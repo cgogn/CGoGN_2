@@ -1,148 +1,516 @@
 /*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps 
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France      
- *                                                                             
- * This library is free software; you can redistribute it and/or modify it     
+ * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
+ * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
+ *
+ * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your    
- * option) any later version.                                                  
- *                                                                             
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
- * for more details.                                                           
- *                                                                             
- * You should have received a copy of the GNU Lesser General Public License    
- * along with this library; if not, write to the Free Software Foundation,     
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.          
- *                                                                             
- * Web site: http://cgogn.unistra.fr/                                          
- * Contact information: cgogn@unistra.fr                                       
- *                                                                             
+ * Free Software Foundation; either version 2.1 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+ *
+ * Web site: http://cgogn.unistra.fr/
+ * Contact information: cgogn@unistra.fr
+ *
  */
 
 #ifndef __CORE_CONTAINER_CHUNK_ARRAY__
 #define __CORE_CONTAINER_CHUNK_ARRAY__
 
-#include <vector>
+#include "core/container/chunk_array_gen.h"
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <cassert>
+
+
+namespace cgogn
+{
+/**
+ *	@brief chunk array class storage
+ *	@tparam CHUNKSIZE size of each chunk (in T, not in bytes!), must be a power of 2 >=32
+ *	@tparam T type of stored data
+ */
+template <unsigned int CHUNKSIZE, typename T>
+class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
+{
+protected:
+
+	/// vector of block pointers
+	std::vector<T*> tableData_;
+
+public:
+
+	/**
+	 * @brief Constructor of ChunkArray
+	 */
+	ChunkArray()
+	{
+		tableData_.reserve(1024);
+	}
+
+	/**
+	 * @brief Destructor of ChunkArray
+	 */
+	~ChunkArray()
+	{
+		for(auto chunk: tableData_)
+			delete[] chunk;
+	}
+
+	/**
+	 * @brief create a ChunkArray<CHUNKSIZE,T>
+	 * @return generic pointer
+	 */
+	ChunkArrayGen<CHUNKSIZE>* clone()
+	{
+		ChunkArrayGen<CHUNKSIZE>* ptr = new ChunkArray<CHUNKSIZE, T>();
+		return ptr;
+	}
+
+	/**
+	 * @brief add a chunk (T[CHUNKSIZE])
+	 */
+	void addChunk()
+	{
+		T* ptr = new T[CHUNKSIZE]();
+		tableData_.push_back(ptr);
+	}
+
+
+	/**
+	 * @brief set number of chunks
+	 * @param nbc number of chunks
+	 */
+	void setNbChunks(unsigned int nbc)
+	{
+		if (nbc >= tableData_.size())
+		{
+			for (std::size_t i= tableData_.size(); i <nbc; ++i)
+				addChunk();
+		}
+		else
+		{
+			for (std::size_t i = nbc; i < tableData_.size(); ++i)
+				delete[] tableData_[i];
+			tableData_.resize(nbc);
+		}
+	}
+
+
+	/**
+	 * @brief get the number of chunks of the array
+	 * @return the number of chunks
+	 */
+	unsigned int getNbChunks() const
+	{
+		return (unsigned int)(tableData_.size());
+	}
+
+	/**
+	 * @brief number of allocated elements
+	 * @return  allocated lines
+	 */
+	unsigned int capacity() const
+	{
+		return (unsigned int)(tableData_.size())*CHUNKSIZE;
+	}
+
+
+	/**
+	 * @brief clear
+	 */
+	void clear()
+	{
+		for(auto chunk: tableData_)
+			delete[] chunk;
+		tableData_.clear();
+	}
+
+	/**
+	 * @brief ref operator []
+	 * @param i index of element to access
+	 * @return ref of element
+	 */
+	T& operator[](unsigned int i)
+	{
+		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief const ref operator []
+	 * @param i index of element to access
+	 * @return const ref of element
+	 */
+	const T& operator[](unsigned int i) const
+	{
+		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief set the value of an element (work also with bool
+	 * @param i index of element to set
+	 * @param v value
+	 */
+	void setVal(unsigned int i, const T& v)
+	{
+		tableData_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
+	}
+
+
+	/**
+	 * @brief get pointer on all chunks data
+	 * @param addr vector to fill
+	 * @param byteBlockSize filled with CHUNKSIZE*sizeof(T)
+	 * @return addr.size()
+	 */
+	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const
+	{
+		byteBlockSize = CHUNKSIZE * sizeof(T);
+
+		addr.reserve(tableData_.size());
+		addr.clear();
+
+		for (typename std::vector<T*>::const_iterator it = tableData_.begin(); it != tableData_.end(); ++it)
+			addr.push_back(*it);
+
+		return (unsigned int)(addr.size());
+	}
+
+	/**
+	 * @brief init an element (overwrite with T())
+	 * @param id index of element
+	 */
+	void initElt(unsigned int id)
+	{
+		tableData_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
+	}
+
+
+	/**
+	 * @brief copy element
+	 * @param dst destination
+	 * @param src source
+	 */
+	void copyElt(unsigned int dst, unsigned int src)
+	{
+		tableData_[dst / CHUNKSIZE][dst % CHUNKSIZE] = tableData_[src / CHUNKSIZE][src % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief swap two elements
+	 * @param id1 idx first
+	 * @param id2 idx second
+	 */
+	void swapElt(unsigned int id1, unsigned int id2)
+	{
+		T data = tableData_[id1 / CHUNKSIZE][id1 % CHUNKSIZE] ;
+		tableData_[id1 / CHUNKSIZE][id1 % CHUNKSIZE] = tableData_[id2 / CHUNKSIZE][id2 % CHUNKSIZE] ;
+		tableData_[id2 / CHUNKSIZE][id2 % CHUNKSIZE] = data ;
+	}
+
+
+	void save(std::ostream& fs, unsigned int nbLines) const
+	{
+		unsigned int nbs[3];
+		nbs[0] = (unsigned int)(tableData_.size());
+		nbs[1] = nbLines;
+		nbs[2] = CHUNKSIZE*sizeof(T);
+
+		assert(nbLines/CHUNKSIZE <= tableData_.size());
+		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
+
+		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
+
+		// no data -> finished
+		if (nbs[0] == 0)
+			return;
+
+		unsigned int nbca = nbs[0]-1;
+		// save data chunks except last
+		for(unsigned int i=0; i<nbca; ++i)
+		{
+			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+		}
+
+		// save last
+		unsigned nbl = nbLines - nbca*CHUNKSIZE;
+		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),nbl*sizeof(T));
+	}
+
+
+	bool load(std::istream& fs)
+	{
+		unsigned int nbs[3];
+		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(unsigned int));
+
+		if (nbs[2] != CHUNKSIZE*sizeof(T))
+		{
+			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
+			return false;
+		}
+
+		this->setNbChunks(nbs[0]);
+
+		// no data -> finished
+		if (nbs[0] == 0)
+			return true;
+
+		// load data chunks except last
+		unsigned int nbca = nbs[0]-1;
+		for(unsigned int i = 0; i < nbca; ++i)
+			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+
+		// load last chunk
+		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
+		fs.read(reinterpret_cast<char*>(tableData_[nbca]),nbl*sizeof(T));
+
+		return true;
+	}
+
+};
+
+
+
+
 
 /**
- * \file cgogn/container/chunk_array.h
- * \brief The class that stores data
+ * @brief specialized version of ChunkArray for bool data. One bit per bool
  */
-namespace cgogn {
+template <unsigned int CHUNKSIZE>
+class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
+{
+protected:
 
-	/**
-	 * \brief Class for blocks of data storage.
-	 * \details 
-	 * ChunckArray is not a two-dimensional array. It is a vector
-	 * of values where each value is itself an array.
-	 * ChunckArrays provides functions to efficiently setting and getting
-	 * arrays.
-	 * \todo
-	 * - multi-threaded environment : a thread safety mode to access in read each chunck with a different thread ?
-	 * - use std::array<T> instead of T[] ?
-	 * \relates ChunckArrayContainer
-	 */
-	// template <typename T, class ThreadPolicy>
-	template <typename T>
-	class CGOGN_API ChunkArray {
+	/// vector of block pointers
+	std::vector<unsigned int*> tableData_;
 
-	private:
-		/**  
-		 * \brief Vector of chunks 
-		 */
-		std::vector<T*> table_data_;		
+public:
 
-		/**
-		 * \brief A symbolic constant that represents the size of a chunk
-		 */
-		const unsigned int kChunkSize = 4096;
+	ChunkArray()
+	{
+		tableData_.reserve(1024);
+	}
 
-		/**
-		 * \brief A symbolic constant that represents the initial size of a vector of chunks
-		 */
-		const unsigned int kVectorSize = 1024;
 
-		/**
-		 * \brief Represents size type of the vector of chunks
-		 */
-		typedef typename std::vector<T*>::size_type size_type;
+	~ChunkArray()
+	{
+		for(auto chunk: tableData_)
+			delete[] chunk;
+	}
 
-	public:
-		
-		/**
-		 * \brief Constructs a new ChunckArray.
-		 */
-		ChunkArray() {
-			table_data_.reserve(kVectorSize);
+
+	ChunkArrayGen<CHUNKSIZE>* clone()
+	{
+		ChunkArrayGen<CHUNKSIZE>* ptr = new ChunkArray<CHUNKSIZE, bool>;
+		return ptr;
+	}
+
+
+	void addChunk()
+	{
+		unsigned int* ptr = new unsigned int[CHUNKSIZE/32];
+//		memset(ptr,0,CHUNKSIZE/8);
+		tableData_.push_back(ptr);
+		for (unsigned int i=CHUNKSIZE/32; i!=0; --i)
+			*ptr++ = 0;
+	}
+
+
+
+	void setNbChunks(unsigned int nbc)
+	{
+		if (nbc >= tableData_.size())
+		{
+			for (std::size_t i= tableData_.size(); i <nbc; ++i)
+				addChunk();
+		}
+		else
+		{
+			for (std::size_t i = nbc; i < tableData_.size(); ++i)
+				delete[] tableData_[i];
+			tableData_.resize(nbc);
+		}
+	}
+
+
+
+	unsigned int getNbChunks() const
+	{
+		return (unsigned int)(tableData_.size());
+	}
+
+
+	unsigned int capacity() const
+	{
+		return (unsigned int)(tableData_.size())*CHUNKSIZE/32;
+	}
+
+
+	void clear()
+	{
+		for(auto chunk: tableData_)
+			delete[] chunk;
+		tableData_.clear();
+	}
+
+
+	void setFalse(unsigned int i)
+	{
+		unsigned int jj = i / CHUNKSIZE;
+		unsigned int j = i % CHUNKSIZE;
+		unsigned int x = j/32;
+		unsigned int y = j%32;
+		unsigned int mask = 1 << y;
+		tableData_[jj][x] &= ~mask;
+	}
+
+	void setTrue(unsigned int i)
+	{
+		unsigned int jj = i / CHUNKSIZE;
+		unsigned int j = i % CHUNKSIZE;
+		unsigned int x = j/32;
+		unsigned int y = j%32;
+		unsigned int mask = 1 << y;
+		tableData_[jj][x] |= mask;
+	}
+
+	void setVal(unsigned int i, bool b)
+	{
+		unsigned int jj = i / CHUNKSIZE;
+		unsigned int j = i % CHUNKSIZE;
+		unsigned int x = j/32;
+		unsigned int y = j%32;
+		unsigned int mask = 1 << y;
+
+		if (b)
+			tableData_[jj][x] |= mask;
+		else
+			tableData_[jj][x] &= ~mask;
+	}
+
+
+
+	bool operator[](unsigned int i) const
+	{
+		unsigned int jj = i / CHUNKSIZE;
+		unsigned int j = i % CHUNKSIZE;
+		unsigned int x = j/32;
+		unsigned int y = j%32;
+
+		unsigned int mask = 1 << y;
+
+		return (tableData_[jj][x] & mask) != 0;
+	}
+
+
+
+	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const
+	{
+		byteBlockSize = CHUNKSIZE / 8;
+
+		addr.reserve(tableData_.size());
+		addr.clear();
+
+		for (typename std::vector<unsigned int*>::const_iterator it = tableData_.begin(); it != tableData_.end(); ++it)
+			addr.push_back(*it);
+
+		return (unsigned int)(addr.size());
+	}
+
+
+	void initElt(unsigned int id)
+	{
+		setFalse(id);
+	}
+
+
+	void copyElt(unsigned int dst, unsigned int src)
+	{
+		setVal(dst,this->operator [](src));
+	}
+
+
+	void swapElt(unsigned int id1, unsigned int id2)
+	{
+		bool data = this->operator [](id1);
+		setVal(id1,this->operator [](id2));
+		setVal(id2,data);
+	}
+
+
+	void save(std::ostream& fs, unsigned int nbLines) const
+	{
+		// round nbLines to 32 multiple
+		if (nbLines%32)
+			nbLines = ((nbLines/32)+1)*32;
+
+		unsigned int nbs[3];
+		nbs[0] = (unsigned int)(tableData_.size());
+		nbs[1] = nbLines;
+		nbs[2] = CHUNKSIZE/8;
+
+		assert(nbLines/CHUNKSIZE <= tableData_.size());
+		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
+
+		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
+
+		// no data -> finished
+		if (nbs[0] == 0)
+			return;
+
+		unsigned int nbca = nbs[0]-1;
+		// save data chunks except last
+		for(unsigned int i=0; i<nbca; ++i)
+		{
+			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE/8);// /8 because bool = 1 bit & octet = 8 bit
 		}
 
-		/**
-		 * \brief ChunckArray destructor.
-		 */
-		~ChunckArray() {
-			for(size_type i = 0 ; i < table_data_.size() ; ++i)
-				delete[] table_data_[i];
+		// save last
+		unsigned int nbl = nbLines - nbca*CHUNKSIZE/8;
+		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),nbl/8);
+	}
+
+
+	bool load(std::istream& fs)
+	{
+		unsigned int nbs[3];
+		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(unsigned int));
+
+		if (nbs[2] != CHUNKSIZE/8)
+		{
+			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
+			return false;
 		}
 
-		/**
-		 * \brief Add a new chunk to the vector of chunks
-		 */
-		inline void addChunk() {
-			T* ptr = new T[kChunkSize];
-			table_data_.push_back(ptr);
+		this->setNbChunks(nbs[0]);
 
-			// TODO test to replace with c++11 version
-			// table_data_.emplace_back(kChunkSize);
-		}
+		// no data -> finished
+		if (nbs[0] == 0)
+			return true;
 
-		/**
-		 * \brief Gets the number of chunks of the array
-		 * \retval the actual number of chunks
-		 */
-		inline unsigned int getNbChunks() const {
-			//TODO add a typedef for basic types to avoid cast
-			return uint32(table_data_.size());
-		}
+		// load data chunks except last
+		unsigned int nbca = nbs[0]-1;
+		for(unsigned int i = 0; i < nbca; ++i)
+			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE/8);// /8 because bool = 1 bit & octet = 8 bit
 
-		/**
-		 * \brief Sets the number of chunks of the array
-		 * \param[in] nbc the number of chuncks
-		 */
-		inline void setNbChunks(unsigned int nbc) {
-			if (nbc >= table_data_.size()) {
-				for (size_type i = table_data_.size(); i < nbc; ++i)
-					addBlock();
-			} else {
-				for (size_type i = nbc; i < table_data_.size(); ++i)
-					delete[] table_data_[i];
-				table_data_.resize(nbc);
-			}
-		}
+		// load last chunk
+		unsigned int nbl = nbs[1] - nbca*CHUNKSIZE/8;
+		fs.read(reinterpret_cast<char*>(tableData_[nbca]),nbl/8);
 
-	private:
-		/**
-		 * Forbid copy constructor
-		 */
-		ChunkArray(const ChunkArray& rhs);
+		return true;
+	}
 
-		/**
-		 * Forbid assignment operator 
-		 */
-		ChunkArray& operator=(const ChunkArray& rhs);
-	};
+};
 
-	/**
-	 *
-	 */
-	// template<T> using ChunkArray = ChunkArray<T, SingleThreadPolicy>;
 
-	/**
-	 *
-	 */
-	// template<T> using ConcurrentChunkArray = ChunkArray<T, MultipleThreadPolicy>;
+} // namespace CGoGN
 
-}
-
-#endif // __CORE_CONTAINER_CHUNK_ARRAY__
+#endif
