@@ -31,7 +31,7 @@ case "$os" in
 	*)
 		echo "Error: OS not supported: $os"			
 		exit 1;;
-esac	
+esac
 
 # Generate the Makefiles
 for config in Release Debug
