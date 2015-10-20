@@ -44,9 +44,11 @@ namespace cgogn
 class ContainerBrowser
 {
 public:
+	inline virtual ~ContainerBrowser() {};
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
+	virtual void nextPrimitive(unsigned int &it) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
 };
@@ -338,7 +340,7 @@ public:
 	}
 
 	/**
-	 * @brief next it <- next used index in the containere
+	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
 	void next(unsigned int &it) const
@@ -348,6 +350,20 @@ public:
 		else
 			realNext(it);
 	}
+
+
+	/**
+	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
+	 * @param it index to "increment"
+	 */
+	void nextPrimitive(unsigned int &it) const
+	{
+		if (currentBrowser_ != NULL)
+			currentBrowser_->nextPrimitive(it);
+		else
+			realNextPrimitive(it);
+	}
+
 
 	/**
 	 * @brief begin of container without browser
@@ -380,6 +396,18 @@ public:
 		do
 		{
 			++it;
+		} while ((it < nbMaxLines_) && (!used(it)));
+	}
+
+	/**
+	 * @brief next primitive without browser
+	 * @param it
+	 */
+	void realNextPrimitive(unsigned int &it) const
+	{
+		do
+		{
+			it+=PRIMSIZE;
 		} while ((it < nbMaxLines_) && (!used(it)));
 	}
 
@@ -549,18 +577,14 @@ public:
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
-		if (this->used(beginPrimIdx))	// replace this IF by an assert ??
-		{
-			holesHeap_.push(beginPrimIdx);
+		assert(this->used(beginPrimIdx)|!" Error removing non existing index");
+		holesHeap_.push(beginPrimIdx);
 
-			/// mark lines as unused
-			for(unsigned int i=0; i<PRIMSIZE; ++i)
-				refs_.setVal(beginPrimIdx++,0);// do not used [] in case of refs_ is bool
+		// mark lines as unused
+		for(unsigned int i=0; i<PRIMSIZE; ++i)
+			refs_.setVal(beginPrimIdx++,0);// do not used [] in case of refs_ is bool
 
-			nbUsedLines_ -= PRIMSIZE;
-		}
-		else
-			std::cerr << "Error removing non existing index " << index << std::endl;
+		nbUsedLines_ -= PRIMSIZE;
 	}
 
 
@@ -596,7 +620,7 @@ public:
 	*/
 	void refLine(unsigned int index)
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
+		static_assert(PRIMSIZE == 1, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
@@ -608,8 +632,7 @@ public:
 	*/
 	bool unrefLine(unsigned int index)
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
-
+		static_assert(PRIMSIZE == 1, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1)
 		{
@@ -628,7 +651,7 @@ public:
 	*/
 	T_REF getNbRefs(unsigned int index) const
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
+		static_assert(PRIMSIZE == 1, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 

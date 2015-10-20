@@ -1,9 +1,12 @@
 
 #include "core/container/chunk_array_container.h"
 
+#include <list>
+
 #define BLK_SZ 32
 
 using namespace cgogn;
+
 
 
 int test1()
@@ -15,7 +18,7 @@ int test1()
 	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 
 
-	for (int i=0;i<21;++i)
+	for (int i=0;i<41;++i)
 		container.insertLines();
 
 
@@ -26,8 +29,8 @@ int test1()
 	}
 
 	container.removeLines(3);
-	container.removeLines(11);
 	container.removeLines(19);
+	container.removeLines(35);
 
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
@@ -58,8 +61,8 @@ int test1()
 	std::cout << "----------------------------------------" << std::endl;
 
 	container.removeLines(3);
-	container.removeLines(11);
 	container.removeLines(19);
+	container.removeLines(35);
 
 	std::vector<unsigned int> mapOldNew;
 	container.compact(mapOldNew);
@@ -83,7 +86,7 @@ int test2()
 	ChunkArrayContainer<BLK_SZ, 3, unsigned char> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
 
-	for (int i=0;i<7;++i)
+	for (int i=0;i<13;++i)
 		container.insertLines();
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
@@ -96,7 +99,7 @@ int test2()
 	std::cout << "----------------------------------------" << std::endl;
 
 	container.removeLines(2);
-	container.removeLines(15);
+	container.removeLines(35);
 
 	unsigned int li = container.insertLines();
 
@@ -158,20 +161,53 @@ int test3()
 
 	ChunkArrayContainer<BLK_SZ, 3, bool> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
+	ChunkArray<BLK_SZ,std::vector<int> >* att2 = container.addAttribute<std::vector<int> >("V_entier");
+	ChunkArray<BLK_SZ,std::list<int> >* att3 = container.addAttribute<std::list<int> >("L_entier");
 
-	for (int i=0;i<7;++i)
+
+	for (int i=0;i<13;++i)
 		container.insertLines();
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		(*att1)[i] = 1+i;
+	std::vector<int> vect = (*att2)[0];
 
-	container.removeLines(3);
-	container.removeLines(11);
-	container.removeLines(19);
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+		(*att1)[i] = 1+i;
+		for (unsigned int j=0; j<i; ++j)
+			(*att2)[i].push_back(j);
+		for (unsigned int j=0; j<i/2; ++j)
+			(*att3)[i].push_front(j);
+	}
+
+	container.removeLines(3);
+	container.removeLines(19);
+	container.removeLines(35);
+
+	container.insertLines();
+
+	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	{
+		std::cout << i << ": "<< (*att1)[i]<< " // ";
+		for (auto j:(*att2)[i])
+			std::cout<< j << ",";
+		std::cout << " // ";
+		for (auto j:(*att3)[i])
+			std::cout<< j << ",";
+		std::cout<< std::endl;
+	}
+	std::cout << "----------------------------------------" << std::endl;
+
+
+	for(unsigned int i=container.begin(); i!=container.end(); container.nextPrimitive(i))
+	{
+		std::cout << i << ": "<< (*att1)[i]<< " // ";
+		for (auto j:(*att2)[i])
+			std::cout<< j << ",";
+		std::cout << " // ";
+		for (auto j:(*att3)[i])
+			std::cout<< j << ",";
+		std::cout<< std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
@@ -191,8 +227,6 @@ int test4()
 	ChunkArrayContainer<BLK_SZ, 3, unsigned int> container;
 	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
-
-//	ChunkArrayGen<BLK_SZ>* att3 = att2->clone();
 
 
 	for (int i=0;i<7;++i)
@@ -242,3 +276,4 @@ int main()
 	test3();
 	test4();
 }
+
