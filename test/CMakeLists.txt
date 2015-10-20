@@ -1,6 +1,8 @@
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 
-aux_source_directories(SOURCES "" .)
+project(cgogn_test
+        LANGUAGES CXX)
 
-add_executable(test_chunk_array ${SOURCES})
+set(CGOGN_TEST_PREFIX "test_")
 
-target_link_libraries(test_chunk_array cgogn)
+add_subdirectory(chunk_array)
