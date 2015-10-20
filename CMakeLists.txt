@@ -11,13 +11,13 @@ project(CGoGN
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
 
-##### Build configuration
+#### Build configuration
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
 
-##### RPATH
+#### RPATH
 if(UNIX)
     # RPATH is a field in ELF binaries that is used as a hint by the system
     # loader to find needed shared libraries.
@@ -33,9 +33,9 @@ if(UNIX)
     endif()
 endif(UNIX)
 
-##### CGOGN sources
+#### CGOGN sources
 # add each subdirectory with a CMakeList
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
-##### test
+#### test
 add_subdirectory(test)

@@ -1,4 +1,4 @@
-project(${CGOGN_TEST_PREFIX}chunck_array
+project(${CGOGN_TEST_PREFIX}chunk_array
 		LANGUAGES CXX
 	   )
 
