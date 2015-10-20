@@ -43,13 +43,13 @@ namespace cgogn
 class ContainerBrowser
 {
 public:
-	inline virtual ~ContainerBrowser() {};
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
 	virtual void nextPrimitive(unsigned int &it) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
+    virtual ~ContainerBrowser() {}
 };
 
 
