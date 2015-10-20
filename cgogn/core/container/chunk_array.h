@@ -242,7 +242,7 @@ public:
 
 		// save last
 		unsigned nbl = nbLines - nbca*CHUNKSIZE;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),nbl*sizeof(T));
+		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
 	}
 
 
@@ -270,7 +270,7 @@ public:
 
 		// load last chunk
 		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
-		fs.read(reinterpret_cast<char*>(tableData_[nbca]),nbl*sizeof(T));
+		fs.read(reinterpret_cast<char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
 
 		return true;
 	}
@@ -364,7 +364,7 @@ public:
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 		tableData_[jj][x] &= ~mask;
 	}
 
@@ -374,7 +374,7 @@ public:
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 		tableData_[jj][x] |= mask;
 	}
 
@@ -384,7 +384,7 @@ public:
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 
 		if (b)
 			tableData_[jj][x] |= mask;
@@ -416,7 +416,7 @@ public:
 		unsigned int x = j/32;
 		unsigned int y = j%32;
 
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 
 		return (tableData_[jj][x] & mask) != 0;
 	}

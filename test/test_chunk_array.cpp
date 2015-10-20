@@ -24,7 +24,7 @@ int test1()
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 	}
 
@@ -90,7 +90,7 @@ int test2()
 		container.insertLines();
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
@@ -173,11 +173,11 @@ int test3()
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 		for (unsigned int j=0; j<i; ++j)
-			(*att2)[i].push_back(j);
+			(*att2)[i].push_back(int(j));
 		for (unsigned int j=0; j<i/2; ++j)
-			(*att3)[i].push_front(j);
+			(*att3)[i].push_front(int(j));
 	}
 
 	container.removeLines(3);
@@ -235,7 +235,7 @@ int test4()
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 	}
 

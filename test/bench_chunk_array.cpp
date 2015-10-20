@@ -45,7 +45,7 @@ int test1()
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}
@@ -86,7 +86,7 @@ int test2()
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+i;
+		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}

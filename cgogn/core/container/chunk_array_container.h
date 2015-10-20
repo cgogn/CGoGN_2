@@ -27,7 +27,6 @@
 
 #include "core/container/chunk_array.h"
 #include "core/container/chunk_heap.h"
-#include "core/basic/static_assert.h"
 #include "core/basic/nameTypes.h"
 #include "core/container/chunk_array_factory.h"
 
@@ -701,15 +700,15 @@ public:
 			buffer.push_back((unsigned int)(names_[i].size()+1));
 			buffer.push_back((unsigned int)(typeNames_[i].size()+1));
 		}
-		fs.write(reinterpret_cast<const char*>(&(buffer[0])),buffer.size()*sizeof(unsigned int));
+		fs.write(reinterpret_cast<const char*>(&(buffer[0])),std::streamsize(buffer.size()*sizeof(unsigned int)));
 
 		// save names
 		for(unsigned int i=0; i<tableArrays_.size(); ++i)
 		{
 			const char* s1 = names_[i].c_str();
 			const char* s2 = typeNames_[i].c_str();
-			fs.write(s1,(names_[i].size()+1)*sizeof(char));
-			fs.write(s2,(typeNames_[i].size()+1)*sizeof(char));
+			fs.write(s1,std::streamsize((names_[i].size()+1)*sizeof(char)));
+			fs.write(s2,std::streamsize((typeNames_[i].size()+1)*sizeof(char)));
 		}
 
 		// save chunk arrays
@@ -735,7 +734,7 @@ public:
 		nbMaxLines_ = buff1[2];
 
 		std::vector<unsigned int> buff2(2*buff1[0]);
-		fs.read(reinterpret_cast<char*>(&(buff2[0])),2*buff1[0]*sizeof(unsigned int));
+		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2*buff1[0]*sizeof(unsigned int)));
 
 		names_.resize(buff1[0]);
 		typeNames_.resize(buff1[0]);
@@ -744,10 +743,10 @@ public:
 		char buff3[256];
 		for(unsigned int i=0; i<buff1[0]; ++i)
 		{
-			fs.read(buff3,buff2[2*i]*sizeof(char));
+			fs.read(buff3, std::streamsize(buff2[2*i]*sizeof(char)));
 			names_[i] = std::string(buff3);
 
-			fs.read(buff3,buff2[2*i+1]*sizeof(char));
+			fs.read(buff3, std::streamsize(buff2[2*i+1]*sizeof(char)));
 			typeNames_[i] = std::string(buff3);
 		}
 
