@@ -26,12 +26,12 @@ case "$os" in
 		os=Linux64-gcc;;
 	Linux*amd64*)
 		os=Linux64-gcc;;
-	Darwin)
-		os=Darwin-clang;;
+	Darwin*)
+		os=Darwin64-clang;;
 	*)
 		echo "Error: OS not supported: $os"			
 		exit 1;;
-esac	
+esac
 
 # Generate the Makefiles
 for config in Release Debug
