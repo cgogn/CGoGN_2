@@ -33,6 +33,9 @@ if(UNIX)
     endif()
 endif(UNIX)
 
+## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
+setBuildType()
+
 #### CGOGN sources
 # add each subdirectory with a CMakeList
 
