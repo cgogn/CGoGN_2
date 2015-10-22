@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 set(CGOGN_VERSION_MAJOR 2)
 set(CGOGN_VERSION_MINOR 0)
@@ -33,9 +33,12 @@ if(UNIX)
     endif()
 endif(UNIX)
 
+## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
+setBuildType()
+
 #### CGOGN sources
 # add each subdirectory with a CMakeList
+
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
-#### test
 add_subdirectory(test)

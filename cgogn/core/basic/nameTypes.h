@@ -25,6 +25,8 @@
 #define __CORE_BASIC_NAME_TYPES_H__
 
 #include <string>
+#include <vector>
+#include <list>
 
 namespace cgogn
 {
@@ -64,6 +66,27 @@ template <> inline std::string nameOfType(const float& /*v*/) { return "float"; 
 template <> inline std::string nameOfType(const double& /*v*/) { return "double"; }
 
 template <> inline std::string nameOfType(const std::string& /*v*/) { return "std::string"; }
+
+template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/) { return "std::vector<?>"; }
+
+template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<?>"; }
+
+
+/**
+ * @brief add CGoGNnameOfType member to a class
+ *
+ * If the class that you want to use as attribute is not basic type nor std::list/std::vector,
+ * use AddTypeName<T> instead of T.
+ * If you develop the class T, just add as public member: static std::string CGoGNnameOfType() { return "type_name_you_develop"; }
+ */
+template <typename T>
+class AddTypeName : public T
+{
+public:
+	static std::string CGoGNnameOfType() { return "UNKNOWN"; }
+};
+
+
 
 }
 

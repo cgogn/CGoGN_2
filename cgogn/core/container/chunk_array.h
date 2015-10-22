@@ -242,7 +242,7 @@ public:
 
 		// save last
 		unsigned nbl = nbLines - nbca*CHUNKSIZE;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),nbl*sizeof(T));
+		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
 	}
 
 
@@ -270,7 +270,7 @@ public:
 
 		// load last chunk
 		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
-		fs.read(reinterpret_cast<char*>(tableData_[nbca]),nbl*sizeof(T));
+		fs.read(reinterpret_cast<char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
 
 		return true;
 	}
@@ -316,11 +316,8 @@ public:
 
 	void addChunk()
 	{
-		unsigned int* ptr = new unsigned int[CHUNKSIZE/32];
-//		memset(ptr,0,CHUNKSIZE/8);
+		unsigned int* ptr = new unsigned int[CHUNKSIZE/32]();
 		tableData_.push_back(ptr);
-		for (unsigned int i=CHUNKSIZE/32; i!=0; --i)
-			*ptr++ = 0;
 	}
 
 
@@ -361,14 +358,13 @@ public:
 		tableData_.clear();
 	}
 
-
 	void setFalse(unsigned int i)
 	{
 		unsigned int jj = i / CHUNKSIZE;
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 		tableData_[jj][x] &= ~mask;
 	}
 
@@ -378,7 +374,7 @@ public:
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 		tableData_[jj][x] |= mask;
 	}
 
@@ -388,12 +384,27 @@ public:
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 
 		if (b)
 			tableData_[jj][x] |= mask;
 		else
 			tableData_[jj][x] &= ~mask;
+	}
+
+	/**
+	 * @brief special optimized version of setFalse when goal is to set all to false;
+	 * @param i index of element to set to false
+	 *
+	 * This version overwrite element AND SOME OF THIS NEIGHBOURS with 0
+	 * Use only if final goal is to set all array to 0 (MarkerStore)
+	 * @todo find another name for the method!
+	 */
+	void setFalseDirty(unsigned int i)
+	{
+		unsigned int jj = i / CHUNKSIZE;
+		unsigned int j = (i % CHUNKSIZE)/32;
+		tableData_[jj][j] = 0;
 	}
 
 
@@ -405,7 +416,7 @@ public:
 		unsigned int x = j/32;
 		unsigned int y = j%32;
 
-		unsigned int mask = 1 << y;
+		unsigned int mask = (unsigned int)(1) << y;
 
 		return (tableData_[jj][x] & mask) != 0;
 	}
@@ -509,6 +520,7 @@ public:
 	}
 
 };
+
 
 
 } // namespace CGoGN

@@ -27,7 +27,6 @@
 
 #include "core/container/chunk_array.h"
 #include "core/container/chunk_heap.h"
-#include "core/basic/static_assert.h"
 #include "core/basic/nameTypes.h"
 #include "core/container/chunk_array_factory.h"
 
@@ -47,6 +46,7 @@ public:
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
+	virtual void nextPrimitive(unsigned int &it) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
     virtual ~ContainerBrowser() {}
@@ -339,7 +339,7 @@ public:
 	}
 
 	/**
-	 * @brief next it <- next used index in the containere
+	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
 	void next(unsigned int &it) const
@@ -349,6 +349,20 @@ public:
 		else
 			realNext(it);
 	}
+
+
+	/**
+	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
+	 * @param it index to "increment"
+	 */
+	void nextPrimitive(unsigned int &it) const
+	{
+		if (currentBrowser_ != NULL)
+			currentBrowser_->nextPrimitive(it);
+		else
+			realNextPrimitive(it);
+	}
+
 
 	/**
 	 * @brief begin of container without browser
@@ -381,6 +395,18 @@ public:
 		do
 		{
 			++it;
+		} while ((it < nbMaxLines_) && (!used(it)));
+	}
+
+	/**
+	 * @brief next primitive without browser
+	 * @param it
+	 */
+	void realNextPrimitive(unsigned int &it) const
+	{
+		do
+		{
+			it+=PRIMSIZE;
 		} while ((it < nbMaxLines_) && (!used(it)));
 	}
 
@@ -550,18 +576,14 @@ public:
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
-		if (this->used(beginPrimIdx))	// replace this IF by an assert ??
-		{
-			holesHeap_.push(beginPrimIdx);
+		assert(this->used(beginPrimIdx)|!" Error removing non existing index");
+		holesHeap_.push(beginPrimIdx);
 
-			/// mark lines as unused
-			for(unsigned int i=0; i<PRIMSIZE; ++i)
-				refs_.setVal(beginPrimIdx++,0);// do not used [] in case of refs_ is bool
+		// mark lines as unused
+		for(unsigned int i=0; i<PRIMSIZE; ++i)
+			refs_.setVal(beginPrimIdx++,0);// do not used [] in case of refs_ is bool
 
-			nbUsedLines_ -= PRIMSIZE;
-		}
-		else
-			std::cerr << "Error removing non existing index " << index << std::endl;
+		nbUsedLines_ -= PRIMSIZE;
 	}
 
 
@@ -597,7 +619,7 @@ public:
 	*/
 	void refLine(unsigned int index)
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
+		static_assert(PRIMSIZE == 1, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
@@ -609,8 +631,7 @@ public:
 	*/
 	bool unrefLine(unsigned int index)
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
-
+		static_assert(PRIMSIZE == 1, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1)
 		{
@@ -629,7 +650,7 @@ public:
 	*/
 	T_REF getNbRefs(unsigned int index) const
 	{
-		CGoGN_STATIC_ASSERT(PRIMSIZE == 1, refLine_with_container_where_PRIMSIZE=1);
+		static_assert(PRIMSIZE == 1, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 
@@ -679,15 +700,15 @@ public:
 			buffer.push_back((unsigned int)(names_[i].size()+1));
 			buffer.push_back((unsigned int)(typeNames_[i].size()+1));
 		}
-		fs.write(reinterpret_cast<const char*>(&(buffer[0])),buffer.size()*sizeof(unsigned int));
+		fs.write(reinterpret_cast<const char*>(&(buffer[0])),std::streamsize(buffer.size()*sizeof(unsigned int)));
 
 		// save names
 		for(unsigned int i=0; i<tableArrays_.size(); ++i)
 		{
 			const char* s1 = names_[i].c_str();
 			const char* s2 = typeNames_[i].c_str();
-			fs.write(s1,(names_[i].size()+1)*sizeof(char));
-			fs.write(s2,(typeNames_[i].size()+1)*sizeof(char));
+			fs.write(s1,std::streamsize((names_[i].size()+1)*sizeof(char)));
+			fs.write(s2,std::streamsize((typeNames_[i].size()+1)*sizeof(char)));
 		}
 
 		// save chunk arrays
@@ -713,7 +734,7 @@ public:
 		nbMaxLines_ = buff1[2];
 
 		std::vector<unsigned int> buff2(2*buff1[0]);
-		fs.read(reinterpret_cast<char*>(&(buff2[0])),2*buff1[0]*sizeof(unsigned int));
+		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2*buff1[0]*sizeof(unsigned int)));
 
 		names_.resize(buff1[0]);
 		typeNames_.resize(buff1[0]);
@@ -722,10 +743,10 @@ public:
 		char buff3[256];
 		for(unsigned int i=0; i<buff1[0]; ++i)
 		{
-			fs.read(buff3,buff2[2*i]*sizeof(char));
+			fs.read(buff3, std::streamsize(buff2[2*i]*sizeof(char)));
 			names_[i] = std::string(buff3);
 
-			fs.read(buff3,buff2[2*i+1]*sizeof(char));
+			fs.read(buff3, std::streamsize(buff2[2*i+1]*sizeof(char)));
 			typeNames_[i] = std::string(buff3);
 		}
 
