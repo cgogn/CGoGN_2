@@ -46,23 +46,37 @@ public:
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
-	virtual void nextPrimitive(unsigned int &it) const = 0;
+	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
     virtual ~ContainerBrowser() {}
+};
+
+template <typename CONTAINER>
+class ContainerStandardBrowser:public ContainerBrowser
+{
+	const CONTAINER* cac_;
+public:
+	ContainerStandardBrowser(const CONTAINER* cac) : cac_(cac) {}
+	virtual unsigned int begin() const { return cac_->realBegin(); }
+	virtual unsigned int end() const { return cac_->realEnd(); }
+	virtual void next(unsigned int &it)  const { cac_->realNext(it); }
+	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const { cac_->realNextPrimitive(it,primSz); }
+	virtual void enable() {}
+	virtual void disable() {}
 };
 
 
 /**
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNKSIZE chunk size for ChunkArray
- * @tparam PRIMSIZE number of lines used as primitive (grouped lines)
  * @detail
  *
  */
-template <unsigned int CHUNKSIZE, unsigned int PRIMSIZE, typename T_REF>
+template <unsigned int CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
+
 public:
 	/**
 	* constante d'attribut inconnu
@@ -101,6 +115,10 @@ protected:
 	 */
 	ContainerBrowser* currentBrowser_;
 
+	/**
+	 * Browser that allow special traversals
+	 */
+	ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >* stdBrowser_;
 
 	/**
 	 * @brief get array index from name
@@ -167,10 +185,12 @@ public:
 	 */
 	ChunkArrayContainer():
 		nbUsedLines_(0),
-		nbMaxLines_(0),
-		currentBrowser_(NULL)
+		nbMaxLines_(0)
 	{
+		stdBrowser_ = new ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >(this);
+		currentBrowser_= stdBrowser_;
 	}
+
 
 	/**
 	 * @brief ChunkArrayContainer destructor
@@ -319,11 +339,9 @@ public:
 	 * @brief begin
 	 * @return the index of the first used line of the container
 	 */
-	unsigned int begin() const
+	inline unsigned int begin() const
 	{
-		if (currentBrowser_ != NULL)
-			return currentBrowser_->begin();
-		return realBegin();
+		return currentBrowser_->begin();
 	}
 
 
@@ -331,23 +349,18 @@ public:
 	 * @brief end
 	 * @return the index after the last used line of the container
 	 */
-	unsigned int end() const
+	inline unsigned int end() const
 	{
-		if (currentBrowser_ != NULL)
-			return currentBrowser_->end();
-		return realEnd();
+		return currentBrowser_->end();
 	}
 
 	/**
 	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
-	void next(unsigned int &it) const
+	inline void next(unsigned int &it) const
 	{
-		if (currentBrowser_ != NULL)
-			currentBrowser_->next(it);
-		else
-			realNext(it);
+		currentBrowser_->next(it);
 	}
 
 
@@ -355,12 +368,9 @@ public:
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
 	 */
-	void nextPrimitive(unsigned int &it) const
+	inline void nextPrimitive(unsigned int &it, unsigned int primSz) const
 	{
-		if (currentBrowser_ != NULL)
-			currentBrowser_->nextPrimitive(it);
-		else
-			realNextPrimitive(it);
+		currentBrowser_->nextPrimitive(it, primSz);
 	}
 
 
@@ -368,7 +378,7 @@ public:
 	 * @brief begin of container without browser
 	 * @return
 	 */
-	unsigned int realBegin() const
+	inline unsigned int realBegin() const
 	{
 		unsigned int it = 0;
 		while ((it < nbMaxLines_) && (!used(it)))
@@ -380,7 +390,7 @@ public:
 	 * @brief end of container without browser
 	 * @return
 	 */
-	unsigned int realEnd() const
+	inline unsigned int realEnd() const
 	{
 		return nbMaxLines_;
 	}
@@ -390,7 +400,7 @@ public:
 	 * @brief next without browser
 	 * @param it
 	 */
-	void realNext(unsigned int &it) const
+	inline void realNext(unsigned int &it) const
 	{
 		do
 		{
@@ -402,11 +412,11 @@ public:
 	 * @brief next primitive without browser
 	 * @param it
 	 */
-	void realNextPrimitive(unsigned int &it) const
+	inline void realNextPrimitive(unsigned int &it, unsigned int primSz) const
 	{
 		do
 		{
-			it+=PRIMSIZE;
+			it+=primSz;
 		} while ((it < nbMaxLines_) && (!used(it)));
 	}
 
@@ -490,6 +500,7 @@ public:
 	 * @brief container compacting
 	 * @param mapOldNew table that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
+	template <unsigned int PRIMSIZE>
 	void compact(std::vector<unsigned int>& mapOldNew)
 	{
 		mapOldNew.clear();
@@ -537,6 +548,7 @@ public:
 	* @brief insert a group of PRIMSIZE consecutive lines in the container
 	* @return index of the first line of group
 	*/
+	template <unsigned int PRIMSIZE>
 	unsigned int insertLines()
 	{
 		unsigned int index;
@@ -569,9 +581,10 @@ public:
 	}
 
 	/**
-	* remove a group of PRIMSIZE lines in the container
+	* @brief remove a group of PRIMSIZE lines in the container
 	* @param index index of one line of group to remove
 	*/
+	template <unsigned int PRIMSIZE>
 	void removeLines(unsigned int index)
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
@@ -619,7 +632,7 @@ public:
 	*/
 	void refLine(unsigned int index)
 	{
-		static_assert(PRIMSIZE == 1, "refLine with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
@@ -631,7 +644,7 @@ public:
 	*/
 	bool unrefLine(unsigned int index)
 	{
-		static_assert(PRIMSIZE == 1, "unrefLine with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1)
 		{
@@ -650,7 +663,7 @@ public:
 	*/
 	T_REF getNbRefs(unsigned int index) const
 	{
-		static_assert(PRIMSIZE == 1, "getNbRefs with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 

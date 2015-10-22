@@ -32,14 +32,14 @@ int test1()
 {
 	std::cout << "= TEST 1 = ref unsigned char" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, 1, unsigned char> container;
+	ChunkArrayContainer<BLK_SZ, unsigned char> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.addAttribute<Vec3f>("Vec3f");
 
 
 	for (unsigned int i=0;i<NB_LINES;++i)
-		container.insertLines();
+		container.insertLines<1>();
 
 
 
@@ -51,18 +51,18 @@ int test1()
 	}
 
 
-	for (unsigned int j=0; j<40; ++j)
+	for (unsigned int j=0; j<100; ++j)
 	{
 
 		for (unsigned int i=0;i<NB_LINES/10;++i)
 		{
-			container.removeLines(j%2+1+i*10);
-			container.removeLines(j%2+3+i*10);
-			container.removeLines(j%2+8+i*10);
+			container.removeLines<1>(j%2+1+i*10);
+			container.removeLines<1>(j%2+3+i*10);
+			container.removeLines<1>(j%2+8+i*10);
 		}
 
 		for (unsigned int i=0;i<3*NB_LINES/10;++i)
-			container.insertLines();
+			container.insertLines<1>();
 	}
 
 	std::cout << "---> OK" << std::endl;
@@ -73,14 +73,14 @@ int test2()
 {
 	std::cout << "= TEST 2 = ref bool" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, 1, bool> container;
+	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.addAttribute<Vec3f>("Vec3f");
 
 
 	for (unsigned int i=0;i<NB_LINES;++i)
-		container.insertLines();
+		container.insertLines<1>();
 
 
 
@@ -92,18 +92,18 @@ int test2()
 	}
 
 
-	for (unsigned int j=0; j<40; ++j)
+	for (unsigned int j=0; j<100; ++j)
 	{
 
 		for (unsigned int i=0;i<NB_LINES/10;++i)
 		{
-			container.removeLines(j%2+1+i*10);
-			container.removeLines(j%2+3+i*10);
-			container.removeLines(j%2+8+i*10);
+			container.removeLines<1>(j%2+1+i*10);
+			container.removeLines<1>(j%2+3+i*10);
+			container.removeLines<1>(j%2+8+i*10);
 		}
 
 		for (unsigned int i=0;i<3*NB_LINES/10;++i)
-			container.insertLines();
+			container.insertLines<1>();
 	}
 
 	std::cout << "---> OK" << std::endl;
@@ -116,18 +116,18 @@ int test3()
 {
 	std::cout << "= TEST 3 = random bool cleaning" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, 1, bool> container;
+	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.addAttribute<bool>("bools");
 
 	for (unsigned int i=0;i<NB_LINES;++i)
-		container.insertLines();
+		container.insertLines<1>();
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
 		att1->setVal(i,true);
 	}
 
-	for (unsigned int j=0; j<40; ++j)
+	for (unsigned int j=0; j<100; ++j)
 	{
 		for (unsigned int i=0;i<NB_LINES/2;++i)
 		{
@@ -145,18 +145,18 @@ int test4()
 {
 	std::cout << "= TEST 4 = random bool cleaning with setFalseDirty" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, 1, bool> container;
+	ChunkArrayContainer<BLK_SZ,  bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.addAttribute<bool>("bools");
 
 	for (unsigned int i=0;i<NB_LINES;++i)
-		container.insertLines();
+		container.insertLines<1>();
 
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
 		att1->setVal(i,true);
 	}
 
-	for (unsigned int j=0; j<40; ++j)
+	for (unsigned int j=0; j<100; ++j)
 	{
 		for (unsigned int i=0;i<NB_LINES/2;++i)
 		{
