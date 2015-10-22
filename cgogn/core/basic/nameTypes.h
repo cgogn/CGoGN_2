@@ -67,9 +67,8 @@ template <> inline std::string nameOfType(const double& /*v*/) { return "double"
 
 template <> inline std::string nameOfType(const std::string& /*v*/) { return "std::string"; }
 
-template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/) { return "std::vector<?>"; }
-
-template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<?>"; }
+template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/) { return std::string("std::vector<") + nameOfType(T()) + std::string(">"); }
+template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<"+ nameOfType(T()) + std::string(">"); }
 
 
 /**
