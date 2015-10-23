@@ -8,6 +8,12 @@ project(CGoGN
 	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
 	LANGUAGES CXX
 	)
+
+#### Default build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
 
