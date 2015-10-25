@@ -22,6 +22,8 @@ set(FULL_WARNINGS
     #-Wno-sign-
     # Ignore warnings about C++98 compatibility
     -Wno-c++98-compat
+    # Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
+    -Wno-c++11-extensions
 )
 
 # Compile with full warnings by default
@@ -50,3 +52,4 @@ macro(m_add_executable)
     
     add_executable(${ARGN})
 endmacro()
+
