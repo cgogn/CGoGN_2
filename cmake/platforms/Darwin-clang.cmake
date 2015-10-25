@@ -18,6 +18,8 @@ set(FULL_WARNINGS
     -Wno-exit-time-destructors
     # Turn this on to detect documentation errors (very useful)
     -Wno-documentation
+    # Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
+    -Wno-documentation-unknown-command
     # Too many of sign conversion problems. Ignore them for the moment.
     #-Wno-sign-
     # Ignore warnings about C++98 compatibility
