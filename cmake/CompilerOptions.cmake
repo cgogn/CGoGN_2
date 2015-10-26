@@ -15,8 +15,8 @@ if(APPLE)
 		include(cmake/platforms/Darwin.cmake)
 	endif()
 
-	if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-		include(cmake/platforms/Darwing-clang.cmake)
+	if(${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang")
+		include(cmake/platforms/Darwin64-clang/config.cmake)
 	endif()
 endif()
 
