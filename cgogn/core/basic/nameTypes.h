@@ -34,9 +34,9 @@ namespace cgogn
  * @brief function that give a name to a type.
  */
 template <typename T>
-std::string nameOfType(const T& v)
+std::string nameOfType(const T& /*v*/)
 {
-	return v.CGoGNnameOfType();
+	return T::CGoGNnameOfType();
 }
 
 template <> inline std::string nameOfType(const bool& /*v*/) { return "bool"; }

@@ -50,7 +50,7 @@ public:
 	 * @brief create a ChunkArray object without knowning type
 	 * @return generic pointer
 	 */
-    virtual ChunkArrayGen<CHUNKSIZE>* clone() const = 0;
+	virtual ChunkArrayGen<CHUNKSIZE>* clone() const = 0;
 
 
 	/**
