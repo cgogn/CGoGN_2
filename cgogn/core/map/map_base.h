@@ -40,16 +40,21 @@ protected:
 
 public:
 
+	//TODO remonter dans map_base
+	template<typename T, unsigned int ORBIT>
+	using AttributeHandler =  AttributeHandler<DATA_TRAITS,T,ORBIT>;
+
+
 	MapBase() {}
 
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler<DATA_TRAITS,T,ORBIT> addAttribute(const std::string& nameAttr = "")
+	inline AttributeHandler<T,ORBIT> addAttribute(const std::string& nameAttr = "")
 	{
 //		if(!this->template isOrbitEmbedded<ORBIT>())
 //			this->template addEmbedding<ORBIT>() ;
 
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attributes_[ORBIT].template addAttribute<T>(nameAttr) ;
-		return AttributeHandler<DATA_TRAITS,T, ORBIT>(this, ca) ;
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attributes_[ORBIT].template addAttribute<T>(nameAttr) ;
+		return AttributeHandler<T, ORBIT>(this, ca) ;
 	}
 
 	/**
@@ -58,7 +63,7 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline bool removeAttribute(AttributeHandler<DATA_TRAITS,T,ORBIT>& attr_handl)
+	inline bool removeAttribute(AttributeHandler<T,ORBIT>& attr_handl)
 	{
 
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca =  attr_handl.getDataVector();
@@ -81,10 +86,10 @@ public:
 	* @return an AttributeHandler
 	*/
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler<DATA_TRAITS, T, ORBIT> getAttribute(const std::string& nameAttr)
+	inline AttributeHandler< T, ORBIT> getAttribute(const std::string& nameAttr)
 	{
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attribs_[ORBIT].template getAttribute<T>(nameAttr) ;
-			return AttributeHandler<DATA_TRAITS,T, ORBIT>(this, ca) ;
+			return AttributeHandler<T, ORBIT>(this, ca) ;
 	}
 
 

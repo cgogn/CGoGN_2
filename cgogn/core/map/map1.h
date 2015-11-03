@@ -55,10 +55,6 @@ public:
 	template<typename T>
 	using FaceAttributeHandler =  AttributeHandler<DATA_TRAITS,T,FACE>;
 
-	//TODO remonter dans map_base
-	template<typename T, unsigned int ORBIT>
-	using AttributeHandler =  AttributeHandler<DATA_TRAITS,T,ORBIT>;
-
 
 	/**
 	 * @brief phi1
@@ -122,7 +118,7 @@ public:
 	 * @param d
 	 * @return
 	 */
-	Dart uncut_edge(Dart d)
+	void uncut_edge(Dart d)
 	{
 		Dart d1 = phi1(d) ;
 		phi1unsew(d) ;			// Dart d is linked to the successor of its successor

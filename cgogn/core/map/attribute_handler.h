@@ -199,7 +199,7 @@ public:
 	 */
 	T& operator[](unsigned int i)
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		assert(this->valid_ || !"Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -210,21 +210,60 @@ public:
 	 */
 	const T& operator[](unsigned int i) const
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		assert(this->valid_ || !"Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
 
 
+	class const_iterator
+	{
+	public:
+		const AttributeHandler<DATA_TRAITS, T,ORBIT>* ah_ptr_;
+		unsigned int index_;
+
+		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i):
+			ah_ptr_(ah),index_(i){}
+
+		inline const_iterator& operator++()
+		{
+			ah_ptr_->chunck_array_cont_->next(index_);
+			return *this;
+		}
+
+		inline const T& operator*() const
+		{
+			return ah_ptr_->operator[](index_);
+		}
+
+		inline bool operator!=(const_iterator it) const
+		{
+			assert(ah_ptr_ == it.ah_ptr_);
+			return index_ != it.index_;
+		}
+	};
+
+	inline const_iterator begin() const
+	{
+		return const_iterator(this,this->chunck_array_cont_->begin());
+	}
+
+	inline const_iterator end() const
+	{
+		return const_iterator(this,this->chunck_array_cont_->end());
+	}
+
+
 	class iterator
 	{
+	public:
 		AttributeHandler<DATA_TRAITS, T,ORBIT>* ah_ptr_;
 		unsigned int index_;
 
-	public:
-
 		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i):
 			ah_ptr_(ah),index_(i){}
+
+
 
 		inline iterator& operator++()
 		{
@@ -232,26 +271,16 @@ public:
 			return *this;
 		}
 
-		inline iterator operator++(int)
-		{
-			iterator temp(*this);
-			ah_ptr_->chunck_array_cont_->next(index_);
-			return temp;
-		}
-
-
 		inline T& operator*()
 		{
-			T& v = ah_ptr_->operator[](index_);
-			return v;
+			return ah_ptr_->operator[](index_);
 		}
 
-		inline bool operator!=(iterator it)
+		inline bool operator!=(iterator it) const
 		{
 			assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
-
 	};
 
 	inline iterator begin()

@@ -37,22 +37,22 @@ namespace cgogn
  * @tparam T type stored in heap
  */
 template <unsigned int CHUNKSIZE, typename T>
-class ChunkHeap : public ChunkArray<CHUNKSIZE, T>
+class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
 	unsigned int heapSize_;
 
 public:
 	/**
-	 * @brief ChunkHeap constructor
+	 * @brief ChunkStack constructor
 	 */
-	ChunkHeap():
+	ChunkStack():
 		heapSize_(0)
 	{}
 
 	/**
-	 * @brief ChunkHeap destructor
+	 * @brief ChunkStack destructor
 	 */
-	~ChunkHeap() {}
+	~ChunkStack() {}
 
 	/**
 	 * @brief push a value on top of heap

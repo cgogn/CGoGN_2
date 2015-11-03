@@ -10,7 +10,7 @@ set(HEADER_FILES
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
 	container/chunk_array.h
-	container/chunk_heap.h
+	container/chunk_stack.h
 
 	map/map_base_data.h
 	map/map_base.h

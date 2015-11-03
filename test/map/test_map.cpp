@@ -10,15 +10,48 @@ struct My_Data_Traits
 	static const int CHUNK_SIZE=64;
 };
 
+// typedef for short writing
+typedef Map1<My_Data_Traits> MAP1;
+
+// declare a map
+MAP1 map;
+
+
+
+void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
+{
+	for (const float& f:ah)
+	{
+		std::cout << f << std::endl;
+	}
+
+	// equivalent to
+	for (MAP1::VertexAttributeHandler<float>::const_iterator it = ah.begin(); it != ah.end(); ++it)
+			std::cout << *it << std::endl;
+
+
+}
+
+void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
+{
+
+	for (float& f:ah)
+	{
+		f *= 2.0f;
+		std::cout << f << std::endl;
+	}
+
+	// equivalent to
+	for (MAP1::VertexAttributeHandler<float>::iterator it = ah.begin(); it != ah.end(); ++it)
+	{
+		*it /= 2.0f;
+	}
+}
+
 
 
 int test1()
 {
-	// typedef for short writing
-	typedef Map1<My_Data_Traits> MAP1;
-
-	// declare a map
-	MAP1 map;
 
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float,MAP1::VERTEX>("floats");
@@ -34,13 +67,15 @@ int test1()
 	// access with index
 	std::cout << ah[0] << std::endl;
 
-	// traverse container with for range
-	for (float f:ah)
-		std::cout << f << std::endl;
 
-	// equivalent to
-	for (MAP1::VertexAttributeHandler<float>::iterator it = ah.begin(); it != ah.end(); ++it)
-		std::cout << *it << std::endl;
+	fonc_non_const(ah);
+
+	fonc_const(ah);
+
+//	// traverse container with for range
+//	for (float f:ah)
+//		std::cout << f << std::endl;
+
 
 	return 0;
 }

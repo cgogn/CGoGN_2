@@ -147,6 +147,7 @@ public:
 	 */
 	T& operator[](unsigned int i)
 	{
+		assert(i/CHUNKSIZE < tableData_.size());
 		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
 	}
 
@@ -157,7 +158,6 @@ public:
 	 */
 	const T& operator[](unsigned int i) const
 	{
-		//TODO le faire partout !!!!
 		assert(i/CHUNKSIZE < tableData_.size());
 		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
 	}
@@ -169,6 +169,7 @@ public:
 	 */
 	void setVal(unsigned int i, const T& v)
 	{
+		assert(i/CHUNKSIZE < tableData_.size());
 		tableData_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
 
@@ -225,60 +226,113 @@ public:
 	}
 
 
+//	void save(std::ostream& fs, unsigned int nbLines) const
+//	{
+//		unsigned int nbs[3];
+//		nbs[0] = (unsigned int)(tableData_.size());
+//		nbs[1] = nbLines;
+//		nbs[2] = CHUNKSIZE*sizeof(T);
+
+//		assert(nbLines/CHUNKSIZE <= tableData_.size());
+//		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
+
+//		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
+
+//		// no data -> finished
+//		if (nbs[0] == 0)
+//			return;
+
+//		unsigned int nbca = nbs[0]-1;
+//		// save data chunks except last
+//		for(unsigned int i=0; i<nbca; ++i)
+//		{
+//			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+//		}
+
+//		// save last
+//		unsigned nbl = nbLines - nbca*CHUNKSIZE;
+//		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+//	}
+
+
+//	bool load(std::istream& fs)
+//	{
+//		unsigned int nbs[3];
+//		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(unsigned int));
+
+//		if (nbs[2] != CHUNKSIZE*sizeof(T))
+//		{
+//			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
+//			return false;
+//		}
+
+//		this->setNbChunks(nbs[0]);
+
+//		// no data -> finished
+//		if (nbs[0] == 0)
+//			return true;
+
+//		// load data chunks except last
+//		unsigned int nbca = nbs[0]-1;
+//		for(unsigned int i = 0; i < nbca; ++i)
+//			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+
+//		// load last chunk
+//		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
+//		fs.read(reinterpret_cast<char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+
+//		return true;
+//	}
+
+
 	void save(std::ostream& fs, unsigned int nbLines) const
 	{
-		unsigned int nbs[3];
-		nbs[0] = (unsigned int)(tableData_.size());
-		nbs[1] = nbLines;
-		nbs[2] = CHUNKSIZE*sizeof(T);
+		assert(nbLines/CHUNKSIZE <= getNbChunks());
 
-		assert(nbLines/CHUNKSIZE <= tableData_.size());
-		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
-
-		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
+		fs.write(reinterpret_cast<const char*>(&nbLines),sizeof(unsigned int));
 
 		// no data -> finished
-		if (nbs[0] == 0)
+		if (nbLines == 0)
 			return;
 
-		unsigned int nbca = nbs[0]-1;
+		unsigned int nbc = getNbChunks() - 1;
+
 		// save data chunks except last
-		for(unsigned int i=0; i<nbca; ++i)
+		for(unsigned int i=0; i<nbc; ++i)
 		{
 			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
 		}
 
-		// save last
-		unsigned nbl = nbLines - nbca*CHUNKSIZE;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+		// save last incomplete chunk
+		unsigned nb = nbLines - nbc*CHUNKSIZE;
+		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),std::streamsize(nb*sizeof(T)));
 	}
 
 
 	bool load(std::istream& fs)
 	{
-		unsigned int nbs[3];
-		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(unsigned int));
-
-		if (nbs[2] != CHUNKSIZE*sizeof(T))
-		{
-			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
-			return false;
-		}
-
-		this->setNbChunks(nbs[0]);
+		unsigned int nbLines;
+		fs.read(reinterpret_cast<char*>(&nbLines), sizeof(unsigned int));
 
 		// no data -> finished
-		if (nbs[0] == 0)
+		if (nbLines == 0)
 			return true;
 
+		// compute number of chunks
+		unsigned int nbc = nbLines / CHUNKSIZE;
+		if (nbLines % CHUNKSIZE != 0)
+			nbc++;
+
+		this->setNbChunks(nbc);
+
 		// load data chunks except last
-		unsigned int nbca = nbs[0]-1;
-		for(unsigned int i = 0; i < nbca; ++i)
+		nbc--;
+		for(unsigned int i = 0; i < nbc; ++i)
 			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
 
-		// load last chunk
-		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
-		fs.read(reinterpret_cast<char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+		// load last incomplete chunk
+		unsigned int nb = nbLines - nbc*CHUNKSIZE;
+		fs.read(reinterpret_cast<char*>(tableData_[nbc]),std::streamsize(nb*sizeof(T)));
 
 		return true;
 	}
@@ -374,6 +428,7 @@ public:
 	void setFalse(unsigned int i)
 	{
 		unsigned int jj = i / CHUNKSIZE;
+		assert(jj < tableData_.size());
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
@@ -384,6 +439,7 @@ public:
 	void setTrue(unsigned int i)
 	{
 		unsigned int jj = i / CHUNKSIZE;
+		assert(jj < tableData_.size());
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
@@ -394,6 +450,7 @@ public:
 	void setVal(unsigned int i, bool b)
 	{
 		unsigned int jj = i / CHUNKSIZE;
+		assert(jj < tableData_.size());
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
@@ -416,6 +473,7 @@ public:
 	void setFalseDirty(unsigned int i)
 	{
 		unsigned int jj = i / CHUNKSIZE;
+		assert(jj < tableData_.size());
 		unsigned int j = (i % CHUNKSIZE)/32;
 		tableData_[jj][j] = 0;
 	}
@@ -425,6 +483,7 @@ public:
 	bool operator[](unsigned int i) const
 	{
 		unsigned int jj = i / CHUNKSIZE;
+		assert(jj < tableData_.size());
 		unsigned int j = i % CHUNKSIZE;
 		unsigned int x = j/32;
 		unsigned int y = j%32;
@@ -476,61 +535,58 @@ public:
 		if (nbLines%32)
 			nbLines = ((nbLines/32)+1)*32;
 
-		unsigned int nbs[3];
-		nbs[0] = (unsigned int)(tableData_.size());
-		nbs[1] = nbLines;
-		nbs[2] = CHUNKSIZE/8;
-
 		assert(nbLines/CHUNKSIZE <= tableData_.size());
 		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
 
-		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
+		// save number of lines
+		fs.write(reinterpret_cast<const char*>(&nbLines),sizeof(unsigned int));
 
 		// no data -> finished
-		if (nbs[0] == 0)
+		if (nbLines == 0)
 			return;
 
-		unsigned int nbca = nbs[0]-1;
+		unsigned int nbc = getNbChunks()-1;
 		// save data chunks except last
-		for(unsigned int i=0; i<nbca; ++i)
+		for(unsigned int i=0; i<nbc; ++i)
 		{
 			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE/8);// /8 because bool = 1 bit & octet = 8 bit
 		}
 
 		// save last
-		unsigned int nbl = nbLines - nbca*CHUNKSIZE/8;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),nbl/8);
+		unsigned int nb = nbLines - nbc*CHUNKSIZE;
+		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),nb/8);
 	}
 
 
 	bool load(std::istream& fs)
 	{
-		unsigned int nbs[3];
-		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(unsigned int));
-
-		if (nbs[2] != CHUNKSIZE/8)
-		{
-			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
-			return false;
-		}
-
-		this->setNbChunks(nbs[0]);
+		// get number of lines to load
+		unsigned int nbLines;
+		fs.read(reinterpret_cast<char*>(&nbLines), sizeof(unsigned int));
 
 		// no data -> finished
-		if (nbs[0] == 0)
+		if (nbLines == 0)
 			return true;
 
+		// compute number of chunks
+		unsigned int nbc = nbLines / CHUNKSIZE;
+		if (nbLines % CHUNKSIZE != 0)
+			nbc++;
+
+		this->setNbChunks(nbc);
+
 		// load data chunks except last
-		unsigned int nbca = nbs[0]-1;
-		for(unsigned int i = 0; i < nbca; ++i)
+		nbc--;
+		for(unsigned int i = 0; i < nbc; ++i)
 			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE/8);// /8 because bool = 1 bit & octet = 8 bit
 
 		// load last chunk
-		unsigned int nbl = nbs[1] - nbca*CHUNKSIZE/8;
-		fs.read(reinterpret_cast<char*>(tableData_[nbca]),nbl/8);
+		unsigned int nb = nbLines - nbc*CHUNKSIZE;
+		fs.read(reinterpret_cast<char*>(tableData_[nbc]),nb/8);
 
 		return true;
 	}
+
 
 };
 

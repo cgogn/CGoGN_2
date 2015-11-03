@@ -26,7 +26,7 @@
 
 
 #include "core/container/chunk_array.h"
-#include "core/container/chunk_heap.h"
+#include "core/container/chunk_stack.h"
 #include "core/basic/nameTypes.h"
 #include "core/container/chunk_array_factory.h"
 
@@ -96,9 +96,9 @@ protected:
 	ChunkArray<CHUNKSIZE, T_REF> refs_;
 
 	/**
-	 * heap of holes
+	 * stack of holes
 	 */
-	ChunkHeap<CHUNKSIZE, unsigned int> holesHeap_;
+	ChunkStack<CHUNKSIZE, unsigned int> holesStack_;
 
 	/**
 	* size (number of elts) of the container
@@ -512,7 +512,7 @@ public:
 		refs_.clear();
 
 		// clear holes
-		holesHeap_.clear();
+		holesStack_.clear();
 
 		//clear data
 		for (auto arr: tableArrays_)
@@ -575,7 +575,7 @@ public:
 		refs_.setNbChunks(newNbBlocks);
 
 		// clear holes
-		holesHeap_.clear();
+		holesStack_.clear();
 
 	}
 
@@ -593,7 +593,7 @@ public:
 	{
 		unsigned int index;
 
-		if (holesHeap_.empty()) // no holes -> insert at the end
+		if (holesStack_.empty()) // no holes -> insert at the end
 		{
 			index = nbMaxLines_;
 			nbMaxLines_ += PRIMSIZE;
@@ -607,8 +607,8 @@ public:
 		}
 		else
 		{
-			index = holesHeap_.head();
-			holesHeap_.pop();
+			index = holesStack_.head();
+			holesStack_.pop();
 		}
 
 		// mark lines as used
@@ -630,7 +630,7 @@ public:
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
 		assert(this->used(beginPrimIdx)|!" Error removing non existing index");
-		holesHeap_.push(beginPrimIdx);
+		holesStack_.push(beginPrimIdx);
 
 		// mark lines as unused
 		for(unsigned int i=0; i<PRIMSIZE; ++i)
@@ -704,7 +704,7 @@ public:
 		refs_[index]--;
 		if (refs_[index] == 1)
 		{
-			holesHeap_.push(index);
+			holesStack_.push(index);
 			refs_[index] = 0;			// same as removeLine without the "if"
 			--nbUsedLines_;
 			return true;
@@ -790,8 +790,8 @@ public:
 		// save uses/refs
 		refs_.save(fs,nbMaxLines_);
 
-		// save heap
-		holesHeap_.save(fs,holesHeap_.size());
+		// save stack
+		holesStack_.save(fs,holesStack_.size());
 	}
 
 

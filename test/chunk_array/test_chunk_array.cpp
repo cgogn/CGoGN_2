@@ -221,12 +221,13 @@ int test4()
 
 	ChunkArrayFactory<BLK_SZ>::registerCA("float",new ChunkArray<BLK_SZ,float>());
 	ChunkArrayFactory<BLK_SZ>::registerCA("int",new ChunkArray<BLK_SZ,int>());
-	ChunkArrayFactory<BLK_SZ>::registerCA("char",new ChunkArray<BLK_SZ,char>());
+	ChunkArrayFactory<BLK_SZ>::registerCA("bool",new ChunkArray<BLK_SZ,bool>());
 
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
+	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
+	ChunkArray<BLK_SZ,bool>* att3 = container.addAttribute<bool>("bools");
 
 
 	for (int i=0;i<7;++i)
@@ -237,6 +238,7 @@ int test4()
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
+		(*att3).setVal(i,i%2);
 	}
 
 	container.removeLines<3>(3);
@@ -254,11 +256,11 @@ int test4()
 
 	ChunkArray<BLK_SZ,int>* load_att1 = cont2.getAttribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* load_att2 = cont2.getAttribute<float>("reel");
-
+	ChunkArray<BLK_SZ,bool>* load_att3 = cont2.getAttribute<bool>("bools");
 
 	for(unsigned int i=cont2.begin(); i!=cont2.end(); cont2.next(i))
 	{
-		std::cout << i << ": "<< (*load_att1)[i] << " / " << (*load_att2)[i] << std::endl;
+		std::cout << i << ": "<< (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] <<std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
