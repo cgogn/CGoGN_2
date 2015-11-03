@@ -55,6 +55,7 @@ public:
 	template<typename T>
 	using FaceAttributeHandler =  AttributeHandler<DATA_TRAITS,T,FACE>;
 
+	//TODO remonter dans map_base
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler =  AttributeHandler<DATA_TRAITS,T,ORBIT>;
 

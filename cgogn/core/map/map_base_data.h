@@ -55,7 +55,7 @@ protected:
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> attributes_[NB_ORBITS];
 
 	/// embedding indices shortcuts
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE,unsigned int> embeddings_[NB_ORBITS];
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE,unsigned int>* embeddings_[NB_ORBITS];
 
 	/// boundary markers shortcuts
 	ChunkArray<DATA_TRAITS::CHUNK_SIZE,bool>* boundaryMarkers_[2];
@@ -78,7 +78,7 @@ public:
 	inline unsigned int getEmbedding(Cell<ORBIT> c) const
 	{
 //		assert(this->template isOrbitEmbedded<ORBIT>() || !"Invalid parameter: orbit not embedded");
-		return (*this->embeddings_[ORBIT])[this->dartIndex(c.dart)] ;
+		return (*this->embeddings_[ORBIT])[c.dart.index] ;
 	}
 
 };

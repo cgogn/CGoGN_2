@@ -31,7 +31,7 @@ namespace cgogn
 {
 
 const unsigned int NB_ORBITS	= 8;
-const unsigned int DART			= 0;
+const unsigned int VERTEX1		= 0;
 const unsigned int VERTEX2		= 1;
 const unsigned int EDGE2		= 2;
 const unsigned int FACE2		= 3;
@@ -45,8 +45,8 @@ inline std::string orbitName(unsigned int orbit)
 {
 	switch(orbit)
 	{
-	case DART:
-		return "DART";
+	case VERTEX1:
+		return "VERTEX1";
 		break;
 	case VERTEX2:
 		return "VERTEX2";
@@ -92,7 +92,7 @@ public:
 	Dart dart;
 
 	/// empty construtor
-	Cell(): dart() {}
+	inline Cell(): dart() {}
 
 	/// constructor from Dart
 	inline Cell(Dart d): dart(d) {}

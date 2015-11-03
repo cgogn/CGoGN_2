@@ -157,6 +157,8 @@ public:
 	 */
 	const T& operator[](unsigned int i) const
 	{
+		//TODO le faire partout !!!!
+		assert(i/CHUNKSIZE < tableData_.size());
 		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
 	}
 
