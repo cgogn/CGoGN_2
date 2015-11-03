@@ -4,12 +4,21 @@ project(cgogn_core
 set(HEADER_FILES
 	basic/definitions.h
 	basic/nameTypes.h
-
+	basic/dart.h
+	basic/cell.h
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
 	container/chunk_array.h
-	container/chunk_heap.h
+	container/chunk_stack.h
+
+	map/map_base_data.h
+	map/map_base.h
+	map/map1.h
+	map/map2.h
+	map/map_tri.h
+
+	map/attribute_handler.h
 	)
 
 set(SOURCE_FILES

@@ -26,7 +26,7 @@
 
 
 #include "core/container/chunk_array.h"
-#include "core/container/chunk_heap.h"
+#include "core/container/chunk_stack.h"
 #include "core/basic/nameTypes.h"
 #include "core/container/chunk_array_factory.h"
 
@@ -46,23 +46,37 @@ public:
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
-	virtual void nextPrimitive(unsigned int &it) const = 0;
+	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
 	virtual ~ContainerBrowser() {}
+};
+
+template <typename CONTAINER>
+class ContainerStandardBrowser:public ContainerBrowser
+{
+	const CONTAINER* cac_;
+public:
+	ContainerStandardBrowser(const CONTAINER* cac) : cac_(cac) {}
+	virtual unsigned int begin() const { return cac_->realBegin(); }
+	virtual unsigned int end() const { return cac_->realEnd(); }
+	virtual void next(unsigned int &it)  const { cac_->realNext(it); }
+	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const { cac_->realNextPrimitive(it,primSz); }
+	virtual void enable() {}
+	virtual void disable() {}
 };
 
 
 /**
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNKSIZE chunk size for ChunkArray
- * @tparam PRIMSIZE number of lines used as primitive (grouped lines)
  * @detail
  *
  */
-template <unsigned int CHUNKSIZE, unsigned int PRIMSIZE, typename T_REF>
+template <unsigned int CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
+
 public:
 	/**
 	* constante d'attribut inconnu
@@ -82,9 +96,9 @@ protected:
 	ChunkArray<CHUNKSIZE, T_REF> refs_;
 
 	/**
-	 * heap of holes
+	 * stack of holes
 	 */
-	ChunkHeap<CHUNKSIZE, unsigned int> holesHeap_;
+	ChunkStack<CHUNKSIZE, unsigned int> holesStack_;
 
 	/**
 	* size (number of elts) of the container
@@ -97,10 +111,19 @@ protected:
 	unsigned int nbMaxLines_;
 
 	/**
+	 * @brief number of bool attribs (which are alway in front of all others)
+	 */
+	unsigned int nbBoolAttribs_;
+
+	/**
 	 * Browser that allow special traversals
 	 */
 	ContainerBrowser* currentBrowser_;
 
+	/**
+	 * Browser that allow special traversals
+	 */
+	ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >* stdBrowser_;
 
 	/**
 	 * @brief get array index from name
@@ -135,7 +158,6 @@ protected:
 	}
 
 
-
 	/**
 	 * @brief remove an attribute by its name
 	 * @param attribName name of attribute to remove
@@ -143,7 +165,23 @@ protected:
 	 */
 	bool removeAttribute(unsigned int index)
 	{
-		delete tableArrays_[index] ;
+		// store ptr for using it before delete
+		ChunkArrayGen<CHUNKSIZE>* ptrToDel = tableArrays_[index];
+
+		// in case of bool, keep booleans first !
+		if (tableArrays_[index]->isBooleanArray())
+		{
+			nbBoolAttribs_--;
+
+			if (index < nbBoolAttribs_)	// if attribute is not last of boolean
+			{
+				tableArrays_[index] = tableArrays_[nbBoolAttribs_];	// copy last of boolean on index
+				names_[index]       = names_[nbBoolAttribs_];
+				typeNames_[index]   = typeNames_[nbBoolAttribs_];
+			}
+			// now overwrite last of bool with last
+			index = nbBoolAttribs_;
+		}
 
 		if (index != tableArrays_.size()- std::size_t(1u))
 		{
@@ -156,6 +194,9 @@ protected:
 		names_.pop_back();
 		typeNames_.pop_back();
 
+		delete ptrToDel ;
+
+
 		return true ;
 	}
 
@@ -167,10 +208,12 @@ public:
 	 */
 	ChunkArrayContainer():
 		nbUsedLines_(0u),
-		nbMaxLines_(0u),
-		currentBrowser_(nullptr)
+		nbMaxLines_(0u)
 	{
+		stdBrowser_ = new ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >(this);
+		currentBrowser_= stdBrowser_;
 	}
+
 
 	/**
 	 * @brief ChunkArrayContainer destructor
@@ -230,6 +273,23 @@ public:
 		tableArrays_.push_back(carr) ;
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
+
+		// move bool in front of others
+		if (typeIsBool(T()))
+		{
+			if (tableArrays_.size() > nbBoolAttribs_)
+			{
+				// swap ptrs
+				auto tmp = tableArrays_.back();
+				tableArrays_.back() = tableArrays_[nbBoolAttribs_];
+				tableArrays_[nbBoolAttribs_] = tmp;
+				// swap names & typenames
+				names_.back().swap(names_[nbBoolAttribs_]);
+				typeNames_.back().swap(typeNames_[nbBoolAttribs_]);
+			}
+			nbBoolAttribs_++;
+
+		}
 
 		return carr ;
 	}
@@ -319,11 +379,9 @@ public:
 	 * @brief begin
 	 * @return the index of the first used line of the container
 	 */
-	unsigned int begin() const
+	inline unsigned int begin() const
 	{
-		if (currentBrowser_ != nullptr)
-			return currentBrowser_->begin();
-		return realBegin();
+		return currentBrowser_->begin();
 	}
 
 
@@ -331,23 +389,18 @@ public:
 	 * @brief end
 	 * @return the index after the last used line of the container
 	 */
-	unsigned int end() const
+	inline unsigned int end() const
 	{
-		if (currentBrowser_ != nullptr)
-			return currentBrowser_->end();
-		return realEnd();
+		return currentBrowser_->end();
 	}
 
 	/**
 	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
-	void next(unsigned int &it) const
+	inline void next(unsigned int &it) const
 	{
-		if (currentBrowser_ != nullptr)
-			currentBrowser_->next(it);
-		else
-			realNext(it);
+		currentBrowser_->next(it);
 	}
 
 
@@ -355,12 +408,9 @@ public:
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
 	 */
-	void nextPrimitive(unsigned int &it) const
+	inline void nextPrimitive(unsigned int &it, unsigned int primSz) const
 	{
-		if (currentBrowser_ != nullptr)
-			currentBrowser_->nextPrimitive(it);
-		else
-			realNextPrimitive(it);
+		currentBrowser_->nextPrimitive(it, primSz);
 	}
 
 
@@ -368,7 +418,7 @@ public:
 	 * @brief begin of container without browser
 	 * @return
 	 */
-	unsigned int realBegin() const
+	inline unsigned int realBegin() const
 	{
 		unsigned int it = 0u;
 		while ((it < nbMaxLines_) && (!used(it)))
@@ -380,7 +430,7 @@ public:
 	 * @brief end of container without browser
 	 * @return
 	 */
-	unsigned int realEnd() const
+	inline unsigned int realEnd() const
 	{
 		return nbMaxLines_;
 	}
@@ -390,7 +440,7 @@ public:
 	 * @brief next without browser
 	 * @param it
 	 */
-	void realNext(unsigned int &it) const
+	inline void realNext(unsigned int &it) const
 	{
 		do
 		{
@@ -402,11 +452,11 @@ public:
 	 * @brief next primitive without browser
 	 * @param it
 	 */
-	void realNextPrimitive(unsigned int &it) const
+	inline void realNextPrimitive(unsigned int &it, unsigned int primSz) const
 	{
 		do
 		{
-			it+=PRIMSIZE;
+			it+=primSz;
 		} while ((it < nbMaxLines_) && (!used(it)));
 	}
 
@@ -462,7 +512,7 @@ public:
 		refs_.clear();
 
 		// clear holes
-		holesHeap_.clear();
+		holesStack_.clear();
 
 		//clear data
 		for (auto arr: tableArrays_)
@@ -490,6 +540,7 @@ public:
 	 * @brief container compacting
 	 * @param mapOldNew table that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
+	template <unsigned int PRIMSIZE>
 	void compact(std::vector<unsigned int>& mapOldNew)
 	{
 		mapOldNew.clear();
@@ -524,7 +575,7 @@ public:
 		refs_.setNbChunks(newNbBlocks);
 
 		// clear holes
-		holesHeap_.clear();
+		holesStack_.clear();
 
 	}
 
@@ -537,11 +588,12 @@ public:
 	* @brief insert a group of PRIMSIZE consecutive lines in the container
 	* @return index of the first line of group
 	*/
+	template <unsigned int PRIMSIZE>
 	unsigned int insertLines()
 	{
 		unsigned int index;
 
-		if (holesHeap_.empty()) // no holes -> insert at the end
+		if (holesStack_.empty()) // no holes -> insert at the end
 		{
 			index = nbMaxLines_;
 			nbMaxLines_ += PRIMSIZE;
@@ -555,8 +607,8 @@ public:
 		}
 		else
 		{
-			index = holesHeap_.head();
-			holesHeap_.pop();
+			index = holesStack_.head();
+			holesStack_.pop();
 		}
 
 		// mark lines as used
@@ -569,15 +621,16 @@ public:
 	}
 
 	/**
-	* remove a group of PRIMSIZE lines in the container
+	* @brief remove a group of PRIMSIZE lines in the container
 	* @param index index of one line of group to remove
 	*/
+	template <unsigned int PRIMSIZE>
 	void removeLines(unsigned int index)
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
 		assert(this->used(beginPrimIdx)|!" Error removing non existing index");
-		holesHeap_.push(beginPrimIdx);
+		holesStack_.push(beginPrimIdx);
 
 		// mark lines as unused
 		for(unsigned int i=0u; i<PRIMSIZE; ++i)
@@ -595,8 +648,24 @@ public:
 	{
 		assert( used(index) && "initLine only with allocated lines");
 		for (auto ptrAtt: tableArrays_)
-			if (ptrAtt != nullptr)
+//			if (ptrAtt != nullptr) never null !
 				ptrAtt->initElt(index);
+	}
+
+	void initBooleansOfLine(unsigned int index)
+	{
+		assert( used(index) && "initBooleansOfLine only with allocated lines");
+		for (unsigned int i=0; i<nbBoolAttribs_;++i)
+			tableArrays_[i]->initElt(index);
+	}
+
+
+	void initBoolsOfLine(unsigned int index)
+	{
+//		assert( used(index) && "initLine only with allocated lines");
+//		for (auto ptrAtt: tableArrays_)
+//			if (ptrAtt != NULL)
+//				ptrAtt->initElt(index);
 	}
 
 
@@ -619,7 +688,7 @@ public:
 	*/
 	void refLine(unsigned int index)
 	{
-		static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
@@ -631,11 +700,11 @@ public:
 	*/
 	bool unrefLine(unsigned int index)
 	{
-		static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1u)
 		{
-			holesHeap_.push(index);
+			holesStack_.push(index);
 			refs_[index] = 0u;			// same as removeLine without the "if"
 			--nbUsedLines_;
 			return true;
@@ -650,7 +719,7 @@ public:
 	*/
 	T_REF getNbRefs(unsigned int index) const
 	{
-		static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
+//		static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 
@@ -692,9 +761,11 @@ public:
 	{
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
+		buffer.reserve(1024);
 		buffer.push_back((unsigned int)(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
+		buffer.push_back(nbBoolAttribs_);
 		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
 		{
 			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
@@ -719,19 +790,20 @@ public:
 		// save uses/refs
 		refs_.save(fs,nbMaxLines_);
 
-		// save heap
-		holesHeap_.save(fs,holesHeap_.size());
+		// save stack
+		holesStack_.save(fs,holesStack_.size());
 	}
 
 
 	bool load(std::ifstream& fs)
 	{
 		// read info
-		unsigned int buff1[3];
-		fs.read(reinterpret_cast<char*>(buff1),3u*sizeof(unsigned int));
+		unsigned int buff1[4];
+		fs.read(reinterpret_cast<char*>(buff1),4u*sizeof(unsigned int));
 
-		nbUsedLines_ = buff1[1];
-		nbMaxLines_ = buff1[2];
+		nbUsedLines_   = buff1[1];
+		nbMaxLines_    = buff1[2];
+		nbBoolAttribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2u*buff1[0]);
 		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2u*buff1[0]*sizeof(unsigned int)));

@@ -82,6 +82,10 @@ public:
 	 */
 	virtual void clear() = 0;
 
+
+	virtual bool isBooleanArray() const = 0;
+
+
 	/**
 	 * @brief get pointer on all chunks data
 	 * @param addr vector to fill
