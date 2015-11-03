@@ -65,6 +65,12 @@ public:
 			delete[] chunk;
 	}
 
+
+	bool isBooleanArray() const
+	{
+		return false;
+	}
+
 	/**
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
@@ -304,6 +310,11 @@ public:
 	{
 		for(auto chunk: tableData_)
 			delete[] chunk;
+	}
+
+	bool isBooleanArray() const
+	{
+		return true;
 	}
 
 

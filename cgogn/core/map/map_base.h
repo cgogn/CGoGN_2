@@ -35,6 +35,9 @@ namespace cgogn
 template<typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase: public MapBaseData<DATA_TRAITS>
 {
+protected:
+	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attributeHandlers_ ;
+
 public:
 
 	MapBase() {}
@@ -55,10 +58,21 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline bool removeAttribute(AttributeHandler<DATA_TRAITS,T,ORBIT>& attr)
+	inline bool removeAttribute(AttributeHandler<DATA_TRAITS,T,ORBIT>& attr_handl)
 	{
 
-		return true;
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca =  attr_handl.getDataVector();
+
+		if (this->attributes_[ORBIT].removeAttribute(ca))
+		{
+			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT ;
+			std::pair<IT, IT> bounds = attributeHandlers_.equal_range(ca) ;
+			for(IT i = bounds.first; i != bounds.second; ++i)
+				(*i).second->setInvalid() ;
+			attributeHandlers_.erase(bounds.first, bounds.second) ;
+			return true ;
+		}
+		return false ;
 	}
 
 	/**
@@ -71,6 +85,27 @@ public:
 	{
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attribs_[ORBIT].template getAttribute<T>(nameAttr) ;
 			return AttributeHandler<DATA_TRAITS,T, ORBIT>(this, ca) ;
+	}
+
+
+	inline Dart add_dart()
+	{
+
+		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
+		 this->topology_.initBooleansOfLine(di);
+
+		for(unsigned int i = 0; i < NB_ORBITS; ++i)
+		{
+			if (this->embeddings_[i])							// set all its embeddings
+				(*(this->embeddings_[i]))[di] = EMBNULL ;			// to EMBNULL
+		}
+
+		Dart d = Dart::create(di) ;
+
+		for (auto relPtr: this->topo_relations_)
+			(*relPtr)[di] = d;
+
+		return d ;
 	}
 
 };

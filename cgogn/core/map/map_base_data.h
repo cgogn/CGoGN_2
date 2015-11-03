@@ -54,7 +54,16 @@ protected:
 	/// embedding attributes
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> attributes_[NB_ORBITS];
 
+	/// embedding indices shortcuts
 	ChunkArray<DATA_TRAITS::CHUNK_SIZE,unsigned int> embeddings_[NB_ORBITS];
+
+	/// boundary markers shortcuts
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE,bool>* boundaryMarkers_[2];
+	// TODO: ?? store in a std::vector ?
+
+	/// topo relations shortcuts
+	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE,Dart>*> topo_relations_;
+
 
 public:
 	MapBaseData() {}

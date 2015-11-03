@@ -83,7 +83,6 @@ int test2()
 		container.insertLines<1>();
 
 
-
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
@@ -171,6 +170,38 @@ int test4()
 
 
 
+int test5()
+{
+	std::cout << "= TEST 5 = Traversal" << std::endl;
+
+	ChunkArrayContainer<BLK_SZ, unsigned int> container;
+	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("ints");
+
+	for (unsigned int i=0;i<NB_LINES;++i)
+		container.insertLines<1>();
+
+	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+		att1->operator [](i) = i;
+
+	for(unsigned int i=container.begin(); i<container.end(); i+=9)
+		container.removeLines<1>(i);
+
+
+	int  total = 0;
+	for (unsigned int j=0; j<50; ++j)
+	{
+		for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+		{
+			if (att1->operator [](i)%i != 0)
+				total += att1->operator [](i);
+		}
+		total = - total;
+	}
+
+	std::cout << "---> OK " << total << std::endl;
+	return 0;
+}
+
 
 
 
@@ -178,7 +209,7 @@ int main(int argc, char **argv)
 {
 	if (argc==1)
 	{
-		std::cout <<" PARAMETER: 1 (for unsigned int refs) / 2 (for bool refs)";
+		std::cout <<" PARAMETER: 1/2 for uint/bool refs ; 3/4 for random clear bool; 5 for traversal";
 		return 1;
 	}
 
@@ -192,6 +223,8 @@ int main(int argc, char **argv)
 		case 3: test3();
 			break;
 		case 4: test4();
+			break;
+		case 5: test5();
 			break;
 		default:
 			break;

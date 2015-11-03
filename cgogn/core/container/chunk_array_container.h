@@ -111,6 +111,11 @@ protected:
 	unsigned int nbMaxLines_;
 
 	/**
+	 * @brief number of bool attribs (which are alway in front of all others)
+	 */
+	unsigned int nbBoolAttribs_;
+
+	/**
 	 * Browser that allow special traversals
 	 */
 	ContainerBrowser* currentBrowser_;
@@ -153,7 +158,6 @@ protected:
 	}
 
 
-
 	/**
 	 * @brief remove an attribute by its name
 	 * @param attribName name of attribute to remove
@@ -161,7 +165,23 @@ protected:
 	 */
 	bool removeAttribute(unsigned int index)
 	{
-		delete tableArrays_[index] ;
+		// store ptr for using it before delete
+		ChunkArrayGen<CHUNKSIZE>* ptrToDel = tableArrays_[index];
+
+		// in case of bool, keep booleans first !
+		if (tableArrays_[index]->isBooleanArray())
+		{
+			nbBoolAttribs_--;
+
+			if (index < nbBoolAttribs_)	// if attribute is not last of boolean
+			{
+				tableArrays_[index] = tableArrays_[nbBoolAttribs_];	// copy last of boolean on index
+				names_[index]       = names_[nbBoolAttribs_];
+				typeNames_[index]   = typeNames_[nbBoolAttribs_];
+			}
+			// now overwrite last of bool with last
+			index = nbBoolAttribs_;
+		}
 
 		if (index != tableArrays_.size()-1)
 		{
@@ -173,6 +193,9 @@ protected:
 		tableArrays_.pop_back();
 		names_.pop_back();
 		typeNames_.pop_back();
+
+		delete ptrToDel ;
+
 
 		return true ;
 	}
@@ -250,6 +273,23 @@ public:
 		tableArrays_.push_back(carr) ;
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
+
+		// move bool in front of others
+		if (typeIsBool(T()))
+		{
+			if (tableArrays_.size() > nbBoolAttribs_)
+			{
+				// swap ptrs
+				auto tmp = tableArrays_.back();
+				tableArrays_.back() = tableArrays_[nbBoolAttribs_];
+				tableArrays_[nbBoolAttribs_] = tmp;
+				// swap names & typenames
+				names_.back().swap(names_[nbBoolAttribs_]);
+				typeNames_.back().swap(typeNames_[nbBoolAttribs_]);
+			}
+			nbBoolAttribs_++;
+
+		}
 
 		return carr ;
 	}
@@ -608,8 +648,24 @@ public:
 	{
 		assert( used(index) && "initLine only with allocated lines");
 		for (auto ptrAtt: tableArrays_)
-			if (ptrAtt != NULL)
+//			if (ptrAtt != NULL) never null !
 				ptrAtt->initElt(index);
+	}
+
+	void initBooleansOfLine(unsigned int index)
+	{
+		assert( used(index) && "initBooleansOfLine only with allocated lines");
+		for (unsigned int i=0; i<nbBoolAttribs_;++i)
+			tableArrays_[i]->initElt(index);
+	}
+
+
+	void initBoolsOfLine(unsigned int index)
+	{
+//		assert( used(index) && "initLine only with allocated lines");
+//		for (auto ptrAtt: tableArrays_)
+//			if (ptrAtt != NULL)
+//				ptrAtt->initElt(index);
 	}
 
 
@@ -705,9 +761,11 @@ public:
 	{
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
+		buffer.reserve(1024);
 		buffer.push_back((unsigned int)(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
+		buffer.push_back(nbBoolAttribs_);
 		for(unsigned int i=0; i<tableArrays_.size(); ++i)
 		{
 			buffer.push_back((unsigned int)(names_[i].size()+1));
@@ -740,11 +798,12 @@ public:
 	bool load(std::ifstream& fs)
 	{
 		// read info
-		unsigned int buff1[3];
-		fs.read(reinterpret_cast<char*>(buff1),3*sizeof(unsigned int));
+		unsigned int buff1[4];
+		fs.read(reinterpret_cast<char*>(buff1),4*sizeof(unsigned int));
 
-		nbUsedLines_ = buff1[1];
-		nbMaxLines_ = buff1[2];
+		nbUsedLines_   = buff1[1];
+		nbMaxLines_    = buff1[2];
+		nbBoolAttribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2*buff1[0]);
 		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2*buff1[0]*sizeof(unsigned int)));

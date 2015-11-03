@@ -28,11 +28,14 @@
 #include "core/basic/cell.h"
 
 
-
+///TODO ajouter enregistrement dans la map de la carte.
 
 namespace cgogn
 {
-
+/**
+ * @brief Generic AttributeHandler class
+ * @TPARAM DATA_TRAITS stprage traits (for MapBase ptr)
+ */
 template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
@@ -48,6 +51,8 @@ public:
 		map_(NULL),valid_(v)
 	{}
 
+	virtual ~AttributeHandlerGen() {}
+
 
 	inline bool isValid() const { return valid_; }
 
@@ -62,7 +67,10 @@ protected:
 
 
 
-
+/**
+ * @brief Generic AttributeHandler class with orbit parameter
+ * @TPARAM ORBIT the orbit of attribute to handlde
+ */
 template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {

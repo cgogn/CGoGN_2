@@ -53,13 +53,20 @@ struct Dart
 
 	bool operator<(Dart d) const { return index < d.index; }
 
-	friend std::ostream& operator<<( std::ostream &out, const Dart& fa ) { return out << fa.index; }
-	friend std::istream& operator>>( std::istream &in, Dart& fa ) { in >> fa.index; return in; }
+
+	friend std::ostream& operator<<( std::ostream &out, const Dart& fa );
+	friend std::istream& operator>>( std::istream &in, Dart& fa );
 
 
 };
 
+
+std::ostream& operator<<( std::ostream &out, const Dart& fa ) { return out << fa.index; }
+std::istream& operator>>( std::istream &in, Dart& fa ) { in >> fa.index; return in; }
+
+
 const Dart NIL = Dart::nil();
+const unsigned int EMBNULL = 0xffffffff;
 
 
 }

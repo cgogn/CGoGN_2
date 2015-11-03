@@ -87,6 +87,14 @@ public:
 };
 
 
+template <typename T>
+bool typeIsBool(T)
+{
+	return false;
+}
+
+template <> bool typeIsBool(bool) { return true; }
+
 
 }
 
