@@ -14,7 +14,7 @@ set(FULL_WARNINGS
 )
 
 # Determine gcc version and activate additional warnings available in latest versions
-#execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
 if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
     message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
