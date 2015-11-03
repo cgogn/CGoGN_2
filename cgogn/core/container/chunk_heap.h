@@ -45,14 +45,14 @@ public:
 	/**
 	 * @brief ChunkHeap constructor
 	 */
-	ChunkHeap():
-		heapSize_(0)
+	ChunkHeap() : ChunkArray<CHUNKSIZE, T>()
+	  ,heapSize_(0u)
 	{}
 
 	/**
 	 * @brief ChunkHeap destructor
 	 */
-	~ChunkHeap() {}
+	~ChunkHeap() override {}
 
 	/**
 	 * @brief push a value on top of heap
@@ -74,15 +74,15 @@ public:
 	 * @brief empty
 	 * @return true if heap empty
 	 */
-	bool empty()
+	inline bool empty() const
 	{
-		return heapSize_==0;
+		return heapSize_ == 0u;
 	}
 
 	/**
 	 * @return number of elements in the heap
 	 */
-	unsigned int size()
+	unsigned int size() const
 	{
 		return heapSize_;
 	}
@@ -90,9 +90,9 @@ public:
 	/**
 	 * @brief pop the head of heap
 	 */
-	void pop()
+	inline void pop()
 	{
-		assert(heapSize_>0);
+		assert(heapSize_ > 0u);
 		heapSize_--;
 	}
 
@@ -100,10 +100,10 @@ public:
 	 * @brief get head of heap
 	 * @return copy of head element
 	 */
-	T head() const
+	inline T head() const
 	{
-		unsigned int offset = heapSize_ % CHUNKSIZE;
-		unsigned int blkId  = heapSize_ / CHUNKSIZE;
+		const unsigned int offset = heapSize_ % CHUNKSIZE;
+		const unsigned int blkId  = heapSize_ / CHUNKSIZE;
 
 		return this->tableData_[blkId][offset];
 	}
@@ -113,7 +113,7 @@ public:
 	 */
 	void compact()
 	{
-		unsigned int keep = (heapSize_+CHUNKSIZE-1) / CHUNKSIZE;
+		const unsigned int keep = (heapSize_+CHUNKSIZE-1u) / CHUNKSIZE;
 		while (this->tableData_.size() > keep)
 		{
 			delete[] this->tableData_.back();
@@ -124,9 +124,9 @@ public:
 	/**
 	 * @brief clear the heap and free memory
 	 */
-	void clear()
+	void clear() override
 	{
-		heapSize_=0;
+		heapSize_ = 0u;
 		ChunkArray<CHUNKSIZE, T>::clear();
 	}
 };
