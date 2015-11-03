@@ -18,10 +18,14 @@ set(FULL_WARNINGS
     -Wno-exit-time-destructors
     # Turn this on to detect documentation errors (very useful)
     -Wno-documentation
+    # Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
+    -Wno-documentation-unknown-command
     # Too many of sign conversion problems. Ignore them for the moment.
     #-Wno-sign-
     # Ignore warnings about C++98 compatibility
     -Wno-c++98-compat
+    # Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
+    -Wno-c++11-extensions
 )
 
 # Compile with full warnings by default
@@ -50,3 +54,4 @@ macro(m_add_executable)
     
     add_executable(${ARGN})
 endmacro()
+
