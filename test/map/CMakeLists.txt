@@ -8,4 +8,4 @@ target_link_libraries(test_map cgogn_core)
 #			  TARGET cgogn_core
 #			  PROPERTY INCLUDE_DIRECTORIES
 #			)
-target_include_directories(test_map PRIVATE ${cgogn_core_includes})
+#target_include_directories(test_map PRIVATE ${cgogn_core_includes})
