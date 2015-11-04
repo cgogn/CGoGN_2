@@ -1,28 +1,28 @@
-/*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- * Web site: http://cgogn.unistra.fr/
- * Contact information: cgogn@unistra.fr
- *
- */
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_HEAP__
-#define __CORE_CONTAINER_CHUNK_HEAP__
+#ifndef __CORE_CONTAINER_CHUNK_STACK_H__
+#define __CORE_CONTAINER_CHUNK_STACK_H__
 
 #include "core/container/chunk_array.h"
 
@@ -39,20 +39,23 @@ namespace cgogn
 template <unsigned int CHUNKSIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
-	unsigned int heapSize_;
+protected:
+
+	unsigned int stackSize_;
 
 public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
 	ChunkStack():
-		heapSize_(0u)
+		stackSize_(0u)
 	{}
 
 	/**
 	 * @brief ChunkStack destructor
 	 */
-	inline ~ChunkStack() override {}
+	inline ~ChunkStack() override
+	{}
 
 	/**
 	 * @brief push a value on top of heap
@@ -60,9 +63,9 @@ public:
 	 */
 	void push(const T& val)
 	{
-		heapSize_++;
-		unsigned int offset = heapSize_ % CHUNKSIZE;
-		unsigned int blkId  = heapSize_ / CHUNKSIZE;
+		stackSize_++;
+		unsigned int offset = stackSize_ % CHUNKSIZE;
+		unsigned int blkId  = stackSize_ / CHUNKSIZE;
 
 		if (blkId >= this->tableData_.size())
 			this->addChunk();
@@ -76,7 +79,7 @@ public:
 	 */
 	inline bool empty() const
 	{
-		return heapSize_ == 0u;
+		return stackSize_ == 0u;
 	}
 
 	/**
@@ -84,7 +87,7 @@ public:
 	 */
 	unsigned int size() const
 	{
-		return heapSize_;
+		return stackSize_;
 	}
 
 	/**
@@ -92,8 +95,8 @@ public:
 	 */
 	inline void pop()
 	{
-		assert(heapSize_ > 0u);
-		heapSize_--;
+		assert(stackSize_ > 0u);
+		stackSize_--;
 	}
 
 	/**
@@ -102,8 +105,8 @@ public:
 	 */
 	inline T head() const
 	{
-		const unsigned int offset = heapSize_ % CHUNKSIZE;
-		const unsigned int blkId  = heapSize_ / CHUNKSIZE;
+		const unsigned int offset = stackSize_ % CHUNKSIZE;
+		const unsigned int blkId  = stackSize_ / CHUNKSIZE;
 
 		return this->tableData_[blkId][offset];
 	}
@@ -113,7 +116,7 @@ public:
 	 */
 	void compact()
 	{
-		const unsigned int keep = (heapSize_+CHUNKSIZE-1u) / CHUNKSIZE;
+		const unsigned int keep = (stackSize_+CHUNKSIZE-1u) / CHUNKSIZE;
 		while (this->tableData_.size() > keep)
 		{
 			delete[] this->tableData_.back();
@@ -126,14 +129,11 @@ public:
 	 */
 	void clear() override
 	{
-		heapSize_ = 0u;
+		stackSize_ = 0u;
 		ChunkArray<CHUNKSIZE, T>::clear();
 	}
 };
 
+} // namespace cgogn
 
-}
-
-
-
-#endif
+#endif // __CORE_CONTAINER_CHUNK_STACK_H__

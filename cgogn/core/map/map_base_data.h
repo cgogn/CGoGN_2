@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -25,30 +25,33 @@
 #define __CORE_MAP_MAP_BASE_DATA_H__
 
 #include "core/container/chunk_array_container.h"
+#include "core/basic/definitions.h"
 #include "core/basic/cell.h"
+
+#include "utils/buffers.h"
+
+#include <thread>
 
 namespace cgogn
 {
 
-
 /**
- * @brief Generic Map class for SCHNApps
+ * @brief Generic Map class (for SCHNApps)
  */
 class MapGen
 {
 };
 
 
-
 /**
  * @brief The MapBase class
  */
 template<typename DATA_TRAITS>
-class MapBaseData: public MapGen
+class MapBaseData : public MapGen
 {
 protected:
 
-	/// topooly & embedding indices
+	/// topology & embedding indices
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned char> topology_;
 
 	/// embedding attributes
@@ -64,25 +67,75 @@ protected:
 	/// topo relations shortcuts
 	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE,Dart>*> topo_relations_;
 
+	/// buffers of pre-allocated vectors of dart or unsigned int
+	Buffers<Dart> dart_buffers_[NB_THREADS];
+	Buffers<unsigned int> uint_buffers_[NB_THREADS];
+
+	/// vector of thread ids known by the map that can pretend to data such as mark vectors and buffers
+	std::vector<std::thread::id> thread_ids_;
 
 public:
-	MapBaseData() {}
 
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
+	MapBaseData()
+	{
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			embeddings_[i] = NULL;
+
+		thread_ids_.reserve(NB_THREADS + 1);
+		thread_ids_.push_back(std::this_thread::get_id());
+	}
+
+	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
 	{
 		return attributes_[orbit];
 	}
 
-
 	template <unsigned int ORBIT>
-	inline unsigned int getEmbedding(Cell<ORBIT> c) const
+	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
 	{
-//		assert(this->template isOrbitEmbedded<ORBIT>() || !"Invalid parameter: orbit not embedded");
-		return (*this->embeddings_[ORBIT])[c.dart.index] ;
+		assert(embeddings_[ORBIT] != NULL || !"Invalid parameter: orbit not embedded");
+		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
+	inline std::vector<Dart>* getDartBuffer()
+	{
+		unsigned int thread = getCurrentThreadIndex();
+		return dart_buffers_[thread].getBuffer();
+	}
+
+	inline void releaseDartBuffer(std::vector<Dart>* v)
+	{
+		unsigned int thread = getCurrentThreadIndex();
+		dart_buffers_[thread].releaseBuffer(v);
+	}
+
+	inline std::vector<unsigned int>* getUIntBuffer()
+	{
+		unsigned int thread = getCurrentThreadIndex();
+		return uint_buffers_[thread].getBuffer();
+	}
+
+	inline void releaseUIntBuffer(std::vector<unsigned int>* v)
+	{
+		unsigned int thread = getCurrentThreadIndex();
+		uint_buffers_[thread].releaseBuffer(v);
+	}
+
+protected:
+
+	inline unsigned int getCurrentThreadIndex() const
+	{
+		std::thread::id id = std::this_thread::get_id();
+		unsigned int i = 0;
+		while (id != thread_ids_[i])
+		{
+			i++;
+			assert(i < thread_ids_.size());
+		}
+		return i;
+	}
 };
 
-}
+} // namespace cgogn
 
-#endif
+#endif // __CORE_MAP_MAP_BASE_DATA_H__

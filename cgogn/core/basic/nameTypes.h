@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -30,6 +30,7 @@
 
 namespace cgogn
 {
+
 /**
  * @brief function that give a name to a type.
  */
@@ -85,7 +86,6 @@ public:
 	static std::string CGoGNnameOfType() { return "UNKNOWN"; }
 };
 
-
 template <typename T>
 bool typeIsBool(T)
 {
@@ -94,7 +94,6 @@ bool typeIsBool(T)
 
 template <> bool typeIsBool(bool) { return true; }
 
+} // namespace cgogn
 
-}
-
-#endif
+#endif // __CORE_BASIC_NAME_TYPES_H__
