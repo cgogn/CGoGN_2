@@ -21,23 +21,28 @@
  *
  */
 
+#define CGoGN_CORE_DLL_EXPORT
+
 #include <core/basic/assert.h>
+#include <iostream>
+#include <sstream>
+#include <core/basic/definitions.h>
 
 namespace cgogn 
 {
 
-		void assertion_failed(const std::string& expression, const std::string& message,
-			const std::string& file_name, const std::string& function_name, int line_number )
-		{
-			std::ostringstream os;
-			os << "Assertion failed: " << expression;
-			if(message.empty())
-				os << ".\n";
-			else
-		 		os<< " (" << message << ").\n";
-			os << "file: " << file_name << ", function: " <<  function_name << ", line: " << line_number ;
+void CGoGN_CORE_API assertion_failed(const std::string& expression, const std::string& message,
+					  const std::string& file_name, const std::string& function_name, int line_number )
+{
+	std::ostringstream os;
+	os << "Assertion failed: " << expression;
+	if(message.empty())
+		os << ".\n";
+	else
+		os<< " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " <<  function_name << ", line: " << line_number ;
 
-			std::cerr << os.str() << std::endl;
-			std::abort();
-		}
+	std::cerr << os.str() << std::endl;
+	std::abort();
+}
 }

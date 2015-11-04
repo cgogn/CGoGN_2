@@ -25,8 +25,6 @@
 #define CORE_BASIC_ASSERT_
 
 #include <string>
-#include <iostream>
-#include <sstream>
 
 /**
  * \file cgogn/core/basic/assert.h
@@ -100,7 +98,7 @@ namespace cgogn
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_invariant(x) \	
+#define cgogn_invariant(x) \
 	(!(x)) ? cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__) : (void)0
 
 
