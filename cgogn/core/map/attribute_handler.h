@@ -101,8 +101,13 @@ public:
 
     inline AttributeHandlerOrbit(MapData* const map) :
         Inherit(map)
-        ,chunk_array_cont_( &(map->getAttributeContainer(ORBIT)) )
-    {}
+       ,chunk_array_cont_(nullptr)
+    {
+        if (map != nullptr)
+        {
+            chunk_array_cont_ =  &(map->getAttributeContainer(ORBIT));
+        }
+    }
 
     inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)  :
         Inherit(attho)
