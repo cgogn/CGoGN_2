@@ -1,37 +1,34 @@
-/*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- * Web site: http://cgogn.unistra.fr/
- * Contact information: cgogn@unistra.fr
- *
- */
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_GEN__
-#define __CORE_CONTAINER_CHUNK_ARRAY_GEN__
-
+#ifndef __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__
+#define __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__
 
 #include <vector>
 #include <iostream>
 
 namespace cgogn
 {
-
-
 
 /**
  * @brief Virtual version of ChunkArray
@@ -52,7 +49,6 @@ public:
 	 */
 	virtual ChunkArrayGen<CHUNKSIZE>* clone() const = 0;
 
-
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
 	 */
@@ -63,7 +59,6 @@ public:
 	 * @param nbc number of chunks
 	 */
 	virtual void setNbChunks(unsigned int nbb) = 0;
-
 
 	/**
 	 * @brief get the number of chunks of the array
@@ -82,9 +77,7 @@ public:
 	 */
 	virtual void clear() = 0;
 
-
 	virtual bool isBooleanArray() const = 0;
-
 
 	/**
 	 * @brief get pointer on all chunks data
@@ -121,22 +114,18 @@ public:
 	 */
 	virtual void save(std::ostream& fs, unsigned int nbLines) const = 0;
 
-
 	/**
 	 * @brief load
 	 * @param fs file stream
 	 * @return ok
 	 */
 	virtual bool load(std::istream& fs) = 0;
-
 };
-
 
 //template<unsigned int CHUNKSIZE>
 //ChunkArrayGen<CHUNKSIZE>::~ChunkArrayGen()
 //{}
 
+} // namespace cgogn
 
-} // namespace CGoGN
-
-#endif
+#endif // __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__

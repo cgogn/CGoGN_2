@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -27,14 +27,14 @@
 #include "core/map/map_base.h"
 #include "core/basic/cell.h"
 
-
 ///TODO ajouter enregistrement dans la map de la carte.
 
 namespace cgogn
 {
+
 /**
  * @brief Generic AttributeHandler class
- * @TPARAM DATA_TRAITS stprage traits (for MapBase ptr)
+ * @TPARAM DATA_TRAITS storage traits (for MapBaseData ptr type)
  */
 template<typename DATA_TRAITS>
 class AttributeHandlerGen
@@ -47,12 +47,13 @@ protected:
 	bool valid_;
 
 public:
+
 	AttributeHandlerGen(bool v) :
-		map_(NULL),valid_(v)
+		map_(NULL), valid_(v)
 	{}
 
-	virtual ~AttributeHandlerGen() {}
-
+	virtual ~AttributeHandlerGen()
+	{}
 
 	inline bool isValid() const { return valid_; }
 
@@ -63,41 +64,44 @@ protected:
 	inline void setInvalid() { valid_ = false ; }
 
 	inline void setValid() { valid_ = true ; }
-} ;
-
+};
 
 
 /**
  * @brief Generic AttributeHandler class with orbit parameter
- * @TPARAM ORBIT the orbit of attribute to handlde
+ * @TPARAM ORBIT the orbit of the attribute to handlde
  */
 template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 protected:
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>* chunck_array_cont_;
+
+	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>* chunk_array_cont_;
 
 public:
+
 	AttributeHandlerOrbit(MapBaseData<DATA_TRAITS>* map) :
 		AttributeHandlerGen<DATA_TRAITS>(map)
 	{
-		chunck_array_cont_ = &(map->getAttributeContainer(ORBIT));
+		chunk_array_cont_ = &(map->getAttributeContainer(ORBIT));
 	}
 
-	unsigned int getOrbit() const { return ORBIT;}
+	unsigned int getOrbit() const { return ORBIT; }
 };
 
-
-
-
-
-template<typename DATA_TRAITS,  typename T, unsigned int ORBIT>
-class AttributeHandler: public AttributeHandlerOrbit<DATA_TRAITS,ORBIT>
+/**
+ * @brief AttributeHandler class
+ * @TPARAM T the data type of the attribute to handlde
+ */
+template<typename DATA_TRAITS, typename T, unsigned int ORBIT>
+class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 protected:
+
 	ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* chunk_array_;
 
 public:
+
 	/**
 	 * @brief Default constructor
 	 *
@@ -107,25 +111,24 @@ public:
 		AttributeHandlerGen<DATA_TRAITS>(false)
 	{}
 
-
 	/**
 	 * @brief Constructor
 	 * @param m the map which belong attribute
-	 * @param attribName name of attribute
+	 * @param attributeName name of attribute
 	 */
-	AttributeHandler(MapBaseData<DATA_TRAITS>* m, const std::string& attribName):
-		AttributeHandlerOrbit<DATA_TRAITS,ORBIT>(m)
+	AttributeHandler(MapBaseData<DATA_TRAITS>* m, const std::string& attributeName):
+		AttributeHandlerOrbit<DATA_TRAITS, ORBIT>(m)
 	{
-		chunk_array_ = this->chunck_array_cont_->getAttribute(attribName);
+		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
 		if (chunk_array_ == NULL)
 		{
 			this->setInvalid();
 		}
 	}
 
-
 	AttributeHandler(MapBaseData<DATA_TRAITS>* m, ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca):
-		AttributeHandlerOrbit<DATA_TRAITS,ORBIT>(m),chunk_array_(ca)
+		AttributeHandlerOrbit<DATA_TRAITS, ORBIT>(m),
+		chunk_array_(ca)
 	{
 		if (chunk_array_ == NULL)
 		{
@@ -138,7 +141,7 @@ public:
 	 * @param att
 	 */
 	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
-		AttributeHandlerOrbit<DATA_TRAITS,ORBIT>(att.map_)/*,
+		AttributeHandlerOrbit<DATA_TRAITS, ORBIT>(att.map_)/*,
 		chunk_array_(att.chunk_array_)*/
 	{
 		this->chunk_array_= att.chunk_array_;
@@ -150,11 +153,11 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler<DATA_TRAITS,T,ORBIT>& operator=(const AttributeHandler<DATA_TRAITS,T,ORBIT>& att)
+	AttributeHandler<DATA_TRAITS,T,ORBIT>& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
 	{
 		this->valid_ = att.valid_;
 		this->map_ = att.map_;
-		this->chunck_array_cont_ = att.chunck_array_cont_;
+		this->chunk_array_cont_ = att.chunk_array_cont_;
 		this->chunck_array_ = att.chunck_array_;
 	}
 
@@ -162,11 +165,10 @@ public:
 	 * @brief getDataVector
 	 * @return
 	 */
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* getDataVector() const
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* getData() const
 	{
 		return chunk_array_;
 	}
-
 
 	/**
 	 * @brief operator []
@@ -194,7 +196,7 @@ public:
 
 	/**
 	 * @brief operator []
-	 * @param a
+	 * @param i
 	 * @return
 	 */
 	T& operator[](unsigned int i)
@@ -204,8 +206,8 @@ public:
 	}
 
 	/**
-	 * @brief operator []
-	 * @param a
+	 * @brief const operator []
+	 * @param i
 	 * @return
 	 */
 	const T& operator[](unsigned int i) const
@@ -215,19 +217,19 @@ public:
 	}
 
 
-
 	class const_iterator
 	{
 	public:
 		const AttributeHandler<DATA_TRAITS, T,ORBIT>* ah_ptr_;
 		unsigned int index_;
 
-		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i):
-			ah_ptr_(ah),index_(i){}
+		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+			ah_ptr_(ah), index_(i)
+		{}
 
 		inline const_iterator& operator++()
 		{
-			ah_ptr_->chunck_array_cont_->next(index_);
+			ah_ptr_->chunk_array_cont_->next(index_);
 			return *this;
 		}
 
@@ -245,12 +247,12 @@ public:
 
 	inline const_iterator begin() const
 	{
-		return const_iterator(this,this->chunck_array_cont_->begin());
+		return const_iterator(this,this->chunk_array_cont_->begin());
 	}
 
 	inline const_iterator end() const
 	{
-		return const_iterator(this,this->chunck_array_cont_->end());
+		return const_iterator(this,this->chunk_array_cont_->end());
 	}
 
 
@@ -260,14 +262,13 @@ public:
 		AttributeHandler<DATA_TRAITS, T,ORBIT>* ah_ptr_;
 		unsigned int index_;
 
-		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i):
-			ah_ptr_(ah),index_(i){}
-
-
+		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+			ah_ptr_(ah), index_(i)
+		{}
 
 		inline iterator& operator++()
 		{
-			ah_ptr_->chunck_array_cont_->next(index_);
+			ah_ptr_->chunk_array_cont_->next(index_);
 			return *this;
 		}
 
@@ -285,17 +286,15 @@ public:
 
 	inline iterator begin()
 	{
-		return iterator(this,this->chunck_array_cont_->begin());
+		return iterator(this,this->chunk_array_cont_->begin());
 	}
 
 	inline iterator end()
 	{
-		return iterator(this,this->chunck_array_cont_->end());
+		return iterator(this,this->chunk_array_cont_->end());
 	}
-
-
 };
 
-}
+} // namespace cgogn
 
-#endif
+#endif // __CORE_MAP_ATTRIBUTE_HANDLER_H__

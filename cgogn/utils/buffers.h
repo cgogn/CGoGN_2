@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,26 +21,51 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_TRI_H__
-#define __CORE_MAP_MAP_TRI_H__
+#ifndef __UTILS_BUFFERS_H__
+#define __UTILS_BUFFERS_H__
 
-#include "core/map/map_base.h"
+#include <vector>
 
 namespace cgogn
 {
 
-class Traits_map_tri
+template <typename T>
+class Buffers
 {
-	static const int PRIM_SIZE=3;
-};
+protected:
 
-class MapTri : public MapBase<Traits_map_tri>
-{
+    std::vector<std::vector<T>*> buffers_;
 
+public:
 
+    inline std::vector<T>* getBuffer()
+    {
+	if (buffers_.empty())
+	{
+	    std::vector<T>* v = new std::vector<T>;
+	    v->reserve(128);
+	    return v;
+	}
 
+	std::vector<T>* v = buffers_.back();
+	buffers_.pop_back();
+	return v;
+    }
+
+    inline void releaseBuffer(std::vector<T>* b)
+    {
+	if (b->capacity() > 1024)
+	{
+	    std::vector<Dart> v;
+	    b->swap(v);
+	    b->reserve(128);
+	}
+
+	b->clear();
+	buffers_.push_back(b);
+    }
 };
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_TRI_H__
+#endif // __UTILS_BUFFERS_H__
