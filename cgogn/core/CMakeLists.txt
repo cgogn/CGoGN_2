@@ -6,6 +6,7 @@ set(HEADER_FILES
 	basic/nameTypes.h
 	basic/dart.h
 	basic/cell.h
+	basic/assert.h
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
@@ -22,6 +23,7 @@ set(HEADER_FILES
 	)
 
 set(SOURCE_FILES
+	basic/assert.cpp
 	container/chunk_array.cpp
 	)
 

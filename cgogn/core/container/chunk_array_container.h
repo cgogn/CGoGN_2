@@ -34,7 +34,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <cassert>
+#include <core/basic/assert.h>
 
 namespace cgogn
 {
@@ -248,7 +248,8 @@ public:
 	template <typename T>
 	ChunkArray<CHUNKSIZE,T>* addAttribute(const std::string& attribName)
 	{
-		assert(attribName.size() != 0);
+		// assert(attribName.size() != 0);
+		cgogn_assert(attribName.size() != 0);
 
 		// first check if attribute already exist
 		unsigned int index = getArrayIndex(attribName) ;
@@ -612,7 +613,9 @@ public:
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
-		assert(this->used(beginPrimIdx)|!" Error removing non existing index");
+		// assert(this->used(beginPrimIdx)|!" Error removing non existing index");
+		cgogn_message_assert(this->used(beginPrimIdx), "Error removing non existing index");
+
 		holesStack_.push(beginPrimIdx);
 
 		// mark lines as unused
@@ -628,7 +631,9 @@ public:
 	 */
 	void initLine(unsigned int index)
 	{
-		assert( used(index) && "initLine only with allocated lines");
+		// assert( used(index) && "initLine only with allocated lines");
+		cgogn_message_assert(!used(index), "initLine only with allocated lines");
+
 		for (auto ptrAtt: tableArrays_)
 //			if (ptrAtt != nullptr) never null !
 				ptrAtt->initElt(index);
@@ -636,7 +641,9 @@ public:
 
 	void initBooleansOfLine(unsigned int index)
 	{
-		assert( used(index) && "initBooleansOfLine only with allocated lines");
+		// assert( used(index) && "initBooleansOfLine only with allocated lines");
+		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
+
 		for (unsigned int i=0; i<nbBoolAttribs_;++i)
 			tableArrays_[i]->initElt(index);
 	}
@@ -715,7 +722,10 @@ public:
 			return nullptr ;
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
-		assert((atm != nullptr) || !"getDataVector: wrong type");
+		// assert((atm != nullptr) || !"getDataVector: wrong type");
+
+		cgogn_message_assert(atm != nullptr, "getDataVector: wrong type");
+
 		return atm;
 	}
 
