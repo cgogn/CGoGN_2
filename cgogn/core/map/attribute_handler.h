@@ -40,33 +40,33 @@ template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
-    typedef MapBaseData<DATA_TRAITS> MapData;
+	typedef MapBaseData<DATA_TRAITS> MapData;
 protected:
 
-    MapData* map_;
+	MapData* map_;
 
 	// boolean that states the validity of the handler
 	bool valid_;
 
 public:
 
-    inline AttributeHandlerGen(MapData * const map) :
-        map_(map)
-      ,valid_(false)
+	inline AttributeHandlerGen(MapData * const map) :
+		map_(map)
+	  ,valid_(false)
 	{}
 
-    inline AttributeHandlerGen(const AttributeHandlerGen< DATA_TRAITS >& atthg) :
-        map_(atthg.map_)
-        ,valid_(atthg.valid_)
-    {}
+	inline AttributeHandlerGen(const AttributeHandlerGen< DATA_TRAITS >& atthg) :
+		map_(atthg.map_)
+	  ,valid_(atthg.valid_)
+	{}
 
-    inline AttributeHandlerGen(AttributeHandlerGen< DATA_TRAITS >&& atthg) :
-        map_(atthg.map_)
-        ,valid_(atthg.valid_)
-    {
-        atthg.map_ = nullptr;
-        atthg.valid_ = false;
-    }
+	inline AttributeHandlerGen(AttributeHandlerGen< DATA_TRAITS >&& atthg) :
+		map_(atthg.map_)
+	  ,valid_(atthg.valid_)
+	{
+		atthg.map_ = nullptr;
+		atthg.valid_ = false;
+	}
 
 	virtual ~AttributeHandlerGen()
 	{}
@@ -91,37 +91,37 @@ template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
-    typedef AttributeHandlerGen<DATA_TRAITS> Inherit;
-    typedef typename Inherit::MapData        MapData;
+	typedef AttributeHandlerGen<DATA_TRAITS> Inherit;
+	typedef typename Inherit::MapData        MapData;
 protected:
 
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>* chunk_array_cont_;
 
 public:
 
-    inline AttributeHandlerOrbit(MapData* const map) :
-        Inherit(map)
-       ,chunk_array_cont_(nullptr)
-    {
-        if (map != nullptr)
-        {
-            chunk_array_cont_ =  &(map->getAttributeContainer(ORBIT));
-        }
-    }
+	inline AttributeHandlerOrbit(MapData* const map) :
+		Inherit(map)
+	  ,chunk_array_cont_(nullptr)
+	{
+		if (map != nullptr)
+		{
+			chunk_array_cont_ =  &(map->getAttributeContainer(ORBIT));
+		}
+	}
 
-    inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)  :
-        Inherit(attho)
-      , chunk_array_cont_(attho.chunk_array_cont_)
-    {}
+	inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)  :
+		Inherit(attho)
+	  , chunk_array_cont_(attho.chunk_array_cont_)
+	{}
 
-    inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) noexcept :
-        Inherit(std::move(attho))
-      , chunk_array_cont_(attho.chunk_array_cont_)
-    {
-        attho.chunk_array_cont_ = nullptr;
-    }
+	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) noexcept :
+		Inherit(std::move(attho))
+	  , chunk_array_cont_(attho.chunk_array_cont_)
+	{
+		attho.chunk_array_cont_ = nullptr;
+	}
 
-    virtual unsigned int getOrbit() const override { return ORBIT; }
+	virtual unsigned int getOrbit() const override { return ORBIT; }
 };
 
 /**
@@ -132,12 +132,12 @@ template<typename DATA_TRAITS, typename T, unsigned int ORBIT>
 class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
-    typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>   Inherit;
-    typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>      ChunckArray;
-    typedef typename Inherit::MapData                   MapData;
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>   Inherit;
+	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>      ChunckArray;
+	typedef typename Inherit::MapData                   MapData;
 protected:
 
-    ChunckArray* chunk_array_;
+	ChunckArray* chunk_array_;
 
 public:
 
@@ -147,7 +147,7 @@ public:
 	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
 	 */
 	AttributeHandler():
-        Inherit(nullptr)
+		Inherit(nullptr)
 	{}
 
 	/**
@@ -155,21 +155,21 @@ public:
 	 * @param m the map which belong attribute
 	 * @param attributeName name of attribute
 	 */
-    AttributeHandler(MapData* const m, const std::string& attributeName):
-        Inherit(m)
+	AttributeHandler(MapData* const m, const std::string& attributeName):
+		Inherit(m)
 	{
 		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
-        if (chunk_array_ == nullptr)
+		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
 		}
 	}
 
-    AttributeHandler(MapData* const m, ChunckArray* const ca):
-        Inherit(m),
+	AttributeHandler(MapData* const m, ChunckArray* const ca):
+		Inherit(m),
 		chunk_array_(ca)
 	{
-        if (chunk_array_ == nullptr)
+		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
 		}
@@ -180,16 +180,16 @@ public:
 	 * @param att
 	 */
 	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
-        Inherit(att)
-        ,chunk_array_(att.chunk_array_)
-    {}
+		Inherit(att)
+	  ,chunk_array_(att.chunk_array_)
+	{}
 
-    AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) noexcept :
-        Inherit(std::move(att))
-        ,chunk_array_(att.chunk_array_)
-    {
-        att.chunk_array_ = nullptr;
-    }
+	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) noexcept :
+		Inherit(std::move(att))
+	  ,chunk_array_(att.chunk_array_)
+	{
+		att.chunk_array_ = nullptr;
+	}
 
 	/**
 	 * @brief operator =
@@ -208,7 +208,7 @@ public:
 	 * @brief getDataVector
 	 * @return
 	 */
-    ChunckArray const * getData() const
+	ChunckArray const * getData() const
 	{
 		return chunk_array_;
 	}
@@ -218,10 +218,10 @@ public:
 	 * @param c
 	 * @return
 	 */
-    inline T& operator[](Cell<ORBIT> c)
+	inline T& operator[](Cell<ORBIT> c)
 	{
 		assert(this->valid || !"Invalid AttributeHandler") ;
-        return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
+		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
 	/**
@@ -231,8 +231,8 @@ public:
 	 */
 	const T& operator[](Cell<ORBIT> c) const
 	{
-        assert(this->valid || !"Invalid AttributeHandler") ;
-        return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
+		assert(this->valid || !"Invalid AttributeHandler") ;
+		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
 	/**
@@ -261,7 +261,7 @@ public:
 	class const_iterator
 	{
 	public:
-        AttributeHandler<DATA_TRAITS, T,ORBIT> const * const ah_ptr_;
+		AttributeHandler<DATA_TRAITS, T,ORBIT> const * const ah_ptr_;
 		unsigned int index_;
 
 		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
@@ -300,7 +300,7 @@ public:
 	class iterator
 	{
 	public:
-        AttributeHandler<DATA_TRAITS, T,ORBIT>* const ah_ptr_;
+		AttributeHandler<DATA_TRAITS, T,ORBIT>* const ah_ptr_;
 		unsigned int index_;
 
 		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
