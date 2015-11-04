@@ -46,7 +46,7 @@
 namespace cgogn
 {
 
-const unsigned int NB_THREADS = 8;
+const unsigned int NB_THREADS = 8u;
 
 } // namespace cgogn
 
