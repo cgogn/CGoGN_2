@@ -133,11 +133,11 @@ class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
 	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>   Inherit;
-	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>      ChunckArray;
+	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>      TChunkArray;
 	typedef typename Inherit::MapData                   MapData;
 protected:
 
-	ChunckArray* chunk_array_;
+	TChunkArray* chunk_array_;
 
 public:
 
@@ -165,7 +165,7 @@ public:
 		}
 	}
 
-	AttributeHandler(MapData* const m, ChunckArray* const ca):
+	AttributeHandler(MapData* const m, TChunkArray* const ca):
 		Inherit(m),
 		chunk_array_(ca)
 	{
@@ -208,7 +208,7 @@ public:
 	 * @brief getDataVector
 	 * @return
 	 */
-	ChunckArray const * getData() const
+	TChunkArray const * getData() const
 	{
 		return chunk_array_;
 	}
@@ -229,7 +229,7 @@ public:
 	 * @param c
 	 * @return
 	 */
-	const T& operator[](Cell<ORBIT> c) const
+	inline const T& operator[](Cell<ORBIT> c) const
 	{
 		assert(this->valid || !"Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
@@ -240,7 +240,7 @@ public:
 	 * @param i
 	 * @return
 	 */
-	T& operator[](unsigned int i)
+	inline T& operator[](unsigned int i)
 	{
 		assert(this->valid_ || !"Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
@@ -251,7 +251,7 @@ public:
 	 * @param i
 	 * @return
 	 */
-	const T& operator[](unsigned int i) const
+	inline const T& operator[](unsigned int i) const
 	{
 		assert(this->valid_ || !"Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
