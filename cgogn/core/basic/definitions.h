@@ -29,5 +29,16 @@
  * \brief Basic definitions for CGOGN API
  */
 
+#ifdef WIN32
+#ifndef CGoGN_CORE_API
+#if defined CGoGN_CORE_DLL_EXPORT
+#define CGoGN_CORE_API __declspec(dllexport)
+#else
+#define CGoGN_CORE_API __declspec(dllimport)
+#endif
+#endif
+#else
+#define CGoGN_CORE_API
+#endif
 
 #endif

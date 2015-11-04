@@ -47,13 +47,13 @@ public:
 	static const unsigned int FACE		= FACE2;
 
 	template<typename T>
-	using VertexAttributeHandler =  AttributeHandler<DATA_TRAITS,T,VERTEX>;
+	using VertexAttributeHandler =  cgogn::AttributeHandler<DATA_TRAITS,T,VERTEX>;
 
 	template<typename T>
-	using EdgeAttributeHandler =  AttributeHandler<DATA_TRAITS,T,EDGE>;
+	using EdgeAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, EDGE>;
 
 	template<typename T>
-	using FaceAttributeHandler =  AttributeHandler<DATA_TRAITS,T,FACE>;
+	using FaceAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, FACE>;
 
 
 	/**
