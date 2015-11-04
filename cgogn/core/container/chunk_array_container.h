@@ -1,29 +1,28 @@
-/*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- * Web site: http://cgogn.unistra.fr/
- * Contact information: cgogn@unistra.fr
- *
- */
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER__
-#define __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER__
-
+#ifndef __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
+#define __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
 
 #include "core/container/chunk_array.h"
 #include "core/container/chunk_stack.h"
@@ -43,6 +42,7 @@ namespace cgogn
 class ContainerBrowser
 {
 public:
+
 	virtual unsigned int begin() const = 0;
 	virtual unsigned int end() const = 0;
 	virtual void next(unsigned int &it) const = 0;
@@ -56,7 +56,9 @@ template <typename CONTAINER>
 class ContainerStandardBrowser:public ContainerBrowser
 {
 	const CONTAINER* cac_;
+
 public:
+
 	ContainerStandardBrowser(const CONTAINER* cac) : cac_(cac) {}
 	virtual unsigned int begin() const { return cac_->realBegin(); }
 	virtual unsigned int end() const { return cac_->realEnd(); }
@@ -76,14 +78,15 @@ public:
 template <unsigned int CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
-
 public:
+
 	/**
 	* constante d'attribut inconnu
 	*/
 	static const unsigned int UNKNOWN = 0xffffffff;
 
 protected:
+
 	/**
 	* vector of pointers to ChunkVector
 	*/
@@ -157,7 +160,6 @@ protected:
 		return UNKNOWN;
 	}
 
-
 	/**
 	 * @brief remove an attribute by its name
 	 * @param attribName name of attribute to remove
@@ -200,9 +202,8 @@ protected:
 		return true ;
 	}
 
-
-
 public:
+
 	/**
 	 * @brief ChunkArrayContainer constructor
 	 */
@@ -214,7 +215,6 @@ public:
 		currentBrowser_= stdBrowser_;
 	}
 
-
 	/**
 	 * @brief ChunkArrayContainer destructor
 	 */
@@ -223,8 +223,6 @@ public:
 		for (auto ptr: tableArrays_)
 			delete ptr;
 	}
-
-
 
 	template <typename T>
 	ChunkArray<CHUNKSIZE,T>* getAttribute(const std::string& attribName)
@@ -240,8 +238,6 @@ public:
 
 		return static_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
 	}
-
-
 
 	/**
 	 * @brief add an attribute
@@ -315,7 +311,6 @@ public:
 		return true;
 	}
 
-
 	/**
 	 * @brief remove an attribute by its name
 	 * @param attribName name of attribute to remove
@@ -336,7 +331,6 @@ public:
 		return true;
 	}
 
-
 	/**
 	 * @brief Number of attributes of the container
 	 * @return number of attributes
@@ -345,7 +339,6 @@ public:
 	{
 		return tableArrays_.size();
 	}
-
 
 	/**
 	 * @brief size (number of used lines)
@@ -364,7 +357,6 @@ public:
 	{
 		return refs_.capacity();
 	}
-
 
 	/**
 	* @brief is a line used
@@ -385,7 +377,6 @@ public:
 		return currentBrowser_->begin();
 	}
 
-
 	/**
 	 * @brief end
 	 * @return the index after the last used line of the container
@@ -404,7 +395,6 @@ public:
 		currentBrowser_->next(it);
 	}
 
-
 	/**
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
@@ -413,7 +403,6 @@ public:
 	{
 		currentBrowser_->nextPrimitive(it, primSz);
 	}
-
 
 	/**
 	 * @brief begin of container without browser
@@ -435,7 +424,6 @@ public:
 	{
 		return nbMaxLines_;
 	}
-
 
 	/**
 	 * @brief next without browser
@@ -460,7 +448,6 @@ public:
 			it+=primSz;
 		} while ((it < nbMaxLines_) && (!used(it)));
 	}
-
 
 	/**
 	 * @brief real reverse begin
@@ -497,8 +484,6 @@ public:
 			--it;
 		} while ((it !=0xffffffff) && (!used(it)));
 	}
-
-
 
 	/**
 	 * @brief clear the container
@@ -577,9 +562,7 @@ public:
 
 		// clear holes
 		holesStack_.clear();
-
 	}
-
 
 	/**************************************
 	 *          LINES MANAGEMENT          *
@@ -642,7 +625,6 @@ public:
 		nbUsedLines_ -= PRIMSIZE;
 	}
 
-
 	/**
 	 * @brief initialize a line of the container (an element of each attribute)
 	 * @param index line index
@@ -666,7 +648,6 @@ public:
 			tableArrays_[i]->initElt(index);
 	}
 
-
 	void initBoolsOfLine(unsigned int index)
 	{
 //		assert( used(index) && "initLine only with allocated lines");
@@ -674,7 +655,6 @@ public:
 //			if (ptrAtt != NULL)
 //				ptrAtt->initElt(index);
 	}
-
 
 	/**
 	 * @brief copy the content of line src in line dst (with refs)
@@ -698,7 +678,6 @@ public:
 //		static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
-
 
 	/**
 	* @brief decrement the reference counter of the given line (only for PRIMSIZE==1)
@@ -730,7 +709,6 @@ public:
 		return refs_[index];
 	}
 
-
 	/**
 	* @brief get a chunk_array
 	* @param attribName name of the array
@@ -751,7 +729,6 @@ public:
 		return atm;
 	}
 
-
 	/**
 	* @brief get a chunk_array
 	* @param attribName name of the array
@@ -765,7 +742,6 @@ public:
 
 		return tableArrays_[index];
 	}
-
 
 	void save(std::ofstream& fs)
 	{
@@ -803,7 +779,6 @@ public:
 		// save stack
 		holesStack_.save(fs,holesStack_.size());
 	}
-
 
 	bool load(std::ifstream& fs)
 	{
@@ -844,10 +819,8 @@ public:
 
 		return ok;
 	}
-
-
 };
 
-} // namespace CGoGN
+} // namespace cgogn
 
-#endif
+#endif // __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__

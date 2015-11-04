@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -26,7 +26,6 @@
 
 #include "core/basic/dart.h"
 
-
 namespace cgogn
 {
 
@@ -40,41 +39,22 @@ const unsigned int EDGE3		= 5;
 const unsigned int FACE3		= 6;
 const unsigned int VOLUME3		= 7;
 
-
 inline std::string orbitName(unsigned int orbit)
 {
 	switch(orbit)
 	{
-	case VERTEX1:
-		return "VERTEX1";
-		break;
-	case VERTEX2:
-		return "VERTEX2";
-		break;
-	case EDGE2:
-		return "EDGE2";
-		break;
-	case FACE2:
-		return "FACE2";
-		break;
-	case VERTEX3:
-		return "VERTEX3";
-		break;
-	case EDGE3:
-		return "EDGE3";
-		break;
-	case FACE3:
-		return "FACE3";
-		break;
-	case VOLUME3:
-		return "VOLUME3";
-	default:
-		break;
-
+		case VERTEX1: return "VERTEX1"; break;
+		case VERTEX2: return "VERTEX2"; break;
+		case EDGE2:   return "EDGE2"; break;
+		case FACE2:   return "FACE2"; break;
+		case VERTEX3: return "VERTEX3"; break;
+		case EDGE3:   return "EDGE3"; break;
+		case FACE3:   return "FACE3"; break;
+		case VOLUME3: return "VOLUME3";
+		default: break;
 	}
 	return "UNKNOWN";
 }
-
 
 
 /**
@@ -89,6 +69,7 @@ template <unsigned int ORBIT>
 class Cell
 {
 public:
+
 	Dart dart;
 
 	/// empty construtor
@@ -106,10 +87,8 @@ public:
 	friend std::ostream& operator<<( std::ostream &out, const Cell<ORBIT>& fa ) { return out << fa.dart; }
 
 	inline bool valid() const { return !dart.isNil(); }
-
 };
 
+} // namespace cgogn
 
-}
-
-#endif
+#endif // __CORE_BASIC_CELL_H__

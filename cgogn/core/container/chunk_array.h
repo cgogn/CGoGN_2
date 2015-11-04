@@ -1,28 +1,28 @@
-/*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- * Web site: http://cgogn.unistra.fr/
- * Contact information: cgogn@unistra.fr
- *
- */
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY__
-#define __CORE_CONTAINER_CHUNK_ARRAY__
+#ifndef __CORE_CONTAINER_CHUNK_ARRAY_H__
+#define __CORE_CONTAINER_CHUNK_ARRAY_H__
 
 #include "core/container/chunk_array_gen.h"
 #include <iostream>
@@ -30,9 +30,9 @@
 #include <cstring>
 #include <cassert>
 
-
 namespace cgogn
 {
+
 /**
  *	@brief chunk array class storage
  *	@tparam CHUNKSIZE size of each chunk (in T, not in bytes!), must be a power of 2 >=32
@@ -65,7 +65,6 @@ public:
 			delete[] chunk;
 	}
 
-
 	bool isBooleanArray() const
 	{
 		return false;
@@ -88,7 +87,6 @@ public:
 		tableData_.emplace_back(new T[CHUNKSIZE]());
 	}
 
-
 	/**
 	 * @brief set number of chunks
 	 * @param nbc number of chunks
@@ -108,7 +106,6 @@ public:
 		}
 	}
 
-
 	/**
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
@@ -126,7 +123,6 @@ public:
 	{
 		return static_cast<unsigned int>(tableData_.size())*CHUNKSIZE;
 	}
-
 
 	/**
 	 * @brief clear
@@ -161,7 +157,7 @@ public:
 	}
 
 	/**
-	 * @brief set the value of an element (work also with bool
+	 * @brief set the value of an element (works also with bool)
 	 * @param i index of element to set
 	 * @param v value
 	 */
@@ -170,7 +166,6 @@ public:
 		assert(i/CHUNKSIZE < tableData_.size());
 		tableData_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
-
 
 	/**
 	 * @brief get pointer on all chunks data
@@ -188,7 +183,7 @@ public:
 		for (typename std::vector<T*>::const_iterator it = tableData_.begin(); it != tableData_.end(); ++it)
 			addr.push_back(*it);
 
-		return (unsigned int)(addr.size());
+		return static_cast<unsigned int>(addr.size());
 	}
 
 	/**
@@ -199,7 +194,6 @@ public:
 	{
 		tableData_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
 	}
-
 
 	/**
 	 * @brief copy element
@@ -220,8 +214,6 @@ public:
 	{
 		std::swap(tableData_[id1 / CHUNKSIZE][id1 % CHUNKSIZE], tableData_[id2 / CHUNKSIZE][id2 % CHUNKSIZE] );
 	}
-
-
 
 //	void save(std::ostream& fs, unsigned int nbLines) const
 //	{
@@ -250,7 +242,6 @@ public:
 //		unsigned nbl = nbLines - nbca*CHUNKSIZE;
 //		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
 //	}
-
 
 //	bool load(std::istream& fs)
 //	{
@@ -281,7 +272,6 @@ public:
 //		return true;
 //	}
 
-
 	void save(std::ostream& fs, unsigned int nbLines) const override
 	{
 		assert(nbLines/CHUNKSIZE <= getNbChunks());
@@ -304,7 +294,6 @@ public:
 		unsigned nb = nbLines - nbc*CHUNKSIZE;
 		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),std::streamsize(nb*sizeof(T)));
 	}
-
 
 	bool load(std::istream& fs) override
 	{
@@ -333,11 +322,7 @@ public:
 
 		return true;
 	}
-
 };
-
-
-
 
 
 /**
@@ -358,7 +343,6 @@ public:
 		tableData_.reserve(1024u);
 	}
 
-
 	~ChunkArray() override
 	{
 		for(auto chunk: tableData_)
@@ -370,20 +354,16 @@ public:
 		return true;
 	}
 
-
 	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
 		return new ChunkArray<CHUNKSIZE, bool>();
 	}
-
 
 	void addChunk() override
 	{
 		// adding the empty parentheses for default-initialization
 		tableData_.push_back(new unsigned int[CHUNKSIZE/32u]());
 	}
-
-
 
 	void setNbChunks(unsigned int nbc) override
 	{
@@ -400,19 +380,15 @@ public:
 		}
 	}
 
-
-
 	unsigned int getNbChunks() const override
 	{
 		return static_cast<unsigned int>(tableData_.size());
 	}
 
-
 	unsigned int capacity() const override
 	{
 		return static_cast<unsigned int>(tableData_.size())*CHUNKSIZE/32u;
 	}
-
 
 	void clear() override
 	{
@@ -462,7 +438,7 @@ public:
 	 * @brief special optimized version of setFalse when goal is to set all to false;
 	 * @param i index of element to set to false
 	 *
-	 * This version overwrite element AND SOME OF THIS NEIGHBOURS with 0
+	 * This version overwrites element AND SOME OF HIS NEIGHBOURS with 0
 	 * Use only if final goal is to set all array to 0 (MarkerStore)
 	 * @todo find another name for the method!
 	 */
@@ -473,8 +449,6 @@ public:
 		const unsigned int j = (i % CHUNKSIZE)/32u;
 		tableData_[jj][j] = 0u;
 	}
-
-
 
 	bool operator[](unsigned int i) const
 	{
@@ -489,9 +463,7 @@ public:
 		return (tableData_[jj][x] & mask) != 0u;
 	}
 
-
-
-	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const
+	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const override
 	{
 		byteBlockSize = CHUNKSIZE / 8u;
 
@@ -504,12 +476,10 @@ public:
 		return static_cast<unsigned int>(addr.size());
 	}
 
-
 	void initElt(unsigned int id) override
 	{
 		setFalse(id);
 	}
-
 
 	void copyElt(unsigned int dst, unsigned int src) override
 	{
@@ -523,7 +493,6 @@ public:
 		setVal(id1,this->operator [](id2));
 		setVal(id2,data);
 	}
-
 
 	void save(std::ostream& fs, unsigned int nbLines) const override
 	{
@@ -554,7 +523,6 @@ public:
 		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),nb/8u);
 	}
 
-
 	bool load(std::istream& fs) override
 	{
 		// get number of lines to load
@@ -583,12 +551,8 @@ public:
 
 		return true;
 	}
-
-
 };
 
+} // namespace cgogn
 
-
-} // namespace CGoGN
-
-#endif
+#endif // __CORE_CONTAINER_CHUNK_ARRAY_H__

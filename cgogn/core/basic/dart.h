@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -23,8 +23,6 @@
 
 #ifndef __CORE_BASIC_DART_H__
 #define __CORE_BASIC_DART_H__
-
-
 
 namespace cgogn
 {
@@ -56,8 +54,6 @@ struct Dart
 
 	friend std::ostream& operator<<( std::ostream &out, const Dart& fa );
 	friend std::istream& operator>>( std::istream &in, Dart& fa );
-
-
 };
 
 
@@ -68,7 +64,6 @@ std::istream& operator>>( std::istream &in, Dart& fa ) { in >> fa.index; return 
 const Dart NIL = Dart::nil();
 const unsigned int EMBNULL = 0xffffffff;
 
+} // namespace cgogn
 
-}
-
-#endif
+#endif // __CORE_BASIC_DART_H__
