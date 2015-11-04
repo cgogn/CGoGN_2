@@ -114,7 +114,7 @@ public:
 	  , chunk_array_cont_(attho.chunk_array_cont_)
 	{}
 
-	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) noexcept :
+	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) CGOGN_NOEXCEPT :
 		Inherit(std::move(attho))
 	  , chunk_array_cont_(attho.chunk_array_cont_)
 	{
@@ -184,7 +184,7 @@ public:
 	  ,chunk_array_(att.chunk_array_)
 	{}
 
-	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) noexcept :
+	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att))
 	  ,chunk_array_(att.chunk_array_)
 	{

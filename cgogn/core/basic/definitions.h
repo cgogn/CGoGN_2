@@ -42,6 +42,11 @@
 #define CGoGN_CORE_API
 #endif
 
+#ifdef WIN32
+#define CGOGN_NOEXCEPT
+#else
+#define CGOGN_NOEXCEPT noexcept
+#endif
 
 namespace cgogn
 {

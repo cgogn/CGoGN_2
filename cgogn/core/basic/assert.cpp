@@ -31,7 +31,7 @@
 namespace cgogn 
 {
 
-void CGoGN_CORE_API assertion_failed(const std::string& expression, const std::string& message,
+CGoGN_CORE_API void assertion_failed(const std::string& expression, const std::string& message,
 					  const std::string& file_name, const std::string& function_name, int line_number )
 {
 	std::ostringstream os;

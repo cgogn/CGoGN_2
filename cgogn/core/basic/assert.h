@@ -25,6 +25,11 @@
 #define CORE_BASIC_ASSERT_
 
 #include <string>
+#include <core/basic/definitions.h>
+
+#if defined (WIN32) && !defined(__func__)
+#define __func__ __FUNCTION__
+#endif
 
 /**
  * \file cgogn/core/basic/assert.h
@@ -47,7 +52,7 @@ namespace cgogn
 	 *
 	 * \todo Add attribute [[noreturn]] when MSVC min version = 14
 	 */
-	void assertion_failed(const std::string& expression, const std::string& message,
+	CGoGN_CORE_API	void assertion_failed(const std::string& expression, const std::string& message,
 		const std::string& file_name, const std::string& function_name, int line_number );
 
 }
