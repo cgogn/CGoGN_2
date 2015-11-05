@@ -76,7 +76,7 @@ public:
 		return *this;
 	}
 
-	ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs)
+	inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs)
 	{
 		Inherit::operator =(std::move(cs));
 		stackSize_ = cs.stackSize_;
