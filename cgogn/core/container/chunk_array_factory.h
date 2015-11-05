@@ -24,8 +24,8 @@
 #ifndef __CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H__
 #define __CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H__
 
-#include "core/container/chunk_array.h"
-
+#include <core/container/chunk_array.h>
+#include <core/basic/nameTypes.h>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -48,8 +48,9 @@ public:
 	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
 	 */
 	template<typename T>
-	static void registerCA(const std::string& keyType)
+	static void registerCA()
 	{
+		const std::string& keyType(nameOfType(T()));
 		if(mapCA_.find(keyType) == mapCA_.end())
 			mapCA_[keyType] = ChunkArrayGenPtr(new ChunkArray<CHUNKSIZE, T>());
 	}

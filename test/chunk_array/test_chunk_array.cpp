@@ -214,16 +214,10 @@ int test3()
 	return 0;
 }
 
-
 int test4()
 {
 	std::cout << "=============== TEST 4 ===============" << std::endl;
 	typedef std::vector< std::vector< double > > vecvecdouble;
-	ChunkArrayFactory<BLK_SZ>::registerCA<float>("float");
-	ChunkArrayFactory<BLK_SZ>::registerCA<int>("int");
-	ChunkArrayFactory<BLK_SZ>::registerCA<bool>("bool");
-	ChunkArrayFactory<BLK_SZ>::registerCA<vecvecdouble>("std::vector<std::vector<double>>");
-
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");

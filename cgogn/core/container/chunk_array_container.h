@@ -262,6 +262,7 @@ public:
 		// create the new attribute
 		std::string typeName = nameOfType(T()) ;
 		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>() ;
+		ChunkArrayFactory<CHUNKSIZE>::template registerCA<T>();
 
 		// reserve memory
 		carr->setNbChunks(refs_.getNbChunks()) ;
