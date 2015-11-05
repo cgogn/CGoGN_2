@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 
 namespace cgogn
 {
@@ -36,18 +37,21 @@ template <unsigned int CHUNKSIZE>
 class ChunkArrayFactory
 {
 public:
+	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
+	typedef std::map<std::string, ChunkArrayGenPtr > Map;
 
-	static std::map<std::string, ChunkArrayGen<CHUNKSIZE>*> mapCA_;
+	static Map mapCA_;
 
 	/**
 	 * @brief register a type
 	 * @param keyType name of type
 	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
 	 */
-	static void registerCA(const std::string& keyType, ChunkArrayGen<CHUNKSIZE>* obj)
+	template<typename T>
+	static void registerCA(const std::string& keyType)
 	{
 		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[keyType] = obj;
+			mapCA_[keyType] = ChunkArrayGenPtr(new ChunkArray<CHUNKSIZE, T>());
 	}
 
 	/**
@@ -57,8 +61,8 @@ public:
 	 */
 	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
 	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = NULL;
-		typename std::map<std::string, ChunkArrayGen<CHUNKSIZE>*>::const_iterator it = mapCA_.find(keyType);
+		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
+		typename Map::const_iterator it = mapCA_.find(keyType);
 
 		if(it != mapCA_.end())
 		{
@@ -69,19 +73,10 @@ public:
 
 		return tmp;
 	}
-
-	/**
-	 * @brief free allocated object stored in map
-	 */
-	static void clean()
-	{
-		for (auto it: mapCA_)
-			delete it.second;
-	}
 };
 
 template <unsigned int CHUNKSIZE>
-std::map<std::string, ChunkArrayGen<CHUNKSIZE>*> ChunkArrayFactory<CHUNKSIZE>::mapCA_= std::map<std::string, ChunkArrayGen<CHUNKSIZE>*>();
+typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
 
 } // namespace cgogn
 

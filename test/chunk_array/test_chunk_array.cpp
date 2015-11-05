@@ -219,9 +219,9 @@ int test4()
 {
 	std::cout << "=============== TEST 4 ===============" << std::endl;
 
-	ChunkArrayFactory<BLK_SZ>::registerCA("float",new ChunkArray<BLK_SZ,float>());
-	ChunkArrayFactory<BLK_SZ>::registerCA("int",new ChunkArray<BLK_SZ,int>());
-	ChunkArrayFactory<BLK_SZ>::registerCA("bool",new ChunkArray<BLK_SZ,bool>());
+	ChunkArrayFactory<BLK_SZ>::registerCA<float>("float");
+	ChunkArrayFactory<BLK_SZ>::registerCA<int>("int");
+	ChunkArrayFactory<BLK_SZ>::registerCA<bool>("bool");
 
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
@@ -263,9 +263,6 @@ int test4()
 		std::cout << i << ": "<< (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] <<std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
-
-
-	ChunkArrayFactory<BLK_SZ>::clean();
 
 	return 0;
 }
