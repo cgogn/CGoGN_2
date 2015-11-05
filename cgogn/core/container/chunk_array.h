@@ -56,6 +56,41 @@ public:
 		tableData_.reserve(1024u);
 	}
 
+	ChunkArray(const ChunkArray< CHUNKSIZE, T>& ca)
+	{
+		tableData_.reserve(1024u);
+		this->setNbChunks(ca.getNbChunks());
+		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+		{
+			std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE, tableData_[i]);
+		}
+	}
+
+	inline ChunkArray(ChunkArray< CHUNKSIZE, T>&& ca) :
+		tableData_(std::move(ca.tableData_))
+	{}
+
+	ChunkArray< CHUNKSIZE, T>& operator=(ChunkArray< CHUNKSIZE, T>&& ca)
+	{
+		// this != &ca because ca is a rvalue
+		this->clear();
+		tableData_ = std::move(ca.tableData_);
+		return *this;
+	}
+
+	ChunkArray< CHUNKSIZE, T>& operator=(const ChunkArray< CHUNKSIZE, T>& ca)
+	{
+		if (this != &ca)
+		{
+			this->setNbChunks(ca.getNbChunks());
+			for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+			{
+				std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE, tableData_[i]);
+			}
+		}
+		return *this;
+	}
+
 	/**
 	 * @brief Destructor of ChunkArray
 	 */
@@ -65,7 +100,7 @@ public:
 			delete[] chunk;
 	}
 
-	bool isBooleanArray() const
+	bool isBooleanArray() const override
 	{
 		return false;
 	}
@@ -338,7 +373,7 @@ protected:
 
 public:
 
-	ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
 	{
 		tableData_.reserve(1024u);
 	}
@@ -349,7 +384,43 @@ public:
 			delete[] chunk;
 	}
 
-	bool isBooleanArray() const
+	ChunkArray(const ChunkArray< CHUNKSIZE, bool>& ca)
+	{
+		tableData_.reserve(1024u);
+		this->setNbChunks(ca.getNbChunks());
+		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+		{
+			std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
+		}
+	}
+
+	inline ChunkArray(ChunkArray< CHUNKSIZE, bool>&& ca) :
+		tableData_(std::move(ca.tableData_))
+	{}
+
+	ChunkArray< CHUNKSIZE, bool>& operator=(ChunkArray< CHUNKSIZE, bool>&& ca)
+	{
+		// this != &ca because ca is a rvalue
+		this->clear();
+		tableData_ = std::move(ca.tableData_);
+		return *this;
+	}
+
+	ChunkArray< CHUNKSIZE, bool>& operator=(const ChunkArray< CHUNKSIZE, bool>& ca)
+	{
+		if (this != &ca)
+		{
+			this->setNbChunks(ca.getNbChunks());
+			for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+			{
+				std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
+			}
+		}
+		return *this;
+	}
+
+
+	bool isBooleanArray() const override
 	{
 		return true;
 	}
