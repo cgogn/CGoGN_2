@@ -93,7 +93,7 @@ public:
 	template <unsigned int ORBIT>
 	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
 	{
-		assert(embeddings_[ORBIT] != NULL || !"Invalid parameter: orbit not embedded");
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
@@ -130,7 +130,7 @@ protected:
 		while (id != thread_ids_[i])
 		{
 			i++;
-			assert(i < thread_ids_.size());
+			cgogn_assert(i < thread_ids_.size());
 		}
 		return i;
 	}

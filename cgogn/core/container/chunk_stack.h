@@ -25,8 +25,8 @@
 #define CORE_CONTAINER_CHUNK_STACK_H_
 
 #include <core/container/chunk_array.h>
+#include <core/basic/assert.h>
 
-#include <cassert>
 
 namespace cgogn
 {
@@ -121,7 +121,7 @@ public:
 	 */
 	inline void pop()
 	{
-		assert(stackSize_ > 0u);
+		cgogn_assert(stackSize_ > 0u);
 		stackSize_--;
 	}
 

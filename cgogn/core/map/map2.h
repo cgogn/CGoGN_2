@@ -62,8 +62,8 @@ protected:
 	 */
 	void phi2sew(Dart d, Dart e)
 	{
-		assert(phi2(d) == d);
-		assert(phi2(e) == e);
+		cgogn_assert(phi2(d) == d);
+		cgogn_assert(phi2(e) == e);
 		(*(this->topo_relations_[2]))[d.index] = e;
 		(*(this->topo_relations_[2]))[e.index] = d;
 	}

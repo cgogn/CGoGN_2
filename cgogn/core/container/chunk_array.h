@@ -26,11 +26,11 @@
 
 #include <core/container/chunk_array_gen.h>
 #include <core/basic/serialization.h>
+#include <core/basic/assert.h>
 
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <cassert>
 
 namespace cgogn
 {
@@ -148,7 +148,7 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		assert(i/CHUNKSIZE < tableData_.size());
+		cgogn_assert(i/CHUNKSIZE < tableData_.size());
 		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
 	}
 
@@ -159,7 +159,7 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		assert(i/CHUNKSIZE < tableData_.size());
+		cgogn_assert(i/CHUNKSIZE < tableData_.size());
 		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
 	}
 
@@ -170,7 +170,7 @@ public:
 	 */
 	inline void setVal(unsigned int i, const T& v)
 	{
-		assert(i/CHUNKSIZE < tableData_.size());
+		cgogn_assert(i/CHUNKSIZE < tableData_.size());
 		tableData_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
 
@@ -281,7 +281,7 @@ public:
 
 	void save(std::ostream& fs, unsigned int nbLines) const override
 	{
-		assert(nbLines/CHUNKSIZE <= getNbChunks());
+		cgogn_assert(nbLines/CHUNKSIZE <= getNbChunks());
 
 		serialization::save(fs, &nbLines, 1);
 
@@ -442,7 +442,7 @@ public:
 	void setFalse(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		assert(jj < tableData_.size());
+		cgogn_assert(jj < tableData_.size());
 		const unsigned int j = i % CHUNKSIZE;
 		const unsigned int x = j/32u;
 		const unsigned int y = j%32u;
@@ -453,7 +453,7 @@ public:
 	void setTrue(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		assert(jj < tableData_.size());
+		cgogn_assert(jj < tableData_.size());
 		const unsigned int j = i % CHUNKSIZE;
 		const unsigned int x = j/32u;
 		const unsigned int y = j%32u;
@@ -464,7 +464,7 @@ public:
 	void setVal(unsigned int i, bool b)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		assert(jj < tableData_.size());
+		cgogn_assert(jj < tableData_.size());
 		const unsigned int j = i % CHUNKSIZE;
 		const unsigned int x = j/32u;
 		const unsigned int y = j%32u;
@@ -487,7 +487,7 @@ public:
 	void setFalseDirty(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		assert(jj < tableData_.size());
+		cgogn_assert(jj < tableData_.size());
 		const unsigned int j = (i % CHUNKSIZE)/32u;
 		tableData_[jj][j] = 0u;
 	}
@@ -495,7 +495,7 @@ public:
 	bool operator[](unsigned int i) const
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		assert(jj < tableData_.size());
+		cgogn_assert(jj < tableData_.size());
 		const unsigned int j = i % CHUNKSIZE;
 		const unsigned int x = j/32u;
 		const unsigned int y = j%32u;
@@ -543,7 +543,7 @@ public:
 			nbLines = ((nbLines/32u)+1u)*32u;
 
 
-		assert(nbLines/CHUNKSIZE <= tableData_.size());
+		cgogn_assert(nbLines/CHUNKSIZE <= tableData_.size());
 		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
 
 		// save number of lines

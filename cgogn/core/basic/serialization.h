@@ -23,10 +23,11 @@
 #ifndef CORE_SERIALIZATION_H_
 #define CORE_SERIALIZATION_H_
 
+#include <core/basic/assert.h>
+
 #include <iostream>
 #include <vector>
 #include <list>
-#include <cassert>
 
 namespace cgogn
 {
@@ -36,14 +37,14 @@ namespace serialization
 template<typename T>
 void load(std::istream& istream, T * dest, std::size_t quantity)
 {
-	assert(dest != nullptr);
+	cgogn_assert(dest != nullptr);
 	istream.read(reinterpret_cast<char*>(dest), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
 template<typename T>
 void save(std::ostream& ostream, T const * src, std::size_t quantity)
 {
-	assert(src != nullptr);
+	cgogn_assert(src != nullptr);
 	ostream.write(reinterpret_cast<const char *>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
@@ -62,7 +63,7 @@ void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity)
 template<typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 {
-	assert(dest != nullptr);
+	cgogn_assert(dest != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		unsigned int vecSize;
@@ -76,7 +77,7 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 template<typename U>
 void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity)
 {
-	assert(src != nullptr);
+	cgogn_assert(src != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		const unsigned int size = static_cast<unsigned int>(src[i].size());
@@ -89,7 +90,7 @@ void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantit
 template<typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 {
-	assert(dest != nullptr);
+	cgogn_assert(dest != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		unsigned int listSize;
@@ -109,7 +110,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 template<typename U>
 void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity)
 {
-	assert(src != nullptr);
+	cgogn_assert(src != nullptr);
 
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{

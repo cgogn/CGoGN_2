@@ -252,7 +252,6 @@ public:
 	template <typename T>
 	ChunkArray<CHUNKSIZE,T>* addAttribute(const std::string& attribName)
 	{
-		// assert(attribName.size() != 0);
 		cgogn_assert(attribName.size() != 0);
 
 		// first check if attribute already exist
@@ -636,7 +635,6 @@ public:
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
-		// assert(this->used(beginPrimIdx)|!" Error removing non existing index");
 		cgogn_message_assert(this->used(beginPrimIdx), "Error removing non existing index");
 
 		holesStack_.push(beginPrimIdx);
@@ -654,7 +652,6 @@ public:
 	 */
 	void initLine(unsigned int index)
 	{
-		// assert( used(index) && "initLine only with allocated lines");
 		cgogn_message_assert(!used(index), "initLine only with allocated lines");
 
 		for (auto ptrAtt: tableArrays_)
@@ -664,7 +661,6 @@ public:
 
 	void initBooleansOfLine(unsigned int index)
 	{
-		// assert( used(index) && "initBooleansOfLine only with allocated lines");
 		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
 
 		for (unsigned int i=0; i<nbBoolAttribs_;++i)
@@ -673,7 +669,7 @@ public:
 
 	void initBoolsOfLine(unsigned int index)
 	{
-//		assert( used(index) && "initLine only with allocated lines");
+//		cgogn_assert(!used(index), "initLine only with allocated lines");
 //		for (auto ptrAtt: tableArrays_)
 //			if (ptrAtt != NULL)
 //				ptrAtt->initElt(index);
@@ -745,7 +741,6 @@ public:
 			return nullptr ;
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
-		// assert((atm != nullptr) || !"getDataVector: wrong type");
 
 		cgogn_message_assert(atm != nullptr, "getDataVector: wrong type");
 

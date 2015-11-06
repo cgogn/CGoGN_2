@@ -48,6 +48,21 @@
 #define CGOGN_NOEXCEPT noexcept
 #endif
 
+/**
+ * \def CGOGN_DEBUG
+ * \brief This macro is set when compiling in debug mode
+ *
+ * \def CGOGN_PARANO
+ * \brief This macro is set when compiling in debug mode
+ */
+#ifdef NDEBUG
+#undef CGOGN_DEBUG
+#undef CGOGN_PARANO
+#else
+#define CGOGN_DEBUG
+#define CGOGN_PARANO
+#endif
+
 namespace cgogn
 {
 
