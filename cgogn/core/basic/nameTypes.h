@@ -40,6 +40,10 @@ std::string nameOfType(const T& /*v*/)
 	return T::CGoGNnameOfType();
 }
 
+// first we need to declare some specializations
+template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/);
+template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/);
+
 template <> inline std::string nameOfType(const bool& /*v*/) { return "bool"; }
 
 template <> inline std::string nameOfType(const char& /*v*/) { return "char"; }
@@ -51,6 +55,8 @@ template <> inline std::string nameOfType(const int& /*v*/) { return "int"; }
 template <> inline std::string nameOfType(const long& /*v*/) { return "long"; }
 
 template <> inline std::string nameOfType(const long long& /*v*/) { return "long long"; }
+// because signed char != char
+template <> inline std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
 
 template <> inline std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
 
@@ -85,14 +91,6 @@ class AddTypeName : public T
 public:
 	static std::string CGoGNnameOfType() { return "UNKNOWN"; }
 };
-
-template <typename T>
-bool typeIsBool(T)
-{
-	return false;
-}
-
-template <> bool typeIsBool(bool) { return true; }
 
 } // namespace cgogn
 

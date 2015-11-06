@@ -37,6 +37,11 @@ template<unsigned int CHUNKSIZE>
 class ChunkArrayGen
 {
 public:
+	ChunkArrayGen() = default;
+	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
+	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
+	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
+	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
 
 	/**
 	 * @brief virtual destructor
