@@ -34,6 +34,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <memory>
 #include <core/basic/assert.h>
 
 namespace cgogn
@@ -126,7 +127,7 @@ protected:
 	/**
 	 * Browser that allow special traversals
 	 */
-	ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >* stdBrowser_;
+	std::unique_ptr< ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> > > stdBrowser_;
 
 	/**
 	 * @brief get array index from name
@@ -211,8 +212,8 @@ public:
 		nbUsedLines_(0u),
 		nbMaxLines_(0u)
 	{
-		stdBrowser_ = new ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >(this);
-		currentBrowser_= stdBrowser_;
+		stdBrowser_.reset(new ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >(this));
+		currentBrowser_= stdBrowser_.get();
 	}
 
 	/**
@@ -220,6 +221,8 @@ public:
 	 */
 	~ChunkArrayContainer()
 	{
+		if (currentBrowser_ != stdBrowser_.get())
+			delete currentBrowser_;
 		for (auto ptr: tableArrays_)
 			delete ptr;
 	}
@@ -368,6 +371,24 @@ public:
 	{
 		return refs_[index] != 0;
 	}
+	/**
+	 * @brief setCurrentBrowser
+	 * @param browser, pointer to a heap-allocated ContainerBrowser
+	 */
+	inline void setCurrentBrowser(ContainerBrowser* browser)
+	{
+		if (currentBrowser_ != stdBrowser_.get())
+			delete currentBrowser_;
+		currentBrowser_ = browser;
+	}
+
+	inline void setStandardBrowser()
+	{
+		if (currentBrowser_ != stdBrowser_.get())
+			delete currentBrowser_;
+		currentBrowser_ = stdBrowser_;
+	}
+
 
 	/**
 	 * @brief begin
