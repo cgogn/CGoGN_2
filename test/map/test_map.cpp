@@ -14,15 +14,50 @@ struct My_Data_Traits
 // typedef for short writing
 typedef Map1<My_Data_Traits> MAP1;
 
-// declare a map
-MAP1 map;
-
 
 // typedef for short writing
 typedef Map2<My_Data_Traits> MAP2;
 
-// declare a map
-MAP2 map2;
+
+void fonc_const(const MAP1::VertexAttributeHandler<float>& ah);
+
+void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah);
+
+int test1();
+
+
+int test1()
+{
+	// declare a map
+	MAP1 map;
+
+	// declare a map
+	MAP2 map2;
+
+	// add an attribute on vertex of map with
+	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
+
+	// get ChunkArrayContainer -> get ChunkArray -> fill
+	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
+	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.getAttribute<float>("floats");
+	for (int i=0;i<10;++i)
+		container.insertLines<1>();
+	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+		(*att)[i] = 3.0f + 0.1f*float(i);
+
+	// access with index
+	std::cout << ah[0] << std::endl;
+
+	fonc_non_const(ah);
+
+	fonc_const(ah);
+
+//	// traverse container with for range
+//	for (float f:ah)
+//		std::cout << f << std::endl;
+
+	return 0;
+}
 
 
 void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
@@ -50,34 +85,6 @@ void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
 	{
 		*it /= 2.0f;
 	}
-}
-
-
-int test1()
-{
-	// add an attribute on vertex of map with
-	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
-
-	// get ChunkArrayContainer -> get ChunkArray -> fill
-	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
-	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.getAttribute<float>("floats");
-	for (int i=0;i<10;++i)
-		container.insertLines<1>();
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		(*att)[i] = 3.0f + 0.1f*float(i);
-
-	// access with index
-	std::cout << ah[0] << std::endl;
-
-	fonc_non_const(ah);
-
-	fonc_const(ah);
-
-//	// traverse container with for range
-//	for (float f:ah)
-//		std::cout << f << std::endl;
-
-	return 0;
 }
 
 
