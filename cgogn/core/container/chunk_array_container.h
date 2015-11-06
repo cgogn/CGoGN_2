@@ -51,7 +51,7 @@ public:
 	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
-	virtual ~ContainerBrowser() {}
+	virtual ~ContainerBrowser();
 };
 
 template <typename CONTAINER>
