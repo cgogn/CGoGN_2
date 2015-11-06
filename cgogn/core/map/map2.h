@@ -87,6 +87,7 @@ public:
 		init();
 	}
 
+	~Map2() override {}
 	/**
 	 * @brief phi2
 	 * @param d

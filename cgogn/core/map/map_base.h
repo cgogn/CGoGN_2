@@ -51,7 +51,7 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attributeName = "")
 	{
-		if (this->embeddings_[ORBIT] == NULL)
+		if (this->embeddings_[ORBIT] == nullptr)
 		{
 			std::ostringstream oss;
 			oss << "EMB_" << orbitName(ORBIT);

@@ -104,6 +104,8 @@ public:
 		init();
 	}
 
+	virtual ~Map1() override {}
+
 	/**
 	 * @brief phi1
 	 * @param d

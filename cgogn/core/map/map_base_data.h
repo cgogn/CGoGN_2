@@ -40,6 +40,8 @@ namespace cgogn
  */
 class MapGen
 {
+public:
+	virtual ~MapGen() {}
 };
 
 
@@ -79,11 +81,13 @@ public:
 	MapBaseData()
 	{
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			embeddings_[i] = NULL;
+			embeddings_[i] = nullptr;
 
 		thread_ids_.reserve(NB_THREADS + 1);
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
+
+	~MapBaseData() override {}
 
 	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
 	{

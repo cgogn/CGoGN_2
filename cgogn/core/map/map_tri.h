@@ -36,9 +36,8 @@ class Traits_map_tri
 
 class MapTri : public MapBase<Traits_map_tri>
 {
-
-
-
+public:
+	~MapTri() override {}
 };
 
 } // namespace cgogn
