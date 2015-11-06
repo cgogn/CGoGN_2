@@ -33,6 +33,8 @@ struct Dart
 
 	Dart(): index(0xffffffff) {}
 
+	Dart(const Dart& d) : index(d.index) {}
+
 	static Dart nil() { Dart d; d.index = 0xffffffff; return d; }
 
 	static Dart create(unsigned int i) { Dart d; d.index = i; return d; }
