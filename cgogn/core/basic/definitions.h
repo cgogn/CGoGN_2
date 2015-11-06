@@ -42,6 +42,11 @@
 #define CGoGN_CORE_API
 #endif
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_NOEXCEPT
+#else
+#define CGOGN_NOEXCEPT noexcept
+#endif
 
 namespace cgogn
 {

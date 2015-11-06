@@ -29,7 +29,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
-
+#include <core/basic/serialization.h>
 namespace cgogn
 {
 
@@ -56,6 +56,11 @@ public:
 		tableData_.reserve(1024u);
 	}
 
+	ChunkArray(const ChunkArray< CHUNKSIZE, T>& ca) = delete;
+	ChunkArray(ChunkArray< CHUNKSIZE, T>&& ca) = delete;
+	ChunkArray< CHUNKSIZE, T>& operator=(ChunkArray< CHUNKSIZE, T>&& ca) = delete;
+	ChunkArray< CHUNKSIZE, T>& operator=(const ChunkArray< CHUNKSIZE, T>& ca) = delete;
+
 	/**
 	 * @brief Destructor of ChunkArray
 	 */
@@ -65,7 +70,7 @@ public:
 			delete[] chunk;
 	}
 
-	bool isBooleanArray() const
+	bool isBooleanArray() const override
 	{
 		return false;
 	}
@@ -276,7 +281,7 @@ public:
 	{
 		assert(nbLines/CHUNKSIZE <= getNbChunks());
 
-		fs.write(reinterpret_cast<const char*>(&nbLines),sizeof(unsigned int));
+		serialization::save(fs, &nbLines, 1);
 
 		// no data -> finished
 		if (nbLines == 0)
@@ -287,19 +292,18 @@ public:
 		// save data chunks except last
 		for(unsigned int i=0; i<nbc; ++i)
 		{
-			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+			serialization::save(fs, tableData_[i], CHUNKSIZE);
 		}
 
 		// save last incomplete chunk
-		unsigned nb = nbLines - nbc*CHUNKSIZE;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),std::streamsize(nb*sizeof(T)));
+		const unsigned nb = nbLines - nbc*CHUNKSIZE;
+		serialization::save(fs, tableData_[nbc], nb);
 	}
 
 	bool load(std::istream& fs) override
 	{
 		unsigned int nbLines;
-		fs.read(reinterpret_cast<char*>(&nbLines), sizeof(unsigned int));
-
+		serialization::load(fs, &nbLines, 1);
 		// no data -> finished
 		if (nbLines == 0)
 			return true;
@@ -313,12 +317,12 @@ public:
 
 		// load data chunks except last
 		nbc--;
-		for(unsigned int i = 0; i < nbc; ++i)
-			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+		for(unsigned int i = 0u; i < nbc; ++i)
+			serialization::load(fs, tableData_[i], CHUNKSIZE);
 
 		// load last incomplete chunk
-		unsigned int nb = nbLines - nbc*CHUNKSIZE;
-		fs.read(reinterpret_cast<char*>(tableData_[nbc]),std::streamsize(nb*sizeof(T)));
+		const unsigned int nb = nbLines - nbc*CHUNKSIZE;
+		serialization::load(fs, tableData_[nbc], nb);
 
 		return true;
 	}
@@ -338,7 +342,7 @@ protected:
 
 public:
 
-	ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
 	{
 		tableData_.reserve(1024u);
 	}
@@ -349,7 +353,43 @@ public:
 			delete[] chunk;
 	}
 
-	bool isBooleanArray() const
+	ChunkArray(const ChunkArray< CHUNKSIZE, bool>& ca)
+	{
+		tableData_.reserve(1024u);
+		this->setNbChunks(ca.getNbChunks());
+		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+		{
+			std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
+		}
+	}
+
+	inline ChunkArray(ChunkArray< CHUNKSIZE, bool>&& ca) :
+		tableData_(std::move(ca.tableData_))
+	{}
+
+	ChunkArray< CHUNKSIZE, bool>& operator=(ChunkArray< CHUNKSIZE, bool>&& ca)
+	{
+		// this != &ca because ca is a rvalue
+		this->clear();
+		tableData_ = std::move(ca.tableData_);
+		return *this;
+	}
+
+	ChunkArray< CHUNKSIZE, bool>& operator=(const ChunkArray< CHUNKSIZE, bool>& ca)
+	{
+		if (this != &ca)
+		{
+			this->setNbChunks(ca.getNbChunks());
+			for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+			{
+				std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
+			}
+		}
+		return *this;
+	}
+
+
+	bool isBooleanArray() const override
 	{
 		return true;
 	}
@@ -505,21 +545,21 @@ public:
 		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
 
 		// save number of lines
-		fs.write(reinterpret_cast<const char*>(&nbLines),sizeof(unsigned int));
+		serialization::save(fs, &nbLines,1);
 
 		// no data -> finished
 		if (nbLines == 0u)
 			return;
 
-		unsigned int nbc = getNbChunks()-1;
+		const unsigned int nbc = getNbChunks()-1u;
 		// save data chunks except last
 		for(unsigned int i=0u; i<nbc; ++i)
 		{
-			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE/8u);// /8 because bool = 1 bit & octet = 8 bit
+			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE/8u); // /8 because bool = 1 bit & octet = 8 bit
 		}
 
 		// save last
-		unsigned int nb = nbLines - nbc*CHUNKSIZE;
+		const unsigned int nb = nbLines - nbc*CHUNKSIZE;
 		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),nb/8u);
 	}
 
@@ -527,7 +567,7 @@ public:
 	{
 		// get number of lines to load
 		unsigned int nbLines;
-		fs.read(reinterpret_cast<char*>(&nbLines), sizeof(unsigned int));
+		serialization::load(fs, &nbLines, 1);
 
 		// no data -> finished
 		if (nbLines == 0)

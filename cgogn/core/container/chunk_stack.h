@@ -39,6 +39,8 @@ namespace cgogn
 template <unsigned int CHUNKSIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
+public:
+	typedef ChunkArray<CHUNKSIZE, T> Inherit;
 protected:
 
 	unsigned int stackSize_;
@@ -56,6 +58,30 @@ public:
 	 */
 	inline ~ChunkStack() override
 	{}
+
+	inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) :
+		Inherit(cs)
+		,stackSize_(cs.stackSize_)
+	{}
+
+	inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) :
+		Inherit(std::move(cs))
+		,stackSize_(cs.stackSize_)
+	{}
+
+	inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs)
+	{
+		Inherit::operator =(cs);
+		stackSize_ = cs.stackSize_;
+		return *this;
+	}
+
+	inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs)
+	{
+		Inherit::operator =(std::move(cs));
+		stackSize_ = cs.stackSize_;
+		return *this;
+	}
 
 	/**
 	 * @brief push a value on top of heap
