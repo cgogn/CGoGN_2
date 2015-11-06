@@ -22,9 +22,11 @@
 *******************************************************************************/
 #ifndef CORE_SERIALIZATION_H_
 #define CORE_SERIALIZATION_H_
+
 #include <iostream>
 #include <vector>
 #include <list>
+#include <cassert>
 
 namespace cgogn
 {
@@ -35,14 +37,14 @@ template<typename T>
 void load(std::istream& istream, T * dest, std::size_t quantity)
 {
 	assert(dest != nullptr);
-	istream.read(reinterpret_cast<char*>(dest), quantity*sizeof(T));
+	istream.read(reinterpret_cast<char*>(dest), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
 template<typename T>
 void save(std::ostream& ostream, T const * src, std::size_t quantity)
 {
 	assert(src != nullptr);
-	ostream.write(reinterpret_cast<const char *>(src),quantity*sizeof(T));
+	ostream.write(reinterpret_cast<const char *>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
 // first step : declare all overrides of load and save
