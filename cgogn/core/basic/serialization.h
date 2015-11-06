@@ -24,6 +24,7 @@
 #define CORE_SERIALIZATION_H_
 #include <iostream>
 #include <vector>
+#include <list>
 
 namespace cgogn
 {
@@ -44,6 +45,17 @@ void save(std::ostream& ostream, T const * src, std::size_t quantity)
 	ostream.write(reinterpret_cast<const char *>(src),quantity*sizeof(T));
 }
 
+// first step : declare all overrides of load and save
+template<typename U>
+void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity);
+template<typename U>
+void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity);
+template<typename U>
+void load(std::istream& istream, std::list<U>* dest, std::size_t quantity);
+template<typename U>
+void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity);
+
+
 // loading n vectors
 template<typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
@@ -58,19 +70,53 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 	}
 }
 
+// saving n vectors
 template<typename U>
 void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity)
 {
 	assert(src != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
-		const unsigned int size = src[i].size();
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
 		save(ostream, &(src[i][0]), size);
 	}
-
 }
 
+// loading n lists
+template<typename U>
+void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
+{
+	assert(dest != nullptr);
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int listSize;
+		istream.read(reinterpret_cast<char*>(&listSize), sizeof(unsigned int));
+		std::vector<U> temp;
+		temp.resize(listSize);
+		load(istream, &(temp[0]), listSize);
+		for(auto&& x : temp)
+		{
+			dest[i].emplace_back(std::move(x));
+		}
+
+	}
+}
+
+// saving n lists
+template<typename U>
+void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity)
+{
+	assert(src != nullptr);
+
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		for (const auto& elem : src[i])
+			save(ostream, &elem, 1);
+	}
+}
 
 }
 }

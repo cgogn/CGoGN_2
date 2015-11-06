@@ -218,12 +218,13 @@ int test4()
 {
 	std::cout << "=============== TEST 4 ===============" << std::endl;
 	typedef std::vector< std::vector< double > > vecvecdouble;
-
+	typedef std::vector< std::list< double > > veclistdouble;
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
 	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
 	ChunkArray<BLK_SZ,bool>* att3 = container.addAttribute<bool>("bools");
 	ChunkArray<BLK_SZ,vecvecdouble>* att4 = container.addAttribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<BLK_SZ,veclistdouble>* att5 = container.addAttribute<veclistdouble>("veclistdouble");
 
 	for (int i=0;i<7;++i)
 		container.insertLines<3>();
@@ -235,6 +236,7 @@ int test4()
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3).setVal(i,i%2);
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
+		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 	}
 
 	container.removeLines<3>(3);
@@ -254,6 +256,7 @@ int test4()
 	ChunkArray<BLK_SZ,float>* load_att2 = cont2.getAttribute<float>("reel");
 	ChunkArray<BLK_SZ,bool>* load_att3 = cont2.getAttribute<bool>("bools");
 	ChunkArray<BLK_SZ,vecvecdouble>* load_att4 = cont2.getAttribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<BLK_SZ,veclistdouble>* load_att5 = cont2.getAttribute<veclistdouble>("veclistdouble");
 
 	for(unsigned int i=cont2.begin(); i!=cont2.end(); cont2.next(i))
 	{
@@ -261,7 +264,13 @@ int test4()
 		for (const auto& v : (*load_att4)[i])
 			for (auto x : v)
 				std::cout << x << " ";
+
+		std::cout << " / ";
+		for (const auto& v : (*load_att5)[i])
+			for (auto x : v)
+				std::cout << x << " ";
 		std::cout << std::endl;
+
 	}
 	std::cout << "----------------------------------------" << std::endl;
 

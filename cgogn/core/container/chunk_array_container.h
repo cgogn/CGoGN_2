@@ -24,10 +24,10 @@
 #ifndef __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
 #define __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
 
-#include "core/container/chunk_array.h"
-#include "core/container/chunk_stack.h"
-#include "core/basic/nameTypes.h"
-#include "core/container/chunk_array_factory.h"
+#include <core/basic/nameTypes.h>
+#include <core/container/chunk_array.h>
+#include <core/container/chunk_stack.h>
+#include <core/container/chunk_array_factory.h>
 
 #include <iostream>
 #include <fstream>
@@ -260,7 +260,7 @@ public:
 		}
 
 		// create the new attribute
-		std::string typeName = nameOfType(T()) ;
+		const std::string& typeName = nameOfType(T()) ;
 		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>() ;
 		ChunkArrayFactory<CHUNKSIZE>::template registerCA<T>();
 
@@ -273,7 +273,7 @@ public:
 		typeNames_.push_back(typeName);
 
 		// move bool in front of others
-		if (typeIsBool(T()))
+		if (std::is_same<bool, T>::value)
 		{
 			if (tableArrays_.size() > nbBoolAttribs_)
 			{
