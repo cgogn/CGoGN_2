@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_NAME_TYPES_H__
-#define __CORE_BASIC_NAME_TYPES_H__
+#ifndef CORE_BASIC_NAME_TYPES_H_
+#define CORE_BASIC_NAME_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -94,4 +94,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_NAME_TYPES_H__
+#endif // CORE_BASIC_NAME_TYPES_H_

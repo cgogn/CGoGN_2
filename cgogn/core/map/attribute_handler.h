@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_ATTRIBUTE_HANDLER_H__
-#define __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
+#define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
-#include "core/map/map_base.h"
-#include "core/basic/cell.h"
+#include <core/map/map_base.h>
+#include <core/basic/cell.h>
 
 ///TODO ajouter enregistrement dans la map de la carte.
 
@@ -414,4 +414,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#endif // CORE_MAP_ATTRIBUTE_HANDLER_H_

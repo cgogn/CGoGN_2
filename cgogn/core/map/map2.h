@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP2_H__
-#define __CORE_MAP_MAP2_H__
+#ifndef CORE_MAP_MAP2_H_
+#define CORE_MAP_MAP2_H_
 
-#include "core/map/map1.h"
+#include <core/map/map1.h>
 
 namespace cgogn
 {
@@ -101,4 +101,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP2_H__
+#endif // CORE_MAP_MAP2_H_

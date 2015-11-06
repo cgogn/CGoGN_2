@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_CELL_H__
-#define __CORE_BASIC_CELL_H__
+#ifndef CORE_BASIC_CELL_H_
+#define CORE_BASIC_CELL_H_
 
 #include "core/basic/dart.h"
 
@@ -91,4 +91,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_CELL_H__
+#endif // CORE_BASIC_CELL_H_

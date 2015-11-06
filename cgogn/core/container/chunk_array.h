@@ -21,15 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_H__
-#define __CORE_CONTAINER_CHUNK_ARRAY_H__
+#ifndef CORE_CONTAINER_CHUNK_ARRAY_H_
+#define CORE_CONTAINER_CHUNK_ARRAY_H_
 
-#include "core/container/chunk_array_gen.h"
+#include <core/container/chunk_array_gen.h>
+#include <core/basic/serialization.h>
+
 #include <iostream>
 #include <string>
 #include <cstring>
 #include <cassert>
-#include <core/basic/serialization.h>
+
 namespace cgogn
 {
 
@@ -595,4 +597,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_CONTAINER_CHUNK_ARRAY_H__
+#endif // CORE_CONTAINER_CHUNK_ARRAY_H_

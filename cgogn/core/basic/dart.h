@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_DART_H__
-#define __CORE_BASIC_DART_H__
+#ifndef CORE_BASIC_DART_H_
+#define CORE_BASIC_DART_H_
 
 namespace cgogn
 {
@@ -66,4 +66,4 @@ const unsigned int EMBNULL = 0xffffffff;
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_DART_H__
+#endif // CORE_BASIC_DART_H_

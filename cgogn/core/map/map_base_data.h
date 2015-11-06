@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_DATA_H__
-#define __CORE_MAP_MAP_BASE_DATA_H__
+#ifndef CORE_MAP_MAP_BASE_DATA_H_
+#define CORE_MAP_MAP_BASE_DATA_H_
 
-#include "core/container/chunk_array_container.h"
-#include "core/basic/definitions.h"
-#include "core/basic/cell.h"
+#include <core/container/chunk_array_container.h>
+#include <core/basic/definitions.h>
+#include <core/basic/cell.h>
 
-#include "utils/buffers.h"
+#include <utils/buffers.h>
 
 #include <thread>
 
@@ -138,4 +138,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_BASE_DATA_H__
+#endif // CORE_MAP_MAP_BASE_DATA_H_

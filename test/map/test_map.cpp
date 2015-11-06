@@ -1,6 +1,6 @@
 
-#include "core/map/map1.h"
-#include "core/map/map2.h"
+#include <core/map/map1.h>
+#include <core/map/map2.h>
 
 using namespace cgogn;
 

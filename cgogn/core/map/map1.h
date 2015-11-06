@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP1_H__
-#define __CORE_MAP_MAP1_H__
+#ifndef CORE_MAP_MAP1_H_
+#define CORE_MAP_MAP1_H_
 
-#include "core/map/map_base.h"
-#include "core/basic/dart.h"
+#include <core/map/map_base.h>
+#include <core/basic/dart.h>
 
 namespace cgogn
 {
@@ -179,4 +179,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP1_H__
+#endif // CORE_MAP_MAP1_H_

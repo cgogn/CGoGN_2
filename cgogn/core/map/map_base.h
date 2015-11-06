@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_H__
-#define __CORE_MAP_MAP_BASE_H__
+#ifndef CORE_MAP_MAP_BASE_H_
+#define CORE_MAP_MAP_BASE_H_
 
-#include "core/map/map_base_data.h"
-#include "core/map/attribute_handler.h"
+#include <core/map/map_base_data.h>
+#include <core/map/attribute_handler.h>
 
 #include <sstream>
 
@@ -121,4 +121,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_BASE_H__
+#endif // CORE_MAP_MAP_BASE_H_

@@ -149,4 +149,4 @@ namespace cgogn
  	#define parano_message_assert(x, msg)
 #endif
 
-#endif
+#endif // CORE_BASIC_ASSERT_

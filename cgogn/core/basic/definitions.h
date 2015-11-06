@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_DEFINITIONS_H__
-#define __CORE_BASIC_DEFINITIONS_H__
+#ifndef CORE_BASIC_DEFINITIONS_H_
+#define CORE_BASIC_DEFINITIONS_H_
 
 /**
  * \file basic/definitions.h
@@ -55,4 +55,4 @@ const unsigned int NB_THREADS = 8u;
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_DEFINITIONS_H__
+#endif // CORE_BASIC_DEFINITIONS_H_
