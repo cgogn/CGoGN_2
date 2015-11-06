@@ -771,7 +771,7 @@ public:
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
-		buffer.push_back((unsigned int)(tableArrays_.size()));
+		buffer.push_back(static_cast<unsigned int>(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
 		buffer.push_back(nbBoolAttribs_);
