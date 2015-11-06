@@ -55,6 +55,8 @@ template <> inline std::string nameOfType(const int& /*v*/) { return "int"; }
 template <> inline std::string nameOfType(const long& /*v*/) { return "long"; }
 
 template <> inline std::string nameOfType(const long long& /*v*/) { return "long long"; }
+// because signed char != char
+template <> inline std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
 
 template <> inline std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
 
