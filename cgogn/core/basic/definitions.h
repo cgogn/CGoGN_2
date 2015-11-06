@@ -31,21 +31,27 @@
 
 
 #ifdef WIN32
-#ifndef CGoGN_CORE_API
-#if defined CGoGN_CORE_DLL_EXPORT
-#define CGoGN_CORE_API __declspec(dllexport)
+#ifndef CGOGN_CORE_API
+#if defined CGOGN_CORE_DLL_EXPORT
+#define CGOGN_CORE_API __declspec(dllexport)
 #else
-#define CGoGN_CORE_API __declspec(dllimport)
+#define CGOGN_CORE_API __declspec(dllimport)
 #endif
 #endif
 #else
-#define CGoGN_CORE_API
+#define CGOGN_CORE_API
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define CGOGN_NOEXCEPT
 #else
 #define CGOGN_NOEXCEPT noexcept
+#endif
+
+#if defined (WIN32)
+#define CGOGN_NORETURN __declspec(noreturn)
+#else
+#define CGOGN_NORETURN [[noreturn]]
 #endif
 
 /**

@@ -31,6 +31,7 @@
 #define __func__ __FUNCTION__
 #endif
 
+
 /**
  * \file cgogn/core/basic/assert.h
  * \brief Assertion checking mechanism.
@@ -50,9 +51,8 @@ namespace cgogn
 	 * \param[in] function_name function where the assertion failed.
 	 * \param[in] line_number line where the assertion failed.
 	 *
-	 * \todo Add attribute [[noreturn]] when MSVC min version = 14
 	 */
-	CGoGN_CORE_API	void assertion_failed(const std::string& expression, const std::string& message,
+	CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(const std::string& expression, const std::string& message,
 		const std::string& file_name, const std::string& function_name, int line_number );
 
 }
