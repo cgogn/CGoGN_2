@@ -42,10 +42,22 @@
 #define CGoGN_CORE_API
 #endif
 
+/*
+ * for a given type T, std::vector<T> will only use move constructor of T if it's marked noexcept. Same for std::swap.
+*/
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#define CGOGN_NOEXCEPT
+#define CGOGN_NOEXCEPT throw()
 #else
 #define CGOGN_NOEXCEPT noexcept
+#endif
+
+/*
+ * Thread local storage. In VS <1900 it works only with POD types.
+*/
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_TLS __declspec( thread )
+#else
+#define CGOGN_TLS thread_local
 #endif
 
 namespace cgogn

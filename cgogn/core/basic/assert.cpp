@@ -26,6 +26,7 @@
 #include <core/basic/assert.h>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include <core/basic/definitions.h>
 
 namespace cgogn 

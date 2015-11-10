@@ -19,7 +19,6 @@ set(HEADER_FILES
 	map/map1.h
 	map/map2.h
 	map/map_tri.h
-
 	map/attribute_handler.h
 	)
 
@@ -30,25 +29,11 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
-#target_compile_features(${PROJECT_NAME} PUBLIC
-#												cxx_nullptr
-#												cxx_range_for
-#												cxx_static_assert
-#												cxx_deleted_functions
-#												cxx_defaulted_functions
-#												cxx_auto_type
-#												cxx_alias_templates
-#												cxx_final
-#												cxx_defaulted_move_initializers
-#												cxx_default_function_template_args
-#												cxx_decltype
-#												cxx_lambdas
-#												cxx_override
-#												cxx_return_type_deduction
-#												cxx_strong_enums
-#												cxx_template_template_parameters
-#							)
+
+#use of target_compile_options to have a transitive c++11 flag
+if(NOT MSVC)
+    target_compile_options(${PROJECT_NAME} INTERFACE "-std=c++11")
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 					$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>

@@ -59,29 +59,10 @@ public:
 	inline ~ChunkStack() override
 	{}
 
-	inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) :
-		Inherit(cs)
-		,stackSize_(cs.stackSize_)
-	{}
-
-	inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) :
-		Inherit(std::move(cs))
-		,stackSize_(cs.stackSize_)
-	{}
-
-	inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs)
-	{
-		Inherit::operator =(cs);
-		stackSize_ = cs.stackSize_;
-		return *this;
-	}
-
-	inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs)
-	{
-		Inherit::operator =(std::move(cs));
-		stackSize_ = cs.stackSize_;
-		return *this;
-	}
+    inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
+    inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
+    inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
+    inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
 
 	/**
 	 * @brief push a value on top of heap

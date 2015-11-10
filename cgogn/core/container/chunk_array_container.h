@@ -216,6 +216,11 @@ public:
 		currentBrowser_= stdBrowser_.get();
 	}
 
+    ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
+    ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
+    ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
+    ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
+
 	/**
 	 * @brief ChunkArrayContainer destructor
 	 */

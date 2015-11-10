@@ -206,7 +206,7 @@ public:
 	 *
 	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
 	 */
-	AttributeHandler():
+    inline AttributeHandler():
 		Inherit(nullptr)
 	{}
 
@@ -215,7 +215,7 @@ public:
 	 * @param m the map which belong attribute
 	 * @param attributeName name of attribute
 	 */
-	AttributeHandler(MapData* const m, const std::string& attributeName):
+    inline AttributeHandler(MapData* const m, const std::string& attributeName):
 		Inherit(m)
 	{
 		assert(this->chunk_array_cont_ != nullptr);
@@ -226,7 +226,7 @@ public:
 		}
 	}
 
-	AttributeHandler(MapData* const m, TChunkArray* const ca):
+    inline AttributeHandler(MapData* const m, TChunkArray* const ca):
 		Inherit(m),
 		chunk_array_(ca)
 	{
@@ -240,7 +240,7 @@ public:
 	 * @brief Copy constructor
 	 * @param att
 	 */
-	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
+    inline AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
 		Inherit(att)
 	  ,chunk_array_(att.chunk_array_)
 	{}
@@ -249,7 +249,7 @@ public:
 	 * @brief Move constructor
 	 * @param att
 	 */
-	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
+    inline AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att))
 	  ,chunk_array_(att.chunk_array_)
 	{}
@@ -259,7 +259,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
+    inline AttributeHandler& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
 	{
 		Inherit::operator=(att);
 		chunk_array_ = att.chunk_array_;
@@ -271,7 +271,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att)
+    inline AttributeHandler& operator=(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att)
 	{
 		Inherit::operator=(std::move(att));
 		chunk_array_ = att.chunk_array_;
@@ -283,7 +283,7 @@ public:
 	 * @brief getDataVector
 	 * @return
 	 */
-	TChunkArray const * getData() const
+    inline TChunkArray const * getData() const
 	{
 		return chunk_array_;
 	}
