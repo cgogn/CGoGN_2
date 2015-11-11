@@ -667,6 +667,7 @@ public:
 			tableArrays_[i]->initElt(index);
 	}
 
+	//TODO delete if useless
 	void initBoolsOfLine(unsigned int index)
 	{
 //		cgogn_assert(!used(index), "initLine only with allocated lines");

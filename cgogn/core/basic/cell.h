@@ -24,7 +24,13 @@
 #ifndef CORE_BASIC_CELL_H_
 #define CORE_BASIC_CELL_H_
 
-#include "core/basic/dart.h"
+#include <core/basic/dart.h>
+
+
+/**
+ * \file core/basic/cell.h
+ * \brief Orbit and cell definitions for CGOGN API 
+ */
 
 namespace cgogn
 {
@@ -58,13 +64,13 @@ inline std::string orbitName(unsigned int orbit)
 
 
 /**
- * class for cellular typing
+ * \brief Cellular typing
  *
- * warning to automatic conversion
+ * \details warning to automatic conversion
  * cell -> Dart (or const Dart&) ok
  * Dart -> Cell (or const Cell&) ok
+ * \tparam ORBIT The type of the orbit used to create the Cell
  */
-
 template <unsigned int ORBIT>
 class Cell
 {
@@ -72,10 +78,15 @@ public:
 
 	Dart dart;
 
-	/// empty construtor
+	/**
+	 * \brief Constructs a new  empty Cell with NIL dart.
+	 */
 	inline Cell(): dart() {}
 
-	/// constructor from Dart
+	/**
+	 * \brief Constructs a new Cell with a dart. 
+	 * \param d dart to convert to a cell of a given orbit
+	 */
 	inline Cell(Dart d): dart(d) {}
 
 	/// copy constructor

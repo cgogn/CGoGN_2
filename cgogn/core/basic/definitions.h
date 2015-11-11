@@ -25,11 +25,13 @@
 #define CORE_BASIC_DEFINITIONS_H_
 
 /**
- * \file basic/definitions.h
+ * \file core/basic/definitions.h
  * \brief Basic definitions for CGOGN API
  */
 
-
+/**
+ * \brief Linkage declaration for CGOGN symbols.
+ */
 #ifdef WIN32
 #ifndef CGOGN_CORE_API
 #if defined CGOGN_CORE_DLL_EXPORT
@@ -42,12 +44,18 @@
 #define CGOGN_CORE_API
 #endif
 
+/**
+ * \brief No execpt declaration for CGOGN symbols.
+ */
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define CGOGN_NOEXCEPT
 #else
 #define CGOGN_NOEXCEPT noexcept
 #endif
 
+/**
+ * \brief No return declaration for CGOGN symbols.
+ */
 #if defined (WIN32)
 #define CGOGN_NORETURN __declspec(noreturn)
 #else
@@ -72,6 +80,9 @@
 namespace cgogn
 {
 
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
 const unsigned int NB_THREADS = 8u;
 
 } // namespace cgogn
