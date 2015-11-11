@@ -45,6 +45,8 @@ setBuildType()
 #### CGOGN sources
 # add each subdirectory with a CMakeList
 
+add_subdirectory(doc)
+
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
 add_subdirectory(test)
