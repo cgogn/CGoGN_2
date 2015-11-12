@@ -36,6 +36,7 @@
 #include <string>
 #include <memory>
 #include <core/basic/assert.h>
+#include <utils/make_unique.h>
 
 namespace cgogn
 {
@@ -209,10 +210,10 @@ public:
 	 * @brief ChunkArrayContainer constructor
 	 */
 	ChunkArrayContainer():
-		nbUsedLines_(0u),
-		nbMaxLines_(0u)
+        nbUsedLines_(0u)
+        ,nbMaxLines_(0u)
+        ,stdBrowser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF>> >(this))
 	{
-		stdBrowser_.reset(new ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> >(this));
 		currentBrowser_= stdBrowser_.get();
 	}
 
