@@ -29,7 +29,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
-
+#include <utils/make_unique.h>
 namespace cgogn
 {
 
@@ -50,9 +50,9 @@ public:
 	template<typename T>
 	static void registerCA()
 	{
-		const std::string& keyType(nameOfType(T()));
+        std::string&& keyType(nameOfType(T()));
 		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[keyType] = ChunkArrayGenPtr(new ChunkArray<CHUNKSIZE, T>());
+            mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
 	}
 
 	/**

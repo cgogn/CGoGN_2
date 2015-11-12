@@ -219,11 +219,13 @@ public:
 		Inherit(m)
 	{
 		assert(this->chunk_array_cont_ != nullptr);
-		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
+        chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
-		}
+        } else {
+            this->setValid();
+        }
 	}
 
     inline AttributeHandler(MapData* const m, TChunkArray* const ca):
@@ -233,7 +235,9 @@ public:
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
-		}
+        } else {
+            this->setValid();
+        }
 	}
 
 	/**

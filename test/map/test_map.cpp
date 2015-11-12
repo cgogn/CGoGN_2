@@ -14,15 +14,10 @@ struct My_Data_Traits
 // typedef for short writing
 typedef Map1<My_Data_Traits> MAP1;
 
-// declare a map
-MAP1 map;
-
-
 // typedef for short writing
 typedef Map2<My_Data_Traits> MAP2;
 
-// declare a map
-MAP2 map2;
+
 
 
 void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
@@ -53,7 +48,7 @@ void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
 }
 
 
-int test1()
+int test1(MAP1& map)
 {
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
@@ -84,6 +79,9 @@ int test1()
 
 int main()
 {
-	test1();
+    // declare a map
+    MAP1 map;
+    MAP2 map2;
+    test1(map);
 	return 0;
 }
