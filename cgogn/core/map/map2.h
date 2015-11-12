@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP2_H__
-#define __CORE_MAP_MAP2_H__
+#ifndef CORE_MAP_MAP2_H_
+#define CORE_MAP_MAP2_H_
 
-#include "core/map/map1.h"
+#include <core/map/map1.h>
 
 namespace cgogn
 {
@@ -62,8 +62,8 @@ protected:
 	 */
 	void phi2sew(Dart d, Dart e)
 	{
-		assert(phi2(d) == d);
-		assert(phi2(e) == e);
+		cgogn_assert(phi2(d) == d);
+		cgogn_assert(phi2(e) == e);
 		(*(this->topo_relations_[2]))[d.index] = e;
 		(*(this->topo_relations_[2]))[e.index] = d;
 	}
@@ -101,4 +101,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP2_H__
+#endif // CORE_MAP_MAP2_H_

@@ -31,6 +31,7 @@
 #define __func__ __FUNCTION__
 #endif
 
+
 /**
  * \file cgogn/core/basic/assert.h
  * \brief Assertion checking mechanism.
@@ -50,10 +51,10 @@ namespace cgogn
 	 * \param[in] function_name function where the assertion failed.
 	 * \param[in] line_number line where the assertion failed.
 	 *
-	 * \todo Add attribute [[noreturn]] when MSVC min version = 14
 	 */
-	CGoGN_CORE_API	void assertion_failed(const std::string& expression, const std::string& message,
-		const std::string& file_name, const std::string& function_name, int line_number );
+	CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(const std::string& expression, 
+		const std::string& message, const std::string& file_name, 
+		const std::string& function_name, int line_number );
 
 }
 
@@ -63,18 +64,28 @@ namespace cgogn
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_assert(x) \
-	(!(x)) ? cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__) : (void)0
+#define cgogn_assert(x) 												\
+{ 																		\
+	if(!(x)) 															\
+	{			 														\
+		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
+	} 																	\
+} 
 
 /**
  * \brief Verifies that a condition is met and take a specific message.
  * \details
  * \param[in] x the boolean expression of the condition
- * \parap[in] msg the specific message about the condition
+ * \param[in] msg the specific message about the condition
  * \see assertion_failed()
  */
-#define cgogn_message_assert(x, msg) \
-	(!(x)) ? cgogn::assertion_failed(#x, msg, __FILE__, __func__, __LINE__) : (void)0
+#define cgogn_message_assert(x, msg)									\
+{ 																		\
+	if(!(x)) 															\
+	{			 														\
+		cgogn::assertion_failed(#x, msg, __FILE__, __func__, __LINE__);	\
+	} 																	\
+}
 
 /**
  * \brief Verifies that the required contract condition is met.
@@ -83,8 +94,13 @@ namespace cgogn
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_require(x) \
-	(!(x)) ? cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__) : (void)0
+#define cgogn_require(x) 												\
+{ 																		\
+	if(!(x)) 															\
+	{			 														\
+		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
+	} 																	\
+} 
 
 /**
  * \brief Verifies that the ensured contract condition is met.
@@ -93,8 +109,13 @@ namespace cgogn
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_ensure(x) \
-	(!(x)) ? cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__) : (void)0
+#define cgogn_ensure(x) 												\
+{ 																		\
+	if(!(x)) 															\
+	{			 														\
+		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
+	} 																	\
+} 
 
 /**
  * \brief Verifies that the invariant contract condition is met.
@@ -103,9 +124,13 @@ namespace cgogn
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_invariant(x) \
-	(!(x)) ? cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__) : (void)0
-
+#define cgogn_invariant(x) 												\
+{ 																		\
+	if(!(x)) 															\
+	{			 														\
+		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
+	} 																	\
+} 
 
 /**
  * \def debug_assert(x)
@@ -149,4 +174,4 @@ namespace cgogn
  	#define parano_message_assert(x, msg)
 #endif
 
-#endif
+#endif // CORE_BASIC_ASSERT_

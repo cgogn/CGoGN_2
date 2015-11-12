@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H__
-#define __CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H__
+#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/container/chunk_array.h>
 #include <core/basic/nameTypes.h>
+#include <core/container/chunk_array.h>
+
 #include <iostream>
 #include <map>
 #include <memory>
@@ -81,4 +82,4 @@ typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_=
 
 } // namespace cgogn
 
-#endif // __CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H__
+#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_

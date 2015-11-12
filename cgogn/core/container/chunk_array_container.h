@@ -21,10 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
-#define __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
+#ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
 #include <core/basic/nameTypes.h>
+#include <core/basic/assert.h>
+
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
@@ -35,7 +37,6 @@
 #include <map>
 #include <string>
 #include <memory>
-#include <core/basic/assert.h>
 
 namespace cgogn
 {
@@ -50,7 +51,7 @@ public:
 	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
-	virtual ~ContainerBrowser() {}
+	virtual ~ContainerBrowser();
 };
 
 template <typename CONTAINER>
@@ -251,7 +252,6 @@ public:
 	template <typename T>
 	ChunkArray<CHUNKSIZE,T>* addAttribute(const std::string& attribName)
 	{
-		// assert(attribName.size() != 0);
 		cgogn_assert(attribName.size() != 0);
 
 		// first check if attribute already exist
@@ -635,7 +635,6 @@ public:
 	{
 		unsigned int beginPrimIdx = (index/PRIMSIZE) * PRIMSIZE;
 
-		// assert(this->used(beginPrimIdx)|!" Error removing non existing index");
 		cgogn_message_assert(this->used(beginPrimIdx), "Error removing non existing index");
 
 		holesStack_.push(beginPrimIdx);
@@ -653,7 +652,6 @@ public:
 	 */
 	void initLine(unsigned int index)
 	{
-		// assert( used(index) && "initLine only with allocated lines");
 		cgogn_message_assert(!used(index), "initLine only with allocated lines");
 
 		for (auto ptrAtt: tableArrays_)
@@ -663,16 +661,16 @@ public:
 
 	void initBooleansOfLine(unsigned int index)
 	{
-		// assert( used(index) && "initBooleansOfLine only with allocated lines");
 		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
 
 		for (unsigned int i=0; i<nbBoolAttribs_;++i)
 			tableArrays_[i]->initElt(index);
 	}
 
+	//TODO delete if useless
 	void initBoolsOfLine(unsigned int index)
 	{
-//		assert( used(index) && "initLine only with allocated lines");
+//		cgogn_assert(!used(index), "initLine only with allocated lines");
 //		for (auto ptrAtt: tableArrays_)
 //			if (ptrAtt != NULL)
 //				ptrAtt->initElt(index);
@@ -744,7 +742,6 @@ public:
 			return nullptr ;
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
-		// assert((atm != nullptr) || !"getDataVector: wrong type");
 
 		cgogn_message_assert(atm != nullptr, "getDataVector: wrong type");
 
@@ -770,7 +767,7 @@ public:
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
-		buffer.push_back((unsigned int)(tableArrays_.size()));
+		buffer.push_back(static_cast<unsigned int>(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
 		buffer.push_back(nbBoolAttribs_);
@@ -845,4 +842,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H__
+#endif // CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
