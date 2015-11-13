@@ -25,7 +25,7 @@
 #define CORE_CONTAINER_CHUNK_STACK_H_
 
 #include <core/container/chunk_array.h>
-#include <core/basic/assert.h>
+#include <utils/assert.h>
 
 
 namespace cgogn

@@ -23,7 +23,7 @@
 #ifndef CORE_SERIALIZATION_H_
 #define CORE_SERIALIZATION_H_
 
-#include <core/basic/assert.h>
+#include <utils/assert.h>
 
 #include <iostream>
 #include <vector>

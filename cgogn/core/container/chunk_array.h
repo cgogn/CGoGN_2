@@ -26,7 +26,7 @@
 
 #include <core/container/chunk_array_gen.h>
 #include <core/basic/serialization.h>
-#include <core/basic/assert.h>
+#include <utils/assert.h>
 
 #include <iostream>
 #include <string>
