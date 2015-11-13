@@ -35,7 +35,7 @@
 #include <map>
 #include <string>
 #include <memory>
-#include <core/basic/assert.h>
+#include <utils/assert.h>
 #include <utils/make_unique.h>
 
 namespace cgogn

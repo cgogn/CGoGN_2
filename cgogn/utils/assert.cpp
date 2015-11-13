@@ -23,7 +23,7 @@
 
 #define CGoGN_CORE_DLL_EXPORT
 
-#include <core/basic/assert.h>
+#include <utils/assert.h>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>

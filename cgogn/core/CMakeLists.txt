@@ -6,7 +6,6 @@ set(HEADER_FILES
 	basic/nameTypes.h
 	basic/dart.h
 	basic/cell.h
-	basic/assert.h
 	basic/serialization.h
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -24,7 +23,7 @@ set(HEADER_FILES
 	)
 
 set(SOURCE_FILES
-        basic/assert.cpp
+	container/chunk_array_container.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
