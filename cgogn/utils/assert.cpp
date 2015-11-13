@@ -21,7 +21,7 @@
  *
  */
 
-#define CGoGN_CORE_DLL_EXPORT
+#define CGOGN_CORE_DLL_EXPORT
 
 #include <utils/assert.h>
 #include <iostream>
@@ -32,7 +32,7 @@
 namespace cgogn 
 {
 
-CGoGN_CORE_API void assertion_failed(const std::string& expression, const std::string& message,
+CGOGN_CORE_API void assertion_failed(const std::string& expression, const std::string& message,
 					  const std::string& file_name, const std::string& function_name, int line_number )
 {
 	std::ostringstream os;

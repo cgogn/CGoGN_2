@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __UTILS_BUFFERS_H__
-#define __UTILS_BUFFERS_H__
+#ifndef UTILS_BUFFERS_H_
+#define UTILS_BUFFERS_H_
 
 #include <vector>
 
@@ -68,4 +68,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __UTILS_BUFFERS_H__
+#endif // UTILS_BUFFERS_H_

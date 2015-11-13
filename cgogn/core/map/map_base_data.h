@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_DATA_H__
-#define __CORE_MAP_MAP_BASE_DATA_H__
+#ifndef CORE_MAP_MAP_BASE_DATA_H_
+#define CORE_MAP_MAP_BASE_DATA_H_
 
-#include "core/container/chunk_array_container.h"
-#include "core/basic/definitions.h"
-#include "core/basic/cell.h"
+#include <core/container/chunk_array_container.h>
+#include <core/basic/definitions.h>
+#include <core/basic/cell.h>
 
-#include "utils/buffers.h"
+#include <utils/buffers.h>
 
 #include <thread>
 
@@ -97,7 +97,7 @@ public:
 	template <unsigned int ORBIT>
 	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
 	{
-		assert(embeddings_[ORBIT] != NULL || !"Invalid parameter: orbit not embedded");
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
@@ -134,7 +134,7 @@ protected:
 		while (id != thread_ids_[i])
 		{
 			i++;
-			assert(i < thread_ids_.size());
+			cgogn_assert(i < thread_ids_.size());
 		}
 		return i;
 	}
@@ -142,4 +142,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_BASE_DATA_H__
+#endif // CORE_MAP_MAP_BASE_DATA_H_

@@ -1,6 +1,6 @@
 
-#include "core/map/map1.h"
-#include "core/map/map2.h"
+#include <core/map/map1.h>
+#include <core/map/map2.h>
 
 using namespace cgogn;
 
@@ -11,10 +11,8 @@ struct My_Data_Traits
 };
 
 
-// typedef for short writing
+// typedefs for short writing
 typedef Map1<My_Data_Traits> MAP1;
-
-// typedef for short writing
 typedef Map2<My_Data_Traits> MAP2;
 
 
@@ -79,7 +77,6 @@ int test1(MAP1& map)
 
 int main()
 {
-    // declare a map
     MAP1 map;
     MAP2 map2;
     test1(map);

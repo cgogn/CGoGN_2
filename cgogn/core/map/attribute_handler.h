@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_ATTRIBUTE_HANDLER_H__
-#define __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
+#define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
-#include "core/map/map_base.h"
-#include "core/basic/cell.h"
+#include <core/map/map_base.h>
+#include <core/basic/cell.h>
+#include <utils/assert.h>
 
 ///TODO ajouter enregistrement dans la map de la carte.
 
@@ -206,7 +207,7 @@ public:
 	 *
 	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
 	 */
-    inline AttributeHandler():
+	AttributeHandler():
 		Inherit(nullptr)
 	{}
 
@@ -215,11 +216,11 @@ public:
 	 * @param m the map which belong attribute
 	 * @param attributeName name of attribute
 	 */
-    inline AttributeHandler(MapData* const m, const std::string& attributeName):
+	AttributeHandler(MapData* const m, const std::string& attributeName):
 		Inherit(m)
 	{
-		assert(this->chunk_array_cont_ != nullptr);
-        chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
+		cgogn_assert(this->chunk_array_cont_ != nullptr);
+		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
@@ -228,7 +229,7 @@ public:
         }
 	}
 
-    inline AttributeHandler(MapData* const m, TChunkArray* const ca):
+	AttributeHandler(MapData* const m, TChunkArray* const ca):
 		Inherit(m),
 		chunk_array_(ca)
 	{
@@ -244,7 +245,7 @@ public:
 	 * @brief Copy constructor
 	 * @param att
 	 */
-    inline AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
+	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
 		Inherit(att)
 	  ,chunk_array_(att.chunk_array_)
 	{}
@@ -253,7 +254,7 @@ public:
 	 * @brief Move constructor
 	 * @param att
 	 */
-    inline AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
+	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att))
 	  ,chunk_array_(att.chunk_array_)
 	{}
@@ -263,7 +264,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-    inline AttributeHandler& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
+	AttributeHandler& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
 	{
 		Inherit::operator=(att);
 		chunk_array_ = att.chunk_array_;
@@ -275,7 +276,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-    inline AttributeHandler& operator=(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att)
+	AttributeHandler& operator=(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att)
 	{
 		Inherit::operator=(std::move(att));
 		chunk_array_ = att.chunk_array_;
@@ -287,7 +288,7 @@ public:
 	 * @brief getDataVector
 	 * @return
 	 */
-    inline TChunkArray const * getData() const
+	TChunkArray const * getData() const
 	{
 		return chunk_array_;
 	}
@@ -299,7 +300,7 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -310,7 +311,7 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -321,7 +322,7 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		assert(this->valid_ || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -332,7 +333,7 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		assert(this->valid_ || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -360,7 +361,7 @@ public:
 
 		inline bool operator!=(const_iterator it) const
 		{
-			assert(ah_ptr_ == it.ah_ptr_);
+			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
 	};
@@ -418,4 +419,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#endif // CORE_MAP_ATTRIBUTE_HANDLER_H_

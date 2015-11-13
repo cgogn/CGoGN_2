@@ -21,30 +21,32 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_DEFINITIONS_H__
-#define __CORE_BASIC_DEFINITIONS_H__
+#ifndef CORE_BASIC_DEFINITIONS_H_
+#define CORE_BASIC_DEFINITIONS_H_
 
 /**
- * \file basic/definitions.h
+ * \file core/basic/definitions.h
  * \brief Basic definitions for CGOGN API
  */
 
-
+/**
+ * \brief Linkage declaration for CGOGN symbols.
+ */
 #ifdef WIN32
-#ifndef CGoGN_CORE_API
-#if defined CGoGN_CORE_DLL_EXPORT
-#define CGoGN_CORE_API __declspec(dllexport)
+#ifndef CGOGN_CORE_API
+#if defined CGOGN_CORE_DLL_EXPORT
+#define CGOGN_CORE_API __declspec(dllexport)
 #else
-#define CGoGN_CORE_API __declspec(dllimport)
+#define CGOGN_CORE_API __declspec(dllimport)
 #endif
 #endif
 #else
-#define CGoGN_CORE_API
+#define CGOGN_CORE_API
 #endif
 
-/*
- * for a given type T, std::vector<T> will only use move constructor of T if it's marked noexcept. Same for std::swap.
-*/
+/**
+ * \brief No execpt declaration for CGOGN symbols.
+ */
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define CGOGN_NOEXCEPT throw()
 #else
@@ -60,11 +62,38 @@
 #define CGOGN_TLS thread_local
 #endif
 
+/**
+ * \brief No return declaration for CGOGN symbols.
+ */
+#if defined (WIN32)
+#define CGOGN_NORETURN __declspec(noreturn)
+#else
+#define CGOGN_NORETURN [[noreturn]]
+#endif
+
+/**
+ * \def CGOGN_DEBUG
+ * \brief This macro is set when compiling in debug mode
+ *
+ * \def CGOGN_PARANO
+ * \brief This macro is set when compiling in debug mode
+ */
+#ifdef NDEBUG
+#undef CGOGN_DEBUG
+#undef CGOGN_PARANO
+#else
+#define CGOGN_DEBUG
+#define CGOGN_PARANO
+#endif
+
 namespace cgogn
 {
 
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
 const unsigned int NB_THREADS = 8u;
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_DEFINITIONS_H__
+#endif // CORE_BASIC_DEFINITIONS_H_
