@@ -2,7 +2,7 @@ project(cgogn_core
 		LANGUAGES CXX)
 
 set(HEADER_FILES
-	basic/definitions.h
+	basic/dll.h
 	basic/nameTypes.h
 	basic/dart.h
 	basic/cell.h

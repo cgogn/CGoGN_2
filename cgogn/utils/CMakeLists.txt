@@ -2,6 +2,8 @@ project(cgogn_utils
         LANGUAGES CXX)
 
 set(HEADER_FILES
+	dll.h
+	definitions.h
 	assert.h
     buffers.h
     make_unique.h

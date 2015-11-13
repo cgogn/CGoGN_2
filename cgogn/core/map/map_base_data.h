@@ -25,7 +25,7 @@
 #define CORE_MAP_MAP_BASE_DATA_H_
 
 #include <core/container/chunk_array_container.h>
-#include <core/basic/definitions.h>
+#include <utils/definitions.h>
 #include <core/basic/cell.h>
 
 #include <utils/buffers.h>

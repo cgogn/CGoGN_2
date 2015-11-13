@@ -20,15 +20,21 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#ifndef CORE_DLL_H_
+#define CORE_DLL_H_
+/**
+* \brief Linkage declaration for CGOGN symbols.
+*/
+#ifdef WIN32
+#ifndef CGOGN_CORE_API
+#if defined CGOGN_CORE_DLL_EXPORT
+#define CGOGN_CORE_API __declspec(dllexport)
+#else
+#define CGOGN_CORE_API __declspec(dllimport)
+#endif
+#endif
+#else
+#define CGOGN_CORE_API
+#endif
 
-#define CGOGN_CORE_DLL_EXPORT
-#include <core/container/chunk_array_container.h>
-
-namespace cgogn
-{
-	
-	ContainerBrowser::~ContainerBrowser()
-	{
-
-	}
-}
+#endif // CORE_DLL_H_

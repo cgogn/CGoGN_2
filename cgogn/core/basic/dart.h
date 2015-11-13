@@ -25,6 +25,7 @@
 #define CORE_BASIC_DART_H_
 
 #include <limits>
+#include <climits>
 
 /**
  * \file cgogn/core/basic/dart.h
@@ -38,6 +39,8 @@ namespace cgogn
      */
 	struct Dart
 	{
+		// MSVC doesn't support  std::numeric_limits<unsigned int>::max() when declaring static const variables
+		const static unsigned int INVALID_INDEX = UINT32_MAX;
 		/**
 		 * \brief the value of a dart.
 		 */
@@ -46,7 +49,7 @@ namespace cgogn
 		/**
 		 * \brief Creates a new nil Dart 
 		 */
-		Dart(): index(std::numeric_limits<unsigned int>::max()) {}
+		Dart() : index(INVALID_INDEX) {}
 
 		/**
 		 * \brief Creates a new Dart with a value
@@ -67,19 +70,9 @@ namespace cgogn
 		 */
 		Dart(const Dart& d): index(d.index) {}
 
-		//TODO why ???? puisque Dart d; -> d is nil
-		//utilise avec l'operateur de comparaison a la place de isNil ...
-		static Dart nil() { Dart d; d.index = std::numeric_limits<unsigned int>::max(); return d; 
-		}
-
-		//TODO why ??? Dar d = Dart::create(10) instead of Dard d(10)
-		//utilise dans genericmap newDart() 
-		static Dart create(unsigned int i) { Dart d; d.index = i; return d; }
-
 		/**
 		 * \brief Name of this CGoGN type
 		 * \return a string representing the name of the class
-		 * \todo un peu moche comme facon de faire...
 		 */
 		static std::string CGoGNnameOfType() { return "Dart"; }
 
@@ -88,7 +81,7 @@ namespace cgogn
 		 * \retval true if the dart is nil
 		 * \retval false otherwise
 		 */
-		bool isNil() const { return index == std::numeric_limits<unsigned int>::max() ; }
+		bool isNil() const { return index == INVALID_INDEX ; }
 
 		/**
 		 * \brief Assigns to the left hand side dart the value 
@@ -141,17 +134,10 @@ namespace cgogn
 
 	};
 
-
-	/**
-	 * \brief Definition of a nil dart
-	 * \todo usefull .. Le constructeur vide creer un dart nil
-	 */
-	const Dart NIL = Dart::nil();
-
 	/**
 	 * \brief Definition of null embedding
 	 */
-	const unsigned int EMBNULL = std::numeric_limits<unsigned int>::max();
+	const unsigned int EMBNULL = Dart::INVALID_INDEX;
 
 } // namespace cgogn
 

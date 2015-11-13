@@ -300,7 +300,7 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -311,7 +311,7 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -322,7 +322,7 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -333,7 +333,7 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		cgogn_message_assert(!this->valid_, "Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 

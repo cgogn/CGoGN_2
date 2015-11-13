@@ -21,14 +21,81 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#include <core/container/chunk_array_container.h>
+#ifndef UTILS_BASIC_DEFINITIONS_H_
+#define UTILS_BASIC_DEFINITIONS_H_
+
+/**
+ * \file core/basic/definitions.h
+ * \brief Basic definitions for CGOGN API
+ */
+
+/**
+ * \brief Linkage declaration for CGOGN symbols.
+ */
+#ifdef WIN32
+#ifndef CGOGN_CORE_API
+#if defined CGOGN_CORE_DLL_EXPORT
+#define CGOGN_CORE_API __declspec(dllexport)
+#else
+#define CGOGN_CORE_API __declspec(dllimport)
+#endif
+#endif
+#else
+#define CGOGN_CORE_API
+#endif
+
+/**
+ * \brief No execpt declaration for CGOGN symbols.
+ */
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_NOEXCEPT throw()
+#else
+#define CGOGN_NOEXCEPT noexcept
+#endif
+
+/*
+ * Thread local storage. In VS <1900 it works only with POD types.
+*/
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_TLS __declspec( thread )
+#else
+#define CGOGN_TLS thread_local
+#endif
+
+/**
+ * \brief No return declaration for CGOGN symbols.
+ */
+#ifndef CGOGN_NORETURN
+#if defined (WIN32)
+#define CGOGN_NORETURN __declspec(noreturn)
+#else
+#define CGOGN_NORETURN [[noreturn]]
+#endif
+#endif
+
+/**
+ * \def CGOGN_DEBUG
+ * \brief This macro is set when compiling in debug mode
+ *
+ * \def CGOGN_PARANO
+ * \brief This macro is set when compiling in debug mode
+ */
+#ifdef NDEBUG
+#undef CGOGN_DEBUG
+#undef CGOGN_PARANO
+#else
+#define CGOGN_DEBUG
+#define CGOGN_PARANO
+#endif
 
 namespace cgogn
 {
-	
-	ContainerBrowser::~ContainerBrowser()
-	{
 
-	}
-}
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
+
+} // namespace cgogn
+
+#endif // UTILS_BASIC_DEFINITIONS_H_

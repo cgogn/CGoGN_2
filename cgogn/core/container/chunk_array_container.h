@@ -26,6 +26,7 @@
 
 #include <core/basic/nameTypes.h>
 #include <utils/assert.h>
+#include <core/basic/dll.h>
 
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
@@ -43,7 +44,7 @@
 namespace cgogn
 {
 
-class ContainerBrowser
+class CGOGN_CORE_API ContainerBrowser
 {
 public:
 
@@ -70,6 +71,7 @@ public:
 	virtual void nextPrimitive(unsigned int &it, unsigned int primSz) const { cac_->realNextPrimitive(it,primSz); }
 	virtual void enable() {}
 	virtual void disable() {}
+	virtual ~ContainerStandardBrowser() {}
 };
 
 
