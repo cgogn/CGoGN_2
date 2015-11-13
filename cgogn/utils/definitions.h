@@ -46,7 +46,7 @@
  * \brief No return declaration for CGOGN symbols.
  */
 #ifndef CGOGN_NORETURN
-#if defined (WIN32)
+#if defined (_MSC_VER)
 #define CGOGN_NORETURN __declspec(noreturn)
 #else
 #define CGOGN_NORETURN [[noreturn]]
