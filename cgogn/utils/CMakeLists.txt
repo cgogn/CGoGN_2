@@ -2,13 +2,13 @@ project(cgogn_utils
         LANGUAGES CXX)
 
 set(HEADER_FILES
-    allocator.h
+	assert.h
     buffers.h
     make_unique.h
     )
 
 set(SOURCE_FILES
-    allocator.cpp
+    assert.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
