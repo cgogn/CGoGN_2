@@ -26,6 +26,7 @@
 
 /**
  * \brief No execpt declaration for CGOGN symbols.
+ * For a given type T, std::vector<T> will only use move constructor of T if it's marked noexcept. Same for std::swap.
  */
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define CGOGN_NOEXCEPT throw()
