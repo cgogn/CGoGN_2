@@ -26,9 +26,9 @@
 
 namespace cgogn
 {
-	
-	ContainerBrowser::~ContainerBrowser()
-	{
 
-	}
+ContainerBrowser::~ContainerBrowser()
+{
+
+}
 }

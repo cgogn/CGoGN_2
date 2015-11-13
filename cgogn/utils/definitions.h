@@ -25,26 +25,6 @@
 #define UTILS_BASIC_DEFINITIONS_H_
 
 /**
- * \file core/basic/definitions.h
- * \brief Basic definitions for CGOGN API
- */
-
-/**
- * \brief Linkage declaration for CGOGN symbols.
- */
-#ifdef WIN32
-#ifndef CGOGN_CORE_API
-#if defined CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_API __declspec(dllexport)
-#else
-#define CGOGN_CORE_API __declspec(dllimport)
-#endif
-#endif
-#else
-#define CGOGN_CORE_API
-#endif
-
-/**
  * \brief No execpt declaration for CGOGN symbols.
  */
 #if defined(_MSC_VER) && _MSC_VER < 1900

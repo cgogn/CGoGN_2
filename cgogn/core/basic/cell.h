@@ -29,7 +29,7 @@
 
 /**
  * \file core/basic/cell.h
- * \brief Orbit and cell definitions for CGOGN API 
+ * \brief Orbit and cell definitions for CGOGN API
  */
 
 namespace cgogn
@@ -84,7 +84,7 @@ public:
 	inline Cell(): dart() {}
 
 	/**
-	 * \brief Constructs a new Cell with a dart. 
+	 * \brief Constructs a new Cell with a dart.
 	 * \param d dart to convert to a cell of a given orbit
 	 */
 	inline Cell(Dart d): dart(d) {}

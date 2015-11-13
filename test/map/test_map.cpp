@@ -27,7 +27,7 @@ void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
 
 	// equivalent to
 	for (MAP1::VertexAttributeHandler<float>::const_iterator it = ah.begin(); it != ah.end(); ++it)
-			std::cout << *it << std::endl;
+		std::cout << *it << std::endl;
 }
 
 void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
@@ -66,9 +66,9 @@ int test1(MAP1& map)
 
 	fonc_const(ah);
 
-//	// traverse container with for range
-//	for (float f:ah)
-//		std::cout << f << std::endl;
+	//	// traverse container with for range
+	//	for (float f:ah)
+	//		std::cout << f << std::endl;
 
 	return 0;
 }
@@ -77,8 +77,8 @@ int test1(MAP1& map)
 
 int main()
 {
-    MAP1 map;
-    MAP2 map2;
-    test1(map);
+	MAP1 map;
+	MAP2 map2;
+	test1(map);
 	return 0;
 }

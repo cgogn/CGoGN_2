@@ -214,17 +214,17 @@ public:
 	 * @brief ChunkArrayContainer constructor
 	 */
 	ChunkArrayContainer():
-        nbUsedLines_(0u)
-        ,nbMaxLines_(0u)
-        ,stdBrowser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF>> >(this))
+		nbUsedLines_(0u)
+	  ,nbMaxLines_(0u)
+	  ,stdBrowser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF>> >(this))
 	{
 		currentBrowser_= stdBrowser_.get();
 	}
 
-    ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
-    ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
-    ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
-    ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
+	ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
+	ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
+	ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
+	ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
 
 	/**
 	 * @brief ChunkArrayContainer destructor
@@ -664,8 +664,8 @@ public:
 		cgogn_message_assert(!used(index), "initLine only with allocated lines");
 
 		for (auto ptrAtt: tableArrays_)
-//			if (ptrAtt != nullptr) never null !
-				ptrAtt->initElt(index);
+			//			if (ptrAtt != nullptr) never null !
+			ptrAtt->initElt(index);
 	}
 
 	void initBooleansOfLine(unsigned int index)
@@ -678,10 +678,10 @@ public:
 
 	void initBoolsOfLine(unsigned int index)
 	{
-//		assert( used(index) && "initLine only with allocated lines");
-//		for (auto ptrAtt: tableArrays_)
-//			if (ptrAtt != NULL)
-//				ptrAtt->initElt(index);
+		//		assert( used(index) && "initLine only with allocated lines");
+		//		for (auto ptrAtt: tableArrays_)
+		//			if (ptrAtt != NULL)
+		//				ptrAtt->initElt(index);
 	}
 
 	/**
@@ -703,7 +703,7 @@ public:
 	*/
 	void refLine(unsigned int index)
 	{
-//		static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
+		//		static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
@@ -714,7 +714,7 @@ public:
 	*/
 	bool unrefLine(unsigned int index)
 	{
-//		static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+		//		static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1u)
 		{
@@ -733,7 +733,7 @@ public:
 	*/
 	T_REF getNbRefs(unsigned int index) const
 	{
-//		static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
+		//		static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 

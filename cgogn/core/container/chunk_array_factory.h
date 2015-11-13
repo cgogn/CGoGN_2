@@ -51,9 +51,9 @@ public:
 	template<typename T>
 	static void registerCA()
 	{
-        std::string&& keyType(nameOfType(T()));
+		std::string&& keyType(nameOfType(T()));
 		if(mapCA_.find(keyType) == mapCA_.end())
-            mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
+			mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
 	}
 
 	/**

@@ -59,10 +59,10 @@ public:
 	inline ~ChunkStack() override
 	{}
 
-    inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
-    inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
-    inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
-    inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
+	inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
+	inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
+	inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
+	inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
 
 	/**
 	 * @brief push a value on top of heap

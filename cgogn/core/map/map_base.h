@@ -110,7 +110,7 @@ public:
 				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
 		}
 
-        Dart d(di);
+		Dart d(di);
 
 		for (auto relPtr: this->topo_relations_)
 			(*relPtr)[di] = d;

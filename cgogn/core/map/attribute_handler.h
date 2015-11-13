@@ -224,9 +224,9 @@ public:
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
-        } else {
-            this->setValid();
-        }
+		} else {
+			this->setValid();
+		}
 	}
 
 	AttributeHandler(MapData* const m, TChunkArray* const ca):
@@ -236,9 +236,9 @@ public:
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
-        } else {
-            this->setValid();
-        }
+		} else {
+			this->setValid();
+		}
 	}
 
 	/**
@@ -400,7 +400,7 @@ public:
 
 		inline bool operator!=(iterator it) const
 		{
-            cgogn_assert(ah_ptr_ == it.ah_ptr_);
+			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
 	};

@@ -99,7 +99,7 @@ protected:
 
 public:
 
-    inline Map1()
+	inline Map1()
 	{
 		init();
 	}
@@ -111,7 +111,7 @@ public:
 	 * @param d
 	 * @return
 	 */
-    inline Dart phi1(Dart d) const
+	inline Dart phi1(Dart d) const
 	{
 		return (*(this->topo_relations_[0]))[d.index];
 	}

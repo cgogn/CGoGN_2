@@ -34,36 +34,36 @@ class Buffers
 {
 protected:
 
-    std::vector<std::vector<T>*> buffers_;
+	std::vector<std::vector<T>*> buffers_;
 
 public:
 
-    inline std::vector<T>* getBuffer()
-    {
-	if (buffers_.empty())
+	inline std::vector<T>* getBuffer()
 	{
-	    std::vector<T>* v = new std::vector<T>;
-	    v->reserve(128);
-	    return v;
+		if (buffers_.empty())
+		{
+			std::vector<T>* v = new std::vector<T>;
+			v->reserve(128);
+			return v;
+		}
+
+		std::vector<T>* v = buffers_.back();
+		buffers_.pop_back();
+		return v;
 	}
 
-	std::vector<T>* v = buffers_.back();
-	buffers_.pop_back();
-	return v;
-    }
-
-    inline void releaseBuffer(std::vector<T>* b)
-    {
-	if (b->capacity() > 1024)
+	inline void releaseBuffer(std::vector<T>* b)
 	{
-	    std::vector<Dart> v;
-	    b->swap(v);
-	    b->reserve(128);
-	}
+		if (b->capacity() > 1024)
+		{
+			std::vector<Dart> v;
+			b->swap(v);
+			b->reserve(128);
+		}
 
-	b->clear();
-	buffers_.push_back(b);
-    }
+		b->clear();
+		buffers_.push_back(b);
+	}
 };
 
 } // namespace cgogn
