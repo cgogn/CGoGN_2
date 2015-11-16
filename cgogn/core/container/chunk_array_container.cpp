@@ -21,38 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_DEFINITIONS_H__
-#define __CORE_BASIC_DEFINITIONS_H__
-
-/**
- * \file basic/definitions.h
- * \brief Basic definitions for CGOGN API
- */
-
-
-#ifdef WIN32
-#ifndef CGoGN_CORE_API
-#if defined CGoGN_CORE_DLL_EXPORT
-#define CGoGN_CORE_API __declspec(dllexport)
-#else
-#define CGoGN_CORE_API __declspec(dllimport)
-#endif
-#endif
-#else
-#define CGoGN_CORE_API
-#endif
-
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define CGOGN_NOEXCEPT
-#else
-#define CGOGN_NOEXCEPT noexcept
-#endif
+#define CGOGN_CORE_DLL_EXPORT
+#include <core/container/chunk_array_container.h>
 
 namespace cgogn
 {
 
-const unsigned int NB_THREADS = 8u;
+ContainerBrowser::~ContainerBrowser()
+{
 
-} // namespace cgogn
-
-#endif // __CORE_BASIC_DEFINITIONS_H__
+}
+}

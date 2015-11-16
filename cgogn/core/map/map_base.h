@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_H__
-#define __CORE_MAP_MAP_BASE_H__
+#ifndef CORE_MAP_MAP_BASE_H_
+#define CORE_MAP_MAP_BASE_H_
 
-#include "core/map/map_base_data.h"
-#include "core/map/attribute_handler.h"
+#include <core/map/map_base_data.h>
+#include <core/map/attribute_handler.h>
 
 #include <sstream>
 
@@ -51,7 +51,7 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attributeName = "")
 	{
-		if (this->embeddings_[ORBIT] == NULL)
+		if (this->embeddings_[ORBIT] == nullptr)
 		{
 			std::ostringstream oss;
 			oss << "EMB_" << orbitName(ORBIT);
@@ -110,7 +110,7 @@ public:
 				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
 		}
 
-		Dart d = Dart::create(di);
+		Dart d(di);
 
 		for (auto relPtr: this->topo_relations_)
 			(*relPtr)[di] = d;
@@ -121,4 +121,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_BASE_H__
+#endif // CORE_MAP_MAP_BASE_H_

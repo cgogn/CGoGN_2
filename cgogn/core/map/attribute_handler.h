@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_ATTRIBUTE_HANDLER_H__
-#define __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
+#define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
-#include "core/map/map_base.h"
-#include "core/basic/cell.h"
+#include <core/map/map_base.h>
+#include <core/basic/cell.h>
+#include <utils/assert.h>
 
 ///TODO ajouter enregistrement dans la map de la carte.
 
@@ -218,11 +219,13 @@ public:
 	AttributeHandler(MapData* const m, const std::string& attributeName):
 		Inherit(m)
 	{
-		assert(this->chunk_array_cont_ != nullptr);
+		cgogn_assert(this->chunk_array_cont_ != nullptr);
 		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
+		} else {
+			this->setValid();
 		}
 	}
 
@@ -233,6 +236,8 @@ public:
 		if (chunk_array_ == nullptr)
 		{
 			this->setInvalid();
+		} else {
+			this->setValid();
 		}
 	}
 
@@ -295,7 +300,7 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -306,7 +311,7 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		assert(this->valid || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
 	}
 
@@ -317,7 +322,7 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		assert(this->valid_ || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -328,7 +333,7 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		assert(this->valid_ || !"Invalid AttributeHandler") ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
 		return chunk_array_->operator[](i) ;
 	}
 
@@ -356,7 +361,7 @@ public:
 
 		inline bool operator!=(const_iterator it) const
 		{
-			assert(ah_ptr_ == it.ah_ptr_);
+			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
 	};
@@ -395,7 +400,7 @@ public:
 
 		inline bool operator!=(iterator it) const
 		{
-			assert(ah_ptr_ == it.ah_ptr_);
+			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
 	};
@@ -414,4 +419,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_ATTRIBUTE_HANDLER_H__
+#endif // CORE_MAP_ATTRIBUTE_HANDLER_H_

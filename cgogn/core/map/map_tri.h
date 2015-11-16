@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_TRI_H__
-#define __CORE_MAP_MAP_TRI_H__
+#ifndef CORE_MAP_MAP_TRI_H_
+#define CORE_MAP_MAP_TRI_H_
 
-#include "core/map/map_base.h"
+#include <core/map/map_base.h>
 
 namespace cgogn
 {
@@ -36,11 +36,10 @@ class Traits_map_tri
 
 class MapTri : public MapBase<Traits_map_tri>
 {
-
-
-
+public:
+	~MapTri() override {}
 };
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_TRI_H__
+#endif // CORE_MAP_MAP_TRI_H_

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__
-#define __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__
+#ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
 #include <vector>
 #include <iostream>
@@ -133,4 +133,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_CONTAINER_CHUNK_ARRAY_GEN_H__
+#endif // CORE_CONTAINER_CHUNK_ARRAY_GEN_H_

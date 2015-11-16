@@ -21,17 +21,17 @@
  *
  */
 
-#define CGoGN_CORE_DLL_EXPORT
-
-#include <core/basic/assert.h>
+#define CGOGN_UTILS_DLL_EXPORT
+#include <utils/dll.h>
+#include <utils/assert.h>
 #include <iostream>
 #include <sstream>
-#include <core/basic/definitions.h>
+#include <cstdlib>
 
 namespace cgogn 
 {
 
-CGoGN_CORE_API void assertion_failed(const std::string& expression, const std::string& message,
+	CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(const std::string& expression, const std::string& message,
 					  const std::string& file_name, const std::string& function_name, int line_number )
 {
 	std::ostringstream os;

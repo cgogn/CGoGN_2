@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_DATA_H__
-#define __CORE_MAP_MAP_BASE_DATA_H__
+#ifndef CORE_MAP_MAP_BASE_DATA_H_
+#define CORE_MAP_MAP_BASE_DATA_H_
 
-#include "core/container/chunk_array_container.h"
-#include "core/basic/definitions.h"
-#include "core/basic/cell.h"
+#include <core/container/chunk_array_container.h>
+#include <utils/definitions.h>
+#include <core/basic/cell.h>
 
-#include "utils/buffers.h"
+#include <utils/buffers.h>
 
 #include <thread>
 
@@ -40,6 +40,8 @@ namespace cgogn
  */
 class MapGen
 {
+public:
+	virtual ~MapGen() {}
 };
 
 
@@ -79,11 +81,13 @@ public:
 	MapBaseData()
 	{
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			embeddings_[i] = NULL;
+			embeddings_[i] = nullptr;
 
 		thread_ids_.reserve(NB_THREADS + 1);
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
+
+	~MapBaseData() override {}
 
 	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
 	{
@@ -93,7 +97,7 @@ public:
 	template <unsigned int ORBIT>
 	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
 	{
-		assert(embeddings_[ORBIT] != NULL || !"Invalid parameter: orbit not embedded");
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
@@ -130,7 +134,7 @@ protected:
 		while (id != thread_ids_[i])
 		{
 			i++;
-			assert(i < thread_ids_.size());
+			cgogn_assert(i < thread_ids_.size());
 		}
 		return i;
 	}
@@ -138,4 +142,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP_BASE_DATA_H__
+#endif // CORE_MAP_MAP_BASE_DATA_H_

@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP1_H__
-#define __CORE_MAP_MAP1_H__
+#ifndef CORE_MAP_MAP1_H_
+#define CORE_MAP_MAP1_H_
 
-#include "core/map/map_base.h"
-#include "core/basic/dart.h"
+#include <core/map/map_base.h>
+#include <core/basic/dart.h>
 
 namespace cgogn
 {
@@ -99,17 +99,19 @@ protected:
 
 public:
 
-	Map1()
+	inline Map1()
 	{
 		init();
 	}
+
+	virtual ~Map1() override {}
 
 	/**
 	 * @brief phi1
 	 * @param d
 	 * @return
 	 */
-	Dart phi1(Dart d) const
+	inline Dart phi1(Dart d) const
 	{
 		return (*(this->topo_relations_[0]))[d.index];
 	}
@@ -179,4 +181,4 @@ public:
 
 } // namespace cgogn
 
-#endif // __CORE_MAP_MAP1_H__
+#endif // CORE_MAP_MAP1_H_

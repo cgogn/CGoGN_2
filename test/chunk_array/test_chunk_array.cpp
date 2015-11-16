@@ -7,7 +7,10 @@
 
 using namespace cgogn;
 
-
+int test1();
+int test2();
+int test3();
+int test4();
 
 int test1()
 {
@@ -234,7 +237,7 @@ int test4()
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3).setVal(i,i%2);
+		(*att3).setVal(i,static_cast<bool>(i%2));
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 	}

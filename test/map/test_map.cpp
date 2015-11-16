@@ -1,6 +1,6 @@
 
-#include "core/map/map1.h"
-#include "core/map/map2.h"
+#include <core/map/map1.h>
+#include <core/map/map2.h>
 
 using namespace cgogn;
 
@@ -11,18 +11,11 @@ struct My_Data_Traits
 };
 
 
-// typedef for short writing
+// typedefs for short writing
 typedef Map1<My_Data_Traits> MAP1;
-
-// declare a map
-MAP1 map;
-
-
-// typedef for short writing
 typedef Map2<My_Data_Traits> MAP2;
 
-// declare a map
-MAP2 map2;
+
 
 
 void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
@@ -34,7 +27,7 @@ void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
 
 	// equivalent to
 	for (MAP1::VertexAttributeHandler<float>::const_iterator it = ah.begin(); it != ah.end(); ++it)
-			std::cout << *it << std::endl;
+		std::cout << *it << std::endl;
 }
 
 void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
@@ -53,7 +46,7 @@ void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
 }
 
 
-int test1()
+int test1(MAP1& map)
 {
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
@@ -73,9 +66,9 @@ int test1()
 
 	fonc_const(ah);
 
-//	// traverse container with for range
-//	for (float f:ah)
-//		std::cout << f << std::endl;
+	//	// traverse container with for range
+	//	for (float f:ah)
+	//		std::cout << f << std::endl;
 
 	return 0;
 }
@@ -84,6 +77,8 @@ int test1()
 
 int main()
 {
-	test1();
+	MAP1 map;
+	MAP2 map2;
+	test1(map);
 	return 0;
 }

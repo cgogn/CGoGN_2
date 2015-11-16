@@ -11,6 +11,7 @@ set(FULL_WARNINGS
     -pedantic
     -Wno-long-long
     -Wconversion
+    -Winline
 )
 
 # Determine gcc version and activate additional warnings available in latest versions
@@ -64,18 +65,15 @@ string_append(CMAKE_C_FLAGS -msse3)
 
 
 # Compile and link with OpenMP
-if (GCC_VERSION VERSION_GREATER 4.0)
-    string_append(CMAKE_CXX_FLAGS -fopenmp)
-    string_append(CMAKE_C_FLAGS -fopenmp)
-endif()
+#if (GCC_VERSION VERSION_GREATER 4.0)
+#    string_append(CMAKE_CXX_FLAGS -fopenmp)
+#    string_append(CMAKE_C_FLAGS -fopenmp)
+#endif()
 
 # Always generate position independant code
 # (to allow linking with DLLs)
 string_append(CMAKE_CXX_FLAGS -fPIC)
 string_append(CMAKE_C_FLAGS -fPIC)
-
-
-string_append(CMAKE_CXX_FLAGS -std=c++11)
 
 
 macro(m_add_executable)

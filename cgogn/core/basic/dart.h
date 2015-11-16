@@ -21,49 +21,123 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_DART_H__
-#define __CORE_BASIC_DART_H__
+#ifndef CORE_BASIC_DART_H_
+#define CORE_BASIC_DART_H_
 
+#include <climits>
+
+/**
+ * \file cgogn/core/basic/dart.h
+ * \brief Dart definition.
+ */
 namespace cgogn
 {
 
+/**
+	 * \brief Dart.
+	 */
 struct Dart
 {
+	// MSVC doesn't support  std::numeric_limits<unsigned int>::max() when declaring static const variables
+	const static unsigned int INVALID_INDEX = UINT_MAX;
+	/**
+		 * \brief the value of a dart.
+		 */
 	unsigned int index;
 
-	Dart(): index(0xffffffff) {}
+	/**
+		 * \brief Creates a new nil Dart
+		 */
+	Dart() : index(INVALID_INDEX) {}
 
-	static Dart nil() { Dart d; d.index = 0xffffffff; return d; }
-
-	static Dart create(unsigned int i) { Dart d; d.index = i; return d; }
-
-	static std::string CGoGNnameOfType() { return "Dart"; }
-
+	/**
+		 * \brief Creates a new Dart with a value
+		 * \details The explicit keyword specifies that this
+		 * constructor is only considered for direct initialization.
+		 * \code
+		 * Dart d = 10 is forbidden
+		 * \endcode
+		 *
+		 * \param[in] v the value of the new dart
+		 */
 	explicit Dart(unsigned int v): index(v) {}
 
-	bool isNil() const { return index == 0xffffffff ; }
+	/**
+		 * \brief Copy constructor.
+		 * Creates a new Dart from an another one.
+		 * \param[in] d a dart
+		 */
+	Dart(const Dart& d): index(d.index) {}
 
-	Dart operator=(Dart d) { index = d.index; return *this; }
+	/**
+		 * \brief Name of this CGoGN type
+		 * \return a string representing the name of the class
+		 */
+	static std::string CGoGNnameOfType() { return "Dart"; }
 
-	bool operator==(Dart d) const { return d.index == index; }
+	/**
+		 * \brief Tests the nullity of the dart.
+		 * \retval true if the dart is nil
+		 * \retval false otherwise
+		 */
+	bool isNil() const { return index == INVALID_INDEX ; }
 
-	bool operator!=(Dart d) const { return d.index != index; }
+	/**
+		 * \brief Assigns to the left hand side dart the value
+		 * of the right hand side dart.
+		 * \param[in] rhs the dart to assign
+		 * \return The dart with the assigned value
+		 */
+	Dart operator=(Dart rhs) { index = rhs.index; return *this; }
 
-	bool operator<(Dart d) const { return index < d.index; }
+	/**
+		 * \brief Tests whether the left hand side dart is equal
+		 * from the right hand side dart.
+		 * \param[in] rhs the dart to compare with
+		 * \retval true if \p lhs is equal than \p rhs
+		 * \retval false otherwise
+		 */
+	bool operator==(Dart rhs) const { return index == rhs.index; }
 
+	/**
+		 * \brief Tests whether the left hand side dart is different
+		 * from the right hand side dart.
+		 * \param[in] rhs the dart to compare with
+		 * \retval true if \p lhs is different than \p rhs
+		 * \retval false otherwise
+		 */
+	bool operator!=(Dart rhs) const { return index != rhs.index; }
 
-	friend std::ostream& operator<<( std::ostream &out, const Dart& fa );
-	friend std::istream& operator>>( std::istream &in, Dart& fa );
+	/**
+		 * \brief Tests whether the left hand side dart is less
+		 * greather than the right hand side dart.
+		 * \param[in] rhs the dart to compare with
+		 * \retval true if \p lhs is less greather than \p rhs
+		 * \retval false otherwise
+		 */
+	bool operator<(Dart rhs) const { return index < rhs.index; }
+
+	/**
+		 * \brief Prints a dart to a stream.
+		 * \param[out] out the stream to print on
+		 * \param[in] rhs the dart to print
+		 */
+	friend std::ostream& operator<<( std::ostream &out, const Dart& rhs )  { return out << rhs.index; }
+
+	/**
+		 * \brief Reads a dart from a stream.
+		 * \param[in] in the stream to read from
+		 * \param[out] rhs the dart read
+		 */
+	friend std::istream& operator>>( std::istream &in, Dart& rhs ) { in >> rhs.index; return in; }
+
 };
 
-
-std::ostream& operator<<( std::ostream &out, const Dart& fa ) { return out << fa.index; }
-std::istream& operator>>( std::istream &in, Dart& fa ) { in >> fa.index; return in; }
-
-
-const Dart NIL = Dart::nil();
-const unsigned int EMBNULL = 0xffffffff;
+/**
+	 * \brief Definition of null embedding
+	 */
+const unsigned int EMBNULL = Dart::INVALID_INDEX;
 
 } // namespace cgogn
 
-#endif // __CORE_BASIC_DART_H__
+#endif // CORE_BASIC_DART_H_
