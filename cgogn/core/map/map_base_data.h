@@ -155,9 +155,8 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-//			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.addMarkerAttribute("marker_" + number);
-//			return ca;
-			return nullptr;
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.addMarkerAttribute("marker_" + number);
+			return ca;
 		}
 	}
 
@@ -189,9 +188,8 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-//			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].addMarkerAttribute("marker_" + orbitName(ORBIT) + number);
-//			return ca;
-			return nullptr;
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].addMarkerAttribute("marker_" + orbitName(ORBIT) + number);
+			return ca;
 		}
 	}
 

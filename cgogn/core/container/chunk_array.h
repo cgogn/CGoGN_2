@@ -507,9 +507,8 @@ public:
 
 	inline void allFalse()
 	{
-		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+		for (auto ptr : tableData_)
 		{
-			unsigned int* ptr = tableData_[i];
 			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
 				*ptr++ = 0;
 		}
@@ -517,9 +516,8 @@ public:
 
 	inline void allTrue()
 	{
-		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
+		for (auto ptr : tableData_)
 		{
-			unsigned int* ptr = tableData_[i];
 			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
 				*ptr++ = 0xffffffff;
 		}

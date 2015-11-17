@@ -258,7 +258,7 @@ public:
 	 * @return pointer on created ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<CHUNKSIZE,T>* addAttribute(const std::string& attribName)
+	ChunkArray<CHUNKSIZE, T>* addAttribute(const std::string& attribName)
 	{
 		cgogn_assert(attribName.size() != 0);
 
@@ -291,9 +291,9 @@ public:
 	 * @param attribName name of marker attribute
 	 * @return pointer on created ChunkArray
 	 */
-	ChunkArray<CHUNKSIZE,bool>* addMarkerAttribute(const std::string& attribName)
+	ChunkArray<CHUNKSIZE, bool>* addMarkerAttribute(const std::string& attribName)
 	{
-		ChunkArray<CHUNKSIZE, bool>* ptr = this->template addMarkerAttribute<CHUNKSIZE, bool>(attribName);
+		ChunkArray<CHUNKSIZE, bool>* ptr = addAttribute<bool>(attribName);
 
 		if (tableArrays_.size() > nbMarkerAttribs_)
 		{

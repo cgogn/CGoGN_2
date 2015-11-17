@@ -105,7 +105,7 @@ public:
 	* add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart addDart()
 	{
 		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
 		this->topology_.initBooleansOfLine(di);

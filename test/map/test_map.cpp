@@ -58,8 +58,12 @@ int test1(MAP1& map)
 	uib->push_back(3);
 	cgogn::uint_buffers_thread.releaseBuffer(uib);
 
+	Dart d = map.addDart();
+
 	DartMarker<MAP1> dm(map);
 	CellMarker<MAP1, MAP1::VERTEX> cm(map);
+
+	dm.mark(d);
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
