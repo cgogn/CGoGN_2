@@ -48,6 +48,9 @@ public:
 	MapBase()
 	{}
 
+	~MapBase()
+	{}
+
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attributeName = "")
 	{
