@@ -43,7 +43,7 @@ public:
 
 	//TODO remonter dans map_base
 	template<typename T, unsigned int ORBIT>
-	using AttributeHandler = AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
 	MapBase()
 	{}
