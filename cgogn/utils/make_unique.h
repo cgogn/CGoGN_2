@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,65 +21,61 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef UTILS_MAKE_UNIQUE_H
+#define UTILS_MAKE_UNIQUE_H
 
-#include <core/basic/nameTypes.h>
-#include <core/container/chunk_array.h>
-
-#include <iostream>
-#include <map>
+#include <cstddef>
 #include <memory>
-#include <utils/make_unique.h>
+#include <type_traits>
+#include <utility>
+
+/*
+ *  std::make_unique is c++14 but std::make_shared is c++11
+ *  bellow you can find the iso implementation of make_unique
+ *  see https://isocpp.org/files/papers/N3656.txt
+ */
+
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
-class ChunkArrayFactory
+template<class T>
+struct _Unique_if
 {
-public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > Map;
-
-	static Map mapCA_;
-
-	/**
-	 * @brief register a type
-	 * @param keyType name of type
-	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
-	 */
-	template<typename T>
-	static void registerCA()
-	{
-		std::string&& keyType(nameOfType(T()));
-		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
-	}
-
-	/**
-	 * @brief create a ChunkArray from a typename
-	 * @param keyType typename of type store in ChunkArray
-	 * @return ptr on created ChunkArray
-	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
-	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename Map::const_iterator it = mapCA_.find(keyType);
-
-		if(it != mapCA_.end())
-		{
-			tmp = (it->second)->clone();
-		}
-		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
-
-		return tmp;
-	}
+	typedef std::unique_ptr<T> _Single_object;
 };
 
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
+template<class T>
+struct _Unique_if<T[]>
+{
+	typedef std::unique_ptr<T[]> _Unknown_bound;
+};
 
-} // namespace cgogn
+template<class T, size_t N>
+struct _Unique_if<T[N]>
+{
+	typedef void _Known_bound;
+};
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+template<class T, class... Args>
+typename _Unique_if<T>::_Single_object
+make_unique(Args&&... args)
+{
+	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+template<class T>
+typename _Unique_if<T>::_Unknown_bound
+make_unique(size_t n)
+{
+	typedef typename std::remove_extent<T>::type U;
+	return std::unique_ptr<T>(new U[n]());
+}
+
+template<class T, class... Args>
+typename _Unique_if<T>::_Known_bound
+make_unique(Args&&...) = delete;
+
+}
+
+#endif // UTILS_MAKE_UNIQUE_H
+

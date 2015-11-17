@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,23 +21,25 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_TRI_H__
-#define __CORE_MAP_MAP_TRI_H__
+#ifndef CORE_MAP_MAP_TRI_H_
+#define CORE_MAP_MAP_TRI_H_
 
-#include "core/map/map_base.h"
+#include <core/map/map_base.h>
+
+namespace cgogn
+{
 
 class Traits_map_tri
 {
-	static const int CHUNK_SIZE=4096;
 	static const int PRIM_SIZE=3;
 };
 
-class MapTri: public MapBase<Traits_map_tri>
+class MapTri : public MapBase<Traits_map_tri>
 {
-
-
-
+public:
+	~MapTri() override {}
 };
 
+} // namespace cgogn
 
-#endif
+#endif // CORE_MAP_MAP_TRI_H_

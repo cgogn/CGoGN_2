@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,65 +21,59 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef UTILS_BUFFERS_H_
+#define UTILS_BUFFERS_H_
 
-#include <core/basic/nameTypes.h>
-#include <core/container/chunk_array.h>
+#include <vector>
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <utils/make_unique.h>
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
-class ChunkArrayFactory
+template <typename T>
+class Buffers
 {
+protected:
+
+	std::vector<std::vector<T>*> buffers_;
+
 public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > Map;
 
-	static Map mapCA_;
-
-	/**
-	 * @brief register a type
-	 * @param keyType name of type
-	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
-	 */
-	template<typename T>
-	static void registerCA()
+	~Buffers()
 	{
-		std::string&& keyType(nameOfType(T()));
-		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
+		for (auto i : buffers_)
+		{
+			delete i;
+		}
 	}
 
-	/**
-	 * @brief create a ChunkArray from a typename
-	 * @param keyType typename of type store in ChunkArray
-	 * @return ptr on created ChunkArray
-	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
+	inline std::vector<T>* getBuffer()
 	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename Map::const_iterator it = mapCA_.find(keyType);
-
-		if(it != mapCA_.end())
+		if (buffers_.empty())
 		{
-			tmp = (it->second)->clone();
+			std::vector<T>* v = new std::vector<T>;
+			v->reserve(128);
+			return v;
 		}
-		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
 
-		return tmp;
+		std::vector<T>* v = buffers_.back();
+		buffers_.pop_back();
+		return v;
+	}
+
+	inline void releaseBuffer(std::vector<T>* b)
+	{
+		if (b->capacity() > 1024)
+		{
+			std::vector<T> v;
+			b->swap(v);
+			b->reserve(128);
+		}
+
+		b->clear();
+		buffers_.push_back(b);
 	}
 };
 
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
-
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#endif // UTILS_BUFFERS_H_

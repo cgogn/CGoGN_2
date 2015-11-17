@@ -21,65 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef CORE_TRAVERSAL_TRAVERSORCELL_H_
+#define CORE_TRAVERSAL_TRAVERSORCELL_H_
 
-#include <core/basic/nameTypes.h>
-#include <core/container/chunk_array.h>
-
-#include <iostream>
-#include <map>
-#include <memory>
-#include <utils/make_unique.h>
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
-class ChunkArrayFactory
+template <typename MAP, unsigned int ORBIT>
+class TraversorCell
 {
-public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > Map;
 
-	static Map mapCA_;
-
-	/**
-	 * @brief register a type
-	 * @param keyType name of type
-	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
-	 */
-	template<typename T>
-	static void registerCA()
-	{
-		std::string&& keyType(nameOfType(T()));
-		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
-	}
-
-	/**
-	 * @brief create a ChunkArray from a typename
-	 * @param keyType typename of type store in ChunkArray
-	 * @return ptr on created ChunkArray
-	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
-	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename Map::const_iterator it = mapCA_.find(keyType);
-
-		if(it != mapCA_.end())
-		{
-			tmp = (it->second)->clone();
-		}
-		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
-
-		return tmp;
-	}
 };
-
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#endif // CORE_TRAVERSAL_TRAVERSORCELL_H_

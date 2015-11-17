@@ -21,65 +21,62 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef UTILS_BASIC_DEFINITIONS_H_
+#define UTILS_BASIC_DEFINITIONS_H_
 
-#include <core/basic/nameTypes.h>
-#include <core/container/chunk_array.h>
+/**
+ * \brief No execpt declaration for CGOGN symbols.
+ * For a given type T, std::vector<T> will only use move constructor of T if it's marked noexcept. Same for std::swap.
+ */
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_NOEXCEPT throw()
+#else
+#define CGOGN_NOEXCEPT noexcept
+#endif
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <utils/make_unique.h>
+/*
+ * Thread local storage. In VS <1900 it works only with POD types.
+*/
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define CGOGN_TLS __declspec( thread )
+#else
+#define CGOGN_TLS thread_local
+#endif
+
+/**
+ * \brief No return declaration for CGOGN symbols.
+ */
+#ifndef CGOGN_NORETURN
+#if defined (_MSC_VER)
+#define CGOGN_NORETURN __declspec(noreturn)
+#else
+#define CGOGN_NORETURN [[noreturn]]
+#endif
+#endif
+
+/**
+ * \def CGOGN_DEBUG
+ * \brief This macro is set when compiling in debug mode
+ *
+ * \def CGOGN_PARANO
+ * \brief This macro is set when compiling in debug mode
+ */
+#ifdef NDEBUG
+#undef CGOGN_DEBUG
+#undef CGOGN_PARANO
+#else
+#define CGOGN_DEBUG
+#define CGOGN_PARANO
+#endif
+
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
-class ChunkArrayFactory
-{
-public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > Map;
-
-	static Map mapCA_;
-
-	/**
-	 * @brief register a type
-	 * @param keyType name of type
-	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
-	 */
-	template<typename T>
-	static void registerCA()
-	{
-		std::string&& keyType(nameOfType(T()));
-		if(mapCA_.find(keyType) == mapCA_.end())
-			mapCA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
-	}
-
-	/**
-	 * @brief create a ChunkArray from a typename
-	 * @param keyType typename of type store in ChunkArray
-	 * @return ptr on created ChunkArray
-	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
-	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename Map::const_iterator it = mapCA_.find(keyType);
-
-		if(it != mapCA_.end())
-		{
-			tmp = (it->second)->clone();
-		}
-		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
-
-		return tmp;
-	}
-};
-
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::mapCA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#endif // UTILS_BASIC_DEFINITIONS_H_

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_BASIC_NAME_TYPES_H__
-#define __CORE_BASIC_NAME_TYPES_H__
+#ifndef CORE_BASIC_NAME_TYPES_H_
+#define CORE_BASIC_NAME_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -30,6 +30,7 @@
 
 namespace cgogn
 {
+
 /**
  * @brief function that give a name to a type.
  */
@@ -38,6 +39,10 @@ std::string nameOfType(const T& /*v*/)
 {
 	return T::CGoGNnameOfType();
 }
+
+// first we need to declare some specializations
+template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/);
+template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/);
 
 template <> inline std::string nameOfType(const bool& /*v*/) { return "bool"; }
 
@@ -50,6 +55,8 @@ template <> inline std::string nameOfType(const int& /*v*/) { return "int"; }
 template <> inline std::string nameOfType(const long& /*v*/) { return "long"; }
 
 template <> inline std::string nameOfType(const long long& /*v*/) { return "long long"; }
+// because signed char != char
+template <> inline std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
 
 template <> inline std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
 
@@ -85,16 +92,6 @@ public:
 	static std::string CGoGNnameOfType() { return "UNKNOWN"; }
 };
 
+} // namespace cgogn
 
-template <typename T>
-bool typeIsBool(T)
-{
-	return false;
-}
-
-template <> bool typeIsBool(bool) { return true; }
-
-
-}
-
-#endif
+#endif // CORE_BASIC_NAME_TYPES_H_

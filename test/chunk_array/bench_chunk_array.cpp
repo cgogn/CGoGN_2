@@ -1,9 +1,15 @@
 
 #include <core/container/chunk_array_container.h>
-
+#include <core/basic/serialization.h>
 #define BLK_SZ 4096
 
 using namespace cgogn;
+
+int test1();
+int test2();
+int test3();
+int test4();
+int test5();
 
 
 /**
@@ -175,7 +181,7 @@ int test5()
 	std::cout << "= TEST 5 = Traversal" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("ints");
+	ChunkArray<BLK_SZ,unsigned int>* att1 = container.addAttribute<unsigned int>("uints");
 
 	for (unsigned int i=0;i<NB_LINES;++i)
 		container.insertLines<1>();

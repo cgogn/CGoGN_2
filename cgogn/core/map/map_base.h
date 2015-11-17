@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,40 +21,50 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef __CORE_MAP_MAP_BASE_H__
-#define __CORE_MAP_MAP_BASE_H__
+#ifndef CORE_MAP_MAP_BASE_H_
+#define CORE_MAP_MAP_BASE_H_
 
-#include "core/map/map_base_data.h"
-#include "core/map/attribute_handler.h"
+#include <core/map/map_base_data.h>
+#include <core/map/attribute_handler.h>
+
+#include <sstream>
 
 namespace cgogn
 {
 
-
-
 template<typename DATA_TRAITS, typename TOPO_TRAITS>
-class MapBase: public MapBaseData<DATA_TRAITS>
+class MapBase : public MapBaseData<DATA_TRAITS>
 {
 protected:
-	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attributeHandlers_ ;
+
+	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attributeHandlers_;
 
 public:
 
-	//TODO remonter dans map_base
 	template<typename T, unsigned int ORBIT>
-	using AttributeHandler =  AttributeHandler<DATA_TRAITS,T,ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
+	MapBase()
+	{}
 
-	MapBase() {}
+	~MapBase()
+	{}
 
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler<T,ORBIT> addAttribute(const std::string& nameAttr = "")
+	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attributeName = "")
 	{
-//		if(!this->template isOrbitEmbedded<ORBIT>())
-//			this->template addEmbedding<ORBIT>() ;
+		if (this->embeddings_[ORBIT] == nullptr)
+		{
+			std::ostringstream oss;
+			oss << "EMB_" << orbitName(ORBIT);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* idx = this->topology_.template addAttribute<unsigned int>(oss.str());
+			this->embeddings_[ORBIT] = idx;
+			for (unsigned int i = this->topology_.begin(); i != this->topology_.end(); this->topology_.next(i))
+				(*idx)[i] = EMBNULL;
+		}
 
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attributes_[ORBIT].template addAttribute<T>(nameAttr) ;
-		return AttributeHandler<T, ORBIT>(this, ca) ;
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template addAttribute<T>(attributeName);
+		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
 	/**
@@ -63,21 +73,20 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline bool removeAttribute(AttributeHandler<T,ORBIT>& attr_handl)
+	inline bool removeAttribute(AttributeHandler<T,ORBIT>& ah)
 	{
-
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca =  attr_handl.getDataVector();
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = ah.getData();
 
 		if (this->attributes_[ORBIT].removeAttribute(ca))
 		{
-			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT ;
-			std::pair<IT, IT> bounds = attributeHandlers_.equal_range(ca) ;
+			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT;
+			std::pair<IT, IT> bounds = attributeHandlers_.equal_range(ca);
 			for(IT i = bounds.first; i != bounds.second; ++i)
-				(*i).second->setInvalid() ;
-			attributeHandlers_.erase(bounds.first, bounds.second) ;
-			return true ;
+				(*i).second->setInvalid();
+			attributeHandlers_.erase(bounds.first, bounds.second);
+			return true;
 		}
-		return false ;
+		return false;
 	}
 
 	/**
@@ -88,33 +97,34 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler< T, ORBIT> getAttribute(const std::string& nameAttr)
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE,T>* ca = this->attribs_[ORBIT].template getAttribute<T>(nameAttr) ;
-			return AttributeHandler<T, ORBIT>(this, ca) ;
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template getAttribute<T>(nameAttr);
+		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
-
-	inline Dart add_dart()
+	/**
+	* add a Dart in the map
+	* @return the new Dart
+	*/
+	inline Dart addDart()
 	{
-
 		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
-		 this->topology_.initBooleansOfLine(di);
+		this->topology_.initBooleansOfLine(di);
 
 		for(unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i])							// set all its embeddings
-				(*(this->embeddings_[i]))[di] = EMBNULL ;			// to EMBNULL
+				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
 		}
 
-		Dart d = Dart::create(di) ;
+		Dart d(di);
 
 		for (auto relPtr: this->topo_relations_)
 			(*relPtr)[di] = d;
 
-		return d ;
+		return d;
 	}
-
 };
 
-}
+} // namespace cgogn
 
-#endif
+#endif // CORE_MAP_MAP_BASE_H_

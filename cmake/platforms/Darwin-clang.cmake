@@ -24,6 +24,8 @@ set(FULL_WARNINGS
     #-Wno-sign-
     # Ignore warnings about C++98 compatibility
     -Wno-c++98-compat
+    # Ignore warnings about c++98 compat pedantic mode
+    -Wno-c++98-compat-pedantic
     # Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
     -Wno-c++11-extensions
 )
