@@ -40,9 +40,9 @@ class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 {
 public:
 
-	static const unsigned int VERTEX	= VERTEX1;
-	static const unsigned int EDGE		= VERTEX1;
-	static const unsigned int FACE		= FACE2;
+	static const unsigned int VERTEX = VERTEX1;
+	static const unsigned int EDGE   = VERTEX1;
+	static const unsigned int FACE   = FACE2;
 
 	template<typename T>
 	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
@@ -131,13 +131,13 @@ public:
 	 * @param nbEdges
 	 * @return
 	 */
-	Dart add_cycle(unsigned int nbEdges) ;
+	Dart add_cycle(unsigned int nbEdges);
 
 	/**
 	 * @brief remove_cycle
 	 * @param d
 	 */
-	void remove_cycle(Dart d) ;
+	void remove_cycle(Dart d);
 
 	/**
 	 * @brief cut_edge
@@ -146,8 +146,8 @@ public:
 	 */
 	Dart cut_edge(Dart d)
 	{
-		Dart e = this->newDart() ;	// Create a new dart
-		phi1sew(d, e) ;				// Insert dart e between d and phi1(d)
+		Dart e = this->newDart();	// Create a new dart
+		phi1sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
 		if (this->template isBoundaryMarked<2>(d))
@@ -156,7 +156,7 @@ public:
 		if (this->template isBoundaryMarked<3>(d))
 			this->template boundaryMark<3>(e);
 
-		return e ;
+		return e;
 	}
 
 	/**
@@ -166,9 +166,9 @@ public:
 	 */
 	void uncut_edge(Dart d)
 	{
-		Dart d1 = phi1(d) ;
-		phi1unsew(d) ;			// Dart d is linked to the successor of its successor
-		this->deleteDart(d1) ;	// Dart d1 is erased
+		Dart d1 = phi1(d);
+		phi1unsew(d);			// Dart d is linked to the successor of its successor
+		this->deleteDart(d1);	// Dart d1 is erased
 	}
 
 	/**

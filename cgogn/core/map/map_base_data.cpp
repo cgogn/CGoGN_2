@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,59 +21,31 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_BUFFERS_H_
-#define UTILS_BUFFERS_H_
-
-#include <vector>
+#include <core/map/map_base_data.h>
 
 namespace cgogn
 {
 
-template <typename T>
-class Buffers
+std::vector<MapGen*>* MapGen::instances_ = nullptr;
+
+CGOGN_TLS Buffers<Dart> dart_buffers_thread = Buffers<Dart>();
+CGOGN_TLS Buffers<unsigned int> uint_buffers_thread = Buffers<unsigned int>();
+
+MapGen::MapGen()
 {
-protected:
+	if (instances_ == nullptr)
+		instances_ = new std::vector<MapGen*>;
 
-	std::vector<std::vector<T>*> buffers_;
+	// register the map in the vector of instances
+	instances_->push_back(this);
+}
 
-public:
-
-	~Buffers()
-	{
-		for (auto i : buffers_)
-		{
-			delete i;
-		}
-	}
-
-	inline std::vector<T>* getBuffer()
-	{
-		if (buffers_.empty())
-		{
-			std::vector<T>* v = new std::vector<T>;
-			v->reserve(128);
-			return v;
-		}
-
-		std::vector<T>* v = buffers_.back();
-		buffers_.pop_back();
-		return v;
-	}
-
-	inline void releaseBuffer(std::vector<T>* b)
-	{
-		if (b->capacity() > 1024)
-		{
-			std::vector<T> v;
-			b->swap(v);
-			b->reserve(128);
-		}
-
-		b->clear();
-		buffers_.push_back(b);
-	}
-};
+MapGen::~MapGen()
+{
+	// remove the map from the vector of instances
+	auto it = std::find(instances_->begin(), instances_->end(), this);
+	*it = instances_->back();
+	instances_->pop_back();
+}
 
 } // namespace cgogn
-
-#endif // UTILS_BUFFERS_H_

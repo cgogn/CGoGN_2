@@ -31,22 +31,41 @@
 #include <utils/buffers.h>
 
 #include <thread>
+#include <mutex>
+#include <algorithm>
 
 namespace cgogn
 {
 
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart> dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int> uint_buffers_thread;
+
 /**
- * @brief Generic Map class (for SCHNApps)
+ * @brief Generic Map class
  */
 class MapGen
 {
+private:
+
+	/// vector of Map instances
+	static std::vector<MapGen*>* instances_;
+
 public:
-	virtual ~MapGen() {}
+
+	MapGen();
+
+	virtual ~MapGen();
+
+	static inline bool isAlive(MapGen* map)
+	{
+		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
+	}
 };
 
 
 /**
- * @brief The MapBase class
+ * @brief The MapBaseData class
  */
 template<typename DATA_TRAITS>
 class MapBaseData : public MapGen
@@ -60,28 +79,43 @@ protected:
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> attributes_[NB_ORBITS];
 
 	/// embedding indices shortcuts
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE,unsigned int>* embeddings_[NB_ORBITS];
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* embeddings_[NB_ORBITS];
 
 	/// boundary markers shortcuts
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE,bool>* boundaryMarkers_[2];
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
 
 	/// topo relations shortcuts
-	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE,Dart>*> topo_relations_;
+	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>*> topo_relations_;
 
-	/// buffers of pre-allocated vectors of dart or unsigned int
-	Buffers<Dart> dart_buffers_[NB_THREADS];
-	Buffers<unsigned int> uint_buffers_[NB_THREADS];
+	/// vector of available mark attributes per orbit per thread
+	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
+	unsigned int mark_attribute_id_[NB_ORBITS];
+	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
-	/// vector of thread ids known by the map that can pretend to data such as mark vectors and buffers
+	/// vector of available mark attributes per thread on the topology container
+	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_topology_[NB_THREADS];
+	unsigned int mark_attribute_topology_id_;
+	std::mutex mark_attributes_topology_mutex_;
+
+	/// vector of thread ids known by the map that can pretend to data such as mark vectors
 	std::vector<std::thread::id> thread_ids_;
 
 public:
 
+	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
+
 	MapBaseData()
 	{
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+		{
 			embeddings_[i] = nullptr;
+			mark_attribute_id_[i] = 0;
+			for (unsigned int j = 0; j < NB_THREADS; ++j)
+			{
+				mark_attributes_[i][j].reserve(8);
+			}
+		}
 
 		thread_ids_.reserve(NB_THREADS + 1);
 		thread_ids_.push_back(std::this_thread::get_id());
@@ -98,31 +132,74 @@ public:
 	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
+
 		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
-	inline std::vector<Dart>* getDartBuffer()
+	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* getTopologyMarkAttribute()
 	{
 		unsigned int thread = getCurrentThreadIndex();
-		return dart_buffers_[thread].getBuffer();
+		if (!mark_attributes_topology_[thread].empty())
+		{
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_topology_[thread].back();
+			mark_attributes_topology_[thread].pop_back();
+			return ca;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> lock(mark_attributes_topology_mutex_);
+
+			unsigned int x = mark_attribute_topology_id_++;
+			std::string number("___");
+			number[2] = '0'+char(x%10u); x /= 10u;
+			number[1] = '0'+char(x%10u); x /= 10u;
+			number[0] = '0'+char(x%10u);
+
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.addMarkerAttribute("marker_" + number);
+			return ca;
+		}
 	}
 
-	inline void releaseDartBuffer(std::vector<Dart>* v)
+	inline void releaseTopologyMarkAttribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
 	{
 		unsigned int thread = getCurrentThreadIndex();
-		dart_buffers_[thread].releaseBuffer(v);
+		mark_attributes_topology_[thread].push_back(ca);
 	}
 
-	inline std::vector<unsigned int>* getUIntBuffer()
+	template <unsigned int ORBIT>
+	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* getMarkAttribute()
 	{
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
+
 		unsigned int thread = getCurrentThreadIndex();
-		return uint_buffers_[thread].getBuffer();
+		if (!mark_attributes_[ORBIT][thread].empty())
+		{
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_[ORBIT][thread].back();
+			mark_attributes_[ORBIT][thread].pop_back();
+			return ca;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> lock(mark_attributes_mutex_[ORBIT]);
+
+			unsigned int x = mark_attribute_id_[ORBIT]++;
+			std::string number("___");
+			number[2] = '0'+char(x%10u); x /= 10u;
+			number[1] = '0'+char(x%10u); x /= 10u;
+			number[0] = '0'+char(x%10u);
+
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].addMarkerAttribute("marker_" + orbitName(ORBIT) + number);
+			return ca;
+		}
 	}
 
-	inline void releaseUIntBuffer(std::vector<unsigned int>* v)
+	template <unsigned int ORBIT>
+	inline void releaseMarkAttribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
 	{
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
+
 		unsigned int thread = getCurrentThreadIndex();
-		uint_buffers_[thread].releaseBuffer(v);
+		mark_attributes_[ORBIT][thread].push_back(ca);
 	}
 
 protected:

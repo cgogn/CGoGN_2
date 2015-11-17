@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -21,59 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_BUFFERS_H_
-#define UTILS_BUFFERS_H_
-
-#include <vector>
+#ifndef CORE_TRAVERSAL_TRAVERSORCELL_H_
+#define CORE_TRAVERSAL_TRAVERSORCELL_H_
 
 namespace cgogn
 {
 
-template <typename T>
-class Buffers
+template <typename MAP, unsigned int ORBIT>
+class TraversorCell
 {
-protected:
 
-	std::vector<std::vector<T>*> buffers_;
-
-public:
-
-	~Buffers()
-	{
-		for (auto i : buffers_)
-		{
-			delete i;
-		}
-	}
-
-	inline std::vector<T>* getBuffer()
-	{
-		if (buffers_.empty())
-		{
-			std::vector<T>* v = new std::vector<T>;
-			v->reserve(128);
-			return v;
-		}
-
-		std::vector<T>* v = buffers_.back();
-		buffers_.pop_back();
-		return v;
-	}
-
-	inline void releaseBuffer(std::vector<T>* b)
-	{
-		if (b->capacity() > 1024)
-		{
-			std::vector<T> v;
-			b->swap(v);
-			b->reserve(128);
-		}
-
-		b->clear();
-		buffers_.push_back(b);
-	}
 };
 
 } // namespace cgogn
 
-#endif // UTILS_BUFFERS_H_
+#endif // CORE_TRAVERSAL_TRAVERSORCELL_H_

@@ -2,12 +2,15 @@
 #include <core/map/map1.h>
 #include <core/map/map2.h>
 
+#include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
+
 using namespace cgogn;
 
 
 struct My_Data_Traits
 {
-	static const int CHUNK_SIZE = 64;
+	static const unsigned int CHUNK_SIZE = 64;
 };
 
 
@@ -51,6 +54,17 @@ int test1(MAP1& map)
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
 
+	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread.getBuffer();
+	uib->push_back(3);
+	cgogn::uint_buffers_thread.releaseBuffer(uib);
+
+	Dart d = map.addDart();
+
+	DartMarker<MAP1> dm(map);
+	CellMarker<MAP1, MAP1::VERTEX> cm(map);
+
+	dm.mark(d);
+
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
 	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.getAttribute<float>("floats");
@@ -77,8 +91,8 @@ int test1(MAP1& map)
 
 int main()
 {
-	MAP1 map;
+	MAP1 map1;
 	MAP2 map2;
-	test1(map);
+	test1(map1);
 	return 0;
 }

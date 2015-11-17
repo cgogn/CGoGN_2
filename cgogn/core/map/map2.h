@@ -34,9 +34,9 @@ class Map2 : public Map1<DATA_TRAITS>
 {
 public:
 
-	static const unsigned int VERTEX	= VERTEX2;
-	static const unsigned int EDGE		= EDGE2;
-	static const unsigned int FACE		= FACE2;
+	static const unsigned int VERTEX = VERTEX2;
+	static const unsigned int EDGE   = EDGE2;
+	static const unsigned int FACE   = FACE2;
 
 	template<typename T>
 	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
@@ -87,7 +87,9 @@ public:
 		init();
 	}
 
-	~Map2() override {}
+	~Map2() override
+	{}
+
 	/**
 	 * @brief phi2
 	 * @param d

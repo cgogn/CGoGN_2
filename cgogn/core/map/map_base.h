@@ -41,7 +41,6 @@ protected:
 
 public:
 
-	//TODO remonter dans map_base
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
@@ -102,7 +101,11 @@ public:
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
-	inline Dart add_dart()
+	/**
+	* add a Dart in the map
+	* @return the new Dart
+	*/
+	inline Dart addDart()
 	{
 		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
 		this->topology_.initBooleansOfLine(di);

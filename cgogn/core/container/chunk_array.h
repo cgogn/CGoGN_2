@@ -355,7 +355,7 @@ public:
 			delete[] chunk;
 	}
 
-	ChunkArray(const ChunkArray< CHUNKSIZE, bool>& ca)
+	ChunkArray(const ChunkArray<CHUNKSIZE, bool>& ca)
 	{
 		tableData_.reserve(1024u);
 		this->setNbChunks(ca.getNbChunks());
@@ -369,7 +369,7 @@ public:
 		tableData_(std::move(ca.tableData_))
 	{}
 
-	ChunkArray< CHUNKSIZE, bool>& operator=(ChunkArray< CHUNKSIZE, bool>&& ca)
+	ChunkArray<CHUNKSIZE, bool>& operator=(ChunkArray< CHUNKSIZE, bool>&& ca)
 	{
 		// this != &ca because ca is a rvalue
 		this->clear();
@@ -377,7 +377,7 @@ public:
 		return *this;
 	}
 
-	ChunkArray< CHUNKSIZE, bool>& operator=(const ChunkArray< CHUNKSIZE, bool>& ca)
+	ChunkArray<CHUNKSIZE, bool>& operator=(const ChunkArray<CHUNKSIZE, bool>& ca)
 	{
 		if (this != &ca)
 		{
@@ -411,7 +411,7 @@ public:
 	{
 		if (nbc >= tableData_.size())
 		{
-			for (std::size_t i= tableData_.size(); i <nbc; ++i)
+			for (std::size_t i = tableData_.size(); i < nbc; ++i)
 				addChunk();
 		}
 		else
@@ -439,7 +439,7 @@ public:
 		tableData_.clear();
 	}
 
-	void setFalse(unsigned int i)
+	inline void setFalse(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < tableData_.size());
@@ -450,7 +450,7 @@ public:
 		tableData_[jj][x] &= ~mask;
 	}
 
-	void setTrue(unsigned int i)
+	inline void setTrue(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < tableData_.size());
@@ -461,7 +461,7 @@ public:
 		tableData_[jj][x] |= mask;
 	}
 
-	void setVal(unsigned int i, bool b)
+	inline void setVal(unsigned int i, bool b)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < tableData_.size());
@@ -484,7 +484,7 @@ public:
 	 * Use only if final goal is to set all array to 0 (MarkerStore)
 	 * @todo find another name for the method!
 	 */
-	void setFalseDirty(unsigned int i)
+	inline void setFalseDirty(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < tableData_.size());
@@ -492,7 +492,7 @@ public:
 		tableData_[jj][j] = 0u;
 	}
 
-	bool operator[](unsigned int i) const
+	inline bool operator[](unsigned int i) const
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < tableData_.size());
@@ -505,7 +505,25 @@ public:
 		return (tableData_[jj][x] & mask) != 0u;
 	}
 
-	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const override
+	inline void allFalse()
+	{
+		for (auto ptr : tableData_)
+		{
+			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
+				*ptr++ = 0;
+		}
+	}
+
+	inline void allTrue()
+	{
+		for (auto ptr : tableData_)
+		{
+			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
+				*ptr++ = 0xffffffff;
+		}
+	}
+
+	inline unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const override
 	{
 		byteBlockSize = CHUNKSIZE / 8u;
 
@@ -518,18 +536,18 @@ public:
 		return static_cast<unsigned int>(addr.size());
 	}
 
-	void initElt(unsigned int id) override
+	inline void initElt(unsigned int id) override
 	{
 		setFalse(id);
 	}
 
-	void copyElt(unsigned int dst, unsigned int src) override
+	inline void copyElt(unsigned int dst, unsigned int src) override
 	{
 		setVal(dst,this->operator [](src));
 	}
 
 
-	void swapElt(unsigned int id1, unsigned int id2) override
+	inline void swapElt(unsigned int id1, unsigned int id2) override
 	{
 		bool data = this->operator [](id1);
 		setVal(id1,this->operator [](id2));
@@ -541,7 +559,6 @@ public:
 		// round nbLines to 32 multiple
 		if (nbLines%32u)
 			nbLines = ((nbLines/32u)+1u)*32u;
-
 
 		cgogn_assert(nbLines/CHUNKSIZE <= tableData_.size());
 		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??

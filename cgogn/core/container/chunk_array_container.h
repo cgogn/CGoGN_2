@@ -58,7 +58,7 @@ public:
 };
 
 template <typename CONTAINER>
-class ContainerStandardBrowser:public ContainerBrowser
+class ContainerStandardBrowser : public ContainerBrowser
 {
 	const CONTAINER* cac_;
 
@@ -202,9 +202,9 @@ protected:
 		names_.pop_back();
 		typeNames_.pop_back();
 
-		delete ptrToDel ;
+		delete ptrToDel;
 
-		return true ;
+		return true;
 	}
 
 public:
@@ -241,11 +241,11 @@ public:
 	{
 
 		// first check if attribute already exist
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if (index == UNKNOWN)
 		{
-			std::cerr << "attribute " << attribName << " not found." << std::endl ;
-			return nullptr ;
+			std::cerr << "attribute " << attribName << " not found." << std::endl;
+			return nullptr;
 		}
 
 		return static_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
@@ -258,28 +258,28 @@ public:
 	 * @return pointer on created ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<CHUNKSIZE,T>* addAttribute(const std::string& attribName)
+	ChunkArray<CHUNKSIZE, T>* addAttribute(const std::string& attribName)
 	{
 		cgogn_assert(attribName.size() != 0);
 
 		// first check if attribute already exist
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if (index != UNKNOWN)
 		{
-			std::cerr << "attribute " << attribName << " already found.." << std::endl ;
-			return nullptr ;
+			std::cerr << "attribute " << attribName << " already found.." << std::endl;
+			return nullptr;
 		}
 
 		// create the new attribute
-		const std::string& typeName = nameOfType(T()) ;
-		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>() ;
+		const std::string& typeName = nameOfType(T());
+		ChunkArray<CHUNKSIZE, T>* carr = new ChunkArray<CHUNKSIZE,T>();
 		ChunkArrayFactory<CHUNKSIZE>::template registerCA<T>();
 
 		// reserve memory
-		carr->setNbChunks(refs_.getNbChunks()) ;
+		carr->setNbChunks(refs_.getNbChunks());
 
 		// store pointer, name & typename.
-		tableArrays_.push_back(carr) ;
+		tableArrays_.push_back(carr);
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
 
@@ -291,9 +291,9 @@ public:
 	 * @param attribName name of marker attribute
 	 * @return pointer on created ChunkArray
 	 */
-	ChunkArray<CHUNKSIZE,bool>* addMarkerAttribute(const std::string& attribName)
+	ChunkArray<CHUNKSIZE, bool>* addMarkerAttribute(const std::string& attribName)
 	{
-		ChunkArray<CHUNKSIZE,bool>* ptr = this->template addMarkerAttribute<CHUNKSIZE,bool>(attribName);
+		ChunkArray<CHUNKSIZE, bool>* ptr = addAttribute<bool>(attribName);
 
 		if (tableArrays_.size() > nbMarkerAttribs_)
 		{
@@ -317,12 +317,12 @@ public:
 	 */
 	bool removeAttribute(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")"<< std::endl ;
-			return false ;
+			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")" << std::endl;
+			return false;
 		}
 
 		removeAttribute(index);
@@ -337,12 +337,12 @@ public:
 	 */
 	bool removeAttribute(const ChunkArrayGen<CHUNKSIZE>* ptr)
 	{
-		unsigned int index = getArrayIndex(ptr) ;
+		unsigned int index = getArrayIndex(ptr);
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by ptr: attribute not found (" << std::endl ;
-			return false ;
+			std::cerr << "removeAttribute by ptr: attribute not found (" << std::endl;
+			return false;
 		}
 
 		removeAttribute(index);
@@ -386,6 +386,7 @@ public:
 	{
 		return refs_[index] != 0;
 	}
+
 	/**
 	 * @brief setCurrentBrowser
 	 * @param browser, pointer to a heap-allocated ContainerBrowser
@@ -403,7 +404,6 @@ public:
 			delete currentBrowser_;
 		currentBrowser_ = stdBrowser_;
 	}
-
 
 	/**
 	 * @brief begin
@@ -567,7 +567,7 @@ public:
 	void compact(std::vector<unsigned int>& mapOldNew)
 	{
 		mapOldNew.clear();
-		mapOldNew.resize(realEnd(),0xffffffff);
+		mapOldNew.resize(realEnd(), 0xffffffff);
 
 		unsigned int up = realRBegin();
 		unsigned int down = 0u;
@@ -576,11 +576,11 @@ public:
 		{
 			if (!used(down))
 			{
-				for(unsigned int i=0u; i<PRIMSIZE;++i)
+				for(unsigned int i = 0u; i < PRIMSIZE; ++i)
 				{
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					mapOldNew[up] = rdown;
-					copyLine(rdown,up);
+					copyLine(rdown, up);
 					realRNext(up);
 				}
 				down += PRIMSIZE;
@@ -593,7 +593,7 @@ public:
 
 		// free unused memory blocks
 		unsigned int newNbBlocks = nbMaxLines_/CHUNKSIZE + 1u;
-		for (auto arr: tableArrays_)
+		for (auto arr : tableArrays_)
 			arr->setNbChunks(newNbBlocks);
 		refs_.setNbChunks(newNbBlocks);
 
@@ -633,8 +633,8 @@ public:
 		}
 
 		// mark lines as used
-		for(unsigned int i=0u; i<PRIMSIZE; ++i)
-			refs_.setVal(index+i,1u); // do not used [] in case of refs_ is bool
+		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+			refs_.setVal(index+i, 1u); // do not used [] in case of refs_ is bool
 
 		nbUsedLines_ += PRIMSIZE;
 
@@ -655,8 +655,8 @@ public:
 		holesStack_.push(beginPrimIdx);
 
 		// mark lines as unused
-		for(unsigned int i=0u; i<PRIMSIZE; ++i)
-			refs_.setVal(beginPrimIdx++,0u);// do not used [] in case of refs_ is bool
+		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+			refs_.setVal(beginPrimIdx++, 0u);// do not used [] in case of refs_ is bool
 
 		nbUsedLines_ -= PRIMSIZE;
 	}
@@ -669,7 +669,7 @@ public:
 	{
 		cgogn_message_assert(!used(index), "initLine only with allocated lines");
 
-		for (auto ptrAtt: tableArrays_)
+		for (auto ptrAtt : tableArrays_)
 			//			if (ptrAtt != nullptr) never null !
 			ptrAtt->initElt(index);
 	}
@@ -678,7 +678,7 @@ public:
 	{
 		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
 
-		for (unsigned int i=0; i<nbMarkerAttribs_;++i)
+		for (unsigned int i = 0u; i < nbMarkerAttribs_; ++i)
 			tableArrays_[i]->initElt(index);
 	}
 
@@ -697,7 +697,7 @@ public:
 	 */
 	void copyLine(unsigned int dstIndex, unsigned int srcIndex)
 	{
-		for (auto ptrAtt: tableArrays_)
+		for (auto ptrAtt : tableArrays_)
 			if (ptrAtt != nullptr)
 				ptrAtt->copyElt(dstIndex, srcIndex);
 		refs_[dstIndex] = refs_[srcIndex];
@@ -751,13 +751,13 @@ public:
 	template<typename T>
 	ChunkArray<CHUNKSIZE,T>* getDataArray(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if(index == UNKNOWN)
-			return nullptr ;
+			return nullptr;
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
 
-		cgogn_message_assert(atm != nullptr, "getDataVector: wrong type");
+		cgogn_message_assert(atm != nullptr, "getDataArray: wrong type");
 
 		return atm;
 	}
@@ -769,9 +769,9 @@ public:
 	*/
 	ChunkArrayGen<CHUNKSIZE>* getVirtualDataArray(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if(index == UNKNOWN)
-			return nullptr ;
+			return nullptr;
 
 		return tableArrays_[index];
 	}
@@ -785,7 +785,7 @@ public:
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
 		buffer.push_back(nbMarkerAttribs_);
-		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
+		for(unsigned int i = 0u; i < tableArrays_.size(); ++i)
 		{
 			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
 			buffer.push_back(static_cast<unsigned int>(typeNames_[i].size()+1));
@@ -793,45 +793,45 @@ public:
 		fs.write(reinterpret_cast<const char*>(&(buffer[0])),std::streamsize(buffer.size()*sizeof(unsigned int)));
 
 		// save names
-		for(unsigned int i=0; i<tableArrays_.size(); ++i)
+		for(unsigned int i = 0; i < tableArrays_.size(); ++i)
 		{
 			const char* s1 = names_[i].c_str();
 			const char* s2 = typeNames_[i].c_str();
-			fs.write(s1,std::streamsize((names_[i].size()+1u)*sizeof(char)));
-			fs.write(s2,std::streamsize((typeNames_[i].size()+1u)*sizeof(char)));
+			fs.write(s1, std::streamsize((names_[i].size()+1u)*sizeof(char)));
+			fs.write(s2, std::streamsize((typeNames_[i].size()+1u)*sizeof(char)));
 		}
 
 		// save chunk arrays
-		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
+		for(unsigned int i = 0u; i < tableArrays_.size(); ++i)
 		{
-			tableArrays_[i]->save(fs,nbMaxLines_);
+			tableArrays_[i]->save(fs, nbMaxLines_);
 		}
 		// save uses/refs
-		refs_.save(fs,nbMaxLines_);
+		refs_.save(fs, nbMaxLines_);
 
 		// save stack
-		holesStack_.save(fs,holesStack_.size());
+		holesStack_.save(fs, holesStack_.size());
 	}
 
 	bool load(std::ifstream& fs)
 	{
 		// read info
 		unsigned int buff1[4];
-		fs.read(reinterpret_cast<char*>(buff1),4u*sizeof(unsigned int));
+		fs.read(reinterpret_cast<char*>(buff1), 4u*sizeof(unsigned int));
 
-		nbUsedLines_   = buff1[1];
-		nbMaxLines_    = buff1[2];
+		nbUsedLines_ = buff1[1];
+		nbMaxLines_ = buff1[2];
 		nbMarkerAttribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2u*buff1[0]);
-		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
+		fs.read(reinterpret_cast<char*>(&(buff2[0])), std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
 
 		names_.resize(buff1[0]);
 		typeNames_.resize(buff1[0]);
 
 		// read name
 		char buff3[256];
-		for(unsigned int i=0u; i<buff1[0]; ++i)
+		for(unsigned int i = 0u; i < buff1[0]; ++i)
 		{
 			fs.read(buff3, std::streamsize(buff2[2u*i]*sizeof(char)));
 			names_[i] = std::string(buff3);
@@ -843,7 +843,7 @@ public:
 		// read chunk array
 		tableArrays_.resize(buff1[0]);
 		bool ok=true;
-		for (unsigned int i=0u; i <buff1[0]; ++i)
+		for (unsigned int i = 0u; i < buff1[0]; ++i)
 		{
 			tableArrays_[i] = ChunkArrayFactory<CHUNKSIZE>::create(typeNames_[i]);
 			ok &= tableArrays_[i]->load(fs);
