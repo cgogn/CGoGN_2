@@ -122,7 +122,7 @@ protected:
 	/**
 	 * @brief number of bool attribs (which are alway in front of all others)
 	 */
-	unsigned int nbBoolAttribs_;
+	unsigned int nbMarkerAttribs_;
 
 	/**
 	 * Browser that allow special traversals
@@ -176,19 +176,19 @@ protected:
 		// store ptr for using it before delete
 		ChunkArrayGen<CHUNKSIZE>* ptrToDel = tableArrays_[index];
 
-		// in case of bool, keep booleans first !
-		if (tableArrays_[index]->isBooleanArray())
+		// in case of Markers, keep Markers first !
+		if (index < nbMarkerAttribs_)
 		{
-			nbBoolAttribs_--;
+			nbMarkerAttribs_--;
 
-			if (index < nbBoolAttribs_)	// if attribute is not last of boolean
+			if (index < nbMarkerAttribs_)	// if attribute is not last of Markers
 			{
-				tableArrays_[index] = tableArrays_[nbBoolAttribs_];	// copy last of boolean on index
-				names_[index]       = names_[nbBoolAttribs_];
-				typeNames_[index]   = typeNames_[nbBoolAttribs_];
+				tableArrays_[index] = tableArrays_[nbMarkerAttribs_];	// copy last of boolean on index
+				names_[index]       = names_[nbMarkerAttribs_];
+				typeNames_[index]   = typeNames_[nbMarkerAttribs_];
 			}
 			// now overwrite last of bool with last
-			index = nbBoolAttribs_;
+			index = nbMarkerAttribs_;
 		}
 
 		if (index != tableArrays_.size()- std::size_t(1u))
@@ -203,7 +203,6 @@ protected:
 		typeNames_.pop_back();
 
 		delete ptrToDel;
-
 
 		return true;
 	}
@@ -273,7 +272,7 @@ public:
 
 		// create the new attribute
 		const std::string& typeName = nameOfType(T());
-		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>();
+		ChunkArray<CHUNKSIZE, T>* carr = new ChunkArray<CHUNKSIZE,T>();
 		ChunkArrayFactory<CHUNKSIZE>::template registerCA<T>();
 
 		// reserve memory
@@ -284,24 +283,31 @@ public:
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
 
-		// move bool in front of others
-		if (std::is_same<bool, T>::value)
+		return carr ;
+	}
+
+	/**
+	 * @brief add an Marker attribute
+	 * @param attribName name of marker attribute
+	 * @return pointer on created ChunkArray
+	 */
+	ChunkArray<CHUNKSIZE,bool>* addMarkerAttribute(const std::string& attribName)
+	{
+		ChunkArray<CHUNKSIZE, bool>* ptr = this->template addMarkerAttribute<CHUNKSIZE, bool>(attribName);
+
+		if (tableArrays_.size() > nbMarkerAttribs_)
 		{
-			if (tableArrays_.size() > nbBoolAttribs_)
-			{
-				// swap ptrs
-				auto tmp = tableArrays_.back();
-				tableArrays_.back() = tableArrays_[nbBoolAttribs_];
-				tableArrays_[nbBoolAttribs_] = tmp;
-				// swap names & typenames
-				names_.back().swap(names_[nbBoolAttribs_]);
-				typeNames_.back().swap(typeNames_[nbBoolAttribs_]);
-			}
-			nbBoolAttribs_++;
-
+			// swap ptrs
+			auto tmp = tableArrays_.back();
+			tableArrays_.back() = tableArrays_[nbMarkerAttribs_];
+			tableArrays_[nbMarkerAttribs_] = tmp;
+			// swap names & typenames
+			names_.back().swap(names_[nbMarkerAttribs_]);
+			typeNames_.back().swap(typeNames_[nbMarkerAttribs_]);
 		}
+		nbMarkerAttribs_++;
 
-		return carr;
+		return ptr;
 	}
 
 	/**
@@ -315,7 +321,7 @@ public:
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")"<< std::endl;
+			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")" << std::endl;
 			return false;
 		}
 
@@ -380,6 +386,7 @@ public:
 	{
 		return refs_[index] != 0;
 	}
+
 	/**
 	 * @brief setCurrentBrowser
 	 * @param browser, pointer to a heap-allocated ContainerBrowser
@@ -397,7 +404,6 @@ public:
 			delete currentBrowser_;
 		currentBrowser_ = stdBrowser_;
 	}
-
 
 	/**
 	 * @brief begin
@@ -561,7 +567,7 @@ public:
 	void compact(std::vector<unsigned int>& mapOldNew)
 	{
 		mapOldNew.clear();
-		mapOldNew.resize(realEnd(),0xffffffff);
+		mapOldNew.resize(realEnd(), 0xffffffff);
 
 		unsigned int up = realRBegin();
 		unsigned int down = 0u;
@@ -570,11 +576,11 @@ public:
 		{
 			if (!used(down))
 			{
-				for(unsigned int i=0u; i<PRIMSIZE;++i)
+				for(unsigned int i = 0u; i < PRIMSIZE; ++i)
 				{
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					mapOldNew[up] = rdown;
-					copyLine(rdown,up);
+					copyLine(rdown, up);
 					realRNext(up);
 				}
 				down += PRIMSIZE;
@@ -587,7 +593,7 @@ public:
 
 		// free unused memory blocks
 		unsigned int newNbBlocks = nbMaxLines_/CHUNKSIZE + 1u;
-		for (auto arr: tableArrays_)
+		for (auto arr : tableArrays_)
 			arr->setNbChunks(newNbBlocks);
 		refs_.setNbChunks(newNbBlocks);
 
@@ -627,8 +633,8 @@ public:
 		}
 
 		// mark lines as used
-		for(unsigned int i=0u; i<PRIMSIZE; ++i)
-			refs_.setVal(index+i,1u); // do not used [] in case of refs_ is bool
+		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+			refs_.setVal(index+i, 1u); // do not used [] in case of refs_ is bool
 
 		nbUsedLines_ += PRIMSIZE;
 
@@ -649,8 +655,8 @@ public:
 		holesStack_.push(beginPrimIdx);
 
 		// mark lines as unused
-		for(unsigned int i=0u; i<PRIMSIZE; ++i)
-			refs_.setVal(beginPrimIdx++,0u);// do not used [] in case of refs_ is bool
+		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+			refs_.setVal(beginPrimIdx++, 0u);// do not used [] in case of refs_ is bool
 
 		nbUsedLines_ -= PRIMSIZE;
 	}
@@ -663,7 +669,7 @@ public:
 	{
 		cgogn_message_assert(!used(index), "initLine only with allocated lines");
 
-		for (auto ptrAtt: tableArrays_)
+		for (auto ptrAtt : tableArrays_)
 			//			if (ptrAtt != nullptr) never null !
 			ptrAtt->initElt(index);
 	}
@@ -672,7 +678,7 @@ public:
 	{
 		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
 
-		for (unsigned int i=0; i<nbBoolAttribs_;++i)
+		for (unsigned int i = 0u; i < nbMarkerAttribs_; ++i)
 			tableArrays_[i]->initElt(index);
 	}
 
@@ -691,7 +697,7 @@ public:
 	 */
 	void copyLine(unsigned int dstIndex, unsigned int srcIndex)
 	{
-		for (auto ptrAtt: tableArrays_)
+		for (auto ptrAtt : tableArrays_)
 			if (ptrAtt != nullptr)
 				ptrAtt->copyElt(dstIndex, srcIndex);
 		refs_[dstIndex] = refs_[srcIndex];
@@ -751,7 +757,7 @@ public:
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
 
-		cgogn_message_assert(atm != nullptr, "getDataVector: wrong type");
+		cgogn_message_assert(atm != nullptr, "getDataArray: wrong type");
 
 		return atm;
 	}
@@ -778,8 +784,8 @@ public:
 		buffer.push_back(static_cast<unsigned int>(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
-		buffer.push_back(nbBoolAttribs_);
-		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
+		buffer.push_back(nbMarkerAttribs_);
+		for(unsigned int i = 0u; i < tableArrays_.size(); ++i)
 		{
 			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
 			buffer.push_back(static_cast<unsigned int>(typeNames_[i].size()+1));
@@ -787,45 +793,45 @@ public:
 		fs.write(reinterpret_cast<const char*>(&(buffer[0])),std::streamsize(buffer.size()*sizeof(unsigned int)));
 
 		// save names
-		for(unsigned int i=0; i<tableArrays_.size(); ++i)
+		for(unsigned int i = 0; i < tableArrays_.size(); ++i)
 		{
 			const char* s1 = names_[i].c_str();
 			const char* s2 = typeNames_[i].c_str();
-			fs.write(s1,std::streamsize((names_[i].size()+1u)*sizeof(char)));
-			fs.write(s2,std::streamsize((typeNames_[i].size()+1u)*sizeof(char)));
+			fs.write(s1, std::streamsize((names_[i].size()+1u)*sizeof(char)));
+			fs.write(s2, std::streamsize((typeNames_[i].size()+1u)*sizeof(char)));
 		}
 
 		// save chunk arrays
-		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
+		for(unsigned int i = 0u; i < tableArrays_.size(); ++i)
 		{
-			tableArrays_[i]->save(fs,nbMaxLines_);
+			tableArrays_[i]->save(fs, nbMaxLines_);
 		}
 		// save uses/refs
-		refs_.save(fs,nbMaxLines_);
+		refs_.save(fs, nbMaxLines_);
 
 		// save stack
-		holesStack_.save(fs,holesStack_.size());
+		holesStack_.save(fs, holesStack_.size());
 	}
 
 	bool load(std::ifstream& fs)
 	{
 		// read info
 		unsigned int buff1[4];
-		fs.read(reinterpret_cast<char*>(buff1),4u*sizeof(unsigned int));
+		fs.read(reinterpret_cast<char*>(buff1), 4u*sizeof(unsigned int));
 
-		nbUsedLines_   = buff1[1];
-		nbMaxLines_    = buff1[2];
-		nbBoolAttribs_ = buff1[3];
+		nbUsedLines_ = buff1[1];
+		nbMaxLines_ = buff1[2];
+		nbMarkerAttribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2u*buff1[0]);
-		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
+		fs.read(reinterpret_cast<char*>(&(buff2[0])), std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
 
 		names_.resize(buff1[0]);
 		typeNames_.resize(buff1[0]);
 
 		// read name
 		char buff3[256];
-		for(unsigned int i=0u; i<buff1[0]; ++i)
+		for(unsigned int i = 0u; i < buff1[0]; ++i)
 		{
 			fs.read(buff3, std::streamsize(buff2[2u*i]*sizeof(char)));
 			names_[i] = std::string(buff3);
@@ -837,7 +843,7 @@ public:
 		// read chunk array
 		tableArrays_.resize(buff1[0]);
 		bool ok=true;
-		for (unsigned int i=0u; i <buff1[0]; ++i)
+		for (unsigned int i = 0u; i < buff1[0]; ++i)
 		{
 			tableArrays_[i] = ChunkArrayFactory<CHUNKSIZE>::create(typeNames_[i]);
 			ok &= tableArrays_[i]->load(fs);
