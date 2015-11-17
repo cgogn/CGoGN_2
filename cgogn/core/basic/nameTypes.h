@@ -41,41 +41,41 @@ std::string nameOfType(const T& /*v*/)
 }
 
 // first we need to declare some specializations
-template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/);
-template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/);
+template <typename T> /*inline*/ std::string nameOfType(const std::list<T>& /*v*/);
+template <typename T> /*inline*/ std::string nameOfType(const std::vector<T>& /*v*/);
 
-template <> inline std::string nameOfType(const bool& /*v*/) { return "bool"; }
+template <> /*inline*/ std::string nameOfType(const bool& /*v*/) { return "bool"; }
 
-template <> inline std::string nameOfType(const char& /*v*/) { return "char"; }
+template <> /*inline*/ std::string nameOfType(const char& /*v*/) { return "char"; }
 
-template <> inline std::string nameOfType(const short& /*v*/) { return "short"; }
+template <> /*inline*/ std::string nameOfType(const short& /*v*/) { return "short"; }
 
-template <> inline std::string nameOfType(const int& /*v*/) { return "int"; }
+template <> /*inline*/ std::string nameOfType(const int& /*v*/) { return "int"; }
 
-template <> inline std::string nameOfType(const long& /*v*/) { return "long"; }
+template <> /*inline*/ std::string nameOfType(const long& /*v*/) { return "long"; }
 
-template <> inline std::string nameOfType(const long long& /*v*/) { return "long long"; }
+template <> /*inline*/ std::string nameOfType(const long long& /*v*/) { return "long long"; }
 // because signed char != char
-template <> inline std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
+template <> /*inline*/ std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
 
-template <> inline std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
+template <> /*inline*/ std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
 
-template <> inline std::string nameOfType(const unsigned short& /*v*/) { return "unsigned short"; }
+template <> /*inline*/ std::string nameOfType(const unsigned short& /*v*/) { return "unsigned short"; }
 
-template <> inline std::string nameOfType(const unsigned int& /*v*/) { return "unsigned int"; }
+template <> /*inline*/ std::string nameOfType(const unsigned int& /*v*/) { return "unsigned int"; }
 
-template <> inline std::string nameOfType(const unsigned long& /*v*/) { return "unsigned long"; }
+template <> /*inline*/ std::string nameOfType(const unsigned long& /*v*/) { return "unsigned long"; }
 
-template <> inline std::string nameOfType(const unsigned long long& /*v*/) { return "unsigned long long"; }
+template <> /*inline*/ std::string nameOfType(const unsigned long long& /*v*/) { return "unsigned long long"; }
 
-template <> inline std::string nameOfType(const float& /*v*/) { return "float"; }
+template <> /*inline*/ std::string nameOfType(const float& /*v*/) { return "float"; }
 
-template <> inline std::string nameOfType(const double& /*v*/) { return "double"; }
+template <> /*inline*/ std::string nameOfType(const double& /*v*/) { return "double"; }
 
-template <> inline std::string nameOfType(const std::string& /*v*/) { return "std::string"; }
+template <> /*inline*/ std::string nameOfType(const std::string& /*v*/) { return "std::string"; }
 
-template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/) { return std::string("std::vector<") + nameOfType(T()) + std::string(">"); }
-template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<"+ nameOfType(T()) + std::string(">"); }
+template <typename T> /*inline*/ std::string nameOfType(const std::vector<T>& /*v*/) { return std::string("std::vector<") + nameOfType(T()) + std::string(">"); }
+template <typename T> /*inline*/ std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<"+ nameOfType(T()) + std::string(">"); }
 
 
 /**

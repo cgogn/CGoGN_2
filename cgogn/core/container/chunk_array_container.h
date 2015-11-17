@@ -122,7 +122,7 @@ protected:
 	/**
 	 * @brief number of bool attribs (which are alway in front of all others)
 	 */
-	unsigned int nbBoolAttribs_;
+	unsigned int nbMarkerAttribs_;
 
 	/**
 	 * Browser that allow special traversals
@@ -176,19 +176,19 @@ protected:
 		// store ptr for using it before delete
 		ChunkArrayGen<CHUNKSIZE>* ptrToDel = tableArrays_[index];
 
-		// in case of bool, keep booleans first !
-		if (tableArrays_[index]->isBooleanArray())
+		// in case of Markers, keep Markers first !
+		if (index < nbMarkerAttribs_)
 		{
-			nbBoolAttribs_--;
+			nbMarkerAttribs_--;
 
-			if (index < nbBoolAttribs_)	// if attribute is not last of boolean
+			if (index < nbMarkerAttribs_)	// if attribute is not last of Markers
 			{
-				tableArrays_[index] = tableArrays_[nbBoolAttribs_];	// copy last of boolean on index
-				names_[index]       = names_[nbBoolAttribs_];
-				typeNames_[index]   = typeNames_[nbBoolAttribs_];
+				tableArrays_[index] = tableArrays_[nbMarkerAttribs_];	// copy last of boolean on index
+				names_[index]       = names_[nbMarkerAttribs_];
+				typeNames_[index]   = typeNames_[nbMarkerAttribs_];
 			}
 			// now overwrite last of bool with last
-			index = nbBoolAttribs_;
+			index = nbMarkerAttribs_;
 		}
 
 		if (index != tableArrays_.size()- std::size_t(1u))
@@ -203,7 +203,6 @@ protected:
 		typeNames_.pop_back();
 
 		delete ptrToDel ;
-
 
 		return true ;
 	}
@@ -284,24 +283,31 @@ public:
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
 
-		// move bool in front of others
-		if (std::is_same<bool, T>::value)
-		{
-			if (tableArrays_.size() > nbBoolAttribs_)
-			{
-				// swap ptrs
-				auto tmp = tableArrays_.back();
-				tableArrays_.back() = tableArrays_[nbBoolAttribs_];
-				tableArrays_[nbBoolAttribs_] = tmp;
-				// swap names & typenames
-				names_.back().swap(names_[nbBoolAttribs_]);
-				typeNames_.back().swap(typeNames_[nbBoolAttribs_]);
-			}
-			nbBoolAttribs_++;
-
-		}
-
 		return carr ;
+	}
+
+	/**
+	 * @brief add an Marker attribute
+	 * @param attribName name of marker attribute
+	 * @return pointer on created ChunkArray
+	 */
+	ChunkArray<CHUNKSIZE,bool>* addMarkerAttribute(const std::string& attribName)
+	{
+		ChunkArray<CHUNKSIZE,bool>* ptr = this->template addMarkerAttribute<CHUNKSIZE,bool>(attribName);
+
+		if (tableArrays_.size() > nbMarkerAttribs_)
+		{
+			// swap ptrs
+			auto tmp = tableArrays_.back();
+			tableArrays_.back() = tableArrays_[nbMarkerAttribs_];
+			tableArrays_[nbMarkerAttribs_] = tmp;
+			// swap names & typenames
+			names_.back().swap(names_[nbMarkerAttribs_]);
+			typeNames_.back().swap(typeNames_[nbMarkerAttribs_]);
+		}
+		nbMarkerAttribs_++;
+
+		return ptr;
 	}
 
 	/**
@@ -672,7 +678,7 @@ public:
 	{
 		cgogn_message_assert(!used(index), "initBooleansOfLine only with allocated lines");
 
-		for (unsigned int i=0; i<nbBoolAttribs_;++i)
+		for (unsigned int i=0; i<nbMarkerAttribs_;++i)
 			tableArrays_[i]->initElt(index);
 	}
 
@@ -778,7 +784,7 @@ public:
 		buffer.push_back(static_cast<unsigned int>(tableArrays_.size()));
 		buffer.push_back(nbUsedLines_);
 		buffer.push_back(nbMaxLines_);
-		buffer.push_back(nbBoolAttribs_);
+		buffer.push_back(nbMarkerAttribs_);
 		for(unsigned int i=0u; i<tableArrays_.size(); ++i)
 		{
 			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
@@ -815,7 +821,7 @@ public:
 
 		nbUsedLines_   = buff1[1];
 		nbMaxLines_    = buff1[2];
-		nbBoolAttribs_ = buff1[3];
+		nbMarkerAttribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2u*buff1[0]);
 		fs.read(reinterpret_cast<char*>(&(buff2[0])),std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
