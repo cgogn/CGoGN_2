@@ -58,7 +58,7 @@ public:
 };
 
 template <typename CONTAINER>
-class ContainerStandardBrowser:public ContainerBrowser
+class ContainerStandardBrowser : public ContainerBrowser
 {
 	const CONTAINER* cac_;
 
@@ -202,10 +202,10 @@ protected:
 		names_.pop_back();
 		typeNames_.pop_back();
 
-		delete ptrToDel ;
+		delete ptrToDel;
 
 
-		return true ;
+		return true;
 	}
 
 public:
@@ -242,11 +242,11 @@ public:
 	{
 
 		// first check if attribute already exist
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if (index == UNKNOWN)
 		{
-			std::cerr << "attribute " << attribName << " not found." << std::endl ;
-			return nullptr ;
+			std::cerr << "attribute " << attribName << " not found." << std::endl;
+			return nullptr;
 		}
 
 		return static_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
@@ -264,23 +264,23 @@ public:
 		cgogn_assert(attribName.size() != 0);
 
 		// first check if attribute already exist
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if (index != UNKNOWN)
 		{
-			std::cerr << "attribute " << attribName << " already found.." << std::endl ;
-			return nullptr ;
+			std::cerr << "attribute " << attribName << " already found.." << std::endl;
+			return nullptr;
 		}
 
 		// create the new attribute
-		const std::string& typeName = nameOfType(T()) ;
-		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>() ;
+		const std::string& typeName = nameOfType(T());
+		ChunkArray<CHUNKSIZE,T>* carr = new ChunkArray<CHUNKSIZE,T>();
 		ChunkArrayFactory<CHUNKSIZE>::template registerCA<T>();
 
 		// reserve memory
-		carr->setNbChunks(refs_.getNbChunks()) ;
+		carr->setNbChunks(refs_.getNbChunks());
 
 		// store pointer, name & typename.
-		tableArrays_.push_back(carr) ;
+		tableArrays_.push_back(carr);
 		names_.push_back(attribName);
 		typeNames_.push_back(typeName);
 
@@ -301,7 +301,7 @@ public:
 
 		}
 
-		return carr ;
+		return carr;
 	}
 
 	/**
@@ -311,12 +311,12 @@ public:
 	 */
 	bool removeAttribute(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")"<< std::endl ;
-			return false ;
+			std::cerr << "removeAttribute by name: attribute not found (" << attribName << ")"<< std::endl;
+			return false;
 		}
 
 		removeAttribute(index);
@@ -331,12 +331,12 @@ public:
 	 */
 	bool removeAttribute(const ChunkArrayGen<CHUNKSIZE>* ptr)
 	{
-		unsigned int index = getArrayIndex(ptr) ;
+		unsigned int index = getArrayIndex(ptr);
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by ptr: attribute not found (" << std::endl ;
-			return false ;
+			std::cerr << "removeAttribute by ptr: attribute not found (" << std::endl;
+			return false;
 		}
 
 		removeAttribute(index);
@@ -745,9 +745,9 @@ public:
 	template<typename T>
 	ChunkArray<CHUNKSIZE,T>* getDataArray(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if(index == UNKNOWN)
-			return nullptr ;
+			return nullptr;
 
 		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE,T>*>(tableArrays_[index]);
 
@@ -763,9 +763,9 @@ public:
 	*/
 	ChunkArrayGen<CHUNKSIZE>* getVirtualDataArray(const std::string& attribName)
 	{
-		unsigned int index = getArrayIndex(attribName) ;
+		unsigned int index = getArrayIndex(attribName);
 		if(index == UNKNOWN)
-			return nullptr ;
+			return nullptr;
 
 		return tableArrays_[index];
 	}

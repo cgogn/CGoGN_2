@@ -41,7 +41,6 @@ protected:
 
 public:
 
-	//TODO remonter dans map_base
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
@@ -99,6 +98,10 @@ public:
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
+	/**
+	* add a Dart in the map
+	* @return the new Dart
+	*/
 	inline Dart add_dart()
 	{
 		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
