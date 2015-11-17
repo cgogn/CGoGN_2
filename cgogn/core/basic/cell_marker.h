@@ -74,22 +74,22 @@ public:
 	CellMarkerT<MAP, ORBIT>& operator=(CellMarkerT<MAP, ORBIT>&& dm) = delete;
 	CellMarkerT<MAP, ORBIT>& operator=(const CellMarkerT<MAP, ORBIT>& dm) = delete;
 
-	inline void mark(Dart d)
+	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->setTrue(d.index);
+		mark_attribute_->setTrue(map_.getEmbedding(c));
 	}
 
-	inline void unmark(Dart d)
+	inline void unmark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->setFalse(d.index);
+		mark_attribute_->setFalse(map_.getEmbedding(c));
 	}
 
-	inline void isMarked(Dart d) const
+	inline void isMarked(Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		return (*mark_attribute_)[d.index];
+		return (*mark_attribute_)[map_.getEmbedding(c)];
 	}
 };
 
