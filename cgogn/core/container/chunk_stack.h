@@ -43,14 +43,14 @@ public:
 	typedef ChunkArray<CHUNKSIZE, T> Inherit;
 protected:
 
-	unsigned int stackSize_;
+	unsigned int stack_size_;
 
 public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
 	ChunkStack():
-		stackSize_(0u)
+		stack_size_(0u)
 	{}
 
 	/**
@@ -70,14 +70,14 @@ public:
 	 */
 	void push(const T& val)
 	{
-		stackSize_++;
-		unsigned int offset = stackSize_ % CHUNKSIZE;
-		unsigned int blkId  = stackSize_ / CHUNKSIZE;
+		stack_size_++;
+		unsigned int offset = stack_size_ % CHUNKSIZE;
+		unsigned int blkId  = stack_size_ / CHUNKSIZE;
 
-		if (blkId >= this->tableData_.size())
+		if (blkId >= this->table_data_.size())
 			this->addChunk();
 
-		this->tableData_[blkId][offset] = val;
+		this->table_data_[blkId][offset] = val;
 	}
 
 	/**
@@ -86,7 +86,7 @@ public:
 	 */
 	inline bool empty() const
 	{
-		return stackSize_ == 0u;
+		return stack_size_ == 0u;
 	}
 
 	/**
@@ -94,7 +94,7 @@ public:
 	 */
 	unsigned int size() const
 	{
-		return stackSize_;
+		return stack_size_;
 	}
 
 	/**
@@ -102,8 +102,8 @@ public:
 	 */
 	inline void pop()
 	{
-		cgogn_assert(stackSize_ > 0u);
-		stackSize_--;
+		cgogn_assert(stack_size_ > 0u);
+		stack_size_--;
 	}
 
 	/**
@@ -112,10 +112,10 @@ public:
 	 */
 	inline T head() const
 	{
-		const unsigned int offset = stackSize_ % CHUNKSIZE;
-		const unsigned int blkId  = stackSize_ / CHUNKSIZE;
+		const unsigned int offset = stack_size_ % CHUNKSIZE;
+		const unsigned int blkId  = stack_size_ / CHUNKSIZE;
 
-		return this->tableData_[blkId][offset];
+		return this->table_data_[blkId][offset];
 	}
 
 	/**
@@ -123,11 +123,11 @@ public:
 	 */
 	void compact()
 	{
-		const unsigned int keep = (stackSize_+CHUNKSIZE-1u) / CHUNKSIZE;
-		while (this->tableData_.size() > keep)
+		const unsigned int keep = (stack_size_+CHUNKSIZE-1u) / CHUNKSIZE;
+		while (this->table_data_.size() > keep)
 		{
-			delete[] this->tableData_.back();
-			this->tableData_.pop_back();
+			delete[] this->table_data_.back();
+			this->table_data_.pop_back();
 		}
 	}
 
@@ -136,7 +136,7 @@ public:
 	 */
 	void clear() override
 	{
-		stackSize_ = 0u;
+		stack_size_ = 0u;
 		ChunkArray<CHUNKSIZE, T>::clear();
 	}
 };

@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #ifndef CORE_SERIALIZATION_H_
 #define CORE_SERIALIZATION_H_
 
@@ -31,18 +32,19 @@
 
 namespace cgogn
 {
+
 namespace serialization
 {
 
 template<typename T>
-void load(std::istream& istream, T * dest, std::size_t quantity)
+void load(std::istream& istream, T* dest, std::size_t quantity)
 {
 	cgogn_assert(dest != nullptr);
 	istream.read(reinterpret_cast<char*>(dest), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
 template<typename T>
-void save(std::ostream& ostream, T const * src, std::size_t quantity)
+void save(std::ostream& ostream, T const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	ostream.write(reinterpret_cast<const char *>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
@@ -57,7 +59,6 @@ template<typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity);
 template<typename U>
 void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity);
-
 
 // loading n vectors
 template<typename U>
@@ -75,7 +76,7 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 
 // saving n vectors
 template<typename U>
-void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity)
+void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
@@ -108,7 +109,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 
 // saving n lists
 template<typename U>
-void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity)
+void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 
@@ -121,8 +122,8 @@ void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity)
 	}
 }
 
-}
-}
+} // namespace serialization
+
+} // namespace cgogn
 
 #endif // CORE_SERIALIZATION_H_
-
