@@ -66,9 +66,9 @@ int test1(MAP1& map)
 	dm.mark(d);
 
 	std::cout << "Darts :" << std::endl;
-	for (Dart d : map)
+	for (Dart dit : map)
 	{
-		std::cout << d << std::endl;
+		std::cout << dit << std::endl;
 	}
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
