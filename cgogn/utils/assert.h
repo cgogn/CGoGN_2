@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_ASSERT_
-#define UTILS_ASSERT_
+#ifndef UTILS_ASSERT_H_
+#define UTILS_ASSERT_H_
 
 #include <string>
 #include <utils/dll.h>
@@ -114,7 +114,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  */
 #define cgogn_assert_not_reached(msg)								\
 {																	\
-	cgogn::should_not_have_reached(msg, __FILE__, __func, __LINE__);\
+	cgogn::should_not_have_reached(msg, __FILE__, __func__, __LINE__);\
 }
 
 /**
@@ -204,4 +204,4 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 	#define parano_message_assert(x, msg)
 #endif
 
-#endif // UTILS_ASSERT_
+#endif // UTILS_ASSERT_H_

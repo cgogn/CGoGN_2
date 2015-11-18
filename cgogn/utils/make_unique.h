@@ -78,4 +78,3 @@ make_unique(Args&&...) = delete;
 } // namespace cgogn
 
 #endif // UTILS_MAKE_UNIQUE_H
-

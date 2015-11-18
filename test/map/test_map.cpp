@@ -19,6 +19,9 @@ typedef Map1<My_Data_Traits> MAP1;
 typedef Map2<My_Data_Traits> MAP2;
 
 
+void fonc_const(const MAP1::VertexAttributeHandler<float>& ah);
+void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah);
+int test1(MAP1& map);
 
 
 void fonc_const(const MAP1::VertexAttributeHandler<float>& ah)
@@ -48,17 +51,16 @@ void fonc_non_const(MAP1::VertexAttributeHandler<float>& ah)
 	}
 }
 
-
 int test1(MAP1& map)
 {
 	// add an attribute on vertex of map with
-	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
+	MAP1::VertexAttributeHandler<float> ah = map.add_attribute<float, MAP1::VERTEX>("floats");
 
-	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread->getBuffer();
+	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread->get_buffer();
 	uib->push_back(3);
-	cgogn::uint_buffers_thread->releaseBuffer(uib);
+	cgogn::uint_buffers_thread->release_buffer(uib);
 
-	Dart d = map.addDart();
+	Dart d = map.add_dart();
 
 	DartMarker<MAP1> dm(map);
 	CellMarker<MAP1, MAP1::VERTEX> cm(map);
@@ -72,10 +74,10 @@ int test1(MAP1& map)
 	}
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
-	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.getAttribute<float>("floats");
+	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.get_attribute_container(VERTEX1);
+	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.get_attribute<float>("floats");
 	for (int i=0;i<10;++i)
-		container.insertLines<1>();
+		container.insert_lines<1>();
 	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
 		(*att)[i] = 3.0f + 0.1f*float(i);
 
@@ -93,14 +95,12 @@ int test1(MAP1& map)
 	return 0;
 }
 
-
-
 int main()
 {
 	cgogn::thread_start();
 	MAP1 map1;
 	MAP2 map2;
 	test1(map1);
-	cgogn::thread_end();
+	cgogn::thread_stop();
 	return 0;
 }

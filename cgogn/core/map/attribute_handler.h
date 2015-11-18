@@ -54,8 +54,8 @@ protected:
 public:
 
 	inline AttributeHandlerGen(MapData* const map) :
-		map_(map)
-		,valid_(false)
+		map_(map),
+		valid_(false)
 	{}
 
 	/**
@@ -63,8 +63,8 @@ public:
 	 * @param atthg
 	 */
 	inline AttributeHandlerGen(const AttributeHandlerGen<DATA_TRAITS>& atthg) :
-		map_(atthg.map_)
-		,valid_(atthg.valid_)
+		map_(atthg.map_),
+		valid_(atthg.valid_)
 	{}
 
 	/**
@@ -72,8 +72,8 @@ public:
 	 * @param atthg
 	 */
 	inline AttributeHandlerGen(AttributeHandlerGen<DATA_TRAITS>&& atthg) CGOGN_NOEXCEPT :
-		map_(atthg.map_)
-		,valid_(atthg.valid_)
+		map_(atthg.map_),
+		valid_(atthg.valid_)
 	{}
 
 	/**
@@ -103,15 +103,15 @@ public:
 	virtual ~AttributeHandlerGen()
 	{}
 
-	inline bool isValid() const { return valid_; }
+	inline bool is_valid() const { return valid_; }
 
-	virtual unsigned int getOrbit() const = 0;
+	virtual unsigned int get_orbit() const = 0;
 
 protected:
 
-	inline void setInvalid() { valid_ = false ; }
+	inline void set_invalid() { valid_ = false ; }
 
-	inline void setValid() { valid_ = true ; }
+	inline void set_valid() { valid_ = true ; }
 };
 
 
@@ -134,12 +134,12 @@ protected:
 public:
 
 	inline AttributeHandlerOrbit(MapData* const map) :
-		Inherit(map)
-		,chunk_array_cont_(nullptr)
+		Inherit(map),
+		chunk_array_cont_(nullptr)
 	{
 		if (map != nullptr)
 		{
-			chunk_array_cont_ =  &(map->getAttributeContainer(ORBIT));
+			chunk_array_cont_ =  &(map->get_attribute_container(ORBIT));
 		}
 	}
 
@@ -148,8 +148,8 @@ public:
 	 * @param attho
 	 */
 	inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho) :
-		Inherit(attho)
-		,chunk_array_cont_(attho.chunk_array_cont_)
+		Inherit(attho),
+		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
 
 	/**
@@ -157,8 +157,8 @@ public:
 	 * @param attho
 	 */
 	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) CGOGN_NOEXCEPT :
-		Inherit(std::move(attho))
-		,chunk_array_cont_(attho.chunk_array_cont_)
+		Inherit(std::move(attho)),
+		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
 
 	/**
@@ -168,7 +168,7 @@ public:
 	 */
 	inline AttributeHandlerOrbit& operator=(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)
 	{
-		Inherit::operator =(attho);
+		Inherit::operator=(attho);
 		chunk_array_cont_ = attho.chunk_array_cont_;
 		return *this;
 	}
@@ -179,13 +179,18 @@ public:
 	 */
 	inline AttributeHandlerOrbit& operator=(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho)
 	{
-		Inherit::operator =(std::move(attho));
+		Inherit::operator=(std::move(attho));
 		chunk_array_cont_ = attho.chunk_array_cont_;
 		return *this;
 	}
 
-	virtual unsigned int getOrbit() const override { return ORBIT; }
-	virtual ~AttributeHandlerOrbit() override {}
+	virtual unsigned int get_orbit() const override
+	{
+		return ORBIT;
+	}
+
+	virtual ~AttributeHandlerOrbit() override
+	{}
 };
 
 /**
@@ -221,17 +226,15 @@ public:
 	 * @param m the map which belong attribute
 	 * @param attributeName name of attribute
 	 */
-	AttributeHandler(MapData* const m, const std::string& attributeName) :
+	AttributeHandler(MapData* const m, const std::string& attribute_name) :
 		Inherit(m)
 	{
 		cgogn_assert(this->chunk_array_cont_ != nullptr);
-		chunk_array_ = this->chunk_array_cont_->getAttribute(attributeName);
+		chunk_array_ = this->chunk_array_cont_->getAttribute(attribute_name);
 		if (chunk_array_ == nullptr)
-		{
-			this->setInvalid();
-		} else {
-			this->setValid();
-		}
+			this->set_invalid();
+		else
+			this->set_valid();
 	}
 
 	AttributeHandler(MapData* const m, TChunkArray* const ca) :
@@ -239,11 +242,9 @@ public:
 		chunk_array_(ca)
 	{
 		if (chunk_array_ == nullptr)
-		{
-			this->setInvalid();
-		} else {
-			this->setValid();
-		}
+			this->set_invalid();
+		else
+			this->set_valid();
 	}
 
 	/**
@@ -295,7 +296,7 @@ public:
 	 * \brief getDataVector
 	 * @return
 	 */
-	TChunkArray const * getData() const
+	TChunkArray const* get_data() const
 	{
 		return chunk_array_;
 	}
@@ -307,8 +308,8 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
-		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		return chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
 	/**
@@ -318,8 +319,8 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
-		return chunk_array_->operator[]( this->map_->getEmbedding(c) ) ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		return chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
 	/**
@@ -329,8 +330,8 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
-		return chunk_array_->operator[](i) ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		return chunk_array_->operator[](i);
 	}
 
 	/**
@@ -340,8 +341,8 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler") ;
-		return chunk_array_->operator[](i) ;
+		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		return chunk_array_->operator[](i);
 	}
 
 
@@ -392,7 +393,8 @@ public:
 		unsigned int index_;
 
 		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
-			ah_ptr_(ah), index_(i)
+			ah_ptr_(ah),
+			index_(i)
 		{}
 
 		inline iterator& operator++()

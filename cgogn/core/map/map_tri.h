@@ -31,7 +31,7 @@ namespace cgogn
 
 class Traits_map_tri
 {
-	static const int PRIM_SIZE=3;
+	static const int PRIM_SIZE = 3;
 };
 
 class MapTri : public MapBase<Traits_map_tri>

@@ -56,24 +56,24 @@ public:
 	 */
 	virtual ChunkArrayGen<CHUNKSIZE>* clone() const = 0;
 
-	virtual bool isBooleanArray() const = 0;
+	virtual bool is_boolean_array() const = 0;
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
 	 */
-	virtual void addChunk() = 0;
+	virtual void add_chunk() = 0;
 
 	/**
 	 * @brief set number of chunks
 	 * @param nbc number of chunks
 	 */
-	virtual void setNbChunks(unsigned int nbb) = 0;
+	virtual void set_nb_chunks(unsigned int nbb) = 0;
 
 	/**
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	virtual unsigned int getNbChunks() const = 0;
+	virtual unsigned int get_nb_chunks() const = 0;
 
 	/**
 	 * @brief get the capacity of the array
@@ -92,27 +92,27 @@ public:
 	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byte_block_size) const = 0;
+	virtual unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())
 	 * @param id index of the element
 	 */
-	virtual void initElement(unsigned int id) = 0;
+	virtual void init_element(unsigned int id) = 0;
 
 	/**
 	 * @brief copy an element to another one
 	 * @param dst destination element index
 	 * @param src source element index
 	 */
-	virtual void copyElement(unsigned int dst, unsigned int src) = 0;
+	virtual void copy_element(unsigned int dst, unsigned int src) = 0;
 
 	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
 	 */
-	virtual void swapElements(unsigned int idx1, unsigned int idx2) = 0;
+	virtual void swap_elements(unsigned int idx1, unsigned int idx2) = 0;
 
 	/**
 	 * @brief save
@@ -128,10 +128,6 @@ public:
 	 */
 	virtual bool load(std::istream& fs) = 0;
 };
-
-//template<unsigned int CHUNKSIZE>
-//ChunkArrayGen<CHUNKSIZE>::~ChunkArrayGen()
-//{}
 
 } // namespace cgogn
 
