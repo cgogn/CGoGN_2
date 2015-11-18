@@ -253,7 +253,7 @@ public:
 			case Map1::VERTEX: f(c); break;
 			case Map1::EDGE:   foreach_dart_of_edge(c, f); break;
 			case Map1::FACE:   foreach_dart_of_face(c, f); break;
-			default: cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
 };

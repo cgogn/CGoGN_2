@@ -186,7 +186,7 @@ public:
 			case Map2::EDGE:   foreach_dart_of_edge(c, f); break;
 			case Map2::FACE:   foreach_dart_of_face(c, f); break;
 			case Map2::VOLUME: foreach_dart_of_volume(c, f); break;
-			default: cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
 };
