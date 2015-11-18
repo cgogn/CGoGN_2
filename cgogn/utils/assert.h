@@ -1,25 +1,25 @@
-/*
- * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps
- * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2.1 of the License, or (at your
- * option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- * Web site: http://cgogn.unistra.fr/
- * Contact information: cgogn@unistra.fr
- *
- */
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
 
 #ifndef UTILS_BASIC_ASSERT_
 #define UTILS_BASIC_ASSERT_
@@ -42,20 +42,24 @@
 namespace cgogn 
 {
 
-	/**
-	 * Prints an assertion failure.
-	 * This function is called when a boolean condition is not met.
-	 * It prints an error message and terminates the program.
-	 * \param[in] expression string representation of the condition.
-	 * \param[in] message string information message to print out.
-	 * \param[in] file_name file where the assertion failed.
-	 * \param[in] function_name function where the assertion failed.
-	 * \param[in] line_number line where the assertion failed.
-	 *
-	 */
-	CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(const std::string& expression,
-		const std::string& message, const std::string& file_name, 
-		const std::string& function_name, int line_number );
+/**
+ * Prints an assertion failure.
+ * This function is called when a boolean condition is not met.
+ * It prints an error message and terminates the program.
+ * \param[in] expression string representation of the condition.
+ * \param[in] message string information message to print out.
+ * \param[in] file_name file where the assertion failed.
+ * \param[in] function_name function where the assertion failed.
+ * \param[in] line_number line where the assertion failed.
+ *
+ */
+CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+	const std::string& expression,
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+);
 
 }
 
