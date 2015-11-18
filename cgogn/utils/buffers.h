@@ -67,19 +67,14 @@ public:
 	{
 		if (b->capacity() > 1024)
 		{
-			std::vector<T> v;
-			b->swap(v);
-			b->reserve(128);
+			b->resize(128);
+			b->shrink_to_fit();
 		}
 
 		b->clear();
 		buffers_.push_back(b);
 	}
 };
-
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
 } // namespace cgogn
 

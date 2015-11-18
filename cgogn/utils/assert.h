@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_BASIC_ASSERT_
-#define UTILS_BASIC_ASSERT_
+#ifndef UTILS_ASSERT_
+#define UTILS_ASSERT_
 
 #include <string>
 #include <utils/dll.h>
@@ -32,14 +32,13 @@
 #define __func__ __FUNCTION__
 #endif
 
-
 /**
  * \file cgogn/core/basic/assert.h
  * \brief Assertion checking mechanism.
  *
  * Allows the user to add a specific message to output
  */
-namespace cgogn 
+namespace cgogn
 {
 
 /**
@@ -75,7 +74,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-} 
+}
 
 /**
  * \brief Verifies that a condition is met and take a specific message.
@@ -95,7 +94,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 /**
  * \brief Verifies that the required contract condition is met.
  * \details
- * 
+ *
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
@@ -105,12 +104,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-} 
+}
 
 /**
  * \brief Verifies that the ensured contract condition is met.
  * \details
- * 
+ *
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
@@ -120,12 +119,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-} 
+}
 
 /**
  * \brief Verifies that the invariant contract condition is met.
  * \details
- * 
+ *
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
@@ -135,7 +134,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-} 
+}
 
 /**
  * \def debug_assert(x)
@@ -148,17 +147,17 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
  * \note This assertion check is only active in debug mode.
  */
 #ifdef CGOGN_DEBUG
- 	#define debug_assert(x) cgogn_assert(x)
+	#define debug_assert(x) cgogn_assert(x)
 	#define debug_message_assert(x, msg) cgogn_message_assert(x, msg)
- 	#define debug_require(x) cgogn_require(x)
- 	#define debug_ensure(x) cgogn_ensure(x)
- 	#define debug_invariant(x) cgogn_invariant(x)
+	#define debug_require(x) cgogn_require(x)
+	#define debug_ensure(x) cgogn_ensure(x)
+	#define debug_invariant(x) cgogn_invariant(x)
 #else
-  	#define debug_assert(x)
+	#define debug_assert(x)
 	#define debug_message_assert(x, msg)
-  	#define debug_require(x)
- 	#define debug_ensure(x)
- 	#define debug_invariant(x)
+	#define debug_require(x)
+	#define debug_ensure(x)
+	#define debug_invariant(x)
 #endif
 
 /**
@@ -172,11 +171,11 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
  * \note This assertion check is only active in parano mode.
  */
 #ifdef CGOGN_PARANO
- 	#define parano_assert(x) cgogn_assert(x)
- 	#define parano_message_assert(x, msg) cgogn_message_assert(x, msg)
+	#define parano_assert(x) cgogn_assert(x)
+	#define parano_message_assert(x, msg) cgogn_message_assert(x, msg)
 #else
- 	#define parano_assert(x)
- 	#define parano_message_assert(x, msg)
+	#define parano_assert(x)
+	#define parano_message_assert(x, msg)
 #endif
 
-#endif // UTILS_BASIC_ASSERT_
+#endif // UTILS_ASSERT_

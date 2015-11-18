@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <utils/buffers.h>
+#include <utils/thread.h>
 
 namespace cgogn
 {
