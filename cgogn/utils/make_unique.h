@@ -75,7 +75,7 @@ template<class T, class... Args>
 typename _Unique_if<T>::_Known_bound
 make_unique(Args&&...) = delete;
 
-}
+} // namespace cgogn
 
 #endif // UTILS_MAKE_UNIQUE_H
 

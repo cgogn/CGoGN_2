@@ -21,13 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#include <core/container/chunk_array_container.h>
+#include <utils/thread.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
+CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
-}
+} // namespace cgogn

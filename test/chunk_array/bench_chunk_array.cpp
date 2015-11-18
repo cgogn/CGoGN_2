@@ -124,17 +124,17 @@ int test3()
 	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.addAttribute<bool>("bools");
 
-	for (unsigned int i=0;i<NB_LINES;++i)
+	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insertLines<1>();
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		att1->setVal(i,true);
+		att1->setValue(i, true);
 	}
 
-	for (unsigned int j=0; j<100; ++j)
+	for (unsigned int j = 0; j < 100; ++j)
 	{
-		for (unsigned int i=0;i<NB_LINES/2;++i)
+		for (unsigned int i = 0; i < NB_LINES/2; ++i)
 		{
 			att1->setFalse(i);
 			att1->setFalse(NB_LINES-1-i);
@@ -148,25 +148,25 @@ int test3()
 
 int test4()
 {
-	std::cout << "= TEST 4 = random bool cleaning with setFalseDirty" << std::endl;
+	std::cout << "= TEST 4 = random bool cleaning with setFalse_byte" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ,  bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.addAttribute<bool>("bools");
 
-	for (unsigned int i=0;i<NB_LINES;++i)
+	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insertLines<1>();
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		att1->setVal(i,true);
+		att1->setValue(i, true);
 	}
 
-	for (unsigned int j=0; j<100; ++j)
+	for (unsigned int j = 0; j < 100; ++j)
 	{
-		for (unsigned int i=0;i<NB_LINES/2;++i)
+		for (unsigned int i = 0; i < NB_LINES/2; ++i)
 		{
-			att1->setFalseDirty(i);
-			att1->setFalseDirty(NB_LINES-1-i);
+			att1->setFalse_byte(i);
+			att1->setFalse_byte(NB_LINES-1-i);
 		}
 	}
 

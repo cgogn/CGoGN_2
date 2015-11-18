@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_BASIC_DEFINITIONS_H_
-#define UTILS_BASIC_DEFINITIONS_H_
+#ifndef UTILS_DEFINITIONS_H_
+#define UTILS_DEFINITIONS_H_
 
 /**
  * \brief No execpt declaration for CGOGN symbols.
@@ -40,7 +40,7 @@
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define CGOGN_TLS __declspec( thread )
 #else
-#define CGOGN_TLS thread_local
+#define CGOGN_TLS __thread
 #endif
 
 /**
@@ -69,14 +69,4 @@
 #define CGOGN_PARANO
 #endif
 
-namespace cgogn
-{
-
-/**
- * \brief The maximum nunmber of threads created by the API.
- */
-const unsigned int NB_THREADS = 8u;
-
-} // namespace cgogn
-
-#endif // UTILS_BASIC_DEFINITIONS_H_
+#endif // UTILS_DEFINITIONS_H_

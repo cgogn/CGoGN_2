@@ -21,13 +21,38 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#include <core/container/chunk_array_container.h>
+#ifndef UTILS_THREAD_H_
+#define UTILS_THREAD_H_
+
+#include <utils/buffers.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
 
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+
+inline void thread_start()
+{
+	if (dart_buffers_thread == nullptr)
+		dart_buffers_thread = new Buffers<Dart>();
+
+	if (uint_buffers_thread == nullptr)
+		uint_buffers_thread = new Buffers<unsigned int>();
 }
+
+inline void thread_end()
+{
+	delete dart_buffers_thread;
+	delete uint_buffers_thread;
+}
+
+} // namespace cgogn
+
+#endif // UTILS_THREAD_H_

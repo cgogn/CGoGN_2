@@ -229,22 +229,21 @@ int test4()
 	ChunkArray<BLK_SZ,vecvecdouble>* att4 = container.addAttribute<vecvecdouble>("vecvecdouble");
 	ChunkArray<BLK_SZ,veclistdouble>* att5 = container.addAttribute<veclistdouble>("veclistdouble");
 
-	for (int i=0;i<7;++i)
+	for (unsigned int i = 0u; i < 7u; ++i)
 		container.insertLines<3>();
 
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3).setVal(i,static_cast<bool>(i%2));
+		(*att3).setValue(i, static_cast<bool>(i%2));
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 	}
 
 	container.removeLines<3>(3);
 	container.removeLines<3>(13);
-
 
 	std::ofstream of("pipo.map");
 	container.save(of);
@@ -261,7 +260,7 @@ int test4()
 	ChunkArray<BLK_SZ,vecvecdouble>* load_att4 = cont2.getAttribute<vecvecdouble>("vecvecdouble");
 	ChunkArray<BLK_SZ,veclistdouble>* load_att5 = cont2.getAttribute<veclistdouble>("veclistdouble");
 
-	for(unsigned int i=cont2.begin(); i!=cont2.end(); cont2.next(i))
+	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
 		std::cout << i << ": "<< (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] << " / ";
 		for (const auto& v : (*load_att4)[i])

@@ -22,12 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#include <core/container/chunk_array_container.h>
+#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
+DartMarkerGen::~DartMarkerGen()
 {}
 
 }

@@ -34,14 +34,16 @@ namespace cgogn
 {
 
 /**
- * @brief Generic AttributeHandler class
+ * \brief Generic AttributeHandler class
  * @TPARAM DATA_TRAITS storage traits (for MapBaseData ptr type)
  */
 template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
+
 	typedef MapBaseData<DATA_TRAITS> MapData;
+
 protected:
 
 	MapData* map_;
@@ -51,35 +53,35 @@ protected:
 
 public:
 
-	inline AttributeHandlerGen(MapData * const map) :
+	inline AttributeHandlerGen(MapData* const map) :
 		map_(map)
-	  ,valid_(false)
+		,valid_(false)
 	{}
 
 	/**
-	 * @brief copy constructor
+	 * \brief copy constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(const AttributeHandlerGen< DATA_TRAITS >& atthg) :
+	inline AttributeHandlerGen(const AttributeHandlerGen<DATA_TRAITS>& atthg) :
 		map_(atthg.map_)
-	  ,valid_(atthg.valid_)
+		,valid_(atthg.valid_)
 	{}
 
 	/**
-	 * @brief move constructor
+	 * \brief move constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(AttributeHandlerGen< DATA_TRAITS >&& atthg) CGOGN_NOEXCEPT :
+	inline AttributeHandlerGen(AttributeHandlerGen<DATA_TRAITS>&& atthg) CGOGN_NOEXCEPT :
 		map_(atthg.map_)
-	  ,valid_(atthg.valid_)
+		,valid_(atthg.valid_)
 	{}
 
 	/**
-	 * @brief operator =
+	 * \brief operator =
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(const AttributeHandlerGen< DATA_TRAITS >& atthg)
+	inline AttributeHandlerGen& operator=(const AttributeHandlerGen<DATA_TRAITS>& atthg)
 	{
 		this->map_ = atthg.map_;
 		this->valid_ = atthg.valid_;
@@ -87,17 +89,16 @@ public:
 	}
 
 	/**
-	 * @brief move operator =
+	 * \brief move operator =
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(AttributeHandlerGen< DATA_TRAITS >&& atthg)
+	inline AttributeHandlerGen& operator=(AttributeHandlerGen<DATA_TRAITS>&& atthg)
 	{
 		this->map_ = atthg.map_;
 		this->valid_ = atthg.valid_;
 		return *this;
 	}
-
 
 	virtual ~AttributeHandlerGen()
 	{}
@@ -115,15 +116,17 @@ protected:
 
 
 /**
- * @brief Generic AttributeHandler class with orbit parameter
+ * \brief Generic AttributeHandler class with orbit parameter
  * @TPARAM ORBIT the orbit of the attribute to handlde
  */
 template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
+
 	typedef AttributeHandlerGen<DATA_TRAITS> Inherit;
 	typedef typename Inherit::MapData        MapData;
+
 protected:
 
 	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>* chunk_array_cont_;
@@ -132,7 +135,7 @@ public:
 
 	inline AttributeHandlerOrbit(MapData* const map) :
 		Inherit(map)
-	  ,chunk_array_cont_(nullptr)
+		,chunk_array_cont_(nullptr)
 	{
 		if (map != nullptr)
 		{
@@ -141,25 +144,25 @@ public:
 	}
 
 	/**
-	 * @brief copy constructor
+	 * \brief copy constructor
 	 * @param attho
 	 */
-	inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)  :
+	inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho) :
 		Inherit(attho)
-	  , chunk_array_cont_(attho.chunk_array_cont_)
+		,chunk_array_cont_(attho.chunk_array_cont_)
 	{}
 
 	/**
-	 * @brief move constructor
+	 * \brief move constructor
 	 * @param attho
 	 */
 	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) CGOGN_NOEXCEPT :
 		Inherit(std::move(attho))
-	  , chunk_array_cont_(attho.chunk_array_cont_)
+		,chunk_array_cont_(attho.chunk_array_cont_)
 	{}
 
 	/**
-	 * @brief operator =
+	 * \brief operator =
 	 * @param attho
 	 * @return
 	 */
@@ -170,7 +173,7 @@ public:
 		return *this;
 	}
 	/**
-	 * @brief move operator =
+	 * \brief move operator =
 	 * @param attho
 	 * @return
 	 */
@@ -186,16 +189,18 @@ public:
 };
 
 /**
- * @brief AttributeHandler class
+ * \brief AttributeHandler class
  * @TPARAM T the data type of the attribute to handlde
  */
 template<typename DATA_TRAITS, typename T, unsigned int ORBIT>
 class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>   Inherit;
-	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>      TChunkArray;
-	typedef typename Inherit::MapData                   MapData;
+
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Inherit;
+	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>    TChunkArray;
+	typedef typename Inherit::MapData                 MapData;
+
 protected:
 
 	TChunkArray* chunk_array_;
@@ -203,7 +208,7 @@ protected:
 public:
 
 	/**
-	 * @brief Default constructor
+	 * \brief Default constructor
 	 *
 	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
 	 */
@@ -212,11 +217,11 @@ public:
 	{}
 
 	/**
-	 * @brief Constructor
+	 * \brief Constructor
 	 * @param m the map which belong attribute
 	 * @param attributeName name of attribute
 	 */
-	AttributeHandler(MapData* const m, const std::string& attributeName):
+	AttributeHandler(MapData* const m, const std::string& attributeName) :
 		Inherit(m)
 	{
 		cgogn_assert(this->chunk_array_cont_ != nullptr);
@@ -229,7 +234,7 @@ public:
 		}
 	}
 
-	AttributeHandler(MapData* const m, TChunkArray* const ca):
+	AttributeHandler(MapData* const m, TChunkArray* const ca) :
 		Inherit(m),
 		chunk_array_(ca)
 	{
@@ -242,25 +247,25 @@ public:
 	}
 
 	/**
-	 * @brief Copy constructor
+	 * \brief Copy constructor
 	 * @param att
 	 */
-	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att):
-		Inherit(att)
-	  ,chunk_array_(att.chunk_array_)
+	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att) :
+		Inherit(att),
+		chunk_array_(att.chunk_array_)
 	{}
 
 	/**
-	 * @brief Move constructor
+	 * \brief Move constructor
 	 * @param att
 	 */
 	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
-		Inherit(std::move(att))
-	  ,chunk_array_(att.chunk_array_)
+		Inherit(std::move(att)),
+		chunk_array_(att.chunk_array_)
 	{}
 
 	/**
-	 * @brief operator =
+	 * \brief operator =
 	 * @param att
 	 * @return
 	 */
@@ -272,7 +277,7 @@ public:
 	}
 
 	/**
-	 * @brief move operator =
+	 * \brief move operator =
 	 * @param att
 	 * @return
 	 */
@@ -283,9 +288,11 @@ public:
 		return *this;
 	}
 
+	virtual ~AttributeHandler() override
+	{}
 
 	/**
-	 * @brief getDataVector
+	 * \brief getDataVector
 	 * @return
 	 */
 	TChunkArray const * getData() const
@@ -294,7 +301,7 @@ public:
 	}
 
 	/**
-	 * @brief operator []
+	 * \brief operator []
 	 * @param c
 	 * @return
 	 */
@@ -305,7 +312,7 @@ public:
 	}
 
 	/**
-	 * @brief operator []
+	 * \brief operator []
 	 * @param c
 	 * @return
 	 */
@@ -316,7 +323,7 @@ public:
 	}
 
 	/**
-	 * @brief operator []
+	 * \brief operator []
 	 * @param i
 	 * @return
 	 */
@@ -327,7 +334,7 @@ public:
 	}
 
 	/**
-	 * @brief const operator []
+	 * \brief const operator []
 	 * @param i
 	 * @return
 	 */
@@ -341,11 +348,12 @@ public:
 	class const_iterator
 	{
 	public:
-		AttributeHandler<DATA_TRAITS, T,ORBIT> const * const ah_ptr_;
+		const AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
 		unsigned int index_;
 
 		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
-			ah_ptr_(ah), index_(i)
+			ah_ptr_(ah),
+			index_(i)
 		{}
 
 		inline const_iterator& operator++()
@@ -368,19 +376,19 @@ public:
 
 	inline const_iterator begin() const
 	{
-		return const_iterator(this,this->chunk_array_cont_->begin());
+		return const_iterator(this, this->chunk_array_cont_->begin());
 	}
 
 	inline const_iterator end() const
 	{
-		return const_iterator(this,this->chunk_array_cont_->end());
+		return const_iterator(this, this->chunk_array_cont_->end());
 	}
 
 
 	class iterator
 	{
 	public:
-		AttributeHandler<DATA_TRAITS, T,ORBIT>* const ah_ptr_;
+		AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
 		unsigned int index_;
 
 		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
@@ -407,14 +415,13 @@ public:
 
 	inline iterator begin()
 	{
-		return iterator(this,this->chunk_array_cont_->begin());
+		return iterator(this, this->chunk_array_cont_->begin());
 	}
 
 	inline iterator end()
 	{
-		return iterator(this,this->chunk_array_cont_->end());
+		return iterator(this, this->chunk_array_cont_->end());
 	}
-	virtual ~AttributeHandler() override {}
 };
 
 } // namespace cgogn

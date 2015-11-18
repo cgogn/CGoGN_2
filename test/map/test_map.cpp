@@ -54,9 +54,9 @@ int test1(MAP1& map)
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.addAttribute<float, MAP1::VERTEX>("floats");
 
-	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread.getBuffer();
+	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread->getBuffer();
 	uib->push_back(3);
-	cgogn::uint_buffers_thread.releaseBuffer(uib);
+	cgogn::uint_buffers_thread->releaseBuffer(uib);
 
 	Dart d = map.addDart();
 
@@ -64,6 +64,12 @@ int test1(MAP1& map)
 	CellMarker<MAP1, MAP1::VERTEX> cm(map);
 
 	dm.mark(d);
+
+	std::cout << "Darts :" << std::endl;
+	for (Dart dit : map)
+	{
+		std::cout << dit << std::endl;
+	}
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.getAttributeContainer(VERTEX1);
@@ -91,8 +97,10 @@ int test1(MAP1& map)
 
 int main()
 {
+	cgogn::thread_start();
 	MAP1 map1;
 	MAP2 map2;
 	test1(map1);
+	cgogn::thread_end();
 	return 0;
 }

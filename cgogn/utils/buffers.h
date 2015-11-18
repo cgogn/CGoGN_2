@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -23,6 +23,9 @@
 
 #ifndef UTILS_BUFFERS_H_
 #define UTILS_BUFFERS_H_
+
+#include <utils/definitions.h>
+#include <core/basic/dart.h>
 
 #include <vector>
 
@@ -64,9 +67,8 @@ public:
 	{
 		if (b->capacity() > 1024)
 		{
-			std::vector<T> v;
-			b->swap(v);
-			b->reserve(128);
+			b->resize(128);
+			b->shrink_to_fit();
 		}
 
 		b->clear();

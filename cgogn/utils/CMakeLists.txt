@@ -8,16 +8,18 @@ set(HEADER_FILES
 	assert.h
 	buffers.h
 	make_unique.h
+	thread.h
 )
 
 set(SOURCE_FILES
 	assert.cpp
+	thread.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 #use of target_compile_options to have a transitive c++11 flag
 if(NOT MSVC)
-    target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 

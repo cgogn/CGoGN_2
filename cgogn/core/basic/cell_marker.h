@@ -37,8 +37,7 @@ public:
 	CellMarkerGen()
 	{}
 
-	virtual ~CellMarkerGen()
-	{}
+	virtual ~CellMarkerGen();
 
 	CellMarkerGen(const CellMarkerGen& dm) = delete;
 	CellMarkerGen(CellMarkerGen&& dm) = delete;
@@ -98,8 +97,10 @@ class CellMarker : public CellMarkerT<MAP, ORBIT>
 {
 public:
 
+	typedef CellMarkerT<MAP, ORBIT> Inherit;
+
 	CellMarker(MAP& map) :
-		CellMarkerT<MAP, ORBIT>(map)
+		Inherit(map)
 	{}
 
 	~CellMarker() override
@@ -112,10 +113,55 @@ public:
 	CellMarker<MAP, ORBIT>& operator=(CellMarker<MAP, ORBIT>&& dm) = delete;
 	CellMarker<MAP, ORBIT>& operator=(const CellMarker<MAP, ORBIT>& dm) = delete;
 
-	void unmarkAll()
+	inline void unmarkAll()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		this->mark_attribute_->allFalse();
+	}
+};
+
+template <typename MAP, unsigned int ORBIT>
+class CellMarkerStore : public CellMarkerT<MAP, ORBIT>
+{
+protected:
+
+	std::vector<unsigned int>* marked_cells_;
+
+public:
+
+	typedef CellMarkerT<MAP, ORBIT> Inherit;
+
+	CellMarkerStore(MAP& map) :
+		Inherit(map)
+	{
+		marked_cells_ = uint_buffers_thread->getBuffer();
+	}
+
+	~CellMarkerStore() override
+	{
+		unmarkAll();
+		uint_buffers_thread->releaseBuffer(marked_cells_);
+	}
+
+	CellMarkerStore(const CellMarkerStore<MAP, ORBIT>& dm) = delete;
+	CellMarkerStore(CellMarkerStore<MAP, ORBIT>&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(CellMarkerStore<MAP, ORBIT>&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(const CellMarkerStore<MAP, ORBIT>& dm) = delete;
+
+	inline void mark(Cell<ORBIT> c)
+	{
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		Inherit::mark(c);
+		marked_cells_->push_back(this->map_.getEmbedding(c));
+	}
+
+	inline void unmarkAll()
+	{
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		for (unsigned int i : marked_cells_)
+		{
+			this->mark_attribute_->setFalse(i);
+		}
 	}
 };
 

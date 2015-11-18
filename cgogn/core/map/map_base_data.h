@@ -28,7 +28,7 @@
 #include <utils/definitions.h>
 #include <core/basic/cell.h>
 
-#include <utils/buffers.h>
+#include <utils/thread.h>
 
 #include <thread>
 #include <mutex>
@@ -36,10 +36,6 @@
 
 namespace cgogn
 {
-
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart> dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int> uint_buffers_thread;
 
 /**
  * @brief Generic Map class
@@ -103,9 +99,11 @@ protected:
 
 public:
 
+	typedef MapGen Inherit;
+
 	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
 
-	MapBaseData()
+	MapBaseData() : Inherit()
 	{
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
@@ -121,19 +119,16 @@ public:
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
 
-	~MapBaseData() override {}
+	~MapBaseData() override
+	{}
+
+	/*******************************************************************************
+	 * Containers management
+	 *******************************************************************************/
 
 	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
 	{
 		return attributes_[orbit];
-	}
-
-	template <unsigned int ORBIT>
-	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
-	{
-		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
-
-		return (*embeddings_[ORBIT])[c.dart.index] ;
 	}
 
 	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* getTopologyMarkAttribute()
@@ -202,7 +197,23 @@ public:
 		mark_attributes_[ORBIT][thread].push_back(ca);
 	}
 
+	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
+
+	template <unsigned int ORBIT>
+	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
+	{
+		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
+
+		return (*embeddings_[ORBIT])[c.dart.index] ;
+	}
+
 protected:
+
+	/*******************************************************************************
+	 * Thread management
+	 *******************************************************************************/
 
 	inline unsigned int getCurrentThreadIndex() const
 	{

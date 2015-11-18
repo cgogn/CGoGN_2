@@ -40,6 +40,8 @@ class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 {
 public:
 
+	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
+
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
@@ -63,10 +65,15 @@ protected:
 		this->topo_relations_.push_back(phi_1);
 	}
 
-	//! Link the current dart to dart d with a permutation
-	/*! @param d the dart to which the current is linked
-	 * - Before:	d->f and e->g
-	 * - After:		d->g and e->f
+	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
+	/**
+	 * \brief Link the current dart to dart d with a permutation
+	 * @param d the dart to which the current is linked
+	 * - Before: d->f and e->g
+	 * - After:  d->g and e->f
 	 * Join the permutations cycles of dart d and e
 	 * - Starting from two cycles : d->f->...->d and e->g->...->e
 	 * - It makes one cycle d->g->...->e->f->...->d
@@ -82,10 +89,11 @@ protected:
 		(*(this->topo_relations_[1]))[f.index] = e;
 	}
 
-	//! Unlink the successor of a given dart in a permutation
-	/*!	@param d a dart
-	 * - Before:	d->e->f
-	 * - After:		d->f and e->e
+	/**
+	 * \brief Unlink the successor of a given dart in a permutation
+	 * @param d a dart
+	 * - Before: d->e->f
+	 * - After:  d->f and e->e
 	 */
 	void phi1unsew(Dart d)
 	{
@@ -99,15 +107,20 @@ protected:
 
 public:
 
-	inline Map1()
+	Map1() : Inherit()
 	{
 		init();
 	}
 
-	virtual ~Map1() override {}
+	virtual ~Map1() override
+	{}
+
+	/*******************************************************************************
+	 * Basic topological operations
+	 *******************************************************************************/
 
 	/**
-	 * @brief phi1
+	 * \brief phi1
 	 * @param d
 	 * @return
 	 */
@@ -117,7 +130,7 @@ public:
 	}
 
 	/**
-	 * @brief phi_1
+	 * \brief phi_1
 	 * @param d
 	 * @return
 	 */
@@ -127,20 +140,47 @@ public:
 	}
 
 	/**
-	 * @brief add_cycle
+	* \brief add a Dart in the map
+	* @return the new Dart
+	*/
+	inline Dart addDart()
+	{
+		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
+		this->topology_.initMarkersOfLine(di);
+
+		for(unsigned int i = 0; i < NB_ORBITS; ++i)
+		{
+			if (this->embeddings_[i])							// set all its embeddings
+				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
+		}
+
+		Dart d(di);
+
+		for (auto relPtr : this->topo_relations_)
+			(*relPtr)[di] = d;
+
+		return d;
+	}
+
+	/*******************************************************************************
+	 * High-level topological operations
+	 *******************************************************************************/
+
+	/**
+	 * \brief add_cycle
 	 * @param nbEdges
 	 * @return
 	 */
 	Dart add_cycle(unsigned int nbEdges);
 
 	/**
-	 * @brief remove_cycle
+	 * \brief remove_cycle
 	 * @param d
 	 */
 	void remove_cycle(Dart d);
 
 	/**
-	 * @brief cut_edge
+	 * \brief cut_edge
 	 * @param d
 	 * @return
 	 */
@@ -160,7 +200,7 @@ public:
 	}
 
 	/**
-	 * @brief uncut_edge
+	 * \brief uncut_edge
 	 * @param d
 	 * @return
 	 */
@@ -172,11 +212,50 @@ public:
 	}
 
 	/**
-	 * @brief collapse_edge
+	 * \brief collapse_edge
 	 * @param d
 	 * @return
 	 */
 	Dart collapse_edge(Dart d);
+
+	/*******************************************************************************
+	 * Orbits traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
+	{
+		f(d);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_edge(Dart d, const FUNC& f) const
+	{
+		f(d);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
+	{
+		Dart it = d;
+		do
+		{
+			f(it);
+			it = phi1(it);
+		} while (it != d);
+	}
+
+	template <unsigned int ORBIT, typename FUNC>
+	void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
+	{
+		switch(ORBIT)
+		{
+			case Map1::VERTEX: f(c); break;
+			case Map1::EDGE:   foreach_dart_of_edge(c, f); break;
+			case Map1::FACE:   foreach_dart_of_face(c, f); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+		}
+	}
 };
 
 } // namespace cgogn
