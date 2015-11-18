@@ -35,61 +35,62 @@ namespace cgogn
  * @brief function that give a name to a type.
  */
 template <typename T>
-std::string nameOfType(const T& /*v*/)
+std::string name_of_type(const T& /*v*/)
 {
-	return T::CGoGNnameOfType();
+	return T::CGoGN_name_of_type();
 }
 
 // first we need to declare some specializations
-template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/);
-template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/);
+template <typename T> inline std::string name_of_type(const std::list<T>& /*v*/);
+template <typename T> inline std::string name_of_type(const std::vector<T>& /*v*/);
 
-template <> inline std::string nameOfType(const bool& /*v*/) { return "bool"; }
+template <> inline std::string name_of_type(const bool& /*v*/) { return "bool"; }
 
-template <> inline std::string nameOfType(const char& /*v*/) { return "char"; }
+template <> inline std::string name_of_type(const char& /*v*/) { return "char"; }
 
-template <> inline std::string nameOfType(const short& /*v*/) { return "short"; }
+template <> inline std::string name_of_type(const short& /*v*/) { return "short"; }
 
-template <> inline std::string nameOfType(const int& /*v*/) { return "int"; }
+template <> inline std::string name_of_type(const int& /*v*/) { return "int"; }
 
-template <> inline std::string nameOfType(const long& /*v*/) { return "long"; }
+template <> inline std::string name_of_type(const long& /*v*/) { return "long"; }
 
-template <> inline std::string nameOfType(const long long& /*v*/) { return "long long"; }
+template <> inline std::string name_of_type(const long long& /*v*/) { return "long long"; }
 // because signed char != char
-template <> inline std::string nameOfType(const signed char& /*v*/) { return "signed char"; }
+template <> inline std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
 
-template <> inline std::string nameOfType(const unsigned char& /*v*/) { return "unsigned char"; }
+template <> inline std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
 
-template <> inline std::string nameOfType(const unsigned short& /*v*/) { return "unsigned short"; }
+template <> inline std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
 
-template <> inline std::string nameOfType(const unsigned int& /*v*/) { return "unsigned int"; }
+template <> inline std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
 
-template <> inline std::string nameOfType(const unsigned long& /*v*/) { return "unsigned long"; }
+template <> inline std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
 
-template <> inline std::string nameOfType(const unsigned long long& /*v*/) { return "unsigned long long"; }
+template <> inline std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
 
-template <> inline std::string nameOfType(const float& /*v*/) { return "float"; }
+template <> inline std::string name_of_type(const float& /*v*/) { return "float"; }
 
-template <> inline std::string nameOfType(const double& /*v*/) { return "double"; }
+template <> inline std::string name_of_type(const double& /*v*/) { return "double"; }
 
-template <> inline std::string nameOfType(const std::string& /*v*/) { return "std::string"; }
+template <> inline std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
 
-template <typename T> inline std::string nameOfType(const std::vector<T>& /*v*/) { return std::string("std::vector<") + nameOfType(T()) + std::string(">"); }
-template <typename T> inline std::string nameOfType(const std::list<T>& /*v*/) { return "std::list<"+ nameOfType(T()) + std::string(">"); }
+template <typename T> inline std::string name_of_type(const std::vector<T>& /*v*/) { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
+template <typename T> inline std::string name_of_type(const std::list<T>& /*v*/) { return "std::list<"+ name_of_type(T()) + std::string(">"); }
 
 
 /**
- * @brief add CGoGNnameOfType member to a class
+ * @brief add CGoGNname_of_type member to a class
  *
  * If the class that you want to use as attribute is not basic type nor std::list/std::vector,
  * use AddTypeName<T> instead of T.
- * If you develop the class T, just add as public member: static std::string CGoGNnameOfType() { return "type_name_you_develop"; }
+ * If you develop the class T, just add as public member: static std::string CGoGNname_of_type() { return "type_name_you_develop"; }
  */
 template <typename T>
 class AddTypeName : public T
 {
 public:
-	static std::string CGoGNnameOfType() { return "UNKNOWN"; }
+
+	static std::string CGoGN_name_of_type() { return "UNKNOWN"; }
 };
 
 } // namespace cgogn

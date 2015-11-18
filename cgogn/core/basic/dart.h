@@ -65,27 +65,29 @@ struct Dart
 	 *
 	 * \param[in] v the value of the new dart
 	 */
-	explicit Dart(unsigned int v): index(v) {}
+	explicit Dart(unsigned int v) : index(v)
+	{}
 
 	/**
 	 * \brief Copy constructor.
 	 * Creates a new Dart from an another one.
 	 * \param[in] d a dart
 	 */
-	Dart(const Dart& d): index(d.index) {}
+	Dart(const Dart& d) : index(d.index)
+	{}
 
 	/**
 	 * \brief Name of this CGoGN type
 	 * \return a string representing the name of the class
 	 */
-	static std::string CGoGNnameOfType() { return "Dart"; }
+	static std::string CGoGN_name_of_type() { return "Dart"; }
 
 	/**
 	 * \brief Tests the nullity of the dart.
 	 * \retval true if the dart is nil
 	 * \retval false otherwise
 	 */
-	bool isNil() const { return index == INVALID_INDEX ; }
+	bool is_nil() const { return index == INVALID_INDEX ; }
 
 	/**
 	 * \brief Assigns to the left hand side dart the value
@@ -127,15 +129,14 @@ struct Dart
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the dart to print
 	 */
-	friend std::ostream& operator<<( std::ostream &out, const Dart& rhs )  { return out << rhs.index; }
+	friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) { return out << rhs.index; }
 
 	/**
 	 * \brief Reads a dart from a stream.
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the dart read
 	 */
-	friend std::istream& operator>>( std::istream &in, Dart& rhs ) { in >> rhs.index; return in; }
-
+	friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
 };
 
 /**

@@ -35,17 +35,17 @@
 namespace cgogn
 {
 
-const unsigned int NB_ORBITS	= 8;
-const unsigned int VERTEX1		= 0;
-const unsigned int VERTEX2		= 1;
-const unsigned int EDGE2		= 2;
-const unsigned int FACE2		= 3;
-const unsigned int VERTEX3		= 4;
-const unsigned int EDGE3		= 5;
-const unsigned int FACE3		= 6;
-const unsigned int VOLUME3		= 7;
+const unsigned int NB_ORBITS = 8;
+const unsigned int VERTEX1   = 0;
+const unsigned int VERTEX2   = 1;
+const unsigned int EDGE2     = 2;
+const unsigned int FACE2     = 3;
+const unsigned int VERTEX3   = 4;
+const unsigned int EDGE3     = 5;
+const unsigned int FACE3     = 6;
+const unsigned int VOLUME3   = 7;
 
-inline std::string orbitName(unsigned int orbit)
+inline std::string orbit_name(unsigned int orbit)
 {
 	switch(orbit)
 	{
@@ -81,23 +81,26 @@ public:
 	/**
 	 * \brief Constructs a new  empty Cell with NIL dart.
 	 */
-	inline Cell(): dart() {}
+	inline Cell() : dart()
+	{}
 
 	/**
 	 * \brief Constructs a new Cell with a dart.
 	 * \param d dart to convert to a cell of a given orbit
 	 */
-	inline Cell(Dart d): dart(d) {}
+	inline Cell(Dart d) : dart(d)
+	{}
 
 	/// copy constructor
-	inline Cell(const Cell<ORBIT>& c): dart(c.dart) {}
+	inline Cell(const Cell<ORBIT>& c) : dart(c.dart)
+	{}
 
 	/// Dart cast operator
 	inline operator Dart() const { return dart; }
 
-	friend std::ostream& operator<<( std::ostream &out, const Cell<ORBIT>& fa ) { return out << fa.dart; }
+	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& fa) { return out << fa.dart; }
 
-	inline bool valid() const { return !dart.isNil(); }
+	inline bool is_valid() const { return !dart.is_nil(); }
 };
 
 } // namespace cgogn

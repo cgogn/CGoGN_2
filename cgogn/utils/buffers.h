@@ -49,7 +49,7 @@ public:
 		}
 	}
 
-	inline std::vector<T>* getBuffer()
+	inline std::vector<T>* get_buffer()
 	{
 		if (buffers_.empty())
 		{
@@ -63,7 +63,7 @@ public:
 		return v;
 	}
 
-	inline void releaseBuffer(std::vector<T>* b)
+	inline void release_buffer(std::vector<T>* b)
 	{
 		if (b->capacity() > 1024)
 		{

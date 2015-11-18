@@ -59,8 +59,8 @@ protected:
 
 	void init()
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1 = this->topology_.template addAttribute<Dart>("phi1");
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1 = this->topology_.template addAttribute<Dart>("phi_1");
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1 = this->topology_.template add_attribute<Dart>("phi1");
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1 = this->topology_.template add_attribute<Dart>("phi_1");
 		this->topo_relations_.push_back(phi1);
 		this->topo_relations_.push_back(phi_1);
 	}
@@ -79,7 +79,7 @@ protected:
 	 * - It makes one cycle d->g->...->e->f->...->d
 	 * If e = g then insert e in the cycle of d : d->e->f->...->d
 	 */
-	void phi1sew(Dart d, Dart e)
+	void phi1_sew(Dart d, Dart e)
 	{
 		Dart f = phi1(d);
 		Dart g = phi1(e);
@@ -95,7 +95,7 @@ protected:
 	 * - Before: d->e->f
 	 * - After:  d->f and e->e
 	 */
-	void phi1unsew(Dart d)
+	void phi1_unsew(Dart d)
 	{
 		Dart e = phi1(d);
 		Dart f = phi1(e);
@@ -143,10 +143,10 @@ public:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart addDart()
+	inline Dart add_dart()
 	{
-		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
-		this->topology_.initMarkersOfLine(di);
+		unsigned int di = this->topology_.template insert_lines<1>();	// insert a new dart line
+		this->topology_.init_markers_of_line(di);
 
 		for(unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
@@ -156,8 +156,8 @@ public:
 
 		Dart d(di);
 
-		for (auto relPtr : this->topo_relations_)
-			(*relPtr)[di] = d;
+		for (auto ptr : this->topo_relations_)
+			(*ptr)[di] = d;
 
 		return d;
 	}
@@ -186,15 +186,15 @@ public:
 	 */
 	Dart cut_edge(Dart d)
 	{
-		Dart e = this->newDart();	// Create a new dart
-		phi1sew(d, e);				// Insert dart e between d and phi1(d)
+		Dart e = this->new_dart();	// Create a new dart
+		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
-		if (this->template isBoundaryMarked<2>(d))
-			this->template boundaryMark<2>(e);
+		if (this->template is_boundary_marked<2>(d))
+			this->template boundary_mark<2>(e);
 
-		if (this->template isBoundaryMarked<3>(d))
-			this->template boundaryMark<3>(e);
+		if (this->template is_boundary_marked<3>(d))
+			this->template boundary_mark<3>(e);
 
 		return e;
 	}
@@ -207,8 +207,8 @@ public:
 	void uncut_edge(Dart d)
 	{
 		Dart d1 = phi1(d);
-		phi1unsew(d);			// Dart d is linked to the successor of its successor
-		this->deleteDart(d1);	// Dart d1 is erased
+		phi1_unsew(d);			// Dart d is linked to the successor of its successor
+		this->delete_dart(d1);	// Dart d1 is erased
 	}
 
 	/**

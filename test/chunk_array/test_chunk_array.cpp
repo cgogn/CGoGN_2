@@ -17,200 +17,187 @@ int test1()
 	std::cout << "=============== TEST 1 ===============" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
+	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 
+	for (unsigned int i = 0; i < 41; ++i)
+		container.insert_lines<1>();
 
-	for (int i=0;i<41;++i)
-		container.insertLines<1>();
-
-
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 	}
 
-	container.removeLines<1>(3);
-	container.removeLines<1>(19);
-	container.removeLines<1>(35);
+	container.remove_lines<1>(3);
+	container.remove_lines<1>(19);
+	container.remove_lines<1>(35);
 
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i] << " / " << (*att2)[i] << std::endl;
+		std::cout << i << ": " << (*att1)[i] << " / " << (*att2)[i] << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-	unsigned int li = container.insertLines<1>();
+	unsigned int li = container.insert_lines<1>();
 
 	(*att1)[li] = 110;
 	(*att2)[li] = 123.1f;
 
-	li = container.insertLines<1>();
+	li = container.insert_lines<1>();
 
 	(*att1)[li] = 111;
 	(*att2)[li] = 223.1f;
 
-	li = container.insertLines<1>();
+	li = container.insert_lines<1>();
 
 	(*att1)[li] = 112;
 	(*att2)[li] = 323.1f;
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i] << " / " << (*att2)[i] << std::endl;
+		std::cout << i << ": " << (*att1)[i] << " / " << (*att2)[i] << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-	container.removeLines<1>(3);
-	container.removeLines<1>(19);
-	container.removeLines<1>(35);
+	container.remove_lines<1>(3);
+	container.remove_lines<1>(19);
+	container.remove_lines<1>(35);
 
 	std::vector<unsigned int> mapOldNew;
 	container.compact<1>(mapOldNew);
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i] << " / " << (*att2)[i] << std::endl;
+		std::cout << i << ": " << (*att1)[i] << " / " << (*att2)[i] << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-
 	return 0;
 }
-
-
 
 int test2()
 {
 	std::cout << "=============== TEST 2 ===============" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
+	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
 
-	for (int i=0;i<13;++i)
-		container.insertLines<3>();
+	for (int i = 0; i < 13; ++i)
+		container.insert_lines<3>();
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 		(*att1)[i] = 1+int(i);
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+		std::cout << i << ": " << (*att1)[i] << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-	container.removeLines<3>(2);
-	container.removeLines<3>(35);
+	container.remove_lines<3>(2);
+	container.remove_lines<3>(35);
 
-	unsigned int li = container.insertLines<3>();
+	unsigned int li = container.insert_lines<3>();
 
 	(*att1)[li] = 110;
 	(*att1)[li+1] = 111;
 	(*att1)[li+2] = 112;
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
 
+	container.remove_lines<3>(8);
+	container.remove_lines<3>(17);
 
-	container.removeLines<3>(8);
-	container.removeLines<3>(17);
-
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "-Compact--------------------------------------" << std::endl;
 
 	std::vector<unsigned int> mapOldNew;
 	container.compact<3>(mapOldNew);
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
 
-	li = container.insertLines<3>();
+	li = container.insert_lines<3>();
 
 	(*att1)[li] = 110;
 	(*att1)[li+1] = 111;
 	(*att1)[li+2] = 112;
 
-	li = container.insertLines<3>();
+	li = container.insert_lines<3>();
 
 	(*att1)[li] = 210;
 	(*att1)[li+1] = 211;
 	(*att1)[li+2] = 212;
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		std::cout << i << ": "<< (*att1)[i] << std::endl;
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
 
+	ChunkArray<BLK_SZ,bool>* attB = container.add_attribute<bool>("bools");
 
-	ChunkArray<BLK_SZ,bool>* attB = container.addAttribute<bool>("bools");
-
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
-		std::cout << i << ": "<< (*att1)[i]<< " / "<< (*attB)[i] << std::endl;
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		std::cout << i << ": " << (*att1)[i]<< " / "<< (*attB)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
-
 
 	return 0;
-
 }
-
 
 int test3()
 {
 	std::cout << "=============== TEST 3 ===============" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
-	ChunkArray<BLK_SZ,std::vector<int> >* att2 = container.addAttribute<std::vector<int> >("V_entier");
-	ChunkArray<BLK_SZ,std::list<int> >* att3 = container.addAttribute<std::list<int> >("L_entier");
+	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<BLK_SZ,std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
+	ChunkArray<BLK_SZ,std::list<int> >* att3 = container.add_attribute<std::list<int> >("L_entier");
 
-
-	for (int i=0;i<13;++i)
-		container.insertLines<3>();
+	for (unsigned int i = 0; i < 13; ++i)
+		container.insert_lines<3>();
 
 	std::vector<int> vect = (*att2)[0];
 
-
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
-		for (unsigned int j=0; j<i; ++j)
+		for (unsigned int j = 0; j < i; ++j)
 			(*att2)[i].push_back(int(j));
-		for (unsigned int j=0; j<i/2; ++j)
+		for (unsigned int j = 0; j < i/2; ++j)
 			(*att3)[i].push_front(int(j));
 	}
 
-	container.removeLines<3>(3);
-	container.removeLines<3>(19);
-	container.removeLines<3>(35);
+	container.remove_lines<3>(3);
+	container.remove_lines<3>(19);
+	container.remove_lines<3>(35);
 
-	container.insertLines<3>();
+	container.insert_lines<3>();
 
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		std::cout << i << ": "<< (*att1)[i]<< " // ";
-		for (auto j:(*att2)[i])
-			std::cout<< j << ",";
+		std::cout << i << ": " << (*att1)[i] << " // ";
+		for (auto j : (*att2)[i])
+			std::cout << j << ",";
 		std::cout << " // ";
-		for (auto j:(*att3)[i])
-			std::cout<< j << ",";
-		std::cout<< std::endl;
+		for (auto j : (*att3)[i])
+			std::cout << j << ",";
+		std::cout << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-
-	for(unsigned int i=container.begin(); i!=container.end(); container.nextPrimitive(i,3))
+	for(unsigned int i = container.begin(); i != container.end(); container.next_primitive(i,3))
 	{
-		std::cout << i << ": "<< (*att1)[i]<< " // ";
-		for (auto j:(*att2)[i])
-			std::cout<< j << ",";
+		std::cout << i << ": " << (*att1)[i] << " // ";
+		for (auto j : (*att2)[i])
+			std::cout << j << ",";
 		std::cout << " // ";
-		for (auto j:(*att3)[i])
-			std::cout<< j << ",";
-		std::cout<< std::endl;
+		for (auto j : (*att3)[i])
+			std::cout << j << ",";
+		std::cout << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
@@ -223,27 +210,26 @@ int test4()
 	typedef std::vector< std::vector< double > > vecvecdouble;
 	typedef std::vector< std::list< double > > veclistdouble;
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.addAttribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.addAttribute<float>("reel");
-	ChunkArray<BLK_SZ,bool>* att3 = container.addAttribute<bool>("bools");
-	ChunkArray<BLK_SZ,vecvecdouble>* att4 = container.addAttribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<BLK_SZ,veclistdouble>* att5 = container.addAttribute<veclistdouble>("veclistdouble");
+	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<BLK_SZ,bool>* att3 = container.add_attribute<bool>("bools");
+	ChunkArray<BLK_SZ,vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<BLK_SZ,veclistdouble>* att5 = container.add_attribute<veclistdouble>("veclistdouble");
 
 	for (unsigned int i = 0u; i < 7u; ++i)
-		container.insertLines<3>();
-
+		container.insert_lines<3>();
 
 	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3).setValue(i, static_cast<bool>(i%2));
+		(*att3).set_value(i, static_cast<bool>(i%2));
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 	}
 
-	container.removeLines<3>(3);
-	container.removeLines<3>(13);
+	container.remove_lines<3>(3);
+	container.remove_lines<3>(13);
 
 	std::ofstream of("pipo.map");
 	container.save(of);
@@ -254,15 +240,15 @@ int test4()
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<BLK_SZ,int>* load_att1 = cont2.getAttribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* load_att2 = cont2.getAttribute<float>("reel");
-	ChunkArray<BLK_SZ,bool>* load_att3 = cont2.getAttribute<bool>("bools");
-	ChunkArray<BLK_SZ,vecvecdouble>* load_att4 = cont2.getAttribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<BLK_SZ,veclistdouble>* load_att5 = cont2.getAttribute<veclistdouble>("veclistdouble");
+	ChunkArray<BLK_SZ,int>* load_att1 = cont2.get_attribute<int>("entier");
+	ChunkArray<BLK_SZ,float>* load_att2 = cont2.get_attribute<float>("reel");
+	ChunkArray<BLK_SZ,bool>* load_att3 = cont2.get_attribute<bool>("bools");
+	ChunkArray<BLK_SZ,vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<BLK_SZ,veclistdouble>* load_att5 = cont2.get_attribute<veclistdouble>("veclistdouble");
 
 	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
-		std::cout << i << ": "<< (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] << " / ";
+		std::cout << i << ": " << (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] << " / ";
 		for (const auto& v : (*load_att4)[i])
 			for (auto x : v)
 				std::cout << x << " ";
@@ -279,7 +265,6 @@ int test4()
 	return 0;
 }
 
-
 int main()
 {
 	test1();
@@ -287,4 +272,3 @@ int main()
 	test3();
 	test4();
 }
-

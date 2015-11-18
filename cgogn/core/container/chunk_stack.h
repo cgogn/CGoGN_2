@@ -75,7 +75,7 @@ public:
 		unsigned int blkId  = stack_size_ / CHUNKSIZE;
 
 		if (blkId >= this->table_data_.size())
-			this->addChunk();
+			this->add_chunk();
 
 		this->table_data_[blkId][offset] = val;
 	}

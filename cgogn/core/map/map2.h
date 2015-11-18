@@ -55,7 +55,7 @@ protected:
 
 	void init()
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi2 = this->topology_.template addAttribute<Dart>("phi2");
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi2 = this->topology_.template add_attribute<Dart>("phi2");
 		this->topo_relations_.push_back(phi2);
 	}
 
@@ -69,7 +69,7 @@ protected:
 	 *	- Before: d->d and e->e
 	 *	- After:  d->e and e->d
 	 */
-	void phi2sew(Dart d, Dart e)
+	void phi2_sew(Dart d, Dart e)
 	{
 		cgogn_assert(phi2(d) == d);
 		cgogn_assert(phi2(e) == e);
@@ -83,7 +83,7 @@ protected:
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
 	 */
-	void phi2unsew(Dart d)
+	void phi2_unsew(Dart d)
 	{
 		Dart e = phi2(d) ;
 		(*(this->topo_relations_[2]))[d.index] = d;
@@ -148,14 +148,14 @@ public:
 	{
 		DartMarkerStore<Map2> marker(*this); // get a marker
 
-		std::vector<Dart>* visited_faces = dart_buffers_thread->getBuffer();
+		std::vector<Dart>* visited_faces = dart_buffers_thread->get_buffer();
 
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
 		for(unsigned int i = 0; i < visited_faces->size(); ++i)
 		{
-			if (!marker.isMarked((*visited_faces)[i]))	// Face has not been visited yet
+			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
 			{
 				// Apply functor to the darts of the face
 				Map2::foreach_dart_of_face((*visited_faces)[i], f);
@@ -167,14 +167,14 @@ public:
 				{
 					marker.mark(e);				// Mark
 					Dart adj = phi2(e);			// Get adjacent face
-					if (!marker.isMarked(adj))
+					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
 					e = this->phi1(e);
 				} while(e != (*visited_faces)[i]);
 			}
 		}
 
-		dart_buffers_thread->releaseBuffer(visited_faces);
+		dart_buffers_thread->release_buffer(visited_faces);
 	}
 
 	template <unsigned int ORBIT, typename FUNC>

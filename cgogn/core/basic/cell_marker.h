@@ -59,13 +59,13 @@ public:
 		CellMarkerGen(),
 		map_(map)
 	{
-		mark_attribute_ = map_.template getMarkAttribute<ORBIT>();
+		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
 	}
 
 	~CellMarkerT() override
 	{
-		if (MapGen::isAlive(&map_))
-			map_.template releaseMarkAttribute<ORBIT>(mark_attribute_);
+		if (MapGen::is_alive(&map_))
+			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
 
 	CellMarkerT(const CellMarkerT<MAP, ORBIT>& dm) = delete;
@@ -76,19 +76,19 @@ public:
 	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->setTrue(map_.getEmbedding(c));
+		mark_attribute_->set_true(map_.get_embedding(c));
 	}
 
 	inline void unmark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->setFalse(map_.getEmbedding(c));
+		mark_attribute_->set_false(map_.get_embedding(c));
 	}
 
-	inline void isMarked(Cell<ORBIT> c) const
+	inline void is_marked(Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		return (*mark_attribute_)[map_.getEmbedding(c)];
+		return (*mark_attribute_)[map_.get_embedding(c)];
 	}
 };
 
@@ -105,7 +105,7 @@ public:
 
 	~CellMarker() override
 	{
-		unmarkAll() ;
+		unmark_all() ;
 	}
 
 	CellMarker(const CellMarker<MAP, ORBIT>& dm) = delete;
@@ -113,10 +113,10 @@ public:
 	CellMarker<MAP, ORBIT>& operator=(CellMarker<MAP, ORBIT>&& dm) = delete;
 	CellMarker<MAP, ORBIT>& operator=(const CellMarker<MAP, ORBIT>& dm) = delete;
 
-	inline void unmarkAll()
+	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		this->mark_attribute_->allFalse();
+		this->mark_attribute_->all_false();
 	}
 };
 
@@ -134,13 +134,13 @@ public:
 	CellMarkerStore(MAP& map) :
 		Inherit(map)
 	{
-		marked_cells_ = uint_buffers_thread->getBuffer();
+		marked_cells_ = uint_buffers_thread->get_buffer();
 	}
 
 	~CellMarkerStore() override
 	{
-		unmarkAll();
-		uint_buffers_thread->releaseBuffer(marked_cells_);
+		unmark_all();
+		uint_buffers_thread->release_buffer(marked_cells_);
 	}
 
 	CellMarkerStore(const CellMarkerStore<MAP, ORBIT>& dm) = delete;
@@ -152,15 +152,15 @@ public:
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		Inherit::mark(c);
-		marked_cells_->push_back(this->map_.getEmbedding(c));
+		marked_cells_->push_back(this->map_.get_embedding(c));
 	}
 
-	inline void unmarkAll()
+	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		for (unsigned int i : marked_cells_)
 		{
-			this->mark_attribute_->setFalse(i);
+			this->mark_attribute_->set_false(i);
 		}
 	}
 };

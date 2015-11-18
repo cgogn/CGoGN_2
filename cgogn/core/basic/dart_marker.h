@@ -59,13 +59,13 @@ public:
 		DartMarkerGen(),
 		map_(map)
 	{
-		mark_attribute_ = map_.template getTopologyMarkAttribute();
+		mark_attribute_ = map_.template get_topology_mark_attribute();
 	}
 
 	~DartMarkerT() override
 	{
-		if (MapGen::isAlive(&map_))
-			map_.template releaseTopologyMarkAttribute(mark_attribute_);
+		if (MapGen::is_alive(&map_))
+			map_.template release_topology_mark_attribute(mark_attribute_);
 	}
 
 	DartMarkerT(const DartMarkerT<MAP>& dm) = delete;
@@ -76,38 +76,38 @@ public:
 	inline void mark(Dart d)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
-		mark_attribute_->setTrue(d.index);
+		mark_attribute_->set_true(d.index);
 	}
 
 	inline void unmark(Dart d)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
-		mark_attribute_->setFalse(d.index);
+		mark_attribute_->set_false(d.index);
 	}
 
-	inline void isMarked(Dart d) const
+	inline void is_marked(Dart d) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		return (*mark_attribute_)[d.index];
 	}
 
 	template <unsigned int ORBIT>
-	inline void markOrbit(Cell<ORBIT> c)
+	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
-			mark_attribute_->setTrue(d.index);
+			mark_attribute_->set_true(d.index);
 		});
 	}
 
 	template <unsigned int ORBIT>
-	inline void unmarkOrbit(Cell<ORBIT> c)
+	inline void unmark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
-			mark_attribute_->setFalse(d.index);
+			mark_attribute_->set_false(d.index);
 		});
 	}
 };
@@ -125,7 +125,7 @@ public:
 
 	~DartMarker() override
 	{
-		unmarkAll() ;
+		unmark_all() ;
 	}
 
 	DartMarker(const DartMarker<MAP>& dm) = delete;
@@ -133,10 +133,10 @@ public:
 	DartMarker<MAP>& operator=(DartMarker<MAP>&& dm) = delete;
 	DartMarker<MAP>& operator=(const DartMarker<MAP>& dm) = delete;
 
-	inline void unmarkAll()
+	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
-		this->mark_attribute_->allFalse();
+		this->mark_attribute_->all_false();
 	}
 };
 
@@ -154,13 +154,13 @@ public:
 	DartMarkerStore(MAP& map) :
 		Inherit(map)
 	{
-		marked_darts_ = dart_buffers_thread->getBuffer();
+		marked_darts_ = dart_buffers_thread->get_buffer();
 	}
 
 	~DartMarkerStore() override
 	{
-		unmarkAll();
-		dart_buffers_thread->releaseBuffer(marked_darts_);
+		unmark_all();
+		dart_buffers_thread->release_buffer(marked_darts_);
 	}
 
 	DartMarkerStore(const DartMarkerStore<MAP>& dm) = delete;
@@ -176,7 +176,7 @@ public:
 	}
 
 	template <unsigned int ORBIT>
-	inline void markOrbit(Cell<ORBIT> c)
+	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)
@@ -186,7 +186,7 @@ public:
 		});
 	}
 
-	inline void unmarkAll()
+	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		for (Dart d : marked_darts_)

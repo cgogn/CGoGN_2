@@ -53,7 +53,7 @@ public:
 
 	virtual ~MapGen();
 
-	static inline bool isAlive(MapGen* map)
+	static inline bool is_alive(MapGen* map)
 	{
 		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
 	}
@@ -126,14 +126,14 @@ public:
 	 * Containers management
 	 *******************************************************************************/
 
-	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& getAttributeContainer(unsigned int orbit)
+	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& get_attribute_container(unsigned int orbit)
 	{
 		return attributes_[orbit];
 	}
 
-	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* getTopologyMarkAttribute()
+	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* get_topology_mark_attribute()
 	{
-		unsigned int thread = getCurrentThreadIndex();
+		unsigned int thread = get_current_thread_index();
 		if (!mark_attributes_topology_[thread].empty())
 		{
 			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_topology_[thread].back();
@@ -150,23 +150,23 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.addMarkerAttribute("marker_" + number);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.add_marker_attribute("marker_" + number);
 			return ca;
 		}
 	}
 
-	inline void releaseTopologyMarkAttribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
+	inline void release_topology_mark_attribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
 	{
-		unsigned int thread = getCurrentThreadIndex();
+		unsigned int thread = get_current_thread_index();
 		mark_attributes_topology_[thread].push_back(ca);
 	}
 
 	template <unsigned int ORBIT>
-	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* getMarkAttribute()
+	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* get_mark_attribute()
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 
-		unsigned int thread = getCurrentThreadIndex();
+		unsigned int thread = get_current_thread_index();
 		if (!mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_[ORBIT][thread].back();
@@ -183,17 +183,17 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].addMarkerAttribute("marker_" + orbitName(ORBIT) + number);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].add_marker_attribute("marker_" + orbit_name(ORBIT) + number);
 			return ca;
 		}
 	}
 
 	template <unsigned int ORBIT>
-	inline void releaseMarkAttribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
+	inline void release_mark_attribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 
-		unsigned int thread = getCurrentThreadIndex();
+		unsigned int thread = get_current_thread_index();
 		mark_attributes_[ORBIT][thread].push_back(ca);
 	}
 
@@ -202,7 +202,7 @@ public:
 	 *******************************************************************************/
 
 	template <unsigned int ORBIT>
-	inline unsigned int getEmbedding(const Cell<ORBIT>& c) const
+	inline unsigned int get_embedding(const Cell<ORBIT>& c) const
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 
@@ -215,7 +215,7 @@ protected:
 	 * Thread management
 	 *******************************************************************************/
 
-	inline unsigned int getCurrentThreadIndex() const
+	inline unsigned int get_current_thread_index() const
 	{
 		std::thread::id id = std::this_thread::get_id();
 		unsigned int i = 0;

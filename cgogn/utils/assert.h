@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_ASSERT_
-#define UTILS_ASSERT_
+#ifndef UTILS_ASSERT_H_
+#define UTILS_ASSERT_H_
 
 #include <string>
 #include <utils/dll.h>
@@ -204,4 +204,4 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 	#define parano_message_assert(x, msg)
 #endif
 
-#endif // UTILS_ASSERT_
+#endif // UTILS_ASSERT_H_

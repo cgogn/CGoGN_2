@@ -62,19 +62,19 @@ public:
 	 * @return a handler to the created attribute
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attribute_name = "")
+	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		if (this->embeddings_[ORBIT] == nullptr)
 		{
 			std::ostringstream oss;
-			oss << "EMB_" << orbitName(ORBIT);
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* idx = this->topology_.template addAttribute<unsigned int>(oss.str());
+			oss << "EMB_" << orbit_name(ORBIT);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
 			this->embeddings_[ORBIT] = idx;
 			for (unsigned int i = this->topology_.begin(); i != this->topology_.end(); this->topology_.next(i))
 				(*idx)[i] = EMBNULL;
 		}
 
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template addAttribute<T>(attribute_name);
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
@@ -84,16 +84,16 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline bool removeAttribute(AttributeHandler<T, ORBIT>& ah)
+	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = ah.getData();
 
-		if (this->attributes_[ORBIT].removeAttribute(ca))
+		if (this->attributes_[ORBIT].remove_attribute(ca))
 		{
 			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT;
 			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
 			for(IT i = bounds.first; i != bounds.second; ++i)
-				(*i).second->setInvalid();
+				(*i).second->set_invalid();
 			attribute_handlers_.erase(bounds.first, bounds.second);
 			return true;
 		}
@@ -106,9 +106,9 @@ public:
 	* @return an AttributeHandler
 	*/
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler< T, ORBIT> getAttribute(const std::string& attribute_name)
+	inline AttributeHandler< T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template getAttribute<T>(attribute_name);
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 

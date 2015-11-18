@@ -47,7 +47,7 @@ inline void thread_start()
 		uint_buffers_thread = new Buffers<unsigned int>();
 }
 
-inline void thread_end()
+inline void thread_stop()
 {
 	delete dart_buffers_thread;
 	delete uint_buffers_thread;

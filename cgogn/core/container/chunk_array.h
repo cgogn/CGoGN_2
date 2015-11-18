@@ -78,7 +78,7 @@ public:
 		return new ChunkArray<CHUNKSIZE, T>();
 	}
 
-	bool isBooleanArray() const override
+	bool is_boolean_array() const override
 	{
 		return false;
 	}
@@ -86,7 +86,7 @@ public:
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
 	 */
-	void addChunk() override
+	void add_chunk() override
 	{
 		table_data_.emplace_back(new T[CHUNKSIZE]());
 	}
@@ -95,12 +95,12 @@ public:
 	 * @brief set number of chunks
 	 * @param nbc number of chunks
 	 */
-	void setNbChunks(unsigned int nbc) override
+	void set_nb_chunks(unsigned int nbc) override
 	{
 		if (nbc >= table_data_.size())
 		{
 			for (std::size_t i= table_data_.size(); i <nbc; ++i)
-				addChunk();
+				add_chunk();
 		}
 		else
 		{
@@ -114,7 +114,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	unsigned int getNbChunks() const override
+	unsigned int get_nb_chunks() const override
 	{
 		return static_cast<unsigned int>(table_data_.size());
 	}
@@ -144,7 +144,7 @@ public:
 	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
+	unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
 	{
 		byte_block_size = CHUNKSIZE * sizeof(T);
 
@@ -161,7 +161,7 @@ public:
 	 * @brief initialize an element (overwrite with T())
 	 * @param id index of the element
 	 */
-	void initElement(unsigned int id) override
+	void init_element(unsigned int id) override
 	{
 		table_data_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
 	}
@@ -171,7 +171,7 @@ public:
 	 * @param dst destination index
 	 * @param src source index
 	 */
-	void copyElement(unsigned int dst, unsigned int src) override
+	void copy_element(unsigned int dst, unsigned int src) override
 	{
 		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
 	}
@@ -181,7 +181,7 @@ public:
 	 * @param idx1 first element index
 	 * @param idx2 second element index
 	 */
-	void swapElements(unsigned int idx1, unsigned int idx2) override
+	void swap_elements(unsigned int idx1, unsigned int idx2) override
 	{
 		std::swap(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
 	}
@@ -245,7 +245,7 @@ public:
 
 	void save(std::ostream& fs, unsigned int nb_lines) const override
 	{
-		cgogn_assert(nb_lines / CHUNKSIZE <= getNbChunks());
+		cgogn_assert(nb_lines / CHUNKSIZE <= get_nb_chunks());
 
 		serialization::save(fs, &nb_lines, 1);
 
@@ -253,7 +253,7 @@ public:
 		if (nb_lines == 0)
 			return;
 
-		unsigned int nbc = getNbChunks() - 1u;
+		unsigned int nbc = get_nb_chunks() - 1u;
 
 		// save data chunks except last
 		for(unsigned int i = 0u; i < nbc; ++i)
@@ -279,7 +279,7 @@ public:
 		if (nb_lines % CHUNKSIZE != 0)
 			nbc++;
 
-		this->setNbChunks(nbc);
+		this->set_nb_chunks(nbc);
 
 		// load data chunks except last
 		nbc--;
@@ -320,7 +320,7 @@ public:
 	 * @param i index of element to set
 	 * @param v value
 	 */
-	inline void setValue(unsigned int i, const T& v)
+	inline void set_value(unsigned int i, const T& v)
 	{
 		cgogn_assert(i / CHUNKSIZE < table_data_.size());
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
@@ -365,7 +365,7 @@ public:
 		return new ChunkArray<CHUNKSIZE, bool>();
 	}
 
-	bool isBooleanArray() const override
+	bool is_boolean_array() const override
 	{
 		return true;
 	}
@@ -373,7 +373,7 @@ public:
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE/32])
 	 */
-	void addChunk() override
+	void add_chunk() override
 	{
 		// adding the empty parentheses for default-initialization
 		table_data_.push_back(new unsigned int[CHUNKSIZE/32u]());
@@ -383,12 +383,12 @@ public:
 	 * @brief set number of chunks
 	 * @param nbc number of chunks
 	 */
-	void setNbChunks(unsigned int nbc) override
+	void set_nb_chunks(unsigned int nbc) override
 	{
 		if (nbc >= table_data_.size())
 		{
 			for (std::size_t i = table_data_.size(); i < nbc; ++i)
-				addChunk();
+				add_chunk();
 		}
 		else
 		{
@@ -402,7 +402,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	unsigned int getNbChunks() const override
+	unsigned int get_nb_chunks() const override
 	{
 		return static_cast<unsigned int>(table_data_.size());
 	}
@@ -432,7 +432,7 @@ public:
 	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	inline unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
+	inline unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
 	{
 		byte_block_size = CHUNKSIZE / 8u;
 
@@ -449,9 +449,9 @@ public:
 	 * @brief initialize an element (overwrite with T())
 	 * @param id index of the element
 	 */
-	inline void initElement(unsigned int id) override
+	inline void init_element(unsigned int id) override
 	{
-		setFalse(id);
+		set_false(id);
 	}
 
 	/**
@@ -459,9 +459,9 @@ public:
 	 * @param dst destination index
 	 * @param src source index
 	 */
-	inline void copyElement(unsigned int dst, unsigned int src) override
+	inline void copy_element(unsigned int dst, unsigned int src) override
 	{
-		setValue(dst, this->operator[](src));
+		set_value(dst, this->operator[](src));
 	}
 
 	/**
@@ -469,11 +469,11 @@ public:
 	 * @param idx1 first element index
 	 * @param idx2 second element index
 	 */
-	inline void swapElements(unsigned int idx1, unsigned int idx2) override
+	inline void swap_elements(unsigned int idx1, unsigned int idx2) override
 	{
 		bool data = this->operator[](idx1);
-		setValue(idx1, this->operator[](idx2));
-		setValue(idx2, data);
+		set_value(idx1, this->operator[](idx2));
+		set_value(idx2, data);
 	}
 
 	void save(std::ostream& fs, unsigned int nb_lines) const override
@@ -492,7 +492,7 @@ public:
 		if (nb_lines == 0u)
 			return;
 
-		const unsigned int nbc = getNbChunks() - 1u;
+		const unsigned int nbc = get_nb_chunks() - 1u;
 		// save data chunks except last
 		for(unsigned int i = 0u; i < nbc; ++i)
 		{
@@ -519,7 +519,7 @@ public:
 		if (nb_lines % CHUNKSIZE != 0u)
 			nbc++;
 
-		this->setNbChunks(nbc);
+		this->set_nb_chunks(nbc);
 
 		// load data chunks except last
 		nbc--;
@@ -551,7 +551,7 @@ public:
 		return (table_data_[jj][x] & mask) != 0u;
 	}
 
-	inline void setFalse(unsigned int i)
+	inline void set_false(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
@@ -562,7 +562,7 @@ public:
 		table_data_[jj][x] &= ~mask;
 	}
 
-	inline void setTrue(unsigned int i)
+	inline void set_true(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
@@ -573,7 +573,7 @@ public:
 		table_data_[jj][x] |= mask;
 	}
 
-	inline void setValue(unsigned int i, bool b)
+	inline void set_value(unsigned int i, bool b)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
@@ -594,7 +594,7 @@ public:
 	 * This version overwrites element AND SOME OF HIS NEIGHBOURS with 0
 	 * Use only if final goal is to set all array to 0 (MarkerStore)
 	 */
-	inline void setFalse_byte(unsigned int i)
+	inline void set_false_byte(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
@@ -602,7 +602,7 @@ public:
 		table_data_[jj][j] = 0u;
 	}
 
-	inline void allFalse()
+	inline void all_false()
 	{
 		for (auto ptr : table_data_)
 		{
@@ -611,7 +611,7 @@ public:
 		}
 	}
 
-//	inline void allTrue()
+//	inline void all_true()
 //	{
 //		for (auto ptr : table_data_)
 //		{
