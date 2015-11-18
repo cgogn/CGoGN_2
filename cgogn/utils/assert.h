@@ -51,10 +51,26 @@ namespace cgogn
  * \param[in] file_name file where the assertion failed.
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
- *
  */
 CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	const std::string& expression,
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+);
+
+/**
+ * Prints an unreachable location failure.
+ * This function is called when execution reaches a point that
+ * should not be reached. It prints an error message and 
+ * terminates the program. 
+ * \param[in] message string information message to print out.
+ * \param[in] file_name file where the assertion failed.
+ * \param[in] function_name function where the assertion failed.
+ * \param[in] line_number line where the assertion failed.
+ */
+CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,
@@ -90,6 +106,16 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 	{			 														\
 		cgogn::assertion_failed(#x, msg, __FILE__, __func__, __LINE__);	\
 	} 																	\
+}
+
+/**
+ * \brief Sets a non reachable point in the program
+ * \details
+ * \param[in] msg the specific information message
+ */
+#define cgogn_assert_not_reached(msg)								\
+{																	\
+	cgogn::should_not_have_reached(msg, __FILE__, __func, __LINE__);\
 }
 
 /**

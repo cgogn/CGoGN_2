@@ -47,4 +47,20 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(const std::string& expressi
 	std::abort();
 }
 
+ CGOGN_UTILS_API CGOGN_NORETURN void assertion_not_reached(const std::string& message,
+	const std::string& file_name, const std::string& function_name, int line_number ) 
+{
+ 	std::ostringstream os;
+	os << "Should not have reached this point";
+	if(message.empty())
+		os << ".\n";
+	else
+		os<< " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " <<  function_name << ", line: " << line_number ;
+
+	std::cerr << os.str() << std::endl;
+	std::abort();
+}
+
+
 } // namespace cgogn
