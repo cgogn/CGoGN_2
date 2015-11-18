@@ -142,6 +142,7 @@ public:
 	{
 		Inherit::foreach_dart_of_face(d, f);
 	}
+
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
@@ -181,10 +182,11 @@ public:
 	{
 		switch(ORBIT)
 		{
-			case VERTEX: f(c); break;
-			case EDGE:   foreach_dart_of_edge(c, f); break;
-			case FACE:   foreach_dart_of_face(c, f); break;
-			default:     cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
+			case Map2::VERTEX: f(c); break;
+			case Map2::EDGE:   foreach_dart_of_edge(c, f); break;
+			case Map2::FACE:   foreach_dart_of_face(c, f); break;
+			case Map2::VOLUME: foreach_dart_of_volume(c, f); break;
+			default: cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
 		}
 	}
 };

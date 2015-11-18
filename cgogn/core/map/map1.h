@@ -40,6 +40,8 @@ class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 {
 public:
 
+	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
+
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
@@ -105,7 +107,7 @@ protected:
 
 public:
 
-	inline Map1()
+	Map1() : Inherit()
 	{
 		init();
 	}
@@ -251,7 +253,7 @@ public:
 			case Map1::VERTEX: f(c); break;
 			case Map1::EDGE:   foreach_dart_of_edge(c, f); break;
 			case Map1::FACE:   foreach_dart_of_face(c, f); break;
-			default:     cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
+			default: cgogn_message_assert(false, "Cells of this dimension are not handled"); break;
 		}
 	}
 };

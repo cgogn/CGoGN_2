@@ -134,7 +134,7 @@ public:
 	DartMarker<MAP>& operator=(DartMarker<MAP>&& dm) = delete;
 	DartMarker<MAP>& operator=(const DartMarker<MAP>& dm) = delete;
 
-	void unmarkAll()
+	inline void unmarkAll()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		this->mark_attribute_->allFalse();
@@ -171,6 +171,7 @@ public:
 
 	inline void mark(Dart d)
 	{
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		Inherit::mark(d);
 		marked_darts_->push_back(d);
 	}
@@ -178,6 +179,7 @@ public:
 	template <unsigned int ORBIT>
 	inline void markOrbit(Cell<ORBIT> c)
 	{
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
 			Inherit::mark(d);
@@ -185,7 +187,7 @@ public:
 		});
 	}
 
-	void unmarkAll()
+	inline void unmarkAll()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		for (Dart d : marked_darts_)
