@@ -114,7 +114,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  */
 #define cgogn_assert_not_reached(msg)								\
 {																	\
-	cgogn::should_not_have_reached(msg, __FILE__, __func, __LINE__);\
+	cgogn::should_not_have_reached(msg, __FILE__, __func__, __LINE__);\
 }
 
 /**
