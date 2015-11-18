@@ -37,8 +37,7 @@ public:
 	DartMarkerGen()
 	{}
 
-	virtual ~DartMarkerGen()
-	{}
+	virtual ~DartMarkerGen();
 
 	DartMarkerGen(const DartMarkerGen& dm) = delete;
 	DartMarkerGen(DartMarkerGen&& dm) = delete;

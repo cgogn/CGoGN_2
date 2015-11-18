@@ -37,8 +37,7 @@ public:
 	CellMarkerGen()
 	{}
 
-	virtual ~CellMarkerGen()
-	{}
+	virtual ~CellMarkerGen();
 
 	CellMarkerGen(const CellMarkerGen& dm) = delete;
 	CellMarkerGen(CellMarkerGen&& dm) = delete;
