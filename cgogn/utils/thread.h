@@ -29,6 +29,15 @@
 namespace cgogn
 {
 
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
+
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+
 inline void thread_start()
 {
 	if (dart_buffers_thread == nullptr)
