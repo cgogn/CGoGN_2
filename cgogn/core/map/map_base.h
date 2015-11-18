@@ -37,7 +37,7 @@ class MapBase : public MapBaseData<DATA_TRAITS>
 {
 protected:
 
-	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attributeHandlers_;
+	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attribute_handlers_;
 
 public:
 
@@ -51,7 +51,7 @@ public:
 	{}
 
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attributeName = "")
+	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attribute_name = "")
 	{
 		if (this->embeddings_[ORBIT] == nullptr)
 		{
@@ -63,7 +63,7 @@ public:
 				(*idx)[i] = EMBNULL;
 		}
 
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template addAttribute<T>(attributeName);
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template addAttribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
@@ -80,10 +80,10 @@ public:
 		if (this->attributes_[ORBIT].removeAttribute(ca))
 		{
 			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT;
-			std::pair<IT, IT> bounds = attributeHandlers_.equal_range(ca);
+			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
 			for(IT i = bounds.first; i != bounds.second; ++i)
 				(*i).second->setInvalid();
-			attributeHandlers_.erase(bounds.first, bounds.second);
+			attribute_handlers_.erase(bounds.first, bounds.second);
 			return true;
 		}
 		return false;
@@ -95,9 +95,9 @@ public:
 	* @return an AttributeHandler
 	*/
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler< T, ORBIT> getAttribute(const std::string& nameAttr)
+	inline AttributeHandler< T, ORBIT> getAttribute(const std::string& attribute_name)
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template getAttribute<T>(nameAttr);
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template getAttribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
@@ -108,7 +108,7 @@ public:
 	inline Dart addDart()
 	{
 		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
-		this->topology_.initBooleansOfLine(di);
+		this->topology_.initMarkersOfLine(di);
 
 		for(unsigned int i = 0; i < NB_ORBITS; ++i)
 		{

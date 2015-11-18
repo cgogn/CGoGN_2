@@ -46,7 +46,7 @@ class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 protected:
 
 	/// vector of block pointers
-	std::vector<T*> tableData_;
+	std::vector<T*> table_data_;
 
 public:
 
@@ -55,26 +55,18 @@ public:
 	 */
 	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
 	{
-		tableData_.reserve(1024u);
+		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const ChunkArray< CHUNKSIZE, T>& ca) = delete;
-	ChunkArray(ChunkArray< CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray< CHUNKSIZE, T>& operator=(ChunkArray< CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray< CHUNKSIZE, T>& operator=(const ChunkArray< CHUNKSIZE, T>& ca) = delete;
+	ChunkArray(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
+	ChunkArray(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
+	ChunkArray<CHUNKSIZE, T>& operator=(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
+	ChunkArray<CHUNKSIZE, T>& operator=(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
 
-	/**
-	 * @brief Destructor of ChunkArray
-	 */
 	~ChunkArray() override
 	{
-		for(auto chunk: tableData_)
+		for(auto chunk : table_data_)
 			delete[] chunk;
-	}
-
-	bool isBooleanArray() const override
-	{
-		return false;
 	}
 
 	/**
@@ -86,12 +78,17 @@ public:
 		return new ChunkArray<CHUNKSIZE, T>();
 	}
 
+	bool isBooleanArray() const override
+	{
+		return false;
+	}
+
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
 	 */
 	void addChunk() override
 	{
-		tableData_.emplace_back(new T[CHUNKSIZE]());
+		table_data_.emplace_back(new T[CHUNKSIZE]());
 	}
 
 	/**
@@ -100,16 +97,16 @@ public:
 	 */
 	void setNbChunks(unsigned int nbc) override
 	{
-		if (nbc >= tableData_.size())
+		if (nbc >= table_data_.size())
 		{
-			for (std::size_t i= tableData_.size(); i <nbc; ++i)
+			for (std::size_t i= table_data_.size(); i <nbc; ++i)
 				addChunk();
 		}
 		else
 		{
-			for (std::size_t i = nbc; i < tableData_.size(); ++i)
-				delete[] tableData_[i];
-			tableData_.resize(nbc);
+			for (std::size_t i = nbc; i < table_data_.size(); ++i)
+				delete[] table_data_[i];
+			table_data_.resize(nbc);
 		}
 	}
 
@@ -119,118 +116,85 @@ public:
 	 */
 	unsigned int getNbChunks() const override
 	{
-		return static_cast<unsigned int>(tableData_.size());
+		return static_cast<unsigned int>(table_data_.size());
 	}
 
 	/**
-	 * @brief number of allocated elements
-	 * @return  allocated lines
+	 * @brief get the capacity of the array
+	 * @return number of allocated lines
 	 */
 	unsigned int capacity() const override
 	{
-		return static_cast<unsigned int>(tableData_.size())*CHUNKSIZE;
+		return static_cast<unsigned int>(table_data_.size())*CHUNKSIZE;
 	}
 
 	/**
-	 * @brief clear
+	 * @brief clear the array
 	 */
 	void clear() override
 	{
-		for(auto chunk: tableData_)
+		for(auto chunk : table_data_)
 			delete[] chunk;
-		tableData_.clear();
+		table_data_.clear();
 	}
 
 	/**
-	 * @brief ref operator []
-	 * @param i index of element to access
-	 * @return ref of element
-	 */
-	inline T& operator[](unsigned int i)
-	{
-		cgogn_assert(i/CHUNKSIZE < tableData_.size());
-		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
-	}
-
-	/**
-	 * @brief const ref operator []
-	 * @param i index of element to access
-	 * @return const ref of element
-	 */
-	inline const T& operator[](unsigned int i) const
-	{
-		cgogn_assert(i/CHUNKSIZE < tableData_.size());
-		return tableData_[i / CHUNKSIZE][i % CHUNKSIZE];
-	}
-
-	/**
-	 * @brief set the value of an element (works also with bool)
-	 * @param i index of element to set
-	 * @param v value
-	 */
-	inline void setVal(unsigned int i, const T& v)
-	{
-		cgogn_assert(i/CHUNKSIZE < tableData_.size());
-		tableData_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
-	}
-
-	/**
-	 * @brief get pointer on all chunks data
+	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byteBlockSize filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const override
+	unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
 	{
-		byteBlockSize = CHUNKSIZE * sizeof(T);
+		byte_block_size = CHUNKSIZE * sizeof(T);
 
-		addr.reserve(tableData_.size());
+		addr.reserve(table_data_.size());
 		addr.clear();
 
-		for (typename std::vector<T*>::const_iterator it = tableData_.begin(); it != tableData_.end(); ++it)
+		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
 		return static_cast<unsigned int>(addr.size());
 	}
 
 	/**
-	 * @brief init an element (overwrite with T())
-	 * @param id index of element
+	 * @brief initialize an element (overwrite with T())
+	 * @param id index of the element
 	 */
-	void initElt(unsigned int id) override
+	void initElement(unsigned int id) override
 	{
-		tableData_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
+		table_data_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
 	}
 
 	/**
-	 * @brief copy element
-	 * @param dst destination
-	 * @param src source
+	 * @brief copy an element to another one
+	 * @param dst destination index
+	 * @param src source index
 	 */
-	void copyElt(unsigned int dst, unsigned int src) override
+	void copyElement(unsigned int dst, unsigned int src) override
 	{
-		tableData_[dst / CHUNKSIZE][dst % CHUNKSIZE] = tableData_[src / CHUNKSIZE][src % CHUNKSIZE];
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
 	}
 
 	/**
 	 * @brief swap two elements
-	 * @param id1 idx first
-	 * @param id2 idx second
+	 * @param idx1 first element index
+	 * @param idx2 second element index
 	 */
-	void swapElt(unsigned int id1, unsigned int id2) override
+	void swapElements(unsigned int idx1, unsigned int idx2) override
 	{
-		std::swap(tableData_[id1 / CHUNKSIZE][id1 % CHUNKSIZE], tableData_[id2 / CHUNKSIZE][id2 % CHUNKSIZE] );
+		std::swap(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
 	}
 
-//	void save(std::ostream& fs, unsigned int nbLines) const
+//	void save(std::ostream& fs, unsigned int nb_lines) const
 //	{
 //		unsigned int nbs[3];
-//		nbs[0] = (unsigned int)(tableData_.size());
-//		nbs[1] = nbLines;
+//		nbs[0] = (unsigned int)(table_data_.size());
+//		nbs[1] = nb_lines;
 //		nbs[2] = CHUNKSIZE*sizeof(T);
 
-//		assert(nbLines/CHUNKSIZE <= tableData_.size());
-//		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
+//		assert(nb_lines/CHUNKSIZE <= table_data_.size());
+//		// TODO: if (nb_lines == 0) nb_lines = CHUNKSIZE*table_data_.size(); ??
 
 //		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(unsigned int));
 
@@ -242,12 +206,12 @@ public:
 //		// save data chunks except last
 //		for(unsigned int i=0; i<nbca; ++i)
 //		{
-//			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+//			fs.write(reinterpret_cast<const char*>(table_data_[i]),CHUNKSIZE*sizeof(T));
 //		}
 
 //		// save last
-//		unsigned nbl = nbLines - nbca*CHUNKSIZE;
-//		fs.write(reinterpret_cast<const char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+//		unsigned nbl = nb_lines - nbca*CHUNKSIZE;
+//		fs.write(reinterpret_cast<const char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
 //	}
 
 //	bool load(std::istream& fs)
@@ -270,49 +234,49 @@ public:
 //		// load data chunks except last
 //		unsigned int nbca = nbs[0]-1;
 //		for(unsigned int i = 0; i < nbca; ++i)
-//			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE*sizeof(T));
+//			fs.read(reinterpret_cast<char*>(table_data_[i]),CHUNKSIZE*sizeof(T));
 
 //		// load last chunk
 //		unsigned int nbl = nbs[1] - CHUNKSIZE*nbca;
-//		fs.read(reinterpret_cast<char*>(tableData_[nbca]),std::streamsize(nbl*sizeof(T)));
+//		fs.read(reinterpret_cast<char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
 
 //		return true;
 //	}
 
-	void save(std::ostream& fs, unsigned int nbLines) const override
+	void save(std::ostream& fs, unsigned int nb_lines) const override
 	{
-		cgogn_assert(nbLines/CHUNKSIZE <= getNbChunks());
+		cgogn_assert(nb_lines / CHUNKSIZE <= getNbChunks());
 
-		serialization::save(fs, &nbLines, 1);
+		serialization::save(fs, &nb_lines, 1);
 
 		// no data -> finished
-		if (nbLines == 0)
+		if (nb_lines == 0)
 			return;
 
-		unsigned int nbc = getNbChunks() - 1;
+		unsigned int nbc = getNbChunks() - 1u;
 
 		// save data chunks except last
-		for(unsigned int i=0; i<nbc; ++i)
+		for(unsigned int i = 0u; i < nbc; ++i)
 		{
-			serialization::save(fs, tableData_[i], CHUNKSIZE);
+			serialization::save(fs, table_data_[i], CHUNKSIZE);
 		}
 
 		// save last incomplete chunk
-		const unsigned nb = nbLines - nbc*CHUNKSIZE;
-		serialization::save(fs, tableData_[nbc], nb);
+		const unsigned nb = nb_lines - nbc*CHUNKSIZE;
+		serialization::save(fs, table_data_[nbc], nb);
 	}
 
 	bool load(std::istream& fs) override
 	{
-		unsigned int nbLines;
-		serialization::load(fs, &nbLines, 1);
+		unsigned int nb_lines;
+		serialization::load(fs, &nb_lines, 1);
 		// no data -> finished
-		if (nbLines == 0)
+		if (nb_lines == 0)
 			return true;
 
 		// compute number of chunks
-		unsigned int nbc = nbLines / CHUNKSIZE;
-		if (nbLines % CHUNKSIZE != 0)
+		unsigned int nbc = nb_lines / CHUNKSIZE;
+		if (nb_lines % CHUNKSIZE != 0)
 			nbc++;
 
 		this->setNbChunks(nbc);
@@ -320,16 +284,48 @@ public:
 		// load data chunks except last
 		nbc--;
 		for(unsigned int i = 0u; i < nbc; ++i)
-			serialization::load(fs, tableData_[i], CHUNKSIZE);
+			serialization::load(fs, table_data_[i], CHUNKSIZE);
 
 		// load last incomplete chunk
-		const unsigned int nb = nbLines - nbc*CHUNKSIZE;
-		serialization::load(fs, tableData_[nbc], nb);
+		const unsigned int nb = nb_lines - nbc*CHUNKSIZE;
+		serialization::load(fs, table_data_[nbc], nb);
 
 		return true;
 	}
-};
 
+	/**
+	 * @brief ref operator []
+	 * @param i index of element to access
+	 * @return ref to the element
+	 */
+	inline T& operator[](unsigned int i)
+	{
+		cgogn_assert(i / CHUNKSIZE < table_data_.size());
+		return table_data_[i / CHUNKSIZE][i % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief const ref operator []
+	 * @param i index of element to access
+	 * @return const ref to the element
+	 */
+	inline const T& operator[](unsigned int i) const
+	{
+		cgogn_assert(i / CHUNKSIZE < table_data_.size());
+		return table_data_[i / CHUNKSIZE][i % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief set the value of an element (works also with bool)
+	 * @param i index of element to set
+	 * @param v value
+	 */
+	inline void setValue(unsigned int i, const T& v)
+	{
+		cgogn_assert(i / CHUNKSIZE < table_data_.size());
+		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
+	}
+};
 
 /**
  * @brief specialized version of ChunkArray for bool data. One bit per bool
@@ -340,140 +336,255 @@ class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
 protected:
 
 	/// vector of block pointers
-	std::vector<unsigned int*> tableData_;
+	std::vector<unsigned int*> table_data_;
 
 public:
 
 	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
 	{
-		tableData_.reserve(1024u);
+		table_data_.reserve(1024u);
 	}
+
+	ChunkArray(const ChunkArray<CHUNKSIZE, bool>& ca) = delete;
+	ChunkArray(ChunkArray<CHUNKSIZE, bool>&& ca) = delete;
+	ChunkArray<CHUNKSIZE, bool>& operator=(ChunkArray<CHUNKSIZE, bool>&& ca) = delete;
+	ChunkArray<CHUNKSIZE, bool>& operator=(const ChunkArray<CHUNKSIZE, bool>& ca) = delete;
 
 	~ChunkArray() override
 	{
-		for(auto chunk: tableData_)
+		for(auto chunk : table_data_)
 			delete[] chunk;
 	}
 
-	ChunkArray(const ChunkArray<CHUNKSIZE, bool>& ca)
+	/**
+	 * @brief create a ChunkArray<CHUNKSIZE,T>
+	 * @return generic pointer
+	 */
+	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
-		tableData_.reserve(1024u);
-		this->setNbChunks(ca.getNbChunks());
-		for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
-		{
-			std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
-		}
+		return new ChunkArray<CHUNKSIZE, bool>();
 	}
-
-	inline ChunkArray(ChunkArray< CHUNKSIZE, bool>&& ca) :
-		tableData_(std::move(ca.tableData_))
-	{}
-
-	ChunkArray<CHUNKSIZE, bool>& operator=(ChunkArray< CHUNKSIZE, bool>&& ca)
-	{
-		// this != &ca because ca is a rvalue
-		this->clear();
-		tableData_ = std::move(ca.tableData_);
-		return *this;
-	}
-
-	ChunkArray<CHUNKSIZE, bool>& operator=(const ChunkArray<CHUNKSIZE, bool>& ca)
-	{
-		if (this != &ca)
-		{
-			this->setNbChunks(ca.getNbChunks());
-			for (std::size_t i = 0, end = tableData_.size() ; i < end ; ++i)
-			{
-				std::copy(ca.tableData_[i], ca.tableData_[i] + CHUNKSIZE/32u, tableData_[i]);
-			}
-		}
-		return *this;
-	}
-
 
 	bool isBooleanArray() const override
 	{
 		return true;
 	}
 
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
-	{
-		return new ChunkArray<CHUNKSIZE, bool>();
-	}
-
+	/**
+	 * @brief add a chunk (T[CHUNKSIZE/32])
+	 */
 	void addChunk() override
 	{
 		// adding the empty parentheses for default-initialization
-		tableData_.push_back(new unsigned int[CHUNKSIZE/32u]());
+		table_data_.push_back(new unsigned int[CHUNKSIZE/32u]());
 	}
 
+	/**
+	 * @brief set number of chunks
+	 * @param nbc number of chunks
+	 */
 	void setNbChunks(unsigned int nbc) override
 	{
-		if (nbc >= tableData_.size())
+		if (nbc >= table_data_.size())
 		{
-			for (std::size_t i = tableData_.size(); i < nbc; ++i)
+			for (std::size_t i = table_data_.size(); i < nbc; ++i)
 				addChunk();
 		}
 		else
 		{
-			for (std::size_t i = nbc; i < tableData_.size(); ++i)
-				delete[] tableData_[i];
-			tableData_.resize(nbc);
+			for (std::size_t i = nbc; i < table_data_.size(); ++i)
+				delete[] table_data_[i];
+			table_data_.resize(nbc);
 		}
 	}
 
+	/**
+	 * @brief get the number of chunks of the array
+	 * @return the number of chunks
+	 */
 	unsigned int getNbChunks() const override
 	{
-		return static_cast<unsigned int>(tableData_.size());
+		return static_cast<unsigned int>(table_data_.size());
 	}
 
+	/**
+	 * @brief get the capacity of the array
+	 * @return number of allocated lines
+	 */
 	unsigned int capacity() const override
 	{
-		return static_cast<unsigned int>(tableData_.size())*CHUNKSIZE/32u;
+		return static_cast<unsigned int>(table_data_.size())*CHUNKSIZE/32u;
 	}
 
+	/**
+	 * @brief clear the array
+	 */
 	void clear() override
 	{
-		for(auto chunk: tableData_)
+		for(auto chunk : table_data_)
 			delete[] chunk;
-		tableData_.clear();
+		table_data_.clear();
+	}
+
+	/**
+	 * @brief fill a vector with pointers to all chunks
+	 * @param addr vector to fill
+	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
+	 * @return addr.size()
+	 */
+	inline unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
+	{
+		byte_block_size = CHUNKSIZE / 8u;
+
+		addr.reserve(table_data_.size());
+		addr.clear();
+
+		for (typename std::vector<unsigned int*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
+			addr.push_back(*it);
+
+		return static_cast<unsigned int>(addr.size());
+	}
+
+	/**
+	 * @brief initialize an element (overwrite with T())
+	 * @param id index of the element
+	 */
+	inline void initElement(unsigned int id) override
+	{
+		setFalse(id);
+	}
+
+	/**
+	 * @brief copy an element to another one
+	 * @param dst destination index
+	 * @param src source index
+	 */
+	inline void copyElement(unsigned int dst, unsigned int src) override
+	{
+		setValue(dst, this->operator[](src));
+	}
+
+	/**
+	 * @brief swap two elements
+	 * @param idx1 first element index
+	 * @param idx2 second element index
+	 */
+	inline void swapElements(unsigned int idx1, unsigned int idx2) override
+	{
+		bool data = this->operator[](idx1);
+		setValue(idx1, this->operator[](idx2));
+		setValue(idx2, data);
+	}
+
+	void save(std::ostream& fs, unsigned int nb_lines) const override
+	{
+		// round nbLines to 32 multiple
+		if (nb_lines % 32u)
+			nb_lines = ((nb_lines / 32u) + 1u) * 32u;
+
+		cgogn_assert(nb_lines / CHUNKSIZE <= table_data_.size());
+		// TODO: if (nb_lines==0) nb_lines = CHUNKSIZE*table_data_.size(); ??
+
+		// save number of lines
+		serialization::save(fs, &nb_lines, 1);
+
+		// no data -> finished
+		if (nb_lines == 0u)
+			return;
+
+		const unsigned int nbc = getNbChunks() - 1u;
+		// save data chunks except last
+		for(unsigned int i = 0u; i < nbc; ++i)
+		{
+			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNKSIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
+		}
+
+		// save last
+		const unsigned int nb = nb_lines - nbc*CHUNKSIZE;
+		fs.write(reinterpret_cast<const char*>(table_data_[nbc]), nb / 8u);
+	}
+
+	bool load(std::istream& fs) override
+	{
+		// get number of lines to load
+		unsigned int nb_lines;
+		serialization::load(fs, &nb_lines, 1);
+
+		// no data -> finished
+		if (nb_lines == 0)
+			return true;
+
+		// compute number of chunks
+		unsigned int nbc = nb_lines / CHUNKSIZE;
+		if (nb_lines % CHUNKSIZE != 0u)
+			nbc++;
+
+		this->setNbChunks(nbc);
+
+		// load data chunks except last
+		nbc--;
+		for(unsigned int i = 0u; i < nbc; ++i)
+			fs.read(reinterpret_cast<char*>(table_data_[i]), CHUNKSIZE / 8u);// /8 because bool = 1 bit & octet = 8 bit
+
+		// load last chunk
+		unsigned int nb = nb_lines - nbc*CHUNKSIZE;
+		fs.read(reinterpret_cast<char*>(table_data_[nbc]), nb / 8u);
+
+		return true;
+	}
+
+	/**
+	 * @brief ref operator []
+	 * @param i index of element to access
+	 * @return value of the element
+	 */
+	inline bool operator[](unsigned int i) const
+	{
+		const unsigned int jj = i / CHUNKSIZE;
+		cgogn_assert(jj < table_data_.size());
+		const unsigned int j = i % CHUNKSIZE;
+		const unsigned int x = j/32u;
+		const unsigned int y = j%32u;
+
+		const unsigned int mask = 1u << y;
+
+		return (table_data_[jj][x] & mask) != 0u;
 	}
 
 	inline void setFalse(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		cgogn_assert(jj < tableData_.size());
+		cgogn_assert(jj < table_data_.size());
 		const unsigned int j = i % CHUNKSIZE;
-		const unsigned int x = j/32u;
-		const unsigned int y = j%32u;
+		const unsigned int x = j / 32u;
+		const unsigned int y = j % 32u;
 		const unsigned int mask = 1u << y;
-		tableData_[jj][x] &= ~mask;
+		table_data_[jj][x] &= ~mask;
 	}
 
 	inline void setTrue(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		cgogn_assert(jj < tableData_.size());
+		cgogn_assert(jj < table_data_.size());
 		const unsigned int j = i % CHUNKSIZE;
-		const unsigned int x = j/32u;
-		const unsigned int y = j%32u;
+		const unsigned int x = j / 32u;
+		const unsigned int y = j % 32u;
 		const unsigned int mask = 1u << y;
-		tableData_[jj][x] |= mask;
+		table_data_[jj][x] |= mask;
 	}
 
-	inline void setVal(unsigned int i, bool b)
+	inline void setValue(unsigned int i, bool b)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		cgogn_assert(jj < tableData_.size());
+		cgogn_assert(jj < table_data_.size());
 		const unsigned int j = i % CHUNKSIZE;
-		const unsigned int x = j/32u;
-		const unsigned int y = j%32u;
+		const unsigned int x = j / 32u;
+		const unsigned int y = j % 32u;
 		const unsigned int mask = 1u << y;
-
 		if (b)
-			tableData_[jj][x] |= mask;
+			table_data_[jj][x] |= mask;
 		else
-			tableData_[jj][x] &= ~mask;
+			table_data_[jj][x] &= ~mask;
 	}
 
 	/**
@@ -482,134 +593,32 @@ public:
 	 *
 	 * This version overwrites element AND SOME OF HIS NEIGHBOURS with 0
 	 * Use only if final goal is to set all array to 0 (MarkerStore)
-	 * @todo find another name for the method!
 	 */
-	inline void setFalseDirty(unsigned int i)
+	inline void setFalse_byte(unsigned int i)
 	{
 		const unsigned int jj = i / CHUNKSIZE;
-		cgogn_assert(jj < tableData_.size());
+		cgogn_assert(jj < table_data_.size());
 		const unsigned int j = (i % CHUNKSIZE)/32u;
-		tableData_[jj][j] = 0u;
-	}
-
-	inline bool operator[](unsigned int i) const
-	{
-		const unsigned int jj = i / CHUNKSIZE;
-		cgogn_assert(jj < tableData_.size());
-		const unsigned int j = i % CHUNKSIZE;
-		const unsigned int x = j/32u;
-		const unsigned int y = j%32u;
-
-		const unsigned int mask = 1u << y;
-
-		return (tableData_[jj][x] & mask) != 0u;
+		table_data_[jj][j] = 0u;
 	}
 
 	inline void allFalse()
 	{
-		for (auto ptr : tableData_)
+		for (auto ptr : table_data_)
 		{
-			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
-				*ptr++ = 0;
+			for (unsigned int j = 0u; j < CHUNKSIZE/32u; ++j)
+				*ptr++ = 0u;
 		}
 	}
 
-	inline void allTrue()
-	{
-		for (auto ptr : tableData_)
-		{
-			for (unsigned int j = 0; j < CHUNKSIZE/32u; ++j)
-				*ptr++ = 0xffffffff;
-		}
-	}
-
-	inline unsigned int getChunksPointers(std::vector<void*>& addr, unsigned int& byteBlockSize) const override
-	{
-		byteBlockSize = CHUNKSIZE / 8u;
-
-		addr.reserve(tableData_.size());
-		addr.clear();
-
-		for (typename std::vector<unsigned int*>::const_iterator it = tableData_.begin(); it != tableData_.end(); ++it)
-			addr.push_back(*it);
-
-		return static_cast<unsigned int>(addr.size());
-	}
-
-	inline void initElt(unsigned int id) override
-	{
-		setFalse(id);
-	}
-
-	inline void copyElt(unsigned int dst, unsigned int src) override
-	{
-		setVal(dst,this->operator [](src));
-	}
-
-
-	inline void swapElt(unsigned int id1, unsigned int id2) override
-	{
-		bool data = this->operator [](id1);
-		setVal(id1,this->operator [](id2));
-		setVal(id2,data);
-	}
-
-	void save(std::ostream& fs, unsigned int nbLines) const override
-	{
-		// round nbLines to 32 multiple
-		if (nbLines%32u)
-			nbLines = ((nbLines/32u)+1u)*32u;
-
-		cgogn_assert(nbLines/CHUNKSIZE <= tableData_.size());
-		// TODO: if (nbLines==0) nbLines=CHUNKSIZE*tableData_.size(); ??
-
-		// save number of lines
-		serialization::save(fs, &nbLines,1);
-
-		// no data -> finished
-		if (nbLines == 0u)
-			return;
-
-		const unsigned int nbc = getNbChunks()-1u;
-		// save data chunks except last
-		for(unsigned int i=0u; i<nbc; ++i)
-		{
-			fs.write(reinterpret_cast<const char*>(tableData_[i]),CHUNKSIZE/8u); // /8 because bool = 1 bit & octet = 8 bit
-		}
-
-		// save last
-		const unsigned int nb = nbLines - nbc*CHUNKSIZE;
-		fs.write(reinterpret_cast<const char*>(tableData_[nbc]),nb/8u);
-	}
-
-	bool load(std::istream& fs) override
-	{
-		// get number of lines to load
-		unsigned int nbLines;
-		serialization::load(fs, &nbLines, 1);
-
-		// no data -> finished
-		if (nbLines == 0)
-			return true;
-
-		// compute number of chunks
-		unsigned int nbc = nbLines / CHUNKSIZE;
-		if (nbLines % CHUNKSIZE != 0u)
-			nbc++;
-
-		this->setNbChunks(nbc);
-
-		// load data chunks except last
-		nbc--;
-		for(unsigned int i = 0u; i < nbc; ++i)
-			fs.read(reinterpret_cast<char*>(tableData_[i]),CHUNKSIZE/8u);// /8 because bool = 1 bit & octet = 8 bit
-
-		// load last chunk
-		unsigned int nb = nbLines - nbc*CHUNKSIZE;
-		fs.read(reinterpret_cast<char*>(tableData_[nbc]),nb/8u);
-
-		return true;
-	}
+//	inline void allTrue()
+//	{
+//		for (auto ptr : table_data_)
+//		{
+//			for (unsigned int j = 0u; j < CHUNKSIZE/32u; ++j)
+//				*ptr++ = 0xffffffff;
+//		}
+//	}
 };
 
 } // namespace cgogn
