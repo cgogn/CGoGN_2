@@ -28,8 +28,8 @@ namespace cgogn
 
 std::vector<MapGen*>* MapGen::instances_ = nullptr;
 
-CGOGN_TLS Buffers<Dart> dart_buffers_thread = Buffers<Dart>();
-CGOGN_TLS Buffers<unsigned int> uint_buffers_thread = Buffers<unsigned int>();
+CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
+CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
 MapGen::MapGen()
 {
@@ -46,6 +46,12 @@ MapGen::~MapGen()
 	auto it = std::find(instances_->begin(), instances_->end(), this);
 	*it = instances_->back();
 	instances_->pop_back();
+
+	if (instances_->empty())
+	{
+		delete instances_;
+		instances_ = nullptr;
+	}
 }
 
 } // namespace cgogn

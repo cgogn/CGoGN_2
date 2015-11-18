@@ -8,10 +8,12 @@ set(HEADER_FILES
 	assert.h
 	buffers.h
 	make_unique.h
+	thread.h
 )
 
 set(SOURCE_FILES
 	assert.cpp
+	buffers.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
