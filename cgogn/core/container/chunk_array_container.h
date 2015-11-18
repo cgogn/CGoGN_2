@@ -213,9 +213,10 @@ public:
 	 * @brief ChunkArrayContainer constructor
 	 */
 	ChunkArrayContainer():
-		nb_used_lines_(0u)
-		,nb_max_lines_(0u)
-		,std_browser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF>> >(this))
+		nb_used_lines_(0u),
+		nb_max_lines_(0u),
+		nb_marker_attribs_(0),
+		std_browser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF>> >(this))
 	{
 		current_browser_= std_browser_.get();
 	}
@@ -377,7 +378,7 @@ public:
 		if(index == UNKNOWN)
 			return nullptr;
 
-		ChunkArray<CHUNKSIZE,T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE, T>*>(table_arrays_[index]);
+		ChunkArray<CHUNKSIZE, T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE, T>*>(table_arrays_[index]);
 
 		cgogn_message_assert(atm != nullptr, "getDataArray: wrong type");
 
@@ -632,9 +633,9 @@ public:
 	 **************************************/
 
 	/**
-	* @brief is a line used
-	* @param index index of line
-	* @return true if used
+	* @brief get if the index is used
+	* @param index index to test
+	* @return true if the index is used, false otherwise
 	*/
 	bool used(unsigned int index) const
 	{
@@ -657,7 +658,7 @@ public:
 
 			if (nb_max_lines_%CHUNKSIZE <= PRIMSIZE) // prim on next block ? -> add block to C.A.
 			{
-				for (auto arr: table_arrays_)
+				for (auto arr : table_arrays_)
 					arr->addChunk();
 				refs_.addChunk();
 			}
@@ -670,7 +671,7 @@ public:
 
 		// mark lines as used
 		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
-			refs_.setValue(index+i, 1u); // do not use [] in case of refs_ is bool
+			refs_.setValue(index + i, 1u); // do not use [] in case of refs_ is bool
 
 		nb_used_lines_ += PRIMSIZE;
 
@@ -686,7 +687,7 @@ public:
 	{
 		unsigned int begin_prim_idx = (index/PRIMSIZE) * PRIMSIZE;
 
-		cgogn_message_assert(this->used(begin_prim_idx), "Error removing non existing index");
+		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 
 		holes_stack_.push(begin_prim_idx);
 
@@ -703,7 +704,7 @@ public:
 	 */
 	void initLine(unsigned int index)
 	{
-		cgogn_message_assert(!used(index), "initLine only with allocated lines");
+		cgogn_message_assert(used(index), "initLine only with allocated lines");
 
 		for (auto ptrAtt : table_arrays_)
 			// if (ptrAtt != nullptr) never null !
@@ -712,7 +713,7 @@ public:
 
 	void initMarkersOfLine(unsigned int index)
 	{
-		cgogn_message_assert(!used(index), "initMarkersOfLine only with allocated lines");
+		cgogn_message_assert(used(index), "initMarkersOfLine only with allocated lines");
 
 		for (unsigned int i = 0u; i < nb_marker_attribs_; ++i)
 			table_arrays_[i]->initElement(index);

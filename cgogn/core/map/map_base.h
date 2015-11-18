@@ -50,6 +50,15 @@ public:
 	~MapBase()
 	{}
 
+	/*******************************************************************************
+	 * Attributes management
+	 *******************************************************************************/
+
+	/**
+	 * \brief add an attribute
+	 * @param attribute_name the name of the attribute to create
+	 * @return a handler to the created attribute
+	 */
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> addAttribute(const std::string& attribute_name = "")
 	{
@@ -68,12 +77,12 @@ public:
 	}
 
 	/**
-	 * remove an attribute
-	 * @param attr a handler to the attribute to remove
+	 * \brief remove an attribute
+	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, unsigned int ORBIT>
-	inline bool removeAttribute(AttributeHandler<T,ORBIT>& ah)
+	inline bool removeAttribute(AttributeHandler<T, ORBIT>& ah)
 	{
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = ah.getData();
 
@@ -90,7 +99,7 @@ public:
 	}
 
 	/**
-	* search an attribute for a given orbit
+	* \brief search an attribute for a given orbit
 	* @param nameAttr attribute name
 	* @return an AttributeHandler
 	*/
@@ -101,27 +110,141 @@ public:
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
-	/**
-	* add a Dart in the map
-	* @return the new Dart
-	*/
-	inline Dart addDart()
-	{
-		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
-		this->topology_.initMarkersOfLine(di);
+	/*******************************************************************************
+	 * Basic traversals
+	 *******************************************************************************/
 
-		for(unsigned int i = 0; i < NB_ORBITS; ++i)
+//private:
+
+//	/**
+//	 * \brief Map begin
+//	 * @return the first dart of the map
+//	 */
+//	inline Dart begin() const
+//	{
+//		return Dart(this->topology_.begin());
+//	}
+
+//	/**
+//	 * \brief Map end
+//	 * @return the dart after the last dart of the map
+//	 */
+//	inline Dart end() const
+//	{
+//		return Dart(this->topology_.end());
+//	}
+
+//	/**
+//	 * \brief next dart in the map
+//	 * @param d reference to the dart to be modified
+//	 */
+//	inline void next(Dart& d) const
+//	{
+//		this->topology_.next(d.index);
+//	}
+
+//public:
+
+	class iterator
+	{
+	public:
+		MapBase* const map_;
+		Dart dart_;
+
+		inline iterator(MapBase* map, Dart d) :
+			map_(map),
+			dart_(d)
+		{}
+
+		inline iterator& operator++()
 		{
-			if (this->embeddings_[i])							// set all its embeddings
-				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
+			map_->topology_.next(dart_.index);
+			return *this;
 		}
 
-		Dart d(di);
+		inline Dart& operator*()
+		{
+			return dart_;
+		}
 
-		for (auto relPtr: this->topo_relations_)
-			(*relPtr)[di] = d;
+		inline bool operator!=(iterator it) const
+		{
+			cgogn_assert(map_ == it.map_);
+			return dart_ != it.dart_;
+		}
+	};
 
-		return d;
+	inline iterator begin()
+	{
+		return iterator(this, Dart(this->topology_.begin()));
+	}
+
+	inline iterator end()
+	{
+		return iterator(this, Dart(this->topology_.end()));
+	}
+
+	class const_iterator
+	{
+	public:
+		const MapBase* const map_;
+		Dart dart_;
+
+		inline const_iterator(const MapBase* map, Dart d) :
+			map_(map),
+			dart_(d)
+		{}
+
+		inline const_iterator& operator++()
+		{
+			map_->topology_.next(dart_.index);
+			return *this;
+		}
+
+		inline const Dart& operator*() const
+		{
+			return dart_;
+		}
+
+		inline bool operator!=(iterator it) const
+		{
+			cgogn_assert(map_ == it.map_);
+			return dart_ != it.dart_;
+		}
+	};
+
+	inline const_iterator begin() const
+	{
+		return const_iterator(this, Dart(this->topology_.begin()));
+	}
+
+	inline const_iterator end() const
+	{
+		return const_iterator(this, Dart(this->topology_.end()));
+	}
+
+	/**
+	 * \brief apply a function on each dart of the map
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC>
+	inline void foreach_dart(FUNC f)
+	{
+		for (Dart d : *this)
+			f(d);
+	}
+
+	/**
+	 * \brief apply a function on each dart of the map
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC>
+	inline void foreach_dart(FUNC& f)
+	{
+		for (Dart d : *this)
+			f(d);
 	}
 };
 

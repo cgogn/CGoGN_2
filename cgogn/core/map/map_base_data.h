@@ -28,7 +28,7 @@
 #include <utils/definitions.h>
 #include <core/basic/cell.h>
 
-#include <utils/buffers.h>
+#include <utils/thread.h>
 
 #include <thread>
 #include <mutex>
@@ -36,10 +36,6 @@
 
 namespace cgogn
 {
-
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart> dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int> uint_buffers_thread;
 
 /**
  * @brief Generic Map class

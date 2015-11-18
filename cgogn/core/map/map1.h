@@ -127,6 +127,29 @@ public:
 	}
 
 	/**
+	* \brief add a Dart in the map
+	* @return the new Dart
+	*/
+	inline Dart addDart()
+	{
+		unsigned int di = this->topology_.template insertLines<1>();	// insert a new dart line
+		this->topology_.initMarkersOfLine(di);
+
+		for(unsigned int i = 0; i < NB_ORBITS; ++i)
+		{
+			if (this->embeddings_[i])							// set all its embeddings
+				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
+		}
+
+		Dart d(di);
+
+		for (auto relPtr : this->topo_relations_)
+			(*relPtr)[di] = d;
+
+		return d;
+	}
+
+	/**
 	 * @brief add_cycle
 	 * @param nbEdges
 	 * @return

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *                                                                  *                                                                              *
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
@@ -23,6 +23,9 @@
 
 #ifndef UTILS_BUFFERS_H_
 #define UTILS_BUFFERS_H_
+
+#include <utils/definitions.h>
+#include <core/basic/dart.h>
 
 #include <vector>
 
@@ -73,6 +76,10 @@ public:
 		buffers_.push_back(b);
 	}
 };
+
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
 } // namespace cgogn
 
