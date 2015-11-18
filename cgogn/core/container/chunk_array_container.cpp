@@ -28,7 +28,6 @@ namespace cgogn
 {
 
 ContainerBrowser::~ContainerBrowser()
-{
+{}
 
-}
 }
