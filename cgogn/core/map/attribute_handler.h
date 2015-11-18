@@ -235,8 +235,8 @@ public:
 	}
 
 	AttributeHandler(MapData* const m, TChunkArray* const ca) :
-		Inherit(m)
-		,chunk_array_(ca)
+		Inherit(m),
+		chunk_array_(ca)
 	{
 		if (chunk_array_ == nullptr)
 		{
@@ -251,8 +251,8 @@ public:
 	 * @param att
 	 */
 	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att) :
-		Inherit(att)
-		,chunk_array_(att.chunk_array_)
+		Inherit(att),
+		chunk_array_(att.chunk_array_)
 	{}
 
 	/**
@@ -260,8 +260,8 @@ public:
 	 * @param att
 	 */
 	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
-		Inherit(std::move(att))
-		,chunk_array_(att.chunk_array_)
+		Inherit(std::move(att)),
+		chunk_array_(att.chunk_array_)
 	{}
 
 	/**

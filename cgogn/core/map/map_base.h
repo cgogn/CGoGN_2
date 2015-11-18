@@ -41,10 +41,12 @@ protected:
 
 public:
 
+	typedef MapBaseData<DATA_TRAITS> Inherit;
+
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
-	MapBase()
+	MapBase() : Inherit()
 	{}
 
 	~MapBase()

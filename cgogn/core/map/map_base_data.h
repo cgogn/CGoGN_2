@@ -99,9 +99,11 @@ protected:
 
 public:
 
+	typedef MapGen Inherit;
+
 	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
 
-	MapBaseData()
+	MapBaseData() : Inherit()
 	{
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
@@ -117,7 +119,8 @@ public:
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
 
-	~MapBaseData() override {}
+	~MapBaseData() override
+	{}
 
 	/*******************************************************************************
 	 * Containers management
