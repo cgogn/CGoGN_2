@@ -31,7 +31,7 @@
 namespace cgogn
 {
 
-class CellMarkerGen
+class CGOGN_CORE_API CellMarkerGen
 {
 public:
 	typedef CellMarkerGen Super;
@@ -154,13 +154,13 @@ public:
 	CellMarkerStore(Map& map) :
 		Inherit(map)
 	{
-		marked_cells_ = uint_buffers_thread->get_buffer();
+		marked_cells_ = cgogn::getUINTBuffers()->get_buffer();
 	}
 
 	~CellMarkerStore() override
 	{
 		unmark_all();
-		uint_buffers_thread->release_buffer(marked_cells_);
+		cgogn::getUINTBuffers()->release_buffer(marked_cells_);
 	}
 
 	CellMarkerStore(const Super& dm) = delete;

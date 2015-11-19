@@ -156,7 +156,7 @@ public:
 	{
 		DartMarkerStore<Map2> marker(*this); // get a marker
 
-		std::vector<Dart>* visited_faces = dart_buffers_thread->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::getDartBuffers()->get_buffer();
 
 		visited_faces->push_back(d); // Start with the face of d
 
@@ -182,7 +182,7 @@ public:
 			}
 		}
 
-		dart_buffers_thread->release_buffer(visited_faces);
+		cgogn::getDartBuffers()->release_buffer(visited_faces);
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
