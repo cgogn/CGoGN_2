@@ -44,7 +44,8 @@ namespace cgogn
 class CGOGN_CORE_API MapGen
 {
 public:
-	typedef MapGen Super;
+	typedef MapGen Self;
+
 private:
 
 	/// vector of Map instances
@@ -71,14 +72,14 @@ class MapBaseData : public MapGen
 {
 public:
 	typedef MapGen Inherit;
-	typedef MapBaseData<DATA_TRAITS> Super;
+	typedef MapBaseData<DATA_TRAITS> Self;
 
-	typedef std::integral_constant<std::size_t, DATA_TRAITS::CHUNK_SIZE> ChunkSizeType;
+	typedef std::integral_constant<std::size_t, DATA_TRAITS::CHUNK_SIZE> chunksize_type;
 	template<typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<ChunkSizeType::value, T>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<chunksize_type::value, T>;
 	template<typename T>
-	using ChunkArray = cgogn::ChunkArray<ChunkSizeType::value, T>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<ChunkSizeType::value>;
+	using ChunkArray = cgogn::ChunkArray<chunksize_type::value, T>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<chunksize_type::value>;
 protected:
 	/// topology & embedding indices
 	ChunkArrayContainer<unsigned char> topology_;

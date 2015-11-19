@@ -40,26 +40,27 @@ class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 {
 public:
 	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
-	typedef Map1<DATA_TRAITS> Super;
-	template<typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template<typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	typedef Map1<DATA_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
 
+	template<typename T>
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	template<typename T>
+	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandler<T, VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
 
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandler<T, FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
 protected:
 

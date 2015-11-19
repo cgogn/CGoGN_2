@@ -38,10 +38,11 @@ template <unsigned int CHUNKSIZE>
 class ChunkArrayFactory
 {
 public:
+	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > Map;
+	typedef std::map<std::string, ChunkArrayGenPtr > string_chunkArrayGen_map;
 
-	static Map map_CA_;
+	static string_chunkArrayGen_map map_CA_;
 
 	/**
 	 * @brief register a type
@@ -64,7 +65,7 @@ public:
 	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
 	{
 		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename Map::const_iterator it = map_CA_.find(keyType);
+		typename string_chunkArrayGen_map::const_iterator it = map_CA_.find(keyType);
 
 		if(it != map_CA_.end())
 		{
@@ -78,7 +79,7 @@ public:
 };
 
 template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::Map ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::Map();
+typename ChunkArrayFactory<CHUNKSIZE>::string_chunkArrayGen_map ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::string_chunkArrayGen_map();
 
 } // namespace cgogn
 

@@ -35,30 +35,29 @@ class Map2 : public Map1<DATA_TRAITS>
 {
 public:
 	typedef Map1<DATA_TRAITS> Inherit;
-	typedef Map2<DATA_TRAITS> Super;
-
-	template<typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template<typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	typedef Map2<DATA_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
 	static const unsigned int FACE   = FACE2;
 	static const unsigned int VOLUME = VOLUME3;
 
+	template<typename T>
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	template<typename T>
+	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 
 	template<typename T>
-	using VertexAttributeHandler = typename Inherit::template VertexAttributeHandler<T>;
+	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
 
 	template<typename T>
-	using EdgeAttributeHandler = typename Inherit::template EdgeAttributeHandler<T>;
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 
 	template<typename T>
-	using FaceAttributeHandler = typename Inherit::template FaceAttributeHandler<T>;
-
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 protected:
 
 	void init()

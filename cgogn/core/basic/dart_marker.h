@@ -33,16 +33,16 @@ namespace cgogn
 class CGOGN_CORE_API DartMarkerGen
 {
 public:
-	typedef DartMarkerGen Super;
+	typedef DartMarkerGen Self;
 	DartMarkerGen()
 	{}
 
 	virtual ~DartMarkerGen();
 
-	DartMarkerGen(const Super& dm) = delete;
-	DartMarkerGen(Super&& dm) = delete;
-	DartMarkerGen& operator=(Super&& dm) = delete;
-	DartMarkerGen& operator=(const Super& dm) = delete;
+	DartMarkerGen(const Self& dm) = delete;
+	DartMarkerGen(Self&& dm) = delete;
+	DartMarkerGen& operator=(Self&& dm) = delete;
+	DartMarkerGen& operator=(const Self& dm) = delete;
 };
 
 template <typename MAP>
@@ -51,10 +51,10 @@ class DartMarkerT : public DartMarkerGen
 public:
 
 	typedef DartMarkerGen Inherit;
-	typedef DartMarkerT<MAP> Super;
+	typedef DartMarkerT<MAP> Self;
 
 	typedef MAP Map;
-	typedef typename Map::ChunkSizeType ChunkSizeType;
+	typedef typename Map::chunksize_type chunksize_type;
 	using ChunkArrayBool = typename Map::template ChunkArray<bool>;
 protected:
 
@@ -76,8 +76,8 @@ public:
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 
-	DartMarkerT(const Super& dm) = delete;
-	DartMarkerT<MAP>& operator=(Super& dm) = delete;
+	DartMarkerT(const Self& dm) = delete;
+	DartMarkerT<MAP>& operator=(Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -124,7 +124,7 @@ class DartMarker : public DartMarkerT<MAP>
 public:
 
 	typedef DartMarkerT<MAP> Inherit;
-	typedef DartMarker<MAP> Super;
+	typedef DartMarker<MAP> Self;
 	typedef MAP Map;
 
 	DartMarker(MAP& map) :
@@ -136,10 +136,10 @@ public:
 		unmark_all() ;
 	}
 
-	DartMarker(const Super& dm) = delete;
-	DartMarker(Super&& dm) = delete;
-	DartMarker<MAP>& operator=(Super&& dm) = delete;
-	DartMarker<MAP>& operator=(const Super& dm) = delete;
+	DartMarker(const Self& dm) = delete;
+	DartMarker(Self&& dm) = delete;
+	DartMarker<MAP>& operator=(Self&& dm) = delete;
+	DartMarker<MAP>& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -152,7 +152,7 @@ template <typename MAP>
 class DartMarkerStore : public DartMarkerT<MAP>
 {
 public:
-	typedef DartMarkerStore<MAP> Super;
+	typedef DartMarkerStore<MAP> Self;
 	typedef DartMarkerT<MAP> Inherit;
 	typedef MAP Map;
 
@@ -174,10 +174,10 @@ public:
 		cgogn::getDartBuffers()->release_buffer(marked_darts_);
 	}
 
-	DartMarkerStore(const Super& dm) = delete;
-	DartMarkerStore(Super&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(Super&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(const Super& dm) = delete;
+	DartMarkerStore(const Self& dm) = delete;
+	DartMarkerStore(Self&& dm) = delete;
+	DartMarkerStore<MAP>& operator=(Self&& dm) = delete;
+	DartMarkerStore<MAP>& operator=(const Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{

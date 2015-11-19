@@ -37,7 +37,7 @@ class MapBase : public MapBaseData<DATA_TRAITS>
 {
 public:
 	typedef MapBaseData<DATA_TRAITS> Inherit;
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Super;
+	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>

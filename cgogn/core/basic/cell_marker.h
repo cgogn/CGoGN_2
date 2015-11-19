@@ -34,16 +34,16 @@ namespace cgogn
 class CGOGN_CORE_API CellMarkerGen
 {
 public:
-	typedef CellMarkerGen Super;
+	typedef CellMarkerGen Self;
 	CellMarkerGen()
 	{}
 
 	virtual ~CellMarkerGen();
 
-	CellMarkerGen(const Super& dm) = delete;
-	CellMarkerGen(Super&& dm) = delete;
-	CellMarkerGen& operator=(Super&& dm) = delete;
-	CellMarkerGen& operator=(const Super& dm) = delete;
+	CellMarkerGen(const Self& dm) = delete;
+	CellMarkerGen(Self&& dm) = delete;
+	CellMarkerGen& operator=(Self&& dm) = delete;
+	CellMarkerGen& operator=(const Self& dm) = delete;
 };
 
 template <typename MAP, unsigned int ORBIT>
@@ -53,12 +53,12 @@ class CellMarkerT : public CellMarkerGen
 	static_assert(ORBIT <= VOLUME3, "ORBIT must be less than or equal to VOLUME3");
 public:
 	typedef CellMarkerGen Inherit;
-	typedef CellMarkerT< MAP, ORBIT > Super;
+	typedef CellMarkerT< MAP, ORBIT > Self;
 
 	typedef std::integral_constant<unsigned int, ORBIT> Orbit;
 	typedef MAP Map;
-	typedef typename Map::ChunkSizeType ChunkSizeType;
-	typedef ChunkArray<ChunkSizeType::value, bool> ChunkArrayBool;
+	typedef typename Map::chunksize_type chunksize_type;
+	typedef ChunkArray<chunksize_type::value, bool> ChunkArrayBool;
 
 protected:
 
@@ -80,10 +80,10 @@ public:
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
 
-	CellMarkerT(const Super& dm) = delete;
-	CellMarkerT(Super&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(Super&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(const Super& dm) = delete;
+	CellMarkerT(const Self& dm) = delete;
+	CellMarkerT(Self&& dm) = delete;
+	CellMarkerT<MAP, ORBIT>& operator=(Self&& dm) = delete;
+	CellMarkerT<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{
@@ -109,7 +109,7 @@ class CellMarker : public CellMarkerT<MAP, ORBIT>
 {
 public:
 	typedef CellMarkerT<MAP, ORBIT> Inherit;
-	typedef CellMarker< MAP, ORBIT > Super;
+	typedef CellMarker< MAP, ORBIT > Self;
 
 	typedef typename Inherit::Orbit Orbit;
 	typedef typename Inherit::Map Map;
@@ -123,10 +123,10 @@ public:
 		unmark_all() ;
 	}
 
-	CellMarker(const Super& dm) = delete;
-	CellMarker(Super&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(Super&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(const Super& dm) = delete;
+	CellMarker(const Self& dm) = delete;
+	CellMarker(Self&& dm) = delete;
+	CellMarker<MAP, ORBIT>& operator=(Self&& dm) = delete;
+	CellMarker<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -140,7 +140,7 @@ class CellMarkerStore : public CellMarkerT<MAP, ORBIT>
 {
 public:
 	typedef CellMarkerT<MAP, ORBIT> Inherit;
-	typedef CellMarkerStore< MAP, ORBIT > Super;
+	typedef CellMarkerStore< MAP, ORBIT > Self;
 
 	typedef typename Inherit::Orbit Orbit;
 	typedef typename Inherit::Map Map;
@@ -163,10 +163,10 @@ public:
 		cgogn::getUINTBuffers()->release_buffer(marked_cells_);
 	}
 
-	CellMarkerStore(const Super& dm) = delete;
-	CellMarkerStore(Super&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(Super&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(const Super& dm) = delete;
+	CellMarkerStore(const Self& dm) = delete;
+	CellMarkerStore(Self&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(Self&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{

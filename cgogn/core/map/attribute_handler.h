@@ -41,6 +41,7 @@ template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
+	typedef AttributeHandlerGen<DATA_TRAITS> Self;
 
 	typedef MapBaseData<DATA_TRAITS> MapData;
 
@@ -62,7 +63,7 @@ public:
 	 * \brief copy constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(const AttributeHandlerGen<DATA_TRAITS>& atthg) :
+	inline AttributeHandlerGen(const Self& atthg) :
 		map_(atthg.map_),
 		valid_(atthg.valid_)
 	{}
@@ -71,7 +72,7 @@ public:
 	 * \brief move constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(AttributeHandlerGen<DATA_TRAITS>&& atthg) CGOGN_NOEXCEPT :
+	inline AttributeHandlerGen(Self&& atthg) CGOGN_NOEXCEPT :
 		map_(atthg.map_),
 		valid_(atthg.valid_)
 	{}
@@ -81,7 +82,7 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(const AttributeHandlerGen<DATA_TRAITS>& atthg)
+	inline AttributeHandlerGen& operator=(const Self& atthg)
 	{
 		this->map_ = atthg.map_;
 		this->valid_ = atthg.valid_;
@@ -93,7 +94,7 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(AttributeHandlerGen<DATA_TRAITS>&& atthg)
+	inline AttributeHandlerGen& operator=(Self&& atthg)
 	{
 		this->map_ = atthg.map_;
 		this->valid_ = atthg.valid_;
@@ -123,13 +124,15 @@ template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
+	typedef AttributeHandlerGen<DATA_TRAITS>			Inherit;
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Self;
 
-	typedef AttributeHandlerGen<DATA_TRAITS> Inherit;
-	typedef typename Inherit::MapData        MapData;
-
+	typedef typename Inherit::MapData					MapData;
+	typedef typename MapData::chunksize_type			chunksize_type;
+	typedef std::integral_constant<unsigned int, ORBIT> orbit_type;
 protected:
 
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>* chunk_array_cont_;
+	ChunkArrayContainer<chunksize_type::value, unsigned int>* chunk_array_cont_;
 
 public:
 
@@ -147,7 +150,7 @@ public:
 	 * \brief copy constructor
 	 * @param attho
 	 */
-	inline AttributeHandlerOrbit(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho) :
+	inline AttributeHandlerOrbit(const Self& attho) :
 		Inherit(attho),
 		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
@@ -156,7 +159,7 @@ public:
 	 * \brief move constructor
 	 * @param attho
 	 */
-	inline AttributeHandlerOrbit(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho) CGOGN_NOEXCEPT :
+	inline AttributeHandlerOrbit(Self&& attho) CGOGN_NOEXCEPT :
 		Inherit(std::move(attho)),
 		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
@@ -166,7 +169,7 @@ public:
 	 * @param attho
 	 * @return
 	 */
-	inline AttributeHandlerOrbit& operator=(const AttributeHandlerOrbit< DATA_TRAITS, ORBIT >& attho)
+	inline AttributeHandlerOrbit& operator=(const Self& attho)
 	{
 		Inherit::operator=(attho);
 		chunk_array_cont_ = attho.chunk_array_cont_;
@@ -177,7 +180,7 @@ public:
 	 * @param attho
 	 * @return
 	 */
-	inline AttributeHandlerOrbit& operator=(AttributeHandlerOrbit< DATA_TRAITS, ORBIT >&& attho)
+	inline AttributeHandlerOrbit& operator=(Self&& attho)
 	{
 		Inherit::operator=(std::move(attho));
 		chunk_array_cont_ = attho.chunk_array_cont_;
@@ -202,9 +205,13 @@ class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
 
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Inherit;
-	typedef ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>    TChunkArray;
-	typedef typename Inherit::MapData                 MapData;
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Inherit;
+	typedef AttributeHandler<DATA_TRAITS, T, ORBIT>		Self;
+	typedef typename Inherit::chunksize_type			chunksize_type;
+	typedef T											value_type;
+	typedef typename Inherit::orbit_type				orbit_type;
+	typedef ChunkArray<chunksize_type::value, T>		TChunkArray;
+	typedef typename Inherit::MapData					MapData;
 
 protected:
 
@@ -251,7 +258,7 @@ public:
 	 * \brief Copy constructor
 	 * @param att
 	 */
-	AttributeHandler(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att) :
+	AttributeHandler(const Self& att) :
 		Inherit(att),
 		chunk_array_(att.chunk_array_)
 	{}
@@ -260,7 +267,7 @@ public:
 	 * \brief Move constructor
 	 * @param att
 	 */
-	AttributeHandler(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att) CGOGN_NOEXCEPT :
+	AttributeHandler(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att)),
 		chunk_array_(att.chunk_array_)
 	{}
@@ -270,7 +277,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(const AttributeHandler<DATA_TRAITS, T, ORBIT>& att)
+	AttributeHandler& operator=(const Self& att)
 	{
 		Inherit::operator=(att);
 		chunk_array_ = att.chunk_array_;
@@ -282,7 +289,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(AttributeHandler<DATA_TRAITS, T, ORBIT>&& att)
+	AttributeHandler& operator=(Self&& att)
 	{
 		Inherit::operator=(std::move(att));
 		chunk_array_ = att.chunk_array_;

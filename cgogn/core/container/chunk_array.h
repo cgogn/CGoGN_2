@@ -43,6 +43,12 @@ namespace cgogn
 template <unsigned int CHUNKSIZE, typename T>
 class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
+public:
+	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
+	typedef ChunkArray<CHUNKSIZE, T> Self;
+	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
+	typedef T value_type;
+
 protected:
 
 	/// vector of block pointers
@@ -53,7 +59,7 @@ public:
 	/**
 	 * @brief Constructor of ChunkArray
 	 */
-	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArray() : Inherit()
 	{
 		table_data_.reserve(1024u);
 	}
@@ -75,7 +81,7 @@ public:
 	 */
 	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
-		return new ChunkArray<CHUNKSIZE, T>();
+		return new Self();
 	}
 
 	bool is_boolean_array() const override
@@ -333,6 +339,12 @@ public:
 template <unsigned int CHUNKSIZE>
 class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
 {
+public:
+
+	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
+	typedef ChunkArray<CHUNKSIZE, bool> Self;
+	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
+	typedef unsigned int value_type;
 protected:
 
 	/// vector of block pointers
@@ -345,10 +357,10 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const ChunkArray<CHUNKSIZE, bool>& ca) = delete;
-	ChunkArray(ChunkArray<CHUNKSIZE, bool>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(ChunkArray<CHUNKSIZE, bool>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(const ChunkArray<CHUNKSIZE, bool>& ca) = delete;
+	ChunkArray(const Self& ca) = delete;
+	ChunkArray(Self&& ca) = delete;
+	ChunkArray<CHUNKSIZE, bool>& operator=(Self&& ca) = delete;
+	ChunkArray<CHUNKSIZE, bool>& operator=(Self& ca) = delete;
 
 	~ChunkArray() override
 	{
@@ -362,7 +374,7 @@ public:
 	 */
 	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
-		return new ChunkArray<CHUNKSIZE, bool>();
+		return new Self();
 	}
 
 	bool is_boolean_array() const override

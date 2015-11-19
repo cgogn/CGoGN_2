@@ -37,9 +37,9 @@ class Traits_map_tri
 class MapTri : public MapBase<Traits_map_tri>
 {
 public:
-
 	typedef MapBase<Traits_map_tri> Inherit;
 	typedef MapTri Self;
+
 	~MapTri() override {}
 };
 

@@ -37,9 +37,10 @@ template<unsigned int CHUNKSIZE>
 class ChunkArrayGen
 {
 public:
+	typedef ChunkArrayGen<CHUNKSIZE> Self;
+	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 
 	ChunkArrayGen() = default;
-
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
 	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
@@ -54,7 +55,7 @@ public:
 	 * @brief create a ChunkArray object without knowning type
 	 * @return generic pointer
 	 */
-	virtual ChunkArrayGen<CHUNKSIZE>* clone() const = 0;
+	virtual Self* clone() const = 0;
 
 	virtual bool is_boolean_array() const = 0;
 
