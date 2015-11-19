@@ -41,7 +41,7 @@ namespace cgogn
 /**
  * @brief Generic Map class
  */
-class MapGen
+class CGOGN_CORE_API MapGen
 {
 public:
 	typedef MapGen Super;

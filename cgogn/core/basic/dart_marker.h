@@ -30,7 +30,7 @@
 namespace cgogn
 {
 
-class DartMarkerGen
+class CGOGN_CORE_API DartMarkerGen
 {
 public:
 	typedef DartMarkerGen Super;
@@ -67,19 +67,17 @@ public:
 		Inherit(),
 		map_(map)
 	{
-		mark_attribute_ = map_.template get_topology_mark_attribute();
+		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
 	~DartMarkerT() override
 	{
 		if (MapGen::is_alive(&map_))
-			map_.template release_topology_mark_attribute(mark_attribute_);
+			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 
 	DartMarkerT(const Super& dm) = delete;
-	DartMarkerT(Super&& dm) = delete;
 	DartMarkerT<MAP>& operator=(Super& dm) = delete;
-	DartMarkerT<MAP>& operator=(const Super& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -125,8 +123,8 @@ class DartMarker : public DartMarkerT<MAP>
 {
 public:
 
-	typedef DartMarker<MAP> Super;
 	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarker<MAP> Super;
 	typedef MAP Map;
 
 	DartMarker(MAP& map) :
@@ -167,13 +165,13 @@ public:
 	DartMarkerStore(Map& map) :
 		Inherit(map)
 	{
-		marked_darts_ = dart_buffers_thread->get_buffer();
+		marked_darts_ = cgogn::getDartBuffers()->get_buffer();
 	}
 
 	~DartMarkerStore() override
 	{
 		unmark_all();
-		dart_buffers_thread->release_buffer(marked_darts_);
+		cgogn::getDartBuffers()->release_buffer(marked_darts_);
 	}
 
 	DartMarkerStore(const Super& dm) = delete;
