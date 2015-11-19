@@ -26,6 +26,7 @@
 
 #include <core/container/chunk_array.h>
 #include <core/map/map_base_data.h>
+#include <type_traits>
 
 namespace cgogn
 {
@@ -33,30 +34,41 @@ namespace cgogn
 class CellMarkerGen
 {
 public:
-
+	typedef CellMarkerGen Super;
 	CellMarkerGen()
 	{}
 
 	virtual ~CellMarkerGen();
 
-	CellMarkerGen(const CellMarkerGen& dm) = delete;
-	CellMarkerGen(CellMarkerGen&& dm) = delete;
-	CellMarkerGen& operator=(CellMarkerGen&& dm) = delete;
-	CellMarkerGen& operator=(const CellMarkerGen& dm) = delete;
+	CellMarkerGen(const Super& dm) = delete;
+	CellMarkerGen(Super&& dm) = delete;
+	CellMarkerGen& operator=(Super&& dm) = delete;
+	CellMarkerGen& operator=(const Super& dm) = delete;
 };
 
 template <typename MAP, unsigned int ORBIT>
 class CellMarkerT : public CellMarkerGen
 {
+	static_assert(ORBIT >= VERTEX1, "ORBIT must be greater than or equal to VERTEX1");
+	static_assert(ORBIT <= VOLUME3, "ORBIT must be less than or equal to VOLUME3");
+public:
+	typedef CellMarkerGen Inherit;
+	typedef CellMarkerT< MAP, ORBIT > Super;
+
+	typedef std::integral_constant<unsigned int, ORBIT> Orbit;
+	typedef MAP Map;
+	typedef typename Map::ChunkSizeType ChunkSizeType;
+	typedef ChunkArray<ChunkSizeType::value, bool> ChunkArrayBool;
+
 protected:
 
 	MAP& map_;
-	ChunkArray<MAP::CHUNK_SIZE, bool>* mark_attribute_;
+	ChunkArrayBool* mark_attribute_;
 
 public:
 
-	CellMarkerT(MAP& map) :
-		CellMarkerGen(),
+	CellMarkerT(Map& map) :
+		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
@@ -68,10 +80,10 @@ public:
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
 
-	CellMarkerT(const CellMarkerT<MAP, ORBIT>& dm) = delete;
-	CellMarkerT(CellMarkerT<MAP, ORBIT>&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(CellMarkerT<MAP, ORBIT>&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(const CellMarkerT<MAP, ORBIT>& dm) = delete;
+	CellMarkerT(const Super& dm) = delete;
+	CellMarkerT(Super&& dm) = delete;
+	CellMarkerT<MAP, ORBIT>& operator=(Super&& dm) = delete;
+	CellMarkerT<MAP, ORBIT>& operator=(const Super& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{
@@ -96,10 +108,13 @@ template <typename MAP, unsigned int ORBIT>
 class CellMarker : public CellMarkerT<MAP, ORBIT>
 {
 public:
-
 	typedef CellMarkerT<MAP, ORBIT> Inherit;
+	typedef CellMarker< MAP, ORBIT > Super;
 
-	CellMarker(MAP& map) :
+	typedef typename Inherit::Orbit Orbit;
+	typedef typename Inherit::Map Map;
+
+	CellMarker(Map& map) :
 		Inherit(map)
 	{}
 
@@ -108,10 +123,10 @@ public:
 		unmark_all() ;
 	}
 
-	CellMarker(const CellMarker<MAP, ORBIT>& dm) = delete;
-	CellMarker(CellMarker<MAP, ORBIT>&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(CellMarker<MAP, ORBIT>&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(const CellMarker<MAP, ORBIT>& dm) = delete;
+	CellMarker(const Super& dm) = delete;
+	CellMarker(Super&& dm) = delete;
+	CellMarker<MAP, ORBIT>& operator=(Super&& dm) = delete;
+	CellMarker<MAP, ORBIT>& operator=(const Super& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -123,15 +138,20 @@ public:
 template <typename MAP, unsigned int ORBIT>
 class CellMarkerStore : public CellMarkerT<MAP, ORBIT>
 {
+public:
+	typedef CellMarkerT<MAP, ORBIT> Inherit;
+	typedef CellMarkerStore< MAP, ORBIT > Super;
+
+	typedef typename Inherit::Orbit Orbit;
+	typedef typename Inherit::Map Map;
+	typedef typename Inherit::ProcessedCell ProcessedCell;
 protected:
 
 	std::vector<unsigned int>* marked_cells_;
 
 public:
 
-	typedef CellMarkerT<MAP, ORBIT> Inherit;
-
-	CellMarkerStore(MAP& map) :
+	CellMarkerStore(Map& map) :
 		Inherit(map)
 	{
 		marked_cells_ = uint_buffers_thread->get_buffer();
@@ -143,10 +163,10 @@ public:
 		uint_buffers_thread->release_buffer(marked_cells_);
 	}
 
-	CellMarkerStore(const CellMarkerStore<MAP, ORBIT>& dm) = delete;
-	CellMarkerStore(CellMarkerStore<MAP, ORBIT>&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(CellMarkerStore<MAP, ORBIT>&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(const CellMarkerStore<MAP, ORBIT>& dm) = delete;
+	CellMarkerStore(const Super& dm) = delete;
+	CellMarkerStore(Super&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(Super&& dm) = delete;
+	CellMarkerStore<MAP, ORBIT>& operator=(const Super& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{

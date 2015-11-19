@@ -33,30 +33,38 @@ namespace cgogn
 class DartMarkerGen
 {
 public:
-
+	typedef DartMarkerGen Super;
 	DartMarkerGen()
 	{}
 
 	virtual ~DartMarkerGen();
 
-	DartMarkerGen(const DartMarkerGen& dm) = delete;
-	DartMarkerGen(DartMarkerGen&& dm) = delete;
-	DartMarkerGen& operator=(DartMarkerGen&& dm) = delete;
-	DartMarkerGen& operator=(const DartMarkerGen& dm) = delete;
+	DartMarkerGen(const Super& dm) = delete;
+	DartMarkerGen(Super&& dm) = delete;
+	DartMarkerGen& operator=(Super&& dm) = delete;
+	DartMarkerGen& operator=(const Super& dm) = delete;
 };
 
 template <typename MAP>
 class DartMarkerT : public DartMarkerGen
 {
+public:
+
+	typedef DartMarkerGen Inherit;
+	typedef DartMarkerT<MAP> Super;
+
+	typedef MAP Map;
+	typedef typename Map::ChunkSizeType ChunkSizeType;
+	using ChunkArrayBool = typename Map::template ChunkArray<bool>;
 protected:
 
-	MAP& map_;
-	ChunkArray<MAP::CHUNK_SIZE, bool>* mark_attribute_;
+	Map& map_;
+	ChunkArrayBool* mark_attribute_;
 
 public:
 
-	DartMarkerT(MAP& map) :
-		DartMarkerGen(),
+	DartMarkerT(Map& map) :
+		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.template get_topology_mark_attribute();
@@ -68,10 +76,10 @@ public:
 			map_.template release_topology_mark_attribute(mark_attribute_);
 	}
 
-	DartMarkerT(const DartMarkerT<MAP>& dm) = delete;
-	DartMarkerT(DartMarkerT<MAP>&& dm) = delete;
-	DartMarkerT<MAP>& operator=(DartMarkerT<MAP>&& dm) = delete;
-	DartMarkerT<MAP>& operator=(const DartMarkerT<MAP>& dm) = delete;
+	DartMarkerT(const Super& dm) = delete;
+	DartMarkerT(Super&& dm) = delete;
+	DartMarkerT<MAP>& operator=(Super& dm) = delete;
+	DartMarkerT<MAP>& operator=(const Super& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -117,7 +125,9 @@ class DartMarker : public DartMarkerT<MAP>
 {
 public:
 
+	typedef DartMarker<MAP> Super;
 	typedef DartMarkerT<MAP> Inherit;
+	typedef MAP Map;
 
 	DartMarker(MAP& map) :
 		Inherit(map)
@@ -128,10 +138,10 @@ public:
 		unmark_all() ;
 	}
 
-	DartMarker(const DartMarker<MAP>& dm) = delete;
-	DartMarker(DartMarker<MAP>&& dm) = delete;
-	DartMarker<MAP>& operator=(DartMarker<MAP>&& dm) = delete;
-	DartMarker<MAP>& operator=(const DartMarker<MAP>& dm) = delete;
+	DartMarker(const Super& dm) = delete;
+	DartMarker(Super&& dm) = delete;
+	DartMarker<MAP>& operator=(Super&& dm) = delete;
+	DartMarker<MAP>& operator=(const Super& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -143,15 +153,18 @@ public:
 template <typename MAP>
 class DartMarkerStore : public DartMarkerT<MAP>
 {
+public:
+	typedef DartMarkerStore<MAP> Super;
+	typedef DartMarkerT<MAP> Inherit;
+	typedef MAP Map;
+
 protected:
 
 	std::vector<Dart>* marked_darts_;
 
 public:
 
-	typedef DartMarkerT<MAP> Inherit;
-
-	DartMarkerStore(MAP& map) :
+	DartMarkerStore(Map& map) :
 		Inherit(map)
 	{
 		marked_darts_ = dart_buffers_thread->get_buffer();
@@ -163,10 +176,10 @@ public:
 		dart_buffers_thread->release_buffer(marked_darts_);
 	}
 
-	DartMarkerStore(const DartMarkerStore<MAP>& dm) = delete;
-	DartMarkerStore(DartMarkerStore<MAP>&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(DartMarkerStore<MAP>&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(const DartMarkerStore<MAP>& dm) = delete;
+	DartMarkerStore(const Super& dm) = delete;
+	DartMarkerStore(Super&& dm) = delete;
+	DartMarkerStore<MAP>& operator=(Super&& dm) = delete;
+	DartMarkerStore<MAP>& operator=(const Super& dm) = delete;
 
 	inline void mark(Dart d)
 	{

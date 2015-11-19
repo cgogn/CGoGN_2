@@ -33,6 +33,7 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
+#include <type_traits>
 
 namespace cgogn
 {
@@ -42,6 +43,8 @@ namespace cgogn
  */
 class MapGen
 {
+public:
+	typedef MapGen Super;
 private:
 
 	/// vector of Map instances
@@ -66,31 +69,40 @@ public:
 template<typename DATA_TRAITS>
 class MapBaseData : public MapGen
 {
-protected:
+public:
+	typedef MapGen Inherit;
+	typedef MapBaseData<DATA_TRAITS> Super;
 
+	typedef std::integral_constant<std::size_t, DATA_TRAITS::CHUNK_SIZE> ChunkSizeType;
+	template<typename T>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<ChunkSizeType::value, T>;
+	template<typename T>
+	using ChunkArray = cgogn::ChunkArray<ChunkSizeType::value, T>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<ChunkSizeType::value>;
+protected:
 	/// topology & embedding indices
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned char> topology_;
+	ChunkArrayContainer<unsigned char> topology_;
 
 	/// embedding attributes
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> attributes_[NB_ORBITS];
+	ChunkArrayContainer<unsigned int> attributes_[NB_ORBITS];
 
 	/// embedding indices shortcuts
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* embeddings_[NB_ORBITS];
+	ChunkArray<unsigned int>* embeddings_[NB_ORBITS];
 
 	/// boundary markers shortcuts
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* boundary_markers_[2];
+	ChunkArray<bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
 
 	/// topo relations shortcuts
-	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>*> topo_relations_;
+	std::vector<ChunkArray<Dart>*> topo_relations_;
 
 	/// vector of available mark attributes per orbit per thread
-	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
+	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
 	unsigned int mark_attribute_id_[NB_ORBITS];
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_topology_[NB_THREADS];
+	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_THREADS];
 	unsigned int mark_attribute_topology_id_;
 	std::mutex mark_attributes_topology_mutex_;
 
@@ -98,10 +110,6 @@ protected:
 	std::vector<std::thread::id> thread_ids_;
 
 public:
-
-	typedef MapGen Inherit;
-
-	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
 
 	MapBaseData() : Inherit()
 	{
@@ -126,17 +134,17 @@ public:
 	 * Containers management
 	 *******************************************************************************/
 
-	inline ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& get_attribute_container(unsigned int orbit)
+	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
 		return attributes_[orbit];
 	}
 
-	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* get_topology_mark_attribute()
+	inline ChunkArray<bool>* get_topology_mark_attribute()
 	{
 		unsigned int thread = get_current_thread_index();
 		if (!mark_attributes_topology_[thread].empty())
 		{
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_topology_[thread].back();
+			ChunkArray<bool>* ca = mark_attributes_topology_[thread].back();
 			mark_attributes_topology_[thread].pop_back();
 			return ca;
 		}
@@ -150,26 +158,26 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.add_marker_attribute("marker_" + number);
+			ChunkArray<bool>* ca = topology_.add_marker_attribute("marker_" + number);
 			return ca;
 		}
 	}
 
-	inline void release_topology_mark_attribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
+	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
 	{
 		unsigned int thread = get_current_thread_index();
 		mark_attributes_topology_[thread].push_back(ca);
 	}
 
 	template <unsigned int ORBIT>
-	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* get_mark_attribute()
+	inline ChunkArray<bool>* get_mark_attribute()
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 
 		unsigned int thread = get_current_thread_index();
 		if (!mark_attributes_[ORBIT][thread].empty())
 		{
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = mark_attributes_[ORBIT][thread].back();
+			ChunkArray<bool>* ca = mark_attributes_[ORBIT][thread].back();
 			mark_attributes_[ORBIT][thread].pop_back();
 			return ca;
 		}
@@ -183,13 +191,13 @@ public:
 			number[1] = '0'+char(x%10u); x /= 10u;
 			number[0] = '0'+char(x%10u);
 
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].add_marker_attribute("marker_" + orbit_name(ORBIT) + number);
+			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute("marker_" + orbit_name(ORBIT) + number);
 			return ca;
 		}
 	}
 
 	template <unsigned int ORBIT>
-	inline void release_mark_attribute(ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca)
+	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
 

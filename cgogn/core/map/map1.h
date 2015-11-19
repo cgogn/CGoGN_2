@@ -39,28 +39,34 @@ template <typename DATA_TRAITS>
 class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 {
 public:
-
 	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
+	typedef Map1<DATA_TRAITS> Super;
+	template<typename T>
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	template<typename T>
+	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
 
+	template<typename T, unsigned int ORBIT>
+	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
-	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, VERTEX>;
 
 	template<typename T>
-	using EdgeAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, EDGE>;
 
 	template<typename T>
-	using FaceAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, FACE>;
 
 protected:
 
 	void init()
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1 = this->topology_.template add_attribute<Dart>("phi1");
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1 = this->topology_.template add_attribute<Dart>("phi_1");
+		ChunkArray<Dart>* phi1 = this->topology_.template add_attribute<Dart>("phi1");
+		ChunkArray<Dart>* phi_1 = this->topology_.template add_attribute<Dart>("phi_1");
 		this->topo_relations_.push_back(phi1);
 		this->topo_relations_.push_back(phi_1);
 	}
