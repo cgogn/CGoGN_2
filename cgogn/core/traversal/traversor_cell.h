@@ -33,17 +33,22 @@ namespace cgogn
 template <typename MAP, unsigned int ORBIT>
 class TraversorCell
 {
+public:
+	typedef TraversorCell<MAP,ORBIT> Self;
+	typedef MAP Map;
+	typedef std::integral_constant<unsigned int, ORBIT> orbit_type;
+	using   DartMarker = cgogn::DartMarker<Map>;
 protected:
 
 	MAP& map_;
-	DartMarker<MAP>* dm_;
+	DartMarker* dm_;
 
 public:
 
 	TraversorCell(MAP& map) :
 		map_(map)
 	{
-		dm_ = new DartMarker<MAP>(map_);
+		dm_ = new DartMarker(map_);
 	}
 
 	virtual ~TraversorCell()

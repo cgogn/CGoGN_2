@@ -77,9 +77,9 @@ public:
 	typedef std::integral_constant<std::size_t, DATA_TRAITS::CHUNK_SIZE> chunksize_type;
 	template<typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<chunksize_type::value, T>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<chunksize_type::value>;
 	template<typename T>
 	using ChunkArray = cgogn::ChunkArray<chunksize_type::value, T>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<chunksize_type::value>;
 protected:
 
 	/// topology & embedding indices
