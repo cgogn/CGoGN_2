@@ -24,6 +24,7 @@ set(HEADER_FILES
 	map/map_tri.h
 	map/attribute_handler.h
 
+	traversal/global.h
 	traversal/traversor_cell.h
 )
 

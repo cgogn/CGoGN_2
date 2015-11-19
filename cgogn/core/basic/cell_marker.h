@@ -62,6 +62,13 @@ public:
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
 	}
 
+	CellMarkerT(const MAP& map) :
+		CellMarkerGen(),
+		map_(const_cast<MAP&>(map))
+	{
+		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
+	}
+
 	~CellMarkerT() override
 	{
 		if (MapGen::is_alive(&map_))
@@ -85,7 +92,7 @@ public:
 		mark_attribute_->set_false(map_.get_embedding(c));
 	}
 
-	inline void is_marked(Cell<ORBIT> c) const
+	inline bool is_marked(Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		return (*mark_attribute_)[map_.get_embedding(c)];
@@ -100,6 +107,10 @@ public:
 	typedef CellMarkerT<MAP, ORBIT> Inherit;
 
 	CellMarker(MAP& map) :
+		Inherit(map)
+	{}
+
+	CellMarker(const MAP& map) :
 		Inherit(map)
 	{}
 
@@ -137,6 +148,12 @@ public:
 		marked_cells_ = uint_buffers_thread->get_buffer();
 	}
 
+	CellMarkerStore(const MAP& map) :
+		Inherit(map)
+	{
+		marked_cells_ = uint_buffers_thread->get_buffer();
+	}
+
 	~CellMarkerStore() override
 	{
 		unmark_all();
@@ -162,6 +179,7 @@ public:
 		{
 			this->mark_attribute_->set_false(i);
 		}
+		marked_cells_->clear();
 	}
 };
 
