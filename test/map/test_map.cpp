@@ -101,6 +101,6 @@ int main()
 	MAP1 map1;
 	MAP2 map2;
 	test1(map1);
-	//cgogn::thread_stop();
+	cgogn::thread_stop();
 	return 0;
 }
