@@ -132,6 +132,11 @@ public:
 	 * Containers management
 	 *******************************************************************************/
 
+	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
+	{
+		return attributes_[orbit];
+	}
+
 	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
 		return attributes_[orbit];
