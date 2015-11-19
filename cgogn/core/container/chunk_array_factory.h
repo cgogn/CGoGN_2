@@ -31,6 +31,7 @@
 #include <map>
 #include <memory>
 #include <utils/make_unique.h>
+
 namespace cgogn
 {
 
@@ -40,9 +41,9 @@ class ChunkArrayFactory
 public:
 	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr > string_chunkArrayGen_map;
+	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
 
-	static string_chunkArrayGen_map map_CA_;
+	static NamePtrMap map_CA_;
 
 	/**
 	 * @brief register a type
@@ -65,7 +66,7 @@ public:
 	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
 	{
 		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename string_chunkArrayGen_map::const_iterator it = map_CA_.find(keyType);
+		typename NamePtrMap::const_iterator it = map_CA_.find(keyType);
 
 		if(it != map_CA_.end())
 		{
@@ -79,7 +80,7 @@ public:
 };
 
 template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::string_chunkArrayGen_map ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::string_chunkArrayGen_map();
+typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
 
 } // namespace cgogn
 

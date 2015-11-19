@@ -81,6 +81,7 @@ public:
 	using ChunkArray = cgogn::ChunkArray<chunksize_type::value, T>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<chunksize_type::value>;
 protected:
+
 	/// topology & embedding indices
 	ChunkArrayContainer<unsigned char> topology_;
 
@@ -93,9 +94,6 @@ protected:
 	/// boundary markers shortcuts
 	ChunkArray<bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
-
-	/// topo relations shortcuts
-	std::vector<ChunkArray<Dart>*> topo_relations_;
 
 	/// vector of available mark attributes per orbit per thread
 	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
@@ -117,7 +115,6 @@ public:
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
 			embeddings_[i] = nullptr;
-			mark_attribute_id_[i] = 0;
 			for (unsigned int j = 0; j < NB_THREADS; ++j)
 			{
 				mark_attributes_[i][j].reserve(8);
@@ -152,14 +149,7 @@ public:
 		else
 		{
 			std::lock_guard<std::mutex> lock(mark_attributes_topology_mutex_);
-
-			unsigned int x = mark_attribute_topology_id_++;
-			std::string number("___");
-			number[2] = '0'+char(x%10u); x /= 10u;
-			number[1] = '0'+char(x%10u); x /= 10u;
-			number[0] = '0'+char(x%10u);
-
-			ChunkArray<bool>* ca = topology_.add_marker_attribute("marker_" + number);
+			ChunkArray<bool>* ca = topology_.add_marker_attribute();
 			return ca;
 		}
 	}
@@ -185,14 +175,7 @@ public:
 		else
 		{
 			std::lock_guard<std::mutex> lock(mark_attributes_mutex_[ORBIT]);
-
-			unsigned int x = mark_attribute_id_[ORBIT]++;
-			std::string number("___");
-			number[2] = '0'+char(x%10u); x /= 10u;
-			number[1] = '0'+char(x%10u); x /= 10u;
-			number[0] = '0'+char(x%10u);
-
-			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute("marker_" + orbit_name(ORBIT) + number);
+			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute();
 			return ca;
 		}
 	}

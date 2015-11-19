@@ -152,59 +152,61 @@ protected:
 
 public:
 
-	class iterator
-	{
-	public:
-		MapBase* const map_;
-		Dart dart_;
+//	class iterator
+//	{
+//	public:
 
-		inline iterator(MapBase* map, Dart d) :
-			map_(map),
-			dart_(d)
-		{}
+//		MapBase* const map_;
+//		Dart dart_;
 
-		inline iterator& operator++()
-		{
-			map_->topology_.next(dart_.index);
-			return *this;
-		}
+//		inline iterator(MapBase* map, Dart d) :
+//			map_(map),
+//			dart_(d)
+//		{}
 
-		inline Dart& operator*()
-		{
-			return dart_;
-		}
+//		inline iterator& operator++()
+//		{
+//			map_->topology_.next(dart_.index);
+//			return *this;
+//		}
 
-		inline bool operator!=(iterator it) const
-		{
-			cgogn_assert(map_ == it.map_);
-			return dart_ != it.dart_;
-		}
-	};
+//		inline Dart& operator*()
+//		{
+//			return dart_;
+//		}
 
-	inline iterator begin()
-	{
-		return iterator(this, Dart(this->topology_.begin()));
-	}
+//		inline bool operator!=(iterator it) const
+//		{
+//			cgogn_assert(map_ == it.map_);
+//			return dart_ != it.dart_;
+//		}
+//	};
 
-	inline iterator end()
-	{
-		return iterator(this, Dart(this->topology_.end()));
-	}
+//	inline iterator begin()
+//	{
+//		return iterator(this, Dart(this->topology_.begin()));
+//	}
+
+//	inline iterator end()
+//	{
+//		return iterator(this, Dart(this->topology_.end()));
+//	}
 
 	class const_iterator
 	{
 	public:
-		const MapBase* const map_;
+
+		const MapBase& map_;
 		Dart dart_;
 
-		inline const_iterator(const MapBase* map, Dart d) :
+		inline const_iterator(const MapBase& map, Dart d) :
 			map_(map),
 			dart_(d)
 		{}
 
 		inline const_iterator& operator++()
 		{
-			map_->topology_.next(dart_.index);
+			map_.topology_.next(dart_.index);
 			return *this;
 		}
 
@@ -213,21 +215,21 @@ public:
 			return dart_;
 		}
 
-		inline bool operator!=(iterator it) const
+		inline bool operator!=(const_iterator it) const
 		{
-			cgogn_assert(map_ == it.map_);
+			cgogn_assert(&map_ == &(it.map_));
 			return dart_ != it.dart_;
 		}
 	};
 
 	inline const_iterator begin() const
 	{
-		return const_iterator(this, Dart(this->topology_.begin()));
+		return const_iterator(*this, Dart(this->topology_.begin()));
 	}
 
 	inline const_iterator end() const
 	{
-		return const_iterator(this, Dart(this->topology_.end()));
+		return const_iterator(*this, Dart(this->topology_.end()));
 	}
 
 	/**
