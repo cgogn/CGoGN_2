@@ -92,7 +92,7 @@ public:
 protected:
 
 	/**
-	* vector of pointers to ChunkVector
+	* vector of pointers to ChunkArray
 	*/
 	std::vector<ChunkArrayGen<CHUNKSIZE>*> table_arrays_;
 
@@ -100,6 +100,14 @@ protected:
 
 	std::vector<std::string> type_names_;
 
+	/**
+	* vector of pointers to Marker ChunkArray
+	*/
+	std::vector<ChunkArray<CHUNKSIZE, bool>*> table_marker_arrays_;
+
+	/**
+	 * @brief ChunkArray of refs
+	 */
 	ChunkArray<CHUNKSIZE, T_REF> refs_;
 
 	/**
@@ -116,11 +124,6 @@ protected:
 	* size of the container with holes (also index of next inserted line if no holes)
 	*/
 	unsigned int nb_max_lines_;
-
-	/**
-	 * @brief number of bool attribs (which are alway in front of all others)
-	 */
-	unsigned int nb_marker_attribs_;
 
 	/**
 	 * Browser that allow special traversals
@@ -140,7 +143,7 @@ protected:
 	 */
 	unsigned int get_array_index(const std::string& attribute_name) const
 	{
-		for (unsigned int i = 0; i != names_.size(); ++i)
+		for (unsigned int i = 0u; i != names_.size(); ++i)
 		{
 			if (names_[i] == attribute_name)
 				return i;
@@ -165,29 +168,14 @@ protected:
 	}
 
 	/**
-	 * @brief remove an attribute by its name
-	 * @param attribName name of attribute to remove
-	 * @return true if attribute exist and has been removed
+	 * @brief remove an attribute by its index
+	 * @param index index of attribute to remove
+	 * @return true if attribute exists and has been removed
 	 */
-	bool remove_attribute(unsigned int index)
+	void remove_attribute(unsigned int index)
 	{
 		// store ptr for using it before delete
 		ChunkArrayGen<CHUNKSIZE>* ptr_to_del = table_arrays_[index];
-
-		// in case of Marker attribute, keep Marker attributes first !
-		if (index < nb_marker_attribs_)
-		{
-			nb_marker_attribs_--;
-
-			if (index < nb_marker_attribs_)	// if attribute is not last of Markers
-			{
-				table_arrays_[index] = table_arrays_[nb_marker_attribs_];	// copy last of boolean on index
-				names_[index]        = names_[nb_marker_attribs_];
-				type_names_[index]   = type_names_[nb_marker_attribs_];
-			}
-			// now overwrite last of bool with last
-			index = nb_marker_attribs_;
-		}
 
 		if (index != table_arrays_.size() - std::size_t(1u))
 		{
@@ -201,8 +189,6 @@ protected:
 		type_names_.pop_back();
 
 		delete ptr_to_del;
-
-		return true;
 	}
 
 public:
@@ -213,7 +199,6 @@ public:
 	ChunkArrayContainer():
 		nb_used_lines_(0u),
 		nb_max_lines_(0u),
-		nb_marker_attribs_(0),
 		std_browser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF> > >(this))
 	{
 		current_browser_= std_browser_.get();
@@ -231,7 +216,11 @@ public:
 	{
 		if (current_browser_ != std_browser_.get())
 			delete current_browser_;
+
 		for (auto ptr : table_arrays_)
+			delete ptr;
+
+		for (auto ptr : table_marker_arrays_)
 			delete ptr;
 	}
 
@@ -242,7 +231,7 @@ public:
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<CHUNKSIZE,T>* get_attribute(const std::string& attribute_name)
+	ChunkArray<CHUNKSIZE,T>* get_attribute(const std::string& attribute_name) const
 	{
 		// first check if attribute already exist
 		unsigned int index = get_array_index(attribute_name);
@@ -276,7 +265,7 @@ public:
 
 		// create the new attribute
 		const std::string& typeName = name_of_type(T());
-		ChunkArray<CHUNKSIZE, T>* carr = new ChunkArray<CHUNKSIZE,T>();
+		ChunkArray<CHUNKSIZE, T>* carr = new ChunkArray<CHUNKSIZE, T>();
 		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
 
 		// reserve memory
@@ -288,30 +277,6 @@ public:
 		type_names_.push_back(typeName);
 
 		return carr ;
-	}
-
-	/**
-	 * @brief add a Marker attribute
-	 * @param attribute_name name of marker attribute
-	 * @return pointer on created ChunkArray
-	 */
-	ChunkArray<CHUNKSIZE, bool>* add_marker_attribute(const std::string& attribute_name)
-	{
-		ChunkArray<CHUNKSIZE, bool>* ptr = add_attribute<bool>(attribute_name);
-
-		if (table_arrays_.size() > nb_marker_attribs_)
-		{
-			// swap ptrs
-			auto tmp = table_arrays_.back();
-			table_arrays_.back() = table_arrays_[nb_marker_attribs_];
-			table_arrays_[nb_marker_attribs_] = tmp;
-			// swap names & typenames
-			names_.back().swap(names_[nb_marker_attribs_]);
-			type_names_.back().swap(type_names_[nb_marker_attribs_]);
-		}
-		nb_marker_attribs_++;
-
-		return ptr;
 	}
 
 	/**
@@ -345,13 +310,48 @@ public:
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by ptr: attribute not found" << std::endl;
+			std::cerr << "remove_attribute by ptr: attribute not found" << std::endl;
 			return false;
 		}
 
 		remove_attribute(index);
 
 		return true;
+	}
+
+	/**
+	 * @brief add a Marker attribute
+	 * @return pointer on created ChunkArray
+	 */
+	ChunkArray<CHUNKSIZE, bool>* add_marker_attribute()
+	{
+		ChunkArray<CHUNKSIZE, bool>* mca = new ChunkArray<CHUNKSIZE, bool>();
+		mca->set_nb_chunks(refs_.get_nb_chunks());
+		table_marker_arrays_.push_back(mca);
+		return mca;
+	}
+
+	/**
+	 * @brief remove a marker attribute by its ChunkArray pointer
+	 * @param ptr ChunkArray pointer to the attribute to remove
+	 * @return true if attribute exists and has been removed
+	 */
+	void remove_marker_attribute(const ChunkArray<CHUNKSIZE, bool>* ptr)
+	{
+		unsigned int index = 0u;
+		while (table_marker_arrays_[index] != ptr && index < table_marker_arrays_.size())
+			++index;
+
+		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
+
+		if (index != table_marker_arrays_.size() - std::size_t(1u))
+		{
+			table_marker_arrays_[index] = table_marker_arrays_.back();
+		}
+
+		table_marker_arrays_.pop_back();
+
+		delete ptr;
 	}
 
 	/**
@@ -704,7 +704,6 @@ public:
 		cgogn_message_assert(used(index), "initLine only with allocated lines");
 
 		for (auto ptr : table_arrays_)
-			// if (ptr != nullptr) never null !
 			ptr->init_element(index);
 	}
 
@@ -712,8 +711,8 @@ public:
 	{
 		cgogn_message_assert(used(index), "initMarkersOfLine only with allocated lines");
 
-		for (unsigned int i = 0u; i < nb_marker_attribs_; ++i)
-			table_arrays_[i]->init_element(index);
+		for (ChunkArray<CHUNKSIZE, bool>* ptr : table_marker_arrays_)
+			ptr->set_false(index);
 	}
 
 	/**
@@ -777,13 +776,14 @@ public:
 		buffer.push_back(static_cast<unsigned int>(table_arrays_.size()));
 		buffer.push_back(nb_used_lines_);
 		buffer.push_back(nb_max_lines_);
-		buffer.push_back(nb_marker_attribs_);
+
 		for(unsigned int i = 0u; i < table_arrays_.size(); ++i)
 		{
 			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
 			buffer.push_back(static_cast<unsigned int>(type_names_[i].size()+1));
 		}
-		fs.write(reinterpret_cast<const char*>(&(buffer[0])),std::streamsize(buffer.size()*sizeof(unsigned int)));
+
+		fs.write(reinterpret_cast<const char*>(&(buffer[0])), std::streamsize(buffer.size()*sizeof(unsigned int)));
 
 		// save names
 		for(unsigned int i = 0; i < table_arrays_.size(); ++i)
@@ -799,6 +799,7 @@ public:
 		{
 			table_arrays_[i]->save(fs, nb_max_lines_);
 		}
+
 		// save uses/refs
 		refs_.save(fs, nb_max_lines_);
 
@@ -810,11 +811,10 @@ public:
 	{
 		// read info
 		unsigned int buff1[4];
-		fs.read(reinterpret_cast<char*>(buff1), 4u*sizeof(unsigned int));
+		fs.read(reinterpret_cast<char*>(buff1), 3u*sizeof(unsigned int));
 
 		nb_used_lines_ = buff1[1];
 		nb_max_lines_ = buff1[2];
-		nb_marker_attribs_ = buff1[3];
 
 		std::vector<unsigned int> buff2(2u*buff1[0]);
 		fs.read(reinterpret_cast<char*>(&(buff2[0])), std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
@@ -835,7 +835,7 @@ public:
 
 		// read chunk array
 		table_arrays_.resize(buff1[0]);
-		bool ok=true;
+		bool ok = true;
 		for (unsigned int i = 0u; i < buff1[0]; ++i)
 		{
 			table_arrays_[i] = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);

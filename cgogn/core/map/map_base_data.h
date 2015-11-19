@@ -81,17 +81,12 @@ protected:
 	ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
 
-	/// topo relations shortcuts
-	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>*> topo_relations_;
-
 	/// vector of available mark attributes per orbit per thread
 	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
-	unsigned int mark_attribute_id_[NB_ORBITS];
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
 	/// vector of available mark attributes per thread on the topology container
 	std::vector<ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>*> mark_attributes_topology_[NB_THREADS];
-	unsigned int mark_attribute_topology_id_;
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of thread ids known by the map that can pretend to data such as mark vectors
@@ -108,7 +103,6 @@ public:
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
 			embeddings_[i] = nullptr;
-			mark_attribute_id_[i] = 0;
 			for (unsigned int j = 0; j < NB_THREADS; ++j)
 			{
 				mark_attributes_[i][j].reserve(8);
@@ -131,6 +125,11 @@ public:
 		return attributes_[orbit];
 	}
 
+	inline const ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>& get_attribute_container(unsigned int orbit) const
+	{
+		return attributes_[orbit];
+	}
+
 	inline ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* get_topology_mark_attribute()
 	{
 		unsigned int thread = get_current_thread_index();
@@ -143,14 +142,7 @@ public:
 		else
 		{
 			std::lock_guard<std::mutex> lock(mark_attributes_topology_mutex_);
-
-			unsigned int x = mark_attribute_topology_id_++;
-			std::string number("___");
-			number[2] = '0'+char(x%10u); x /= 10u;
-			number[1] = '0'+char(x%10u); x /= 10u;
-			number[0] = '0'+char(x%10u);
-
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.add_marker_attribute("marker_" + number);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = topology_.add_marker_attribute();
 			return ca;
 		}
 	}
@@ -176,14 +168,7 @@ public:
 		else
 		{
 			std::lock_guard<std::mutex> lock(mark_attributes_mutex_[ORBIT]);
-
-			unsigned int x = mark_attribute_id_[ORBIT]++;
-			std::string number("___");
-			number[2] = '0'+char(x%10u); x /= 10u;
-			number[1] = '0'+char(x%10u); x /= 10u;
-			number[0] = '0'+char(x%10u);
-
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].add_marker_attribute("marker_" + orbit_name(ORBIT) + number);
+			ChunkArray<DATA_TRAITS::CHUNK_SIZE, bool>* ca = attributes_[ORBIT].add_marker_attribute();
 			return ca;
 		}
 	}

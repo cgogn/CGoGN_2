@@ -21,66 +21,44 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef CORE_TRAVERSAL_GLOBAL_H_
+#define CORE_TRAVERSAL_GLOBAL_H_
 
-#include <core/basic/nameTypes.h>
-#include <core/container/chunk_array.h>
-
-#include <iostream>
-#include <map>
-#include <memory>
-#include <utils/make_unique.h>
+#include <core/traversal/traversor_cell.h>
 
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
-class ChunkArrayFactory
+template <unsigned int ORBIT, typename MAP>
+inline TraversorCell<MAP, ORBIT> cells(MAP& map)
 {
-public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
+	return TraversorCell<MAP, ORBIT>(map);
+}
 
-	static NamePtrMap map_CA_;
+template <typename MAP>
+inline TraversorCell<MAP, MAP::VERTEX> vertices(MAP& map)
+{
+	return TraversorCell<MAP, MAP::VERTEX>(map);
+}
 
-	/**
-	 * @brief register a type
-	 * @param keyType name of type
-	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
-	 */
-	template<typename T>
-	static void register_CA()
-	{
-		std::string&& keyType(name_of_type(T()));
-		if(map_CA_.find(keyType) == map_CA_.end())
-			map_CA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
-	}
+template <typename MAP>
+inline TraversorCell<MAP, MAP::EDGE> edges(MAP& map)
+{
+	return TraversorCell<MAP, MAP::EDGE>(map);
+}
 
-	/**
-	 * @brief create a ChunkArray from a typename
-	 * @param keyType typename of type store in ChunkArray
-	 * @return ptr on created ChunkArray
-	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
-	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename NamePtrMap::const_iterator it = map_CA_.find(keyType);
+template <typename MAP>
+inline TraversorCell<MAP, MAP::FACE> faces(MAP& map)
+{
+	return TraversorCell<MAP, MAP::FACE>(map);
+}
 
-		if(it != map_CA_.end())
-		{
-			tmp = (it->second)->clone();
-		}
-		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
-
-		return tmp;
-	}
-};
-
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
+template <typename MAP>
+inline TraversorCell<MAP, MAP::VOLUME> volumes(MAP& map)
+{
+	return TraversorCell<MAP, MAP::VOLUME>(map);
+}
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#endif // CORE_TRAVERSAL_GLOBAL_H_

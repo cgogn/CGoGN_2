@@ -62,6 +62,13 @@ public:
 		mark_attribute_ = map_.template get_topology_mark_attribute();
 	}
 
+	DartMarkerT(const MAP& map) :
+		DartMarkerGen(),
+		map_(const_cast<MAP&>(map))
+	{
+		mark_attribute_ = map_.template get_topology_mark_attribute();
+	}
+
 	~DartMarkerT() override
 	{
 		if (MapGen::is_alive(&map_))
@@ -85,7 +92,7 @@ public:
 		mark_attribute_->set_false(d.index);
 	}
 
-	inline void is_marked(Dart d) const
+	inline bool is_marked(Dart d) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		return (*mark_attribute_)[d.index];
@@ -123,6 +130,10 @@ public:
 		Inherit(map)
 	{}
 
+	DartMarker(const MAP& map) :
+		Inherit(map)
+	{}
+
 	~DartMarker() override
 	{
 		unmark_all() ;
@@ -152,6 +163,12 @@ public:
 	typedef DartMarkerT<MAP> Inherit;
 
 	DartMarkerStore(MAP& map) :
+		Inherit(map)
+	{
+		marked_darts_ = dart_buffers_thread->get_buffer();
+	}
+
+	DartMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
 		marked_darts_ = dart_buffers_thread->get_buffer();
@@ -193,6 +210,7 @@ public:
 		{
 			Inherit::unmark(d);
 		}
+		marked_darts_->clear();
 	}
 };
 

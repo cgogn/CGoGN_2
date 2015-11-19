@@ -42,6 +42,11 @@ public:
 	static const unsigned int FACE   = FACE2;
 	static const unsigned int VOLUME = VOLUME3;
 
+	typedef Cell<VERTEX> Vertex;
+	typedef Cell<EDGE> Edge;
+	typedef Cell<FACE> Face;
+	typedef Cell<VOLUME> Volume;
+
 	template<typename T>
 	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
 
@@ -53,10 +58,11 @@ public:
 
 protected:
 
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi2_;
+
 	void init()
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi2 = this->topology_.template add_attribute<Dart>("phi2");
-		this->topo_relations_.push_back(phi2);
+		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
 	}
 
 	/*******************************************************************************
@@ -73,8 +79,8 @@ protected:
 	{
 		cgogn_assert(phi2(d) == d);
 		cgogn_assert(phi2(e) == e);
-		(*(this->topo_relations_[2]))[d.index] = e;
-		(*(this->topo_relations_[2]))[e.index] = d;
+		(*phi2_)[d.index] = e;
+		(*phi2_)[e.index] = d;
 	}
 
 	/**
@@ -86,8 +92,8 @@ protected:
 	void phi2_unsew(Dart d)
 	{
 		Dart e = phi2(d) ;
-		(*(this->topo_relations_[2]))[d.index] = d;
-		(*(this->topo_relations_[2]))[e.index] = e;
+		(*phi2_)[d.index] = d;
+		(*phi2_)[e.index] = e;
 	}
 
 public:
@@ -113,6 +119,19 @@ public:
 	{
 		// phi2 first topo relation
 		return (*(this->topo_relations_[2]))[d.index];
+	}
+
+	/**
+	* \brief add a Dart in the map
+	* @return the new Dart
+	*/
+	inline Dart add_dart()
+	{
+		Dart d = Inherit::add_dart();
+
+		(*phi2_)[d.index] = d;
+
+		return d;
 	}
 
 	/*******************************************************************************
@@ -182,10 +201,11 @@ public:
 	{
 		switch(ORBIT)
 		{
-			case Map2::VERTEX: f(c); break;
-			case Map2::EDGE:   foreach_dart_of_edge(c, f); break;
-			case Map2::FACE:   foreach_dart_of_face(c, f); break;
-			case Map2::VOLUME: foreach_dart_of_volume(c, f); break;
+			case VERTEX1: f(c); break;
+			case VERTEX2: foreach_dart_of_vertex(c, f); break;
+			case EDGE2:   foreach_dart_of_edge(c, f); break;
+			case FACE2:   foreach_dart_of_face(c, f); break;
+			case VOLUME3: foreach_dart_of_volume(c, f); break;
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}

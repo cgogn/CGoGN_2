@@ -76,10 +76,12 @@ class Cell
 {
 public:
 
+	static const unsigned int Orbit = ORBIT;
+
 	Dart dart;
 
 	/**
-	 * \brief Constructs a new  empty Cell with NIL dart.
+	 * \brief Constructs a new empty Cell with NIL dart.
 	 */
 	inline Cell() : dart()
 	{}

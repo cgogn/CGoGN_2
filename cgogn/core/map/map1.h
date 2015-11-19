@@ -46,6 +46,10 @@ public:
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
 
+	typedef Cell<VERTEX> Vertex;
+	typedef Cell<EDGE> Edge;
+	typedef Cell<FACE> Face;
+
 	template<typename T>
 	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
 
@@ -57,12 +61,13 @@ public:
 
 protected:
 
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1_;
+	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1_;
+
 	void init()
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1 = this->topology_.template add_attribute<Dart>("phi1");
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1 = this->topology_.template add_attribute<Dart>("phi_1");
-		this->topo_relations_.push_back(phi1);
-		this->topo_relations_.push_back(phi_1);
+		phi1_ = this->topology_.template add_attribute<Dart>("phi1");
+		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
 	}
 
 	/*******************************************************************************
@@ -83,10 +88,10 @@ protected:
 	{
 		Dart f = phi1(d);
 		Dart g = phi1(e);
-		(*(this->topo_relations_[0]))[d.index] = g;
-		(*(this->topo_relations_[0]))[e.index] = f;
-		(*(this->topo_relations_[1]))[g.index] = d;
-		(*(this->topo_relations_[1]))[f.index] = e;
+		(*phi1_)[d.index] = g;
+		(*phi1_)[e.index] = f;
+		(*phi_1_)[g.index] = d;
+		(*phi_1_)[f.index] = e;
 	}
 
 	/**
@@ -99,10 +104,10 @@ protected:
 	{
 		Dart e = phi1(d);
 		Dart f = phi1(e);
-		(*(this->topo_relations_[0]))[d.index] = f;
-		(*(this->topo_relations_[0]))[e.index] = e;
-		(*(this->topo_relations_[1]))[f.index] = d;
-		(*(this->topo_relations_[1]))[e.index] = e;
+		(*phi1_)[d.index] = f;
+		(*phi1_)[e.index] = e;
+		(*phi_1_)[f.index] = d;
+		(*phi_1_)[e.index] = e;
 	}
 
 public:
@@ -126,7 +131,7 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		return (*(this->topo_relations_[0]))[d.index];
+		return (*phi1_)[d.index];
 	}
 
 	/**
@@ -136,7 +141,7 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		return (*(this->topo_relations_[1]))[d.index];
+		return (*phi_1_)[d.index];
 	}
 
 	/**
@@ -156,8 +161,8 @@ public:
 
 		Dart d(di);
 
-		for (auto ptr : this->topo_relations_)
-			(*ptr)[di] = d;
+		(*phi1_)[di] = d;
+		(*phi_1_)[di] = d;
 
 		return d;
 	}
@@ -229,12 +234,6 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_dart_of_edge(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
-
-	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
@@ -250,9 +249,8 @@ public:
 	{
 		switch(ORBIT)
 		{
-			case Map1::VERTEX: f(c); break;
-			case Map1::EDGE:   foreach_dart_of_edge(c, f); break;
-			case Map1::FACE:   foreach_dart_of_face(c, f); break;
+			case VERTEX1: foreach_dart_of_vertex(c, f); break;
+			case FACE2:   foreach_dart_of_face(c, f); break;
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}

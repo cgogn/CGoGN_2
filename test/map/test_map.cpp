@@ -5,6 +5,8 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/traversal/global.h>
+
 using namespace cgogn;
 
 
@@ -71,6 +73,12 @@ int test1(MAP1& map)
 	for (Dart dit : map)
 	{
 		std::cout << dit << std::endl;
+	}
+
+	std::cout << "Vertices :" << std::endl;
+	for (MAP1::Vertex v : vertices(map))
+	{
+		std::cout << v << std::endl;
 	}
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
