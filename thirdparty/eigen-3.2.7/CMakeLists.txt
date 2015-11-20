@@ -7,16 +7,19 @@ if (CGOGN_PROVIDE_EIGEN)
         set(CGOGN_OLD_EIGEN_DIRECTORY "eigen-eigen-b30b87236a1b")
         if(NOT EXISTS ${PROJECT_BINARY_DIR}/eigen${CGOGN_EIGEN_VERSION_STR}.tar.gz)
                 file(DOWNLOAD http://bitbucket.org/eigen/eigen/get/${CGOGN_EIGEN_VERSION_STR}.tar.gz ${PROJECT_BINARY_DIR}/eigen${CGOGN_EIGEN_VERSION_STR}.tar.gz
+                 TIMEOUT 180
                  SHOW_PROGRESS
                  EXPECTED_MD5 ${CGOGN_EIGEN_MD5}
                  )
 
                 execute_process(
-                COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_BINARY_DIR}/eigen${CGOGN_EIGEN_VERSION_STR}.tar.gz
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                COMMAND ${CMAKE_COMMAND} -E tar xzf eigen${CGOGN_EIGEN_VERSION_STR}.tar.gz
                 )
         endif()
         if(NOT EXISTS ${EIGEN_ROOT}/Eigen)
                 execute_process(
+                WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                 COMMAND ${CMAKE_COMMAND} -E copy_directory ${CGOGN_OLD_EIGEN_DIRECTORY}/Eigen ${EIGEN_ROOT}/Eigen
                 )
                 file(
