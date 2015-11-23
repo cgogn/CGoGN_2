@@ -112,6 +112,12 @@ public:
 
 	MapBaseData() : Inherit()
 	{
+		static bool initCAFactory = true;
+		if (initCAFactory)
+		{
+			ChunkArrayFactory<chunksize_type::value>::reset();
+			initCAFactory = false;
+		}
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
 			embeddings_[i] = nullptr;
