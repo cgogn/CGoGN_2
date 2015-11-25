@@ -28,8 +28,6 @@
 #include <core/map/attribute_handler.h>
 #include <core/traversal/global.h>
 
-#include <sstream>
-
 namespace cgogn
 {
 
@@ -68,14 +66,14 @@ public:
 	template <unsigned int ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(this->embeddings_[ORBIT] != nullptr, "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		return (*this->embeddings_[ORBIT])[c.dart.index];
 	}
 
 	inline unsigned int get_embedding(Dart d, unsigned int orbit) const
 	{
-		cgogn_message_assert(this->embeddings_[orbit] != nullptr, "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_orbit_embedded(orbit), "Invalid parameter: orbit not embedded");
 
 		return (*this->embeddings_[orbit])[d.index];
 	}
@@ -83,7 +81,7 @@ public:
 	template <unsigned int ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
-		cgogn_message_assert(this->embeddings_[ORBIT] != nullptr, "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		unsigned int old = get_embedding<ORBIT>(d);
 
@@ -109,10 +107,6 @@ public:
 		(*this->embeddings_[orbit])[d.index] = emb; // affect the embedding to the dart
 	}
 
-protected:
-
-	virtual void init_orbit_embedding(unsigned int orbit) = 0;
-
 	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
@@ -127,15 +121,8 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
-		if (this->embeddings_[ORBIT] == nullptr)
-		{
-			std::ostringstream oss;
-			oss << "EMB_" << orbit_name(ORBIT);
-			ChunkArray<unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
-			this->embeddings_[ORBIT] = idx;
-			init_orbit_embedding(ORBIT);
-		}
-
+		if (!this->template is_orbit_embedded<ORBIT>())
+			this->create_embedding(ORBIT);
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
@@ -182,10 +169,10 @@ public:
 	{
 	public:
 
-		const MapBase& map_;
+		const Self& map_;
 		Dart dart_;
 
-		inline const_iterator(const MapBase& map, Dart d) :
+		inline const_iterator(const Self& map, Dart d) :
 			map_(map),
 			dart_(d)
 		{}

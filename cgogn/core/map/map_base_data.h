@@ -34,6 +34,7 @@
 #include <mutex>
 #include <algorithm>
 #include <type_traits>
+#include <sstream>
 
 namespace cgogn
 {
@@ -188,6 +189,8 @@ public:
 		else
 		{
 			std::lock_guard<std::mutex> lock(mark_attributes_mutex_[ORBIT]);
+			if (!is_orbit_embedded<ORBIT>())
+				create_embedding(ORBIT);
 			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute();
 			return ca;
 		}
@@ -202,7 +205,33 @@ public:
 		mark_attributes_[ORBIT][thread].push_back(ca);
 	}
 
+	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
+
+	template <unsigned int ORBIT>
+	inline bool is_orbit_embedded() const
+	{
+		return embeddings_[ORBIT] != nullptr;
+	}
+
+	inline bool is_orbit_embedded(unsigned int orbit) const
+	{
+		return embeddings_[orbit] != nullptr;
+	}
+
 protected:
+
+	virtual void init_orbit_embedding(unsigned int orbit) = 0;
+
+	inline void create_embedding(unsigned int orbit)
+	{
+		std::ostringstream oss;
+		oss << "EMB_" << orbit_name(orbit);
+		ChunkArray<unsigned int>* idx = topology_.template add_attribute<unsigned int>(oss.str());
+		embeddings_[orbit] = idx;
+		init_orbit_embedding(orbit);
+	}
 
 	/*******************************************************************************
 	 * Thread management

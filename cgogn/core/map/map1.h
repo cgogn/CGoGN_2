@@ -193,7 +193,7 @@ public:
 	 */
 	Dart cut_edge(Dart d)
 	{
-		Dart e = this->new_dart();	// Create a new dart
+		Dart e = this->add_dart();	// Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
@@ -292,7 +292,7 @@ protected:
 		switch (orbit)
 		{
 			case VERTEX1:
-				for (Dart d : cells<VERTEX1>(*this))
+				for (Dart d : cells<VERTEX1, FORCE_DART_MARKING>(*this))
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
@@ -300,7 +300,7 @@ protected:
 				}
 				break;
 			case FACE2:
-				for (Dart d : cells<FACE2>(*this))
+				for (Dart d : cells<FACE2, FORCE_DART_MARKING>(*this))
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
