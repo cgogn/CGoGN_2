@@ -40,8 +40,8 @@ class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
 	static_assert((CHUNKSIZE >= 1u) & !(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
+
 public:
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
 	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
 

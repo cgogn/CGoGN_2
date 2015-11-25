@@ -74,12 +74,14 @@ public:
 	typedef MapGen Inherit;
 	typedef MapBaseData<DATA_TRAITS> Self;
 
-	typedef std::integral_constant<std::size_t, DATA_TRAITS::CHUNK_SIZE> chunksize_type;
+	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
+
 	template<typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<chunksize_type::value, T>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<chunksize_type::value>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template<typename T>
-	using ChunkArray = cgogn::ChunkArray<chunksize_type::value, T>;
+	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+
 protected:
 
 	/// topology & embedding indices
@@ -115,7 +117,7 @@ public:
 		static bool initCAFactory = true;
 		if (initCAFactory)
 		{
-			ChunkArrayFactory<chunksize_type::value>::reset();
+			ChunkArrayFactory<CHUNKSIZE>::reset();
 			initCAFactory = false;
 		}
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)

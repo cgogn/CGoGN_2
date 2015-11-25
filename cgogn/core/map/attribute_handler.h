@@ -128,11 +128,16 @@ public:
 	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Self;
 
 	typedef typename Inherit::MapData					MapData;
-	typedef typename MapData::chunksize_type			chunksize_type;
-	typedef std::integral_constant<unsigned int, ORBIT> orbit_type;
+
+	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
+	template<typename T>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
+	template<typename T>
+	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+
 protected:
 
-	ChunkArrayContainer<chunksize_type::value, unsigned int>* chunk_array_cont_;
+	ChunkArrayContainer<unsigned int>* chunk_array_cont_;
 
 public:
 
@@ -207,11 +212,10 @@ public:
 
 	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Inherit;
 	typedef AttributeHandler<DATA_TRAITS, T, ORBIT>		Self;
-	typedef typename Inherit::chunksize_type			chunksize_type;
+
 	typedef T											value_type;
-	typedef typename Inherit::orbit_type				orbit_type;
-	typedef ChunkArray<chunksize_type::value, T>		TChunkArray;
-	typedef typename Inherit::MapData					MapData;
+	using MapData =		typename Inherit::MapData;
+	using TChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
 

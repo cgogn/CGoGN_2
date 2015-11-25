@@ -37,8 +37,9 @@ template <typename T>
 class Buffers
 {
 	typedef T value_type;
-	typedef std::integral_constant<std::size_t, 128>	DEFAULT_SIZE;
-	typedef std::integral_constant<std::size_t, 1024>	SHRINK_SIZE;
+	static const unsigned int DEFAULT_SIZE	= 128u;
+	static const unsigned int SHRINK_SIZE	= 1024u;
+
 protected:
 
 	std::vector<std::vector<T>*> buffers_;
@@ -58,7 +59,7 @@ public:
 		if (buffers_.empty())
 		{
 			std::vector<T>* v = new std::vector<T>;
-			v->reserve(DEFAULT_SIZE::value);
+			v->reserve(DEFAULT_SIZE);
 			return v;
 		}
 
@@ -69,9 +70,9 @@ public:
 
 	inline void release_buffer(std::vector<T>* b)
 	{
-		if (b->capacity() > SHRINK_SIZE::value)
+		if (b->capacity() > SHRINK_SIZE)
 		{
-			b->resize(DEFAULT_SIZE::value);
+			b->resize(DEFAULT_SIZE);
 			b->shrink_to_fit();
 		}
 

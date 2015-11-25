@@ -38,7 +38,6 @@ class ChunkArrayGen
 {
 public:
 	typedef ChunkArrayGen<CHUNKSIZE> Self;
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 
 	ChunkArrayGen() = default;
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;

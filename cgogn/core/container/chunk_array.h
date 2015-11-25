@@ -46,7 +46,6 @@ class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 public:
 	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
 	typedef ChunkArray<CHUNKSIZE, T> Self;
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef T value_type;
 
 protected:
@@ -343,8 +342,8 @@ public:
 
 	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
 	typedef ChunkArray<CHUNKSIZE, bool> Self;
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef unsigned int value_type;
+
 protected:
 
 	/// vector of block pointers

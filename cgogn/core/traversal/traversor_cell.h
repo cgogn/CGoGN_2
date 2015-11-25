@@ -36,8 +36,8 @@ class TraversorCell
 public:
 	typedef TraversorCell<MAP,ORBIT> Self;
 	typedef MAP Map;
-	typedef std::integral_constant<unsigned int, ORBIT> orbit_type;
 	using   DartMarker = cgogn::DartMarker<Map>;
+
 protected:
 
 	MAP& map_;

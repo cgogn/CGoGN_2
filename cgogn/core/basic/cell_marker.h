@@ -54,11 +54,11 @@ class CellMarkerT : public CellMarkerGen
 public:
 	typedef CellMarkerGen Inherit;
 	typedef CellMarkerT< MAP, ORBIT > Self;
-
-	typedef std::integral_constant<unsigned int, ORBIT> Orbit;
 	typedef MAP Map;
-	typedef typename Map::chunksize_type chunksize_type;
-	typedef ChunkArray<chunksize_type::value, bool> ChunkArrayBool;
+
+	static const unsigned int CHUNKSIZE = Map::CHUNKSIZE;
+
+	typedef ChunkArray<CHUNKSIZE, bool> ChunkArrayBool;
 
 protected:
 
@@ -117,8 +117,6 @@ class CellMarker : public CellMarkerT<MAP, ORBIT>
 public:
 	typedef CellMarkerT<MAP, ORBIT> Inherit;
 	typedef CellMarker< MAP, ORBIT > Self;
-
-	typedef typename Inherit::Orbit Orbit;
 	typedef typename Inherit::Map Map;
 
 	CellMarker(Map& map) :

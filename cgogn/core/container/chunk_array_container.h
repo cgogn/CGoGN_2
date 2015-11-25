@@ -85,7 +85,6 @@ class ChunkArrayContainer
 {
 public:
 	typedef ChunkArrayContainer<CHUNKSIZE, T_REF> Self;
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef T_REF ref_type;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;

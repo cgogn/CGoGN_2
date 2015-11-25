@@ -54,8 +54,8 @@ public:
 	typedef DartMarkerT<MAP> Self;
 
 	typedef MAP Map;
-	typedef typename Map::chunksize_type chunksize_type;
 	using ChunkArrayBool = typename Map::template ChunkArray<bool>;
+
 protected:
 
 	Map& map_;

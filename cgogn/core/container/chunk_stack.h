@@ -42,8 +42,6 @@ class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 public:
 	typedef ChunkArray<CHUNKSIZE, T> Inherit;
 	typedef ChunkStack<CHUNKSIZE, T> Self;
-
-	typedef std::integral_constant<std::size_t, CHUNKSIZE> chunksize_type;
 	typedef T value_type;
 
 protected:
