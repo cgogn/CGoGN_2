@@ -41,6 +41,9 @@ class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
 public:
 	typedef ChunkArray<CHUNKSIZE, T> Inherit;
+	typedef ChunkStack<CHUNKSIZE, T> Self;
+	typedef T value_type;
+
 protected:
 
 	unsigned int stack_size_;
@@ -50,6 +53,7 @@ public:
 	 * @brief ChunkStack constructor
 	 */
 	ChunkStack():
+		Inherit(),
 		stack_size_(0u)
 	{}
 
@@ -59,10 +63,10 @@ public:
 	inline ~ChunkStack() override
 	{}
 
-	inline ChunkStack(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
-	inline ChunkStack(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
-	inline ChunkStack& operator=(const ChunkStack<CHUNKSIZE, T>& cs) = delete;
-	inline ChunkStack& operator=(ChunkStack<CHUNKSIZE, T>&& cs) = delete;
+	inline ChunkStack(const Self& cs) = delete;
+	inline ChunkStack(Self&& cs) = delete;
+	inline ChunkStack& operator=(const Self& cs) = delete;
+	inline ChunkStack& operator=(Self&& cs) = delete;
 
 	/**
 	 * @brief push a value on top of heap
@@ -137,7 +141,7 @@ public:
 	void clear() override
 	{
 		stack_size_ = 0u;
-		ChunkArray<CHUNKSIZE, T>::clear();
+		Inherit::clear();
 	}
 };
 

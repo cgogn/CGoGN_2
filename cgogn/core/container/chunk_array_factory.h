@@ -38,6 +38,9 @@ namespace cgogn
 template <unsigned int CHUNKSIZE>
 class ChunkArrayFactory
 {
+	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
+	static_assert((CHUNKSIZE >= 1u) & !(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
+
 public:
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
 	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
@@ -75,6 +78,11 @@ public:
 			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
 
 		return tmp;
+	}
+
+	static void reset()
+	{
+		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = NamePtrMap();
 	}
 };
 

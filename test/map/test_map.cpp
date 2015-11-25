@@ -58,9 +58,9 @@ int test1(MAP1& map)
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.add_attribute<float, MAP1::VERTEX>("floats");
 
-	std::vector<unsigned int>* uib = cgogn::uint_buffers_thread->get_buffer();
+	std::vector<unsigned int>* uib = cgogn::getUINTBuffers()->get_buffer();
 	uib->push_back(3);
-	cgogn::uint_buffers_thread->release_buffer(uib);
+	cgogn::getUINTBuffers()->release_buffer(uib);
 
 	Dart d = map.add_dart();
 

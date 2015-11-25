@@ -28,6 +28,7 @@
 #include <core/basic/dart.h>
 
 #include <vector>
+#include <type_traits>
 
 namespace cgogn
 {
@@ -35,6 +36,10 @@ namespace cgogn
 template <typename T>
 class Buffers
 {
+	typedef T value_type;
+	static const unsigned int DEFAULT_SIZE	= 128u;
+	static const unsigned int SHRINK_SIZE	= 1024u;
+
 protected:
 
 	std::vector<std::vector<T>*> buffers_;
@@ -54,7 +59,7 @@ public:
 		if (buffers_.empty())
 		{
 			std::vector<T>* v = new std::vector<T>;
-			v->reserve(128);
+			v->reserve(DEFAULT_SIZE);
 			return v;
 		}
 
@@ -65,9 +70,9 @@ public:
 
 	inline void release_buffer(std::vector<T>* b)
 	{
-		if (b->capacity() > 1024)
+		if (b->capacity() > SHRINK_SIZE)
 		{
-			b->resize(128);
+			b->resize(DEFAULT_SIZE);
 			b->shrink_to_fit();
 		}
 

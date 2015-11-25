@@ -42,7 +42,7 @@ namespace cgogn
 struct Dart
 {
 	// MSVC doesn't support  std::numeric_limits<unsigned int>::max() when declaring static const variables
-	const static unsigned int INVALID_INDEX = UINT_MAX;
+	static const unsigned int INVALID_INDEX = UINT_MAX;
 
 	/**
 	 * \brief the value of a dart.

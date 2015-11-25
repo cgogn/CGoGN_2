@@ -20,7 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
+#define CGOGN_CORE_DLL_EXPORT
 #include <core/map/map_base_data.h>
 
 namespace cgogn
@@ -28,14 +28,11 @@ namespace cgogn
 
 std::vector<MapGen*>* MapGen::instances_ = nullptr;
 
-CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
-CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
-
 MapGen::MapGen()
 {
 	if (instances_ == nullptr)
 		instances_ = new std::vector<MapGen*>;
-
+	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(),"This map is already present in the instances vector.");
 	// register the map in the vector of instances
 	instances_->push_back(this);
 }
