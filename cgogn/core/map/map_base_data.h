@@ -192,6 +192,10 @@ public:
 			if (!is_orbit_embedded<ORBIT>())
 				create_embedding(ORBIT);
 			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute();
+
+			// TODO : useful ?
+			ca->all_false();
+
 			return ca;
 		}
 	}
@@ -222,7 +226,7 @@ public:
 
 protected:
 
-	virtual void init_orbit_embedding(unsigned int orbit) = 0;
+	virtual void init_orbits_embeddings(unsigned int orbit) = 0;
 
 	inline void create_embedding(unsigned int orbit)
 	{
@@ -230,7 +234,15 @@ protected:
 		oss << "EMB_" << orbit_name(orbit);
 		ChunkArray<unsigned int>* idx = topology_.template add_attribute<unsigned int>(oss.str());
 		embeddings_[orbit] = idx;
-		init_orbit_embedding(orbit);
+		init_orbits_embeddings(orbit);
+	}
+
+	template <unsigned int ORBIT>
+	inline unsigned int add_cell()
+	{
+		unsigned int idx = attributes_[ORBIT].template insert_lines<1>();
+		attributes_[ORBIT].init_markers_of_line(idx);
+		return idx;
 	}
 
 	/*******************************************************************************

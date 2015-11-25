@@ -78,6 +78,14 @@ public:
 		return (*this->embeddings_[orbit])[d.index];
 	}
 
+	inline void init_embedding(Dart d, unsigned int orbit, unsigned int emb)
+	{
+		cgogn_message_assert(this->embeddings_[orbit] != nullptr, "Invalid parameter: orbit not embedded");
+
+		this->attributes_[orbit].ref_line(emb);     // ref the new emb
+		(*this->embeddings_[orbit])[d.index] = emb; // affect the embedding to the dart
+	}
+
 	template <unsigned int ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{

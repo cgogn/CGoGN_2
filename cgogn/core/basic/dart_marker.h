@@ -176,19 +176,19 @@ public:
 	DartMarkerStore(Map& map) :
 		Inherit(map)
 	{
-		marked_darts_ = cgogn::getDartBuffers()->get_buffer();
+		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
 	}
 
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
-		marked_darts_ = dart_buffers_thread->get_buffer();
+		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
 	}
 
 	~DartMarkerStore() override
 	{
 		unmark_all();
-		cgogn::getDartBuffers()->release_buffer(marked_darts_);
+		cgogn::get_dart_buffers()->release_buffer(marked_darts_);
 	}
 
 	DartMarkerStore(const Self& dm) = delete;

@@ -43,6 +43,7 @@ template <typename MAP, unsigned int ORBIT, TraversorStrategy STRATEGY = AUTO>
 class TraversorCell
 {
 public:
+
 	typedef TraversorCell<MAP, ORBIT, STRATEGY> Self;
 	typedef MAP Map;
 
@@ -58,7 +59,9 @@ protected:
 public:
 
 	TraversorCell(MAP& map) :
-		map_(map)
+		map_(map),
+		dm_(nullptr),
+		cm_(nullptr)
 	{
 		switch (STRATEGY)
 		{

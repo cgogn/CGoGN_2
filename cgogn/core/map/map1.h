@@ -152,6 +152,8 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
+protected:
+
 	/**
 	* \brief add a Dart in the map
 	* @return the new Dart
@@ -169,61 +171,78 @@ public:
 		return d;
 	}
 
+public:
+
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
 
 	/**
 	 * \brief add_cycle
-	 * @param nbEdges
+	 * @param nb_edges
 	 * @return
 	 */
-	Dart add_cycle(unsigned int nbEdges);
+	Dart add_cycle(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-	/**
-	 * \brief remove_cycle
-	 * @param d
-	 */
-	void remove_cycle(Dart d);
+		Dart d = add_cycle_topo(nb_edges);
+
+		if (this->template is_orbit_embedded<VERTEX1>())
+		{
+			// TODO : replace with local traversal
+			Dart it = d;
+			do
+			{
+				unsigned int idx = this->template add_cell<VERTEX1>();
+				init_orbit_embedding(it, VERTEX1, idx);
+				it = phi1(it);
+			} while (it != d);
+		}
+
+		if (this->template is_orbit_embedded<FACE2>())
+		{
+			unsigned int idx = this->template add_cell<FACE2>();
+			init_orbit_embedding(d, FACE2, idx);
+		}
+
+		return d;
+	}
+
+protected:
+
+	Dart add_cycle_topo(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+
+		Dart d = add_dart();
+		for (unsigned int i = 1 ; i < nb_edges ; ++i)
+			cut_edge_topo(d);
+
+		return d;
+	}
 
 	/**
 	 * \brief cut_edge
 	 * @param d
 	 * @return
 	 */
-	Dart cut_edge(Dart d)
+	Dart cut_edge_topo(Dart d)
 	{
 		Dart e = this->add_dart();	// Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
-		if (this->template is_boundary_marked<2>(d))
-			this->template boundary_mark<2>(e);
+//		if (this->template is_boundary_marked<2>(d))
+//			this->template boundary_mark<2>(e);
 
-		if (this->template is_boundary_marked<3>(d))
-			this->template boundary_mark<3>(e);
+//		if (this->template is_boundary_marked<3>(d))
+//			this->template boundary_mark<3>(e);
 
 		return e;
 	}
 
-	/**
-	 * \brief uncut_edge
-	 * @param d
-	 * @return
-	 */
-	void uncut_edge(Dart d)
-	{
-		Dart d1 = phi1(d);
-		phi1_unsew(d);			// Dart d is linked to the successor of its successor
-		this->delete_dart(d1);	// Dart d1 is erased
-	}
-
-	/**
-	 * \brief collapse_edge
-	 * @param d
-	 * @return
-	 */
-	Dart collapse_edge(Dart d);
+public:
 
 	/*******************************************************************************
 	 * Orbits traversal
@@ -273,6 +292,17 @@ public:
 	 *******************************************************************************/
 
 	template <unsigned int ORBIT>
+	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	{
+		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->init_embedding<ORBIT>(d, emb); });
+	}
+
+	inline void init_orbit_embedding(Dart d, unsigned int orbit, unsigned int emb)
+	{
+		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->init_embedding(it, orbit, emb); });
+	}
+
+	template <unsigned int ORBIT>
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->set_embedding<ORBIT>(d, emb); });
@@ -285,7 +315,7 @@ public:
 
 protected:
 
-	void init_orbit_embedding(unsigned int orbit) override
+	void init_orbits_embeddings(unsigned int orbit) override
 	{
 		cgogn_message_assert(this->attributes_[orbit].size() == 0, "init_orbit_embedding : container is not empty");
 
@@ -296,7 +326,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			case FACE2:
@@ -304,7 +334,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			default:

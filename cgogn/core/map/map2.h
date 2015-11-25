@@ -175,7 +175,7 @@ public:
 	{
 		DartMarkerStore<Map2> marker(*this); // get a marker
 
-		std::vector<Dart>* visited_faces = cgogn::getDartBuffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 
 		visited_faces->push_back(d); // Start with the face of d
 
@@ -201,7 +201,7 @@ public:
 			}
 		}
 
-		cgogn::getDartBuffers()->release_buffer(visited_faces);
+		cgogn::get_dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
@@ -237,6 +237,17 @@ public:
 	 *******************************************************************************/
 
 	template <unsigned int ORBIT>
+	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	{
+		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->init_embedding<ORBIT>(d, emb); });
+	}
+
+	inline void init_orbit_embedding(Dart d, unsigned int orbit, unsigned int emb)
+	{
+		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->init_embedding(it, orbit, emb); });
+	}
+
+	template <unsigned int ORBIT>
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) {	this->set_embedding<ORBIT>(d, emb); });
@@ -249,7 +260,7 @@ public:
 
 protected:
 
-	void init_orbit_embedding(unsigned int orbit) override
+	void init_orbits_embeddings(unsigned int orbit) override
 	{
 		cgogn_message_assert(this->attributes_[orbit].size() == 0, "init_orbit_embedding : container is not empty");
 
@@ -260,7 +271,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			case VERTEX2:
@@ -268,7 +279,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			case EDGE2:
@@ -276,7 +287,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			case FACE2:
@@ -284,7 +295,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			case VOLUME3:
@@ -292,7 +303,7 @@ protected:
 				{
 					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
 					this->attributes_[orbit].init_markers_of_line(idx);
-					set_orbit_embedding(d, orbit, idx);
+					init_orbit_embedding(d, orbit, idx);
 				}
 				break;
 			default:

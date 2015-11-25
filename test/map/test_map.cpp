@@ -58,35 +58,37 @@ int test1(MAP1& map)
 	// add an attribute on vertex of map with
 	MAP1::VertexAttributeHandler<float> ah = map.add_attribute<float, MAP1::VERTEX>("floats");
 
-	std::vector<unsigned int>* uib = cgogn::getUINTBuffers()->get_buffer();
+	std::vector<unsigned int>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
-	cgogn::getUINTBuffers()->release_buffer(uib);
+	cgogn::get_uint_buffers()->release_buffer(uib);
 
-	Dart d = map.add_dart();
+	Dart d1 = map.add_cycle(3);
 
 	DartMarker<MAP1> dm(map);
 	CellMarker<MAP1, MAP1::VERTEX> cm(map);
 
-	dm.mark(d);
+	dm.mark(d1);
 
 	std::cout << "Darts :" << std::endl;
 	for (Dart dit : map)
 	{
 		std::cout << dit << std::endl;
 	}
+	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	for (MAP1::Vertex v : vertices(map))
+	for (MAP1::Vertex v : vertices<FORCE_CELL_MARKING>(map))
 	{
 		std::cout << v << std::endl;
 	}
+	std::cout << "End Vertices" << std::endl;
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 	ChunkArrayContainer<My_Data_Traits::CHUNK_SIZE, unsigned int>& container = map.get_attribute_container(VERTEX1);
 	ChunkArray<My_Data_Traits::CHUNK_SIZE,float>* att = container.get_attribute<float>("floats");
-	for (int i=0;i<10;++i)
+	for (unsigned int i = 0; i < 10; ++i)
 		container.insert_lines<1>();
-	for(unsigned int i=container.begin(); i!=container.end(); container.next(i))
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 		(*att)[i] = 3.0f + 0.1f*float(i);
 
 	// access with index
