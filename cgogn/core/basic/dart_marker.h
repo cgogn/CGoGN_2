@@ -206,7 +206,7 @@ public:
 	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
-		for (Dart d : marked_darts_)
+		for (Dart d : *marked_darts_)
 		{
 			Inherit::unmark(d);
 		}

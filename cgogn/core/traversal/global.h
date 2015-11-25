@@ -59,6 +59,15 @@ inline TraversorCell<MAP, MAP::VOLUME> volumes(MAP& map)
 	return TraversorCell<MAP, MAP::VOLUME>(map);
 }
 
+
+
+namespace parallel
+{
+
+
+
+} // namespace parallel
+
 } // namespace cgogn
 
 #endif // CORE_TRAVERSAL_GLOBAL_H_

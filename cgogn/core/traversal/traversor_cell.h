@@ -26,6 +26,7 @@
 
 #include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
@@ -37,6 +38,7 @@ protected:
 
 	MAP& map_;
 	DartMarker<MAP>* dm_;
+	CellMarker<MAP, ORBIT>* cm_;
 
 public:
 

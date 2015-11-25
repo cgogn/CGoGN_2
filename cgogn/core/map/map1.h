@@ -153,12 +153,6 @@ public:
 		unsigned int di = this->topology_.template insert_lines<1>();	// insert a new dart line
 		this->topology_.init_markers_of_line(di);
 
-		for(unsigned int i = 0; i < NB_ORBITS; ++i)
-		{
-			if (this->embeddings_[i])							// set all its embeddings
-				(*(this->embeddings_[i]))[di] = EMBNULL;		// to EMBNULL
-		}
-
 		Dart d(di);
 
 		(*phi1_)[di] = d;
@@ -245,13 +239,69 @@ public:
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
-	void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
+	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		switch(ORBIT)
+		switch (ORBIT)
 		{
 			case VERTEX1: foreach_dart_of_vertex(c, f); break;
 			case FACE2:   foreach_dart_of_face(c, f); break;
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+		}
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_orbit(Dart d, unsigned int orbit, const FUNC& f) const
+	{
+		switch (orbit)
+		{
+			case VERTEX1: foreach_dart_of_vertex(d, f); break;
+			case FACE2:   foreach_dart_of_face(d, f); break;
+			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+		}
+	}
+
+	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
+
+	template <unsigned int ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	{
+		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->set_embedding<ORBIT>(d, emb); });
+	}
+
+	inline void set_orbit_embedding(Dart d, unsigned int orbit, unsigned int emb)
+	{
+		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->set_embedding(it, orbit, emb); });
+	}
+
+protected:
+
+	void init_orbit_embedding(unsigned int orbit) override
+	{
+		cgogn_message_assert(this->attributes_[orbit].size() == 0, "init_orbit_embedding : container is not empty");
+
+		switch (orbit)
+		{
+			case VERTEX1:
+				for (Dart d : cells<VERTEX1>(*this))
+				{
+					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
+					this->attributes_[orbit].init_markers_of_line(idx);
+					set_orbit_embedding(d, orbit, idx);
+				}
+				break;
+			case FACE2:
+				for (Dart d : cells<FACE2>(*this))
+				{
+					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
+					this->attributes_[orbit].init_markers_of_line(idx);
+					set_orbit_embedding(d, orbit, idx);
+				}
+				break;
+			default:
+				cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+				break;
 		}
 	}
 };

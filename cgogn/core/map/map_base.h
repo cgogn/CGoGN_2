@@ -26,6 +26,7 @@
 
 #include <core/map/map_base_data.h>
 #include <core/map/attribute_handler.h>
+#include <core/traversal/global.h>
 
 #include <sstream>
 
@@ -53,8 +54,62 @@ public:
 	{}
 
 	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
+
+	template <unsigned int ORBIT>
+	inline unsigned int get_embedding(Cell<ORBIT> c) const
+	{
+		cgogn_message_assert(this->embeddings_[ORBIT] != nullptr, "Invalid parameter: orbit not embedded");
+
+		return (*this->embeddings_[ORBIT])[c.dart.index];
+	}
+
+	inline unsigned int get_embedding(Dart d, unsigned int orbit) const
+	{
+		cgogn_message_assert(this->embeddings_[orbit] != nullptr, "Invalid parameter: orbit not embedded");
+
+		return (*this->embeddings_[orbit])[d.index];
+	}
+
+	template <unsigned int ORBIT>
+	inline void set_embedding(Dart d, unsigned int emb)
+	{
+		cgogn_message_assert(this->embeddings_[ORBIT] != nullptr, "Invalid parameter: orbit not embedded");
+
+		unsigned int old = get_embedding<ORBIT>(d);
+
+		if (old == emb)	return;
+
+		this->attributes_[ORBIT].unref_line(old); // unref the old emb
+		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
+
+		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+	}
+
+	inline void set_embedding(Dart d, unsigned int orbit, unsigned int emb)
+	{
+		cgogn_message_assert(this->embeddings_[orbit] != nullptr, "Invalid parameter: orbit not embedded");
+
+		unsigned int old = get_embedding(d, orbit);
+
+		if (old == emb)	return;
+
+		this->attributes_[orbit].unref_line(old); // unref the old emb
+		this->attributes_[orbit].ref_line(emb);   // ref the new emb
+
+		(*this->embeddings_[orbit])[d.index] = emb; // affect the embedding to the dart
+	}
+
+protected:
+
+	virtual void init_orbit_embedding(unsigned int orbit) = 0;
+
+	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
+
+public:
 
 	/**
 	 * \brief add an attribute
@@ -70,8 +125,7 @@ public:
 			oss << "EMB_" << orbit_name(ORBIT);
 			ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
 			this->embeddings_[ORBIT] = idx;
-			for (unsigned int i = this->topology_.begin(); i != this->topology_.end(); this->topology_.next(i))
-				(*idx)[i] = EMBNULL;
+			init_orbit_embedding(ORBIT);
 		}
 
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
@@ -115,77 +169,6 @@ public:
 	/*******************************************************************************
 	 * Basic traversals
 	 *******************************************************************************/
-
-//private:
-
-//	/**
-//	 * \brief Map begin
-//	 * @return the first dart of the map
-//	 */
-//	inline Dart begin() const
-//	{
-//		return Dart(this->topology_.begin());
-//	}
-
-//	/**
-//	 * \brief Map end
-//	 * @return the dart after the last dart of the map
-//	 */
-//	inline Dart end() const
-//	{
-//		return Dart(this->topology_.end());
-//	}
-
-//	/**
-//	 * \brief next dart in the map
-//	 * @param d reference to the dart to be modified
-//	 */
-//	inline void next(Dart& d) const
-//	{
-//		this->topology_.next(d.index);
-//	}
-
-//public:
-
-//	class iterator
-//	{
-//	public:
-
-//		MapBase* const map_;
-//		Dart dart_;
-
-//		inline iterator(MapBase* map, Dart d) :
-//			map_(map),
-//			dart_(d)
-//		{}
-
-//		inline iterator& operator++()
-//		{
-//			map_->topology_.next(dart_.index);
-//			return *this;
-//		}
-
-//		inline Dart& operator*()
-//		{
-//			return dart_;
-//		}
-
-//		inline bool operator!=(iterator it) const
-//		{
-//			cgogn_assert(map_ == it.map_);
-//			return dart_ != it.dart_;
-//		}
-//	};
-
-//	inline iterator begin()
-//	{
-//		return iterator(this, Dart(this->topology_.begin()));
-//	}
-
-//	inline iterator end()
-//	{
-//		return iterator(this, Dart(this->topology_.end()));
-//	}
 
 	class const_iterator
 	{

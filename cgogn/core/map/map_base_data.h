@@ -182,18 +182,6 @@ public:
 		mark_attributes_[ORBIT][thread].push_back(ca);
 	}
 
-	/*******************************************************************************
-	 * Embedding management
-	 *******************************************************************************/
-
-	template <unsigned int ORBIT>
-	inline unsigned int get_embedding(const Cell<ORBIT>& c) const
-	{
-		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
-
-		return (*embeddings_[ORBIT])[c.dart.index] ;
-	}
-
 protected:
 
 	/*******************************************************************************
