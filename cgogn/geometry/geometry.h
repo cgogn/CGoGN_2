@@ -1,1 +1,6 @@
- 
+#ifndef GEOMETRY_GEOMETRY_H_
+#define GEOMETRY_GEOMETRY_H_
+
+
+
+#endif // GEOMETRY_GEOMETRY_H_

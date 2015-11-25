@@ -7,4 +7,4 @@ set(CGOGN_TEST_PREFIX "test_")
 
 add_subdirectory(chunk_array)
 add_subdirectory(map)
-
+add_subdirectory(geometry)
