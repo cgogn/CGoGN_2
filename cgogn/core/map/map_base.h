@@ -35,14 +35,15 @@ namespace cgogn
 template<typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase : public MapBaseData<DATA_TRAITS>
 {
-protected:
-
-	std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*> attribute_handlers_;
-
 public:
-
 	typedef MapBaseData<DATA_TRAITS> Inherit;
+	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
+	using typename Inherit::ChunkArrayGen;
+	template<typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
@@ -68,13 +69,13 @@ public:
 		{
 			std::ostringstream oss;
 			oss << "EMB_" << orbit_name(ORBIT);
-			ChunkArray<DATA_TRAITS::CHUNK_SIZE, unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
+			ChunkArray<unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
 			this->embeddings_[ORBIT] = idx;
 			for (unsigned int i = this->topology_.begin(); i != this->topology_.end(); this->topology_.next(i))
 				(*idx)[i] = EMBNULL;
 		}
 
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
+		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
@@ -86,11 +87,11 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = ah.getData();
+		ChunkArray<T>* ca = ah.getData();
 
 		if (this->attributes_[ORBIT].remove_attribute(ca))
 		{
-			typedef typename std::multimap<ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>*, AttributeHandlerGen<DATA_TRAITS>*>::iterator IT;
+			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
 			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
 			for(IT i = bounds.first; i != bounds.second; ++i)
 				(*i).second->set_invalid();
@@ -108,9 +109,13 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler< T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
+		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
+
+protected:
+
+	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
 
 	/*******************************************************************************
 	 * Basic traversals
@@ -145,7 +150,7 @@ public:
 //		this->topology_.next(d.index);
 //	}
 
-//public:
+public:
 
 //	class iterator
 //	{
