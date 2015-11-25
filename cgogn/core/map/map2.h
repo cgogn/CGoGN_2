@@ -36,29 +36,37 @@ class Map2 : public Map1<DATA_TRAITS>
 public:
 
 	typedef Map1<DATA_TRAITS> Inherit;
+	typedef Map2<DATA_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
 	static const unsigned int FACE   = FACE2;
 	static const unsigned int VOLUME = VOLUME3;
 
-	typedef Cell<VERTEX> Vertex;
-	typedef Cell<EDGE> Edge;
-	typedef Cell<FACE> Face;
-	typedef Cell<VOLUME> Volume;
+	typedef Cell<Self::VERTEX> Vertex;
+	typedef Cell<Self::EDGE> Edge;
+	typedef Cell<Self::FACE> Face;
+	typedef Cell<Self::VOLUME> Volume;
 
 	template<typename T>
-	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	template<typename T>
+	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
+	template<typename T, unsigned int ORBIT>
+	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 
 	template<typename T>
-	using EdgeAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, EDGE>;
+	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
 
 	template<typename T>
-	using FaceAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, FACE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 
+	template<typename T>
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 protected:
 
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi2_;
+	ChunkArray<Dart>* phi2_;
 
 	void init()
 	{
@@ -167,7 +175,7 @@ public:
 	{
 		DartMarkerStore<Map2> marker(*this); // get a marker
 
-		std::vector<Dart>* visited_faces = dart_buffers_thread->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::getDartBuffers()->get_buffer();
 
 		visited_faces->push_back(d); // Start with the face of d
 
@@ -193,7 +201,7 @@ public:
 			}
 		}
 
-		dart_buffers_thread->release_buffer(visited_faces);
+		cgogn::getDartBuffers()->release_buffer(visited_faces);
 	}
 
 	template <unsigned int ORBIT, typename FUNC>

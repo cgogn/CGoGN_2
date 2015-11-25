@@ -25,7 +25,7 @@
 #define UTILS_THREAD_H_
 
 #include <utils/buffers.h>
-
+#include <utils/dll.h>
 namespace cgogn
 {
 
@@ -38,20 +38,10 @@ const unsigned int NB_THREADS = 8u;
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
 extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
-inline void thread_start()
-{
-	if (dart_buffers_thread == nullptr)
-		dart_buffers_thread = new Buffers<Dart>();
-
-	if (uint_buffers_thread == nullptr)
-		uint_buffers_thread = new Buffers<unsigned int>();
-}
-
-inline void thread_stop()
-{
-	delete dart_buffers_thread;
-	delete uint_buffers_thread;
-}
+CGOGN_UTILS_API void thread_start();
+CGOGN_UTILS_API void thread_stop();
+CGOGN_UTILS_API Buffers<Dart>*			getDartBuffers();
+CGOGN_UTILS_API Buffers<unsigned int>*	getUINTBuffers();
 
 } // namespace cgogn
 

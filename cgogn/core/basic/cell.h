@@ -77,8 +77,6 @@ class Cell
 {
 public:
 
-	static const unsigned int Orbit = ORBIT;
-
 	Dart dart;
 
 	/**

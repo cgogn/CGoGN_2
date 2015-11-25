@@ -34,18 +34,25 @@ namespace cgogn
 template <typename MAP, unsigned int ORBIT>
 class TraversorCell
 {
+public:
+	typedef TraversorCell<MAP,ORBIT> Self;
+	typedef MAP Map;
+
+	using   DartMarker = cgogn::DartMarker<Map>;
+	using   CellMarker = cgogn::CellMarker<Map, ORBIT>;
+
 protected:
 
-	MAP& map_;
-	DartMarker<MAP>* dm_;
-	CellMarker<MAP, ORBIT>* cm_;
+	Map& map_;
+	DartMarker* dm_;
+	CellMarker* cm_;
 
 public:
 
 	TraversorCell(MAP& map) :
 		map_(map)
 	{
-		dm_ = new DartMarker<MAP>(map_);
+		dm_ = new DartMarker(map_);
 	}
 
 	virtual ~TraversorCell()
