@@ -31,21 +31,21 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS, typename CONCRETE>
-class MapBase : public MapBaseData<DATA_TRAITS>
+template <typename MAP_TRAITS>
+class MapBase : public MapBaseData<MAP_TRAITS>
 {
 public:
 
-	typedef MapBaseData<DATA_TRAITS> Inherit;
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS, CONCRETE> Self;
+	typedef MapBaseData<MAP_TRAITS> Inherit;
+	typedef MapBase<MAP_TRAITS> Self;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
+	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
 	template<typename T, unsigned int ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
 
 protected:
 
@@ -65,7 +65,7 @@ public:
 
 	inline unsigned int add_topology_element()
 	{
-		unsigned int idx = this->topology_.template insert_lines<TOPO_TRAITS::PRIM_SIZE>();
+		unsigned int idx = this->topology_.template insert_lines<MAP_TRAITS::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
 		return idx;
 	}
@@ -209,19 +209,22 @@ public:
 protected:
 
 	template <unsigned int ORBIT>
-	void init_orbits_embeddings()
-	{
-		static_cast<CONCRETE*>(this)->init_orbits_embeddings<ORBIT>();
-	}
-
-	template <unsigned int ORBIT>
 	inline void create_embedding()
 	{
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
-		ChunkArray<unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
-		this->embeddings_[ORBIT] = idx;
-		init_orbits_embeddings<ORBIT>();
+
+		// create the topology attribute that stores the orbit indices
+		ChunkArray<unsigned int>* ca = this->topology_.template add_attribute<unsigned int>(oss.str());
+		this->embeddings_[ORBIT] = ca;
+
+		// initialize the indices of the existing orbits
+		typename MAP_TRAITS::CONCRETE* cmap = static_cast<typename MAP_TRAITS::CONCRETE*>(this);
+		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
+		{
+			unsigned int idx = add_attribute_element<ORBIT>();
+			cmap->template init_orbit_embedding(c, idx);
+		}
 	}
 
 public:

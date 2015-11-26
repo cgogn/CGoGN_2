@@ -69,15 +69,15 @@ public:
 /**
  * @brief The MapBaseData class
  */
-template <typename DATA_TRAITS>
+template <typename MAP_TRAITS>
 class MapBaseData : public MapGen
 {
 public:
 
 	typedef MapGen Inherit;
-	typedef MapBaseData<DATA_TRAITS> Self;
+	typedef MapBaseData<MAP_TRAITS> Self;
 
-	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
+	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template<typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
@@ -176,13 +176,6 @@ public:
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
-	inline unsigned int get_embedding(Dart d, unsigned int orbit) const
-	{
-		cgogn_message_assert(is_orbit_embedded(orbit), "Invalid parameter: orbit not embedded");
-
-		return (*embeddings_[orbit])[d.index];
-	}
-
 	template <unsigned int ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
@@ -190,14 +183,6 @@ public:
 
 		this->attributes_[ORBIT].ref_line(emb);     // ref the new emb
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
-	}
-
-	inline void init_embedding(Dart d, unsigned int orbit, unsigned int emb)
-	{
-		cgogn_message_assert(is_orbit_embedded(orbit), "Invalid parameter: orbit not embedded");
-
-		this->attributes_[orbit].ref_line(emb);     // ref the new emb
-		(*this->embeddings_[orbit])[d.index] = emb; // affect the embedding to the dart
 	}
 
 	template <unsigned int ORBIT>
@@ -213,20 +198,6 @@ public:
 		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
 
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
-	}
-
-	inline void set_embedding(Dart d, unsigned int orbit, unsigned int emb)
-	{
-		cgogn_message_assert(is_orbit_embedded(orbit), "Invalid parameter: orbit not embedded");
-
-		unsigned int old = get_embedding(d, orbit);
-
-		if (old == emb)	return;
-
-		this->attributes_[orbit].unref_line(old); // unref the old emb
-		this->attributes_[orbit].ref_line(emb);   // ref the new emb
-
-		(*this->embeddings_[orbit])[d.index] = emb; // affect the embedding to the dart
 	}
 
 	/*******************************************************************************

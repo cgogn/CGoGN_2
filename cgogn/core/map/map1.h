@@ -30,18 +30,13 @@
 namespace cgogn
 {
 
-struct Topo_Traits_Map1
-{
-	static const int PRIM_SIZE = 1;
-};
-
-template <typename DATA_TRAITS>
-class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1, Map1<DATA_TRAITS>>
+template <typename MAP_TRAITS>
+class Map1 : public MapBase<MAP_TRAITS>
 {
 public:
 
-	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1, Map1> Inherit;
-	typedef Map1<DATA_TRAITS> Self;
+	typedef MapBase<MAP_TRAITS> Inherit;
+	typedef Map1<MAP_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
@@ -52,9 +47,9 @@ public:
 	typedef Cell<FACE> Face;
 
 	template<typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template<typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
@@ -135,7 +130,7 @@ public:
 	/**
 	 * \brief phi1
 	 * @param d
-	 * @return
+	 * @return phi1(d)
 	 */
 	inline Dart phi1(Dart d) const
 	{
@@ -145,7 +140,7 @@ public:
 	/**
 	 * \brief phi_1
 	 * @param d
-	 * @return
+	 * @return phi_1(d)
 	 */
 	Dart phi_1(Dart d) const
 	{
@@ -177,44 +172,44 @@ public:
 	 *******************************************************************************/
 
 	/**
-	 * \brief add_cycle
+	 * \brief add_face
 	 * @param nb_edges
 	 * @return
 	 */
-	Dart add_cycle(unsigned int nb_edges)
+	Dart add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart d = add_cycle_topo(nb_edges);
+		Dart d = add_face_topo(nb_edges);
+
+//		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-			// TODO : replace with local traversal
+//			for (Dart d : incident<VERTEX1>(f))
+//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
+
 			Dart it = d;
 			do
 			{
-				unsigned int idx = this->template add_attribute_element<VERTEX1>();
-				init_orbit_embedding(it, VERTEX1, idx);
+				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
 				it = phi1(it);
 			} while (it != d);
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-		{
-			unsigned int idx = this->template add_attribute_element<FACE2>();
-			init_orbit_embedding(d, FACE2, idx);
-		}
+			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
 
 		return d;
 	}
 
 protected:
 
-	Dart add_cycle_topo(unsigned int nb_edges)
+	Dart add_face_topo(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart d = add_dart();
+		Dart d = static_cast<typename MAP_TRAITS::CONCRETE*>(this)->add_dart();
 		for (unsigned int i = 1 ; i < nb_edges ; ++i)
 			cut_edge_topo(d);
 
@@ -228,7 +223,7 @@ protected:
 	 */
 	Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->add_dart();	// Create a new dart
+		Dart e = static_cast<typename MAP_TRAITS::CONCRETE*>(this)->add_dart(); // Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
@@ -275,17 +270,6 @@ public:
 		}
 	}
 
-	template <typename FUNC>
-	inline void foreach_dart_of_orbit(Dart d, unsigned int orbit, const FUNC& f) const
-	{
-		switch (orbit)
-		{
-			case VERTEX1: foreach_dart_of_vertex(d, f); break;
-			case FACE2:   foreach_dart_of_face(d, f); break;
-			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
-		}
-	}
-
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
@@ -293,56 +277,24 @@ public:
 	template <unsigned int ORBIT>
 	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->init_embedding<ORBIT>(d, emb); });
-	}
-
-	inline void init_orbit_embedding(Dart d, unsigned int orbit, unsigned int emb)
-	{
-		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->init_embedding(it, orbit, emb); });
+		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
 	template <unsigned int ORBIT>
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->set_embedding<ORBIT>(d, emb); });
-	}
-
-	inline void set_orbit_embedding(Dart d, unsigned int orbit, unsigned int emb)
-	{
-		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->set_embedding(it, orbit, emb); });
-	}
-
-//protected:
-
-	template <unsigned int ORBIT>
-	void init_orbits_embeddings()
-	{
-		cgogn_message_assert(this->attributes_[ORBIT].size() == 0, "init_orbit_embedding : container is not empty");
-
-		switch (ORBIT)
-		{
-			case VERTEX1:
-				for (Dart d : cells<VERTEX1, FORCE_DART_MARKING>(*this))
-				{
-					unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
-					this->attributes_[ORBIT].init_markers_of_line(idx);
-					init_orbit_embedding(d, ORBIT, idx);
-				}
-				break;
-			case FACE2:
-				for (Dart d : cells<FACE2, FORCE_DART_MARKING>(*this))
-				{
-					unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
-					this->attributes_[ORBIT].init_markers_of_line(idx);
-					init_orbit_embedding(d, ORBIT, idx);
-				}
-				break;
-			default:
-				cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
-				break;
-		}
+		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
 	}
 };
+
+struct Map1Traits
+{
+	static const int PRIM_SIZE = 1;
+	typedef Map1<Map1Traits> CONCRETE;
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using MAP1 = Map1<Map1Traits>;
 
 } // namespace cgogn
 
