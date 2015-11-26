@@ -32,7 +32,9 @@ MapGen::MapGen()
 {
 	if (instances_ == nullptr)
 		instances_ = new std::vector<MapGen*>;
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(),"This map is already present in the instances vector.");
+
+	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
+
 	// register the map in the vector of instances
 	instances_->push_back(this);
 }

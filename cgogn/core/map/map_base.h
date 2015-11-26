@@ -73,6 +73,8 @@ public:
 	template <unsigned int ORBIT>
 	inline unsigned int add_attribute_element()
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
 		this->attributes_[ORBIT].init_markers_of_line(idx);
 		return idx;
@@ -92,6 +94,8 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		if (!this->template is_orbit_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
@@ -106,6 +110,8 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		ChunkArray<T>* ca = ah.get_data();
 
 		if (this->attributes_[ORBIT].remove_attribute(ca))
@@ -128,6 +134,8 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
@@ -170,7 +178,7 @@ public:
 	template <unsigned int ORBIT>
 	inline ChunkArray<bool>* get_mark_attribute()
 	{
-		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -200,6 +208,7 @@ public:
 	template <unsigned int ORBIT>
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
@@ -210,6 +219,8 @@ protected:
 	template <unsigned int ORBIT>
 	inline void create_embedding()
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
 

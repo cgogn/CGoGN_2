@@ -145,11 +145,13 @@ public:
 
 	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
 	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
 	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
@@ -160,17 +162,14 @@ public:
 	template <unsigned int ORBIT>
 	inline bool is_orbit_embedded() const
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return embeddings_[ORBIT] != nullptr;
-	}
-
-	inline bool is_orbit_embedded(unsigned int orbit) const
-	{
-		return embeddings_[orbit] != nullptr;
 	}
 
 	template <unsigned int ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
@@ -179,6 +178,7 @@ public:
 	template <unsigned int ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->attributes_[ORBIT].ref_line(emb);     // ref the new emb
@@ -188,6 +188,7 @@ public:
 	template <unsigned int ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		unsigned int old = get_embedding<ORBIT>(d);
