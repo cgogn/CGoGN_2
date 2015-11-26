@@ -69,15 +69,15 @@ public:
 /**
  * @brief The MapBaseData class
  */
-template <typename MAP_TRAITS>
+template <typename DATA_TRAITS>
 class MapBaseData : public MapGen
 {
 public:
 
 	typedef MapGen Inherit;
-	typedef MapBaseData<MAP_TRAITS> Self;
+	typedef MapBaseData<DATA_TRAITS> Self;
 
-	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
 
 	template<typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;

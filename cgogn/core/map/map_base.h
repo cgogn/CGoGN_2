@@ -31,21 +31,21 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class MapBase : public MapBaseData<MAP_TRAITS>
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
+class MapBase : public MapBaseData<DATA_TRAITS>
 {
 public:
 
-	typedef MapBaseData<MAP_TRAITS> Inherit;
-	typedef MapBase<MAP_TRAITS> Self;
+	typedef MapBaseData<DATA_TRAITS> Inherit;
+	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
+	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
 	template<typename T, unsigned int ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
 protected:
 
@@ -65,7 +65,7 @@ public:
 
 	inline unsigned int add_topology_element()
 	{
-		unsigned int idx = this->topology_.template insert_lines<MAP_TRAITS::PRIM_SIZE>();
+		unsigned int idx = this->topology_.template insert_lines<TOPO_TRAITS::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
 		return idx;
 	}
@@ -202,8 +202,7 @@ public:
 	{
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		unsigned int thread = this->get_current_thread_index();
-		this->mark_attributes_[ORBIT][thread].push_back(ca);
+		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
 protected:
@@ -219,12 +218,9 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize the indices of the existing orbits
-		typename MAP_TRAITS::CONCRETE* cmap = static_cast<typename MAP_TRAITS::CONCRETE*>(this);
+		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
 		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
-		{
-			unsigned int idx = add_attribute_element<ORBIT>();
-			cmap->template init_orbit_embedding(c, idx);
-		}
+			cmap->template init_orbit_embedding(c, add_attribute_element<ORBIT>());
 	}
 
 public:

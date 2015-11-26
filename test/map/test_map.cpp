@@ -10,6 +10,16 @@
 using namespace cgogn;
 
 
+struct DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 64;
+};
+
+// typedefs for short writing
+typedef Map1<DataTraits> MAP1;
+typedef Map2<DataTraits> MAP2;
+
+
 template <typename MAP>
 void fonc_const(const typename MAP::template VertexAttributeHandler<float>& ah);
 

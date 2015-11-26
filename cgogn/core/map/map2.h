@@ -30,15 +30,15 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class Map2 : public Map1<MAP_TRAITS>
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
+class Map2_T : public Map1_T<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
-	typedef Map1<MAP_TRAITS> Inherit;
-	typedef Map2<MAP_TRAITS> Self;
+	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
+	typedef Map2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	friend class Map1<MAP_TRAITS>;
+	friend class Map1_T<DATA_TRAITS, TOPO_TRAITS>;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
@@ -57,15 +57,14 @@ public:
 
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
-
 	template<typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
-
 	template<typename T>
 	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
-
 	template<typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	template<typename T>
+	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
 protected:
 
@@ -109,12 +108,12 @@ protected:
 
 public:
 
-	Map2() : Inherit()
+	Map2_T() : Inherit()
 	{
 		init();
 	}
 
-	~Map2() override
+	~Map2_T() override
 	{}
 
 	/*******************************************************************************
@@ -242,7 +241,7 @@ public:
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore<Map2> marker(*this); // get a marker
+		DartMarkerStore<Self> marker(*this); // get a marker
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 
@@ -254,7 +253,7 @@ public:
 			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
 			{
 				// Apply functor to the darts of the face
-				Map2::foreach_dart_of_face((*visited_faces)[i], f);
+				foreach_dart_of_face((*visited_faces)[i], f);
 
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
@@ -304,14 +303,15 @@ public:
 	}
 };
 
-struct Map2Traits
+template <typename DataTraits>
+struct Map2TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map2<Map2Traits> CONCRETE;
-	static const unsigned int CHUNK_SIZE = 4096;
+	typedef Map2_T<DataTraits, Map2TopoTraits<DataTraits>> CONCRETE;
 };
 
-using MAP2 = Map2<Map2Traits>;
+template <typename DataTraits>
+using Map2 = Map2_T<DataTraits, Map2TopoTraits<DataTraits>>;
 
 } // namespace cgogn
 

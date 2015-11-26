@@ -30,13 +30,13 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class Map1 : public MapBase<MAP_TRAITS>
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
+class Map1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
-	typedef MapBase<MAP_TRAITS> Inherit;
-	typedef Map1<MAP_TRAITS> Self;
+	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
+	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
@@ -55,10 +55,8 @@ public:
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
-
 	template<typename T>
 	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
-
 	template<typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
@@ -115,12 +113,12 @@ protected:
 
 public:
 
-	Map1() : Inherit()
+	Map1_T() : Inherit()
 	{
 		init();
 	}
 
-	virtual ~Map1() override
+	virtual ~Map1_T() override
 	{}
 
 	/*******************************************************************************
@@ -209,7 +207,7 @@ protected:
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart d = static_cast<typename MAP_TRAITS::CONCRETE*>(this)->add_dart();
+		Dart d = static_cast<typename TOPO_TRAITS::CONCRETE*>(this)->add_dart();
 		for (unsigned int i = 1 ; i < nb_edges ; ++i)
 			cut_edge_topo(d);
 
@@ -223,7 +221,7 @@ protected:
 	 */
 	Dart cut_edge_topo(Dart d)
 	{
-		Dart e = static_cast<typename MAP_TRAITS::CONCRETE*>(this)->add_dart(); // Create a new dart
+		Dart e = static_cast<typename TOPO_TRAITS::CONCRETE*>(this)->add_dart(); // Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
@@ -287,14 +285,15 @@ public:
 	}
 };
 
-struct Map1Traits
+template <typename DataTraits>
+struct Map1TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map1<Map1Traits> CONCRETE;
-	static const unsigned int CHUNK_SIZE = 4096;
+	typedef Map1_T<DataTraits, Map1TopoTraits<DataTraits>> CONCRETE;
 };
 
-using MAP1 = Map1<Map1Traits>;
+template <typename DataTraits>
+using Map1 = Map1_T<DataTraits, Map1TopoTraits<DataTraits>>;
 
 } // namespace cgogn
 
