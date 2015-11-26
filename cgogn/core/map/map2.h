@@ -260,7 +260,7 @@ public:
 
 protected:
 
-	void init_orbits_embeddings(unsigned int orbit) override
+	void init_orbits_embeddings(unsigned int orbit)
 	{
 		cgogn_message_assert(this->attributes_[orbit].size() == 0, "init_orbit_embedding : container is not empty");
 

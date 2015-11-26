@@ -30,17 +30,17 @@
 namespace cgogn
 {
 
-class Topo_Traits_Map1
+struct Topo_Traits_Map1
 {
 	static const int PRIM_SIZE = 1;
 };
 
 template <typename DATA_TRAITS>
-class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
+class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1, Map1<DATA_TRAITS>>
 {
 public:
 
-	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
+	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1, Map1> Inherit;
 	typedef Map1<DATA_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
@@ -160,8 +160,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
-		unsigned int di = this->topology_.template insert_lines<1>();	// insert a new dart line
-		this->topology_.init_markers_of_line(di);
+		unsigned int di = this->add_topology_element();
 
 		Dart d(di);
 
@@ -194,7 +193,7 @@ public:
 			Dart it = d;
 			do
 			{
-				unsigned int idx = this->template add_cell<VERTEX1>();
+				unsigned int idx = this->template add_attribute_element<VERTEX1>();
 				init_orbit_embedding(it, VERTEX1, idx);
 				it = phi1(it);
 			} while (it != d);
@@ -202,7 +201,7 @@ public:
 
 		if (this->template is_orbit_embedded<FACE2>())
 		{
-			unsigned int idx = this->template add_cell<FACE2>();
+			unsigned int idx = this->template add_attribute_element<FACE2>();
 			init_orbit_embedding(d, FACE2, idx);
 		}
 
@@ -313,28 +312,29 @@ public:
 		foreach_dart_of_orbit(d, orbit, [this, orbit, emb] (Dart it) { this->set_embedding(it, orbit, emb); });
 	}
 
-protected:
+//protected:
 
-	void init_orbits_embeddings(unsigned int orbit) override
+	template <unsigned int ORBIT>
+	void init_orbits_embeddings()
 	{
-		cgogn_message_assert(this->attributes_[orbit].size() == 0, "init_orbit_embedding : container is not empty");
+		cgogn_message_assert(this->attributes_[ORBIT].size() == 0, "init_orbit_embedding : container is not empty");
 
-		switch (orbit)
+		switch (ORBIT)
 		{
 			case VERTEX1:
 				for (Dart d : cells<VERTEX1, FORCE_DART_MARKING>(*this))
 				{
-					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
-					this->attributes_[orbit].init_markers_of_line(idx);
-					init_orbit_embedding(d, orbit, idx);
+					unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
+					this->attributes_[ORBIT].init_markers_of_line(idx);
+					init_orbit_embedding(d, ORBIT, idx);
 				}
 				break;
 			case FACE2:
 				for (Dart d : cells<FACE2, FORCE_DART_MARKING>(*this))
 				{
-					unsigned int idx = this->attributes_[orbit].template insert_lines<1>();
-					this->attributes_[orbit].init_markers_of_line(idx);
-					init_orbit_embedding(d, orbit, idx);
+					unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
+					this->attributes_[ORBIT].init_markers_of_line(idx);
+					init_orbit_embedding(d, ORBIT, idx);
 				}
 				break;
 			default:

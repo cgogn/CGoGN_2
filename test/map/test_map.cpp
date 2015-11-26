@@ -80,6 +80,7 @@ int test1(MAP1& map)
 	for (MAP1::Vertex v : vertices<FORCE_CELL_MARKING>(map))
 	{
 		std::cout << v << std::endl;
+		ah[v] = 2.0f;
 	}
 	std::cout << "End Vertices" << std::endl;
 
