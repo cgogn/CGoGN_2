@@ -14,6 +14,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+
+#### Here are located the FindPackages that we need
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
 
@@ -22,6 +26,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
+
+
+#### ThirdParty options
+option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
+
 
 #### RPATH
 if(UNIX)
@@ -46,6 +55,8 @@ setBuildType()
 # add each subdirectory with a CMakeList
 
 add_subdirectory(doc)
+
+add_subdirectory(thirdparty)
 
 add_subdirectory(${CGOGN_SOURCE_DIR})
 

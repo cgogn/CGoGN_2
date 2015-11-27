@@ -20,7 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
+#define CGOGN_UTILS_DLL_EXPORT
 #include <utils/thread.h>
 
 namespace cgogn
@@ -29,8 +29,7 @@ namespace cgogn
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
 CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
-
-void thread_start()
+CGOGN_UTILS_API void thread_start()
 {
 	if (dart_buffers_thread == nullptr)
 		dart_buffers_thread = new Buffers<Dart>();
@@ -39,11 +38,19 @@ void thread_start()
 		uint_buffers_thread = new Buffers<unsigned int>();
 }
 
-void thread_stop()
+CGOGN_UTILS_API void thread_stop()
 {
 	delete dart_buffers_thread;
 	delete uint_buffers_thread;
 }
 
+CGOGN_UTILS_API Buffers<Dart>*			getDartBuffers()
+{
+	return dart_buffers_thread;
+}
+CGOGN_UTILS_API Buffers<unsigned int>*	getUINTBuffers()
+{
+	return uint_buffers_thread;
+}
 
 } // namespace cgogn

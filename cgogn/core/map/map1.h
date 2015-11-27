@@ -41,6 +41,7 @@ class Map1 : public MapBase<DATA_TRAITS, Topo_Traits_Map1>
 public:
 
 	typedef MapBase<DATA_TRAITS, Topo_Traits_Map1> Inherit;
+	typedef Map1<DATA_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
@@ -51,18 +52,25 @@ public:
 	typedef Cell<FACE> Face;
 
 	template<typename T>
-	using VertexAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, VERTEX>;
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	template<typename T>
+	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
+	template<typename T, unsigned int ORBIT>
+	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	template<typename T>
+	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
 
 	template<typename T>
-	using EdgeAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 
 	template<typename T>
-	using FaceAttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
 protected:
 
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi1_;
-	ChunkArray<DATA_TRAITS::CHUNK_SIZE, Dart>* phi_1_;
+	ChunkArray<Dart>* phi1_;
+	ChunkArray<Dart>* phi_1_;
 
 	void init()
 	{

@@ -38,6 +38,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <climits>
 #include <utils/assert.h>
 #include <utils/make_unique.h>
 
@@ -83,18 +84,25 @@ template <unsigned int CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
 public:
+	typedef ChunkArrayContainer<CHUNKSIZE, T_REF> Self;
+	typedef T_REF ref_type;
 
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	template<class T>
+	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+	template<class T>
+	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
 	/**
 	* constante d'attribut inconnu
 	*/
-	static const unsigned int UNKNOWN = 0xffffffff;
+	static const unsigned int UNKNOWN = UINT_MAX;
 
 protected:
 
 	/**
 	* vector of pointers to ChunkArray
 	*/
-	std::vector<ChunkArrayGen<CHUNKSIZE>*> table_arrays_;
+	std::vector<ChunkArrayGen*> table_arrays_;
 
 	std::vector<std::string> names_;
 
@@ -103,17 +111,17 @@ protected:
 	/**
 	* vector of pointers to Marker ChunkArray
 	*/
-	std::vector<ChunkArray<CHUNKSIZE, bool>*> table_marker_arrays_;
+	std::vector<ChunkArray<bool>*> table_marker_arrays_;
 
 	/**
 	 * @brief ChunkArray of refs
 	 */
-	ChunkArray<CHUNKSIZE, T_REF> refs_;
+	ChunkArray<T_REF> refs_;
 
 	/**
 	 * stack of holes
 	 */
-	ChunkStack<CHUNKSIZE, unsigned int> holes_stack_;
+	ChunkStack<unsigned int> holes_stack_;
 
 	/**
 	* size (number of elts) of the container
@@ -157,7 +165,7 @@ protected:
 	 * @param ptr of ChunkArray
 	 * @return the index in table
 	 */
-	unsigned int get_array_index(const ChunkArrayGen<CHUNKSIZE>* ptr) const
+	unsigned int get_array_index(const ChunkArrayGen* ptr) const
 	{
 		for (unsigned int i = 0u; i != table_arrays_.size(); ++i)
 		{
@@ -175,7 +183,7 @@ protected:
 	void remove_attribute(unsigned int index)
 	{
 		// store ptr for using it before delete
-		ChunkArrayGen<CHUNKSIZE>* ptr_to_del = table_arrays_[index];
+		ChunkArrayGen* ptr_to_del = table_arrays_[index];
 
 		if (index != table_arrays_.size() - std::size_t(1u))
 		{
@@ -199,15 +207,15 @@ public:
 	ChunkArrayContainer():
 		nb_used_lines_(0u),
 		nb_max_lines_(0u),
-		std_browser_(make_unique< ContainerStandardBrowser<ChunkArrayContainer<CHUNKSIZE, T_REF> > >(this))
+		std_browser_(make_unique< ContainerStandardBrowser<Self> >(this))
 	{
 		current_browser_= std_browser_.get();
 	}
 
-	ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
-	ChunkArrayContainer(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
-	ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>const& ) = delete;
-	ChunkArrayContainer& operator=(ChunkArrayContainer<CHUNKSIZE, T_REF>&& ) = delete;
+	ChunkArrayContainer(Self const& ) = delete;
+	ChunkArrayContainer(Self&& ) = delete;
+	ChunkArrayContainer& operator=(Self const& ) = delete;
+	ChunkArrayContainer& operator=(Self&& ) = delete;
 
 	/**
 	 * @brief ChunkArrayContainer destructor
@@ -231,7 +239,7 @@ public:
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<CHUNKSIZE,T>* get_attribute(const std::string& attribute_name) const
+	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
 	{
 		// first check if attribute already exist
 		unsigned int index = get_array_index(attribute_name);
@@ -241,7 +249,7 @@ public:
 			return nullptr;
 		}
 
-		return static_cast<ChunkArray<CHUNKSIZE, T>*>(table_arrays_[index]);
+		return static_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
 	/**
@@ -251,7 +259,7 @@ public:
 	 * @return pointer on created attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<CHUNKSIZE, T>* add_attribute(const std::string& attribute_name)
+	ChunkArray<T>* add_attribute(const std::string& attribute_name)
 	{
 		cgogn_assert(attribute_name.size() != 0);
 
@@ -265,7 +273,7 @@ public:
 
 		// create the new attribute
 		const std::string& typeName = name_of_type(T());
-		ChunkArray<CHUNKSIZE, T>* carr = new ChunkArray<CHUNKSIZE, T>();
+		ChunkArray<T>* carr = new ChunkArray<T>();
 		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
 
 		// reserve memory
@@ -304,7 +312,7 @@ public:
 	 * @param ptr ChunkArray pointer to the attribute to remove
 	 * @return true if attribute exists and has been removed
 	 */
-	bool remove_attribute(const ChunkArrayGen<CHUNKSIZE>* ptr)
+	bool remove_attribute(const ChunkArrayGen* ptr)
 	{
 		unsigned int index = get_array_index(ptr);
 
@@ -323,9 +331,9 @@ public:
 	 * @brief add a Marker attribute
 	 * @return pointer on created ChunkArray
 	 */
-	ChunkArray<CHUNKSIZE, bool>* add_marker_attribute()
+	ChunkArray<bool>* add_marker_attribute()
 	{
-		ChunkArray<CHUNKSIZE, bool>* mca = new ChunkArray<CHUNKSIZE, bool>();
+		ChunkArray<bool>* mca = new ChunkArray<bool>();
 		mca->set_nb_chunks(refs_.get_nb_chunks());
 		table_marker_arrays_.push_back(mca);
 		return mca;
@@ -336,7 +344,7 @@ public:
 	 * @param ptr ChunkArray pointer to the attribute to remove
 	 * @return true if attribute exists and has been removed
 	 */
-	void remove_marker_attribute(const ChunkArray<CHUNKSIZE, bool>* ptr)
+	void remove_marker_attribute(const ChunkArray<bool>* ptr)
 	{
 		unsigned int index = 0u;
 		while (table_marker_arrays_[index] != ptr && index < table_marker_arrays_.size())
@@ -369,13 +377,13 @@ public:
 	* @return pointer on typed chunk_array
 	*/
 	template<typename T>
-	ChunkArray<CHUNKSIZE,T>* get_data_array(const std::string& attribute_name)
+	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
 		if(index == UNKNOWN)
 			return nullptr;
 
-		ChunkArray<CHUNKSIZE, T>* atm = dynamic_cast<ChunkArray<CHUNKSIZE, T>*>(table_arrays_[index]);
+		ChunkArray<T>* atm = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 
 		cgogn_message_assert(atm != nullptr, "getDataArray: wrong type");
 
@@ -387,7 +395,7 @@ public:
 	* @param attribute_name name of the array
 	* @return pointer on virtual chunk_array
 	*/
-	ChunkArrayGen<CHUNKSIZE>* get_virtual_data_array(const std::string& attribute_name)
+	ChunkArrayGen* get_virtual_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
 		if(index == UNKNOWN)
@@ -711,7 +719,7 @@ public:
 	{
 		cgogn_message_assert(used(index), "initMarkersOfLine only with allocated lines");
 
-		for (ChunkArray<CHUNKSIZE, bool>* ptr : table_marker_arrays_)
+		for (ChunkArray<bool>* ptr : table_marker_arrays_)
 			ptr->set_false(index);
 	}
 

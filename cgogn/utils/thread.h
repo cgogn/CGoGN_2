@@ -25,7 +25,7 @@
 #define UTILS_THREAD_H_
 
 #include <utils/buffers.h>
-
+#include <utils/dll.h>
 namespace cgogn
 {
 
@@ -41,12 +41,15 @@ extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 /**
  * @brief function to call at begin of each thread which use a map
  */
-void thread_start();
+CGOGN_UTILS_API void thread_start();
 
 /**
  * @brief function to call at end of each thread which use a map
  */
-void thread_stop();
+CGOGN_UTILS_API void thread_stop();
+
+CGOGN_UTILS_API Buffers<Dart>*			getDartBuffers();
+CGOGN_UTILS_API Buffers<unsigned int>*	getUINTBuffers();
 
 } // namespace cgogn
 
