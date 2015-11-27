@@ -29,35 +29,44 @@
 namespace cgogn
 {
 
-template <unsigned int ORBIT, typename MAP>
-inline TraversorCell<MAP, ORBIT> cells(MAP& map)
+template <unsigned int ORBIT, TraversorStrategy STRATEGY = AUTO, typename MAP>
+inline TraversorCell<MAP, ORBIT, STRATEGY> cells(MAP& map)
 {
-	return TraversorCell<MAP, ORBIT>(map);
+	return TraversorCell<MAP, ORBIT, STRATEGY>(map);
 }
 
-template <typename MAP>
-inline TraversorCell<MAP, MAP::VERTEX> vertices(MAP& map)
+template <TraversorStrategy STRATEGY = AUTO, typename MAP>
+inline TraversorCell<MAP, MAP::VERTEX, STRATEGY> vertices(MAP& map)
 {
-	return TraversorCell<MAP, MAP::VERTEX>(map);
+	return TraversorCell<MAP, MAP::VERTEX, STRATEGY>(map);
 }
 
-template <typename MAP>
-inline TraversorCell<MAP, MAP::EDGE> edges(MAP& map)
+template <TraversorStrategy STRATEGY = AUTO, typename MAP>
+inline TraversorCell<MAP, MAP::EDGE, STRATEGY> edges(MAP& map)
 {
-	return TraversorCell<MAP, MAP::EDGE>(map);
+	return TraversorCell<MAP, MAP::EDGE, STRATEGY>(map);
 }
 
-template <typename MAP>
-inline TraversorCell<MAP, MAP::FACE> faces(MAP& map)
+template <TraversorStrategy STRATEGY = AUTO, typename MAP>
+inline TraversorCell<MAP, MAP::FACE, STRATEGY> faces(MAP& map)
 {
-	return TraversorCell<MAP, MAP::FACE>(map);
+	return TraversorCell<MAP, MAP::FACE, STRATEGY>(map);
 }
 
-template <typename MAP>
-inline TraversorCell<MAP, MAP::VOLUME> volumes(MAP& map)
+template <TraversorStrategy STRATEGY = AUTO, typename MAP>
+inline TraversorCell<MAP, MAP::VOLUME, STRATEGY> volumes(MAP& map)
 {
-	return TraversorCell<MAP, MAP::VOLUME>(map);
+	return TraversorCell<MAP, MAP::VOLUME, STRATEGY>(map);
 }
+
+
+
+namespace parallel
+{
+
+
+
+} // namespace parallel
 
 } // namespace cgogn
 

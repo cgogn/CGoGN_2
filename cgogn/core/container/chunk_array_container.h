@@ -25,12 +25,14 @@
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
 #include <core/basic/nameTypes.h>
-#include <utils/assert.h>
 #include <core/basic/dll.h>
 
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
+
+#include <utils/assert.h>
+#include <utils/make_unique.h>
 
 #include <iostream>
 #include <fstream>
@@ -39,8 +41,6 @@
 #include <string>
 #include <memory>
 #include <climits>
-#include <utils/assert.h>
-#include <utils/make_unique.h>
 
 namespace cgogn
 {
@@ -84,6 +84,7 @@ template <unsigned int CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
 public:
+
 	typedef ChunkArrayContainer<CHUNKSIZE, T_REF> Self;
 	typedef T_REF ref_type;
 
@@ -92,6 +93,7 @@ public:
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
 	template<class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
+
 	/**
 	* constante d'attribut inconnu
 	*/
@@ -353,10 +355,7 @@ public:
 		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
 
 		if (index != table_marker_arrays_.size() - std::size_t(1u))
-		{
 			table_marker_arrays_[index] = table_marker_arrays_.back();
-		}
-
 		table_marker_arrays_.pop_back();
 
 		delete ptr;
@@ -380,12 +379,12 @@ public:
 	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
-		if(index == UNKNOWN)
+		if (index == UNKNOWN)
 			return nullptr;
 
 		ChunkArray<T>* atm = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 
-		cgogn_message_assert(atm != nullptr, "getDataArray: wrong type");
+		cgogn_message_assert(atm != nullptr, "get_data_array : wrong type");
 
 		return atm;
 	}
@@ -398,7 +397,7 @@ public:
 	ChunkArrayGen* get_virtual_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
-		if(index == UNKNOWN)
+		if (index == UNKNOWN)
 			return nullptr;
 
 		return table_arrays_[index];
@@ -573,7 +572,11 @@ public:
 		for (auto arr : table_arrays_)
 			arr->clear();
 
-		// remove CA ?
+		for (auto arr : table_marker_arrays_)
+			arr->clear();
+
+		// remove attributes
+		// (but not Markers as they may still be in the pool of a map)
 		if (remove_attributes)
 		{
 			for (auto arr : table_arrays_)
@@ -625,8 +628,13 @@ public:
 
 		// free unused memory blocks
 		unsigned int new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+
 		for (auto arr : table_arrays_)
 			arr->set_nb_chunks(new_nb_blocks);
+
+		for (auto arr : table_marker_arrays_)
+			arr->set_nb_chunks(new_nb_blocks);
+
 		refs_.set_nb_chunks(new_nb_blocks);
 
 		// clear holes
@@ -665,6 +673,10 @@ public:
 			{
 				for (auto arr : table_arrays_)
 					arr->add_chunk();
+
+				for (auto arr : table_marker_arrays_)
+					arr->add_chunk();
+
 				refs_.add_chunk();
 			}
 		}
@@ -709,30 +721,37 @@ public:
 	 */
 	void init_line(unsigned int index)
 	{
-		cgogn_message_assert(used(index), "initLine only with allocated lines");
+		cgogn_message_assert(used(index), "init_line only with allocated lines");
 
 		for (auto ptr : table_arrays_)
 			ptr->init_element(index);
 	}
 
+	/**
+	 * @brief initialize the markers of a line of the container
+	 * @param index line index
+	 */
 	void init_markers_of_line(unsigned int index)
 	{
-		cgogn_message_assert(used(index), "initMarkersOfLine only with allocated lines");
+		cgogn_message_assert(used(index), "init_markers_of_line only with allocated lines");
 
-		for (ChunkArray<bool>* ptr : table_marker_arrays_)
+		for (auto ptr : table_marker_arrays_)
 			ptr->set_false(index);
 	}
 
 	/**
-	 * @brief copy the content of line src in line dst (with refs)
+	 * @brief copy the content of line src in line dst (with refs & markers)
 	 * @param dstIndex destination
 	 * @param srcIndex source
 	 */
 	void copy_line(unsigned int dst, unsigned int src)
 	{
 		for (auto ptr : table_arrays_)
-			if (ptr != nullptr)
-				ptr->copy_element(dst, src);
+			ptr->copy_element(dst, src);
+
+		for (auto ptr : table_marker_arrays_)
+			ptr->copy_element(dst, src);
+
 		refs_[dst] = refs_[src];
 	}
 

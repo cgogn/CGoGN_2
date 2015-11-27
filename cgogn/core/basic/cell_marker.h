@@ -49,9 +49,10 @@ public:
 template <typename MAP, unsigned int ORBIT>
 class CellMarkerT : public CellMarkerGen
 {
-	static_assert(ORBIT >= VERTEX1, "ORBIT must be greater than or equal to VERTEX1");
-	static_assert(ORBIT <= VOLUME3, "ORBIT must be less than or equal to VOLUME3");
+	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 public:
+
 	typedef CellMarkerGen Inherit;
 	typedef CellMarkerT< MAP, ORBIT > Self;
 	typedef MAP Map;
@@ -163,19 +164,19 @@ public:
 	CellMarkerStore(Map& map) :
 		Inherit(map)
 	{
-		marked_cells_ = cgogn::getUINTBuffers()->get_buffer();
+		marked_cells_ = cgogn::get_uint_buffers()->get_buffer();
 	}
 
 	CellMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
-		marked_cells_ = uint_buffers_thread->get_buffer();
+		marked_cells_ = cgogn::get_uint_buffers()->get_buffer();
 	}
 
 	~CellMarkerStore() override
 	{
 		unmark_all();
-		cgogn::getUINTBuffers()->release_buffer(marked_cells_);
+		cgogn::get_uint_buffers()->release_buffer(marked_cells_);
 	}
 
 	CellMarkerStore(const Self& dm) = delete;

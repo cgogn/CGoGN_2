@@ -34,6 +34,7 @@
 #include <mutex>
 #include <algorithm>
 #include <type_traits>
+#include <sstream>
 
 namespace cgogn
 {
@@ -44,6 +45,7 @@ namespace cgogn
 class CGOGN_CORE_API MapGen
 {
 public:
+
 	typedef MapGen Self;
 
 private:
@@ -67,10 +69,11 @@ public:
 /**
  * @brief The MapBaseData class
  */
-template<typename DATA_TRAITS>
+template <typename DATA_TRAITS>
 class MapBaseData : public MapGen
 {
 public:
+
 	typedef MapGen Inherit;
 	typedef MapBaseData<DATA_TRAITS> Self;
 
@@ -142,79 +145,61 @@ public:
 
 	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
 	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
 	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
-	inline ChunkArray<bool>* get_topology_mark_attribute()
-	{
-		unsigned int thread = get_current_thread_index();
-		if (!mark_attributes_topology_[thread].empty())
-		{
-			ChunkArray<bool>* ca = mark_attributes_topology_[thread].back();
-			mark_attributes_topology_[thread].pop_back();
-			return ca;
-		}
-		else
-		{
-			std::lock_guard<std::mutex> lock(mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = topology_.add_marker_attribute();
-			return ca;
-		}
-	}
-
-	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
-	{
-		unsigned int thread = get_current_thread_index();
-		mark_attributes_topology_[thread].push_back(ca);
-	}
-
-	template <unsigned int ORBIT>
-	inline ChunkArray<bool>* get_mark_attribute()
-	{
-		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
-
-		unsigned int thread = get_current_thread_index();
-		if (!mark_attributes_[ORBIT][thread].empty())
-		{
-			ChunkArray<bool>* ca = mark_attributes_[ORBIT][thread].back();
-			mark_attributes_[ORBIT][thread].pop_back();
-			return ca;
-		}
-		else
-		{
-			std::lock_guard<std::mutex> lock(mark_attributes_mutex_[ORBIT]);
-			ChunkArray<bool>* ca = attributes_[ORBIT].add_marker_attribute();
-			return ca;
-		}
-	}
-
-	template <unsigned int ORBIT>
-	inline void release_mark_attribute(ChunkArray<bool>* ca)
-	{
-		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
-
-		unsigned int thread = get_current_thread_index();
-		mark_attributes_[ORBIT][thread].push_back(ca);
-	}
-
 	/*******************************************************************************
-	 * Embedding management
+	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
 
 	template <unsigned int ORBIT>
-	inline unsigned int get_embedding(const Cell<ORBIT>& c) const
+	inline bool is_orbit_embedded() const
 	{
-		cgogn_message_assert(embeddings_[ORBIT] != NULL, "Invalid parameter: orbit not embedded");
-
-		return (*embeddings_[ORBIT])[c.dart.index] ;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[ORBIT] != nullptr;
 	}
 
-protected:
+	template <unsigned int ORBIT>
+	inline unsigned int get_embedding(Cell<ORBIT> c) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		return (*embeddings_[ORBIT])[c.dart.index];
+	}
+
+	template <unsigned int ORBIT>
+	inline void init_embedding(Dart d, unsigned int emb)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		this->attributes_[ORBIT].ref_line(emb);     // ref the new emb
+		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+	}
+
+	template <unsigned int ORBIT>
+	inline void set_embedding(Dart d, unsigned int emb)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		unsigned int old = get_embedding<ORBIT>(d);
+
+		if (old == emb)	return;
+
+		this->attributes_[ORBIT].unref_line(old); // unref the old emb
+		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
+
+		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+	}
 
 	/*******************************************************************************
 	 * Thread management
