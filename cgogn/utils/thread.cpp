@@ -29,4 +29,21 @@ namespace cgogn
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
 CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
+
+void thread_start()
+{
+	if (dart_buffers_thread == nullptr)
+		dart_buffers_thread = new Buffers<Dart>();
+
+	if (uint_buffers_thread == nullptr)
+		uint_buffers_thread = new Buffers<unsigned int>();
+}
+
+void thread_stop()
+{
+	delete dart_buffers_thread;
+	delete uint_buffers_thread;
+}
+
+
 } // namespace cgogn

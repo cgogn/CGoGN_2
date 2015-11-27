@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
-#include <core/basic/nameTypes.h>
+#include <core/basic/name_types.h>
 #include <utils/assert.h>
 #include <core/basic/dll.h>
 
@@ -768,7 +768,7 @@ public:
 		return refs_[index];
 	}
 
-	void save(std::ofstream& fs)
+	void save(std::ostream& fs)
 	{
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
@@ -807,7 +807,7 @@ public:
 		holes_stack_.save(fs, holes_stack_.size());
 	}
 
-	bool load(std::ifstream& fs)
+	bool load(std::istream& fs)
 	{
 		// read info
 		unsigned int buff1[4];
