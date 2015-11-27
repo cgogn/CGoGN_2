@@ -36,6 +36,7 @@ namespace cgogn
 {
 
 const unsigned int NB_ORBITS = 8;
+
 const unsigned int VERTEX1   = 0;
 const unsigned int VERTEX2   = 1;
 const unsigned int EDGE2     = 2;
@@ -56,7 +57,7 @@ inline std::string orbit_name(unsigned int orbit)
 		case VERTEX3: return "VERTEX3"; break;
 		case EDGE3:   return "EDGE3"; break;
 		case FACE3:   return "FACE3"; break;
-		case VOLUME3: return "VOLUME3";
+		case VOLUME3: return "VOLUME3"; break;
 		default: break;
 	}
 	return "UNKNOWN";

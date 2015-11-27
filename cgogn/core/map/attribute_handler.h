@@ -124,12 +124,14 @@ template<typename DATA_TRAITS, unsigned int ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
-	typedef AttributeHandlerGen<DATA_TRAITS>			Inherit;
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Self;
 
-	typedef typename Inherit::MapData					MapData;
+	typedef AttributeHandlerGen<DATA_TRAITS>          Inherit;
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Self;
+
+	typedef typename Inherit::MapData                 MapData;
 
 	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
+
 	template<typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
 	template<typename T>
@@ -146,9 +148,7 @@ public:
 		chunk_array_cont_(nullptr)
 	{
 		if (map != nullptr)
-		{
-			chunk_array_cont_ =  &(map->get_attribute_container(ORBIT));
-		}
+			chunk_array_cont_ = &(map->get_attribute_container(ORBIT));
 	}
 
 	/**
@@ -210,11 +210,12 @@ class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
 
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT>	Inherit;
-	typedef AttributeHandler<DATA_TRAITS, T, ORBIT>		Self;
+	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Inherit;
+	typedef AttributeHandler<DATA_TRAITS, T, ORBIT>   Self;
 
-	typedef T											value_type;
-	using MapData =		typename Inherit::MapData;
+	typedef T value_type;
+
+	using MapData =     typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
