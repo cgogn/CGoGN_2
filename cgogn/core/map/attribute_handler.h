@@ -75,7 +75,9 @@ public:
 	inline AttributeHandlerGen(Self&& atthg) CGOGN_NOEXCEPT :
 		map_(atthg.map_),
 		valid_(atthg.valid_)
-	{}
+	{
+		atthg.map_ = nullptr;
+	}
 
 	/**
 	 * \brief operator =
