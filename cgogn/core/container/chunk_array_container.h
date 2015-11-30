@@ -817,6 +817,9 @@ public:
 
 	bool load(std::istream& fs)
 	{
+		// check and register all known types if necessaey
+		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
+
 		// read info
 		unsigned int buff1[4];
 		fs.read(reinterpret_cast<char*>(buff1), 3u*sizeof(unsigned int));
@@ -842,12 +845,21 @@ public:
 		}
 
 		// read chunk array
-		table_arrays_.resize(buff1[0]);
+		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
 		for (unsigned int i = 0u; i < buff1[0]; ++i)
 		{
-			table_arrays_[i] = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
-			ok &= table_arrays_[i]->load(fs);
+			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
+			if (cag)
+			{
+				table_arrays_.push_back(cag);
+				ok &= table_arrays_.back()->load(fs);
+			}
+			else
+			{
+				std::cerr << "ChunkArrayContainer: could not load attribute of type "<< type_names_[i] << std::endl;
+				ChunkArrayGen::skip(fs);
+			}
 		}
 		ok &= refs_.load(fs);
 
