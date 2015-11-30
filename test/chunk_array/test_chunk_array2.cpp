@@ -31,7 +31,7 @@ int test_save()
 
 	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 0.1f*i;
+		(*att1)[i] = 0.1f*float(i);
 		(*att4)[i] = std::string(3,char('Z'-i));
 
 		(*att2)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};

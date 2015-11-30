@@ -26,16 +26,16 @@
 
 #include <core/map/map_base_data.h>
 #include <core/map/attribute_handler.h>
-
-#include <sstream>
+#include <core/traversal/global.h>
 
 namespace cgogn
 {
 
-template<typename DATA_TRAITS, typename TOPO_TRAITS>
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase : public MapBaseData<DATA_TRAITS>
 {
 public:
+
 	typedef MapBaseData<DATA_TRAITS> Inherit;
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
@@ -47,6 +47,12 @@ public:
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
+protected:
+
+	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+
+public:
+
 	MapBase() : Inherit()
 	{}
 
@@ -54,8 +60,31 @@ public:
 	{}
 
 	/*******************************************************************************
+	 * Container elements management
+	 *******************************************************************************/
+
+	inline unsigned int add_topology_element()
+	{
+		unsigned int idx = this->topology_.template insert_lines<TOPO_TRAITS::PRIM_SIZE>();
+		this->topology_.init_markers_of_line(idx);
+		return idx;
+	}
+
+	template <unsigned int ORBIT>
+	inline unsigned int add_attribute_element()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
+		this->attributes_[ORBIT].init_markers_of_line(idx);
+		return idx;
+	}
+
+	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
+
+public:
 
 	/**
 	 * \brief add an attribute
@@ -65,16 +94,10 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
-		if (this->embeddings_[ORBIT] == nullptr)
-		{
-			std::ostringstream oss;
-			oss << "EMB_" << orbit_name(ORBIT);
-			ChunkArray<unsigned int>* idx = this->topology_.template add_attribute<unsigned int>(oss.str());
-			this->embeddings_[ORBIT] = idx;
-			for (unsigned int i = this->topology_.begin(); i != this->topology_.end(); this->topology_.next(i))
-				(*idx)[i] = EMBNULL;
-		}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
+		if (!this->template is_orbit_embedded<ORBIT>())
+			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
@@ -87,7 +110,9 @@ public:
 	template <typename T, unsigned int ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
-		ChunkArray<T>* ca = ah.getData();
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		ChunkArray<T>* ca = ah.get_data();
 
 		if (this->attributes_[ORBIT].remove_attribute(ca))
 		{
@@ -103,103 +128,126 @@ public:
 
 	/**
 	* \brief search an attribute for a given orbit
-	* @param nameAttr attribute name
+	* @param attribute_name attribute name
 	* @return an AttributeHandler
 	*/
 	template <typename T, unsigned int ORBIT>
-	inline AttributeHandler< T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
+	/**
+	* \brief get a mark attribute on the topology container (from pool or created)
+	* @return a mark attribute on the topology container
+	*/
+	inline ChunkArray<bool>* get_topology_mark_attribute()
+	{
+		unsigned int thread = this->get_current_thread_index();
+		if (!this->mark_attributes_topology_[thread].empty())
+		{
+			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
+			this->mark_attributes_topology_[thread].pop_back();
+			return ca;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
+			return ca;
+		}
+	}
+
+	/**
+	* \brief release a mark attribute on the topology container
+	* @param the mark attribute to release
+	*/
+	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
+	{
+		unsigned int thread = this->get_current_thread_index();
+		this->mark_attributes_topology_[thread].push_back(ca);
+	}
+
+	/**
+	* \brief get a mark attribute on the given ORBIT attribute container (from pool or created)
+	* @return a mark attribute on the topology container
+	*/
+	template <unsigned int ORBIT>
+	inline ChunkArray<bool>* get_mark_attribute()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		unsigned int thread = this->get_current_thread_index();
+		if (!this->mark_attributes_[ORBIT][thread].empty())
+		{
+			ChunkArray<bool>* ca = this->mark_attributes_[ORBIT][thread].back();
+			this->mark_attributes_[ORBIT][thread].pop_back();
+			return ca;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
+			if (!this->template is_orbit_embedded<ORBIT>())
+				create_embedding<ORBIT>();
+			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
+
+			// TODO : useful ?
+			ca->all_false();
+
+			return ca;
+		}
+	}
+
+	/**
+	* \brief release a mark attribute on the given ORBIT attribute container
+	* @param the mark attribute to release
+	*/
+	template <unsigned int ORBIT>
+	inline void release_mark_attribute(ChunkArray<bool>* ca)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
+	}
+
 protected:
 
-	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+	template <unsigned int ORBIT>
+	inline void create_embedding()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		std::ostringstream oss;
+		oss << "EMB_" << orbit_name(ORBIT);
+
+		// create the topology attribute that stores the orbit indices
+		ChunkArray<unsigned int>* ca = this->topology_.template add_attribute<unsigned int>(oss.str());
+		this->embeddings_[ORBIT] = ca;
+
+		// initialize the indices of the existing orbits
+		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
+		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
+			cmap->template init_orbit_embedding(c, add_attribute_element<ORBIT>());
+	}
+
+public:
 
 	/*******************************************************************************
 	 * Basic traversals
 	 *******************************************************************************/
 
-//private:
-
-//	/**
-//	 * \brief Map begin
-//	 * @return the first dart of the map
-//	 */
-//	inline Dart begin() const
-//	{
-//		return Dart(this->topology_.begin());
-//	}
-
-//	/**
-//	 * \brief Map end
-//	 * @return the dart after the last dart of the map
-//	 */
-//	inline Dart end() const
-//	{
-//		return Dart(this->topology_.end());
-//	}
-
-//	/**
-//	 * \brief next dart in the map
-//	 * @param d reference to the dart to be modified
-//	 */
-//	inline void next(Dart& d) const
-//	{
-//		this->topology_.next(d.index);
-//	}
-
-public:
-
-//	class iterator
-//	{
-//	public:
-
-//		MapBase* const map_;
-//		Dart dart_;
-
-//		inline iterator(MapBase* map, Dart d) :
-//			map_(map),
-//			dart_(d)
-//		{}
-
-//		inline iterator& operator++()
-//		{
-//			map_->topology_.next(dart_.index);
-//			return *this;
-//		}
-
-//		inline Dart& operator*()
-//		{
-//			return dart_;
-//		}
-
-//		inline bool operator!=(iterator it) const
-//		{
-//			cgogn_assert(map_ == it.map_);
-//			return dart_ != it.dart_;
-//		}
-//	};
-
-//	inline iterator begin()
-//	{
-//		return iterator(this, Dart(this->topology_.begin()));
-//	}
-
-//	inline iterator end()
-//	{
-//		return iterator(this, Dart(this->topology_.end()));
-//	}
-
 	class const_iterator
 	{
 	public:
 
-		const MapBase& map_;
+		const Self& map_;
 		Dart dart_;
 
-		inline const_iterator(const MapBase& map, Dart d) :
+		inline const_iterator(const Self& map, Dart d) :
 			map_(map),
 			dart_(d)
 		{}

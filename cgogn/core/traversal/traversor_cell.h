@@ -26,44 +26,95 @@
 
 #include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
 
-template <typename MAP, unsigned int ORBIT>
+enum TraversorStrategy
+{
+	AUTO = 0,
+	FORCE_DART_MARKING,
+	FORCE_CELL_MARKING,
+	FORCE_TOPO_CACHE
+};
+
+template <typename MAP, unsigned int ORBIT, TraversorStrategy STRATEGY = AUTO>
 class TraversorCell
 {
 public:
-	typedef TraversorCell<MAP,ORBIT> Self;
+
+	typedef TraversorCell<MAP, ORBIT, STRATEGY> Self;
 	typedef MAP Map;
+
 	using   DartMarker = cgogn::DartMarker<Map>;
+	using   CellMarker = cgogn::CellMarker<Map, ORBIT>;
 
 protected:
 
-	MAP& map_;
+	Map& map_;
 	DartMarker* dm_;
+	CellMarker* cm_;
 
 public:
 
 	TraversorCell(MAP& map) :
-		map_(map)
+		map_(map),
+		dm_(nullptr),
+		cm_(nullptr)
 	{
-		dm_ = new DartMarker(map_);
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				dm_ = new DartMarker(map_);
+				break;
+			case FORCE_CELL_MARKING :
+				cm_ = new CellMarker(map_);
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if (map_.template is_orbit_embedded<ORBIT>())
+					cm_ = new CellMarker(map_);
+				else
+					dm_ = new DartMarker(map_);
+				break;
+		}
 	}
 
 	virtual ~TraversorCell()
 	{
-		delete dm_;
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				delete dm_;
+				break;
+			case FORCE_CELL_MARKING :
+				delete cm_;
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if(dm_)
+					delete dm_;
+				else if(cm_)
+					delete cm_;
+				break;
+			default:
+				break;
+		}
 	}
 
 	class iterator
 	{
 	public:
 
-		TraversorCell& traversor_;
+		Self& traversor_;
 		typename MAP::const_iterator map_it_;
 
-		inline iterator(TraversorCell& t) :
+		inline iterator(Self& t) :
 			traversor_(t),
 			map_it_(t.map_.begin())
 		{
@@ -71,11 +122,33 @@ public:
 //			while(map_it_ != map_.end() && map_.is_boundary_marked(dim, *map_it_))
 //				++map_it_;
 
-			if (map_it_ != traversor_.map_.end())
-				traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+			switch (STRATEGY)
+			{
+				case FORCE_DART_MARKING :
+					if (map_it_ != traversor_.map_.end())
+						traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+					break;
+				case FORCE_CELL_MARKING :
+					if (map_it_ != traversor_.map_.end())
+						traversor_.cm_->mark(*map_it_);
+					break;
+				case FORCE_TOPO_CACHE :
+					cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+					break;
+				case AUTO :
+					if (map_it_ != traversor_.map_.end())
+					{
+						if (traversor_.dm_)
+							traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+						else
+							traversor_.cm_->mark(*map_it_);
+					}
+					break;
+			}
+
 		}
 
-		inline iterator(TraversorCell& t, typename MAP::const_iterator it) :
+		inline iterator(Self& t, typename MAP::const_iterator it) :
 			traversor_(t),
 			map_it_(it)
 		{
@@ -83,17 +156,70 @@ public:
 //			while(map_it_ != map_.end() && map_.is_boundary_marked(dim, *map_it_))
 //				++map_it_;
 
-			if (map_it_ != traversor_.map_.end())
-				traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+			switch (STRATEGY)
+			{
+				case FORCE_DART_MARKING :
+					if (map_it_ != traversor_.map_.end())
+						traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+					break;
+				case FORCE_CELL_MARKING :
+					if (map_it_ != traversor_.map_.end())
+						traversor_.cm_->mark(*map_it_);
+					break;
+				case FORCE_TOPO_CACHE :
+					cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+					break;
+				case AUTO :
+					if (map_it_ != traversor_.map_.end())
+					{
+						if (traversor_.dm_)
+							traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+						else
+							traversor_.cm_->mark(*map_it_);
+					}
+					break;
+			}
 		}
 
 		inline iterator& operator++()
 		{
 			cgogn_message_assert(map_it_ != traversor_.map_.end(), "TraversorCell: iterator ++ after end");
-			while (map_it_ != traversor_.map_.end() && (traversor_.dm_->is_marked(*map_it_) /*|| traversor_.map_.is_boundary_marked(dim, *it)*/))
-				++map_it_;
-			if (map_it_ != traversor_.map_.end())
-				traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+
+			switch (STRATEGY)
+			{
+				case FORCE_DART_MARKING :
+					while (map_it_ != traversor_.map_.end() && (traversor_.dm_->is_marked(*map_it_) /*|| traversor_.map_.is_boundary_marked(dim, *it)*/))
+						++map_it_;
+					if (map_it_ != traversor_.map_.end())
+						traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+					break;
+				case FORCE_CELL_MARKING :
+					while (map_it_ != traversor_.map_.end() && (traversor_.cm_->is_marked(*map_it_) /*|| traversor_.map_.is_boundary_marked(dim, *it)*/))
+						++map_it_;
+					if (map_it_ != traversor_.map_.end())
+						traversor_.cm_->mark(*map_it_);
+					break;
+				case FORCE_TOPO_CACHE :
+					cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+					break;
+				case AUTO :
+					if (traversor_.dm_)
+					{
+						while (map_it_ != traversor_.map_.end() && (traversor_.dm_->is_marked(*map_it_) /*|| traversor_.map_.is_boundary_marked(dim, *it)*/))
+							++map_it_;
+						if (map_it_ != traversor_.map_.end())
+							traversor_.dm_->template mark_orbit<ORBIT>(*map_it_);
+					}
+					else
+					{
+						while (map_it_ != traversor_.map_.end() && (traversor_.cm_->is_marked(*map_it_) /*|| traversor_.map_.is_boundary_marked(dim, *it)*/))
+							++map_it_;
+						if (map_it_ != traversor_.map_.end())
+							traversor_.cm_->mark(*map_it_);
+					}
+					break;
+			}
+
 			return *this;
 		}
 
@@ -104,6 +230,7 @@ public:
 
 		inline bool operator!=(iterator it) const
 		{
+			cgogn_assert(&traversor_ == &(it.traversor_));
 			return map_it_ != it.map_it_;
 		}
 	};

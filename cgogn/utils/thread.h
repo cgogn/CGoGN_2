@@ -48,8 +48,9 @@ CGOGN_UTILS_API void thread_start();
  */
 CGOGN_UTILS_API void thread_stop();
 
-CGOGN_UTILS_API Buffers<Dart>*			getDartBuffers();
-CGOGN_UTILS_API Buffers<unsigned int>*	getUINTBuffers();
+CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+
 
 } // namespace cgogn
 

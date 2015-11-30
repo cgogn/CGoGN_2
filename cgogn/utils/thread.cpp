@@ -44,11 +44,12 @@ CGOGN_UTILS_API void thread_stop()
 	delete uint_buffers_thread;
 }
 
-CGOGN_UTILS_API Buffers<Dart>*			getDartBuffers()
+CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
 {
 	return dart_buffers_thread;
 }
-CGOGN_UTILS_API Buffers<unsigned int>*	getUINTBuffers()
+
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
 {
 	return uint_buffers_thread;
 }
