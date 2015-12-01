@@ -3,6 +3,8 @@ project(cgogn_geometry
 )
 
 set(HEADER_FILES
+	basic.h
+	aligned_box.h
 	eigen.h
 	geometry.h
 )
