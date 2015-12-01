@@ -3,6 +3,7 @@ project(cgogn_geometry
 )
 
 set(HEADER_FILES
+	eigen.h
 	geometry.h
 )
 
