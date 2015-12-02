@@ -9,6 +9,7 @@ set(HEADER_FILES
 	buffers.h
 	make_unique.h
 	thread.h
+	fake_arg_used.h
 )
 
 set(SOURCE_FILES
