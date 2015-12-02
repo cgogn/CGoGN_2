@@ -72,11 +72,10 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.template foreach_cell<MAP::VERTEX, FORCE_CELL_MARKING>([&] (typename MAP::Vertex v) -> bool
+	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;
-		return true;
 	});
 	std::cout << "End Vertices" << std::endl;
 
