@@ -50,15 +50,70 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 	ostream.write(reinterpret_cast<const char *>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
+template<typename T>
+std::size_t data_length(T const* /*src*/, std::size_t quantity)
+{
+	return quantity*sizeof(T);
+}
+
+
+// data size is known or not ?
+template<typename T>
+bool known_size(T const* /*src*/)
+{
+	return true;
+}
+
+template<>
+inline bool known_size<std::string>(std::string const * /*src*/)
+{
+	return false;
+}
+
+template<typename U>
+bool known_size(std::vector<U> const * /*src*/)
+{
+	return false;
+}
+
+template<typename U>
+bool known_size(std::list<U> const * /*src*/)
+{
+	return false;
+}
+
+
 // first step : declare all overrides of load and save
 template<typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity);
+
 template<typename U>
 void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity);
+
+template<typename U>
+std::size_t data_length(std::vector<U> const * src, std::size_t quantity);
+
+
 template<typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity);
+
 template<typename U>
 void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity);
+
+template<typename U>
+std::size_t data_length(std::list<U> const * src, std::size_t quantity);
+
+
+template<>
+void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
+
+template<>
+void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
+
+template<>
+std::size_t data_length<std::string>(std::string const * src, std::size_t quantity);
+
+
 
 // loading n vectors
 template<typename U>
@@ -87,6 +142,22 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 	}
 }
 
+// compute data length of vector
+template<typename U>
+std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int);// for size
+		total += data_length(&(src[i][0]), src[i].size());
+	}
+	return total;
+}
+
+
+
 // loading n lists
 template<typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
@@ -103,7 +174,6 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 		{
 			dest[i].emplace_back(std::move(x));
 		}
-
 	}
 }
 
@@ -120,6 +190,68 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 		for (const auto& elem : src[i])
 			save(ostream, &elem, 1);
 	}
+}
+
+// compute data length of list
+template<typename U>
+std::size_t data_length(std::list<U> const * src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		for (const auto& elem : src[i])
+			total += data_length(&elem, 1);
+	}
+		return total;
+}
+
+// load string
+template<>
+inline void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+{
+	cgogn_assert(dest != nullptr);
+
+	char buffer[2048];
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		istream.read((buffer), size);
+		dest[i].resize(size);
+		for (unsigned int j=0; j<size; ++j)
+			dest[i][j] = buffer[j];
+	}
+}
+
+//save string
+template<>
+inline void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const char* str = src[i].c_str();
+		ostream.write(str, size);
+	}
+}
+
+// compute data length of string
+template<>
+inline std::size_t data_length<std::string>(std::string const * src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		total += src[i].size();
+	}
+	return total;
 }
 
 } // namespace serialization

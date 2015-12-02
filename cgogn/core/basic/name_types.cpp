@@ -21,37 +21,44 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_THREAD_H_
-#define UTILS_THREAD_H_
 
-#include <utils/buffers.h>
-#include <utils/dll.h>
+#include <core/basic/name_types.h>
+
 namespace cgogn
 {
 
-/**
- * \brief The maximum nunmber of threads created by the API.
- */
-const unsigned int NB_THREADS = 8u;
 
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
-/**
- * @brief function to call at begin of each thread which use a map
- */
-CGOGN_UTILS_API void thread_start();
+template <>  std::string name_of_type(const bool& /*v*/) { return "bool"; }
 
-/**
- * @brief function to call at end of each thread which use a map
- */
-CGOGN_UTILS_API void thread_stop();
+template <>  std::string name_of_type(const char& /*v*/) { return "char"; }
 
-CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+template <>  std::string name_of_type(const short& /*v*/) { return "short"; }
+
+template <>  std::string name_of_type(const int& /*v*/) { return "int"; }
+
+template <>  std::string name_of_type(const long& /*v*/) { return "long"; }
+
+template <>  std::string name_of_type(const long long& /*v*/) { return "long long"; }
+
+template <>  std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
+
+template <>  std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
+
+template <>  std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
+
+template <>  std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
+
+template <>  std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
+
+template <>  std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
+
+template <>  std::string name_of_type(const float& /*v*/) { return "float"; }
+
+template <>  std::string name_of_type(const double& /*v*/) { return "double"; }
+
+template <>  std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
 
 
 } // namespace cgogn
 
-#endif // UTILS_THREAD_H_

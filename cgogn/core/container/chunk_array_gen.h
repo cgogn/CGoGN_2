@@ -27,6 +27,8 @@
 #include <vector>
 #include <iostream>
 
+#include <core/basic/serialization.h>
+
 namespace cgogn
 {
 
@@ -127,6 +129,19 @@ public:
 	 * @return ok
 	 */
 	virtual bool load(std::istream& fs) = 0;
+
+	/**
+	 * @brief skip the data instead of loading
+	 * @param fs input file stream
+	 */
+	static void skip(std::istream& fs)
+	{
+		std::size_t chunk_bytes;
+		serialization::load(fs, &chunk_bytes, 1);
+		unsigned int nb_lines;
+		serialization::load(fs, &nb_lines, 1);
+		fs.ignore(chunk_bytes,EOF);
+	}
 };
 
 } // namespace cgogn
