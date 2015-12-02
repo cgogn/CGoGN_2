@@ -249,10 +249,9 @@ protected:
 
 		// initialize the indices of the existing orbits
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c) -> bool
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
 		{
 			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
-			return true;
 		});
 	}
 

@@ -103,8 +103,8 @@ int test1(MAP& map)
 int main()
 {
 	cgogn::thread_start();
-	Map1 map1;
-	Map2 map2;
+	CMap1 map1;
+	CMap2 map2;
 	test1(map1);
 	test1(map2);
 	cgogn::thread_stop();
