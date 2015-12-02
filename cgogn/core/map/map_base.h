@@ -26,10 +26,21 @@
 
 #include <core/map/map_base_data.h>
 #include <core/map/attribute_handler.h>
-#include <core/traversal/global.h>
+
+#include <core/basic/cell.h>
+#include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
+
+enum TraversalStrategy
+{
+	AUTO = 0,
+	FORCE_DART_MARKING,
+	FORCE_CELL_MARKING,
+	FORCE_TOPO_CACHE
+};
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase : public MapBaseData<DATA_TRAITS>
@@ -47,9 +58,13 @@ public:
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+	template <typename MAP> friend class cgogn::CellMarkerT;
+
 protected:
 
-	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+	// TODO : put back this code when AttributeHandlers register in the map on construction
+//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
 
 public:
 
@@ -62,6 +77,8 @@ public:
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
+
+protected:
 
 	inline unsigned int add_topology_element()
 	{
@@ -116,11 +133,13 @@ public:
 
 		if (this->attributes_[ORBIT].remove_attribute(ca))
 		{
-			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-			for(IT i = bounds.first; i != bounds.second; ++i)
-				(*i).second->set_invalid();
-			attribute_handlers_.erase(bounds.first, bounds.second);
+			// TODO : put back this code when AttributeHandlers register in the map on construction
+
+//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
+//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
+//			for(IT i = bounds.first; i != bounds.second; ++i)
+//				(*i).second->set_invalid();
+//			attribute_handlers_.erase(bounds.first, bounds.second);
 			return true;
 		}
 		return false;
@@ -139,6 +158,12 @@ public:
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
+
+	/*******************************************************************************
+	 * Marking attributes management
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	* \brief get a mark attribute on the topology container (from pool or created)
@@ -193,10 +218,6 @@ public:
 			if (!this->template is_orbit_embedded<ORBIT>())
 				create_embedding<ORBIT>();
 			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
-
-			// TODO : useful ?
-			ca->all_false();
-
 			return ca;
 		}
 	}
@@ -214,8 +235,6 @@ public:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
-protected:
-
 	template <unsigned int ORBIT>
 	inline void create_embedding()
 	{
@@ -230,15 +249,18 @@ protected:
 
 		// initialize the indices of the existing orbits
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
-			cmap->template init_orbit_embedding(c, add_attribute_element<ORBIT>());
+		foreach_cell<ORBIT>([cmap] (Cell<ORBIT> c) -> bool
+		{
+			cmap->init_orbit_embedding(c, cmap->add_attribute_element<ORBIT>());
+			return true;
+		});
 	}
 
-public:
-
 	/*******************************************************************************
-	 * Basic traversals
+	 * Traversals
 	 *******************************************************************************/
+
+public:
 
 	class const_iterator
 	{
@@ -293,15 +315,48 @@ public:
 	}
 
 	/**
-	 * \brief apply a function on each dart of the map
+	 * \brief apply a function on each orbit of the map
+	 * @tparam ORBIT orbit to traverse
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <typename FUNC>
-	inline void foreach_dart(FUNC& f)
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY, typename FUNC>
+	void foreach_cell(FUNC f)
 	{
-		for (Dart d : *this)
-			f(d);
+		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
+
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				DartMarker<typename TOPO_TRAITS::CONCRETE> dm(*cmap);
+				for (Dart d : *this)
+				{
+					if (!dm.is_marked(d))
+					{
+						dm.template mark_orbit<ORBIT>(d);
+						if (!f(d))
+							break;
+					}
+				}
+				break;
+			case FORCE_CELL_MARKING :
+				CellMarker<typename TOPO_TRAITS::CONCRETE, ORBIT> cm(*cmap);
+				for (Dart d : *this)
+				{
+					if (!cm.is_marked(d))
+					{
+						cm.mark(d);
+						if (!f(d))
+							break;
+					}
+				}
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				break;
+		}
 	}
 };
 

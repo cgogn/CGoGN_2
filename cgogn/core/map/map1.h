@@ -292,8 +292,12 @@ struct Map1TopoTraits
 	typedef Map1_T<DataTraits, Map1TopoTraits<DataTraits>> CONCRETE;
 };
 
-template <typename DataTraits>
-using Map1 = Map1_T<DataTraits, Map1TopoTraits<DataTraits>>;
+struct Map1DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using Map1 = Map1_T<Map1DataTraits, Map1TopoTraits<Map1DataTraits>>;
 
 } // namespace cgogn
 
