@@ -357,6 +357,29 @@ public:
 		}
 	}
 
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	inline void foreach_cell(FUNC& f)
+	{
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
 	/**
 	 * \brief apply a function on each orbit of the map and stops when the function returns false
 	 * @tparam ORBIT orbit to traverse
@@ -365,6 +388,29 @@ public:
 	 */
 	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
 	void foreach_cell_until(FUNC f)
+	{
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_until_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_until_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	void foreach_cell_until(FUNC& f)
 	{
 		switch (STRATEGY)
 		{

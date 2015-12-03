@@ -20,13 +20,10 @@ set(HEADER_FILES
 
 	map/map_base_data.h
 	map/map_base.h
-	map/map1.h
-	map/map2.h
-	map/map_tri.h
+	map/cmap1.h
+	map/cmap2.h
+	map/cmap_tri.h
 	map/attribute_handler.h
-
-	traversal/global.h
-	traversal/traversor_cell.h
 )
 
 set(SOURCE_FILES

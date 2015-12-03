@@ -140,7 +140,7 @@ public:
 		serialization::load(fs, &chunk_bytes, 1);
 		unsigned int nb_lines;
 		serialization::load(fs, &nb_lines, 1);
-		fs.ignore(chunk_bytes,EOF);
+		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}
 };
 
