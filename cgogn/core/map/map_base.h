@@ -335,30 +335,7 @@ public:
 	 * @param f a callable
 	 */
 	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
-	inline void foreach_cell(FUNC f)
-	{
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_dart_marking<ORBIT>(f);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_cell_marking<ORBIT>(f);
-				break;
-			case FORCE_TOPO_CACHE :
-				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
-				break;
-			case AUTO :
-				if (this->template is_orbit_embedded<ORBIT>())
-					foreach_cell_cell_marking<ORBIT>(f);
-				else
-					foreach_cell_dart_marking<ORBIT>(f);
-				break;
-		}
-	}
-
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
-	inline void foreach_cell(FUNC& f)
+	inline void foreach_cell(const FUNC& f)
 	{
 		switch (STRATEGY)
 		{
@@ -387,30 +364,7 @@ public:
 	 * @param f a callable
 	 */
 	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
-	void foreach_cell_until(FUNC f)
-	{
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking<ORBIT>(f);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking<ORBIT>(f);
-				break;
-			case FORCE_TOPO_CACHE :
-				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
-				break;
-			case AUTO :
-				if (this->template is_orbit_embedded<ORBIT>())
-					foreach_cell_until_cell_marking<ORBIT>(f);
-				else
-					foreach_cell_until_dart_marking<ORBIT>(f);
-				break;
-		}
-	}
-
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
-	void foreach_cell_until(FUNC& f)
+	void foreach_cell_until(const FUNC& f)
 	{
 		switch (STRATEGY)
 		{
@@ -435,7 +389,7 @@ public:
 protected:
 
 	template <unsigned int ORBIT, typename FUNC>
-	inline void foreach_cell_dart_marking(FUNC& f)
+	inline void foreach_cell_dart_marking(const FUNC& f)
 	{
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
 		DartMarker<typename TOPO_TRAITS::CONCRETE> dm(*cmap);
@@ -450,7 +404,7 @@ protected:
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
-	inline void foreach_cell_cell_marking(FUNC& f)
+	inline void foreach_cell_cell_marking(const FUNC& f)
 	{
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
 		CellMarker<typename TOPO_TRAITS::CONCRETE, ORBIT> cm(*cmap);
@@ -465,7 +419,7 @@ protected:
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
-	inline void foreach_cell_until_dart_marking(FUNC& f)
+	inline void foreach_cell_until_dart_marking(const FUNC& f)
 	{
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
 		DartMarker<typename TOPO_TRAITS::CONCRETE> dm(*cmap);
@@ -481,7 +435,7 @@ protected:
 	}
 
 	template <unsigned int ORBIT, typename FUNC>
-	inline void foreach_cell_until_cell_marking(FUNC& f)
+	inline void foreach_cell_until_cell_marking(const FUNC& f)
 	{
 		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
 		CellMarker<typename TOPO_TRAITS::CONCRETE, ORBIT> cm(*cmap);
