@@ -36,87 +36,84 @@ namespace cgogn
 namespace serialization
 {
 
-template<typename T>
+template <typename T>
 void load(std::istream& istream, T* dest, std::size_t quantity)
 {
 	cgogn_assert(dest != nullptr);
 	istream.read(reinterpret_cast<char*>(dest), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
-template<typename T>
+template <typename T>
 void save(std::ostream& ostream, T const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
-	ostream.write(reinterpret_cast<const char *>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
+	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
-template<typename T>
+template <typename T>
 std::size_t data_length(T const* /*src*/, std::size_t quantity)
 {
 	return quantity*sizeof(T);
 }
 
-
 // data size is known or not ?
-template<typename T>
+template <typename T>
 bool known_size(T const* /*src*/)
 {
 	return true;
 }
 
-template<>
-inline bool known_size<std::string>(std::string const * /*src*/)
+template <>
+inline bool known_size<std::string>(std::string const* /*src*/)
 {
 	return false;
 }
 
-template<typename U>
-bool known_size(std::vector<U> const * /*src*/)
+template <typename U>
+bool known_size(std::vector<U> const* /*src*/)
 {
 	return false;
 }
 
-template<typename U>
-bool known_size(std::list<U> const * /*src*/)
+template <typename U>
+bool known_size(std::list<U> const* /*src*/)
 {
 	return false;
 }
-
 
 // first step : declare all overrides of load and save
-template<typename U>
+template <typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity);
 
-template<typename U>
-void save(std::ostream& ostream, std::vector<U> const * src, std::size_t quantity);
+template <typename U>
+void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity);
 
-template<typename U>
-std::size_t data_length(std::vector<U> const * src, std::size_t quantity);
+template <typename U>
+std::size_t data_length(std::vector<U> const* src, std::size_t quantity);
 
 
-template<typename U>
+template <typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity);
 
-template<typename U>
-void save(std::ostream& ostream, std::list<U> const * src, std::size_t quantity);
+template <typename U>
+void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity);
 
-template<typename U>
-std::size_t data_length(std::list<U> const * src, std::size_t quantity);
+template <typename U>
+std::size_t data_length(std::list<U> const* src, std::size_t quantity);
 
 
-template<>
+template <>
 void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
 
-template<>
+template <>
 void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
 
-template<>
-std::size_t data_length<std::string>(std::string const * src, std::size_t quantity);
-
+template <>
+std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
 
 
 // loading n vectors
-template<typename U>
+template <typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 {
 	cgogn_assert(dest != nullptr);
@@ -130,7 +127,7 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 }
 
 // saving n vectors
-template<typename U>
+template <typename U>
 void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
@@ -143,7 +140,7 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 }
 
 // compute data length of vector
-template<typename U>
+template <typename U>
 std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
@@ -157,9 +154,8 @@ std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 }
 
 
-
 // loading n lists
-template<typename U>
+template <typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 {
 	cgogn_assert(dest != nullptr);
@@ -178,7 +174,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 }
 
 // saving n lists
-template<typename U>
+template <typename U>
 void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
@@ -193,8 +189,8 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 }
 
 // compute data length of list
-template<typename U>
-std::size_t data_length(std::list<U> const * src, std::size_t quantity)
+template <typename U>
+std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	std::size_t total = 0;
@@ -207,8 +203,9 @@ std::size_t data_length(std::list<U> const * src, std::size_t quantity)
 		return total;
 }
 
+
 // load string
-template<>
+template <>
 inline void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
 {
 	cgogn_assert(dest != nullptr);
@@ -226,7 +223,7 @@ inline void load<std::string>(std::istream& istream, std::string* dest, std::siz
 }
 
 //save string
-template<>
+template <>
 inline void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
@@ -241,8 +238,8 @@ inline void save<std::string>(std::ostream& ostream, std::string const* src, std
 }
 
 // compute data length of string
-template<>
-inline std::size_t data_length<std::string>(std::string const * src, std::size_t quantity)
+template <>
+inline std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	std::size_t total = 0;

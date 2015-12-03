@@ -31,12 +31,12 @@ namespace cgogn
 {
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class Map1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
+class CMap1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
@@ -113,12 +113,12 @@ protected:
 
 public:
 
-	Map1_T() : Inherit()
+	CMap1_T() : Inherit()
 	{
 		init();
 	}
 
-	virtual ~Map1_T() override
+	virtual ~CMap1_T() override
 	{}
 
 	/*******************************************************************************
@@ -286,14 +286,18 @@ public:
 };
 
 template <typename DataTraits>
-struct Map1TopoTraits
+struct CMap1TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map1_T<DataTraits, Map1TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap1_T<DataTraits, CMap1TopoTraits<DataTraits>> CONCRETE;
 };
 
-template <typename DataTraits>
-using Map1 = Map1_T<DataTraits, Map1TopoTraits<DataTraits>>;
+struct CMap1DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using CMap1 = CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
 
 } // namespace cgogn
 

@@ -24,21 +24,21 @@
 #ifndef CORE_MAP_MAP2_H_
 #define CORE_MAP_MAP2_H_
 
-#include <core/map/map1.h>
+#include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class Map2_T : public Map1_T<DATA_TRAITS, TOPO_TRAITS>
+class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
-	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef Map2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
+	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	friend class Map1_T<DATA_TRAITS, TOPO_TRAITS>;
+	friend class CMap1_T<DATA_TRAITS, TOPO_TRAITS>;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
@@ -108,12 +108,12 @@ protected:
 
 public:
 
-	Map2_T() : Inherit()
+	CMap2_T() : Inherit()
 	{
 		init();
 	}
 
-	~Map2_T() override
+	~CMap2_T() override
 	{}
 
 	/*******************************************************************************
@@ -304,14 +304,18 @@ public:
 };
 
 template <typename DataTraits>
-struct Map2TopoTraits
+struct CMap2TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map2_T<DataTraits, Map2TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
 };
 
-template <typename DataTraits>
-using Map2 = Map2_T<DataTraits, Map2TopoTraits<DataTraits>>;
+struct CMap2DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
 
 } // namespace cgogn
 

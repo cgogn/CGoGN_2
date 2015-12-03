@@ -41,6 +41,7 @@ template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
+
 	typedef AttributeHandlerGen<DATA_TRAITS> Self;
 
 	typedef MapBaseData<DATA_TRAITS> MapData;
