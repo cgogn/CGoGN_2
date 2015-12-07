@@ -17,6 +17,7 @@ set(SOURCE_FILES
 	assert.cpp
 	thread.cpp
 	name_types.cpp
+        serialization.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
