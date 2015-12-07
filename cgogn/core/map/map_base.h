@@ -79,6 +79,10 @@ public:
 	~MapBase()
 	{}
 
+	MapBase(Self const&) = delete;
+	MapBase(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
@@ -277,6 +281,13 @@ public:
 			map_(map),
 			dart_(d)
 		{}
+
+		inline const_iterator& operator=(const_iterator const& it)
+		{
+			map_ = it.map_;
+			dart_ = it.dart_;
+			return *this;
+		}
 
 		inline const_iterator& operator++()
 		{

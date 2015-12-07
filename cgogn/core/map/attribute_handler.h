@@ -370,6 +370,13 @@ public:
 			index_(i)
 		{}
 
+		inline const_iterator& operator=(const const_iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
+
 		inline const_iterator& operator++()
 		{
 			ah_ptr_->chunk_array_cont_->next(index_);
@@ -409,6 +416,13 @@ public:
 			ah_ptr_(ah),
 			index_(i)
 		{}
+
+		inline iterator& operator=(const iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
 
 		inline iterator& operator++()
 		{

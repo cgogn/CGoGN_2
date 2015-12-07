@@ -121,6 +121,11 @@ public:
 	virtual ~CMap1_T() override
 	{}
 
+	CMap1_T(Self const&) = delete;
+	CMap1_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
