@@ -307,7 +307,7 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart(FUNC f)
+	inline void foreach_dart(const FUNC& f)
 	{
 		for (Dart d : *this)
 			f(d);
@@ -319,7 +319,7 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart_until(FUNC f)
+	inline void foreach_dart_until(const FUNC& f)
 	{
 		for (Dart d : *this)
 		{

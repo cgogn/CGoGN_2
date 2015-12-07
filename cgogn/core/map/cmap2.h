@@ -287,6 +287,82 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit<VERTEX>(d);
+				f(d);
+			}
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<EDGE>(d);
+			f(d);
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<FACE>(d);
+			f(d);
+		});
+	}
+
+	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
 

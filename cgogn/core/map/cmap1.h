@@ -269,6 +269,22 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
 
