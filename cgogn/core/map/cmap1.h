@@ -180,12 +180,12 @@ public:
 
 		Dart d = add_face_topo(nb_edges);
 
-//		Face f(d);
+		//		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
+			//			for (Dart d : incident<VERTEX1>(f))
+			//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
 
 			Dart it = d;
 			do
@@ -207,7 +207,7 @@ protected:
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-        Dart d = this->toConcrete()->add_dart();
+		Dart d = this->to_concrete()->add_dart();
 		for (unsigned int i = 1 ; i < nb_edges ; ++i)
 			cut_edge_topo(d);
 
@@ -221,15 +221,15 @@ protected:
 	 */
 	Dart cut_edge_topo(Dart d)
 	{
-        Dart e = this->toConcrete()->add_dart(); // Create a new dart
+		Dart e = this->to_concrete()->add_dart(); // Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
-//		if (this->template is_boundary_marked<2>(d))
-//			this->template boundary_mark<2>(e);
+		//		if (this->template is_boundary_marked<2>(d))
+		//			this->template boundary_mark<2>(e);
 
-//		if (this->template is_boundary_marked<3>(d))
-//			this->template boundary_mark<3>(e);
+		//		if (this->template is_boundary_marked<3>(d))
+		//			this->template boundary_mark<3>(e);
 
 		return e;
 	}
