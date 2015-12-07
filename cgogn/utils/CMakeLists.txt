@@ -9,11 +9,14 @@ set(HEADER_FILES
 	buffers.h
 	make_unique.h
 	thread.h
+	serialization.h
+	name_types.h
 )
 
 set(SOURCE_FILES
 	assert.cpp
 	thread.cpp
+	name_types.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

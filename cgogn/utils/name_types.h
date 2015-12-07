@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #include <list>
-#include <core/basic/dll.h>
+#include <utils/dll.h>
 
 namespace cgogn
 {
@@ -46,48 +46,48 @@ template <typename T>  std::string name_of_type(const std::list<T>& /*v*/);
 template <typename T>  std::string name_of_type(const std::vector<T>& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const bool& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const bool& /*v*/);
 template <>
-CGOGN_CORE_API std::string name_of_type(const char& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const char& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const short& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const short& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const int& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const int& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const long& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const long& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const long long& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const long long& /*v*/);
 // because signed char != char
 template <>
-CGOGN_CORE_API std::string name_of_type(const signed char& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const signed char& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const unsigned char& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const unsigned short& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const unsigned int& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const unsigned long& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const unsigned long long& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const float& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const float& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const double& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const double& /*v*/);
 
 template <>
-CGOGN_CORE_API std::string name_of_type(const std::string& /*v*/);
+CGOGN_UTILS_API std::string name_of_type(const std::string& /*v*/);
 
 template <typename T>  std::string name_of_type(const std::vector<T>& /*v*/) { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 template <typename T>  std::string name_of_type(const std::list<T>& /*v*/) { return std::string("std::list<")+ name_of_type(T()) + std::string(">"); }
