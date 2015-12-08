@@ -61,10 +61,15 @@ public:
 	template <typename MAP> friend class cgogn::DartMarkerT;
 	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
 
+	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+	using DartMarker = cgogn::DartMarker<ConcreteMap>;
+	template<unsigned int ORBIT>
+	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
+
 protected:
 
 	// TODO : put back this code when AttributeHandlers register in the map on construction
-//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+	//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
 
 public:
 
@@ -74,6 +79,10 @@ public:
 	~MapBase()
 	{}
 
+	MapBase(Self const&) = delete;
+	MapBase(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
@@ -135,11 +144,11 @@ public:
 		{
 			// TODO : put back this code when AttributeHandlers register in the map on construction
 
-//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-//			for(IT i = bounds.first; i != bounds.second; ++i)
-//				(*i).second->set_invalid();
-//			attribute_handlers_.erase(bounds.first, bounds.second);
+			//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
+			//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
+			//			for(IT i = bounds.first; i != bounds.second; ++i)
+			//				(*i).second->set_invalid();
+			//			attribute_handlers_.erase(bounds.first, bounds.second);
 			return true;
 		}
 		return false;
@@ -248,7 +257,7 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize the indices of the existing orbits
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
+		ConcreteMap* cmap = to_concrete();
 		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
 		{
 			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
@@ -272,6 +281,13 @@ public:
 			map_(map),
 			dart_(d)
 		{}
+
+		inline const_iterator& operator=(const_iterator const& it)
+		{
+			map_ = it.map_;
+			dart_ = it.dart_;
+			return *this;
+		}
 
 		inline const_iterator& operator++()
 		{
@@ -391,8 +407,8 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f)
 	{
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		DartMarker<typename TOPO_TRAITS::CONCRETE> dm(*cmap);
+
+		DartMarker dm(*to_concrete());
 		for (Dart d : *this)
 		{
 			if (!dm.is_marked(d))
@@ -406,8 +422,7 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_cell_marking(const FUNC& f)
 	{
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		CellMarker<typename TOPO_TRAITS::CONCRETE, ORBIT> cm(*cmap);
+		CellMarker<ORBIT> cm(*to_concrete());
 		for (Dart d : *this)
 		{
 			if (!cm.is_marked(d))
@@ -421,8 +436,7 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_until_dart_marking(const FUNC& f)
 	{
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		DartMarker<typename TOPO_TRAITS::CONCRETE> dm(*cmap);
+		DartMarker dm(*to_concrete());
 		for (Dart d : *this)
 		{
 			if (!dm.is_marked(d))
@@ -437,8 +451,7 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_until_cell_marking(const FUNC& f)
 	{
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		CellMarker<typename TOPO_TRAITS::CONCRETE, ORBIT> cm(*cmap);
+		CellMarker<ORBIT> cm(*to_concrete());
 		for (Dart d : *this)
 		{
 			if (!cm.is_marked(d))
@@ -448,6 +461,16 @@ protected:
 					break;
 			}
 		}
+	}
+
+	inline ConcreteMap* to_concrete()
+	{
+		return static_cast<ConcreteMap*>(this);
+	}
+
+	inline const ConcreteMap* to_concrete() const
+	{
+		return static_cast<const ConcreteMap*>(this);
 	}
 };
 

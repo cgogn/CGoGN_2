@@ -25,7 +25,7 @@
 #define CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <core/container/chunk_array_gen.h>
-#include <core/basic/serialization.h>
+#include <utils/serialization.h>
 #include <utils/assert.h>
 
 #include <iostream>

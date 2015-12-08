@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
-#include <core/basic/name_types.h>
+#include <utils/name_types.h>
 #include <utils/assert.h>
 #include <core/basic/dll.h>
 

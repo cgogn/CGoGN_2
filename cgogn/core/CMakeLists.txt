@@ -4,13 +4,11 @@ project(cgogn_core
 
 set(HEADER_FILES
 	basic/dll.h
-	basic/name_types.h
-	basic/name_types.cpp
+
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
 	basic/cell_marker.h
-	basic/serialization.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h

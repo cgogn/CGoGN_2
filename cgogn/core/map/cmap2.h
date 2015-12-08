@@ -116,6 +116,11 @@ public:
 	~CMap2_T() override
 	{}
 
+	CMap2_T(Self const&) = delete;
+	CMap2_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
