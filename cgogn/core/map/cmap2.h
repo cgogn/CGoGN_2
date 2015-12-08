@@ -171,43 +171,34 @@ public:
 			b = this->phi_1(b);
 		} while (it != d);
 
-//		Face f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<VERTEX2>())
 		{
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX2> c)
 			{
-				init_orbit_embedding<VERTEX2>(it, this->template add_attribute_element<VERTEX2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<EDGE2>())
 		{
-			it = d;
-			do
+			foreach_incident_edge(f, [this] (Cell<EDGE2> c)
 			{
-				init_orbit_embedding<EDGE2>(it, this->template add_attribute_element<EDGE2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<EDGE2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
 
 		if (this->template is_orbit_embedded<VOLUME3>())
 			init_orbit_embedding<VOLUME3>(d, this->template add_attribute_element<VOLUME3>());
@@ -289,6 +280,82 @@ public:
 			case VOLUME3: foreach_dart_of_volume(c, f); break;
 			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
+	}
+
+	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit<VERTEX>(d);
+				f(d);
+			}
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<EDGE>(d);
+			f(d);
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<FACE>(d);
+			f(d);
+		});
 	}
 
 	/*******************************************************************************

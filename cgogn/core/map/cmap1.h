@@ -185,23 +185,18 @@ public:
 
 		Dart d = add_face_topo(nb_edges);
 
-		//		Face f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-			//			for (Dart d : incident<VERTEX1>(f))
-			//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			Dart it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
 
 		return d;
 	}
@@ -213,7 +208,7 @@ protected:
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
 		Dart d = this->to_concrete()->add_dart();
-		for (unsigned int i = 1 ; i < nb_edges ; ++i)
+		for (unsigned int i = 1; i < nb_edges; ++i)
 			cut_edge_topo(d);
 
 		return d;
@@ -271,6 +266,22 @@ public:
 			case FACE2:   foreach_dart_of_face(c, f); break;
 			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
+	}
+
+	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
 	}
 
 	/*******************************************************************************
