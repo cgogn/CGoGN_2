@@ -154,6 +154,14 @@ int test3(MAP& map)
 	std::cout << std::endl;
 	std::cout << "End Volume" << std::endl;
 
+	std::cout << "Autre :" ;
+	CellIterator<MAP,cgogn::NB_ORBITS> to(map, d1);
+	for (Dart d : to)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << std::endl;
+	std::cout << "End Autre" << std::endl;
 	return 0;
 }
 

@@ -46,8 +46,6 @@ protected:
 	Dart cell_;
 	bool outer_marker_;
 	DartMarker* dm_;
-	std::vector<Dart>* visited_darts_;
-
 
 public:
 
@@ -55,8 +53,7 @@ public:
 		map_(map),
 		cell_(d),
 		outer_marker_(false),
-		dm_(dm),
-		visited_darts_(nullptr)
+		dm_(dm)
 	{
 		if (dm) outer_marker_ = true;
 	}
@@ -65,41 +62,32 @@ public:
 	{
 		if (dm_ && !outer_marker_)
 			delete dm_;
-		if (visited_darts_)
-			cgogn::get_dart_buffers()->release_buffer(visited_darts_);
 	}
 
-	void init_marker_and_buffer()
+	DartMarker* init_marker()
 	{
-		if (!dm_)
+		if (!dm_) {
+			if (outer_marker_)
+				std::cerr << "Warning: unefficient use of Iterator (duplicated Marker)" << std::endl;
 			dm_ = new DartMarker(map_);
-		if (!visited_darts_)
-			visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
+		}
+		DartMarker* tmp = dm_;
+		dm_ = nullptr;
+		return tmp;
 	}
 
 	class iterator
 	{
 	public:
 
-		//		Self& traversor_;
-		Map& map_;
-		Dart current_;
-		unsigned int count_;
-
-		inline iterator(Self& t) :
-			//			traversor_(t),
-			map_(t.map_),
-			current_(t.cell_),
-			count_(0)
+		inline iterator(Self&)
 		{
+			std::cerr << "Not implemented" << std::endl;
 		}
 
-		inline iterator(Self& t, Dart d) :
-			//			traversor_(t),
-			map_(t.map_),
-			current_(d),
-			count_(0)
+		inline iterator(Self&, Dart)
 		{
+			std::cerr << "Not implemented" << std::endl;
 		}
 
 		inline iterator& operator++()
@@ -107,24 +95,14 @@ public:
 			return *this;
 		}
 
-		inline iterator& operator--()
+		inline Dart operator*() const
 		{
-			return *this;
+			return Dart();
 		}
 
-		inline Dart operator*()
+		inline bool operator!=(const iterator&) const
 		{
-			return current_;
-		}
-
-		inline bool operator==(iterator it) const
-		{
-			return true;
-		}
-
-		inline bool operator!=(iterator it) const
-		{
-			return true;
+			return false;
 		}
 	};
 
@@ -143,15 +121,14 @@ template<> class CellIterator<CMap1, VERTEX1>::iterator
 {
 public:
 
-	Map& map_;
 	Dart current_;
 	bool is_first_;
 
 	inline iterator(Self& t) :
-		map_(t.map_), current_(t.cell_), is_first_(true) {}
+		current_(t.cell_), is_first_(true) {}
 
 	inline iterator(Self& t, Dart) :
-		map_(t.map_), current_(t.cell_), is_first_(true)	{}
+		current_(t.cell_), is_first_(true)	{}
 
 	inline iterator& operator++()
 	{
@@ -161,7 +138,7 @@ public:
 
 	inline Dart operator*() const { return current_; }
 
-	inline bool operator!=(iterator it) const
+	inline bool operator!=(const iterator& it) const
 	{
 		return !(current_ == it.current_ && !is_first_);
 	}
@@ -190,7 +167,7 @@ public:
 
 	inline Dart operator*() const { return current_; }
 
-	inline bool operator!=(iterator it) const
+	inline bool operator!=(const iterator& it) const
 	{
 		return !(current_ == it.current_ && !is_first_);
 	}
@@ -219,7 +196,7 @@ public:
 
 	inline Dart operator*() const { return current_; }
 
-	inline bool operator!=(iterator it) const
+	inline bool operator!=(const iterator& it) const
 	{
 		return !(current_ == it.current_ && !is_first_);
 	}
@@ -250,7 +227,7 @@ public:
 
 	inline Dart operator*() const { return current_; }
 
-	inline bool operator!=(iterator it) const
+	inline bool operator!=(const iterator& it) const
 	{
 		return !(current_ == it.current_ && !is_first_);
 	}
@@ -279,7 +256,7 @@ public:
 
 	inline Dart operator*() const { return current_; }
 
-	inline bool operator!=(iterator it) const
+	inline bool operator!=(const iterator& it) const
 	{
 		return !(current_ == it.current_ && !is_first_);
 	}
@@ -287,6 +264,8 @@ public:
 
 template<> class CellIterator<CMap2, VOLUME3>::iterator
 {
+	using   DartMarker = cgogn::DartMarker<Map>;
+
 public:
 
 	Map& map_;
@@ -299,21 +278,27 @@ public:
 		map_(t.map_),
 		current_(t.cell_)
 	{
-//		std::cout << "iterator begin() in " << current_ << std::endl;
-		t.init_marker_and_buffer();
-		dm_ = t.dm_;
-		visited_darts_ = t.visited_darts_;
-		visited_darts_->push_back(t.cell_);
-		dm_->mark(t.cell_);
+		std::cout << "iterator begin() in " << current_ << std::endl;
+		dm_ = t.init_marker();
+		visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
+		visited_darts_->push_back(current_);
+		dm_->mark(current_);
 		visited_current_ = visited_darts_->begin();
-//		std::cout << "iterator begin() out " << std::endl;
+		std::cout << "iterator begin() out " << std::endl;
 	}
 
 	// TODO : le brin donné par Vector<Dart>.end() est 0u, mais pas NIL c'est ok ?
+	// TODO : renvoyer le premier brin à la fin et ajouter le booleen is_first
 	inline iterator(Self& t, Dart) :
 		map_(t.map_),
+		visited_darts_(nullptr),
 		current_(0u)
 	{
+	}
+
+	inline ~iterator() {
+		if (visited_darts_)
+			cgogn::get_dart_buffers()->release_buffer(visited_darts_);
 	}
 
 	inline iterator& operator++()
@@ -338,8 +323,10 @@ public:
 		return current_;
 	}
 
-	inline bool operator!=(iterator it) const
+	// TODO : faire le test sur visited_current_ == end() et ignorer it ?
+	inline bool operator!=(const iterator& it) const
 	{
+		std::cout << "iterator " << current_ << " != " << it.current_ << std::endl;
 		return current_ != it.current_;
 	}
 };
