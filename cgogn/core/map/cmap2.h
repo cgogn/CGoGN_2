@@ -186,7 +186,7 @@ public:
 
 		if (this->template is_orbit_embedded<EDGE2>())
 		{
-			foreach_incident_vertex(f, [this] (Cell<EDGE2> c)
+			foreach_incident_edge(f, [this] (Cell<EDGE2> c)
 			{
 				init_orbit_embedding(c, this->template add_attribute_element<EDGE2>());
 			});
