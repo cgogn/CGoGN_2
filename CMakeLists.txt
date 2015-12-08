@@ -20,6 +20,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
+include(cmake/GenerateCppcheck.cmake)
+
 
 #### Build configuration
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -61,3 +63,12 @@ add_subdirectory(thirdparty)
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
 add_subdirectory(test)
+
+
+# CPPCheck
+
+GENERATE_CPPCHECK(
+    SOURCES ${CGOGN_SOURCE_DIR}
+    ENABLE_IDS all
+    INCLUDES ${CGOGN_SOURCE_DIR}
+)
