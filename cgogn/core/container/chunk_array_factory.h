@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/basic/name_types.h>
+#include <utils/name_types.h>
 #include <core/container/chunk_array.h>
 
 #include <iostream>
