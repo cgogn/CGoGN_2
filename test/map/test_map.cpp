@@ -5,6 +5,8 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/iterator/cell_iterators.h>
+
 using namespace cgogn;
 
 
@@ -51,7 +53,38 @@ template <typename MAP>
 int test1(MAP& map)
 {
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<float> ah =
+			map.template add_attribute<float, MAP::VERTEX>("floats");
+
+	// get ChunkArrayContainer -> get ChunkArray -> fill
+	typename MAP::template ChunkArrayContainer<unsigned int>& container =
+			map.get_attribute_container(MAP::VERTEX);
+	typename MAP::template ChunkArray<float>* att =
+			container.template get_attribute<float>("floats");
+	for (unsigned int i = 0; i < 10; ++i)
+		container.template insert_lines<1>();
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		(*att)[i] = 3.0f + 0.1f*float(i);
+
+	// access with index
+	std::cout << ah[0] << std::endl;
+
+	fonc_non_const<MAP>(ah);
+	fonc_const<MAP>(ah);
+
+	//	// traverse container with for range
+	//	for (float f:ah)
+	//		std::cout << f << std::endl;
+
+	return 0;
+}
+
+template <typename MAP>
+int test2(MAP& map)
+{
+	// add an attribute on vertex of map with
+	typename MAP::template VertexAttributeHandler<float> ah =
+			map.template get_attribute<float, MAP::VERTEX>("floats");
 
 	std::vector<unsigned int>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
@@ -79,23 +112,47 @@ int test1(MAP& map)
 	});
 	std::cout << "End Vertices" << std::endl;
 
-	// get ChunkArrayContainer -> get ChunkArray -> fill
-	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
-	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
-	for (unsigned int i = 0; i < 10; ++i)
-		container.template insert_lines<1>();
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
-		(*att)[i] = 3.0f + 0.1f*float(i);
+	return 0;
+}
 
-	// access with index
-	std::cout << ah[0] << std::endl;
+template <typename MAP>
+int test3(MAP& map)
+{
 
-	fonc_non_const<MAP>(ah);
-	fonc_const<MAP>(ah);
+	Dart d1 = map.add_face(3);
 
-	//	// traverse container with for range
-	//	for (float f:ah)
-	//		std::cout << f << std::endl;
+	std::cout << "Faces :" ;
+	CellIterator<MAP,MAP::FACE> tf(map, d1);
+
+	for (Dart d : tf)
+	{
+		std::cout << std::endl;
+		std::cout << d;
+		for (Dart e : tf)
+		{
+			std::cout << " - " << e ;
+		}
+	}
+	std::cout << std::endl;
+	std::cout << "End Faces" << std::endl;
+
+	std::cout << "Vertices :" ;
+	CellIterator<MAP,MAP::VERTEX> tv(map, d1);
+	for (Dart d : tv)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << std::endl;
+	std::cout << "End Vertices" << std::endl;
+
+	std::cout << "Volume :" ;
+	CellIterator<MAP,MAP::VOLUME> tw(map, d1);
+	for (Dart d : tw)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << std::endl;
+	std::cout << "End Volume" << std::endl;
 
 	return 0;
 }
@@ -107,6 +164,10 @@ int main()
 	CMap2 map2;
 	test1(map1);
 	test1(map2);
+	test2(map1);
+	test2(map2);
+	test3(map1);
+	test3(map2);
 	cgogn::thread_stop();
 	return 0;
 }

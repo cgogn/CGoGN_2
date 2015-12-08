@@ -18,6 +18,9 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
+	iterator/cell_iterators.h
+	iterator/iterators.h
+
 	map/map_base_data.h
 	map/map_base.h
 	map/cmap1.h
@@ -31,6 +34,8 @@ set(SOURCE_FILES
 	basic/dart_marker.cpp
 
 	container/chunk_array_container.cpp
+
+	iterator/iterators.cpp
 
 	map/map_base_data.cpp
 )
