@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <utils/dll.h>
 
 namespace cgogn
 {
@@ -41,41 +42,55 @@ std::string name_of_type(const T& /*v*/)
 }
 
 // first we need to declare some specializations
-template <typename T> inline std::string name_of_type(const std::list<T>& /*v*/);
-template <typename T> inline std::string name_of_type(const std::vector<T>& /*v*/);
+template <typename T>  std::string name_of_type(const std::list<T>& /*v*/);
+template <typename T>  std::string name_of_type(const std::vector<T>& /*v*/);
 
-template <> inline std::string name_of_type(const bool& /*v*/) { return "bool"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const bool& /*v*/);
+template <>
+CGOGN_UTILS_API std::string name_of_type(const char& /*v*/);
 
-template <> inline std::string name_of_type(const char& /*v*/) { return "char"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const short& /*v*/);
 
-template <> inline std::string name_of_type(const short& /*v*/) { return "short"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const int& /*v*/);
 
-template <> inline std::string name_of_type(const int& /*v*/) { return "int"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const long& /*v*/);
 
-template <> inline std::string name_of_type(const long& /*v*/) { return "long"; }
-
-template <> inline std::string name_of_type(const long long& /*v*/) { return "long long"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const long long& /*v*/);
 // because signed char != char
-template <> inline std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const signed char& /*v*/);
 
-template <> inline std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& /*v*/);
 
-template <> inline std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& /*v*/);
 
-template <> inline std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& /*v*/);
 
-template <> inline std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& /*v*/);
 
-template <> inline std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& /*v*/);
 
-template <> inline std::string name_of_type(const float& /*v*/) { return "float"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const float& /*v*/);
 
-template <> inline std::string name_of_type(const double& /*v*/) { return "double"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const double& /*v*/);
 
-template <> inline std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
+template <>
+CGOGN_UTILS_API std::string name_of_type(const std::string& /*v*/);
 
-template <typename T> inline std::string name_of_type(const std::vector<T>& /*v*/) { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
-template <typename T> inline std::string name_of_type(const std::list<T>& /*v*/) { return "std::list<"+ name_of_type(T()) + std::string(">"); }
+template <typename T>  std::string name_of_type(const std::vector<T>& /*v*/) { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
+template <typename T>  std::string name_of_type(const std::list<T>& /*v*/) { return std::string("std::list<")+ name_of_type(T()) + std::string(">"); }
 
 
 /**

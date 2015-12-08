@@ -4,12 +4,11 @@ project(cgogn_core
 
 set(HEADER_FILES
 	basic/dll.h
-	basic/nameTypes.h
+
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
 	basic/cell_marker.h
-	basic/serialization.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -19,13 +18,10 @@ set(HEADER_FILES
 
 	map/map_base_data.h
 	map/map_base.h
-	map/map1.h
-	map/map2.h
-	map/map_tri.h
+	map/cmap1.h
+	map/cmap2.h
+	map/cmap_tri.h
 	map/attribute_handler.h
-
-	traversal/global.h
-	traversal/traversor_cell.h
 )
 
 set(SOURCE_FILES

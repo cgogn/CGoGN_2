@@ -1,23 +1,11 @@
 
-#include <core/map/map1.h>
-#include <core/map/map2.h>
+#include <core/map/cmap1.h>
+#include <core/map/cmap2.h>
 
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
-#include <core/traversal/global.h>
-
 using namespace cgogn;
-
-
-struct DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 64;
-};
-
-// typedefs for short writing
-typedef Map1<DataTraits> MAP1;
-typedef Map2<DataTraits> MAP2;
 
 
 template <typename MAP>
@@ -84,11 +72,11 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	for (typename MAP::Vertex v : vertices(map))
+	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;
-	}
+	});
 	std::cout << "End Vertices" << std::endl;
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
@@ -115,8 +103,8 @@ int test1(MAP& map)
 int main()
 {
 	cgogn::thread_start();
-	MAP1 map1;
-	MAP2 map2;
+	CMap1 map1;
+	CMap2 map2;
 	test1(map1);
 	test1(map2);
 	cgogn::thread_stop();

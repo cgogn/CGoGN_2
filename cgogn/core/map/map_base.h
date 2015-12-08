@@ -26,10 +26,21 @@
 
 #include <core/map/map_base_data.h>
 #include <core/map/attribute_handler.h>
-#include <core/traversal/global.h>
+
+#include <core/basic/cell.h>
+#include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
+
+enum TraversalStrategy
+{
+	AUTO = 0,
+	FORCE_DART_MARKING,
+	FORCE_CELL_MARKING,
+	FORCE_TOPO_CACHE
+};
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase : public MapBaseData<DATA_TRAITS>
@@ -47,9 +58,18 @@ public:
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
+
+	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+	using DartMarker = cgogn::DartMarker<ConcreteMap>;
+	template<unsigned int ORBIT>
+	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
+
 protected:
 
-	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+	// TODO : put back this code when AttributeHandlers register in the map on construction
+	//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
 
 public:
 
@@ -59,9 +79,15 @@ public:
 	~MapBase()
 	{}
 
+	MapBase(Self const&) = delete;
+	MapBase(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
+
+protected:
 
 	inline unsigned int add_topology_element()
 	{
@@ -116,11 +142,13 @@ public:
 
 		if (this->attributes_[ORBIT].remove_attribute(ca))
 		{
-			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-			for(IT i = bounds.first; i != bounds.second; ++i)
-				(*i).second->set_invalid();
-			attribute_handlers_.erase(bounds.first, bounds.second);
+			// TODO : put back this code when AttributeHandlers register in the map on construction
+
+			//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
+			//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
+			//			for(IT i = bounds.first; i != bounds.second; ++i)
+			//				(*i).second->set_invalid();
+			//			attribute_handlers_.erase(bounds.first, bounds.second);
 			return true;
 		}
 		return false;
@@ -139,6 +167,12 @@ public:
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
+
+	/*******************************************************************************
+	 * Marking attributes management
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	* \brief get a mark attribute on the topology container (from pool or created)
@@ -193,10 +227,6 @@ public:
 			if (!this->template is_orbit_embedded<ORBIT>())
 				create_embedding<ORBIT>();
 			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
-
-			// TODO : useful ?
-			ca->all_false();
-
 			return ca;
 		}
 	}
@@ -214,8 +244,6 @@ public:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
-protected:
-
 	template <unsigned int ORBIT>
 	inline void create_embedding()
 	{
@@ -229,16 +257,18 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize the indices of the existing orbits
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
-			cmap->template init_orbit_embedding(c, add_attribute_element<ORBIT>());
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
+		{
+			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+		});
 	}
 
-public:
-
 	/*******************************************************************************
-	 * Basic traversals
+	 * Traversals
 	 *******************************************************************************/
+
+public:
 
 	class const_iterator
 	{
@@ -251,6 +281,18 @@ public:
 			map_(map),
 			dart_(d)
 		{}
+
+		inline const_iterator(const const_iterator& it) :
+			map_(it.map_),
+			dart_(it.dart_)
+		{}
+
+		inline const_iterator& operator=(const_iterator const& it)
+		{
+			map_ = it.map_;
+			dart_ = it.dart_;
+			return *this;
+		}
 
 		inline const_iterator& operator++()
 		{
@@ -286,22 +328,154 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart(FUNC f)
+	inline void foreach_dart(const FUNC& f)
 	{
 		for (Dart d : *this)
 			f(d);
 	}
 
 	/**
-	 * \brief apply a function on each dart of the map
+	 * \brief apply a function on each dart of the map and stops when the function returns false
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart(FUNC& f)
+	inline void foreach_dart_until(const FUNC& f)
 	{
 		for (Dart d : *this)
-			f(d);
+		{
+			if(!f(d))
+				break;
+		}
+	}
+
+	/**
+	 * \brief apply a function on each orbit of the map
+	 * @tparam ORBIT orbit to traverse
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f)
+	{
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
+	/**
+	 * \brief apply a function on each orbit of the map and stops when the function returns false
+	 * @tparam ORBIT orbit to traverse
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	void foreach_cell_until(const FUNC& f)
+	{
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_until_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				break;
+			case AUTO :
+				if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_until_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
+protected:
+
+	template <unsigned int ORBIT, typename FUNC>
+	inline void foreach_cell_dart_marking(const FUNC& f)
+	{
+
+		DartMarker dm(*to_concrete());
+		for (Dart d : *this)
+		{
+			if (!dm.is_marked(d))
+			{
+				dm.template mark_orbit<ORBIT>(d);
+				f(d);
+			}
+		}
+	}
+
+	template <unsigned int ORBIT, typename FUNC>
+	inline void foreach_cell_cell_marking(const FUNC& f)
+	{
+		CellMarker<ORBIT> cm(*to_concrete());
+		for (Dart d : *this)
+		{
+			if (!cm.is_marked(d))
+			{
+				cm.mark(d);
+				f(d);
+			}
+		}
+	}
+
+	template <unsigned int ORBIT, typename FUNC>
+	inline void foreach_cell_until_dart_marking(const FUNC& f)
+	{
+		DartMarker dm(*to_concrete());
+		for (Dart d : *this)
+		{
+			if (!dm.is_marked(d))
+			{
+				dm.template mark_orbit<ORBIT>(d);
+				if(!f(d))
+					break;
+			}
+		}
+	}
+
+	template <unsigned int ORBIT, typename FUNC>
+	inline void foreach_cell_until_cell_marking(const FUNC& f)
+	{
+		CellMarker<ORBIT> cm(*to_concrete());
+		for (Dart d : *this)
+		{
+			if (!cm.is_marked(d))
+			{
+				cm.mark(d);
+				if(!f(d))
+					break;
+			}
+		}
+	}
+
+	inline ConcreteMap* to_concrete()
+	{
+		return static_cast<ConcreteMap*>(this);
+	}
+
+	inline const ConcreteMap* to_concrete() const
+	{
+		return static_cast<const ConcreteMap*>(this);
 	}
 };
 

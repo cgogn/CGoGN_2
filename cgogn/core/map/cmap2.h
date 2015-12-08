@@ -24,21 +24,21 @@
 #ifndef CORE_MAP_MAP2_H_
 #define CORE_MAP_MAP2_H_
 
-#include <core/map/map1.h>
+#include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class Map2_T : public Map1_T<DATA_TRAITS, TOPO_TRAITS>
+class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
-	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef Map2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
+	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	friend class Map1_T<DATA_TRAITS, TOPO_TRAITS>;
+	friend class CMap1_T<DATA_TRAITS, TOPO_TRAITS>;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
@@ -108,13 +108,18 @@ protected:
 
 public:
 
-	Map2_T() : Inherit()
+	CMap2_T() : Inherit()
 	{
 		init();
 	}
 
-	~Map2_T() override
+	~CMap2_T() override
 	{}
+
+	CMap2_T(Self const&) = delete;
+	CMap2_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Basic topological operations
@@ -166,43 +171,34 @@ public:
 			b = this->phi_1(b);
 		} while (it != d);
 
-//		Face f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<VERTEX2>())
 		{
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX2> c)
 			{
-				init_orbit_embedding<VERTEX2>(it, this->template add_attribute_element<VERTEX2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<EDGE2>())
 		{
-			it = d;
-			do
+			foreach_incident_edge(f, [this] (Cell<EDGE2> c)
 			{
-				init_orbit_embedding<EDGE2>(it, this->template add_attribute_element<EDGE2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<EDGE2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
 
 		if (this->template is_orbit_embedded<VOLUME3>())
 			init_orbit_embedding<VOLUME3>(d, this->template add_attribute_element<VOLUME3>());
@@ -287,6 +283,82 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit<VERTEX>(d);
+				f(d);
+			}
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<EDGE>(d);
+			f(d);
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Volume v, const FUNC& f) const
+	{
+		DartMarkerStore<Self> marker(*this);
+		foreach_dart_of_volume(v, [&] (Dart d)
+		{
+			marker.mark_orbit<FACE>(d);
+			f(d);
+		});
+	}
+
+	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
 
@@ -304,14 +376,18 @@ public:
 };
 
 template <typename DataTraits>
-struct Map2TopoTraits
+struct CMap2TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map2_T<DataTraits, Map2TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
 };
 
-template <typename DataTraits>
-using Map2 = Map2_T<DataTraits, Map2TopoTraits<DataTraits>>;
+struct CMap2DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
 
 } // namespace cgogn
 

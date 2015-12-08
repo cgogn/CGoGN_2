@@ -21,37 +21,57 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_THREAD_H_
-#define UTILS_THREAD_H_
+#define CGOGN_UTILS_DLL_EXPORT
+#include <utils/name_types.h>
 
-#include <utils/buffers.h>
-#include <utils/dll.h>
 namespace cgogn
 {
 
-/**
- * \brief The maximum nunmber of threads created by the API.
- */
-const unsigned int NB_THREADS = 8u;
+template <>
+CGOGN_UTILS_API std::string name_of_type(const bool& /*v*/) { return "bool"; }
 
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+template <>
+CGOGN_UTILS_API std::string name_of_type(const char& /*v*/) { return "char"; }
 
-/**
- * @brief function to call at begin of each thread which use a map
- */
-CGOGN_UTILS_API void thread_start();
+template <>
+CGOGN_UTILS_API std::string name_of_type(const short& /*v*/) { return "short"; }
 
-/**
- * @brief function to call at end of each thread which use a map
- */
-CGOGN_UTILS_API void thread_stop();
+template <>
+CGOGN_UTILS_API std::string name_of_type(const int& /*v*/) { return "int"; }
 
-CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+template <>
+CGOGN_UTILS_API std::string name_of_type(const long& /*v*/) { return "long"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const long long& /*v*/) { return "long long"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const float& /*v*/) { return "float"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const double& /*v*/) { return "double"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
 
 
 } // namespace cgogn
 
-#endif // UTILS_THREAD_H_

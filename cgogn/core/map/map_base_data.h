@@ -58,7 +58,10 @@ public:
 	MapGen();
 
 	virtual ~MapGen();
-
+	MapGen(MapGen const&) = delete;
+	MapGen(MapGen &&) = delete;
+	MapGen& operator=(MapGen const&) = delete;
+	MapGen& operator=(MapGen &&) = delete;
 	static inline bool is_alive(MapGen* map)
 	{
 		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
@@ -138,6 +141,11 @@ public:
 
 	~MapBaseData() override
 	{}
+
+	MapBaseData(Self const&) = delete;
+	MapBaseData(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Containers management

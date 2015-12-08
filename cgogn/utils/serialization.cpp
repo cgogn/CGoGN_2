@@ -20,38 +20,65 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_UTILS_DLL_EXPORT
+#include <utils/serialization.h>
 
-#ifndef UTILS_THREAD_H_
-#define UTILS_THREAD_H_
-
-#include <utils/buffers.h>
-#include <utils/dll.h>
 namespace cgogn
 {
+namespace serialization
+{
+template <>
+CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
+{
+	return false;
+}
 
-/**
- * \brief The maximum nunmber of threads created by the API.
- */
-const unsigned int NB_THREADS = 8u;
+// load string
+template <>
+CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+{
+	cgogn_assert(dest != nullptr);
 
-/// buffers of pre-allocated vectors of dart or unsigned int
-extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+	char buffer[2048];
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		istream.read((buffer), size);
+		dest[i].resize(size);
+		for (unsigned int j=0; j<size; ++j)
+			dest[i][j] = buffer[j];
+	}
+}
 
-/**
- * @brief function to call at begin of each thread which use a map
- */
-CGOGN_UTILS_API void thread_start();
+//save string
+template <>
+CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
 
-/**
- * @brief function to call at end of each thread which use a map
- */
-CGOGN_UTILS_API void thread_stop();
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const char* str = src[i].c_str();
+		ostream.write(str, size);
+	}
+}
 
-CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+// compute data length of string
+template <>
+CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		total += src[i].size();
+	}
+	return total;
+}
 
-
+} // namespace serialization
 } // namespace cgogn
-
-#endif // UTILS_THREAD_H_
