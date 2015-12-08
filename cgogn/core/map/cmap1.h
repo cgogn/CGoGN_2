@@ -180,23 +180,18 @@ public:
 
 		Dart d = add_face_topo(nb_edges);
 
-//		Face f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			Dart it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
 
 		return d;
 	}

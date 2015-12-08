@@ -166,43 +166,34 @@ public:
 			b = this->phi_1(b);
 		} while (it != d);
 
-//		Face f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<VERTEX1>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<VERTEX2>())
 		{
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<VERTEX2> c)
 			{
-				init_orbit_embedding<VERTEX2>(it, this->template add_attribute_element<VERTEX2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<VERTEX2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<EDGE2>())
 		{
-			it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<EDGE2> c)
 			{
-				init_orbit_embedding<EDGE2>(it, this->template add_attribute_element<EDGE2>());
-				it = this->phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<EDGE2>());
+			});
 		}
 
 		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
 
 		if (this->template is_orbit_embedded<VOLUME3>())
 			init_orbit_embedding<VOLUME3>(d, this->template add_attribute_element<VOLUME3>());
