@@ -21,6 +21,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
 include(cmake/GenerateCppcheck.cmake)
+include(cmake/EnableCoverageReport.cmake)
 
 
 #### Build configuration
@@ -63,6 +64,13 @@ add_subdirectory(thirdparty)
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
 add_subdirectory(test)
+
+
+# --- coverage ---
+
+ENABLE_COVERAGE_REPORT(
+    TARGETS ${CGOGN_SOURCE_DIR}
+)
 
 
 # CPPCheck
