@@ -29,6 +29,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <utils/dll.h>
 
 namespace cgogn
 {
@@ -64,10 +65,7 @@ bool known_size(T const* /*src*/)
 }
 
 template <>
-inline bool known_size<std::string>(std::string const* /*src*/)
-{
-	return false;
-}
+CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/);
 
 template <typename U>
 bool known_size(std::vector<U> const* /*src*/)
@@ -103,13 +101,13 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity);
 
 
 template <>
-void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
+CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
 
 template <>
-void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
+CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
 
 template <>
-std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
+CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
 
 
 // loading n vectors
@@ -204,52 +202,7 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 }
 
 
-// load string
-template <>
-inline void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
-{
-	cgogn_assert(dest != nullptr);
 
-	char buffer[2048];
-	for (std::size_t i = 0; i < quantity ; ++i)
-	{
-		unsigned int size;
-		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
-		istream.read((buffer), size);
-		dest[i].resize(size);
-		for (unsigned int j=0; j<size; ++j)
-			dest[i][j] = buffer[j];
-	}
-}
-
-//save string
-template <>
-inline void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
-{
-	cgogn_assert(src != nullptr);
-
-	for (std::size_t i = 0; i < quantity ; ++i)
-	{
-		const unsigned int size = static_cast<unsigned int>(src[i].size());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
-		const char* str = src[i].c_str();
-		ostream.write(str, size);
-	}
-}
-
-// compute data length of string
-template <>
-inline std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
-{
-	cgogn_assert(src != nullptr);
-	std::size_t total = 0;
-	for (std::size_t i = 0; i < quantity ; ++i)
-	{
-		total += sizeof(unsigned int); // for size
-		total += src[i].size();
-	}
-	return total;
-}
 
 } // namespace serialization
 

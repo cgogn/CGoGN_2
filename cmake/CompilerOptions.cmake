@@ -20,7 +20,6 @@ if(APPLE)
 	endif()
 endif()
 
-if(WIN32)
-	#TODO
+if(MSVC)
+	include(cmake/platforms/Windows-MSVC.cmake)
 endif()
-

@@ -74,7 +74,7 @@ public:
 		DartMarkerGen(),
 		map_(const_cast<MAP&>(map))
 	{
-		mark_attribute_ = map_.template get_topology_mark_attribute();
+		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
 	~DartMarkerT() override

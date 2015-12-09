@@ -20,45 +20,65 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
-
-#include <core/basic/name_types.h>
+#define CGOGN_UTILS_DLL_EXPORT
+#include <utils/serialization.h>
 
 namespace cgogn
 {
+namespace serialization
+{
+template <>
+CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
+{
+	return false;
+}
 
+// load string
+template <>
+CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+{
+	cgogn_assert(dest != nullptr);
 
+	char buffer[2048];
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		istream.read((buffer), size);
+		dest[i].resize(size);
+		for (unsigned int j=0; j<size; ++j)
+			dest[i][j] = buffer[j];
+	}
+}
 
-template <>  std::string name_of_type(const bool& /*v*/) { return "bool"; }
+//save string
+template <>
+CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
 
-template <>  std::string name_of_type(const char& /*v*/) { return "char"; }
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const char* str = src[i].c_str();
+		ostream.write(str, size);
+	}
+}
 
-template <>  std::string name_of_type(const short& /*v*/) { return "short"; }
+// compute data length of string
+template <>
+CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		total += src[i].size();
+	}
+	return total;
+}
 
-template <>  std::string name_of_type(const int& /*v*/) { return "int"; }
-
-template <>  std::string name_of_type(const long& /*v*/) { return "long"; }
-
-template <>  std::string name_of_type(const long long& /*v*/) { return "long long"; }
-
-template <>  std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
-
-template <>  std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
-
-template <>  std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
-
-template <>  std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
-
-template <>  std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
-
-template <>  std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
-
-template <>  std::string name_of_type(const float& /*v*/) { return "float"; }
-
-template <>  std::string name_of_type(const double& /*v*/) { return "double"; }
-
-template <>  std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
-
-
+} // namespace serialization
 } // namespace cgogn
-

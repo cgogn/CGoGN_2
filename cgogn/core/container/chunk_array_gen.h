@@ -27,7 +27,7 @@
 #include <vector>
 #include <iostream>
 
-#include <core/basic/serialization.h>
+#include <utils/serialization.h>
 
 namespace cgogn
 {
