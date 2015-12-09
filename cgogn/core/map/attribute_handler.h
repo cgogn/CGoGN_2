@@ -282,7 +282,7 @@ public:
 
 	virtual ~AttributeHandler() override
 	{
-		if (chunk_array_ != nullptr)
+		if (is_valid())
 		{
 			TChunkArray** tmp = &chunk_array_;
 			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
@@ -360,12 +360,12 @@ public:
 			index_(i)
 		{}
 
-//		inline const_iterator& operator=(const const_iterator& it)
-//		{
-//			ah_ptr_ = it.ah_ptr_;
-//			index_ = it.index_;
-//			return *this;
-//		}
+		inline const_iterator& operator=(const const_iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
 
 		inline const_iterator& operator++()
 		{
@@ -407,12 +407,12 @@ public:
 			index_(i)
 		{}
 
-//		inline iterator& operator=(const iterator& it)
-//		{
-//			ah_ptr_ = it.ah_ptr_;
-//			index_ = it.index_;
-//			return *this;
-//		}
+		inline iterator& operator=(const iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
 
 		inline iterator& operator++()
 		{
