@@ -66,13 +66,6 @@ public:
 	template<unsigned int ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
-protected:
-
-	// TODO : put back this code when AttributeHandlers register in the map on construction
-	//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
-
-public:
-
 	MapBase() : Inherit()
 	{}
 
@@ -138,20 +131,8 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = ah.get_data();
-
-		if (this->attributes_[ORBIT].remove_attribute(ca))
-		{
-			// TODO : put back this code when AttributeHandlers register in the map on construction
-
-			//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-			//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-			//			for(IT i = bounds.first; i != bounds.second; ++i)
-			//				(*i).second->set_invalid();
-			//			attribute_handlers_.erase(bounds.first, bounds.second);
-			return true;
-		}
-		return false;
+		const ChunkArray<T>* ca = ah.get_data();
+		return this->attributes_[ORBIT].remove_attribute(ca);
 	}
 
 	/**
@@ -282,12 +263,12 @@ public:
 			dart_(d)
 		{}
 
-		inline const_iterator& operator=(const_iterator const& it)
-		{
-			map_ = it.map_;
-			dart_ = it.dart_;
-			return *this;
-		}
+//		inline const_iterator& operator=(const_iterator const& it)
+//		{
+//			map_ = it.map_;
+//			dart_ = it.dart_;
+//			return *this;
+//		}
 
 		inline const_iterator& operator++()
 		{

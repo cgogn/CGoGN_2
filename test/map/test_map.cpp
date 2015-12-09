@@ -53,6 +53,11 @@ int test1(MAP& map)
 	// add an attribute on vertex of map with
 	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
 
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
+
+	map.remove_attribute(ahf);
+	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
+
 	std::vector<unsigned int>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
 	cgogn::get_uint_buffers()->release_buffer(uib);
