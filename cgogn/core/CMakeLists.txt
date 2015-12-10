@@ -16,8 +16,9 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
-	iterator/cell_iterators.h
-	iterator/iterators.h
+        iterator/cell_iterators.h
+        iterator/adjacent_iterator.h
+        iterator/iterators.h
 
 	map/map_base_data.h
 	map/map_base.h

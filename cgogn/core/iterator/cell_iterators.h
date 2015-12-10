@@ -43,14 +43,14 @@ class InCellIterator
 public:
 
     typedef InCellIterator<MAP, ORBIT> Self;
-	using   DartMarker = cgogn::DartMarker<MAP>;
+    using   DartMarker = cgogn::DartMarker<MAP>;
 
 protected:
 
 	MAP& map_;
 	Dart cell_;
 	bool outer_marker_;
-	DartMarker* dm_;
+    DartMarker* dm_;
 
 public:
 
@@ -66,18 +66,23 @@ public:
 
     ~InCellIterator()
 	{
-		if (dm_ && !outer_marker_)
+        if (dm_ && !outer_marker_) {
+            // TODO => unmark_all ?
 			delete dm_;
+        }
 	}
 
-	DartMarker* init_marker()
+    DartMarker* init_marker()
 	{
 		if (!dm_) {
-			if (outer_marker_)
+            if (outer_marker_) {
+                // TODO : paranoic test : est-ce possible ?
                 std::cerr << "Warning: non optimal use of Iterator (duplicated Marker)" << std::endl;
-			dm_ = new DartMarker(map_);
+                outer_marker_ = false;
+            }
+            dm_ = new DartMarker(map_);
 		}
-		DartMarker* tmp = dm_;
+        DartMarker* tmp = dm_;
 		dm_ = nullptr;
 		return tmp;
 	}
@@ -244,7 +249,7 @@ public:
 
 	inline iterator& operator++()
 	{
-		current_ = map_.phi_1(map_.phi2(current_));
+        current_ = map_.phi2(map_.phi_1(current_));
 		not_first_ = true;
 		return *this;
 	}
@@ -262,10 +267,10 @@ template<> class InCellIterator<CMap2, VOLUME3>::iterator
 public:
 
     typedef InCellIterator<CMap2, VOLUME3> Self;
-	using   DartMarker = cgogn::DartMarker<CMap2>;
+    using   DartMarker = cgogn::DartMarker<CMap2>;
 
 	CMap2& map_;
-	DartMarker* dm_;
+    DartMarker* dm_;
 	std::vector<Dart>* visited_darts_;
     std::size_t current_index_;
 	Dart current_;
