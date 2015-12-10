@@ -293,15 +293,15 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		f(phi1(v.dart));
-		f(phi_1(v.dart));
+		f(Vertex(phi1(v.dart)));
+		f(Vertex(phi_1(v.dart)));
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		f(phi1(e.dart));
-		f(phi_1(e.dart));
+		f(Edge(phi1(e.dart)));
+		f(Edge(phi_1(e.dart)));
 	}
 
 protected:

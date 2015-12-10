@@ -377,7 +377,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, [this, &f] (Dart d) { f(this->phi2(d)); });
+		foreach_dart_of_vertex(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
@@ -390,7 +390,7 @@ public:
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
-					f(fd);
+					f(Vertex(fd));
 			});
 		});
 	}
@@ -404,7 +404,7 @@ public:
 			{
 				// skip Edge e itself
 				if (vd != ed)
-					f(vd);
+					f(Edge(vd));
 			});
 		});
 	}
@@ -418,7 +418,7 @@ public:
 			{
 				// skip Edge e itself
 				if (fd != ed)
-					f(fd);
+					f(Edge(fd));
 			});
 		});
 	}
@@ -433,7 +433,7 @@ public:
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
-					func(vd);
+					func(Face(vd));
 			});
 		});
 	}
@@ -441,7 +441,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, [this, &func] (Dart d) { func(this->phi2(d)); });
+		foreach_dart_of_face(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:
