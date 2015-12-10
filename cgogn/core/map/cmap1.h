@@ -38,6 +38,8 @@ public:
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
+	friend typename Self::Inherit;
+
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
@@ -283,6 +285,26 @@ public:
 	{
 		foreach_dart_of_face(f, func);
 	}
+
+	/*******************************************************************************
+	 * Adjacence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
+	{
+		f(phi1(v.dart));
+		f(phi_1(v.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
+	{
+		f(phi1(e.dart));
+		f(phi_1(e.dart));
+	}
+
+protected:
 
 	/*******************************************************************************
 	 * Embedding management
