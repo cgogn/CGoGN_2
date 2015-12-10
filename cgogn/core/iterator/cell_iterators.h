@@ -29,7 +29,7 @@
 #include <core/basic/cell_marker.h>
 
 /* Les spécialisations pourraient aller dans les fichiers où sont déclarées
- * les classes de cartes pour ne pas les inclurent ici
+ * les classes de cartes pour ne pas devoir les inclure ici
  */
 #include <core/map/cmap1.h>
 #include <core/map/cmap2.h>
@@ -38,11 +38,11 @@ namespace cgogn
 {
 
 template <typename MAP, unsigned int ORBIT>
-class CellIterator
+class InCellIterator
 {
 public:
 
-	typedef CellIterator<MAP, ORBIT> Self;
+    typedef InCellIterator<MAP, ORBIT> Self;
 	using   DartMarker = cgogn::DartMarker<MAP>;
 
 protected:
@@ -54,16 +54,17 @@ protected:
 
 public:
 
-	CellIterator(MAP& map, Dart d, DartMarker* dm = nullptr) :
+    InCellIterator(MAP& map, Dart d, DartMarker* dm = nullptr) :
 		map_(map),
 		cell_(d),
 		outer_marker_(false),
 		dm_(dm)
 	{
 		if (dm) outer_marker_ = true;
+
 	}
 
-	~CellIterator()
+    ~InCellIterator()
 	{
 		if (dm_ && !outer_marker_)
 			delete dm_;
@@ -73,7 +74,7 @@ public:
 	{
 		if (!dm_) {
 			if (outer_marker_)
-				std::cerr << "Warning: unefficient use of Iterator (duplicated Marker)" << std::endl;
+                std::cerr << "Warning: non optimal use of Iterator (duplicated Marker)" << std::endl;
 			dm_ = new DartMarker(map_);
 		}
 		DartMarker* tmp = dm_;
@@ -85,14 +86,9 @@ public:
 	{
 	public:
 
-		inline iterator(Self&)
+        inline iterator(Self&, bool)
 		{
-			std::cerr << "Not implemented" << std::endl;
-		}
-
-		inline iterator(Self&, Dart)
-		{
-			std::cerr << "Not implemented" << std::endl;
+            std::cout << "Not implemented (ORBIT=" << ORBIT << ")" << std::endl;
 		}
 
 		inline iterator& operator++()
@@ -111,30 +107,28 @@ public:
 		}
 	};
 
-	inline iterator begin()
+    // TODO faire du paramètre booleen un paramètre template ?
+    inline iterator begin()
 	{
-		return iterator(*this);
+        return iterator(*this, true);
 	}
 
-	inline iterator end()
+    inline iterator end()
 	{
-		return iterator(*this, Dart());
+        return iterator(*this, false);
 	}
 };
 
-template<> class CellIterator<CMap1, VERTEX1>::iterator
+template<> class InCellIterator<CMap1, VERTEX1>::iterator
 {
 public:
 
-	typedef CellIterator<CMap1, VERTEX1> Self;
+    typedef InCellIterator<CMap1, VERTEX1> Self;
 
 	Dart current_;
 	bool not_first_;
 
-	inline iterator(Self& t) :
-		current_(t.cell_), not_first_(false) {}
-
-	inline iterator(Self& t, Dart) :
+    inline iterator(Self& t, bool) :
 		current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -151,20 +145,17 @@ public:
 	}
 };
 
-template<> class CellIterator<CMap1, FACE2>::iterator
+template<> class InCellIterator<CMap1, FACE2>::iterator
 {
 public:
 
-	typedef CellIterator<CMap1, FACE2> Self;
+    typedef InCellIterator<CMap1, FACE2> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-	inline iterator(Self& t) :
-		map_(t.map_), current_(t.cell_), not_first_(false) {}
-
-	inline iterator(Self& t, Dart) :
+    inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -182,20 +173,45 @@ public:
 	}
 };
 
-template<> class CellIterator<CMap1, VOLUME3>::iterator
+template<> class InCellIterator<CMap1, VOLUME3>::iterator
 {
 public:
 
-	typedef CellIterator<CMap1, VOLUME3> Self;
+    typedef InCellIterator<CMap1, VOLUME3> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-	inline iterator(Self& t) :
-		map_(t.map_), current_(t.cell_), not_first_(false) {}
+    inline iterator(Self& t, bool) :
+        map_(t.map_), current_(t.cell_), not_first_(false) {}
 
-	inline iterator(Self& t, Dart) :
+	inline iterator& operator++()
+	{
+		current_ = map_.phi1(current_);
+		not_first_ = true;
+		return *this;
+	}
+
+	inline Dart operator*() const { return current_; }
+
+	inline bool operator!=(const iterator& it) const
+	{
+		return !(current_ == it.current_ && not_first_);
+	}
+};
+
+template<> class InCellIterator<CMap2, FACE2>::iterator
+{
+public:
+
+    typedef InCellIterator<CMap2, FACE2> Self;
+
+	CMap2& map_;
+	Dart current_;
+	bool not_first_;
+
+    inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -213,51 +229,17 @@ public:
 	}
 };
 
-template<> class CellIterator<CMap2, FACE2>::iterator
+template<> class InCellIterator<CMap2, VERTEX2>::iterator
 {
 public:
 
-	typedef CellIterator<CMap2, FACE2> Self;
+    typedef InCellIterator<CMap2, VERTEX2> Self;
 
 	CMap2& map_;
 	Dart current_;
 	bool not_first_;
 
-	inline iterator(Self& t) :
-		map_(t.map_), current_(t.cell_), not_first_(false) {}
-
-	inline iterator(Self& t, Dart) :
-		map_(t.map_), current_(t.cell_), not_first_(false) {}
-
-	inline iterator& operator++()
-	{
-		current_ = map_.phi1(current_);
-		not_first_ = true;
-		return *this;
-	}
-
-	inline Dart operator*() const { return current_; }
-
-	inline bool operator!=(const iterator& it) const
-	{
-		return !(current_ == it.current_ && not_first_);
-	}
-};
-
-template<> class CellIterator<CMap2, VERTEX2>::iterator
-{
-public:
-
-	typedef CellIterator<CMap2, VERTEX2> Self;
-
-	CMap2& map_;
-	Dart current_;
-	bool not_first_;
-
-	inline iterator(Self& t) :
-		map_(t.map_), current_(t.cell_), not_first_(false) {}
-
-	inline iterator(Self& t, Dart) :
+    inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -275,39 +257,35 @@ public:
 	}
 };
 
-template<> class CellIterator<CMap2, VOLUME3>::iterator
+template<> class InCellIterator<CMap2, VOLUME3>::iterator
 {
 public:
 
-	typedef CellIterator<CMap2, VOLUME3> Self;
+    typedef InCellIterator<CMap2, VOLUME3> Self;
 	using   DartMarker = cgogn::DartMarker<CMap2>;
 
 	CMap2& map_;
 	DartMarker* dm_;
 	std::vector<Dart>* visited_darts_;
-	std::size_t visited_current_;
+    std::size_t current_index_;
 	Dart current_;
 	bool not_first_;
 
-	inline iterator(Self& t) :
+    // is_begin est 'true' pour la construction de l'itérateur begin(), 'false' sinon
+    inline iterator(Self& t, bool is_begin) :
 		map_(t.map_),
-		visited_current_(0u),
-		current_(t.cell_),
+        dm_(nullptr),
+        visited_darts_(nullptr),
+        current_index_(0u),
+        current_(t.cell_),
 		not_first_(false)
 	{
-		dm_ = t.init_marker();
-		visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
-		visited_darts_->push_back(current_);
-		dm_->mark(current_);
-	}
-
-	inline iterator(Self& t, Dart) :
-		map_(t.map_),
-		visited_darts_(nullptr),
-		visited_current_(0u),
-		current_(t.cell_),
-		not_first_(false)
-	{
+        if (is_begin) {
+            dm_ = t.init_marker();
+            visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
+            visited_darts_->push_back(current_);
+            dm_->mark(current_);
+        }
 	}
 
 	inline ~iterator() {
@@ -318,23 +296,29 @@ public:
 
 	inline iterator& operator++()
 	{
-		not_first_ = true;
+        // TODO : faire ce test uniquement en DEBUG ?
+        if(dm_) {
+            not_first_ = true;
 
-		Dart d = map_.phi1(current_);
-		if (!dm_->is_marked(d)) {
-			visited_darts_->push_back(d);
-			dm_->mark(d);
-		}
-		d = map_.phi2(current_);
-		if (!dm_->is_marked(d)) {
-			visited_darts_->push_back(d);
-			dm_->mark(d);
-		}
-		++visited_current_;
-		if (visited_current_ < visited_darts_->size())
-			current_ = (*visited_darts_)[visited_current_];
-		else
-			current_ = (*visited_darts_)[0u];
+            Dart d = map_.phi1(current_);
+            if (!dm_->is_marked(d)) {
+                visited_darts_->push_back(d);
+                dm_->mark(d);
+            }
+            d = map_.phi2(current_);
+            if (!dm_->is_marked(d)) {
+                visited_darts_->push_back(d);
+                dm_->mark(d);
+            }
+            ++current_index_;
+            if (current_index_ < visited_darts_->size())
+                current_ = (*visited_darts_)[current_index_];
+            else
+                current_ = (*visited_darts_)[0u];
+        }
+        else
+            std::cerr << "Warning: ++ operator has no effect on the end() iterator";
+
 		return *this;
 	}
 

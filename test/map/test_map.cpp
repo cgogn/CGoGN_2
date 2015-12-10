@@ -6,6 +6,7 @@
 #include <core/basic/cell_marker.h>
 
 #include <core/iterator/cell_iterators.h>
+#include <core/iterator/iterators.h>
 
 using namespace cgogn;
 
@@ -122,7 +123,7 @@ int test3(MAP& map)
 	Dart d1 = map.add_face(3);
 
 	std::cout << "Faces :" ;
-	CellIterator<MAP,MAP::FACE> tf(map, d1);
+    InCellIterator<MAP,MAP::FACE> tf(map, d1);
 
 	for (Dart d : tf)
 	{
@@ -137,7 +138,7 @@ int test3(MAP& map)
 	std::cout << "End Faces" << std::endl;
 
 	std::cout << "Vertices :" ;
-	CellIterator<MAP,MAP::VERTEX> tv(map, d1);
+    InCellIterator<MAP,MAP::VERTEX> tv(map, d1);
 	for (Dart d : tv)
 	{
 		std::cout << " - " << d ;
@@ -146,7 +147,7 @@ int test3(MAP& map)
 	std::cout << "End Vertices" << std::endl;
 
 	std::cout << "Volume :" ;
-	CellIterator<MAP,MAP::VOLUME> tw(map, d1);
+    InCellIterator<MAP,MAP::VOLUME> tw(map, d1);
 	for (Dart d : tw)
 	{
 		std::cout << " - " << d ;
@@ -154,15 +155,34 @@ int test3(MAP& map)
 	std::cout << std::endl;
 	std::cout << "End Volume" << std::endl;
 
-	std::cout << "Autre :" ;
-	CellIterator<MAP,cgogn::NB_ORBITS> to(map, d1);
+    std::cout << "Autre :" << std::endl;
+    InCellIterator<MAP,cgogn::NB_ORBITS> to(map, d1);
 	for (Dart d : to)
 	{
 		std::cout << " - " << d ;
 	}
-	std::cout << std::endl;
 	std::cout << "End Autre" << std::endl;
-	return 0;
+
+    std::cout << std::endl << "Les cellules :" ;
+    for (Dart d : AllCellIterator<MAP,MAP::VERTEX>(map))
+        std::cout << " vertex(" << d << ")" << std::endl;
+    for (Dart d : AllCellIterator<MAP,MAP::FACE>(map))
+        std::cout << " face(" << d << ")" << std::endl;
+    for (Dart d : AllCellIterator<MAP,MAP::VOLUME>(map))
+        std::cout << " volume(" << d << ")" << std::endl;
+    std::cout << "End cellules" << std::endl;
+
+    std::cout << std::endl << "Parcours multiples :" << std::endl;
+    AllCellIterator<MAP,MAP::VERTEX> vertices(map);
+    for (Dart d : vertices) {
+        std::cout << "A:" << d << " => B:";
+        for (Dart e : vertices)
+            std::cout << e << " ";
+        std::cout << std::endl;
+    }
+    std::cout << "End cellules" << std::endl;
+
+    return 0;
 }
 
 int main()
@@ -170,10 +190,10 @@ int main()
 	cgogn::thread_start();
 	CMap1 map1;
 	CMap2 map2;
-	test1(map1);
-	test1(map2);
-	test2(map1);
-	test2(map2);
+//	test1(map1);
+//	test1(map2);
+//	test2(map1);
+//	test2(map2);
 	test3(map1);
 	test3(map2);
 	cgogn::thread_stop();
