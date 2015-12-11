@@ -1,0 +1,5 @@
+#ifndef GLOBAL_ITERATORS_H
+#define GLOBAL_ITERATORS_H
+
+#endif // GLOBAL_ITERATORS_H
+

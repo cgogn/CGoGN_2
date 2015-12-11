@@ -52,8 +52,7 @@ struct Dart
 	/**
 	 * \brief Creates a new nil Dart
 	 */
-	Dart() : index(INVALID_INDEX)
-	{}
+	Dart() : index(INVALID_INDEX) {}
 
 	/**
 	 * \brief Creates a new Dart with a value
@@ -65,16 +64,14 @@ struct Dart
 	 *
 	 * \param[in] v the value of the new dart
 	 */
-	explicit Dart(unsigned int v) : index(v)
-	{}
+	explicit Dart(unsigned int v) : index(v) {}
 
 	/**
 	 * \brief Copy constructor.
 	 * Creates a new Dart from an another one.
 	 * \param[in] d a dart
 	 */
-	Dart(const Dart& d) : index(d.index)
-	{}
+	Dart(const Dart& d) : index(d.index) {}
 
 	/**
 	 * \brief Name of this CGoGN type

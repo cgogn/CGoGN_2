@@ -5,6 +5,9 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/iterator/cell_iterators.h>
+#include <core/iterator/iterators.h>
+
 using namespace cgogn;
 
 
@@ -51,7 +54,38 @@ template <typename MAP>
 int test1(MAP& map)
 {
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<float> ah =
+			map.template add_attribute<float, MAP::VERTEX>("floats");
+
+	// get ChunkArrayContainer -> get ChunkArray -> fill
+	typename MAP::template ChunkArrayContainer<unsigned int>& container =
+			map.get_attribute_container(MAP::VERTEX);
+	typename MAP::template ChunkArray<float>* att =
+			container.template get_attribute<float>("floats");
+	for (unsigned int i = 0; i < 10; ++i)
+		container.template insert_lines<1>();
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		(*att)[i] = 3.0f + 0.1f*float(i);
+
+	// access with index
+	std::cout << ah[0] << std::endl;
+
+	fonc_non_const<MAP>(ah);
+	fonc_const<MAP>(ah);
+
+	//	// traverse container with for range
+	//	for (float f:ah)
+	//		std::cout << f << std::endl;
+
+	return 0;
+}
+
+template <typename MAP>
+int test2(MAP& map)
+{
+	// add an attribute on vertex of map with
+	typename MAP::template VertexAttributeHandler<float> ah =
+			map.template get_attribute<float, MAP::VERTEX>("floats");
 
 	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
 
@@ -84,25 +118,76 @@ int test1(MAP& map)
 	});
 	std::cout << "End Vertices" << std::endl;
 
-	// get ChunkArrayContainer -> get ChunkArray -> fill
-	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
-	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
-	for (unsigned int i = 0; i < 10; ++i)
-		container.template insert_lines<1>();
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
-		(*att)[i] = 3.0f + 0.1f*float(i);
-
-	// access with index
-	std::cout << ah[0] << std::endl;
-
-	fonc_non_const<MAP>(ah);
-	fonc_const<MAP>(ah);
-
-	//	// traverse container with for range
-	//	for (float f:ah)
-	//		std::cout << f << std::endl;
-
 	return 0;
+}
+
+template <typename MAP>
+int test3(MAP& map)
+{
+
+	Dart d1 = map.add_face(3);
+
+	std::cout << "Vertices of faces :" ;
+	IncidentCellsIterator<MAP, MAP::FACE> tf(map, d1);
+
+	for (Dart d : tf)
+	{
+		std::cout << std::endl;
+		std::cout << d;
+		for (MAP::Vertex e : tf)
+		{
+			std::cout << " - " << e ;
+		}
+	}
+	std::cout << std::endl;
+	std::cout << "End Faces" << std::endl;
+
+	std::cout << "Vertices :" ;
+	IncidentCellsIterator<MAP, MAP::VERTEX> tv(map, d1);
+	for (Dart d : tv)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << std::endl;
+	std::cout << "End Vertices" << std::endl;
+
+	std::cout << "Volume :" ;
+	IncidentCellsIterator<MAP, MAP::VOLUME> tw(map, d1);
+	for (Dart d : tw)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << std::endl;
+	std::cout << "End Volume" << std::endl;
+
+    std::cout << "Autre :" << std::endl;
+	IncidentCellsIterator<MAP, cgogn::NB_ORBITS> to(map, d1);
+	for (Dart d : to)
+	{
+		std::cout << " - " << d ;
+	}
+	std::cout << "End Autre" << std::endl;
+
+    std::cout << std::endl << "Les cellules :" ;
+    for (Dart d : AllCellIterator<MAP,MAP::VERTEX>(map))
+        std::cout << " vertex(" << d << ")" << std::endl;
+    for (Dart d : AllCellIterator<MAP,MAP::FACE>(map))
+        std::cout << " face(" << d << ")" << std::endl;
+    for (Dart d : AllCellIterator<MAP,MAP::VOLUME>(map))
+        std::cout << " volume(" << d << ")" << std::endl;
+    std::cout << "End cellules" << std::endl;
+
+    std::cout << std::endl << "Parcours multiples :" << std::endl;
+    AllCellIterator<MAP,MAP::VERTEX> vertices(map);
+    for (Dart d : vertices) {
+        std::cout << "A:" << d << " => B:";
+        for (Dart e : vertices)
+            std::cout << e << " ";
+        std::cout << std::endl;
+    }
+    std::cout << "End cellules" << std::endl;
+
+    return 0;
 }
 
 int main()
@@ -110,8 +195,12 @@ int main()
 	cgogn::thread_start();
 	CMap1 map1;
 	CMap2 map2;
-	test1(map1);
-	test1(map2);
+//	test1(map1);
+//	test1(map2);
+//	test2(map1);
+//	test2(map2);
+	test3(map1);
+	test3(map2);
 	cgogn::thread_stop();
 	return 0;
 }

@@ -41,10 +41,12 @@ public:
 	static const unsigned int VERTEX = VERTEX1;
 	static const unsigned int EDGE   = VERTEX1;
 	static const unsigned int FACE   = FACE2;
+	static const unsigned int VOLUME = VOLUME3;
 
 	typedef Cell<VERTEX> Vertex;
 	typedef Cell<EDGE> Edge;
 	typedef Cell<FACE> Face;
+	typedef Cell<VOLUME> Volume;
 
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -197,6 +199,8 @@ public:
 
 		if (this->template is_orbit_embedded<FACE2>())
 			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
+
+		// TODO VOLUME3 ??
 
 		return d;
 	}
