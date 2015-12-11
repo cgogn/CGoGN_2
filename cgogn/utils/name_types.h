@@ -28,7 +28,6 @@
 #include <vector>
 #include <list>
 #include <utils/dll.h>
-#include <utils/fake_arg_used.h>
 
 namespace cgogn
 {
@@ -37,69 +36,69 @@ namespace cgogn
  * @brief function that give a name to a type.
  */
 template <typename T>
-CGOGN_UTILS_API std::string name_of_type(const T& v)
-{ fake_arg_used(v); return T::cgogn_name_of_type(); }
+CGOGN_UTILS_API std::string name_of_type(const T& )
+{ return T::cgogn_name_of_type(); }
 
 // first we need to declare some specializations
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::list<T>& v);
+CGOGN_UTILS_API std::string name_of_type(const std::list<T>& );
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& v);
+CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& v);
+CGOGN_UTILS_API std::string name_of_type(const bool& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const char& v);
+CGOGN_UTILS_API std::string name_of_type(const char& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const short& v);
+CGOGN_UTILS_API std::string name_of_type(const short& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const int& v);
+CGOGN_UTILS_API std::string name_of_type(const int& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long& v);
+CGOGN_UTILS_API std::string name_of_type(const long& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& v);
+CGOGN_UTILS_API std::string name_of_type(const long long& );
 
 // because signed char != char
 template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& v);
+CGOGN_UTILS_API std::string name_of_type(const signed char& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& v);
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& v);
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& v);
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& v);
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& v);
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const float& v);
+CGOGN_UTILS_API std::string name_of_type(const float& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const double& v);
+CGOGN_UTILS_API std::string name_of_type(const double& );
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& v);
+CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::list<T>& v) 
-{ fake_arg_used(v); return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
+CGOGN_UTILS_API std::string name_of_type(const std::list<T>& ) 
+{ return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& v) 
-{ fake_arg_used(v); return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
+CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& ) 
+{ return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 
 
 /**
