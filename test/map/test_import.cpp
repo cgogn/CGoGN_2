@@ -1,4 +1,7 @@
 
+#include <chrono>
+#include <ctime>
+
 #include <core/map/cmap2.h>
 
 #include <Eigen/Dense>
@@ -16,6 +19,9 @@ int main(int argc, char** argv)
 	}
 
 	cgogn::thread_start();
+
+	std::chrono::time_point<std::chrono::system_clock> start, end;
+	start = std::chrono::system_clock::now();
 
 	CMap2 map;
 	map.import(argv[1]);
@@ -37,14 +43,14 @@ int main(int argc, char** argv)
 	map.foreach_cell<CMap2::VERTEX>([&] (CMap2::Vertex v)
 	{
 		++nbv;
-		VEC3 average;
+		VEC3 sum({0, 0, 0});
 		unsigned int nb_incident = 0;
 		map.foreach_incident_face(v, [&] (CMap2::Face f)
 		{
 			++nb_incident;
-			average += face_normal[f];
+			sum += face_normal[f];
 		});
-		vertex_normal[v] = average / nb_incident;
+		vertex_normal[v] = sum / nb_incident;
 	});
 
 	unsigned int nbe = 0;
@@ -56,6 +62,12 @@ int main(int argc, char** argv)
 	std::cout << "nb vertices -> " << nbv << std::endl;
 	std::cout << "nb edges -> " << nbe << std::endl;
 	std::cout << "nb faces -> " << nbf << std::endl;
+
+	end = std::chrono::system_clock::now();
+
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
 	cgogn::thread_stop();
 	return 0;
