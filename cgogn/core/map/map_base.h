@@ -76,11 +76,22 @@ public:
 	MapBase(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
+
+protected:
+
+	inline ConcreteMap* to_concrete()
+	{
+		return static_cast<ConcreteMap*>(this);
+	}
+
+	inline const ConcreteMap* to_concrete() const
+	{
+		return static_cast<const ConcreteMap*>(this);
+	}
+
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
-
-protected:
 
 	inline unsigned int add_topology_element()
 	{
@@ -442,16 +453,6 @@ protected:
 					break;
 			}
 		}
-	}
-
-	inline ConcreteMap* to_concrete()
-	{
-		return static_cast<ConcreteMap*>(this);
-	}
-
-	inline const ConcreteMap* to_concrete() const
-	{
-		return static_cast<const ConcreteMap*>(this);
 	}
 };
 

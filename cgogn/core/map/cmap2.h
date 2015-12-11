@@ -38,7 +38,8 @@ public:
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
 	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	friend class CMap1_T<DATA_TRAITS, TOPO_TRAITS>;
+	friend typename Self::Inherit;
+	friend typename Inherit::Inherit;
 
 	static const unsigned int VERTEX = VERTEX2;
 	static const unsigned int EDGE   = EDGE2;
@@ -130,7 +131,7 @@ public:
 	 * @param d
 	 * @return phi2(d)
 	 */
-	Dart phi2(Dart d) const
+	inline Dart phi2(Dart d) const
 	{
 		// phi2 first topo relation
 		return (*phi2_)[d.index];
@@ -206,6 +207,11 @@ public:
 		return d;
 	}
 
+	void import()
+	{
+
+	}
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
@@ -213,12 +219,12 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
 	{
-		Dart next = d;
+		Dart it = d;
 		do
 		{
-			f(next);
-			next = phi2(this->phi_1(next));
-		} while (next != d);
+			f(it);
+			it = phi2(this->phi_1(it));
+		} while (it != d);
 	}
 
 	template <typename FUNC>
@@ -342,8 +348,11 @@ public:
 		DartMarkerStore<Self> marker(*this);
 		foreach_dart_of_volume(v, [&] (Dart d)
 		{
-			marker.mark_orbit<EDGE>(d);
-			f(d);
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit<EDGE>(d);
+				f(d);
+			}
 		});
 	}
 
@@ -353,10 +362,89 @@ public:
 		DartMarkerStore<Self> marker(*this);
 		foreach_dart_of_volume(v, [&] (Dart d)
 		{
-			marker.mark_orbit<FACE>(d);
-			f(d);
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit<FACE>(d);
+				f(d);
+			}
 		});
 	}
+
+	/*******************************************************************************
+	 * Adjacence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
+	{
+		foreach_dart_of_vertex(v, [this, &f] (Dart vd)
+		{
+			Dart vd1 = this->phi1(vd);
+			foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
+			{
+				// skip Vertex v itself and its first successor around current face
+				if (fd != vd && fd != vd1)
+					f(Vertex(fd));
+			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, [&f] (Dart ed)
+		{
+			foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
+			{
+				// skip Edge e itself
+				if (vd != ed)
+					f(Edge(vd));
+			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
+	{
+		foreach_dart_of_edge(e, [&f] (Dart ed)
+		{
+			foreach_dart_of_face(ed, [&f, ed] (Dart fd)
+			{
+				// skip Edge e itself
+				if (fd != ed)
+					f(Edge(fd));
+			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, [this, &func] (Dart fd)
+		{
+			Dart fd1 = this->phi2(this->phi_1(fd));
+			foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
+			{
+				// skip Face f itself and its first successor around current vertex
+				if (vd != fd && vd != fd1)
+					func(Face(vd));
+			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
+	{
+		foreach_dart_of_face(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+	}
+
+protected:
 
 	/*******************************************************************************
 	 * Embedding management
