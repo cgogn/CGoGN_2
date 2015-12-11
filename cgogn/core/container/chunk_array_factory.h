@@ -83,6 +83,7 @@ public:
 		register_CA<std::string>();
 		// TODO add all std::vector<> ?
 		// TODO add Eigen ?
+		register_CA<Eigen::Vector3d>();
 
 		known_types_initialized_ = true;
 	}

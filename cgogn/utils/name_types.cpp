@@ -22,6 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_UTILS_DLL_EXPORT
+
 #include <utils/name_types.h>
 
 namespace cgogn
@@ -72,6 +73,8 @@ CGOGN_UTILS_API std::string name_of_type(const double& /*v*/) { return "double";
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
 
+template <>
+CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& /*v*/) { return "Eigen::Vector3d"; }
 
 } // namespace cgogn
 

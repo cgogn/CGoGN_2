@@ -30,7 +30,7 @@ public:
 		data_[2] = z;
 	}
 
-	static std::string CGoGN_name_of_type()
+	static std::string cgogn_name_of_type()
 	{
 		return "Vec3f";
 	}

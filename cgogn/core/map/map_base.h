@@ -50,6 +50,9 @@ public:
 	typedef MapBaseData<DATA_TRAITS> Inherit;
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
+
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -58,11 +61,11 @@ public:
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
-
 	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
+	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
+
 	template<unsigned int ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
@@ -120,6 +123,8 @@ protected:
 		return idx;
 	}
 
+public:
+
 	template <unsigned int ORBIT>
 	inline unsigned int add_attribute_element()
 	{
@@ -133,8 +138,6 @@ protected:
 	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
-
-public:
 
 	/**
 	 * \brief add an attribute
@@ -419,7 +422,6 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f)
 	{
-
 		DartMarker dm(*to_concrete());
 		for (Dart d : *this)
 		{

@@ -24,20 +24,33 @@
 #ifndef UTILS_IMPORT_SURFACE_H_
 #define UTILS_IMPORT_SURFACE_H_
 
+#include <istream>
+
+#include <Eigen/Dense>
+
 namespace cgogn
 {
 
 enum SurfaceFileType
 {
-	SurfaceFileType_AUTO = 0,
+	SurfaceFileType_UNKNOWN = 0,
 	SurfaceFileType_OFF,
 	SurfaceFileType_OBJ
 };
 
+inline SurfaceFileType get_file_type(const std::string& filename)
+{
+	if (filename.rfind(".off") != std::string::npos || filename.rfind(".OFF") != std::string::npos)
+		return SurfaceFileType_OFF;
+	if (filename.rfind(".obj") != std::string::npos || filename.rfind(".OBJ") != std::string::npos)
+		return SurfaceFileType_OBJ;
+	return SurfaceFileType_UNKNOWN;
+}
+
 template <typename MAP>
 class SurfaceImport
 {
-protected:
+public:
 
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
@@ -48,12 +61,239 @@ protected:
 
 	MAP& map_;
 
-public:
-
 	SurfaceImport(MAP& m) : map_(m)
 	{}
 
-	void import_file(const std::string& filename);
+	void clear()
+	{
+		nb_vertices_ = 0;
+		nb_edges_ = 0;
+		nb_faces_ = 0;
+		faces_nb_edges_.clear();
+		faces_vertex_indices_.clear();
+	}
+
+	bool import_file(const std::string& filename)
+	{
+		return import_file(filename, get_file_type(filename));
+	}
+
+	bool import_file(const std::string& filename, SurfaceFileType type)
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
+		if (!fp.good())
+		{
+			std::cout << "Unable to open file " << filename << std::endl;
+			return false;
+		}
+
+		clear();
+
+		bool result = false;
+		switch (type)
+		{
+			case SurfaceFileType_UNKNOWN :
+				std::cout << "Unknown file type " << filename << std::endl;
+				result = false;
+				break;
+			case SurfaceFileType_OFF :
+				result = import_OFF(fp);
+				break;
+			case SurfaceFileType_OBJ :
+				result = import_OBJ(fp);
+				break;
+		}
+
+		fp.close();
+
+		return result;
+	}
+
+protected:
+
+	bool import_OFF(std::ifstream& fp)
+	{
+		typedef Eigen::Vector3d VEC3;
+
+		std::string line;
+
+		// read OFF header
+		std::getline(fp, line);
+		if (line.rfind("OFF") == std::string::npos)
+		{
+			std::cout << "Problem reading off file: not an off file" << std::endl;
+			std::cout << line << std::endl;
+			return false;
+		}
+
+		// read number of vertices, edges, faces
+		do
+		{
+			std::getline(fp, line);
+		} while (line.size() == 0);
+
+		std::stringstream oss(line);
+
+		oss >> nb_vertices_;
+		oss >> nb_faces_;
+		oss >> nb_edges_;
+
+		typename MAP::template VertexAttributeHandler<VEC3> position =
+			map_.template add_attribute<VEC3, MAP::VERTEX>("position");
+
+		// read vertices position
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(nb_vertices_);
+
+		for (unsigned int i = 0; i < nb_vertices_; ++i)
+		{
+			do
+			{
+				std::getline(fp, line);
+			} while (line.size() == 0);
+
+			std::stringstream oss(line);
+
+			float x, y, z;
+			oss >> x;
+			oss >> y;
+			oss >> z;
+
+			VEC3 pos(x, y, z);
+
+			unsigned int vertex_id = map_.template add_attribute_element<MAP::VERTEX>();
+			position[vertex_id] = pos;
+
+			vertices_id.push_back(vertex_id);
+		}
+
+		// read faces (vertex indices)
+		faces_nb_edges_.reserve(nb_faces_);
+		faces_vertex_indices_.reserve(nb_vertices_ * 8);
+		for (unsigned int i = 0; i < nb_faces_; ++i)
+		{
+			do
+			{
+				std::getline(fp, line);
+			} while (line.size() == 0);
+
+			std::stringstream oss(line);
+
+			unsigned short n;
+			oss >> n;
+			faces_nb_edges_.push_back(n);
+			for (unsigned int j = 0; j < n; ++j)
+			{
+				int index;
+				oss >> index;
+				faces_vertex_indices_.push_back(vertices_id[index]);
+			}
+		}
+
+		return true;
+	}
+
+	bool import_OBJ(std::ifstream& fp)
+	{
+		typedef Eigen::Vector3d VEC3;
+
+		typename MAP::template VertexAttributeHandler<VEC3> position =
+			map_.template add_attribute<VEC3, MAP::VERTEX>("position");
+
+		std::string line, tag;
+
+		do
+		{
+			fp >> tag;
+			std::getline(fp, line);
+		} while (tag != std::string("v"));
+
+		// lecture des sommets
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(102400);
+
+		unsigned int i = 0;
+		do
+		{
+			if (tag == std::string("v"))
+			{
+				std::stringstream oss(line);
+
+				float x, y, z;
+				oss >> x;
+				oss >> y;
+				oss >> z;
+
+				VEC3 pos(x, y, z);
+
+				unsigned int vertex_id = map_.template add_attribute_element<MAP::VERTEX>();
+				position[vertex_id] = pos;
+
+				vertices_id.push_back(vertex_id);
+				i++;
+			}
+
+			fp >> tag;
+			std::getline(fp, line);
+		} while (!fp.eof());
+
+		nb_vertices_ = static_cast<unsigned int>(vertices_id.size());
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
+
+		do
+		{
+			fp >> tag;
+			std::getline(fp, line);
+		} while (tag != std::string("f"));
+
+		faces_nb_edges_.reserve(vertices_id.size() * 2);
+		faces_vertex_indices_.reserve(vertices_id.size() * 8);
+
+		std::vector<unsigned int> table;
+		table.reserve(64);
+		do
+		{
+			if (tag == std::string("f")) // lecture d'une face
+			{
+				std::stringstream oss(line);
+
+				table.clear();
+				while (!oss.eof())  // lecture de tous les indices
+				{
+					std::string str;
+					oss >> str;
+
+					unsigned int ind = 0;
+
+					while ((ind < str.length()) && (str[ind] != '/'))
+						ind++;
+
+					if (ind > 0)
+					{
+						unsigned int index;
+						std::stringstream iss(str.substr(0, ind));
+						iss >> index;
+						table.push_back(index);
+					}
+				}
+
+				unsigned int n = static_cast<unsigned int>(table.size());
+				faces_nb_edges_.push_back(static_cast<unsigned short>(n));
+				for (unsigned int j = 0; j < n; ++j)
+				{
+					unsigned int index = table[j] - 1; // indices start at 1
+					faces_vertex_indices_.push_back(vertices_id[index]);
+				}
+				nb_faces_++;
+			}
+			fp >> tag;
+			std::getline(fp, line);
+		 } while (!fp.eof());
+
+		return true;
+	}
 };
 
 } // namespace cgogn
