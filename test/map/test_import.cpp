@@ -20,11 +20,11 @@ int main(int argc, char** argv)
 
 	cgogn::thread_start();
 
-	std::chrono::time_point<std::chrono::system_clock> start, end;
-	start = std::chrono::system_clock::now();
-
 	CMap2 map;
 	map.import(argv[1]);
+
+	std::chrono::time_point<std::chrono::system_clock> start, end;
+	start = std::chrono::system_clock::now();
 
 	CMap2::VertexAttributeHandler<VEC3> vertex_position = map.get_attribute<VEC3, CMap2::VERTEX>("position");
 	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
@@ -54,10 +54,10 @@ int main(int argc, char** argv)
 	});
 
 	unsigned int nbe = 0;
-	map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
-	{
-		++nbe;
-	});
+//	map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
+//	{
+//		++nbe;
+//	});
 
 	std::cout << "nb vertices -> " << nbv << std::endl;
 	std::cout << "nb edges -> " << nbe << std::endl;

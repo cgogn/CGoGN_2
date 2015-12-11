@@ -211,14 +211,17 @@ public:
 
 	void import(const std::string& filename)
 	{
-		this->clear();
+		this->clear(true);
 
-		SurfaceImport<Self> si(*this);
+		SurfaceImport<DATA_TRAITS> si;
 		if (!si.import_file(filename))
 		{
 			std::cout << "Failed to import file " << filename << std::endl;
 			return;
 		}
+
+		this->attributes_[VERTEX].swap(si.vertex_attributes_);
+		this->template create_embedding<VERTEX>();
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 			this->template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");

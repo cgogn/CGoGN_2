@@ -91,8 +91,11 @@ public:
 		{
 			for (unsigned int i = 0; i < NB_ORBITS; ++i)
 			{
-				this->topology_.remove_attribute(this->embeddings_[i]);
-				this->embeddings_[i] = nullptr;
+				if (this->embeddings_[i] != nullptr)
+				{
+					this->topology_.remove_attribute(this->embeddings_[i]);
+					this->embeddings_[i] = nullptr;
+				}
 
 				for (unsigned int j = 0; j < NB_THREADS; ++j)
 					this->mark_attributes_[i][j].clear();

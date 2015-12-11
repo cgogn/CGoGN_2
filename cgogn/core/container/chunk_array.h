@@ -83,6 +83,11 @@ public:
 		return new Self();
 	}
 
+	void swap(Self& ca)
+	{
+		table_data_.swap(ca.table_data_);
+	}
+
 	bool is_boolean_array() const override
 	{
 		return false;

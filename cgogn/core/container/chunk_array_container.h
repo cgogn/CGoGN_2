@@ -587,6 +587,24 @@ public:
 	}
 
 	/**
+	 * @brief swap
+	 * @param container
+	 */
+	void swap(Self& container)
+	{
+		table_arrays_.swap(container.table_arrays_);
+		names_.swap(container.names_);
+		type_names_.swap(container.type_names_);
+		table_marker_arrays_.swap(container.table_marker_arrays_);
+		refs_.swap(container.refs_);
+		holes_stack_.swap(container.holes_stack_);
+		std::swap(nb_used_lines_, container.nb_used_lines_);
+		std::swap(nb_max_lines_, container.nb_max_lines_);
+		std::swap(current_browser_, container.current_browser_);
+		std_browser_.swap(container.std_browser_);
+	}
+
+	/**
 	 * @brief fragmentation of container (size/index of last lines): 100% = no holes
 	 * @return 1 is full filled - 0 is lots of holes
 	 */

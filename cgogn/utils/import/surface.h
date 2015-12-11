@@ -26,6 +26,8 @@
 
 #include <istream>
 
+#include <core/container/chunk_array_container.h>
+
 #include <Eigen/Dense>
 
 namespace cgogn
@@ -47,7 +49,7 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 	return SurfaceFileType_UNKNOWN;
 }
 
-template <typename MAP>
+template <typename DATA_TRAITS>
 class SurfaceImport
 {
 public:
@@ -59,9 +61,12 @@ public:
 	std::vector<unsigned short> faces_nb_edges_;
 	std::vector<unsigned int> faces_vertex_indices_;
 
-	MAP& map_;
+	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> vertex_attributes_;
 
-	SurfaceImport(MAP& m) : map_(m)
+	SurfaceImport()
+	{}
+
+	~SurfaceImport()
 	{}
 
 	void clear()
@@ -138,8 +143,8 @@ protected:
 		oss >> nb_faces_;
 		oss >> nb_edges_;
 
-		typename MAP::template VertexAttributeHandler<VEC3> position =
-			map_.template add_attribute<VEC3, MAP::VERTEX>("position");
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, VEC3>* position =
+			vertex_attributes_.template add_attribute<VEC3>("position");
 
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
@@ -161,8 +166,8 @@ protected:
 
 			VEC3 pos(x, y, z);
 
-			unsigned int vertex_id = map_.template add_attribute_element<MAP::VERTEX>();
-			position[vertex_id] = pos;
+			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+			(*position)[vertex_id] = pos;
 
 			vertices_id.push_back(vertex_id);
 		}
@@ -197,8 +202,8 @@ protected:
 	{
 		typedef Eigen::Vector3d VEC3;
 
-		typename MAP::template VertexAttributeHandler<VEC3> position =
-			map_.template add_attribute<VEC3, MAP::VERTEX>("position");
+		ChunkArray<DATA_TRAITS::CHUNK_SIZE, VEC3>* position =
+			vertex_attributes_.template add_attribute<VEC3>("position");
 
 		std::string line, tag;
 
@@ -226,8 +231,8 @@ protected:
 
 				VEC3 pos(x, y, z);
 
-				unsigned int vertex_id = map_.template add_attribute_element<MAP::VERTEX>();
-				position[vertex_id] = pos;
+				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+				(*position)[vertex_id] = pos;
 
 				vertices_id.push_back(vertex_id);
 				i++;
