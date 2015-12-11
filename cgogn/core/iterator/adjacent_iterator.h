@@ -37,14 +37,19 @@ public:
 
         Map& map_;
 
-        inline iterator(Self& t) :
+		iterator(const iterator& dm) = delete;
+		iterator(iterator&& dm) = delete;
+		iterator& operator=(iterator&& dm) = delete;
+		iterator& operator=(const iterator& dm) = delete;
+		
+		inline iterator(Self& t) :
             map_(t.map_),
             dm_(nullptr),
             map_it_(t.map_.begin())
         {
             dm_ = new DartMarker(map_);
             if (map_it_ != map_.end()) {
-                for (Dart d : InCellIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
                     dm_->mark(d);
             }
         }
@@ -73,7 +78,7 @@ public:
             while (map_it_ != map_.end() && (dm_->is_marked(*map_it_)))
                 ++map_it_;
             if (map_it_ != map_.end()) {
-                for (Dart d : InCellIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
                     dm_->mark(d);
             }
 

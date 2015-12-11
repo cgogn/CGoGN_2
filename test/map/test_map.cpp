@@ -122,14 +122,14 @@ int test3(MAP& map)
 
 	Dart d1 = map.add_face(3);
 
-	std::cout << "Faces :" ;
-    InCellIterator<MAP,MAP::FACE> tf(map, d1);
+	std::cout << "Vertices of faces :" ;
+	IncidentCellsIterator<MAP, MAP::FACE> tf(map, d1);
 
 	for (Dart d : tf)
 	{
 		std::cout << std::endl;
 		std::cout << d;
-		for (Dart e : tf)
+		for (MAP::Vertex e : tf)
 		{
 			std::cout << " - " << e ;
 		}
@@ -138,7 +138,7 @@ int test3(MAP& map)
 	std::cout << "End Faces" << std::endl;
 
 	std::cout << "Vertices :" ;
-    InCellIterator<MAP,MAP::VERTEX> tv(map, d1);
+	IncidentCellsIterator<MAP, MAP::VERTEX> tv(map, d1);
 	for (Dart d : tv)
 	{
 		std::cout << " - " << d ;
@@ -147,7 +147,7 @@ int test3(MAP& map)
 	std::cout << "End Vertices" << std::endl;
 
 	std::cout << "Volume :" ;
-    InCellIterator<MAP,MAP::VOLUME> tw(map, d1);
+	IncidentCellsIterator<MAP, MAP::VOLUME> tw(map, d1);
 	for (Dart d : tw)
 	{
 		std::cout << " - " << d ;
@@ -156,7 +156,7 @@ int test3(MAP& map)
 	std::cout << "End Volume" << std::endl;
 
     std::cout << "Autre :" << std::endl;
-    InCellIterator<MAP,cgogn::NB_ORBITS> to(map, d1);
+	IncidentCellsIterator<MAP, cgogn::NB_ORBITS> to(map, d1);
 	for (Dart d : to)
 	{
 		std::cout << " - " << d ;

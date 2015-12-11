@@ -38,11 +38,11 @@ namespace cgogn
 {
 
 template <typename MAP, unsigned int ORBIT>
-class InCellIterator
+class IncidentCellsIterator
 {
 public:
 
-    typedef InCellIterator<MAP, ORBIT> Self;
+    typedef IncidentCellsIterator<MAP, ORBIT> Self;
     using   DartMarker = cgogn::DartMarker<MAP>;
 
 protected:
@@ -54,7 +54,12 @@ protected:
 
 public:
 
-    InCellIterator(MAP& map, Dart d, DartMarker* dm = nullptr) :
+	IncidentCellsIterator(const Self& dm) = delete;
+	IncidentCellsIterator(Self&& dm) = delete;
+	IncidentCellsIterator& operator=(Self&& dm) = delete;
+	IncidentCellsIterator& operator=(const Self& dm) = delete;
+	
+	IncidentCellsIterator(MAP& map, Cell<ORBIT> d, DartMarker* dm = nullptr) :
 		map_(map),
 		cell_(d),
 		outer_marker_(false),
@@ -64,7 +69,7 @@ public:
 
 	}
 
-    ~InCellIterator()
+    ~IncidentCellsIterator()
 	{
         if (dm_ && !outer_marker_) {
             // TODO => unmark_all ?
@@ -90,6 +95,11 @@ public:
 	class iterator
 	{
 	public:
+
+		iterator(const iterator& dm) = delete;
+		iterator(iterator&& dm) = delete;
+		iterator& operator=(iterator&& dm) = delete;
+		iterator& operator=(const iterator& dm) = delete;
 
         inline iterator(Self&, bool)
 		{
@@ -124,11 +134,11 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap1, VERTEX1>::iterator
+template<> class IncidentCellsIterator<CMap1, VERTEX1>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap1, VERTEX1> Self;
+    typedef IncidentCellsIterator<CMap1, VERTEX1> Self;
 
 	Dart current_;
 	bool not_first_;
@@ -150,17 +160,22 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap1, FACE2>::iterator
+template<> class IncidentCellsIterator<CMap1, FACE2>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap1, FACE2> Self;
+    typedef IncidentCellsIterator<CMap1, FACE2> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-    inline iterator(Self& t, bool) :
+	iterator(const iterator& dm) = delete;
+	iterator(iterator&& dm) = delete;
+	iterator& operator=(iterator&& dm) = delete;
+	iterator& operator=(const iterator& dm) = delete;
+	
+	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -178,17 +193,22 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap1, VOLUME3>::iterator
+template<> class IncidentCellsIterator<CMap1, VOLUME3>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap1, VOLUME3> Self;
+    typedef IncidentCellsIterator<CMap1, VOLUME3> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-    inline iterator(Self& t, bool) :
+	iterator(const iterator& dm) = delete;
+	iterator(iterator&& dm) = delete;
+	iterator& operator=(iterator&& dm) = delete;
+	iterator& operator=(const iterator& dm) = delete;
+	
+	inline iterator(Self& t, bool) :
         map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -206,17 +226,22 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap2, FACE2>::iterator
+template<> class IncidentCellsIterator<CMap2, FACE2>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap2, FACE2> Self;
+    typedef IncidentCellsIterator<CMap2, FACE2> Self;
 
 	CMap2& map_;
 	Dart current_;
 	bool not_first_;
 
-    inline iterator(Self& t, bool) :
+	iterator(const iterator& dm) = delete;
+	iterator(iterator&& dm) = delete;
+	iterator& operator=(iterator&& dm) = delete;
+	iterator& operator=(const iterator& dm) = delete;
+	
+	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -234,17 +259,22 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap2, VERTEX2>::iterator
+template<> class IncidentCellsIterator<CMap2, VERTEX2>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap2, VERTEX2> Self;
+    typedef IncidentCellsIterator<CMap2, VERTEX2> Self;
 
 	CMap2& map_;
 	Dart current_;
 	bool not_first_;
 
-    inline iterator(Self& t, bool) :
+	iterator(const iterator& dm) = delete;
+	iterator(iterator&& dm) = delete;
+	iterator& operator=(iterator&& dm) = delete;
+	iterator& operator=(const iterator& dm) = delete;
+	
+	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -262,11 +292,11 @@ public:
 	}
 };
 
-template<> class InCellIterator<CMap2, VOLUME3>::iterator
+template<> class IncidentCellsIterator<CMap2, VOLUME3>::iterator
 {
 public:
 
-    typedef InCellIterator<CMap2, VOLUME3> Self;
+    typedef IncidentCellsIterator<CMap2, VOLUME3> Self;
     using   DartMarker = cgogn::DartMarker<CMap2>;
 
 	CMap2& map_;
@@ -276,7 +306,12 @@ public:
 	Dart current_;
 	bool not_first_;
 
-    // is_begin est 'true' pour la construction de l'itérateur begin(), 'false' sinon
+	iterator(const iterator& dm) = delete;
+	iterator(iterator&& dm) = delete;
+	iterator& operator=(iterator&& dm) = delete;
+	iterator& operator=(const iterator& dm) = delete;
+	
+	// is_begin est 'true' pour la construction de l'itérateur begin(), 'false' sinon
     inline iterator(Self& t, bool is_begin) :
 		map_(t.map_),
         dm_(nullptr),

@@ -1,5 +1,5 @@
-#ifndef CORE_TRAVERSAL_GLOBAL_ITERATORS_H
-#define CORE_TRAVERSAL_GLOBAL_ITERATORS_H
+#ifndef CORE_ITERATORS_ITERATORS_H
+#define CORE_ITERATORS_ITERATORS_H
 
 #include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>
@@ -25,7 +25,12 @@ protected:
 
 public:
 
-    AllCellIterator(MAP& map) :
+	AllCellIterator(const Self& dm) = delete;
+	AllCellIterator(Self&& dm) = delete;
+	AllCellIterator& operator=(Self&& dm) = delete;
+	AllCellIterator& operator=(const Self& dm) = delete;
+	
+	AllCellIterator(MAP& map) :
         map_(map)
     {
     }
@@ -42,14 +47,19 @@ public:
         DartMarker* dm_;
         typename Map::const_iterator map_it_;
 
-        inline iterator(Self& t) :
+		iterator(const iterator& dm) = delete;
+		iterator(iterator&& dm) = delete;
+		iterator& operator=(iterator&& dm) = delete;
+		iterator& operator=(const iterator& dm) = delete;
+		
+		inline iterator(Self& t) :
             map_(t.map_),
             dm_(nullptr),
             map_it_(t.map_.begin())
         {
             dm_ = new DartMarker(map_);
             if (map_it_ != map_.end()) {
-                for (Dart d : InCellIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
                     dm_->mark(d);
             }
         }
@@ -78,7 +88,7 @@ public:
             while (map_it_ != map_.end() && (dm_->is_marked(*map_it_)))
                 ++map_it_;
             if (map_it_ != map_.end()) {
-                for (Dart d : InCellIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
                     dm_->mark(d);
             }
 
@@ -109,4 +119,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_TRAVERSAL_GLOBAL_ITERATORS_H
+#endif // CORE_ITERATORS_ITERATORS_H
