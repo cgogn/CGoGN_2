@@ -21,22 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_DLL_H_
-#define UTILS_DLL_H_
+#ifndef UTILS_IMPORT_SURFACE_H_
+#define UTILS_IMPORT_SURFACE_H_
 
-/**
-* \brief Linkage declaration for CGOGN symbols.
-*/
-#ifdef WIN32
-#ifndef CGOGN_UTILS_API
-#if defined CGOGN_UTILS_DLL_EXPORT
-#define CGOGN_UTILS_API __declspec(dllexport)
-#else
-#define CGOGN_UTILS_API __declspec(dllimport)
-#endif
-#endif
-#else
-#define CGOGN_UTILS_API
-#endif
+namespace cgogn
+{
 
-#endif // UTILS_DLL_H_
+enum SurfaceFileType
+{
+	SurfaceFileType_AUTO = 0,
+	SurfaceFileType_OFF,
+	SurfaceFileType_OBJ
+};
+
+template <typename MAP>
+class SurfaceImport
+{
+protected:
+
+	unsigned int nb_vertices_;
+	unsigned int nb_edges_;
+	unsigned int nb_faces_;
+
+	std::vector<unsigned short> faces_nb_edges_;
+	std::vector<unsigned int> faces_vertex_indices_;
+
+	MAP& map_;
+
+public:
+
+	SurfaceImport(MAP& m) : map_(m)
+	{}
+
+	void import_file(const std::string& filename);
+};
+
+} // namespace cgogn
+
+#endif // UTILS_IMPORT_SURFACE_H_

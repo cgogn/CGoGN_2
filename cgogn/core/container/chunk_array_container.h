@@ -572,17 +572,17 @@ public:
 		// clear data
 		for (auto arr : table_arrays_)
 			arr->clear();
-
 		for (auto arr : table_marker_arrays_)
 			arr->clear();
 
-		// remove attributes
-		// (but not Markers as they may still be in the pool of a map)
 		if (remove_attributes)
 		{
 			for (auto arr : table_arrays_)
 				delete arr;
+			for (auto arr : table_marker_arrays_)
+				delete arr;
 			table_arrays_.clear();
+			table_marker_arrays_.clear();
 		}
 	}
 

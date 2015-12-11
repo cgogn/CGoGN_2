@@ -21,7 +21,7 @@ int test1(MAP& map);
 template <typename MAP>
 void fonc_const(const typename MAP::template VertexAttributeHandler<float>& ah)
 {
-	for (const float& f:ah)
+	for (const float& f : ah)
 	{
 		std::cout << f << std::endl;
 	}
@@ -34,7 +34,7 @@ void fonc_const(const typename MAP::template VertexAttributeHandler<float>& ah)
 template <typename MAP>
 void fonc_non_const(typename MAP::template VertexAttributeHandler<float>& ah)
 {
-	for (float& f:ah)
+	for (float& f : ah)
 	{
 		f *= 2.0f;
 		std::cout << f << std::endl;
@@ -90,12 +90,12 @@ int test1(MAP& map)
 	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
-	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
-	for (unsigned int i = 0; i < 10; ++i)
-		container.template insert_lines<1>();
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
-		(*att)[i] = 3.0f + 0.1f*float(i);
+//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
+//	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
+//	for (unsigned int i = 0; i < 10; ++i)
+//		container.template insert_lines<1>();
+	for (auto& v : ah)
+		v = 3.0f;
 
 	// access with index
 	std::cout << ah[0] << std::endl;

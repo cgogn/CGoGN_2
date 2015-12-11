@@ -3,21 +3,23 @@ project(cgogn_utils
 )
 
 set(HEADER_FILES
-	dll.h
-	definitions.h
 	assert.h
 	buffers.h
+	definitions.h
+	dll.h
 	make_unique.h
-	thread.h
-	serialization.h
 	name_types.h
+	serialization.h
+	thread.h
+
+	import/surface.h
 )
 
 set(SOURCE_FILES
 	assert.cpp
 	thread.cpp
 	name_types.cpp
-        serialization.cpp
+	serialization.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

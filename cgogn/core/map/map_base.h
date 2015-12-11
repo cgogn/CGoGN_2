@@ -77,6 +77,26 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	void clear(bool remove_attributes = false)
+	{
+		this->topology_.clear(false);
+
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear(remove_attributes);
+
+		if (remove_attributes)
+		{
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			{
+				this->topology_.remove_attribute(this->embeddings_[i]);
+				this->embeddings_[i] = nullptr;
+
+				for (unsigned int j = 0; j < NB_THREADS; ++j)
+					this->mark_attributes_[i][j].clear();
+			}
+		}
+	}
+
 protected:
 
 	inline ConcreteMap* to_concrete()
@@ -342,7 +362,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f)
 	{
 		switch (STRATEGY)
@@ -371,7 +391,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	void foreach_cell_until(const FUNC& f)
 	{
 		switch (STRATEGY)

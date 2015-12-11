@@ -27,6 +27,8 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
+#include <utils/import/surface.h>
+
 namespace cgogn
 {
 
@@ -71,7 +73,7 @@ protected:
 
 	ChunkArray<Dart>* phi2_;
 
-	void init()
+	inline void init()
 	{
 		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
 	}
@@ -86,7 +88,7 @@ protected:
 	 *	- Before: d->d and e->e
 	 *	- After:  d->e and e->d
 	 */
-	void phi2_sew(Dart d, Dart e)
+	inline void phi2_sew(Dart d, Dart e)
 	{
 		cgogn_assert(phi2(d) == d);
 		cgogn_assert(phi2(e) == e);
@@ -100,7 +102,7 @@ protected:
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
 	 */
-	void phi2_unsew(Dart d)
+	inline void phi2_unsew(Dart d)
 	{
 		Dart e = phi2(d) ;
 		(*phi2_)[d.index] = d;
@@ -207,9 +209,10 @@ public:
 		return d;
 	}
 
-	void import()
+	void import(const std::string& filename, SurfaceFileType type = SurfaceFileType_AUTO)
 	{
-
+		SurfaceImport<Self> si(*this);
+		this->clear();
 	}
 
 	/*******************************************************************************
