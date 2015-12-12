@@ -28,6 +28,7 @@
 #include <vector>
 #include <list>
 #include <utils/dll.h>
+#include <utils/fake_arg_used.h>
 
 namespace cgogn
 {
@@ -99,7 +100,6 @@ CGOGN_UTILS_API std::string name_of_type(const std::list<T>& )
 template <typename T>  
 CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& ) 
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
-
 
 /**
  * @brief add cgogn_name_of_type member to a class
