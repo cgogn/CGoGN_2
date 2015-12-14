@@ -29,7 +29,7 @@
 
 /**
  * \file core/basic/cell.h
- * \brief Orbit and cell definitions for CGOGN API
+ * \brief Orbit and cell definitions used in cgogn
  */
 
 namespace cgogn
@@ -77,6 +77,9 @@ class Cell
 {
 public:
 
+	/**
+	 * \brief the dart representing this cell
+	 */
 	Dart dart;
 
 	/**
@@ -102,6 +105,7 @@ public:
 	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& fa) { return out << fa.dart; }
 
 	inline bool is_valid() const { return !dart.is_nil(); }
+
 };
 
 } // namespace cgogn
