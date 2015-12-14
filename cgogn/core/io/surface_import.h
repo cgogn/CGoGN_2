@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_IMPORT_SURFACE_H_
-#define UTILS_IMPORT_SURFACE_H_
+#ifndef CORE_IO_SURFACE_IMPORT_H_
+#define CORE_IO_SURFACE_IMPORT_H_
 
 #include <istream>
 
@@ -303,4 +303,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // UTILS_IMPORT_SURFACE_H_
+#endif // CORE_IO_SURFACE_IMPORT_H_

@@ -48,7 +48,7 @@ public:
 
 	typedef MapGen Self;
 
-private:
+protected:
 
 	/// vector of Map instances
 	static std::vector<MapGen*>* instances_;

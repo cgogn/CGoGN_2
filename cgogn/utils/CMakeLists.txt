@@ -11,8 +11,6 @@ set(HEADER_FILES
 	name_types.h
 	serialization.h
 	thread.h
-
-	import/surface.h
 )
 
 set(SOURCE_FILES
@@ -24,12 +22,15 @@ set(SOURCE_FILES
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
-#use of target_compile_options to have a transitive c++11 flag
+# use of target_compile_options to have a transitive c++11 flag
 if(NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+
+# Eigen generated warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>

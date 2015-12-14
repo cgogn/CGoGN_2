@@ -27,7 +27,7 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
-#include <utils/import/surface.h>
+#include <core/io/surface_import.h>
 
 namespace cgogn
 {
@@ -493,7 +493,7 @@ public:
 		foreach_dart_of_vertex(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
@@ -505,9 +505,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f] (Dart ed)
+		foreach_dart_of_edge(e, [&f, this] (Dart ed)
 		{
-			foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
+			this->foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -519,9 +519,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f] (Dart ed)
+		foreach_dart_of_edge(e, [&f, this] (Dart ed)
 		{
-			foreach_dart_of_face(ed, [&f, ed] (Dart fd)
+			this->foreach_dart_of_face(ed, [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
@@ -536,7 +536,7 @@ public:
 		foreach_dart_of_face(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
