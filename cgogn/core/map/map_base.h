@@ -274,6 +274,11 @@ public:
 			dart_(d)
 		{}
 
+		inline const_iterator(const_iterator const& it) :
+			map_(it.map_),
+			dart_(it.dart_)
+		{}
+
 		inline const_iterator& operator=(const_iterator const& it)
 		{
 			map_ = it.map_;
