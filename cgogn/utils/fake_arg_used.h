@@ -21,75 +21,25 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#ifndef UTILS_FAKE_ARG_USED_H_
+#define UTILS_FAKE_ARG_USED_H_
 
-#include <utils/name_types.h>
-
+/**
+ * \file cgogn/utils/fake_arg_used.h
+ * \brief A function to suppress unused parameters compilation warnings
+ */
 namespace cgogn
 {
+	/**
+	 * \brief Suppresses compiler warnings about unused parameters
+	 * \details This function is intended to make warnings silent
+	 * concerning non used parameters. The corresponding code
+	 * is supposed to be wiped out by the optimizer.
+	 * (Removed starting from -O1 with gcc and clang)
+	 */
+	template <class T>
+	inline void fake_arg_used(const T&)
+	{}
+}
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& ) 
-{ return "bool"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char& ) 
-{ return "char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const short& ) 
-{ return "short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const int& ) 
-{ return "int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long& ) 
-{ return "long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& ) 
-{ return "long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& ) 
-{ return "signed char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& ) 
-{ return "unsigned char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& ) 
-{ return "unsigned short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& ) 
-{ return "unsigned int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& ) 
-{ return "unsigned long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& ) 
-{ return "unsigned long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const float& ) 
-{ return "float"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const double& ) 
-{ return "double"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& )
-{ return "std::string"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& )
-{ return "Eigen::Vector3d"; }
-
-} // namespace cgogn
+#endif // UTILS_FAKE_ARG_USED_H_
