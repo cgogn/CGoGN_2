@@ -29,7 +29,6 @@
 #include <list>
 
 #include <utils/dll.h>
-#include <utils/fake_arg_used.h>
 
 #include <Eigen/Dense>
 
