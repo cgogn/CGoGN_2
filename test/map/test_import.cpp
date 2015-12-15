@@ -27,10 +27,18 @@ int main(int argc, char** argv)
 	start = std::chrono::system_clock::now();
 
 	CMap2::VertexAttributeHandler<VEC3> vertex_position = map.get_attribute<VEC3, CMap2::VERTEX>("position");
-	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
 	CMap2::VertexAttributeHandler<VEC3> vertex_normal = map.add_attribute<VEC3, CMap2::VERTEX>("normal");
+	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
 
 	unsigned int nbf = 0;
+	map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
+	{
+		++nbf;
+		VEC3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
+		VEC3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+		face_normal[f] = v1.cross(v2);
+	});
+
 	map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
 	{
 		++nbf;
