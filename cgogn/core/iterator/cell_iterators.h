@@ -42,23 +42,23 @@ class IncidentCellsIterator
 {
 public:
 
-    typedef IncidentCellsIterator<MAP, ORBIT> Self;
-    using   DartMarker = cgogn::DartMarker<MAP>;
+	typedef IncidentCellsIterator<MAP, ORBIT> Self;
+	using   DartMarker = cgogn::DartMarker<MAP>;
 
 protected:
 
 	MAP& map_;
 	Dart cell_;
 	bool outer_marker_;
-    DartMarker* dm_;
+	DartMarker* dm_;
 
 public:
 
-	IncidentCellsIterator(const Self& dm) = delete;
-	IncidentCellsIterator(Self&& dm) = delete;
-	IncidentCellsIterator& operator=(Self&& dm) = delete;
-	IncidentCellsIterator& operator=(const Self& dm) = delete;
-	
+//	IncidentCellsIterator(const Self& dm) = delete;
+//	IncidentCellsIterator(Self&& dm) = delete;
+//	IncidentCellsIterator& operator=(Self&& dm) = delete;
+//	IncidentCellsIterator& operator=(const Self& dm) = delete;
+
 	IncidentCellsIterator(MAP& map, Cell<ORBIT> d, DartMarker* dm = nullptr) :
 		map_(map),
 		cell_(d),
@@ -69,25 +69,25 @@ public:
 
 	}
 
-    ~IncidentCellsIterator()
+	~IncidentCellsIterator()
 	{
-        if (dm_ && !outer_marker_) {
-            // TODO => unmark_all ?
+		if (dm_ && !outer_marker_) {
+			// TODO => unmark_all ?
 			delete dm_;
-        }
+		}
 	}
 
-    DartMarker* init_marker()
+	DartMarker* init_marker()
 	{
 		if (!dm_) {
-            if (outer_marker_) {
-                // TODO : paranoic test : est-ce possible ?
-                std::cerr << "Warning: non optimal use of Iterator (duplicated Marker)" << std::endl;
-                outer_marker_ = false;
-            }
-            dm_ = new DartMarker(map_);
+			if (outer_marker_) {
+				// TODO : paranoic test : est-ce possible ?
+				std::cerr << "Warning: non optimal use of Iterator (duplicated Marker)" << std::endl;
+				outer_marker_ = false;
+			}
+			dm_ = new DartMarker(map_);
 		}
-        DartMarker* tmp = dm_;
+		DartMarker* tmp = dm_;
 		dm_ = nullptr;
 		return tmp;
 	}
@@ -96,14 +96,14 @@ public:
 	{
 	public:
 
-		iterator(const iterator& dm) = delete;
-		iterator(iterator&& dm) = delete;
-		iterator& operator=(iterator&& dm) = delete;
-		iterator& operator=(const iterator& dm) = delete;
+//		iterator(const iterator& dm) = delete;
+//		iterator(iterator&& dm) = delete;
+//		iterator& operator=(iterator&& dm) = delete;
+//		iterator& operator=(const iterator& dm) = delete;
 
-        inline iterator(Self&, bool)
+		inline iterator(Self&, bool)
 		{
-            std::cout << "Not implemented (ORBIT=" << ORBIT << ")" << std::endl;
+			std::cout << "Not implemented (ORBIT=" << ORBIT << ")" << std::endl;
 		}
 
 		inline iterator& operator++()
@@ -122,15 +122,15 @@ public:
 		}
 	};
 
-    // TODO faire du paramètre booleen un paramètre template ?
-    inline iterator begin()
+	// TODO faire du paramètre booleen un paramètre template ?
+	inline iterator begin()
 	{
-        return iterator(*this, true);
+		return iterator(*this, true);
 	}
 
-    inline iterator end()
+	inline iterator end()
 	{
-        return iterator(*this, false);
+		return iterator(*this, false);
 	}
 };
 
@@ -138,12 +138,12 @@ template<> class IncidentCellsIterator<CMap1, VERTEX1>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap1, VERTEX1> Self;
+	typedef IncidentCellsIterator<CMap1, VERTEX1> Self;
 
 	Dart current_;
 	bool not_first_;
 
-    inline iterator(Self& t, bool) :
+	inline iterator(Self& t, bool) :
 		current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
@@ -164,17 +164,17 @@ template<> class IncidentCellsIterator<CMap1, FACE2>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap1, FACE2> Self;
+	typedef IncidentCellsIterator<CMap1, FACE2> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-	iterator(const iterator& dm) = delete;
-	iterator(iterator&& dm) = delete;
-	iterator& operator=(iterator&& dm) = delete;
-	iterator& operator=(const iterator& dm) = delete;
-	
+//	iterator(const iterator& dm) = delete;
+//	iterator(iterator&& dm) = delete;
+//	iterator& operator=(iterator&& dm) = delete;
+//	iterator& operator=(const iterator& dm) = delete;
+
 	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
@@ -197,19 +197,19 @@ template<> class IncidentCellsIterator<CMap1, VOLUME3>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap1, VOLUME3> Self;
+	typedef IncidentCellsIterator<CMap1, VOLUME3> Self;
 
 	CMap1& map_;
 	Dart current_;
 	bool not_first_;
 
-	iterator(const iterator& dm) = delete;
-	iterator(iterator&& dm) = delete;
-	iterator& operator=(iterator&& dm) = delete;
-	iterator& operator=(const iterator& dm) = delete;
-	
+//	iterator(const iterator& dm) = delete;
+//	iterator(iterator&& dm) = delete;
+//	iterator& operator=(iterator&& dm) = delete;
+//	iterator& operator=(const iterator& dm) = delete;
+
 	inline iterator(Self& t, bool) :
-        map_(t.map_), current_(t.cell_), not_first_(false) {}
+		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
 	{
@@ -230,17 +230,17 @@ template<> class IncidentCellsIterator<CMap2, FACE2>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap2, FACE2> Self;
+	typedef IncidentCellsIterator<CMap2, FACE2> Self;
 
 	CMap2& map_;
 	Dart current_;
 	bool not_first_;
 
-	iterator(const iterator& dm) = delete;
-	iterator(iterator&& dm) = delete;
-	iterator& operator=(iterator&& dm) = delete;
-	iterator& operator=(const iterator& dm) = delete;
-	
+//	iterator(const iterator& dm) = delete;
+//	iterator(iterator&& dm) = delete;
+//	iterator& operator=(iterator&& dm) = delete;
+//	iterator& operator=(const iterator& dm) = delete;
+
 	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
@@ -263,23 +263,23 @@ template<> class IncidentCellsIterator<CMap2, VERTEX2>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap2, VERTEX2> Self;
+	typedef IncidentCellsIterator<CMap2, VERTEX2> Self;
 
 	CMap2& map_;
 	Dart current_;
 	bool not_first_;
 
-	iterator(const iterator& dm) = delete;
-	iterator(iterator&& dm) = delete;
-	iterator& operator=(iterator&& dm) = delete;
-	iterator& operator=(const iterator& dm) = delete;
-	
+//	iterator(const iterator& dm) = delete;
+//	iterator(iterator&& dm) = delete;
+//	iterator& operator=(iterator&& dm) = delete;
+//	iterator& operator=(const iterator& dm) = delete;
+
 	inline iterator(Self& t, bool) :
 		map_(t.map_), current_(t.cell_), not_first_(false) {}
 
 	inline iterator& operator++()
 	{
-        current_ = map_.phi2(map_.phi_1(current_));
+		current_ = map_.phi2(map_.phi_1(current_));
 		not_first_ = true;
 		return *this;
 	}
@@ -296,36 +296,36 @@ template<> class IncidentCellsIterator<CMap2, VOLUME3>::iterator
 {
 public:
 
-    typedef IncidentCellsIterator<CMap2, VOLUME3> Self;
-    using   DartMarker = cgogn::DartMarker<CMap2>;
+	typedef IncidentCellsIterator<CMap2, VOLUME3> Self;
+	using   DartMarker = cgogn::DartMarker<CMap2>;
 
 	CMap2& map_;
-    DartMarker* dm_;
+	DartMarker* dm_;
 	std::vector<Dart>* visited_darts_;
-    std::size_t current_index_;
+	std::size_t current_index_;
 	Dart current_;
 	bool not_first_;
 
-	iterator(const iterator& dm) = delete;
-	iterator(iterator&& dm) = delete;
-	iterator& operator=(iterator&& dm) = delete;
-	iterator& operator=(const iterator& dm) = delete;
-	
+//	iterator(const iterator& dm) = delete;
+//	iterator(iterator&& dm) = delete;
+//	iterator& operator=(iterator&& dm) = delete;
+//	iterator& operator=(const iterator& dm) = delete;
+
 	// is_begin est 'true' pour la construction de l'itérateur begin(), 'false' sinon
-    inline iterator(Self& t, bool is_begin) :
+	inline iterator(Self& t, bool is_begin) :
 		map_(t.map_),
-        dm_(nullptr),
-        visited_darts_(nullptr),
-        current_index_(0u),
-        current_(t.cell_),
+		dm_(nullptr),
+		visited_darts_(nullptr),
+		current_index_(0u),
+		current_(t.cell_),
 		not_first_(false)
 	{
-        if (is_begin) {
-            dm_ = t.init_marker();
-            visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
-            visited_darts_->push_back(current_);
-            dm_->mark(current_);
-        }
+		if (is_begin) {
+			dm_ = t.init_marker();
+			visited_darts_ = cgogn::get_dart_buffers()->get_buffer();
+			visited_darts_->push_back(current_);
+			dm_->mark(current_);
+		}
 	}
 
 	inline ~iterator() {
@@ -336,28 +336,28 @@ public:
 
 	inline iterator& operator++()
 	{
-        // TODO : faire ce test uniquement en DEBUG ?
-        if(dm_) {
-            not_first_ = true;
+		// TODO : faire ce test uniquement en DEBUG ?
+		if(dm_) {
+			not_first_ = true;
 
-            Dart d = map_.phi1(current_);
-            if (!dm_->is_marked(d)) {
-                visited_darts_->push_back(d);
-                dm_->mark(d);
-            }
-            d = map_.phi2(current_);
-            if (!dm_->is_marked(d)) {
-                visited_darts_->push_back(d);
-                dm_->mark(d);
-            }
-            ++current_index_;
-            if (current_index_ < visited_darts_->size())
-                current_ = (*visited_darts_)[current_index_];
-            else
-                current_ = (*visited_darts_)[0u];
-        }
-        else
-            std::cerr << "Warning: ++ operator has no effect on the end() iterator";
+			Dart d = map_.phi1(current_);
+			if (!dm_->is_marked(d)) {
+				visited_darts_->push_back(d);
+				dm_->mark(d);
+			}
+			d = map_.phi2(current_);
+			if (!dm_->is_marked(d)) {
+				visited_darts_->push_back(d);
+				dm_->mark(d);
+			}
+			++current_index_;
+			if (current_index_ < visited_darts_->size())
+				current_ = (*visited_darts_)[current_index_];
+			else
+				current_ = (*visited_darts_)[0u];
+		}
+		else
+			std::cerr << "Warning: ++ operator has no effect on the end() iterator";
 
 		return *this;
 	}

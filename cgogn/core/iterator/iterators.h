@@ -13,15 +13,15 @@ class AllCellIterator
 {
 public:
 
-    typedef AllCellIterator<MAP, ORBIT> Self;
-    typedef MAP Map;
+	typedef AllCellIterator<MAP, ORBIT> Self;
+	typedef MAP Map;
 
-    using   DartMarker = cgogn::DartMarker<Map>;
-    using   CellMarker = cgogn::CellMarker<Map, ORBIT>;
+	using   DartMarker = cgogn::DartMarker<Map>;
+	using   CellMarker = cgogn::CellMarker<Map, ORBIT>;
 
 protected:
 
-    Map& map_;
+	Map& map_;
 
 public:
 
@@ -29,92 +29,92 @@ public:
 	AllCellIterator(Self&& dm) = delete;
 	AllCellIterator& operator=(Self&& dm) = delete;
 	AllCellIterator& operator=(const Self& dm) = delete;
-	
+
 	AllCellIterator(MAP& map) :
-        map_(map)
-    {
-    }
+		map_(map)
+	{
+	}
 
-    ~AllCellIterator()
-    {
-    }
+	~AllCellIterator()
+	{
+	}
 
-    class iterator
-    {
-    public:
+	class iterator
+	{
+	public:
 
-        Map& map_;
-        DartMarker* dm_;
-        typename Map::const_iterator map_it_;
+		Map& map_;
+		DartMarker* dm_;
+		typename Map::const_iterator map_it_;
 
-		iterator(const iterator& dm) = delete;
-		iterator(iterator&& dm) = delete;
-		iterator& operator=(iterator&& dm) = delete;
-		iterator& operator=(const iterator& dm) = delete;
-		
+//		iterator(const iterator& dm) = delete;
+//		iterator(iterator&& dm) = delete;
+//		iterator& operator=(iterator&& dm) = delete;
+//		iterator& operator=(const iterator& dm) = delete;
+
 		inline iterator(Self& t) :
-            map_(t.map_),
-            dm_(nullptr),
-            map_it_(t.map_.begin())
-        {
-            dm_ = new DartMarker(map_);
-            if (map_it_ != map_.end()) {
-                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
-                    dm_->mark(d);
-            }
-        }
+			map_(t.map_),
+			dm_(nullptr),
+			map_it_(t.map_.begin())
+		{
+			dm_ = new DartMarker(map_);
+			if (map_it_ != map_.end()) {
+				for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+					dm_->mark(d);
+			}
+		}
 
-        // TODO transformer en ajoutant un paramètre template booleen
-        inline iterator(Self& t, typename MAP::const_iterator it) :
-            map_(t.map_),
-            dm_(nullptr),
-            map_it_(it)
-        {
-            if (map_it_ != map_.end()) {
-                std::cerr << "Warning : incorrect usage of end() constructor" << std::endl;
-            }
-        }
+		// TODO transformer en ajoutant un paramètre template booleen
+		inline iterator(Self& t, typename MAP::const_iterator it) :
+			map_(t.map_),
+			dm_(nullptr),
+			map_it_(it)
+		{
+			if (map_it_ != map_.end()) {
+				std::cerr << "Warning : incorrect usage of end() constructor" << std::endl;
+			}
+		}
 
-        ~iterator()
-        {
-            if(dm_) {
-                dm_->unmark_all();
-                delete dm_;
-            }
-        }
+		~iterator()
+		{
+			if(dm_) {
+				dm_->unmark_all();
+				delete dm_;
+			}
+		}
 
-        inline iterator& operator++()
-        {
-            while (map_it_ != map_.end() && (dm_->is_marked(*map_it_)))
-                ++map_it_;
-            if (map_it_ != map_.end()) {
-                for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
-                    dm_->mark(d);
-            }
+		inline iterator& operator++()
+		{
+			while (map_it_ != map_.end() && (dm_->is_marked(*map_it_)))
+				++map_it_;
+			if (map_it_ != map_.end()) {
+				for (Dart d : IncidentCellsIterator<MAP,ORBIT>(map_, *map_it_, dm_))
+					dm_->mark(d);
+			}
 
-            return *this;
-        }
+			return *this;
+		}
 
-        inline Cell<ORBIT> operator*()
-        {
-            return Cell<ORBIT>(*map_it_);
-        }
+		inline Cell<ORBIT> operator*()
+		{
+			return Cell<ORBIT>(*map_it_);
+		}
 
-        inline bool operator!=(const iterator& it) const
-        {
-            return map_it_ != it.map_it_;
-        }
-    };
+		inline bool operator!=(const iterator& it) const
+		{
+			return map_it_ != it.map_it_;
+		}
+	};
 
-    inline iterator begin()
-    {
-        return iterator(*this);
-    }
+	inline iterator begin()
+	{
+		return iterator(*this);
+	}
 
-    inline iterator end()
-    {
-        return iterator(*this, map_.end());
-    }
+	inline iterator end()
+	{
+		return iterator(*this, map_.end());
+	}
 };
 
 } // namespace cgogn
