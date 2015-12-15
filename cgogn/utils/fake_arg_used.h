@@ -20,38 +20,26 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_CORE_DLL_EXPORT
-#include <core/map/map_base_data.h>
 
+#ifndef UTILS_FAKE_ARG_USED_H_
+#define UTILS_FAKE_ARG_USED_H_
+
+/**
+ * \file cgogn/utils/fake_arg_used.h
+ * \brief A function to suppress unused parameters compilation warnings
+ */
 namespace cgogn
 {
-
-std::vector<MapGen*>* MapGen::instances_ = nullptr;
-bool MapGen::init_CA_factory = true;
-
-MapGen::MapGen()
-{
-	if (instances_ == nullptr)
-		instances_ = new std::vector<MapGen*>;
-
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
-
-	// register the map in the vector of instances
-	instances_->push_back(this);
+	/**
+	 * \brief Suppresses compiler warnings about unused parameters
+	 * \details This function is intended to make warnings silent
+	 * concerning non used parameters. The corresponding code
+	 * is supposed to be wiped out by the optimizer.
+	 * (Removed starting from -O1 with gcc and clang)
+	 */
+	template <class T>
+	inline void fake_arg_used(const T&)
+	{}
 }
 
-MapGen::~MapGen()
-{
-	// remove the map from the vector of instances
-	auto it = std::find(instances_->begin(), instances_->end(), this);
-	*it = instances_->back();
-	instances_->pop_back();
-
-	if (instances_->empty())
-	{
-		delete instances_;
-		instances_ = nullptr;
-	}
-}
-
-} // namespace cgogn
+#endif // UTILS_FAKE_ARG_USED_H_

@@ -66,13 +66,6 @@ public:
 	template<unsigned int ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
-protected:
-
-	// TODO : put back this code when AttributeHandlers register in the map on construction
-	//	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
-
-public:
-
 	MapBase() : Inherit()
 	{}
 
@@ -83,11 +76,22 @@ public:
 	MapBase(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
+
+protected:
+
+	inline ConcreteMap* to_concrete()
+	{
+		return static_cast<ConcreteMap*>(this);
+	}
+
+	inline const ConcreteMap* to_concrete() const
+	{
+		return static_cast<const ConcreteMap*>(this);
+	}
+
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
-
-protected:
 
 	inline unsigned int add_topology_element()
 	{
@@ -138,20 +142,8 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = ah.get_data();
-
-		if (this->attributes_[ORBIT].remove_attribute(ca))
-		{
-			// TODO : put back this code when AttributeHandlers register in the map on construction
-
-			//			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-			//			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-			//			for(IT i = bounds.first; i != bounds.second; ++i)
-			//				(*i).second->set_invalid();
-			//			attribute_handlers_.erase(bounds.first, bounds.second);
-			return true;
-		}
-		return false;
+		const ChunkArray<T>* ca = ah.get_data();
+		return this->attributes_[ORBIT].remove_attribute(ca);
 	}
 
 	/**
@@ -280,6 +272,11 @@ public:
 		inline const_iterator(const Self& map, Dart d) :
 			map_(map),
 			dart_(d)
+		{}
+
+		inline const_iterator(const_iterator const& it) :
+			map_(it.map_),
+			dart_(it.dart_)
 		{}
 
 		inline const_iterator& operator=(const_iterator const& it)
@@ -461,16 +458,6 @@ protected:
 					break;
 			}
 		}
-	}
-
-	inline ConcreteMap* to_concrete()
-	{
-		return static_cast<ConcreteMap*>(this);
-	}
-
-	inline const ConcreteMap* to_concrete() const
-	{
-		return static_cast<const ConcreteMap*>(this);
 	}
 };
 

@@ -28,50 +28,64 @@ namespace cgogn
 {
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& /*v*/) { return "bool"; }
+CGOGN_UTILS_API std::string name_of_type(const bool& ) 
+{ return "bool"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const char& /*v*/) { return "char"; }
+CGOGN_UTILS_API std::string name_of_type(const char& ) 
+{ return "char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const short& /*v*/) { return "short"; }
+CGOGN_UTILS_API std::string name_of_type(const short& ) 
+{ return "short"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const int& /*v*/) { return "int"; }
+CGOGN_UTILS_API std::string name_of_type(const int& ) 
+{ return "int"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long& /*v*/) { return "long"; }
+CGOGN_UTILS_API std::string name_of_type(const long& ) 
+{ return "long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& /*v*/) { return "long long"; }
+CGOGN_UTILS_API std::string name_of_type(const long long& ) 
+{ return "long long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& /*v*/) { return "signed char"; }
+CGOGN_UTILS_API std::string name_of_type(const signed char& ) 
+{ return "signed char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& /*v*/) { return "unsigned char"; }
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& ) 
+{ return "unsigned char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& /*v*/) { return "unsigned short"; }
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& ) 
+{ return "unsigned short"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& /*v*/) { return "unsigned int"; }
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& ) 
+{ return "unsigned int"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& /*v*/) { return "unsigned long"; }
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& ) 
+{ return "unsigned long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& /*v*/) { return "unsigned long long"; }
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& ) 
+{ return "unsigned long long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const float& /*v*/) { return "float"; }
+CGOGN_UTILS_API std::string name_of_type(const float& ) 
+{ return "float"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const double& /*v*/) { return "double"; }
+CGOGN_UTILS_API std::string name_of_type(const double& ) 
+{ return "double"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& /*v*/) { return "std::string"; }
-
+CGOGN_UTILS_API std::string name_of_type(const std::string& ) 
+{ return "std::string"; }
 
 } // namespace cgogn
 

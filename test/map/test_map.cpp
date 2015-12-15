@@ -87,6 +87,11 @@ int test2(MAP& map)
 	typename MAP::template VertexAttributeHandler<float> ah =
 			map.template get_attribute<float, MAP::VERTEX>("floats");
 
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
+
+	map.remove_attribute(ahf);
+	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
+
 	std::vector<unsigned int>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
 	cgogn::get_uint_buffers()->release_buffer(uib);
@@ -113,6 +118,19 @@ int test2(MAP& map)
 	});
 	std::cout << "End Vertices" << std::endl;
 
+	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
+	{
+		ah[v] = 4.0f;
+	});
+
+	// get ChunkArrayContainer -> get ChunkArray -> fill
+	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
+	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
+	for (unsigned int i = 0; i < 10; ++i)
+		container.template insert_lines<1>();
+	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		(*att)[i] = 3.0f + 0.1f*float(i);
+
 	return 0;
 }
 
@@ -129,7 +147,7 @@ int test3(MAP& map)
 	{
 		std::cout << std::endl;
 		std::cout << d;
-		for (MAP::Vertex e : tf)
+		for (typename MAP::Vertex e : tf)
 		{
 			std::cout << " - " << e ;
 		}
@@ -155,7 +173,7 @@ int test3(MAP& map)
 	std::cout << std::endl;
 	std::cout << "End Volume" << std::endl;
 
-    std::cout << "Autre :" << std::endl;
+	std::cout << "Autre :" << std::endl;
 	IncidentCellsIterator<MAP, cgogn::NB_ORBITS> to(map, d1);
 	for (Dart d : to)
 	{
@@ -163,26 +181,26 @@ int test3(MAP& map)
 	}
 	std::cout << "End Autre" << std::endl;
 
-    std::cout << std::endl << "Les cellules :" ;
-    for (Dart d : AllCellIterator<MAP,MAP::VERTEX>(map))
-        std::cout << " vertex(" << d << ")" << std::endl;
-    for (Dart d : AllCellIterator<MAP,MAP::FACE>(map))
-        std::cout << " face(" << d << ")" << std::endl;
-    for (Dart d : AllCellIterator<MAP,MAP::VOLUME>(map))
-        std::cout << " volume(" << d << ")" << std::endl;
-    std::cout << "End cellules" << std::endl;
+	std::cout << std::endl << "Les cellules :" ;
+	for (Dart d : AllCellIterator<MAP,MAP::VERTEX>(map))
+		std::cout << " vertex(" << d << ")" << std::endl;
+	for (Dart d : AllCellIterator<MAP,MAP::FACE>(map))
+		std::cout << " face(" << d << ")" << std::endl;
+	for (Dart d : AllCellIterator<MAP,MAP::VOLUME>(map))
+		std::cout << " volume(" << d << ")" << std::endl;
+	std::cout << "End cellules" << std::endl;
 
-    std::cout << std::endl << "Parcours multiples :" << std::endl;
-    AllCellIterator<MAP,MAP::VERTEX> vertices(map);
-    for (Dart d : vertices) {
-        std::cout << "A:" << d << " => B:";
-        for (Dart e : vertices)
-            std::cout << e << " ";
-        std::cout << std::endl;
-    }
-    std::cout << "End cellules" << std::endl;
+	std::cout << std::endl << "Parcours multiples :" << std::endl;
+	AllCellIterator<MAP,MAP::VERTEX> vertices(map);
+	for (Dart d : vertices) {
+		std::cout << "A:" << d << " => B:";
+		for (Dart e : vertices)
+			std::cout << e << " ";
+		std::cout << std::endl;
+	}
+	std::cout << "End cellules" << std::endl;
 
-    return 0;
+	return 0;
 }
 
 int main()

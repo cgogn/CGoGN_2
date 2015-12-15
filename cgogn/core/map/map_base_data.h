@@ -48,10 +48,11 @@ public:
 
 	typedef MapGen Self;
 
-private:
+protected:
 
 	/// vector of Map instances
 	static std::vector<MapGen*>* instances_;
+	static bool init_CA_factory;
 
 public:
 
@@ -120,11 +121,10 @@ public:
 
 	MapBaseData() : Inherit()
 	{
-		static bool initCAFactory = true;
-		if (initCAFactory)
+		if (init_CA_factory)
 		{
 			ChunkArrayFactory<CHUNKSIZE>::reset();
-			initCAFactory = false;
+			init_CA_factory = false;
 		}
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
