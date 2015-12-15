@@ -362,6 +362,11 @@ public:
 			index_(i)
 		{}
 
+		inline const_iterator(const const_iterator& it) :
+			ah_ptr_(it.ah_ptr_),
+			index_(it.index_)
+		{}
+
 		inline const_iterator& operator=(const const_iterator& it)
 		{
 			ah_ptr_ = it.ah_ptr_;
@@ -407,6 +412,11 @@ public:
 		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
 			ah_ptr_(ah),
 			index_(i)
+		{}
+
+		inline iterator(const iterator& it) :
+			ah_ptr_(it.ah_ptr_),
+			index_(it.index_)
 		{}
 
 		inline iterator& operator=(const iterator& it)

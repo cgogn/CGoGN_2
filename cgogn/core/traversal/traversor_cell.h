@@ -58,7 +58,7 @@ protected:
 
 public:
 
-	TraversorCell(MAP& map) :
+	inline TraversorCell(MAP& map) :
 		map_(map),
 		dm_(nullptr),
 		cm_(nullptr)
@@ -81,6 +81,57 @@ public:
 					dm_ = new DartMarker(map_);
 				break;
 		}
+	}
+
+	/**
+	 * \brief Copy Constructor
+	 * \param tc
+	 */
+	inline TraversorCell(const TraversorCell& tc) :
+		map_(tc.map_),
+		dm_(tc.dm_),
+		cm_(tc.cm_)
+	{}
+
+	/**
+	 * \brief Move constructor
+	 * \param tc
+	 */
+	inline TraversorCell(TraversorCell&& tc) CGOGN_NOEXCEPT :
+		map_(tc.map_),
+		dm_(tc.dm_),
+		cm_(tc.cm_)
+	{
+		//prevents the deallocation of memory in
+		//when the destructor is called on tc
+		tc.dm_ = nullptr;
+		tc.cm_ = nullptr;
+	}
+
+	/**
+	 * \brief operator =
+	 * \param tc
+	 * \return
+	 */
+	inline TraversorCell& operator=(const TraversorCell& tc)
+	{
+		this->map_ = tc.map_;
+		this->cm_ = tc.cm_;
+		this->dm_ = tc.dm_;
+		return *this;
+	}
+
+	/**
+	 * \brief operator =
+	 * \param tc
+	 * \return
+	 */
+	inline TraversorCell& operator=(TraversorCell&& tc)
+	{
+		this->map_ = tc.map_;
+		this->cm_ = tc.cm_;
+		this->dm_ = tc.dm_;
+		return *this;
 	}
 
 	virtual ~TraversorCell()

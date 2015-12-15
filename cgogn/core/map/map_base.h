@@ -300,6 +300,11 @@ public:
 			dart_(d)
 		{}
 
+		inline const_iterator(const const_iterator& it) :
+			map_(it.map_),
+			dart_(it.dart_)
+		{}
+
 		inline const_iterator& operator=(const const_iterator& it)
 		{
 			map_ = it.map_;
