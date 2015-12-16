@@ -83,8 +83,10 @@ public:
 
 	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
 
-	template<typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
+	template <typename DT, unsigned int ORBIT> friend class AttributeHandlerOrbit;
+
+	template<typename T_REF>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template<typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
@@ -106,12 +108,10 @@ protected:
 
 	/// vector of available mark attributes per orbit per thread
 	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
-	unsigned int mark_attribute_id_[NB_ORBITS];
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
 	/// vector of available mark attributes per thread on the topology container
 	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_THREADS];
-	unsigned int mark_attribute_topology_id_;
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of thread ids known by the map that can pretend to data such as mark vectors
@@ -130,10 +130,10 @@ public:
 		{
 			embeddings_[i] = nullptr;
 			for (unsigned int j = 0; j < NB_THREADS; ++j)
-			{
 				mark_attributes_[i][j].reserve(8);
-			}
 		}
+		for (unsigned int i = 0; i < NB_THREADS; ++i)
+			mark_attributes_topology_[i].reserve(8);
 
 		thread_ids_.reserve(NB_THREADS + 1);
 		thread_ids_.push_back(std::this_thread::get_id());
@@ -146,6 +146,8 @@ public:
 	MapBaseData(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
+
+protected:
 
 	/*******************************************************************************
 	 * Containers management
@@ -162,6 +164,8 @@ public:
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management

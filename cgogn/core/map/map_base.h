@@ -50,6 +50,9 @@ public:
 	typedef MapBaseData<DATA_TRAITS> Inherit;
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
+
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -58,11 +61,11 @@ public:
 	template<typename T, unsigned int ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
-
 	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
+	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
+
 	template<unsigned int ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
@@ -76,6 +79,29 @@ public:
 	MapBase(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
+
+	void clear(bool remove_attributes = false)
+	{
+		this->topology_.clear(false);
+
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear(remove_attributes);
+
+		if (remove_attributes)
+		{
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			{
+				if (this->embeddings_[i] != nullptr)
+				{
+					this->topology_.remove_attribute(this->embeddings_[i]);
+					this->embeddings_[i] = nullptr;
+				}
+
+				for (unsigned int j = 0; j < NB_THREADS; ++j)
+					this->mark_attributes_[i][j].clear();
+			}
+		}
+	}
 
 protected:
 
@@ -100,6 +126,8 @@ protected:
 		return idx;
 	}
 
+public:
+
 	template <unsigned int ORBIT>
 	inline unsigned int add_attribute_element()
 	{
@@ -113,8 +141,6 @@ protected:
 	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
-
-public:
 
 	/**
 	 * \brief add an attribute
@@ -274,12 +300,12 @@ public:
 			dart_(d)
 		{}
 
-		inline const_iterator(const_iterator const& it) :
+		inline const_iterator(const const_iterator& it) :
 			map_(it.map_),
 			dart_(it.dart_)
 		{}
 
-		inline const_iterator& operator=(const_iterator const& it)
+		inline const_iterator& operator=(const const_iterator& it)
 		{
 			map_ = it.map_;
 			dart_ = it.dart_;
@@ -297,7 +323,7 @@ public:
 			return dart_;
 		}
 
-		inline bool operator!=(const_iterator it) const
+		inline bool operator!=(const const_iterator& it) const
 		{
 			cgogn_assert(&map_ == &(it.map_));
 			return dart_ != it.dart_;
@@ -322,8 +348,12 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f)
 	{
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
 			f(d);
+		}
 	}
 
 	/**
@@ -334,7 +364,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f)
 	{
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
 		{
 			if(!f(d))
 				break;
@@ -347,7 +379,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f)
 	{
 		switch (STRATEGY)
@@ -376,7 +408,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = AUTO, typename FUNC>
+	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	void foreach_cell_until(const FUNC& f)
 	{
 		switch (STRATEGY)
@@ -404,9 +436,10 @@ protected:
 	template <unsigned int ORBIT, typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f)
 	{
-
 		DartMarker dm(*to_concrete());
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
 		{
 			if (!dm.is_marked(d))
 			{
@@ -420,7 +453,9 @@ protected:
 	inline void foreach_cell_cell_marking(const FUNC& f)
 	{
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
 		{
 			if (!cm.is_marked(d))
 			{
@@ -434,7 +469,9 @@ protected:
 	inline void foreach_cell_until_dart_marking(const FUNC& f)
 	{
 		DartMarker dm(*to_concrete());
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
 		{
 			if (!dm.is_marked(d))
 			{
@@ -449,7 +486,9 @@ protected:
 	inline void foreach_cell_until_cell_marking(const FUNC& f)
 	{
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
 		{
 			if (!cm.is_marked(d))
 			{

@@ -27,6 +27,8 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
+#include <core/io/surface_import.h>
+
 namespace cgogn
 {
 
@@ -71,7 +73,7 @@ protected:
 
 	ChunkArray<Dart>* phi2_;
 
-	void init()
+	inline void init()
 	{
 		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
 	}
@@ -86,7 +88,7 @@ protected:
 	 *	- Before: d->d and e->e
 	 *	- After:  d->e and e->d
 	 */
-	void phi2_sew(Dart d, Dart e)
+	inline void phi2_sew(Dart d, Dart e)
 	{
 		cgogn_assert(phi2(d) == d);
 		cgogn_assert(phi2(e) == e);
@@ -100,7 +102,7 @@ protected:
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
 	 */
-	void phi2_unsew(Dart d)
+	inline void phi2_unsew(Dart d)
 	{
 		Dart e = phi2(d) ;
 		(*phi2_)[d.index] = d;
@@ -207,9 +209,114 @@ public:
 		return d;
 	}
 
-	void import()
+	void import(const std::string& filename)
 	{
+		this->clear(true);
 
+		SurfaceImport<DATA_TRAITS> si;
+		if (!si.import_file(filename))
+		{
+			std::cout << "Failed to import file " << filename << std::endl;
+			return;
+		}
+
+		this->attributes_[VERTEX].swap(si.vertex_attributes_);
+		this->template create_embedding<VERTEX>();
+
+		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+			this->template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+
+		unsigned int faces_vertex_index = 0;
+		std::vector<unsigned int> edges_buffer;
+		edges_buffer.reserve(16);
+
+		for (unsigned int i = 0; i < si.nb_faces_; ++i)
+		{
+			unsigned short nbe = si.faces_nb_edges_[i];
+			edges_buffer.clear();
+			unsigned int prev = -1;
+			for (unsigned int j = 0; j < nbe; ++j)
+			{
+				unsigned int idx = si.faces_vertex_indices_[faces_vertex_index++];
+				if (idx != prev)
+				{
+					prev = idx;
+					edges_buffer.push_back(idx);
+				}
+			}
+			if (edges_buffer.front() == edges_buffer.back())
+				edges_buffer.pop_back();
+
+			nbe = static_cast<unsigned short>(edges_buffer.size());
+			if (nbe > 2)
+			{
+				Dart d = Inherit::add_face_topo(nbe);
+				for (unsigned int j = 0; j < nbe; ++j)
+				{
+					unsigned int vertex_index = edges_buffer[j];
+					this->template init_embedding<VERTEX>(d, vertex_index);
+					darts_per_vertex[vertex_index].push_back(d);
+					d = this->phi1(d);
+				}
+			}
+		}
+
+		bool need_bijective_check = false;
+		unsigned int nb_boundary_edges = 0;
+		DartMarker<Self> dm(*this);
+
+		for (Dart d : *this)
+		{
+			if (!dm.is_marked(d))
+			{
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
+
+				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
+				Dart good_dart;
+				bool first_OK = true;
+
+				for (auto it = next_vertex_darts.begin();
+					 it != next_vertex_darts.end() && good_dart.index == Dart::INVALID_INDEX;
+					 ++it)
+				{
+					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
+					{
+						good_dart = *it;
+						if (good_dart == phi2(good_dart))
+						{
+							phi2_sew(d, good_dart);
+							dm.template mark_orbit<EDGE>(d);
+						}
+						else
+						{
+							good_dart.index = Dart::INVALID_INDEX;
+							first_OK = false;
+						}
+					}
+				}
+
+				if (!first_OK)
+					need_bijective_check = true;
+
+				if (good_dart.index == Dart::INVALID_INDEX)
+				{
+					dm.template mark_orbit<EDGE>(d);
+					++nb_boundary_edges;
+				}
+			}
+		}
+
+		if (nb_boundary_edges > 0)
+		{
+			// close map
+		}
+
+		if (need_bijective_check)
+		{
+			// ensure unicity of orbit indexation
+		}
+
+		this->remove_attribute(darts_per_vertex);
 	}
 
 	/*******************************************************************************
@@ -386,7 +493,7 @@ public:
 		foreach_dart_of_vertex(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
@@ -398,9 +505,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f] (Dart ed)
+		foreach_dart_of_edge(e, [&f, this] (Dart ed)
 		{
-			foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
+			this->foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -412,9 +519,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f] (Dart ed)
+		foreach_dart_of_edge(e, [&f, this] (Dart ed)
 		{
-			foreach_dart_of_face(ed, [&f, ed] (Dart fd)
+			this->foreach_dart_of_face(ed, [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
@@ -429,7 +536,7 @@ public:
 		foreach_dart_of_face(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)

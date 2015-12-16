@@ -143,6 +143,12 @@ public:
 		stack_size_ = 0u;
 		Inherit::clear();
 	}
+
+	void swap(Self &cs)
+	{
+		Inherit::swap(cs);
+		std::swap(stack_size_, cs.stack_size_);
+	}
 };
 
 } // namespace cgogn

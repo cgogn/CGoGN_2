@@ -27,8 +27,10 @@
 #include <string>
 #include <vector>
 #include <list>
+
 #include <utils/dll.h>
-#include <utils/fake_arg_used.h>
+
+#include <Eigen/Dense>
 
 namespace cgogn
 {
@@ -40,7 +42,6 @@ template <typename T>
 CGOGN_UTILS_API std::string name_of_type(const T& )
 { return T::cgogn_name_of_type(); }
 
-// first we need to declare some specializations
 template <typename T>  
 CGOGN_UTILS_API std::string name_of_type(const std::list<T>& );
 
@@ -65,7 +66,6 @@ CGOGN_UTILS_API std::string name_of_type(const long& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const long long& );
 
-// because signed char != char
 template <>
 CGOGN_UTILS_API std::string name_of_type(const signed char& );
 
@@ -93,6 +93,9 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
+template <>
+CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& );
+
 template <typename T>  
 CGOGN_UTILS_API std::string name_of_type(const std::list<T>& ) 
 { return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
@@ -104,7 +107,7 @@ CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& )
 /**
  * @brief add cgogn_name_of_type member to a class
  *
- * If the class that you want to use as attribute is not basic type nor std::list/std::vector,
+ * If the class that you want to use as attribute is not listed above
  * use AddTypeName<T> instead of T.
  * If you develop the class T, just add as public member: static std::string cgogn_name_of_type() { return "type_name_you_develop"; }
  */
