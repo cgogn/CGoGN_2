@@ -31,6 +31,7 @@ int main(int argc, char** argv)
 	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
 
 	unsigned int nbf = 0;
+
 	map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
 	{
 		++nbf;
@@ -48,6 +49,7 @@ int main(int argc, char** argv)
 	});
 
 	unsigned int nbv = 0;
+
 	map.foreach_cell<CMap2::VERTEX>([&] (CMap2::Vertex v)
 	{
 		++nbv;
@@ -62,19 +64,18 @@ int main(int argc, char** argv)
 	});
 
 	unsigned int nbe = 0;
-//	map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
-//	{
-//		++nbe;
-//	});
+
+	map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
+	{
+		++nbe;
+	});
 
 	std::cout << "nb vertices -> " << nbv << std::endl;
 	std::cout << "nb edges -> " << nbe << std::endl;
 	std::cout << "nb faces -> " << nbf << std::endl;
 
 	end = std::chrono::system_clock::now();
-
 	std::chrono::duration<double> elapsed_seconds = end - start;
-
 	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
 	cgogn::thread_stop();

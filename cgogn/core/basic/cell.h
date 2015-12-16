@@ -43,32 +43,32 @@ namespace cgogn
 //const unsigned int Orbit::PHI2_PHI3     = 5;
 //const unsigned int Orbit::PHI1_PHI3     = 6;
 //const unsigned int Orbit::PHI1_PHI2   = 7;
+
 enum Orbit: unsigned int
 {
 	DART = 0,
-	PHI21,
-	PHI2,
 	PHI1,
-	PHI21_PHI31,
-	PHI2_PHI3,
-	PHI1_PHI3,
+	PHI2,
 	PHI1_PHI2,
+	PHI1_PHI3,
+	PHI2_PHI3,
+	PHI21,
+	PHI21_PHI31,
 	NB_ORBITS
 };
-
 
 inline std::string orbit_name(Orbit orbit)
 {
 	switch(orbit)
 	{
 		case Orbit::DART: return "Orbit::DART"; break;
-		case Orbit::PHI21: return "Orbit::PHI21"; break;
-		case Orbit::PHI2:   return "Orbit::PHI2"; break;
-		case Orbit::PHI1:   return "Orbit::PHI1"; break;
-		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
-		case Orbit::PHI2_PHI3:   return "Orbit::PHI2_PHI3"; break;
-		case Orbit::PHI1_PHI3:   return "Orbit::PHI1_PHI3"; break;
+		case Orbit::PHI1: return "Orbit::PHI1"; break;
+		case Orbit::PHI2: return "Orbit::PHI2"; break;
 		case Orbit::PHI1_PHI2: return "Orbit::PHI1_PHI2"; break;
+		case Orbit::PHI1_PHI3: return "Orbit::PHI1_PHI3"; break;
+		case Orbit::PHI2_PHI3: return "Orbit::PHI2_PHI3"; break;
+		case Orbit::PHI21: return "Orbit::PHI21"; break;
+		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
 		default: break;
 	}
 	return "UNKNOWN";

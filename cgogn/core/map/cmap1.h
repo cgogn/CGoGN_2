@@ -40,6 +40,8 @@ public:
 
 	friend typename Self::Inherit;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -236,17 +238,11 @@ protected:
 		return e;
 	}
 
-public:
+protected:
 
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
-
-	template <typename FUNC>
-	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
@@ -264,11 +260,13 @@ public:
 	{
 		switch (ORBIT)
 		{
-			case Orbit::DART: foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI1:   foreach_dart_of_face(c, f); break;
-			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			case Orbit::DART: f(c.dart); break;
+			case Orbit::PHI1: foreach_dart_of_face(c, f); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Incidence traversal
@@ -277,13 +275,15 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	/*******************************************************************************
@@ -293,6 +293,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		f(Vertex(phi1(v.dart)));
 		f(Vertex(phi_1(v.dart)));
 	}
@@ -300,6 +301,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		f(Edge(phi1(e.dart)));
 		f(Edge(phi_1(e.dart)));
 	}

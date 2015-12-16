@@ -43,6 +43,8 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -135,7 +137,6 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		// phi2 first topo relation
 		return (*phi2_)[d.index];
 	}
 
@@ -148,9 +149,7 @@ protected:
 	inline Dart add_dart()
 	{
 		Dart d = Inherit::add_dart();
-
 		(*phi2_)[d.index] = d;
-
 		return d;
 	}
 
@@ -178,9 +177,9 @@ public:
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
+			foreach_dart_of_orbit<FACE>(f, [this] (Dart fd)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
+				init_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
@@ -319,6 +318,8 @@ public:
 		this->remove_attribute(darts_per_vertex);
 	}
 
+protected:
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
@@ -335,25 +336,11 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_dart_of_edge(Dart d, const FUNC& f) const
-	{
-		f(d);
-		f(phi2(d));
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
-	{
-		Inherit::foreach_dart_of_face(d, f);
-	}
-
-	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this); // get a marker
+		DartMarkerStore<Self> marker(*this);
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
-
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -361,14 +348,12 @@ public:
 		{
 			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
 			{
-				// Apply functor to the darts of the face
-				foreach_dart_of_face((*visited_faces)[i], f);
-
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
 				Dart e = (*visited_faces)[i] ;
 				do
 				{
+					f(e); // apply the function to the darts of the face
 					marker.mark(e);				// Mark
 					Dart adj = phi2(e);			// Get adjacent face
 					if (!marker.is_marked(adj))
@@ -386,14 +371,16 @@ public:
 	{
 		switch (ORBIT)
 		{
-			case Orbit::DART: Inherit::foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI2:   foreach_dart_of_edge(c, f); break;
-			case Orbit::PHI1:   foreach_dart_of_face(c, f); break;
+			case Orbit::DART: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI1: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
-			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Incidence traversal
@@ -402,44 +389,53 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, f);
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, f);
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, f);
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		f(Vertex(e.dart));
+		f(Vertex(phi2(e.dart)));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, f);
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		f(e.dart);
+		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarkerStore<Self> marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -452,8 +448,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarkerStore<Self> marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -466,8 +463,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore<Self> marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -484,16 +482,18 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, [this, &f] (Dart vd)
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_orbit<FACE>(vd, [&f, vd, vd1] (Dart fd)
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
@@ -505,9 +505,10 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f, this] (Dart ed)
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
+			this->foreach_dart_of_orbit<VERTEX>(ed, [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -519,9 +520,10 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f, this] (Dart ed)
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_face(ed, [&f, ed] (Dart fd)
+			this->foreach_dart_of_orbit<FACE>(ed, [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
@@ -533,10 +535,11 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, [this, &func] (Dart fd)
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			this->foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_orbit<VERTEX>(fd, [&func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
@@ -548,7 +551,8 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:

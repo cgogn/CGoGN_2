@@ -19,6 +19,7 @@ set(HEADER_FILES
 	map/map_base.h
 	map/cmap1.h
 	map/cmap2.h
+	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
 
