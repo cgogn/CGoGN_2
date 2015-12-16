@@ -40,9 +40,9 @@ public:
 
 	friend typename Self::Inherit;
 
-	static const unsigned int VERTEX = VERTEX1;
-	static const unsigned int EDGE   = VERTEX1;
-	static const unsigned int FACE   = FACE2;
+	static const Orbit VERTEX = Orbit::DART;
+	static const Orbit EDGE   = Orbit::DART;
+	static const Orbit FACE   = Orbit::PHI1;
 
 	typedef Cell<VERTEX> Vertex;
 	typedef Cell<EDGE> Edge;
@@ -53,7 +53,7 @@ public:
 	template<typename T>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
-	template<typename T, unsigned int ORBIT>
+	template<typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
@@ -189,16 +189,16 @@ public:
 
 		Face f(d);
 
-		if (this->template is_orbit_embedded<VERTEX1>())
+		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-			foreach_incident_vertex(f, [this] (Cell<VERTEX1> c)
+			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<VERTEX1>());
+				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding(f, this->template add_attribute_element<FACE2>());
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
+			init_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		return d;
 	}
@@ -259,13 +259,13 @@ public:
 		} while (it != d);
 	}
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		switch (ORBIT)
 		{
-			case VERTEX1: foreach_dart_of_vertex(c, f); break;
-			case FACE2:   foreach_dart_of_face(c, f); break;
+			case Orbit::DART: foreach_dart_of_vertex(c, f); break;
+			case Orbit::PHI1:   foreach_dart_of_face(c, f); break;
 			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
@@ -310,13 +310,13 @@ protected:
 	 * Embedding management
 	 *******************************************************************************/
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });

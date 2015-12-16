@@ -51,14 +51,14 @@ public:
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, unsigned int ORBIT> friend class cgogn::CellMarkerT;
+	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarkerT;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
-	template<typename T, unsigned int ORBIT>
+	template<typename T, Orbit ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
 	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
@@ -66,7 +66,7 @@ public:
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
 	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
 
-	template<unsigned int ORBIT>
+	template<Orbit ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
 	MapBase() : Inherit()
@@ -84,12 +84,12 @@ public:
 	{
 		this->topology_.clear(false);
 
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+		for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
 			this->attributes_[i].clear(remove_attributes);
 
 		if (remove_attributes)
 		{
-			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
 			{
 				if (this->embeddings_[i] != nullptr)
 				{
@@ -128,10 +128,10 @@ protected:
 
 public:
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
 		this->attributes_[ORBIT].init_markers_of_line(idx);
@@ -147,10 +147,10 @@ public:
 	 * @param attribute_name the name of the attribute to create
 	 * @return a handler to the created attribute
 	 */
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_orbit_embedded<ORBIT>())
 			create_embedding<ORBIT>();
@@ -163,10 +163,10 @@ public:
 	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
 	 */
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		const ChunkArray<T>* ca = ah.get_data();
 		return this->attributes_[ORBIT].remove_attribute(ca);
@@ -177,10 +177,10 @@ public:
 	* @param attribute_name attribute name
 	* @return an AttributeHandler
 	*/
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
@@ -227,10 +227,10 @@ protected:
 	* \brief get a mark attribute on the given ORBIT attribute container (from pool or created)
 	* @return a mark attribute on the topology container
 	*/
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline ChunkArray<bool>* get_mark_attribute()
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -253,19 +253,20 @@ protected:
 	* \brief release a mark attribute on the given ORBIT attribute container
 	* @param the mark attribute to release
 	*/
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -379,7 +380,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f)
 	{
 		switch (STRATEGY)
@@ -408,7 +409,7 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <unsigned int ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	void foreach_cell_until(const FUNC& f)
 	{
 		switch (STRATEGY)
@@ -433,7 +434,7 @@ public:
 
 protected:
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f)
 	{
 		DartMarker dm(*to_concrete());
@@ -449,7 +450,7 @@ protected:
 		}
 	}
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_cell_marking(const FUNC& f)
 	{
 		CellMarker<ORBIT> cm(*to_concrete());
@@ -465,7 +466,7 @@ protected:
 		}
 	}
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_dart_marking(const FUNC& f)
 	{
 		DartMarker dm(*to_concrete());
@@ -482,7 +483,7 @@ protected:
 		}
 	}
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_cell_marking(const FUNC& f)
 	{
 		CellMarker<ORBIT> cm(*to_concrete());

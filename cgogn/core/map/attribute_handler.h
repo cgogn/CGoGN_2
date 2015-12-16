@@ -101,7 +101,7 @@ public:
 
 	virtual bool is_valid() const = 0;
 
-	virtual unsigned int get_orbit() const = 0;
+	virtual Orbit get_orbit() const = 0;
 };
 
 
@@ -109,7 +109,7 @@ public:
  * \brief Generic AttributeHandler class with orbit parameter
  * @TPARAM ORBIT the orbit of the attribute to handlde
  */
-template<typename DATA_TRAITS, unsigned int ORBIT>
+template<typename DATA_TRAITS, Orbit ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
@@ -181,7 +181,7 @@ public:
 		return *this;
 	}
 
-	virtual unsigned int get_orbit() const override
+	virtual Orbit get_orbit() const override
 	{
 		return ORBIT;
 	}
@@ -194,7 +194,7 @@ public:
  * \brief AttributeHandler class
  * @TPARAM T the data type of the attribute to handlde
  */
-template<typename DATA_TRAITS, typename T, unsigned int ORBIT>
+template<typename DATA_TRAITS, typename T, Orbit ORBIT>
 class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:

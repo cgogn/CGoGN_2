@@ -104,7 +104,7 @@ public:
 		return (*mark_attribute_)[d.index];
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
@@ -114,7 +114,7 @@ public:
 		});
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void unmark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
@@ -203,7 +203,7 @@ public:
 		marked_darts_->push_back(d);
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
