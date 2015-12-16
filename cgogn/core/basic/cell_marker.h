@@ -46,10 +46,10 @@ public:
 	CellMarkerGen& operator=(const Self& dm) = delete;
 };
 
-template <typename MAP, unsigned int ORBIT>
+template <typename MAP, Orbit ORBIT>
 class CellMarkerT : public CellMarkerGen
 {
-	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+	static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 
 public:
 
@@ -112,7 +112,7 @@ public:
 	}
 };
 
-template <typename MAP, unsigned int ORBIT>
+template <typename MAP, Orbit ORBIT>
 class CellMarker : public CellMarkerT<MAP, ORBIT>
 {
 public:
@@ -145,7 +145,7 @@ public:
 	}
 };
 
-template <typename MAP, unsigned int ORBIT>
+template <typename MAP, Orbit ORBIT>
 class CellMarkerStore : public CellMarkerT<MAP, ORBIT>
 {
 public:

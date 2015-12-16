@@ -83,7 +83,7 @@ public:
 
 	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
 
-	template <typename DT, unsigned int ORBIT> friend class AttributeHandlerOrbit;
+	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 
 	template<typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
@@ -97,18 +97,18 @@ protected:
 	ChunkArrayContainer<unsigned char> topology_;
 
 	/// embedding attributes
-	ChunkArrayContainer<unsigned int> attributes_[NB_ORBITS];
+	ChunkArrayContainer<unsigned int> attributes_[Orbit::NB_ORBITS];
 
 	/// embedding indices shortcuts
-	ChunkArray<unsigned int>* embeddings_[NB_ORBITS];
+	ChunkArray<unsigned int>* embeddings_[Orbit::NB_ORBITS];
 
 	/// boundary markers shortcuts
 	ChunkArray<bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
 
 	/// vector of available mark attributes per orbit per thread
-	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
-	std::mutex mark_attributes_mutex_[NB_ORBITS];
+	std::vector<ChunkArray<bool>*> mark_attributes_[Orbit::NB_ORBITS][NB_THREADS];
+	std::mutex mark_attributes_mutex_[Orbit::NB_ORBITS];
 
 	/// vector of available mark attributes per thread on the topology container
 	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_THREADS];
@@ -126,7 +126,7 @@ public:
 			ChunkArrayFactory<CHUNKSIZE>::reset();
 			init_CA_factory = false;
 		}
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+		for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
 		{
 			embeddings_[i] = nullptr;
 			for (unsigned int j = 0; j < NB_THREADS; ++j)
@@ -155,13 +155,13 @@ protected:
 
 	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
 	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(orbit < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
 	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(orbit < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
 
@@ -171,36 +171,36 @@ public:
 	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline bool is_orbit_embedded() const
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		return embeddings_[ORBIT] != nullptr;
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->attributes_[ORBIT].ref_line(emb);     // ref the new emb
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		unsigned int old = get_embedding<ORBIT>(d);
