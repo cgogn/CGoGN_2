@@ -404,8 +404,8 @@ public:
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		f(Vertex(e.dart));
-		f(Vertex(phi2(e.dart)));
+		f(e.dart);
+		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>

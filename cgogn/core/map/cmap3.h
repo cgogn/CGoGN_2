@@ -216,8 +216,11 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
 	{
-		Inherit::foreach_dart_of_face(d, f);
-		Inherit::foreach_dart_of_face(phi3(d), f);
+		foreach_dart_of_orbit<Inherit::FACE>(d, [&] (Dart fd)
+		{
+			f(fd);
+			f(phi3(fd));
+		});
 	}
 
 	template <Orbit ORBIT, typename FUNC>
