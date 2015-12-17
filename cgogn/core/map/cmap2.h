@@ -69,6 +69,9 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
+	using DartMarker = cgogn::DartMarker<Self>;
+	using DartMarkerStore = cgogn::DartMarkerStore<Self>;
+
 protected:
 
 	ChunkArray<Dart>* phi2_;
@@ -263,7 +266,7 @@ public:
 
 		bool need_bijective_check = false;
 		unsigned int nb_boundary_edges = 0;
-		DartMarker<Self> dm(*this);
+		DartMarker dm(*this);
 
 		for (Dart d : *this)
 		{
@@ -285,7 +288,7 @@ public:
 						if (good_dart == phi2(good_dart))
 						{
 							phi2_sew(d, good_dart);
-							dm.template mark_orbit<EDGE>(d);
+							dm.mark_orbit<EDGE>(d);
 						}
 						else
 						{
@@ -300,7 +303,7 @@ public:
 
 				if (good_dart.index == Dart::INVALID_INDEX)
 				{
-					dm.template mark_orbit<EDGE>(d);
+					dm.mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
 				}
 			}
@@ -350,7 +353,7 @@ public:
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this); // get a marker
+		DartMarkerStore marker(*this); // get a marker
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 
