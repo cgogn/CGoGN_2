@@ -69,6 +69,9 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
+	using DartMarker = typename Inherit::DartMarker;
+	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
 protected:
 
 	ChunkArray<Dart>* phi2_;
@@ -285,7 +288,7 @@ public:
 						if (good_dart == phi2(good_dart))
 						{
 							phi2_sew(d, good_dart);
-							dm.mark_orbit<EDGE>(d);
+							dm.template mark_orbit<EDGE>(d);
 						}
 						else
 						{
@@ -300,7 +303,7 @@ public:
 
 				if (good_dart.index == Dart::INVALID_INDEX)
 				{
-					dm.mark_orbit<EDGE>(d);
+					dm.template mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
 				}
 			}
@@ -438,7 +441,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_volume(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -452,7 +455,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_volume(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -466,7 +469,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_volume(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
