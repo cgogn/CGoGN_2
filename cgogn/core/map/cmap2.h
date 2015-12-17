@@ -69,9 +69,6 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
-	using DartMarker = cgogn::DartMarker<Self>;
-	using DartMarkerStore = cgogn::DartMarkerStore<Self>;
-
 protected:
 
 	ChunkArray<Dart>* phi2_;
@@ -237,7 +234,7 @@ public:
 		{
 			unsigned short nbe = si.faces_nb_edges_[i];
 			edges_buffer.clear();
-			unsigned int prev = -1;
+			unsigned int prev = std::numeric_limits<unsigned int>::max();
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
 				unsigned int idx = si.faces_vertex_indices_[faces_vertex_index++];
