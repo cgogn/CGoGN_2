@@ -153,13 +153,46 @@ protected:
 		return d;
 	}
 
+	/**
+	 * @brief close_map closes the map so that there are no phi2 fix points
+	 */
+	void close_map()
+	{
+		for (Dart d : *this)
+		{
+			if (phi2(d) == d)
+			{
+				Dart first = add_dart(); // First edge of the face that will fill the hole
+				phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+				Dart d_next = d; // Turn around the hole
+				Dart d_phi1;     // to complete the face
+				do
+				{
+					do
+					{
+						d_phi1 = this->phi1(d_next); // Search and put in d_next
+						d_next = phi2(d_phi1);       // the next dart of the hole
+					} while (d_next != d_phi1 && d_phi1 != d);
+
+					if (d_phi1 != d)
+					{
+						Dart next = add_dart(); // Add a new edge there and link it to the face
+						this->phi1_sew(first, next); // the edge is linked to the face
+						phi2_sew(d_next, next);      // the face is linked to the hole
+					}
+				} while (d_phi1 != d);
+			}
+		}
+	}
+
 public:
 
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
 
-	Dart add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
@@ -205,34 +238,38 @@ public:
 		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			init_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
 
-		return d;
+		return f;
 	}
 
 	void import(const std::string& filename)
 	{
-		this->clear(true);
-
 		SurfaceImport<DATA_TRAITS> si;
 		if (!si.import_file(filename))
 		{
 			std::cout << "Failed to import file " << filename << std::endl;
 			return;
 		}
+		import(si);
+	}
 
-		this->attributes_[VERTEX].swap(si.vertex_attributes_);
+	void import(SurfaceImport<DATA_TRAITS>& si)
+	{
+		this->clear(true);
+
 		this->template create_embedding<VERTEX>();
+		this->attributes_[VERTEX].swap(si.vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 			this->template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
-		std::vector<unsigned int> edges_buffer;
-		edges_buffer.reserve(16);
+		std::vector<unsigned int> vertices_buffer;
+		vertices_buffer.reserve(16);
 
 		for (unsigned int i = 0; i < si.nb_faces_; ++i)
 		{
 			unsigned short nbe = si.faces_nb_edges_[i];
-			edges_buffer.clear();
+			vertices_buffer.clear();
 			unsigned int prev = -1;
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
@@ -240,19 +277,19 @@ public:
 				if (idx != prev)
 				{
 					prev = idx;
-					edges_buffer.push_back(idx);
+					vertices_buffer.push_back(idx);
 				}
 			}
-			if (edges_buffer.front() == edges_buffer.back())
-				edges_buffer.pop_back();
+			if (vertices_buffer.front() == vertices_buffer.back())
+				vertices_buffer.pop_back();
 
-			nbe = static_cast<unsigned short>(edges_buffer.size());
+			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
 				Dart d = Inherit::add_face_topo(nbe);
 				for (unsigned int j = 0; j < nbe; ++j)
 				{
-					unsigned int vertex_index = edges_buffer[j];
+					unsigned int vertex_index = vertices_buffer[j];
 					this->template init_embedding<VERTEX>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = this->phi1(d);
@@ -260,7 +297,7 @@ public:
 			}
 		}
 
-		bool need_bijective_check = false;
+		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
 		DartMarker<Self> dm(*this);
 
@@ -268,52 +305,47 @@ public:
 		{
 			if (!dm.is_marked(d))
 			{
-				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
-
 				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
-				Dart good_dart;
+
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
+				bool phi2_found = false;
 				bool first_OK = true;
 
 				for (auto it = next_vertex_darts.begin();
-					 it != next_vertex_darts.end() && good_dart.index == Dart::INVALID_INDEX;
+					 it != next_vertex_darts.end() && !phi2_found;
 					 ++it)
 				{
 					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
 					{
-						good_dart = *it;
-						if (good_dart == phi2(good_dart))
+						if (!dm.is_marked(*it))
 						{
-							phi2_sew(d, good_dart);
+							phi2_sew(d, *it);
 							dm.template mark_orbit<EDGE>(d);
+							phi2_found = true;
 						}
 						else
 						{
-							good_dart.index = Dart::INVALID_INDEX;
 							first_OK = false;
 						}
 					}
 				}
 
-				if (!first_OK)
-					need_bijective_check = true;
-
-				if (good_dart.index == Dart::INVALID_INDEX)
+				if (!phi2_found)
 				{
 					dm.template mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
 				}
+
+				if (!first_OK)
+					need_vertex_unicity_check = true;
 			}
 		}
 
 		if (nb_boundary_edges > 0)
-		{
-			// close map
-		}
+			close_map();
 
-		if (need_bijective_check)
-		{
-			// ensure unicity of orbit indexation
-		}
+		if (need_vertex_unicity_check)
+			this->template unique_orbit_embedding<VERTEX>();
 
 		this->remove_attribute(darts_per_vertex);
 	}

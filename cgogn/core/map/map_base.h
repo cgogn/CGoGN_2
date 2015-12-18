@@ -186,11 +186,33 @@ public:
 		return AttributeHandler<T, ORBIT>(this, ca);
 	}
 
+protected:
+
+	/**
+	 * \brief make sure that all given orbits are uniquely embedded (indexed)
+	 */
+	template <Orbit ORBIT>
+	void unique_orbit_embedding()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter") ;
+
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
+		{
+			if (counter[c] > 0)
+				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+			counter[c]++;
+		});
+
+		remove_attribute(counter) ;
+	}
+
 	/*******************************************************************************
 	 * Marking attributes management
 	 *******************************************************************************/
-
-protected:
 
 	/**
 	* \brief get a mark attribute on the topology container (from pool or created)

@@ -183,7 +183,7 @@ public:
 	 * @param nb_edges
 	 * @return
 	 */
-	Dart add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
@@ -202,7 +202,7 @@ public:
 		if (this->template is_orbit_embedded<Orbit::PHI1>())
 			init_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
-		return d;
+		return f;
 	}
 
 protected:

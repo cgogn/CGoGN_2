@@ -32,43 +32,44 @@ int main(int argc, char** argv)
 
 	unsigned int nbf = 0;
 
-	map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
+	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		++nbf;
-		VEC3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-		VEC3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
-		face_normal[f] = v1.cross(v2);
-	});
-
-	map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
-	{
-		++nbf;
-		VEC3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-		VEC3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
-		face_normal[f] = v1.cross(v2);
-	});
+		map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
+		{
+			++nbf;
+			VEC3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
+			VEC3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+			face_normal[f] = v1.cross(v2);
+		});
+	}
 
 	unsigned int nbv = 0;
 
-	map.foreach_cell<CMap2::VERTEX>([&] (CMap2::Vertex v)
+	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		++nbv;
-		VEC3 sum({0, 0, 0});
-		unsigned int nb_incident = 0;
-		map.foreach_incident_face(v, [&] (CMap2::Face f)
+		map.foreach_cell<CMap2::VERTEX>([&] (CMap2::Vertex v)
 		{
-			++nb_incident;
-			sum += face_normal[f];
+			++nbv;
+			VEC3 sum({0, 0, 0});
+			unsigned int nb_incident = 0;
+			map.foreach_incident_face(v, [&] (CMap2::Face f)
+			{
+				++nb_incident;
+				sum += face_normal[f];
+			});
+			vertex_normal[v] = sum / nb_incident;
 		});
-		vertex_normal[v] = sum / nb_incident;
-	});
+	}
 
 	unsigned int nbe = 0;
 
-	map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
+	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		++nbe;
-	});
+		map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
+		{
+			++nbe;
+		});
+	}
 
 	std::cout << "nb vertices -> " << nbv << std::endl;
 	std::cout << "nb edges -> " << nbe << std::endl;
