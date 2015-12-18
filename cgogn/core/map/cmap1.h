@@ -64,6 +64,8 @@ public:
 	template<typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
+	using DartMarker = typename Inherit::DartMarker;
+	using DartMarkerStore = typename Inherit::DartMarkerStore;
 protected:
 
 	ChunkArray<Dart>* phi1_;

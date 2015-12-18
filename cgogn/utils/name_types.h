@@ -39,14 +39,14 @@ namespace cgogn
  * @brief function that give a name to a type.
  */
 template <typename T>
-CGOGN_UTILS_API std::string name_of_type(const T& )
+std::string name_of_type(const T& )
 { return T::cgogn_name_of_type(); }
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::list<T>& );
+std::string name_of_type(const std::list<T>& );
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& );
+std::string name_of_type(const std::vector<T>& );
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const bool& );
@@ -97,11 +97,11 @@ template <>
 CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& );
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::list<T>& ) 
+std::string name_of_type(const std::list<T>& )
 { return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
 
 template <typename T>  
-CGOGN_UTILS_API std::string name_of_type(const std::vector<T>& ) 
+std::string name_of_type(const std::vector<T>& )
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 
 /**

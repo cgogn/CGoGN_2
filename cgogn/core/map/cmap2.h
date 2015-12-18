@@ -71,6 +71,9 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
+	using DartMarker = typename Inherit::DartMarker;
+	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
 protected:
 
 	ChunkArray<Dart>* phi2_;
@@ -269,8 +272,10 @@ public:
 		for (unsigned int i = 0; i < si.nb_faces_; ++i)
 		{
 			unsigned short nbe = si.faces_nb_edges_[i];
+
 			vertices_buffer.clear();
-			unsigned int prev = -1;
+			unsigned int prev = std::numeric_limits<unsigned int>::max();
+
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
 				unsigned int idx = si.faces_vertex_indices_[faces_vertex_index++];
@@ -299,7 +304,7 @@ public:
 
 		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
-		DartMarker<Self> dm(*this);
+		DartMarker dm(*this);
 
 		for (Dart d : *this)
 		{
@@ -370,7 +375,7 @@ protected:
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 		visited_faces->push_back(d); // Start with the face of d
@@ -466,7 +471,7 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -481,7 +486,7 @@ public:
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -496,7 +501,7 @@ public:
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		DartMarkerStore<Self> marker(*this);
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
