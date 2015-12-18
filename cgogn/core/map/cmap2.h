@@ -408,6 +408,9 @@ protected:
 			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI1_PHI3:
+			case Orbit::PHI21_PHI31:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}

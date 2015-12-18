@@ -28,7 +28,9 @@
 
 #include <core/container/chunk_array_container.h>
 
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {
@@ -136,13 +138,13 @@ protected:
 		{
 			std::getline(fp, line);
 		} while (line.size() == 0);
+		{ // limit scope of oss
+			std::stringstream oss(line);
 
-		std::stringstream oss(line);
-
-		oss >> nb_vertices_;
-		oss >> nb_faces_;
-		oss >> nb_edges_;
-
+			oss >> nb_vertices_;
+			oss >> nb_faces_;
+			oss >> nb_edges_;
+		}
 		ChunkArray<DATA_TRAITS::CHUNK_SIZE, VEC3>* position =
 			vertex_attributes_.template add_attribute<VEC3>("position");
 
@@ -189,7 +191,7 @@ protected:
 			faces_nb_edges_.push_back(n);
 			for (unsigned int j = 0; j < n; ++j)
 			{
-				int index;
+				unsigned int index;
 				oss >> index;
 				faces_vertex_indices_.push_back(vertices_id[index]);
 			}

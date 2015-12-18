@@ -49,7 +49,7 @@ namespace cgogn
 template <typename MAP, Orbit ORBIT>
 class CellMarkerT // : public CellMarkerGen
 {
-	static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 public:
 

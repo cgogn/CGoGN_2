@@ -84,12 +84,12 @@ public:
 	{
 		this->topology_.clear(false);
 
-		for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 			this->attributes_[i].clear(remove_attributes);
 
 		if (remove_attributes)
 		{
-			for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
 			{
 				if (this->embeddings_[i] != nullptr)
 				{
@@ -131,7 +131,7 @@ public:
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
 		this->attributes_[ORBIT].init_markers_of_line(idx);
@@ -150,7 +150,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_orbit_embedded<ORBIT>())
 			create_embedding<ORBIT>();
@@ -166,7 +166,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		const ChunkArray<T>* ca = ah.get_data();
 		return this->attributes_[ORBIT].remove_attribute(ca);
@@ -180,10 +180,25 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
+	}
+
+	/**
+	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
+	* @param attribute_name attribute name
+	* @return an AttributeHandler
+	*/
+	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
+	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
+
+		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
+		return AttributeHandler<T_ASK, ORBIT>(this, ca);
 	}
 
 protected:
@@ -199,7 +214,7 @@ protected:
 	template <Orbit ORBIT>
 	inline ChunkArray<bool>* get_mark_attribute()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -225,7 +240,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
@@ -241,7 +256,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
@@ -265,7 +280,7 @@ protected:
 	template <Orbit ORBIT>
 	void unique_orbit_embedding()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter");
@@ -291,14 +306,14 @@ public:
 	template <Orbit ORBIT>
 	bool is_topo_cache_enabled()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return this->global_topo_cache_[ORBIT] != nullptr;
 	}
 
 	template <Orbit ORBIT>
 	void enable_topo_cache()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(!is_topo_cache_enabled<ORBIT>(), "Trying to enable an enabled global topo cache");
 
@@ -309,7 +324,7 @@ public:
 	template <Orbit ORBIT>
 	void update_topo_cache()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
 		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
@@ -321,7 +336,7 @@ public:
 	template <Orbit ORBIT>
 	void disable_topo_cache()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to disable a disabled global topo cache");
 
 		this->topology_.remove_attribute(this->global_topo_cache_[ORBIT]);
@@ -449,6 +464,7 @@ public:
 				break;
 		}
 	}
+
 
 	/**
 	 * \brief apply a function on each orbit of the map and stops when the function returns false
