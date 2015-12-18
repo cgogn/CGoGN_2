@@ -54,8 +54,10 @@ enum Orbit: unsigned int
 	PHI2_PHI3,
 	PHI21,
 	PHI21_PHI31,
-	NB_ORBITS
 };
+
+static const unsigned int NB_ORBITS = PHI21_PHI31+1;
+
 
 inline std::string orbit_name(Orbit orbit)
 {

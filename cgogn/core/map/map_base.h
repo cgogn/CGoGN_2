@@ -84,12 +84,12 @@ public:
 	{
 		this->topology_.clear(false);
 
-		for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 			this->attributes_[i].clear(remove_attributes);
 
 		if (remove_attributes)
 		{
-			for (unsigned int i = 0; i < Orbit::NB_ORBITS; ++i)
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
 			{
 				if (this->embeddings_[i] != nullptr)
 				{
@@ -131,7 +131,7 @@ public:
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
 		this->attributes_[ORBIT].init_markers_of_line(idx);
@@ -150,7 +150,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_orbit_embedded<ORBIT>())
 			create_embedding<ORBIT>();
@@ -166,7 +166,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		const ChunkArray<T>* ca = ah.get_data();
 		return this->attributes_[ORBIT].remove_attribute(ca);
@@ -180,10 +180,25 @@ public:
 	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
+	}
+
+	/**
+	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
+	* @param attribute_name attribute name
+	* @return an AttributeHandler
+	*/
+	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
+	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		static_assert(sizeof(T_ASK) == sizeof(T_ATT),"Incompatible casting operation between attributes, sizes are differents");
+		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
+		return AttributeHandler<T_ASK, ORBIT>(this, ca);
 	}
 
 protected:
@@ -194,8 +209,8 @@ protected:
 	template <Orbit ORBIT>
 	void unique_orbit_embedding()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter") ;
 
@@ -252,7 +267,7 @@ protected:
 	template <Orbit ORBIT>
 	inline ChunkArray<bool>* get_mark_attribute()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		unsigned int thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -278,7 +293,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
@@ -288,7 +303,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -425,6 +440,7 @@ public:
 				break;
 		}
 	}
+
 
 	/**
 	 * \brief apply a function on each orbit of the map and stops when the function returns false

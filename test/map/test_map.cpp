@@ -56,6 +56,9 @@ int test1(MAP& map)
 
 	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
 
+	// get attribute and change type (dangerous!)
+	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::VERTEX>("floats");
+
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
 
@@ -63,7 +66,21 @@ int test1(MAP& map)
 	uib->push_back(3);
 	cgogn::get_uint_buffers()->release_buffer(uib);
 
+
 	Dart d1 = map.add_face(3);
+
+	// get cell buffer typed
+//	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();
+
+	std::vector<Dart>* vertdb = cgogn::get_dart_buffers()->get_buffer();
+	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
+
+
+	vert_b->push_back(d1);
+	vert_b->push_back(typename MAP::Vertex(d1));
+
+	cgogn::get_dart_buffers()->release_cell_buffer(vertdb);
+//	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
 
 	DartMarker<MAP> dm(map);
 	CellMarker<MAP, MAP::VERTEX> cm(map);
