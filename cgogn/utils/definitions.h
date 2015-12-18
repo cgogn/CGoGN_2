@@ -93,7 +93,7 @@
 #ifdef __clang__
 	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON \
 	_Pragma("clang diagnostic push") \
-	_Pragma("clang diagnostic ignored \"-Winline\"")
+	_Pragma("clang diagnostic ignored \"-Winline\"") \
 	_Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
 	_Pragma("clang diagnostic ignored \"-Wdeprecated\"") \
 	_Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
@@ -103,7 +103,7 @@
 	_Pragma("clang diagnostic ignored \"-Wused-but-marked-unused\"")
 
 	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF \
-	_Pragma("clang					 diagnostic pop")
+	_Pragma("clang diagnostic pop")
 #endif
 
 // TODO: on Visual ?

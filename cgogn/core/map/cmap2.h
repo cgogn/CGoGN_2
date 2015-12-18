@@ -304,11 +304,10 @@ public:
 
 		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
-		DartMarker dm(*this);
 
 		for (Dart d : *this)
 		{
-			if (!dm.is_marked(d))
+			if (phi2(d) == d)
 			{
 				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
 
@@ -322,10 +321,9 @@ public:
 				{
 					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
 					{
-						if (!dm.is_marked(*it))
+						if (phi2(*it) == *it)
 						{
 							phi2_sew(d, *it);
-							dm.template mark_orbit<EDGE>(d);
 							phi2_found = true;
 						}
 						else
@@ -336,10 +334,7 @@ public:
 				}
 
 				if (!phi2_found)
-				{
-					dm.template mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
-				}
 
 				if (!first_OK)
 					need_vertex_unicity_check = true;
@@ -413,9 +408,9 @@ protected:
 			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI21_PHI31:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
+			case Orbit::PHI21_PHI31:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}

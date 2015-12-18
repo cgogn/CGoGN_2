@@ -35,15 +35,6 @@
 namespace cgogn
 {
 
-//const unsigned int Orbit::DART   = 0;
-//const unsigned int Orbit::PHI21   = 1;
-//const unsigned int Orbit::PHI2     = 2;
-//const unsigned int Orbit::PHI1     = 3;
-//const unsigned int Orbit::PHI21_PHI31   = 4;
-//const unsigned int Orbit::PHI2_PHI3     = 5;
-//const unsigned int Orbit::PHI1_PHI3     = 6;
-//const unsigned int Orbit::PHI1_PHI2   = 7;
-
 enum Orbit: unsigned int
 {
 	DART = 0,
@@ -56,8 +47,7 @@ enum Orbit: unsigned int
 	PHI21_PHI31,
 };
 
-static const unsigned int NB_ORBITS = PHI21_PHI31+1;
-
+static const unsigned int NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
 inline std::string orbit_name(Orbit orbit)
 {

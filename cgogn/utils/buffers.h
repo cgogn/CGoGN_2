@@ -38,8 +38,8 @@ template <typename T>
 class Buffers
 {
 	typedef T value_type;
-	static const unsigned int DEFAULT_SIZE	= 128u;
-	static const unsigned int SHRINK_SIZE	= 1024u;
+	static const unsigned int DEFAULT_SIZE = 128u;
+	static const unsigned int SHRINK_SIZE  = 1024u;
 
 protected:
 
@@ -50,9 +50,7 @@ public:
 	~Buffers()
 	{
 		for (auto i : buffers_)
-		{
 			delete i;
-		}
 	}
 
 	inline std::vector<T>* get_buffer()
@@ -83,13 +81,12 @@ public:
 };
 
 
-
 template <>
 class Buffers<Dart>
 {
 	typedef Dart value_type;
-	static const unsigned int DEFAULT_SIZE	= 128u;
-	static const unsigned int SHRINK_SIZE	= 1024u;
+	static const unsigned int DEFAULT_SIZE = 128u;
+	static const unsigned int SHRINK_SIZE  = 1024u;
 
 protected:
 
@@ -100,9 +97,7 @@ public:
 	~Buffers()
 	{
 		for (auto i : buffers_)
-		{
 			delete i;
-		}
 	}
 
 	inline std::vector<Dart>* get_buffer()
@@ -132,30 +127,28 @@ public:
 	}
 
 	template <typename CELL>
-	inline std::vector< CELL>* get_cell_buffer()
+	inline std::vector<CELL>* get_cell_buffer()
 	{
-		static_assert(sizeof(CELL) == sizeof(Dart),"can not cast buffer dart in buffer of ??");
+		static_assert(sizeof(CELL) == sizeof(Dart), "Cannot cast dart buffer in buffer of ??");
 		if (buffers_.empty())
 		{
 			std::vector<Dart>* v = new std::vector<Dart>;
 			v->reserve(DEFAULT_SIZE);
-			return reinterpret_cast< std::vector< CELL >*>(v);
+			return reinterpret_cast<std::vector<CELL>*>(v);
 		}
 
 		std::vector<Dart>* v = buffers_.back();
 		buffers_.pop_back();
-		return reinterpret_cast< std::vector< CELL >*>(v);
+		return reinterpret_cast<std::vector<CELL>*>(v);
 	}
 
-
 	template <typename CELL>
-	inline void release_cell_buffer(std::vector< CELL >* b)
+	inline void release_cell_buffer(std::vector<CELL>* b)
 	{
-		static_assert(sizeof(CELL) == sizeof(Dart),"can not cast buffer dart in buffer of ??");
+		static_assert(sizeof(CELL) == sizeof(Dart), "Cannot cast dart buffer in buffer of ??");
 		release_buffer(reinterpret_cast<std::vector<Dart>*>(b));
 	}
 };
-
 
 } // namespace cgogn
 

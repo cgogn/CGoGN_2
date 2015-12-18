@@ -32,6 +32,10 @@ int main(int argc, char** argv)
 	CMap2::VertexAttributeHandler<VEC3> vertex_normal = map.add_attribute<VEC3, CMap2::VERTEX>("normal");
 	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
 
+	map.enable_topo_cache<CMap2::FACE>();
+	map.enable_topo_cache<CMap2::VERTEX>();
+	map.enable_topo_cache<CMap2::EDGE>();
+
 	unsigned int nbf = 0;
 
 	for	(unsigned int i = 0; i < 10; ++i)
