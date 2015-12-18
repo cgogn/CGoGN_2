@@ -43,6 +43,8 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -138,7 +140,6 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		// phi2 first topo relation
 		return (*phi2_)[d.index];
 	}
 
@@ -151,10 +152,41 @@ protected:
 	inline Dart add_dart()
 	{
 		Dart d = Inherit::add_dart();
-
 		(*phi2_)[d.index] = d;
-
 		return d;
+	}
+
+	/**
+	 * @brief close_map closes the map so that there are no phi2 fix points
+	 */
+	void close_map()
+	{
+		for (Dart d : *this)
+		{
+			if (phi2(d) == d)
+			{
+				Dart first = add_dart(); // First edge of the face that will fill the hole
+				phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+				Dart d_next = d; // Turn around the hole
+				Dart d_phi1;     // to complete the face
+				do
+				{
+					do
+					{
+						d_phi1 = this->phi1(d_next); // Search and put in d_next
+						d_next = phi2(d_phi1);       // the next dart of the hole
+					} while (d_next != d_phi1 && d_phi1 != d);
+
+					if (d_phi1 != d)
+					{
+						Dart next = add_dart(); // Add a new edge there and link it to the face
+						this->phi1_sew(first, next); // the edge is linked to the face
+						phi2_sew(d_next, next);      // the face is linked to the hole
+					}
+				} while (d_phi1 != d);
+			}
+		}
 	}
 
 public:
@@ -163,7 +195,7 @@ public:
 	 * High-level topological operations
 	 *******************************************************************************/
 
-	Dart add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
@@ -181,9 +213,9 @@ public:
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
+			foreach_dart_of_orbit<FACE>(f, [this] (Dart fd)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
+				init_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
@@ -209,54 +241,60 @@ public:
 		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			init_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
 
-		return d;
+		return f;
 	}
 
 	void import(const std::string& filename)
 	{
-		this->clear(true);
-
 		SurfaceImport<DATA_TRAITS> si;
 		if (!si.import_file(filename))
 		{
 			std::cout << "Failed to import file " << filename << std::endl;
 			return;
 		}
+		import(si);
+	}
 
-		this->attributes_[VERTEX].swap(si.vertex_attributes_);
+	void import(SurfaceImport<DATA_TRAITS>& si)
+	{
+		this->clear(true);
+
 		this->template create_embedding<VERTEX>();
+		this->attributes_[VERTEX].swap(si.vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 			this->template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
-		std::vector<unsigned int> edges_buffer;
-		edges_buffer.reserve(16);
+		std::vector<unsigned int> vertices_buffer;
+		vertices_buffer.reserve(16);
 
 		for (unsigned int i = 0; i < si.nb_faces_; ++i)
 		{
 			unsigned short nbe = si.faces_nb_edges_[i];
-			edges_buffer.clear();
+
+			vertices_buffer.clear();
 			unsigned int prev = std::numeric_limits<unsigned int>::max();
+
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
 				unsigned int idx = si.faces_vertex_indices_[faces_vertex_index++];
 				if (idx != prev)
 				{
 					prev = idx;
-					edges_buffer.push_back(idx);
+					vertices_buffer.push_back(idx);
 				}
 			}
-			if (edges_buffer.front() == edges_buffer.back())
-				edges_buffer.pop_back();
+			if (vertices_buffer.front() == vertices_buffer.back())
+				vertices_buffer.pop_back();
 
-			nbe = static_cast<unsigned short>(edges_buffer.size());
+			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
 				Dart d = Inherit::add_face_topo(nbe);
 				for (unsigned int j = 0; j < nbe; ++j)
 				{
-					unsigned int vertex_index = edges_buffer[j];
+					unsigned int vertex_index = vertices_buffer[j];
 					this->template init_embedding<VERTEX>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = this->phi1(d);
@@ -264,7 +302,7 @@ public:
 			}
 		}
 
-		bool need_bijective_check = false;
+		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
 		DartMarker dm(*this);
 
@@ -272,55 +310,52 @@ public:
 		{
 			if (!dm.is_marked(d))
 			{
-				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
-
 				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
-				Dart good_dart;
+
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
+				bool phi2_found = false;
 				bool first_OK = true;
 
 				for (auto it = next_vertex_darts.begin();
-					 it != next_vertex_darts.end() && good_dart.index == Dart::INVALID_INDEX;
+					 it != next_vertex_darts.end() && !phi2_found;
 					 ++it)
 				{
 					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
 					{
-						good_dart = *it;
-						if (good_dart == phi2(good_dart))
+						if (!dm.is_marked(*it))
 						{
-							phi2_sew(d, good_dart);
+							phi2_sew(d, *it);
 							dm.template mark_orbit<EDGE>(d);
+							phi2_found = true;
 						}
 						else
 						{
-							good_dart.index = Dart::INVALID_INDEX;
 							first_OK = false;
 						}
 					}
 				}
 
-				if (!first_OK)
-					need_bijective_check = true;
-
-				if (good_dart.index == Dart::INVALID_INDEX)
+				if (!phi2_found)
 				{
 					dm.template mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
 				}
+
+				if (!first_OK)
+					need_vertex_unicity_check = true;
 			}
 		}
 
 		if (nb_boundary_edges > 0)
-		{
-			// close map
-		}
+			close_map();
 
-		if (need_bijective_check)
-		{
-			// ensure unicity of orbit indexation
-		}
+		if (need_vertex_unicity_check)
+			this->template unique_orbit_embedding<VERTEX>();
 
 		this->remove_attribute(darts_per_vertex);
 	}
+
+protected:
 
 	/*******************************************************************************
 	 * Orbits traversal
@@ -338,25 +373,11 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_dart_of_edge(Dart d, const FUNC& f) const
-	{
-		f(d);
-		f(phi2(d));
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
-	{
-		Inherit::foreach_dart_of_face(d, f);
-	}
-
-	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this); // get a marker
+		DartMarkerStore marker(*this);
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
-
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -364,14 +385,12 @@ public:
 		{
 			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
 			{
-				// Apply functor to the darts of the face
-				foreach_dart_of_face((*visited_faces)[i], f);
-
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
 				Dart e = (*visited_faces)[i] ;
 				do
 				{
+					f(e); // apply the function to the darts of the face
 					marker.mark(e);				// Mark
 					Dart adj = phi2(e);			// Get adjacent face
 					if (!marker.is_marked(adj))
@@ -389,14 +408,16 @@ public:
 	{
 		switch (ORBIT)
 		{
-			case Orbit::DART: Inherit::foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI2:   foreach_dart_of_edge(c, f); break;
-			case Orbit::PHI1:   foreach_dart_of_face(c, f); break;
+			case Orbit::DART: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI1: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
-			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Incidence traversal
@@ -405,44 +426,53 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, f);
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, f);
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, f);
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		f(e.dart);
+		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, f);
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		f(e.dart);
+		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, func);
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -455,8 +485,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -469,8 +500,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_volume(v, [&] (Dart d)
+		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -487,16 +519,18 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
-		foreach_dart_of_vertex(v, [this, &f] (Dart vd)
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_face(vd, [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_orbit<FACE>(vd, [&f, vd, vd1] (Dart fd)
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
@@ -508,9 +542,10 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f, this] (Dart ed)
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_vertex(ed, [&f, ed] (Dart vd)
+			this->foreach_dart_of_orbit<VERTEX>(ed, [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -522,9 +557,10 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		foreach_dart_of_edge(e, [&f, this] (Dart ed)
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_face(ed, [&f, ed] (Dart fd)
+			this->foreach_dart_of_orbit<FACE>(ed, [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
@@ -536,10 +572,11 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, [this, &func] (Dart fd)
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			this->foreach_dart_of_vertex(fd, [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_orbit<VERTEX>(fd, [&func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
@@ -551,7 +588,8 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		foreach_dart_of_face(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:
