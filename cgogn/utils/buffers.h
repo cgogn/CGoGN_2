@@ -37,8 +37,8 @@ template <typename T>
 class Buffers
 {
 	typedef T value_type;
-	static const unsigned int DEFAULT_SIZE	= 128u;
-	static const unsigned int SHRINK_SIZE	= 1024u;
+	static const unsigned int DEFAULT_SIZE = 128u;
+	static const unsigned int SHRINK_SIZE  = 1024u;
 
 protected:
 

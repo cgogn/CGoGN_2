@@ -30,27 +30,27 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API DartMarkerGen
-{
-public:
-	typedef DartMarkerGen Self;
-	DartMarkerGen()
-	{}
+//class CGOGN_CORE_API DartMarkerGen
+//{
+//public:
+//	typedef DartMarkerGen Self;
+//	DartMarkerGen()
+//	{}
 
-	virtual ~DartMarkerGen();
+//	virtual ~DartMarkerGen();
 
-	DartMarkerGen(const Self& dm) = delete;
-	DartMarkerGen(Self&& dm) = delete;
-	DartMarkerGen& operator=(Self&& dm) = delete;
-	DartMarkerGen& operator=(const Self& dm) = delete;
-};
+//	DartMarkerGen(const Self& dm) = delete;
+//	DartMarkerGen(Self&& dm) = delete;
+//	DartMarkerGen& operator=(Self&& dm) = delete;
+//	DartMarkerGen& operator=(const Self& dm) = delete;
+//};
 
 template <typename MAP>
-class DartMarkerT : public DartMarkerGen
+class DartMarkerT // : public DartMarkerGen
 {
 public:
 
-	typedef DartMarkerGen Inherit;
+//	typedef DartMarkerGen Inherit;
 	typedef DartMarkerT<MAP> Self;
 
 	typedef MAP Map;
@@ -64,26 +64,28 @@ protected:
 public:
 
 	DartMarkerT(Map& map) :
-		Inherit(),
+//		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
 	DartMarkerT(const MAP& map) :
-		DartMarkerGen(),
+//		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
-	~DartMarkerT() override
+	virtual ~DartMarkerT() // override
 	{
 		if (MapGen::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 
 	DartMarkerT(const Self& dm) = delete;
+	DartMarkerT(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 	Self& operator=(Self& dm) = delete;
 
 	inline void mark(Dart d)
@@ -218,7 +220,7 @@ public:
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		for (Dart d : *marked_darts_)
-			Inherit::unmark(d);
+			this->mark_attribute_->set_false_byte(d.index);
 		marked_darts_->clear();
 	}
 

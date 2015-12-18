@@ -188,62 +188,9 @@ public:
 
 protected:
 
-	/**
-	 * \brief make sure that all given orbits are uniquely embedded (indexed)
-	 */
-	template <Orbit ORBIT>
-	void unique_orbit_embedding()
-	{
-		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-
-		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter") ;
-
-		ConcreteMap* cmap = to_concrete();
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
-		{
-			if (counter[c] > 0)
-				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
-			counter[c]++;
-		});
-
-		remove_attribute(counter) ;
-	}
-
 	/*******************************************************************************
 	 * Marking attributes management
 	 *******************************************************************************/
-
-	/**
-	* \brief get a mark attribute on the topology container (from pool or created)
-	* @return a mark attribute on the topology container
-	*/
-	inline ChunkArray<bool>* get_topology_mark_attribute()
-	{
-		unsigned int thread = this->get_current_thread_index();
-		if (!this->mark_attributes_topology_[thread].empty())
-		{
-			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
-			this->mark_attributes_topology_[thread].pop_back();
-			return ca;
-		}
-		else
-		{
-			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
-			return ca;
-		}
-	}
-
-	/**
-	* \brief release a mark attribute on the topology container
-	* @param the mark attribute to release
-	*/
-	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
-	{
-		unsigned int thread = this->get_current_thread_index();
-		this->mark_attributes_topology_[thread].push_back(ca);
-	}
 
 	/**
 	* \brief get a mark attribute on the given ORBIT attribute container (from pool or created)
@@ -279,16 +226,23 @@ protected:
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
-
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
+	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
+
+	/**
+	 * \brief initialize a new orbit embedding
+	 */
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -305,11 +259,78 @@ protected:
 		});
 	}
 
+	/**
+	 * \brief make sure that all given orbits are uniquely embedded (indexed)
+	 */
+	template <Orbit ORBIT>
+	void unique_orbit_embedding()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter");
+		for (unsigned int& i : counter) i = 0;
+
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
+		{
+			if (counter[c] > 0)
+				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+			counter[c]++;
+		});
+
+		remove_attribute(counter) ;
+	}
+
+public:
+
+	/*******************************************************************************
+	 * Topo caches management
+	 *******************************************************************************/
+
+	template <Orbit ORBIT>
+	bool is_topo_cache_enabled()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		return this->global_topo_cache_[ORBIT] != nullptr;
+	}
+
+	template <Orbit ORBIT>
+	void enable_topo_cache()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(!is_topo_cache_enabled<ORBIT>(), "Trying to enable an enabled global topo cache");
+
+		this->global_topo_cache_[ORBIT] = this->attributes_[ORBIT].template add_attribute<Dart>("global_topo_cache");;
+		update_topo_cache<ORBIT>();
+	}
+
+	template <Orbit ORBIT>
+	void update_topo_cache()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
+
+		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
+		{
+			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
+		});
+	}
+
+	template <Orbit ORBIT>
+	void disable_topo_cache()
+	{
+		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to disable a disabled global topo cache");
+
+		this->topology_.remove_attribute(this->global_topo_cache_[ORBIT]);
+		this->global_topo_cache_[ORBIT] = nullptr;
+	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
-
-public:
 
 	class const_iterator
 	{
@@ -406,6 +427,7 @@ public:
 	inline void foreach_cell(const FUNC& f)
 	{
 		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
+
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
@@ -415,10 +437,12 @@ public:
 				foreach_cell_cell_marking<ORBIT>(f);
 				break;
 			case FORCE_TOPO_CACHE :
-				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				foreach_cell_topo_cache<ORBIT>(f);
 				break;
 			case AUTO :
-				if (this->template is_orbit_embedded<ORBIT>())
+				if (is_topo_cache_enabled<ORBIT>())
+					foreach_cell_topo_cache<ORBIT>(f);
+				else if (this->template is_orbit_embedded<ORBIT>())
 					foreach_cell_cell_marking<ORBIT>(f);
 				else
 					foreach_cell_dart_marking<ORBIT>(f);
@@ -436,6 +460,8 @@ public:
 	void foreach_cell_until(const FUNC& f)
 	{
 		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
@@ -445,10 +471,12 @@ public:
 				foreach_cell_until_cell_marking<ORBIT>(f);
 				break;
 			case FORCE_TOPO_CACHE :
-				cgogn_assert_not_reached("FORCE_TOPO_CACHE not implemented yet");
+				foreach_cell_topo_cache<ORBIT>(f);
 				break;
 			case AUTO :
-				if (this->template is_orbit_embedded<ORBIT>())
+				if (is_topo_cache_enabled<ORBIT>())
+					foreach_cell_topo_cache<ORBIT>(f);
+				else if (this->template is_orbit_embedded<ORBIT>())
 					foreach_cell_until_cell_marking<ORBIT>(f);
 				else
 					foreach_cell_until_dart_marking<ORBIT>(f);
@@ -491,6 +519,17 @@ protected:
 	}
 
 	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_topo_cache(const FUNC& f)
+	{
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
+			 i != end;
+			 this->attributes_[ORBIT].next(i))
+		{
+			f((*this->global_topo_cache_[ORBIT])[i]);
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_dart_marking(const FUNC& f)
 	{
 		DartMarker dm(*to_concrete());
@@ -521,6 +560,18 @@ protected:
 				if(!f(d))
 					break;
 			}
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_until_topo_cache(const FUNC& f)
+	{
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
+			 i != end;
+			 this->attributes_[ORBIT].next(i))
+		{
+			if(!f((*this->global_topo_cache_[ORBIT])[i]))
+				break;
 		}
 	}
 };

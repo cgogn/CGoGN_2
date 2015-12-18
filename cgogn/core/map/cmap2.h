@@ -304,11 +304,10 @@ public:
 
 		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
-		DartMarker dm(*this);
 
 		for (Dart d : *this)
 		{
-			if (!dm.is_marked(d))
+			if (phi2(d) == d)
 			{
 				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
 
@@ -322,10 +321,9 @@ public:
 				{
 					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
 					{
-						if (!dm.is_marked(*it))
+						if (phi2(*it) == *it)
 						{
 							phi2_sew(d, *it);
-							dm.template mark_orbit<EDGE>(d);
 							phi2_found = true;
 						}
 						else
@@ -336,10 +334,7 @@ public:
 				}
 
 				if (!phi2_found)
-				{
-					dm.template mark_orbit<EDGE>(d);
 					++nb_boundary_edges;
-				}
 
 				if (!first_OK)
 					need_vertex_unicity_check = true;

@@ -144,7 +144,7 @@ protected:
 	/**
 	 * Browser that allow special traversals
 	 */
-	std::unique_ptr< ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> > > std_browser_;
+	ContainerStandardBrowser<Self>* std_browser_;
 
 	/**
 	 * @brief get array index from name
@@ -209,10 +209,10 @@ public:
 	 */
 	ChunkArrayContainer():
 		nb_used_lines_(0u),
-		nb_max_lines_(0u),
-		std_browser_(make_unique< ContainerStandardBrowser<Self> >(this))
+		nb_max_lines_(0u)
 	{
-		current_browser_= std_browser_.get();
+		std_browser_ = new ContainerStandardBrowser<Self>(this);
+		current_browser_= std_browser_;
 	}
 
 	ChunkArrayContainer(Self const& ) = delete;
@@ -225,8 +225,9 @@ public:
 	 */
 	~ChunkArrayContainer()
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
+		delete std_browser_;
 
 		for (auto ptr : table_arrays_)
 			delete ptr;
@@ -428,14 +429,14 @@ public:
 	 */
 	inline void set_current_browser(ContainerBrowser* browser)
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
 		current_browser_ = browser;
 	}
 
 	inline void set_standard_browser()
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
 		current_browser_ = std_browser_;
 	}
@@ -600,8 +601,18 @@ public:
 		holes_stack_.swap(container.holes_stack_);
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
-		std::swap(current_browser_, container.current_browser_);
-		std_browser_.swap(container.std_browser_);
+
+		ContainerBrowser* browser = current_browser_;
+
+		if (container.current_browser_ != container.std_browser_)
+			current_browser_ = container.current_browser_;
+		else
+			current_browser_ = std_browser_;
+
+		if (browser != std_browser_)
+			container.current_browser_ = browser;
+		else
+			container.current_browser_ = container.std_browser_;
 	}
 
 	/**

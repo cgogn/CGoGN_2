@@ -22,12 +22,13 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
+
 #include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
 
-CellMarkerGen::~CellMarkerGen()
-{}
+//CellMarkerGen::~CellMarkerGen()
+//{}
 
-}
+} // namespace cgogn

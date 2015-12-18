@@ -44,6 +44,7 @@ template <unsigned int CHUNKSIZE, typename T>
 class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
+
 	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
 	typedef ChunkArray<CHUNKSIZE, T> Self;
 	typedef T value_type;
@@ -591,7 +592,7 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief operator []
 	 * @param i index of element to access
 	 * @return value of the element
 	 */
