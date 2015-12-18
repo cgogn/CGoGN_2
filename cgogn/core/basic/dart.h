@@ -32,7 +32,6 @@
  * \file cgogn/core/basic/dart.h
  * \brief Dart definition.
  */
-
 namespace cgogn
 {
 
@@ -52,7 +51,7 @@ struct Dart
 	/**
 	 * \brief Creates a new nil Dart
 	 */
-	Dart() : index(INVALID_INDEX)
+	inline Dart() : index(INVALID_INDEX)
 	{}
 
 	/**
@@ -151,11 +150,6 @@ struct Dart
 	 */
 	friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
 };
-
-/**
- * \brief Definition of null embedding
- */
-const unsigned int EMBNULL = Dart::INVALID_INDEX;
 
 } // namespace cgogn
 
