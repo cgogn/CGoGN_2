@@ -84,7 +84,7 @@ public:
 	}
 
 	DartMarkerT(const Self& dm) = delete;
-	DartMarkerT<MAP>& operator=(Self& dm) = delete;
+	Self& operator=(Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -149,8 +149,8 @@ public:
 
 	DartMarker(const Self& dm) = delete;
 	DartMarker(Self&& dm) = delete;
-	DartMarker<MAP>& operator=(Self&& dm) = delete;
-	DartMarker<MAP>& operator=(const Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -193,8 +193,8 @@ public:
 
 	DartMarkerStore(const Self& dm) = delete;
 	DartMarkerStore(Self&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(Self&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(const Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -218,11 +218,40 @@ public:
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		for (Dart d : *marked_darts_)
-		{
 			Inherit::unmark(d);
-		}
 		marked_darts_->clear();
 	}
+
+	inline const std::vector<Dart>* get_marker_darts() const
+	{
+		return marked_darts_;
+	}
+};
+
+template <typename MAP>
+class DartMarkerNoUnmark : public DartMarkerT<MAP>
+{
+public:
+
+	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarkerNoUnmark<MAP> Self;
+	typedef MAP Map;
+
+	DartMarkerNoUnmark(MAP& map) :
+		Inherit(map)
+	{}
+
+	DartMarkerNoUnmark(const MAP& map) :
+		Inherit(map)
+	{}
+
+	~DartMarkerNoUnmark() override
+	{}
+
+	DartMarkerNoUnmark(const Self& dm) = delete;
+	DartMarkerNoUnmark(Self&& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 };
 
 } // namespace cgogn
