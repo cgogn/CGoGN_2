@@ -195,7 +195,7 @@ protected:
 	void unique_orbit_embedding()
 	{
 		static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter") ;
 
