@@ -28,7 +28,9 @@
 
 #include <core/container/chunk_array_container.h>
 
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {

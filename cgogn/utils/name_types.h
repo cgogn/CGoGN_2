@@ -29,8 +29,12 @@
 #include <list>
 
 #include <utils/dll.h>
+#include <utils/definitions.h>
 
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+
 
 namespace cgogn
 {

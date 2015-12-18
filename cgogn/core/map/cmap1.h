@@ -266,6 +266,12 @@ public:
 		{
 			case Orbit::DART: foreach_dart_of_vertex(c, f); break;
 			case Orbit::PHI1:   foreach_dart_of_face(c, f); break;
+			case Orbit::PHI21:
+			case Orbit::PHI2:
+			case Orbit::PHI1_PHI2:
+			case Orbit::PHI21_PHI31:
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI1_PHI3:
 			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
