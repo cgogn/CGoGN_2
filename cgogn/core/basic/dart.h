@@ -115,28 +115,6 @@ struct Dart
 	bool operator!=(Dart rhs) const { return index != rhs.index; }
 
 	/**
-	 * \brief Tests whether the left hand side dart is less
-	 * greather than the right hand side dart.
-	 * \param[in] rhs the dart to compare with
-	 * \retval true if \p lhs is less greather than \p rhs
-	 * \retval false otherwise
-	 * \todo Is this function correct ? 
-	 * What is the definition of the order between darts 
-	 */
-	bool operator<(Dart rhs) const { return index < rhs.index; }
-
-	/**
-	 * \brief Tests whether the left hand side dart is
-	 * greather than the right hand side dart.
-	 * \param[in] rhs the dart to compare with
-	 * \retval true if \p lhs is less greather than \p rhs
-	 * \retval false otherwise
-	 * \todo Is this function correct ?
-	 * What is the definition of the order between darts 
-	 */
-	bool operator>(Dart rhs) const { return index > rhs.index; }
-
-	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the dart to print
