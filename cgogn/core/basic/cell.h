@@ -102,6 +102,9 @@ public:
 	inline Cell(const Cell<ORBIT>& c) : dart(c.dart)
 	{}
 
+	//TODO
+	// Cell(Cell<ORBIT>&& ) = delete;
+
 	/**
 	 * \brief Cast operator.
 	 * \return the dart 
@@ -122,6 +125,10 @@ public:
 	 * \return The cell with the assigned value
 	 */
 	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
+
+
+	//TODO
+	// Cell<ORBIT> operator=(Cell<ORBIT>&& rhs) { dart = rhs.dart return *this; }
 
 	/**
 	 * \brief Prints a cell to a stream.
