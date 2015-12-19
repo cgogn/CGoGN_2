@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/basic/nameTypes.h>
+#include <utils/name_types.h>
 #include <core/container/chunk_array.h>
 
 #include <iostream>
@@ -46,6 +46,7 @@ public:
 	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
 
 	static NamePtrMap map_CA_;
+	static bool known_types_initialized_;
 
 	/**
 	 * @brief register a type
@@ -57,7 +58,34 @@ public:
 	{
 		std::string&& keyType(name_of_type(T()));
 		if(map_CA_.find(keyType) == map_CA_.end())
-			map_CA_[std::move(keyType)] =  make_unique<ChunkArray<CHUNKSIZE, T>>();
+			map_CA_[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
+	}
+
+	static void register_known_types()
+	{
+		if (known_types_initialized_)
+			return;
+
+		register_CA<bool>();
+		register_CA<char>();
+		register_CA<short>();
+		register_CA<int>();
+		register_CA<long>();
+		register_CA<long long>();
+		register_CA<signed char>();
+		register_CA<unsigned char>();
+		register_CA<unsigned short>();
+		register_CA<unsigned int>();
+		register_CA<unsigned long>();
+		register_CA<unsigned long long>();
+		register_CA<float>();
+		register_CA<double>();
+		register_CA<std::string>();
+		// TODO add all std::vector<> ?
+		// TODO add Eigen ?
+		register_CA<Eigen::Vector3d>();
+
+		known_types_initialized_ = true;
 	}
 
 	/**
@@ -88,6 +116,10 @@ public:
 
 template <unsigned int CHUNKSIZE>
 typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
+
+template <unsigned int CHUNKSIZE>
+bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
+
 
 } // namespace cgogn
 

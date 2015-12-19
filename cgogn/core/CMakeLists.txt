@@ -4,12 +4,10 @@ project(cgogn_core
 
 set(HEADER_FILES
 	basic/dll.h
-	basic/nameTypes.h
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
 	basic/cell_marker.h
-	basic/serialization.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -19,13 +17,13 @@ set(HEADER_FILES
 
 	map/map_base_data.h
 	map/map_base.h
-	map/map1.h
-	map/map2.h
-	map/map_tri.h
+	map/cmap1.h
+	map/cmap2.h
+	map/cmap3.h
+	map/cmap_tri.h
 	map/attribute_handler.h
 
-	traversal/global.h
-	traversal/traversor_cell.h
+	io/surface_import.h
 )
 
 set(SOURCE_FILES
@@ -42,6 +40,7 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/cgogn_core>
 )

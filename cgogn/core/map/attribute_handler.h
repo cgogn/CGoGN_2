@@ -41,6 +41,7 @@ template<typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
+
 	typedef AttributeHandlerGen<DATA_TRAITS> Self;
 
 	typedef MapBaseData<DATA_TRAITS> MapData;
@@ -49,14 +50,10 @@ protected:
 
 	MapData* map_;
 
-	// boolean that states the validity of the handler
-	bool valid_;
-
 public:
 
 	inline AttributeHandlerGen(MapData* const map) :
-		map_(map),
-		valid_(false)
+		map_(map)
 	{}
 
 	/**
@@ -64,8 +61,7 @@ public:
 	 * @param atthg
 	 */
 	inline AttributeHandlerGen(const Self& atthg) :
-		map_(atthg.map_),
-		valid_(atthg.valid_)
+		map_(atthg.map_)
 	{}
 
 	/**
@@ -73,8 +69,7 @@ public:
 	 * @param atthg
 	 */
 	inline AttributeHandlerGen(Self&& atthg) CGOGN_NOEXCEPT :
-		map_(atthg.map_),
-		valid_(atthg.valid_)
+		map_(atthg.map_)
 	{
 		atthg.map_ = nullptr;
 	}
@@ -87,7 +82,6 @@ public:
 	inline AttributeHandlerGen& operator=(const Self& atthg)
 	{
 		this->map_ = atthg.map_;
-		this->valid_ = atthg.valid_;
 		return *this;
 	}
 
@@ -99,22 +93,15 @@ public:
 	inline AttributeHandlerGen& operator=(Self&& atthg)
 	{
 		this->map_ = atthg.map_;
-		this->valid_ = atthg.valid_;
 		return *this;
 	}
 
 	virtual ~AttributeHandlerGen()
 	{}
 
-	inline bool is_valid() const { return valid_; }
+	virtual bool is_valid() const = 0;
 
-	virtual unsigned int get_orbit() const = 0;
-
-protected:
-
-	inline void set_invalid() { valid_ = false ; }
-
-	inline void set_valid() { valid_ = true ; }
+	virtual Orbit get_orbit() const = 0;
 };
 
 
@@ -122,7 +109,7 @@ protected:
  * \brief Generic AttributeHandler class with orbit parameter
  * @TPARAM ORBIT the orbit of the attribute to handlde
  */
-template<typename DATA_TRAITS, unsigned int ORBIT>
+template<typename DATA_TRAITS, Orbit ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
@@ -194,7 +181,7 @@ public:
 		return *this;
 	}
 
-	virtual unsigned int get_orbit() const override
+	virtual Orbit get_orbit() const override
 	{
 		return ORBIT;
 	}
@@ -207,7 +194,7 @@ public:
  * \brief AttributeHandler class
  * @TPARAM T the data type of the attribute to handlde
  */
-template<typename DATA_TRAITS, typename T, unsigned int ORBIT>
+template<typename DATA_TRAITS, typename T, Orbit ORBIT>
 class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
@@ -231,34 +218,26 @@ public:
 	 *
 	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
 	 */
-	AttributeHandler():
-		Inherit(nullptr)
+	AttributeHandler() :
+		Inherit(nullptr),
+		chunk_array_(nullptr)
 	{}
 
 	/**
 	 * \brief Constructor
-	 * @param m the map which belong attribute
-	 * @param attributeName name of attribute
+	 * @param m the map the attribute belongs to
+	 * @param ca ChunkArray pointer
 	 */
-	AttributeHandler(MapData* const m, const std::string& attribute_name) :
-		Inherit(m)
-	{
-		cgogn_assert(this->chunk_array_cont_ != nullptr);
-		chunk_array_ = this->chunk_array_cont_->getAttribute(attribute_name);
-		if (chunk_array_ == nullptr)
-			this->set_invalid();
-		else
-			this->set_valid();
-	}
-
 	AttributeHandler(MapData* const m, TChunkArray* const ca) :
 		Inherit(m),
 		chunk_array_(ca)
 	{
-		if (chunk_array_ == nullptr)
-			this->set_invalid();
-		else
-			this->set_valid();
+		if (chunk_array_ != nullptr)
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->add_external_ref(ref);
+		}
 	}
 
 	/**
@@ -304,7 +283,19 @@ public:
 	}
 
 	virtual ~AttributeHandler() override
-	{}
+	{
+		if (is_valid())
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->remove_external_ref(ref);
+		}
+	}
+
+	virtual bool is_valid() const override
+	{
+		return chunk_array_ != nullptr;
+	}
 
 	/**
 	 * \brief getDataVector
@@ -322,7 +313,7 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
@@ -333,7 +324,7 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
@@ -344,7 +335,7 @@ public:
 	 */
 	inline T& operator[](unsigned int i)
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](i);
 	}
 
@@ -355,7 +346,7 @@ public:
 	 */
 	inline const T& operator[](unsigned int i) const
 	{
-		cgogn_message_assert(this->valid_, "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](i);
 	}
 
@@ -370,6 +361,18 @@ public:
 			ah_ptr_(ah),
 			index_(i)
 		{}
+
+		inline const_iterator(const const_iterator& it) :
+			ah_ptr_(it.ah_ptr_),
+			index_(it.index_)
+		{}
+
+		inline const_iterator& operator=(const const_iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
 
 		inline const_iterator& operator++()
 		{
@@ -410,6 +413,18 @@ public:
 			ah_ptr_(ah),
 			index_(i)
 		{}
+
+		inline iterator(const iterator& it) :
+			ah_ptr_(it.ah_ptr_),
+			index_(it.index_)
+		{}
+
+		inline iterator& operator=(const iterator& it)
+		{
+			ah_ptr_ = it.ah_ptr_;
+			index_ = it.index_;
+			return *this;
+		}
 
 		inline iterator& operator++()
 		{

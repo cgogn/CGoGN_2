@@ -26,10 +26,21 @@
 
 #include <core/map/map_base_data.h>
 #include <core/map/attribute_handler.h>
-#include <core/traversal/global.h>
+
+#include <core/basic/cell.h>
+#include <core/basic/dart_marker.h>
+#include <core/basic/cell_marker.h>
 
 namespace cgogn
 {
+
+enum TraversalStrategy
+{
+	AUTO = 0,
+	FORCE_DART_MARKING,
+	FORCE_CELL_MARKING,
+	FORCE_TOPO_CACHE
+};
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class MapBase : public MapBaseData<DATA_TRAITS>
@@ -39,25 +50,70 @@ public:
 	typedef MapBaseData<DATA_TRAITS> Inherit;
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
+	template <typename MAP> friend class cgogn::DartMarkerT;
+	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarkerT;
+
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
-	template<typename T, unsigned int ORBIT>
+	template<typename T, Orbit ORBIT>
 	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
 
-protected:
+	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
 
-	std::multimap<ChunkArrayGen*, AttributeHandlerGen*> attribute_handlers_;
+	using DartMarker = cgogn::DartMarker<ConcreteMap>;
+	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
 
-public:
+	template<Orbit ORBIT>
+	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
 	MapBase() : Inherit()
 	{}
 
 	~MapBase()
 	{}
+
+	MapBase(Self const&) = delete;
+	MapBase(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
+	void clear(bool remove_attributes = false)
+	{
+		this->topology_.clear(false);
+
+		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear(remove_attributes);
+
+		if (remove_attributes)
+		{
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			{
+				if (this->embeddings_[i] != nullptr)
+				{
+					this->topology_.remove_attribute(this->embeddings_[i]);
+					this->embeddings_[i] = nullptr;
+				}
+
+				for (unsigned int j = 0; j < NB_THREADS; ++j)
+					this->mark_attributes_[i][j].clear();
+			}
+		}
+	}
+
+protected:
+
+	inline ConcreteMap* to_concrete()
+	{
+		return static_cast<ConcreteMap*>(this);
+	}
+
+	inline const ConcreteMap* to_concrete() const
+	{
+		return static_cast<const ConcreteMap*>(this);
+	}
 
 	/*******************************************************************************
 	 * Container elements management
@@ -70,7 +126,9 @@ public:
 		return idx;
 	}
 
-	template <unsigned int ORBIT>
+public:
+
+	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
@@ -84,14 +142,12 @@ public:
 	 * Attributes management
 	 *******************************************************************************/
 
-public:
-
 	/**
 	 * \brief add an attribute
 	 * @param attribute_name the name of the attribute to create
 	 * @return a handler to the created attribute
 	 */
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
@@ -107,23 +163,13 @@ public:
 	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
 	 */
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = ah.get_data();
-
-		if (this->attributes_[ORBIT].remove_attribute(ca))
-		{
-			typedef typename std::multimap<ChunkArrayGen*, AttributeHandlerGen*>::iterator IT;
-			std::pair<IT, IT> bounds = attribute_handlers_.equal_range(ca);
-			for(IT i = bounds.first; i != bounds.second; ++i)
-				(*i).second->set_invalid();
-			attribute_handlers_.erase(bounds.first, bounds.second);
-			return true;
-		}
-		return false;
+		const ChunkArray<T>* ca = ah.get_data();
+		return this->attributes_[ORBIT].remove_attribute(ca);
 	}
 
 	/**
@@ -131,7 +177,7 @@ public:
 	* @param attribute_name attribute name
 	* @return an AttributeHandler
 	*/
-	template <typename T, unsigned int ORBIT>
+	template <typename T, Orbit ORBIT>
 	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
@@ -141,41 +187,31 @@ public:
 	}
 
 	/**
-	* \brief get a mark attribute on the topology container (from pool or created)
-	* @return a mark attribute on the topology container
+	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
+	* @param attribute_name attribute name
+	* @return an AttributeHandler
 	*/
-	inline ChunkArray<bool>* get_topology_mark_attribute()
+	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
+	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
 	{
-		unsigned int thread = this->get_current_thread_index();
-		if (!this->mark_attributes_topology_[thread].empty())
-		{
-			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
-			this->mark_attributes_topology_[thread].pop_back();
-			return ca;
-		}
-		else
-		{
-			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
-			return ca;
-		}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
+
+		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
+		return AttributeHandler<T_ASK, ORBIT>(this, ca);
 	}
 
-	/**
-	* \brief release a mark attribute on the topology container
-	* @param the mark attribute to release
-	*/
-	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
-	{
-		unsigned int thread = this->get_current_thread_index();
-		this->mark_attributes_topology_[thread].push_back(ca);
-	}
+protected:
+
+	/*******************************************************************************
+	 * Marking attributes management
+	 *******************************************************************************/
 
 	/**
 	* \brief get a mark attribute on the given ORBIT attribute container (from pool or created)
 	* @return a mark attribute on the topology container
 	*/
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline ChunkArray<bool>* get_mark_attribute()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
@@ -193,10 +229,6 @@ public:
 			if (!this->template is_orbit_embedded<ORBIT>())
 				create_embedding<ORBIT>();
 			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
-
-			// TODO : useful ?
-			ca->all_false();
-
 			return ca;
 		}
 	}
@@ -205,7 +237,7 @@ public:
 	* \brief release a mark attribute on the given ORBIT attribute container
 	* @param the mark attribute to release
 	*/
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
@@ -214,12 +246,18 @@ public:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
-protected:
+	/*******************************************************************************
+	 * Embedding management
+	 *******************************************************************************/
 
-	template <unsigned int ORBIT>
+	/**
+	 * \brief initialize a new orbit embedding
+	 */
+	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -229,15 +267,83 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize the indices of the existing orbits
-		typename TOPO_TRAITS::CONCRETE* cmap = static_cast<typename TOPO_TRAITS::CONCRETE*>(this);
-		for (Cell<ORBIT> c : cells<ORBIT, FORCE_DART_MARKING>(*cmap))
-			cmap->template init_orbit_embedding(c, add_attribute_element<ORBIT>());
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
+		{
+			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+		});
+	}
+
+	/**
+	 * \brief make sure that all given orbits are uniquely embedded (indexed)
+	 */
+	template <Orbit ORBIT>
+	void unique_orbit_embedding()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter");
+		for (unsigned int& i : counter) i = 0;
+
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
+		{
+			if (counter[c] > 0)
+				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+			counter[c]++;
+		});
+
+		remove_attribute(counter) ;
 	}
 
 public:
 
 	/*******************************************************************************
-	 * Basic traversals
+	 * Topo caches management
+	 *******************************************************************************/
+
+	template <Orbit ORBIT>
+	bool is_topo_cache_enabled()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return this->global_topo_cache_[ORBIT] != nullptr;
+	}
+
+	template <Orbit ORBIT>
+	void enable_topo_cache()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(!is_topo_cache_enabled<ORBIT>(), "Trying to enable an enabled global topo cache");
+
+		this->global_topo_cache_[ORBIT] = this->attributes_[ORBIT].template add_attribute<Dart>("global_topo_cache");;
+		update_topo_cache<ORBIT>();
+	}
+
+	template <Orbit ORBIT>
+	void update_topo_cache()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
+
+		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
+		{
+			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
+		});
+	}
+
+	template <Orbit ORBIT>
+	void disable_topo_cache()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to disable a disabled global topo cache");
+
+		this->topology_.remove_attribute(this->global_topo_cache_[ORBIT]);
+		this->global_topo_cache_[ORBIT] = nullptr;
+	}
+
+	/*******************************************************************************
+	 * Traversals
 	 *******************************************************************************/
 
 	class const_iterator
@@ -252,6 +358,18 @@ public:
 			dart_(d)
 		{}
 
+		inline const_iterator(const const_iterator& it) :
+			map_(it.map_),
+			dart_(it.dart_)
+		{}
+
+		inline const_iterator& operator=(const const_iterator& it)
+		{
+			map_ = it.map_;
+			dart_ = it.dart_;
+			return *this;
+		}
+
 		inline const_iterator& operator++()
 		{
 			map_.topology_.next(dart_.index);
@@ -263,7 +381,7 @@ public:
 			return dart_;
 		}
 
-		inline bool operator!=(const_iterator it) const
+		inline bool operator!=(const const_iterator& it) const
 		{
 			cgogn_assert(&map_ == &(it.map_));
 			return dart_ != it.dart_;
@@ -286,22 +404,190 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart(FUNC f)
+	inline void foreach_dart(const FUNC& f)
 	{
-		for (Dart d : *this)
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
 			f(d);
+		}
 	}
 
 	/**
-	 * \brief apply a function on each dart of the map
+	 * \brief apply a function on each dart of the map and stops when the function returns false
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart(FUNC& f)
+	inline void foreach_dart_until(const FUNC& f)
 	{
-		for (Dart d : *this)
-			f(d);
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
+			if(!f(d))
+				break;
+		}
+	}
+
+	/**
+	 * \brief apply a function on each orbit of the map
+	 * @tparam ORBIT orbit to traverse
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f)
+	{
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
+
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				foreach_cell_topo_cache<ORBIT>(f);
+				break;
+			case AUTO :
+				if (is_topo_cache_enabled<ORBIT>())
+					foreach_cell_topo_cache<ORBIT>(f);
+				else if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
+
+	/**
+	 * \brief apply a function on each orbit of the map and stops when the function returns false
+	 * @tparam ORBIT orbit to traverse
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	void foreach_cell_until(const FUNC& f)
+	{
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_until_cell_marking<ORBIT>(f);
+				break;
+			case FORCE_TOPO_CACHE :
+				foreach_cell_topo_cache<ORBIT>(f);
+				break;
+			case AUTO :
+				if (is_topo_cache_enabled<ORBIT>())
+					foreach_cell_topo_cache<ORBIT>(f);
+				else if (this->template is_orbit_embedded<ORBIT>())
+					foreach_cell_until_cell_marking<ORBIT>(f);
+				else
+					foreach_cell_until_dart_marking<ORBIT>(f);
+				break;
+		}
+	}
+
+protected:
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_dart_marking(const FUNC& f)
+	{
+		DartMarker dm(*to_concrete());
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
+			if (!dm.is_marked(d))
+			{
+				dm.template mark_orbit<ORBIT>(d);
+				f(d);
+			}
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_cell_marking(const FUNC& f)
+	{
+		CellMarker<ORBIT> cm(*to_concrete());
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
+			if (!cm.is_marked(d))
+			{
+				cm.mark(d);
+				f(d);
+			}
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_topo_cache(const FUNC& f)
+	{
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
+			 i != end;
+			 this->attributes_[ORBIT].next(i))
+		{
+			f((*this->global_topo_cache_[ORBIT])[i]);
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_until_dart_marking(const FUNC& f)
+	{
+		DartMarker dm(*to_concrete());
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
+			if (!dm.is_marked(d))
+			{
+				dm.template mark_orbit<ORBIT>(d);
+				if(!f(d))
+					break;
+			}
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_until_cell_marking(const FUNC& f)
+	{
+		CellMarker<ORBIT> cm(*to_concrete());
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index))
+		{
+			if (!cm.is_marked(d))
+			{
+				cm.mark(d);
+				if(!f(d))
+					break;
+			}
+		}
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_cell_until_topo_cache(const FUNC& f)
+	{
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
+			 i != end;
+			 this->attributes_[ORBIT].next(i))
+		{
+			if(!f((*this->global_topo_cache_[ORBIT])[i]))
+				break;
+		}
 	}
 };
 

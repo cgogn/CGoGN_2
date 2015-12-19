@@ -26,6 +26,9 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
+
+#include <utils/serialization.h>
 
 namespace cgogn
 {
@@ -37,6 +40,7 @@ template<unsigned int CHUNKSIZE>
 class ChunkArrayGen
 {
 public:
+
 	typedef ChunkArrayGen<CHUNKSIZE> Self;
 
 	ChunkArrayGen() = default;
@@ -45,10 +49,37 @@ public:
 	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
 	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
 
+protected:
+
+	std::vector<ChunkArrayGen**> external_refs_;
+
+public:
+
 	/**
 	 * @brief virtual destructor
 	 */
-	virtual ~ChunkArrayGen() {}
+	virtual ~ChunkArrayGen()
+	{
+		for (auto ref : external_refs_)
+		{
+			*ref = nullptr;
+		}
+	}
+
+	void add_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
+		external_refs_.push_back(ref);
+	}
+
+	void remove_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen remove_external_ref on other ChunkArrayGen");
+		auto it = std::find(external_refs_.begin(), external_refs_.end(), ref);
+		cgogn_message_assert(it != external_refs_.end(), "ChunkArrayGen external ref not found");
+		std::swap(*it, external_refs_.back());
+		external_refs_.pop_back();
+	}
 
 	/**
 	 * @brief create a ChunkArray object without knowning type
@@ -127,6 +158,19 @@ public:
 	 * @return ok
 	 */
 	virtual bool load(std::istream& fs) = 0;
+
+	/**
+	 * @brief skip the data instead of loading
+	 * @param fs input file stream
+	 */
+	static void skip(std::istream& fs)
+	{
+		std::size_t chunk_bytes;
+		serialization::load(fs, &chunk_bytes, 1);
+		unsigned int nb_lines;
+		serialization::load(fs, &nb_lines, 1);
+		fs.ignore(std::streamsize(chunk_bytes), EOF);
+	}
 };
 
 } // namespace cgogn

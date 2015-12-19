@@ -30,27 +30,27 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API DartMarkerGen
-{
-public:
-	typedef DartMarkerGen Self;
-	DartMarkerGen()
-	{}
+//class CGOGN_CORE_API DartMarkerGen
+//{
+//public:
+//	typedef DartMarkerGen Self;
+//	DartMarkerGen()
+//	{}
 
-	virtual ~DartMarkerGen();
+//	virtual ~DartMarkerGen();
 
-	DartMarkerGen(const Self& dm) = delete;
-	DartMarkerGen(Self&& dm) = delete;
-	DartMarkerGen& operator=(Self&& dm) = delete;
-	DartMarkerGen& operator=(const Self& dm) = delete;
-};
+//	DartMarkerGen(const Self& dm) = delete;
+//	DartMarkerGen(Self&& dm) = delete;
+//	DartMarkerGen& operator=(Self&& dm) = delete;
+//	DartMarkerGen& operator=(const Self& dm) = delete;
+//};
 
 template <typename MAP>
-class DartMarkerT : public DartMarkerGen
+class DartMarkerT // : public DartMarkerGen
 {
 public:
 
-	typedef DartMarkerGen Inherit;
+//	typedef DartMarkerGen Inherit;
 	typedef DartMarkerT<MAP> Self;
 
 	typedef MAP Map;
@@ -64,27 +64,29 @@ protected:
 public:
 
 	DartMarkerT(Map& map) :
-		Inherit(),
+//		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
 	DartMarkerT(const MAP& map) :
-		DartMarkerGen(),
+//		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
-		mark_attribute_ = map_.template get_topology_mark_attribute();
+		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
-	~DartMarkerT() override
+	virtual ~DartMarkerT() // override
 	{
 		if (MapGen::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 
 	DartMarkerT(const Self& dm) = delete;
-	DartMarkerT<MAP>& operator=(Self& dm) = delete;
+	DartMarkerT(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
+	Self& operator=(Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -104,7 +106,7 @@ public:
 		return (*mark_attribute_)[d.index];
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
@@ -114,7 +116,7 @@ public:
 		});
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void unmark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
@@ -149,8 +151,8 @@ public:
 
 	DartMarker(const Self& dm) = delete;
 	DartMarker(Self&& dm) = delete;
-	DartMarker<MAP>& operator=(Self&& dm) = delete;
-	DartMarker<MAP>& operator=(const Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -193,8 +195,8 @@ public:
 
 	DartMarkerStore(const Self& dm) = delete;
 	DartMarkerStore(Self&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(Self&& dm) = delete;
-	DartMarkerStore<MAP>& operator=(const Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -203,7 +205,7 @@ public:
 		marked_darts_->push_back(d);
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
@@ -218,11 +220,40 @@ public:
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		for (Dart d : *marked_darts_)
-		{
-			Inherit::unmark(d);
-		}
+			this->mark_attribute_->set_false_byte(d.index);
 		marked_darts_->clear();
 	}
+
+	inline const std::vector<Dart>* get_marker_darts() const
+	{
+		return marked_darts_;
+	}
+};
+
+template <typename MAP>
+class DartMarkerNoUnmark : public DartMarkerT<MAP>
+{
+public:
+
+	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarkerNoUnmark<MAP> Self;
+	typedef MAP Map;
+
+	DartMarkerNoUnmark(MAP& map) :
+		Inherit(map)
+	{}
+
+	DartMarkerNoUnmark(const MAP& map) :
+		Inherit(map)
+	{}
+
+	~DartMarkerNoUnmark() override
+	{}
+
+	DartMarkerNoUnmark(const Self& dm) = delete;
+	DartMarkerNoUnmark(Self&& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
 };
 
 } // namespace cgogn

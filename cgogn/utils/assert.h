@@ -25,6 +25,7 @@
 #define UTILS_ASSERT_H_
 
 #include <string>
+#include <tuple>
 #include <utils/dll.h>
 #include <utils/definitions.h>
 
@@ -84,7 +85,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_assert(x) 												\
+#define _internal_cgogn_assert(x) 												\
 { 																		\
 	if(!(x)) 															\
 	{			 														\
@@ -99,7 +100,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] msg the specific message about the condition
  * \see assertion_failed()
  */
-#define cgogn_message_assert(x, msg)									\
+#define _internal_cgogn_message_assert(x, msg)									\
 { 																		\
 	if(!(x)) 															\
 	{			 														\
@@ -112,7 +113,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \details
  * \param[in] msg the specific information message
  */
-#define cgogn_assert_not_reached(msg)								\
+#define _internal_cgogn_assert_not_reached(msg)								\
 {																	\
 	cgogn::should_not_have_reached(msg, __FILE__, __func__, __LINE__);\
 }
@@ -124,7 +125,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_require(x) 												\
+#define _internal_cgogn_require(x) 												\
 { 																		\
 	if(!(x)) 															\
 	{			 														\
@@ -139,7 +140,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_ensure(x) 												\
+#define _internal_cgogn_ensure(x) 												\
 { 																		\
 	if(!(x)) 															\
 	{			 														\
@@ -154,7 +155,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] x the boolean expression of the condition
  * \see assertion_failed()
  */
-#define cgogn_invariant(x) 												\
+#define _internal_cgogn_invariant(x) 												\
 { 																		\
 	if(!(x)) 															\
 	{			 														\
@@ -163,27 +164,29 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 }
 
 /**
- * \def debug_assert(x)
+ * \def cgogn_assert(x)
  * \copydoc cgogn_assert()
  * \note This assertion check is only active in debug mode.
  */
  /**
- * \def debug_message_assert(x, msg)
+ * \def cgogn_message_assert(x, msg)
  * \copydoc cgogn_assert()
  * \note This assertion check is only active in debug mode.
  */
 #ifdef CGOGN_DEBUG
-	#define debug_assert(x) cgogn_assert(x)
-	#define debug_message_assert(x, msg) cgogn_message_assert(x, msg)
-	#define debug_require(x) cgogn_require(x)
-	#define debug_ensure(x) cgogn_ensure(x)
-	#define debug_invariant(x) cgogn_invariant(x)
+	#define cgogn_assert(x) _internal_cgogn_assert(x)
+	#define cgogn_message_assert(x, msg) _internal_cgogn_message_assert(x, msg)
+	#define cgogn_assert_not_reached(msg) _internal_cgogn_assert_not_reached(msg)
+	#define cgogn_require(x) _internal_cgogn_require(x)
+	#define cgogn_ensure(x) _internal_cgogn_ensure(x)
+	#define cgogn_invariant(x) _internal_cgogn_invariant(x)
 #else
-	#define debug_assert(x)
-	#define debug_message_assert(x, msg)
-	#define debug_require(x)
-	#define debug_ensure(x)
-	#define debug_invariant(x)
+	#define cgogn_assert(x)
+	#define cgogn_message_assert(x, msg)
+	#define cgogn_assert_not_reached(msg)
+	#define cgogn_require(x)
+	#define cgogn_ensure(x)
+	#define cgogn_invariant(x)
 #endif
 
 /**
@@ -197,11 +200,39 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \note This assertion check is only active in parano mode.
  */
 #ifdef CGOGN_PARANO
-	#define parano_assert(x) cgogn_assert(x)
-	#define parano_message_assert(x, msg) cgogn_message_assert(x, msg)
+	#define parano_assert(x) _internal_cgogn_assert(x)
+	#define parano_message_assert(x, msg) _internal_cgogn_message_assert(x, msg)
 #else
 	#define parano_assert(x)
 	#define parano_message_assert(x, msg)
 #endif
+
+
+// no comment :-)
+
+template <typename T>
+struct function_traits : public function_traits<decltype(&T::operator())>
+{};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...) const>
+// we specialize for pointers to member function
+{
+	enum { arity = sizeof...(Args) };
+	// arity is the number of arguments.
+
+	typedef ReturnType result_type;
+
+	template <size_t i>
+	struct arg
+	{
+		typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+		// the i-th argument is equivalent to the i-th tuple element of a tuple
+		// composed of those arguments.
+	};
+};
+
+#define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type , T>::value
+#define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type , T>::value
 
 #endif // UTILS_ASSERT_H_

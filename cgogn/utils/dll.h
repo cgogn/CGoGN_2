@@ -20,8 +20,10 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #ifndef UTILS_DLL_H_
 #define UTILS_DLL_H_
+
 /**
 * \brief Linkage declaration for CGOGN symbols.
 */

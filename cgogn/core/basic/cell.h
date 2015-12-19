@@ -25,7 +25,7 @@
 #define CORE_BASIC_CELL_H_
 
 #include <core/basic/dart.h>
-
+#include <utils/definitions.h>
 
 /**
  * \file core/basic/cell.h
@@ -34,29 +34,32 @@
 namespace cgogn
 {
 
-const unsigned int NB_ORBITS = 8;
+enum Orbit: unsigned int
+{
+	DART = 0,
+	PHI1,
+	PHI2,
+	PHI1_PHI2,
+	PHI1_PHI3,
+	PHI2_PHI3,
+	PHI21,
+	PHI21_PHI31,
+};
 
-const unsigned int VERTEX1   = 0;
-const unsigned int VERTEX2   = 1;
-const unsigned int EDGE2     = 2;
-const unsigned int FACE2     = 3;
-const unsigned int VERTEX3   = 4;
-const unsigned int EDGE3     = 5;
-const unsigned int FACE3     = 6;
-const unsigned int VOLUME3   = 7;
+static const unsigned int NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
-inline std::string orbit_name(unsigned int orbit)
+inline std::string orbit_name(Orbit orbit)
 {
 	switch(orbit)
 	{
-		case VERTEX1: return "VERTEX1"; break;
-		case VERTEX2: return "VERTEX2"; break;
-		case EDGE2:   return "EDGE2"; break;
-		case FACE2:   return "FACE2"; break;
-		case VERTEX3: return "VERTEX3"; break;
-		case EDGE3:   return "EDGE3"; break;
-		case FACE3:   return "FACE3"; break;
-		case VOLUME3: return "VOLUME3"; break;
+		case Orbit::DART: return "Orbit::DART"; break;
+		case Orbit::PHI1: return "Orbit::PHI1"; break;
+		case Orbit::PHI2: return "Orbit::PHI2"; break;
+		case Orbit::PHI1_PHI2: return "Orbit::PHI1_PHI2"; break;
+		case Orbit::PHI1_PHI3: return "Orbit::PHI1_PHI3"; break;
+		case Orbit::PHI2_PHI3: return "Orbit::PHI2_PHI3"; break;
+		case Orbit::PHI21: return "Orbit::PHI21"; break;
+		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
 		default: cgogn_assert_not_reached("orbit of this name do not exist"); break;
 	}
 	return "UNKNOWN";
@@ -71,7 +74,7 @@ inline std::string orbit_name(unsigned int orbit)
  * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
-template <unsigned int ORBIT>
+template <Orbit ORBIT>
 class Cell
 {
 public:

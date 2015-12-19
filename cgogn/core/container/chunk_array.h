@@ -25,7 +25,7 @@
 #define CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <core/container/chunk_array_gen.h>
-#include <core/basic/serialization.h>
+#include <utils/serialization.h>
 #include <utils/assert.h>
 
 #include <iostream>
@@ -44,6 +44,7 @@ template <unsigned int CHUNKSIZE, typename T>
 class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
+
 	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
 	typedef ChunkArray<CHUNKSIZE, T> Self;
 	typedef T value_type;
@@ -81,6 +82,11 @@ public:
 	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
 		return new Self();
+	}
+
+	void swap(Self& ca)
+	{
+		table_data_.swap(ca.table_data_);
 	}
 
 	bool is_boolean_array() const override
@@ -252,13 +258,37 @@ public:
 	{
 		cgogn_assert(nb_lines / CHUNKSIZE <= get_nb_chunks());
 
-		serialization::save(fs, &nb_lines, 1);
-
 		// no data -> finished
 		if (nb_lines == 0)
+		{
+			std::size_t chunk_bytes = 0;
+			serialization::save(fs, &chunk_bytes, 1);
+			serialization::save(fs, &nb_lines, 1);
 			return;
+		}
 
 		unsigned int nbc = get_nb_chunks() - 1u;
+		// nb of lines of last chunk
+		const unsigned nb = nb_lines - nbc*CHUNKSIZE;
+
+		// compute number of bytes to save
+		std::size_t chunk_bytes = 0;
+		if (serialization::known_size(table_data_[0]))
+		{
+			chunk_bytes += nbc * serialization::data_length(table_data_[0], CHUNKSIZE);
+		}
+		else
+		{
+			for(unsigned int i = 0u; i < nbc; ++i)
+				chunk_bytes += serialization::data_length(table_data_[i], CHUNKSIZE);
+		}
+		chunk_bytes +=serialization::data_length(table_data_[nbc], nb);
+		// save it
+		serialization::save(fs, &chunk_bytes, 1);
+
+		// save nb lines
+		serialization::save(fs, &nb_lines, 1);
+
 
 		// save data chunks except last
 		for(unsigned int i = 0u; i < nbc; ++i)
@@ -267,12 +297,14 @@ public:
 		}
 
 		// save last incomplete chunk
-		const unsigned nb = nb_lines - nbc*CHUNKSIZE;
 		serialization::save(fs, table_data_[nbc], nb);
 	}
 
 	bool load(std::istream& fs) override
 	{
+		std::size_t chunk_bytes;
+		serialization::load(fs, &chunk_bytes, 1);
+
 		unsigned int nb_lines;
 		serialization::load(fs, &nb_lines, 1);
 		// no data -> finished
@@ -489,6 +521,16 @@ public:
 
 	void save(std::ostream& fs, unsigned int nb_lines) const override
 	{
+		// no data -> finished
+		if (nb_lines == 0)
+		{
+			std::size_t chunk_bytes = 0;
+			serialization::save(fs, &chunk_bytes, 1);
+			serialization::save(fs, &nb_lines, 1);
+			return;
+		}
+
+
 		// round nbLines to 32 multiple
 		if (nb_lines % 32u)
 			nb_lines = ((nb_lines / 32u) + 1u) * 32u;
@@ -496,12 +538,13 @@ public:
 		cgogn_assert(nb_lines / CHUNKSIZE <= table_data_.size());
 		// TODO: if (nb_lines==0) nb_lines = CHUNKSIZE*table_data_.size(); ??
 
+		// save number of bytes
+		std::size_t chunk_bytes = nb_lines / 8u;
+		serialization::save(fs, &chunk_bytes, 1);
+
 		// save number of lines
 		serialization::save(fs, &nb_lines, 1);
 
-		// no data -> finished
-		if (nb_lines == 0u)
-			return;
 
 		const unsigned int nbc = get_nb_chunks() - 1u;
 		// save data chunks except last
@@ -517,6 +560,10 @@ public:
 
 	bool load(std::istream& fs) override
 	{
+		// get number of bytes
+		std::size_t chunk_bytes;
+		serialization::load(fs, &chunk_bytes, 1);
+
 		// get number of lines to load
 		unsigned int nb_lines;
 		serialization::load(fs, &nb_lines, 1);
@@ -545,7 +592,7 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief operator []
 	 * @param i index of element to access
 	 * @return value of the element
 	 */

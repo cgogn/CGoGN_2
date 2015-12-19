@@ -38,10 +38,19 @@ const unsigned int NB_THREADS = 8u;
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
 extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
+/**
+ * @brief function to call at begin of each thread which use a map
+ */
 CGOGN_UTILS_API void thread_start();
+
+/**
+ * @brief function to call at end of each thread which use a map
+ */
 CGOGN_UTILS_API void thread_stop();
+
 CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
 CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+
 
 } // namespace cgogn
 

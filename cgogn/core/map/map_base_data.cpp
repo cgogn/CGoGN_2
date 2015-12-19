@@ -27,6 +27,7 @@ namespace cgogn
 {
 
 std::vector<MapGen*>* MapGen::instances_ = nullptr;
+bool MapGen::init_CA_factory = true;
 
 MapGen::MapGen()
 {

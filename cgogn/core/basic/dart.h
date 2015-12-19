@@ -79,7 +79,7 @@ struct Dart
 	 * \brief Name of this CGoGN type
 	 * \return a string representing the name of the class
 	 */
-	static std::string CGoGN_name_of_type() { return "Dart"; }
+	static std::string cgogn_name_of_type() { return "Dart"; }
 
 	/**
 	 * \brief Tests the nullity of the dart.

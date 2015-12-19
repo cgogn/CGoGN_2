@@ -31,16 +31,20 @@ namespace cgogn
 {
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class Map1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
+class CMap1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef Map1_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	static const unsigned int VERTEX = VERTEX1;
-	static const unsigned int EDGE   = VERTEX1;
-	static const unsigned int FACE   = FACE2;
+	friend typename Self::Inherit;
+
+	template <typename MAP> friend class cgogn::DartMarkerT;
+
+	static const Orbit VERTEX = Orbit::DART;
+	static const Orbit EDGE   = Orbit::DART;
+	static const Orbit FACE   = Orbit::PHI1;
 
 	typedef Cell<VERTEX> Vertex;
 	typedef Cell<EDGE> Edge;
@@ -51,7 +55,7 @@ public:
 	template<typename T>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
-	template<typename T, unsigned int ORBIT>
+	template<typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
@@ -60,6 +64,8 @@ public:
 	template<typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
+	using DartMarker = typename Inherit::DartMarker;
+	using DartMarkerStore = typename Inherit::DartMarkerStore;
 protected:
 
 	ChunkArray<Dart>* phi1_;
@@ -113,13 +119,18 @@ protected:
 
 public:
 
-	Map1_T() : Inherit()
+	CMap1_T() : Inherit()
 	{
 		init();
 	}
 
-	virtual ~Map1_T() override
+	virtual ~CMap1_T() override
 	{}
+
+	CMap1_T(Self const&) = delete;
+	CMap1_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Basic topological operations
@@ -174,31 +185,26 @@ public:
 	 * @param nb_edges
 	 * @return
 	 */
-	Dart add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
 		Dart d = add_face_topo(nb_edges);
 
-//		Face f(d);
+		Face f(d);
 
-		if (this->template is_orbit_embedded<VERTEX1>())
+		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-//			for (Dart d : incident<VERTEX1>(f))
-//				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-
-			Dart it = d;
-			do
+			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
 			{
-				init_orbit_embedding<VERTEX1>(it, this->template add_attribute_element<VERTEX1>());
-				it = phi1(it);
-			} while (it != d);
+				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
+			});
 		}
 
-		if (this->template is_orbit_embedded<FACE2>())
-			init_orbit_embedding<FACE2>(d, this->template add_attribute_element<FACE2>());
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
+			init_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
-		return d;
+		return f;
 	}
 
 protected:
@@ -207,8 +213,8 @@ protected:
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart d = static_cast<typename TOPO_TRAITS::CONCRETE*>(this)->add_dart();
-		for (unsigned int i = 1 ; i < nb_edges ; ++i)
+		Dart d = this->to_concrete()->add_dart();
+		for (unsigned int i = 1; i < nb_edges; ++i)
 			cut_edge_topo(d);
 
 		return d;
@@ -221,30 +227,24 @@ protected:
 	 */
 	Dart cut_edge_topo(Dart d)
 	{
-		Dart e = static_cast<typename TOPO_TRAITS::CONCRETE*>(this)->add_dart(); // Create a new dart
+		Dart e = this->to_concrete()->add_dart(); // Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
 
 		// TODO: doit on traiter les marker de bord 2/3 dans Map1
-//		if (this->template is_boundary_marked<2>(d))
-//			this->template boundary_mark<2>(e);
+		//		if (this->template is_boundary_marked<2>(d))
+		//			this->template boundary_mark<2>(e);
 
-//		if (this->template is_boundary_marked<3>(d))
-//			this->template boundary_mark<3>(e);
+		//		if (this->template is_boundary_marked<3>(d))
+		//			this->template boundary_mark<3>(e);
 
 		return e;
 	}
 
-public:
+protected:
 
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
-
-	template <typename FUNC>
-	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
@@ -257,28 +257,76 @@ public:
 		} while (it != d);
 	}
 
-	template <unsigned int ORBIT, typename FUNC>
+	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		switch (ORBIT)
 		{
-			case VERTEX1: foreach_dart_of_vertex(c, f); break;
-			case FACE2:   foreach_dart_of_face(c, f); break;
-			default:      cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			case Orbit::DART: f(c.dart); break;
+			case Orbit::PHI1: foreach_dart_of_face(c, f); break;
+			case Orbit::PHI2:
+			case Orbit::PHI1_PHI2:
+			case Orbit::PHI1_PHI3:
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI21:
+			case Orbit::PHI21_PHI31:
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
+
+public:
+
+	/*******************************************************************************
+	 * Incidence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		foreach_dart_of_orbit<FACE>(f, func);
+	}
+
+	/*******************************************************************************
+	 * Adjacence traversal
+	 *******************************************************************************/
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		f(Vertex(phi1(v.dart)));
+		f(Vertex(phi_1(v.dart)));
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		f(Edge(phi1(e.dart)));
+		f(Edge(phi_1(e.dart)));
+	}
+
+protected:
 
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
-	template <unsigned int ORBIT>
+	template <Orbit ORBIT>
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
@@ -286,14 +334,18 @@ public:
 };
 
 template <typename DataTraits>
-struct Map1TopoTraits
+struct CMap1TopoTraits
 {
 	static const int PRIM_SIZE = 1;
-	typedef Map1_T<DataTraits, Map1TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap1_T<DataTraits, CMap1TopoTraits<DataTraits>> CONCRETE;
 };
 
-template <typename DataTraits>
-using Map1 = Map1_T<DataTraits, Map1TopoTraits<DataTraits>>;
+struct CMap1DataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+};
+
+using CMap1 = CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
 
 } // namespace cgogn
 

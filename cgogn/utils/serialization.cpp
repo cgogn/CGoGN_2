@@ -20,54 +20,65 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
-#ifndef CORE_TRAVERSAL_GLOBAL_H_
-#define CORE_TRAVERSAL_GLOBAL_H_
-
-#include <core/traversal/traversor_cell.h>
+#define CGOGN_UTILS_DLL_EXPORT
+#include <utils/serialization.h>
 
 namespace cgogn
 {
-
-template <unsigned int ORBIT, TraversorStrategy STRATEGY = AUTO, typename MAP>
-inline TraversorCell<MAP, ORBIT, STRATEGY> cells(MAP& map)
+namespace serialization
 {
-	return TraversorCell<MAP, ORBIT, STRATEGY>(map);
+template <>
+CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
+{
+	return false;
 }
 
-template <TraversorStrategy STRATEGY = AUTO, typename MAP>
-inline TraversorCell<MAP, MAP::VERTEX, STRATEGY> vertices(MAP& map)
+// load string
+template <>
+CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
 {
-	return TraversorCell<MAP, MAP::VERTEX, STRATEGY>(map);
+	cgogn_assert(dest != nullptr);
+
+	char buffer[2048];
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		istream.read((buffer), size);
+		dest[i].resize(size);
+		for (unsigned int j=0; j<size; ++j)
+			dest[i][j] = buffer[j];
+	}
 }
 
-template <TraversorStrategy STRATEGY = AUTO, typename MAP>
-inline TraversorCell<MAP, MAP::EDGE, STRATEGY> edges(MAP& map)
+//save string
+template <>
+CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
 {
-	return TraversorCell<MAP, MAP::EDGE, STRATEGY>(map);
+	cgogn_assert(src != nullptr);
+
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const char* str = src[i].c_str();
+		ostream.write(str, size);
+	}
 }
 
-template <TraversorStrategy STRATEGY = AUTO, typename MAP>
-inline TraversorCell<MAP, MAP::FACE, STRATEGY> faces(MAP& map)
+// compute data length of string
+template <>
+CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
 {
-	return TraversorCell<MAP, MAP::FACE, STRATEGY>(map);
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		total += src[i].size();
+	}
+	return total;
 }
 
-template <TraversorStrategy STRATEGY = AUTO, typename MAP>
-inline TraversorCell<MAP, MAP::VOLUME, STRATEGY> volumes(MAP& map)
-{
-	return TraversorCell<MAP, MAP::VOLUME, STRATEGY>(map);
-}
-
-
-
-namespace parallel
-{
-
-
-
-} // namespace parallel
-
+} // namespace serialization
 } // namespace cgogn
-
-#endif // CORE_TRAVERSAL_GLOBAL_H_

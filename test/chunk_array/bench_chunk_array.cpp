@@ -1,6 +1,6 @@
 
 #include <core/container/chunk_array_container.h>
-#include <core/basic/serialization.h>
+#include <utils/serialization.h>
 #define BLK_SZ 4096
 
 using namespace cgogn;
@@ -30,7 +30,7 @@ public:
 		data_[2] = z;
 	}
 
-	static std::string CGoGN_name_of_type()
+	static std::string cgogn_name_of_type()
 	{
 		return "Vec3f";
 	}
