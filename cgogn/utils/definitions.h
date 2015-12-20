@@ -106,7 +106,11 @@
 	_Pragma("clang diagnostic pop")
 #endif
 
-// TODO: on Visual ?
+#ifdef _MSC_VER
+	// no warning with VS 2013 and \W4
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+#endif
 
 
 #endif // UTILS_DEFINITIONS_H_
