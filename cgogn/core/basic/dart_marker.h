@@ -62,14 +62,6 @@ protected:
 	ChunkArrayBool* mark_attribute_;
 
 public:
-
-	DartMarkerT(Map& map) :
-//		Inherit(),
-		map_(map)
-	{
-		mark_attribute_ = map_.get_topology_mark_attribute();
-	}
-
 	DartMarkerT(const MAP& map) :
 //		Inherit(),
 		map_(const_cast<MAP&>(map))
@@ -86,7 +78,7 @@ public:
 	DartMarkerT(const Self& dm) = delete;
 	DartMarkerT(Self&& dm) = delete;
 	Self& operator=(const Self& dm) = delete;
-	Self& operator=(Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -136,10 +128,6 @@ public:
 	typedef DartMarker<MAP> Self;
 	typedef MAP Map;
 
-	DartMarker(MAP& map) :
-		Inherit(map)
-	{}
-
 	DartMarker(const MAP& map) :
 		Inherit(map)
 	{}
@@ -174,12 +162,6 @@ protected:
 	std::vector<Dart>* marked_darts_;
 
 public:
-
-	DartMarkerStore(Map& map) :
-		Inherit(map)
-	{
-		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
-	}
 
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
@@ -238,10 +220,6 @@ public:
 	typedef DartMarkerT<MAP> Inherit;
 	typedef DartMarkerNoUnmark<MAP> Self;
 	typedef MAP Map;
-
-	DartMarkerNoUnmark(MAP& map) :
-		Inherit(map)
-	{}
 
 	DartMarkerNoUnmark(const MAP& map) :
 		Inherit(map)
