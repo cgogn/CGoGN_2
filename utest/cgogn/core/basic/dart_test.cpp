@@ -77,4 +77,4 @@ TEST(DartTest, ReadingIn)
 	EXPECT_EQ(10u, d.index);
 }
 
-} //namespace cgogn
+} // namespace cgogn
