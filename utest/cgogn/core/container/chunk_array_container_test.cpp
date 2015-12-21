@@ -7,8 +7,8 @@ namespace cgogn
 
 class ChunkArrayContainerTest : public ::testing::Test
 {
-
 protected:
+
 	ChunkArrayContainerTest() 
 	{}
 
@@ -21,10 +21,8 @@ protected:
 	void testAddAttribute()
 	{
 		std::cout << "test" << std::endl;
-		//avec un grand nombre de type
-		//
+		// avec un grand nombre de type
 	}
-
 };
 
 // Test
@@ -33,4 +31,4 @@ TEST_F(ChunkArrayContainerTest, testAddAttribute)
 	this->testAddAttribute();
 }
 
-} //end namespace cgogn
+} // namespace cgogn

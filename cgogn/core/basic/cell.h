@@ -25,6 +25,8 @@
 #define CORE_BASIC_CELL_H_
 
 #include <core/basic/dart.h>
+
+#include <utils/assert.h>
 #include <utils/definitions.h>
 
 /**
@@ -60,7 +62,7 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
-		default: cgogn_assert_not_reached("orbit of this name do not exist"); break;
+		default: cgogn_assert_not_reached("This orbit does not exist"); break;
 	}
 	return "UNKNOWN";
 }
