@@ -29,9 +29,8 @@
 
 /**
  * \file core/basic/cell.h
- * \brief Orbit and cell definitions for CGOGN API
+ * \brief Orbit and cell definitions used in cgogn.
  */
-
 namespace cgogn
 {
 
@@ -61,7 +60,7 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
-		default: break;
+		default: cgogn_assert_not_reached("orbit of this name do not exist"); break;
 	}
 	return "UNKNOWN";
 }
@@ -80,31 +79,73 @@ class Cell
 {
 public:
 
+	/**
+	 * \brief the dart representing this cell
+	 */
 	Dart dart;
 
 	/**
-	 * \brief Constructs a new empty Cell with NIL dart.
+	 * \brief Creates a new empty Cell as a nil dart.
 	 */
 	inline Cell() : dart()
 	{}
 
 	/**
-	 * \brief Constructs a new Cell with a dart.
-	 * \param d dart to convert to a cell of a given orbit
+	 * \brief Creates a new Cell with a dart. 
+	 * \param[in] d dart to convert to a cell of a given orbit
 	 */
 	inline Cell(Dart d) : dart(d)
 	{}
 
-	/// copy constructor
+	/**
+	 * \brief Copy constructor.
+	 * Creates a new Cell from an another one.
+	 * \param[in] c a cell
+	 */
 	inline Cell(const Cell<ORBIT>& c) : dart(c.dart)
 	{}
 
-	/// Dart cast operator
+	//TODO
+	// Cell(Cell<ORBIT>&& ) = delete;
+
+	/**
+	 * \brief Cast operator.
+	 * \return the dart 
+	 */
 	inline operator Dart() const { return dart; }
 
-	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& fa) { return out << fa.dart; }
-
+	/**
+	 * \brief Tests the validity of the cell.
+	 * \retval true if the cell is valid
+	 * \retval false otherwise
+	 */
 	inline bool is_valid() const { return !dart.is_nil(); }
+
+	/**
+	 * \brief Assigns to the left hand side cell the value
+	 * of the right hand side cell.
+	 * \param[in] rhs the cell to assign
+	 * \return The cell with the assigned value
+	 */
+	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
+
+
+	//TODO
+	// Cell<ORBIT> operator=(Cell<ORBIT>&& rhs) { dart = rhs.dart return *this; }
+
+	/**
+	 * \brief Prints a cell to a stream.
+	 * \param[out] out the stream to print on
+	 * \param[in] rhs the cell to print
+	 */
+	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& rhs) { return out << rhs.dart; }
+
+	/**
+	 * \brief Reads a cell from a stream.
+	 * \param[in] in the stream to read from
+	 * \param[out] rhs the cell read
+	 */
+	friend std::istream& operator>>(std::istream &in, Cell<ORBIT>& rhs) { in >> rhs.dart; return in; }
 };
 
 } // namespace cgogn
