@@ -27,7 +27,7 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
-#include <core/io/surface_import.h>
+#include <io/surface_import.h>
 
 namespace cgogn
 {
@@ -257,7 +257,7 @@ public:
 
 	void import(SurfaceImport<DATA_TRAITS>& si)
 	{
-		this->clear(true);
+		this->clear_and_remove();
 
 		this->template create_embedding<VERTEX>();
 		this->attributes_[VERTEX].swap(si.vertex_attributes_);

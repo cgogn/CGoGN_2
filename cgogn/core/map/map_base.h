@@ -80,26 +80,27 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-	void clear(bool remove_attributes = false)
+	inline void clear()
 	{
-		this->topology_.clear(false);
+		this->topology_.clear_attributes();
 
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			this->attributes_[i].clear(remove_attributes);
+		for (unsigned int i = 0u; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear_attributes();
+	}
 
-		if (remove_attributes)
+	inline void clear_and_remove()
+	{
+		this->topology_.remove_attributes();
+
+		for (unsigned int j = 0u; j < NB_THREADS; ++j)
+			this->mark_attributes_topology_[j].clear();
+
+		for (unsigned int i = 0u; i < NB_ORBITS; ++i)
 		{
-			for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			{
-				if (this->embeddings_[i] != nullptr)
-				{
-					this->topology_.remove_attribute(this->embeddings_[i]);
-					this->embeddings_[i] = nullptr;
-				}
-
-				for (unsigned int j = 0; j < NB_THREADS; ++j)
+			this->attributes_[i].remove_attributes();
+			this->embeddings_[i] = nullptr;
+			for (unsigned int j = 0u; j < NB_THREADS; ++j)
 					this->mark_attributes_[i][j].clear();
-			}
 		}
 	}
 
