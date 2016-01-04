@@ -42,6 +42,8 @@ CGOGN_UTILS_API void thread_stop()
 {
 	delete dart_buffers_thread;
 	delete uint_buffers_thread;
+	dart_buffers_thread = nullptr;
+	uint_buffers_thread = nullptr;
 }
 
 CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
