@@ -55,6 +55,8 @@ template <typename DATA_TRAITS>
 class SurfaceImport
 {
 public:
+	using Self = SurfaceImport<DATA_TRAITS>;
+	using UnsignedChunkArray = ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int>;
 
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
@@ -63,13 +65,23 @@ public:
 	std::vector<unsigned short> faces_nb_edges_;
 	std::vector<unsigned int> faces_vertex_indices_;
 
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> vertex_attributes_;
+	UnsignedChunkArray vertex_attributes_;
 
-	SurfaceImport()
+	SurfaceImport() :
+		nb_vertices_(0u)
+	  ,nb_edges_(0u)
+	  ,nb_faces_(0u)
+	  ,faces_nb_edges_()
+	  ,faces_vertex_indices_()
 	{}
 
 	~SurfaceImport()
 	{}
+
+	SurfaceImport(const Self&) = delete;
+	SurfaceImport(Self&&) = delete;
+	Self& operator=(const Self&) = delete;
+	Self& operator=(Self&&) = delete;
 
 	void clear()
 	{
