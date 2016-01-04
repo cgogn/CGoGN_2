@@ -22,8 +22,6 @@ set(HEADER_FILES
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-
-	io/surface_import.h
 )
 
 set(SOURCE_FILES
