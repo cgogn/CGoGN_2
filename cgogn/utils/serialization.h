@@ -29,6 +29,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <array>
 #include <utils/dll.h>
 
 namespace cgogn
@@ -99,6 +100,15 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity);
 template <typename U>
 std::size_t data_length(std::list<U> const* src, std::size_t quantity);
 
+
+template <typename U, std::size_t size>
+void load(std::istream& istream, std::array<U, size>* dest, std::size_t quantity);
+
+template <typename U, std::size_t size>
+void save(std::ostream& ostream, std::array<U, size> const* src, std::size_t quantity);
+
+template <typename U, std::size_t size>
+std::size_t data_length(std::array<U, size>const* src, std::size_t quantity);
 
 template <>
 CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
@@ -202,7 +212,39 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 }
 
 
+template <typename U, std::size_t size>
+void load(std::istream& istream, std::array<U, size>* dest, std::size_t quantity)
+{
+	cgogn_assert(dest != nullptr);
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		load(istream, &(dest[i][0]), size);
+	}
+}
 
+template <typename U, std::size_t size>
+void save(std::ostream& ostream, std::array<U, size> const* src, std::size_t quantity)
+{
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		save(ostream, &(src[i][0]), size);
+	}
+}
+
+template <typename U, std::size_t size>
+std::size_t data_length(std::array<U, size>const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+	std::size_t total = 0u;
+	for (std::size_t i = 0u; i < quantity ; ++i)
+	{
+		for (const auto& elem : src[i])
+		{
+			total += data_length(&elem,1);
+		}
+	}
+	return total;
+}
 
 } // namespace serialization
 
