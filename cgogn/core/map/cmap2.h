@@ -27,22 +27,25 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
-#include <io/surface_import.h>
-
 namespace cgogn
 {
+template<class>
+class SurfaceImport;
+
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
 {
 public:
 
+	typedef TOPO_TRAITS TopoTraits;
+	typedef DATA_TRAITS DataTraits;
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
 	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-
+	friend class SurfaceImport<Self>;
 	template <typename MAP> friend class cgogn::DartMarkerT;
 
 	static const Orbit VERTEX = Orbit::PHI21;
