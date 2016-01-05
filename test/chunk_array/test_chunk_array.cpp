@@ -233,12 +233,12 @@ int test4()
 	container.remove_lines<3>(3);
 	container.remove_lines<3>(13);
 
-	std::ofstream of("pipo.map");
+	std::ofstream of("pipo.map", std::ios::binary);
 	container.save(of);
 	of.close();
 
 	ChunkArrayContainer<unsigned int> cont2;
-	std::ifstream ifi("pipo.map");
+	std::ifstream ifi("pipo.map", std::ios::binary);
 	cont2.load(ifi);
 	ifi.close();
 

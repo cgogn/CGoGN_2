@@ -89,11 +89,21 @@ int test_save()
 			}
 
 		}
+
+		if (att_string_array)
+		{
+			std::cout << " att_string_array = ";
+			for (const auto& v : (*att_string_array)[i])
+			{
+					std::cout << v << " ";
+			}
+			std::cout << "/ ";
+		}
 		std::cout << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
 
-	std::ofstream of("pipo.map");
+	std::ofstream of("pipo.map", std::ios::binary);
 	container.save(of);
 	of.close();
 	return 0;
@@ -111,7 +121,7 @@ int test_load(bool with_register)
 		ChunkArrayFactory::register_CA<StringArray>();
 	}
 
-	std::ifstream ifi("pipo.map");
+	std::ifstream ifi("pipo.map", std::ios::binary);
 	cont2.load(ifi);
 	ifi.close();
 
