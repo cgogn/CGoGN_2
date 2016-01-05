@@ -80,6 +80,12 @@ bool known_size(std::list<U> const* /*src*/)
 	return false;
 }
 
+template <typename U, std::size_t size>
+bool known_size(std::array<U, size> const* /*src*/)
+{
+	return false;
+}
+
 // first step : declare all overrides of load and save
 template <typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity);
