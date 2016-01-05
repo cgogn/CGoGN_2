@@ -3,9 +3,11 @@
 
 #include <list>
 
-#define BLK_SZ 32
-
-using namespace cgogn;
+const unsigned int SIZE = 32u;
+template<class T>
+using ChunkArray = cgogn::ChunkArray<SIZE, T>;
+template<typename T>
+using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, T>;
 
 int test1();
 int test2();
@@ -16,9 +18,9 @@ int test1()
 {
 	std::cout << "=============== TEST 1 ===============" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
+	ChunkArrayContainer<unsigned int> container;
+	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
 
 	for (unsigned int i = 0; i < 41; ++i)
 		container.insert_lines<1>();
@@ -81,8 +83,8 @@ int test2()
 {
 	std::cout << "=============== TEST 2 ===============" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, unsigned char> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArrayContainer<unsigned char> container;
+	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 
 	for (int i = 0; i < 13; ++i)
 		container.insert_lines<3>();
@@ -139,7 +141,7 @@ int test2()
 		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
 
-	ChunkArray<BLK_SZ,bool>* attB = container.add_attribute<bool>("bools");
+	ChunkArray<bool>* attB = container.add_attribute<bool>("bools");
 
 	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 		std::cout << i << ": " << (*att1)[i]<< " / "<< (*attB)[i] << std::endl;
@@ -152,10 +154,10 @@ int test3()
 {
 	std::cout << "=============== TEST 3 ===============" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, bool> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
-	ChunkArray<BLK_SZ,std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
-	ChunkArray<BLK_SZ,std::list<int> >* att3 = container.add_attribute<std::list<int> >("L_entier");
+	ChunkArrayContainer<bool> container;
+	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
+	ChunkArray<std::list<int> >* att3 = container.add_attribute<std::list<int> >("L_entier");
 
 	for (unsigned int i = 0; i < 13; ++i)
 		container.insert_lines<3>();
@@ -209,12 +211,12 @@ int test4()
 	std::cout << "=============== TEST 4 ===============" << std::endl;
 	typedef std::vector< std::vector< double > > vecvecdouble;
 	typedef std::vector< std::list< double > > veclistdouble;
-	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
-	ChunkArray<BLK_SZ,bool>* att3 = container.add_attribute<bool>("bools");
-	ChunkArray<BLK_SZ,vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<BLK_SZ,veclistdouble>* att5 = container.add_attribute<veclistdouble>("veclistdouble");
+	ChunkArrayContainer<unsigned int> container;
+	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<bool>* att3 = container.add_attribute<bool>("bools");
+	ChunkArray<vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<veclistdouble>* att5 = container.add_attribute<veclistdouble>("veclistdouble");
 
 	for (unsigned int i = 0u; i < 7u; ++i)
 		container.insert_lines<3>();
@@ -235,16 +237,16 @@ int test4()
 	container.save(of);
 	of.close();
 
-	ChunkArrayContainer<BLK_SZ, unsigned int> cont2;
+	ChunkArrayContainer<unsigned int> cont2;
 	std::ifstream ifi("pipo.map");
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<BLK_SZ,int>* load_att1 = cont2.get_attribute<int>("entier");
-	ChunkArray<BLK_SZ,float>* load_att2 = cont2.get_attribute<float>("reel");
-	ChunkArray<BLK_SZ,bool>* load_att3 = cont2.get_attribute<bool>("bools");
-	ChunkArray<BLK_SZ,vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<BLK_SZ,veclistdouble>* load_att5 = cont2.get_attribute<veclistdouble>("veclistdouble");
+	ChunkArray<int>* load_att1 = cont2.get_attribute<int>("entier");
+	ChunkArray<float>* load_att2 = cont2.get_attribute<float>("reel");
+	ChunkArray<bool>* load_att3 = cont2.get_attribute<bool>("bools");
+	ChunkArray<vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");
+	ChunkArray<veclistdouble>* load_att5 = cont2.get_attribute<veclistdouble>("veclistdouble");
 
 	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{

@@ -8,9 +8,20 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
-using namespace cgogn;
+#include <io/surface_import.h>
 
-typedef Eigen::Vector3d VEC3;
+struct MyDataTraits : public cgogn::CMap2DataTraits
+{
+	using Vec3 = Eigen::Vector3d;
+};
+using Map2 = cgogn::CMap2_T<MyDataTraits, cgogn::CMap2TopoTraits<MyDataTraits>> ;
+
+using Vec3 = Map2::DataTraits::Vec3;
+using SurfaceImport = cgogn::SurfaceImport<Map2>;
+template<typename T>
+using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+template<typename T>
+using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
 
 int main(int argc, char** argv)
 {
@@ -22,29 +33,32 @@ int main(int argc, char** argv)
 
 	cgogn::thread_start();
 
-	CMap2 map;
-	map.import(argv[1]);
+	Map2 map;
+	SurfaceImport suface_import;
+	suface_import.import_file(argv[1]);
+	suface_import.createMap(map);
+//	map.import(argv[1]);
 
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
 
-	CMap2::VertexAttributeHandler<VEC3> vertex_position = map.get_attribute<VEC3, CMap2::VERTEX>("position");
-	CMap2::VertexAttributeHandler<VEC3> vertex_normal = map.add_attribute<VEC3, CMap2::VERTEX>("normal");
-	CMap2::FaceAttributeHandler<VEC3> face_normal = map.add_attribute<VEC3, CMap2::FACE>("normal");
+	VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
+	VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
+	FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
 
-	map.enable_topo_cache<CMap2::FACE>();
-	map.enable_topo_cache<CMap2::VERTEX>();
-	map.enable_topo_cache<CMap2::EDGE>();
+	map.enable_topo_cache<Map2::FACE>();
+	map.enable_topo_cache<Map2::VERTEX>();
+	map.enable_topo_cache<Map2::EDGE>();
 
 	unsigned int nbf = 0;
 
 	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		map.foreach_cell<CMap2::FACE>([&] (CMap2::Face f)
+		map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
 		{
 			++nbf;
-			VEC3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-			VEC3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+			Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
+			Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
 			face_normal[f] = v1.cross(v2);
 		});
 	}
@@ -53,12 +67,12 @@ int main(int argc, char** argv)
 
 	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		map.foreach_cell<CMap2::VERTEX>([&] (CMap2::Vertex v)
+		map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
 		{
 			++nbv;
-			VEC3 sum({0, 0, 0});
+			Vec3 sum({0, 0, 0});
 			unsigned int nb_incident = 0;
-			map.foreach_incident_face(v, [&] (CMap2::Face f)
+			map.foreach_incident_face(v, [&] (Map2::Face f)
 			{
 				++nb_incident;
 				sum += face_normal[f];
@@ -71,7 +85,7 @@ int main(int argc, char** argv)
 
 	for	(unsigned int i = 0; i < 10; ++i)
 	{
-		map.foreach_cell<CMap2::EDGE>([&nbe] (CMap2::Edge)
+		map.foreach_cell<Map2::EDGE>([&nbe] (Map2::Edge)
 		{
 			++nbe;
 		});

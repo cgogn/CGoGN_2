@@ -2,29 +2,34 @@
 #include <core/container/chunk_array_container.h>
 
 #include <list>
+#include <array>
 
-#define BLK_SZ 32
 
-using namespace cgogn;
+const unsigned int SIZE = 32u;
+template<class T>
+using ChunkArray = cgogn::ChunkArray<SIZE, T>;
+using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, unsigned int>;
+using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
+
+using DoubleVecList = std::list< std::vector< double > >;
+using StringListVec = std::vector< std::list < std::string > >;
+using StringArray = std::array< std::string, 2>;
+
 
 int test_save();
 int test_load(bool with_register);
-
-
-typedef std::list< std::vector< double > > ListVecDouble;
-typedef std::vector< std::list < std::string > > VecListString;
-
 
 int test_save()
 {
 	std::cout << "=============== TEST SAVE ===============" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, unsigned int> container;
+	ChunkArrayContainer container;
 
-	ChunkArray<BLK_SZ,float>* att1 = container.add_attribute<float>("float");
-	ChunkArray<BLK_SZ,std::string>* att4 = container.add_attribute<std::string>("std::string");
-	ChunkArray<BLK_SZ,ListVecDouble>* att2 = container.add_attribute<ListVecDouble>("ListVecDouble");
-	ChunkArray<BLK_SZ,VecListString>* att3 = container.add_attribute<VecListString>("VecListString");
+	ChunkArray<float>* att1 = container.add_attribute<float>("float");
+	ChunkArray<std::string>* att4 = container.add_attribute<std::string>("std::string");
+	ChunkArray<DoubleVecList>* att2 = container.add_attribute<DoubleVecList>("ListVecDouble");
+	ChunkArray<StringListVec>* att3 = container.add_attribute<StringListVec>("VecListString");
+	ChunkArray<StringArray>* att_string_array = container.add_attribute<StringArray>("StringArray");
 
 	for (unsigned int i = 0u; i < 10u; ++i)
 		container.insert_lines<1>();
@@ -38,6 +43,7 @@ int test_save()
 
 		(*att3)[i] = {{"riri","riri"},{"fifi","fifi"},{"loulou","loulou"}};
 
+		(*att_string_array)[i] = {"riri" + std::to_string(i), "fifi" + std::to_string(i)};
 		if (i%2)
 		{
 			(*att2)[i].front().push_back(0.0);
@@ -96,22 +102,24 @@ int test_save()
 int test_load(bool with_register)
 {
 	std::cout << "=============== TEST LOAD ===============" << std::endl;
-	ChunkArrayContainer<BLK_SZ, unsigned int> cont2;
+	ChunkArrayContainer cont2;
 
 	if (with_register)
 	{
-		ChunkArrayFactory<BLK_SZ>::register_CA<ListVecDouble>();
-		ChunkArrayFactory<BLK_SZ>::register_CA<VecListString>();
+		ChunkArrayFactory::register_CA<DoubleVecList>();
+		ChunkArrayFactory::register_CA<StringListVec>();
+		ChunkArrayFactory::register_CA<StringArray>();
 	}
 
 	std::ifstream ifi("pipo.map");
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<BLK_SZ,float>* att1 = cont2.get_attribute<float>("float");
-	ChunkArray<BLK_SZ,std::string>* att4 = cont2.get_attribute<std::string>("std::string");
-	ChunkArray<BLK_SZ,ListVecDouble>* att2 = cont2.get_attribute<ListVecDouble>("ListVecDouble");
-	ChunkArray<BLK_SZ,VecListString>* att3 = cont2.get_attribute<VecListString>("VecListString");
+	ChunkArray<float>* att1 = cont2.get_attribute<float>("float");
+	ChunkArray<std::string>* att4 = cont2.get_attribute<std::string>("std::string");
+	ChunkArray<DoubleVecList>* att2 = cont2.get_attribute<DoubleVecList>("ListVecDouble");
+	ChunkArray<StringListVec>* att3 = cont2.get_attribute<StringListVec>("VecListString");
+	ChunkArray<StringArray>* att_string_array = cont2.get_attribute<StringArray>("StringArray");
 
 	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
@@ -142,6 +150,15 @@ int test_load(bool with_register)
 				std::cout << "/ ";
 			}
 		}
+
+		if (att_string_array)
+		{
+			std::cout << "att_string_array : ";
+			for(const auto& s: (*att_string_array)[i])
+				std::cout << s << " ";
+			std::cout << "/ ";
+		}
+
 		std::cout << std::endl;
 	}
 	std::cout << "----------------------------------------" << std::endl;
