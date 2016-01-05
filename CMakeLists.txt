@@ -20,6 +20,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
+include(cmake/GenerateCppcheck.cmake)
+include(cmake/EnableCoverageReport.cmake)
+
 
 #### Build configuration
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -30,6 +33,7 @@ set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
 
 #### ThirdParty options
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
+option(CGOGN_BUILD_TESTS "build cgogn unit tests using google test framework" ON)
 
 
 #### RPATH
@@ -51,8 +55,14 @@ endif(UNIX)
 ## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
 setBuildType()
 
-#### CGOGN sources
-# add each subdirectory with a CMakeList
+
+if(CGOGN_BUILD_TESTS)
+    if(NOT gtest_inited)
+        set(gtest_inited ON CACHE INTERNAL "" FORCE)
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    endif()
+endif(CGOGN_BUILD_TESTS)
+
 
 add_subdirectory(doc)
 
@@ -61,3 +71,13 @@ add_subdirectory(thirdparty)
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
 add_subdirectory(test)
+
+add_subdirectory(utest)
+
+##  TODO a mettre dans un fichier cmake particulier
+
+# --- coverage ---
+ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
+
+# --- CPPCheck ---
+GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR} ENABLE_IDS all INCLUDES ${CGOGN_SOURCE_DIR})

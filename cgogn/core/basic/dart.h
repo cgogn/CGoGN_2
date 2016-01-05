@@ -32,7 +32,6 @@
  * \file cgogn/core/basic/dart.h
  * \brief Dart definition.
  */
-
 namespace cgogn
 {
 
@@ -52,7 +51,7 @@ struct Dart
 	/**
 	 * \brief Creates a new nil Dart
 	 */
-	Dart() : index(INVALID_INDEX)
+	inline Dart() : index(INVALID_INDEX)
 	{}
 
 	/**
@@ -116,15 +115,6 @@ struct Dart
 	bool operator!=(Dart rhs) const { return index != rhs.index; }
 
 	/**
-	 * \brief Tests whether the left hand side dart is less
-	 * greather than the right hand side dart.
-	 * \param[in] rhs the dart to compare with
-	 * \retval true if \p lhs is less greather than \p rhs
-	 * \retval false otherwise
-	 */
-	bool operator<(Dart rhs) const { return index < rhs.index; }
-
-	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the dart to print
@@ -138,11 +128,6 @@ struct Dart
 	 */
 	friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
 };
-
-/**
- * \brief Definition of null embedding
- */
-const unsigned int EMBNULL = Dart::INVALID_INDEX;
 
 } // namespace cgogn
 
