@@ -834,6 +834,8 @@ public:
 
 	void save(std::ostream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
@@ -873,6 +875,8 @@ public:
 
 	bool load(std::istream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// check and register all known types if necessaey
 		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
 
@@ -899,7 +903,7 @@ public:
 			fs.read(buff3, std::streamsize(buff2[2u*i+1u]*sizeof(char)));
 			type_names_[i] = std::string(buff3);
 		}
-
+		cgogn_assert(fs.good());
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;

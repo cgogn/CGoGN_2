@@ -130,7 +130,9 @@ CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std
 template <typename U>
 void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 {
+	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
+
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		unsigned int vecSize;
@@ -144,7 +146,9 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 template <typename U>
 void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity)
 {
+	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
+
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		const unsigned int size = static_cast<unsigned int>(src[i].size());
@@ -158,6 +162,7 @@ template <typename U>
 std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
+
 	std::size_t total = 0;
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
@@ -172,7 +177,9 @@ std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 template <typename U>
 void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 {
+	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
+
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		unsigned int listSize;
@@ -191,6 +198,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 template <typename U>
 void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 {
+	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
 
 	for (std::size_t i = 0; i < quantity ; ++i)
@@ -207,6 +215,7 @@ template <typename U>
 std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
+
 	std::size_t total = 0;
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
@@ -217,10 +226,10 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 		return total;
 }
 
-
 template <typename U, std::size_t size>
 void load(std::istream& istream, std::array<U, size>* dest, std::size_t quantity)
 {
+	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
@@ -231,6 +240,9 @@ void load(std::istream& istream, std::array<U, size>* dest, std::size_t quantity
 template <typename U, std::size_t size>
 void save(std::ostream& ostream, std::array<U, size> const* src, std::size_t quantity)
 {
+	cgogn_assert(ostream.good());
+	cgogn_assert(src);
+
 	for (std::size_t i = 0; i < quantity ; ++i)
 	{
 		save(ostream, &(src[i][0]), size);
