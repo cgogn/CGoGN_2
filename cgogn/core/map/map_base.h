@@ -247,6 +247,8 @@ protected:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
+public:
+
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
@@ -297,8 +299,6 @@ protected:
 
 		remove_attribute(counter) ;
 	}
-
-public:
 
 	/*******************************************************************************
 	 * Topo caches management
