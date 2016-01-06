@@ -23,7 +23,6 @@ include(cmake/CompilerOptions.cmake)
 include(cmake/GenerateCppcheck.cmake)
 include(cmake/EnableCoverageReport.cmake)
 
-
 #### Build configuration
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -34,6 +33,17 @@ set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
 #### ThirdParty options
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
 option(CGOGN_BUILD_TESTS "build cgogn unit tests using google test framework" ON)
+
+
+#### Continuous integration options
+option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)
+option(CGOGN_WITH_GCOV "Builds the project for coverage analysis with gcov" OFF)
+option(CGOGN_WITH_PPROF "Profile the project using gprof" OFF)
+option(CGOGN_WITH_ASAN "Builds the project with Google's AddressSanitizer" OFF)
+option(CGOGN_WITH_TSAN "Builds the project with Google's ThreadSanitizer" OFF)
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    option(CGOGN_WITH_CLANGSA "Builds the project for performance analysis with clang static analyser" OFF)
+endif()
 
 
 #### RPATH
@@ -53,8 +63,7 @@ if(UNIX)
 endif(UNIX)
 
 ## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
-setBuildType()
-
+deduce_build_type()
 
 if(CGOGN_BUILD_TESTS)
     if(NOT gtest_inited)
@@ -74,10 +83,17 @@ add_subdirectory(test)
 
 add_subdirectory(utest)
 
+
 ##  TODO a mettre dans un fichier cmake particulier
 
 # --- coverage ---
 ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
 
 # --- CPPCheck ---
-GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR} ENABLE_IDS all INCLUDES ${CGOGN_SOURCE_DIR})
+GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR} 
+                   ENABLE_IDS all 
+                   INCLUDES ${CGOGN_SOURCE_DIR}
+                   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
+                   SYSTEM_INCLUDE_WARNING_SUPPRESSION 
+                   INLINE_SUPPRESSION
+                   HTML_REPORT)
