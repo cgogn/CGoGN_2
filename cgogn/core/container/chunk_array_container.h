@@ -351,7 +351,7 @@ public:
 	void remove_marker_attribute(const ChunkArray<bool>* ptr)
 	{
 		unsigned int index = 0u;
-		while (table_marker_arrays_[index] != ptr && index < table_marker_arrays_.size())
+		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
 			++index;
 
 		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
