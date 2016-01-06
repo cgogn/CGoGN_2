@@ -146,7 +146,7 @@ namespace cgogn
 
             MapModifier mmod(map);
             const Orbit VERTEX = Map::VERTEX;
-            map.clear_and_remove();
+            map.clear_and_remove_attributes();
 
             map.template create_embedding<VERTEX>();
             mmod.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);

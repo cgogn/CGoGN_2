@@ -80,6 +80,9 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/**
+	 * @brief clear : clear the topology (empty the dart attributes) leaving the other attributes unmodified
+	 */
 	inline void clear()
 	{
 		this->topology_.clear_attributes();
@@ -88,9 +91,12 @@ public:
 			this->attributes_[i].clear_attributes();
 	}
 
-	inline void clear_and_remove()
+	/**
+	 * @brief clear_and_remove_attributes : clear the topology and delete all the attributes.
+	 */
+	inline void clear_and_remove_attributes()
 	{
-		this->topology_.remove_attributes();
+		this->topology_.clear_attributes();
 
 		for (unsigned int j = 0u; j < NB_THREADS; ++j)
 			this->mark_attributes_topology_[j].clear();
