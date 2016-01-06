@@ -31,22 +31,23 @@ namespace cgogn
 {
 template<class>
 class SurfaceImport;
-
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
+class CMap2Modifier_T;
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
 {
-public:
 
-	typedef TOPO_TRAITS TopoTraits;
+public:
 	typedef DATA_TRAITS DataTraits;
+	typedef TOPO_TRAITS TopoTraits;
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
 	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-	friend class SurfaceImport<Self>;
-	template <typename MAP> friend class cgogn::DartMarkerT;
+	friend class CMap2Modifier_T<DataTraits,TopoTraits>;
+	friend class cgogn::DartMarkerT<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;

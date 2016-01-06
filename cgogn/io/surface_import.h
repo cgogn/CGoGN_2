@@ -33,6 +33,8 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 #include <core/map/cmap2.h>
+#include <core/map/cmap2_modifier.h>
+
 namespace cgogn
 {
 
@@ -140,11 +142,14 @@ namespace cgogn
 
         void createMap(Map& map)
         {
+            using MapModifier = cgogn::CMap2Modifier_T<typename Map::DataTraits, typename Map::TopoTraits>;
+
+            MapModifier mmod(map);
             const Orbit VERTEX = Map::VERTEX;
             map.clear_and_remove();
 
             map.template create_embedding<VERTEX>();
-            map.attributes_[VERTEX].swap(this->vertex_attributes_);
+            mmod.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
 
             VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
                     map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
@@ -175,7 +180,7 @@ namespace cgogn
                 nbe = static_cast<unsigned short>(vertices_buffer.size());
                 if (nbe > 2)
                 {
-                    Dart d = map.Map::Inherit::add_face_topo(nbe);
+                    Dart d = mmod.add_face_topo(nbe);
                     for (unsigned int j = 0; j < nbe; ++j)
                     {
                         unsigned int vertex_index = vertices_buffer[j];
@@ -207,7 +212,7 @@ namespace cgogn
                         {
                             if (map.phi2(*it) == *it)
                             {
-                                map.phi2_sew(d, *it);
+                                mmod.phi2_sew(d, *it);
                                 phi2_found = true;
                             }
                             else
@@ -226,7 +231,7 @@ namespace cgogn
             }
 
             if (nb_boundary_edges > 0)
-                map.close_map();
+                mmod.close_map();
 
             if (need_vertex_unicity_check)
                 map.template unique_orbit_embedding<VERTEX>();
