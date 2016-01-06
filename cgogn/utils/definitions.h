@@ -81,7 +81,8 @@
 #endif
 
 
-#ifdef __GNUG__
+// #ifdef __GNUG__
+#if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
 	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON \
 	_Pragma("GCC diagnostic push") \
 	_Pragma("GCC diagnostic ignored \"-Winline\"")

@@ -192,6 +192,27 @@ protected:
 public:
 
 	/*******************************************************************************
+	 * High-level topological operations without boundary management
+	 *******************************************************************************/
+
+	Face add_face_without_boundary(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+
+		Dart d = Inherit::add_face_topo(nb_edges);
+
+		Face f(d);
+
+		return f;
+	}
+
+	void sew_faces_without_boundary(Face d, Face e)
+	{
+		assert(phi2(d) == d && phi2(e) == e) ;
+		phi2sew(d, e) ;
+	}
+
+	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
 
