@@ -67,8 +67,8 @@ endif(CGOGN_USE_GCOV)
 # These flags can only be specified for dynamic builds
 if(CGOGN_USE_ASAN)
     message(STATUS "Building with AddressSanitizer (debug only)")
-    add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer)
-    add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer)
+    add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
+    add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
 endif(CGOGN_USE_ASAN)
 #TODO Use native GCC stack smash Protection and buffer overflow detection in debug when no asan ??
 
