@@ -110,12 +110,12 @@ public:
 	{
 		if (nbc >= table_data_.size())
 		{
-			for (std::size_t i= table_data_.size(); i <nbc; ++i)
+			for (std::size_t i = table_data_.size(); i < nbc; ++i)
 				add_chunk();
 		}
 		else
 		{
-			for (std::size_t i = nbc; i < table_data_.size(); ++i)
+			for (std::size_t i = static_cast<std::size_t>(nbc); i < table_data_.size(); ++i)
 				delete[] table_data_[i];
 			table_data_.resize(nbc);
 		}
