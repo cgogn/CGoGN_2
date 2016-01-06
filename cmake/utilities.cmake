@@ -39,13 +39,13 @@ endfunction()
 # if CMAKE_CURRENT_BINARY_DIR end with Debug/debug/DEBUG, set Debug mode else Release mode.
 #
 function(deduce_build_type)
-IF (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug|Release"))
-	IF (${CMAKE_CURRENT_BINARY_DIR} MATCHES "(.*)Debug|(.*)debug|(.*)DEBUG")
+# IF (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug|Release"))
+	IF (${CMAKE_CURRENT_BINARY_DIR} MATCHES "(.*)Debug|(.*)debug|(.*)DEBUG")        
 		SET(CMAKE_BUILD_TYPE "Debug" PARENT_SCOPE)
 	ELSE()
 		SET(CMAKE_BUILD_TYPE "Release" PARENT_SCOPE)
 	ENDIF()
-ENDIF()
+# ENDIF()
 endfunction(deduce_build_type)
 
 

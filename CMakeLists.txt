@@ -65,7 +65,6 @@ endif(UNIX)
 ## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
 deduce_build_type()
 
-
 if(CGOGN_BUILD_TESTS)
     if(NOT gtest_inited)
         set(gtest_inited ON CACHE INTERNAL "" FORCE)
