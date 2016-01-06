@@ -8,7 +8,7 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
-#include <io/surface_import.h>
+#include <io/map_import.h>
 
 struct MyDataTraits : public cgogn::CMap2DataTraits
 {
@@ -34,10 +34,7 @@ int main(int argc, char** argv)
 	cgogn::thread_start();
 
 	Map2 map;
-	SurfaceImport suface_import;
-	suface_import.import_file(argv[1]);
-	suface_import.createMap(map);
-//	map.import(argv[1]);
+	cgogn::import::importSurface(map,argv[1]);
 
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
