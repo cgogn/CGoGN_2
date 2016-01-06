@@ -21,14 +21,18 @@ set(FULL_WARNINGS
     -Wno-documentation
     # Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
     -Wno-documentation-unknown-command
-    # Too many of sign conversion problems. Ignore them for the moment.
-    #-Wno-sign-
     # Ignore warnings about C++98 compatibility
     -Wno-c++98-compat
     # Ignore warnings about c++98 compat pedantic mode
     -Wno-c++98-compat-pedantic
     # Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
     -Wno-c++11-extensions
+
+    # # Too many of sign conversion problems (Eigen!!!). Ignore them for the moment.
+    # -Wno-sign-conversion
+    # # 
+    # -Wno-deprecated
+    # -Wno-old-style-cast
 )
 
 # Compile with full warnings by default
