@@ -140,7 +140,7 @@ namespace cgogn
             return result;
         }
 
-        void createMap(Map& map)
+        void create_map(Map& map)
         {
             using MapModifier = cgogn::CMap2Modifier_T<typename Map::DataTraits, typename Map::TopoTraits>;
 

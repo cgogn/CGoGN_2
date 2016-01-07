@@ -33,16 +33,16 @@ namespace cgogn
 namespace import
 {
 template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void importSurface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename);
+inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename);
 
 template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void importSurface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename)
+inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename)
 {
     using CMap2 = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
     using SurfaceImport = cgogn::SurfaceImport<CMap2>;
     SurfaceImport si;
     si.import_file(filename);
-    si.createMap(cmap2);
+    si.create_map(cmap2);
 }
 }
 }

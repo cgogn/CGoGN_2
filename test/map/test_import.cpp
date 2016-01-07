@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	cgogn::thread_start();
 
 	Map2 map;
-	cgogn::import::importSurface(map,argv[1]);
+	cgogn::import::import_surface(map,argv[1]);
 
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
