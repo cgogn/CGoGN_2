@@ -266,7 +266,8 @@ public:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
+		if (this->template is_orbit_embedded<ORBIT>())
+			return;
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
