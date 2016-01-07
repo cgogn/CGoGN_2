@@ -81,7 +81,7 @@ public:
 	Self& operator=(Self &&) = delete;
 
 	/**
-	 * @brief clear : clear the topology (empty the dart attributes) leaving the other attributes unmodified
+	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified
 	 */
 	inline void clear()
 	{
@@ -98,15 +98,23 @@ public:
 	{
 		this->topology_.clear_attributes();
 
-		for (unsigned int j = 0u; j < NB_THREADS; ++j)
-			this->mark_attributes_topology_[j].clear();
+		for (auto& mark_att_topo : this->mark_attributes_topology_)
+			mark_att_topo.clear();
 
-		for (unsigned int i = 0u; i < NB_ORBITS; ++i)
+		for (auto& att : this->attributes_)
+			att.remove_attributes();
+
+		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
-			this->attributes_[i].remove_attributes();
-			this->embeddings_[i] = nullptr;
-			for (unsigned int j = 0u; j < NB_THREADS; ++j)
-					this->mark_attributes_[i][j].clear();
+			if (this->embeddings_[i] != nullptr)
+			{
+				this->topology_.remove_attribute(this->embeddings_[i]);
+				this->embeddings_[i] = nullptr;
+				this->global_topo_cache_[i] = nullptr;
+			}
+
+			for (auto& mark_attr : this->mark_attributes_[i])
+				mark_attr.clear();
 		}
 	}
 
