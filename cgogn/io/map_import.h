@@ -38,8 +38,7 @@ inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const
 template<class DATA_TRAITS, class TOPO_TRAITS>
 inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename)
 {
-    using CMap2 = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
-    using SurfaceImport = cgogn::SurfaceImport<CMap2>;
+    using SurfaceImport = cgogn::SurfaceImport<DATA_TRAITS,TOPO_TRAITS>;
     SurfaceImport si;
     si.import_file(filename);
     si.create_map(cmap2);

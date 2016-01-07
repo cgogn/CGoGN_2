@@ -29,8 +29,6 @@
 
 namespace cgogn
 {
-template<class>
-class SurfaceImport;
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class CMap2Modifier_T;
 

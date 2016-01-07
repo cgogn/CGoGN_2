@@ -54,22 +54,24 @@ namespace cgogn
         return SurfaceFileType_UNKNOWN;
     }
 
-    template <typename MAP>
+    template <typename DATA_TRAITS, typename TOPO_TRAITS>
     class SurfaceImport
     {
     public:
-        using Self = SurfaceImport<MAP>;
-        using Map = MAP;
-
+        using Self = SurfaceImport<DATA_TRAITS,TOPO_TRAITS>;
+        using Map = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
+        static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
         template<typename T>
-        using ChunkArray =  typename Map::template ChunkArray<T>;
-        using ChunkArrayContainer = typename Map::template ChunkArrayContainer<unsigned int>;
+        using ChunkArray =  cgogn::ChunkArray<CHUNK_SIZE, T>;
+        using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
         template<typename T, Orbit ORBIT>
-        using AttributeHandler = typename Map::template AttributeHandler<T, ORBIT>;
+        using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
+        using Vec3 = typename DATA_TRAITS::Vec3;
         template<typename T>
+
         using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
-        using Vec3 = typename Map::DataTraits::Vec3;
+
         unsigned int nb_vertices_;
         unsigned int nb_edges_;
         unsigned int nb_faces_;
