@@ -10,6 +10,9 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 #include <io/map_import.h>
 
+
+#define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
+
 struct MyDataTraits : public cgogn::CMap2DataTraits
 {
 	using Vec3 = Eigen::Vector3d;
@@ -25,10 +28,14 @@ using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
 
 int main(int argc, char** argv)
 {
+	std::string surfaceMesh;
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		return 0;
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+	} else {
+		surfaceMesh = std::string(argv[1]);
 	}
 
 	cgogn::thread_start();
@@ -36,7 +43,7 @@ int main(int argc, char** argv)
 	for (int k = 0 ; k < 2 ; ++k)
 	{
 
-		cgogn::import::import_surface(map,argv[1]);
+		cgogn::import::import_surface(map,surfaceMesh);
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
