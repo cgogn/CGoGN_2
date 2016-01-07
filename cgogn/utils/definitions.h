@@ -113,4 +113,7 @@
 #endif
 
 
+#define CGOGN_QUOTE(name) #name
+#define CGOGN_STR(macro) CGOGN_QUOTE(macro)
+
 #endif // UTILS_DEFINITIONS_H_
