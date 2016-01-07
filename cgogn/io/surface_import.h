@@ -102,6 +102,7 @@ namespace cgogn
             nb_faces_ = 0;
             faces_nb_edges_.clear();
             faces_vertex_indices_.clear();
+            vertex_attributes_.remove_attributes();
         }
 
         bool import_file(const std::string& filename)
@@ -111,14 +112,14 @@ namespace cgogn
 
         bool import_file(const std::string& filename, SurfaceFileType type)
         {
+            clear();
+
             std::ifstream fp(filename.c_str(), std::ios::in);
             if (!fp.good())
             {
                 std::cout << "Unable to open file " << filename << std::endl;
                 return false;
             }
-
-            clear();
 
             bool result = false;
             switch (type)
@@ -135,7 +136,8 @@ namespace cgogn
                     break;
             }
 
-            fp.close();
+            if (!result)
+                this->clear();
 
             return result;
         }
@@ -143,6 +145,9 @@ namespace cgogn
         void create_map(Map& map)
         {
             using MapModifier = cgogn::CMap2Modifier_T<typename Map::DataTraits, typename Map::TopoTraits>;
+
+            if (this->nb_vertices_ == 0u)
+                return;
 
             MapModifier mmod(map);
             const Orbit VERTEX = Map::VERTEX;
@@ -237,6 +242,7 @@ namespace cgogn
                 map.template unique_orbit_embedding<VERTEX>();
 
             map.remove_attribute(darts_per_vertex);
+            this->clear();
         }
 
 
