@@ -26,7 +26,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	basic/cell_marker.cpp
+#	basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
 	container/chunk_array_container.cpp
