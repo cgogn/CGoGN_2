@@ -32,70 +32,72 @@ int main(int argc, char** argv)
 	}
 
 	cgogn::thread_start();
-
 	Map2 map;
-	cgogn::import::import_surface(map,argv[1]);
-
-	std::chrono::time_point<std::chrono::system_clock> start, end;
-	start = std::chrono::system_clock::now();
-
-	VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
-	VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
-	FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
-
-	map.enable_topo_cache<Map2::FACE>();
-	map.enable_topo_cache<Map2::VERTEX>();
-	map.enable_topo_cache<Map2::EDGE>();
-
-	unsigned int nbf = 0;
-
-	for	(unsigned int i = 0; i < 10; ++i)
+	for (int k = 0 ; k < 2 ; ++k)
 	{
-		map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
-		{
-			++nbf;
-			Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-			Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
-			face_normal[f] = v1.cross(v2);
-		});
-	}
 
-	unsigned int nbv = 0;
+		cgogn::import::import_surface(map,argv[1]);
 
-	for	(unsigned int i = 0; i < 10; ++i)
-	{
-		map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
+		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
+
+		map.enable_topo_cache<Map2::FACE>();
+		map.enable_topo_cache<Map2::VERTEX>();
+		map.enable_topo_cache<Map2::EDGE>();
+
+		unsigned int nbf = 0;
+
+		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			++nbv;
-			Vec3 sum({0, 0, 0});
-			unsigned int nb_incident = 0;
-			map.foreach_incident_face(v, [&] (Map2::Face f)
+			map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
 			{
-				++nb_incident;
-				sum += face_normal[f];
+				++nbf;
+				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
+				Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+				face_normal[f] = v1.cross(v2);
 			});
-			vertex_normal[v] = sum / nb_incident;
-		});
-	}
+		}
 
-	unsigned int nbe = 0;
+		unsigned int nbv = 0;
 
-	for	(unsigned int i = 0; i < 10; ++i)
-	{
-		map.foreach_cell<Map2::EDGE>([&nbe] (Map2::Edge)
+		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			++nbe;
-		});
+			map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
+			{
+				++nbv;
+				Vec3 sum({0, 0, 0});
+				unsigned int nb_incident = 0;
+				map.foreach_incident_face(v, [&] (Map2::Face f)
+				{
+					++nb_incident;
+					sum += face_normal[f];
+				});
+				vertex_normal[v] = sum / nb_incident;
+			});
+		}
+
+		unsigned int nbe = 0;
+
+		for	(unsigned int i = 0; i < 10; ++i)
+		{
+			map.foreach_cell<Map2::EDGE>([&nbe] (Map2::Edge)
+			{
+				++nbe;
+			});
+		}
+
+		std::cout << "nb vertices -> " << nbv << std::endl;
+		std::cout << "nb edges -> " << nbe << std::endl;
+		std::cout << "nb faces -> " << nbf << std::endl;
+
+		end = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 	}
-
-	std::cout << "nb vertices -> " << nbv << std::endl;
-	std::cout << "nb edges -> " << nbe << std::endl;
-	std::cout << "nb faces -> " << nbf << std::endl;
-
-	end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsed_seconds = end - start;
-	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-
 	cgogn::thread_stop();
 	return 0;
 }
