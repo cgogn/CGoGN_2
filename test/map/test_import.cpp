@@ -20,7 +20,7 @@ struct MyDataTraits : public cgogn::CMap2DataTraits
 using Map2 = cgogn::CMap2_T<MyDataTraits, cgogn::CMap2TopoTraits<MyDataTraits>> ;
 
 using Vec3 = Map2::DataTraits::Vec3;
-using SurfaceImport = cgogn::SurfaceImport<Map2::DataTraits, Map2::TopoTraits>;
+using SurfaceImport = cgogn::io::SurfaceImport<Map2::DataTraits, Map2::TopoTraits>;
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 template<typename T>
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	for (int k = 0 ; k < 2 ; ++k)
 	{
 
-		cgogn::import::import_surface(map,surfaceMesh);
+		cgogn::io::import_surface(map,surfaceMesh);
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
