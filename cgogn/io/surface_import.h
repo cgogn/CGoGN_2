@@ -52,26 +52,26 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 	return SurfaceFileType_UNKNOWN;
 }
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
+template <typename MAP_TRAITS>
 class SurfaceImport
 {
 public:
 
-	using Self = SurfaceImport<DATA_TRAITS,TOPO_TRAITS>;
-	using Map = CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
+	using Self = SurfaceImport<MAP_TRAITS>;
+	using Map = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
-	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
+	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template<typename T>
 	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
 
-	using Vec3 = typename DATA_TRAITS::Vec3;
+	using Vec3 = typename MAP_TRAITS::Vec3;
 
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
@@ -147,7 +147,7 @@ public:
 
 	void create_map(Map& map)
 	{
-		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits, typename Map::MapType>;
+		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
 
 		if (this->nb_vertices_ == 0u)
 			return;

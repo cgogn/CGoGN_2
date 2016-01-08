@@ -35,13 +35,13 @@ namespace cgogn
 namespace io
 {
 
-template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void import_surface(cgogn::CMap2_T<DATA_TRAITS, TOPO_TRAITS>& cmap2, const std::string& filename);
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>& cmap2, const std::string& filename);
 
-template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void import_surface(cgogn::CMap2_T<DATA_TRAITS, TOPO_TRAITS>& cmap2, const std::string& filename)
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>& cmap2, const std::string& filename)
 {
-	using SurfaceImport = SurfaceImport<DATA_TRAITS, TOPO_TRAITS>;
+	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
 	SurfaceImport si;
 	si.import_file(filename);
 	si.create_map(cmap2);
