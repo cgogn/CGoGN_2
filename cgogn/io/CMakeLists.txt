@@ -4,7 +4,7 @@ project(cgogn_io
 
 set(HEADER_FILES
 	surface_import.h
-        map_import.h
+	map_import.h
 )
 
 set(SOURCE_FILES
