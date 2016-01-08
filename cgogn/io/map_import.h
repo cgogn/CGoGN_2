@@ -36,10 +36,10 @@ namespace io
 {
 
 template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>& cmap2, const std::string& filename);
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
 
 template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>& cmap2, const std::string& filename)
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
 	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
 	SurfaceImport si;
