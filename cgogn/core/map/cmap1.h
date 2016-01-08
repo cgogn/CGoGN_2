@@ -39,8 +39,7 @@ public:
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
 
 	friend typename Self::Inherit;
-
-	template <typename MAP> friend class cgogn::DartMarkerT;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
@@ -66,6 +65,7 @@ public:
 
 	using DartMarker = typename Inherit::DartMarker;
 	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
 protected:
 
 	ChunkArray<Dart>* phi1_;

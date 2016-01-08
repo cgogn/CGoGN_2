@@ -50,8 +50,8 @@ public:
 	typedef MapBaseData<DATA_TRAITS> Inherit;
 	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarkerT;
+	template <typename MAP> friend class cgogn::DartMarker_T;
+	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarker_T;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
