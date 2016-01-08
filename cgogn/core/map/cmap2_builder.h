@@ -29,13 +29,13 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
+template <typename MAP_TRAITS>
 class CMap2Builder_T
 {
 public:
 
-	using Self = CMap2Builder_T<MAP_TRAITS, MAP_TYPE>;
-	using CMap2 = cgogn::CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap2Builder_T<MAP_TRAITS>;
+	using CMap2 = cgogn::CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 	template<typename T>
 	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
