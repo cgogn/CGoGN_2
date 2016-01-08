@@ -9,6 +9,10 @@
 using namespace cgogn;
 
 
+using Map1 = CMap1<DefaultMapTraits>;
+using Map2 = CMap2<DefaultMapTraits>;
+
+
 template <typename MAP>
 void fonc_const(const typename MAP::template VertexAttributeHandler<float>& ah);
 
@@ -131,8 +135,8 @@ int test1(MAP& map)
 int main()
 {
 	cgogn::thread_start();
-	CMap1 map1;
-	CMap2 map2;
+	Map1 map1;
+	Map2 map2;
 	test1(map1);
 	test1(map2);
 	cgogn::thread_stop();

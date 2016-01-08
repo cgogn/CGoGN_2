@@ -30,13 +30,17 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap1_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
@@ -333,14 +337,14 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap1TopoTraits
+template <typename MAP_TRAITS>
+struct CMap1Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap1_T<DataTraits, CMap1TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>> TYPE;
 };
 
-using CMap1 = CMap1_T<DefaultDataTraits, CMap1TopoTraits<DefaultDataTraits>>;
+template <typename MAP_TRAITS>
+using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 

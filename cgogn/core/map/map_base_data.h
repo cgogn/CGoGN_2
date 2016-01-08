@@ -72,7 +72,7 @@ public:
 };
 
 
-struct DefaultDataTraits
+struct DefaultMapTraits
 {
 	static const unsigned int CHUNK_SIZE = 4096;
 	using Real = double;

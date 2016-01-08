@@ -150,7 +150,7 @@ public:
 
 	void create_map(Map& map)
 	{
-		using MapBuilder = cgogn::CMap2Builder_T<typename Map::DataTraits, typename Map::TopoTraits>;
+		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits, typename Map::MapType>;
 
 		if (this->nb_vertices_ == 0u)
 			return;

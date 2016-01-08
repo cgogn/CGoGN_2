@@ -13,13 +13,14 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-struct MyDataTraits : public cgogn::DefaultDataTraits
+struct MyMapTraits : public cgogn::DefaultMapTraits
 {
+	static const unsigned int CHUNK_SIZE = 8192;
 	using Vec3 = Eigen::Vector3d;
 };
-using Map2 = cgogn::CMap2_T<MyDataTraits, cgogn::CMap2TopoTraits<MyDataTraits>> ;
+using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
 
-using Vec3 = Map2::DataTraits::Vec3;
+using Vec3 = Map2::MapTraits::Vec3;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;

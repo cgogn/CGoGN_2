@@ -30,22 +30,24 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2Builder_T;
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef DATA_TRAITS DataTraits;
-	typedef TOPO_TRAITS TopoTraits;
-	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-	friend class CMap2Builder_T<DataTraits,TopoTraits>;
+	friend class CMap2Builder_T<MapTraits, MapType>;
 	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
@@ -506,14 +508,14 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap2TopoTraits
+template <typename MAP_TRAITS>
+struct CMap2Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>> TYPE;
 };
 
-using CMap2 = CMap2_T<DefaultDataTraits, CMap2TopoTraits<DefaultDataTraits>>;
+template <typename MAP_TRAITS>
+using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
