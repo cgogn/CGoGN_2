@@ -46,12 +46,12 @@ namespace cgogn
 //};
 
 template <typename MAP>
-class DartMarkerT // : public DartMarkerGen
+class DartMarker_T // : public DartMarkerGen
 {
 public:
 
 //	typedef DartMarkerGen Inherit;
-	typedef DartMarkerT<MAP> Self;
+	typedef DartMarker_T<MAP> Self;
 
 	typedef MAP Map;
 	using ChunkArrayBool = typename Map::template ChunkArray<bool>;
@@ -62,21 +62,21 @@ protected:
 	ChunkArrayBool* mark_attribute_;
 
 public:
-	DartMarkerT(const MAP& map) :
+	DartMarker_T(const MAP& map) :
 //		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
-	virtual ~DartMarkerT() // override
+	virtual ~DartMarker_T() // override
 	{
 		if (MapGen::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 
-	DartMarkerT(const Self& dm) = delete;
-	DartMarkerT(Self&& dm) = delete;
+	DartMarker_T(const Self& dm) = delete;
+	DartMarker_T(Self&& dm) = delete;
 	Self& operator=(const Self& dm) = delete;
 	Self& operator=(Self&& dm) = delete;
 
@@ -120,11 +120,11 @@ public:
 };
 
 template <typename MAP>
-class DartMarker : public DartMarkerT<MAP>
+class DartMarker : public DartMarker_T<MAP>
 {
 public:
 
-	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarker_T<MAP> Inherit;
 	typedef DartMarker<MAP> Self;
 	typedef MAP Map;
 
@@ -150,11 +150,12 @@ public:
 };
 
 template <typename MAP>
-class DartMarkerStore : public DartMarkerT<MAP>
+class DartMarkerStore : public DartMarker_T<MAP>
 {
 public:
+
 	typedef DartMarkerStore<MAP> Self;
-	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarker_T<MAP> Inherit;
 	typedef MAP Map;
 
 protected:
@@ -182,7 +183,7 @@ public:
 
 	inline void mark(Dart d)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
 		Inherit::mark(d);
 		marked_darts_->push_back(d);
 	}
@@ -190,7 +191,7 @@ public:
 	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
 		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
 			Inherit::mark(d);
@@ -200,24 +201,24 @@ public:
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
 		for (Dart d : *marked_darts_)
 			this->mark_attribute_->set_false_byte(d.index);
 		marked_darts_->clear();
 	}
 
-	inline const std::vector<Dart>* get_marker_darts() const
+	inline const std::vector<Dart>* get_marked_darts() const
 	{
 		return marked_darts_;
 	}
 };
 
 template <typename MAP>
-class DartMarkerNoUnmark : public DartMarkerT<MAP>
+class DartMarkerNoUnmark : public DartMarker_T<MAP>
 {
 public:
 
-	typedef DartMarkerT<MAP> Inherit;
+	typedef DartMarker_T<MAP> Inherit;
 	typedef DartMarkerNoUnmark<MAP> Self;
 	typedef MAP Map;
 

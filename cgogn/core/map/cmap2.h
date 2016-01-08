@@ -46,7 +46,7 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend class CMap2Builder_T<DataTraits,TopoTraits>;
-	friend class DartMarkerT<Self>;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
