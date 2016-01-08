@@ -340,12 +340,7 @@ struct CMap1TopoTraits
 	typedef CMap1_T<DataTraits, CMap1TopoTraits<DataTraits>> CONCRETE;
 };
 
-struct CMap1DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-};
-
-using CMap1 = CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
+using CMap1 = CMap1_T<DefaultDataTraits, CMap1TopoTraits<DefaultDataTraits>>;
 
 } // namespace cgogn
 

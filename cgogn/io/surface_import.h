@@ -150,17 +150,17 @@ public:
 
 	void create_map(Map& map)
 	{
-		using MapModifier = cgogn::CMap2Builder_T<typename Map::DataTraits, typename Map::TopoTraits>;
+		using MapBuilder = cgogn::CMap2Builder_T<typename Map::DataTraits, typename Map::TopoTraits>;
 
 		if (this->nb_vertices_ == 0u)
 			return;
 
-		MapModifier mmod(map);
+		MapBuilder mbuild(map);
 		const Orbit VERTEX = Map::VERTEX;
 		map.clear_and_remove_attributes();
 
 		map.template create_embedding<VERTEX>();
-		mmod.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
+		mbuild.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 		map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
@@ -191,7 +191,7 @@ public:
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-			Dart d = mmod.add_face_topo(nbe);
+			Dart d = mbuild.add_face_topo(nbe);
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
 				unsigned int vertex_index = vertices_buffer[j];
@@ -223,7 +223,7 @@ public:
 				{
 				if (map.phi2(*it) == *it)
 				{
-					mmod.phi2_sew(d, *it);
+					mbuild.phi2_sew(d, *it);
 					phi2_found = true;
 				}
 				else
@@ -242,7 +242,7 @@ public:
 		}
 
 		if (nb_boundary_edges > 0)
-			mmod.close_map();
+			mbuild.close_map();
 
 		if (need_vertex_unicity_check)
 			map.template unique_orbit_embedding<VERTEX>();
