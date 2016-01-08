@@ -78,6 +78,9 @@ private:
 	DartAttribute<unsigned int> dart_level_ ;
 	DartAttribute<unsigned int> edge_id_ ;
 
+	ChunkArray<unsigned int>* next_level_cell_[NB_ORBITS];
+
+
 public:
 	IHCMap2_T() : Inherit()
 	{
@@ -172,6 +175,18 @@ public:
 		if(Inherit::phi2(d) == d)
 			return d;
 		return Inherit::phi2(Inherit::phi_1(phi1(d)));
+	}
+
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f, unsigned int level)
+	{
+		
+	}
+
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f)
+	{
+		
 	}
 
 protected:
