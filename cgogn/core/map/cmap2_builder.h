@@ -20,69 +20,64 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_UTILS_DLL_EXPORT
-#include <utils/serialization.h>
+
+#ifndef CORE_MAP_MAP2_MODIFIER_H_
+#define CORE_MAP_MAP2_MODIFIER_H_
+
+#include <core/map/cmap2.h>
 
 namespace cgogn
 {
-namespace serialization
-{
-template <>
-CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
-{
-	return false;
-}
 
-// load string
-template <>
-CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+template <typename DATA_TRAITS, typename TOPO_TRAITS>
+class CMap2Builder_T
 {
-	cgogn_assert(istream.good());
-	cgogn_assert(dest != nullptr);
+public:
+	using Self = CMap2Builder_T<DATA_TRAITS,TOPO_TRAITS>;
+	using CMap2 = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
+	template<typename T>
+	using ChunkArrayContainer =  typename CMap2::template ChunkArrayContainer<T>;
 
-	char buffer[2048];
-	for (std::size_t i = 0; i < quantity ; ++i)
+	inline CMap2Builder_T(CMap2& map) : map_(map) {}
+	CMap2Builder_T(const Self&) = delete;
+	CMap2Builder_T(Self&&) = delete;
+	Self& operator=(const Self&) = delete;
+	Self& operator=(Self&&) = delete;
+	inline ~CMap2Builder_T() = default;
+
+public:
+	template<Orbit ORBIT,typename T>
+	inline void swapChunkArrayContainer(ChunkArrayContainer<T> &cac)
 	{
-		unsigned int size;
-		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
-		cgogn_assert(size < 2048);
-		istream.read((buffer), size);
-		dest[i].resize(size);
-		for (unsigned int j=0; j<size; ++j)
-			dest[i][j] = buffer[j];
+		map_.attributes_[ORBIT].swap(cac);
 	}
-}
 
-//save string
-template <>
-CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
-{
-	cgogn_assert(ostream.good());
-	cgogn_assert(src != nullptr);
-
-	for (std::size_t i = 0; i < quantity ; ++i)
+	inline Dart add_face_topo(unsigned int nb_edges)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].length());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
-		const char* str = src[i].c_str();
-		ostream.write(str, size);
+		return map_.add_face_topo(nb_edges);
 	}
-}
 
-// compute data length of string
-template <>
-CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
-{
-	cgogn_assert(src != nullptr);
-
-	std::size_t total = 0;
-	for (std::size_t i = 0; i < quantity ; ++i)
+	inline void phi2_sew(Dart d, Dart e)
 	{
-		total += sizeof(unsigned int); // for size
-		total += src[i].length();
+		return map_.phi2_sew(d,e);
 	}
-	return total;
-}
 
-} // namespace serialization
+	inline void phi2_unsew(Dart d)
+	{
+		map_.phi2_unsew(d);
+	}
+
+	inline void close_map()
+	{
+		map_.close_map();
+	}
+
+private:
+	CMap2& map_;
+};
+
+using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
+
 } // namespace cgogn
+
+#endif // CORE_MAP_MAP2_MODIFIER_H_

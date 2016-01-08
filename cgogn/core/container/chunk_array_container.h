@@ -181,7 +181,6 @@ protected:
 	/**
 	 * @brief remove an attribute by its index
 	 * @param index index of attribute to remove
-	 * @return true if attribute exists and has been removed
 	 */
 	void remove_attribute(unsigned int index)
 	{
@@ -559,7 +558,7 @@ public:
 	 * @brief clear the container
 	 * @param remove_attributes remove the attributes (not only their data)
 	 */
-	void clear(bool remove_attributes = false)
+	void clear_attributes()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -571,20 +570,28 @@ public:
 		holes_stack_.clear();
 
 		// clear data
-		for (auto arr : table_arrays_)
-			arr->clear();
-		for (auto arr : table_marker_arrays_)
-			arr->clear();
+		for (auto cagen : table_arrays_)
+			 cagen->clear();
+		for (auto ca_bool : table_marker_arrays_)
+			ca_bool->clear();
+	}
 
-		if (remove_attributes)
-		{
-			for (auto arr : table_arrays_)
-				delete arr;
-			for (auto arr : table_marker_arrays_)
-				delete arr;
-			table_arrays_.clear();
-			table_marker_arrays_.clear();
-		}
+	void remove_attributes()
+	{
+		nb_used_lines_ = 0u;
+		nb_max_lines_ = 0u;
+		refs_.clear();
+		holes_stack_.clear();
+
+		for (auto cagen : table_arrays_)
+			delete cagen;
+		for (auto ca_bool : table_marker_arrays_)
+			delete ca_bool;
+
+		table_arrays_.clear();
+		table_marker_arrays_.clear();
+		names_.clear();
+		type_names_.clear();
 	}
 
 	/**
@@ -827,6 +834,8 @@ public:
 
 	void save(std::ostream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
@@ -866,6 +875,8 @@ public:
 
 	bool load(std::istream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// check and register all known types if necessaey
 		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
 
@@ -892,7 +903,7 @@ public:
 			fs.read(buff3, std::streamsize(buff2[2u*i+1u]*sizeof(char)));
 			type_names_[i] = std::string(buff3);
 		}
-
+		cgogn_assert(fs.good());
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
