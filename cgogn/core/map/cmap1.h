@@ -345,6 +345,11 @@ struct CMap1DataTraits
 	static const unsigned int CHUNK_SIZE = 4096;
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
+extern template class CGOGN_CORE_API MapBaseData<CMap1DataTraits>;
+extern template class CGOGN_CORE_API CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
+
 using CMap1 = CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
 
 } // namespace cgogn

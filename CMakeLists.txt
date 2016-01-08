@@ -29,6 +29,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
 
+### External Templates
+option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
+if(${CGOGN_EXTERNAL_TEMPLATES})
+	add_definitions("-DCGOGN_USE_EXTERNAL_TEMPLATES")
+endif()
 
 #### ThirdParty options
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)

@@ -28,6 +28,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include <core/basic/dll.h>
 #include <utils/serialization.h>
 
 namespace cgogn
@@ -172,6 +173,12 @@ public:
 		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+extern template class CGOGN_CORE_API std::allocator<ChunkArrayGen<4096>**>;
+extern template class CGOGN_CORE_API std::vector<ChunkArrayGen<4096>**>;
+extern template class CGOGN_CORE_API ChunkArrayGen<4096>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn
 

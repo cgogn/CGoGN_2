@@ -22,7 +22,7 @@ set(HEADER_FILES
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-        map/cmap2_builder.h
+	map/cmap2_builder.h
 )
 
 set(SOURCE_FILES
@@ -32,6 +32,11 @@ set(SOURCE_FILES
 	container/chunk_array_container.cpp
 
 	map/map_base_data.cpp
+	map/cmap1.cpp
+	map/cmap2.cpp
+	container/chunk_array.cpp
+	container/chunk_stack.cpp
+	container/chunk_array_gen.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

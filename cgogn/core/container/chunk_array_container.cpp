@@ -22,6 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
+#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
 #include <core/container/chunk_array_container.h>
 
 namespace cgogn
@@ -29,5 +30,12 @@ namespace cgogn
 
 ContainerBrowser::~ContainerBrowser()
 {}
-
+template class CGOGN_CORE_API std::allocator< cgogn::ChunkArrayGen<4096>* >;
+template class CGOGN_CORE_API std::vector< cgogn::ChunkArrayGen<4096>* >;
+template class CGOGN_CORE_API std::allocator< cgogn::ChunkArray<4096, bool>* >;
+template class CGOGN_CORE_API std::vector< cgogn::ChunkArray<4096, bool>* >;
+template class CGOGN_CORE_API std::allocator< std::string >;
+template class CGOGN_CORE_API std::vector< std::string >;
+template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned int>;
+template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned char>;
 }

@@ -271,6 +271,13 @@ public:
 	}
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
+extern template class CGOGN_CORE_API std::allocator<std::thread::id>;
+extern template class CGOGN_CORE_API std::vector<std::thread::id>;
+extern template class CGOGN_CORE_API std::allocator<cgogn::ChunkArray<4096, bool>*>;
+extern template class CGOGN_CORE_API std::vector<cgogn::ChunkArray<4096, bool>*>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
+
 } // namespace cgogn
 
 #endif // CORE_MAP_MAP_BASE_DATA_H_

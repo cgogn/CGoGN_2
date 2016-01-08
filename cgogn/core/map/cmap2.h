@@ -519,6 +519,11 @@ struct CMap2DataTraits
 	using Vec3 = std::array<Real, 3>;
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
+extern template class CGOGN_CORE_API MapBaseData<CMap2DataTraits>;
+extern template class CGOGN_CORE_API CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
+
 using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
 
 } // namespace cgogn
