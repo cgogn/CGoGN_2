@@ -80,26 +80,41 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-	void clear(bool remove_attributes = false)
+	/**
+	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified
+	 */
+	inline void clear()
 	{
-		this->topology_.clear(false);
+		this->topology_.clear_attributes();
 
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			this->attributes_[i].clear(remove_attributes);
+		for (unsigned int i = 0u; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear_attributes();
+	}
 
-		if (remove_attributes)
+	/**
+	 * @brief clear_and_remove_attributes : clear the topology and delete all the attributes.
+	 */
+	inline void clear_and_remove_attributes()
+	{
+		this->topology_.clear_attributes();
+
+		for (auto& mark_att_topo : this->mark_attributes_topology_)
+			mark_att_topo.clear();
+
+		for (auto& att : this->attributes_)
+			att.remove_attributes();
+
+		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
-			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			if (this->embeddings_[i] != nullptr)
 			{
-				if (this->embeddings_[i] != nullptr)
-				{
-					this->topology_.remove_attribute(this->embeddings_[i]);
-					this->embeddings_[i] = nullptr;
-				}
-
-				for (unsigned int j = 0; j < NB_THREADS; ++j)
-					this->mark_attributes_[i][j].clear();
+				this->topology_.remove_attribute(this->embeddings_[i]);
+				this->embeddings_[i] = nullptr;
+				this->global_topo_cache_[i] = nullptr;
 			}
+
+			for (auto& mark_attr : this->mark_attributes_[i])
+				mark_attr.clear();
 		}
 	}
 
@@ -246,6 +261,8 @@ protected:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
+public:
+
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
@@ -257,7 +274,8 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
+		if (this->template is_orbit_embedded<ORBIT>())
+			return;
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -296,8 +314,6 @@ protected:
 
 		remove_attribute(counter) ;
 	}
-
-public:
 
 	/*******************************************************************************
 	 * Topo caches management

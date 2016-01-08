@@ -22,12 +22,11 @@ set(HEADER_FILES
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-
-	io/surface_import.h
+        map/cmap2_builder.h
 )
 
 set(SOURCE_FILES
-	basic/cell_marker.cpp
+#	basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
 	container/chunk_array_container.cpp

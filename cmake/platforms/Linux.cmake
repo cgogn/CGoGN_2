@@ -9,11 +9,11 @@ set(SHELL_SUFFIX "sh")
 # (std::type_infos representing the same template type do not compare equal,
 # introducing subtle bugs)
 # IMPORTANT: DO NOT ADD THIS FLAG WITH STATIC LINKING
-string_append(CMAKE_EXE_LINKER_FLAGS "-Wl,-E")
+add_flags(CMAKE_EXE_LINKER_FLAGS "-Wl,-E")
 
 # Forbid undefined symbols at link time (shared libraries and executables)
-string_append(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
-string_append(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-undefined")
+add_flags(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
+add_flags(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-undefined")
 
 # Link with the loader library
 #list(APPEND SYSLIBS dl)
