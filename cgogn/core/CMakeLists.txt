@@ -19,10 +19,10 @@ set(HEADER_FILES
 	map/map_base.h
 	map/cmap1.h
 	map/cmap2.h
+	map/cmap2_builder.h
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-        map/cmap2_builder.h
 )
 
 set(SOURCE_FILES
@@ -46,7 +46,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} cgogn_utils)
 
-install(DIRECTORY basic container io map
+install(DIRECTORY basic container map
 	DESTINATION include/cgogn/cgogn_core
 	FILES_MATCHING PATTERN "*.h"
 )
