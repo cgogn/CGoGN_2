@@ -33,7 +33,7 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 #include <core/map/cmap2.h>
-#include <core/map/cmap2_modifier.h>
+#include <core/map/cmap2_builder.h>
 
 namespace cgogn
 {
@@ -151,7 +151,7 @@ public:
 
     void create_map(Map& map)
     {
-        using MapModifier = cgogn::CMap2Modifier_T<typename Map::DataTraits, typename Map::TopoTraits>;
+        using MapModifier = cgogn::CMap2Builder_T<typename Map::DataTraits, typename Map::TopoTraits>;
 
         if (this->nb_vertices_ == 0u)
             return;

@@ -30,20 +30,20 @@ namespace cgogn
 {
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap2Modifier_T
+class CMap2Builder_T
 {
 public:
-	using Self = CMap2Modifier_T<DATA_TRAITS,TOPO_TRAITS>;
+	using Self = CMap2Builder_T<DATA_TRAITS,TOPO_TRAITS>;
 	using CMap2 = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
 	template<typename T>
 	using ChunkArrayContainer =  typename CMap2::template ChunkArrayContainer<T>;
 
-	inline CMap2Modifier_T(CMap2& map) : map_(map) {}
-	CMap2Modifier_T(const Self&) = delete;
-	CMap2Modifier_T(Self&&) = delete;
+	inline CMap2Builder_T(CMap2& map) : map_(map) {}
+	CMap2Builder_T(const Self&) = delete;
+	CMap2Builder_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
-	inline ~CMap2Modifier_T() = default;
+	inline ~CMap2Builder_T() = default;
 
 public:
 	template<Orbit ORBIT,typename T>
@@ -76,7 +76,7 @@ private:
 	CMap2& map_;
 };
 
-using CMap2Modifier = cgogn::CMap2Modifier_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
+using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
 
 } // namespace cgogn
 
