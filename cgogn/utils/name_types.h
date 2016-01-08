@@ -34,7 +34,7 @@
 namespace Eigen
 {
 // forward declaration
-	template<typename , int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 	class Matrix;
 }
 namespace cgogn

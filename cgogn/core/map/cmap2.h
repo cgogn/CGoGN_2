@@ -29,14 +29,15 @@
 
 namespace cgogn
 {
+
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class CMap2Builder_T;
 
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
 {
-
 public:
+
 	typedef DATA_TRAITS DataTraits;
 	typedef TOPO_TRAITS TopoTraits;
 	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
@@ -45,7 +46,7 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend class CMap2Builder_T<DataTraits,TopoTraits>;
-	friend class cgogn::DartMarkerT<Self>;
+	friend class DartMarkerT<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
