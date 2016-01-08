@@ -31,11 +31,12 @@
 #include <utils/dll.h>
 #include <utils/definitions.h>
 
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-
-
+namespace Eigen
+{
+// forward declaration
+	template<typename , int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+	class Matrix;
+}
 namespace cgogn
 {
 
@@ -46,10 +47,10 @@ template <typename T>
 std::string name_of_type(const T& )
 { return T::cgogn_name_of_type(); }
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::list<T>& );
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::vector<T>& );
 
 template<typename T, std::size_t size>
@@ -100,14 +101,15 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
+// Eigen Vec3d
 template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& );
+CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& );
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::list<T>& )
 { return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::vector<T>& )
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 
