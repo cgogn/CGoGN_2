@@ -58,7 +58,7 @@ class SurfaceImport
 public:
 
 	using Self = SurfaceImport<MAP_TRAITS>;
-	using Map = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
+	using Map = CMap2<MAP_TRAITS>;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
