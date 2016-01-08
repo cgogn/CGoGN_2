@@ -30,13 +30,17 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap3_T : public CMap2_T<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap3_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap3_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
@@ -481,14 +485,14 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap3TopoTraits
+template <typename MAP_TRAITS>
+struct CMap3Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap3_T<DataTraits, CMap3TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>> TYPE;
 };
 
-using CMap3 = CMap3_T<DefaultDataTraits, CMap3TopoTraits<DefaultDataTraits>>;
+template <typename MAP_TRAITS>
+using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
