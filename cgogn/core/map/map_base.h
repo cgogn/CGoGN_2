@@ -141,8 +141,6 @@ protected:
 		return idx;
 	}
 
-public:
-
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
@@ -152,6 +150,8 @@ public:
 		this->attributes_[ORBIT].init_markers_of_line(idx);
 		return idx;
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Attributes management

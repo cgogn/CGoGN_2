@@ -13,7 +13,7 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-struct MyDataTraits : public cgogn::CMap2DataTraits
+struct MyDataTraits : public cgogn::DefaultDataTraits
 {
 	using Vec3 = Eigen::Vector3d;
 };
@@ -42,7 +42,6 @@ int main(int argc, char** argv)
 	Map2 map;
 	for (int k = 0 ; k < 2 ; ++k)
 	{
-
 		cgogn::io::import_surface(map,surfaceMesh);
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;

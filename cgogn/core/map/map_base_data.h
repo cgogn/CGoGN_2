@@ -72,6 +72,13 @@ public:
 };
 
 
+struct DefaultDataTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+	using Real = double;
+	using Vec3 = std::array<Real, 3>;
+};
+
 /**
  * @brief The MapBaseData class
  */

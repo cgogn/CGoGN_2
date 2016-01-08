@@ -513,14 +513,7 @@ struct CMap2TopoTraits
 	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
 };
 
-struct CMap2DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
-};
-
-using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
+using CMap2 = CMap2_T<DefaultDataTraits, CMap2TopoTraits<DefaultDataTraits>>;
 
 } // namespace cgogn
 
