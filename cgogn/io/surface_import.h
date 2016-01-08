@@ -21,12 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_IO_SURFACE_IMPORT_H_
-#define CORE_IO_SURFACE_IMPORT_H_
+#ifndef IO_SURFACE_IMPORT_H_
+#define IO_SURFACE_IMPORT_H_
 
 #include <istream>
-
-#include <core/container/chunk_array_container.h>
 
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
@@ -37,6 +35,7 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {
+
 namespace io
 {
 
@@ -59,21 +58,23 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 template <typename DATA_TRAITS, typename TOPO_TRAITS>
 class SurfaceImport
 {
-
 public:
+
 	using Self = SurfaceImport<DATA_TRAITS,TOPO_TRAITS>;
-	using Map = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
+	using Map = CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
+
 	static const unsigned int CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
+
 	template<typename T>
-	using ChunkArray =  cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
-	using Vec3 = typename DATA_TRAITS::Vec3;
+	using AttributeHandler = AttributeHandler<DATA_TRAITS, T, ORBIT>;
 	template<typename T>
-
 	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
+
+	using Vec3 = typename DATA_TRAITS::Vec3;
 
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
@@ -85,11 +86,11 @@ public:
 	ChunkArrayContainer vertex_attributes_;
 
 	SurfaceImport() :
-	nb_vertices_(0u)
-	,nb_edges_(0u)
-	,nb_faces_(0u)
-	,faces_nb_edges_()
-	,faces_vertex_indices_()
+		nb_vertices_(0u)
+		,nb_edges_(0u)
+		,nb_faces_(0u)
+		,faces_nb_edges_()
+		,faces_vertex_indices_()
 	{}
 
 	~SurfaceImport()
@@ -102,12 +103,12 @@ public:
 
 	void clear()
 	{
-	nb_vertices_ = 0;
-	nb_edges_ = 0;
-	nb_faces_ = 0;
-	faces_nb_edges_.clear();
-	faces_vertex_indices_.clear();
-	vertex_attributes_.remove_attributes();
+		nb_vertices_ = 0;
+		nb_edges_ = 0;
+		nb_faces_ = 0;
+		faces_nb_edges_.clear();
+		faces_vertex_indices_.clear();
+		vertex_attributes_.remove_attributes();
 	}
 
 	bool import_file(const std::string& filename)
@@ -279,7 +280,7 @@ protected:
 			oss >> nb_edges_;
 		}
 		ChunkArray<Vec3>* position =
-		vertex_attributes_.template add_attribute<Vec3>("position");
+			vertex_attributes_.template add_attribute<Vec3>("position");
 
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
@@ -289,7 +290,7 @@ protected:
 		{
 			do
 			{
-			std::getline(fp, line);
+				std::getline(fp, line);
 			} while (line.size() == 0);
 
 			std::stringstream oss(line);
@@ -314,7 +315,7 @@ protected:
 		{
 			do
 			{
-			std::getline(fp, line);
+				std::getline(fp, line);
 			} while (line.size() == 0);
 
 			std::stringstream oss(line);
@@ -324,9 +325,9 @@ protected:
 			faces_nb_edges_.push_back(n);
 			for (unsigned int j = 0; j < n; ++j)
 			{
-			unsigned int index;
-			oss >> index;
-			faces_vertex_indices_.push_back(vertices_id[index]);
+				unsigned int index;
+				oss >> index;
+				faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 		}
 
@@ -336,7 +337,7 @@ protected:
 	bool import_OBJ(std::ifstream& fp)
 	{
 		ChunkArray<Vec3>* position =
-		vertex_attributes_.template add_attribute<Vec3>("position");
+			vertex_attributes_.template add_attribute<Vec3>("position");
 
 		std::string line, tag;
 
@@ -355,20 +356,20 @@ protected:
 		{
 			if (tag == std::string("v"))
 			{
-			std::stringstream oss(line);
+				std::stringstream oss(line);
 
-			double x, y, z;
-			oss >> x;
-			oss >> y;
-			oss >> z;
+				double x, y, z;
+				oss >> x;
+				oss >> y;
+				oss >> z;
 
-			Vec3 pos{x, y, z};
+				Vec3 pos{x, y, z};
 
-			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
-			(*position)[vertex_id] = pos;
+				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+				(*position)[vertex_id] = pos;
 
-			vertices_id.push_back(vertex_id);
-			i++;
+				vertices_id.push_back(vertex_id);
+				i++;
 			}
 
 			fp >> tag;
@@ -395,36 +396,36 @@ protected:
 		{
 			if (tag == std::string("f")) // lecture d'une face
 			{
-			std::stringstream oss(line);
+				std::stringstream oss(line);
 
-			table.clear();
-			while (!oss.eof())  // lecture de tous les indices
-			{
-				std::string str;
-				oss >> str;
-
-				unsigned int ind = 0;
-
-				while ((ind < str.length()) && (str[ind] != '/'))
-				ind++;
-
-				if (ind > 0)
+				table.clear();
+				while (!oss.eof())  // lecture de tous les indices
 				{
-				unsigned int index;
-				std::stringstream iss(str.substr(0, ind));
-				iss >> index;
-				table.push_back(index);
-				}
-			}
+					std::string str;
+					oss >> str;
 
-			unsigned int n = static_cast<unsigned int>(table.size());
-			faces_nb_edges_.push_back(static_cast<unsigned short>(n));
-			for (unsigned int j = 0; j < n; ++j)
-			{
-				unsigned int index = table[j] - 1; // indices start at 1
-				faces_vertex_indices_.push_back(vertices_id[index]);
-			}
-			nb_faces_++;
+					unsigned int ind = 0;
+
+					while ((ind < str.length()) && (str[ind] != '/'))
+					ind++;
+
+					if (ind > 0)
+					{
+						unsigned int index;
+						std::stringstream iss(str.substr(0, ind));
+						iss >> index;
+						table.push_back(index);
+					}
+				}
+
+				unsigned int n = static_cast<unsigned int>(table.size());
+				faces_nb_edges_.push_back(static_cast<unsigned short>(n));
+				for (unsigned int j = 0; j < n; ++j)
+				{
+					unsigned int index = table[j] - 1; // indices start at 1
+					faces_vertex_indices_.push_back(vertices_id[index]);
+				}
+				nb_faces_++;
 			}
 			fp >> tag;
 			std::getline(fp, line);
@@ -435,6 +436,7 @@ protected:
 };
 
 } // namespace io
+
 } // namespace cgogn
 
-#endif // CORE_IO_SURFACE_IMPORT_H_
+#endif // IO_SURFACE_IMPORT_H_
