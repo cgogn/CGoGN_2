@@ -47,7 +47,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} cgogn_utils)
 
-install(DIRECTORY basic container
+install(DIRECTORY basic container io map
 	DESTINATION include/cgogn/cgogn_core
 	FILES_MATCHING PATTERN "*.h"
 )
