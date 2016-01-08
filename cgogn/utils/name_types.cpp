@@ -24,64 +24,66 @@
 #define CGOGN_UTILS_DLL_EXPORT
 
 #include <utils/name_types.h>
-
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+#include <Eigen/Core>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 namespace cgogn
 {
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& ) 
+CGOGN_UTILS_API std::string name_of_type(const bool& )
 { return "bool"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const char& ) 
+CGOGN_UTILS_API std::string name_of_type(const char& )
 { return "char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const short& ) 
+CGOGN_UTILS_API std::string name_of_type(const short& )
 { return "short"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const int& ) 
+CGOGN_UTILS_API std::string name_of_type(const int& )
 { return "int"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long& ) 
+CGOGN_UTILS_API std::string name_of_type(const long& )
 { return "long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& ) 
+CGOGN_UTILS_API std::string name_of_type(const long long& )
 { return "long long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& ) 
+CGOGN_UTILS_API std::string name_of_type(const signed char& )
 { return "signed char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& ) 
+CGOGN_UTILS_API std::string name_of_type(const unsigned char& )
 { return "unsigned char"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& ) 
+CGOGN_UTILS_API std::string name_of_type(const unsigned short& )
 { return "unsigned short"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& ) 
+CGOGN_UTILS_API std::string name_of_type(const unsigned int& )
 { return "unsigned int"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& ) 
+CGOGN_UTILS_API std::string name_of_type(const unsigned long& )
 { return "unsigned long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& ) 
+CGOGN_UTILS_API std::string name_of_type(const unsigned long long& )
 { return "unsigned long long"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const float& ) 
+CGOGN_UTILS_API std::string name_of_type(const float& )
 { return "float"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const double& ) 
+CGOGN_UTILS_API std::string name_of_type(const double& )
 { return "double"; }
 
 template <>
@@ -89,7 +91,7 @@ CGOGN_UTILS_API std::string name_of_type(const std::string& )
 { return "std::string"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& )
+CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& )
 { return "Eigen::Vector3d"; }
 
 } // namespace cgogn
