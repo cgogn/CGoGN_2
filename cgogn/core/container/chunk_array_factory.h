@@ -122,6 +122,10 @@ template <unsigned int CHUNKSIZE>
 bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayFactory<4096>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+
 } // namespace cgogn
 
 #endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_

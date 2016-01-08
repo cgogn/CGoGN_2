@@ -55,10 +55,5 @@ MapGen::~MapGen()
 	}
 }
 
-// external templates
-template class CGOGN_CORE_API std::allocator<std::thread::id>;
-template class CGOGN_CORE_API std::vector<std::thread::id>;
-template class CGOGN_CORE_API std::allocator<cgogn::ChunkArray<4096, bool>*>;
-template class CGOGN_CORE_API std::vector<cgogn::ChunkArray<4096, bool>*>;
 
 } // namespace cgogn

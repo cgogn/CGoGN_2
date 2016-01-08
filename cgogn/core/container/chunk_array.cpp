@@ -28,10 +28,6 @@
 
 namespace cgogn
 {
-	template class CGOGN_CORE_API std::allocator<unsigned int*>;
-	template class CGOGN_CORE_API std::vector<unsigned int*>;
-	template class CGOGN_CORE_API std::allocator<unsigned char*>;
-	template class CGOGN_CORE_API std::vector<unsigned char*>;
 	template class CGOGN_CORE_API ChunkArray<4096, bool>;
 	template class CGOGN_CORE_API ChunkArray<4096, unsigned int>;
 	template class CGOGN_CORE_API ChunkArray<4096, unsigned char>;

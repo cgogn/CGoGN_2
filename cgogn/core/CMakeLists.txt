@@ -29,14 +29,16 @@ set(SOURCE_FILES
 #	basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
-	container/chunk_array_container.cpp
-
 	map/map_base_data.cpp
 	map/cmap1.cpp
 	map/cmap2.cpp
+	map/cmap2_builder.cpp
+
+	container/chunk_array_gen.cpp
 	container/chunk_array.cpp
 	container/chunk_stack.cpp
-	container/chunk_array_gen.cpp
+	container/chunk_array_container.cpp
+	container/chunk_array_factory.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_MODIFIER_H_
-#define CORE_MAP_MAP2_MODIFIER_H_
+#ifndef CORE_MAP_MAP2_BUILDER_H_
+#define CORE_MAP_MAP2_BUILDER_H_
 
 #include <core/map/cmap2.h>
 
@@ -76,8 +76,12 @@ private:
 	CMap2& map_;
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+
 using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP2_MODIFIER_H_
+#endif // CORE_MAP_MAP2_BUILDER_H_

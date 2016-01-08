@@ -930,12 +930,6 @@ public:
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
-extern template class CGOGN_CORE_API std::allocator< cgogn::ChunkArrayGen<4096>* >;
-extern template class CGOGN_CORE_API std::vector< cgogn::ChunkArrayGen<4096>* >;
-extern template class CGOGN_CORE_API std::allocator< cgogn::ChunkArray<4096, bool>* >;
-extern template class CGOGN_CORE_API std::vector< cgogn::ChunkArray<4096, bool>* >;
-extern template class CGOGN_CORE_API std::allocator< std::string >;
-extern template class CGOGN_CORE_API std::vector< std::string >;
 extern template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned int>;
 extern template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned char>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))

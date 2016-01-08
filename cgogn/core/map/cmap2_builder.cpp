@@ -22,15 +22,11 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
-#include <core/container/chunk_array_container.h>
+#define CORE_MAP_MAP2_BUILDER_CPP_
+
+#include <core/map/cmap2_builder.h>
 
 namespace cgogn
 {
-
-ContainerBrowser::~ContainerBrowser()
-{}
-
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned char>;
+	template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
 }

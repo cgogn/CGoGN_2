@@ -20,17 +20,12 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
-#include <core/container/chunk_array_container.h>
+#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_
+
+#include <core/container/chunk_array_factory.h>
 
 namespace cgogn
 {
-
-ContainerBrowser::~ContainerBrowser()
-{}
-
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned char>;
+	template class CGOGN_CORE_API ChunkArrayFactory<4096>;
 }

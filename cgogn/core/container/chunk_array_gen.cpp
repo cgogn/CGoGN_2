@@ -28,7 +28,5 @@
 
 namespace cgogn
 {
-	template class CGOGN_CORE_API std::allocator<ChunkArrayGen<4096>**>;
-	template class CGOGN_CORE_API std::vector<ChunkArrayGen<4096>**>;
 	template class CGOGN_CORE_API ChunkArrayGen<4096>;
 }
