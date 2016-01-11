@@ -76,6 +76,9 @@ public:
 	using DartMarker = typename Inherit::DartMarker;
 	using DartMarkerStore = typename Inherit::DartMarkerStore;
 
+	template <Orbit ORBIT>
+	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
+
 protected:
 
 	ChunkArray<Dart>* phi3_;
