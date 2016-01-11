@@ -80,9 +80,9 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
+using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 

@@ -22,11 +22,22 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_MAP_MAP2_BUILDER_CPP_
+#define CORE_MAP_MAP3_CPP_
 
-#include <core/map/cmap2_builder.h>
+#include <core/map/cmap3.h>
 
 namespace cgogn
 {
-        template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
+//	template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
+//	template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
+//	template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
+//	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
+//	template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
+//	template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
+//	template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
+//	template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+//	template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
+//	template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
+//	template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
+//	template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
 }

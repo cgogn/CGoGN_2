@@ -28,7 +28,8 @@
 
 namespace cgogn
 {
-	template class CGOGN_CORE_API ChunkArray<4096, bool>;
-	template class CGOGN_CORE_API ChunkArray<4096, unsigned int>;
-	template class CGOGN_CORE_API ChunkArray<4096, unsigned char>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, bool>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, DefaultMapTraits::Vec3>;
 }

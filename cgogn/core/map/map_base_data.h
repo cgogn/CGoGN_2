@@ -24,11 +24,11 @@
 #ifndef CORE_MAP_MAP_BASE_DATA_H_
 #define CORE_MAP_MAP_BASE_DATA_H_
 
-#include <core/container/chunk_array_container.h>
 #include <utils/definitions.h>
-#include <core/basic/cell.h>
-
 #include <utils/thread.h>
+#include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
+#include <core/map/map_traits.h>
 
 #include <thread>
 #include <mutex>
@@ -71,13 +71,6 @@ public:
 	}
 };
 
-
-struct DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
-};
 
 /**
  * @brief The MapBaseData class

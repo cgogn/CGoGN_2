@@ -686,9 +686,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-extern template class CGOGN_CORE_API ChunkArray<4096, bool>;
-extern template class CGOGN_CORE_API ChunkArray<4096, unsigned int>;
-extern template class CGOGN_CORE_API ChunkArray<4096, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, bool>;
+extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, DefaultMapTraits::Vec3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn

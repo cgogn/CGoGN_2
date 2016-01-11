@@ -31,6 +31,6 @@ namespace cgogn
 ContainerBrowser::~ContainerBrowser()
 {}
 
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<4096, unsigned char>;
+template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
 }

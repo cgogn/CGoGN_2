@@ -15,6 +15,7 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
+	map/map_traits.h
 	map/map_base_data.h
 	map/map_base.h
 	map/cmap1.h
@@ -22,7 +23,7 @@ set(HEADER_FILES
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-        map/cmap2_builder.h
+	map/cmap2_builder.h
 )
 
 set(SOURCE_FILES
@@ -32,6 +33,7 @@ set(SOURCE_FILES
 	map/map_base_data.cpp
 	map/cmap1.cpp
 	map/cmap2.cpp
+	map/cmap3.cpp
 	map/cmap2_builder.cpp
 
 	container/chunk_array_gen.cpp

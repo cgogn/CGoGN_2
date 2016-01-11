@@ -27,5 +27,5 @@
 
 namespace cgogn
 {
-	template class CGOGN_CORE_API ChunkArrayFactory<4096>;
+	template class CGOGN_CORE_API ChunkArrayFactory<DefaultMapTraits::CHUNK_SIZE>;
 }
