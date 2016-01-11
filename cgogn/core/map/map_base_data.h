@@ -72,18 +72,25 @@ public:
 };
 
 
+struct DefaultMapTraits
+{
+	static const unsigned int CHUNK_SIZE = 4096;
+	using Real = double;
+	using Vec3 = std::array<Real, 3>;
+};
+
 /**
  * @brief The MapBaseData class
  */
-template <typename DATA_TRAITS>
+template <typename MAP_TRAITS>
 class MapBaseData : public MapGen
 {
 public:
 
 	typedef MapGen Inherit;
-	typedef MapBaseData<DATA_TRAITS> Self;
+	typedef MapBaseData<MAP_TRAITS> Self;
 
-	static const unsigned int CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
+	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 

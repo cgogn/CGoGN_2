@@ -42,26 +42,26 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class MapBase : public MapBaseData<DATA_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class MapBase : public MapBaseData<MAP_TRAITS>
 {
 public:
 
-	typedef MapBaseData<DATA_TRAITS> Inherit;
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef MapBaseData<MAP_TRAITS> Inherit;
+	typedef MapBase<MAP_TRAITS, MAP_TYPE> Self;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarkerT;
+	template <typename MAP> friend class DartMarker_T;
+	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
+	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
 
-	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+	using ConcreteMap = typename MAP_TYPE::TYPE;
 
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
 	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
@@ -136,12 +136,10 @@ protected:
 
 	inline unsigned int add_topology_element()
 	{
-		unsigned int idx = this->topology_.template insert_lines<TOPO_TRAITS::PRIM_SIZE>();
+		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
 		return idx;
 	}
-
-public:
 
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
@@ -152,6 +150,8 @@ public:
 		this->attributes_[ORBIT].init_markers_of_line(idx);
 		return idx;
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Attributes management

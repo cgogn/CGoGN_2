@@ -29,16 +29,19 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
+template <typename MAP_TRAITS>
 class CMap2Builder_T
 {
 public:
-	using Self = CMap2Builder_T<DATA_TRAITS,TOPO_TRAITS>;
-	using CMap2 = cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>;
-	template<typename T>
-	using ChunkArrayContainer =  typename CMap2::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(CMap2& map) : map_(map) {}
+	using Self = CMap2Builder_T<MAP_TRAITS>;
+	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
+
+	template<typename T>
+	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
+
+	inline CMap2Builder_T(CMap2& map) : map_(map)
+	{}
 	CMap2Builder_T(const Self&) = delete;
 	CMap2Builder_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
@@ -79,7 +82,6 @@ private:
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-
 using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::DataTraits, cgogn::CMap2::TopoTraits>;
 
 } // namespace cgogn

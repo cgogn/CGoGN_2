@@ -29,23 +29,26 @@
 
 namespace cgogn
 {
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
+
+template <typename MAP_TRAITS>
 class CMap2Builder_T;
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
-
 public:
-	typedef DATA_TRAITS DataTraits;
-	typedef TOPO_TRAITS TopoTraits;
-	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-	friend class CMap2Builder_T<DataTraits,TopoTraits>;
-	friend class cgogn::DartMarkerT<Self>;
+	friend class CMap2Builder_T<MapTraits>;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
@@ -75,6 +78,9 @@ public:
 
 	using DartMarker = typename Inherit::DartMarker;
 	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
+	template <Orbit ORBIT>
+	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
 
 protected:
 
@@ -414,14 +420,14 @@ public:
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart vd)
+		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
 			this->foreach_dart_of_orbit<FACE>(vd, [&f, vd, vd1] (Dart fd)
@@ -437,7 +443,7 @@ public:
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<VERTEX>(ed, [&f, ed] (Dart vd)
 			{
@@ -452,7 +458,7 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<FACE>(ed, [&f, ed] (Dart fd)
 			{
@@ -467,7 +473,7 @@ public:
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart fd)
+		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
 			this->foreach_dart_of_orbit<VERTEX>(fd, [&func, fd, fd1] (Dart vd)
@@ -483,7 +489,7 @@ public:
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:
@@ -505,18 +511,10 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap2TopoTraits
+template <typename MAP_TRAITS>
+struct CMap2Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
-};
-
-struct CMap2DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
+	typedef CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>> TYPE;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
@@ -524,7 +522,8 @@ extern template class CGOGN_CORE_API MapBaseData<CMap2DataTraits>;
 extern template class CGOGN_CORE_API CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
 
-using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
+template <typename MAP_TRAITS>
+using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 

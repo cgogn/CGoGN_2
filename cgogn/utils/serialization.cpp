@@ -20,13 +20,16 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_UTILS_DLL_EXPORT
 #include <utils/serialization.h>
 
 namespace cgogn
 {
+
 namespace serialization
 {
+
 template <>
 CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
 {
@@ -85,4 +88,5 @@ CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std
 }
 
 } // namespace serialization
+
 } // namespace cgogn
