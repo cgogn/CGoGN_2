@@ -33,6 +33,8 @@ set(HEADER_FILES
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
+
+	mrcmap/mrcmap2.h
 )
 
 set(SOURCE_FILES
