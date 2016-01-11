@@ -24,12 +24,12 @@
 #ifndef CORE_SERIALIZATION_H_
 #define CORE_SERIALIZATION_H_
 
-#include <utils/assert.h>
-
 #include <iostream>
 #include <vector>
 #include <list>
 #include <array>
+
+#include <utils/assert.h>
 #include <utils/dll.h>
 
 namespace cgogn

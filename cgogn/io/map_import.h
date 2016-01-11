@@ -21,30 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_IO_MAP_IMPORT_H_
-#define CORE_IO_MAP_IMPORT_H_
+#ifndef IO_MAP_IMPORT_H_
+#define IO_MAP_IMPORT_H_
 
 #include <string>
+
 #include <core/map/cmap2.h>
 #include <io/surface_import.h>
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename);
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
 
-template<class DATA_TRAITS, class TOPO_TRAITS>
-inline void import_surface(cgogn::CMap2_T<DATA_TRAITS,TOPO_TRAITS>& cmap2, const std::string& filename)
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
-    using SurfaceImport = cgogn::io::SurfaceImport<DATA_TRAITS,TOPO_TRAITS>;
-    SurfaceImport si;
-    si.import_file(filename);
-    si.create_map(cmap2);
+	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
+	SurfaceImport si;
+	si.import_file(filename);
+	si.create_map(cmap2);
 }
 
 } // namespace io
+
 } // namespace cgogn
-#endif // CORE_IO_MAP_IMPORT_H_
+
+#endif // IO_MAP_IMPORT_H_

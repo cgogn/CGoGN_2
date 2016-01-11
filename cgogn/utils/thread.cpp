@@ -20,7 +20,9 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_UTILS_DLL_EXPORT
+
 #include <utils/thread.h>
 
 namespace cgogn
