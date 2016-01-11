@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_IO_SURFACE_IMPORT_H_
-#define CORE_IO_SURFACE_IMPORT_H_
+#ifndef IO_SURFACE_IMPORT_H_
+#define IO_SURFACE_IMPORT_H_
 
 #include <istream>
 
@@ -69,6 +69,7 @@ public:
 	template<typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
+
 	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
 
 	using Vec3 = typename MAP_TRAITS::Vec3;
@@ -312,7 +313,7 @@ protected:
 		{
 			do
 			{
-				std::getline(fp, line);
+			std::getline(fp, line);
 			} while (line.size() == 0);
 
 			std::stringstream oss(line);
@@ -322,9 +323,9 @@ protected:
 			faces_nb_edges_.push_back(n);
 			for (unsigned int j = 0; j < n; ++j)
 			{
-				unsigned int index;
-				oss >> index;
-				faces_vertex_indices_.push_back(vertices_id[index]);
+			unsigned int index;
+			oss >> index;
+			faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 		}
 
@@ -436,4 +437,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_IO_SURFACE_IMPORT_H_
+#endif // IO_SURFACE_IMPORT_H_
