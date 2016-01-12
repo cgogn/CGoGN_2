@@ -51,15 +51,23 @@ public:
 	Self& operator=(Self&&) = delete;
 
 public:
-	template<Orbit ORBIT,typename T>
+
+	template <Orbit ORBIT>
+	inline void create_embedding()
+	{
+		map_.create_embedding<ORBIT>();
+	}
+
+	template <Orbit ORBIT, typename T>
 	inline void swapChunkArrayContainer(ChunkArrayContainer<T> &cac)
 	{
 		map_.attributes_[ORBIT].swap(cac);
 	}
 
-	inline Dart add_face_topo(unsigned int nb_edges)
+	template <Orbit ORBIT>
+	inline void init_embedding(Dart d, unsigned int emb)
 	{
-		return map_.add_face_topo(nb_edges);
+		map_.init_embedding<ORBIT>(d, emb);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)
@@ -72,12 +80,18 @@ public:
 		map_.phi2_unsew(d);
 	}
 
+	inline Dart add_face_topo(unsigned int nb_edges)
+	{
+		return map_.add_face_topo(nb_edges);
+	}
+
 	inline void close_map()
 	{
 		map_.close_map();
 	}
 
 private:
+
 	CMap2& map_;
 };
 

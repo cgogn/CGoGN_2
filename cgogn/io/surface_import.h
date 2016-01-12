@@ -26,10 +26,7 @@
 
 #include <istream>
 
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-
+#include <core/container/chunk_array_container.h>
 #include <core/map/cmap2.h>
 #include <core/map/cmap2_builder.h>
 
@@ -72,6 +69,7 @@ public:
 	template<typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
+
 	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
 
 	using Vec3 = typename MAP_TRAITS::Vec3;
@@ -159,11 +157,11 @@ public:
 		const Orbit VERTEX = Map::VERTEX;
 		map.clear_and_remove_attributes();
 
-		map.template create_embedding<VERTEX>();
+		mbuild.template create_embedding<VERTEX>();
 		mbuild.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
-		map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+			map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
 		std::vector<unsigned int> vertices_buffer;
@@ -178,27 +176,27 @@ public:
 
 			for (unsigned int j = 0; j < nbe; ++j)
 			{
-			unsigned int idx = this->faces_vertex_indices_[faces_vertex_index++];
-			if (idx != prev)
-			{
-				prev = idx;
-				vertices_buffer.push_back(idx);
-			}
+				unsigned int idx = this->faces_vertex_indices_[faces_vertex_index++];
+				if (idx != prev)
+				{
+					prev = idx;
+					vertices_buffer.push_back(idx);
+				}
 			}
 			if (vertices_buffer.front() == vertices_buffer.back())
-			vertices_buffer.pop_back();
+				vertices_buffer.pop_back();
 
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-			Dart d = mbuild.add_face_topo(nbe);
-			for (unsigned int j = 0; j < nbe; ++j)
-			{
-				unsigned int vertex_index = vertices_buffer[j];
-				map.template init_embedding<VERTEX>(d, vertex_index);
-				darts_per_vertex[vertex_index].push_back(d);
-				d = map.phi1(d);
-			}
+				Dart d = mbuild.add_face_topo(nbe);
+				for (unsigned int j = 0; j < nbe; ++j)
+				{
+					unsigned int vertex_index = vertices_buffer[j];
+					mbuild.template init_embedding<VERTEX>(d, vertex_index);
+					darts_per_vertex[vertex_index].push_back(d);
+					d = map.phi1(d);
+				}
 			}
 		}
 
@@ -209,35 +207,35 @@ public:
 		{
 			if (map.phi2(d) == d)
 			{
-			unsigned int vertex_index = map.template get_embedding<VERTEX>(d);
+				unsigned int vertex_index = map.template get_embedding<VERTEX>(d);
 
-			std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
-			bool phi2_found = false;
-			bool first_OK = true;
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
+				bool phi2_found = false;
+				bool first_OK = true;
 
-			for (auto it = next_vertex_darts.begin();
-			it != next_vertex_darts.end() && !phi2_found;
-			++it)
-			{
-				if (map.template get_embedding<VERTEX>(map.phi1(*it)) == vertex_index)
+				for (auto it = next_vertex_darts.begin();
+					it != next_vertex_darts.end() && !phi2_found;
+					++it)
 				{
-				if (map.phi2(*it) == *it)
-				{
-					mbuild.phi2_sew(d, *it);
-					phi2_found = true;
+					if (map.template get_embedding<VERTEX>(map.phi1(*it)) == vertex_index)
+					{
+						if (map.phi2(*it) == *it)
+						{
+							mbuild.phi2_sew(d, *it);
+							phi2_found = true;
+						}
+						else
+						{
+							first_OK = false;
+						}
+					}
 				}
-				else
-				{
-					first_OK = false;
-				}
-				}
-			}
 
-			if (!phi2_found)
-				++nb_boundary_edges;
+				if (!phi2_found)
+					++nb_boundary_edges;
 
-			if (!first_OK)
-				need_vertex_unicity_check = true;
+				if (!first_OK)
+					need_vertex_unicity_check = true;
 			}
 		}
 
@@ -250,7 +248,6 @@ public:
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
 	}
-
 
 protected:
 
@@ -407,7 +404,7 @@ protected:
 					unsigned int ind = 0;
 
 					while ((ind < str.length()) && (str[ind] != '/'))
-					ind++;
+						ind++;
 
 					if (ind > 0)
 					{
