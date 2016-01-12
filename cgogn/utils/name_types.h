@@ -27,14 +27,13 @@
 #include <string>
 #include <vector>
 #include <list>
-
+#include <array>
 #include <utils/dll.h>
 #include <utils/definitions.h>
 
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-
 
 namespace cgogn
 {
@@ -51,6 +50,9 @@ std::string name_of_type(const std::list<T>& );
 
 template <typename T>  
 std::string name_of_type(const std::vector<T>& );
+
+template<typename T, std::size_t size>
+std::string name_of_type(const std::array<T, size>&);
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const bool& );
@@ -107,6 +109,12 @@ std::string name_of_type(const std::list<T>& )
 template <typename T>  
 std::string name_of_type(const std::vector<T>& )
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
+
+template<typename T, std::size_t size>
+std::string name_of_type(const std::array<T, size>&)
+{
+	return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(size) + std::string(">");
+}
 
 /**
  * @brief add cgogn_name_of_type member to a class

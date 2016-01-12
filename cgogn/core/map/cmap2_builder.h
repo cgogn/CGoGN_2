@@ -21,41 +21,68 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#ifndef CORE_MAP_MAP2_MODIFIER_H_
+#define CORE_MAP_MAP2_MODIFIER_H_
 
-#include <utils/thread.h>
+#include <core/map/cmap2.h>
 
 namespace cgogn
 {
 
-CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
-CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
-
-CGOGN_UTILS_API void thread_start()
+template <typename MAP_TRAITS>
+class CMap2Builder_T
 {
-	if (dart_buffers_thread == nullptr)
-		dart_buffers_thread = new Buffers<Dart>();
+public:
 
-	if (uint_buffers_thread == nullptr)
-		uint_buffers_thread = new Buffers<unsigned int>();
-}
+	using Self = CMap2Builder_T<MAP_TRAITS>;
+	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
 
-CGOGN_UTILS_API void thread_stop()
-{
-	delete dart_buffers_thread;
-	delete uint_buffers_thread;
-	dart_buffers_thread = nullptr;
-	uint_buffers_thread = nullptr;
-}
+	template<typename T>
+	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
 
-CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
-{
-	return dart_buffers_thread;
-}
+	inline CMap2Builder_T(CMap2& map) : map_(map)
+	{}
 
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
-{
-	return uint_buffers_thread;
-}
+	inline ~CMap2Builder_T() = default;
+
+	CMap2Builder_T(const Self&) = delete;
+	CMap2Builder_T(Self&&) = delete;
+	Self& operator=(const Self&) = delete;
+	Self& operator=(Self&&) = delete;
+
+public:
+	template<Orbit ORBIT,typename T>
+	inline void swapChunkArrayContainer(ChunkArrayContainer<T> &cac)
+	{
+		map_.attributes_[ORBIT].swap(cac);
+	}
+
+	inline Dart add_face_topo(unsigned int nb_edges)
+	{
+		return map_.add_face_topo(nb_edges);
+	}
+
+	inline void phi2_sew(Dart d, Dart e)
+	{
+		return map_.phi2_sew(d,e);
+	}
+
+	inline void phi2_unsew(Dart d)
+	{
+		map_.phi2_unsew(d);
+	}
+
+	inline void close_map()
+	{
+		map_.close_map();
+	}
+
+private:
+	CMap2& map_;
+};
+
+//using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::MapTraits, cgogn::CMap2::MapType>;
 
 } // namespace cgogn
+
+#endif // CORE_MAP_MAP2_MODIFIER_H_

@@ -19,15 +19,14 @@ set(HEADER_FILES
 	map/map_base.h
 	map/cmap1.h
 	map/cmap2.h
+	map/cmap2_builder.h
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
-
-	io/surface_import.h
 )
 
 set(SOURCE_FILES
-	basic/cell_marker.cpp
+#	basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
 	container/chunk_array_container.cpp
@@ -47,7 +46,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} cgogn_utils)
 
-install(DIRECTORY basic container
+install(DIRECTORY basic container map
 	DESTINATION include/cgogn/cgogn_core
 	FILES_MATCHING PATTERN "*.h"
 )

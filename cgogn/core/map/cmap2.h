@@ -27,23 +27,28 @@
 #include <core/map/cmap1.h>
 #include <core/basic/dart_marker.h>
 
-#include <core/io/surface_import.h>
-
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap2_T : public CMap1_T<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS>
+class CMap2Builder_T;
+
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-
-	template <typename MAP> friend class cgogn::DartMarkerT;
+	friend class CMap2Builder_T<MapTraits>;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
@@ -73,6 +78,9 @@ public:
 
 	using DartMarker = typename Inherit::DartMarker;
 	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
+	template <Orbit ORBIT>
+	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
 
 protected:
 
@@ -265,112 +273,6 @@ public:
 		return f;
 	}
 
-	void import(const std::string& filename)
-	{
-		SurfaceImport<DATA_TRAITS> si;
-		if (!si.import_file(filename))
-		{
-			std::cout << "Failed to import file " << filename << std::endl;
-			return;
-		}
-		import(si);
-	}
-
-	void import(SurfaceImport<DATA_TRAITS>& si)
-	{
-		this->clear(true);
-
-		this->template create_embedding<VERTEX>();
-		this->attributes_[VERTEX].swap(si.vertex_attributes_);
-
-		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
-			this->template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
-
-		unsigned int faces_vertex_index = 0;
-		std::vector<unsigned int> vertices_buffer;
-		vertices_buffer.reserve(16);
-
-		for (unsigned int i = 0; i < si.nb_faces_; ++i)
-		{
-			unsigned short nbe = si.faces_nb_edges_[i];
-
-			vertices_buffer.clear();
-			unsigned int prev = std::numeric_limits<unsigned int>::max();
-
-			for (unsigned int j = 0; j < nbe; ++j)
-			{
-				unsigned int idx = si.faces_vertex_indices_[faces_vertex_index++];
-				if (idx != prev)
-				{
-					prev = idx;
-					vertices_buffer.push_back(idx);
-				}
-			}
-			if (vertices_buffer.front() == vertices_buffer.back())
-				vertices_buffer.pop_back();
-
-			nbe = static_cast<unsigned short>(vertices_buffer.size());
-			if (nbe > 2)
-			{
-				Dart d = Inherit::add_face_topo(nbe);
-				for (unsigned int j = 0; j < nbe; ++j)
-				{
-					unsigned int vertex_index = vertices_buffer[j];
-					this->template init_embedding<VERTEX>(d, vertex_index);
-					darts_per_vertex[vertex_index].push_back(d);
-					d = this->phi1(d);
-				}
-			}
-		}
-
-		bool need_vertex_unicity_check = false;
-		unsigned int nb_boundary_edges = 0;
-
-		for (Dart d : *this)
-		{
-			if (phi2(d) == d)
-			{
-				unsigned int vertex_index = this->template get_embedding<VERTEX>(d);
-
-				std::vector<Dart>& next_vertex_darts = darts_per_vertex[this->phi1(d)];
-				bool phi2_found = false;
-				bool first_OK = true;
-
-				for (auto it = next_vertex_darts.begin();
-					 it != next_vertex_darts.end() && !phi2_found;
-					 ++it)
-				{
-					if (this->template get_embedding<VERTEX>(this->phi1(*it)) == vertex_index)
-					{
-						if (phi2(*it) == *it)
-						{
-							phi2_sew(d, *it);
-							phi2_found = true;
-						}
-						else
-						{
-							first_OK = false;
-						}
-					}
-				}
-
-				if (!phi2_found)
-					++nb_boundary_edges;
-
-				if (!first_OK)
-					need_vertex_unicity_check = true;
-			}
-		}
-
-		if (nb_boundary_edges > 0)
-			close_map();
-
-		if (need_vertex_unicity_check)
-			this->template unique_orbit_embedding<VERTEX>();
-
-		this->remove_attribute(darts_per_vertex);
-	}
-
 protected:
 
 	/*******************************************************************************
@@ -539,14 +441,14 @@ public:
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<VERTEX>(v, [this, &f] (Dart vd)
+		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
 			this->foreach_dart_of_orbit<FACE>(vd, [&f, vd, vd1] (Dart fd)
@@ -562,7 +464,7 @@ public:
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<VERTEX>(ed, [&f, ed] (Dart vd)
 			{
@@ -577,7 +479,7 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<EDGE>(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<FACE>(ed, [&f, ed] (Dart fd)
 			{
@@ -592,7 +494,7 @@ public:
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart fd)
+		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
 			this->foreach_dart_of_orbit<VERTEX>(fd, [&func, fd, fd1] (Dart vd)
@@ -608,7 +510,7 @@ public:
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:
@@ -630,19 +532,14 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap2TopoTraits
+template <typename MAP_TRAITS>
+struct CMap2Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap2_T<DataTraits, CMap2TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>> TYPE;
 };
 
-struct CMap2DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-};
-
-using CMap2 = CMap2_T<CMap2DataTraits, CMap2TopoTraits<CMap2DataTraits>>;
+template <typename MAP_TRAITS>
+using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 

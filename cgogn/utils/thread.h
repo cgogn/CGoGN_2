@@ -26,6 +26,7 @@
 
 #include <utils/buffers.h>
 #include <utils/dll.h>
+
 namespace cgogn
 {
 
@@ -50,7 +51,6 @@ CGOGN_UTILS_API void thread_stop();
 
 CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
 CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
-
 
 } // namespace cgogn
 

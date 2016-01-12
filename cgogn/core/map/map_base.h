@@ -42,26 +42,26 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class MapBase : public MapBaseData<DATA_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class MapBase : public MapBaseData<MAP_TRAITS>
 {
 public:
 
-	typedef MapBaseData<DATA_TRAITS> Inherit;
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef MapBaseData<MAP_TRAITS> Inherit;
+	typedef MapBase<MAP_TRAITS, MAP_TYPE> Self;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
-	template <typename MAP, Orbit ORBIT> friend class cgogn::CellMarkerT;
+	template <typename MAP> friend class DartMarker_T;
+	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;
 
 	using typename Inherit::ChunkArrayGen;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<DATA_TRAITS>;
+	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
 
-	using ConcreteMap = typename TOPO_TRAITS::CONCRETE;
+	using ConcreteMap = typename MAP_TYPE::TYPE;
 
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
 	using DartMarkerStore = cgogn::DartMarkerStore<ConcreteMap>;
@@ -80,26 +80,41 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-	void clear(bool remove_attributes = false)
+	/**
+	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified
+	 */
+	inline void clear()
 	{
-		this->topology_.clear(false);
+		this->topology_.clear_attributes();
 
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-			this->attributes_[i].clear(remove_attributes);
+		for (unsigned int i = 0u; i < NB_ORBITS; ++i)
+			this->attributes_[i].clear_attributes();
+	}
 
-		if (remove_attributes)
+	/**
+	 * @brief clear_and_remove_attributes : clear the topology and delete all the attributes.
+	 */
+	inline void clear_and_remove_attributes()
+	{
+		this->topology_.clear_attributes();
+
+		for (auto& mark_att_topo : this->mark_attributes_topology_)
+			mark_att_topo.clear();
+
+		for (auto& att : this->attributes_)
+			att.remove_attributes();
+
+		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
-			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			if (this->embeddings_[i] != nullptr)
 			{
-				if (this->embeddings_[i] != nullptr)
-				{
-					this->topology_.remove_attribute(this->embeddings_[i]);
-					this->embeddings_[i] = nullptr;
-				}
-
-				for (unsigned int j = 0; j < NB_THREADS; ++j)
-					this->mark_attributes_[i][j].clear();
+				this->topology_.remove_attribute(this->embeddings_[i]);
+				this->embeddings_[i] = nullptr;
+				this->global_topo_cache_[i] = nullptr;
 			}
+
+			for (auto& mark_attr : this->mark_attributes_[i])
+				mark_attr.clear();
 		}
 	}
 
@@ -121,12 +136,10 @@ protected:
 
 	inline unsigned int add_topology_element()
 	{
-		unsigned int idx = this->topology_.template insert_lines<TOPO_TRAITS::PRIM_SIZE>();
+		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
 		return idx;
 	}
-
-public:
 
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
@@ -137,6 +150,8 @@ public:
 		this->attributes_[ORBIT].init_markers_of_line(idx);
 		return idx;
 	}
+
+public:
 
 	/*******************************************************************************
 	 * Attributes management
@@ -246,6 +261,8 @@ protected:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
+public:
+
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
@@ -257,7 +274,8 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
+		if (this->template is_orbit_embedded<ORBIT>())
+			return;
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -296,8 +314,6 @@ protected:
 
 		remove_attribute(counter) ;
 	}
-
-public:
 
 	/*******************************************************************************
 	 * Topo caches management

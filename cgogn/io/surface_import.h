@@ -21,18 +21,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_IO_SURFACE_IMPORT_H_
-#define CORE_IO_SURFACE_IMPORT_H_
+#ifndef IO_SURFACE_IMPORT_H_
+#define IO_SURFACE_IMPORT_H_
 
 #include <istream>
-
-#include <core/container/chunk_array_container.h>
 
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
+#include <core/map/cmap2.h>
+#include <core/map/cmap2_builder.h>
+
 namespace cgogn
+{
+
+namespace io
 {
 
 enum SurfaceFileType
@@ -51,10 +55,26 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 	return SurfaceFileType_UNKNOWN;
 }
 
-template <typename DATA_TRAITS>
+template <typename MAP_TRAITS>
 class SurfaceImport
 {
 public:
+
+	using Self = SurfaceImport<MAP_TRAITS>;
+	using Map = CMap2<MAP_TRAITS>;
+
+	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+
+	template<typename T>
+	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
+
+	template<typename T, Orbit ORBIT>
+	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	template<typename T>
+	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
+
+	using Vec3 = typename MAP_TRAITS::Vec3;
 
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
@@ -63,13 +83,23 @@ public:
 	std::vector<unsigned short> faces_nb_edges_;
 	std::vector<unsigned int> faces_vertex_indices_;
 
-	ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, unsigned int> vertex_attributes_;
+	ChunkArrayContainer vertex_attributes_;
 
-	SurfaceImport()
+	SurfaceImport() :
+		nb_vertices_(0u)
+		,nb_edges_(0u)
+		,nb_faces_(0u)
+		,faces_nb_edges_()
+		,faces_vertex_indices_()
 	{}
 
 	~SurfaceImport()
 	{}
+
+	SurfaceImport(const Self&) = delete;
+	SurfaceImport(Self&&) = delete;
+	Self& operator=(const Self&) = delete;
+	Self& operator=(Self&&) = delete;
 
 	void clear()
 	{
@@ -78,6 +108,7 @@ public:
 		nb_faces_ = 0;
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
+		vertex_attributes_.remove_attributes();
 	}
 
 	bool import_file(const std::string& filename)
@@ -87,6 +118,8 @@ public:
 
 	bool import_file(const std::string& filename, SurfaceFileType type)
 	{
+		clear();
+
 		std::ifstream fp(filename.c_str(), std::ios::in);
 		if (!fp.good())
 		{
@@ -94,34 +127,135 @@ public:
 			return false;
 		}
 
-		clear();
-
 		bool result = false;
 		switch (type)
 		{
-			case SurfaceFileType_UNKNOWN :
-				std::cout << "Unknown file type " << filename << std::endl;
-				result = false;
-				break;
-			case SurfaceFileType_OFF :
-				result = import_OFF(fp);
-				break;
-			case SurfaceFileType_OBJ :
-				result = import_OBJ(fp);
-				break;
+		case SurfaceFileType_UNKNOWN :
+			std::cout << "Unknown file type " << filename << std::endl;
+			result = false;
+			break;
+		case SurfaceFileType_OFF :
+			result = import_OFF(fp);
+			break;
+		case SurfaceFileType_OBJ :
+			result = import_OBJ(fp);
+			break;
 		}
 
-		fp.close();
+		if (!result)
+			this->clear();
 
 		return result;
 	}
+
+	void create_map(Map& map)
+	{
+		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
+
+		if (this->nb_vertices_ == 0u)
+			return;
+
+		MapBuilder mbuild(map);
+		const Orbit VERTEX = Map::VERTEX;
+		map.clear_and_remove_attributes();
+
+		map.template create_embedding<VERTEX>();
+		mbuild.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
+
+		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+		map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+
+		unsigned int faces_vertex_index = 0;
+		std::vector<unsigned int> vertices_buffer;
+		vertices_buffer.reserve(16);
+
+		for (unsigned int i = 0; i < this->nb_faces_; ++i)
+		{
+			unsigned short nbe = this->faces_nb_edges_[i];
+
+			vertices_buffer.clear();
+			unsigned int prev = std::numeric_limits<unsigned int>::max();
+
+			for (unsigned int j = 0; j < nbe; ++j)
+			{
+			unsigned int idx = this->faces_vertex_indices_[faces_vertex_index++];
+			if (idx != prev)
+			{
+				prev = idx;
+				vertices_buffer.push_back(idx);
+			}
+			}
+			if (vertices_buffer.front() == vertices_buffer.back())
+			vertices_buffer.pop_back();
+
+			nbe = static_cast<unsigned short>(vertices_buffer.size());
+			if (nbe > 2)
+			{
+			Dart d = mbuild.add_face_topo(nbe);
+			for (unsigned int j = 0; j < nbe; ++j)
+			{
+				unsigned int vertex_index = vertices_buffer[j];
+				map.template init_embedding<VERTEX>(d, vertex_index);
+				darts_per_vertex[vertex_index].push_back(d);
+				d = map.phi1(d);
+			}
+			}
+		}
+
+		bool need_vertex_unicity_check = false;
+		unsigned int nb_boundary_edges = 0;
+
+		for (Dart d : map)
+		{
+			if (map.phi2(d) == d)
+			{
+			unsigned int vertex_index = map.template get_embedding<VERTEX>(d);
+
+			std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
+			bool phi2_found = false;
+			bool first_OK = true;
+
+			for (auto it = next_vertex_darts.begin();
+			it != next_vertex_darts.end() && !phi2_found;
+			++it)
+			{
+				if (map.template get_embedding<VERTEX>(map.phi1(*it)) == vertex_index)
+				{
+				if (map.phi2(*it) == *it)
+				{
+					mbuild.phi2_sew(d, *it);
+					phi2_found = true;
+				}
+				else
+				{
+					first_OK = false;
+				}
+				}
+			}
+
+			if (!phi2_found)
+				++nb_boundary_edges;
+
+			if (!first_OK)
+				need_vertex_unicity_check = true;
+			}
+		}
+
+		if (nb_boundary_edges > 0)
+			mbuild.close_map();
+
+		if (need_vertex_unicity_check)
+			map.template unique_orbit_embedding<VERTEX>();
+
+		map.remove_attribute(darts_per_vertex);
+		this->clear();
+	}
+
 
 protected:
 
 	bool import_OFF(std::ifstream& fp)
 	{
-		typedef Eigen::Vector3d VEC3;
-
 		std::string line;
 
 		// read OFF header
@@ -145,8 +279,8 @@ protected:
 			oss >> nb_faces_;
 			oss >> nb_edges_;
 		}
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, VEC3>* position =
-			vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<Vec3>* position =
+			vertex_attributes_.template add_attribute<Vec3>("position");
 
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
@@ -161,12 +295,12 @@ protected:
 
 			std::stringstream oss(line);
 
-			float x, y, z;
+			double x, y, z;
 			oss >> x;
 			oss >> y;
 			oss >> z;
 
-			VEC3 pos(x, y, z);
+			Vec3 pos{x, y, z};
 
 			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
@@ -202,10 +336,8 @@ protected:
 
 	bool import_OBJ(std::ifstream& fp)
 	{
-		typedef Eigen::Vector3d VEC3;
-
-		ChunkArray<DATA_TRAITS::CHUNK_SIZE, VEC3>* position =
-			vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<Vec3>* position =
+			vertex_attributes_.template add_attribute<Vec3>("position");
 
 		std::string line, tag;
 
@@ -226,12 +358,12 @@ protected:
 			{
 				std::stringstream oss(line);
 
-				float x, y, z;
+				double x, y, z;
 				oss >> x;
 				oss >> y;
 				oss >> z;
 
-				VEC3 pos(x, y, z);
+				Vec3 pos{x, y, z};
 
 				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
@@ -275,7 +407,7 @@ protected:
 					unsigned int ind = 0;
 
 					while ((ind < str.length()) && (str[ind] != '/'))
-						ind++;
+					ind++;
 
 					if (ind > 0)
 					{
@@ -297,12 +429,14 @@ protected:
 			}
 			fp >> tag;
 			std::getline(fp, line);
-		 } while (!fp.eof());
+		} while (!fp.eof());
 
 		return true;
 	}
 };
 
+} // namespace io
+
 } // namespace cgogn
 
-#endif // CORE_IO_SURFACE_IMPORT_H_
+#endif // IO_SURFACE_IMPORT_H_
