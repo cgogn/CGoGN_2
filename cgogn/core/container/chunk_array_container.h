@@ -144,7 +144,7 @@ protected:
 	/**
 	 * Browser that allow special traversals
 	 */
-	std::unique_ptr< ContainerStandardBrowser< ChunkArrayContainer<CHUNKSIZE, T_REF> > > std_browser_;
+	ContainerStandardBrowser<Self>* std_browser_;
 
 	/**
 	 * @brief get array index from name
@@ -181,7 +181,6 @@ protected:
 	/**
 	 * @brief remove an attribute by its index
 	 * @param index index of attribute to remove
-	 * @return true if attribute exists and has been removed
 	 */
 	void remove_attribute(unsigned int index)
 	{
@@ -209,10 +208,10 @@ public:
 	 */
 	ChunkArrayContainer():
 		nb_used_lines_(0u),
-		nb_max_lines_(0u),
-		std_browser_(make_unique< ContainerStandardBrowser<Self> >(this))
+		nb_max_lines_(0u)
 	{
-		current_browser_= std_browser_.get();
+		std_browser_ = new ContainerStandardBrowser<Self>(this);
+		current_browser_= std_browser_;
 	}
 
 	ChunkArrayContainer(Self const& ) = delete;
@@ -225,8 +224,9 @@ public:
 	 */
 	~ChunkArrayContainer()
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
+		delete std_browser_;
 
 		for (auto ptr : table_arrays_)
 			delete ptr;
@@ -350,7 +350,7 @@ public:
 	void remove_marker_attribute(const ChunkArray<bool>* ptr)
 	{
 		unsigned int index = 0u;
-		while (table_marker_arrays_[index] != ptr && index < table_marker_arrays_.size())
+		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
 			++index;
 
 		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
@@ -428,14 +428,14 @@ public:
 	 */
 	inline void set_current_browser(ContainerBrowser* browser)
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
 		current_browser_ = browser;
 	}
 
 	inline void set_standard_browser()
 	{
-		if (current_browser_ != std_browser_.get())
+		if (current_browser_ != std_browser_)
 			delete current_browser_;
 		current_browser_ = std_browser_;
 	}
@@ -558,7 +558,7 @@ public:
 	 * @brief clear the container
 	 * @param remove_attributes remove the attributes (not only their data)
 	 */
-	void clear(bool remove_attributes = false)
+	void clear_attributes()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -570,20 +570,28 @@ public:
 		holes_stack_.clear();
 
 		// clear data
-		for (auto arr : table_arrays_)
-			arr->clear();
-		for (auto arr : table_marker_arrays_)
-			arr->clear();
+		for (auto cagen : table_arrays_)
+			 cagen->clear();
+		for (auto ca_bool : table_marker_arrays_)
+			ca_bool->clear();
+	}
 
-		if (remove_attributes)
-		{
-			for (auto arr : table_arrays_)
-				delete arr;
-			for (auto arr : table_marker_arrays_)
-				delete arr;
-			table_arrays_.clear();
-			table_marker_arrays_.clear();
-		}
+	void remove_attributes()
+	{
+		nb_used_lines_ = 0u;
+		nb_max_lines_ = 0u;
+		refs_.clear();
+		holes_stack_.clear();
+
+		for (auto cagen : table_arrays_)
+			delete cagen;
+		for (auto ca_bool : table_marker_arrays_)
+			delete ca_bool;
+
+		table_arrays_.clear();
+		table_marker_arrays_.clear();
+		names_.clear();
+		type_names_.clear();
 	}
 
 	/**
@@ -600,8 +608,18 @@ public:
 		holes_stack_.swap(container.holes_stack_);
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
-		std::swap(current_browser_, container.current_browser_);
-		std_browser_.swap(container.std_browser_);
+
+		ContainerBrowser* browser = current_browser_;
+
+		if (container.current_browser_ != container.std_browser_)
+			current_browser_ = container.current_browser_;
+		else
+			current_browser_ = std_browser_;
+
+		if (browser != std_browser_)
+			container.current_browser_ = browser;
+		else
+			container.current_browser_ = container.std_browser_;
 	}
 
 	/**
@@ -816,6 +834,8 @@ public:
 
 	void save(std::ostream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
@@ -855,6 +875,8 @@ public:
 
 	bool load(std::istream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// check and register all known types if necessaey
 		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
 
@@ -881,7 +903,7 @@ public:
 			fs.read(buff3, std::streamsize(buff2[2u*i+1u]*sizeof(char)));
 			type_names_[i] = std::string(buff3);
 		}
-
+		cgogn_assert(fs.good());
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;

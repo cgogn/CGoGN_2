@@ -27,11 +27,16 @@
 #include <string>
 #include <vector>
 #include <list>
-
+#include <array>
 #include <utils/dll.h>
+#include <utils/definitions.h>
 
-#include <Eigen/Dense>
-
+namespace Eigen
+{
+// forward declaration
+	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+	class Matrix;
+}
 namespace cgogn
 {
 
@@ -42,17 +47,32 @@ template <typename T>
 std::string name_of_type(const T& )
 { return T::cgogn_name_of_type(); }
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::list<T>& );
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::vector<T>& );
+
+template<typename T, std::size_t size>
+std::string name_of_type(const std::array<T, size>&);
+
+template<typename T>
+std::string name_of_type(const std::basic_string<T>);
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const bool& );
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const char& );
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const wchar_t& );
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const char16_t& );
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const char32_t& );
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const short& );
@@ -93,16 +113,30 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
+// Eigen Vec3d
 template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& );
+CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& );
 
-template <typename T>  
+
+template<typename T>
+std::string name_of_type(const std::basic_string<T>)
+{
+	return std::string("std::basic_string<") + name_of_type(T()) + std::string(">");
+}
+
+template <typename T>
 std::string name_of_type(const std::list<T>& )
 { return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
 
-template <typename T>  
+template <typename T>
 std::string name_of_type(const std::vector<T>& )
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
+
+template<typename T, std::size_t size>
+std::string name_of_type(const std::array<T, size>&)
+{
+	return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(size) + std::string(">");
+}
 
 /**
  * @brief add cgogn_name_of_type member to a class

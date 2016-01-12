@@ -31,30 +31,30 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API CellMarkerGen
-{
-public:
-	typedef CellMarkerGen Self;
-	CellMarkerGen()
-	{}
+//class CGOGN_CORE_API CellMarkerGen
+//{
+//public:
+//	typedef CellMarkerGen Self;
+//	CellMarkerGen()
+//	{}
 
-	virtual ~CellMarkerGen();
+//	virtual ~CellMarkerGen();
 
-	CellMarkerGen(const Self& dm) = delete;
-	CellMarkerGen(Self&& dm) = delete;
-	CellMarkerGen& operator=(Self&& dm) = delete;
-	CellMarkerGen& operator=(const Self& dm) = delete;
-};
+//	CellMarkerGen(const Self& dm) = delete;
+//	CellMarkerGen(Self&& dm) = delete;
+//	CellMarkerGen& operator=(Self&& dm) = delete;
+//	CellMarkerGen& operator=(const Self& dm) = delete;
+//};
 
 template <typename MAP, Orbit ORBIT>
-class CellMarkerT : public CellMarkerGen
+class CellMarker_T // : public CellMarkerGen
 {
-	static_assert(ORBIT < Orbit::NB_ORBITS, "Unknown orbit parameter");
+	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 public:
 
-	typedef CellMarkerGen Inherit;
-	typedef CellMarkerT< MAP, ORBIT > Self;
+//	typedef CellMarkerGen Inherit;
+	typedef CellMarker_T<MAP, ORBIT> Self;
 	typedef MAP Map;
 
 	static const unsigned int CHUNKSIZE = Map::CHUNKSIZE;
@@ -68,30 +68,30 @@ protected:
 
 public:
 
-	CellMarkerT(Map& map) :
-		Inherit(),
+	CellMarker_T(Map& map) :
+//		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
 	}
 
-	CellMarkerT(const MAP& map) :
-		CellMarkerGen(),
+	CellMarker_T(const MAP& map) :
+//		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
 	}
 
-	~CellMarkerT() override
+	virtual ~CellMarker_T() // override
 	{
 		if (MapGen::is_alive(&map_))
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
 
-	CellMarkerT(const Self& dm) = delete;
-	CellMarkerT(Self&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(Self&& dm) = delete;
-	CellMarkerT<MAP, ORBIT>& operator=(const Self& dm) = delete;
+	CellMarker_T(const Self& dm) = delete;
+	CellMarker_T(Self&& dm) = delete;
+	Self& operator=(const Self& dm) = delete;
+	Self& operator=(Self&& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{
@@ -113,10 +113,11 @@ public:
 };
 
 template <typename MAP, Orbit ORBIT>
-class CellMarker : public CellMarkerT<MAP, ORBIT>
+class CellMarker : public CellMarker_T<MAP, ORBIT>
 {
 public:
-	typedef CellMarkerT<MAP, ORBIT> Inherit;
+
+	typedef CellMarker_T<MAP, ORBIT> Inherit;
 	typedef CellMarker< MAP, ORBIT > Self;
 	typedef typename Inherit::Map Map;
 
@@ -146,26 +147,22 @@ public:
 };
 
 template <typename MAP, Orbit ORBIT>
-class CellMarkerStore : public CellMarkerT<MAP, ORBIT>
+class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 {
 public:
-	typedef CellMarkerT<MAP, ORBIT> Inherit;
+
+	typedef CellMarker_T<MAP, ORBIT> Inherit;
 	typedef CellMarkerStore< MAP, ORBIT > Self;
 
 	typedef typename Inherit::Orbit Orbit;
 	typedef typename Inherit::Map Map;
 	typedef typename Inherit::ProcessedCell ProcessedCell;
+
 protected:
 
 	std::vector<unsigned int>* marked_cells_;
 
 public:
-
-	CellMarkerStore(Map& map) :
-		Inherit(map)
-	{
-		marked_cells_ = cgogn::get_uint_buffers()->get_buffer();
-	}
 
 	CellMarkerStore(const MAP& map) :
 		Inherit(map)
@@ -186,19 +183,22 @@ public:
 
 	inline void mark(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
 		Inherit::mark(c);
 		marked_cells_->push_back(this->map_.get_embedding(c));
 	}
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
 		for (unsigned int i : marked_cells_)
-		{
 			this->mark_attribute_->set_false(i);
-		}
 		marked_cells_->clear();
+	}
+
+	inline const std::vector<unsigned int>* get_marked_cells() const
+	{
+		return marked_cells_;
 	}
 };
 

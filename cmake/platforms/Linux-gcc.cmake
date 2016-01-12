@@ -32,56 +32,62 @@ endif()
 add_definitions(${FULL_WARNINGS})
 
 # Warn about missing virtual destructor (C++ only)
-string_append(CMAKE_CXX_FLAGS -Wnon-virtual-dtor)
+add_flags(CMAKE_CXX_FLAGS -Wnon-virtual-dtor)
 
 # Add static and dynamic bounds checks (optimization required)
 if (GCC_VERSION VERSION_GREATER 4.0)
-   string_append(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
-   string_append(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+   add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+   add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
 endif()
 
 # Enable SSE3 instruction set
-string_append(CMAKE_CXX_FLAGS -msse3)
-string_append(CMAKE_C_FLAGS -msse3)
-
-# Enable glibc parallel mode
-#add_flags(CMAKE_CXX_FLAGS -D_GLIBCXX_PARALLEL)
-
-# Enable some algebraic transforms
-# (necessary for vectorizing certain reductions and dot products)
-#!!! -- deactivated, because it breaks Shewchuck's predicates --
-#add_flags(CMAKE_CXX_FLAGS -ffast-math -fassociative-math)
-#add_flags(CMAKE_C_FLAGS -ffast-math -fassociative-math)
-#-ftree-vectorizer-verbose=2 
-
-# Generate debug information even in release mode
-#add_flags(CMAKE_CXX_FLAGS_RELEASE -g)
-#add_flags(CMAKE_C_FLAGS_RELEASE -g)
-
-
-# Additional debug flags
-# deactivated for now: I added bound checking in VOR::vector<>.
-#add_flags(CMAKE_CXX_FLAGS_DEBUG -D_GLIBCXX_DEBUG)
-
-
-# Compile and link with OpenMP
-#if (GCC_VERSION VERSION_GREATER 4.0)
-#    string_append(CMAKE_CXX_FLAGS -fopenmp)
-#    string_append(CMAKE_C_FLAGS -fopenmp)
-#endif()
+add_flags(CMAKE_CXX_FLAGS -msse3)
+add_flags(CMAKE_C_FLAGS -msse3)
 
 # Always generate position independant code
 # (to allow linking with DLLs)
-string_append(CMAKE_CXX_FLAGS -fPIC)
-string_append(CMAKE_C_FLAGS -fPIC)
+add_flags(CMAKE_CXX_FLAGS -fPIC)
+add_flags(CMAKE_C_FLAGS -fPIC)
+
+# Profiler compilation flags
+if(CGOGN_USE_GPROF)
+    message(STATUS "Building for code profiling")
+    add_flags(CMAKE_CXX_FLAGS -pg -DPROFILER)
+    add_flags(CMAKE_C_FLAGS -pg -DPROFILER)
+endif(CGOGN_USE_GPROF)
+
+# Code coverage compilation flags
+if(CGOGN_USE_GCOV)
+    message(STATUS "Building for coverage analysis")
+    add_flags(CMAKE_CXX_FLAGS --coverage)
+    add_flags(CMAKE_C_FLAGS --coverage)
+endif(CGOGN_USE_GCOV)
+
+# Compilation flags for Google's AddressSanitizer
+# These flags can only be specified for dynamic builds
+if(CGOGN_USE_ASAN)
+    message(STATUS "Building with AddressSanitizer (debug only)")
+    add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
+    add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
+endif(CGOGN_USE_ASAN)
+#TODO Use native GCC stack smash Protection and buffer overflow detection in debug when no asan ??
+
+# Compilation flags for Google's ThreadSanitizer
+# Does not work for the moment: cannot figure out how to link with library libtsan
+if(CGOGN_USE_TSAN)
+    message(STATUS "Building with ThreadSanitizer (debug only)")
+    add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=thread)
+    add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=thread)
+endif(CGOGN_USE_TSAN)
+
 
 
 macro(m_add_executable)
     
     # Create a statically linked executable
     # Link with static libraries
-    string_append(CMAKE_CXX_FLAGS -static-libstdc++ -static-libgcc )
-    string_append(CMAKE_C_FLAGS -static-libgcc -static)
+    add_flags(CMAKE_CXX_FLAGS -static-libstdc++ -static-libgcc )
+    add_flags(CMAKE_C_FLAGS -static-libgcc -static)
     
     add_executable(${ARGN})
 endmacro()

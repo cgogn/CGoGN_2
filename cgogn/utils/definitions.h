@@ -80,4 +80,40 @@
 #define CGOGN_PARANO
 #endif
 
+
+#ifdef __GNUG__
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON \
+	_Pragma("GCC diagnostic push") \
+	_Pragma("GCC diagnostic ignored \"-Winline\"")
+
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF \
+	_Pragma("GCC diagnostic pop")
+#endif
+
+#ifdef __clang__
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON \
+	_Pragma("clang diagnostic push") \
+	_Pragma("clang diagnostic ignored \"-Winline\"") \
+	_Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
+	_Pragma("clang diagnostic ignored \"-Wdeprecated\"") \
+	_Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
+	_Pragma("clang diagnostic ignored \"-Wreserved-id-macro\"") \
+	_Pragma("clang diagnostic ignored \"-Wshadow\"") \
+	_Pragma("clang diagnostic ignored \"-Wmissing-noreturn\"") \
+	_Pragma("clang diagnostic ignored \"-Wused-but-marked-unused\"")
+
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF \
+	_Pragma("clang diagnostic pop")
+#endif
+
+#ifdef _MSC_VER
+	// no warning with VS 2013 and \W4
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+#endif
+
+
+#define CGOGN_QUOTE(name) #name
+#define CGOGN_STR(macro) CGOGN_QUOTE(macro)
+
 #endif // UTILS_DEFINITIONS_H_

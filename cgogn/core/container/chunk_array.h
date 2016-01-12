@@ -44,6 +44,7 @@ template <unsigned int CHUNKSIZE, typename T>
 class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
+
 	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
 	typedef ChunkArray<CHUNKSIZE, T> Self;
 	typedef T value_type;
@@ -109,12 +110,12 @@ public:
 	{
 		if (nbc >= table_data_.size())
 		{
-			for (std::size_t i= table_data_.size(); i <nbc; ++i)
+			for (std::size_t i = table_data_.size(); i < nbc; ++i)
 				add_chunk();
 		}
 		else
 		{
-			for (std::size_t i = nbc; i < table_data_.size(); ++i)
+			for (std::size_t i = static_cast<std::size_t>(nbc); i < table_data_.size(); ++i)
 				delete[] table_data_[i];
 			table_data_.resize(nbc);
 		}
@@ -255,6 +256,7 @@ public:
 
 	void save(std::ostream& fs, unsigned int nb_lines) const override
 	{
+		cgogn_assert(fs.good());
 		cgogn_assert(nb_lines / CHUNKSIZE <= get_nb_chunks());
 
 		// no data -> finished
@@ -297,10 +299,14 @@ public:
 
 		// save last incomplete chunk
 		serialization::save(fs, table_data_[nbc], nb);
+
+		cgogn_assert(fs.good());
 	}
 
 	bool load(std::istream& fs) override
 	{
+		cgogn_assert(fs.good());
+
 		std::size_t chunk_bytes;
 		serialization::load(fs, &chunk_bytes, 1);
 
@@ -325,6 +331,7 @@ public:
 		// load last incomplete chunk
 		const unsigned int nb = nb_lines - nbc*CHUNKSIZE;
 		serialization::load(fs, table_data_[nbc], nb);
+		cgogn_assert(fs.good());
 
 		return true;
 	}
@@ -591,7 +598,7 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief operator []
 	 * @param i index of element to access
 	 * @return value of the element
 	 */

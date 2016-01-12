@@ -30,17 +30,20 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class CMap1_T : public MapBase<DATA_TRAITS, TOPO_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class CMap1_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef MapBase<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef CMap1_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
-
-	template <typename MAP> friend class cgogn::DartMarkerT;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
@@ -66,6 +69,10 @@ public:
 
 	using DartMarker = typename Inherit::DartMarker;
 	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
+	template <Orbit ORBIT>
+	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
+
 protected:
 
 	ChunkArray<Dart>* phi1_;
@@ -264,6 +271,12 @@ protected:
 		{
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_face(c, f); break;
+			case Orbit::PHI2:
+			case Orbit::PHI1_PHI2:
+			case Orbit::PHI1_PHI3:
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI21:
+			case Orbit::PHI21_PHI31:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
@@ -327,19 +340,14 @@ protected:
 	}
 };
 
-template <typename DataTraits>
-struct CMap1TopoTraits
+template <typename MAP_TRAITS>
+struct CMap1Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef CMap1_T<DataTraits, CMap1TopoTraits<DataTraits>> CONCRETE;
+	typedef CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>> TYPE;
 };
 
-struct CMap1DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-};
-
-using CMap1 = CMap1_T<CMap1DataTraits, CMap1TopoTraits<CMap1DataTraits>>;
+template <typename MAP_TRAITS>
+using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
