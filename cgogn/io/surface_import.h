@@ -28,6 +28,7 @@
 #include <core/container/chunk_array_container.h>
 #include <core/map/cmap2.h>
 #include <core/map/cmap2_builder.h>
+#include <io/dll.h>
 
 namespace cgogn
 {
@@ -430,6 +431,11 @@ protected:
 		return true;
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
+extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
+
 
 } // namespace io
 

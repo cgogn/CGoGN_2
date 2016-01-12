@@ -55,5 +55,7 @@ MapGen::~MapGen()
 	}
 }
 
+template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
+
 
 } // namespace cgogn

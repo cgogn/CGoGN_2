@@ -28,7 +28,7 @@
 
 namespace cgogn
 {
-	template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
+//	template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
 	template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;

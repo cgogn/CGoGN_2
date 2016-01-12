@@ -21,21 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP_TRAITS_H_
-#define CORE_MAP_MAP_TRAITS_H_
+#ifndef IO_DLL_H_
+#define IO_DLL_H_
 
-#include <array>
+/**
+* \brief Linkage declaration for CGOGN symbols.
+*/
+#ifdef WIN32
+#if defined CGOGN_IO_DLL_EXPORT
+#define CGOGN_IO_API __declspec(dllexport)
+#else
+#define CGOGN_IO_API __declspec(dllimport)
+#endif
+#else
+#define CGOGN_IO_API
+#endif
 
-namespace cgogn
-{
-
-struct DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
-};
-
-}
-
-#endif // CORE_MAP_MAP_TRAITS_H_
+#endif // IO_DLL_H_

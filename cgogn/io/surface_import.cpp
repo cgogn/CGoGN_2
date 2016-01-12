@@ -20,22 +20,19 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_IO_DLL_EXPORT
+#define IO_SURFACE_IMPORT_CPP_
 
-#ifndef CORE_MAP_MAP_TRAITS_H_
-#define CORE_MAP_MAP_TRAITS_H_
-
-#include <array>
+#include <io/surface_import.h>
 
 namespace cgogn
 {
 
-struct DefaultMapTraits
+namespace io
 {
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
-};
 
-}
+template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
 
-#endif // CORE_MAP_MAP_TRAITS_H_
+} // namespace io
+
+} // namespace cgogn
