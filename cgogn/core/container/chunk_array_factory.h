@@ -30,6 +30,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <array>
 #include <utils/make_unique.h>
 
 namespace cgogn
@@ -81,9 +82,9 @@ public:
 		register_CA<float>();
 		register_CA<double>();
 		register_CA<std::string>();
-		// TODO add all std::vector<> ?
-		// TODO add Eigen ?
-		register_CA<Eigen::Vector3d>();
+		register_CA<std::array<double,3>>();
+		register_CA<std::array<float,3>>();
+		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
 	}

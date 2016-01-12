@@ -26,10 +26,7 @@
 
 #include <istream>
 
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-
+#include <core/container/chunk_array_container.h>
 #include <core/map/cmap2.h>
 #include <core/map/cmap2_builder.h>
 
@@ -72,6 +69,7 @@ public:
 	template<typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
+
 	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
 
 	using Vec3 = typename MAP_TRAITS::Vec3;
