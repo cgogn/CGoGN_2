@@ -21,28 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP_TRI_H_
-#define CORE_MAP_MAP_TRI_H_
+#ifndef IO_MAP_IMPORT_H_
+#define IO_MAP_IMPORT_H_
 
-#include <core/map/map_base.h>
+#include <string>
+
+#include <core/cmap/cmap2.h>
+#include <io/surface_import.h>
 
 namespace cgogn
 {
 
-class Traits_map_tri
+namespace io
 {
-	static const int PRIM_SIZE = 3;
-};
 
-class MapTri : public MapBase<Traits_map_tri>
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
+
+template<class MAP_TRAITS>
+inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
-public:
-	typedef MapBase<Traits_map_tri> Inherit;
-	typedef MapTri Self;
+	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
+	SurfaceImport si;
+	si.import_file(filename);
+	si.create_map(cmap2);
+}
 
-	~MapTri() override {}
-};
+} // namespace io
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP_TRI_H_
+#endif // IO_MAP_IMPORT_H_

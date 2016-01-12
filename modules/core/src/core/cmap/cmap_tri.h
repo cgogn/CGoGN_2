@@ -21,75 +21,28 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#ifndef CORE_MAP_MAP_TRI_H_
+#define CORE_MAP_MAP_TRI_H_
 
-#include <utils/name_types.h>
+#include <core/cmap/map_base.h>
 
 namespace cgogn
 {
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& ) 
-{ return "bool"; }
+class Traits_map_tri
+{
+	static const int PRIM_SIZE = 3;
+};
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char& ) 
-{ return "char"; }
+class MapTri : public MapBase<Traits_map_tri>
+{
+public:
+	typedef MapBase<Traits_map_tri> Inherit;
+	typedef MapTri Self;
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const short& ) 
-{ return "short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const int& ) 
-{ return "int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long& ) 
-{ return "long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& ) 
-{ return "long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& ) 
-{ return "signed char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& ) 
-{ return "unsigned char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& ) 
-{ return "unsigned short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& ) 
-{ return "unsigned int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& ) 
-{ return "unsigned long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& ) 
-{ return "unsigned long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const float& ) 
-{ return "float"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const double& ) 
-{ return "double"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& )
-{ return "std::string"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Vector3d& )
-{ return "Eigen::Vector3d"; }
+	~MapTri() override {}
+};
 
 } // namespace cgogn
+
+#endif // CORE_MAP_MAP_TRI_H_

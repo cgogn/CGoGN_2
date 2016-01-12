@@ -24,8 +24,8 @@
 #ifndef CORE_MAP_MAP_BASE_H_
 #define CORE_MAP_MAP_BASE_H_
 
-#include <core/map/map_base_data.h>
-#include <core/map/attribute_handler.h>
+#include <core/cmap/map_base_data.h>
+#include <core/cmap/attribute_handler.h>
 
 #include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>
@@ -261,8 +261,6 @@ protected:
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
 
-public:
-
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/
@@ -274,8 +272,7 @@ public:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		if (this->template is_orbit_embedded<ORBIT>())
-			return;
+		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -291,6 +288,8 @@ public:
 			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
 		});
 	}
+
+public:
 
 	/**
 	 * \brief make sure that all given orbits are uniquely embedded (indexed)

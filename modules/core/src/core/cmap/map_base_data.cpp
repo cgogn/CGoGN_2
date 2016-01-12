@@ -20,35 +20,38 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
-
-#include <string>
-
-#include <core/map/cmap2.h>
-#include <io/surface_import.h>
+#define CGOGN_CORE_DLL_EXPORT
+#include <core/cmap/map_base_data.h>
 
 namespace cgogn
 {
 
-namespace io
-{
+std::vector<MapGen*>* MapGen::instances_ = nullptr;
+bool MapGen::init_CA_factory = true;
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
+MapGen::MapGen()
 {
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
+	if (instances_ == nullptr)
+		instances_ = new std::vector<MapGen*>;
+
+	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
+
+	// register the map in the vector of instances
+	instances_->push_back(this);
 }
 
-} // namespace io
+MapGen::~MapGen()
+{
+	// remove the map from the vector of instances
+	auto it = std::find(instances_->begin(), instances_->end(), this);
+	*it = instances_->back();
+	instances_->pop_back();
+
+	if (instances_->empty())
+	{
+		delete instances_;
+		instances_ = nullptr;
+	}
+}
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

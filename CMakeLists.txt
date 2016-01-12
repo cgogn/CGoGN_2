@@ -27,7 +27,7 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
+set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/modules)
 
 
 #### ThirdParty options
@@ -72,16 +72,9 @@ if(CGOGN_BUILD_TESTS)
     endif()
 endif(CGOGN_BUILD_TESTS)
 
-
-add_subdirectory(doc)
-
 add_subdirectory(thirdparty)
-
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
-add_subdirectory(test)
-
-add_subdirectory(utest)
 
 
 ##  TODO a mettre dans un fichier cmake particulier
