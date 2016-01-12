@@ -39,6 +39,18 @@ CGOGN_UTILS_API std::string name_of_type(const char& )
 { return "char"; }
 
 template <>
+CGOGN_UTILS_API std::string name_of_type(const wchar_t& )
+{ return "wchar_t"; }
+template <>
+
+CGOGN_UTILS_API std::string name_of_type(const char16_t& )
+{ return "char16_t"; }
+
+template <>
+CGOGN_UTILS_API std::string name_of_type(const char32_t& )
+{ return "char32_t"; }
+
+template <>
 CGOGN_UTILS_API std::string name_of_type(const short& )
 { return "short"; }
 
@@ -87,11 +99,10 @@ CGOGN_UTILS_API std::string name_of_type(const double& )
 { return "double"; }
 
 template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& )
-{ return "std::string"; }
-
-template <>
 CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& )
-{ return "Eigen::Vector3d"; }
+{
+	static_assert(std::is_same<Eigen::Vector3d, Eigen::Matrix<double,3,1,0,3,1>>::value,"Eigen::Matrix<double,3,1,0,3,1> and Eigen::Vector3d have to be the same.");
+	return "Eigen::Vector3d";
+}
 
 } // namespace cgogn

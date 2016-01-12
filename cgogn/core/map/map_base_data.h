@@ -228,6 +228,8 @@ public:
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
+protected:
+
 	template <Orbit ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
