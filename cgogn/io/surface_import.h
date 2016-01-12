@@ -313,7 +313,7 @@ protected:
 		{
 			do
 			{
-			std::getline(fp, line);
+				std::getline(fp, line);
 			} while (line.size() == 0);
 
 			std::stringstream oss(line);
@@ -323,9 +323,9 @@ protected:
 			faces_nb_edges_.push_back(n);
 			for (unsigned int j = 0; j < n; ++j)
 			{
-			unsigned int index;
-			oss >> index;
-			faces_vertex_indices_.push_back(vertices_id[index]);
+				unsigned int index;
+				oss >> index;
+				faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 		}
 
