@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_CORE_DLL_EXPORT
-#include <core/map/map_base_data.h>
+#include <core/cmap/map_base_data.h>
 
 namespace cgogn
 {

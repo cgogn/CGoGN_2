@@ -34,6 +34,9 @@ add_definitions(${FULL_WARNINGS})
 # Warn about missing virtual destructor (C++ only)
 add_flags(CMAKE_CXX_FLAGS -Wnon-virtual-dtor)
 
+# Enable c++11 extensions
+add_flags(CMAKE_CXX_FLAGS -std=c++11)
+
 # Add static and dynamic bounds checks (optimization required)
 if (GCC_VERSION VERSION_GREATER 4.0)
    add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)

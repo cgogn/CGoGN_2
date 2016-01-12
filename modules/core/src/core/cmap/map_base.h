@@ -24,8 +24,8 @@
 #ifndef CORE_MAP_MAP_BASE_H_
 #define CORE_MAP_MAP_BASE_H_
 
-#include <core/map/map_base_data.h>
-#include <core/map/attribute_handler.h>
+#include <core/cmap/map_base_data.h>
+#include <core/cmap/attribute_handler.h>
 
 #include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>

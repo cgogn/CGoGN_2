@@ -24,7 +24,7 @@
 #ifndef CORE_MAP_MAP_TRI_H_
 #define CORE_MAP_MAP_TRI_H_
 
-#include <core/map/map_base.h>
+#include <core/cmap/map_base.h>
 
 namespace cgogn
 {

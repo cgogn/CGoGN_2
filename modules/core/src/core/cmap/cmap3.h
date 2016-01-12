@@ -24,7 +24,7 @@
 #ifndef CORE_MAP_MAP3_H_
 #define CORE_MAP_MAP3_H_
 
-#include <core/map/cmap2.h>
+#include <core/cmap/cmap2.h>
 #include <core/basic/dart_marker.h>
 
 namespace cgogn
