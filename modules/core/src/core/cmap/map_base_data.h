@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP_BASE_DATA_H_
-#define CORE_MAP_MAP_BASE_DATA_H_
+#ifndef CORE_CMAP_MAP_BASE_DATA_H_
+#define CORE_CMAP_MAP_BASE_DATA_H_
 
 #include <core/container/chunk_array_container.h>
 #include <utils/definitions.h>
@@ -282,4 +282,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP_BASE_DATA_H_
+#endif // CORE_CMAP_MAP_BASE_DATA_H_

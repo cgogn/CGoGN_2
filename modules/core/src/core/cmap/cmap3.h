@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP3_H_
-#define CORE_MAP_MAP3_H_
+#ifndef CORE_CMAP_CMAP3_H_
+#define CORE_CMAP_CMAP3_H_
 
 #include <core/cmap/cmap2.h>
 #include <core/basic/dart_marker.h>
@@ -499,4 +499,4 @@ using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP3_H_
+#endif // CORE_CMAP_CMAP3_H_

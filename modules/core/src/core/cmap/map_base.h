@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP_BASE_H_
-#define CORE_MAP_MAP_BASE_H_
+#ifndef CORE_CMAP_MAP_BASE_H_
+#define CORE_CMAP_MAP_BASE_H_
 
 #include <core/cmap/map_base_data.h>
 #include <core/cmap/attribute_handler.h>
@@ -608,4 +608,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP_BASE_H_
+#endif // CORE_CMAP_MAP_BASE_H_

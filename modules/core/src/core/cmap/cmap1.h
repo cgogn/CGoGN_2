@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP1_H_
-#define CORE_MAP_MAP1_H_
+#ifndef CORE_CMAP_CMAP1_H_
+#define CORE_CMAP_CMAP1_H_
 
 #include <core/cmap/map_base.h>
 #include <core/basic/dart.h>
@@ -351,4 +351,4 @@ using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP1_H_
+#endif // CORE_CMAP_CMAP1_H_

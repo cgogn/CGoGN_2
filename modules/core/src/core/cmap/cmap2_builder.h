@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_MODIFIER_H_
-#define CORE_MAP_MAP2_MODIFIER_H_
+#ifndef CORE_CMAP_CMAP2_MODIFIER_H_
+#define CORE_CMAP_CMAP2_MODIFIER_H_
 
 #include <core/cmap/cmap2.h>
 
@@ -99,4 +99,4 @@ private:
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP2_MODIFIER_H_
+#endif // CORE_CMAP_CMAP2_MODIFIER_H_

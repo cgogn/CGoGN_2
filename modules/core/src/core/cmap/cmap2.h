@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_H_
-#define CORE_MAP_MAP2_H_
+#ifndef CORE_CMAP_CMAP2_H_
+#define CORE_CMAP_CMAP2_H_
 
 #include <core/cmap/cmap1.h>
 #include <core/basic/dart_marker.h>
@@ -198,27 +198,6 @@ protected:
 	}
 
 public:
-
-	/*******************************************************************************
-	 * High-level topological operations without boundary management
-	 *******************************************************************************/
-
-	Face add_face_without_boundary(unsigned int nb_edges)
-	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
-
-		Dart d = Inherit::add_face_topo(nb_edges);
-
-		Face f(d);
-
-		return f;
-	}
-
-	void sew_faces_without_boundary(Face d, Face e)
-	{
-		assert(phi2(d) == d && phi2(e) == e) ;
-		phi2sew(d, e) ;
-	}
 
 	/*******************************************************************************
 	 * High-level topological operations
@@ -543,4 +522,4 @@ using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP2_H_
+#endif // CORE_CMAP_CMAP2_H_
