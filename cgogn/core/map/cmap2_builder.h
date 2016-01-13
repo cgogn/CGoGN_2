@@ -53,7 +53,7 @@ public:
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
-		map_.create_embedding<ORBIT>();
+		map_.template create_embedding<ORBIT>();
 	}
 
 	template <Orbit ORBIT, typename T>
@@ -65,7 +65,7 @@ public:
 	template <Orbit ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
-		map_.init_embedding<ORBIT>(d, emb);
+		map_.template init_embedding<ORBIT>(d, emb);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)
