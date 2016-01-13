@@ -70,7 +70,7 @@ public:
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
 
-	using VertexAttributeHandler = typename Map::VertexAttributeHandler<T>;
+	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
 	using Vec3 = typename MAP_TRAITS::Vec3;
 
