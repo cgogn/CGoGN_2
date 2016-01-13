@@ -65,22 +65,10 @@ public:
 	template <Orbit ORBIT>
 	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
 
-
-protected:
-
-	ChunkArray<Dart>* phi0_;
-
-	void init()
-	{
-		phi0_ = this->topology_.template add_attribute<Dart>("phi0");	
-	}
-
 public:
 
 	CMap0_T() : Inherit()
-	{
-		init();
-	}
+	{}
 
 	~CMap0_T() override
 	{}
@@ -96,12 +84,10 @@ protected:
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
 
-		(*phi0_)[di] = d;
-
 		return d;
 	}
 
-public:	
+public:
 	Vertex add_vertex()
 	{
 		Dart d = add_dart();
