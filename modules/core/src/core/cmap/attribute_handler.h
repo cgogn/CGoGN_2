@@ -24,7 +24,7 @@
 #ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
 #define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
-#include <core/map/map_base.h>
+#include <core/cmap/map_base.h>
 #include <core/basic/cell.h>
 #include <utils/assert.h>
 

@@ -72,6 +72,11 @@ if(CGOGN_BUILD_TESTS)
     endif()
 endif(CGOGN_BUILD_TESTS)
 
+file(GLOB CGOGN_CONFIGURED_MODULES RELATIVE ${CMAKE_SOURCE_DIR} "${CMAKE_SOURCE_DIR}/modules/*")
+list(REMOVE_ITEM CGOGN_CONFIGURED_MODULES modules/CMakeLists.txt modules/.DS_Store)
+
+message("modules: ${CGOGN_CONFIGURED_MODULES}")
+
 add_subdirectory(thirdparty)
 add_subdirectory(${CGOGN_SOURCE_DIR})
 

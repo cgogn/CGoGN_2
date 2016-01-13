@@ -63,6 +63,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/cgogn_core>
 )
 
+add_subdirectory(examples)
+
 # target_link_libraries(${PROJECT_NAME} cgogn_utils)
 
 # install(DIRECTORY basic container map

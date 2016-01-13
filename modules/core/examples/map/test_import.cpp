@@ -2,7 +2,7 @@
 #include <chrono>
 #include <ctime>
 
-#include <core/map/cmap2.h>
+#include <core/cmap/cmap2.h>
 
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
