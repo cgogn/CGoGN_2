@@ -24,9 +24,6 @@ set(HEADER_FILES
 	src/core/cmap/cmap3.h
 	src/core/cmap/attribute_handler.h
 
-	src/io/surface_import.h
-	src/io/map_import.h
-
 	src/utils/assert.h
 	src/utils/buffers.h
 	src/utils/definitions.h
@@ -38,7 +35,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-#	basic/cell_marker.cpp
+#	src/core/basic/cell_marker.cpp
 	src/core/basic/dart_marker.cpp
 
 	src/core/container/chunk_array_container.cpp
@@ -59,7 +56,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}/core/src>
+	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}/src>
 	$<INSTALL_INTERFACE:include/cgogn/cgogn_core>
 )
 

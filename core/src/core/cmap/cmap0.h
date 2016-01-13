@@ -83,16 +83,18 @@ protected:
 	{
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
-
 		return d;
 	}
 
 public:
 	Vertex add_vertex()
 	{
-		Dart d = add_dart();
+		Dart d = this->to_concrete()->add_dart();
 		Vertex v(d);
-		init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
+
+		if (this->template is_orbit_embedded<Orbit::DART>())
+			init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
+
 		return v;
 	}
 
