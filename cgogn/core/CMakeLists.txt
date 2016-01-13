@@ -23,6 +23,11 @@ set(HEADER_FILES
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
+
+	mr_map/mr_map_base_data.h
+	mr_map/mr_map_base.h
+	mr_map/mr_map1.h
+	mr_map/mr_attribute_handler.h
 )
 
 set(SOURCE_FILES
