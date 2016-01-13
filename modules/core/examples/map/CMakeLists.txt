@@ -13,3 +13,6 @@ target_link_libraries(test_map cgogn_core)
 
 add_executable(test_import test_import.cpp)
 target_link_libraries(test_import cgogn_core)
+
+add_executable(test_cmap0 test_cmap0.cpp)
+target_link_libraries(test_cmap0 cgogn_core)

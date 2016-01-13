@@ -31,7 +31,7 @@ namespace cgogn
 {
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap1_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
@@ -42,9 +42,12 @@ public:
 	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Self;
 
+	friend typename Self::Inherit;
+	friend class DartMarker_T<Self>;
+
 	static const Orbit VERTEX = Orbit::DART;
 
-	typedef Cell<VERTEX> Vertex;
+	typedef Cell<Self::VERTEX> Vertex;
 
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -64,19 +67,22 @@ public:
 
 
 protected:
-	inline void init()
+
+	ChunkArray<Dart>* phi0_;
+
+	void init()
 	{
-		this->create_embedding<DART>();
+		phi0_ = this->topology_.template add_attribute<Dart>("phi0");	
 	}
 
 public:
 
-	CMap0_T()
+	CMap0_T() : Inherit()
 	{
 		init();
 	}
 
-	~CMap0_T()
+	~CMap0_T() override
 	{}
 
 	CMap0_T(Self const&) = delete;
@@ -85,39 +91,37 @@ public:
 	Self& operator=(Self &&) = delete;
 
 protected:
-
-	inline unsigned int add_dart()
+	inline Dart add_dart()
 	{
 		unsigned int di = this->add_topology_element();
+		Dart d(di);
 
-		return di;
+		(*phi0_)[di] = d;
+
+		return d;
 	}
 
-public:
+public:	
 	Vertex add_vertex()
 	{
-		unsigned int d = add_dart();
-
+		Dart d = add_dart();
 		Vertex v(d);
-
 		init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
-
 		return v;
 	}
 
 protected:
-	template <typename FUNC>
-	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
+
+	/*******************************************************************************
+	 * Orbits traversal
+	 *******************************************************************************/
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		switch(ORBIT)
 		{
-			case Orbit::DART: foreach_dart_of_vertex(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1:
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
@@ -130,6 +134,7 @@ protected:
 	}
 
 protected:
+
 	/*******************************************************************************
 	 * Embedding management
 	 *******************************************************************************/

@@ -17,11 +17,11 @@ set(HEADER_FILES
 
 	src/core/cmap/map_base_data.h
 	src/core/cmap/map_base.h
+	src/core/cmap/cmap0.h
 	src/core/cmap/cmap1.h
 	src/core/cmap/cmap2.h
 	src/core/cmap/cmap2_builder.h
 	src/core/cmap/cmap3.h
-	src/core/cmap/cmap_tri.h
 	src/core/cmap/attribute_handler.h
 
 	src/io/surface_import.h
