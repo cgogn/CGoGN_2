@@ -21,41 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_MAP_MAP_BASE_DATA_CPP_
-#include <core/cmap/map_base_data.h>
+#define CORE_CONTAINER_CHUNK_ARRAY_CPP_
+
+#include <core/basic/dll.h>
+#include <core/container/chunk_array.h>
 
 namespace cgogn
 {
-
-std::vector<MapGen*>* MapGen::instances_ = nullptr;
-bool MapGen::init_CA_factory = true;
-
-MapGen::MapGen()
-{
-	if (instances_ == nullptr)
-		instances_ = new std::vector<MapGen*>;
-
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
-
-	// register the map in the vector of instances
-	instances_->push_back(this);
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, bool>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+	template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, DefaultMapTraits::Vec3>;
 }
-
-MapGen::~MapGen()
-{
-	// remove the map from the vector of instances
-	auto it = std::find(instances_->begin(), instances_->end(), this);
-	*it = instances_->back();
-	instances_->pop_back();
-
-	if (instances_->empty())
-	{
-		delete instances_;
-		instances_ = nullptr;
-	}
-}
-
-template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
-
-
-} // namespace cgogn

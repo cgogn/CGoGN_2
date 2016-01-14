@@ -27,9 +27,13 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_MODULE_DIR ${CMAKE_SOURCE_DIR}/modules)
-set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/core)
+set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
 
+### External Templates
+option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
+if(${CGOGN_EXTERNAL_TEMPLATES})
+	add_definitions("-DCGOGN_USE_EXTERNAL_TEMPLATES")
+endif()
 
 #### ThirdParty options
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
@@ -73,14 +77,8 @@ if(CGOGN_BUILD_TESTS)
     endif()
 endif(CGOGN_BUILD_TESTS)
 
-file(GLOB CGOGN_CONFIGURED_MODULES RELATIVE ${CMAKE_SOURCE_DIR} "${CMAKE_SOURCE_DIR}/modules/*")
-list(REMOVE_ITEM CGOGN_CONFIGURED_MODULES modules/CMakeLists.txt modules/.DS_Store)
-
-message("modules: ${CGOGN_CONFIGURED_MODULES}")
-
 add_subdirectory(thirdparty)
-add_subdirectory(core)
-add_subdirectory(${CGOGN_MODULE_DIR})
+add_subdirectory(${CGOGN_SOURCE_DIR})
 
 
 

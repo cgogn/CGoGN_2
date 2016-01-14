@@ -32,6 +32,7 @@
 #include <memory>
 #include <array>
 #include <utils/make_unique.h>
+#include <core/map/map_traits.h>
 
 namespace cgogn
 {
@@ -121,6 +122,10 @@ typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::
 template <unsigned int CHUNKSIZE>
 bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayFactory<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 
 } // namespace cgogn
 

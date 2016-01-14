@@ -3,49 +3,59 @@ project(cgogn_core
 )
 
 set(HEADER_FILES
-	src/core/basic/dll.h
-	src/core/basic/dart.h
-	src/core/basic/dart_marker.h
-	src/core/basic/cell.h
-	src/core/basic/cell_marker.h
+	basic/dll.h
+	basic/dart.h
+	basic/dart_marker.h
+	basic/cell.h
+	basic/cell_marker.h
 
-	src/core/container/chunk_array_container.h
-	src/core/container/chunk_array_factory.h
-	src/core/container/chunk_array_gen.h
-	src/core/container/chunk_array.h
-	src/core/container/chunk_stack.h
+	container/chunk_array_container.h
+	container/chunk_array_factory.h
+	container/chunk_array_gen.h
+	container/chunk_array.h
+	container/chunk_stack.h
 
-	src/core/cmap/map_base_data.h
-	src/core/cmap/map_base.h
-	src/core/cmap/cmap0.h
-	src/core/cmap/cmap1.h
-	src/core/cmap/cmap2.h
-	src/core/cmap/cmap2_builder.h
-	src/core/cmap/cmap3.h
-	src/core/cmap/attribute_handler.h
+	cmap/map_traits.h
+	cmap/map_base_data.h
+	cmap/map_base.h
+	cmap/cmap0.h
+	cmap/cmap1.h
+	cmap/cmap2.h
+	cmap/cmap2_builder.h
+	cmap/cmap3.h
+	cmap/attribute_handler.h
 
-	src/utils/assert.h
-	src/utils/buffers.h
-	src/utils/definitions.h
-	src/utils/dll.h
-	src/utils/make_unique.h
-	src/utils/name_types.h
-	src/utils/serialization.h
-	src/utils/thread.h
+	utils/assert.h
+	utils/buffers.h
+	utils/definitions.h
+	utils/dll.h
+	utils/make_unique.h
+	utils/name_types.h
+	utils/serialization.h
+	utils/thread.h
 )
 
 set(SOURCE_FILES
-#	src/core/basic/cell_marker.cpp
-	src/core/basic/dart_marker.cpp
+	#basic/cell_marker.cpp
+	basic/dart_marker.cpp
 
-	src/core/container/chunk_array_container.cpp
+	container/chunk_array_container.cpp
+	container/chunk_array_gen.cpp
+	container/chunk_array.cpp
+	container/chunk_stack.cpp
+	container/chunk_array_container.cpp
+	container/chunk_array_factory.cpp
 
-	src/core/cmap/map_base_data.cpp
+	cmap/map_base_data.cpp
+	cmap/cmap1.cpp
+	cmap/cmap2.cpp
+	cmap/cmap3.cpp
+	cmap/cmap2_builder.cpp
 
-	src/utils/assert.cpp
-	src/utils/thread.cpp
-	src/utils/name_types.cpp
-	src/utils/serialization.cpp
+	utils/assert.cpp
+	utils/thread.cpp
+	utils/name_types.cpp
+	utils/serialization.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

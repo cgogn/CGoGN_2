@@ -26,14 +26,13 @@
 
 #include <utils/name_types.h>
 #include <utils/assert.h>
+#include <utils/assert.h>
+#include <utils/make_unique.h>
 #include <core/basic/dll.h>
-
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
-
-#include <utils/assert.h>
-#include <utils/make_unique.h>
+#include <core/map/map_traits.h>
 
 #include <iostream>
 #include <fstream>
@@ -366,7 +365,7 @@ public:
 	 * @brief Number of attributes of the container
 	 * @return number of attributes
 	 */
-	unsigned int get_nb_attributes() const
+	std::size_t get_nb_attributes() const
 	{
 		return table_arrays_.size();
 	}
@@ -926,6 +925,13 @@ public:
 		return ok;
 	}
 };
+
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn
 

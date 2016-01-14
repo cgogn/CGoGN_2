@@ -24,11 +24,11 @@
 #ifndef CORE_CMAP_MAP_BASE_DATA_H_
 #define CORE_CMAP_MAP_BASE_DATA_H_
 
-#include <core/container/chunk_array_container.h>
 #include <utils/definitions.h>
-#include <core/basic/cell.h>
-
 #include <utils/thread.h>
+#include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
+#include <core/map/map_traits.h>
 
 #include <thread>
 #include <mutex>
@@ -71,13 +71,9 @@ public:
 	}
 };
 
-
-struct DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
-};
+// forward declaration of class AttributeHandlerOrbit
+template<typename DATA_TRAITS, Orbit ORBIT>
+class AttributeHandlerOrbit;
 
 /**
  * @brief The MapBaseData class
@@ -279,6 +275,10 @@ protected:
 		return i;
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
+extern template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
 
 } // namespace cgogn
 

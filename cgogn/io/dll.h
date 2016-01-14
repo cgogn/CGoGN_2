@@ -20,42 +20,21 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_MAP_MAP_BASE_DATA_CPP_
-#include <core/cmap/map_base_data.h>
 
-namespace cgogn
-{
+#ifndef IO_DLL_H_
+#define IO_DLL_H_
 
-std::vector<MapGen*>* MapGen::instances_ = nullptr;
-bool MapGen::init_CA_factory = true;
+/**
+* \brief Linkage declaration for CGOGN symbols.
+*/
+#ifdef WIN32
+#if defined CGOGN_IO_DLL_EXPORT
+#define CGOGN_IO_API __declspec(dllexport)
+#else
+#define CGOGN_IO_API __declspec(dllimport)
+#endif
+#else
+#define CGOGN_IO_API
+#endif
 
-MapGen::MapGen()
-{
-	if (instances_ == nullptr)
-		instances_ = new std::vector<MapGen*>;
-
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
-
-	// register the map in the vector of instances
-	instances_->push_back(this);
-}
-
-MapGen::~MapGen()
-{
-	// remove the map from the vector of instances
-	auto it = std::find(instances_->begin(), instances_->end(), this);
-	*it = instances_->back();
-	instances_->pop_back();
-
-	if (instances_->empty())
-	{
-		delete instances_;
-		instances_ = nullptr;
-	}
-}
-
-template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
-
-
-} // namespace cgogn
+#endif // IO_DLL_H_
