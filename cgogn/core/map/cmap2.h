@@ -272,7 +272,7 @@ protected:
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 		visited_faces->push_back(d); // Start with the face of d
@@ -371,7 +371,7 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -386,7 +386,7 @@ public:
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -401,7 +401,7 @@ public:
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))

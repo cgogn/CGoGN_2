@@ -178,8 +178,8 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this);
-		const std::vector<Dart>* marked_darts = marker->get_marked_darts();
+		DartMarkerStore marker(*this->to_concrete());
+		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
 		for(unsigned int i = 0; i < marked_darts->size(); ++i)
@@ -189,9 +189,9 @@ protected:
 			Dart d2 = this->phi2((*marked_darts)[i]);
 			Dart d21 = this->phi1(d2); // turn in volume
 			Dart d23 = phi3(d2); // change volume
-			if(!marker.isMarked(d21))
+			if(!marker.is_marked(d21))
 				marker.mark(d21);
-			if(!marker.isMarked(d23))
+			if(!marker.is_marked(d23))
 				marker.mark(d23);
 		}
 	}
@@ -223,11 +223,14 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
 	{
-		foreach_dart_of_orbit<Inherit::FACE>(d, [&] (Dart fd)
-		{
-			f(fd);
-			f(phi3(fd));
-		});
+		Inherit::foreach_dart_of_face(d,f);
+		Inherit::foreach_dart_of_face(phi3(d),f);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_volume(Dart d, const FUNC& f) const
+	{
+		Inherit::foreach_dart_of_volume(d,f);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -236,9 +239,9 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI1: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI1: Inherit::foreach_dart_of_face(c, f); break;
 			case Orbit::PHI2: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI1_PHI2: Inherit::foreach_dart_of_orbit(c, f); break;
+			case Orbit::PHI1_PHI2: Inherit::foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI1_PHI3: foreach_dart_of_face(c, f); break;
 			case Orbit::PHI2_PHI3: foreach_dart_of_edge(c, f); break;
 			case Orbit::PHI21: Inherit::foreach_dart_of_orbit(c, f); break;
@@ -257,7 +260,7 @@ public:
 	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -272,7 +275,7 @@ public:
 	inline void foreach_incident_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -288,7 +291,7 @@ public:
 	inline void foreach_incident_volume(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
+		DartMarkerStore marker(*this->to_concrete());
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -498,18 +501,18 @@ template <typename MAP_TRAITS>
 using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
-//extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
-//extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
-//extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
-//extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
-//extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-//extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-//extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-//extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
-//extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-//extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-//extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-//extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn
