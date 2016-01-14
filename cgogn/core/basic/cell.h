@@ -132,6 +132,10 @@ public:
 	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
 
 
+	inline bool operator==(Cell<ORBIT> other_cell) const { return dart == other_cell.dart; }
+	inline bool operator!=(Cell<ORBIT> other_cell) const { return dart != other_cell.dart; }
+	inline bool operator <(Cell<ORBIT> other_cell) const { return dart <  other_cell.dart; }
+
 	//TODO
 	// Cell<ORBIT> operator=(Cell<ORBIT>&& rhs) { dart = rhs.dart return *this; }
 
