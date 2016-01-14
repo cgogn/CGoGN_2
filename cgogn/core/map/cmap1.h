@@ -67,11 +67,17 @@ public:
 	template<typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
-	using DartMarker = typename Inherit::DartMarker;
-	using DartMarkerStore = typename Inherit::DartMarkerStore;
+//	using DartMarker = typename Inherit::DartMarker;
+//	using DartMarkerStore = typename Inherit::DartMarkerStore;
+
+	using DartMarker = typename cgogn::DartMarker<Self>;
+	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
+
+//	template <Orbit ORBIT>
+//	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
 
 	template <Orbit ORBIT>
-	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
+	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
 
 protected:
 
@@ -254,7 +260,13 @@ protected:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
+	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
+	{
+		f(d);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
 		do
@@ -267,10 +279,12 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
+					  "Orbit not supported in a CMap1");
 		switch (ORBIT)
 		{
-			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_face(c, f); break;
+			case Orbit::DART: foreach_dart_of_DART(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:

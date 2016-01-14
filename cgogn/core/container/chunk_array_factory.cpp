@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_CORE_DLL_EXPORT
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_
 
@@ -27,5 +28,7 @@
 
 namespace cgogn
 {
+
 	template class CGOGN_CORE_API ChunkArrayFactory<DefaultMapTraits::CHUNK_SIZE>;
-}
+
+} // namespace cgogn
