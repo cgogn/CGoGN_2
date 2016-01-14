@@ -21,34 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#define CGOGN_CORE_DLL_EXPORT
+#define CORE_MAP_MAP2_BUILDER_CPP_
 
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
+#include <core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
 
-namespace io
-{
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
-}
-
-} // namespace io
+	template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

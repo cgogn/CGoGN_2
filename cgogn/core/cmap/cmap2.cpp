@@ -21,34 +21,25 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
-
-#include <string>
+#define CGOGN_CORE_DLL_EXPORT
+#define CORE_MAP_MAP2_CPP_
 
 #include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
 
 namespace cgogn
 {
 
-namespace io
-{
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
-}
-
-} // namespace io
+	template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI21>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI2>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI1>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI21>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI2>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

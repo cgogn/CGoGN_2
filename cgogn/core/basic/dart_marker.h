@@ -25,7 +25,7 @@
 #define CORE_BASIC_DART_MARKER_H_
 
 #include <core/container/chunk_array.h>
-#include <core/map/map_base_data.h>
+#include <core/cmap/map_base_data.h>
 
 namespace cgogn
 {

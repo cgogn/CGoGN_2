@@ -77,16 +77,9 @@ if(CGOGN_BUILD_TESTS)
     endif()
 endif(CGOGN_BUILD_TESTS)
 
-
-add_subdirectory(doc)
-
 add_subdirectory(thirdparty)
-
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
-add_subdirectory(test)
-
-add_subdirectory(utest)
 
 
 ##  TODO a mettre dans un fichier cmake particulier
