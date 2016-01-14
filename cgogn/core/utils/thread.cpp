@@ -21,34 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#define CGOGN_UTILS_DLL_EXPORT
 
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
+#include <core/utils/thread.h>
 
 namespace cgogn
 {
 
-namespace io
-{
+CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
+CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
+CGOGN_UTILS_API void thread_start()
 {
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
+	if (dart_buffers_thread == nullptr)
+		dart_buffers_thread = new Buffers<Dart>();
+
+	if (uint_buffers_thread == nullptr)
+		uint_buffers_thread = new Buffers<unsigned int>();
 }
 
-} // namespace io
+CGOGN_UTILS_API void thread_stop()
+{
+	delete dart_buffers_thread;
+	delete uint_buffers_thread;
+	dart_buffers_thread = nullptr;
+	uint_buffers_thread = nullptr;
+}
+
+CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
+{
+	return dart_buffers_thread;
+}
+
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
+{
+	return uint_buffers_thread;
+}
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

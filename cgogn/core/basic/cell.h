@@ -26,8 +26,8 @@
 
 #include <core/basic/dart.h>
 
-#include <utils/assert.h>
-#include <utils/definitions.h>
+#include <core/utils/assert.h>
+#include <core/utils/definitions.h>
 
 /**
  * \file core/basic/cell.h

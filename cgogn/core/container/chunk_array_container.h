@@ -24,15 +24,15 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
-#include <utils/name_types.h>
-#include <utils/assert.h>
-#include <utils/assert.h>
-#include <utils/make_unique.h>
+#include <core/utils/name_types.h>
+#include <core/utils/assert.h>
+#include <core/utils/assert.h>
+#include <core/utils/make_unique.h>
 #include <core/basic/dll.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
-#include <core/map/map_traits.h>
+#include <core/cmap/map_traits.h>
 
 #include <iostream>
 #include <fstream>

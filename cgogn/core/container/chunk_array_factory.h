@@ -24,15 +24,15 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <utils/name_types.h>
+#include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 
 #include <iostream>
 #include <map>
 #include <memory>
 #include <array>
-#include <utils/make_unique.h>
-#include <core/map/map_traits.h>
+#include <core/utils/make_unique.h>
+#include <core/cmap/map_traits.h>
 
 namespace cgogn
 {

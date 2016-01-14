@@ -21,34 +21,37 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#ifndef UTILS_THREAD_H_
+#define UTILS_THREAD_H_
 
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
+#include <core/utils/buffers.h>
+#include <core/utils/dll.h>
 
 namespace cgogn
 {
 
-namespace io
-{
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
-}
+/**
+ * @brief function to call at begin of each thread which use a map
+ */
+CGOGN_UTILS_API void thread_start();
 
-} // namespace io
+/**
+ * @brief function to call at end of each thread which use a map
+ */
+CGOGN_UTILS_API void thread_stop();
+
+CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
 
 } // namespace cgogn
 
-#endif // IO_MAP_IMPORT_H_
+#endif // UTILS_THREAD_H_

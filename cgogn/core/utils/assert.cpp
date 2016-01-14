@@ -21,34 +21,54 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#define CGOGN_UTILS_DLL_EXPORT
 
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
+#include <core/utils/dll.h>
+#include <core/utils/assert.h>
+#include <iostream>
+#include <sstream>
+#include <cstdlib>
 
 namespace cgogn
 {
 
-namespace io
+CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+	const std::string& expression,
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+)
 {
+	std::ostringstream os;
+	os << "Assertion failed: " << expression;
+	if (message.empty())
+		os << ".\n";
+	else
+		os << " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " << function_name << ", line: " << line_number;
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
+	std::cerr << os.str() << std::endl;
+	std::abort();
 }
 
-} // namespace io
+CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+)
+{
+ 	std::ostringstream os;
+	os << "Should not have reached this point";
+	if (message.empty())
+		os << ".\n";
+	else
+		os << " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " << function_name << ", line: " << line_number;
+
+	std::cerr << os.str() << std::endl;
+	std::abort();
+}
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

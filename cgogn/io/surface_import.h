@@ -26,9 +26,11 @@
 
 #include <istream>
 #include <core/container/chunk_array_container.h>
-#include <core/map/cmap2.h>
-#include <core/map/cmap2_builder.h>
+
+#include <core/cmap/cmap2.h>
+#include <core/cmap/cmap2_builder.h>
 #include <io/dll.h>
+
 
 namespace cgogn
 {

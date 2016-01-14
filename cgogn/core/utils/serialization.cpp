@@ -21,34 +21,72 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
-
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <io/surface_import.h>
+#define CGOGN_UTILS_DLL_EXPORT
+#include <core/utils/serialization.h>
 
 namespace cgogn
 {
 
-namespace io
+namespace serialization
 {
 
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
+template <>
+CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
 {
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.import_file(filename);
-	si.create_map(cmap2);
+	return false;
 }
 
-} // namespace io
+// load string
+template <>
+CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+{
+	cgogn_assert(istream.good());
+	cgogn_assert(dest != nullptr);
+
+	char buffer[2048];
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		unsigned int size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		cgogn_assert(size < 2048);
+		istream.read((buffer), size);
+		dest[i].resize(size);
+		for (unsigned int j=0; j<size; ++j)
+			dest[i][j] = buffer[j];
+	}
+}
+
+//save string
+template <>
+CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(ostream.good());
+	cgogn_assert(src != nullptr);
+
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		const unsigned int size = static_cast<unsigned int>(src[i].length());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const char* str = src[i].c_str();
+		ostream.write(str, size);
+	}
+}
+
+// compute data length of string
+template <>
+CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
+{
+	cgogn_assert(src != nullptr);
+
+	std::size_t total = 0;
+	for (std::size_t i = 0; i < quantity ; ++i)
+	{
+		total += sizeof(unsigned int); // for size
+		total += src[i].length();
+	}
+	return total;
+}
+
+} // namespace serialization
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_
