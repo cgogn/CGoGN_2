@@ -21,16 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
-#include <core/container/chunk_array_container.h>
+#ifndef IO_DLL_H_
+#define IO_DLL_H_
 
-namespace cgogn
-{
+/**
+* \brief Linkage declaration for CGOGN symbols.
+*/
+#ifdef WIN32
+#if defined CGOGN_IO_DLL_EXPORT
+#define CGOGN_IO_API __declspec(dllexport)
+#else
+#define CGOGN_IO_API __declspec(dllimport)
+#endif
+#else
+#define CGOGN_IO_API
+#endif
 
-ContainerBrowser::~ContainerBrowser()
-{}
-
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
-}
+#endif // IO_DLL_H_

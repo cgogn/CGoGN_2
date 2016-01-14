@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_MODIFIER_H_
-#define CORE_MAP_MAP2_MODIFIER_H_
+#ifndef CORE_MAP_MAP2_BUILDER_H_
+#define CORE_MAP_MAP2_BUILDER_H_
 
 #include <core/map/cmap2.h>
 
@@ -42,20 +42,18 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
-
-	inline ~CMap2Builder_T() = default;
-
 	CMap2Builder_T(const Self&) = delete;
 	CMap2Builder_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
+	inline ~CMap2Builder_T() = default;
 
 public:
 
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{
-		map_.create_embedding<ORBIT>();
+		map_.template create_embedding<ORBIT>();
 	}
 
 	template <Orbit ORBIT, typename T>
@@ -67,7 +65,7 @@ public:
 	template <Orbit ORBIT>
 	inline void init_embedding(Dart d, unsigned int emb)
 	{
-		map_.init_embedding<ORBIT>(d, emb);
+		map_.template init_embedding<ORBIT>(d, emb);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)
@@ -95,8 +93,11 @@ private:
 	CMap2& map_;
 };
 
-//using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2::MapTraits, cgogn::CMap2::MapType>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP2_MODIFIER_H_
+#endif // CORE_MAP_MAP2_BUILDER_H_

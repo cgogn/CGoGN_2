@@ -68,11 +68,14 @@ CGOGN_UTILS_API std::string name_of_type(const char& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const wchar_t& );
 
+// char16_t and char32_t are new fundamental types according to the c++11 standard. Regrettably, in MSVC they're just typedefs.
+#ifndef _MSC_VER
 template <>
 CGOGN_UTILS_API std::string name_of_type(const char16_t& );
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const char32_t& );
+#endif
 
 template <>
 CGOGN_UTILS_API std::string name_of_type(const short& );

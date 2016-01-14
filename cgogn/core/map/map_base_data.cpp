@@ -21,6 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_CORE_DLL_EXPORT
+#define CORE_MAP_MAP_BASE_DATA_CPP_
 #include <core/map/map_base_data.h>
 
 namespace cgogn
@@ -53,5 +54,8 @@ MapGen::~MapGen()
 		instances_ = nullptr;
 	}
 }
+
+template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
+
 
 } // namespace cgogn

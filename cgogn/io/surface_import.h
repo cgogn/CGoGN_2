@@ -25,10 +25,10 @@
 #define IO_SURFACE_IMPORT_H_
 
 #include <istream>
-
 #include <core/container/chunk_array_container.h>
 #include <core/map/cmap2.h>
 #include <core/map/cmap2_builder.h>
+#include <io/dll.h>
 
 namespace cgogn
 {
@@ -70,7 +70,7 @@ public:
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 	template<typename T>
 
-	using VertexAttributeHandler = AttributeHandler<T, Map::VERTEX>;
+	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
 	using Vec3 = typename MAP_TRAITS::Vec3;
 
@@ -431,6 +431,11 @@ protected:
 		return true;
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
+extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
+
 
 } // namespace io
 

@@ -15,23 +15,32 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
+	map/map_traits.h
 	map/map_base_data.h
 	map/map_base.h
 	map/cmap1.h
 	map/cmap2.h
-	map/cmap2_builder.h
 	map/cmap3.h
 	map/cmap_tri.h
 	map/attribute_handler.h
+	map/cmap2_builder.h
 )
 
 set(SOURCE_FILES
 #	basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
-	container/chunk_array_container.cpp
-
 	map/map_base_data.cpp
+	map/cmap1.cpp
+	map/cmap2.cpp
+	map/cmap3.cpp
+	map/cmap2_builder.cpp
+
+	container/chunk_array_gen.cpp
+	container/chunk_array.cpp
+	container/chunk_stack.cpp
+	container/chunk_array_container.cpp
+	container/chunk_array_factory.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
