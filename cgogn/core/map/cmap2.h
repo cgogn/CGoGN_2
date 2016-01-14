@@ -76,11 +76,11 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
-	using DartMarker = typename Inherit::DartMarker;
-	using DartMarkerStore = typename Inherit::DartMarkerStore;
+	using DartMarker = typename cgogn::DartMarker<Self>;
+	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
 	template <Orbit ORBIT>
-	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
+	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
 
 protected:
 
@@ -259,7 +259,14 @@ protected:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
+	inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
+	{
+		f(d);
+		f(phi2(d));
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
 		do
@@ -270,9 +277,9 @@ protected:
 	}
 
 	template <typename FUNC>
-	void foreach_dart_of_volume(Dart d, const FUNC& f) const
+	void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this->to_concrete());
+		DartMarkerStore marker(*this);
 
 		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
 		visited_faces->push_back(d); // Start with the face of d
@@ -303,13 +310,16 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
+					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  "Orbit not supported in a CMap2");
 		switch (ORBIT)
 		{
-			case Orbit::DART: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI1: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
+			case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -371,7 +381,7 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this->to_concrete());
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -386,7 +396,7 @@ public:
 	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this->to_concrete());
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
@@ -401,7 +411,7 @@ public:
 	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this->to_concrete());
+		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
