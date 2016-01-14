@@ -485,7 +485,7 @@ public:
 				if (!marker.is_marked(inc_fac))
 				{
 					marker.mark(inc_fac);
-					f(inc_fac);
+					func(inc_fac);
 				}
 			});
 		});
@@ -516,7 +516,7 @@ public:
 			if (!marker.is_marked(inc_face))
 			{
 				marker.mark((inc_face));
-				f(inc_face);
+				func(inc_face);
 			}
 		});
 
@@ -525,7 +525,7 @@ public:
 			if (!marker.is_marked(inc_face))
 			{
 				marker.mark((inc_face));
-				f(inc_face);
+				func(inc_face);
 			}
 		});
 	}
