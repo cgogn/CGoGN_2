@@ -24,7 +24,7 @@
 #define CGOGN_CORE_DLL_EXPORT
 #define CORE_MAP_MAP1_CPP_
 
-#include <core/map/cmap1.h>
+#include <core/cmap/cmap1.h>
 
 namespace cgogn
 {
