@@ -21,18 +21,85 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#ifndef CORE_MAP_MAP2_BUILDER_H_
+#define CORE_MAP_MAP2_BUILDER_H_
 
-#include <core/container/chunk_array_container.h>
+#include <core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+template <typename MAP_TRAITS>
+class CMap2Builder_T
+{
+public:
 
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+	using Self = CMap2Builder_T<MAP_TRAITS>;
+	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
+
+	template<typename T>
+	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
+
+	inline CMap2Builder_T(CMap2& map) : map_(map)
+	{}
+	CMap2Builder_T(const Self&) = delete;
+	CMap2Builder_T(Self&&) = delete;
+	Self& operator=(const Self&) = delete;
+	Self& operator=(Self&&) = delete;
+	inline ~CMap2Builder_T() = default;
+
+public:
+
+	template <Orbit ORBIT>
+	inline void create_embedding()
+	{
+		map_.template create_embedding<ORBIT>();
+	}
+
+	template <Orbit ORBIT, typename T>
+	inline void swapChunkArrayContainer(ChunkArrayContainer<T> &cac)
+	{
+		map_.attributes_[ORBIT].swap(cac);
+	}
+
+	template <Orbit ORBIT>
+	inline void init_embedding(Dart d, unsigned int emb)
+	{
+		map_.template init_embedding<ORBIT>(d, emb);
+	}
+
+	inline void phi2_sew(Dart d, Dart e)
+	{
+		return map_.phi2_sew(d,e);
+	}
+
+	inline void phi2_unsew(Dart d)
+	{
+		map_.phi2_unsew(d);
+	}
+
+	inline Dart add_face_topo(unsigned int nb_edges)
+	{
+		return map_.add_face_topo(nb_edges);
+	}
+
+	inline void close_map()
+	{
+		map_.close_map();
+	}
+
+private:
+
+	CMap2& map_;
+};
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
+
+
+#endif // CORE_MAP_MAP2_BUILDER_H_
+

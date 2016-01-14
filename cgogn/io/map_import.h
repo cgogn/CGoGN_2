@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include <core/map/cmap2.h>
+#include <core/cmap/cmap2.h>
 #include <io/surface_import.h>
 
 namespace cgogn

@@ -24,13 +24,15 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <utils/name_types.h>
+#include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 
 #include <iostream>
 #include <map>
 #include <memory>
-#include <utils/make_unique.h>
+#include <array>
+#include <core/utils/make_unique.h>
+#include <core/cmap/map_traits.h>
 
 namespace cgogn
 {
@@ -81,9 +83,9 @@ public:
 		register_CA<float>();
 		register_CA<double>();
 		register_CA<std::string>();
-		// TODO add all std::vector<> ?
-		// TODO add Eigen ?
-		register_CA<Eigen::Vector3d>();
+		register_CA<std::array<double,3>>();
+		register_CA<std::array<float,3>>();
+		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
 	}
@@ -120,6 +122,10 @@ typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::
 template <unsigned int CHUNKSIZE>
 bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayFactory<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 
 } // namespace cgogn
 

@@ -25,7 +25,7 @@
 #define CORE_BASIC_CELL_MARKER_H_
 
 #include <core/container/chunk_array.h>
-#include <core/map/map_base_data.h>
+#include <core/cmap/map_base_data.h>
 #include <type_traits>
 
 namespace cgogn
@@ -52,14 +52,10 @@ class CellMarker_T // : public CellMarkerGen
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 public:
-
-//	typedef CellMarkerGen Inherit;
-	typedef CellMarker_T<MAP, ORBIT> Self;
-	typedef MAP Map;
-
-	static const unsigned int CHUNKSIZE = Map::CHUNKSIZE;
-
-	typedef ChunkArray<CHUNKSIZE, bool> ChunkArrayBool;
+	static const unsigned int CHUNKSIZE = MAP::CHUNKSIZE;
+	using Self = CellMarker_T<MAP, ORBIT>;
+	using Map = MAP;
+	using ChunkArrayBool = ChunkArray<CHUNKSIZE, bool>;
 
 protected:
 
@@ -154,9 +150,7 @@ public:
 	typedef CellMarker_T<MAP, ORBIT> Inherit;
 	typedef CellMarkerStore< MAP, ORBIT > Self;
 
-	typedef typename Inherit::Orbit Orbit;
 	typedef typename Inherit::Map Map;
-	typedef typename Inherit::ProcessedCell ProcessedCell;
 
 protected:
 
@@ -191,7 +185,7 @@ public:
 	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
-		for (unsigned int i : marked_cells_)
+		for (unsigned int i : *(this->marked_cells_))
 			this->mark_attribute_->set_false(i);
 		marked_cells_->clear();
 	}

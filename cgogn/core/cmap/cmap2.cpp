@@ -22,17 +22,24 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#define CORE_MAP_MAP2_CPP_
 
-#include <core/container/chunk_array_container.h>
+#include <core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
-
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+	template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI21>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI2>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI1>;
+	template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI21>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI2>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
 
 } // namespace cgogn
