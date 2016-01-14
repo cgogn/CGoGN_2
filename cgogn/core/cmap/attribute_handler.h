@@ -26,7 +26,7 @@
 
 #include <core/cmap/map_base.h>
 #include <core/basic/cell.h>
-#include <utils/assert.h>
+#include <core/utils/assert.h>
 
 ///TODO ajouter enregistrement dans la map de la carte.
 

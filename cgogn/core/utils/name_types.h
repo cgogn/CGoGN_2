@@ -28,8 +28,8 @@
 #include <vector>
 #include <list>
 #include <array>
-#include <utils/dll.h>
-#include <utils/definitions.h>
+#include <core/utils/dll.h>
+#include <core/utils/definitions.h>
 
 namespace Eigen
 {

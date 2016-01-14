@@ -26,8 +26,8 @@
 
 #include <string>
 #include <tuple>
-#include <utils/dll.h>
-#include <utils/definitions.h>
+#include <core/utils/dll.h>
+#include <core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
 #define __func__ __FUNCTION__

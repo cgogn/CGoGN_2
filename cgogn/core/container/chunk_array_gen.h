@@ -28,9 +28,9 @@
 #include <iostream>
 #include <algorithm>
 
-#include <utils/serialization.h>
+#include <core/utils/serialization.h>
 #include <core/basic/dll.h>
-#include <core/map/map_traits.h>
+#include <core/cmap/map_traits.h>
 
 namespace cgogn
 {

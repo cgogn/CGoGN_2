@@ -19,7 +19,7 @@ add_executable(chunk_array2 chunk_array2.cpp)
 target_link_libraries(chunk_array2 cgogn_core)
 
 
-install(TARGETS test_chunk_array
+install(TARGETS chunk_array
         EXPORT ${PROJECT_NAME}Targets
         RUNTIME DESTINATION "bin/test"
            )

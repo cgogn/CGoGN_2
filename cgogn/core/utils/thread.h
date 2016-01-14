@@ -24,8 +24,8 @@
 #ifndef UTILS_THREAD_H_
 #define UTILS_THREAD_H_
 
-#include <utils/buffers.h>
-#include <utils/dll.h>
+#include <core/utils/buffers.h>
+#include <core/utils/dll.h>
 
 namespace cgogn
 {

@@ -100,8 +100,6 @@ using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
-<<<<<<< HEAD:cgogn/core/cmap/cmap2_builder.h
-#endif // CORE_CMAP_CMAP2_MODIFIER_H_
-=======
+
 #endif // CORE_MAP_MAP2_BUILDER_H_
->>>>>>> 1061eb04b2d491f6d327d964093a34d2e83a09bc:cgogn/core/map/cmap2_builder.h
+

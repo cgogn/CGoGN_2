@@ -28,6 +28,7 @@
 
 namespace cgogn
 {
+
 	template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
@@ -40,4 +41,5 @@ namespace cgogn
 	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI2>;
 	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1>;
 	template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
-}
+
+} // namespace cgogn

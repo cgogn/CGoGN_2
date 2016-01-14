@@ -9,12 +9,6 @@ set(HEADER_FILES
 	basic/cell.h
 	basic/cell_marker.h
 
-	container/chunk_array_container.h
-	container/chunk_array_factory.h
-	container/chunk_array_gen.h
-	container/chunk_array.h
-	container/chunk_stack.h
-
 	cmap/map_traits.h
 	cmap/map_base_data.h
 	cmap/map_base.h
@@ -24,6 +18,12 @@ set(HEADER_FILES
 	cmap/cmap2_builder.h
 	cmap/cmap3.h
 	cmap/attribute_handler.h
+
+	container/chunk_array_container.h
+	container/chunk_array_factory.h
+	container/chunk_array_gen.h
+	container/chunk_array.h
+	container/chunk_stack.h
 
 	utils/assert.h
 	utils/buffers.h
@@ -39,18 +39,18 @@ set(SOURCE_FILES
 	#basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
+	cmap/map_base_data.cpp
+	cmap/cmap1.cpp
+	cmap/cmap2.cpp
+	cmap/cmap3.cpp
+	cmap/cmap2_builder.cpp
+
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
 	container/chunk_array.cpp
 	container/chunk_stack.cpp
 	container/chunk_array_container.cpp
 	container/chunk_array_factory.cpp
-
-	cmap/map_base_data.cpp
-	cmap/cmap1.cpp
-	cmap/cmap2.cpp
-	cmap/cmap3.cpp
-	cmap/cmap2_builder.cpp
 
 	utils/assert.cpp
 	utils/thread.cpp
@@ -66,8 +66,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}/src>
-	$<INSTALL_INTERFACE:include/cgogn/cgogn_core>
+	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
+	$<INSTALL_INTERFACE:include/cgogn/core>
 )
 
 add_subdirectory(examples)

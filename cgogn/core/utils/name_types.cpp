@@ -23,7 +23,7 @@
 
 #define CGOGN_UTILS_DLL_EXPORT
 
-#include <utils/name_types.h>
+#include <core/utils/name_types.h>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Core>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF

@@ -29,8 +29,8 @@
 #include <list>
 #include <array>
 
-#include <utils/assert.h>
-#include <utils/dll.h>
+#include <core/utils/assert.h>
+#include <core/utils/dll.h>
 
 namespace cgogn
 {

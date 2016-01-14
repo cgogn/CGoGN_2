@@ -28,5 +28,7 @@
 
 namespace cgogn
 {
+
 	template class CGOGN_CORE_API ChunkArrayGen<DefaultMapTraits::CHUNK_SIZE>;
-}
+
+} // namespace cgogn

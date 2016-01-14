@@ -24,11 +24,11 @@
 #ifndef CORE_CMAP_MAP_BASE_DATA_H_
 #define CORE_CMAP_MAP_BASE_DATA_H_
 
-#include <utils/definitions.h>
-#include <utils/thread.h>
+#include <core/utils/definitions.h>
+#include <core/utils/thread.h>
 #include <core/container/chunk_array_container.h>
 #include <core/basic/cell.h>
-#include <core/map/map_traits.h>
+#include <core/cmap/map_traits.h>
 
 #include <thread>
 #include <mutex>

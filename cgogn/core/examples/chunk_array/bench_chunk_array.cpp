@@ -1,6 +1,6 @@
 
 #include <core/container/chunk_array_container.h>
-#include <utils/serialization.h>
+#include <core/utils/serialization.h>
 #define BLK_SZ 4096
 
 using namespace cgogn;
