@@ -386,14 +386,38 @@ public:
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::VERTEX> marker(*this);
+		marker.mark(v);
+		foreach_incident_face(v, [&] (Face inc_face)
+		{
+			foreach_incident_vertex(inc_face, [&] (Vertex vertex_of_face)
+			{
+				if (!marker.is_marked(vertex_of_face))
+				{
+					marker.mark(vertex_of_face);
+					f(vertex_of_face);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_volume(Vertex v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::VERTEX> marker(*this);
+		marker.mark(v);
+		foreach_incident_volume(v, [&] (Volume inc_vol)
+		{
+			foreach_incident_vertex(inc_vol, [&] (Vertex inc_vert)
+			{
+				if (!marker.is_marked(inc_vert))
+				{
+					marker.mark(inc_vert);
+					f(inc_vert);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
@@ -414,21 +438,57 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::EDGE> marker(*this);
+		marker.mark(e);
+		foreach_incident_face(e, [&] (Face inc_face)
+		{
+			foreach_incident_edge(inc_face, [&] (Edge inc_edge)
+			{
+				if (!marker.is_marked(inc_edge))
+				{
+					marker.mark(inc_edge);
+					f(inc_edge);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_volume(Edge e, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::EDGE> marker(*this);
+		marker.mark(e);
+		foreach_incident_volume(e, [&] (Volume inc_vol)
+		{
+			foreach_incident_edge(inc_vol, [&] (Edge inc_edge)
+			{
+				if (!marker.is_marked(inc_edge))
+				{
+					marker.mark(inc_edge);
+					f(inc_edge);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::FACE> marker(*this);
+		marker.mark(f);
+		foreach_incident_vertex(f, [&] (Vertex v)
+		{
+			foreach_incident_face(f, [&](Face inc_fac)
+			{
+				if (!marker.is_marked(inc_fac))
+				{
+					marker.mark(inc_fac);
+					f(inc_fac);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
@@ -449,28 +509,82 @@ public:
 	inline void foreach_adjacent_face_through_volume(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::FACE> marker(*this);
+		marker.mark(f);
+		foreach_incident_face<VOLUME>(f.dart, [&] (Face inc_face)
+		{
+			if (!marker.is_marked(inc_face))
+			{
+				marker.mark((inc_face));
+				f(inc_face);
+			}
+		});
+
+		foreach_incident_face<VOLUME>(phi3(f), [&] (Face inc_face)
+		{
+			if (!marker.is_marked(inc_face))
+			{
+				marker.mark((inc_face));
+				f(inc_face);
+			}
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_vertex(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::VOLUME> marker(*this);
+		marker.mark(v);
+		foreach_incident_vertex(v, [&] (Vertex inc_vert)
+		{
+			foreach_incident_volume(inc_vert, [&](Volume inc_vol)
+			{
+				if (!marker.is_marked(inc_vol))
+				{
+					marker.mark(inc_vol);
+					f(inc_vol);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_edge(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::VOLUME> marker(*this);
+		marker.mark(v);
+		foreach_incident_edge(v, [&] (Edge inc_edge)
+		{
+			foreach_incident_volume(inc_edge, [&] (Volume inc_vol)
+			{
+				if (!marker.is_marked(inc_vol))
+				{
+					marker.mark(inc_vol);
+					f(inc_vol);
+				}
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_face(Volume v, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		// TODO
+		CellMarker<Self::VOLUME> marker(*this);
+		marker.mark(v);
+		foreach_incident_face(v, [&] (Edge inc_face)
+		{
+			foreach_incident_volume(inc_face, [&] (Volume inc_vol)
+			{
+				if (!marker.is_marked(inc_vol))
+				{
+					marker.mark(inc_vol);
+					f(inc_vol);
+				}
+			});
+		});
 	}
 
 protected:
