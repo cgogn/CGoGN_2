@@ -76,14 +76,8 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
-//	using DartMarker = typename Inherit::DartMarker;
-//	using DartMarkerStore = typename Inherit::DartMarkerStore;
-
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
-
-//	template <Orbit ORBIT>
-//	using CellMarker = typename Inherit::template CellMarker<ORBIT>;
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
