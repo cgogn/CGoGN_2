@@ -25,6 +25,9 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
+	cph/attribute_handler_cph.h  
+	cph/ihcmap2.h
+
 	utils/assert.h
 	utils/buffers.h
 	utils/definitions.h
