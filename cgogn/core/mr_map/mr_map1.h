@@ -24,22 +24,23 @@
 #ifndef CORE_MAP_MAP1_H_
 #define CORE_MAP_MAP1_H_
 
-#include <core/map/map_base.h>
+#include <core/mr_map/mr_map_base.h>
 #include <core/basic/dart.h>
 
 namespace cgogn
 {
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap1_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+class CMap1_T : public MR_MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
 	static const int PRIM_SIZE = 1;
+	static const unsigned int NB_LEVELS = MAP_TRAITS::NB_LEVELS;
 
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef MR_MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
@@ -75,13 +76,15 @@ public:
 
 protected:
 
-	ChunkArray<Dart>* phi1_;
-	ChunkArray<Dart>* phi_1_;
+	ChunkArray<Dart>* phi1_[NB_LEVELS];
+	ChunkArray<Dart>* phi_1_[NB_LEVELS];
 
 	void init()
 	{
-		phi1_ = this->topology_.template add_attribute<Dart>("phi1");
-		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
+		for (unsigned int l = 0; l < NB_LEVELS; ++l) {
+			phi1_[l] = this->topology_[l].template add_attribute<Dart>("phi1");
+			phi_1_[l] = this->topology_[l].template add_attribute<Dart>("phi_1");
+		}
 	}
 
 	/*******************************************************************************
@@ -102,10 +105,10 @@ protected:
 	{
 		Dart f = phi1(d);
 		Dart g = phi1(e);
-		(*phi1_)[d.index] = g;
-		(*phi1_)[e.index] = f;
-		(*phi_1_)[g.index] = d;
-		(*phi_1_)[f.index] = e;
+		(*phi1_[current_level_])[d.index] = g;
+		(*phi1_[current_level_])[e.index] = f;
+		(*phi_1_[current_level_])[g.index] = d;
+		(*phi_1_[current_level_])[f.index] = e;
 	}
 
 	/**
@@ -118,10 +121,10 @@ protected:
 	{
 		Dart e = phi1(d);
 		Dart f = phi1(e);
-		(*phi1_)[d.index] = f;
-		(*phi1_)[e.index] = e;
-		(*phi_1_)[f.index] = d;
-		(*phi_1_)[e.index] = e;
+		(*phi1_[current_level_])[d.index] = f;
+		(*phi1_[current_level_])[e.index] = e;
+		(*phi_1_[current_level_])[f.index] = d;
+		(*phi_1_[current_level_])[e.index] = e;
 	}
 
 public:
@@ -150,7 +153,7 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		return (*phi1_)[d.index];
+		return (*phi1_[current_level_])[d.index];
 	}
 
 	/**
@@ -160,7 +163,7 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		return (*phi_1_)[d.index];
+		return (*phi_1_[current_level_])[d.index];
 	}
 
 protected:
@@ -175,8 +178,8 @@ protected:
 
 		Dart d(di);
 
-		(*phi1_)[di] = d;
-		(*phi_1_)[di] = d;
+		(*phi1_[current_level_])[di] = d;
+		(*phi_1_[current_level_])[di] = d;
 
 		return d;
 	}

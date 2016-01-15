@@ -25,10 +25,12 @@
 #define CORE_MAP_MAP_BASE_DATA_H_
 
 #include <core/container/chunk_array_container.h>
-#include <utils/definitions.h>
+#include <core/utils/definitions.h>
+#include <core/utils/thread.h>
 #include <core/basic/cell.h>
 
-#include <utils/thread.h>
+// TODO Pour MapGen => Besoin de MR_MapGen ?
+#include <core/cmap/map_base_data.h>
 
 #include <thread>
 #include <mutex>
@@ -39,58 +41,24 @@
 namespace cgogn
 {
 
-/**
- * @brief Generic Map class
- */
-class CGOGN_CORE_API MapGen
+struct DefaultMR_MapTraits : DefaultMapTraits
 {
-public:
-
-	typedef MapGen Self;
-
-protected:
-
-	/// vector of Map instances
-	static std::vector<MapGen*>* instances_;
-	static bool init_CA_factory;
-
-public:
-
-	MapGen();
-
-	virtual ~MapGen();
-
-	MapGen(MapGen const&) = delete;
-	MapGen(MapGen &&) = delete;
-	MapGen& operator=(MapGen const&) = delete;
-	MapGen& operator=(MapGen &&) = delete;
-
-	static inline bool is_alive(MapGen* map)
-	{
-		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
-	}
-};
-
-
-struct DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-	using Real = double;
-	using Vec3 = std::array<Real, 3>;
+	static const unsigned int NB_LEVELS = 16;
 };
 
 /**
  * @brief The MapBaseData class
  */
 template <typename MAP_TRAITS>
-class MapBaseData : public MapGen
+class MR_MapBaseData : public MapGen
 {
 public:
 
 	typedef MapGen Inherit;
-	typedef MapBaseData<MAP_TRAITS> Self;
+	typedef MR_MapBaseData<MAP_TRAITS> Self;
 
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const unsigned int NB_LEVELS = MAP_TRAITS::NB_LEVELS;
 
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 
@@ -102,51 +70,58 @@ public:
 
 protected:
 
+	/// current level of resolution
+	unsigned int current_level_;
+
 	/// topology & embedding indices
-	ChunkArrayContainer<unsigned char> topology_;
+	ChunkArrayContainer<unsigned char> topology_[NB_LEVELS];
 
 	/// per orbit attributes
-	ChunkArrayContainer<unsigned int> attributes_[NB_ORBITS];
+	ChunkArrayContainer<unsigned int> attributes_[NB_LEVELS][NB_ORBITS];
 
 	/// embedding indices shortcuts
-	ChunkArray<unsigned int>* embeddings_[NB_ORBITS];
+	ChunkArray<unsigned int>* embeddings_[NB_LEVELS][NB_ORBITS];
 
 	/// boundary markers shortcuts
 	ChunkArray<bool>* boundary_markers_[2];
 	// TODO: ?? store in a std::vector ?
+	// TODO: Do we need disctinct markers for each MR levels ?
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_THREADS];
-	std::mutex mark_attributes_topology_mutex_;
+	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_LEVELS][NB_THREADS];
+	std::mutex mark_attributes_topology_mutex_[NB_LEVELS];
 
 	/// vector of available mark attributes per orbit per thread on attributes containers
-	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
-	std::mutex mark_attributes_mutex_[NB_ORBITS];
+	std::vector<ChunkArray<bool>*> mark_attributes_[NB_LEVELS][NB_ORBITS][NB_THREADS];
+	std::mutex mark_attributes_mutex_[NB_LEVELS][NB_ORBITS];
 
 	/// vector of thread ids known by the map that can pretend to data such as mark vectors
 	std::vector<std::thread::id> thread_ids_;
 
 	/// global topo cache shortcuts
-	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
+	ChunkArray<Dart>* global_topo_cache_[NB_LEVELS][NB_ORBITS];
 
 public:
 
-	MapBaseData() : Inherit()
+	MR_MapBaseData() : Inherit(), current_level_(0)
 	{
 		if (init_CA_factory)
 		{
 			ChunkArrayFactory<CHUNKSIZE>::reset();
 			init_CA_factory = false;
 		}
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
-		{
-			embeddings_[i] = nullptr;
-			global_topo_cache_[i] = nullptr;
-			for (unsigned int j = 0; j < NB_THREADS; ++j)
-				mark_attributes_[i][j].reserve(8);
+
+		for (unsigned int l = 0; l < NB_LEVELS; ++l) {
+			for (unsigned int i = 0; i < NB_ORBITS; ++i)
+			{
+				embeddings_[l][i] = nullptr;
+				global_topo_cache_[l][i] = nullptr;
+				for (unsigned int j = 0; j < NB_THREADS; ++j)
+					mark_attributes_[l][i][j].reserve(8);
+			}
+			for (unsigned int i = 0; i < NB_THREADS; ++i)
+				mark_attributes_topology_[l][i].reserve(8);
 		}
-		for (unsigned int i = 0; i < NB_THREADS; ++i)
-			mark_attributes_topology_[i].reserve(8);
 
 		thread_ids_.reserve(NB_THREADS + 1);
 		thread_ids_.push_back(std::this_thread::get_id());
@@ -169,13 +144,13 @@ protected:
 	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return attributes_[orbit];
+		return attributes_[current_level_][orbit];
 	}
 
 	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return attributes_[orbit];
+		return attributes_[current_level_][orbit];
 	}
 
 	/*******************************************************************************
@@ -189,16 +164,16 @@ protected:
 	inline ChunkArray<bool>* get_topology_mark_attribute()
 	{
 		unsigned int thread = this->get_current_thread_index();
-		if (!this->mark_attributes_topology_[thread].empty())
+		if (!this->mark_attributes_topology_[current_level_][thread].empty())
 		{
-			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
-			this->mark_attributes_topology_[thread].pop_back();
+			ChunkArray<bool>* ca = this->mark_attributes_topology_[current_level_][thread].back();
+			this->mark_attributes_topology_[current_level_][thread].pop_back();
 			return ca;
 		}
 		else
 		{
-			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_[current_level_]);
+			ChunkArray<bool>* ca = this->topology_[current_level_].add_marker_attribute();
 			return ca;
 		}
 	}
@@ -210,10 +185,24 @@ protected:
 	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
 	{
 		unsigned int thread = this->get_current_thread_index();
-		this->mark_attributes_topology_[thread].push_back(ca);
+		this->mark_attributes_topology_[current_level_][thread].push_back(ca);
 	}
 
 public:
+
+	/*******************************************************************************
+	 * Level of resolution management
+	 *******************************************************************************/
+
+	inline void current_level_inc() {
+		cgogn_message_assert(current_level_+1 < NB_LEVELS,"No more MR level left");
+		++current_level_;
+	}
+
+	inline void current_level_dec() {
+		cgogn_message_assert(current_level_ > 0,"First MR level alrady reached");
+		--current_level_;
+	}
 
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management
@@ -223,7 +212,7 @@ public:
 	inline bool is_orbit_embedded() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return embeddings_[ORBIT] != nullptr;
+		return embeddings_[current_level_][ORBIT] != nullptr;
 	}
 
 	template <Orbit ORBIT>
@@ -232,7 +221,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		return (*embeddings_[ORBIT])[c.dart.index];
+		return (*embeddings_[current_level_][ORBIT])[c.dart.index];
 	}
 
 protected:
@@ -243,8 +232,8 @@ protected:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		this->attributes_[ORBIT].ref_line(emb);     // ref the new emb
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+		this->attributes_[current_level_][ORBIT].ref_line(emb);     // ref the new emb
+		(*this->embeddings_[current_level_][ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
 
 	template <Orbit ORBIT>
@@ -257,10 +246,10 @@ protected:
 
 		if (old == emb)	return;
 
-		this->attributes_[ORBIT].unref_line(old); // unref the old emb
-		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
+		this->attributes_[current_level_][ORBIT].unref_line(old); // unref the old emb
+		this->attributes_[current_level_][ORBIT].ref_line(emb);   // ref the new emb
 
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+		(*this->embeddings_[current_level_][ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
 
 	/*******************************************************************************
