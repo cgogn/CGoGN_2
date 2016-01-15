@@ -182,7 +182,7 @@ int test5()
 	for(unsigned int i = container.begin(); i < container.end(); i += 9)
 		container.remove_lines<1>(i);
 
-	int  total = 0;
+	unsigned int  total = 0;
 	for (unsigned int j = 0; j < 50; ++j)
 	{
 		for(unsigned int i = container.begin(); i != container.end(); container.next(i))

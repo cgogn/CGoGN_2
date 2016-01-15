@@ -24,6 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
+#include <core/utils/make_unique.h>
 #include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 
@@ -31,8 +32,6 @@
 #include <map>
 #include <memory>
 #include <array>
-#include <core/utils/make_unique.h>
-#include <core/cmap/map_traits.h>
 
 namespace cgogn
 {
@@ -41,7 +40,7 @@ template <unsigned int CHUNKSIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
-	static_assert((CHUNKSIZE >= 1u) & !(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
+	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
@@ -124,7 +123,7 @@ bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayFactory<DefaultMapTraits::CHUNK_SIZE>;
+extern template class CGOGN_CORE_API ChunkArrayFactory<DEFAULT_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 
 } // namespace cgogn

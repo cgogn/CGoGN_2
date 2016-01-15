@@ -686,10 +686,11 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, bool>;
-extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
-extern template class CGOGN_CORE_API ChunkArray<DefaultMapTraits::CHUNK_SIZE, DefaultMapTraits::Vec3>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float, 3>>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<double, 3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn

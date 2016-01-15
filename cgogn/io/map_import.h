@@ -35,15 +35,15 @@ namespace cgogn
 namespace io
 {
 
-template<class MAP_TRAITS>
+template<typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
 
-template<class MAP_TRAITS>
+template<typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
 	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
 	SurfaceImport si;
-	si.import_file(filename);
+	si.template import_file<VEC3>(filename);
 	si.create_map(cmap2);
 }
 
