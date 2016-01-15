@@ -26,7 +26,7 @@
 
 #include <core/utils/definitions.h>
 #include <core/basic/dart.h>
-#include <core/basic/cell.h>
+#include <core/basic/cell_handle.h>
 
 #include <vector>
 #include <type_traits>

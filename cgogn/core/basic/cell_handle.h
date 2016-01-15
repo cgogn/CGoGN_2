@@ -77,7 +77,7 @@ inline std::string orbit_name(Orbit orbit)
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
 template <Orbit ORBIT>
-class Cell
+class CellHandle
 {
 public:
 
@@ -89,14 +89,14 @@ public:
 	/**
 	 * \brief Creates a new empty Cell as a nil dart.
 	 */
-	inline Cell() : dart()
+	inline CellHandle() : dart()
 	{}
 
 	/**
 	 * \brief Creates a new Cell with a dart. 
 	 * \param[in] d dart to convert to a cell of a given orbit
 	 */
-	inline Cell(Dart d) : dart(d)
+	inline CellHandle(Dart d) : dart(d)
 	{}
 
 	/**
@@ -104,7 +104,7 @@ public:
 	 * Creates a new Cell from an another one.
 	 * \param[in] c a cell
 	 */
-	inline Cell(const Cell<ORBIT>& c) : dart(c.dart)
+	inline CellHandle(const CellHandle<ORBIT>& c) : dart(c.dart)
 	{}
 
 	//TODO
@@ -129,12 +129,12 @@ public:
 	 * \param[in] rhs the cell to assign
 	 * \return The cell with the assigned value
 	 */
-	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
+	CellHandle<ORBIT> operator=(CellHandle<ORBIT> rhs) { dart = rhs.dart; return *this; }
 
 
-	inline bool operator==(Cell<ORBIT> other_cell) const { return dart == other_cell.dart; }
-	inline bool operator!=(Cell<ORBIT> other_cell) const { return dart != other_cell.dart; }
-	inline bool operator <(Cell<ORBIT> other_cell) const { return dart <  other_cell.dart; }
+	inline bool operator==(CellHandle<ORBIT> other_cell) const { return dart == other_cell.dart; }
+	inline bool operator!=(CellHandle<ORBIT> other_cell) const { return dart != other_cell.dart; }
+	inline bool operator <(CellHandle<ORBIT> other_cell) const { return dart <  other_cell.dart; }
 
 	//TODO
 	// Cell<ORBIT> operator=(Cell<ORBIT>&& rhs) { dart = rhs.dart return *this; }
@@ -144,14 +144,14 @@ public:
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the cell to print
 	 */
-	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& rhs) { return out << rhs.dart; }
+	friend std::ostream& operator<<(std::ostream &out, const CellHandle<ORBIT>& rhs) { return out << rhs.dart; }
 
 	/**
 	 * \brief Reads a cell from a stream.
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the cell read
 	 */
-	friend std::istream& operator>>(std::istream &in, Cell<ORBIT>& rhs) { in >> rhs.dart; return in; }
+	friend std::istream& operator>>(std::istream &in, CellHandle<ORBIT>& rhs) { in >> rhs.dart; return in; }
 };
 
 } // namespace cgogn
