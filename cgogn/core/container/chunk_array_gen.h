@@ -24,16 +24,17 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
+#include <core/utils/serialization.h>
+#include <core/basic/dll.h>
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
-#include <core/utils/serialization.h>
-#include <core/basic/dll.h>
-#include <core/cmap/map_traits.h>
-
 namespace cgogn
 {
+
+static const unsigned int DEFAULT_CHUNK_SIZE = 4096;
 
 /**
  * @brief Virtual version of ChunkArray
@@ -180,7 +181,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayGen<DefaultMapTraits::CHUNK_SIZE>;
+extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn

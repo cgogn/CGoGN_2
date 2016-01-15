@@ -32,7 +32,6 @@
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
-#include <core/cmap/map_traits.h>
 
 #include <iostream>
 #include <fstream>
