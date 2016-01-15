@@ -358,6 +358,29 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Topological information
+	 *******************************************************************************/
+
+	/**
+	 * \brief return true if c1 and c2 represent the same cell, i.e. contain darts of the same orbit
+	 * @tparam ORBIT considered orbit
+	 * @param c1 first cell to compare
+	 * @param c2 second cell to compare
+	 */
+	template <Orbit ORBIT>
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2)
+	{
+		ConcreteMap* cmap = to_concrete();
+		bool result = false;
+		cmap->template foreach_dart_of_orbit<ORBIT>(c1, [&] (Dart d)
+		{
+			if (d == c2.dart)
+				result = true;
+		});
+		return result;
+	}
+
+	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
 
@@ -479,7 +502,6 @@ public:
 		}
 	}
 
-
 	/**
 	 * \brief apply a function on each orbit of the map and stops when the function returns false
 	 * @tparam ORBIT orbit to traverse
@@ -501,11 +523,11 @@ public:
 				foreach_cell_until_cell_marking<ORBIT>(f);
 				break;
 			case FORCE_TOPO_CACHE :
-				foreach_cell_topo_cache<ORBIT>(f);
+				foreach_cell_until_topo_cache<ORBIT>(f);
 				break;
 			case AUTO :
 				if (is_topo_cache_enabled<ORBIT>())
-					foreach_cell_topo_cache<ORBIT>(f);
+					foreach_cell_until_topo_cache<ORBIT>(f);
 				else if (this->template is_orbit_embedded<ORBIT>())
 					foreach_cell_until_cell_marking<ORBIT>(f);
 				else
