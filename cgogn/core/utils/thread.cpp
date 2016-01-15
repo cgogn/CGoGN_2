@@ -21,18 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#define CGOGN_UTILS_DLL_EXPORT
 
-#include <core/container/chunk_array_container.h>
+#include <core/utils/thread.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
+CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+CGOGN_UTILS_API void thread_start()
+{
+	if (dart_buffers_thread == nullptr)
+		dart_buffers_thread = new Buffers<Dart>();
+
+	if (uint_buffers_thread == nullptr)
+		uint_buffers_thread = new Buffers<unsigned int>();
+}
+
+CGOGN_UTILS_API void thread_stop()
+{
+	delete dart_buffers_thread;
+	delete uint_buffers_thread;
+	dart_buffers_thread = nullptr;
+	uint_buffers_thread = nullptr;
+}
+
+CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
+{
+	return dart_buffers_thread;
+}
+
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
+{
+	return uint_buffers_thread;
+}
 
 } // namespace cgogn

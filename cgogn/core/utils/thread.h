@@ -21,18 +21,37 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#ifndef UTILS_THREAD_H_
+#define UTILS_THREAD_H_
 
-#include <core/container/chunk_array_container.h>
+#include <core/utils/buffers.h>
+#include <core/utils/dll.h>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+/**
+ * \brief The maximum nunmber of threads created by the API.
+ */
+const unsigned int NB_THREADS = 8u;
 
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+/// buffers of pre-allocated vectors of dart or unsigned int
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
+extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+
+/**
+ * @brief function to call at begin of each thread which use a map
+ */
+CGOGN_UTILS_API void thread_start();
+
+/**
+ * @brief function to call at end of each thread which use a map
+ */
+CGOGN_UTILS_API void thread_stop();
+
+CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
+CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
 
 } // namespace cgogn
+
+#endif // UTILS_THREAD_H_

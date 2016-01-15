@@ -28,7 +28,9 @@
 #include <iostream>
 #include <algorithm>
 
-#include <utils/serialization.h>
+#include <core/utils/serialization.h>
+#include <core/basic/dll.h>
+#include <core/cmap/map_traits.h>
 
 namespace cgogn
 {
@@ -43,7 +45,11 @@ public:
 
 	typedef ChunkArrayGen<CHUNKSIZE> Self;
 
-	ChunkArrayGen() = default;
+	inline ChunkArrayGen()
+	{
+
+	}
+
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
 	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
@@ -172,6 +178,10 @@ public:
 		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayGen<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn
 

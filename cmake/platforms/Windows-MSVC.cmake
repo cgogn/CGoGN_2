@@ -4,4 +4,5 @@ string(REGEX REPLACE "/W[0-9]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # C4127 - conditional expression is constant
 # C4714 - marked as __forceinline but not inlined
 # C4505 - unreferenced local function has been removed (impossible to deactive selectively)
-add_flags(${CMAKE_CXX_FLAGS} "/EHsc /wd4127 /wd4505 /wd4714")
+# C4910 - __declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
+add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910")
