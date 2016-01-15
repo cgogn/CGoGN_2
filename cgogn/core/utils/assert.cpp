@@ -21,18 +21,54 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#define CGOGN_UTILS_DLL_EXPORT
 
-#include <core/container/chunk_array_container.h>
+#include <core/utils/dll.h>
+#include <core/utils/assert.h>
+#include <iostream>
+#include <sstream>
+#include <cstdlib>
 
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+	const std::string& expression,
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+)
+{
+	std::ostringstream os;
+	os << "Assertion failed: " << expression;
+	if (message.empty())
+		os << ".\n";
+	else
+		os << " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " << function_name << ", line: " << line_number;
 
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DefaultMapTraits::CHUNK_SIZE, unsigned char>;
+	std::cerr << os.str() << std::endl;
+	std::abort();
+}
+
+CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
+	const std::string& message,
+	const std::string& file_name,
+	const std::string& function_name,
+	int line_number
+)
+{
+ 	std::ostringstream os;
+	os << "Should not have reached this point";
+	if (message.empty())
+		os << ".\n";
+	else
+		os << " (" << message << ").\n";
+	os << "file: " << file_name << ", function: " << function_name << ", line: " << line_number;
+
+	std::cerr << os.str() << std::endl;
+	std::abort();
+}
 
 } // namespace cgogn
