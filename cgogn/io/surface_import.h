@@ -74,8 +74,6 @@ public:
 
 	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
-//	using Vec3 = typename MAP_TRAITS::Vec3;
-
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
 	unsigned int nb_faces_;
