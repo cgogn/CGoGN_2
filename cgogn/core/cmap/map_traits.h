@@ -25,13 +25,14 @@
 #define CORE_MAP_MAP_TRAITS_H_
 
 #include <array>
+#include <core/container/chunk_array_gen.h>
 
 namespace cgogn
 {
 
 struct DefaultMapTraits
 {
-	static const unsigned int CHUNK_SIZE = 4096;
+	static const unsigned int CHUNK_SIZE = DEFAULT_CHUNK_SIZE;
 	using Real = double;
 	using Vec3 = std::array<Real, 3>;
 };
