@@ -35,7 +35,7 @@ if (NOT MSVC)
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)
 
-	if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+	if(NOT (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
 		set(FULL_WARNINGS
 			${NORMAL_WARNINGS}
 			-pedantic
