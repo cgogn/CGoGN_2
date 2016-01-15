@@ -372,10 +372,14 @@ public:
 	{
 		ConcreteMap* cmap = to_concrete();
 		bool result = false;
-		cmap->template foreach_dart_of_orbit<ORBIT>(c1, [&] (Dart d)
+		cmap->template foreach_dart_of_orbit_until<ORBIT>(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
+			{
 				result = true;
+				return false;
+			}
+			return true;
 		});
 		return result;
 	}
