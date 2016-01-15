@@ -16,11 +16,11 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 struct MyMapTraits : public cgogn::DefaultMapTraits
 {
 	static const unsigned int CHUNK_SIZE = 8192;
-	using Vec3 = Eigen::Vector3d;
 };
+
 using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
 
-using Vec3 = Map2::MapTraits::Vec3;
+using Vec3 = Eigen::Vector3d;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	Map2 map;
 	for (int k = 0 ; k < 2 ; ++k)
 	{
-		cgogn::io::import_surface(map,surfaceMesh);
+		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
