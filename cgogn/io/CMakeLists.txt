@@ -50,3 +50,5 @@ target_link_libraries(${PROJECT_NAME} cgogn_core)
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
  )
+
+add_subdirectory(examples)

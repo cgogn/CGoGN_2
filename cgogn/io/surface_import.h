@@ -74,8 +74,6 @@ public:
 
 	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
-	using Vec3 = typename MAP_TRAITS::Vec3;
-
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
 	unsigned int nb_faces_;
@@ -111,11 +109,13 @@ public:
 		vertex_attributes_.remove_attributes();
 	}
 
+	template <typename VEC3>
 	bool import_file(const std::string& filename)
 	{
-		return import_file(filename, get_file_type(filename));
+		return import_file<VEC3>(filename, get_file_type(filename));
 	}
 
+	template <typename VEC3>
 	bool import_file(const std::string& filename, SurfaceFileType type)
 	{
 		clear();
@@ -135,10 +135,10 @@ public:
 			result = false;
 			break;
 		case SurfaceFileType_OFF :
-			result = import_OFF(fp);
+			result = import_OFF<VEC3>(fp);
 			break;
 		case SurfaceFileType_OBJ :
-			result = import_OBJ(fp);
+			result = import_OBJ<VEC3>(fp);
 			break;
 		}
 
@@ -151,12 +151,12 @@ public:
 	void create_map(Map& map)
 	{
 		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
+		const Orbit VERTEX = Map::VERTEX;
 
 		if (this->nb_vertices_ == 0u)
 			return;
 
 		MapBuilder mbuild(map);
-		const Orbit VERTEX = Map::VERTEX;
 		map.clear_and_remove_attributes();
 
 		mbuild.template create_embedding<VERTEX>();
@@ -253,6 +253,7 @@ public:
 
 protected:
 
+	template <typename VEC3>
 	bool import_OFF(std::ifstream& fp)
 	{
 		std::string line;
@@ -278,8 +279,8 @@ protected:
 			oss >> nb_faces_;
 			oss >> nb_edges_;
 		}
-		ChunkArray<Vec3>* position =
-			vertex_attributes_.template add_attribute<Vec3>("position");
+		ChunkArray<VEC3>* position =
+			vertex_attributes_.template add_attribute<VEC3>("position");
 
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
@@ -299,7 +300,7 @@ protected:
 			oss >> y;
 			oss >> z;
 
-			Vec3 pos{x, y, z};
+			VEC3 pos{x, y, z};
 
 			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
@@ -333,10 +334,11 @@ protected:
 		return true;
 	}
 
+	template <typename VEC3>
 	bool import_OBJ(std::ifstream& fp)
 	{
-		ChunkArray<Vec3>* position =
-			vertex_attributes_.template add_attribute<Vec3>("position");
+		ChunkArray<VEC3>* position =
+			vertex_attributes_.template add_attribute<VEC3>("position");
 
 		std::string line, tag;
 
@@ -362,7 +364,7 @@ protected:
 				oss >> y;
 				oss >> z;
 
-				Vec3 pos{x, y, z};
+				VEC3 pos{x, y, z};
 
 				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
@@ -437,7 +439,6 @@ protected:
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
 extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
-
 
 } // namespace io
 
