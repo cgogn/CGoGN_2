@@ -152,7 +152,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<DefaultMapTraits::CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, unsigned int>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn
