@@ -30,10 +30,10 @@
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
-	template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned int>;
-	template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
-	template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float, 3> >;
-	template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<double, 3> >;
+template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
+template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned int>;
+template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
+template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float, 3>>;
+template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<double, 3>>;
 
 } // namespace cgogn
