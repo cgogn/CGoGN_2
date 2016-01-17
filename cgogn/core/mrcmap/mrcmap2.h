@@ -27,12 +27,168 @@
 #include <core/map/cmap2.h>
 #include <deque>
 #include <stack>
+#include <array>
 
 namespace cgogn
 {
 
+
+template <typename MAP_TRAITS>
+class MapBaseMRData: public MapGen
+{
+
+public:
+	typedef MapGen Inherit;
+	typedef MapBaseMRData<MAP_TRAITS> Self;
+
+	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+
+	template<typename T_REF>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	template<typename T>
+	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+
+
+protected:
+
+	/// per level topology & embedding indices
+	std::deque<ChunkArrayContainer<unsigned char>> topology_;
+
+	/// per level per orbit attributes
+	std::deque<std::array<ChunkArrayContainer<unsigned int>, NB_ORBITS>> attributes_;
+
+	/// per level embedding indices shortcuts
+	std::deque<std::array<ChunkArray<unsigned int>*, NB_ORBITS>> embeddings_;
+
+	/// per level boundary markers shortcuts
+	std::deque<std::array<ChunkArray<bool>*,2>> boundary_markers_;
+
+
+	/// vector of available mark attributes per thread on the topology container
+	std::deque<std::array<std::vector<ChunkArray<bool>*,NB_THREADS>> mark_attributes_topology_;
+	std::mutex mark_attributes_topology_mutex_;
+
+	/// vector of available mark attributes per orbit per thread on attributes containers
+	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
+	std::deque<std::array<std::mutex, NB_ORBITS>> mark_attributes_mutex_;
+
+	/// vector of thread ids known by the map that can pretend to data such as mark vectors
+	std::vector<std::thread::id> thread_ids_;
+
+	/// global topo cache shortcuts
+	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
+
+public:
+	MapBaseMRData() : Inherit()
+	{
+		//TODO
+	}
+
+	~MapBaseMRData() override
+	{}
+
+	MapBaseMRData(Self const&) = delete;
+	MapBaseMRData(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
+protected:
+
+	/*******************************************************************************
+	 * Containers management
+	 *******************************************************************************/
+
+	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit, unsigned int level) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(level < attributes_.size(), "max level reached");
+
+		return attributes_[level][orbit];
+	}
+
+	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit, unsigned int level)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(level < attributes_.size(), "max level reached");
+
+		return attributes_[level][orbit];
+	}
+
+	/*******************************************************************************
+	 * Marking attributes management
+	 *******************************************************************************/
+
+	/**
+	* \brief get a mark attribute on the topology container (from pool or created)
+	* @return a mark attribute on the topology container
+	*/
+	inline ChunkArray<bool>* get_topology_mark_attribute()
+	{
+		unsigned int thread = this->get_current_thread_index();
+		if (!this->mark_attributes_topology_[thread].empty())
+		{
+			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
+			this->mark_attributes_topology_[thread].pop_back();
+			return ca;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
+			return ca;
+		}
+	}
+
+public:
+
+	/*******************************************************************************
+	 * Embedding (orbit indexing) management
+	 *******************************************************************************/
+
+	template <Orbit ORBIT>
+	inline bool is_orbit_embedded(unsigned int level) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[level][ORBIT] != nullptr;
+	}
+
+	template <Orbit ORBIT>
+	inline bool is_orbit_embedded() const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		for(unsigned int i = O ; i < embeddings_.size() ; ++i)
+			if(embeddings_[i][ORBIT] != nullptr)
+				return true;
+		else false;
+	}
+
+	template <Orbit ORBIT>
+	inline unsigned int get_embedding(Cell<ORBIT> c) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		return (*embeddings_[ORBIT])[c.dart.index];
+	}
+
+	template <typename T>
+	inline void add_level_back()
+	{
+		//ajouter une carte par copie dans maps_
+		//ajouter un chunkarray dans next_
+
+		topology_.template add_attribute<T>
+
+		CMap2* last = maps_.back();
+		maps_.emplace_back(last);
+	}
+
+
+};
+
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class MRCMap2_T
+class MRCMap2_T : public MapBaseMRData<MAP_TRAITS>
 {
 public:
 
