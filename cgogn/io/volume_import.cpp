@@ -20,15 +20,9 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_IO_DLL_EXPORT
+#define IO_VOLUME_IMPORT_CPP_
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
-
-#include <string>
-
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap3.h>
-#include <io/surface_import.h>
 #include <io/volume_import.h>
 
 namespace cgogn
@@ -37,34 +31,8 @@ namespace cgogn
 namespace io
 {
 
-template<typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
+template class CGOGN_IO_API VolumeImport<DefaultMapTraits>;
 
-template<typename VEC3, class MAP_TRAITS>
-inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename);
-
-
-
-
-template<typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.template import_file<VEC3>(filename);
-	si.create_map(cmap2);
-}
-
-template<typename VEC3, class MAP_TRAITS>
-inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename)
-{
-	using VolumeImport = VolumeImport<MAP_TRAITS>;
-	VolumeImport vi;
-	vi.template import_file<VEC3>(filename);
-	vi.create_map(cmap3);
-}
 } // namespace io
 
 } // namespace cgogn
-
-#endif // IO_MAP_IMPORT_H_

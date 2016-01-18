@@ -30,7 +30,7 @@
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
 #include <io/dll.h>
-
+#include <core/utils/string.h>
 
 namespace cgogn
 {
@@ -47,9 +47,10 @@ enum SurfaceFileType
 
 inline SurfaceFileType get_file_type(const std::string& filename)
 {
-	if (filename.rfind(".off") != std::string::npos || filename.rfind(".OFF") != std::string::npos)
+	const std::string& extension = to_lower(get_extension(filename));
+	if (extension == "off")
 		return SurfaceFileType_OFF;
-	if (filename.rfind(".obj") != std::string::npos || filename.rfind(".OBJ") != std::string::npos)
+	if (extension == "obj")
 		return SurfaceFileType_OBJ;
 	return SurfaceFileType_UNKNOWN;
 }
