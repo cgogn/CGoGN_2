@@ -33,6 +33,7 @@ set(HEADER_FILES
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
+	utils/string.h
 )
 
 set(SOURCE_FILES
