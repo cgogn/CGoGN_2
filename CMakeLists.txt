@@ -36,7 +36,9 @@ if(${CGOGN_EXTERNAL_TEMPLATES})
 endif()
 
 #### ThirdParty options
+set(CGOGN_THIRDPARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
+option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN" ON)
 option(CGOGN_BUILD_TESTS "build cgogn unit tests using google test framework" ON)
 
 
@@ -77,7 +79,7 @@ if(CGOGN_BUILD_TESTS)
     endif()
 endif(CGOGN_BUILD_TESTS)
 
-add_subdirectory(thirdparty)
+add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
 
