@@ -418,6 +418,89 @@ protected:
 		}
 	}
 
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI21_PHI31_until(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
+
+		marker.mark(d);
+		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		{
+			if (!f((*marked_darts)[i]))
+				break;
+
+			Dart d2 = this->phi2((*marked_darts)[i]);
+			Dart d21 = this->phi1(d2); // turn in volume
+			Dart d23 = phi3(d2); // change volume
+			if(!marker.is_marked(d21))
+				marker.mark(d21);
+			if(!marker.is_marked(d23))
+				marker.mark(d23);
+		}
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI2_PHI3_until(Dart d, const FUNC& f) const
+	{
+		Dart it = d;
+		do
+		{
+			if (!f(it))
+				break;
+			it = this->phi2(it);
+			if (!f(it))
+				break;
+			it = phi3(it);
+		} while (it != d);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI23_until(Dart d, const FUNC& f) const
+	{
+		Dart it = d;
+		do
+		{
+			if (!f(it))
+				break;
+			it = phi3(this->phi2(it));
+		} while (it != d);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI1_PHI3_until(Dart d, const FUNC& f) const
+	{
+		this->foreach_dart_of_PHI1_until(d, [&] (Dart fd) -> bool
+		{
+			if (f(fd))
+				return f(phi3(fd));
+			return false;
+		});
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
+	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
+					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
+					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+					  "Orbit not supported in a CMap3");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
+		switch (ORBIT)
+		{
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c, f); break;
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+		}
+	}
+
 public:
 
 	/*******************************************************************************
