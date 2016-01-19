@@ -114,6 +114,8 @@ struct Dart
 	 */
 	bool operator!=(Dart rhs) const { return index != rhs.index; }
 
+	// operator < is needed if we want to use std::set<Dart>
+	bool operator<(Dart rhs) const { return index < rhs.index; }
 	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on

@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
+			map.foreach_cell<Map2::FACE>([&] (Map2::FaceHandle f)
 			{
 				++nbf;
 				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
@@ -73,12 +73,12 @@ int main(int argc, char** argv)
 
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
+			map.foreach_cell<Map2::VERTEX>([&] (Map2::VertexHandle v)
 			{
 				++nbv;
 				Vec3 sum({0, 0, 0});
 				unsigned int nb_incident = 0;
-				map.foreach_incident_face(v, [&] (Map2::Face f)
+				map.foreach_incident_face(v, [&] (Map2::FaceHandle f)
 				{
 					++nb_incident;
 					sum += face_normal[f];
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.foreach_cell<Map2::EDGE>([&nbe] (Map2::Edge)
+			map.foreach_cell<Map2::EDGE>([&nbe] (Map2::EdgeHandle)
 			{
 				++nbe;
 			});
