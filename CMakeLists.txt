@@ -11,7 +11,7 @@ project(CGoGN
 
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
+	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 
@@ -40,7 +40,11 @@ set(CGOGN_THIRDPARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
 option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN" ON)
 option(CGOGN_BUILD_TESTS "build cgogn unit tests using google test framework" ON)
-
+option(CGOGN_USE_OPENMP "activate openMP directives" OFF)
+option(CGOGN_USE_PARALLEL_GLIBCXX "highly experimental : compiles using the parallel mode" OFF)
+if (${CGOGN_USE_PARALLEL_GLIBCXX})
+	set(CGOGN_USE_OPENMP "ON")
+endif()
 
 #### Continuous integration options
 option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)
@@ -49,34 +53,40 @@ option(CGOGN_WITH_PPROF "Profile the project using gprof" OFF)
 option(CGOGN_WITH_ASAN "Builds the project with Google's AddressSanitizer" OFF)
 option(CGOGN_WITH_TSAN "Builds the project with Google's ThreadSanitizer" OFF)
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    option(CGOGN_WITH_CLANGSA "Builds the project for performance analysis with clang static analyser" OFF)
+	option(CGOGN_WITH_CLANGSA "Builds the project for performance analysis with clang static analyser" OFF)
 endif()
 
 
 #### RPATH
 if(UNIX)
-    # RPATH is a field in ELF binaries that is used as a hint by the system
-    # loader to find needed shared libraries.
-    #
-    # In the build directory, cmake creates binaries with absolute paths in
-    # RPATH.  And by default, it strips RPATH from installed binaries.  Here we
-    # use CMAKE_INSTALL_RPATH to set a relative RPATH.  By doing so, we avoid
-    # the need to play with LD_LIBRARY_PATH to get applications to run.
-    set(CMAKE_INSTALL_RPATH "../lib:../../lib")
+	# RPATH is a field in ELF binaries that is used as a hint by the system
+	# loader to find needed shared libraries.
+	#
+	# In the build directory, cmake creates binaries with absolute paths in
+	# RPATH.  And by default, it strips RPATH from installed binaries.  Here we
+	# use CMAKE_INSTALL_RPATH to set a relative RPATH.  By doing so, we avoid
+	# the need to play with LD_LIBRARY_PATH to get applications to run.
+	set(CMAKE_INSTALL_RPATH "../lib:../../lib")
 
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        set(CMAKE_MACOSX_RPATH ON)
-    endif()
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		set(CMAKE_MACOSX_RPATH ON)
+	endif()
 endif(UNIX)
 
 ## Deduce build type of not forced by setting the CMAKE_BUILD_TYPE var
 deduce_build_type()
 
+if(${CGOGN_USE_OPENMP})
+	find_package(OpenMP)
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 if(CGOGN_BUILD_TESTS)
-    if(NOT gtest_inited)
-        set(gtest_inited ON CACHE INTERNAL "" FORCE)
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    endif()
+	if(NOT gtest_inited)
+		set(gtest_inited ON CACHE INTERNAL "" FORCE)
+		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+	endif()
 endif(CGOGN_BUILD_TESTS)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
