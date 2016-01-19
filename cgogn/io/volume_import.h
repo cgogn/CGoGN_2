@@ -136,6 +136,7 @@ public:
 	bool create_map(Map& map)
 	{
 		const Orbit VERTEX = Map::VERTEX;
+		using Face = typename Map::Face;
 
 		if (this->nb_vertices_ == 0u)
 			return false;
@@ -312,8 +313,8 @@ public:
 
 				if (!good_dart.is_nil())
 				{
-					const unsigned int degD = map.face_degree(d);
-					const unsigned int degGD = map.face_degree(good_dart);
+					const unsigned int degD = map.degree(Face(d));
+					const unsigned int degGD = map.degree(Face(good_dart));
 
 					//std::cout << "degD = " << degD << " et degGD = " << degGD << std::endl;
 					if(degD == degGD)
