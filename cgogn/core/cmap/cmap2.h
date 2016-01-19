@@ -253,7 +253,7 @@ public:
 		return f;
 	}
 
-	inline unsigned int face_degree(FaceHandle f) const
+	inline unsigned int face_degree(Face f) const
 	{
 		unsigned res{0u};
 		this->foreach_dart_of_PHI1(f,[&res](Dart)
