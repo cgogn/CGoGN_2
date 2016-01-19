@@ -246,7 +246,7 @@ protected:
 					Dart it = visitedFaces[i] ;
 					Dart f = it ;
 
-					const Dart b = this->add_face_topo(this->face_degree(f));
+					const Dart b = this->add_face_topo(this->degree(Face(f)));
 					boundary_marker.template mark_orbit<Orbit::PHI1>(b);
 					++count ;
 
@@ -334,7 +334,10 @@ public:
 	 * High-level topological operations
 	 *******************************************************************************/
 
-
+	inline unsigned int degree(Face f) const
+	{
+		return Inherit::degree(typename Inherit::Face(f.dart));
+	}
 
 protected:
 
