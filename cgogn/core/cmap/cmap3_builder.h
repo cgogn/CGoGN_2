@@ -57,7 +57,7 @@ public:
 	}
 
 	template <Orbit ORBIT, typename T>
-	inline void swapChunkArrayContainer(ChunkArrayContainer<T> &cac)
+	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
 	{
 		map_.attributes_[ORBIT].swap(cac);
 	}
