@@ -75,14 +75,14 @@ int test1(MAP& map)
 	Dart d1 = map.add_face(3);
 
 	// get cell buffer typed
-//	std::vector<typename MAP::VertexHandle>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::VertexHandle>();
+//	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();
 
 	std::vector<Dart>* vertdb = cgogn::get_dart_buffers()->get_buffer();
-	std::vector<typename MAP::VertexHandle>* vert_b = reinterpret_cast< std::vector<typename MAP::VertexHandle>* >(vertdb);
+	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
 
 
 	vert_b->push_back(d1);
-	vert_b->push_back(typename MAP::VertexHandle(d1));
+	vert_b->push_back(typename MAP::Vertex(d1));
 
 	cgogn::get_dart_buffers()->release_cell_buffer(vertdb);
 //	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
@@ -100,20 +100,20 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::VertexHandle v)
+	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;
 	});
 	std::cout << "End Vertices" << std::endl;
 
-	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::VertexHandle v)
+	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
 	{
 		ah[v] = 4.0f;
 	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VertexHandle);
+//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
 //	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
 //	for (unsigned int i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();

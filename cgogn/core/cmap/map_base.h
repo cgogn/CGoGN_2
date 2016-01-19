@@ -27,7 +27,7 @@
 #include <core/cmap/map_base_data.h>
 #include <core/cmap/attribute_handler.h>
 
-#include <core/basic/cell_handle.h>
+#include <core/basic/cell.h>
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
@@ -283,7 +283,7 @@ protected:
 
 		// initialize the indices of the existing orbits
 		ConcreteMap* cmap = to_concrete();
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (CellHandle<ORBIT> c)
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
 		{
 			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
 		});
@@ -304,7 +304,7 @@ public:
 		for (unsigned int& i : counter) i = 0;
 
 		ConcreteMap* cmap = to_concrete();
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (CellHandle<ORBIT> c)
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
 		{
 			if (counter[c] > 0)
 				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
@@ -341,7 +341,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
-		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (CellHandle<ORBIT> c)
+		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
 		{
 			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
 		});
@@ -482,7 +482,7 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f)
 	{
-		static_assert(check_func_parameter_type(FUNC, CellHandle<ORBIT>), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
 
 		switch (STRATEGY)
 		{
@@ -515,7 +515,7 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	void foreach_cell_until(const FUNC& f)
 	{
-		static_assert(check_func_parameter_type(FUNC, CellHandle<ORBIT>), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
 		switch (STRATEGY)

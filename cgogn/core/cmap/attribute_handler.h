@@ -25,7 +25,7 @@
 #define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
 #include <core/cmap/map_base.h>
-#include <core/basic/cell_handle.h>
+#include <core/basic/cell.h>
 #include <core/utils/assert.h>
 
 ///TODO ajouter enregistrement dans la map de la carte.
@@ -311,7 +311,7 @@ public:
 	 * @param c
 	 * @return
 	 */
-	inline T& operator[](CellHandle<ORBIT> c)
+	inline T& operator[](Cell<ORBIT> c)
 	{
 		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
@@ -322,7 +322,7 @@ public:
 	 * @param c
 	 * @return
 	 */
-	inline const T& operator[](CellHandle<ORBIT> c) const
+	inline const T& operator[](Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
