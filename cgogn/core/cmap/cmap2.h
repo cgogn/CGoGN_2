@@ -313,6 +313,7 @@ protected:
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
 					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap2");
+
 		switch (ORBIT)
 		{
 			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
@@ -320,6 +321,82 @@ protected:
 			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI1_PHI3:
+			case Orbit::PHI21_PHI31:
+			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+		}
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI2_until(Dart d, const FUNC& f) const
+	{
+		if (f(d))
+			f(phi2(d));
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI21_until(Dart d, const FUNC& f) const
+	{
+		Dart it = d;
+		do
+		{
+			if (!f(it))
+				break;
+			it = phi2(this->phi_1(it));
+		} while (it != d);
+	}
+
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2_until(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+
+		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		visited_faces->push_back(d); // Start with the face of d
+
+		// For every face added to the list
+		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		{
+			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
+			{
+				// mark visited darts (current face)
+				// and add non visited adjacent faces to the list of face
+				Dart e = (*visited_faces)[i] ;
+				do
+				{
+					if (!f(e)) // apply the function to the darts of the face
+					{
+						cgogn::get_dart_buffers()->release_buffer(visited_faces);
+						return;
+					}
+					marker.mark(e);				// Mark
+					Dart adj = phi2(e);			// Get adjacent face
+					if (!marker.is_marked(adj))
+						visited_faces->push_back(adj);	// Add it
+					e = this->phi1(e);
+				} while (e != (*visited_faces)[i]);
+			}
+		}
+
+		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
+	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
+					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  "Orbit not supported in a CMap2");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
+		switch (ORBIT)
+		{
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2_until(c, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c, f); break;
+			case Orbit::PHI21: foreach_dart_of_PHI21_until(c, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
