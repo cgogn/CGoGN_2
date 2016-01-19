@@ -218,10 +218,10 @@ protected:
 
 	Dart add_face_topo(unsigned int nb_edges)
 	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+		cgogn_message_assert(nb_edges > 0u, "Cannot create a face with no edge");
 
 		Dart d = this->to_concrete()->add_dart();
-		for (unsigned int i = 1; i < nb_edges; ++i)
+		for (unsigned int i = 1u; i < nb_edges; ++i)
 			cut_edge_topo(d);
 
 		return d;
