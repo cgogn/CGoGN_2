@@ -161,7 +161,7 @@ public:
 		map.clear_and_remove_attributes();
 
 		mbuild.template create_embedding<VERTEX>();
-		mbuild.template swapChunkArrayContainer<VERTEX>(this->vertex_attributes_);
+		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 			map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
