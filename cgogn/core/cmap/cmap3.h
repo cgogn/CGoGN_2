@@ -132,7 +132,7 @@ protected:
 	 */
 	inline Dart add_pyramid_topo(unsigned int n)
 	{
-		cgogn_message_assert( n>3u ,"The base must have at least 3 edges.");
+		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
 
 		std::vector<Dart> m_tableVertDarts;
 		m_tableVertDarts.reserve(n);
@@ -173,7 +173,7 @@ protected:
 	 */
 	Dart add_prism_topo(unsigned int n)
 	{
-		cgogn_message_assert( n>3u ,"The base must have at least 3 edges.");
+		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
 		std::vector<Dart> m_tableVertDarts;
 		m_tableVertDarts.reserve(n*2u);
 
