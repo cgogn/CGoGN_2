@@ -78,8 +78,12 @@ if (NOT MSVC)
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 
-	# Additional debug flags
-	add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_DEBUG")
+	if (${CGOGN_USE_PARALLEL_GLIBCXX})
+		add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_PARALLEL")
+	else()
+		# _GLIBCXX_ASSERTIONS and _GLIBCXX_PARALLEL are not compatible on some systems.
+		add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_ASSERTIONS")
+	endif()
 
 	# Enable SSE3 instruction set
 	add_flags(CMAKE_CXX_FLAGS "-msse3")
