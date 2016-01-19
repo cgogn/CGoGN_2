@@ -194,7 +194,7 @@ public:
 	 */
 	void swap_elements(unsigned int idx1, unsigned int idx2) override
 	{
-		std::swap<T>(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
+		std::swap(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
 	}
 
 //	void save(std::ostream& fs, unsigned int nb_lines) const
