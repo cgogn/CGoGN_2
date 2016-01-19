@@ -84,6 +84,7 @@ if (NOT MSVC)
 		# _GLIBCXX_ASSERTIONS and _GLIBCXX_PARALLEL are not compatible on some systems.
 		add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_ASSERTIONS")
 	endif()
+	remove_definitions("-D_GLIBCXX_USE_DEPRECATED")
 
 	# Enable SSE3 instruction set
 	add_flags(CMAKE_CXX_FLAGS "-msse3")
