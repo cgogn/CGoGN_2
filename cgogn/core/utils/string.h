@@ -24,8 +24,9 @@
 #ifndef CORE_UTILS_STRING_H_
 #define CORE_UTILS_STRING_H_
 
-#include <locale>
+
 #include <string>
+#include <cctype>
 
 namespace cgogn
 {
