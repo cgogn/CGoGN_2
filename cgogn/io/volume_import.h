@@ -133,9 +133,219 @@ public:
 
 
 
-	void create_map(Map& map)
+	bool create_map(Map& map)
 	{
+		const Orbit VERTEX = Map::VERTEX;
 
+		if (this->nb_vertices_ == 0u)
+			return false;
+
+		MapBuilder mbuild(map);
+		map.clear_and_remove_attributes();
+
+		mbuild.template create_embedding<VERTEX>();
+		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
+		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+			map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+
+		unsigned int index = 0u;
+		// buffer for tempo faces (used to remove degenerated edges)
+		std::vector<unsigned int> edgesBuffer;
+		edgesBuffer.reserve(16u);
+
+		typename Map::DartMarkerStore m(map) ;
+
+		unsigned int vemb = std::numeric_limits<unsigned int>::max();
+		//auto fsetemb = [&] (Dart d) { map.template initDartEmbedding<VERTEX>(d, vemb); };
+
+		//for each volume of table
+		for(unsigned int i = 0u ; i < this->nb_volumes_ ; ++i)
+		{
+			// store volume in buffer, removing degenated faces
+			const unsigned int nbf = this->volumes_nb_faces_[i];
+
+
+			edgesBuffer.clear();
+			unsigned int prec = std::numeric_limits<unsigned int>::max();
+			for (unsigned int j = 0u; j < nbf; ++j)
+			{
+				unsigned int em = this->volumes_vertex_indices_[index++];
+				if (em != prec)
+				{
+					prec = em;
+					edgesBuffer.push_back(em);
+				}
+			}
+
+
+			if(nbf == 4u) //tetrahedral case
+			{
+				const Dart d = mbuild.add_pyramid_topo(3u);
+
+				const std::array<Dart, 4> vertices_of_tetra = {d,
+									   map.phi1(d),
+									   map.phi_1(d),
+									   map.phi_1(map.phi2(map.phi_1(d)))
+									  };
+
+				std::size_t buffer_id = 0ul;
+				for (const Dart dv : vertices_of_tetra)
+				{
+					const unsigned emb = edgesBuffer[buffer_id++];
+					mbuild.init_parent_vertex_embedding(dv,emb);
+
+					Dart dd = dv;
+					do
+					{
+						m.mark(dd) ;
+						darts_per_vertex[emb].push_back(dd);
+						dd = map.phi1(map.phi2(dd));
+					} while(dd != dv);
+				}
+			}
+			else if(nbf == 5u) //pyramidal case
+			{
+				Dart d = mbuild.add_pyramid_topo(4u);
+
+				const std::array<Dart, 5> vertices_of_pyramid = {d,
+									   map.phi1(d),
+									   map.phi1(map.phi1(d)),
+									   map.phi_1(d),
+									   map.phi_1(map.phi2(map.phi_1(d)))
+									  };
+
+				std::size_t buffer_id = 0ul;
+				for (Dart dv : vertices_of_pyramid)
+				{
+					const unsigned emb = edgesBuffer[buffer_id++];
+					mbuild.init_parent_vertex_embedding(dv,emb);
+
+					Dart dd = dv;
+					do
+					{
+						m.mark(dd) ;
+						darts_per_vertex[emb].push_back(dd);
+						dd = map.phi1(map.phi2(dd));
+					} while(dd != dv);
+				}
+
+			}
+			else if(nbf == 6u) //prism case
+			{
+				Dart d = mbuild.add_prism_topo(3u);
+				const std::array<Dart, 6> vertices_of_prism = {d,
+									   map.phi1(d),
+									   map.phi_1(d),
+
+									   map.phi2(map.phi1(map.phi1(map.phi2(map.phi_1(d))))),
+									   map.phi2(map.phi1(map.phi1(map.phi2(d)))),
+									   map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(d))))),
+
+									  };
+
+				std::size_t buffer_id = 0ul;
+				for (Dart dv : vertices_of_prism)
+				{
+					const unsigned int emb = edgesBuffer[buffer_id++];
+					mbuild.init_parent_vertex_embedding(dv,vemb);
+
+					Dart dd = dv;
+					do
+					{
+						m.mark(dd) ;
+						darts_per_vertex[emb].push_back(dd);
+						dd = map.phi1(map.phi2(dd));
+					} while(dd != dv);
+				}
+			}
+			else if(nbf == 8u) //hexahedral case
+			{
+				Dart d = mbuild.add_prism_topo(4u);
+				const std::array<Dart, 8> vertices_of_hexa = {d,
+														map.phi1(d),
+														map.phi1(map.phi1(d)),
+														map.phi_1(d),
+
+														map.phi2(map.phi1(map.phi1(map.phi2(map.phi_1(d))))),
+														map.phi2(map.phi1(map.phi1(map.phi2(d)))),
+														map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(d))))),
+														map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(map.phi1(d))))))
+													   };
+
+				std::size_t buffer_id = 0ul;
+				for (Dart dv : vertices_of_hexa)
+				{
+					const unsigned emb = edgesBuffer[buffer_id++];
+					mbuild.init_parent_vertex_embedding(dv,emb);
+
+					Dart dd = dv;
+					do
+					{
+						m.mark(dd) ;
+						darts_per_vertex[emb].push_back(dd);
+						dd = map.phi1(map.phi2(dd));
+					} while(dd != dv);
+				}
+			}  //end of hexa
+
+		}
+
+		std::cout << " elements created " << std::endl;
+
+		//reconstruct neighbourhood
+		unsigned int nbBoundaryFaces = 0 ;
+		for (Dart d : map)
+		{
+			if (m.is_marked(d))
+			{
+				std::vector<Dart>& vec = darts_per_vertex[map.phi1(d)];
+
+				Dart good_dart;
+				for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
+				{
+					if(map.template get_embedding<VERTEX>(map.phi1(*it)) == map.template get_embedding<VERTEX>(d) &&
+							map.template get_embedding<VERTEX>(map.phi_1(*it)) == map.template get_embedding<VERTEX>(map.phi1(map.phi1(d))))
+					{
+						good_dart = *it ;
+					}
+				}
+
+				if (!good_dart.is_nil())
+				{
+					const unsigned int degD = map.face_degree(d);
+					const unsigned int degGD = map.face_degree(good_dart);
+
+					//std::cout << "degD = " << degD << " et degGD = " << degGD << std::endl;
+					if(degD == degGD)
+					{
+//						map.sew_volumes(d, good_dart, false);
+						Dart f1_it = d;
+						Dart f2_it = good_dart;
+						do {
+							mbuild.phi3_sew(f1_it, f2_it) ;
+							f1_it = map.phi1(f1_it) ;
+							f2_it = map.phi_1(f2_it) ;
+						} while (f1_it != d);
+						m.template unmark_orbit<Orbit::PHI1_PHI3>(d);
+					}
+	//                else
+	//                    std::cout << "erreur : degD != degGD" << std::endl;
+				}
+				else
+				{
+					m.template unmark_orbit<Orbit::PHI1>(d);
+					++nbBoundaryFaces;
+				}
+			}
+		}
+
+		if (nbBoundaryFaces > 0)
+		{
+			unsigned int nbH = mbuild.close_map();
+			std::cout << "Map closed (" << nbBoundaryFaces << " boundary faces / " << nbH << " holes)" << std::endl;
+		}
+
+		return true;
 	}
 
 protected:
@@ -281,6 +491,9 @@ protected:
 				pt[2] = indices[currentOffset+2];
 				pt[3] = indices[currentOffset+3];
 				pt[4] = indices[currentOffset+4];
+				pt[5] = indices[currentOffset+5];
+				pt[6] = indices[currentOffset+6];
+				pt[7] = indices[currentOffset+7];
 				VEC3 const& P = position->operator [](verticesID[indices[currentOffset+4]]);
 				VEC3 const& A = position->operator [](verticesID[indices[currentOffset  ]]);
 				VEC3 const& B = position->operator [](verticesID[indices[currentOffset+1]]);
