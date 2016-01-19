@@ -230,6 +230,27 @@ protected:
 		return d ;
 	}
 
+	inline Vertex cut_edge(Edge e)
+	{
+		Dart dd = phi2(e);
+		unsigned int e_id = get_edge_id(e) ;
+
+		Vertex v = Inherit::cut_edge(e);
+		
+		set_edge_id(phi1(e), e_id) ;
+		set_edge_id(phi1(dd), e_id) ;
+		
+		return v;
+	}
+
+	inline void split_face(Face d, Face e)
+	{
+		Inherit::split_face(d, e);
+
+		foreach_dart_of_orbit(d, [this, e_id] (Dart dit) { set_edge_id(dit, e_id); });
+		foreach_dart_of_orbit(e, [this, e_id] (Dart dit) { set_edge_id(dit, e_id); });
+	}
+
 protected:
 
 	/*******************************************************************************
@@ -307,6 +328,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
+					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  "Orbit not supported in a CMap2");
 		switch (ORBIT)
 		{
             case Orbit::DART: foreach_dart_of_DART(c, f); break;
