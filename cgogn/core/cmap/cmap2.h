@@ -30,6 +30,7 @@
 namespace cgogn
 {
 
+// forward declaration of CMap2Builder_T
 template <typename MAP_TRAITS>
 class CMap2Builder_T;
 
@@ -252,6 +253,15 @@ public:
 		return f;
 	}
 
+	inline unsigned int face_degree(FaceHandle f) const
+	{
+		unsigned res{0u};
+		this->foreach_dart_of_PHI1(f,[&res](Dart)
+		{
+			++res;
+		});
+		return res;
+	}
 protected:
 
 	/*******************************************************************************
