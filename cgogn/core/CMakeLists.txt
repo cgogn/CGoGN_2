@@ -17,6 +17,7 @@ set(HEADER_FILES
 	cmap/cmap2.h
 	cmap/cmap2_builder.h
 	cmap/cmap3.h
+	cmap/cmap3_builder.h
 	cmap/attribute_handler.h
 
 	container/chunk_array_container.h
@@ -33,10 +34,10 @@ set(HEADER_FILES
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
+	utils/string.h
 )
 
 set(SOURCE_FILES
-	#basic/cell_marker.cpp
 	basic/dart_marker.cpp
 
 	cmap/map_base_data.cpp
@@ -44,6 +45,7 @@ set(SOURCE_FILES
 	cmap/cmap2.cpp
 	cmap/cmap3.cpp
 	cmap/cmap2_builder.cpp
+	cmap/cmap3_builder.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
@@ -60,7 +62,10 @@ set(SOURCE_FILES
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
-# target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+# use of target_compile_options to have a transitive c++11 flag
+if(NOT MSVC)
+	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
@@ -72,16 +77,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 add_subdirectory(examples)
 
-# target_link_libraries(${PROJECT_NAME} cgogn_utils)
+ install(DIRECTORY basic cmap container utils
+	DESTINATION include/cgogn/core/
+	FILES_MATCHING PATTERN "*.h"
+ )
 
-# install(DIRECTORY basic container map
-# 	DESTINATION include/cgogn/cgogn_core
-# 	FILES_MATCHING PATTERN "*.h"
-# )
-
-# install(TARGETS ${PROJECT_NAME}
-# 	EXPORT ${PROJECT_NAME}Targets
-# 	RUNTIME DESTINATION bin
-# 	LIBRARY DESTINATION lib
-# 	ARCHIVE DESTINATION lib
-# )
+ install(TARGETS ${PROJECT_NAME}
+	EXPORT ${PROJECT_NAME}Targets
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+ )

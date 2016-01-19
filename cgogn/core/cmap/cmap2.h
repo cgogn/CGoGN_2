@@ -30,6 +30,7 @@
 namespace cgogn
 {
 
+// forward declaration of CMap2Builder_T
 template <typename MAP_TRAITS>
 class CMap2Builder_T;
 
@@ -250,6 +251,16 @@ public:
 			init_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
 
 		return f;
+	}
+
+	inline unsigned int degree(Face f) const
+	{
+		unsigned res{0u};
+		this->foreach_dart_of_PHI1(f,[&res](Dart)
+		{
+			++res;
+		});
+		return res;
 	}
 
 protected:

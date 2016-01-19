@@ -21,50 +21,42 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#ifndef CORE_UTILS_STRING_H_
+#define CORE_UTILS_STRING_H_
 
+#include <locale>
 #include <string>
-
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap3.h>
-#include <io/surface_import.h>
-#include <io/volume_import.h>
 
 namespace cgogn
 {
 
-namespace io
+template<typename Char_T>
+inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
 {
-
-template<typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
-
-template<typename VEC3, class MAP_TRAITS>
-inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename);
-
-
-
-
-template<typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
-{
-	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
-	SurfaceImport si;
-	si.template import_file<VEC3>(filename);
-	si.create_map(cmap2);
+	std::basic_string<Char_T> res(str);
+	for (auto& c : res)
+		c = std::toupper(c);
+	return res;
 }
 
-template<typename VEC3, class MAP_TRAITS>
-inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename)
+template<typename Char_T>
+inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
 {
-	using VolumeImport = VolumeImport<MAP_TRAITS>;
-	VolumeImport vi;
-	vi.template import_file<VEC3>(filename);
-	vi.create_map(cmap3);
+	std::basic_string<Char_T> res(str);
+	for (auto& c : res)
+		c = std::tolower(c);
+	return res;
 }
-} // namespace io
+
+template<typename Char_T>
+inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& str)
+{
+	std::size_t dot = str.rfind('.');
+	if (dot == std::basic_string<Char_T>::npos || dot == str.size() -1u)
+		return std::basic_string<Char_T>();
+	return str.substr(dot + 1u);
+}
 
 } // namespace cgogn
 
-#endif // IO_MAP_IMPORT_H_
+#endif // CORE_UTILS_STRING_H_

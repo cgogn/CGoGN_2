@@ -21,32 +21,32 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_BUILDER_H_
-#define CORE_MAP_MAP2_BUILDER_H_
+#ifndef CORE_CMAP_CMAP3_BUILDER_H_
+#define CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <core/cmap/cmap2.h>
+#include <core/cmap/cmap3.h>
 
 namespace cgogn
 {
 
 template <typename MAP_TRAITS>
-class CMap2Builder_T
+class CMap3Builder_T
 {
 public:
 
-	using Self = CMap2Builder_T<MAP_TRAITS>;
-	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
+	using Self = CMap3Builder_T<MAP_TRAITS>;
+	using CMap3 = cgogn::CMap3<MAP_TRAITS>;
 
 	template<typename T>
-	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(CMap2& map) : map_(map)
+	inline CMap3Builder_T(CMap3& map) : map_(map)
 	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
+	CMap3Builder_T(const Self&) = delete;
+	CMap3Builder_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
+	inline ~CMap3Builder_T() = default;
 
 public:
 
@@ -68,6 +68,14 @@ public:
 		map_.template init_embedding<ORBIT>(d, emb);
 	}
 
+	inline void init_parent_vertex_embedding(Dart d, unsigned int emb)
+	{
+		map_.foreach_dart_of_PHI21(d,[&](Dart dit)
+		{
+			map_.init_embedding<CMap3::VERTEX>(dit,emb);
+		});
+	}
+
 	inline void phi2_sew(Dart d, Dart e)
 	{
 		return map_.phi2_sew(d,e);
@@ -78,28 +86,48 @@ public:
 		map_.phi2_unsew(d);
 	}
 
+	inline void phi3_sew(Dart d, Dart e)
+	{
+		return map_.phi3_sew(d,e);
+	}
+
+	inline void phi3_unsew(Dart d)
+	{
+		return map_.phi3_unsew(d);
+	}
+
 	inline Dart add_face_topo(unsigned int nb_edges)
 	{
 		return map_.add_face_topo(nb_edges);
 	}
 
-	inline void close_map()
+	inline Dart add_prism_topo(unsigned int nb_edges)
 	{
-		map_.close_map();
+		return map_.add_prism_topo(nb_edges);
+	}
+
+	inline Dart add_pyramid_topo(unsigned int nb_edges)
+	{
+		return map_.add_pyramid_topo(nb_edges);
+	}
+
+	inline unsigned int close_map()
+	{
+		return map_.close_map();
 	}
 
 private:
 
-	CMap2& map_;
+	CMap3& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CMAP_CMAP3_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CMAP_CMAP3_BUILDER_CPP_))
+using CMap3Builder = cgogn::CMap3Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
 
-#endif // CORE_MAP_MAP2_BUILDER_H_
+#endif // CORE_CMAP_CMAP3_BUILDER_H_
 
