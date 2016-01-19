@@ -68,25 +68,35 @@ public:
 		map_.template init_embedding<ORBIT>(d, emb);
 	}
 
-//	inline void phi2_sew(Dart d, Dart e)
-//	{
-//		return map_.phi2_sew(d,e);
-//	}
+	inline void phi2_sew(Dart d, Dart e)
+	{
+		return map_.phi2_sew(d,e);
+	}
 
-//	inline void phi2_unsew(Dart d)
-//	{
-//		map_.phi2_unsew(d);
-//	}
+	inline void phi2_unsew(Dart d)
+	{
+		map_.phi2_unsew(d);
+	}
 
-//	inline Dart add_face_topo(unsigned int nb_edges)
-//	{
-//		return map_.add_face_topo(nb_edges);
-//	}
+	inline Dart add_face_topo(unsigned int nb_edges)
+	{
+		return map_.add_face_topo(nb_edges);
+	}
 
-//	inline void close_map()
-//	{
-//		map_.close_map();
-//	}
+	inline Dart add_prism_topo(unsigned int nb_edges)
+	{
+		return map_.add_prism_topo(nb_edges);
+	}
+
+	inline Dart add_pyramid_topo(unsigned int nb_edges)
+	{
+		return map_.add_pyramid_topo(nb_edges);
+	}
+
+	inline void close_map()
+	{
+		map_.close_map();
+	}
 
 private:
 
