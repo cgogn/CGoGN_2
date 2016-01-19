@@ -49,9 +49,9 @@ public:
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
 
-	using VertexHandle = CellHandle<Self::VERTEX>;
-	using EdgeHandle =  CellHandle<Self::EDGE>;
-	using FaceHandle =  CellHandle<Self::FACE>;
+	typedef Cell<VERTEX> Vertex;
+	typedef Cell<EDGE> Edge;
+	typedef Cell<FACE> Face;
 
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -192,17 +192,17 @@ public:
 	 * @param nb_edges
 	 * @return
 	 */
-	FaceHandle add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
 		Dart d = add_face_topo(nb_edges);
 
-		FaceHandle f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-			foreach_incident_vertex(f, [this] (CellHandle<Orbit::DART> c)
+			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
 			{
 				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
 			});
@@ -271,7 +271,7 @@ protected:
 	}
 
 	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit(CellHandle<ORBIT> c, const FUNC& f) const
+	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
@@ -296,16 +296,16 @@ public:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(FaceHandle f, const FUNC& func) const
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_edge(FaceHandle f, const FUNC& func) const
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
@@ -314,19 +314,19 @@ public:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_adjacent_vertex_through_edge(VertexHandle v, const FUNC& f) const
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
-		f(VertexHandle(phi1(v.dart)));
-		f(VertexHandle(phi_1(v.dart)));
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		f(Vertex(phi1(v.dart)));
+		f(Vertex(phi_1(v.dart)));
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_edge_through_vertex(EdgeHandle e, const FUNC& f) const
+	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
-		f(EdgeHandle(phi1(e.dart)));
-		f(EdgeHandle(phi_1(e.dart)));
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		f(Edge(phi1(e.dart)));
+		f(Edge(phi_1(e.dart)));
 	}
 
 protected:
@@ -336,13 +336,13 @@ protected:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline void init_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
 	template <Orbit ORBIT>
-	inline void set_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
 	}

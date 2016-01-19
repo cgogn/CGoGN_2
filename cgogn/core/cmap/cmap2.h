@@ -56,10 +56,10 @@ public:
 	static const Orbit FACE   = Orbit::PHI1;
 	static const Orbit VOLUME = Orbit::PHI1_PHI2;
 
-	using VertexHandle =  CellHandle<Self::VERTEX>;
-	using EdgeHandle =  CellHandle<Self::EDGE>;
-	using FaceHandle =  CellHandle<Self::FACE>;
-	using VolumeHandle =  CellHandle<Self::VOLUME>;
+	typedef Cell<Self::VERTEX> Vertex;
+	typedef Cell<Self::EDGE> Edge;
+	typedef Cell<Self::FACE> Face;
+	typedef Cell<Self::VOLUME> Volume;
 
 	template<typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -204,7 +204,7 @@ public:
 	 * High-level topological operations
 	 *******************************************************************************/
 
-	FaceHandle add_face(unsigned int nb_edges)
+	Face add_face(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
@@ -218,7 +218,7 @@ public:
 			b = this->phi_1(b);
 		} while (it != d);
 
-		FaceHandle f(d);
+		Face f(d);
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
@@ -230,7 +230,7 @@ public:
 
 		if (this->template is_orbit_embedded<Orbit::PHI21>())
 		{
-			foreach_incident_vertex(f, [this] (CellHandle<Orbit::PHI21> c)
+			foreach_incident_vertex(f, [this] (Cell<Orbit::PHI21> c)
 			{
 				init_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
 			});
@@ -238,7 +238,7 @@ public:
 
 		if (this->template is_orbit_embedded<Orbit::PHI2>())
 		{
-			foreach_incident_edge(f, [this] (CellHandle<Orbit::PHI2> c)
+			foreach_incident_edge(f, [this] (Cell<Orbit::PHI2> c)
 			{
 				init_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
 			});
@@ -318,7 +318,7 @@ protected:
 	}
 
 	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit(CellHandle<ORBIT> c, const FUNC& f) const
+	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
 					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
@@ -344,53 +344,53 @@ public:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_incident_edge(VertexHandle v, const FUNC& f) const
+	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_face(VertexHandle v, const FUNC& f) const
+	inline void foreach_incident_face(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, FaceHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, f);
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(EdgeHandle e, const FUNC& f) const
+	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		f(e.dart);
 		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_face(EdgeHandle e, const FUNC& f) const
+	inline void foreach_incident_face(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, FaceHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		f(e.dart);
 		f(phi2(e.dart));
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(FaceHandle f, const FUNC& func) const
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_edge(FaceHandle f, const FUNC& func) const
+	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit<FACE>(f, func);
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(VolumeHandle v, const FUNC& f) const
+	inline void foreach_incident_vertex(Volume v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
@@ -403,9 +403,9 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_edge(VolumeHandle v, const FUNC& f) const
+	inline void foreach_incident_edge(Volume v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
@@ -418,9 +418,9 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_face(VolumeHandle v, const FUNC& f) const
+	inline void foreach_incident_face(Volume v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, FaceHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<VOLUME>(v, [&] (Dart d)
 		{
@@ -437,16 +437,16 @@ public:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_adjacent_vertex_through_edge(VertexHandle v, const FUNC& f) const
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart d) { f(VertexHandle(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_vertex_through_face(VertexHandle v, const FUNC& f) const
+	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, VertexHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
@@ -454,45 +454,45 @@ public:
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
-					f(VertexHandle(fd));
+					f(Vertex(fd));
 			});
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_edge_through_vertex(EdgeHandle e, const FUNC& f) const
+	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<VERTEX>(ed, [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
-					f(EdgeHandle(vd));
+					f(Edge(vd));
 			});
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_edge_through_face(EdgeHandle e, const FUNC& f) const
+	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, EdgeHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit<FACE>(ed, [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
-					f(EdgeHandle(fd));
+					f(Edge(fd));
 			});
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_face_through_vertex(FaceHandle f, const FUNC& func) const
+	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, FaceHandle), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
@@ -500,16 +500,16 @@ public:
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
-					func(FaceHandle(vd));
+					func(Face(vd));
 			});
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_adjacent_face_through_edge(FaceHandle f, const FUNC& func) const
+	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, FaceHandle), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(FaceHandle(this->phi2(d))); });
+		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
 	}
 
 protected:
@@ -519,13 +519,13 @@ protected:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline void init_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
 	template <Orbit ORBIT>
-	inline void set_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) {	this->template set_embedding<ORBIT>(d, emb); });
 	}

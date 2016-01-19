@@ -6,7 +6,7 @@ set(HEADER_FILES
 	basic/dll.h
 	basic/dart.h
 	basic/dart_marker.h
-	basic/cell_handle.h
+	basic/cell.h
 	basic/cell_marker.h
 
 	cmap/map_traits.h

@@ -27,7 +27,7 @@
 #include <core/utils/definitions.h>
 #include <core/utils/thread.h>
 #include <core/container/chunk_array_container.h>
-#include <core/basic/cell_handle.h>
+#include <core/basic/cell.h>
 #include <core/cmap/map_traits.h>
 
 #include <thread>
@@ -223,7 +223,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline unsigned int get_embedding(CellHandle<ORBIT> c) const
+	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");

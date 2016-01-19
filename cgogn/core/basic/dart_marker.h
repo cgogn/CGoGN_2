@@ -99,7 +99,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline void mark_orbit(CellHandle<ORBIT> c)
+	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
@@ -109,7 +109,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline void unmark_orbit(CellHandle<ORBIT> c)
+	inline void unmark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
@@ -189,7 +189,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline void mark_orbit(CellHandle<ORBIT> c)
+	inline void mark_orbit(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
 		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)

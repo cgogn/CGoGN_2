@@ -89,19 +89,19 @@ public:
 	Self& operator=(const Self& dm) = delete;
 	Self& operator=(Self&& dm) = delete;
 
-	inline void mark(CellHandle<ORBIT> c)
+	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		mark_attribute_->set_true(map_.get_embedding(c));
 	}
 
-	inline void unmark(CellHandle<ORBIT> c)
+	inline void unmark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		mark_attribute_->set_false(map_.get_embedding(c));
 	}
 
-	inline bool is_marked(CellHandle<ORBIT> c) const
+	inline bool is_marked(Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
 		return (*mark_attribute_)[map_.get_embedding(c)];
@@ -175,7 +175,7 @@ public:
 	CellMarkerStore<MAP, ORBIT>& operator=(Self&& dm) = delete;
 	CellMarkerStore<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
-	inline void mark(CellHandle<ORBIT> c)
+	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
 		Inherit::mark(c);

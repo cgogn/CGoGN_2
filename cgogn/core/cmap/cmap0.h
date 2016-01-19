@@ -47,7 +47,7 @@ public:
 
 	static const Orbit VERTEX = Orbit::DART;
 
-	using VertexHandle = CellHandle<Self::VERTEX>;
+	typedef Cell<Self::VERTEX> Vertex;
 
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -87,10 +87,10 @@ protected:
 	}
 
 public:
-	VertexHandle add_vertex()
+	Vertex add_vertex()
 	{
 		Dart d = this->to_concrete()->add_dart();
-		VertexHandle v(d);
+		Vertex v(d);
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 			init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
@@ -105,7 +105,7 @@ protected:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit(CellHandle<ORBIT> c, const FUNC& f) const
+	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		switch(ORBIT)
 		{
@@ -128,13 +128,13 @@ protected:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline void init_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
 	}
 
 	template <Orbit ORBIT>
-	inline void set_orbit_embedding(CellHandle<ORBIT> c, unsigned int emb)
+	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
 	}
