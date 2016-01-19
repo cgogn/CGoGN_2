@@ -68,6 +68,14 @@ public:
 		map_.template init_embedding<ORBIT>(d, emb);
 	}
 
+	inline void init_parent_vertex_embedding(Dart d, unsigned int emb)
+	{
+		map_.foreach_dart_of_PHI21(d,[&](Dart dit)
+		{
+			map_.init_embedding<CMap3::VERTEX>(dit,emb);
+		});
+	}
+
 	inline void phi2_sew(Dart d, Dart e)
 	{
 		return map_.phi2_sew(d,e);
@@ -76,6 +84,16 @@ public:
 	inline void phi2_unsew(Dart d)
 	{
 		map_.phi2_unsew(d);
+	}
+
+	inline void phi3_sew(Dart d, Dart e)
+	{
+		return map_.phi3_sew(d,e);
+	}
+
+	inline void phi3_unsew(Dart d)
+	{
+		return map_.phi3_unsew(d);
 	}
 
 	inline Dart add_face_topo(unsigned int nb_edges)
@@ -93,9 +111,9 @@ public:
 		return map_.add_pyramid_topo(nb_edges);
 	}
 
-	inline void close_map()
+	inline unsigned int close_map()
 	{
-		map_.close_map();
+		return map_.close_map();
 	}
 
 private:
