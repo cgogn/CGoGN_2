@@ -30,6 +30,10 @@
 namespace cgogn
 {
 
+// forward declaration of CMap3Builder_T
+template <typename MAP_TRAITS>
+class CMap3Builder_T;
+
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
@@ -46,6 +50,8 @@ public:
 	friend typename Inherit::Inherit;
 	friend typename Inherit::Inherit::Inherit;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
+	friend class CMap3Builder_T<MapTraits>;
 
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
 	static const Orbit EDGE   = Orbit::PHI2_PHI3;
@@ -117,6 +123,167 @@ protected:
 		Dart e = phi3(d) ;
 		(*phi3_)[d.index] = d;
 		(*phi3_)[e.index] = e;
+	}
+
+	/**
+	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
+	 * @param n, the number of edges of the base
+	 * @return a dart from the base
+	 */
+	inline Dart add_pyramid_topo(unsigned int n)
+	{
+		cgogn_message_assert( n>3u ,"The base must have at least 3 edges.");
+
+		std::vector<Dart> m_tableVertDarts;
+		m_tableVertDarts.reserve(n);
+
+		// creation of triangles around circunference and storing vertices
+		for (unsigned int i = 0u; i < n; ++i)
+		{
+			m_tableVertDarts.push_back(this->add_face_topo(3u));
+		}
+
+		// sewing the triangles
+		for (unsigned int i = 0u; i < n-1u; ++i)
+		{
+			const Dart d = this->phi_1(m_tableVertDarts[i]);
+			const Dart e = this->phi1(m_tableVertDarts[i+1]);
+			this->phi2_sew(d,e);
+		}
+
+		//sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0ul]), this->phi_1(m_tableVertDarts[n-1u]));
+
+		//sewing the bottom face
+		Dart base = this->add_face_topo(n);
+		const Dart dres = base;
+		for(unsigned int i = 0u; i < n ; ++i)
+		{
+			this->phi2_sew(m_tableVertDarts[i], base);
+			base = this->phi1(base);
+		}
+		//return a dart from the base
+		return dres;
+	}
+
+	/**
+	 * @brief create_prism_topo : create a prism whose base is n-sided
+	 * @param n, the number of edges of the base
+	 * @return a dart from the base
+	 */
+	Dart add_prism_topo(unsigned int n)
+	{
+		cgogn_message_assert( n>3u ,"The base must have at least 3 edges.");
+		std::vector<Dart> m_tableVertDarts;
+		m_tableVertDarts.reserve(n*2u);
+
+		// creation of quads around circunference and storing vertices
+		for (unsigned int i = 0u; i < n; ++i)
+		{
+			m_tableVertDarts.emplace_back(this->add_face_topo(4));
+		}
+
+		// storing a dart from the vertex pointed by phi1(phi1(d))
+		for (unsigned int i = 0u; i < n; ++i)
+		{
+			m_tableVertDarts.emplace_back(this->phi1(this->phi1(m_tableVertDarts[i])));
+		}
+
+		// sewing the quads
+		for (unsigned int i = 0u; i < n-1u; ++i)
+		{
+			const Dart d = this->phi_1(m_tableVertDarts[i]);
+			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
+			this->phi2_sew(d,e);
+		}
+		//sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0]), this->phi_1(m_tableVertDarts[n-1u]));
+
+		//sewing the top & bottom faces
+		Dart top = this->add_face_topo(n);
+		Dart bottom = this->add_face_topo(n);
+		const Dart dres = top;
+		for(unsigned int i = 0u; i < n ; ++i)
+		{
+			this->phi2_sew(m_tableVertDarts[i], top);
+			this->phi2_sew(m_tableVertDarts[n+i], bottom);
+			top = this->phi1(top);
+			bottom = this->phi_1(bottom);
+		}
+
+		//return a dart from the base
+		return dres;
+	}
+
+	/**
+	 * @brief close_map : /!\ DO NOT USE /!\ Close the map removing topological holes (only for import/creation)
+	 * Add volumes to the map that close every existing hole.
+	 * @return the number of closed holes
+	 */
+	inline unsigned int close_map()
+	{
+		// Search the map for topological holes (fix points of phi3)
+		unsigned int nb = 0u ;
+		for (Dart d: (*this))
+		{
+			if (phi3(d) == d)
+			{
+				++nb ;
+				DartMarkerStore dmarker(*this);
+				DartMarkerStore boundary_marker(*this);
+
+				std::vector<Dart> visitedFaces;	// Faces that are traversed
+				visitedFaces.reserve(1024) ;
+
+				visitedFaces.push_back(d);		// Start with the face of d
+				dmarker.template mark_orbit<Orbit::PHI1>(d);
+
+				unsigned int count = 0u ;
+
+				// For every face added to the list
+				for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
+				{
+					Dart it = visitedFaces[i] ;
+					Dart f = it ;
+
+					const Dart b = this->add_face_topo(this->face_degree(f));
+					boundary_marker.template mark_orbit<Orbit::PHI1>(b);
+					++count ;
+
+					Dart bit = b ;
+					do
+					{
+						Dart e = this->phi3(this->phi2(f)); ;
+						bool found = false ;
+						do
+						{
+							if (phi3(e) == e)
+							{
+								found = true ;
+								if(!dmarker.is_marked(e))
+								{
+									visitedFaces.push_back(e) ;
+									dmarker.template mark_orbit<Orbit::PHI1>(e) ;
+								}
+							} else {
+								if(boundary_marker.is_marked(e))
+								{
+									found = true ;
+									this->phi2_sew(e, bit) ;
+								} else {
+									e = this->phi3(this->phi2(e));
+								}
+							}
+						} while(!found) ;
+
+						phi3_sew(f, bit) ;
+						bit = this->phi_1(bit) ;
+						f = this->phi1(f);
+					} while(f != it) ;
+				}
+			}
+		}
+		return nb ;
 	}
 
 public:
