@@ -53,8 +53,8 @@ struct vector_traits<std::array<Scalar,Size>>
 
 
 template<>
-template<typename Scalar, int Rows, int Cols, int Options>
-struct vector_traits<Eigen::Matrix<Scalar,Rows,Cols,Options,Rows,Cols>>
+template<typename Scalar, int Rows, int Options>
+struct vector_traits<Eigen::Matrix<Scalar,Rows,1,Options,Rows,1>>
 {
 	static const std::size_t SIZE = Rows;
 	using Real = Scalar;
