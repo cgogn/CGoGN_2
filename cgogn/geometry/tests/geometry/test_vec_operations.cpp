@@ -157,7 +157,7 @@ TEST(VEC_OP_TEST, Minus)
 	}
 }
 
-TEST(VEC_OP_TEST, multScalar)
+TEST(VEC_OP_TEST, MultScalar)
 {
 	using cgogn::geometry::operator *;
 
@@ -186,7 +186,7 @@ TEST(VEC_OP_TEST, multScalar)
 	}
 }
 
-TEST(VEC_OP_TEST, norm2)
+TEST(VEC_OP_TEST, Norm2)
 {
 	Vec1 vec1a = {1.,2., 3.};
 	Vec2 vec2a = {1.,2., 3.};
@@ -195,7 +195,7 @@ TEST(VEC_OP_TEST, norm2)
 	EXPECT_EQ(cgogn::geometry::norm2(vec2a), 14.);
 }
 
-TEST(VEC_OP_TEST, norm)
+TEST(VEC_OP_TEST, Norm)
 {
 	{
 	Vec1 a = {3.,-4., 0.};
@@ -208,7 +208,7 @@ TEST(VEC_OP_TEST, norm)
 	}
 }
 
-TEST(VEC_OP_TEST, normalize)
+TEST(VEC_OP_TEST, Normalize)
 {
 	{
 	Vec1 a = {3.,-4., 0.};
@@ -231,4 +231,41 @@ TEST(VEC_OP_TEST, normalize)
 	}
 }
 
+TEST(VEC_OP_TEST, DotProduct)
+{
+	using cgogn::geometry::operator *;
+	{
+	Vec1 a = {1.,-2., 3.};
+	Vec1 b = {1.,-2., 3.};
+	EXPECT_EQ(a*b, 14.);
+	}
+
+	{
+	Vec1 a = {1.,2., -3.};
+	Vec1 b = {1.,2., -3.};
+	EXPECT_EQ(b*a, 14.);
+	}
+}
+
+TEST(VEC_OP_TEST, CrossProduct)
+{
+	using cgogn::geometry::operator ^;
+	{
+	Vec1 a = {1.,2., 3.};
+	Vec1 b = {3.,2., 1.};
+	Vec1 c = a^b;
+	EXPECT_EQ(c[0], -4.);
+	EXPECT_EQ(c[1], 8.);
+	EXPECT_EQ(c[2], -4.);
+	}
+
+	{
+	Vec2 a = {1.,2., 3.};
+	Vec2 b = {3.,2., 1.};
+	Vec2 c = a^b;
+	EXPECT_EQ(c[0], -4.);
+	EXPECT_EQ(c[1], 8.);
+	EXPECT_EQ(c[2], -4.);
+	}
+}
 
