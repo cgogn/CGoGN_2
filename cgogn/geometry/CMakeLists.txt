@@ -7,6 +7,7 @@ set(HEADER_FILES
 	plane_3d.h
 	vec_operations.h
 	geometry_traits.h
+	orientation.h
 	)
 
 set(SOURCE_FILES
