@@ -38,4 +38,6 @@ install(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION lib
 	)
 
-# add_subdirectory(examples)
+if(CGOGN_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
