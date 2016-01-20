@@ -26,7 +26,10 @@
 
 #include <type_traits>
 #include <array>
+
 #include <core/utils/name_types.h>
+#include <core/utils/precision.h>
+
 #include <geometry/dll.h>
 #include <geometry/vec_operations.h>
 #include <geometry/geometry_traits.h>
@@ -99,24 +102,28 @@ public:
 	}
 
 	// project the point p onto the plane
-	inline void project(Vec& p, Real precision) const
+	inline void project(Vec& p) const
 	{
 		Real d = -distance(p);
-		if (std::fabs(d) > precision)
+
+		if (!cgogn::almost_equal_relative(d,Real(0)))
 		{
 			p += normal_*d;
 		}
 	}
 
 	// return on/over/under according to the side of the plane where point p is
-	inline Orientation3D orient(const Vec& p, Real precision) const
+	inline Orientation3D orient(const Vec& p) const
 	{
 		const Real dist = distance(p);
-		if (dist < -precision)
+
+		if (cgogn::almost_equal_relative(dist, Real(0)))
+			return Orientation3D::ON;
+
+		if (dist < -Real(0))
 			return Orientation3D::UNDER;
-		if (dist > precision)
-			return Orientation3D::OVER;
-		return Orientation3D::ON;
+
+		return Orientation3D::OVER;
 	}
 
 public:
