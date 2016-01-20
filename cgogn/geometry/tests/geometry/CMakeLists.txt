@@ -4,6 +4,7 @@ project(cgogn_geometry_test
 
 set(SOURCE_FILES
 	test_vec_operations.cpp
+	test_plane_3d.cpp
 	main.cpp
 )
 
