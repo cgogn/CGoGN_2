@@ -35,7 +35,9 @@ namespace cgogn
 namespace geometry
 {
 
-
+/*
+ *  Beginning of declarations
+ */
 template<typename VEC_T>
 VEC_T operator-(const VEC_T& v1);
 
@@ -57,6 +59,11 @@ VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Scalar r);
 template<typename VEC_T>
 VEC_T operator*( const typename vector_traits<VEC_T>::Scalar r, const VEC_T& v1);
 
+template<typename VEC_T>
+typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2);
+
+template<typename VEC_T>
+VEC_T operator^(const VEC_T& v1, const VEC_T& v2);
 
 template<typename VEC_T>
 typename vector_traits<VEC_T>::Scalar norm2(const VEC_T& v);
@@ -67,31 +74,44 @@ typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v);
 template<typename VEC_T>
 typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v);
 
+
+
+/*
+ *  End of declarations
+ */
+
+
+/*
+ *  Beginning of definitions
+ */
+
 template<typename VEC_T>
-VEC_T operator^(const VEC_T& v1, const VEC_T& v2);
-
-
-template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2);
-
-
-template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v)
+VEC_T operator-(const VEC_T& v)
 {
-	return std::sqrt(norm2(v));
+	VEC_T res(v);
+	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
+	{
+		res[i] = -res[i];
+	}
+	return res;
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar norm2(const VEC_T& v)
+void operator+=(VEC_T& v1, const VEC_T& v2)
 {
-	using Real = typename vector_traits<VEC_T>::Scalar;
-	Real r{0};
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
-		r += v[i]*v[i];
+		v1[i] += v2[i];
 	}
+}
 
-	return r;
+template<typename VEC_T>
+void operator-=(VEC_T& v1, const VEC_T& v2)
+{
+	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
+	{
+		v1[i] -= v2[i];
+	}
 }
 
 template<typename VEC_T>
@@ -134,18 +154,6 @@ VEC_T operator*( const typename vector_traits<VEC_T>::Scalar r, const VEC_T& v1)
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v)
-{
-	using Real = typename vector_traits<VEC_T>::Scalar;
-	const Real norm_value = norm(v);
-	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
-	{
-		v[i]/= norm_value;
-	}
-	return norm_value;
-}
-
-template<typename VEC_T>
 typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2)
 {
 	using Real = typename vector_traits<VEC_T>::Scalar;
@@ -157,16 +165,7 @@ typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2
 	return r;
 }
 
-template<typename VEC_T>
-VEC_T operator-(const VEC_T& v)
-{
-	VEC_T res(v);
-	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
-	{
-		res[i] = -res[i];
-	}
-	return res;
-}
+
 
 template<typename VEC_T>
 VEC_T operator^(const VEC_T& v1, const VEC_T& v2)
@@ -180,22 +179,42 @@ VEC_T operator^(const VEC_T& v1, const VEC_T& v2)
 }
 
 template<typename VEC_T>
-void operator+=(VEC_T& v1, const VEC_T& v2)
+typename vector_traits<VEC_T>::Scalar norm2(const VEC_T& v)
 {
+	using Real = typename vector_traits<VEC_T>::Scalar;
+	Real r{0};
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
-		v1[i] += v2[i];
+		r += v[i]*v[i];
 	}
+
+	return r;
 }
 
 template<typename VEC_T>
-void operator-=(VEC_T& v1, const VEC_T& v2)
+typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v)
 {
+	return std::sqrt(norm2(v));
+}
+
+template<typename VEC_T>
+typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v)
+{
+	using Real = typename vector_traits<VEC_T>::Scalar;
+	const Real norm_value = norm(v);
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
-		v1[i] -= v2[i];
+		v[i]/= norm_value;
 	}
+	return norm_value;
 }
+
+
+
+
+/*
+ *  End of definitions
+ */
 
 } // namespace geometry
 } // namespace cgogn
