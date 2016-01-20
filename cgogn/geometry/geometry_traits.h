@@ -41,8 +41,7 @@ struct vector_traits
 {
 };
 
-
-template<>
+// specialization 1 : std::array
 template<typename Scalar_, std::size_t Size>
 struct vector_traits<std::array<Scalar_,Size>>
 {
@@ -50,9 +49,7 @@ struct vector_traits<std::array<Scalar_,Size>>
 	using Scalar = Scalar_;
 };
 
-
-
-template<>
+// specialization 2 : Eigen::Vector
 template<typename Scalar_, int Rows, int Options>
 struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {

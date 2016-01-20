@@ -212,8 +212,7 @@ TEST(VEC_OP_TEST, Normalize)
 {
 	{
 	Vec1 a = {3.,-4., 0.};
-	double norm = cgogn::geometry::normalize(a);
-	EXPECT_EQ(norm, 5);
+	cgogn::geometry::normalize(a);
 	EXPECT_DOUBLE_EQ(a[0], 3./5.);
 	EXPECT_DOUBLE_EQ(a[1], -4./5.);
 	EXPECT_DOUBLE_EQ(a[2], 0.);
@@ -222,8 +221,7 @@ TEST(VEC_OP_TEST, Normalize)
 
 	{
 	Vec2 a = {3.,-4., 0.};
-	double norm = cgogn::geometry::normalize(a);
-	EXPECT_EQ(norm, 5);
+	cgogn::geometry::normalize(a);
 	EXPECT_DOUBLE_EQ(a[0], 3./5.);
 	EXPECT_DOUBLE_EQ(a[1], -4./5.);
 	EXPECT_DOUBLE_EQ(a[2], 0.);
