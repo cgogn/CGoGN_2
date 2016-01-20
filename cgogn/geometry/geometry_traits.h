@@ -43,21 +43,21 @@ struct vector_traits
 
 
 template<>
-template<typename Scalar, std::size_t Size>
-struct vector_traits<std::array<Scalar,Size>>
+template<typename Scalar_, std::size_t Size>
+struct vector_traits<std::array<Scalar_,Size>>
 {
 	static const std::size_t SIZE = Size;
-	using Real = Scalar;
+	using Scalar = Scalar_;
 };
 
 
 
 template<>
-template<typename Scalar, int Rows, int Options>
-struct vector_traits<Eigen::Matrix<Scalar,Rows,1,Options,Rows,1>>
+template<typename Scalar_, int Rows, int Options>
+struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
 	static const std::size_t SIZE = Rows;
-	using Real = Scalar;
+	using Scalar = Scalar_;
 };
 
 

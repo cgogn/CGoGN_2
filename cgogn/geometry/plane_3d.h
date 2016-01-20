@@ -52,7 +52,7 @@ class Plane3D{
 public:
 	using Vec = VEC_T;
 	//	using Real = typename std::remove_reference<decltype(Vec()[0ul])>::type;
-	using Real = typename vector_traits<Vec>::Real;
+	using Scalar = typename vector_traits<Vec>::Scalar;
 	using Self = Plane3D<Vec>;
 
 	Plane3D() = default;
@@ -62,7 +62,7 @@ public:
 	Self& operator=(Self&&) = default;
 
 	// construct the plane from a normal vector and a scalar
-	inline Plane3D(const Vec& normal, Real d) :
+	inline Plane3D(const Vec& normal, Scalar d) :
 		normal_(normal),
 		d_(d)
 	{
@@ -96,7 +96,7 @@ public:
 	}
 
 	// compute the distance between the plane and point p
-	inline Real distance(const Vec& p) const
+	inline Scalar distance(const Vec& p) const
 	{
 		return normal_*p + d_;
 	}
@@ -104,9 +104,9 @@ public:
 	// project the point p onto the plane
 	inline void project(Vec& p) const
 	{
-		Real d = -distance(p);
+		Scalar d = -distance(p);
 
-		if (!cgogn::almost_equal_relative(d,Real(0)))
+		if (!cgogn::almost_equal_relative(d,Scalar(0)))
 		{
 			p += normal_*d;
 		}
@@ -115,12 +115,12 @@ public:
 	// return on/over/under according to the side of the plane where point p is
 	inline Orientation3D orient(const Vec& p) const
 	{
-		const Real dist = distance(p);
+		const Scalar dist = distance(p);
 
-		if (cgogn::almost_equal_relative(dist, Real(0)))
+		if (cgogn::almost_equal_relative(dist, Scalar(0)))
 			return Orientation3D::ON;
 
-		if (dist < -Real(0))
+		if (dist < -Scalar(0))
 			return Orientation3D::UNDER;
 
 		return Orientation3D::OVER;
@@ -134,7 +134,7 @@ public:
 	}
 private:
 	Vec normal_;
-	Real d_;
+	Scalar d_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))

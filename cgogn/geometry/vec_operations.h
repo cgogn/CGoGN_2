@@ -52,39 +52,39 @@ template<typename VEC_T>
 VEC_T operator-(const VEC_T& v1, const VEC_T& v2);
 
 template<typename VEC_T>
-VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Real r);
+VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Scalar r);
 
 template<typename VEC_T>
-VEC_T operator*( const typename vector_traits<VEC_T>::Real r, const VEC_T& v1);
+VEC_T operator*( const typename vector_traits<VEC_T>::Scalar r, const VEC_T& v1);
 
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real norm2(const VEC_T& v);
+typename vector_traits<VEC_T>::Scalar norm2(const VEC_T& v);
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real norm(const VEC_T& v);
+typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v);
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real normalize(VEC_T& v);
+typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v);
 
 template<typename VEC_T>
 VEC_T cross(const VEC_T& v1, const VEC_T& v2);
 
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real operator*(const VEC_T& v1, const VEC_T& v2);
+typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2);
 
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real norm(const VEC_T& v)
+typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v)
 {
 	return std::sqrt(norm2(v));
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real norm2(const VEC_T& v)
+typename vector_traits<VEC_T>::Scalar norm2(const VEC_T& v)
 {
-	using Real = typename vector_traits<VEC_T>::Real;
+	using Real = typename vector_traits<VEC_T>::Scalar;
 	Real r{0};
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
@@ -117,7 +117,7 @@ VEC_T operator-(const VEC_T& v1, const VEC_T& v2)
 }
 
 template<typename VEC_T>
-VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Real r)
+VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Scalar r)
 {
 	VEC_T res(v1);
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
@@ -128,15 +128,15 @@ VEC_T operator*(const VEC_T& v1, const typename vector_traits<VEC_T>::Real r)
 }
 
 template<typename VEC_T>
-VEC_T operator*( const typename vector_traits<VEC_T>::Real r, const VEC_T& v1)
+VEC_T operator*( const typename vector_traits<VEC_T>::Scalar r, const VEC_T& v1)
 {
 	return geometry::operator *(v1,r);
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real normalize(VEC_T& v)
+typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v)
 {
-	using Real = typename vector_traits<VEC_T>::Real;
+	using Real = typename vector_traits<VEC_T>::Scalar;
 	const Real norm_value = norm(v);
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
@@ -146,9 +146,9 @@ typename vector_traits<VEC_T>::Real normalize(VEC_T& v)
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Real operator*(const VEC_T& v1, const VEC_T& v2)
+typename vector_traits<VEC_T>::Scalar operator*(const VEC_T& v1, const VEC_T& v2)
 {
-	using Real = typename vector_traits<VEC_T>::Real;
+	using Real = typename vector_traits<VEC_T>::Scalar;
 	Real r{0};
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
