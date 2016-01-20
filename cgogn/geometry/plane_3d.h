@@ -55,7 +55,7 @@ public:
 	using Scalar = typename vector_traits<Vec>::Scalar;
 	using Self = Plane3D<Vec>;
 
-	Plane3D() = default;
+	Plane3D() = delete;
 	Plane3D(const Self&) = default;
 	Plane3D(Self&&) = default;
 	Self& operator=(const Self&) = default;
@@ -127,7 +127,7 @@ public:
 	}
 
 public:
-	static std::string CGoGNnameOfType()
+	static std::string cgogn_name_of_type()
 	{
 		vector_traits<Vec>::SIZE;
 		return std::string("geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
