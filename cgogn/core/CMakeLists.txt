@@ -35,6 +35,7 @@ set(HEADER_FILES
 	utils/serialization.h
 	utils/thread.h
 	utils/string.h
+	utils/precision.h
 )
 
 set(SOURCE_FILES
