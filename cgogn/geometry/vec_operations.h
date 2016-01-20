@@ -27,7 +27,9 @@
 #include <cmath>
 #include <type_traits>
 #include <geometry/geometry_traits.h>
-
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+#include <Eigen/Dense>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {
@@ -72,12 +74,92 @@ template<typename VEC_T>
 typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v);
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v);
-
-
+void normalize(VEC_T& v);
 
 /*
  *  End of declarations
+ */
+
+
+/*
+ *  Beginning of Eigen specializations
+ */
+
+
+template<typename Scalar_, int Rows, int Options>
+inline auto operator-(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1) -> Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>
+{
+	return v1.operator-();
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline void operator+=(Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	v1.operator+=(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline void operator-=(Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	v1.operator-=(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1> operator+(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	return v1.operator+(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1> operator-(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	return v1.operator-(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1> operator*(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Scalar_ r)
+{
+	return v1.operator*(r);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1> operator*(const Scalar_ r, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1)
+{
+	return v1.operator*(r);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Scalar_ operator*(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	return v1.dot(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+inline Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1> operator^(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v1, const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v2)
+{
+	return v1.cross(v2);
+}
+
+template<typename Scalar_, int Rows, int Options>
+Scalar_ norm2(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v)
+{
+	return v.squaredNorm();
+}
+
+template<typename Scalar_, int Rows, int Options>
+Scalar_ norm(const Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v)
+{
+	return v.norm();
+}
+
+template<typename Scalar_, int Rows, int Options>
+void normalize(Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>& v)
+{
+	v.normalize();
+}
+
+/*
+ *  End of Eigen specializations
  */
 
 
@@ -198,7 +280,7 @@ typename vector_traits<VEC_T>::Scalar norm(const VEC_T& v)
 }
 
 template<typename VEC_T>
-typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v)
+void normalize(VEC_T& v)
 {
 	using Real = typename vector_traits<VEC_T>::Scalar;
 	const Real norm_value = norm(v);
@@ -206,7 +288,6 @@ typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v)
 	{
 		v[i]/= norm_value;
 	}
-	return norm_value;
 }
 
 
