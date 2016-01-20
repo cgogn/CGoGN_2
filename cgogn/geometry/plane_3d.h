@@ -80,7 +80,7 @@ public:
 	// construct the plane going through p1, p2 and p3
 	inline Plane3D(const Vec& p1, const Vec& p2, const Vec& p3)
 	{
-		normal_ = cross(p2-p1, p3-p1);
+		normal_ = (p2-p1) ^(p3-p1);
 		normalize(normal_);
 		d_ = -(p1 * normal_);
 	}
