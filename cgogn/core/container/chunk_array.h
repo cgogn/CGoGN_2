@@ -668,10 +668,13 @@ public:
 
 	inline void all_false()
 	{
-		for (auto ptr : table_data_)
+		for (unsigned int * const ptr : table_data_)
 		{
-			for (unsigned int j = 0u; j < CHUNKSIZE/32u; ++j)
-				*ptr++ = 0u;
+#pragma omp for
+			for (std::size_t j = 0ul ; j < CHUNKSIZE/32ul; ++j)
+			{
+				ptr[j] = 0u;
+			}
 		}
 	}
 
