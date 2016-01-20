@@ -25,7 +25,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/io>
 	)
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core)
+target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/cgogn_core
