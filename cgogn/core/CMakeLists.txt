@@ -76,8 +76,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/core>
 )
 
-add_subdirectory(examples)
-
  install(DIRECTORY basic cmap container utils
 	DESTINATION include/cgogn/core/
 	FILES_MATCHING PATTERN "*.h"
@@ -89,3 +87,8 @@ add_subdirectory(examples)
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
  )
+
+add_subdirectory(examples)
+if(CGOGN_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
