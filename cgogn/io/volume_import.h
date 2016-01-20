@@ -494,7 +494,7 @@ protected:
 				VEC3 const& C = position->operator [](verticesID[indices[currentOffset+2]]);
 
 
-				if (geometry::testOrientation3D(P,A,B,C) == geometry::Orientation3D::OVER)
+				if (geometry::test_orientation_3D(P,A,B,C) == geometry::Orientation3D::OVER)
 				{
 					pt[0] = indices[currentOffset+3];
 					pt[1] = indices[currentOffset+2];
@@ -543,7 +543,7 @@ protected:
 				VEC3 const& C = position->operator [](verticesID[pt[3]]);
 
 
-				if (geometry::testOrientation3D(P,A,B,C) == geometry::Orientation3D::OVER)
+				if (geometry::test_orientation_3D(P,A,B,C) == geometry::Orientation3D::OVER)
 					std::swap(pt[1], pt[2]);
 
 				volumes_vertex_indices_.push_back(verticesID[pt[0]]);
