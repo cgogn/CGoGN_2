@@ -68,7 +68,7 @@ template<typename VEC_T>
 typename vector_traits<VEC_T>::Scalar normalize(VEC_T& v);
 
 template<typename VEC_T>
-VEC_T cross(const VEC_T& v1, const VEC_T& v2);
+VEC_T operator^(const VEC_T& v1, const VEC_T& v2);
 
 
 template<typename VEC_T>
@@ -169,7 +169,7 @@ VEC_T operator-(const VEC_T& v)
 }
 
 template<typename VEC_T>
-VEC_T cross(const VEC_T& v1, const VEC_T& v2)
+VEC_T operator^(const VEC_T& v1, const VEC_T& v2)
 {
 	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 	VEC_T res;
