@@ -40,10 +40,10 @@ template<typename VEC_T>
 VEC_T operator-(const VEC_T& v1);
 
 template<typename VEC_T>
-VEC_T operator+=(VEC_T& v1, const VEC_T& v2);
+void operator+=(VEC_T& v1, const VEC_T& v2);
 
 template<typename VEC_T>
-VEC_T operator-=(VEC_T& v1, const VEC_T& v2);
+void operator-=(VEC_T& v1, const VEC_T& v2);
 
 template<typename VEC_T>
 VEC_T operator+(const VEC_T& v1, const VEC_T& v2);
@@ -180,7 +180,7 @@ VEC_T cross(const VEC_T& v1, const VEC_T& v2)
 }
 
 template<typename VEC_T>
-VEC_T operator+=(VEC_T& v1, const VEC_T& v2)
+void operator+=(VEC_T& v1, const VEC_T& v2)
 {
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
@@ -189,7 +189,7 @@ VEC_T operator+=(VEC_T& v1, const VEC_T& v2)
 }
 
 template<typename VEC_T>
-VEC_T operator-=(VEC_T& v1, const VEC_T& v2)
+void operator-=(VEC_T& v1, const VEC_T& v2)
 {
 	for (std::size_t i = 0ul; i < vector_traits<VEC_T>::SIZE; ++i)
 	{
