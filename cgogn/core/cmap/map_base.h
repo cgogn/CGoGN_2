@@ -406,6 +406,19 @@ public:
 		return result;
 	}
 
+	template <Orbit ORBIT>
+	unsigned int degree(Cell<ORBIT> c)
+	{
+		ConcreteMap* cmap = to_concrete();
+		unsigned int result = 0u;
+		cmap->template foreach_dart_of_orbit<ORBIT>(c, [&result](Dart)
+		{
+			++result;
+		});
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
