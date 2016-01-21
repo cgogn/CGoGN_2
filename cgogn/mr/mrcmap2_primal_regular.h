@@ -29,66 +29,78 @@
 namespace cgogn
 {
 
-class Map2MR
+class CMap2MR
 {
 
 protected:
-	MRCMap2& mrmap_;
+	MRCMap2& mrcmap_;
 
 	std::vector<MRFilter*> synthesis_filters_;
 	std::vector<MRFilter*> analysis_filters_;
 
 public:
-	Map2MR(MRCMap2& mrmap) : 
-		mrmap_(mrmap)
+	CMap2MR(MRCMap2& mrmap) : 
+		mrcmap_(mrmap)
 	{}
 
-	~Map2MR()
+	~CMap2MR()
 	{
-		unsigned int level = mrmap_.get_current_level();
-		unsigned int max_level = mrmap_.get_maximum_level();
+		unsigned int level = mrcmap_.get_current_level();
+		unsigned int max_level = mrcmap_.get_maximum_level();
 
 		for(unsigned int i = max_level ; i > level ; --i)
-			mrmap_.remove_level_back();
+			mrcmap_.remove_level_back();
 
 		for(unsigned int i = 0 ; i < level ; ++i)
-			mrmap_.remove_level_front();
+			mrcmap_.remove_level_front();
 	}
 
 	// level management
 	void add_new_level(bool do_tri_quad)
 	{
-		mrmap_.push_level();
+		mrcmap_.push_level();
 
 		//1. add a nex level back as a copy of previous level;
-		mrmap_.add_level_back();
+		mrcmap_.add_level_back();
 
 		//cut edges
-		mrmap_.foreach_cell<MRCMap2::Edge>([&] (MRCMap2::Edge e)
+		mrcmap_.foreach_cell<MRCMap2::Edge, TraversalStrategy::FORCE_DART_MARKING>([&] (MRCMap2::Edge e)
 		{
-			mrmap_.cut_edge(e);
-			//skip the two resulting edges
+			mrcmap_.cut_edge(e);
+			//skip the two resulting edges d and phi1(d) ?
 			//the new vertex should automatically be embedded
 		});
 
 		// split faces
-		mrmap_.foreach_cell<MRCMap2::Face>([&] (MRCMap2::Face f)
+		mrcmap_.foreach_cell<MRCMap2::Face, TraversalStrategy::FORCE_DART_MARKING>([&] (MRCMap2::Face f)
 		{
 			//TODO search the oldest dart of the face
 			Face old = f;
-			if(mrmap_.get_dart_level(old) == mrmap_.get_maximum_level())
-				old = mrmap_.phi1(old);
+			if(mrcmap_.get_dart_level(old) == mrcmap_.get_maximum_level())
+				old = mrcmap_.phi1(old);
 
 			//compute the degree of the face
-			mrmap_.dec_current_level();
-			unsigned int degree = mrmap_.degree(f);
-			mrmap_.inc_current_level();
+			mrcmap_.dec_current_level();
+			unsigned int degree = mrcmap_.degree(f);
+			mrcmap_.inc_current_level();
 
 			if(do_tri_quad && (degree == 3))
 			{
-				Dart dd = mrmap_.phi1(old);
-				Dart e = mrmap_.phi1(mrmap_.phi1(dd));
-				mrmap_.split_face(dd, e);
+				Dart dd = mrcmap_.phi1(old);
+				Dart e = mrcmap_.phi1(mrcmap_.phi1(dd));
+				mrcmap_.split_face(dd, e);
+				//skip dd ?
+
+				dd = e ;
+				e = mrcmap_.phi1(mrcmap_.phi1(dd)) ;
+				mrcmap_.split_face(dd, e) ;
+				//skip dd ?
+
+				dd = e ;
+				e = mrcmap_.phi1(mrcmap_.phi1(dd)) ;
+				mrcmap_.split_face(dd, e) ;
+				//skip dd ?
+				//and skip e ?
 			}
 			else
 			{
@@ -96,7 +108,7 @@ public:
 			}
 		});
 
-		mrmap_.pop_level();
+		mrcmap_.pop_level();
 	}
 
 
@@ -123,19 +135,19 @@ public:
 
 	void synthesis()
 	{
-		cgogn_message_assert(mrmap_.get_current_level() < mrmap_.get_maximum_level(), "synthesis : called on max level") ;
+		cgogn_message_assert(mrcmap_.get_current_level() < mrcmap_.get_maximum_level(), "synthesis : called on max level") ;
 
 		for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
 			(*synthesis_filters_[i])() ;
 
-		mrmap_.inc_current_level() ;
+		mrcmap_.inc_current_level() ;
 	}
 
 	void analysis()
 	{
-		cgogn_message_assert(mrmap_.get_current_level() > 0, "analysis : called on level 0") ;
+		cgogn_message_assert(mrcmap_.get_current_level() > 0, "analysis : called on level 0") ;
 
-		mrmap_.dec_current_level() ;
+		mrcmap_.dec_current_level() ;
 
 		for(unsigned int i = 0; i < analysis_filters_.size(); ++i)
 			(*analysis_filters_[i])() ;
