@@ -165,6 +165,21 @@ public:
 		levels_stack_.pop_back() ;
 	}
 
+
+	inline void split_face_regular(Vertex d, Vertex e)
+	{
+		get_current_cmap()->split_face(d,e);
+	}
+
+	inline void split_face_adaptive(Vertex d, Vertex e)
+	{
+		get_current_cmap(i)->split_face(d,e);
+
+		for(unsigned int i = get_current_level()-1 ; i > 0 ; --i)
+		{
+			get_cmap_at(i)->split_face(previous_level(d), previous_level(e));
+		}
+	}
 protected:
 
 	/*******************************************************************************
