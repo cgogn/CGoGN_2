@@ -5,7 +5,6 @@ project(cgogn_geometry
 set(HEADER_FILES
 	dll.h
 	plane_3d.h
-	vec_operations.h
 	geometry_traits.h
 	orientation.h
 	)
