@@ -7,5 +7,5 @@ if(CGOGN_PROVIDE_TINYXML2)
 endif(CGOGN_PROVIDE_TINYXML2)
 
 if(CGOGN_BUILD_TESTS)
-	add_subdirectory(gtest)
+	add_subdirectory(googletest-master)
 endif(CGOGN_BUILD_TESTS)
