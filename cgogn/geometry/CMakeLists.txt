@@ -4,15 +4,16 @@ project(cgogn_geometry
 
 set(HEADER_FILES
 	dll.h
-	plane_3d.h
-	geometry_traits.h
-	orientation.h
-	vec.h
+	types/plane_3d.h
+	types/geometry_traits.h
+	functions/orientation.h
+	types/vec.h
+	types/eigen.h
 	)
 
 set(SOURCE_FILES
-	plane_3d.cpp
-	vec.cpp
+	types/plane_3d.cpp
+	types/vec.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -29,8 +29,10 @@
 #include <core/utils/string.h>
 #include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap3_builder.h>
+
+#include <geometry/functions/orientation.h>
+
 #include <io/dll.h>
-#include <geometry/orientation.h>
 
 #include <tinyxml2.h>
 

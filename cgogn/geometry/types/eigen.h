@@ -21,46 +21,30 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
+#ifndef GEOMETRY_EIGEN_H_
+#define GEOMETRY_EIGEN_H_
 
-#include <geometry/plane_3d.h>
+#include <core/utils/name_types.h>
+
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+#include <Eigen/Dense>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {
 
-namespace geometry
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& )
 {
-/**
- * return the orientation of point P w.r.t. the plane defined by 3 points
- * @param P the point
- * @param A plane point 1
- * @param B plane point 2
- * @param C plane point 3
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
-{
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A,B,C).orient(P);
+	using std::string;
+	using std::to_string;
+	return string("Eigen::Matrix<") + name_of_type(_Scalar()) + string(",") + to_string(_Rows) + string(",") + to_string(_Cols) + string(",") + to_string(_Options) + string(",") + to_string(_MaxRows) + string(",") + to_string(_MaxCols) + string(">");
 }
 
-/**
- * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
- * @param P the point
- * @param N plane normal
- * @param PP plane point
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
+namespace geometry
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P) ;
-}
 
 } // namespace geometry
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // GEOMETRY_EIGEN_H_

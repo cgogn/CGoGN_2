@@ -26,9 +26,11 @@
 
 #include <array>
 #include <cmath>
+#include <vector>
 #include <initializer_list>
 
 #include <core/utils/name_types.h>
+#include <core/utils/assert.h>
 
 #include <geometry/dll.h>
 
@@ -38,6 +40,16 @@ namespace cgogn
 namespace geometry
 {
 
+/**
+ * @brief The Vec_T class, designed to mimic Eigen's Vector interface.
+ * The template parameter is the kind of container you want to use to store your vec (std::array)
+ * The Container class must provide an iterator nested type and the following methods :
+ *  -operator []
+ *  -begin()
+ *  -end()
+ * Its size has to be known at compile time
+ * The struct cgogn::geometry::vector_traits has to be specialized for the Container class (see geometry_traits.h).
+ */
 template<class Container>
 class Vec_T
 {
@@ -45,25 +57,25 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
-
+	Vec_T() = default;
+	inline Vec_T(const Container& cont) : data_(cont) {}
+	inline Vec_T(Container&& cont) : data_(std::move(cont)) {}
 
 	Vec_T(const Self&) = default;
 	Vec_T(Self&&) = default;
+
 	Self& operator=(const Self&) = default;
 	Self& operator=(Self&&) = default;
 
-	Vec_T() = default;
-
-	inline Vec_T(const Container& cont) : data_(cont)
-	{}
-	inline Vec_T(Container&& cont) : data_(std::move(cont))
-	{}
 
 	inline Vec_T(std::initializer_list<Scalar> const & init_list)
 	{
 		auto it_this = data_.begin();
 		for (auto c : init_list)
+		{
+			cgogn_assert(it_this != data_.end());
 			*it_this++ = c;
+		}
 	}
 
 	inline Scalar& operator[](std::size_t i)
@@ -174,12 +186,19 @@ public:
 		return std::string("geometry::Vec_T<") + cgogn::name_of_type(Container()) + std::string(">");
 	}
 
+	const Container& to_container() const
+	{
+		return data_;
+	}
+
 private:
 	Container data_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_VEC_CPP_))
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::vector<float>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_VEC_CPP_))
 
 } // namespace geometry
