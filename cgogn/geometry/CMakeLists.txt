@@ -1,17 +1,18 @@
-project(cgogn_io
+project(cgogn_geometry
 	LANGUAGES CXX
 	)
 
 set(HEADER_FILES
-	surface_import.h
-	volume_import.h
-	map_import.h
 	dll.h
+	plane_3d.h
+	geometry_traits.h
+	orientation.h
+	vec.h
 	)
 
 set(SOURCE_FILES
-	surface_import.cpp
-	volume_import.cpp
+	plane_3d.cpp
+	vec.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -21,14 +22,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<BUILD_INTERFACE:${TinyXml2_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/io>
+	$<INSTALL_INTERFACE:include/cgogn/geometry>
 	)
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry)
+target_link_libraries(${PROJECT_NAME} cgogn_core)
 
 install(DIRECTORY .
-	DESTINATION include/cgogn/cgogn_core
+	DESTINATION include/cgogn/geometry
 	FILES_MATCHING PATTERN "*.h"
 	)
 
@@ -39,4 +39,6 @@ install(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION lib
 	)
 
-add_subdirectory(examples)
+if(CGOGN_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
