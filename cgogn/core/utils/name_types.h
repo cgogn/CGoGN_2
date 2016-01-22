@@ -31,12 +31,10 @@
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
 
-namespace Eigen
-{
-// forward declaration
-	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-	class Matrix;
-}
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+#include <Eigen/Core>
+CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+
 namespace cgogn
 {
 
@@ -116,9 +114,14 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
-// Eigen Vec3d
-template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& );
+
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& )
+{
+	using std::string;
+	using std::to_string;
+	return string("Eigen::Matrix<") + name_of_type(_Scalar()) + string(",") + to_string(_Rows) + string(",") + to_string(_Cols) + string(",") + to_string(_Options) + string(",") + to_string(_MaxRows) + string(",") + to_string(_MaxCols) + string(">");
+}
 
 
 template<typename T>

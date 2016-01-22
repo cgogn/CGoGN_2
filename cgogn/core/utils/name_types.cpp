@@ -24,9 +24,7 @@
 #define CGOGN_UTILS_DLL_EXPORT
 
 #include <core/utils/name_types.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Core>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+
 namespace cgogn
 {
 
@@ -100,11 +98,5 @@ template <>
 CGOGN_UTILS_API std::string name_of_type(const double& )
 { return "double"; }
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& )
-{
-	static_assert(std::is_same<Eigen::Vector3d, Eigen::Matrix<double,3,1,0,3,1>>::value,"Eigen::Matrix<double,3,1,0,3,1> and Eigen::Vector3d have to be the same.");
-	return "Eigen::Vector3d";
-}
 
 } // namespace cgogn
