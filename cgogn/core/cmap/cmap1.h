@@ -293,7 +293,7 @@ protected:
 	inline void merge_faces_topo(Dart d, Dart e)
 	{
 		cgogn_debug_assert(!this->same_cell(Face(d), Face(e)));
-		phi1sew(phi_1(d), phi_1(e));
+		phi1_sew(phi_1(d), phi_1(e));
 	}
 
 	inline void link_faces_topo(Dart d, Dart e)
@@ -342,16 +342,9 @@ protected:
 
 public:
 
-	inline unsigned int face_degree(Face d) const
+	inline unsigned int degree(Face d) const
 	{
-		unsigned int count = 0;
-		Dart it = d ;
-		do
-	    {
-			++count ;
-			it = phi1(it) ;
-		} while (it != d) ;
-		return count ;
+		return this->nb_darts(f);
 	}
 
 	/**
@@ -363,7 +356,7 @@ public:
 	 * \param f [description]
 	 * \return [description]
 	 */
-	inline bool is_face_degree_3(Face f) const
+	inline bool is_degree_3(Face f) const
 	{
 		return (phi1(d) != d) && (phi1(phi1(phi1(d))) == d);
 	}
