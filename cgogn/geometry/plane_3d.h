@@ -31,8 +31,18 @@
 #include <core/utils/precision.h>
 
 #include <geometry/dll.h>
-#include <geometry/vec_operations.h>
+#include <geometry/vec.h>
 #include <geometry/geometry_traits.h>
+
+
+namespace Eigen
+{
+
+// forward declaration
+	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+	class Matrix;
+
+} // end namespace Eigen
 
 namespace cgogn
 {
@@ -66,23 +76,23 @@ public:
 		normal_(normal),
 		d_(d)
 	{
-		normalize(normal_);
+		normal_.normalize();
 	}
 
 	// construct the plane with normal vector and going through p
 	inline Plane3D(const Vec& normal, const Vec& p) :
 		normal_(normal),
-		d_(-(p*normal))
+		d_(-(p.dot(normal)))
 	{
-		normalize(normal_);
+		normal_.normalize();
 	}
 
 	// construct the plane going through p1, p2 and p3
-	inline Plane3D(const Vec& p1, const Vec& p2, const Vec& p3)
+	inline Plane3D(const Vec& p1, const Vec& p2, const Vec& p3) :
+		normal_((p2-p1).cross(p3-p1))
 	{
-		normal_ = (p2-p1) ^(p3-p1);
-		normalize(normal_);
-		d_ = -(p1 * normal_);
+		normal_.normalize();
+		d_ = -(p1.dot(normal_));
 	}
 
 	/**********************************************/
@@ -90,15 +100,15 @@ public:
 	/**********************************************/
 
 	// compute a point on the plane (-d*N)
-	inline Vec point() const
+	inline const Vec point() const
 	{
-		return d_ * normal_;
+		return normal_*d_;
 	}
 
 	// compute the distance between the plane and point p
 	inline Scalar distance(const Vec& p) const
 	{
-		return normal_*p + d_;
+		return normal_.dot(p) + d_;
 	}
 
 	// project the point p onto the plane
@@ -139,7 +149,7 @@ private:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API Plane3D<std::array<double,3>>;
+extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
 
 } // namespace geometry

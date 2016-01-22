@@ -22,21 +22,17 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_PLANE_3D_CPP_
+#define GEOMETRY_VEC_CPP_
 
-#include <geometry/plane_3d.h>
+#include <geometry/vec.h>
 
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 namespace cgogn
 {
 
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
-template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
+template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
 
 } // namespace geometry
 } // namespace cgogn

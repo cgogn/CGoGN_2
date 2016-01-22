@@ -7,10 +7,12 @@ set(HEADER_FILES
 	plane_3d.h
 	geometry_traits.h
 	orientation.h
+	vec.h
 	)
 
 set(SOURCE_FILES
 	plane_3d.cpp
+	vec.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

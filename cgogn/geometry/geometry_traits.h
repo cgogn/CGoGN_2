@@ -24,11 +24,12 @@
 #ifndef GEOMETRY_TRAITS_H_
 #define GEOMETRY_TRAITS_H_
 
-#include <array>
+
 #include <core/utils/definitions.h>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Core>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+#include <geometry/vec.h>
 
 namespace cgogn
 {
@@ -41,15 +42,22 @@ struct vector_traits
 {
 };
 
-// specialization 1 : std::array
+// specialization 1 : cgogn::geometry::Vec_T with a standard container
+template<typename Container>
+struct vector_traits< Vec_T<Container> >
+{
+	using Scalar = typename Vec_T<Container>::Scalar;
+};
+
+// specialization 2 : cgogn::geometry::Vec_T with a fixed-size array
 template<typename Scalar_, std::size_t Size>
-struct vector_traits<std::array<Scalar_,Size>>
+struct vector_traits< Vec_T<std::array<Scalar_,Size>> >
 {
 	static const std::size_t SIZE = Size;
 	using Scalar = Scalar_;
 };
 
-// specialization 2 : Eigen::Vector
+// specialization 3 : Eigen::Vector
 template<typename Scalar_, int Rows, int Options>
 struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
