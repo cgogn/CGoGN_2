@@ -65,29 +65,34 @@ private:
 	Barrier& sync1_;
 	Barrier& sync2_;
 	bool& finished_;
-	unsigned int index_;
-	std::thread::id& thread_id_;
+	unsigned int thread_index_;
+	std::thread::id& thread_id_ref_;
 
 public:
 
-	ThreadFunction(FUNC f, std::vector<ELEM>& elements, Barrier& sync1, Barrier& sync2, bool& finished, unsigned int index, std::thread::id& thread_id) :
+	ThreadFunction(FUNC f, std::vector<ELEM>& elements, Barrier& sync1, Barrier& sync2, bool& finished, unsigned int thread_index, std::thread::id& thread_id_ref) :
 		f_(f),
 		elements_(elements),
 		sync1_(sync1),
 		sync2_(sync2),
 		finished_(finished),
-		index_(index),
-		thread_id_(thread_id)
+		thread_index_(thread_index),
+		thread_id_ref_(thread_id_ref)
 	{}
+
+	unsigned int get_thread_index() const
+	{
+		return thread_index_;
+	}
 
 	void operator()()
 	{
-		thread_id_ = std::this_thread::get_id();
+		thread_id_ref_ = std::this_thread::get_id();
 
 		while (!finished_)
 		{
 			for (ELEM& e : elements_)
-				f_(e, index_);
+				f_(e, thread_index_);
 			elements_.clear();
 			sync1_.wait(); // wait every body has finished
 			sync2_.wait(); // wait vectors has been refilled

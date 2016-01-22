@@ -234,6 +234,7 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 };
 
 #define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type , T>::value
+#define check_func_ith_parameter_type(F, i, T) std::is_same<typename function_traits<F>::template arg<i>::type , T>::value
 #define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type , T>::value
 
 #endif // CORE_UTILS_ASSERT_H_

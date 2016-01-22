@@ -274,6 +274,24 @@ protected:
 		}
 		return i;
 	}
+
+	inline std::thread::id& get_thread_id_ref(unsigned int thread_index)
+	{
+		return thread_ids_[thread_index];
+	}
+
+	inline unsigned int get_new_thread_index()
+	{
+		cgogn_assert(thread_ids_.size() < NB_THREADS);
+		thread_ids_.resize(thread_ids_.size() + 1);
+		return thread_ids_.size() - 1;
+	}
+
+	inline void remove_thread(unsigned int thread_index)
+	{
+		thread_ids_[thread_index] = thread_ids_.back();
+		thread_ids_.pop_back();
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))

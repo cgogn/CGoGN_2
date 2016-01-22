@@ -481,6 +481,8 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f)
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
 			 d != end;
 			 this->topology_.next(d.index))
@@ -492,17 +494,23 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f, unsigned int nb_threads = NB_THREADS - 1)
 	{
+		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
+		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
+
+		Dart it = Dart(this->topology_.begin());
+		Dart end = Dart(this->topology_.end());
+
 		std::vector<Dart>* vd = new std::vector<Dart>[nb_threads];
 		for (unsigned int i = 0; i < nb_threads; ++i)
 			vd[i].reserve(PARALLEL_BUFFER_SIZE);
 
 		unsigned int nb = 0;
-		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
-			 d != end && nb < nb_threads * PARALLEL_BUFFER_SIZE;
-			 this->topology_.next(d.index))
+
+		while (it != end && nb < nb_threads * PARALLEL_BUFFER_SIZE)
 		{
-			vd[nb % nb_threads].push_back(d);
+			vd[nb % nb_threads].push_back(it);
 			++nb;
+			this->topology_.next(it.index);
 		}
 
 		Barrier sync1(nb_threads + 1);
@@ -511,13 +519,59 @@ public:
 		bool finished = false;
 
 		std::thread** threads = new std::thread*[nb_threads];
-		ThreadFunction<FUNC>** tfs = new ThreadFunction<FUNC>*[nb_threads];
+		ThreadFunction<Dart, FUNC>** tfs = new ThreadFunction<Dart, FUNC>*[nb_threads];
 
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs[i] = new ThreadFunction<FUNC>(f, vd[i], sync1, sync2, finished, i+1);
+			unsigned int thread_index = this->get_new_thread_index();
+			std::thread::id& thread_id_ref = this->get_thread_id_ref(thread_index);
+			tfs[i] = new ThreadFunction<Dart, FUNC>(f, vd[i], sync1, sync2, finished, thread_index, thread_id_ref);
 			threads[i] = new std::thread( std::ref( *(tfs[i]) ) );
 		}
+
+		std::vector<Dart>* tempo = new std::vector<Dart>[nb_threads];
+		for (unsigned int i = 0; i < nb_threads; ++i)
+			tempo[i].reserve(PARALLEL_BUFFER_SIZE);
+
+		while (it != end)
+		{
+			for (unsigned int i = 0; i < nb_threads; ++i)
+				tempo[i].clear();
+
+			unsigned int nb = 0;
+
+			while (it != end && nb < nb_threads * PARALLEL_BUFFER_SIZE)
+			{
+				tempo[nb % nb_threads].push_back(it);
+				++nb;
+				this->topology_.next(it.index);
+			}
+
+			sync1.wait(); // wait for all threads to finish their vector
+
+			for (unsigned int i = 0; i < nb_threads; ++i)
+				vd[i].swap(tempo[i]);
+
+			sync2.wait(); // everybody refilled then go
+		}
+
+		sync1.wait(); // wait for all threads to finish their vector
+		finished = true; // say finish to everyone
+		sync2.wait(); // just wait for last barrier wait !
+
+		// wait for all threads to be finished
+		for (unsigned int i = 0; i < nb_threads; ++i)
+		{
+			threads[i]->join();
+			delete threads[i];
+			this->remove_thread(tfs[i]->get_thread_index());
+			delete tfs[i];
+		}
+
+		delete[] tfs;
+		delete[] threads;
+		delete[] vd;
+		delete[] tempo;
 	}
 
 	/**
@@ -528,6 +582,9 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f)
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
 			 d != end;
 			 this->topology_.next(d.index))
