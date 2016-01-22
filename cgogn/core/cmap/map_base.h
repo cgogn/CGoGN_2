@@ -407,7 +407,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	unsigned int degree(Cell<ORBIT> c)
+	unsigned int nb_darts(Cell<ORBIT> c)
 	{
 		ConcreteMap* cmap = to_concrete();
 		unsigned int result = 0u;
