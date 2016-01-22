@@ -26,6 +26,7 @@
 
 #include <core/cmap/map_base.h>
 #include <core/basic/dart.h>
+#include <core/utils/assert.h>
 
 namespace cgogn
 {
@@ -190,7 +191,7 @@ protected:
 			if(this->embeddings_[orbit])
 			{
 				// get the embedding of the dart
-				unsigned int emb = (*this->embeddings_[orbit])[index] ;
+				unsigned int emb = (*this->embeddings_[orbit])[d.index] ;
 				this->attributes_[orbit].unref_line(emb);
 			}
 		}
@@ -286,19 +287,19 @@ protected:
 
 	inline void split_face_topo(Dart d, Dart e)
 	{
-		cgogn_debug_assert(d != e && this->same_cell(Face(d), Face(e)));
+		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
 		phi1_sew(phi_1(d), phi_1(e));
 	}
 
 	inline void merge_faces_topo(Dart d, Dart e)
 	{
-		cgogn_debug_assert(!this->same_cell(Face(d), Face(e)));
+		cgogn_assert(!this->same_cell(Face(d), Face(e)));
 		phi1_sew(phi_1(d), phi_1(e));
 	}
 
 	inline void link_faces_topo(Dart d, Dart e)
 	{
-		cgogn_debug_assert(d != e && !this->same_cell(Face(d), Face(e)));
+		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
 
 		// cut the edge before d (insert a new dart before d)
 		cut_edge_topo(phi_1(d));
@@ -344,21 +345,7 @@ public:
 
 	inline unsigned int degree(Face d) const
 	{
-		return this->nb_darts(f);
-	}
-
-	/**
-	 * \brief [brief description]
-	 * \details The second condition is not sufficient in the case
-	 * of a one dart face. Needs to test if the face is not a one 
-	 * dart face first.
-	 * 
-	 * \param f [description]
-	 * \return [description]
-	 */
-	inline bool is_degree_3(Face f) const
-	{
-		return (phi1(d) != d) && (phi1(phi1(phi1(d))) == d);
+		return this->template nb_darts(d);
 	}
 
 protected:
