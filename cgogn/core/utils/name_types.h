@@ -28,12 +28,19 @@
 #include <vector>
 #include <list>
 #include <array>
+
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
 
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Core>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+
+namespace Eigen
+{
+
+// forward declaration
+	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+	class Matrix;
+
+} // end namespace Eigen
 
 namespace cgogn
 {
@@ -114,15 +121,8 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
-
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& )
-{
-	using std::string;
-	using std::to_string;
-	return string("Eigen::Matrix<") + name_of_type(_Scalar()) + string(",") + to_string(_Rows) + string(",") + to_string(_Cols) + string(",") + to_string(_Options) + string(",") + to_string(_MaxRows) + string(",") + to_string(_MaxCols) + string(">");
-}
-
+inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& );
 
 template<typename T>
 std::string name_of_type(const std::basic_string<T>)

@@ -21,19 +21,46 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_VEC_CPP_
+#ifndef GEOMETRY_ORIENTATION_H_
+#define GEOMETRY_ORIENTATION_H_
 
-#include <geometry/vec.h>
+#include <geometry/types/plane_3d.h>
 
 namespace cgogn
 {
 
 namespace geometry
 {
+/**
+ * return the orientation of point P w.r.t. the plane defined by 3 points
+ * @param P the point
+ * @param A plane point 1
+ * @param B plane point 2
+ * @param C plane point 3
+ * @return the orientation
+ */
+template <typename VEC3_T>
+Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+{
+	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3_T>(A,B,C).orient(P);
+}
 
-template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
+/**
+ * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
+ * @param P the point
+ * @param N plane normal
+ * @param PP plane point
+ * @return the orientation
+ */
+template <typename VEC3_T>
+Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
+{
+	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+}
 
 } // namespace geometry
 } // namespace cgogn
+
+#endif // GEOMETRY_ORIENTATION_H_

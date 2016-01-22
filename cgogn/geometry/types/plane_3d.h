@@ -27,22 +27,11 @@
 #include <type_traits>
 #include <array>
 
-#include <core/utils/name_types.h>
 #include <core/utils/precision.h>
 
 #include <geometry/dll.h>
-#include <geometry/vec.h>
-#include <geometry/geometry_traits.h>
+#include <geometry/types/geometry_traits.h>
 
-
-namespace Eigen
-{
-
-// forward declaration
-	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-	class Matrix;
-
-} // end namespace Eigen
 
 namespace cgogn
 {

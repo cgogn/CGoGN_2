@@ -21,15 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TRAITS_H_
-#define GEOMETRY_TRAITS_H_
+#define CGOGN_GEOMETRY_DLL_EXPORT
+#define GEOMETRY_PLANE_3D_CPP_
 
-
-#include <core/utils/definitions.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Core>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-#include <geometry/vec.h>
+#include <geometry/types/plane_3d.h>
 
 namespace cgogn
 {
@@ -37,29 +32,11 @@ namespace cgogn
 namespace geometry
 {
 
-template<typename Vec_T>
-struct vector_traits
-{
-};
-
-// specialization 1 : cgogn::geometry::Vec_T with a fixed-size array
-template<typename Scalar_, std::size_t Size>
-struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
-{
-	static const std::size_t SIZE = Size;
-	using Scalar = Scalar_;
-};
-
-// specialization 2 : Eigen::Vector
-template<typename Scalar_, int Rows, int Options>
-struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
-{
-	static const std::size_t SIZE = Rows;
-	using Scalar = Scalar_;
-};
-
+template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
+template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
+template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
+template class CGOGN_GEOMETRY_API Vec_T<std::vector<float>>;
 
 } // namespace geometry
 } // namespace cgogn
-
-#endif // GEOMETRY_TRAITS_H_

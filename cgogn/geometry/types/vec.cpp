@@ -21,16 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <iostream>
+#define CGOGN_GEOMETRY_DLL_EXPORT
+#define GEOMETRY_VEC_CPP_
 
-#include "gtest/gtest.h"
+#include <geometry/types/vec.h>
 
-int main(int argc, char **argv)
+namespace cgogn
 {
-	testing::InitGoogleTest(&argc, argv);
 
-	// Set LC_CTYPE according to the environnement variable.
-	setlocale(LC_CTYPE, "");
+namespace geometry
+{
 
-	return RUN_ALL_TESTS();
-}
+template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
+template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
+
+} // namespace geometry
+} // namespace cgogn
