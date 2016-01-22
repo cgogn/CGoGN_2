@@ -390,9 +390,9 @@ public:
 	 * @param c2 second cell to compare
 	 */
 	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2)
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		ConcreteMap* cmap = to_concrete();
+		const ConcreteMap* cmap = to_concrete();
 		bool result = false;
 		cmap->template foreach_dart_of_orbit_until<ORBIT>(c1, [&] (Dart d) -> bool
 		{
@@ -407,9 +407,9 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	unsigned int nb_darts(Cell<ORBIT> c)
+	unsigned int nb_darts(Cell<ORBIT> c) const
 	{
-		ConcreteMap* cmap = to_concrete();
+		const ConcreteMap* cmap = to_concrete();
 		unsigned int result = 0u;
 		cmap->template foreach_dart_of_orbit<ORBIT>(c, [&result](Dart)
 		{
