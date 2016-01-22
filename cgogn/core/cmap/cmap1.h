@@ -26,6 +26,7 @@
 
 #include <core/cmap/map_base.h>
 #include <core/basic/dart.h>
+#include <core/utils/assert.h>
 
 namespace cgogn
 {
@@ -181,6 +182,21 @@ protected:
 		return d;
 	}
 
+	inline void delete_dart(Dart d)
+	{
+		this->remove_topology_element(d.index);
+
+		for(unsigned int orbit = 0 ; orbit < NB_ORBITS ; ++orbit)
+		{
+			if(this->embeddings_[orbit])
+			{
+				// get the embedding of the dart
+				unsigned int emb = (*this->embeddings_[orbit])[d.index] ;
+				this->attributes_[orbit].unref_line(emb);
+			}
+		}
+	}
+
 public:
 
 	/*******************************************************************************
@@ -216,7 +232,7 @@ public:
 
 protected:
 
-	Dart add_face_topo(unsigned int nb_edges)
+	inline Dart add_face_topo(unsigned int nb_edges)
 	{
 		cgogn_message_assert(nb_edges > 0u, "Cannot create a face with no edge");
 
@@ -227,24 +243,109 @@ protected:
 		return d;
 	}
 
+	inline void delete_face_topo(Dart d)
+	{
+		Dart e = phi1(d);
+		while(e != d)
+		{
+			Dart f = phi1(e);
+			delete_dart(e);
+			e = f;
+		}
+
+		delete_dart(d);
+	}
+
 	/**
 	 * \brief cut_edge
 	 * @param d
 	 * @return
 	 */
-	Dart cut_edge_topo(Dart d)
+	inline Dart cut_edge_topo(Dart d)
 	{
 		Dart e = this->to_concrete()->add_dart(); // Create a new dart
 		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
-
-		// TODO: doit on traiter les marker de bord 2/3 dans Map1
-		//		if (this->template is_boundary_marked<2>(d))
-		//			this->template boundary_mark<2>(e);
-
-		//		if (this->template is_boundary_marked<3>(d))
-		//			this->template boundary_mark<3>(e);
-
 		return e;
+	}
+
+	inline void uncut_edge_topo(Dart d)
+	{
+		Dart d1 = phi1(d);
+		// Dart d is linked to the successor of its successor
+		phi1_unsew(d);
+		// Dart d1 is erased
+		delete_dart(d1);
+	}
+
+	inline void collapse_edge_topo(Dart d)
+	{
+		// Dart before d is linked to its successor
+		phi1_unsew(phi_1(d));
+		// Dart d is erased
+		delete_dart(d);
+	}
+
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
+		phi1_sew(phi_1(d), phi_1(e));
+	}
+
+	inline void merge_faces_topo(Dart d, Dart e)
+	{
+		cgogn_assert(!this->same_cell(Face(d), Face(e)));
+		phi1_sew(phi_1(d), phi_1(e));
+	}
+
+	inline void link_faces_topo(Dart d, Dart e)
+	{
+		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
+
+		// cut the edge before d (insert a new dart before d)
+		cut_edge_topo(phi_1(d));
+		
+		// cut the edge before e (insert a new dart before e)
+		cut_edge_topo(phi_1(e));
+		
+		// phi1sew between the 2 new inserted darts
+		phi1_sew(phi_1(d), phi_1(e));
+
+	}
+
+	inline void reverse_face_topo(Dart d)
+	{
+		// Dart e is the first edge of the new face
+		Dart e = phi1(d);
+
+		// Only one edge: nothing to do
+		if (e == d) return;
+
+		// Only two edges: nothing to do
+		if (phi1(e) == d) return;	
+
+		// Detach e from the face of d
+		phi1_unsew(d);
+
+		// While the face of d contains more than two edges
+		Dart dNext = phi1(d);
+		while (dNext != d)
+		{
+			// Unsew the edge after d
+			phi1_unsew(d);
+			// Sew it after e (thus in reverse order)
+			phi1_sew(e, dNext);
+			dNext = phi1(d) ;
+		}
+
+		// Sew the last edge
+		phi1_sew(e, d);
+	}
+
+public:
+
+	inline unsigned int degree(Face d) const
+	{
+		return this->template nb_darts(d);
 	}
 
 protected:

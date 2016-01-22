@@ -72,7 +72,7 @@ public:
 	{
 		map_.foreach_dart_of_PHI21(d,[&](Dart dit)
 		{
-			map_.init_embedding<CMap3::VERTEX>(dit,emb);
+			map_.template init_embedding<CMap3::VERTEX>(dit,emb);
 		});
 	}
 
