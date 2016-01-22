@@ -88,18 +88,14 @@ public:
 	{
 		auto it_this = data_.begin();
 		for (auto c : v.data_)
-		{
 			*(it_this++) += c;
-		}
 	}
 
 	inline void operator-=(const Self& v)
 	{
 		auto it_this = data_.begin();
 		for (auto c : v.data_)
-		{
 			*(it_this++) -= c;
-		}
 	}
 
 	inline const Self operator+(const Self& v) const
@@ -108,9 +104,7 @@ public:
 		auto it_res = res.data_.begin();
 		auto it_v = v.data_.begin();
 		for (auto c : v.data_)
-		{
 			*(it_res++) = c + (*it_v++);
-		}
 		return res;
 	}
 
@@ -120,10 +114,8 @@ public:
 		auto it_res = res.data_.begin();
 		auto it_v = v.data_.begin();
 		for (auto c : data_)
-		{
 			*(it_res++) = c - *(it_v++);
-		}
-				return res;
+		return res;
 	}
 
 	inline friend const Self operator*(const Self& v, Scalar r)

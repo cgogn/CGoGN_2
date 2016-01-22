@@ -58,7 +58,8 @@ enum Orientation3D
 };
 
 template<typename VEC_T>
-class Plane3D{
+class Plane3D
+{
 public:
 	using Vec = VEC_T;
 	//	using Real = typename std::remove_reference<decltype(Vec()[0ul])>::type;
