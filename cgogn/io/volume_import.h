@@ -30,6 +30,7 @@
 #include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap3_builder.h>
 #include <io/dll.h>
+#include <geometry/orientation.h>
 
 #include <tinyxml2.h>
 
@@ -487,43 +488,34 @@ protected:
 				volumes_nb_faces_.push_back(8u);
 
 				std::array<unsigned int, 8> pt;
-				pt[0] = indices[currentOffset];
-				pt[1] = indices[currentOffset+1];
-				pt[2] = indices[currentOffset+2];
-				pt[3] = indices[currentOffset+3];
-				pt[4] = indices[currentOffset+4];
-				pt[5] = indices[currentOffset+5];
-				pt[6] = indices[currentOffset+6];
-				pt[7] = indices[currentOffset+7];
 				VEC3 const& P = position->operator [](verticesID[indices[currentOffset+4]]);
 				VEC3 const& A = position->operator [](verticesID[indices[currentOffset  ]]);
 				VEC3 const& B = position->operator [](verticesID[indices[currentOffset+1]]);
 				VEC3 const& C = position->operator [](verticesID[indices[currentOffset+2]]);
 
-				// TODO : orientation
-				//					if (Geom::testOrientation3D<typename PFP::VEC3>(P,A,B,C) == Geom::OVER)
-				//					{
 
-				//						pt[0] = indices[currentOffset+3];
-				//						pt[1] = indices[currentOffset+2];
-				//						pt[2] = indices[currentOffset+1];
-				//						pt[3] = indices[currentOffset+0];
-				//						pt[4] = indices[currentOffset+7];
-				//						pt[5] = indices[currentOffset+6];
-				//						pt[6] = indices[currentOffset+5];
-				//						pt[7] = indices[currentOffset+4];
-				//					}
-				//					else
-				//					{
-				//						pt[0] = indices[currentOffset+0];
-				//						pt[1] = indices[currentOffset+1];
-				//						pt[2] = indices[currentOffset+2];
-				//						pt[3] = indices[currentOffset+3];
-				//						pt[4] = indices[currentOffset+4];
-				//						pt[5] = indices[currentOffset+5];
-				//						pt[6] = indices[currentOffset+6];
-				//						pt[7] = indices[currentOffset+7];
-				//					}
+				if (geometry::test_orientation_3D(P,A,B,C) == geometry::Orientation3D::OVER)
+				{
+					pt[0] = indices[currentOffset+3];
+					pt[1] = indices[currentOffset+2];
+					pt[2] = indices[currentOffset+1];
+					pt[3] = indices[currentOffset+0];
+					pt[4] = indices[currentOffset+7];
+					pt[5] = indices[currentOffset+6];
+					pt[6] = indices[currentOffset+5];
+					pt[7] = indices[currentOffset+4];
+				}
+				else
+				{
+					pt[0] = indices[currentOffset+0];
+					pt[1] = indices[currentOffset+1];
+					pt[2] = indices[currentOffset+2];
+					pt[3] = indices[currentOffset+3];
+					pt[4] = indices[currentOffset+4];
+					pt[5] = indices[currentOffset+5];
+					pt[6] = indices[currentOffset+6];
+					pt[7] = indices[currentOffset+7];
+				}
 
 				volumes_vertex_indices_.push_back(verticesID[pt[0]]);
 				volumes_vertex_indices_.push_back(verticesID[pt[1]]);
@@ -550,13 +542,9 @@ protected:
 				VEC3 const& B = position->operator [](verticesID[pt[2]]);
 				VEC3 const& C = position->operator [](verticesID[pt[3]]);
 
-				// TODO : orientation
-				//					if (Geom::testOrientation3D<typename PFP::VEC3>(P,A,B,C) == Geom::OVER)
-				//					{
-				//						unsigned int ui=pt[1];
-				//						pt[1] = pt[2];
-				//						pt[2] = ui;
-				//					}
+
+				if (geometry::test_orientation_3D(P,A,B,C) == geometry::Orientation3D::OVER)
+					std::swap(pt[1], pt[2]);
 
 				volumes_vertex_indices_.push_back(verticesID[pt[0]]);
 				volumes_vertex_indices_.push_back(verticesID[pt[1]]);
