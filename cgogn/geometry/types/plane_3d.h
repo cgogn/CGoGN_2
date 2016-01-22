@@ -27,22 +27,11 @@
 #include <type_traits>
 #include <array>
 
-#include <core/utils/name_types.h>
 #include <core/utils/precision.h>
 
 #include <geometry/dll.h>
-#include <geometry/vec.h>
-#include <geometry/geometry_traits.h>
+#include <geometry/types/geometry_traits.h>
 
-
-namespace Eigen
-{
-
-// forward declaration
-	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-	class Matrix;
-
-} // end namespace Eigen
 
 namespace cgogn
 {
@@ -62,7 +51,6 @@ class Plane3D
 {
 public:
 	using Vec = VEC_T;
-	//	using Real = typename std::remove_reference<decltype(Vec()[0ul])>::type;
 	using Scalar = typename vector_traits<Vec>::Scalar;
 	using Self = Plane3D<Vec>;
 
@@ -140,7 +128,6 @@ public:
 public:
 	static std::string cgogn_name_of_type()
 	{
-		vector_traits<Vec>::SIZE;
 		return std::string("geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
 	}
 private:
@@ -150,7 +137,9 @@ private:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
+extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
+extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
 
 } // namespace geometry

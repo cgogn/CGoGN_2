@@ -1,9 +1,30 @@
-#include <geometry/plane_3d.h>
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
+
+#include <geometry/types/plane_3d.h>
 #include <gtest/gtest.h>
 #include <iostream>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+
 
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
@@ -13,7 +34,7 @@ using Plane3D_Eigen = cgogn::geometry::Plane3D<EigenVec3d>;
 TEST(Plane3D_TEST, NameOfType)
 {
 	EXPECT_EQ(cgogn::name_of_type(Plane3D_Array(StdArray(),0.)), "geometry::Plane3D<geometry::Vec_T<std::array<double,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(Plane3D_Eigen(EigenVec3d(),0.)), "geometry::Plane3D<Eigen::Vector3d>");
+	EXPECT_EQ(cgogn::name_of_type(Plane3D_Eigen(EigenVec3d(),0.)), "geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 
 TEST(Plane3D_TEST, Project)

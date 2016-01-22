@@ -28,15 +28,20 @@
 #include <vector>
 #include <list>
 #include <array>
+
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
 
+
 namespace Eigen
 {
+
 // forward declaration
 	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 	class Matrix;
-}
+
+} // end namespace Eigen
+
 namespace cgogn
 {
 
@@ -116,10 +121,8 @@ CGOGN_UTILS_API std::string name_of_type(const double& );
 template <>
 CGOGN_UTILS_API std::string name_of_type(const std::string& );
 
-// Eigen Vec3d
-template <>
-CGOGN_UTILS_API std::string name_of_type(const Eigen::Matrix<double,3,1,0,3,1>& );
-
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& );
 
 template<typename T>
 std::string name_of_type(const std::basic_string<T>)

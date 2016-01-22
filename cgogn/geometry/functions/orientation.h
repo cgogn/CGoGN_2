@@ -21,52 +21,46 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TRAITS_H_
-#define GEOMETRY_TRAITS_H_
+#ifndef GEOMETRY_ORIENTATION_H_
+#define GEOMETRY_ORIENTATION_H_
 
-
-#include <core/utils/definitions.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Core>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-#include <geometry/vec.h>
+#include <geometry/types/plane_3d.h>
 
 namespace cgogn
 {
 
 namespace geometry
 {
-
-template<typename Vec_T>
-struct vector_traits
+/**
+ * return the orientation of point P w.r.t. the plane defined by 3 points
+ * @param P the point
+ * @param A plane point 1
+ * @param B plane point 2
+ * @param C plane point 3
+ * @return the orientation
+ */
+template <typename VEC3_T>
+Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
 {
-};
+	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3_T>(A,B,C).orient(P);
+}
 
-// specialization 1 : cgogn::geometry::Vec_T with a standard container
-template<typename Container>
-struct vector_traits< Vec_T<Container> >
+/**
+ * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
+ * @param P the point
+ * @param N plane normal
+ * @param PP plane point
+ * @return the orientation
+ */
+template <typename VEC3_T>
+Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
 {
-	using Scalar = typename Vec_T<Container>::Scalar;
-};
-
-// specialization 2 : cgogn::geometry::Vec_T with a fixed-size array
-template<typename Scalar_, std::size_t Size>
-struct vector_traits< Vec_T<std::array<Scalar_,Size>> >
-{
-	static const std::size_t SIZE = Size;
-	using Scalar = Scalar_;
-};
-
-// specialization 3 : Eigen::Vector
-template<typename Scalar_, int Rows, int Options>
-struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
-{
-	static const std::size_t SIZE = Rows;
-	using Scalar = Scalar_;
-};
-
+	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+}
 
 } // namespace geometry
 } // namespace cgogn
 
-#endif // GEOMETRY_TRAITS_H_
+#endif // GEOMETRY_ORIENTATION_H_

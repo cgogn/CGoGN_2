@@ -17,7 +17,7 @@ namespace cgogn
 class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 
-	using CMap1 = CMap1<DefaultMapTraits>;
+	using CMap1 = cgogn::CMap1<DefaultMapTraits>;
 
 public:
 	CMap1 cmap_;
@@ -34,7 +34,7 @@ protected:
 	}
 
 	void TearDown()
-  	{}
+	{}
 };
 
 TEST_F(CMap1TopoTest, testFaceDegree)
@@ -48,8 +48,8 @@ TEST_F(CMap1TopoTest, testCutEdge)
 	Dart e = this->cut_edge_topo(d_);
 
 	EXPECT_EQ(d1.index, this->phi1(e).index);
- 	EXPECT_EQ(d_.index, this->phi_1(e).index);
- 	EXPECT_EQ(11, this->degree(d_));
+	EXPECT_EQ(d_.index, this->phi_1(e).index);
+	EXPECT_EQ(11, this->degree(d_));
 }
 
 TEST_F(CMap1TopoTest, testUncutEdge)
@@ -59,7 +59,7 @@ TEST_F(CMap1TopoTest, testUncutEdge)
 	this->uncut_edge_topo(e);
 
 	EXPECT_EQ(d1.index, this->phi1(d_).index);
- 	EXPECT_EQ(10, this->degree(d_));
+	EXPECT_EQ(10, this->degree(d_));
 }
 
 TEST_F(CMap1TopoTest, testSplitFace)
@@ -69,7 +69,7 @@ TEST_F(CMap1TopoTest, testSplitFace)
 	this->uncut_edge_topo(e);
 
 	EXPECT_EQ(d1.index, this->phi1(d_).index);
- 	EXPECT_EQ(10, this->degree(d_));
+	EXPECT_EQ(10, this->degree(d_));
 }
 
 // TEST_F(CMap1TopoTest, testDeleteFace)

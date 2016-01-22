@@ -3,11 +3,6 @@
 #include <ctime>
 
 #include <core/cmap/cmap3.h>
-
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
-
 #include <io/map_import.h>
 
 

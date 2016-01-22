@@ -21,82 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#define CGOGN_GEOMETRY_DLL_EXPORT
+#define GEOMETRY_VEC_CPP_
 
-#include <core/utils/name_types.h>
+#include <geometry/types/vec.h>
 
 namespace cgogn
 {
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& )
-{ return "bool"; }
+namespace geometry
+{
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char& )
-{ return "char"; }
+template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
+template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const wchar_t& )
-{ return "wchar_t"; }
-
-#ifndef _MSC_VER
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char16_t& )
-{ return "char16_t"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char32_t& )
-{ return "char32_t"; }
-#endif
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const short& )
-{ return "short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const int& )
-{ return "int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long& )
-{ return "long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& )
-{ return "long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& )
-{ return "signed char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& )
-{ return "unsigned char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& )
-{ return "unsigned short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& )
-{ return "unsigned int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& )
-{ return "unsigned long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& )
-{ return "unsigned long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const float& )
-{ return "float"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const double& )
-{ return "double"; }
-
-
+} // namespace geometry
 } // namespace cgogn

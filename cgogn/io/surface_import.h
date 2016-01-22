@@ -25,12 +25,14 @@
 #define IO_SURFACE_IMPORT_H_
 
 #include <istream>
-#include <core/container/chunk_array_container.h>
 
+#include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
-#include <io/dll.h>
 #include <core/utils/string.h>
+
+#include <io/dll.h>
+
 
 namespace cgogn
 {
