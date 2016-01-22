@@ -141,6 +141,20 @@ protected:
 		return idx;
 	}
 
+	/**
+	 * \brief Removes a topological element of PRIM_SIZE 
+	 * from the topology container
+	 * \details Removing a topological element consists in
+	 * removing PRIM_SIZE lines of the topological container starting
+	 * from index 
+	 * 
+	 * \param int [description]
+	 */
+	inline void remove_topology_element(unsigned int index)
+	{
+		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
+	}
+
 	template <Orbit ORBIT>
 	inline unsigned int add_attribute_element()
 	{
@@ -149,6 +163,14 @@ protected:
 		unsigned int idx = this->attributes_[ORBIT].template insert_lines<1>();
 		this->attributes_[ORBIT].init_markers_of_line(idx);
 		return idx;
+	}
+
+	template <Orbit ORBIT>
+	inline void remove_attribute_element(unsigned int index)
+	{
+		static_assert(ORBIT < NB_ORBITS,  "Unknown orbit parameter");
+
+		this->attributes_[ORBIT].template remove_lines<1>(index);
 	}
 
 public:
@@ -368,9 +390,9 @@ public:
 	 * @param c2 second cell to compare
 	 */
 	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2)
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		ConcreteMap* cmap = to_concrete();
+		const ConcreteMap* cmap = to_concrete();
 		bool result = false;
 		cmap->template foreach_dart_of_orbit_until<ORBIT>(c1, [&] (Dart d) -> bool
 		{
@@ -381,6 +403,19 @@ public:
 			}
 			return true;
 		});
+		return result;
+	}
+
+	template <Orbit ORBIT>
+	unsigned int nb_darts(Cell<ORBIT> c) const
+	{
+		const ConcreteMap* cmap = to_concrete();
+		unsigned int result = 0u;
+		cmap->template foreach_dart_of_orbit<ORBIT>(c, [&result](Dart)
+		{
+			++result;
+		});
+
 		return result;
 	}
 

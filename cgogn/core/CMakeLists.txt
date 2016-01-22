@@ -89,6 +89,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
  )
 
 add_subdirectory(examples)
+
 if(CGOGN_BUILD_TESTS)
 	add_subdirectory(tests)
 endif()
