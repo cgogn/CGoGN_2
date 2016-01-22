@@ -31,6 +31,8 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/utils/thread_barrier.h>
+
 namespace cgogn
 {
 
@@ -411,11 +413,7 @@ public:
 	{
 		const ConcreteMap* cmap = to_concrete();
 		unsigned int result = 0u;
-		cmap->template foreach_dart_of_orbit<ORBIT>(c, [&result](Dart)
-		{
-			++result;
-		});
-
+		cmap->template foreach_dart_of_orbit<ORBIT>(c, [&result] (Dart) { ++result; });
 		return result;
 	}
 
@@ -488,6 +486,37 @@ public:
 			 this->topology_.next(d.index))
 		{
 			f(d);
+		}
+	}
+
+	template <typename FUNC>
+	inline void parallel_foreach_dart(const FUNC& f, unsigned int nb_threads = NB_THREADS - 1)
+	{
+		std::vector<Dart>* vd = new std::vector<Dart>[nb_threads];
+		for (unsigned int i = 0; i < nb_threads; ++i)
+			vd[i].reserve(PARALLEL_BUFFER_SIZE);
+
+		unsigned int nb = 0;
+		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
+			 d != end && nb < nb_threads * PARALLEL_BUFFER_SIZE;
+			 this->topology_.next(d.index))
+		{
+			vd[nb % nb_threads].push_back(d);
+			++nb;
+		}
+
+		Barrier sync1(nb_threads + 1);
+		Barrier sync2(nb_threads + 1);
+
+		bool finished = false;
+
+		std::thread** threads = new std::thread*[nb_threads];
+		ThreadFunction<FUNC>** tfs = new ThreadFunction<FUNC>*[nb_threads];
+
+		for (unsigned int i = 0; i < nb_threads; ++i)
+		{
+			tfs[i] = new ThreadFunction<FUNC>(f, vd[i], sync1, sync2, finished, i+1);
+			threads[i] = new std::thread( std::ref( *(tfs[i]) ) );
 		}
 	}
 

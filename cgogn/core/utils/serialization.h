@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_SERIALIZATION_H_
-#define CORE_SERIALIZATION_H_
+#ifndef CORE_UTILS_SERIALIZATION_H_
+#define CORE_UTILS_SERIALIZATION_H_
 
 #include <iostream>
 #include <vector>
@@ -268,4 +268,4 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity)
 
 } // namespace cgogn
 
-#endif // CORE_SERIALIZATION_H_
+#endif // CORE_UTILS_SERIALIZATION_H_

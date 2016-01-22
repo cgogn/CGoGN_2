@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_MAKE_UNIQUE_H
-#define UTILS_MAKE_UNIQUE_H
+#ifndef CORE_UTILS_MAKE_UNIQUE_H
+#define CORE_UTILS_MAKE_UNIQUE_H
 
 #include <cstddef>
 #include <memory>
@@ -77,4 +77,4 @@ make_unique(Args&&...) = delete;
 
 } // namespace cgogn
 
-#endif // UTILS_MAKE_UNIQUE_H
+#endif // CORE_UTILS_MAKE_UNIQUE_H

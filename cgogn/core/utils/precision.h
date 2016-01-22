@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_PRECISION_H_
-#define UTILS_PRECISION_H_
+#ifndef CORE_UTILS_PRECISION_H_
+#define CORE_UTILS_PRECISION_H_
 
 #include <type_traits>
 #include <cmath>
@@ -41,4 +41,4 @@ auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::
 	return diff <= std::max(x,y) * max_rel_diff;
 }
 }
-#endif // UTILS_PRECISION_H_
+#endif // CORE_UTILS_PRECISION_H_
