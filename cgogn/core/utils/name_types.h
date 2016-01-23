@@ -24,10 +24,19 @@
 #ifndef CORE_BASIC_NAME_TYPES_H_
 #define CORE_BASIC_NAME_TYPES_H_
 
+#include <typeinfo>
 #include <string>
 #include <vector>
 #include <list>
 #include <array>
+
+#ifdef __GNUG__
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+#include <limits>
+#include <iostream>
+#endif // __GNUG__
 
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
@@ -44,6 +53,25 @@ namespace Eigen
 
 namespace cgogn
 {
+
+template<typename T>
+std::string get_typename_from_compiler()
+{
+	std::string&& type_name = typeid(T).name();
+
+	#ifdef __GNUG__
+	int status = std::numeric_limits<int>::max();
+	std::unique_ptr<char, void(*)(void*)> res {abi::__cxa_demangle(type_name.c_str(), NULL, NULL, &status), std::free};
+	if (status == 0)
+		return std::string(res.get());
+	else
+		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
+	#endif // __GNUG__
+
+	return std::move(type_name);
+}
+
+
 
 /**
  * @brief function that give a name to a type.
@@ -156,7 +184,7 @@ class AddTypeName : public T
 {
 public:
 
-	static std::string cgogn_name_of_type() { return "UNKNOWN"; }
+	static std::string cgogn_name_of_type() { return  get_typename_from_compiler<T>(); }
 };
 
 } // namespace cgogn
