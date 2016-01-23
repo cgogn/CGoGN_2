@@ -37,12 +37,31 @@ int main(int argc, char** argv)
 
 	cgogn::thread_start();
 	Map2 map;
+
 	for (int k = 0 ; k < 2 ; ++k)
 	{
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
+
+
+		unsigned int nb_darts = 0;
+		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
+		std::cout << "nb darts -> " << nb_darts << std::endl;
+
+		unsigned int nb_darts_2 = 0;
+		unsigned int nb_darts_per_thread[cgogn::NB_THREADS - 1];
+		for (unsigned int& n : nb_darts_per_thread)
+			n = 0;
+		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
+		{
+			nb_darts_per_thread[thread_index]++;
+		});
+		for (unsigned int n : nb_darts_per_thread)
+			nb_darts_2 += n;
+		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
+
 
 		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
 		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
@@ -52,26 +71,38 @@ int main(int argc, char** argv)
 		map.enable_topo_cache<Map2::VERTEX>();
 		map.enable_topo_cache<Map2::EDGE>();
 
-		unsigned int nbf = 0;
+
+		unsigned int nb_faces = 0;
+		map.foreach_cell<Map2::FACE>([&nb_faces] (Map2::Face) { nb_faces++; });
+		std::cout << "nb faces -> " << nb_faces << std::endl;
+
+		unsigned int nb_faces_2 = 0;
+		unsigned int nb_faces_per_thread[cgogn::NB_THREADS - 1];
+		for (unsigned int& n : nb_faces_per_thread)
+			n = 0;
+		map.parallel_foreach_cell<Map2::FACE>([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
+		{
+			nb_faces_per_thread[thread_index]++;
+		});
+		for (unsigned int n : nb_faces_per_thread)
+			nb_faces_2 += n;
+		std::cout << "nb faces // -> " << nb_faces_2 << std::endl;
+
 
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
+			map.parallel_foreach_cell<Map2::FACE>([&] (Map2::Face f, unsigned int)
 			{
-				++nbf;
 				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
 				Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
 				face_normal[f] = v1.cross(v2);
 			});
 		}
 
-		unsigned int nbv = 0;
-
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
+			map.parallel_foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v, unsigned int)
 			{
-				++nbv;
 				Vec3 sum({0, 0, 0});
 				unsigned int nb_incident = 0;
 				map.foreach_incident_face(v, [&] (Map2::Face f)
@@ -83,24 +114,11 @@ int main(int argc, char** argv)
 			});
 		}
 
-		unsigned int nbe = 0;
-
-		for	(unsigned int i = 0; i < 10; ++i)
-		{
-			map.foreach_cell<Map2::EDGE>([&nbe] (Map2::Edge)
-			{
-				++nbe;
-			});
-		}
-
-		std::cout << "nb vertices -> " << nbv << std::endl;
-		std::cout << "nb edges -> " << nbe << std::endl;
-		std::cout << "nb faces -> " << nbf << std::endl;
-
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 	}
+
 	cgogn::thread_stop();
 	return 0;
 }

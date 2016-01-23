@@ -65,19 +65,30 @@ private:
 	Barrier& sync1_;
 	Barrier& sync2_;
 	bool& finished_;
+	unsigned int thread_order_;
 	unsigned int thread_index_;
-	std::thread::id& thread_id_ref_;
+	std::thread::id* thread_id_pointer_;
 
 public:
 
-	ThreadFunction(FUNC f, std::vector<ELEM>& elements, Barrier& sync1, Barrier& sync2, bool& finished, unsigned int thread_index, std::thread::id& thread_id_ref) :
+	ThreadFunction(
+		FUNC f,
+		std::vector<ELEM>& elements,
+		Barrier& sync1,
+		Barrier& sync2,
+		bool& finished,
+		unsigned int thread_order,
+		unsigned int thread_index,
+		std::thread::id* thread_id_pointer
+	) :
 		f_(f),
 		elements_(elements),
 		sync1_(sync1),
 		sync2_(sync2),
 		finished_(finished),
+		thread_order_(thread_order),
 		thread_index_(thread_index),
-		thread_id_ref_(thread_id_ref)
+		thread_id_pointer_(thread_id_pointer)
 	{}
 
 	unsigned int get_thread_index() const
@@ -87,16 +98,21 @@ public:
 
 	void operator()()
 	{
-		thread_id_ref_ = std::this_thread::get_id();
+		thread_start();
 
-		while (!finished_)
+		*thread_id_pointer_ = std::this_thread::get_id();
+
+		while (true)
 		{
+			sync2_.wait(); // wait for vectors to be filled
+			if (finished_)
+				break;
 			for (ELEM& e : elements_)
-				f_(e, thread_index_);
-			elements_.clear();
-			sync1_.wait(); // wait every body has finished
-			sync2_.wait(); // wait vectors has been refilled
+				f_(e, thread_order_);
+			sync1_.wait(); // wait every thread has finished
 		}
+
+		thread_stop();
 	}
 };
 

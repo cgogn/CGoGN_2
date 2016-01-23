@@ -40,12 +40,12 @@ class Barrier
 {
 private:
 
-	unsigned int m_initCount;
-	unsigned int m_count;
-	unsigned int m_generation;
+	unsigned int init_count_;
+	unsigned int count_;
+	unsigned int generation_;
 	
-	std::mutex m_protect;
-	std::condition_variable m_cond;
+	std::mutex protect_;
+	std::condition_variable cond_;
 
 public:
 
@@ -53,26 +53,25 @@ public:
 	* constructor
 	* @param count number of threads to syncronize
 	*/
-	inline Barrier(unsigned int count):
-		m_initCount(count), m_count(count), m_generation(0)
+	inline Barrier(unsigned int count) :
+		init_count_(count),
+		count_(count),
+		generation_(0)
 	{}
 	
-	inline bool wait()
+	inline void wait()
 	{
-		std::unique_lock<std::mutex> lock(m_protect);
-		unsigned int gen = m_generation;
-		if (--m_count == 0)
+		std::unique_lock<std::mutex> lock(protect_);
+		unsigned int gen = generation_;
+
+		if (--count_ == 0)
 		{
-			m_generation++;
-			m_count = m_initCount;
-			m_cond.notify_all();
-			return true;
+			++generation_;
+			count_ = init_count_;
+			cond_.notify_all();
 		}
-
-		while (gen == m_generation)
-			m_cond.wait(lock);
-
-		return false;
+		else
+			cond_.wait(lock, [this, gen] () { return gen != generation_; });
 	}
 };
 

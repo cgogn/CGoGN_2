@@ -144,7 +144,7 @@ public:
 		for (unsigned int i = 0; i < NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
 
-		thread_ids_.reserve(NB_THREADS + 1);
+		thread_ids_.reserve(NB_THREADS);
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
 
@@ -275,16 +275,17 @@ protected:
 		return i;
 	}
 
-	inline std::thread::id& get_thread_id_ref(unsigned int thread_index)
-	{
-		return thread_ids_[thread_index];
-	}
-
 	inline unsigned int get_new_thread_index()
 	{
 		cgogn_assert(thread_ids_.size() < NB_THREADS);
-		thread_ids_.resize(thread_ids_.size() + 1);
+//		thread_ids_.resize(thread_ids_.size() + 1);
+		thread_ids_.push_back(std::thread::id());
 		return thread_ids_.size() - 1;
+	}
+
+	inline std::thread::id* get_thread_id_pointer(unsigned int thread_index)
+	{
+		return &(thread_ids_[thread_index]);
 	}
 
 	inline void remove_thread(unsigned int thread_index)
