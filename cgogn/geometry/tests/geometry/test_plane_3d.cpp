@@ -33,8 +33,8 @@ using Plane3D_Eigen = cgogn::geometry::Plane3D<EigenVec3d>;
 
 TEST(Plane3D_TEST, NameOfType)
 {
-	EXPECT_EQ(cgogn::name_of_type(Plane3D_Array(StdArray(),0.)), "geometry::Plane3D<geometry::Vec_T<std::array<double,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(Plane3D_Eigen(EigenVec3d(),0.)), "geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(Plane3D_Array(StdArray(),0.)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<double,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(Plane3D_Eigen(EigenVec3d(),0.)), "cgogn::geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 
 TEST(Plane3D_TEST, Project)

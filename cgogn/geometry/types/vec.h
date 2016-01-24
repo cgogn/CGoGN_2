@@ -183,7 +183,7 @@ public:
 
 	static std::string cgogn_name_of_type()
 	{
-		return std::string("geometry::Vec_T<") + cgogn::name_of_type(Container()) + std::string(">");
+		return std::string("cgogn::geometry::Vec_T<") + cgogn::name_of_type(Container()) + std::string(">");
 	}
 
 	const Container& to_container() const

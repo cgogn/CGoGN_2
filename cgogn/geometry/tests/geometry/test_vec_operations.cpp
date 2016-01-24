@@ -30,6 +30,12 @@
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
 
+TEST(VEC_OP_TEST, CGOGN_Typename)
+{
+	EXPECT_EQ(cgogn::name_of_type(StdArray()),"cgogn::geometry::Vec_T<std::array<double,3>>");
+	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
+}
+
 TEST(VEC_OP_TEST, Constructor)
 {
 	StdArray vec1 = {0.,0.,0.};

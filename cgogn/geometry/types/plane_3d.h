@@ -128,7 +128,7 @@ public:
 public:
 	static std::string cgogn_name_of_type()
 	{
-		return std::string("geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
+		return std::string("cgogn::geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
 	}
 private:
 	Vec normal_;

@@ -21,82 +21,42 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
-
 #include <core/utils/name_types.h>
+#include <core/basic/cell.h>
+#include <gtest/gtest.h>
 
-namespace cgogn
+TEST(NameTypesTest, NumTypes)
 {
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& )
-{ return "bool"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char& )
-{ return "char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const wchar_t& )
-{ return "wchar_t"; }
+	EXPECT_EQ(cgogn::name_of_type(bool()), "bool");
+	EXPECT_EQ(cgogn::name_of_type(char()), "char");
+	EXPECT_EQ(cgogn::name_of_type(signed char()), "signed char");
+	EXPECT_EQ(cgogn::name_of_type(unsigned char()), "unsigned char");
+	EXPECT_EQ(cgogn::name_of_type(wchar_t()), "wchar_t");
 
 #ifndef _MSC_VER
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char16_t& )
-{ return "char16_t"; }
+	EXPECT_EQ(cgogn::name_of_type(char16_t()), "char16_t");
+	EXPECT_EQ(cgogn::name_of_type(char32_t()), "char32_t");
+#else
+	EXPECT_EQ(cgogn::name_of_type(char16_t()), "unsigned short");
+	EXPECT_EQ(cgogn::name_of_type(char32_t()), "unsigned int");
+#endif // _MSC_VER
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char32_t& )
-{ return "char32_t"; }
-#endif
+	EXPECT_EQ(cgogn::name_of_type(short()), "short");
+	EXPECT_EQ(cgogn::name_of_type(unsigned short()), "unsigned short");
+	EXPECT_EQ(cgogn::name_of_type(int()), "int");
+	EXPECT_EQ(cgogn::name_of_type(unsigned int()), "unsigned int");
+	EXPECT_EQ(cgogn::name_of_type(long()), "long");
+	EXPECT_EQ(cgogn::name_of_type(unsigned long()), "unsigned long");
+	EXPECT_EQ(cgogn::name_of_type(long long()), "long long");
+	EXPECT_EQ(cgogn::name_of_type(unsigned long long()), "unsigned long long");
+	EXPECT_EQ(cgogn::name_of_type(float()), "float");
+	EXPECT_EQ(cgogn::name_of_type(double()), "double");
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const short& )
-{ return "short"; }
+	EXPECT_EQ(cgogn::name_of_type(std::string()), "std::basic_string<char>");
+	EXPECT_EQ(cgogn::name_of_type(std::vector<double>()), "std::vector<double>");
+	EXPECT_EQ(cgogn::name_of_type(std::vector<std::list<double>>()), "std::vector<std::list<double>>");
+	EXPECT_EQ(cgogn::name_of_type(std::array<double,3>()), "std::array<double,3>");
 
-template <>
-CGOGN_UTILS_API std::string name_of_type(const int& )
-{ return "int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long& )
-{ return "long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& )
-{ return "long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& )
-{ return "signed char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& )
-{ return "unsigned char"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& )
-{ return "unsigned short"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& )
-{ return "unsigned int"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& )
-{ return "unsigned long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& )
-{ return "unsigned long long"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const float& )
-{ return "float"; }
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const double& )
-{ return "double"; }
-
-
-} // namespace cgogn
+	EXPECT_EQ(cgogn::name_of_type(cgogn::Dart()), "cgogn::Dart");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::Cell<cgogn::Orbit::PHI1>()), "cgogn::Cell<cgogn::Orbit::PHI1>");
+}
