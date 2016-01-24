@@ -30,6 +30,9 @@
 #include <list>
 #include <array>
 #include <type_traits>
+#include <regex>
+#include <algorithm>
+#include <cctype>
 
 #ifdef __GNUG__
 #include <cstdlib>
@@ -38,12 +41,6 @@
 #include <limits>
 #include <iostream>
 #endif // __GNUG__
-
-#ifdef _MSC_VER
-#include <algorithm>
-#include <cctype>
-#include <regex>
-#endif // _MSC_VER
 
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
@@ -121,9 +118,19 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 	int status = std::numeric_limits<int>::max();
 	std::unique_ptr<char, void(*)(void*)> res{ abi::__cxa_demangle(type_name.c_str(), NULL, NULL, &status), std::free };
 	if (status == 0)
-		return std::string(res.get());
+		type_name = std::string(res.get());
 	else
 		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
+
+	// integer postfixes
+	{
+		std::regex regex("([0-9]+)(ul|l)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch m;
+		std::regex_search(type_name, m, regex);
+		if (!m[1].str().empty())
+			type_name = std::regex_replace(type_name, regex, m[1].str());
+	}
+
 #else // __GNUG__
 #ifdef _MSC_VER
 	// fix MSVC displaying "__int64" instead of long long
@@ -140,17 +147,16 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 		type_name = std::regex_replace(type_name, rege_struct, "");
 	}
 
-	// removing spaces
-		{
-			std::regex regex("([a-z]*)([[:space:]]+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
-			std::smatch m;
-			std::regex_search(type_name, m, regex);
-			if (m[1].str().empty())
-				type_name = std::regex_replace(type_name, regex, "");
-		}
-
 #endif // _MSC_VER
 #endif // __GNUG__
+	// removing spaces
+	{
+		std::regex regex("([a-z]*)([[:space:]]+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch m;
+		std::regex_search(type_name, m, regex);
+		if (m[1].str().empty())
+			type_name = std::regex_replace(type_name, regex, "");
+	}
 		return type_name;
 }
 
