@@ -24,7 +24,7 @@
 #ifndef CORE_MRCMAP_MRCMAP2_H_
 #define CORE_MRCMAP_MRCMAP2_H_
 
-#include <core/map/cmap2.h>
+#include <core/cmap/cmap2.h>
 #include <deque>
 #include <stack>
 #include <array>
@@ -42,14 +42,15 @@ public:
 	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
 
 	template<typename T>
-	using ChunkArray =  typename CMap2::template ChunkArray<T>;
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 
+	using Vertex =  typename Inherit::Vertex;
 
 protected:
 	/**
 	 * pointers to maps (one for each level)
 	 */
-	std::deque<CMap2*> maps_;
+	std::deque<Inherit*> maps_;
 
 	/**
 	 * pointers to attributs that stores next level 
@@ -73,35 +74,34 @@ protected:
 	 */
 	unsigned int current_level_;
 
-	//TODO le niveau courant doit etre par thread 
-	//appele sur la carte et non plus un champs de
-	//la classe carte
+	//TODO il y a le niveau courant de la carte 
+	// mais il devrait aussi etre par thread 
 
 	inline void add_level_back()
 	{
-		CMap2* last = maps_.back();
+		Inherit* last = maps_.back();
 		maps_.emplace_back(last);
 	}
 
 	inline void remove_level_back()
 	{
-		CMap2* back = maps_.pop_back();
+		Inherit* back = maps_.pop_back();
 		delete back;
 	}
 
 	inline void add_level_front()
 	{
-		CMap2* first = maps_.front();
+		Inherit* first = maps_.front();
 		maps_.emplace_front(first);
 	}
 
 	inline void remove_level_front()
 	{
-		CMap2* front = maps_.pop_front();
+		Inherit* front = maps_.pop_front();
 		delete front;
 	}
 
-	inline CMap2* get_current_cmap() const
+	inline Inherit* get_current_cmap() const
 	{
 		return maps_[get_current_level()];
 	}
@@ -156,30 +156,15 @@ public:
 
 	inline void push_level()
 	{
-		levels_stack_.push_back(get_current_level()) ;
+		levels_stack_.push(get_current_level()) ;
 	}
 
 	inline void pop_level()
 	{
-		set_current_level(levels_stack_.back()) ;
-		levels_stack_.pop_back() ;
+		set_current_level(levels_stack_.top()) ;
+		levels_stack_.pop() ;
 	}
 
-
-	inline void split_face_regular(Vertex d, Vertex e)
-	{
-		get_current_cmap()->split_face(d,e);
-	}
-
-	inline void split_face_adaptive(Vertex d, Vertex e)
-	{
-		get_current_cmap(i)->split_face(d,e);
-
-		for(unsigned int i = get_current_level()-1 ; i > 0 ; --i)
-		{
-			get_cmap_at(i)->split_face(previous_level(d), previous_level(e));
-		}
-	}
 protected:
 
 	/*******************************************************************************
@@ -221,6 +206,16 @@ protected:
 		}
 	}
 };
+
+template <typename MAP_TRAITS>
+struct MRCMap2Type
+{
+	typedef MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>> TYPE;
+};
+
+template <typename MAP_TRAITS>
+using MRCMap2 = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
+
 
 /*
 template <typename MAP_TRAITS>
