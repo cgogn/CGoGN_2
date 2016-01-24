@@ -29,21 +29,26 @@
 namespace cgogn
 {
 
-class CMap2MR
+template <typename MAP_TRAITS>
+class MRCMap2PrimalRegular
 {
+public:
+	typedef MRCMap2<MAP_TRAITS> MRCMap;
+	typedef MRCMap2PrimalRegular<MAP_TRAITS> Self;
+
 
 protected:
-	MRCMap2& mrcmap_;
+	MRCMap& mrcmap_;
 
 	std::vector<MRFilter*> synthesis_filters_;
 	std::vector<MRFilter*> analysis_filters_;
 
 public:
-	CMap2MR(MRCMap2& mrmap) : 
-		mrcmap_(mrmap)
+	MRCMap2PrimalRegular(MRCMap& mrcmap) : 
+		mrcmap_(mrcmap)
 	{}
 
-	~CMap2MR()
+	~MRCMap2PrimalRegular()
 	{
 		unsigned int level = mrcmap_.get_current_level();
 		unsigned int max_level = mrcmap_.get_maximum_level();
@@ -55,8 +60,12 @@ public:
 			mrcmap_.remove_level_front();
 	}
 
-	// level management
-	void add_new_level(bool do_tri_quad)
+	MRCMap2PrimalRegular(Self const&) = delete;
+	MRCMap2PrimalRegular(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
+	void add_level(bool do_tri_quad)
 	{
 		mrcmap_.push_level();
 
@@ -64,7 +73,7 @@ public:
 		mrcmap_.add_level_back();
 
 		//cut edges
-		mrcmap_.foreach_cell<MRCMap2::Edge, TraversalStrategy::FORCE_DART_MARKING>([&] (MRCMap2::Edge e)
+		mrcmap_.foreach_cell<Inherit::Edge, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			mrcmap_.cut_edge(e);
 			//skip the two resulting edges d and phi1(d) ?
@@ -72,10 +81,10 @@ public:
 		});
 
 		// split faces
-		mrcmap_.foreach_cell<MRCMap2::Face, TraversalStrategy::FORCE_DART_MARKING>([&] (MRCMap2::Face f)
+		mrcmap_.foreach_cell<Inherit::Face, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face f)
 		{
 			//TODO search the oldest dart of the face
-			Face old = f;
+			typename Inherit::xFace old = f;
 			if(mrcmap_.get_dart_level(old) == mrcmap_.get_maximum_level())
 				old = mrcmap_.phi1(old);
 
@@ -111,50 +120,48 @@ public:
 		mrcmap_.pop_level();
 	}
 
-
-	//
-	void add_synthesis_filter(MRFilter* f) 
+	void add_synthesis_filter(Algo::MR::Filter* f) 
 	{ 
 		synthesis_filters_.push_back(f); 
 	}
-	
-	void add_analysis_filter(MRFilter* f) 
-	{
+
+	void add_analysis_filter(Algo::MR::Filter* f) 
+	{ 
 		analysis_filters_.push_back(f); 
 	}
 
-	void clear_synthesis_filter() 
+	void clear_synthesis_filters() 
 	{ 
 		synthesis_filters_.clear(); 
 	}
 	
-	void clear_analysis_filter() 
-	{
+	void clear_analysis_filters() 
+	{ 
 		analysis_filters_.clear(); 
-	}
-
-	void synthesis()
-	{
-		cgogn_message_assert(mrcmap_.get_current_level() < mrcmap_.get_maximum_level(), "synthesis : called on max level") ;
-
-		for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
-			(*synthesis_filters_[i])() ;
-
-		mrcmap_.inc_current_level() ;
 	}
 
 	void analysis()
 	{
-		cgogn_message_assert(mrcmap_.get_current_level() > 0, "analysis : called on level 0") ;
+		cgogn_message_assert(mrcmap_.getCurrentLevel() > 0, "analysis : called on level 0") ;
 
-		mrcmap_.dec_current_level() ;
+		mrcmap_.decCurrentLevel() ;
 
 		for(unsigned int i = 0; i < analysis_filters_.size(); ++i)
 			(*analysis_filters_[i])() ;
 	}
 
+	void synthesis()
+	{
+		cgogn_message_assert(mrcmap_.getCurrentLevel() < mrcmap_.getMaxLevel(), "synthesis : called on max level") ;
+
+		for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
+			(*synthesis_filters_[i])() ;
+
+		mrcmap_.incCurrentLevel() ;
+	}
+
 };
 
-}
+} // namespace cgogn
 
 #endif // MR_MRCMAP2_REGULAR_H_
