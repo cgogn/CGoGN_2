@@ -49,6 +49,7 @@ enum Orientation3D
 template<typename VEC_T>
 class Plane3D
 {
+	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 public:
 	using Vec = VEC_T;
 	using Scalar = typename vector_traits<Vec>::Scalar;
@@ -56,9 +57,7 @@ public:
 
 	Plane3D() = delete;
 	Plane3D(const Self&) = default;
-	Plane3D(Self&&) = default;
 	Self& operator=(const Self&) = default;
-	Self& operator=(Self&&) = default;
 
 	// construct the plane from a normal vector and a scalar
 	inline Plane3D(const Vec& normal, Scalar d) :

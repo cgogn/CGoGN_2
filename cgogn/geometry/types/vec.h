@@ -59,13 +59,8 @@ public:
 
 	Vec_T() = default;
 	inline Vec_T(const Container& cont) : data_(cont) {}
-	inline Vec_T(Container&& cont) : data_(std::move(cont)) {}
-
-	Vec_T(const Self&) = default;
-	Vec_T(Self&&) = default;
-
-	Self& operator=(const Self&) = default;
-	Self& operator=(Self&&) = default;
+	Vec_T(const Self&v) = default;
+	Self& operator=(const Self& v) = default;
 
 
 	inline Vec_T(std::initializer_list<Scalar> const & init_list)
