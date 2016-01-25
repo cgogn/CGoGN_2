@@ -43,9 +43,6 @@ int main(int argc, char** argv)
 	{
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-
 
 		unsigned int nb_darts = 0;
 		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
@@ -88,6 +85,10 @@ int main(int argc, char** argv)
 		for (unsigned int n : nb_faces_per_thread)
 			nb_faces_2 += n;
 		std::cout << "nb faces // -> " << nb_faces_2 << std::endl;
+
+
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
 
 
 		for	(unsigned int i = 0; i < 10; ++i)

@@ -34,7 +34,14 @@ namespace cgogn
 /**
  * \brief The maximum nunmber of threads created by the API.
  */
-const unsigned int NB_THREADS = 8u;
+const unsigned int MAX_NB_THREADS = 8u;
+CGOGN_UTILS_API extern unsigned int NB_THREADS;
+
+inline unsigned int get_nb_threads()
+{
+	unsigned int c = std::thread::hardware_concurrency();
+	return c < MAX_NB_THREADS ? c : MAX_NB_THREADS;
+}
 
 const unsigned int PARALLEL_BUFFER_SIZE = 1024u;
 
