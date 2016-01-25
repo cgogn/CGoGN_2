@@ -32,6 +32,9 @@ if(CGOGN_USE_TSAN)
 endif(CGOGN_USE_TSAN)
 
 if (NOT MSVC)
+	find_package(Threads REQUIRED)
+	add_flags(CMAKE_CXX_FLAGS ${CMAKE_THREAD_LIBS_INIT})
+
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)
 
