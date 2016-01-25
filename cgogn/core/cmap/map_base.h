@@ -548,7 +548,7 @@ public:
 		std::vector<std::vector<Dart>> vd2(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
+			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
 			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
 		}
 
@@ -766,7 +766,7 @@ protected:
 		std::vector<std::vector<Cell<ORBIT>>> vd2(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
+			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
 			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
 		}
 
@@ -873,7 +873,7 @@ protected:
 		std::vector<std::vector<Cell<ORBIT>>> vd2(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
+			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
 			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
 		}
 
@@ -974,7 +974,7 @@ protected:
 		std::vector<std::vector<Cell<ORBIT>>> vd2(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
+			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
 			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
 		}
 
