@@ -105,6 +105,7 @@ else() # MSVC
 	# C4714 - marked as __forceinline but not inlined
 	# C4505 - unreferenced local function has been removed (impossible to deactive selectively)
 	# C4910 - __declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
-	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910")
+	# C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910 /wd4251")
 
 endif()

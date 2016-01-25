@@ -58,7 +58,6 @@ set(SOURCE_FILES
 
 	utils/assert.cpp
 	utils/thread.cpp
-	utils/name_types.cpp
 	utils/serialization.cpp
 )
 

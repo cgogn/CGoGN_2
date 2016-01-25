@@ -76,12 +76,6 @@ struct Dart
 	{}
 
 	/**
-	 * \brief Name of this CGoGN type
-	 * \return a string representing the name of the class
-	 */
-	static std::string cgogn_name_of_type() { return "Dart"; }
-
-	/**
 	 * \brief Tests the nullity of the dart.
 	 * \retval true if the dart is nil
 	 * \retval false otherwise

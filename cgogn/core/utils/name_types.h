@@ -24,140 +24,150 @@
 #ifndef CORE_UTILS_NAME_TYPES_H_
 #define CORE_UTILS_NAME_TYPES_H_
 
+#include <typeinfo>
 #include <string>
 #include <vector>
 #include <list>
 #include <array>
+#include <type_traits>
+#include <regex>
+#include <algorithm>
+#include <cctype>
+
+#ifdef __GNUG__
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+#include <limits>
+#include <iostream>
+#endif // __GNUG__
 
 #include <core/utils/dll.h>
 #include <core/utils/definitions.h>
 
-
-namespace Eigen
-{
-
-// forward declaration
-	template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-	class Matrix;
-
-} // end namespace Eigen
-
 namespace cgogn
 {
 
+
 /**
- * @brief function that give a name to a type.
- */
+* @brief function that give a name to a type.
+* It relies on typeid except if the class T has a static function cgogn_name_of_type (returning a std::string)
+* See class Cell and the file name_type_test.cpp
+*/
 template <typename T>
-std::string name_of_type(const T& )
-{ return T::cgogn_name_of_type(); }
+inline std::string name_of_type(const T& t);
+
+
+namespace internal
+{
+
+template<class>
+struct sfinae_true : std::true_type{};
+
+template<class T>
+static auto test_name_of_type(int ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
+template<class>
+static auto test_name_of_type(long) -> std::false_type;
+
+template<class T>
+struct has_cgogn_name_of_type : decltype(test_name_of_type<T>(0)){};
+
+// implementation for classes which have a static cgogn_name_of_type() function (returning a std::string)
+template <class T>
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type;
+
+// implementation for other classes and type
+template <class T>
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value == true, std::string>::type;
 
 template <typename T>
-std::string name_of_type(const std::list<T>& );
+inline std::string name_of_type_impl(const std::list<T>&);
 
 template <typename T>
-std::string name_of_type(const std::vector<T>& );
-
-template<typename T, std::size_t size>
-std::string name_of_type(const std::array<T, size>&);
+inline std::string name_of_type_impl(const std::vector<T>&);
 
 template<typename T>
-std::string name_of_type(const std::basic_string<T>);
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const bool& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const wchar_t& );
-
-// char16_t and char32_t are new fundamental types according to the c++11 standard. Regrettably, in MSVC they're just typedefs.
-#ifndef _MSC_VER
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char16_t& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const char32_t& );
-#endif
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const short& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const int& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const long long& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const signed char& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned char& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned short& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned int& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const unsigned long long& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const float& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const double& );
-
-template <>
-CGOGN_UTILS_API std::string name_of_type(const std::string& );
-
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-inline std::string name_of_type(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& );
+inline std::string name_of_type_impl(const std::basic_string<T>&);
 
 template<typename T>
-std::string name_of_type(const std::basic_string<T>)
+inline std::string name_of_type_impl(const std::basic_string<T>&)
 {
 	return std::string("std::basic_string<") + name_of_type(T()) + std::string(">");
 }
 
 template <typename T>
-std::string name_of_type(const std::list<T>& )
+inline std::string name_of_type_impl(const std::list<T>&)
 { return std::string("std::list<") + name_of_type(T()) + std::string(">"); }
 
 template <typename T>
-std::string name_of_type(const std::vector<T>& )
+inline std::string name_of_type_impl(const std::vector<T>&)
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 
-template<typename T, std::size_t size>
-std::string name_of_type(const std::array<T, size>&)
+
+template <class T>
+inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == true, std::string>::type
 {
-	return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(size) + std::string(">");
+	return T::cgogn_name_of_type();
 }
 
-/**
- * @brief add cgogn_name_of_type member to a class
- *
- * If the class that you want to use as attribute is not listed above
- * use AddTypeName<T> instead of T.
- * If you develop the class T, just add as public member: static std::string cgogn_name_of_type() { return "type_name_you_develop"; }
- */
 template <typename T>
-class AddTypeName : public T
+inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type
 {
-public:
+	std::string type_name = typeid(T).name();
+	static_assert(has_cgogn_name_of_type<int>::value == false, "plop");
+#ifdef __GNUG__
+	int status = std::numeric_limits<int>::max();
+	std::unique_ptr<char, void(*)(void*)> res{ abi::__cxa_demangle(type_name.c_str(), NULL, NULL, &status), std::free };
+	if (status == 0)
+		type_name = std::string(res.get());
+	else
+		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
 
-	static std::string cgogn_name_of_type() { return "UNKNOWN"; }
-};
+	// integer postfixes
+	{
+		std::regex regex("([0-9]+)(ul|l)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch m;
+		std::regex_search(type_name, m, regex);
+		if (!m[1].str().empty())
+			type_name = std::regex_replace(type_name, regex, m[1].str());
+	}
+
+#else // __GNUG__
+#ifdef _MSC_VER
+	// fix MSVC displaying "__int64" instead of long long
+	if (std::is_same<T, long long>::value)
+		return "long long";
+	if (std::is_same<T, unsigned long long>::value)
+		return "unsigned long long";
+
+	// removing all "class " and "struct" from type_name
+	{
+		std::regex regex_class("class ", std::regex_constants::ECMAScript);
+		std::regex rege_struct("struct ", std::regex_constants::ECMAScript);
+		type_name = std::regex_replace(type_name, regex_class, "");
+		type_name = std::regex_replace(type_name, rege_struct, "");
+	}
+
+#endif // _MSC_VER
+#endif // __GNUG__
+	// removing spaces
+	{
+		std::regex regex("([a-z]*)([[:space:]]+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::smatch m;
+		std::regex_search(type_name, m, regex);
+		if (m[1].str().empty())
+			type_name = std::regex_replace(type_name, regex, "");
+	}
+		return type_name;
+}
+
+} // namespace internal
+
+template <typename T>
+inline std::string name_of_type(const T& t)
+{
+	return internal::name_of_type_impl(t);
+}
 
 } // namespace cgogn
 
