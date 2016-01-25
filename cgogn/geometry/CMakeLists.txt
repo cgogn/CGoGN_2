@@ -4,11 +4,16 @@ project(cgogn_geometry
 
 set(HEADER_FILES
 	dll.h
-	types/plane_3d.h
-	types/geometry_traits.h
+	algos/area.h
+	algos/centroid.h
+	algos/normal.h
+	functions/area.h
+	functions/normal.h
 	functions/orientation.h
-	types/vec.h
 	types/eigen.h
+	types/geometry_traits.h
+	types/plane_3d.h
+	types/vec.h
 	)
 
 set(SOURCE_FILES

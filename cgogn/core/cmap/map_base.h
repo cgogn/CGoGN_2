@@ -558,12 +558,8 @@ public:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter =  [](std::thread* th)
-		{
-			th->join();
-			delete th;
-		};
-		auto tfs_deleter = [this](ThreadFunction<Dart, FUNC>* tf)
+		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
+		auto tfs_deleter = [this] (ThreadFunction<Dart, FUNC>* tf)
 		{
 			this->remove_thread(tf->get_thread_index());
 			delete tf;
@@ -607,7 +603,6 @@ public:
 
 		finished = true; // say finish to all threads
 		sync2.wait(); // last barrier wait
-
 	}
 
 	/**
@@ -776,13 +771,8 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter =  [](std::thread* th)
-		{
-			th->join();
-			delete th;
-		};
-
-		auto tfs_deleter = [this](ThreadFunction<Cell<ORBIT>, FUNC>* tf)
+		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
+		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
 		{
 			this->remove_thread(tf->get_thread_index());
 			delete tf;
@@ -790,11 +780,11 @@ protected:
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
 		threads.reserve(nb_threads);
 		tfs.reserve(nb_threads);
-
 		for (unsigned int i = 0u; i < nb_threads; ++i)
 		{
 			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
@@ -831,7 +821,6 @@ protected:
 
 		finished = true; // say finish to all threads
 		sync2.wait(); // last barrier wait
-
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -883,13 +872,8 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter =  [](std::thread* th)
-		{
-			th->join();
-			delete th;
-		};
-
-		auto tfs_deleter = [this](ThreadFunction<Cell<ORBIT>, FUNC>* tf)
+		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
+		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
 		{
 			this->remove_thread(tf->get_thread_index());
 			delete tf;
@@ -897,11 +881,11 @@ protected:
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
 		threads.reserve(nb_threads);
 		tfs.reserve(nb_threads);
-
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
 			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
@@ -983,13 +967,9 @@ protected:
 		// creation of threads
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
-		auto thread_deleter =  [](std::thread* th)
-		{
-			th->join();
-			delete th;
-		};
 
-		auto tfs_deleter = [this](ThreadFunction<Cell<ORBIT>, FUNC>* tf)
+		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
+		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
 		{
 			this->remove_thread(tf->get_thread_index());
 			delete tf;
@@ -997,11 +977,11 @@ protected:
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
 		threads.reserve(nb_threads);
 		tfs.reserve(nb_threads);
-
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
 			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));

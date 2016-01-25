@@ -255,12 +255,7 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		unsigned res{0u};
-		this->foreach_dart_of_PHI1(f,[&res](Dart)
-		{
-			++res;
-		});
-		return res;
+		return Inherit::degree(f);
 	}
 
 protected:
