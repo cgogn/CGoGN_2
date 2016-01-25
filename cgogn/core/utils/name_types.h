@@ -48,19 +48,6 @@
 namespace cgogn
 {
 
-namespace detail
-{
-template<class>
-struct sfinae_true : std::true_type{};
-
-template<class T>
-static auto test_name_of_type(int ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
-template<class>
-static auto test_name_of_type(long) -> std::false_type;
-} // namespace detail
-
-template<class T>
-struct has_cgogn_name_of_type : decltype(detail::test_name_of_type<T>(0)){};
 
 /**
 * @brief function that give a name to a type.
@@ -70,6 +57,20 @@ struct has_cgogn_name_of_type : decltype(detail::test_name_of_type<T>(0)){};
 template <typename T>
 inline std::string name_of_type(const T& t);
 
+
+namespace internal
+{
+
+template<class>
+struct sfinae_true : std::true_type{};
+
+template<class T>
+static auto test_name_of_type(int ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
+template<class>
+static auto test_name_of_type(long) -> std::false_type;
+
+template<class T>
+struct has_cgogn_name_of_type : decltype(test_name_of_type<T>(0)){};
 
 // implementation for classes which have a static cgogn_name_of_type() function (returning a std::string)
 template <class T>
@@ -160,10 +161,12 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 		return type_name;
 }
 
+} // namespace internal
+
 template <typename T>
 inline std::string name_of_type(const T& t)
 {
-	return name_of_type_impl(t);
+	return internal::name_of_type_impl(t);
 }
 
 } // namespace cgogn
