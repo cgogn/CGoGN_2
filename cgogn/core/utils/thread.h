@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_THREAD_H_
-#define UTILS_THREAD_H_
+#ifndef CORE_UTILS_THREAD_H_
+#define CORE_UTILS_THREAD_H_
 
 #include <core/utils/buffers.h>
 #include <core/utils/dll.h>
+#include <core/utils/thread_barrier.h>
 
 namespace cgogn
 {
@@ -34,6 +35,8 @@ namespace cgogn
  * \brief The maximum nunmber of threads created by the API.
  */
 const unsigned int NB_THREADS = 8u;
+
+const unsigned int PARALLEL_BUFFER_SIZE = 1024u;
 
 /// buffers of pre-allocated vectors of dart or unsigned int
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
@@ -52,6 +55,67 @@ CGOGN_UTILS_API void thread_stop();
 CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
 CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
 
+template <typename ELEM, typename FUNC>
+class ThreadFunction
+{
+private:
+
+	FUNC f_;
+	std::vector<ELEM>& elements_;
+	Barrier& sync1_;
+	Barrier& sync2_;
+	bool& finished_;
+	unsigned int thread_order_;
+	unsigned int thread_index_;
+	std::thread::id* thread_id_pointer_;
+
+public:
+
+	ThreadFunction(
+		FUNC f,
+		std::vector<ELEM>& elements,
+		Barrier& sync1,
+		Barrier& sync2,
+		bool& finished,
+		unsigned int thread_order,
+		unsigned int thread_index,
+		std::thread::id* thread_id_pointer
+	) :
+		f_(f),
+		elements_(elements),
+		sync1_(sync1),
+		sync2_(sync2),
+		finished_(finished),
+		thread_order_(thread_order),
+		thread_index_(thread_index),
+		thread_id_pointer_(thread_id_pointer)
+	{}
+
+	unsigned int get_thread_index() const
+	{
+		return thread_index_;
+	}
+
+	void operator()()
+	{
+		thread_start();
+
+		*thread_id_pointer_ = std::this_thread::get_id();
+
+		while (true)
+		{
+			sync2_.wait(); // wait for vectors to be filled
+			if (finished_)
+				break;
+			for (ELEM& e : elements_)
+				f_(e, thread_order_);
+			sync1_.wait(); // wait every thread has finished
+		}
+
+		thread_stop();
+	}
+};
+
 } // namespace cgogn
 
-#endif // UTILS_THREAD_H_
+#endif // CORE_UTILS_THREAD_H_

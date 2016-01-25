@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_DEFINITIONS_H_
-#define UTILS_DEFINITIONS_H_
+#ifndef CORE_UTILS_DEFINITIONS_H_
+#define CORE_UTILS_DEFINITIONS_H_
 
 /**
  * \brief No execpt declaration for CGOGN symbols.
@@ -117,4 +117,4 @@
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)
 
-#endif // UTILS_DEFINITIONS_H_
+#endif // CORE_UTILS_DEFINITIONS_H_

@@ -1,6 +1,7 @@
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
-* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+* version 0.1                                                                  *
+* Copyright (C) 2009-2012, IGG Team, LSIIT, University of Strasbourg           *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
 * under the terms of the GNU Lesser General Public License as published by the *
@@ -21,24 +22,59 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_PRECISION_H_
-#define CORE_UTILS_PRECISION_H_
+#ifndef CORE_UTILS_THREAD_BARRIER_H_
+#define CORE_UTILS_THREAD_BARRIER_H_
 
-#include <type_traits>
-#include <cmath>
-#include <limits>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace cgogn
 {
 
-template<class Scalar>
-auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+/**
+* Implementation of simple counter barrier (rdv)
+* for c++11 std::thread
+*/
+class Barrier
 {
-	const Scalar diff = std::fabs(x-y);
-	x = std::fabs(x);
-	y = std::fabs(y);
+private:
 
-	return diff <= std::max(x,y) * max_rel_diff;
-}
-}
-#endif // CORE_UTILS_PRECISION_H_
+	unsigned int init_count_;
+	unsigned int count_;
+	unsigned int generation_;
+	
+	std::mutex protect_;
+	std::condition_variable cond_;
+
+public:
+
+	/**
+	* constructor
+	* @param count number of threads to syncronize
+	*/
+	inline Barrier(unsigned int count) :
+		init_count_(count),
+		count_(count),
+		generation_(0)
+	{}
+	
+	inline void wait()
+	{
+		std::unique_lock<std::mutex> lock(protect_);
+		unsigned int gen = generation_;
+
+		if (--count_ == 0)
+		{
+			++generation_;
+			count_ = init_count_;
+			cond_.notify_all();
+		}
+		else
+			cond_.wait(lock, [this, gen] () { return gen != generation_; });
+	}
+};
+
+} // namespace cgogn
+
+#endif // CORE_UTILS_THREAD_BARRIER_H_

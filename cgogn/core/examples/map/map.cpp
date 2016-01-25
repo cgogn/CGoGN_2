@@ -138,10 +138,11 @@ int main()
 	cgogn::thread_start();
 	Map1 map1;
 	Map2 map2;
-	Map3 map3;
+//	Map3 map3;
 	test1(map1);
 	test1(map2);
-	test1(map3);
+//	test1(map3);
+
 	cgogn::thread_stop();
 	return 0;
 }

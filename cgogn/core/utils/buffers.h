@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef UTILS_BUFFERS_H_
-#define UTILS_BUFFERS_H_
+#ifndef CORE_UTILS_BUFFERS_H_
+#define CORE_UTILS_BUFFERS_H_
 
 #include <vector>
 #include <type_traits>
@@ -152,4 +152,4 @@ public:
 
 } // namespace cgogn
 
-#endif // UTILS_BUFFERS_H_
+#endif // CORE_UTILS_BUFFERS_H_
