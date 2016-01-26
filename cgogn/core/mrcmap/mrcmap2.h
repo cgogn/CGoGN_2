@@ -24,7 +24,6 @@
 #ifndef CORE_MRCMAP_MRCMAP2_H_
 #define CORE_MRCMAP_MRCMAP2_H_
 
-#include <core/cmap/cmap2.h>
 #include <deque>
 #include <stack>
 #include <array>
@@ -33,24 +32,22 @@ namespace cgogn
 {
 
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class MRCMap2_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
-{
+template <typename MAP>
+class MRCMap_T 
 public:
 
-	typedef MRCMap2_T<MAP_TRAITS, MAP_TYPE> Self;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef MRCMap_T<MAP> Self;
 
 	template<typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	using ChunkArray =  typename MAP::template ChunkArray<T>;
 
-	using Vertex =  typename Inherit::Vertex;
+	using Vertex = typename MAP::Vertex;
 
 protected:
 	/**
 	 * pointers to maps (one for each level)
 	 */
-	std::deque<Inherit*> maps_;
+	std::deque<typename MAP*> maps_;
 
 	/**
 	 * pointers to attributs that stores next level 
@@ -79,25 +76,25 @@ protected:
 
 	inline void add_level_back()
 	{
-		Inherit* last = maps_.back();
+		typename MAP* last = maps_.back();
 		maps_.emplace_back(last);
 	}
 
 	inline void remove_level_back()
 	{
-		Inherit* back = maps_.pop_back();
+		typename MAP* back = maps_.pop_back();
 		delete back;
 	}
 
 	inline void add_level_front()
 	{
-		Inherit* first = maps_.front();
+		typename MAP* first = maps_.front();
 		maps_.emplace_front(first);
 	}
 
 	inline void remove_level_front()
 	{
-		Inherit* front = maps_.pop_front();
+		typename MAP* front = maps_.pop_front();
 		delete front;
 	}
 
@@ -112,7 +109,7 @@ public:
 	{
 		//creation d'un niveau 0 avec une carte vide 
 		//a la construction -> should call new CMap2()
-		maps_.emplace_back();
+		maps_.emplace_back(new MAP());
 	}
 
 	~MRCMap2_T()
