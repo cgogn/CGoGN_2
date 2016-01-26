@@ -21,10 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
+#ifndef GEOMETRY_ALGOS_AREA_H_
+#define GEOMETRY_ALGOS_AREA_H_
 
-#include <geometry/types/plane_3d.h>
+#include <geometry/functions/area.h>
+#include <geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -32,37 +33,35 @@ namespace cgogn
 namespace geometry
 {
 
-/**
- * return the orientation of point P w.r.t. the plane defined by 3 points
- * @param P the point
- * @param A plane point 1
- * @param B plane point 2
- * @param C plane point 3
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+template <typename VEC3_T, typename MAP>
+inline typename VEC3_T::Scalar triangle_area(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A, B, C).orient(P);
+	return triangle_area<VEC3_T>(
+		position[f.dart],
+		position[map.phi1(f.dart)],
+		position[map.phi_1(f.dart)]
+	);
 }
 
-/**
- * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
- * @param P the point
- * @param N plane normal
- * @param PP plane point
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
+template <typename VEC3_T, typename MAP>
+inline typename VEC3_T::Scalar convex_face_area(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+	if(map.degree(f) == 3)
+		return triangle_area<VEC3_T>(map, f, position);
+	else
+	{
+		typename VEC3_T::Scalar area{0};
+		VEC3_T center = centroid<VEC3_T>(map, f, position);
+		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
+		{
+			area += triangle_area<VEC3_T>(center, position[e.dart], position[map.phi1(e.dart)]);
+		});
+		return area;
+	}
 }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // GEOMETRY_ALGOS_AREA_H_

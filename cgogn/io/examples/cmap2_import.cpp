@@ -5,6 +5,7 @@
 
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
+#include <geometry/algos/normal.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -14,7 +15,7 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 	static const unsigned int CHUNK_SIZE = 8192;
 };
 
-using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
+using Map2 = cgogn::CMap2<MyMapTraits>;
 
 using Vec3 = Eigen::Vector3d;
 
@@ -41,9 +42,6 @@ int main(int argc, char** argv)
 	for (int k = 0 ; k < 2 ; ++k)
 	{
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
-
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
 
 
 		unsigned int nb_darts = 0;
@@ -89,29 +87,42 @@ int main(int argc, char** argv)
 		std::cout << "nb faces // -> " << nb_faces_2 << std::endl;
 
 
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+
+
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.parallel_foreach_cell<Map2::FACE>([&] (Map2::Face f, unsigned int)
-			{
-				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-				Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
-				face_normal[f] = v1.cross(v2);
-			});
+//			map.parallel_foreach_cell<Map2::FACE>([&] (Map2::Face f, unsigned int)
+//			map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
+//			{
+//				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
+//				Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+//				Vec3 n = v1.cross(v2);
+//				n.normalize();
+//				face_normal[f] = v1.cross(v2);
+//			});
+
+			cgogn::geometry::template compute_normal_faces<Vec3>(map, vertex_position, face_normal);
 		}
 
 		for	(unsigned int i = 0; i < 10; ++i)
 		{
-			map.parallel_foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v, unsigned int)
-			{
-				Vec3 sum({0, 0, 0});
-				unsigned int nb_incident = 0;
-				map.foreach_incident_face(v, [&] (Map2::Face f)
-				{
-					++nb_incident;
-					sum += face_normal[f];
-				});
-				vertex_normal[v] = sum / nb_incident;
-			});
+//			map.parallel_foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v, unsigned int)
+//			map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
+//			{
+//				Vec3 sum({0, 0, 0});
+//				unsigned int nb_incident = 0;
+//				map.foreach_incident_face(v, [&] (Map2::Face f)
+//				{
+//					++nb_incident;
+//					sum += face_normal[f];
+//				});
+//				vertex_normal[v] = sum / nb_incident;
+//			});
+
+//			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, vertex_normal);
+			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, face_normal, vertex_normal);
 		}
 
 		end = std::chrono::system_clock::now();

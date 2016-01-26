@@ -112,11 +112,11 @@ protected:
 	// TODO: ?? store in a std::vector ?
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<ChunkArray<bool>*> mark_attributes_topology_[NB_THREADS];
+	std::vector<ChunkArray<bool>*> mark_attributes_topology_[MAX_NB_THREADS];
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of available mark attributes per orbit per thread on attributes containers
-	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][NB_THREADS];
+	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][MAX_NB_THREADS];
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
 	/// vector of thread ids known by the map that can pretend to data such as mark vectors
@@ -138,13 +138,13 @@ public:
 		{
 			embeddings_[i] = nullptr;
 			global_topo_cache_[i] = nullptr;
-			for (unsigned int j = 0; j < NB_THREADS; ++j)
+			for (unsigned int j = 0; j < MAX_NB_THREADS; ++j)
 				mark_attributes_[i][j].reserve(8);
 		}
-		for (unsigned int i = 0; i < NB_THREADS; ++i)
+		for (unsigned int i = 0; i < MAX_NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
 
-		thread_ids_.reserve(NB_THREADS);
+		thread_ids_.reserve(MAX_NB_THREADS);
 		thread_ids_.push_back(std::this_thread::get_id());
 	}
 

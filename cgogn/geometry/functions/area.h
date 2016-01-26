@@ -21,10 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
-
-#include <geometry/types/plane_3d.h>
+#ifndef GEOMETRY_FUNCTIONS_AREA_H_
+#define GEOMETRY_FUNCTIONS_AREA_H_
 
 namespace cgogn
 {
@@ -33,36 +31,16 @@ namespace geometry
 {
 
 /**
- * return the orientation of point P w.r.t. the plane defined by 3 points
- * @param P the point
- * @param A plane point 1
- * @param B plane point 2
- * @param C plane point 3
- * @return the orientation
+ * area of the triangle formed by 3 points in 3D
  */
 template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+inline typename VEC3_T::Scalar triangle_area(const VEC3_T& p1, const VEC3_T& p2, const VEC3_T& p3)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A, B, C).orient(P);
-}
-
-/**
- * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
- * @param P the point
- * @param N plane normal
- * @param PP plane point
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
-{
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+	return (0.5 * ((p2-p1).cross(p3-p1)).norm());
 }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // GEOMETRY_FUNCTIONS_AREA_H_

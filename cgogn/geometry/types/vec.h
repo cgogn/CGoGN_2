@@ -54,6 +54,7 @@ template<class Container>
 class Vec_T
 {
 public:
+
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
@@ -61,7 +62,6 @@ public:
 	inline Vec_T(const Container& cont) : data_(cont) {}
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
-
 
 	inline Vec_T(std::initializer_list<Scalar> const & init_list)
 	{
@@ -87,7 +87,7 @@ public:
 	{
 		Self res(*this);
 		for(auto& c : res.data_)
-			c=-c;
+			c = -c;
 		return res;
 	}
 
@@ -129,13 +129,13 @@ public:
 	{
 		Self res(v);
 		for (auto& c : res.data_)
-			c*=r;
+			c *= r;
 		return res;
 	}
 
 	inline friend const Self operator*(Scalar r, const Self& v)
 	{
-		return v*r;
+		return v * r;
 	}
 
 	inline const Scalar dot(const Self& v) const
@@ -143,7 +143,7 @@ public:
 		Scalar r{0};
 		auto it_v = v.data_.begin();
 		for (auto c : data_)
-			r += c* (*it_v++);
+			r += c * (*it_v++);
 		return r;
 	}
 
@@ -160,7 +160,7 @@ public:
 	{
 		Scalar r{0};
 		for (auto c : data_)
-			r += c*c;
+			r += c * c;
 		return r;
 	}
 
@@ -173,7 +173,13 @@ public:
 	{
 		const Scalar norm_value = this->norm();
 		for (auto& c : data_)
-			c/= norm_value;
+			c /= norm_value;
+	}
+
+	inline void setZero()
+	{
+		for (auto& c : data_)
+			c = 0;
 	}
 
 	static std::string cgogn_name_of_type()
@@ -187,6 +193,7 @@ public:
 	}
 
 private:
+
 	Container data_;
 };
 
@@ -197,6 +204,7 @@ extern template class CGOGN_GEOMETRY_API Vec_T<std::vector<float>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_VEC_CPP_))
 
 } // namespace geometry
+
 } // namespace cgogn
 
 #endif // GEOMETRY_VEC_H_

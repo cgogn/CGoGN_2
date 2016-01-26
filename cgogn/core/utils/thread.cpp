@@ -28,6 +28,8 @@
 namespace cgogn
 {
 
+CGOGN_UTILS_API unsigned int NB_THREADS = get_nb_threads();
+
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
 CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
 
