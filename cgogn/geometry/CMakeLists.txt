@@ -9,11 +9,14 @@ set(HEADER_FILES
 	functions/orientation.h
 	types/vec.h
 	types/eigen.h
+	types/bounding_box.h
+	algo/bounding_box.h
 	)
 
 set(SOURCE_FILES
 	types/plane_3d.cpp
 	types/vec.cpp
+	types/bounding_box.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
