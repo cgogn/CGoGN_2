@@ -248,7 +248,7 @@ public:
 			mbuild.close_map();
 
 		if (need_vertex_unicity_check)
-			map.template unique_orbit_embedding<VERTEX>();
+			map.template enforce_unique_orbit_embedding<VERTEX>();
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
