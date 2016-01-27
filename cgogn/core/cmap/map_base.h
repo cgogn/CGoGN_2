@@ -317,7 +317,7 @@ public:
 	 * \brief make sure that all given orbits are uniquely embedded (indexed)
 	 */
 	template <Orbit ORBIT>
-	void unique_orbit_embedding()
+	void enforce_unique_orbit_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
@@ -335,6 +335,157 @@ public:
 
 		remove_attribute(counter) ;
 	}
+
+	template <Orbit ORBIT>
+	bool is_embedding_bijective()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		return is_embedding_surjective<ORBIT>() && is_embedding_injective<ORBIT>();
+	}
+
+	/**
+	 * \brief Tests if all orbits of \p ORBIT are uniquely embedded
+	 * \details This is a surjectivity test from the 
+	 * embedding indices to the attributes tables.
+	 * 
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <Orbit ORBIT>
+	bool is_embedding_surjective()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("tmp_counter");
+		for (unsigned int& elt : counter) elt = 0;
+
+		//count the number of cells
+		//pointing to an attribute line
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c) { counter[c]++; });
+
+		bool result = true;
+		unsigned int i = 0;
+		for (unsigned int& elt : counter)
+		{
+			// if there is more or less than one cell pointing to
+			// one attribute line
+			if(elt != 1)
+			{
+				#ifndef NDEBUG
+					std::stringstream ss;
+					ss << "Orbit #" << i << " is not surjective (" << elt << " embeddings).";
+					std::cout << ss.str() << std::endl;
+				#endif
+
+				// don't break the loop to print 
+				// in debug all non surjective embeddings
+				result = false;
+			}
+			++i;
+		}	
+
+		this->remove_attribute(counter);
+
+		return result;
+	}
+
+	/**
+	 * \brief Tests if all attributes are uniquely indexed by an 
+	 * orbit of \p ORBIT
+	 * \details This is a injectivity test from the 
+	 * the attributes tables to the embedding indices.
+	 * 
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <Orbit ORBIT>
+	bool is_embedding_injective()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		AttributeHandler<Dart, ORBIT> topo_ref = add_attribute<Dart, ORBIT>("tmp_topo_ref");
+
+		for (Dart& i : topo_ref) i = Dart();
+
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_CELL_MARKING>([cmap, &topo_ref] (Cell<ORBIT> c)
+		{
+			topo_ref[cmap->get_embedding(c)] = c.dart;
+		});
+
+		bool result = true;
+		unsigned int i = 0;
+		for (Dart& elt : topo_ref)
+		{
+			// if there is more or less than one cell pointing to
+			// one attribute line
+			if(elt.is_nil())
+			{
+				#ifndef NDEBUG
+					std::stringstream ss;
+					ss << "Attribute line #" << i << " is not injective (" << elt << " dart).";
+					std::cout << ss.str() << std::endl;
+				#endif
+
+				// don't break the loop to print 
+				// in debug all non injective attributes line
+				result = false;
+			}
+			++i;
+		}
+
+		this->remove_attribute(topo_ref);
+
+		return result;
+	}
+
+	/**
+	 * \brief Tests if all orbits of type \p ORBIT are well embedded
+	 * \details An orbit is well embedded when all darts of this
+	 * orbit have the same embedding
+	 * 
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <Orbit ORBIT>
+	bool is_well_embedded()
+	{
+		bool result = true;
+
+		ConcreteMap* cmap = to_concrete();
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &result] (Cell<ORBIT> c) 
+		{
+			unsigned int emb = cmap->get_embedding(c);
+
+			cmap->template foreach_dart_of_orbit<ORBIT>(c, [&cmap, &result, &emb](Dart d)
+			{
+				unsigned int cur_emb = cmap->get_embedding(Cell<ORBIT>(d));
+				if(cur_emb != emb)
+				{
+					#if !defined NDEBUG
+					std::stringstream ss;
+					ss << "Orbit of dart #" << d << " is not well embedded (#" << cur_emb << " != #" << emb << ").";
+					std::cout << ss.str() << std::endl;
+					// cgogn_debug_message(s)
+					#endif
+
+					// don't break the loop to print all non well embedded darts of 
+					// each orbit
+					result = false;
+				}
+			});
+
+		});
+
+		return result;
+	}
+
+
 
 	/*******************************************************************************
 	 * Topo caches management
