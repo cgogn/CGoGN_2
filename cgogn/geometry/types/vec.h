@@ -59,19 +59,11 @@ public:
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
 	Vec_T() = default;
-	inline Vec_T(const Container& cont) : data_(cont) {}
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
 
-	inline Vec_T(std::initializer_list<Scalar> const & init_list)
-	{
-		auto it_this = data_.begin();
-		for (auto c : init_list)
-		{
-			cgogn_assert(it_this != data_.end());
-			*it_this++ = c;
-		}
-	}
+	template<typename...Args>
+	inline Vec_T(Args... a) : data_{a...} {}
 
 	inline Scalar& operator[](std::size_t i)
 	{
@@ -103,6 +95,18 @@ public:
 		auto it_this = data_.begin();
 		for (auto c : v.data_)
 			*(it_this++) -= c;
+	}
+
+	inline void operator/=(Scalar r)
+	{
+		for (auto& c : data_)
+			c /= r;
+	}
+
+	inline void operator*=(Scalar r)
+	{
+		for (auto& c : data_)
+			c *= r;
 	}
 
 	inline const Self operator+(const Self& v) const
