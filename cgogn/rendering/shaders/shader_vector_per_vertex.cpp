@@ -22,8 +22,9 @@
 *******************************************************************************/
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include "rendering/shaders/shader_color_per_vertex.h"
+#include "rendering/shaders/shader_vector_per_vertex.h"
 #include <QOpenGLFunctions>
+
 #include <iostream>
 
 namespace cgogn
@@ -31,65 +32,95 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderColorPerVertex::vertex_shader_source_ =
-    "#version 150\n"
+const char* ShaderVectorPerVertex::vertex_shader_source_ =
+	"#version 150\n"
 	"in vec3 vertex_pos;\n"
-    "in vec3 color;\n"
-    "uniform mat4 projection_matrix;\n"
-    "uniform mat4 model_view_matrix;\n"
-    "out vec3 color_v;\n"
-    "void main() {\n"
-    "   color_v = color;"
-	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-    "}\n";
+	"in vec3 vertex_normal;\n"
+	"out vec3 normal;\n"
+	"void main() {\n"
+	"   normal = vertex_normal;\n"
+	"   gl_Position = vec4(vertex_pos,1.0);\n"
+	"}\n";
 
-const char* ShaderColorPerVertex::fragment_shader_source_ =
-    "#version 150\n"
-    "in vec3 color_v;\n"
-    "out vec3 fragColor;\n"
-    "void main() {\n"
-	"   fragColor = color_v;\n"
-    "}\n";
+const char* ShaderVectorPerVertex::geometry_shader_source_ =
+	"#version 150\n"
+	"layout(points) in;\n"
+	"layout(line_strip,max_vertices=2) out;\n"
+	"in vec3 normal[];\n"
+	"uniform mat4 projection_matrix;\n"
+	"uniform mat4 model_view_matrix;\n"
+	"uniform float length;\n"
+	"void main() {\n"
+	"   gl_Position = projection_matrix * model_view_matrix * gl_in[0].gl_Position;\n"
+	"	EmitVertex();\n"
+	"   vec4 end_point = gl_in[0].gl_Position + vec4(length * normal[0], 0.0);\n"
+	"   gl_Position = projection_matrix * model_view_matrix * end_point;\n"
+	"	EmitVertex();\n"
+	"	EndPrimitive();\n"
+	"}\n";
 
 
-ShaderColorPerVertex::ShaderColorPerVertex()
+const char* ShaderVectorPerVertex::fragment_shader_source_ =
+	"#version 150\n"
+	"uniform vec4 color;\n"
+	"out vec4 fragColor;\n"
+	"void main() {\n"
+	"   fragColor = color;\n"
+	"}\n";
+
+
+ShaderVectorPerVertex::ShaderVectorPerVertex()
 {
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
+	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
 	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("color", ATTRIB_COLOR);
-    prg_.link();
+	prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORMAL);
+	prg_.link();
 
 	get_matrices_uniforms();
+
+	unif_color_ = prg_.uniformLocation("color");
+	unif_length_ = prg_.uniformLocation("length");
 }
 
 
-bool ShaderColorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
+void ShaderVectorPerVertex::set_color(const QColor& rgb)
 {
-    if (i>=vaos_.size())
-    {
-        std::cerr << "VAO number "<< i << "does not exist"<< std::endl;
-        return false;
-    }
+	prg_.setUniformValue(unif_color_,rgb);
+}
 
-    QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+void ShaderVectorPerVertex::set_length(float l)
+{
+	prg_.setUniformValue(unif_length_,l);
+}
+
+bool ShaderVectorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_normal)
+{
+	if (i>=vaos_.size())
+	{
+		std::cerr << "VAO number "<< i << "does not exist"<< std::endl;
+		return false;
+	}
+
+	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
 	prg_.bind();
-    vaos_[i]->bind();
+	vaos_[i]->bind();
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
 	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
-	// color vbo
-	vbo_color->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-	ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
-    vbo_color->release();
+	// normal vbo
+	vbo_normal->bind();
+	ogl->glEnableVertexAttribArray(ATTRIB_NORMAL);
+	ogl->glVertexAttribPointer(ATTRIB_NORMAL, vbo_normal->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
+	vbo_normal->release();
 
-    vaos_[i]->release();
+	vaos_[i]->release();
 	prg_.release();
-    return true;
+	return true;
 }
 
 } // namespace rendering

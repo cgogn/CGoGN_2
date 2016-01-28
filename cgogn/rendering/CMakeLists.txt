@@ -13,12 +13,17 @@ set(HEADER_FILES
 	shaders/shader_program.h
 	shaders/shader_simple_color.h
 	shaders/shader_color_per_vertex.h
+	shaders/shader_flat.h
+	shaders/shader_vector_per_vertex.h
 	)
 
 set(SOURCE_FILES
 	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
+	shaders/shader_flat.cpp
+	shaders/shader_vector_per_vertex.cpp
+
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -24,7 +24,8 @@
 
 #include <QMatrix4x4>
 #include <rendering/shaders/shader_simple_color.h>
-#include <rendering/shaders/shader_color_per_vertex.h>
+#include <rendering/shaders/shader_flat.h>
+#include <rendering/shaders/shader_vector_per_vertex.h>
 #include <rendering/shaders/vbo.h>
 
 #include <core/cmap/cmap2.h>
@@ -52,7 +53,10 @@ class Viewer : public QGLViewer
 public:
 
 	Map2 map;
-	VertexAttributeHandler<Vec3> vertex_position;
+	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttributeHandler<Vec3> vertex_normal_;
+
+	cgogn::geometry::BoundingBox<Vec3> bb_;
 
 	cgogn::rendering::MapRender* render_;
 
@@ -63,9 +67,11 @@ public:
 
 
 	cgogn::rendering::VBO* vbo1_;
-//	cgogn::rendering::VBO* m_vbo_col1;
+	cgogn::rendering::VBO* vbo_norm_;
 //	cgogn::rendering::VBO* m_vbo_col2;
 
 	cgogn::rendering::ShaderSimpleColor* shader1_;
-//	cgogn::rendering::ShaderColorPerVertex* m_shader2;
+	cgogn::rendering::ShaderFlat* shader2_;
+	cgogn::rendering::ShaderVectorPerVertex* shader3_;
+
 };

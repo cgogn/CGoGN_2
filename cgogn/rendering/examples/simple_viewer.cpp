@@ -29,13 +29,16 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
-	vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
+	vertex_position_ = map.get_attribute<Vec3, Map2::VERTEX>("position");
+	vertex_normal_ = map.add_attribute<Vec3, Map2::VERTEX>("normal");
 
-	cgogn::geometry::BoundingBox<Vec3> bb;
-	cgogn::geometry::algo::compute_bounding_box(vertex_position,bb);
+	for(Vec3& n:vertex_normal_)
+		n = Vec3(0,0,1);
 
-	setSceneRadius(bb.diagSize());
-	Vec3 center = bb.center();
+	cgogn::geometry::algo::compute_bounding_box(vertex_position_,bb_);
+
+	setSceneRadius(bb_.diagSize());
+	Vec3 center = bb_.center();
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	showEntireScene();
 }
@@ -61,21 +64,36 @@ void Viewer::draw()
 	shader1_->set_color(QColor(255,255,0));
 	render_->draw(cgogn::rendering::LINES);
 
-	shader1_->set_color(QColor(0,128,0));
-	render_->draw(cgogn::rendering::TRIANGLES);
-
 	shader1_->release_vao(0);
 	shader1_->release();
 
+	glEnable(GL_POLYGON_OFFSET_FILL) ;
+	glPolygonOffset(1.0f, 1.0f) ;
+
+	shader2_->bind();
+	shader2_->set_matrices(proj,view);
+	shader2_->bind_vao(0);
+	render_->draw(cgogn::rendering::TRIANGLES);
+	shader2_->release_vao(0);
+	shader2_->release();
+
+	shader3_->bind();
+	shader3_->set_matrices(proj,view);
+	shader3_->bind_vao(0);
+	render_->draw(cgogn::rendering::POINTS);
+	shader3_->release_vao(0);
+	shader3_->release();
 }
 
 void Viewer::init()
 {
 	glClearColor(0.1,0.1,0.3,0.0);
 	vbo1_ = new cgogn::rendering::VBO;
+	cgogn::rendering::update_vbo(vertex_position_,*vbo1_);
 
-	vbo1_->allocate(8192,3);
-	cgogn::rendering::update_vbo(vertex_position,*vbo1_);
+	vbo_norm_ = new cgogn::rendering::VBO;
+	cgogn::rendering::update_vbo(vertex_normal_,*vbo_norm_);
+
 
 	render_ = new cgogn::rendering::MapRender();
 
@@ -84,9 +102,32 @@ void Viewer::init()
 	render_->init_primitives(map,cgogn::rendering::LINES);
 	render_->init_primitives(map,cgogn::rendering::TRIANGLES);
 
-//	vbo1_->allocate(buffer_.size()/3,3,&(buffer_[0]));
+	//	vbo1_->allocate(buffer_.size()/3,3,&(buffer_[0]));
 
-	  shader1_ = new cgogn::rendering::ShaderSimpleColor;
-	  shader1_->add_vao();
-	  shader1_->set_vao(0,vbo1_);
+	shader1_ = new cgogn::rendering::ShaderSimpleColor;
+	shader1_->add_vao();
+	shader1_->set_vao(0,vbo1_);
+
+	shader2_ = new cgogn::rendering::ShaderFlat;
+	shader2_->add_vao();
+	shader2_->set_vao(0,vbo1_);
+
+	shader2_->bind();
+	shader2_->set_front_color(QColor(0,200,0));
+	shader2_->set_back_color(QColor(0,0,200));
+	shader2_->set_ambiant_color(QColor(5,5,5));
+	shader2_->release();
+
+
+	shader3_ = new cgogn::rendering::ShaderVectorPerVertex;
+	shader3_->add_vao();
+	shader3_->set_vao(0,vbo1_,vbo_norm_);
+
+	shader3_->bind();
+	shader3_->set_color(QColor(200,0,0));
+	shader3_->set_length(bb_.diagSize()/20);
+
+	shader2_->release();
+
 }
+
