@@ -35,7 +35,7 @@ namespace geometry
 {
 
 template <typename VEC3_T, typename MAP>
-inline VEC3_T triangle_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline VEC3_T triangle_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	VEC3_T n = triangle_normal<VEC3_T>(
 		position[f.dart],
@@ -47,7 +47,7 @@ inline VEC3_T triangle_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP:
 }
 
 template <typename VEC3_T, typename MAP>
-inline VEC3_T newell_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline VEC3_T newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	VEC3_T n{0,0,0};
 	map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
@@ -63,7 +63,7 @@ inline VEC3_T newell_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::t
 }
 
 template <typename VEC3_T, typename MAP>
-inline VEC3_T face_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline VEC3_T face_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	if (map.degree(f) == 3)
 		return triangle_normal<VEC3_T>(map, f, position);
@@ -72,7 +72,7 @@ inline VEC3_T face_normal(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::tem
 }
 
 template <typename VEC3_T, typename MAP>
-inline VEC3_T vertex_normal(MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline VEC3_T vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	VEC3_T n{0,0,0};
 	const VEC3_T& p = position[v.dart];
@@ -90,7 +90,7 @@ inline VEC3_T vertex_normal(MAP& map, Cell<Orbit::PHI21> v, const typename MAP::
 }
 
 template <typename VEC3_T, typename MAP>
-inline VEC3_T vertex_normal(MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3_T>& position, const typename MAP::template AttributeHandler<VEC3_T, Orbit::PHI1>& fnormal)
+inline VEC3_T vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3_T>& position, const typename MAP::template AttributeHandler<VEC3_T, Orbit::PHI1>& fnormal)
 {
 	VEC3_T n{0,0,0};
 	const VEC3_T& p = position[v.dart];

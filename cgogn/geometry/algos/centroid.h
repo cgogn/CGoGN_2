@@ -33,7 +33,7 @@ namespace geometry
 {
 
 template <typename T, Orbit ORBIT, typename MAP>
-inline T centroid(MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
+inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
 {
 	T result;
 	result.setZero();
