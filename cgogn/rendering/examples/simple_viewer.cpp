@@ -22,6 +22,7 @@
 
 #include "simple_viewer.h"
 #include <geometry/algos/normal.h>
+#include <QApplication>
 
 
 void Viewer::import(const std::string& surfaceMesh)
@@ -44,8 +45,6 @@ void Viewer::import(const std::string& surfaceMesh)
 	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
 	showEntireScene();
 }
-
-
 
 
 void Viewer::draw()
@@ -133,3 +132,30 @@ void Viewer::init()
 
 }
 
+
+int main(int argc, char** argv)
+{
+	std::string surfaceMesh;
+	if (argc < 2)
+	{
+		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+	} else {
+		surfaceMesh = std::string(argv[1]);
+	}
+
+	// Read command lines arguments.
+	QApplication application(argc,argv);
+
+	qglviewer::init_ogl_context();
+
+	// Instantiate the viewer.
+	Viewer viewer;
+	viewer.setWindowTitle("simpleViewer");
+	viewer.import(surfaceMesh);
+	viewer.show();
+
+	// Run main loop.
+	return application.exec();
+}

@@ -43,6 +43,19 @@
 using namespace std;
 using namespace qglviewer;
 
+namespace qglviewer
+{
+void init_ogl_context()
+{
+	QSurfaceFormat fmt;
+	fmt.setDepthBufferSize(24);
+	fmt.setVersion(3, 3);
+	fmt.setProfile(QSurfaceFormat::CoreProfile);
+	QSurfaceFormat::setDefaultFormat(fmt);
+}
+}
+
+
 // Static private variable
 QList<QGLViewer*> QGLViewer::QGLViewerPool_;
 
