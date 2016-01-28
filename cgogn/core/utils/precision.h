@@ -27,18 +27,28 @@
 #include <type_traits>
 #include <cmath>
 #include <limits>
+#include <algorithm>
+
+#include <core/utils/assert.h>
 
 namespace cgogn
 {
 
 template<class Scalar>
-auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
 {
 	const Scalar diff = std::fabs(x-y);
 	x = std::fabs(x);
 	y = std::fabs(y);
 
 	return diff <= std::max(x,y) * max_rel_diff;
+}
+
+template<class Scalar>
+inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+{
+	cgogn_assert(epsilon > 0);
+	return std::fabs(y-x) < epsilon;
 }
 }
 #endif // CORE_UTILS_PRECISION_H_

@@ -34,7 +34,7 @@ namespace geometry
 {
 
 template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	return triangle_area<VEC3_T>(
 		position[f.dart],
@@ -44,7 +44,7 @@ inline typename VEC3_T::Scalar triangle_area(MAP& map, typename MAP::Face f, con
 }
 
 template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	if(map.degree(f) == 3)
 		return triangle_area<VEC3_T>(map, f, position);

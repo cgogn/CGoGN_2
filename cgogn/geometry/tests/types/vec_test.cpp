@@ -38,7 +38,7 @@ TEST(VEC_OP_TEST, CGOGN_Typename)
 
 TEST(VEC_OP_TEST, Constructor)
 {
-	StdArray vec1 = {0.,0.,0.};
+	StdArray vec1{0.,0.,0.};
 	EigenVec3d vec2 = {0.,0.,0.};
 	EXPECT_EQ(vec1[0],0);
 	EXPECT_EQ(vec1[1],0);
@@ -134,6 +134,44 @@ TEST(VEC_OP_TEST, MinusAssign)
 		EXPECT_EQ(b[0], 2);
 		EXPECT_EQ(b[1], 4);
 		EXPECT_EQ(b[2], 6);
+	}
+}
+
+TEST(VEC_OP_TEST, MultAssign)
+{
+	{
+		StdArray a = {1.,2., 3.};
+		a *= 2;
+		EXPECT_EQ(a[0], 2);
+		EXPECT_EQ(a[1], 4);
+		EXPECT_EQ(a[2], 6);
+	}
+
+	{
+		EigenVec3d a = {1.,2., 3.};
+		a *= 2;
+		EXPECT_EQ(a[0], 2);
+		EXPECT_EQ(a[1], 4);
+		EXPECT_EQ(a[2], 6);
+	}
+}
+
+TEST(VEC_OP_TEST, DivAssign)
+{
+	{
+		StdArray a{2.,4., 6.};
+		a /= 2;
+		EXPECT_EQ(a[0], 1);
+		EXPECT_EQ(a[1], 2);
+		EXPECT_EQ(a[2], 3);
+	}
+
+	{
+		EigenVec3d a{2.,4., 6.};
+		a /= 2;
+		EXPECT_EQ(a[0], 1);
+		EXPECT_EQ(a[1], 2);
+		EXPECT_EQ(a[2], 3);
 	}
 }
 
