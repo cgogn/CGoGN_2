@@ -21,6 +21,7 @@
 *****************************************************************************/
 
 #include "simple_viewer.h"
+#include <geometry/algos/normal.h>
 
 
 void Viewer::import(const std::string& surfaceMesh)
@@ -32,8 +33,9 @@ void Viewer::import(const std::string& surfaceMesh)
 	vertex_position_ = map.get_attribute<Vec3, Map2::VERTEX>("position");
 	vertex_normal_ = map.add_attribute<Vec3, Map2::VERTEX>("normal");
 
-	for(Vec3& n:vertex_normal_)
-		n = Vec3(0,0,1);
+	cgogn::geometry::compute_normal_vertices<Vec3>(map, vertex_position_, vertex_normal_);
+//	for(Vec3& n:vertex_normal_)
+//		n = Vec3(0,0,1);
 
 	cgogn::geometry::algo::compute_bounding_box(vertex_position_,bb_);
 
@@ -125,7 +127,7 @@ void Viewer::init()
 
 	shader3_->bind();
 	shader3_->set_color(QColor(200,0,0));
-	shader3_->set_length(bb_.diagSize()/20);
+	shader3_->set_length(bb_.diagSize()/50);
 
 	shader2_->release();
 

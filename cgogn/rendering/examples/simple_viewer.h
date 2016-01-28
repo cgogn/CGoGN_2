@@ -30,7 +30,7 @@
 
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
-#include <geometry/algo/bounding_box.h>
+#include <geometry/algos/bounding_box.h>
 #include <rendering/map_render.h>
 
 
