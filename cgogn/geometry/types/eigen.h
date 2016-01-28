@@ -24,6 +24,7 @@
 #ifndef GEOMETRY_EIGEN_H_
 #define GEOMETRY_EIGEN_H_
 
+#include <core/utils/definitions.h>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
