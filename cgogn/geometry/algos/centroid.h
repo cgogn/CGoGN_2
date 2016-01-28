@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
+#ifndef GEOMETRY_ALGOS_CENTROID_H_
+#define GEOMETRY_ALGOS_CENTROID_H_
 
-#include <geometry/types/plane_3d.h>
+#include <core/basic/cell.h>
 
 namespace cgogn
 {
@@ -32,37 +32,23 @@ namespace cgogn
 namespace geometry
 {
 
-/**
- * return the orientation of point P w.r.t. the plane defined by 3 points
- * @param P the point
- * @param A plane point 1
- * @param B plane point 2
- * @param C plane point 3
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+template <typename T, Orbit ORBIT, typename MAP>
+inline T centroid(MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A, B, C).orient(P);
-}
-
-/**
- * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
- * @param P the point
- * @param N plane normal
- * @param PP plane point
- * @return the orientation
- */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
-{
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+	T result;
+	result.setZero();
+	unsigned int count = 0;
+	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
+	{
+		result += attribute[v];
+		++count;
+	});
+	result /= count;
+	return result;
 }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // GEOMETRY_ALGOS_CENTROID_H_
