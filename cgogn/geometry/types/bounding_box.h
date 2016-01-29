@@ -101,7 +101,7 @@ public:
 	}
 
 
-	Scalar maxSize() const
+	Scalar max_size() const
 	{
 		cgogn_message_assert(initialized_, "Bounding box not initialized");
 		Scalar max = p_max_[0] - p_min_[0] ;
@@ -115,7 +115,7 @@ public:
 	}
 
 
-	Scalar minSize() const
+	Scalar min_size() const
 	{
 		cgogn_message_assert(initialized_, "Bounding box not initialized");
 		Scalar min = p_max_[0] - p_min_[0] ;
@@ -134,7 +134,7 @@ public:
 		return p_max_ - p_min_ ;
 	}
 
-	Scalar diagSize()  const
+	Scalar diag_size()  const
 	{
 		cgogn_message_assert(initialized_, "Bounding box not initialized");
 		return Scalar((p_max_ - p_min_).norm());
@@ -147,7 +147,7 @@ public:
 		return center ;
 	}
 
-	bool isInitialized() const ;
+	bool is_initialized() const ;
 
 
 	// reinitialize the bounding box
@@ -157,7 +157,7 @@ public:
 	}
 
 	// add a point to the bounding box
-	void addPoint(const Vec& p)
+	void add_point(const Vec& p)
 	{
 		if(!initialized_)
 		{
@@ -326,7 +326,7 @@ public:
 
 
 	// 0-centered scale of the bounding box
-	void centeredScale(Scalar size)
+	void centered_scale(Scalar size)
 	{
 		cgogn_message_assert(initialized_, "Bounding box not initialized");
 		Vec center = (p_min_ + p_max_) / Scalar(2) ;
@@ -335,7 +335,7 @@ public:
 	}
 
 	/// test if bb is intersected by a ray
-	bool rayIntersect(const Vec& P, const Vec& V) const
+	bool ray_intersect(const Vec& P, const Vec& V) const
 	{
 
 		if (!cgogn::almost_equal_relative(V[2],Scalar(0)))

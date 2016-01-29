@@ -32,20 +32,15 @@ namespace cgogn
 namespace geometry
 {
 
-namespace algo
-{
 template<typename ATTR>
 void compute_bounding_box(const ATTR& attr, BoundingBox<inside_type(ATTR)>& bb)
 {
 	bb.reset();
 	for(const auto& p:attr)
-		bb.addPoint(p);
+		bb.add_point(p);
 }
 
 
-
-
-} // namespace algo
 } // namespace geometry
 } // namespace cgogn
 

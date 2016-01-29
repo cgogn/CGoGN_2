@@ -29,7 +29,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <cassert>
 
-#include "rendering/dll.h"
+#include <rendering/dll.h>
 
 namespace cgogn
 {

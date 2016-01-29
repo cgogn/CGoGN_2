@@ -24,9 +24,9 @@
 #ifndef RENDERING_SHADERVECTORPERVERTEX_H
 #define RENDERING_SHADERVECTORPERVERTEX_H
 
-#include "rendering/shaders/shader_program.h"
-#include "rendering/shaders/vbo.h"
-#include "rendering/dll.h"
+#include <rendering/shaders/shader_program.h>
+#include <rendering/shaders/vbo.h>
+#include <rendering/dll.h>
 
 namespace cgogn
 {

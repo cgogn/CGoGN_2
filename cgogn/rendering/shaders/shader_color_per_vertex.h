@@ -24,9 +24,9 @@
 #ifndef RENDERING_SHADERCOLORPERVERTEX_H
 #define RENDERING_SHADERCOLORPERVERTEX_H
 
-#include "rendering/shaders/shader_program.h"
-#include "rendering/shaders/vbo.h"
-#include "rendering/dll.h"
+#include <rendering/shaders/shader_program.h>
+#include <rendering/shaders/vbo.h>
+#include <rendering/dll.h>
 
 namespace cgogn
 {

@@ -22,7 +22,7 @@
 *******************************************************************************/
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include "rendering/shaders/shader_vector_per_vertex.h"
+#include <rendering/shaders/shader_vector_per_vertex.h>
 #include <QOpenGLFunctions>
 
 #include <iostream>

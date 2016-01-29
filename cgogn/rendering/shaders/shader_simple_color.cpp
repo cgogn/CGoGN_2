@@ -22,7 +22,7 @@
 *******************************************************************************/
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include "rendering/shaders/shader_simple_color.h"
+#include <rendering/shaders/shader_simple_color.h>
 #include <QOpenGLFunctions>
 #include <QColor>
 #include <iostream>

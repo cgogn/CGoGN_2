@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_RENDERING_DLL_EXPORT
-#include "rendering/shaders/shader_program.h"
+#include <rendering/shaders/shader_program.h>
 
 namespace cgogn
 {

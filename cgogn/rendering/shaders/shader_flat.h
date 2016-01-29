@@ -24,9 +24,9 @@
 #ifndef RENDERING_SHADERFLAT_H
 #define RENDERING_SHADERFLAT_H
 
-#include "rendering/shaders/shader_program.h"
-#include "rendering/shaders/vbo.h"
-#include "rendering/dll.h"
+#include <rendering/shaders/shader_program.h>
+#include <rendering/shaders/vbo.h>
+#include <rendering/dll.h>
 
 class QColor;
 
