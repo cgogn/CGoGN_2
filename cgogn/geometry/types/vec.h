@@ -63,7 +63,7 @@ public:
 	Self& operator=(const Self& v) = default;
 
 	template<typename...Args>
-	inline Vec_T(Args... a) : data_{a...} {}
+	inline Vec_T(Args... a) : data_{Scalar(a)...} {}
 
 	inline Scalar& operator[](std::size_t i)
 	{
