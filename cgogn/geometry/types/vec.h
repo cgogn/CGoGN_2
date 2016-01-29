@@ -58,13 +58,14 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
-	Vec_T() = default;
-	Vec_T(const Self&v) = default;
-	Self& operator=(const Self& v) = default;
+	inline Vec_T() : data_() {}
 
 	template <typename... Args>
-	inline Vec_T(Args... a) : data_{Scalar(a)...}
+	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... })
 	{}
+
+	Vec_T(const Self&v) = default;
+	Self& operator=(const Self& v) = default;
 
 	inline Scalar& operator[](std::size_t i)
 	{
@@ -228,7 +229,6 @@ private:
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
-extern template class CGOGN_GEOMETRY_API Vec_T<std::vector<float>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 
 } // namespace geometry

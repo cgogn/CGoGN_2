@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERPROGRAM_H
-#define RENDERING_SHADERPROGRAM_H
+#ifndef RENDERING_SHADERS_SHADERPROGRAM_H_
+#define RENDERING_SHADERS_SHADERPROGRAM_H_
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -68,9 +68,7 @@ public:
 	 * @brief set model-view matrice (normal matrix computed if needed)
 	 * @param mv model view matrix
 	 */
-	void set_view_matrice(const QMatrix4x4& mv);
-
-
+	void set_view_matrix(const QMatrix4x4& mv);
 
 	/**
 	 * @brief add a vao (vbo configuration)
@@ -80,19 +78,18 @@ public:
 	{
 		vaos_.emplace_back(new QOpenGLVertexArrayObject);
 		vaos_.back()->create();
-		return vaos_.size()-1;
+		return vaos_.size() - 1;
 	}
 
 	/**
-	 * @brief allocate new vao until total reach nb
-	 * @param nb number of allocated vao
+	 * @brief allocate new vaos until total nb is reached
+	 * @param nb number of vaos to reach
 	 */
 	void alloc_vao(unsigned int nb)
 	{
-		while (vaos_.size()<nb)
+		while (vaos_.size() < nb)
 			vaos_.emplace_back(new QOpenGLVertexArrayObject);
 	}
-
 
 	/**
 	 * @brief number of allocated vaos
@@ -109,7 +106,7 @@ public:
 	 */
 	inline void bind_vao(unsigned int i)
 	{
-//		assert(i<vaos_.size());
+//		assert(i < vaos_.size());
 //		if (!vaos_[i]->isCreated())
 //			vaos_[i]->create();
 		vaos_[i]->bind();
@@ -121,7 +118,7 @@ public:
 	 */
 	inline void release_vao(unsigned int i)
 	{
-//		assert(i<vaos_.size());
+//		assert(i < vaos_.size());
 		vaos_[i]->release();
 	}
 
@@ -140,11 +137,10 @@ public:
 	{
 		prg_.release();
 	}
-
 };
 
 } // namespace rendering
+
 } // namespace cgogn
 
-
-#endif // RENDERING_SHADERPROGRAM_H
+#endif // RENDERING_SHADERS_SHADERPROGRAM_H_

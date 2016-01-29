@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERCOLORPERVERTEX_H
-#define RENDERING_SHADERCOLORPERVERTEX_H
+#ifndef RENDERING_SHADERS_COLORPERVERTEX_H_
+#define RENDERING_SHADERS_COLORPERVERTEX_H_
 
 #include <rendering/shaders/shader_program.h>
 #include <rendering/shaders/vbo.h>
@@ -30,20 +30,23 @@
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
 class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
 {
-	/// vertex shader source
-	static const char *vertex_shader_source_;
-	/// fragment shader source
-	static const char *fragment_shader_source_;
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
-	/// here two attributes
-	enum {ATTRIB_POS=0, ATTRIB_COLOR};
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR
+	};
 
 public:
+
     ShaderColorPerVertex();
 
 	/**
@@ -54,11 +57,10 @@ public:
 	 * @return true if ok
 	 */
 	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_col);
-
 };
 
 } // namespace rendering
+
 } // namespace cgogn
 
-
-#endif // RENDERING_SHADERCOLORPERVERTEX_H
+#endif // RENDERING_SHADERS_COLORPERVERTEX_H_

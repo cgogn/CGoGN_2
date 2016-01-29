@@ -20,15 +20,17 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_RENDERING_DLL_EXPORT
 
 #include <rendering/shaders/shader_vector_per_vertex.h>
-#include <QOpenGLFunctions>
 
+#include <QOpenGLFunctions>
 #include <iostream>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
@@ -59,7 +61,6 @@ const char* ShaderVectorPerVertex::geometry_shader_source_ =
 	"	EndPrimitive();\n"
 	"}\n";
 
-
 const char* ShaderVectorPerVertex::fragment_shader_source_ =
 	"#version 150\n"
 	"uniform vec4 color;\n"
@@ -67,7 +68,6 @@ const char* ShaderVectorPerVertex::fragment_shader_source_ =
 	"void main() {\n"
 	"   fragColor = color;\n"
 	"}\n";
-
 
 ShaderVectorPerVertex::ShaderVectorPerVertex()
 {
@@ -84,22 +84,21 @@ ShaderVectorPerVertex::ShaderVectorPerVertex()
 	unif_length_ = prg_.uniformLocation("length");
 }
 
-
 void ShaderVectorPerVertex::set_color(const QColor& rgb)
 {
-	prg_.setUniformValue(unif_color_,rgb);
+	prg_.setUniformValue(unif_color_, rgb);
 }
 
 void ShaderVectorPerVertex::set_length(float l)
 {
-	prg_.setUniformValue(unif_length_,l);
+	prg_.setUniformValue(unif_length_, l);
 }
 
 bool ShaderVectorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_normal)
 {
-	if (i>=vaos_.size())
+	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number "<< i << "does not exist"<< std::endl;
+		std::cerr << "VAO number " << i << " does not exist" << std::endl;
 		return false;
 	}
 
@@ -107,23 +106,25 @@ bool ShaderVectorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norma
 
 	prg_.bind();
 	vaos_[i]->bind();
+
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
+
 	// normal vbo
 	vbo_normal->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_NORMAL);
-	ogl->glVertexAttribPointer(ATTRIB_NORMAL, vbo_normal->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_NORMAL, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_normal->release();
 
 	vaos_[i]->release();
 	prg_.release();
+
 	return true;
 }
 
 } // namespace rendering
+
 } // namespace cgogn
-
-

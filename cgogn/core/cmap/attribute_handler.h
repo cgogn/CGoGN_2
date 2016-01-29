@@ -28,8 +28,6 @@
 #include <core/basic/cell.h>
 #include <core/utils/assert.h>
 
-///TODO ajouter enregistrement dans la map de la carte.
-
 namespace cgogn
 {
 

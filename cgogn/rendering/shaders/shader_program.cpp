@@ -20,17 +20,20 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_RENDERING_DLL_EXPORT
+
 #include <rendering/shaders/shader_program.h>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
 ShaderProgram::~ShaderProgram()
 {
-	for (QOpenGLVertexArrayObject* vao: vaos_)
+	for (QOpenGLVertexArrayObject* vao : vaos_)
 	{
 		vao->destroy();
 		delete vao;
@@ -46,23 +49,21 @@ void ShaderProgram::get_matrices_uniforms()
 
 void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
 {
-	prg_.setUniformValue(unif_projection_matrix_,proj);
+	prg_.setUniformValue(unif_projection_matrix_, proj);
 	prg_.setUniformValue(unif_mv_matrix_, mv);
 
-	if (unif_normal_matrix_>=0)
+	if (unif_normal_matrix_ >= 0)
 	{
 		QMatrix3x3 normalMatrix = mv.normalMatrix();
 		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
 	}
 }
 
-
-
-void ShaderProgram::set_view_matrice(const QMatrix4x4& mv)
+void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
 {
 	prg_.setUniformValue(unif_mv_matrix_, mv);
 
-	if (unif_normal_matrix_>=0)
+	if (unif_normal_matrix_ >= 0)
 	{
 		QMatrix3x3 normalMatrix = mv.normalMatrix();
 		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
@@ -70,4 +71,5 @@ void ShaderProgram::set_view_matrice(const QMatrix4x4& mv)
 }
 
 } // namespace rendering
+
 } // namespace cgogn

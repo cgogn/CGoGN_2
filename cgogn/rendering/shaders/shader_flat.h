@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERFLAT_H
-#define RENDERING_SHADERFLAT_H
+#ifndef RENDERING_SHADERS_FLAT_H_
+#define RENDERING_SHADERS_FLAT_H_
 
 #include <rendering/shaders/shader_program.h>
 #include <rendering/shaders/vbo.h>
@@ -32,26 +32,23 @@ class QColor;
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
 class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 {
-	/// vertex shader source
-	static const char *vertex_shader_source_;
-	/// fragment shader source
-	static const char *fragment_shader_source_;
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
-	/// here only one attribute in shader
-	enum {ATTRIB_POS=0};
+	enum
+	{
+		ATTRIB_POS = 0
+	};
 
-	/// uniform id of front color
+	// uniform ids
 	int unif_front_color_;
-
-	/// uniform id of back color
 	int unif_back_color_;
-
-	/// uniform id of ambiant color
 	int unif_ambiant_color_;
 
 public:
@@ -70,7 +67,6 @@ public:
 	 */
 	void set_back_color(const QColor& rgb);
 
-
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
@@ -84,11 +80,10 @@ public:
 	 * @return true if ok
 	 */
 	bool set_vao(unsigned int i, VBO* vbo_pos);
-
 };
 
 } // namespace rendering
+
 } // namespace cgogn
 
-
-#endif // RENDERING_SHADERFLAT_H
+#endif // RENDERING_SHADERS_FLAT_H_

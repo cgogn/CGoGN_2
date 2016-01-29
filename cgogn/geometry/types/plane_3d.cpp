@@ -36,7 +36,6 @@ template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
 template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
 template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
 template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
-template class CGOGN_GEOMETRY_API Vec_T<std::vector<float>>;
 
 } // namespace geometry
 

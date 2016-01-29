@@ -281,8 +281,8 @@ protected:
 			oss >> nb_faces_;
 			oss >> nb_edges_;
 		}
-		ChunkArray<VEC3>* position =
-			vertex_attributes_.template add_attribute<VEC3>("position");
+
+		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
 
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
