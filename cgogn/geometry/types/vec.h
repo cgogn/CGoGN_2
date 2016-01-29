@@ -164,18 +164,6 @@ public:
 		return v / r;
 	}
 
-	inline void operator*=(Scalar f)
-	{
-		for (auto& c : data_)
-			c *= f;
-	}
-
-	inline void operator/=(Scalar f)
-	{
-		for (auto& c : data_)
-			c /= f;
-	}
-
 
 	inline const Scalar dot(const Self& v) const
 	{

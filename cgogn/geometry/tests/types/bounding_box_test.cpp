@@ -80,22 +80,22 @@ TEST(BoundingBox_TEST, testing)
 		bb.addPoint(StdArray({-1,-2,-3}));
 		bb.addPoint(StdArray({1,2,3}));
 
-		EXPECT_EQ(bb.contains(StdArray({1,1,1})),true);
+		EXPECT_TRUE(bb.contains(StdArray({1,1,1})));
 
 		BoundingBox_Array bb2;
 		bb2.addPoint(StdArray({0,0,0}));
 		bb2.addPoint(StdArray({4,5,2}));
 
-		EXPECT_EQ(bb.intersects(bb2),true);
+		EXPECT_TRUE(bb.intersects(bb2));
 
 		BoundingBox_Array bb3;
 		bb3.addPoint(StdArray({0,0,0}));
 		bb3.addPoint(StdArray({1,1,1}));
 
-		EXPECT_EQ(bb.contains(bb3),true);
+		EXPECT_TRUE(bb.contains(bb3));
 
-		EXPECT_EQ(bb.rayIntersect(StdArray({-9,-9,-9}),StdArray({1,1,1})),true);
-		EXPECT_EQ(bb.rayIntersect(StdArray({-9,-9,-9}),StdArray({1,-1,0})),false);
+		EXPECT_TRUE(bb.rayIntersect(StdArray({-9,-9,-9}),StdArray({1,1,1})));
+		EXPECT_FALSE(bb.rayIntersect(StdArray({-9,-9,-9}),StdArray({1,-1,0})));
 
 	}
 	{
@@ -104,22 +104,22 @@ TEST(BoundingBox_TEST, testing)
 		bb.addPoint(EigenVec3d(-1,2,-3));
 		bb.addPoint(EigenVec3d(1,-2,3));
 
-		EXPECT_EQ(bb.contains(EigenVec3d(1,1,1)),true);
+		EXPECT_TRUE(bb.contains(EigenVec3d(1,1,1)));
 
 		BoundingBox_Eigen bb2;
 		bb2.addPoint(EigenVec3d(0,0,0));
 		bb2.addPoint(EigenVec3d(4,5,2));
 
-		EXPECT_EQ(bb.intersects(bb2),true);
+		EXPECT_TRUE(bb.intersects(bb2));
 
 		BoundingBox_Eigen bb3;
 		bb3.addPoint(EigenVec3d(0,0,0));
 		bb3.addPoint(EigenVec3d(1,1,1));
 
-		EXPECT_EQ(bb.contains(bb3),true);
+		EXPECT_TRUE(bb.contains(bb3));
 
-		EXPECT_EQ(bb.rayIntersect(EigenVec3d(-9,-9,-9),EigenVec3d(1,1,1)),true);
-		EXPECT_EQ(bb.rayIntersect(EigenVec3d(-9,-9,-9),EigenVec3d(1,-1,0)),false);
+		EXPECT_TRUE(bb.rayIntersect(EigenVec3d(-9,-9,-9),EigenVec3d(1,1,1)));
+		EXPECT_FALSE(bb.rayIntersect(EigenVec3d(-9,-9,-9),EigenVec3d(1,-1,0)));
 
 	}
 }
