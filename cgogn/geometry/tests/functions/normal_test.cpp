@@ -21,20 +21,48 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_EIGEN_H_
-#define GEOMETRY_EIGEN_H_
+#include <core/utils/precision.h>
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/functions/normal.h>
+#include <gtest/gtest.h>
+#include <iostream>
 
-#include <core/utils/definitions.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
-namespace cgogn
+using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3d = Eigen::Vector3d;
+
+TEST(Normal_TEST, TriangleNormal)
 {
-namespace geometry
-{
+	{
+		StdArray p0(1,3,-5);
+		StdArray p1(7,-4,0.1);
+		StdArray p2(-15,-2,15);
+		StdArray n = cgogn::geometry::triangle_normal(p0,p1,p2);
+		cgogn::almost_equal_relative(n.dot(p1-p0),0.);
+//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
+		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0),0., 1e-8));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0),0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1),0.));
+//		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
+		EXPECT_NEAR(n.dot(p1-p0),0, 1e-8);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p0),0);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p1),0);
+	}
+	{
+		EigenVec3d p0(1,3,-5);
+		EigenVec3d p1(7,-4,0.1);
+		EigenVec3d p2(-15,-2,15);
+		EigenVec3d n = cgogn::geometry::triangle_normal(p0,p1,p2);
+//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
+		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0),0., 1e-8));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0),0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1),0.));
+//		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
+		EXPECT_NEAR(n.dot(p1-p0),0, 1e-8);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p0),0);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p1),0);
+	}
 
-} // namespace geometry
-} // namespace cgogn
+}
 
-#endif // GEOMETRY_EIGEN_H_

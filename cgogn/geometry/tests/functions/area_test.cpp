@@ -20,21 +20,30 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/functions/area.h>
+#include <gtest/gtest.h>
+#include <iostream>
 
-#ifndef GEOMETRY_EIGEN_H_
-#define GEOMETRY_EIGEN_H_
 
-#include <core/utils/definitions.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
-#include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
+using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3d = Eigen::Vector3d;
 
-namespace cgogn
+TEST(Area_TEST, TriangleArea)
 {
-namespace geometry
-{
+	{
+		StdArray p0(0,0,0);
+		StdArray p1(2,0,0);
+		StdArray p2(0,2,0);
+		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2),2.0);
+	}
+	{
+		EigenVec3d p0(0,0,0);
+		EigenVec3d p1(2,0,0);
+		EigenVec3d p2(0,2,0);
+		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2),2.0);
+	}
 
-} // namespace geometry
-} // namespace cgogn
+}
 
-#endif // GEOMETRY_EIGEN_H_
