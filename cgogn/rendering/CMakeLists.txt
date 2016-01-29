@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	)
 
 
-target_link_libraries(${PROJECT_NAME} cgogn_core Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Widgets)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/rendering

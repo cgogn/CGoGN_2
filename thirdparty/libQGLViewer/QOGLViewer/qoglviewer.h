@@ -37,7 +37,7 @@ namespace qoglviewer {
 class MouseGrabber;
 class ManipulatedFrame;
 class ManipulatedCameraFrame;
-void init_ogl_context();
+QGLVIEWER_EXPORT void init_ogl_context();
 }
 
 /*! \brief A versatile 3D OpenGL viewer based on QGLWidget.
