@@ -63,7 +63,7 @@ public:
 	Self& operator=(const Self& v) = default;
 
 	template <typename... Args>
-	inline Vec_T(Args... a) : data_{a...}
+	inline Vec_T(Args... a) : data_{Scalar(a)...}
 	{}
 
 	inline Scalar& operator[](std::size_t i)
@@ -74,6 +74,15 @@ public:
 	inline const Scalar& operator[](std::size_t i) const
 	{
 		return data_[i];
+	}
+
+	inline bool operator==(const Self& v) const
+	{
+		auto it_this = data_.begin();
+		for (auto c : v.data_)
+			if ( *(it_this++) != c)
+				return false;
+		return true;
 	}
 
 	inline const Self operator-() const
@@ -115,7 +124,7 @@ public:
 		Self res;
 		auto it_res = res.data_.begin();
 		auto it_v = v.data_.begin();
-		for (auto c : v.data_)
+		for (auto c : data_)
 			*(it_res++) = c + (*it_v++);
 		return res;
 	}
@@ -142,6 +151,20 @@ public:
 	{
 		return v * r;
 	}
+
+	inline friend const Self operator/(const Self& v, Scalar r)
+	{
+		Self res(v);
+		for (auto& c : res.data_)
+			c /= r;
+		return res;
+	}
+
+	inline friend const Self operator/(Scalar r, const Self& v)
+	{
+		return v / r;
+	}
+
 
 	inline const Scalar dot(const Self& v) const
 	{

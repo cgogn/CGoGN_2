@@ -4,12 +4,14 @@ project(cgogn_geometry
 
 set(HEADER_FILES
 	dll.h
+	algos/bounding_box.h
 	algos/area.h
 	algos/centroid.h
 	algos/normal.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
+	types/bounding_box.h
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
@@ -19,6 +21,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	types/plane_3d.cpp
 	types/vec.cpp
+	types/bounding_box.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -247,7 +247,14 @@ public:
 	AttributeHandler(const Self& att) :
 		Inherit(att),
 		chunk_array_(att.chunk_array_)
-	{}
+	{
+		if (chunk_array_ != nullptr)
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->add_external_ref(ref);
+		}
+	}
 
 	/**
 	 * \brief Move constructor
@@ -256,7 +263,14 @@ public:
 	AttributeHandler(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att)),
 		chunk_array_(att.chunk_array_)
-	{}
+	{
+		if (chunk_array_ != nullptr)
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->add_external_ref(ref);
+		}
+	}
 
 	/**
 	 * \brief operator =
@@ -266,7 +280,23 @@ public:
 	AttributeHandler& operator=(const Self& att)
 	{
 		Inherit::operator=(att);
+
+		if (is_valid())
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->remove_external_ref(ref);
+		}
+
 		chunk_array_ = att.chunk_array_;
+
+		if (chunk_array_ != nullptr)
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->add_external_ref(ref);
+		}
+
 		return *this;
 	}
 
@@ -278,7 +308,23 @@ public:
 	AttributeHandler& operator=(Self&& att)
 	{
 		Inherit::operator=(std::move(att));
+
+		if (is_valid())
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->remove_external_ref(ref);
+		}
+
 		chunk_array_ = att.chunk_array_;
+
+		if (chunk_array_ != nullptr)
+		{
+			TChunkArray** tmp = &chunk_array_;
+			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			chunk_array_->add_external_ref(ref);
+		}
+
 		return *this;
 	}
 
