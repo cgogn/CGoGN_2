@@ -4,9 +4,9 @@
 #include <list>
 
 const unsigned int SIZE = 32u;
-template<class T>
+template <class T>
 using ChunkArray = cgogn::ChunkArray<SIZE, T>;
-template<typename T>
+template <typename T>
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, T>;
 
 int test1();

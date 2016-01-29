@@ -88,9 +88,9 @@ public:
 	typedef T_REF ref_type;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
-	template<class T>
+	template <class T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	template<class T>
+	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
 
 	/**
@@ -374,7 +374,7 @@ public:
 	* @param attribute_name name of the array
 	* @return pointer on typed chunk_array
 	*/
-	template<typename T>
+	template <typename T>
 	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);

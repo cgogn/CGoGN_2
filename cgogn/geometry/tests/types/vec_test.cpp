@@ -26,7 +26,6 @@
 
 #include <gtest/gtest.h>
 
-
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
 
@@ -324,4 +323,3 @@ TEST(VEC_OP_TEST, CrossProduct)
 	EXPECT_EQ(c[2], -4.);
 	}
 }
-

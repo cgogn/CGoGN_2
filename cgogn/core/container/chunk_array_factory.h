@@ -54,7 +54,7 @@ public:
 	 * @param keyType name of type
 	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
 	 */
-	template<typename T>
+	template <typename T>
 	static void register_CA()
 	{
 		std::string&& keyType(name_of_type(T()));

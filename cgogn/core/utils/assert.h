@@ -78,7 +78,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 	int line_number
 );
 
-}
+} // namespace cgogn
 
 /**
  * \brief Verifies that a condition is met.

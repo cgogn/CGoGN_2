@@ -33,7 +33,6 @@
 
 #include <io/dll.h>
 
-
 namespace cgogn
 {
 
@@ -67,13 +66,13 @@ public:
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
-	template<typename T, Orbit ORBIT>
+	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
-	template<typename T>
+	template <typename T>
 
 	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
@@ -248,7 +247,7 @@ public:
 			mbuild.close_map();
 
 		if (need_vertex_unicity_check)
-			map.template unique_orbit_embedding<VERTEX>();
+			map.template enforce_unique_orbit_embedding<VERTEX>();
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();

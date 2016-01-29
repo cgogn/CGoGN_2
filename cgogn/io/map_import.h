@@ -37,16 +37,16 @@ namespace cgogn
 namespace io
 {
 
-template<typename VEC3, class MAP_TRAITS>
+template <typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
 
-template<typename VEC3, class MAP_TRAITS>
+template <typename VEC3, class MAP_TRAITS>
 inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename);
 
 
 
 
-template<typename VEC3, class MAP_TRAITS>
+template <typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
 	using SurfaceImport = SurfaceImport<MAP_TRAITS>;
@@ -55,7 +55,7 @@ inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& f
 	si.create_map(cmap2);
 }
 
-template<typename VEC3, class MAP_TRAITS>
+template <typename VEC3, class MAP_TRAITS>
 inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename)
 {
 	using VolumeImport = VolumeImport<MAP_TRAITS>;
@@ -63,6 +63,7 @@ inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& fi
 	vi.template import_file<VEC3>(filename);
 	vi.create_map(cmap3);
 }
+
 } // namespace io
 
 } // namespace cgogn

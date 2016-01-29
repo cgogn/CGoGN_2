@@ -28,26 +28,25 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
 
 TEST(Normal_TEST, TriangleNormal)
 {
 	{
-		StdArray p0(1,3,-5);
-		StdArray p1(7,-4,0.1);
-		StdArray p2(-15,-2,15);
+		StdArray p0(1.,3.,-5.);
+		StdArray p1(7.,-4.,0.1);
+		StdArray p2(-15.,-2.,15.);
 		StdArray n = cgogn::geometry::triangle_normal(p0,p1,p2);
-		cgogn::almost_equal_relative(n.dot(p1-p0),0.);
+		cgogn::almost_equal_relative(n.dot(p1-p0), 0.);
 //		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0),0., 1e-8));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0),0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1),0.));
-//		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
-		EXPECT_NEAR(n.dot(p1-p0),0, 1e-8);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p0),0);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p1),0);
+		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
+//		EXPECT_DOUBLE_EQ(n.dot(p1-p0), 0.); // is false !
+		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
 	}
 	{
 		EigenVec3d p0(1,3,-5);
@@ -55,14 +54,12 @@ TEST(Normal_TEST, TriangleNormal)
 		EigenVec3d p2(-15,-2,15);
 		EigenVec3d n = cgogn::geometry::triangle_normal(p0,p1,p2);
 //		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0),0., 1e-8));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0),0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1),0.));
+		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
 //		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
-		EXPECT_NEAR(n.dot(p1-p0),0, 1e-8);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p0),0);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p1),0);
+		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
+		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
 	}
-
 }
-

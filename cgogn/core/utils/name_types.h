@@ -48,7 +48,6 @@
 namespace cgogn
 {
 
-
 /**
 * @brief function that give a name to a type.
 * It relies on typeid except if the class T has a static function cgogn_name_of_type (returning a std::string)
@@ -61,15 +60,15 @@ inline std::string name_of_type(const T& t);
 namespace internal
 {
 
-template<class>
+template <class>
 struct sfinae_true : std::true_type{};
 
-template<class T>
+template <class T>
 static auto test_name_of_type(int ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
-template<class>
+template <class>
 static auto test_name_of_type(long) -> std::false_type;
 
-template<class T>
+template <class T>
 struct has_cgogn_name_of_type : decltype(test_name_of_type<T>(0)){};
 
 // implementation for classes which have a static cgogn_name_of_type() function (returning a std::string)
@@ -86,10 +85,10 @@ inline std::string name_of_type_impl(const std::list<T>&);
 template <typename T>
 inline std::string name_of_type_impl(const std::vector<T>&);
 
-template<typename T>
+template <typename T>
 inline std::string name_of_type_impl(const std::basic_string<T>&);
 
-template<typename T>
+template <typename T>
 inline std::string name_of_type_impl(const std::basic_string<T>&)
 {
 	return std::string("std::basic_string<") + name_of_type(T()) + std::string(">");

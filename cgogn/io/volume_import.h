@@ -42,15 +42,14 @@ namespace cgogn
 namespace io
 {
 
+enum VolumeFileType
+{
+	VolumeFileType_UNKNOWN = 0,
+};
 
 template <typename MAP_TRAITS>
 class VolumeImport
 {
-
-	enum VolumeFileType
-	{
-		VolumeFileType_UNKNOWN = 0,
-	};
 public:
 
 	using Self = VolumeImport<MAP_TRAITS>;
@@ -58,13 +57,13 @@ public:
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
-	template<typename T, Orbit ORBIT>
+	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
-	template<typename T>
+	template <typename T>
 
 	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 	using MapBuilder = cgogn::CMap3Builder_T<typename Map::MapTraits>;

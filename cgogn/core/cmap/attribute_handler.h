@@ -37,7 +37,7 @@ namespace cgogn
  * \brief Generic AttributeHandler class
  * @TPARAM DATA_TRAITS storage traits (for MapBaseData ptr type)
  */
-template<typename DATA_TRAITS>
+template <typename DATA_TRAITS>
 class AttributeHandlerGen
 {
 public:
@@ -109,7 +109,7 @@ public:
  * \brief Generic AttributeHandler class with orbit parameter
  * @TPARAM ORBIT the orbit of the attribute to handlde
  */
-template<typename DATA_TRAITS, Orbit ORBIT>
+template <typename DATA_TRAITS, Orbit ORBIT>
 class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
@@ -121,9 +121,9 @@ public:
 
 	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
 
 protected:
@@ -137,7 +137,7 @@ public:
 		chunk_array_cont_(nullptr)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = &(map->get_attribute_container(ORBIT));
+			chunk_array_cont_ = &(map->template get_attribute_container<ORBIT>());
 	}
 
 	/**
@@ -194,7 +194,7 @@ public:
  * \brief AttributeHandler class
  * @TPARAM T the data type of the attribute to handlde
  */
-template<typename DATA_TRAITS, typename T, Orbit ORBIT>
+template <typename DATA_TRAITS, typename T, Orbit ORBIT>
 class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:

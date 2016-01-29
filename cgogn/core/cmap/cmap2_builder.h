@@ -37,7 +37,7 @@ public:
 	using Self = CMap2Builder_T<MAP_TRAITS>;
 	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)

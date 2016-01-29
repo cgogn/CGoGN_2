@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_PLANE_3D_H_
-#define GEOMETRY_PLANE_3D_H_
+#ifndef GEOMETRY_TYPES_PLANE_3D_H_
+#define GEOMETRY_TYPES_PLANE_3D_H_
 
 #include <type_traits>
 #include <array>
@@ -31,7 +31,6 @@
 
 #include <geometry/dll.h>
 #include <geometry/types/geometry_traits.h>
-
 
 namespace cgogn
 {
@@ -46,11 +45,13 @@ enum Orientation3D
 	UNDER
 };
 
-template<typename VEC_T>
+template <typename VEC_T>
 class Plane3D
 {
 	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+
 public:
+
 	using Vec = VEC_T;
 	using Scalar = typename vector_traits<Vec>::Scalar;
 	using Self = Plane3D<Vec>;
@@ -125,23 +126,27 @@ public:
 	}
 
 public:
+
 	static std::string cgogn_name_of_type()
 	{
 		return std::string("cgogn::geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
 	}
+
 private:
+
 	Vec normal_;
 	Scalar d_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_PLANE_3D_CPP_))
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_PLANE_3D_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_PLANE_3D_CPP_))
 
 } // namespace geometry
+
 } // namespace cgogn
 
-#endif // GEOMETRY_PLANE_3D_H_
+#endif // GEOMETRY_TYPES_PLANE_3D_H_

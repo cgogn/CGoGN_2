@@ -54,18 +54,18 @@ public:
 	typedef Cell<EDGE> Edge;
 	typedef Cell<FACE> Face;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
-	template<typename T>
+	template <typename T>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
-	template<typename T, Orbit ORBIT>
+	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
-	template<typename T>
+	template <typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
-	template<typename T>
+	template <typename T>
 	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
-	template<typename T>
+	template <typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
