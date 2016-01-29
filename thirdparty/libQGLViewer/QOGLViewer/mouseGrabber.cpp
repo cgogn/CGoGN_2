@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -22,7 +22,7 @@
 
 #include "mouseGrabber.h"
 
-using namespace qglviewer;
+using namespace qoglviewer;
 
 // Static private variable
 QList<MouseGrabber*> MouseGrabber::MouseGrabberPool_;
@@ -42,7 +42,7 @@ All created MouseGrabber are automatically added in the MouseGrabberPool() by th
 Trying to add a MouseGrabber that already isInMouseGrabberPool() has no effect.
 
 Use removeFromMouseGrabberPool() to remove the MouseGrabber from the list, so that it is no longer
-tested with checkIfGrabsMouse() by the QGLViewer, and hence can no longer grab mouse focus. Use
+tested with checkIfGrabsMouse() by the QOGLViewer, and hence can no longer grab mouse focus. Use
 isInMouseGrabberPool() to know the current state of the MouseGrabber. */
 void MouseGrabber::addInMouseGrabberPool()
 {
@@ -63,7 +63,7 @@ void MouseGrabber::removeFromMouseGrabberPool()
 /*! Clears the MouseGrabberPool().
 
  Use this method only if it is faster to clear the MouseGrabberPool() and then to add back a few
- MouseGrabbers than to remove each one independently. Use QGLViewer::setMouseTracking(false) instead
+ MouseGrabbers than to remove each one independently. Use QOGLViewer::setMouseTracking(false) instead
  if you want to disable mouse grabbing.
 
  When \p autoDelete is \c true, the MouseGrabbers of the MouseGrabberPool() are actually deleted

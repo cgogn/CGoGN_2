@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -25,7 +25,7 @@
 #include "camera.h"
 #include "manipulatedCameraFrame.h"
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////

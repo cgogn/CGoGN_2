@@ -3,7 +3,7 @@ project(cgogn_rendering
 	)
 
 find_package(Qt5Widgets)
-find_package(Qt5OpenGL)
+#find_package(Qt5OpenGL)
 
 
 set(HEADER_FILES
@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	)
 
 
-target_link_libraries(${PROJECT_NAME} cgogn_core Qt5::Widgets Qt5::OpenGL)
+target_link_libraries(${PROJECT_NAME} cgogn_core Qt5::Widgets)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/rendering

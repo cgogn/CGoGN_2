@@ -149,9 +149,6 @@ public:
 
 	bool isInitialized() const ;
 
-	/**********************************************/
-	/*                 FUNCTIONS                  */
-	/**********************************************/
 
 	// reinitialize the bounding box
 	void reset()
@@ -374,6 +371,10 @@ public:
 		return false;
 	}
 
+	static std::string cgogn_name_of_type()
+	{
+		return std::string("cgogn::geometry::BoundingBox<") + name_of_type(Vec()) + std::string(">");
+	}
 
 private:
 	bool initialized_ ;

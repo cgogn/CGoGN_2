@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -22,14 +22,14 @@
 
 #include "manipulatedFrame.h"
 #include "manipulatedCameraFrame.h"
-#include "qglviewer.h"
+#include "qoglviewer.h"
 #include "camera.h"
 
 #include <cstdlib>
 
 #include <QMouseEvent>
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 /*! Default constructor.
@@ -40,7 +40,7 @@ using namespace std;
   The different sensitivities are set to their default values (see rotationSensitivity(),
   translationSensitivity(), spinningSensitivity() and wheelSensitivity()). */
 ManipulatedFrame::ManipulatedFrame()
-	: action_(QGLViewer::NO_MOUSE_ACTION), keepsGrabbingMouse_(false)
+	: action_(QOGLViewer::NO_MOUSE_ACTION), keepsGrabbingMouse_(false)
 {
 	// #CONNECTION# initFromDOMElement and accessor docs
 	setRotationSensitivity(1.0);
@@ -69,7 +69,7 @@ ManipulatedFrame& ManipulatedFrame::operator=(const ManipulatedFrame& mf)
 	mouseSpeed_ = 0.0;
 	dirIsFixed_ = false;
 	keepsGrabbingMouse_ = false;
-	action_ = QGLViewer::NO_MOUSE_ACTION;
+	action_ = QOGLViewer::NO_MOUSE_ACTION;
 
 	return *this;
 }
@@ -167,12 +167,12 @@ See Vec::initFromDOMElement() for a complete code example. */
 
   Can be used to change the display of the manipulated object during manipulation.
 
-  When Camera::frame() of the QGLViewer::camera() isManipulated(), QGLViewer::fastDraw() is used in
-  place of QGLViewer::draw() for scene rendering. A simplified drawing will then allow for
+  When Camera::frame() of the QOGLViewer::camera() isManipulated(), QOGLViewer::fastDraw() is used in
+  place of QOGLViewer::draw() for scene rendering. A simplified drawing will then allow for
   interactive camera displacements.  */
 bool ManipulatedFrame::isManipulated() const
 {
-	return action_ != QGLViewer::NO_MOUSE_ACTION;
+	return action_ != QOGLViewer::NO_MOUSE_ACTION;
 }
 
 /*! Starts the spinning of the ManipulatedFrame.
@@ -193,7 +193,7 @@ void ManipulatedFrame::spin()
 }
 
 /* spin() and spinUpdate() differ since spin can be used by itself (for instance by
-   QGLViewer::SCREEN_ROTATE) without a spun emission. Much nicer to use the spinningQuaternion() and
+   QOGLViewer::SCREEN_ROTATE) without a spun emission. Much nicer to use the spinningQuaternion() and
    hence spin() for these incremental updates. Nothing special to be done for continuous spinning
    with this design. */
 void ManipulatedFrame::spinUpdate()
@@ -206,7 +206,7 @@ void ManipulatedFrame::spinUpdate()
 /*! Protected internal method used to handle mouse events. */
 void ManipulatedFrame::startAction(int ma, bool withConstraint)
 {
-	action_ = (QGLViewer::MouseAction)(ma);
+	action_ = (QOGLViewer::MouseAction)(ma);
 
 	// #CONNECTION# manipulatedFrame::wheelEvent, manipulatedCameraFrame::wheelEvent and mouseReleaseEvent()
 	// restore previous constraint
@@ -220,13 +220,13 @@ void ManipulatedFrame::startAction(int ma, bool withConstraint)
 
 	switch (action_)
 	{
-		case QGLViewer::ROTATE:
-		case QGLViewer::SCREEN_ROTATE:
+		case QOGLViewer::ROTATE:
+		case QOGLViewer::SCREEN_ROTATE:
 			mouseSpeed_ = 0.0;
 			stopSpinning();
 			break;
 
-		case QGLViewer::SCREEN_TRANSLATE:
+		case QOGLViewer::SCREEN_TRANSLATE:
 			dirIsFixed_ = false;
 			break;
 
@@ -299,7 +299,7 @@ void ManipulatedFrame::zoom(qreal delta, const Camera * const camera) {
 
 Overloading of MouseGrabber::mousePressEvent(). See also mouseMoveEvent() and mouseReleaseEvent().
 
-The mouse behavior depends on which button is pressed. See the <a href="../mouse.html">QGLViewer
+The mouse behavior depends on which button is pressed. See the <a href="../mouse.html">QOGLViewer
 mouse page</a> for details. */
 void ManipulatedFrame::mousePressEvent(QMouseEvent* const event, Camera* const camera)
 {
@@ -310,7 +310,7 @@ void ManipulatedFrame::mousePressEvent(QMouseEvent* const event, Camera* const c
 
 	// #CONNECTION setMouseBinding
 	// action_ should no longer possibly be NO_MOUSE_ACTION since this value is not inserted in mouseBinding_
-	//if (action_ == QGLViewer::NO_MOUSE_ACTION)
+	//if (action_ == QOGLViewer::NO_MOUSE_ACTION)
 	//event->ignore();
 
 	prevPos_ = pressPos_ = event->pos();
@@ -318,8 +318,8 @@ void ManipulatedFrame::mousePressEvent(QMouseEvent* const event, Camera* const c
 
 /*! Modifies the ManipulatedFrame according to the mouse motion.
 
-Actual behavior depends on mouse bindings. See the QGLViewer::MouseAction enum and the <a
-href="../mouse.html">QGLViewer mouse page</a> for details.
+Actual behavior depends on mouse bindings. See the QOGLViewer::MouseAction enum and the <a
+href="../mouse.html">QOGLViewer mouse page</a> for details.
 
 The \p camera is used to fit the mouse motion with the display parameters (see
 Camera::screenWidth(), Camera::screenHeight(), Camera::fieldOfView()).
@@ -329,7 +329,7 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 {
 	switch (action_)
 	{
-		case QGLViewer::TRANSLATE:
+		case QOGLViewer::TRANSLATE:
 		{
 			const QPoint delta = event->pos() - prevPos_;
 			Vec trans(delta.x(), -delta.y(), 0.0);
@@ -356,13 +356,13 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 			break;
 		}
 
-		case QGLViewer::ZOOM:
+		case QOGLViewer::ZOOM:
 		{
 			zoom(deltaWithPrevPos(event, camera), camera);
 			break;
 		}
 
-		case QGLViewer::SCREEN_ROTATE:
+		case QOGLViewer::SCREEN_ROTATE:
 		{
 			Vec trans = camera->projectedCoordinatesOf(position());
 
@@ -378,7 +378,7 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 			break;
 		}
 
-		case QGLViewer::SCREEN_TRANSLATE:
+		case QOGLViewer::SCREEN_TRANSLATE:
 		{
 			Vec trans;
 			int dir = mouseOriginalDirection(event);
@@ -411,7 +411,7 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 			break;
 		}
 
-		case QGLViewer::ROTATE:
+		case QOGLViewer::ROTATE:
 		{
 			Vec trans = camera->projectedCoordinatesOf(position());
 			Quaternion rot = deformedBallQuaternion(event->x(), event->y(), trans[0], trans[1], camera);
@@ -428,22 +428,22 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 			break;
 		}
 
-		case QGLViewer::MOVE_FORWARD:
-		case QGLViewer::MOVE_BACKWARD:
-		case QGLViewer::LOOK_AROUND:
-		case QGLViewer::ROLL:
-		case QGLViewer::DRIVE:
-		case QGLViewer::ZOOM_ON_REGION:
+		case QOGLViewer::MOVE_FORWARD:
+		case QOGLViewer::MOVE_BACKWARD:
+		case QOGLViewer::LOOK_AROUND:
+		case QOGLViewer::ROLL:
+		case QOGLViewer::DRIVE:
+		case QOGLViewer::ZOOM_ON_REGION:
 			// These MouseAction values make no sense for a manipulatedFrame
 			break;
 
-		case QGLViewer::NO_MOUSE_ACTION:
+		case QOGLViewer::NO_MOUSE_ACTION:
 			// Possible when the ManipulatedFrame is a MouseGrabber. This method is then called without startAction
 			// because of mouseTracking.
 			break;
 	}
 
-	if (action_ != QGLViewer::NO_MOUSE_ACTION)
+	if (action_ != QOGLViewer::NO_MOUSE_ACTION)
 	{
 		prevPos_ = event->pos();
 		Q_EMIT manipulated();
@@ -454,7 +454,7 @@ void ManipulatedFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const ca
 
 Overloading of MouseGrabber::mouseReleaseEvent().
 
-If the action was a QGLViewer::ROTATE QGLViewer::MouseAction, a continuous spinning is possible if
+If the action was a QOGLViewer::ROTATE QOGLViewer::MouseAction, a continuous spinning is possible if
 the speed of the mouse cursor is larger than spinningSensitivity() when the button is released.
 Press the rotate button again to stop spinning. See startSpinning() and isSpinning(). */
 void ManipulatedFrame::mouseReleaseEvent(QMouseEvent* const event, Camera* const camera)
@@ -467,16 +467,16 @@ void ManipulatedFrame::mouseReleaseEvent(QMouseEvent* const event, Camera* const
 	if (previousConstraint_)
 		setConstraint(previousConstraint_);
 
-	if (((action_ == QGLViewer::ROTATE) || (action_ == QGLViewer::SCREEN_ROTATE)) && (mouseSpeed_ >= spinningSensitivity()))
+	if (((action_ == QOGLViewer::ROTATE) || (action_ == QOGLViewer::SCREEN_ROTATE)) && (mouseSpeed_ >= spinningSensitivity()))
 		startSpinning(delay_);
 
-	action_ = QGLViewer::NO_MOUSE_ACTION;
+	action_ = QOGLViewer::NO_MOUSE_ACTION;
 }
 
 /*! Overloading of MouseGrabber::mouseDoubleClickEvent().
 
 Left button double click aligns the ManipulatedFrame with the \p camera axis (see alignWithFrame()
- and QGLViewer::ALIGN_FRAME). Right button projects the ManipulatedFrame on the \p camera view
+ and QOGLViewer::ALIGN_FRAME). Right button projects the ManipulatedFrame on the \p camera view
  direction. */
 void ManipulatedFrame::mouseDoubleClickEvent(QMouseEvent* const event, Camera* const camera)
 {
@@ -491,12 +491,12 @@ void ManipulatedFrame::mouseDoubleClickEvent(QMouseEvent* const event, Camera* c
 
 /*! Overloading of MouseGrabber::wheelEvent().
 
-Using the wheel is equivalent to a QGLViewer::ZOOM QGLViewer::MouseAction. See
- QGLViewer::setWheelBinding(), setWheelSensitivity(). */
+Using the wheel is equivalent to a QOGLViewer::ZOOM QOGLViewer::MouseAction. See
+ QOGLViewer::setWheelBinding(), setWheelSensitivity(). */
 void ManipulatedFrame::wheelEvent(QWheelEvent* const event, Camera* const camera)
 {
-	//#CONNECTION# QGLViewer::setWheelBinding
-	if (action_ == QGLViewer::ZOOM)
+	//#CONNECTION# QOGLViewer::setWheelBinding
+	if (action_ == QOGLViewer::ZOOM)
 	{
 		zoom(wheelDelta(event), camera);
 		Q_EMIT manipulated();
@@ -506,7 +506,7 @@ void ManipulatedFrame::wheelEvent(QWheelEvent* const event, Camera* const camera
 	if (previousConstraint_)
 		setConstraint(previousConstraint_);
 
-	action_ = QGLViewer::NO_MOUSE_ACTION;
+	action_ = QOGLViewer::NO_MOUSE_ACTION;
 }
 
 

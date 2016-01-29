@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -27,9 +27,9 @@
 #include <math.h>
 #include <iostream>
 
-namespace qglviewer {
+namespace qoglviewer {
 /*! \brief The Quaternion class represents 3D rotations and orientations.
-	\class Quaternion quaternion.h QGLViewer/quaternion.h
+	\class Quaternion quaternion.h QOGLViewer/quaternion.h
 
 	The Quaternion is an appropriate (although not very intuitive) representation for 3D rotations and
 	orientations. Many tools are provided to ease the definition of a Quaternion: see constructors,
@@ -45,8 +45,8 @@ namespace qglviewer {
 	// equvalent to glRotate(q.angle()*180.0/M_PI, q.axis().x, q.axis().y, q.axis().z);
 	\endcode
 
-	Quaternion is part of the \c qglviewer namespace, specify \c qglviewer::Quaternion or use the qglviewer
-	namespace: \code using namespace qglviewer; \endcode
+	Quaternion is part of the \c qoglviewer namespace, specify \c qoglviewer::Quaternion or use the qoglviewer
+	namespace: \code using namespace qoglviewer; \endcode
 
 	<h3>Internal representation</h3>
 
@@ -295,7 +295,7 @@ public:
 		Quaternion rot(...);
 		cout << "Rotation=" << rot << endl;
 		\endcode */
-	std::ostream& operator<<(std::ostream& o, const qglviewer::Vec&);
+	std::ostream& operator<<(std::ostream& o, const qoglviewer::Vec&);
 	//@}
 #endif
 
@@ -306,6 +306,6 @@ private:
 
 } // namespace
 
-std::ostream& operator<<(std::ostream& o, const qglviewer::Quaternion&);
+std::ostream& operator<<(std::ostream& o, const qoglviewer::Quaternion&);
 
 #endif // QGLVIEWER_QUATERNION_H

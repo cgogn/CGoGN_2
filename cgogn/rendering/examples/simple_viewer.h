@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -20,7 +20,7 @@
 
 *****************************************************************************/
 
-#include "qglviewer.h"
+#include <qoglviewer.h>
 
 #include <QMatrix4x4>
 #include <rendering/shaders/shader_simple_color.h>
@@ -48,7 +48,7 @@ using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 
 
 
-class Viewer : public QGLViewer
+class Viewer : public QOGLViewer
 {
 public:
 

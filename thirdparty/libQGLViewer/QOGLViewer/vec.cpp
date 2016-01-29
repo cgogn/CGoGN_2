@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -24,7 +24,7 @@
 
 // Most of the methods are declared inline in vec.h
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 /*! Projects the Vec on the axis of direction \p direction that passes through the origin.

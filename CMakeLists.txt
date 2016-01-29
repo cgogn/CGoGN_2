@@ -45,6 +45,8 @@ option(CGOGN_USE_PARALLEL_GLIBCXX "highly experimental : compiles using the para
 if (${CGOGN_USE_PARALLEL_GLIBCXX})
 	set(CGOGN_USE_OPENMP "ON")
 endif()
+option(CGOGN_USE_QT "use Qt (5.4 min) for interface & rendering" ON)
+
 
 #### Continuous integration options
 option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)

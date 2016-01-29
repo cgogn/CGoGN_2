@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -34,11 +34,11 @@
 // #include "frame.h"
 // and comment "class Frame;" 3 lines below
 
-namespace qglviewer {
+namespace qoglviewer {
 class Camera;
 class Frame;
 /*! \brief A keyFrame Catmull-Rom Frame interpolator.
-  \class KeyFrameInterpolator keyFrameInterpolator.h QGLViewer/keyFrameInterpolator.h
+  \class KeyFrameInterpolator keyFrameInterpolator.h QOGLViewer/keyFrameInterpolator.h
 
   A KeyFrameInterpolator holds keyFrames (that define a path) and a pointer to a Frame of your
   application (which will be interpolated). When the user startInterpolation(), the
@@ -93,13 +93,13 @@ class Frame;
   especially useful for benchmarking or movie creation (constant number of snapshots).
 
   During the interpolation, the KeyFrameInterpolator emits an interpolated() signal, which will
-  usually be connected to the QGLViewer::update() slot. The interpolation is stopped when
+  usually be connected to the QOGLViewer::update() slot. The interpolation is stopped when
   interpolationTime() is greater than the lastTime() (unless loopInterpolation() is \c true) and the
   endReached() signal is then emitted.
 
   Note that a Camera has Camera::keyFrameInterpolator(), that can be used to drive the Camera along a
   path, or to restore a saved position (a path made of a single keyFrame). Press Alt+Fx to define a
-  new keyFrame for path x. Pressing Fx plays/pauses path interpolation. See QGLViewer::pathKey() and
+  new keyFrame for path x. Pressing Fx plays/pauses path interpolation. See QOGLViewer::pathKey() and
   the <a href="../keyboard.html">keyboard page</a> for details.
 
   \attention If a Constraint is attached to the frame() (see Frame::constraint()), it should be
@@ -122,7 +122,7 @@ class Frame;
   }
   \endcode
   You may want to temporally disconnect the \c kfi interpolated() signal from the
-  QGLViewer::update() slot before calling this code. \nosubgrouping */
+  QOGLViewer::update() slot before calling this code. \nosubgrouping */
 class QGLVIEWER_EXPORT KeyFrameInterpolator : public QObject
 {
 	// todo closedPath, insertKeyFrames, deleteKeyFrame, replaceKeyFrame
@@ -138,15 +138,15 @@ Q_SIGNALS:
 	The emission of this signal triggers the synchronous emission of the frame()
 	Frame::interpolated() signal, which may also be useful.
 
-	This signal should especially be connected to your QGLViewer::update() slot, so that the display
+	This signal should especially be connected to your QOGLViewer::update() slot, so that the display
 	is updated after every update of the KeyFrameInterpolator frame():
 	\code
 	connect(myKeyFrameInterpolator, SIGNAL(interpolated()), SLOT(update()));
 	\endcode
-	Use the QGLViewer::QGLViewerPool() to connect the signal to all the viewers.
+	Use the QOGLViewer::QGLViewerPool() to connect the signal to all the viewers.
 
-	Note that the QGLViewer::camera() Camera::keyFrameInterpolator() created using QGLViewer::pathKey()
-	have their interpolated() signals automatically connected to the QGLViewer::update() slot. */
+	Note that the QOGLViewer::camera() Camera::keyFrameInterpolator() created using QOGLViewer::pathKey()
+	have their interpolated() signals automatically connected to the QOGLViewer::update() slot. */
 	void interpolated();
 
 	/*! This signal is emitted when the interpolation reaches the first (when interpolationSpeed()
@@ -347,6 +347,6 @@ private:
 	Vec v1, v2;
 };
 
-} // namespace qglviewer
+} // namespace qoglviewer
 
 #endif // QGLVIEWER_KEY_FRAME_INTERPOLATOR_H

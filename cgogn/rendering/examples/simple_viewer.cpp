@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -42,7 +42,7 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	setSceneRadius(bb_.diagSize());
 	Vec3 center = bb_.center();
-	setSceneCenter(qglviewer::Vec(center[0],center[1],center[2]));
+	setSceneCenter(qoglviewer::Vec(center[0],center[1],center[2]));
 	showEntireScene();
 }
 
@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 	// Read command lines arguments.
 	QApplication application(argc,argv);
 
-	qglviewer::init_ogl_context();
+	qoglviewer::init_ogl_context();
 
 	// Instantiate the viewer.
 	Viewer viewer;

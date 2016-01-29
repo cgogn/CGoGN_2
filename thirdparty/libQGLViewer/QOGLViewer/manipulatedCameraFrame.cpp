@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -21,11 +21,11 @@
 *****************************************************************************/
 
 #include "manipulatedCameraFrame.h"
-#include "qglviewer.h"
+#include "qoglviewer.h"
 
 #include <QMouseEvent>
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 /*! Default constructor.
@@ -74,22 +74,22 @@ void ManipulatedCameraFrame::spin()
 }
 
 #ifndef DOXYGEN
-/*! Called for continuous frame motion in fly mode (see QGLViewer::MOVE_FORWARD). Emits
+/*! Called for continuous frame motion in fly mode (see QOGLViewer::MOVE_FORWARD). Emits
   manipulated(). */
 void ManipulatedCameraFrame::flyUpdate()
 {
 	static Vec flyDisp(0.0, 0.0, 0.0);
 	switch (action_)
 	{
-		case QGLViewer::MOVE_FORWARD:
+		case QOGLViewer::MOVE_FORWARD:
 			flyDisp.z = -flySpeed();
 			translate(localInverseTransformOf(flyDisp));
 			break;
-		case QGLViewer::MOVE_BACKWARD:
+		case QOGLViewer::MOVE_BACKWARD:
 			flyDisp.z = flySpeed();
 			translate(localInverseTransformOf(flyDisp));
 			break;
-		case QGLViewer::DRIVE:
+		case QOGLViewer::DRIVE:
 			flyDisp.z = flySpeed() * driveSpeed_;
 			translate(localInverseTransformOf(flyDisp));
 			break;
@@ -196,13 +196,13 @@ void ManipulatedCameraFrame::startAction(int ma, bool withConstraint)
 
 	switch (action_)
 	{
-		case QGLViewer::MOVE_FORWARD:
-		case QGLViewer::MOVE_BACKWARD:
-		case QGLViewer::DRIVE:
+		case QOGLViewer::MOVE_FORWARD:
+		case QOGLViewer::MOVE_BACKWARD:
+		case QOGLViewer::DRIVE:
 			flyTimer_.setSingleShot(false);
 			flyTimer_.start(10);
 			break;
-		case QGLViewer::ROTATE:
+		case QOGLViewer::ROTATE:
 			constrainedRotationIsReversed_ = transformOf(sceneUpVector_).y < 0.0;
 			break;
 		default:
@@ -231,10 +231,10 @@ Motion depends on mouse binding (see <a href="../mouse.html">mouse page</a> for 
 resulting displacements are basically inverted from those of a ManipulatedFrame. */
 void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* const camera)
 {
-	// #CONNECTION# QGLViewer::mouseMoveEvent does the update().
+	// #CONNECTION# QOGLViewer::mouseMoveEvent does the update().
 	switch (action_)
 	{
-		case QGLViewer::TRANSLATE:
+		case QOGLViewer::TRANSLATE:
 		{
 			const QPoint delta = prevPos_ - event->pos();
 			Vec trans(delta.x(), -delta.y(), 0.0);
@@ -258,7 +258,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::MOVE_FORWARD:
+		case QOGLViewer::MOVE_FORWARD:
 		{
 			Quaternion rot = pitchYawQuaternion(event->x(), event->y(), camera);
 			rotate(rot);
@@ -268,7 +268,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::MOVE_BACKWARD:
+		case QOGLViewer::MOVE_BACKWARD:
 		{
 			Quaternion rot = pitchYawQuaternion(event->x(), event->y(), camera);
 			rotate(rot);
@@ -277,7 +277,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::DRIVE:
+		case QOGLViewer::DRIVE:
 		{
 			Quaternion rot = turnQuaternion(event->x(), camera);
 			rotate(rot);
@@ -286,20 +286,20 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::ZOOM:
+		case QOGLViewer::ZOOM:
 		{
 			zoom(deltaWithPrevPos(event, camera), camera);
 			break;
 		}
 
-		case QGLViewer::LOOK_AROUND:
+		case QOGLViewer::LOOK_AROUND:
 		{
 			Quaternion rot = pitchYawQuaternion(event->x(), event->y(), camera);
 			rotate(rot);
 			break;
 		}
 
-		case QGLViewer::ROTATE:
+		case QOGLViewer::ROTATE:
 		{
 			Quaternion rot;
 			if (rotatesAroundUpVector_) {
@@ -320,7 +320,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::SCREEN_ROTATE:
+		case QOGLViewer::SCREEN_ROTATE:
 		{
 			Vec trans = camera->projectedCoordinatesOf(pivotPoint());
 
@@ -335,7 +335,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::ROLL:
+		case QOGLViewer::ROLL:
 		{
 			const qreal angle = M_PI * (event->x() - prevPos_.x()) / camera->screenWidth();
 			Quaternion rot(Vec(0.0, 0.0, 1.0), angle);
@@ -345,7 +345,7 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::SCREEN_TRANSLATE:
+		case QOGLViewer::SCREEN_TRANSLATE:
 		{
 			Vec trans;
 			int dir = mouseOriginalDirection(event);
@@ -374,15 +374,15 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 			break;
 		}
 
-		case QGLViewer::ZOOM_ON_REGION:
-		case QGLViewer::NO_MOUSE_ACTION:
+		case QOGLViewer::ZOOM_ON_REGION:
+		case QOGLViewer::NO_MOUSE_ACTION:
 			break;
 	}
 
-	if (action_ != QGLViewer::NO_MOUSE_ACTION)
+	if (action_ != QOGLViewer::NO_MOUSE_ACTION)
 	{
 		prevPos_ = event->pos();
-		if (action_ != QGLViewer::ZOOM_ON_REGION)
+		if (action_ != QOGLViewer::ZOOM_ON_REGION)
 			// ZOOM_ON_REGION should not emit manipulated().
 			// prevPos_ is used to draw rectangle feedback.
 			Q_EMIT manipulated();
@@ -390,14 +390,14 @@ void ManipulatedCameraFrame::mouseMoveEvent(QMouseEvent* const event, Camera* co
 }
 
 
-/*! This is an overload of ManipulatedFrame::mouseReleaseEvent(). The QGLViewer::MouseAction is
+/*! This is an overload of ManipulatedFrame::mouseReleaseEvent(). The QOGLViewer::MouseAction is
   terminated. */
 void ManipulatedCameraFrame::mouseReleaseEvent(QMouseEvent* const event, Camera* const camera)
 {
-	if ((action_ == QGLViewer::MOVE_FORWARD) || (action_ == QGLViewer::MOVE_BACKWARD) || (action_ == QGLViewer::DRIVE))
+	if ((action_ == QOGLViewer::MOVE_FORWARD) || (action_ == QOGLViewer::MOVE_BACKWARD) || (action_ == QOGLViewer::DRIVE))
 		flyTimer_.stop();
 
-	if (action_ == QGLViewer::ZOOM_ON_REGION)
+	if (action_ == QOGLViewer::ZOOM_ON_REGION)
 		camera->fitScreenRegion(QRect(pressPos_, event->pos()));
 
 	ManipulatedFrame::mouseReleaseEvent(event, camera);
@@ -405,23 +405,23 @@ void ManipulatedCameraFrame::mouseReleaseEvent(QMouseEvent* const event, Camera*
 
 /*! This is an overload of ManipulatedFrame::wheelEvent().
 
-The wheel behavior depends on the wheel binded action. Current possible actions are QGLViewer::ZOOM,
-QGLViewer::MOVE_FORWARD, QGLViewer::MOVE_BACKWARD. QGLViewer::ZOOM speed depends on
-wheelSensitivity() while QGLViewer::MOVE_FORWARD and QGLViewer::MOVE_BACKWARD depend on flySpeed().
-See QGLViewer::setWheelBinding() to customize the binding. */
+The wheel behavior depends on the wheel binded action. Current possible actions are QOGLViewer::ZOOM,
+QOGLViewer::MOVE_FORWARD, QOGLViewer::MOVE_BACKWARD. QOGLViewer::ZOOM speed depends on
+wheelSensitivity() while QOGLViewer::MOVE_FORWARD and QOGLViewer::MOVE_BACKWARD depend on flySpeed().
+See QOGLViewer::setWheelBinding() to customize the binding. */
 void ManipulatedCameraFrame::wheelEvent(QWheelEvent* const event, Camera* const camera)
 {
-	//#CONNECTION# QGLViewer::setWheelBinding, ManipulatedFrame::wheelEvent.
+	//#CONNECTION# QOGLViewer::setWheelBinding, ManipulatedFrame::wheelEvent.
 	switch (action_)
 	{
-		case QGLViewer::ZOOM:
+		case QOGLViewer::ZOOM:
 		{
 			zoom(wheelDelta(event), camera);
 			Q_EMIT manipulated();
 			break;
 		}
-		case QGLViewer::MOVE_FORWARD:
-		case QGLViewer::MOVE_BACKWARD:
+		case QOGLViewer::MOVE_FORWARD:
+		case QOGLViewer::MOVE_BACKWARD:
 			//#CONNECTION# mouseMoveEvent() MOVE_FORWARD case
 			translate(inverseTransformOf(Vec(0.0, 0.0, 0.2*flySpeed()*event->delta())));
 			Q_EMIT manipulated();
@@ -447,7 +447,7 @@ void ManipulatedCameraFrame::wheelEvent(QWheelEvent* const event, Camera* const 
 	// This could also be done *before* manipulated is emitted, so that isManipulated() returns false.
 	// But then fastDraw would not be used with wheel.
 	// Detecting the last wheel event and forcing a final draw() is done using the timer_.
-	action_ = QGLViewer::NO_MOUSE_ACTION;
+	action_ = QOGLViewer::NO_MOUSE_ACTION;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

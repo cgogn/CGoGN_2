@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -20,9 +20,9 @@
 
 *****************************************************************************/
 
-#include "qglviewer.h" // for QGLViewer::drawAxis and Camera::drawCamera
+#include "qoglviewer.h" // for QOGLViewer::drawAxis and Camera::drawCamera
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 /*! Creates a KeyFrameInterpolator, with \p frame as associated frame().
@@ -118,7 +118,7 @@ void KeyFrameInterpolator::update()
 
   See the <a href="../examples/keyFrames.html">keyFrames example</a> for an illustration.
 
-  You may also be interested in QGLViewer::animate() and QGLViewer::startAnimation().
+  You may also be interested in QOGLViewer::animate() and QOGLViewer::startAnimation().
 
   \attention The keyFrames must be defined (see addKeyFrame()) \e before you startInterpolation(),
   or else the interpolation will naturally immediately stop. */
@@ -447,8 +447,8 @@ void KeyFrameInterpolator::interpolateAtTime(qreal time)
  See Vec::domElement() for a complete example. See also Quaternion::domElement(),
  Camera::domElement()...
 
- Note that the Camera::keyFrameInterpolator() are automatically saved by QGLViewer::saveStateToFile()
- when a QGLViewer is closed. */
+ Note that the Camera::keyFrameInterpolator() are automatically saved by QOGLViewer::saveStateToFile()
+ when a QOGLViewer is closed. */
 //QDomElement KeyFrameInterpolator::domElement(const QString& name, QDomDocument& document) const
 //{
 //	QDomElement de = document.createElement(name);

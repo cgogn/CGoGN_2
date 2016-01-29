@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -33,7 +33,7 @@
 
 class QTabWidget;
 
-namespace qglviewer {
+namespace qoglviewer {
 class MouseGrabber;
 class ManipulatedFrame;
 class ManipulatedCameraFrame;
@@ -41,7 +41,7 @@ void init_ogl_context();
 }
 
 /*! \brief A versatile 3D OpenGL viewer based on QGLWidget.
-\class QGLViewer qglviewer.h QGLViewer/qglviewer.h
+\class QOGLViewer qoglviewer.h QOGLViewer/qoglviewer.h
 
 It features many classical viewer functionalities, such as a camera trackball, manipulated objects,
 snapshot saving and much <a href="../features.html">more</a>. Its main goal is to ease the development
@@ -54,24 +54,24 @@ understand how it works.
 
 <h3>Usage</h3>
 
-To use a QGLViewer, derive you viewer class from the QGLViewer and overload its draw() virtual
+To use a QOGLViewer, derive you viewer class from the QOGLViewer and overload its draw() virtual
 method. See the <a href="../examples/simpleViewer.html">simpleViewer example</a> for an illustration.
 
-An other option is to connect your drawing methods to the signals emitted by the QGLViewer (Qt's
+An other option is to connect your drawing methods to the signals emitted by the QOGLViewer (Qt's
 callback mechanism). See the <a href="../examples/callback.html">callback example</a> for a
 complete implementation.
 
 \nosubgrouping */
-class QGLVIEWER_EXPORT QGLViewer : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
+class QGLVIEWER_EXPORT QOGLViewer : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
 	Q_OBJECT
 
 public:
 
 
-	explicit QGLViewer(QWidget* parent=0, Qt::WindowFlags flags=0);
+	explicit QOGLViewer(QWidget* parent=0, Qt::WindowFlags flags=0);
 
-	virtual ~QGLViewer();
+	virtual ~QOGLViewer();
 
 
 	/*! @name Scene dimensions */
@@ -82,8 +82,8 @@ public:
 	The entire displayed scene should be included in a sphere of radius sceneRadius(), centered on
 	sceneCenter().
 
-	This approximate value is used by the camera() to set qglviewer::Camera::zNear() and
-	qglviewer::Camera::zFar(). It is also used to showEntireScene() or to scale the world axis
+	This approximate value is used by the camera() to set qoglviewer::Camera::zNear() and
+	qoglviewer::Camera::zFar(). It is also used to showEntireScene() or to scale the world axis
 	display..
 
 	Default value is 1.0. This method is equivalent to camera()->sceneRadius(). See
@@ -96,21 +96,21 @@ public:
 	Default value is (0,0,0). Simply a wrapper for camera()->sceneCenter(). Set using
 	setSceneCenter().
 
-	Do not mismatch this value (that only depends on the scene) with the qglviewer::Camera::pivotPoint(). */
-	qglviewer::Vec sceneCenter() const { return camera()->sceneCenter(); }
+	Do not mismatch this value (that only depends on the scene) with the qoglviewer::Camera::pivotPoint(). */
+	qoglviewer::Vec sceneCenter() const { return camera()->sceneCenter(); }
 
 public Q_SLOTS:
 	/*! Sets the sceneRadius().
 
-		The camera() qglviewer::Camera::flySpeed() is set to 1% of this value by this method. Simple
+		The camera() qoglviewer::Camera::flySpeed() is set to 1% of this value by this method. Simple
 		wrapper around camera()->setSceneRadius(). */
 	virtual void setSceneRadius(qreal radius) { camera()->setSceneRadius(radius); }
 
 	/*! Sets the sceneCenter(), defined in world coordinates.
 
-		\attention The qglviewer::Camera::pivotPoint() is set to the sceneCenter() value by this
+		\attention The qoglviewer::Camera::pivotPoint() is set to the sceneCenter() value by this
 		method. */
-	virtual void setSceneCenter(const qglviewer::Vec& center) { camera()->setSceneCenter(center); }
+	virtual void setSceneCenter(const qoglviewer::Vec& center) { camera()->setSceneCenter(center); }
 
 	/*! Convenient way to call setSceneCenter() and setSceneRadius() from a (world axis aligned) bounding box of the scene.
 
@@ -119,11 +119,11 @@ public Q_SLOTS:
 		setSceneCenter((min+max) / 2.0);
 		setSceneRadius((max-min).norm() / 2.0);
 		\endcode */
-	void setSceneBoundingBox(const qglviewer::Vec& min, const qglviewer::Vec& max) { camera()->setSceneBoundingBox(min,max); }
+	void setSceneBoundingBox(const qoglviewer::Vec& min, const qoglviewer::Vec& max) { camera()->setSceneBoundingBox(min,max); }
 
 	/*! Moves the camera so that the entire scene is visible.
 
-		Simple wrapper around qglviewer::Camera::showEntireScene(). */
+		Simple wrapper around qoglviewer::Camera::showEntireScene(). */
 	void showEntireScene() { camera()->showEntireScene(); update(); }
 	//@}
 
@@ -131,37 +131,37 @@ public Q_SLOTS:
 	/*! @name Associated objects */
 	//@{
 public:
-	/*! Returns the associated qglviewer::Camera, never \c NULL. */
-	qglviewer::Camera* camera() const { return camera_; }
+	/*! Returns the associated qoglviewer::Camera, never \c NULL. */
+	qoglviewer::Camera* camera() const { return camera_; }
 
-	/*! Returns the viewer's qglviewer::ManipulatedFrame.
+	/*! Returns the viewer's qoglviewer::ManipulatedFrame.
 
-	This qglviewer::ManipulatedFrame can be moved with the mouse when the associated mouse bindings
+	This qoglviewer::ManipulatedFrame can be moved with the mouse when the associated mouse bindings
 	are used (default is when pressing the \c Control key with any mouse button). Use
 	setMouseBinding() to define new bindings.
 
 	See the <a href="../examples/manipulatedFrame.html">manipulatedFrame example</a> for a complete
 	implementation.
 
-	Default value is \c NULL, meaning that no qglviewer::ManipulatedFrame is set. */
-	qglviewer::ManipulatedFrame* manipulatedFrame() const { return manipulatedFrame_; }
+	Default value is \c NULL, meaning that no qoglviewer::ManipulatedFrame is set. */
+	qoglviewer::ManipulatedFrame* manipulatedFrame() const { return manipulatedFrame_; }
 
 public Q_SLOTS:
-	void setCamera(qglviewer::Camera* const camera);
-	void setManipulatedFrame(qglviewer::ManipulatedFrame* frame);
+	void setCamera(qoglviewer::Camera* const camera);
+	void setManipulatedFrame(qoglviewer::ManipulatedFrame* frame);
 	//@}
 
 
 	/*! @name Mouse grabbers */
 	//@{
 public:
-	/*! Returns the current qglviewer::MouseGrabber, or \c NULL if no qglviewer::MouseGrabber
+	/*! Returns the current qoglviewer::MouseGrabber, or \c NULL if no qoglviewer::MouseGrabber
 	currently grabs mouse events.
 
-	When qglviewer::MouseGrabber::grabsMouse(), the different mouse events are sent to the
+	When qoglviewer::MouseGrabber::grabsMouse(), the different mouse events are sent to the
 	mouseGrabber() instead of their usual targets (camera() or manipulatedFrame()).
 
-	See the qglviewer::MouseGrabber documentation for details on MouseGrabber's mode of operation.
+	See the qoglviewer::MouseGrabber documentation for details on MouseGrabber's mode of operation.
 
 	In order to use MouseGrabbers, you need to enable mouse tracking (so that mouseMoveEvent() is
 	called even when no mouse button is pressed). Add this line in init() or in your viewer
@@ -171,21 +171,21 @@ public:
 	\endcode
 	Note that mouse tracking is disabled by default. Use QWidget::hasMouseTracking() to
 	retrieve current state. */
-	qglviewer::MouseGrabber* mouseGrabber() const { return mouseGrabber_; }
+	qoglviewer::MouseGrabber* mouseGrabber() const { return mouseGrabber_; }
 
-	void setMouseGrabberIsEnabled(const qglviewer::MouseGrabber* const mouseGrabber, bool enabled=true);
+	void setMouseGrabberIsEnabled(const qoglviewer::MouseGrabber* const mouseGrabber, bool enabled=true);
 	/*! Returns \c true if \p mouseGrabber is enabled.
 
 	Default value is \c true for all MouseGrabbers. When set to \c false using
 	setMouseGrabberIsEnabled(), the specified \p mouseGrabber will never become the mouseGrabber() of
-	this QGLViewer. This is useful when you use several viewers: some MouseGrabbers may only have a
+	this QOGLViewer. This is useful when you use several viewers: some MouseGrabbers may only have a
 	meaning for some specific viewers and should not be selectable in others.
 
-	You can also use qglviewer::MouseGrabber::removeFromMouseGrabberPool() to completely disable a
+	You can also use qoglviewer::MouseGrabber::removeFromMouseGrabberPool() to completely disable a
 	MouseGrabber in all the QGLViewers. */
-	bool mouseGrabberIsEnabled(const qglviewer::MouseGrabber* const mouseGrabber) { return !disabledMouseGrabbers_.contains(reinterpret_cast<size_t>(mouseGrabber)); }
+	bool mouseGrabberIsEnabled(const qoglviewer::MouseGrabber* const mouseGrabber) { return !disabledMouseGrabbers_.contains(reinterpret_cast<size_t>(mouseGrabber)); }
 public Q_SLOTS:
-	void setMouseGrabber(qglviewer::MouseGrabber* mouseGrabber);
+	void setMouseGrabber(qoglviewer::MouseGrabber* mouseGrabber);
 	//@}
 
 
@@ -209,16 +209,16 @@ public:
 
 	Default value is \c false. Set by setFullScreen() or toggleFullScreen().
 
-	Note that if the QGLViewer is embedded in an other QWidget, it returns \c true when the top level
+	Note that if the QOGLViewer is embedded in an other QWidget, it returns \c true when the top level
 	widget is in full screen mode. */
 	bool isFullScreen() const { return fullScreen_; }
 	/*! Returns \c true if the viewer displays in stereo.
 
-	The QGLViewer object must be created with a stereo format to handle stereovision:
+	The QOGLViewer object must be created with a stereo format to handle stereovision:
 	\code
 	QGLFormat format;
 	format.setStereoDisplay( TRUE );
-	QGLViewer viewer(format);
+	QOGLViewer viewer(format);
 	\endcode
 	The hardware needs to support stereo display. Try the <a
 	href="../examples/stereoViewer.html">stereoViewer example</a> to check.
@@ -228,11 +228,11 @@ public:
 	Stereo is performed using the Parallel axis asymmetric frustum perspective projection method.
 	See Camera::loadProjectionMatrixStereo() and Camera::loadModelViewMatrixStereo().
 
-	The stereo parameters are defined by the camera(). See qglviewer::Camera::setIODistance(),
-	qglviewer::Camera::setPhysicalScreenWidth() and
-	qglviewer::Camera::setFocusDistance(). */
+	The stereo parameters are defined by the camera(). See qoglviewer::Camera::setIODistance(),
+	qoglviewer::Camera::setPhysicalScreenWidth() and
+	qoglviewer::Camera::setFocusDistance(). */
 	bool displaysInStereo() const { return stereo_; }
-	/*! Returns the recommended size for the QGLViewer. Default value is 600x400 pixels. */
+	/*! Returns the recommended size for the QOGLViewer. Default value is 600x400 pixels. */
 	virtual QSize sizeHint() const { return QSize(600, 400); }
 
 public Q_SLOTS:
@@ -511,7 +511,7 @@ Q_SIGNALS:
 	href="../examples/callback.html">callback example</a> for an illustration. */
 	void drawNeeded();
 
-	/*! Signal emitted at the end of the QGLViewer::paintGL() method, when frame is drawn.
+	/*! Signal emitted at the end of the QOGLViewer::paintGL() method, when frame is drawn.
 
 	Can be used to notify an image grabbing process that the image is ready. A typical example is to
 	connect this signal to the saveSnapshot() method, so that a (numbered) snapshot is generated after
@@ -529,7 +529,7 @@ Q_SIGNALS:
 	Connect this signal to your scene animation method or overload animate(). */
 	void animateNeeded();
 
-	/*! Signal emitted by the default QGLViewer::help() method.
+	/*! Signal emitted by the default QOGLViewer::help() method.
 
 	Connect this signal to your own help method or overload help(). */
 	void helpRequired();
@@ -556,7 +556,7 @@ Q_SIGNALS:
 
 	\p mouseGrabber is a pointer to the new MouseGrabber. Note that this signal is emitted with a \c
 	NULL parameter each time a MouseGrabber stops grabbing mouse. */
-	void mouseGrabberChanged(qglviewer::MouseGrabber* mouseGrabber);
+	void mouseGrabberChanged(qoglviewer::MouseGrabber* mouseGrabber);
 
 	/*! @name Help window */
 	//@{
@@ -620,7 +620,7 @@ protected:
 	in this method.
 
 	\attention You should not call updateGL() (or any method that calls it) in this method, as it will
-	result in an infinite loop. The different QGLViewer set methods (setAxisIsDrawn(),
+	result in an infinite loop. The different QOGLViewer set methods (setAxisIsDrawn(),
 	setFPSIsDisplayed()...) are protected against this problem and can safely be called.
 
 	\note All the OpenGL specific initializations must be done in this method: the OpenGL context is
@@ -633,7 +633,7 @@ protected:
 
 	/*! The core method of the viewer, that draws the scene.
 
-	If you build a class that inherits from QGLViewer, this is the method you want to overload. See
+	If you build a class that inherits from QOGLViewer, this is the method you want to overload. See
 	the <a href="../examples/simpleViewer.html">simpleViewer example</a> for an illustration.
 
 	The camera modelView matrix set in preDraw() converts from the world to the camera coordinate
@@ -775,11 +775,11 @@ public:
 
 	unsigned int shortcut(KeyboardAction action) const;
 #ifndef DOXYGEN
-	// QGLViewer 1.x
+	// QOGLViewer 1.x
 	unsigned int keyboardAccelerator(KeyboardAction action) const;
 	Qt::Key keyFrameKey(unsigned int index) const;
 	Qt::KeyboardModifiers playKeyFramePathStateKey() const;
-	// QGLViewer 2.0 without Qt4 support
+	// QOGLViewer 2.0 without Qt4 support
 	Qt::KeyboardModifiers addKeyFrameStateKey() const;
 	Qt::KeyboardModifiers playPathStateKey() const;
 #endif
@@ -797,10 +797,10 @@ public Q_SLOTS:
 
 	// Key Frames shortcut keys
 #ifndef DOXYGEN
-	// QGLViewer 1.x compatibility methods
+	// QOGLViewer 1.x compatibility methods
 	virtual void setKeyFrameKey(unsigned int index, int key);
 	virtual void setPlayKeyFramePathStateKey(unsigned int buttonState);
-	// QGLViewer 2.0 without Qt4 support
+	// QOGLViewer 2.0 without Qt4 support
 	virtual void setPlayPathStateKey(unsigned int buttonState);
 	virtual void setAddKeyFrameStateKey(unsigned int buttonState);
 #endif
@@ -830,7 +830,7 @@ public:
 	/*! Defines the possible actions that can be binded to a mouse action (a click, followed by a
 	mouse displacement).
 
-	These actions may be binded to the camera() or to the manipulatedFrame() (see QGLViewer::MouseHandler) using
+	These actions may be binded to the camera() or to the manipulatedFrame() (see QOGLViewer::MouseHandler) using
 	setMouseBinding(). */
 	enum MouseAction { NO_MOUSE_ACTION,
 					   ROTATE, ZOOM, TRANSLATE,
@@ -894,8 +894,8 @@ public Q_SLOTS:
 #endif
 
 private:
-	static QString mouseActionString(QGLViewer::MouseAction ma);
-	static QString clickActionString(QGLViewer::ClickAction ca);
+	static QString mouseActionString(QOGLViewer::MouseAction ma);
+	static QString clickActionString(QOGLViewer::ClickAction ca);
 	//@}
 
 
@@ -934,7 +934,7 @@ private:
 	//@}
 
 
-	/*! @name QGLViewer pool */
+	/*! @name QOGLViewer pool */
 	//@{
 public:
 	/*! Returns a \c QList that contains pointers to all the created QGLViewers.
@@ -942,23 +942,23 @@ public:
 
 	Can be useful to apply a method or to connect a signal to all the viewers:
 		\code
-	foreach (QGLViewer* viewer, QGLViewer::QGLViewerPool())
+	foreach (QOGLViewer* viewer, QOGLViewer::QGLViewerPool())
 	  connect(myObject, SIGNAL(IHaveChangedSignal()), viewer, SLOT(update()));
 	\endcode
 
 	\attention With Qt version 3, this method returns a \c QPtrList instead. Use a \c QPtrListIterator
 	to iterate on the list instead.*/
-	static const QList<QGLViewer*>& QGLViewerPool() { return QGLViewer::QGLViewerPool_; }
+	static const QList<QOGLViewer*>& QGLViewerPool() { return QOGLViewer::QGLViewerPool_; }
 
 
-	/*! Returns the index of the QGLViewer \p viewer in the QGLViewerPool(). This index in unique and
+	/*! Returns the index of the QOGLViewer \p viewer in the QGLViewerPool(). This index in unique and
 	can be used to identify the different created QGLViewers (see stateFileName() for an application
 	example).
 
-	When a QGLViewer is deleted, the QGLViewers' indexes are preserved and NULL is set for that index.
-		When a QGLViewer is created, it is placed in the first available position in that list.
-		Returns -1 if the QGLViewer could not be found (which should not be possible). */
-	static int QGLViewerIndex(const QGLViewer* const viewer) { return QGLViewer::QGLViewerPool_.indexOf(const_cast<QGLViewer*>(viewer)); }
+	When a QOGLViewer is deleted, the QGLViewers' indexes are preserved and NULL is set for that index.
+		When a QOGLViewer is created, it is placed in the first available position in that list.
+		Returns -1 if the QOGLViewer could not be found (which should not be possible). */
+	static int QGLViewerIndex(const QOGLViewer* const viewer) { return QOGLViewer::QGLViewerPool_.indexOf(const_cast<QOGLViewer*>(viewer)); }
 	//@}
 
 #ifndef DOXYGEN
@@ -981,8 +981,8 @@ private Q_SLOTS:
 private:
 	// Copy constructor and operator= are declared private and undefined
 	// Prevents everyone from trying to use them
-	QGLViewer(const QGLViewer& v);
-	QGLViewer& operator=(const QGLViewer& v);
+	QOGLViewer(const QOGLViewer& v);
+	QOGLViewer& operator=(const QOGLViewer& v);
 
 	// Set parameters to their default values. Called by the constructors.
 	void defaultConstructor();
@@ -990,7 +990,7 @@ private:
 	void handleKeyboardAction(KeyboardAction id);
 
 	// C a m e r a
-	qglviewer::Camera* camera_;
+	qoglviewer::Camera* camera_;
 	bool cameraIsEdited_;
 	qreal previousCameraZClippingCoefficient_;
 	unsigned int previousPathId_; // double key press recognition
@@ -1025,11 +1025,11 @@ private:
 	QTimer messageTimer_;
 
 	// M a n i p u l a t e d    f r a m e
-	qglviewer::ManipulatedFrame* manipulatedFrame_;
+	qoglviewer::ManipulatedFrame* manipulatedFrame_;
 	bool manipulatedFrameIsACamera_;
 
 	// M o u s e   G r a b b e r
-	qglviewer::MouseGrabber* mouseGrabber_;
+	qoglviewer::MouseGrabber* mouseGrabber_;
 	bool mouseGrabberIsAManipulatedFrame_;
 	bool mouseGrabberIsAManipulatedCameraFrame_;
 	QMap<size_t, bool> disabledMouseGrabbers_;
@@ -1152,7 +1152,7 @@ private:
 	TileRegion* tileRegion_;
 
 	// Q G L V i e w e r   p o o l
-	static QList<QGLViewer*> QGLViewerPool_;
+	static QList<QOGLViewer*> QGLViewerPool_;
 
 	// S t a t e   F i l e
 	QString stateFileName_;

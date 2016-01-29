@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -38,7 +38,7 @@
 // Get QT_VERSION and other Qt flags
 #include <qglobal.h>
 
-#if QT_VERSION < 0x040000
+#if QT_VERSION < 0x050400
 Error : libQGLViewer requires a minimum Qt version of 4.0
 #endif
 

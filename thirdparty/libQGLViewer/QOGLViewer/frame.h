@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -29,9 +29,9 @@
 #include "constraint.h"
 // #include "GL/gl.h" is now included in config.h for ease of configuration
 
-namespace qglviewer {
+namespace qoglviewer {
 /*! \brief The Frame class represents a coordinate system, defined by a position and an
-  orientation. \class Frame frame.h QGLViewer/frame.h
+  orientation. \class Frame frame.h QOGLViewer/frame.h
 
   A Frame is a 3D coordinate system, represented by a position() and an orientation(). The order of
   these transformations is important: the Frame is first translated \e and \e then rotated around
@@ -81,7 +81,7 @@ namespace qglviewer {
   orientation()) definitions is used in all the methods' names and should be sufficient to prevent
   ambiguities. These notions are obviously identical when the referenceFrame() is \c NULL, i.e. when
   the Frame is defined in the world coordinate system (the one you are in at the beginning of the
-  QGLViewer::draw() method, see the <a href="../introduction.html">introduction page</a>).
+  QOGLViewer::draw() method, see the <a href="../introduction.html">introduction page</a>).
 
   Frames can hence easily be organized in a tree hierarchy, which root is the world coordinate
   system. A loop in the hierarchy would result in an inconsistent (multiple) Frame definition.
@@ -138,7 +138,7 @@ Q_SIGNALS:
 	\code
 	QObject::connect(myFrame, SIGNAL(modified()), myObject, SLOT(update()));
 	\endcode
-	Use the QGLViewer::QGLViewerPool() to connect the signal to all the viewers.
+	Use the QOGLViewer::QGLViewerPool() to connect the signal to all the viewers.
 
 	\note If your Frame is part of a Frame hierarchy (see referenceFrame()), a modification of one
 	of the parents of this Frame will \e not emit this signal. Use code like this to change this
@@ -150,8 +150,8 @@ Q_SIGNALS:
 	\endcode
 
 	\attention Connecting this signal to a QGLWidget::update() slot (or a method that calls it)
-	will prevent you from modifying the Frame \e inside your QGLViewer::draw() method as it would
-	result in an infinite loop. However, QGLViewer::draw() should not modify the scene.
+	will prevent you from modifying the Frame \e inside your QOGLViewer::draw() method as it would
+	result in an infinite loop. However, QOGLViewer::draw() should not modify the scene.
 
 	\note Note that this signal might be emitted even if the Frame is not actually modified, for
 	instance after a translate(Vec(0,0,0)) or a setPosition(position()). */
@@ -410,6 +410,6 @@ private:
 	const Frame* referenceFrame_;
 };
 
-} // namespace qglviewer
+} // namespace qoglviewer
 
 #endif // QGLVIEWER_FRAME_H

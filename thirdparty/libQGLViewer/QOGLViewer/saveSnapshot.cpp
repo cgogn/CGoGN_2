@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -20,7 +20,7 @@
 
 *****************************************************************************/
 
-#include "qglviewer.h"
+#include "qoglviewer.h"
 
 // Output format list
 # include <QImageWriter>
@@ -48,13 +48,13 @@ static QMap<QString, QString> extension;
 
 
 /*! Sets snapshotFileName(). */
-void QGLViewer::setSnapshotFileName(const QString& name)
+void QOGLViewer::setSnapshotFileName(const QString& name)
 {
 	snapshotFileName_ = QFileInfo(name).absoluteFilePath();
 }
 
 #ifndef DOXYGEN
-const QString& QGLViewer::snapshotFilename() const
+const QString& QOGLViewer::snapshotFilename() const
 {
 	qWarning("snapshotFilename is deprecated. Use snapshotFileName() (uppercase N) instead.");
 	return snapshotFileName();
@@ -67,7 +67,7 @@ const QString& QGLViewer::snapshotFilename() const
 Then calls setSnapshotFormat() with the selected one (unless the user cancels).
 
 Returns \c false if the user presses the Cancel button and \c true otherwise. */
-bool QGLViewer::openSnapshotFormatDialog()
+bool QOGLViewer::openSnapshotFormatDialog()
 {
 	bool ok = false;
 	QStringList list = formats.split(";;", QString::SkipEmptyParts);
@@ -81,7 +81,7 @@ bool QGLViewer::openSnapshotFormatDialog()
 
 // Finds all available Qt output formats, so that they can be available in
 // saveSnapshot dialog. Initialize snapshotFormat() to the first one.
-void QGLViewer::initializeSnapshotFormats()
+void QOGLViewer::initializeSnapshotFormats()
 {
 	QList<QByteArray> list = QImageWriter::supportedImageFormats();
 	QStringList formatList;
@@ -171,190 +171,6 @@ static bool checkFileName(QString& fileName, QWidget* widget, const QString& sna
 }
 
 
-//class ImageInterface: public QDialog, public Ui::ImageInterface
-//{
-//public: ImageInterface(QWidget *parent) : QDialog(parent) { setupUi(this); }
-//};
-
-
-//// Pops-up an image settings dialog box and save to fileName.
-//// Returns false in case of problem.
-//bool QGLViewer::saveImageSnapshot(const QString& fileName)
-//{
-//	static ImageInterface* imageInterface = NULL;
-
-//	if (!imageInterface)
-//		imageInterface = new ImageInterface(this);
-
-//	imageInterface->imgWidth->setValue(width());
-//	imageInterface->imgHeight->setValue(height());
-
-//	imageInterface->imgQuality->setValue(snapshotQuality());
-
-//	if (imageInterface->exec() == QDialog::Rejected)
-//		return true;
-
-//	// Hide closed dialog
-//	qApp->processEvents();
-
-//	setSnapshotQuality(imageInterface->imgQuality->value());
-
-////	QColor previousBGColor = backgroundColor();
-////	if (imageInterface->whiteBackground->isChecked())
-////		setBackgroundColor(Qt::white);
-
-//	QSize finalSize(imageInterface->imgWidth->value(), imageInterface->imgHeight->value());
-
-//	qreal oversampling = imageInterface->oversampling->value();
-//	QSize subSize(int(this->width()/oversampling), int(this->height()/oversampling));
-
-//	qreal aspectRatio = width() / static_cast<qreal>(height());
-//	qreal newAspectRatio = finalSize.width() / static_cast<qreal>(finalSize.height());
-
-//	qreal zNear = camera()->zNear();
-//	qreal zFar = camera()->zFar();
-
-//	qreal xMin, yMin;
-//	bool expand = imageInterface->expandFrustum->isChecked();
-//	if (camera()->type() == qglviewer::Camera::PERSPECTIVE)
-//		if ((expand && (newAspectRatio>aspectRatio)) || (!expand && (newAspectRatio<aspectRatio)))
-//		{
-//			yMin = zNear * tan(camera()->fieldOfView() / 2.0);
-//			xMin = newAspectRatio * yMin;
-//		}
-//		else
-//		{
-//			xMin = zNear * tan(camera()->fieldOfView() / 2.0) * aspectRatio;
-//			yMin = xMin / newAspectRatio;
-//		}
-//	else
-//	{
-//		camera()->getOrthoWidthHeight(xMin, yMin);
-//		if ((expand && (newAspectRatio>aspectRatio)) || (!expand && (newAspectRatio<aspectRatio)))
-//			xMin = newAspectRatio * yMin;
-//		else
-//			yMin = xMin / newAspectRatio;
-//	}
-
-//	QImage image(finalSize.width(), finalSize.height(), QImage::Format_ARGB32);
-
-//	if (image.isNull())
-//	{
-//		QMessageBox::warning(this, "Image saving error",
-//							 "Unable to create resulting image",
-//							 QMessageBox::Ok, QMessageBox::NoButton);
-//		return false;
-//	}
-
-//	// ProgressDialog disabled since it interfers with the screen grabing mecanism on some platforms. Too bad.
-//	// ProgressDialog::showProgressDialog(this);
-
-//	qreal scaleX = subSize.width() / static_cast<qreal>(finalSize.width());
-//	qreal scaleY = subSize.height() / static_cast<qreal>(finalSize.height());
-
-//	qreal deltaX = 2.0 * xMin * scaleX;
-//	qreal deltaY = 2.0 * yMin * scaleY;
-
-//	int nbX = finalSize.width() / subSize.width();
-//	int nbY = finalSize.height() / subSize.height();
-
-//	// Extra subimage on the right/bottom border(s) if needed
-//	if (nbX * subSize.width() < finalSize.width())
-//		nbX++;
-//	if (nbY * subSize.height() < finalSize.height())
-//		nbY++;
-
-//	makeCurrent();
-
-//	// tileRegion_ is used by startScreenCoordinatesSystem to appropriately set the local
-//	// coordinate system when tiling
-//	tileRegion_ = new TileRegion();
-//	qreal tileXMin, tileWidth, tileYMin, tileHeight;
-//	if ((expand && (newAspectRatio>aspectRatio)) || (!expand && (newAspectRatio<aspectRatio)))
-//	{
-//		qreal tileTotalWidth = newAspectRatio * height();
-//		tileXMin = (width() - tileTotalWidth) / 2.0;
-//		tileWidth = tileTotalWidth * scaleX;
-//		tileYMin = 0.0;
-//		tileHeight = height() * scaleY;
-//		tileRegion_->textScale = 1.0 / scaleY;
-//	}
-//	else
-//	{
-//		qreal tileTotalHeight = width() / newAspectRatio;
-//		tileYMin = (height() - tileTotalHeight) / 2.0;
-//		tileHeight = tileTotalHeight * scaleY;
-//		tileXMin = 0.0;
-//		tileWidth = width() * scaleX;
-//		tileRegion_->textScale = 1.0 / scaleX;
-//	}
-
-//	int count=0;
-//	for (int i=0; i<nbX; i++)
-//		for (int j=0; j<nbY; j++)
-//		{
-//			preDraw();
-
-//			// Change projection matrix
-//			glMatrixMode(GL_PROJECTION);
-//			glLoadIdentity();
-//			if (camera()->type() == qglviewer::Camera::PERSPECTIVE)
-//				glFrustum(-xMin + i*deltaX, -xMin + (i+1)*deltaX, yMin - (j+1)*deltaY, yMin - j*deltaY, zNear, zFar);
-//			else
-//				glOrtho(-xMin + i*deltaX, -xMin + (i+1)*deltaX, yMin - (j+1)*deltaY, yMin - j*deltaY, zNear, zFar);
-//			glMatrixMode(GL_MODELVIEW);
-
-//			tileRegion_->xMin = tileXMin + i * tileWidth;
-//			tileRegion_->xMax = tileXMin + (i+1) * tileWidth;
-//			tileRegion_->yMin = tileYMin + j * tileHeight;
-//			tileRegion_->yMax = tileYMin + (j+1) * tileHeight;
-
-//			draw();
-//			postDraw();
-
-//			// ProgressDialog::hideProgressDialog();
-//			// qApp->processEvents();
-
-//			QImage snapshot = this->grabFramebuffer();
-
-//			// ProgressDialog::showProgressDialog(this);
-//			// ProgressDialog::updateProgress(count / (qreal)(nbX*nbY),
-//			// "Generating image ["+QString::number(count)+"/"+QString::number(nbX*nbY)+"]");
-//			// qApp->processEvents();
-
-//			QImage subImage = snapshot.scaled(subSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-//			// Copy subImage in image
-//			for (int ii=0; ii<subSize.width(); ii++)
-//			{
-//				int fi = i*subSize.width() + ii;
-//				if (fi == image.width())
-//					break;
-//				for (int jj=0; jj<subSize.height(); jj++)
-//				{
-//					int fj = j*subSize.height() + jj;
-//					if (fj == image.height())
-//						break;
-//					image.setPixel(fi, fj, subImage.pixel(ii,jj));
-//				}
-//			}
-//			count++;
-//		}
-
-//	bool saveOK = image.save(fileName, snapshotFormat().toLatin1().constData(), snapshotQuality());
-
-//	// ProgressDialog::hideProgressDialog();
-//	// setCursor(QCursor(Qt::ArrowCursor));
-
-//	delete tileRegion_;
-//	tileRegion_ = NULL;
-
-////	if (imageInterface->whiteBackground->isChecked())
-////		setBackgroundColor(previousBGColor);
-
-//	return saveOK;
-//}
-
 
 /*! Saves a snapshot of the current image displayed by the widget.
 
@@ -403,9 +219,9 @@ static bool checkFileName(QString& fileName, QWidget* widget, const QString& sna
  The VRender library was written by Cyril Soler (Cyril dot Soler at imag dot fr). If the generated
  PS or EPS file is not properly displayed, remove the anti-aliasing option in your postscript viewer.
 
- \note In order to correctly grab the frame buffer, the QGLViewer window is raised in front of
+ \note In order to correctly grab the frame buffer, the QOGLViewer window is raised in front of
  other windows by this method. */
-void QGLViewer::saveSnapshot(bool automatic, bool overwrite)
+void QOGLViewer::saveSnapshot(bool automatic, bool overwrite)
 {
 	// Ask for file name
 	if (snapshotFileName().isEmpty() || !automatic)
@@ -444,21 +260,28 @@ void QGLViewer::saveSnapshot(bool automatic, bool overwrite)
 			}
 	}
 
-	bool saveOK;
+//	bool saveOK;
+//		if (automatic)
+//		{
+//			QImage snapshot = frameBufferSnapshot();
+//			saveOK = snapshot.save(fileInfo.filePath(), snapshotFormat().toLatin1().constData(), snapshotQuality());
+//		}
+//		else
+//		{
+//			QMessageBox::warning(this, "Snapshot problem", "Unsupported interface filename for snapshot use automatic mode");
+//			//saveOK = saveImageSnapshot(fileInfo.filePath());
+//		}
 
-		if (automatic)
-		{
-			QImage snapshot = frameBufferSnapshot();
-			saveOK = snapshot.save(fileInfo.filePath(), snapshotFormat().toLatin1().constData(), snapshotQuality());
-		}
-		else
-//			saveOK = saveImageSnapshot(fileInfo.filePath());
+	QImage snapshot = frameBufferSnapshot();
+	bool saveOK = snapshot.save(fileInfo.filePath(), snapshotFormat().toLatin1().constData(), snapshotQuality());
 
 	if (!saveOK)
 		QMessageBox::warning(this, "Snapshot problem", "Unable to save snapshot in\n"+fileInfo.filePath());
+
+
 }
 
-QImage QGLViewer::frameBufferSnapshot()
+QImage QOGLViewer::frameBufferSnapshot()
 {
 	// Viewer must be on top of other windows.
 	makeCurrent();
@@ -481,7 +304,7 @@ QImage QGLViewer::frameBufferSnapshot()
  \attention If \p fileName is a char* (as is "myFile.jpg"), it may be casted into a \c bool, and the
  other saveSnapshot() method may be used instead. Pass QString("myFile.jpg") as a parameter to
  prevent this. */
-void QGLViewer::saveSnapshot(const QString& fileName, bool overwrite)
+void QOGLViewer::saveSnapshot(const QString& fileName, bool overwrite)
 {
 	const QString previousName = snapshotFileName();
 	const int previousCounter = snapshotCounter();
@@ -496,7 +319,7 @@ void QGLViewer::saveSnapshot(const QString& fileName, bool overwrite)
 
 This action is activated by the KeyboardAction::SNAPSHOT_TO_CLIPBOARD enum, binded to \c Ctrl+C by default.
 */
-void QGLViewer::snapshotToClipboard()
+void QOGLViewer::snapshotToClipboard()
 {
 	QClipboard *cb = QApplication::clipboard();
 	cb->setImage(frameBufferSnapshot());

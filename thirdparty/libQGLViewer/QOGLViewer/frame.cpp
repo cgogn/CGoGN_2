@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -23,7 +23,7 @@
 #include "frame.h"
 #include <math.h>
 
-using namespace qglviewer;
+using namespace qoglviewer;
 using namespace std;
 
 
@@ -456,7 +456,7 @@ void Frame::setPosition(qreal x, qreal y, qreal z)
 /*! Same as successive calls to setPosition() and then setOrientation().
 
 Only one modified() signal is emitted, which is convenient if this signal is connected to a
-QGLViewer::update() slot. See also setTranslationAndRotation() and
+QOGLViewer::update() slot. See also setTranslationAndRotation() and
 setPositionAndOrientationWithConstraint(). */
 void Frame::setPositionAndOrientation(const Vec& position, const Quaternion& orientation)
 {
@@ -477,7 +477,7 @@ void Frame::setPositionAndOrientation(const Vec& position, const Quaternion& ori
 /*! Same as successive calls to setTranslation() and then setRotation().
 
 Only one modified() signal is emitted, which is convenient if this signal is connected to a
-QGLViewer::update() slot. See also setPositionAndOrientation() and
+QOGLViewer::update() slot. See also setPositionAndOrientation() and
 setTranslationAndRotationWithConstraint(). */
 void Frame::setTranslationAndRotation(const Vec& translation, const Quaternion& rotation)
 {

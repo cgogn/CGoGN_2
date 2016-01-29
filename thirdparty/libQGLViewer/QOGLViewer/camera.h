@@ -2,7 +2,7 @@
 
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
- This file is part of the QGLViewer library version 2.6.3.
+ This file is part of the QOGLViewer library version 2.6.3.
 
  http://www.libqglviewer.com - contact@libqglviewer.com
 
@@ -28,15 +28,15 @@
 #include <QMatrix4x4>
 
 #include "keyFrameInterpolator.h"
-class QGLViewer;
+class QOGLViewer;
 
 
-namespace qglviewer {
+namespace qoglviewer {
 
 class ManipulatedCameraFrame;
 
 /*! \brief A perspective or orthographic camera.
-  \class Camera camera.h QGLViewer/camera.h
+  \class Camera camera.h QOGLViewer/camera.h
 
   A Camera defines some intrinsic parameters (fieldOfView(), position(), viewDirection(),
   upVector()...) and useful positioning tools that ease its placement (showEntireScene(),
@@ -51,14 +51,14 @@ class ManipulatedCameraFrame;
   complex Camera setups.
 
   Different displacements can be performed using the mouse. The list of possible actions is defined
-  by the QGLViewer::MouseAction enum. Use QGLViewer::setMouseBinding() to attach a specific action
+  by the QOGLViewer::MouseAction enum. Use QOGLViewer::setMouseBinding() to attach a specific action
   to an arbitrary mouse button-state key binding. These actions are detailed in the <a
   href="../mouse.html">mouse page</a>.
 
-  The default button binding are: QGLViewer::ROTATE (left), QGLViewer::ZOOM (middle) and
-  QGLViewer::TRANSLATE (right). With this configuration, the Camera \e observes a scene and rotates
+  The default button binding are: QOGLViewer::ROTATE (left), QOGLViewer::ZOOM (middle) and
+  QOGLViewer::TRANSLATE (right). With this configuration, the Camera \e observes a scene and rotates
   around its pivotPoint(). You can switch between this mode and a fly mode using the
-  QGLViewer::CAMERA_MODE (see QGLViewer::toggleCameraMode()) keyboard shortcut (default is 'Space').
+  QOGLViewer::CAMERA_MODE (see QOGLViewer::toggleCameraMode()) keyboard shortcut (default is 'Space').
 
   <h3>Other functionalities</h3>
 
@@ -66,8 +66,8 @@ class ManipulatedCameraFrame;
   fieldOfView() is meaningless with Camera::ORTHOGRAPHIC.
 
   The near and far planes of the Camera are fitted to the scene and determined from
-  QGLViewer::sceneRadius(), QGLViewer::sceneCenter() and zClippingCoefficient() by the zNear() and
-  zFar() methods. Reasonable values on the scene extends hence have to be provided to the QGLViewer
+  QOGLViewer::sceneRadius(), QOGLViewer::sceneCenter() and zClippingCoefficient() by the zNear() and
+  zFar() methods. Reasonable values on the scene extends hence have to be provided to the QOGLViewer
   in order for the Camera to correctly display the scene. High level positioning methods also use
   this information (showEntireScene(), centerScene()...).
 
@@ -83,13 +83,13 @@ class ManipulatedCameraFrame;
   Stereo display is possible on machines with quad buffer capabilities (with Camera::PERSPECTIVE
   type() only). Test the <a href="../examples/stereoViewer.html">stereoViewer example</a> to check.
 
-  A Camera can also be used outside of a QGLViewer or even without OpenGL for its coordinate system
+  A Camera can also be used outside of a QOGLViewer or even without OpenGL for its coordinate system
   conversion capabilities. Note however that some of them explicitly rely on the presence of a
   Z-buffer. \nosubgrouping */
 class QGLVIEWER_EXPORT Camera : public QObject
 {
 #ifndef DOXYGEN
-	friend class ::QGLViewer;
+	friend class ::QOGLViewer;
 #endif
 
 	Q_OBJECT
@@ -185,18 +185,18 @@ public:
 
 	/*! Returns the Camera aspect ratio defined by screenWidth() / screenHeight().
 
-	When the Camera is attached to a QGLViewer, these values and hence the aspectRatio() are
+	When the Camera is attached to a QOGLViewer, these values and hence the aspectRatio() are
 	automatically fitted to the viewer's window aspect ratio using setScreenWidthAndHeight(). */
 	qreal aspectRatio() const { return screenWidth_ / static_cast<qreal>(screenHeight_); }
 	/*! Returns the width (in pixels) of the Camera screen.
 
-	Set using setScreenWidthAndHeight(). This value is automatically fitted to the QGLViewer's
-	window dimensions when the Camera is attached to a QGLViewer. See also QGLWidget::width() */
+	Set using setScreenWidthAndHeight(). This value is automatically fitted to the QOGLViewer's
+	window dimensions when the Camera is attached to a QOGLViewer. See also QGLWidget::width() */
 	int screenWidth() const { return screenWidth_; }
 	/*! Returns the height (in pixels) of the Camera screen.
 
-	Set using setScreenWidthAndHeight(). This value is automatically fitted to the QGLViewer's
-	window dimensions when the Camera is attached to a QGLViewer. See also QGLWidget::height() */
+	Set using setScreenWidthAndHeight(). This value is automatically fitted to the QOGLViewer's
+	window dimensions when the Camera is attached to a QOGLViewer. See also QGLWidget::height() */
 	int screenHeight() const { return screenHeight_; }
 	void getViewport(GLint viewport[4]) const;
 	qreal pixelGLRatio(const Vec& position) const;
@@ -228,7 +228,7 @@ public:
 	For a total control on clipping planes' positions, an other option is to overload the zNear()
 	and zFar() methods. See the <a href="../examples/standardCamera.html">standardCamera example</a>.
 
-	\attention When QGLViewer::cameraPathAreEdited(), this value is set to 5.0 so that the Camera
+	\attention When QOGLViewer::cameraPathAreEdited(), this value is set to 5.0 so that the Camera
 	paths are not clipped. The previous zClippingCoefficient() value is restored back when you leave
 	this mode. */
 	qreal zClippingCoefficient() const { return zClippingCoef_; }
@@ -257,13 +257,13 @@ public Q_SLOTS:
 	This value is actually inferred from the screenWidth() / screenHeight() ratio. You should use
 	setScreenWidthAndHeight() instead.
 
-	This method might however be convenient when the Camera is not associated with a QGLViewer. It
+	This method might however be convenient when the Camera is not associated with a QOGLViewer. It
 	actually sets the screenHeight() to 100 and the screenWidth() accordingly. See also
 	setFOVToFitScene().
 
 	\note If you absolutely need an aspectRatio() that does not correspond to your viewer's window
 	dimensions, overload loadProjectionMatrix() or multiply the created GL_PROJECTION matrix by a
-	scaled diagonal matrix in your QGLViewer::draw() method. */
+	scaled diagonal matrix in your QOGLViewer::draw() method. */
 	void setAspectRatio(qreal aspect) { setScreenWidthAndHeight(int(100.0*aspect), 100); }
 
 	void setScreenWidthAndHeight(int width, int height);
@@ -284,8 +284,8 @@ public:
 
 	See also setSceneBoundingBox().
 
-	Note that QGLViewer::sceneRadius() (resp. QGLViewer::setSceneRadius()) simply call this method
-	(resp. setSceneRadius()) on its associated QGLViewer::camera(). */
+	Note that QOGLViewer::sceneRadius() (resp. QOGLViewer::setSceneRadius()) simply call this method
+	(resp. setSceneRadius()) on its associated QOGLViewer::camera(). */
 	qreal sceneRadius() const { return sceneRadius_; }
 
 	/*! Returns the position of the scene center, defined in the world coordinate system.
@@ -297,8 +297,8 @@ public:
 	Default value is (0,0,0) (world origin). Use setSceneCenter() to change it. See also
 	setSceneBoundingBox().
 
-	Note that QGLViewer::sceneCenter() (resp. QGLViewer::setSceneCenter()) simply calls this method
-	(resp. setSceneCenter()) on its associated QGLViewer::camera(). */
+	Note that QOGLViewer::sceneCenter() (resp. QOGLViewer::setSceneCenter()) simply calls this method
+	(resp. setSceneCenter()) on its associated QOGLViewer::camera(). */
 	Vec sceneCenter() const { return sceneCenter_; }
 	qreal distanceToSceneCenter() const;
 
@@ -454,7 +454,7 @@ public:
 
 	This distance is the virtual world equivalent of the real-world physicalDistanceToScreen().
 
-	\attention This value is modified by QGLViewer::setSceneRadius(), setSceneRadius() and
+	\attention This value is modified by QOGLViewer::setSceneRadius(), setSceneRadius() and
 	setFieldOfView(). When one of these values is modified, focusDistance() is set to sceneRadius()
 	/ tan(fieldOfView()/2), which provides good results. */
 	qreal focusDistance() const { return focusDistance_; }
@@ -515,6 +515,6 @@ private:
 	KeyFrameInterpolator* interpolationKfi_;
 };
 
-} // namespace qglviewer
+} // namespace qoglviewer
 
 #endif // QGLVIEWER_CAMERA_H

@@ -3,7 +3,7 @@ set(QOGLViewer_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer 
 
 PROJECT(QOGLViewer)
 FIND_PACKAGE(OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets 5.4.0 REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -11,7 +11,7 @@ set(CMAKE_AUTOMOC ON)
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(HEADER_FILES
-	qglviewer.h 
+	qoglviewer.h
 	camera.h 
 	manipulatedFrame.h 
 	manipulatedCameraFrame.h 
@@ -26,7 +26,7 @@ set(HEADER_FILES
 	)
 	
 set(SOURCE_FILES
-	qglviewer.cpp 
+	qoglviewer.cpp
 	camera.cpp 
 	manipulatedFrame.cpp 
 	manipulatedCameraFrame.cpp 
