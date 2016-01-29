@@ -325,3 +325,34 @@ TEST(VEC_OP_TEST, CrossProduct)
 	}
 }
 
+TEST(VEC_OP_TEST, Equality)
+{
+	StdArray vec1a = {1.,2., 3.};
+	EigenVec3d vec2a = {1.,2., 3.};
+
+	StdArray vec1b = {1.,2., 3.};
+	EigenVec3d vec2b = {1.,2., 3.};
+
+
+	EXPECT_TRUE(vec1a == vec1b);
+	EXPECT_TRUE(vec2a == vec2b);
+}
+
+TEST(VEC_OP_TEST, DivScalar)
+{
+	{
+		StdArray a = {2. ,4., 6.};
+		StdArray c = a/2;
+		EXPECT_EQ(c[0], 1);
+		EXPECT_EQ(c[1], 2);
+		EXPECT_EQ(c[2], 3);
+	}
+
+	{
+		EigenVec3d a = {2. ,4., 6.};
+		EigenVec3d c = a/2;
+		EXPECT_EQ(c[0], 1);
+		EXPECT_EQ(c[1], 2);
+		EXPECT_EQ(c[2], 3);
+	}
+}
