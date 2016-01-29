@@ -45,7 +45,7 @@ using namespace qoglviewer;
 
 namespace qoglviewer
 {
-void init_ogl_context()
+QGLVIEWER_EXPORT void init_ogl_context()
 {
 	QSurfaceFormat fmt;
 	fmt.setDepthBufferSize(24);

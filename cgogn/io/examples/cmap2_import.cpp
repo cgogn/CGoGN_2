@@ -1,7 +1,7 @@
 
 #include <chrono>
 #include <ctime>
-
+#include <vector>
 
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 		std::cout << "nb darts -> " << nb_darts << std::endl;
 
 		unsigned int nb_darts_2 = 0;
-		unsigned int nb_darts_per_thread[cgogn::NB_THREADS - 1];
+		std::vector<unsigned int> nb_darts_per_thread(cgogn::NB_THREADS - 1);
 		for (unsigned int& n : nb_darts_per_thread)
 			n = 0;
 		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 		std::cout << "nb faces -> " << nb_faces << std::endl;
 
 		unsigned int nb_faces_2 = 0;
-		unsigned int nb_faces_per_thread[cgogn::NB_THREADS - 1];
+		std::vector<unsigned int> nb_faces_per_thread(cgogn::NB_THREADS - 1);
 		for (unsigned int& n : nb_faces_per_thread)
 			n = 0;
 		map.parallel_foreach_cell<Map2::FACE>([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
