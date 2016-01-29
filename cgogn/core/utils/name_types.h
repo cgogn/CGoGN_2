@@ -40,6 +40,7 @@
 #include <cxxabi.h>
 #include <limits>
 #include <iostream>
+#include <sstream>
 #endif // __GNUG__
 
 #include <core/utils/dll.h>
@@ -114,7 +115,6 @@ template <typename T>
 inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type
 {
 	std::string type_name = typeid(T).name();
-	static_assert(has_cgogn_name_of_type<int>::value == false, "plop");
 #ifdef __GNUG__
 	int status = std::numeric_limits<int>::max();
 	std::unique_ptr<char, void(*)(void*)> res{ abi::__cxa_demangle(type_name.c_str(), NULL, NULL, &status), std::free };
@@ -150,6 +150,13 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 
 #endif // _MSC_VER
 #endif // __GNUG__
+#ifdef __APPLE__
+	// removing std::__1
+	{
+		std::regex regex("std::__1::", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		type_name = std::regex_replace(type_name, regex, "std::");
+	}
+#endif // __APPLE__
 	// removing spaces
 	{
 		std::regex regex("([a-z]*)([[:space:]]+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
