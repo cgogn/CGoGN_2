@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_VEC_H_
-#define GEOMETRY_VEC_H_
+#ifndef GEOMETRY_TYPES_VEC_H_
+#define GEOMETRY_TYPES_VEC_H_
 
 #include <array>
 #include <cmath>
@@ -50,7 +50,7 @@ namespace geometry
  * Its size has to be known at compile time
  * The struct cgogn::geometry::vector_traits has to be specialized for the Container class (see geometry_traits.h).
  */
-template<class Container>
+template <class Container>
 class Vec_T
 {
 public:
@@ -59,8 +59,10 @@ public:
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
 	inline Vec_T() : data_() {}
-	template<typename...Args>
-	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... }) {}
+
+	template <typename... Args>
+	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... })
+	{}
 
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
@@ -224,13 +226,13 @@ private:
 	Container data_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_VEC_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_VEC_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_VEC_H_
+#endif // GEOMETRY_TYPES_VEC_H_

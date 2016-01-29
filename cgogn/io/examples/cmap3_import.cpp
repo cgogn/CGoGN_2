@@ -14,9 +14,9 @@ using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = std::array<double,3>;
 
-template<typename T>
+template <typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
-template<typename T>
+template <typename T>
 using FaceAttributeHandler = Map3::FaceAttributeHandler<T>;
 
 int main(int argc, char** argv)

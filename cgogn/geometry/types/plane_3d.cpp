@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_PLANE_3D_CPP_
+#define GEOMETRY_TYPES_PLANE_3D_CPP_
 
 #include <geometry/types/plane_3d.h>
 
@@ -38,4 +38,5 @@ template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
 template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
 
 } // namespace geometry
+
 } // namespace cgogn

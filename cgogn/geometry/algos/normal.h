@@ -49,7 +49,7 @@ inline VEC3_T triangle_normal(const MAP& map, Cell<Orbit::PHI1> f, const typenam
 template <typename VEC3_T, typename MAP>
 inline VEC3_T newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
-	VEC3_T n{0,0,0};
+	VEC3_T n{0.,0.,0.};
 	map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
 	{
 		const VEC3_T& p = position[v.dart];

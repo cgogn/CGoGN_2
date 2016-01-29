@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_VEC_CPP_
+#define GEOMETRY_TYPES_VEC_CPP_
 
 #include <geometry/types/vec.h>
 
@@ -36,4 +36,5 @@ template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
 template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
 
 } // namespace geometry
+
 } // namespace cgogn

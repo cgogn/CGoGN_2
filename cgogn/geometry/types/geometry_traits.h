@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TRAITS_H_
-#define GEOMETRY_TRAITS_H_
+#ifndef GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#define GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
 
 #include <core/utils/definitions.h>
 
@@ -35,13 +35,13 @@ namespace cgogn
 namespace geometry
 {
 
-template<typename Vec_T>
+template <typename Vec_T>
 struct vector_traits
 {
 };
 
 // specialization 1 : cgogn::geometry::Vec_T with a fixed-size array
-template<typename Scalar_, std::size_t Size>
+template <typename Scalar_, std::size_t Size>
 struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
 {
 	static const std::size_t SIZE = Size;
@@ -49,15 +49,15 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
 };
 
 // specialization 2 : Eigen::Vector
-template<typename Scalar_, int Rows, int Options>
+template <typename Scalar_, int Rows, int Options>
 struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
 	static const std::size_t SIZE = Rows;
 	using Scalar = Scalar_;
 };
 
-
 } // namespace geometry
+
 } // namespace cgogn
 
-#endif // GEOMETRY_TRAITS_H_
+#endif // GEOMETRY_TYPES_GEOMETRY_TRAITS_H_

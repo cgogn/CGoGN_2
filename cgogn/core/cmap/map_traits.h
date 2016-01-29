@@ -33,8 +33,6 @@ namespace cgogn
 struct DefaultMapTraits
 {
 	static const unsigned int CHUNK_SIZE = DEFAULT_CHUNK_SIZE;
-//	using Real = double;
-//	using Vec3 = std::array<Real, 3>;
 };
 
 } // namespace cgogn

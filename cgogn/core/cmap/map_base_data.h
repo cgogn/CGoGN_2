@@ -72,7 +72,7 @@ public:
 };
 
 // forward declaration of class AttributeHandlerOrbit
-template<typename DATA_TRAITS, Orbit ORBIT>
+template <typename DATA_TRAITS, Orbit ORBIT>
 class AttributeHandlerOrbit;
 
 /**
@@ -90,10 +90,10 @@ public:
 
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 
-	template<typename T_REF>
+	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
 
 protected:
@@ -120,7 +120,7 @@ protected:
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
 	/// vector of thread ids known by the map that can pretend to data such as mark vectors
-	std::vector<std::thread::id> thread_ids_;
+	mutable std::vector<std::thread::id> thread_ids_;
 
 	/// global topo cache shortcuts
 	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
@@ -156,22 +156,24 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-protected:
-
 	/*******************************************************************************
 	 * Containers management
 	 *******************************************************************************/
 
-	inline const ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit) const
+	template <Orbit ORBIT>
+	inline const ChunkArrayContainer<unsigned int>& get_attribute_container() const
 	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return attributes_[orbit];
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[ORBIT];
 	}
 
-	inline ChunkArrayContainer<unsigned int>& get_attribute_container(unsigned int orbit)
+protected:
+
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<unsigned int>& get_attribute_container()
 	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return attributes_[orbit];
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[ORBIT];
 	}
 
 	/*******************************************************************************
@@ -275,7 +277,7 @@ protected:
 		return i;
 	}
 
-	inline unsigned int get_new_thread_index()
+	inline unsigned int get_new_thread_index() const
 	{
 		cgogn_assert(thread_ids_.size() < NB_THREADS);
 //		thread_ids_.resize(thread_ids_.size() + 1);
@@ -283,12 +285,12 @@ protected:
 		return thread_ids_.size() - 1;
 	}
 
-	inline std::thread::id* get_thread_id_pointer(unsigned int thread_index)
+	inline std::thread::id* get_thread_id_pointer(unsigned int thread_index) const
 	{
 		return &(thread_ids_[thread_index]);
 	}
 
-	inline void remove_thread(unsigned int thread_index)
+	inline void remove_thread(unsigned int thread_index) const
 	{
 		thread_ids_[thread_index] = thread_ids_.back();
 		thread_ids_.pop_back();

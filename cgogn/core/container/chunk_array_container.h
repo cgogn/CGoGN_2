@@ -88,9 +88,9 @@ public:
 	typedef T_REF ref_type;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
-	template<class T>
+	template <class T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	template<class T>
+	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
 
 	/**
@@ -374,7 +374,7 @@ public:
 	* @param attribute_name name of the array
 	* @return pointer on typed chunk_array
 	*/
-	template<typename T>
+	template <typename T>
 	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
@@ -697,23 +697,34 @@ public:
 	template <unsigned int PRIMSIZE>
 	unsigned int insert_lines()
 	{
+		static_assert(PRIMSIZE < CHUNKSIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNKSIZE");
+
 		unsigned int index;
 
 		if (holes_stack_.empty()) // no holes -> insert at the end
 		{
-			index = nb_max_lines_;
-			nb_max_lines_ += PRIMSIZE;
-
-			if (nb_max_lines_ % CHUNKSIZE <= PRIMSIZE) // prim on next block ? -> add block to C.A.
+			if (nb_max_lines_ == 0) // add first chunk
 			{
 				for (auto arr : table_arrays_)
 					arr->add_chunk();
-
 				for (auto arr : table_marker_arrays_)
 					arr->add_chunk();
-
 				refs_.add_chunk();
 			}
+
+			if ((nb_max_lines_ + PRIMSIZE) % CHUNKSIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
+			{
+				nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
+
+				for (auto arr : table_arrays_)
+					arr->add_chunk();
+				for (auto arr : table_marker_arrays_)
+					arr->add_chunk();
+				refs_.add_chunk();
+			}
+
+			index = nb_max_lines_;
+			nb_max_lines_ += PRIMSIZE;
 		}
 		else
 		{
@@ -737,7 +748,7 @@ public:
 	template <unsigned int PRIMSIZE>
 	void remove_lines(unsigned int index)
 	{
-		unsigned int begin_prim_idx = (index/PRIMSIZE) * PRIMSIZE;
+		unsigned int begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
 
 		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 

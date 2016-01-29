@@ -6,7 +6,7 @@
 
 
 const unsigned int SIZE = 32u;
-template<class T>
+template <class T>
 using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, unsigned int>;
 using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;

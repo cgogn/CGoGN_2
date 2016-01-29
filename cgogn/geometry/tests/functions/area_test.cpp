@@ -20,12 +20,12 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #include <geometry/types/eigen.h>
 #include <geometry/types/vec.h>
 #include <geometry/functions/area.h>
 #include <gtest/gtest.h>
 #include <iostream>
-
 
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
@@ -33,17 +33,15 @@ using EigenVec3d = Eigen::Vector3d;
 TEST(Area_TEST, TriangleArea)
 {
 	{
-		StdArray p0(0,0,0);
-		StdArray p1(2,0,0);
-		StdArray p2(0,2,0);
-		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2),2.0);
+		StdArray p0(0.,0.,0.);
+		StdArray p1(2.,0.,0.);
+		StdArray p2(0.,2.,0.);
+		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2), 2.0);
 	}
 	{
 		EigenVec3d p0(0,0,0);
 		EigenVec3d p1(2,0,0);
 		EigenVec3d p2(0,2,0);
-		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2),2.0);
+		EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2), 2.0);
 	}
-
 }
-

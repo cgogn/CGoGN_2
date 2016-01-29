@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_EIGEN_H_
-#define GEOMETRY_EIGEN_H_
+#ifndef GEOMETRY_TYPES_EIGEN_H_
+#define GEOMETRY_TYPES_EIGEN_H_
 
 #include <core/utils/definitions.h>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
@@ -31,10 +31,12 @@ CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {
+
 namespace geometry
 {
 
 } // namespace geometry
+
 } // namespace cgogn
 
-#endif // GEOMETRY_EIGEN_H_
+#endif // GEOMETRY_TYPES_EIGEN_H_
