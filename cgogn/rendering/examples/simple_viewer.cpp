@@ -42,7 +42,9 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 {
 	static const unsigned int CHUNK_SIZE = 8192;
 };
-using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
+
+//using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
+using Map2 = cgogn::CMap2<MyMapTraits>;
 using Vec3 = Eigen::Vector3d;
 
 template<typename T>
