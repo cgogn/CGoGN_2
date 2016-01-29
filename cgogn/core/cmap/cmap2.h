@@ -174,26 +174,33 @@ protected:
 		{
 			if (phi2(d) == d)
 			{
-				Dart first = add_dart(); // First edge of the face that will fill the hole
-				phi2_sew(d, first);      // phi2-link the new edge to the hole
-
-				Dart d_next = d; // Turn around the hole
-				Dart d_phi1;     // to complete the face
-				do
+				close_hole_topo(d);
+				Dart new_face = phi2(d);
+				if (this->template is_orbit_embedded<Orbit::DART>())
 				{
-					do
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						d_phi1 = this->phi1(d_next); // Search and put in d_next
-						d_next = phi2(d_phi1);       // the next dart of the hole
-					} while (d_next != d_phi1 && d_phi1 != d);
-
-					if (d_phi1 != d)
+						init_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+					});
+				}
+				if (this->template is_orbit_embedded<Orbit::PHI21>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						Dart next = add_dart(); // Add a new edge there and link it to the face
-						this->phi1_sew(first, next); // the edge is linked to the face
-						phi2_sew(d_next, next);      // the face is linked to the hole
-					}
-				} while (d_phi1 != d);
+						this->template init_embedding<Orbit::PHI21>(fd, this->template get_embedding<Orbit::PHI21>(this->phi1(phi2(fd))));
+					});
+				}
+				if (this->template is_orbit_embedded<Orbit::PHI2>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
+					{
+						this->template init_embedding<Orbit::PHI2>(fd, this->template get_embedding<Orbit::PHI2>(phi2(fd)));
+					});
+				}
+				if (this->template is_orbit_embedded<Orbit::PHI1>())
+				{
+					init_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
+				}
 			}
 		}
 	}
@@ -259,6 +266,32 @@ public:
 	}
 
 protected:
+
+	inline void close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+		Dart first = add_dart(); // First edge of the face that will fill the hole
+		phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+		Dart d_next = d; // Turn around the hole
+		Dart d_phi1;     // to complete the face
+		do
+		{
+			do
+			{
+				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_next = phi2(d_phi1);       // the next dart of the hole
+			} while (d_next != d_phi1 && d_phi1 != d);
+
+			if (d_phi1 != d)
+			{
+				Dart next = add_dart(); // Add a new edge there and link it to the face
+				this->phi1_sew(first, next); // the edge is linked to the face
+				phi2_sew(d_next, next);      // the face is linked to the hole
+			}
+		} while (d_phi1 != d);
+	}
 
 	/*******************************************************************************
 	 * Orbits traversal
