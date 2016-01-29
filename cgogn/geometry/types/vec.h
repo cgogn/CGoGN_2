@@ -83,6 +83,15 @@ public:
 		return data_[i];
 	}
 
+	inline bool operator==(const Self& v) const
+	{
+		auto it_this = data_.begin();
+		for (auto c : v.data_)
+			if ( *(it_this++) != c)
+				return false;
+		return true;
+	}
+
 	inline const Self operator-() const
 	{
 		Self res(*this);
@@ -110,7 +119,7 @@ public:
 		Self res;
 		auto it_res = res.data_.begin();
 		auto it_v = v.data_.begin();
-		for (auto c : v.data_)
+		for (auto c : data_)
 			*(it_res++) = c + (*it_v++);
 		return res;
 	}
@@ -137,6 +146,32 @@ public:
 	{
 		return v * r;
 	}
+
+	inline friend const Self operator/(const Self& v, Scalar r)
+	{
+		Self res(v);
+		for (auto& c : res.data_)
+			c /= r;
+		return res;
+	}
+
+	inline friend const Self operator/(Scalar r, const Self& v)
+	{
+		return v / r;
+	}
+
+	inline void operator*=(Scalar f)
+	{
+		for (auto& c : data_)
+			c *= f;
+	}
+
+	inline void operator/=(Scalar f)
+	{
+		for (auto& c : data_)
+			c /= f;
+	}
+
 
 	inline const Scalar dot(const Self& v) const
 	{

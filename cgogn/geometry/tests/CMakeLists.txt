@@ -5,6 +5,7 @@ project(cgogn_geometry_test
 set(SOURCE_FILES
 	types/vec_test.cpp
 	types/plane_3d_test.cpp
+	types/bounding_box_test.cpp
 	main.cpp
 )
 

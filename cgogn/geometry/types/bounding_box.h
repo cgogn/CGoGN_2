@@ -399,8 +399,8 @@ std::istream& operator>>(std::istream& in, BoundingBox<VEC_T>& bb)
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_BOUNDING_BOX_CPP_))
 extern template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3f>;
-//extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
-//extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
+extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<double,3>>>;
+extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_BOUNDING_BOX_CPP_))
 
 } // namespace geometry
