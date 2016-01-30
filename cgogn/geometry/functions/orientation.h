@@ -58,7 +58,7 @@ template <typename VEC3_T>
 Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
 {
 	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P) ;
+	return Plane3D<VEC3_T>(N, PP).orient(P);
 }
 
 } // namespace geometry

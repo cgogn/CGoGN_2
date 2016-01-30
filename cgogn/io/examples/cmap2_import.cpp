@@ -33,16 +33,15 @@ int main(int argc, char** argv)
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
-	} else {
-		surfaceMesh = std::string(argv[1]);
 	}
+	else
+		surfaceMesh = std::string(argv[1]);
 
 	Map2 map;
 
-	for (int k = 0 ; k < 2 ; ++k)
+	for (unsigned int k = 0; k < 2; ++k)
 	{
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
-
 
 		unsigned int nb_darts = 0;
 		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });

@@ -33,7 +33,7 @@ TEST(NameTypesTest, NumTypes)
 	using unsigned_short = unsigned short;
 	using uint = unsigned int;
 	using ulint = unsigned long;
-	using llint = long long ;
+	using llint = long long;
 	using ullint = unsigned long long;
 
 	EXPECT_EQ(cgogn::name_of_type(bool()), "bool");

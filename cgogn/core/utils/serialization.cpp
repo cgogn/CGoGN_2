@@ -44,7 +44,7 @@ CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest,
 	cgogn_assert(dest != nullptr);
 
 	char buffer[2048];
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0; i < quantity; ++i)
 	{
 		unsigned int size;
 		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
@@ -63,7 +63,7 @@ CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const*
 	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0; i < quantity; ++i)
 	{
 		const unsigned int size = static_cast<unsigned int>(src[i].length());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
@@ -79,7 +79,7 @@ CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std
 	cgogn_assert(src != nullptr);
 
 	std::size_t total = 0;
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0; i < quantity; ++i)
 	{
 		total += sizeof(unsigned int); // for size
 		total += src[i].length();

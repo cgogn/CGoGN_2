@@ -80,7 +80,7 @@ struct Dart
 	 * \retval true if the dart is nil
 	 * \retval false otherwise
 	 */
-	bool is_nil() const { return index == INVALID_INDEX ; }
+	bool is_nil() const { return index == INVALID_INDEX; }
 
 	/**
 	 * \brief Assigns to the left hand side dart the value

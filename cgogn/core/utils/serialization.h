@@ -116,6 +116,7 @@ void save(std::ostream& ostream, std::array<U, size> const* src, std::size_t qua
 template <typename U, std::size_t size>
 std::size_t data_length(std::array<U, size>const* src, std::size_t quantity);
 
+
 template <>
 CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
 
@@ -133,7 +134,7 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		unsigned int vecSize;
 		istream.read(reinterpret_cast<char*>(&vecSize), sizeof(unsigned int));
@@ -149,7 +150,7 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		const unsigned int size = static_cast<unsigned int>(src[i].size());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
@@ -163,8 +164,8 @@ std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 
-	std::size_t total = 0;
-	for (std::size_t i = 0; i < quantity ; ++i)
+	std::size_t total = 0u;
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		total += sizeof(unsigned int);// for size
 		total += data_length(&(src[i][0]), src[i].size());
@@ -180,7 +181,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		unsigned int listSize;
 		istream.read(reinterpret_cast<char*>(&listSize), sizeof(unsigned int));
@@ -188,9 +189,7 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 		temp.resize(listSize);
 		load(istream, &(temp[0]), listSize);
 		for(auto&& x : temp)
-		{
 			dest[i].emplace_back(std::move(x));
-		}
 	}
 }
 
@@ -201,7 +200,7 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		const unsigned int size = static_cast<unsigned int>(src[i].size());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
@@ -216,25 +215,25 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 
-	std::size_t total = 0;
-	for (std::size_t i = 0; i < quantity ; ++i)
+	std::size_t total = 0u;
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		total += sizeof(unsigned int); // for size
 		for (const auto& elem : src[i])
 			total += data_length(&elem, 1);
 	}
-		return total;
+	return total;
 }
+
 
 template <typename U, std::size_t size>
 void load(std::istream& istream, std::array<U, size>* dest, std::size_t quantity)
 {
 	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
-	for (std::size_t i = 0; i < quantity ; ++i)
-	{
+
+	for (std::size_t i = 0u; i < quantity; ++i)
 		load(istream, &(dest[i][0]), size);
-	}
 }
 
 template <typename U, std::size_t size>
@@ -243,10 +242,8 @@ void save(std::ostream& ostream, std::array<U, size> const* src, std::size_t qua
 	cgogn_assert(ostream.good());
 	cgogn_assert(src);
 
-	for (std::size_t i = 0; i < quantity ; ++i)
-	{
+	for (std::size_t i = 0u; i < quantity; ++i)
 		save(ostream, &(src[i][0]), size);
-	}
 }
 
 template <typename U, std::size_t size>
@@ -254,12 +251,10 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	std::size_t total = 0u;
-	for (std::size_t i = 0u; i < quantity ; ++i)
+	for (std::size_t i = 0u; i < quantity; ++i)
 	{
 		for (const auto& elem : src[i])
-		{
-			total += data_length(&elem,1);
-		}
+			total += data_length(&elem, 1);
 	}
 	return total;
 }

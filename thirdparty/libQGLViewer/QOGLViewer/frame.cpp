@@ -784,7 +784,7 @@ Vec Frame::coordinatesOfIn(const Vec& src, const Frame* const in) const
 void Frame::getCoordinatesOf(const qreal src[3], qreal res[3]) const
 {
 	const Vec r = coordinatesOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -792,7 +792,7 @@ void Frame::getCoordinatesOf(const qreal src[3], qreal res[3]) const
 void Frame::getInverseCoordinatesOf(const qreal src[3], qreal res[3]) const
 {
 	const Vec r = inverseCoordinatesOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -800,7 +800,7 @@ void Frame::getInverseCoordinatesOf(const qreal src[3], qreal res[3]) const
 void Frame::getLocalCoordinatesOf(const qreal src[3], qreal res[3]) const
 {
 	const Vec r = localCoordinatesOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -808,7 +808,7 @@ void Frame::getLocalCoordinatesOf(const qreal src[3], qreal res[3]) const
 void Frame::getLocalInverseCoordinatesOf(const qreal src[3], qreal res[3]) const
 {
 	const Vec r = localInverseCoordinatesOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -816,7 +816,7 @@ void Frame::getLocalInverseCoordinatesOf(const qreal src[3], qreal res[3]) const
 void Frame::getCoordinatesOfIn(const qreal src[3], qreal res[3], const Frame* const in) const
 {
 	const Vec r = coordinatesOfIn(Vec(src), in);
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -824,7 +824,7 @@ void Frame::getCoordinatesOfIn(const qreal src[3], qreal res[3], const Frame* co
 void Frame::getCoordinatesOfFrom(const qreal src[3], qreal res[3], const Frame* const from) const
 {
 	const Vec r = coordinatesOfFrom(Vec(src), from);
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -925,7 +925,7 @@ Vec Frame::transformOfIn(const Vec& src, const Frame* const in) const
 void Frame::getTransformOf(const qreal src[3], qreal res[3]) const
 {
 	Vec r = transformOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -933,7 +933,7 @@ void Frame::getTransformOf(const qreal src[3], qreal res[3]) const
 void Frame::getInverseTransformOf(const qreal src[3], qreal res[3]) const
 {
 	Vec r = inverseTransformOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -941,7 +941,7 @@ void Frame::getInverseTransformOf(const qreal src[3], qreal res[3]) const
 void Frame::getLocalTransformOf(const qreal src[3], qreal res[3]) const
 {
 	Vec r = localTransformOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -949,7 +949,7 @@ void Frame::getLocalTransformOf(const qreal src[3], qreal res[3]) const
 void Frame::getLocalInverseTransformOf(const qreal src[3], qreal res[3]) const
 {
 	Vec r = localInverseTransformOf(Vec(src));
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -957,7 +957,7 @@ void Frame::getLocalInverseTransformOf(const qreal src[3], qreal res[3]) const
 void Frame::getTransformOfIn(const qreal src[3], qreal res[3], const Frame* const in) const
 {
 	Vec r = transformOfIn(Vec(src), in);
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
@@ -965,7 +965,7 @@ void Frame::getTransformOfIn(const qreal src[3], qreal res[3], const Frame* cons
 void Frame::getTransformOfFrom(const qreal src[3], qreal res[3], const Frame* const from) const
 {
 	Vec r = transformOfFrom(Vec(src), from);
-	for (int i=0; i<3 ; ++i)
+	for (int i=0; i<3; ++i)
 		res[i] = r[i];
 }
 
