@@ -549,7 +549,8 @@ public:
 		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Dart, FUNC>>;
+		using ThreadFunc = ThreadFunction<Dart, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -557,7 +558,7 @@ public:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(make_unique<ThreadFunction<Dart, FUNC>>(f, vd1[i], sync1, sync2, finished, i));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
 			this->add_thread(threads.back()->get_id());
 		}
@@ -745,7 +746,8 @@ protected:
 		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -753,7 +755,7 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0u; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(make_unique<ThreadFunction<Cell<ORBIT>, FUNC>>(f, vd1[i], sync1, sync2, finished, i));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
 			this->add_thread(threads.back()->get_id());
 		}
@@ -829,7 +831,8 @@ protected:
 		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -837,7 +840,7 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(make_unique<ThreadFunction<Cell<ORBIT>, FUNC>>(f, vd1[i], sync1, sync2, finished, i));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
 			this->add_thread(threads.back()->get_id());
 		}
@@ -908,7 +911,8 @@ protected:
 		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -916,7 +920,7 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(make_unique<ThreadFunction<Cell<ORBIT>, FUNC>>(f, vd1[i], sync1, sync2, finished, i));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
 			this->add_thread(threads.back()->get_id());
 		}
