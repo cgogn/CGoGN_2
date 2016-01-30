@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 		surfaceMesh = std::string(argv[1]);
 	}
 
-	cgogn::thread_start();
 	Map2 map;
 
 	for (int k = 0 ; k < 2 ; ++k)
@@ -141,6 +140,5 @@ int main(int argc, char** argv)
 		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 	}
 
-	cgogn::thread_stop();
 	return 0;
 }

@@ -35,6 +35,7 @@
 #include <core/basic/cell_marker.h>
 
 #include <core/utils/thread_barrier.h>
+#include <core/utils/make_unique.h>
 
 namespace cgogn
 {
@@ -555,19 +556,6 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
-		std::vector<unsigned int> thread_indices(nb_threads);
-		std::vector<std::thread::id*> thread_id_pointers(nb_threads);
-
-		// get new thread local indices on this map
-		// and get pointers to the corresponding thread_id locations
-		// so that the threads will be able to store their id once created
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			unsigned int index = this->get_new_thread_index();
-			thread_indices[i] = index;
-			thread_id_pointers[i] = this->get_thread_id_pointer(index);
-		}
-
 		// these vectors will contain elements to be processed by the threads
 		// the first ones are passed to the threads
 		// the second ones are filled by this thread then swapped with the first ones
@@ -585,15 +573,11 @@ public:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
-		auto tfs_deleter = [this] (ThreadFunction<Dart, FUNC>* tf)
-		{
-			this->remove_thread(tf->get_thread_index());
-			delete tf;
-		};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Dart, FUNC>, decltype(tfs_deleter)>;
+		using ThreadFunc = ThreadFunction<Dart, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -601,8 +585,9 @@ public:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunction<Dart, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
+			this->add_thread(threads.back()->get_id());
 		}
 
 		Dart it = Dart(this->topology_.begin());
@@ -768,19 +753,6 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void parallel_foreach_cell_dart_marking(const FUNC& f, unsigned int nb_threads) const
 	{
-		std::vector<unsigned int> thread_indices(nb_threads);
-		std::vector<std::thread::id*> thread_id_pointers(nb_threads);
-
-		// get new thread local indices on this map
-		// and get pointers to the corresponding thread_id locations
-		// so that the threads will be able to store their id once created
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			unsigned int index = this->get_new_thread_index();
-			thread_indices[i] = index;
-			thread_id_pointers[i] = this->get_thread_id_pointer(index);
-		}
-
 		// these vectors will contain elements to be processed by the threads
 		// the first ones are passed to the threads
 		// the second ones are filled by this thread while the other are processed
@@ -798,15 +770,11 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
-		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
-		{
-			this->remove_thread(tf->get_thread_index());
-			delete tf;
-		};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -814,8 +782,9 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0u; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
+			this->add_thread(threads.back()->get_id());
 		}
 
 		DartMarker dm(*to_concrete());
@@ -869,19 +838,6 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void parallel_foreach_cell_cell_marking(const FUNC& f, unsigned int nb_threads) const
 	{
-		std::vector<unsigned int> thread_indices(nb_threads);
-		std::vector<std::thread::id*> thread_id_pointers(nb_threads);
-
-		// get new thread local indices on this map
-		// and get pointers to the corresponding thread_id locations
-		// so that the threads will be able to store their id once created
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			unsigned int index = this->get_new_thread_index();
-			thread_indices[i] = index;
-			thread_id_pointers[i] = this->get_thread_id_pointer(index);
-		}
-
 		// these vectors will contain elements to be processed by the threads
 		// the first ones are passed to the threads
 		// the second ones are filled by this thread while the other are processed
@@ -899,15 +855,11 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
-		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
-		{
-			this->remove_thread(tf->get_thread_index());
-			delete tf;
-		};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -915,8 +867,9 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
+			this->add_thread(threads.back()->get_id());
 		}
 
 		CellMarker<ORBIT> cm(*to_concrete());
@@ -965,19 +918,6 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void parallel_foreach_cell_topo_cache(const FUNC& f, unsigned int nb_threads) const
 	{
-		std::vector<unsigned int> thread_indices(nb_threads);
-		std::vector<std::thread::id*> thread_id_pointers(nb_threads);
-
-		// get new thread local indices on this map
-		// and get pointers to the corresponding thread_id locations
-		// so that the threads will be able to store their id once created
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			unsigned int index = this->get_new_thread_index();
-			thread_indices[i] = index;
-			thread_id_pointers[i] = this->get_thread_id_pointer(index);
-		}
-
 		// these vectors will contain elements to be processed by the threads
 		// the first ones are passed to the threads
 		// the second ones are filled by this thread while the other are processed
@@ -995,15 +935,11 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [] (std::thread* th) { th->join(); delete th; };
-		auto tfs_deleter = [this] (ThreadFunction<Cell<ORBIT>, FUNC>* tf)
-		{
-			this->remove_thread(tf->get_thread_index());
-			delete tf;
-		};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using tfs_ptr = std::unique_ptr<ThreadFunction<Cell<ORBIT>, FUNC>, decltype(tfs_deleter)>;
+		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
+		using tfs_ptr = std::unique_ptr<ThreadFunc>;
 
 		std::vector<thread_ptr> threads;
 		std::vector<tfs_ptr> tfs;
@@ -1011,8 +947,9 @@ protected:
 		tfs.reserve(nb_threads);
 		for (unsigned int i = 0; i < nb_threads; ++i)
 		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunction<Cell<ORBIT>, FUNC>(f, vd1[i], sync1, sync2, finished, i, thread_indices[i], thread_id_pointers[i]), tfs_deleter));
+			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
 			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
+			this->add_thread(threads.back()->get_id());
 		}
 
 		unsigned int it = this->attributes_[ORBIT].begin();

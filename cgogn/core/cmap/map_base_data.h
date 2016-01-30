@@ -267,33 +267,26 @@ protected:
 
 	inline unsigned int get_current_thread_index() const
 	{
-		std::thread::id id = std::this_thread::get_id();
-		unsigned int i = 0;
-		while (id != thread_ids_[i])
+		cgogn_message_assert(std::binary_search(thread_ids_.begin(), thread_ids_.end(), std::this_thread::get_id()),"Unable to find currend thread ID.");
+		return std::distance(thread_ids_.begin(), std::lower_bound(thread_ids_.begin(), thread_ids_.end(), std::this_thread::get_id()));
+	}
+
+	inline void remove_thread(std::thread::id thread_id) const
+	{
+		cgogn_message_assert(std::binary_search(thread_ids_.begin(), thread_ids_.end(), thread_id),"Unable to find the thread.");
+		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
+		cgogn_message_assert((*it)  == thread_id,"Unable to find the thread.");
+		thread_ids_.erase(it);
+	}
+
+	inline void add_thread(std::thread::id thread_id) const
+	{
+		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
+		if ((it == thread_ids_.end()) || (*it  != thread_id))
 		{
-			i++;
-			cgogn_assert(i < thread_ids_.size());
+			thread_ids_.insert(it,thread_id);
 		}
-		return i;
-	}
 
-	inline unsigned int get_new_thread_index() const
-	{
-		cgogn_assert(thread_ids_.size() < NB_THREADS);
-//		thread_ids_.resize(thread_ids_.size() + 1);
-		thread_ids_.push_back(std::thread::id());
-		return thread_ids_.size() - 1;
-	}
-
-	inline std::thread::id* get_thread_id_pointer(unsigned int thread_index) const
-	{
-		return &(thread_ids_[thread_index]);
-	}
-
-	inline void remove_thread(unsigned int thread_index) const
-	{
-		thread_ids_[thread_index] = thread_ids_.back();
-		thread_ids_.pop_back();
 	}
 };
 
