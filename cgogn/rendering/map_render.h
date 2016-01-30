@@ -42,7 +42,7 @@ enum DrawingType
 	LINES,
 	TRIANGLES,
 	SIZE_BUFFER
-} ;
+};
 
 class MapRender
 {
@@ -50,7 +50,7 @@ protected:
 
 	QOpenGLBuffer* indices_buffers_[SIZE_BUFFER];
 	bool indices_buffers_uptodate_[SIZE_BUFFER];
-	unsigned int nb_indices_[SIZE_BUFFER] ;
+	unsigned int nb_indices_[SIZE_BUFFER];
 
 public:
 

@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 {
 	if (argc == 1)
 	{
-		std::cout << " PARAMETER: 1/2 for uint/bool refs ; 3/4 for random clear bool; 5 for traversal";
+		std::cout << " PARAMETER: 1/2 for uint/bool refs; 3/4 for random clear bool; 5 for traversal";
 		return 1;
 	}
 

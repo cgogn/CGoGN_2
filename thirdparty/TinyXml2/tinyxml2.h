@@ -782,7 +782,7 @@ public:
     }
 
     /// Get the previous (left) sibling element of this node, with an optionally supplied name.
-    const XMLElement*	PreviousSiblingElement( const char* value=0 ) const ;
+	const XMLElement*	PreviousSiblingElement( const char* value=0 ) const;
 
     XMLElement*	PreviousSiblingElement( const char* value=0 ) {
         return const_cast<XMLElement*>(const_cast<const XMLNode*>(this)->PreviousSiblingElement( value ) );

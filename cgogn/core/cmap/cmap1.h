@@ -186,12 +186,12 @@ protected:
 	{
 		this->remove_topology_element(d.index);
 
-		for(unsigned int orbit = 0 ; orbit < NB_ORBITS ; ++orbit)
+		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
 			if(this->embeddings_[orbit])
 			{
 				// get the embedding of the dart
-				unsigned int emb = (*this->embeddings_[orbit])[d.index] ;
+				unsigned int emb = (*this->embeddings_[orbit])[d.index];
 				this->attributes_[orbit].unref_line(emb);
 			}
 		}
@@ -334,7 +334,7 @@ protected:
 			phi1_unsew(d);
 			// Sew it after e (thus in reverse order)
 			phi1_sew(e, dNext);
-			dNext = phi1(d) ;
+			dNext = phi1(d);
 		}
 
 		// Sew the last edge

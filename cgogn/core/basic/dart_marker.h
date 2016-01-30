@@ -134,7 +134,7 @@ public:
 
 	~DartMarker() override
 	{
-		unmark_all() ;
+		unmark_all();
 	}
 
 	DartMarker(const Self& dm) = delete;

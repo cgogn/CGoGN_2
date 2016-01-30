@@ -285,7 +285,7 @@ public:
 		names_.push_back(attribute_name);
 		type_names_.push_back(typeName);
 
-		return carr ;
+		return carr;
 	}
 
 	/**
@@ -714,7 +714,7 @@ public:
 
 			if ((nb_max_lines_ + PRIMSIZE) % CHUNKSIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
 			{
-				nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
+				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
 
 				for (auto arr : table_arrays_)
 					arr->add_chunk();

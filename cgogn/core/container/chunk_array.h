@@ -671,10 +671,8 @@ public:
 		for (unsigned int * const ptr : table_data_)
 		{
 #pragma omp for
-			for (int j = 0 ; j < int(CHUNKSIZE/32); ++j)
-			{
+			for (int j = 0; j < int(CHUNKSIZE/32); ++j)
 				ptr[j] = 0u;
-			}
 		}
 	}
 

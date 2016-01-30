@@ -27,12 +27,13 @@ int main(int argc, char** argv)
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
 		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("liverHexa.vtu");
 		std::cout << "Using default mesh : " << volumeMesh << std::endl;
-	} else {
-		volumeMesh = std::string(argv[1]);
 	}
+	else
+		volumeMesh = std::string(argv[1]);
 
 	Map3 map;
-	for (int k = 0 ; k < 2 ; ++k)
+
+	for (unsigned int k = 0; k < 2; ++k)
 	{
 		cgogn::io::import_volume<Vec3>(map, volumeMesh);
 
