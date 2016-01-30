@@ -86,8 +86,6 @@ public:
 
 void Viewer::import(const std::string& surfaceMesh)
 {
-	cgogn::thread_start();
-
 	cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
 	vertex_position_ = map.get_attribute<Vec3, Map2::VERTEX>("position");

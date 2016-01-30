@@ -73,8 +73,6 @@ private:
 	Barrier& sync2_;
 	bool& finished_;
 	unsigned int thread_order_;
-	unsigned int thread_index_;
-	std::thread::id* thread_id_pointer_;
 
 public:
 
@@ -84,31 +82,18 @@ public:
 		Barrier& sync1,
 		Barrier& sync2,
 		bool& finished,
-		unsigned int thread_order,
-		unsigned int thread_index,
-		std::thread::id* thread_id_pointer
+		unsigned int thread_order
 	) :
 		f_(f),
 		elements_(elements),
 		sync1_(sync1),
 		sync2_(sync2),
 		finished_(finished),
-		thread_order_(thread_order),
-		thread_index_(thread_index),
-		thread_id_pointer_(thread_id_pointer)
+		thread_order_(thread_order)
 	{}
-
-	unsigned int get_thread_index() const
-	{
-		return thread_index_;
-	}
 
 	void operator()()
 	{
-		thread_start();
-
-		*thread_id_pointer_ = std::this_thread::get_id();
-
 		while (true)
 		{
 			sync2_.wait(); // wait for vectors to be filled
@@ -118,8 +103,6 @@ public:
 				f_(e, thread_order_);
 			sync1_.wait(); // wait every thread has finished
 		}
-
-		thread_stop();
 	}
 };
 

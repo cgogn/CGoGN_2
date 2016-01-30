@@ -35,7 +35,10 @@ bool MapGen::init_CA_factory = true;
 MapGen::MapGen()
 {
 	if (instances_ == nullptr)
+	{
+		cgogn::thread_start();
 		instances_ = new std::vector<MapGen*>;
+	}
 
 	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
 
@@ -52,6 +55,7 @@ MapGen::~MapGen()
 
 	if (instances_->empty())
 	{
+		cgogn::thread_stop();
 		delete instances_;
 		instances_ = nullptr;
 	}
