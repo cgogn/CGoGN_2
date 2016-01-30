@@ -22,6 +22,8 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
+#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+
 #include <core/container/chunk_array_container.h>
 
 namespace cgogn
@@ -30,4 +32,7 @@ namespace cgogn
 ContainerBrowser::~ContainerBrowser()
 {}
 
-}
+template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
+template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
+
+} // namespace cgogn

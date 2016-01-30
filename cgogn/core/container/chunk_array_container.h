@@ -24,16 +24,14 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
-#include <utils/name_types.h>
-#include <utils/assert.h>
+#include <core/utils/name_types.h>
+#include <core/utils/assert.h>
+#include <core/utils/assert.h>
+#include <core/utils/make_unique.h>
 #include <core/basic/dll.h>
-
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_stack.h>
 #include <core/container/chunk_array_factory.h>
-
-#include <utils/assert.h>
-#include <utils/make_unique.h>
 
 #include <iostream>
 #include <fstream>
@@ -90,9 +88,9 @@ public:
 	typedef T_REF ref_type;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
-	template<class T>
+	template <class T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	template<class T>
+	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
 
 	/**
@@ -181,7 +179,6 @@ protected:
 	/**
 	 * @brief remove an attribute by its index
 	 * @param index index of attribute to remove
-	 * @return true if attribute exists and has been removed
 	 */
 	void remove_attribute(unsigned int index)
 	{
@@ -288,7 +285,7 @@ public:
 		names_.push_back(attribute_name);
 		type_names_.push_back(typeName);
 
-		return carr ;
+		return carr;
 	}
 
 	/**
@@ -351,7 +348,7 @@ public:
 	void remove_marker_attribute(const ChunkArray<bool>* ptr)
 	{
 		unsigned int index = 0u;
-		while (table_marker_arrays_[index] != ptr && index < table_marker_arrays_.size())
+		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
 			++index;
 
 		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
@@ -367,7 +364,7 @@ public:
 	 * @brief Number of attributes of the container
 	 * @return number of attributes
 	 */
-	unsigned int get_nb_attributes() const
+	std::size_t get_nb_attributes() const
 	{
 		return table_arrays_.size();
 	}
@@ -377,7 +374,7 @@ public:
 	* @param attribute_name name of the array
 	* @return pointer on typed chunk_array
 	*/
-	template<typename T>
+	template <typename T>
 	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
 		unsigned int index = get_array_index(attribute_name);
@@ -559,7 +556,7 @@ public:
 	 * @brief clear the container
 	 * @param remove_attributes remove the attributes (not only their data)
 	 */
-	void clear(bool remove_attributes = false)
+	void clear_attributes()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -571,20 +568,28 @@ public:
 		holes_stack_.clear();
 
 		// clear data
-		for (auto arr : table_arrays_)
-			arr->clear();
-		for (auto arr : table_marker_arrays_)
-			arr->clear();
+		for (auto cagen : table_arrays_)
+			 cagen->clear();
+		for (auto ca_bool : table_marker_arrays_)
+			ca_bool->clear();
+	}
 
-		if (remove_attributes)
-		{
-			for (auto arr : table_arrays_)
-				delete arr;
-			for (auto arr : table_marker_arrays_)
-				delete arr;
-			table_arrays_.clear();
-			table_marker_arrays_.clear();
-		}
+	void remove_attributes()
+	{
+		nb_used_lines_ = 0u;
+		nb_max_lines_ = 0u;
+		refs_.clear();
+		holes_stack_.clear();
+
+		for (auto cagen : table_arrays_)
+			delete cagen;
+		for (auto ca_bool : table_marker_arrays_)
+			delete ca_bool;
+
+		table_arrays_.clear();
+		table_marker_arrays_.clear();
+		names_.clear();
+		type_names_.clear();
 	}
 
 	/**
@@ -692,23 +697,34 @@ public:
 	template <unsigned int PRIMSIZE>
 	unsigned int insert_lines()
 	{
+		static_assert(PRIMSIZE < CHUNKSIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNKSIZE");
+
 		unsigned int index;
 
 		if (holes_stack_.empty()) // no holes -> insert at the end
 		{
-			index = nb_max_lines_;
-			nb_max_lines_ += PRIMSIZE;
-
-			if (nb_max_lines_ % CHUNKSIZE <= PRIMSIZE) // prim on next block ? -> add block to C.A.
+			if (nb_max_lines_ == 0) // add first chunk
 			{
 				for (auto arr : table_arrays_)
 					arr->add_chunk();
-
 				for (auto arr : table_marker_arrays_)
 					arr->add_chunk();
-
 				refs_.add_chunk();
 			}
+
+			if ((nb_max_lines_ + PRIMSIZE) % CHUNKSIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
+			{
+				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
+
+				for (auto arr : table_arrays_)
+					arr->add_chunk();
+				for (auto arr : table_marker_arrays_)
+					arr->add_chunk();
+				refs_.add_chunk();
+			}
+
+			index = nb_max_lines_;
+			nb_max_lines_ += PRIMSIZE;
 		}
 		else
 		{
@@ -732,7 +748,7 @@ public:
 	template <unsigned int PRIMSIZE>
 	void remove_lines(unsigned int index)
 	{
-		unsigned int begin_prim_idx = (index/PRIMSIZE) * PRIMSIZE;
+		unsigned int begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
 
 		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 
@@ -827,6 +843,8 @@ public:
 
 	void save(std::ostream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<unsigned int> buffer;
 		buffer.reserve(1024);
@@ -866,6 +884,8 @@ public:
 
 	bool load(std::istream& fs)
 	{
+		cgogn_assert(fs.good());
+
 		// check and register all known types if necessaey
 		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
 
@@ -892,7 +912,7 @@ public:
 			fs.read(buff3, std::streamsize(buff2[2u*i+1u]*sizeof(char)));
 			type_names_[i] = std::string(buff3);
 		}
-
+		cgogn_assert(fs.good());
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
@@ -915,6 +935,13 @@ public:
 		return ok;
 	}
 };
+
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn
 

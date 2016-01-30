@@ -26,8 +26,8 @@
 
 #include <core/basic/dart.h>
 
-#include <utils/assert.h>
-#include <utils/definitions.h>
+#include <core/utils/assert.h>
+#include <core/utils/definitions.h>
 
 /**
  * \file core/basic/cell.h
@@ -48,20 +48,20 @@ enum Orbit: unsigned int
 	PHI21_PHI31,
 };
 
-static const unsigned int NB_ORBITS = Orbit::PHI21_PHI31 + 1;
+static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
 inline std::string orbit_name(Orbit orbit)
 {
 	switch(orbit)
 	{
-		case Orbit::DART: return "Orbit::DART"; break;
-		case Orbit::PHI1: return "Orbit::PHI1"; break;
-		case Orbit::PHI2: return "Orbit::PHI2"; break;
-		case Orbit::PHI1_PHI2: return "Orbit::PHI1_PHI2"; break;
-		case Orbit::PHI1_PHI3: return "Orbit::PHI1_PHI3"; break;
-		case Orbit::PHI2_PHI3: return "Orbit::PHI2_PHI3"; break;
-		case Orbit::PHI21: return "Orbit::PHI21"; break;
-		case Orbit::PHI21_PHI31: return "Orbit::PHI21_PHI31"; break;
+		case Orbit::DART: return "cgogn::Orbit::DART"; break;
+		case Orbit::PHI1: return "cgogn::Orbit::PHI1"; break;
+		case Orbit::PHI2: return "cgogn::Orbit::PHI2"; break;
+		case Orbit::PHI1_PHI2: return "cgogn::Orbit::PHI1_PHI2"; break;
+		case Orbit::PHI1_PHI3: return "cgogn::Orbit::PHI1_PHI3"; break;
+		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
+		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
+		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
 		default: cgogn_assert_not_reached("This orbit does not exist"); break;
 	}
 	return "UNKNOWN";
@@ -131,10 +131,6 @@ public:
 	 */
 	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
 
-
-	//TODO
-	// Cell<ORBIT> operator=(Cell<ORBIT>&& rhs) { dart = rhs.dart return *this; }
-
 	/**
 	 * \brief Prints a cell to a stream.
 	 * \param[out] out the stream to print on
@@ -148,6 +144,12 @@ public:
 	 * \param[out] rhs the cell read
 	 */
 	friend std::istream& operator>>(std::istream &in, Cell<ORBIT>& rhs) { in >> rhs.dart; return in; }
+
+	/**
+	* \brief Name of this CGoGN type
+	* \return a string representing the name of the class
+	*/
+	static std::string cgogn_name_of_type() { return std::string("cgogn::Cell<") + orbit_name(ORBIT) +std::string(">"); }
 };
 
 } // namespace cgogn

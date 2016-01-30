@@ -24,13 +24,14 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <utils/name_types.h>
+#include <core/utils/make_unique.h>
+#include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 
 #include <iostream>
 #include <map>
 #include <memory>
-#include <utils/make_unique.h>
+#include <array>
 
 namespace cgogn
 {
@@ -39,7 +40,7 @@ template <unsigned int CHUNKSIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
-	static_assert((CHUNKSIZE >= 1u) & !(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
+	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
@@ -53,7 +54,7 @@ public:
 	 * @param keyType name of type
 	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
 	 */
-	template<typename T>
+	template <typename T>
 	static void register_CA()
 	{
 		std::string&& keyType(name_of_type(T()));
@@ -81,9 +82,9 @@ public:
 		register_CA<float>();
 		register_CA<double>();
 		register_CA<std::string>();
-		// TODO add all std::vector<> ?
-		// TODO add Eigen ?
-		register_CA<Eigen::Vector3d>();
+		register_CA<std::array<double,3>>();
+		register_CA<std::array<float,3>>();
+		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
 	}
@@ -120,6 +121,10 @@ typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::
 template <unsigned int CHUNKSIZE>
 bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayFactory<DEFAULT_CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 
 } // namespace cgogn
 

@@ -76,17 +76,11 @@ struct Dart
 	{}
 
 	/**
-	 * \brief Name of this CGoGN type
-	 * \return a string representing the name of the class
-	 */
-	static std::string cgogn_name_of_type() { return "Dart"; }
-
-	/**
 	 * \brief Tests the nullity of the dart.
 	 * \retval true if the dart is nil
 	 * \retval false otherwise
 	 */
-	bool is_nil() const { return index == INVALID_INDEX ; }
+	bool is_nil() const { return index == INVALID_INDEX; }
 
 	/**
 	 * \brief Assigns to the left hand side dart the value
@@ -114,6 +108,8 @@ struct Dart
 	 */
 	bool operator!=(Dart rhs) const { return index != rhs.index; }
 
+	// operator < is needed if we want to use std::set<Dart>
+	bool operator<(Dart rhs) const { return index < rhs.index; }
 	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on

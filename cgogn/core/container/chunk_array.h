@@ -25,9 +25,9 @@
 #define CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <core/container/chunk_array_gen.h>
-#include <utils/serialization.h>
-#include <utils/assert.h>
-
+#include <core/utils/serialization.h>
+#include <core/utils/assert.h>
+#include <core/basic/dll.h>
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -110,12 +110,12 @@ public:
 	{
 		if (nbc >= table_data_.size())
 		{
-			for (std::size_t i= table_data_.size(); i <nbc; ++i)
+			for (std::size_t i = table_data_.size(); i < nbc; ++i)
 				add_chunk();
 		}
 		else
 		{
-			for (std::size_t i = nbc; i < table_data_.size(); ++i)
+			for (std::size_t i = static_cast<std::size_t>(nbc); i < table_data_.size(); ++i)
 				delete[] table_data_[i];
 			table_data_.resize(nbc);
 		}
@@ -152,12 +152,12 @@ public:
 	/**
 	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_chunk_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
+	unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_chunk_size) const override
 	{
-		byte_block_size = CHUNKSIZE * sizeof(T);
+		byte_chunk_size = CHUNKSIZE * sizeof(T);
 
 		addr.reserve(table_data_.size());
 		addr.clear();
@@ -256,6 +256,7 @@ public:
 
 	void save(std::ostream& fs, unsigned int nb_lines) const override
 	{
+		cgogn_assert(fs.good());
 		cgogn_assert(nb_lines / CHUNKSIZE <= get_nb_chunks());
 
 		// no data -> finished
@@ -298,10 +299,14 @@ public:
 
 		// save last incomplete chunk
 		serialization::save(fs, table_data_[nbc], nb);
+
+		cgogn_assert(fs.good());
 	}
 
 	bool load(std::istream& fs) override
 	{
+		cgogn_assert(fs.good());
+
 		std::size_t chunk_bytes;
 		serialization::load(fs, &chunk_bytes, 1);
 
@@ -326,6 +331,7 @@ public:
 		// load last incomplete chunk
 		const unsigned int nb = nb_lines - nbc*CHUNKSIZE;
 		serialization::load(fs, table_data_[nbc], nb);
+		cgogn_assert(fs.good());
 
 		return true;
 	}
@@ -662,10 +668,11 @@ public:
 
 	inline void all_false()
 	{
-		for (auto ptr : table_data_)
+		for (unsigned int * const ptr : table_data_)
 		{
-			for (unsigned int j = 0u; j < CHUNKSIZE/32u; ++j)
-				*ptr++ = 0u;
+#pragma omp for
+			for (int j = 0; j < int(CHUNKSIZE/32); ++j)
+				ptr[j] = 0u;
 		}
 	}
 
@@ -678,6 +685,14 @@ public:
 //		}
 //	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float, 3>>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<double, 3>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn
 

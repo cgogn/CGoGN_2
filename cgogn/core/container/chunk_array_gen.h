@@ -24,26 +24,33 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
+#include <core/utils/serialization.h>
+#include <core/basic/dll.h>
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
-#include <utils/serialization.h>
-
 namespace cgogn
 {
+
+static const unsigned int DEFAULT_CHUNK_SIZE = 4096;
 
 /**
  * @brief Virtual version of ChunkArray
  */
-template<unsigned int CHUNKSIZE>
+template <unsigned int CHUNKSIZE>
 class ChunkArrayGen
 {
 public:
 
 	typedef ChunkArrayGen<CHUNKSIZE> Self;
 
-	ChunkArrayGen() = default;
+	inline ChunkArrayGen()
+	{
+
+	}
+
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
 	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
 	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
@@ -172,6 +179,10 @@ public:
 		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn
 
