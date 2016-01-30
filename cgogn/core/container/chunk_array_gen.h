@@ -39,7 +39,7 @@ static const unsigned int DEFAULT_CHUNK_SIZE = 4096;
 /**
  * @brief Virtual version of ChunkArray
  */
-template<unsigned int CHUNKSIZE>
+template <unsigned int CHUNKSIZE>
 class ChunkArrayGen
 {
 public:

@@ -20,14 +20,17 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_RENDERING_DLL_EXPORT
 
 #include <rendering/shaders/shader_color_per_vertex.h>
+
 #include <QOpenGLFunctions>
 #include <iostream>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
@@ -63,12 +66,11 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	get_matrices_uniforms();
 }
 
-
 bool ShaderColorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 {
-    if (i>=vaos_.size())
+	if (i >= vaos_.size())
     {
-        std::cerr << "VAO number "<< i << "does not exist"<< std::endl;
+		std::cerr << "VAO number " << i << " does not exist" << std::endl;
         return false;
     }
 
@@ -76,23 +78,25 @@ bool ShaderColorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 
 	prg_.bind();
     vaos_[i]->bind();
+
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
+
 	// color vbo
 	vbo_color->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-	ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
     vbo_color->release();
 
     vaos_[i]->release();
 	prg_.release();
-    return true;
+
+	return true;
 }
 
 } // namespace rendering
+
 } // namespace cgogn
-
-

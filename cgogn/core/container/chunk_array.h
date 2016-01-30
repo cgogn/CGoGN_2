@@ -152,12 +152,12 @@ public:
 	/**
 	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_chunk_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const override
+	unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_chunk_size) const override
 	{
-		byte_block_size = CHUNKSIZE * sizeof(T);
+		byte_chunk_size = CHUNKSIZE * sizeof(T);
 
 		addr.reserve(table_data_.size());
 		addr.clear();

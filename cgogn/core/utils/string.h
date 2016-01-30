@@ -31,7 +31,7 @@
 namespace cgogn
 {
 
-template<typename Char_T>
+template <typename Char_T>
 inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
@@ -40,7 +40,7 @@ inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
 	return res;
 }
 
-template<typename Char_T>
+template <typename Char_T>
 inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
@@ -49,7 +49,7 @@ inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
 	return res;
 }
 
-template<typename Char_T>
+template <typename Char_T>
 inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& str)
 {
 	std::size_t dot = str.rfind('.');

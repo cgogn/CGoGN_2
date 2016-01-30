@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERSIMPLECOLOR_H
-#define RENDERING_SHADERSIMPLECOLOR_H
+#ifndef RENDERING_SHADERS_SIMPLECOLOR_H_
+#define RENDERING_SHADERS_SIMPLECOLOR_H_
 
 #include <rendering/shaders/shader_program.h>
 #include <rendering/shaders/vbo.h>
@@ -37,15 +37,15 @@ namespace rendering
 
 class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
 {
-	/// vertex shader source
-	static const char *vertex_shader_source_;
-	/// fragment shader source
-	static const char *fragment_shader_source_;
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
-	/// here only one attribute in shader
-	enum {ATTRIB_POS=0};
+	enum
+	{
+		ATTRIB_POS = 0
+	};
 
-	/// uniform id of color
+	// uniform ids
 	int unif_color_;
 
 public:
@@ -65,11 +65,10 @@ public:
 	 * @return true if ok
 	 */
 	bool set_vao(unsigned int i, VBO* vbo_pos);
-
 };
 
 } // namespace rendering
+
 } // namespace cgogn
 
-
-#endif // RENDERING_SHADERSIMPLECOLOR_H
+#endif // RENDERING_SHADERS_SIMPLECOLOR_H_

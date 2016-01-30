@@ -40,7 +40,7 @@ using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
 
 using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-template<typename T>
+template <typename T>
 using VertexAttributeHandler = CMap2::VertexAttributeHandler<T>;
 
 TEST(Algos_TEST, TriangleArea)
@@ -142,10 +142,10 @@ TEST(Algos_TEST, TriangleNormal)
 		EXPECT_TRUE(cgogn::almost_equal_relative(n1[1], n2[1]));
 		EXPECT_TRUE(cgogn::almost_equal_relative(n1[2], n2[2]));
 
-		const StdArray& cross = n1.cross(StdArray(0,0,1));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2],0.));
+		const StdArray& cross = n1.cross(StdArray(0.,0.,1.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2], 0.));
 	}
 	{
 		CMap2 map;
@@ -158,9 +158,9 @@ TEST(Algos_TEST, TriangleNormal)
 		EXPECT_TRUE(cgogn::almost_equal_relative(n1[2], n2[2]));
 
 		const EigenVec3d& cross = n1.cross(EigenVec3d(0,0,1));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2],0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2], 0.));
 	}
 }
 
@@ -171,10 +171,10 @@ TEST(Algos_TEST, QuadNormal)
 		cgogn::io::import_surface<StdArray>(map, std::string(DEFAULT_MESH_PATH) + std::string("singleQuad.obj"));
 		VertexAttributeHandler<StdArray> vertex_position = map.get_attribute<StdArray, CMap2::VERTEX>("position");
 		const StdArray& n1 = cgogn::geometry::face_normal<StdArray>(map, cgogn::Cell<CMap2::FACE>(*map.begin()), vertex_position);
-		const StdArray& cross = n1.cross(StdArray(0,0,1));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2],0.));
+		const StdArray& cross = n1.cross(StdArray(0.,0.,1.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2], 0.));
 	}
 	{
 		CMap2 map;
@@ -182,9 +182,8 @@ TEST(Algos_TEST, QuadNormal)
 		VertexAttributeHandler<EigenVec3d> vertex_position = map.get_attribute<EigenVec3d, CMap2::VERTEX>("position");
 		const EigenVec3d& n1 = cgogn::geometry::triangle_normal<EigenVec3d>(map, cgogn::Cell<CMap2::FACE>(*map.begin()), vertex_position);
 		const EigenVec3d& cross = n1.cross(EigenVec3d(0,0,1));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1],0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2],0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], 0.));
+		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2], 0.));
 	}
 }
-

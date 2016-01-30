@@ -20,15 +20,18 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #define CGOGN_RENDERING_DLL_EXPORT
 
 #include <rendering/shaders/shader_flat.h>
+
 #include <QOpenGLFunctions>
 #include <QColor>
 #include <iostream>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
@@ -43,7 +46,6 @@ const char* ShaderFlat::vertex_shader_source_ =
 	"	pos = pos4.xyz;"
 	"   gl_Position = projection_matrix * pos4;\n"
 	"}\n";
-
 
 const char* ShaderFlat::fragment_shader_source_ =
 	"#version 150\n"
@@ -63,7 +65,6 @@ const char* ShaderFlat::fragment_shader_source_ =
 	"		fragColor = ambiant_color+lambert*back_color;\n"
 	"}\n";
 
-
 ShaderFlat::ShaderFlat()
 {
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
@@ -71,16 +72,12 @@ ShaderFlat::ShaderFlat()
 	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 	prg_.link();
 
-	// do not forget to get matrices uniforms !
 	get_matrices_uniforms();
 
-	// and shader specific uniforms
 	unif_front_color_ = prg_.uniformLocation("front_color");
 	unif_back_color_ = prg_.uniformLocation("back_color");
 	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-
 }
-
 
 void ShaderFlat::set_front_color(const QColor& rgb)
 {
@@ -97,42 +94,31 @@ void ShaderFlat::set_ambiant_color(const QColor& rgb)
 	prg_.setUniformValue(unif_ambiant_color_,rgb);
 }
 
-
 bool ShaderFlat::set_vao(unsigned int i, VBO* vbo_pos)
 {
-	if (i>=vaos_.size())
+	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number "<< i << "does not exist"<< std::endl;
+		std::cerr << "VAO number " << i << " does not exist" << std::endl;
 		return false;
 	}
 
-	// here we need gl function specific to current context
-	QOpenGLFunctions *ogl_f = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
 	prg_.bind();
-
-	// bind the choosen vao
 	vaos_[i]->bind();
 
-	// use vbo
+	// position vbo
 	vbo_pos->bind();
-	//associate with attribute "vertex_pos"
-	ogl_f->glEnableVertexAttribArray(ATTRIB_POS);
-	// parameters
-	ogl_f->glVertexAttribPointer(ATTRIB_POS, vbo_pos->nb_comp(), GL_FLOAT, GL_FALSE, 0, 0);
-	// finish with this vbo
+	ogl->glEnableVertexAttribArray(ATTRIB_POS);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
-	// finish vao filling
     vaos_[i]->release();
-
 	prg_.release();
 
     return true;
 }
 
 } // namespace rendering
+
 } // namespace cgogn
-
-
-

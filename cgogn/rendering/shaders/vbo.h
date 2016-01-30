@@ -22,29 +22,33 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_VBO_H
-#define RENDERING_VBO_H
+#ifndef RENDERING_SHADERS_VBO_H_
+#define RENDERING_SHADERS_VBO_H_
 
 #include <QOpenGLBuffer>
+
 #include <core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
+#include <geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
 class VBO
 {
 protected:
-	unsigned int nb_vecs_;
-	unsigned int vec_dim_;
 
+	unsigned int nb_vectors_;
+	unsigned int vector_dimension_;
 	QOpenGLBuffer buffer_;
 
 public:
 
-	inline VBO():
-		nb_vecs_(0),vec_dim_(0)
+	inline VBO() :
+		nb_vectors_(0),
+		vector_dimension_(0)
 	{
 		buffer_.create();
 		buffer_.bind();
@@ -68,34 +72,17 @@ public:
 
 	/**
 	 * @brief allocate VBO memory
-	 * @param nbv number of vector
-	 * @param nbc number of component of vector
+	 * @param nb_vectors number of vectors
+	 * @param vector_dimension_ number of component of each vector
 	 */
-    inline void allocate(int nbv, int nbc)
+	inline void allocate(int nb_vectors, int vector_dimension)
 	{
 		buffer_.bind();
-		unsigned int total = nbv*nbc;
-		if (total != nb_vecs_*vec_dim_) // > ?
-			buffer_.allocate(total*4);
-		vec_dim_ = nbc;
-		nb_vecs_ = nbv;
-		buffer_.release();
-	}
-
-	/**
-	 * @brief allocate
-	 * @param nbv number of vector
-	 * @param nbc number of component of vector
-	 * @param ptr memory pointer for direct copy
-	 */
-	inline void allocate(int nbv, int nbc, float* ptr)
-	{
-		buffer_.bind();
-		unsigned int total = nbv*nbc;
-		if (total != nb_vecs_*vec_dim_) // > ?
-			buffer_.allocate(ptr,total*4);
-		vec_dim_ = nbc;
-		nb_vecs_ = nbv;
+		unsigned int total = nb_vectors * vector_dimension;
+		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
+			buffer_.allocate(total * sizeof(float));
+		nb_vectors_ = nb_vectors;
+		vector_dimension_ = vector_dimension;
 		buffer_.release();
 	}
 
@@ -106,7 +93,7 @@ public:
 	inline float* lock_pointer()
 	{
 		buffer_.bind();
-		 return reinterpret_cast<float*>(buffer_.map(QOpenGLBuffer::ReadWrite));
+		return reinterpret_cast<float*>(buffer_.map(QOpenGLBuffer::ReadWrite));
 	}
 
 	/**
@@ -125,77 +112,68 @@ public:
 	 */
 	inline void copy_data(unsigned int offset, unsigned int nb, void* src)
 	{
-		buffer_.write(offset,src, nb);
+		buffer_.write(offset, src, nb);
 	}
 
 	/**
-	 * @brief number of components of vectors stored in buffer
+	 * @brief dimension of vectors stored in buffer
 	 */
-	inline int nb_comp()
+	inline int vector_dimension()
 	{
-		return vec_dim_;
+		return vector_dimension_;
 	}
 };
 
-
-template<typename ATTR>
-void update_vbo( const ATTR& attr, VBO& vbo)
+template <typename ATTR>
+void update_vbo(const ATTR& attr, VBO& vbo)
 {
 	const typename ATTR::TChunkArray* ca = attr.get_data();
-	std::vector<void*> addr;
-	unsigned int byte_block_size;
-	unsigned int nbp = ca->get_chunks_pointers(addr, byte_block_size);
 
-	if (std::is_same<typename ATTR::value_type::Scalar, float>::value)
+	std::vector<void*> chunk_addr;
+	unsigned int byte_chunk_size;
+	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	unsigned int vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
+
+	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+
+	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value)
 	{
-		// number of compo
-		unsigned int nbc = sizeof(typename ATTR::value_type)/4;
-		// number of vec
-		unsigned int nbv = nbp*byte_block_size/sizeof(typename ATTR::value_type);
-		// realloc
-		vbo.allocate(nbv,nbc);
 		// copy
 		char* dst = reinterpret_cast<char*>(vbo.lock_pointer());
-		for (unsigned int i=0; i<nbp; ++i)
+		for (unsigned int i = 0; i < nb_chunks; ++i)
 		{
-			memcpy(dst,addr[i],byte_block_size);
-			dst += byte_block_size;
+			memcpy(dst, chunk_addr[i], byte_chunk_size);
+			dst += byte_chunk_size;
 		}
 		vbo.release_pointer();
 	}
-	else if (std::is_same<typename ATTR::value_type::Scalar, double>::value)
+	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value)
 	{
-		float* buffer_float = new float[byte_block_size/2];
-		// number of compo
-		unsigned int nbc = sizeof(typename ATTR::value_type)/8;
-		// number of vec
-		unsigned int nbv = nbp*byte_block_size/sizeof(typename ATTR::value_type);
-		// realloc
-		vbo.allocate(nbv,nbc);
 		// copy (after conversion to float)
 		char* dst = reinterpret_cast<char*>(vbo.lock_pointer());
-		for (unsigned int i=0; i<nbp; ++i)
+		float* float_buffer = new float[ATTR::CHUNKSIZE * vec_dim];
+		for (unsigned int i = 0; i < nb_chunks; ++i)
 		{
 			// transform double into float
-			float* buf = buffer_float;
-			double* src = reinterpret_cast<double*>(addr[i]);
-			for (unsigned int j=0; j<byte_block_size/8; ++j)
-				*buf++ = *src++;
-			// copy to buffer
-			memcpy(dst,buffer_float,byte_block_size/2);
-			dst += byte_block_size;
+			float* fit = float_buffer;
+			double* src = reinterpret_cast<double*>(chunk_addr[i]);
+			for (unsigned int j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
+				*fit++ = *src++;
+			// copy
+			memcpy(dst, float_buffer, ATTR::CHUNKSIZE * vec_dim * sizeof(float));
+			dst += ATTR::CHUNKSIZE * vec_dim * sizeof(float);
 		}
 		vbo.release_pointer();
-		delete[] buffer_float;
+		delete[] float_buffer;
 	}
 	else
 	{
-		cgogn_message_assert(true,"only float or double allowed for vbo")
+		cgogn_assert_not_reached("only float or double allowed for vbo");
 	}
 }
 
 } // namespace rendering
+
 } // namespace cgogn
 
-
-#endif // RENDERING_VBO_H
+#endif // RENDERING_SHADERS_VBO_H_

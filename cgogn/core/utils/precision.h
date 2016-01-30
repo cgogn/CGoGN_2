@@ -34,21 +34,23 @@
 namespace cgogn
 {
 
-template<class Scalar>
+template <class Scalar>
 inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
 {
-	const Scalar diff = std::fabs(x-y);
+	const Scalar diff = std::fabs(x - y);
 	x = std::fabs(x);
 	y = std::fabs(y);
 
-	return diff <= std::max(x,y) * max_rel_diff;
+	return diff <= std::max(x, y) * max_rel_diff;
 }
 
-template<class Scalar>
+template <class Scalar>
 inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
 {
 	cgogn_assert(epsilon > 0);
-	return std::fabs(y-x) < epsilon;
+	return std::fabs(y - x) < epsilon;
 }
-}
+
+} // namespace cgogn
+
 #endif // CORE_UTILS_PRECISION_H_

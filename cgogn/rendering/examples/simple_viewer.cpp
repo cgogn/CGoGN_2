@@ -24,6 +24,7 @@
 #include <qoglviewer.h>
 #include <QApplication>
 #include <QMatrix4x4>
+
 #include <rendering/shaders/shader_simple_color.h>
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/shader_vector_per_vertex.h>
@@ -35,21 +36,13 @@
 #include <rendering/map_render.h>
 #include <geometry/algos/normal.h>
 
-
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-struct MyMapTraits : public cgogn::DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 8192;
-};
-
-//using Map2 = cgogn::CMap2_T<MyMapTraits, cgogn::CMap2Type<MyMapTraits>>;
-using Map2 = cgogn::CMap2<MyMapTraits>;
+using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
-
 
 
 class Viewer : public QOGLViewer
@@ -69,13 +62,12 @@ public:
 
 	void import(const std::string& surfaceMesh);
 
-	cgogn::rendering::VBO* vbo1_;
+	cgogn::rendering::VBO* vbo_pos_;
 	cgogn::rendering::VBO* vbo_norm_;
 
 	cgogn::rendering::ShaderSimpleColor* shader1_;
 	cgogn::rendering::ShaderFlat* shader2_;
 	cgogn::rendering::ShaderVectorPerVertex* shader3_;
-
 };
 
 
@@ -92,17 +84,13 @@ void Viewer::import(const std::string& surfaceMesh)
 	vertex_normal_ = map.add_attribute<Vec3, Map2::VERTEX>("normal");
 
 	cgogn::geometry::compute_normal_vertices<Vec3>(map, vertex_position_, vertex_normal_);
-//	for(Vec3& n:vertex_normal_)
-//		n = Vec3(0,0,1);
-
-	cgogn::geometry::compute_bounding_box(vertex_position_,bb_);
+	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size());
 	Vec3 center = bb_.center();
-	setSceneCenter(qoglviewer::Vec(center[0],center[1],center[2]));
+	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
-
 
 void Viewer::draw()
 {
@@ -146,29 +134,26 @@ void Viewer::draw()
 void Viewer::init()
 {
 	glClearColor(0.1,0.1,0.3,0.0);
-	vbo1_ = new cgogn::rendering::VBO;
-	cgogn::rendering::update_vbo(vertex_position_,*vbo1_);
+
+	vbo_pos_ = new cgogn::rendering::VBO;
+	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 
 	vbo_norm_ = new cgogn::rendering::VBO;
-	cgogn::rendering::update_vbo(vertex_normal_,*vbo_norm_);
-
+	cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
 
 	render_ = new cgogn::rendering::MapRender();
 
-
-	render_->init_primitives(map,cgogn::rendering::POINTS);
-	render_->init_primitives(map,cgogn::rendering::LINES);
-	render_->init_primitives(map,cgogn::rendering::TRIANGLES);
-
-	//	vbo1_->allocate(buffer_.size()/3,3,&(buffer_[0]));
+	render_->init_primitives(map, cgogn::rendering::POINTS);
+	render_->init_primitives(map, cgogn::rendering::LINES);
+	render_->init_primitives(map, cgogn::rendering::TRIANGLES);
 
 	shader1_ = new cgogn::rendering::ShaderSimpleColor;
 	shader1_->add_vao();
-	shader1_->set_vao(0,vbo1_);
+	shader1_->set_vao(0, vbo_pos_);
 
 	shader2_ = new cgogn::rendering::ShaderFlat;
 	shader2_->add_vao();
-	shader2_->set_vao(0,vbo1_);
+	shader2_->set_vao(0, vbo_pos_);
 
 	shader2_->bind();
 	shader2_->set_front_color(QColor(0,200,0));
@@ -176,19 +161,16 @@ void Viewer::init()
 	shader2_->set_ambiant_color(QColor(5,5,5));
 	shader2_->release();
 
-
 	shader3_ = new cgogn::rendering::ShaderVectorPerVertex;
 	shader3_->add_vao();
-	shader3_->set_vao(0,vbo1_,vbo_norm_);
+	shader3_->set_vao(0, vbo_pos_, vbo_norm_);
 
 	shader3_->bind();
 	shader3_->set_color(QColor(200,0,0));
 	shader3_->set_length(bb_.diag_size()/50);
 
 	shader2_->release();
-
 }
-
 
 int main(int argc, char** argv)
 {
@@ -198,14 +180,13 @@ int main(int argc, char** argv)
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
-	} else {
-		surfaceMesh = std::string(argv[1]);
 	}
+	else
+		surfaceMesh = std::string(argv[1]);
 
-	// Read command lines arguments.
-	QApplication application(argc,argv);
-
+	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
+	cgogn::thread_start();
 
 	// Instantiate the viewer.
 	Viewer viewer;

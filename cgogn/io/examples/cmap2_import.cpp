@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <core/cmap/cmap2.h>
+#include <core/cmap/sanity_check.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
 
@@ -19,9 +20,9 @@ using Map2 = cgogn::CMap2<MyMapTraits>;
 
 using Vec3 = Eigen::Vector3d;
 
-template<typename T>
+template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
-template<typename T>
+template <typename T>
 using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
 
 int main(int argc, char** argv)
@@ -67,6 +68,16 @@ int main(int argc, char** argv)
 		map.enable_topo_cache<Map2::FACE>();
 		map.enable_topo_cache<Map2::VERTEX>();
 		map.enable_topo_cache<Map2::EDGE>();
+
+
+		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::FACE>(map) << std::endl;
+
+		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::FACE>(map) << std::endl;
+
+		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::FACE>(map) << std::endl;
 
 
 		unsigned int nb_faces = 0;
