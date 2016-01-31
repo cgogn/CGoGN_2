@@ -94,6 +94,7 @@ public:
 
 	void operator()()
 	{
+		thread_start();
 		while (true)
 		{
 			sync2_.wait(); // wait for vectors to be filled
@@ -103,6 +104,7 @@ public:
 				f_(e, thread_order_);
 			sync1_.wait(); // wait every thread has finished
 		}
+		thread_stop();
 	}
 };
 
