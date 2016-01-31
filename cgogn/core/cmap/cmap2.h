@@ -118,7 +118,7 @@ protected:
 	 */
 	inline void phi2_unsew(Dart d)
 	{
-		Dart e = phi2(d) ;
+		Dart e = phi2(d);
 		(*phi2_)[d.index] = d;
 		(*phi2_)[e.index] = e;
 	}
@@ -330,7 +330,7 @@ protected:
 			{
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
-				Dart e = (*visited_faces)[i] ;
+				Dart e = (*visited_faces)[i];
 				do
 				{
 					f(e); // apply the function to the darts of the face
@@ -401,7 +401,7 @@ protected:
 			{
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
-				Dart e = (*visited_faces)[i] ;
+				Dart e = (*visited_faces)[i];
 				do
 				{
 					if (!f(e)) // apply the function to the darts of the face

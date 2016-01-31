@@ -127,7 +127,7 @@ public:
 
 	~CellMarker() override
 	{
-		unmark_all() ;
+		unmark_all();
 	}
 
 	CellMarker(const Self& dm) = delete;

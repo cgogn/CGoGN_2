@@ -339,7 +339,7 @@ public:
 			counter[c]++;
 		});
 
-		remove_attribute(counter) ;
+		remove_attribute(counter);
 	}
 
 	template <Orbit ORBIT>
@@ -573,7 +573,7 @@ public:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using ThreadFunc = ThreadFunction<Dart, FUNC>;
@@ -770,7 +770,7 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
@@ -855,7 +855,7 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
@@ -935,7 +935,7 @@ protected:
 		Barrier sync1(nb_threads + 1);
 		Barrier sync2(nb_threads + 1);
 
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id) ;};
+		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
 
 		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
 		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;

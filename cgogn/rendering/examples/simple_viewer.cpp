@@ -113,8 +113,8 @@ void Viewer::draw()
 	shader1_->release_vao(0);
 	shader1_->release();
 
-	glEnable(GL_POLYGON_OFFSET_FILL) ;
-	glPolygonOffset(1.0f, 1.0f) ;
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1.0f, 1.0f);
 
 	shader2_->bind();
 	shader2_->set_matrices(proj,view);
@@ -186,7 +186,6 @@ int main(int argc, char** argv)
 
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
-	cgogn::thread_start();
 
 	// Instantiate the viewer.
 	Viewer viewer;

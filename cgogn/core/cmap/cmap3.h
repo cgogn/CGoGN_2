@@ -120,7 +120,7 @@ protected:
 	 */
 	inline void phi3_unsew(Dart d)
 	{
-		Dart e = phi3(d) ;
+		Dart e = phi3(d);
 		(*phi3_)[d.index] = d;
 		(*phi3_)[e.index] = e;
 	}
@@ -157,7 +157,7 @@ protected:
 		//sewing the bottom face
 		Dart base = this->add_face_topo(n);
 		const Dart dres = base;
-		for(unsigned int i = 0u; i < n ; ++i)
+		for(unsigned int i = 0u; i < n; ++i)
 		{
 			this->phi2_sew(m_tableVertDarts[i], base);
 			base = this->phi1(base);
@@ -203,7 +203,7 @@ protected:
 		Dart top = this->add_face_topo(n);
 		Dart bottom = this->add_face_topo(n);
 		const Dart dres = top;
-		for(unsigned int i = 0u; i < n ; ++i)
+		for(unsigned int i = 0u; i < n; ++i)
 		{
 			this->phi2_sew(m_tableVertDarts[i], top);
 			this->phi2_sew(m_tableVertDarts[n+i], bottom);
@@ -223,67 +223,67 @@ protected:
 	inline unsigned int close_map()
 	{
 		// Search the map for topological holes (fix points of phi3)
-		unsigned int nb = 0u ;
+		unsigned int nb = 0u;
 		for (Dart d: (*this))
 		{
 			if (phi3(d) == d)
 			{
-				++nb ;
+				++nb;
 				DartMarkerStore dmarker(*this);
 				DartMarkerStore boundary_marker(*this);
 
 				std::vector<Dart> visitedFaces;	// Faces that are traversed
-				visitedFaces.reserve(1024) ;
+				visitedFaces.reserve(1024);
 
 				visitedFaces.push_back(d);		// Start with the face of d
 				dmarker.template mark_orbit<Orbit::PHI1>(d);
 
-				unsigned int count = 0u ;
+				unsigned int count = 0u;
 
 				// For every face added to the list
 				for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
 				{
-					Dart it = visitedFaces[i] ;
-					Dart f = it ;
+					Dart it = visitedFaces[i];
+					Dart f = it;
 
 					const Dart b = this->add_face_topo(this->degree(Face(f)));
 					boundary_marker.template mark_orbit<Orbit::PHI1>(b);
-					++count ;
+					++count;
 
-					Dart bit = b ;
+					Dart bit = b;
 					do
 					{
-						Dart e = this->phi3(this->phi2(f)); ;
-						bool found = false ;
+						Dart e = this->phi3(this->phi2(f));;
+						bool found = false;
 						do
 						{
 							if (phi3(e) == e)
 							{
-								found = true ;
+								found = true;
 								if(!dmarker.is_marked(e))
 								{
-									visitedFaces.push_back(e) ;
-									dmarker.template mark_orbit<Orbit::PHI1>(e) ;
+									visitedFaces.push_back(e);
+									dmarker.template mark_orbit<Orbit::PHI1>(e);
 								}
 							} else {
 								if(boundary_marker.is_marked(e))
 								{
-									found = true ;
-									this->phi2_sew(e, bit) ;
+									found = true;
+									this->phi2_sew(e, bit);
 								} else {
 									e = this->phi3(this->phi2(e));
 								}
 							}
-						} while(!found) ;
+						} while(!found);
 
-						phi3_sew(f, bit) ;
-						bit = this->phi_1(bit) ;
+						phi3_sew(f, bit);
+						bit = this->phi_1(bit);
 						f = this->phi1(f);
-					} while(f != it) ;
+					} while(f != it);
 				}
 			}
 		}
-		return nb ;
+		return nb;
 	}
 
 public:
