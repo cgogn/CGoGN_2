@@ -24,13 +24,17 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_H_
 
+#include <algorithm>
+#include <array>
+#include <iostream>
+#include <string>
+#include <cstring>
+
 #include <core/container/chunk_array_gen.h>
 #include <core/utils/serialization.h>
 #include <core/utils/assert.h>
 #include <core/basic/dll.h>
-#include <iostream>
-#include <string>
-#include <cstring>
+
 
 namespace cgogn
 {
@@ -194,7 +198,16 @@ public:
 	 */
 	void swap_elements(unsigned int idx1, unsigned int idx2) override
 	{
+// small workaround to avoid difficulties with std::swap when _GLIBCXX_DEBUG is defined.
+#ifndef _GLIBCXX_DEBUG
 		std::swap(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
+#else
+		T& a = table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE];
+		T& b = table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE];
+		T tmp(std::move(a));
+		a = std::move(b);
+		b = std::move(tmp);
+#endif // _GLIBCXX_DEBUG
 	}
 
 //	void save(std::ostream& fs, unsigned int nb_lines) const
