@@ -27,6 +27,11 @@ set(HEADER_FILES
 	container/chunk_array.h
 	container/chunk_stack.h
 
+	mr_map/mr_map_base_data.h
+	mr_map/mr_map_base.h
+	mr_map/mr_map1.h
+	mr_map/mr_attribute_handler.h
+
 	utils/assert.h
 	utils/buffers.h
 	utils/definitions.h
