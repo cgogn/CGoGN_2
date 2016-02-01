@@ -24,10 +24,9 @@
 #ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
 #define CORE_MAP_ATTRIBUTE_HANDLER_H_
 
-#include <core/cmap/map_base.h>
 #include <core/basic/cell.h>
 #include <core/utils/assert.h>
-
+#include <core/cmap/map_base_data.h>
 namespace cgogn
 {
 
