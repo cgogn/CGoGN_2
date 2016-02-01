@@ -24,12 +24,14 @@
 #ifndef CORE_CPH_IHCMAP2_H_
 #define CORE_CPH_IHCMAP2_H_
 
+
 #include <core/cmap/cmap2.h>
 // #include <core/cph/attribute_handler_cph.h>
 
 namespace cgogn
 {
 
+<<<<<<< HEAD
 template <typename CONTAINER, typename MAP>
 class ContainerCPHBrowser : public ContainerBrowser
 {
@@ -62,6 +64,7 @@ public:
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
+
 
 	friend class DartMarker_T<Self>;
 
@@ -140,7 +143,7 @@ public:
 	IHCMap2_T(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
-	
+
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
@@ -222,6 +225,7 @@ protected:
 		}
 
 //		inc_nb_darts(get_current_level());
+
 		
 		return d ;
 	}
@@ -330,7 +334,6 @@ public:
         return count ;
     }
 
-
 	/***************************************************
 	 *              LEVELS MANAGEMENT                  *
 	 ***************************************************/
@@ -346,13 +349,13 @@ public:
 	}
 
 	inline void inc_current_level() 
-	{
+    {
 		cgogn_message_assert(get_current_level() < get_maximum_level(), "incCurrentLevel : already at maximum resolution level");
 		++current_level_ ;
 	}
 
 	inline void dec_current_level()
-	{
+    {
 		cgogn_message_assert(get_current_level() > 0u, "decCurrentLevel : already at minimum resolution level");
 		--current_level_ ;
 	}
@@ -433,7 +436,6 @@ public:
 		return 0u;
 	}
 
-
 	inline void inc_nb_darts(unsigned int level)
 	{
 		nb_darts_per_level[level]++;
@@ -452,3 +454,4 @@ using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
 } // namespace cgogn
 
 #endif // CORE_CPH_IHCMAP2_H_
+
