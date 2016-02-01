@@ -26,12 +26,12 @@
 
 
 #include <core/cmap/cmap2.h>
+#include <core/cph/cph.h
 // #include <core/cph/attribute_handler_cph.h>
 
 namespace cgogn
 {
 
-<<<<<<< HEAD
 template <typename CONTAINER, typename MAP>
 class ContainerCPHBrowser : public ContainerBrowser
 {
@@ -55,16 +55,16 @@ public:
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>
+class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public CPH<DATA_TRAITS>
 {
 public:
 
-	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit_CMAP;
+	typedef CPH Inherit_CPH;
 	typedef IHCMap2_T<DATA_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
-
 
 	friend class DartMarker_T<Self>;
 
@@ -101,69 +101,51 @@ public:
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
 protected:
-	unsigned int current_level_;
-	unsigned int maximum_level_;
-	unsigned int id_count_;
-
-	// DartAttributeHandler<unsigned int> dart_level_ ;
-	// DartAttributeHandler<unsigned int> edge_id_ ;
-    ChunkArray<unsigned int>* dart_level_;
-    ChunkArray<unsigned int>* edge_id_;
-
     ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
-
-	std::vector<unsigned int> nb_darts_per_level;
 
 	inline void init()
 	{
-        dart_level_ = this->topology_.template add_attribute<unsigned int>("dartLevel") ;
-        edge_id_ = this->topology_.template add_attribute<unsigned int>("edgeId");
-
-        cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
-
+		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
         this->topology_.set_current_browser(cph_browser);
+
+        // Inherit_CPH::new_level_darts();
 	}
 
 public:
-    IHCMap2_T() : Inherit(),
-        current_level_(0),
-        maximum_level_(0),
-        id_count_(0)
+    IHCMap2_T() : Inherit_MAP(), Inherit_CPH(this->topology_)
 	{
-		init();        
+		init();    
 	}
 
 	~IHCMap2_T() override
-	{
-        this->topology_.template remove_attribute(dart_level_);
-        this->topology_.template remove_attribute(edge_id_);
-	}
+	{}
 
 	IHCMap2_T(Self const&) = delete;
 	IHCMap2_T(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+protected:
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
 
 	inline Dart phi1(Dart d) const
 	{
-        cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+        cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 	
 		bool finished = false ;
 		unsigned int edge_id = get_edge_id(d) ;
 		Dart it = d ;
 		do
 		{
-			it = Inherit::phi1(it) ;
-			if(get_dart_level(it) <= get_current_level())
+			it = Inherit_CMAP::phi1(it) ;
+			if(Inherit_CPH::get_dart_level(it) <= Inherit_CPH::get_current_level())
 				finished = true ;
 			else
 			{
-				while(get_edge_id(it) != edge_id)
-					it = Inherit::phi1(Inherit::phi2(it)) ;
+				while(Inherit_CPH::get_edge_id(it) != edge_id)
+					it = Inherit_CMAP::phi1(Inherit_CMAP::phi2(it)) ;
 			}
 		} while(!finished) ;
 		return it ;
@@ -171,20 +153,20 @@ public:
 
 	inline Dart phi_1(Dart d) const
 	{
-        cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+        cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 
 		bool finished = false ;
-		Dart it = Inherit::phi_1(d) ;
-		unsigned int edge_id = get_edge_id(d) ;
+		Dart it = Inherit_CMAP::phi_1(d) ;
+		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
 		do
 		{
-			if(get_dart_level(it) <= get_current_level())
+			if(Inherit_CPH::get_dart_level(it) <= Inherit_CPH::get_current_level())
 				finished = true ;
 			else
 			{
-				it = Inherit::phi_1(it) ;
-				while(get_edge_id(it) != edge_id)
-					it = Inherit::phi_1(Inherit::phi2(it)) ;
+				it = Inherit_CMAP::phi_1(it) ;
+				while(Inherit_CPH::get_edge_id(it) != edge_id)
+					it = Inherit_CMAP::phi_1(Inherit_CMAP::phi2(it)) ;
 			}
 		} while(!finished) ;
 		return it ;
@@ -197,11 +179,11 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+		cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 
-		if(Inherit::phi2(d) == d)
+		if(Inherit_CMAP::phi2(d) == d)
 			return d;
-		return Inherit::phi2(Inherit::phi_1(phi1(d)));
+		return Inherit_CMAP::phi2(Inherit_CMAP::phi_1(phi1(d)));
 	}
 
 protected:
@@ -212,43 +194,21 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
-		Dart d = Inherit::add_dart();
+		Dart d = Inherit_CMAP::add_dart();
 
-		set_edge_id(d, 0);
-		set_dart_level(d, get_current_level());
+		Inherit_CPH::set_edge_id(d, 0);
+		Inherit_CPH::set_dart_level(d, Inherit_CPH::get_current_level());
 
 		// update max level if needed
-		if(get_current_level() > get_maximum_level()) 
+		if(Inherit_CPH::get_current_level() > Inherit_CPH::get_maximum_level()) 
 		{
-			set_maximum_level(get_current_level()); 
-			nb_darts_per_level.push_back(0);
+			Inherit_CPH::set_maximum_level(Inherit_CPH::get_current_level()); 
+			// Inherit_CPH::new_level_darts();
 		}
 
-//		inc_nb_darts(get_current_level());
+//		Inherit_CPH::inc_nb_darts(get_current_level());
 
-		
 		return d ;
-	}
-
-	inline Vertex cut_edge(Edge e)
-	{
-		Dart dd = phi2(e);
-		unsigned int e_id = get_edge_id(e) ;
-
-		Vertex v = Inherit::cut_edge(e);
-		
-		set_edge_id(phi1(e), e_id) ;
-		set_edge_id(phi1(dd), e_id) ;
-		
-		return v;
-	}
-
-	inline void split_face(Face d, Face e)
-	{
-		Inherit::split_face(d, e);
-
-		foreach_dart_of_orbit(d, [this, e_id] (Dart dit) { set_edge_id(dit, e_id); });
-		foreach_dart_of_orbit(e, [this, e_id] (Dart dit) { set_edge_id(dit, e_id); });
 	}
 
 protected:
@@ -290,7 +250,7 @@ protected:
 		do
 		{
 			f(it);
-            it = Inherit::phi2(Inherit::phi_1(it));
+            it = Inherit_CMAP::phi2(Inherit_CMAP::phi_1(it));
 		} while (it != d);
 	}
 
@@ -357,113 +317,6 @@ public:
         } while (it != d) ;
         return count ;
     }
-
-	/***************************************************
-	 *              LEVELS MANAGEMENT                  *
-	 ***************************************************/
-
-	inline unsigned int get_current_level() const
-	{
-		return current_level_ ;
-	}
-
-	inline void set_current_level(unsigned int l)
-	{
-		current_level_ = l ;
-	}
-
-	inline void inc_current_level() 
-    {
-		cgogn_message_assert(get_current_level() < get_maximum_level(), "incCurrentLevel : already at maximum resolution level");
-		++current_level_ ;
-	}
-
-	inline void dec_current_level()
-    {
-		cgogn_message_assert(get_current_level() > 0u, "decCurrentLevel : already at minimum resolution level");
-		--current_level_ ;
-	}
-
-	inline unsigned int get_maximum_level() const
-	{
-		return maximum_level_ ;
-	}
-
-	inline void set_maximum_level(unsigned int l)
-	{
-		maximum_level_ = l;
-	}
-
-	inline unsigned int get_dart_level(Dart d) const
-	{
-        return (*dart_level_)[d.index] ;
-	}
-
-	inline void set_dart_level(Dart d, unsigned int l)
-	{
-        (*dart_level_)[d.index] = l ;
-	}
-
-	/***************************************************
-	 *             EDGE ID MANAGEMENT                  *
-	 ***************************************************/
-
-	/**
-	 * Return the next available edge id
-	 */
-	inline unsigned int get_new_edge_id()
-	{
-		return id_count_++ ;
-	}
-
-	inline unsigned int get_edge_id(Dart d) const
-	{
-        return (*edge_id_)[d.index] ;
-	}
-
-	inline void set_edge_id(Dart d, unsigned int i)
-	{
-        (*edge_id_)[d.index] = i ;
-	}
-
-	inline unsigned int get_tri_refinement_edge_id(Dart d) const
-	{
-		unsigned int d_id = get_edge_id(phi_1(d));
-		unsigned int e_id = get_edge_id(phi1(d));
-
-		unsigned int id = d_id + e_id;
-
-		if(id == 0u)
-			return 1u;
-		else if(id == 1u)
-			return 2u;
-		else if(id == 2u)
-		{
-			if(d_id == e_id)
-				return 0u;
-			else
-				return 1u;
-		}
-
-		//else if(id == 3)
-		return 0u;
-	}
-
-	inline unsigned int get_quad_refinement_edge_id(Dart d) const
-	{
-		unsigned int e_id = get_edge_id(phi1(d));
-
-		if(e_id == 0u)
-			return 1u;
-
-		//else if(e_id == 1)
-		return 0u;
-	}
-
-	inline void inc_nb_darts(unsigned int level)
-	{
-		nb_darts_per_level[level]++;
-	}
 };
 
 template <typename MAP_TRAITS>

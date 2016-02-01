@@ -29,6 +29,7 @@ set(HEADER_FILES
 
 	cph/attribute_handler_cph.h  
 	cph/ihcmap2.h
+	cph/cph.h
 
 	utils/assert.h
 	utils/buffers.h
