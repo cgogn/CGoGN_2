@@ -556,10 +556,15 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
+		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
+
 		const unsigned int nb_chunks = this->nb_darts()/PARALLEL_BUFFER_SIZE + 1u;
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 
 		std::vector<std::vector<Dart>> vd(nb_chunks);
+		std::vector<Future> futures;
+		futures.reserve(nb_chunks);
+
 
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
@@ -573,11 +578,16 @@ public:
 				darts.push_back(it);
 				this->topology_.next(it.index);
 			}
-			thread_pool->enqueue_no_return( [&](unsigned int i){
+			futures.emplace_back(thread_pool->enqueue( [&](unsigned int i){
 				const std::vector<Dart>& vec_darts = darts;
 				for (auto d : vec_darts)
 					f(d,i);
-			});
+		}));
+		}
+
+		for (auto& fu: futures)
+		{
+			fu.wait();
 		}
 	}
 
@@ -646,7 +656,7 @@ public:
 				parallel_foreach_cell_dart_marking<ORBIT>(f, nb_threads);
 				break;
 			case FORCE_CELL_MARKING :
-				parallel_foreach_cell_cell_marking<ORBIT>(f, nb_threads);
+				parallel_foreach_cell_cell_marking<ORBIT>(f);
 				break;
 			case FORCE_TOPO_CACHE :
 				parallel_foreach_cell_topo_cache<ORBIT>(f, nb_threads);
@@ -655,7 +665,7 @@ public:
 				if (is_topo_cache_enabled<ORBIT>())
 					parallel_foreach_cell_topo_cache<ORBIT>(f, nb_threads);
 				else if (this->template is_orbit_embedded<ORBIT>())
-					parallel_foreach_cell_cell_marking<ORBIT>(f, nb_threads);
+					parallel_foreach_cell_cell_marking<ORBIT>(f);
 				else
 					parallel_foreach_cell_dart_marking<ORBIT>(f, nb_threads);
 				break;
@@ -800,72 +810,46 @@ protected:
 	}
 
 	template <Orbit ORBIT, typename FUNC>
-	inline void parallel_foreach_cell_cell_marking(const FUNC& f, unsigned int nb_threads) const
+	inline void parallel_foreach_cell_cell_marking(const FUNC& f) const
 	{
-		// these vectors will contain elements to be processed by the threads
-		// the first ones are passed to the threads
-		// the second ones are filled by this thread while the other are processed
-		std::vector<std::vector<Cell<ORBIT>>> vd1(nb_threads);
-		std::vector<std::vector<Cell<ORBIT>>> vd2(nb_threads);
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
-		}
+		using VecCell  = std::vector<Cell<ORBIT>>;
+		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
-		bool finished = false;
+		const unsigned int nb_chunks = this->nb_cells<ORBIT>()/PARALLEL_BUFFER_SIZE + 1u;
+		ThreadPool* thread_pool = cgogn::get_thread_pool();
 
-		// creation of threads
-		Barrier sync1(nb_threads + 1);
-		Barrier sync2(nb_threads + 1);
-
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
-
-		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using ThreadFunc = ThreadFunction<Cell<ORBIT>, FUNC>;
-		using tfs_ptr = std::unique_ptr<ThreadFunc>;
-
-		std::vector<thread_ptr> threads;
-		std::vector<tfs_ptr> tfs;
-		threads.reserve(nb_threads);
-		tfs.reserve(nb_threads);
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
-			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
-			this->add_thread(threads.back()->get_id());
-		}
+		std::vector<VecCell> vd(nb_chunks);
+		std::vector<Future> futures;
+		futures.reserve(nb_chunks);
 
 		CellMarker<ORBIT> cm(*to_concrete());
 		Dart it = Dart(this->topology_.begin());
-		Dart end = Dart(this->topology_.end());
-		while (it != end)
-		{
-			for (unsigned int i = 0; i < nb_threads; ++i)
-				vd2[i].clear();
+		const Dart end = Dart(this->topology_.end());
 
-			// fill vd2 vectors
-			unsigned int nb = 0;
-			while (it != end && nb < nb_threads * PARALLEL_BUFFER_SIZE)
+		for (unsigned int i = 0u; i < nb_chunks; ++i)
+		{
+			VecCell& cells  = vd[i];
+			cells.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned int j = 0u; j < PARALLEL_BUFFER_SIZE && it != end;)
 			{
 				if (!cm.is_marked(it))
 				{
 					cm.mark(it);
-					vd2[nb % nb_threads].push_back(Cell<ORBIT>(it));
-					++nb;
+					cells.push_back(it);
+					++j;
 				}
 				this->topology_.next(it.index);
 			}
-
-			for (unsigned int i = 0; i < nb_threads; ++i)
-				vd1[i].swap(vd2[i]);
-
-			sync2.wait(); // vectors are ready for threads to process
-			sync1.wait(); // wait for all threads to finish their vector
+			futures.emplace_back(thread_pool->enqueue( [&](unsigned int i){
+				const VecCell& vec_cells = cells;
+				for (auto d : vec_cells)
+					f(d,i);
+			}));
 		}
-
-		finished = true; // say finish to all threads
-		sync2.wait(); // last barrier wait
+		for (auto& fu: futures)
+		{
+			fu.wait();
+		}
 	}
 
 	template <Orbit ORBIT, typename FUNC>

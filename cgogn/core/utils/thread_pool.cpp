@@ -38,14 +38,17 @@ std::vector<std::thread::id> ThreadPool::get_threads_ids() const
 
 ThreadPool::~ThreadPool()
 {
-	stop_ = true;
+	{
+		std::unique_lock<std::mutex> lock(queue_mutex_);
+		stop_ = true;
+	}
 	condition_.notify_all();
 	for(std::thread &worker: workers_)
 		worker.join();
 }
 
-ThreadPool::ThreadPool()
-	:   stop_(false)
+
+ThreadPool::ThreadPool() : stop_(false)
 {
 	for(unsigned int i = 0u; i< MAX_NB_THREADS ;++i)
 		workers_.emplace_back(

@@ -32,7 +32,6 @@
 #include <condition_variable>
 #include <future>
 #include <functional>
-#include <atomic>
 
 #include <core/utils/assert.h>
 #include <core/utils/thread.h>
@@ -52,9 +51,6 @@ public:
 	auto enqueue(F&& f, Args&&... args)
 	-> std::future<typename std::result_of<F(unsigned int, Args...)>::type>;
 
-	template<class F, class... Args>
-	void enqueue_no_return(F&& f, Args&&... args);
-
 	std::vector<std::thread::id> get_threads_ids() const;
 	virtual ~ThreadPool();
 
@@ -67,7 +63,7 @@ private:
 	// synchronization
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
-	std::atomic_bool stop_;
+	bool stop_;
 };
 
 
@@ -78,10 +74,6 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 {
 	using return_type = typename std::result_of<F(unsigned int, Args...)>::type;
 
-	// don't allow enqueueing after stopping the pool
-	if(stop_)
-		cgogn_assert_not_reached("enqueue on stopped ThreadPool");
-
 	auto task = std::make_shared< std::packaged_task<return_type(unsigned int)> >([&](unsigned int i)
 	{
 		return std::bind(std::forward<F>(f), i, std::forward<Args>(args)...)();
@@ -91,32 +83,15 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 	std::future<return_type> res = task->get_future();
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
+			// don't allow enqueueing after stopping the pool
+		if(stop_)
+			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 		// Push work back on the queue
 		tasks_.emplace([task](unsigned int i){ (*task)(i); });
 	}
 	// Notify a thread that there is new work to perform
 	condition_.notify_one();
 	return res;
-}
-
-template<class F, class... Args>
-void ThreadPool::enqueue_no_return(F&& f, Args&&... args)
-{
-	// don't allow enqueueing after stopping the pool
-	if(stop_)
-		cgogn_assert_not_reached("enqueue on stopped ThreadPool");
-	{
-		std::unique_lock<std::mutex> lock(queue_mutex_);
-
-		// Push work back on the queue
-		tasks_.emplace ([&](unsigned int i)
-	{
-		std::bind(std::forward<F>(f), i, std::forward<Args>(args)...)();
-	});
-	}
-
-	// Notify a thread that there is new work to perform
-	condition_.notify_one ();
 }
 
 } // namespace cgogn
