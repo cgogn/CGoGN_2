@@ -60,6 +60,7 @@ set(SOURCE_FILES
 
 	utils/assert.cpp
 	utils/thread.cpp
+	utils/thread_pool.cpp
 	utils/serialization.cpp
 )
 

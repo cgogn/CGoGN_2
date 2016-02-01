@@ -32,6 +32,7 @@
 #include <condition_variable>
 #include <future>
 #include <functional>
+#include <atomic>
 
 #include <core/utils/assert.h>
 #include <core/utils/thread.h>
@@ -51,16 +52,12 @@ public:
 	auto enqueue(F&& f, Args&&... args)
 	-> std::future<typename std::result_of<F(unsigned int, Args...)>::type>;
 
-	std::vector<std::thread::id> get_threads_ids() const
-	{
-		std::vector<std::thread::id> res;
-		res.reserve(workers_.size());
-		for (const std::thread& w : workers_)
-			res.push_back(w.get_id());
-		return res;
-	}
+	template<class F, class... Args>
+	void enqueue_no_return(F&& f, Args&&... args);
 
+	std::vector<std::thread::id> get_threads_ids() const;
 	virtual ~ThreadPool();
+
 private:
 	// need to keep track of threads so we can join them
 	std::vector< std::thread > workers_;
@@ -70,36 +67,9 @@ private:
 	// synchronization
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
-	bool stop_;
+	std::atomic_bool stop_;
 };
 
-// the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool()
-	:   stop_(false)
-{
-	for(unsigned int i = 0u; i< MAX_NB_THREADS ;++i)
-		workers_.emplace_back(
-					[this,i]
-		{
-			for(;;)
-			{
-				std::function<void(unsigned int)> task;
-
-				{
-					std::unique_lock<std::mutex> lock(this->queue_mutex_);
-					this->condition_.wait(lock,
-										 [this]{ return this->stop_ || !this->tasks_.empty(); });
-					if(this->stop_ && this->tasks_.empty())
-						return;
-					task = std::move(this->tasks_.front());
-					this->tasks_.pop();
-				}
-
-				task(i);
-			}
-		}
-		);
-}
 
 // add new work item to the pool
 template<class F, class... Args>
@@ -108,36 +78,45 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 {
 	using return_type = typename std::result_of<F(unsigned int, Args...)>::type;
 
+	// don't allow enqueueing after stopping the pool
+	if(stop_)
+		cgogn_assert_not_reached("enqueue on stopped ThreadPool");
+
 	auto task = std::make_shared< std::packaged_task<return_type(unsigned int)> >([&](unsigned int i)
 	{
 		return std::bind(std::forward<F>(f), i, std::forward<Args>(args)...)();
 	}
-				);
+	);
 
 	std::future<return_type> res = task->get_future();
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-
-		// don't allow enqueueing after stopping the pool
-		if(stop_)
-			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
-
+		// Push work back on the queue
 		tasks_.emplace([task](unsigned int i){ (*task)(i); });
 	}
+	// Notify a thread that there is new work to perform
 	condition_.notify_one();
 	return res;
 }
 
-// the destructor joins all threads
-inline ThreadPool::~ThreadPool()
+template<class F, class... Args>
+void ThreadPool::enqueue_no_return(F&& f, Args&&... args)
 {
+	// don't allow enqueueing after stopping the pool
+	if(stop_)
+		cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-		stop_ = true;
+
+		// Push work back on the queue
+		tasks_.emplace ([&](unsigned int i)
+	{
+		std::bind(std::forward<F>(f), i, std::forward<Args>(args)...)();
+	});
 	}
-	condition_.notify_all();
-	for(std::thread &worker: workers_)
-		worker.join();
+
+	// Notify a thread that there is new work to perform
+	condition_.notify_one ();
 }
 
 } // namespace cgogn

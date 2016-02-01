@@ -556,15 +556,10 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
-		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
-
 		const unsigned int nb_chunks = this->nb_darts()/PARALLEL_BUFFER_SIZE + 1u;
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 
 		std::vector<std::vector<Dart>> vd(nb_chunks);
-		std::vector<Future> futures;
-		futures.reserve(nb_chunks);
-
 
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
@@ -578,16 +573,11 @@ public:
 				darts.push_back(it);
 				this->topology_.next(it.index);
 			}
-			futures.emplace_back(thread_pool->enqueue( [&](unsigned int i){
+			thread_pool->enqueue_no_return( [&](unsigned int i){
 				const std::vector<Dart>& vec_darts = darts;
 				for (auto d : vec_darts)
 					f(d,i);
-		}));
-		}
-
-		for (auto& fu: futures)
-		{
-			fu.wait();
+			});
 		}
 	}
 
