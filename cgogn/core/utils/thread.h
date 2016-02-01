@@ -27,6 +27,7 @@
 #include <core/utils/buffers.h>
 #include <core/utils/dll.h>
 #include <core/utils/thread_barrier.h>
+#include <core/utils/thread_pool.h>
 
 namespace cgogn
 {
@@ -36,6 +37,8 @@ namespace cgogn
  */
 const unsigned int MAX_NB_THREADS = 8u;
 CGOGN_UTILS_API extern unsigned int NB_THREADS;
+
+CGOGN_UTILS_API ThreadPool* get_thread_pool();
 
 inline unsigned int get_nb_threads()
 {

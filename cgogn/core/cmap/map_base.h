@@ -556,65 +556,39 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
-		// these vectors will contain elements to be processed by the threads
-		// the first ones are passed to the threads
-		// the second ones are filled by this thread then swapped with the first ones
-		std::vector<std::vector<Dart>> vd1(nb_threads);
-		std::vector<std::vector<Dart>> vd2(nb_threads);
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			vd1[i].reserve(PARALLEL_BUFFER_SIZE);
-			vd2[i].reserve(PARALLEL_BUFFER_SIZE);
-		}
+		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
 
-		bool finished = false;
+		const unsigned int nb_chunks = this->nb_darts()/PARALLEL_BUFFER_SIZE + 1u;
+		ThreadPool* thread_pool = cgogn::get_thread_pool();
 
-		// creation of threads
-		Barrier sync1(nb_threads + 1);
-		Barrier sync2(nb_threads + 1);
+		std::vector<std::vector<Dart>> vd(nb_chunks);
+		std::vector<Future> futures;
+		futures.reserve(nb_chunks);
 
-		auto thread_deleter = [this] (std::thread* th) { const std::thread::id id = th->get_id(); th->join(); delete th; this->remove_thread(id); };
-
-		using thread_ptr = std::unique_ptr<std::thread, decltype(thread_deleter)>;
-		using ThreadFunc = ThreadFunction<Dart, FUNC>;
-		using tfs_ptr = std::unique_ptr<ThreadFunc>;
-
-		std::vector<thread_ptr> threads;
-		std::vector<tfs_ptr> tfs;
-		threads.reserve(nb_threads);
-		tfs.reserve(nb_threads);
-		for (unsigned int i = 0; i < nb_threads; ++i)
-		{
-			tfs.emplace_back(tfs_ptr(new ThreadFunc(f, vd1[i], sync1, sync2, finished, i)));
-			threads.emplace_back(thread_ptr(new std::thread(std::ref( *(tfs[i]) )), thread_deleter));
-			this->add_thread(threads.back()->get_id());
-		}
 
 		Dart it = Dart(this->topology_.begin());
-		Dart end = Dart(this->topology_.end());
-		while (it != end)
-		{
-			for (unsigned int i = 0; i < nb_threads; ++i)
-				vd2[i].clear();
+		const Dart end = Dart(this->topology_.end());
 
-			// fill vd2 vectors
-			unsigned int nb = 0;
-			while (it != end && nb < nb_threads * PARALLEL_BUFFER_SIZE)
+		for (unsigned int i = 0u; i < nb_chunks; ++i)
+		{
+			std::vector<Dart>& darts  = vd[i];
+			darts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned j = 0; j < PARALLEL_BUFFER_SIZE && it != end; ++j)
 			{
-				vd2[nb % nb_threads].push_back(it);
-				++nb;
+				darts.push_back(it);
 				this->topology_.next(it.index);
 			}
-
-			for (unsigned int i = 0; i < nb_threads; ++i)
-				vd1[i].swap(vd2[i]);
-
-			sync2.wait(); // vectors are ready for threads to process
-			sync1.wait(); // wait for all threads to finish their vector
+			futures.emplace_back(thread_pool->enqueue( [&](){
+				const std::vector<Dart>& vec_darts = darts;
+				for (auto d : vec_darts)
+					f(d,0u);
+		}));
 		}
 
-		finished = true; // say finish to all threads
-		sync2.wait(); // last barrier wait
+		for (auto& fu: futures)
+		{
+			fu.wait();
+		}
 	}
 
 	/**

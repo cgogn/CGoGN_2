@@ -26,6 +26,7 @@
 
 #include <core/utils/definitions.h>
 #include <core/utils/thread.h>
+#include <core/utils/thread_pool.h>
 #include <core/container/chunk_array_container.h>
 #include <core/basic/cell.h>
 #include <core/cmap/map_traits.h>
@@ -145,7 +146,10 @@ public:
 			mark_attributes_topology_[i].reserve(8);
 
 		thread_ids_.reserve(MAX_NB_THREADS);
-		thread_ids_.push_back(std::this_thread::get_id());
+		this->add_thread(std::this_thread::get_id());
+		const auto& pool_threads_ids = cgogn::get_thread_pool()->get_threads_ids();
+		for (const std::thread::id& ids : pool_threads_ids)
+			this->add_thread(ids);
 	}
 
 	~MapBaseData() override

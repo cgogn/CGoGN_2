@@ -25,6 +25,7 @@
 
 #include <core/utils/thread.h>
 
+
 namespace cgogn
 {
 
@@ -58,6 +59,12 @@ CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
 CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
 {
 	return uint_buffers_thread;
+}
+
+CGOGN_UTILS_API ThreadPool* get_thread_pool()
+{
+	static std::unique_ptr<ThreadPool> pool(new ThreadPool(NB_THREADS));
+	return pool.get();
 }
 
 } // namespace cgogn
