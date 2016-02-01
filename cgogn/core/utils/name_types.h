@@ -149,13 +149,23 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 
 #endif // _MSC_VER
 #endif // __GNUG__
+
 #ifdef __APPLE__
 	// removing std::__1
 	{
-		std::regex regex("std::__1::", std::regex_constants::ECMAScript | std::regex_constants::icase);
+		std::regex regex("std::__1::", std::regex_constants::ECMAScript);
 		type_name = std::regex_replace(type_name, regex, "std::");
 	}
 #endif // __APPLE__
+
+#ifdef _GLIBCXX_DEBUG
+// replacing std::__debug:: by std::
+	{
+		std::regex regex("std::__debug::", std::regex_constants::ECMAScript);
+		type_name = std::regex_replace(type_name, regex, "std::");
+	}
+#endif // _GLIBCXX_DEBUG
+
 	// removing spaces
 	{
 		std::regex regex("([a-z]*)([[:space:]]+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
