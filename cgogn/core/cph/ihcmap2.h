@@ -24,24 +24,46 @@
 #ifndef CORE_CPH_IHCMAP2_H_
 #define CORE_CPH_IHCMAP2_H_
 
-#include <cgogn/core/map/cmap2.h>
-#include <cgogn/core/cph/attribute_handler_cph.h>
+#include <core/cmap/cmap2.h>
+// #include <core/cph/attribute_handler_cph.h>
 
 namespace cgogn
 {
 
-template <typename DATA_TRAITS, typename TOPO_TRAITS>
-class IHCMap2_T : protected CMap2_T<DATA_TRAITS, TOPO_TRAITS>
+template <typename CONTAINER, typename MAP>
+class ContainerCPHBrowser : public ContainerBrowser
+{
+    const CONTAINER& cac_;
+    const MAP* map_;
+
+public:
+   ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
+   virtual unsigned int begin() const { return cac_.real_begin(); }
+   virtual unsigned int end() const { return cac_.real_end(); }
+   virtual void next(unsigned int &it)  const
+   {
+       cac_.real_next(it);
+       if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
+           it = cac_.real_end();
+   }
+   virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
+   virtual void enable() {}
+   virtual void disable() {}
+   virtual ~ContainerCPHBrowser() {}
+};
+
+template <typename DATA_TRAITS, typename MAP_TYPE>
+class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef CMap2_T<DATA_TRAITS, TOPO_TRAITS> Inherit;
-	typedef IHCMap2_T<DATA_TRAITS, TOPO_TRAITS> Self;
+	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit;
+	typedef IHCMap2_T<DATA_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 
-	template <typename MAP> friend class cgogn::DartMarkerT;
+	friend class DartMarker_T<Self>;
 
 	static const Orbit DART = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
@@ -54,68 +76,70 @@ public:
 	typedef Cell<Self::FACE> Face;
 	typedef Cell<Self::VOLUME> Volume;
 
+	template <typename T>
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+    template <typename T>
+    using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = typename AttributeHandlerCPH<T, ORBIT>;
+	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template<typename T>
-	using DartAttributeHandler = AttributeHandlerCPH<T, Self::DART>;
+	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandlerCPH<T, Self::VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandlerCPH<T, Self::EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandlerCPH<T, Self::FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
 	template<typename T>
-	using VolumeAttributeHandler = AttributeHandlerCPH<T, Self::VOLUME>;
+	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
-	using DartMarker = typename Inherit::DartMarker;
-	using DartMarkerStore = typename Inherit::DartMarkerStore;
+	using DartMarker = typename cgogn::DartMarker<Self>;
+	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
-private:
+protected:
 	unsigned int current_level_;
 	unsigned int maximum_level_;
 	unsigned int id_count_;
 
-	DartAttribute<unsigned int> dart_level_ ;
-	DartAttribute<unsigned int> edge_id_ ;
+	// DartAttributeHandler<unsigned int> dart_level_ ;
+	// DartAttributeHandler<unsigned int> edge_id_ ;
+    ChunkArray<unsigned int>* dart_level_;
+    ChunkArray<unsigned int>* edge_id_;
 
-	ChunkArray<unsigned int>* next_level_cell_[NB_ORBITS];
+    ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
 
+	std::vector<unsigned int> nb_darts_per_level;
+
+	inline void init()
+	{
+        dart_level_ = this->topology_.template add_attribute<unsigned int>("dartLevel") ;
+        edge_id_ = this->topology_.template add_attribute<unsigned int>("edgeId");
+
+        cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
+
+        this->topology_.set_current_browser(cph_browser);
+	}
 
 public:
-	IHCMap2_T() : Inherit()
+    IHCMap2_T() : Inherit(),
+        current_level_(0),
+        maximum_level_(0),
+        id_count_(0)
 	{
-		init();
+		init();        
 	}
 
 	~IHCMap2_T() override
-	{}
+	{
+        this->topology_.template remove_attribute(dart_level_);
+        this->topology_.template remove_attribute(edge_id_);
+	}
 
 	IHCMap2_T(Self const&) = delete;
 	IHCMap2_T(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
-
-
-	inline void init_implicit_properties()
-	{
-		//initEdgeId() ;
-
-		//init each edge Id at 0
-		for(Dart d : Inherit)
-		{
-			set_edge_id(d, 0);
-		}
-
-		// for(unsigned int orbit = 0u; orbit < Orbit::NB_ORBITS; ++orbit)
-		// {
-		// 	if(m_nextLevelCell[orbit] != NULL)
-		// 	{
-		// 		AttributeContainer& cellCont = m_attribs[orbit] ;
-		// 		for(unsigned int i = cellCont.begin(); i < cellCont.end(); cellCont.next(i))
-		// 			m_nextLevelCell[orbit]->operator[](i) = EMBNULL ;
-		// 	}
-		// }
-	}
 	
 	/*******************************************************************************
 	 * Basic topological operations
@@ -123,7 +147,7 @@ public:
 
 	inline Dart phi1(Dart d) const
 	{
-		cgogn_debug_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+        cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
 	
 		bool finished = false ;
 		unsigned int edge_id = get_edge_id(d) ;
@@ -144,7 +168,7 @@ public:
 
 	inline Dart phi_1(Dart d) const
 	{
-		cgogn_debug_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+        cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
 
 		bool finished = false ;
 		Dart it = Inherit::phi_1(d) ;
@@ -170,23 +194,11 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		cgogn_debug_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
+		cgogn_message_assert(get_dart_level(d) <= get_current_level(), "Access to a dart introduced after current level") ;
 
 		if(Inherit::phi2(d) == d)
 			return d;
 		return Inherit::phi2(Inherit::phi_1(phi1(d)));
-	}
-
-	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell(const FUNC& f, unsigned int level)
-	{
-		
-	}
-
-	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell(const FUNC& f)
-	{
-		
 	}
 
 protected:
@@ -198,9 +210,18 @@ protected:
 	inline Dart add_dart()
 	{
 		Dart d = Inherit::add_dart();
+
+		set_edge_id(d, 0);
 		set_dart_level(d, get_current_level());
-		if(get_current_level() > get_maximum_level()) // update max level
-			set_maximum_level(get_current_level()); // if needed
+
+		// update max level if needed
+		if(get_current_level() > get_maximum_level()) 
+		{
+			set_maximum_level(get_current_level()); 
+			nb_darts_per_level.push_back(0);
+		}
+
+//		inc_nb_darts(get_current_level());
 		
 		return d ;
 	}
@@ -211,19 +232,45 @@ protected:
 	 * Orbits traversal
 	 *******************************************************************************/
 
+    template <typename FUNC>
+    inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
+    {
+        f(d);
+    }
+
+    template <typename FUNC>
+    inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
+    {
+        Dart it = d;
+        do
+        {
+            f(it);
+            it = phi1(it);
+        } while (it != d);
+    }
+
+    template <typename FUNC>
+    inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
+    {
+        f(d);
+        Dart d2 = phi2(d);
+        if (d2 != d)
+            f(d2);
+    }
+
 	template <typename FUNC>
-	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
+    inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
 		do
 		{
 			f(it);
-			it = phi2(phi_1(it));
+            it = Inherit::phi2(Inherit::phi_1(it));
 		} while (it != d);
 	}
 
 	template <typename FUNC>
-	void foreach_dart_of_volume(Dart d, const FUNC& f) const
+    void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
 	{
 		DartMarkerStore marker(*this);
 
@@ -258,19 +305,32 @@ protected:
 	{
 		switch (ORBIT)
 		{
-			case Orbit::DART: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI1: Inherit::foreach_dart_of_orbit(c, f); break;
-			case Orbit::PHI2: f(c.dart); f(phi2(c.dart)); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
-			case Orbit::PHI2_PHI3:
-			case Orbit::PHI1_PHI3:
-			case Orbit::PHI21_PHI31:
+            case Orbit::DART: foreach_dart_of_DART(c, f); break;
+            case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
+            case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
+            case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
+            case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
+            case Orbit::PHI2_PHI3:
+            case Orbit::PHI1_PHI3:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
 
 public:
+
+    inline unsigned int face_degree(Dart d)
+    {
+        unsigned int count = 0 ;
+        Dart it = d ;
+        do
+        {
+            ++count ;
+            it = phi1(it) ;
+        } while (it != d) ;
+        return count ;
+    }
+
+
 	/***************************************************
 	 *              LEVELS MANAGEMENT                  *
 	 ***************************************************/
@@ -287,13 +347,13 @@ public:
 
 	inline void inc_current_level() 
 	{
-		cgogn_debug_assert(get_current_level() < get_maximum_level(), "incCurrentLevel : already at maximum resolution level");
+		cgogn_message_assert(get_current_level() < get_maximum_level(), "incCurrentLevel : already at maximum resolution level");
 		++current_level_ ;
 	}
 
 	inline void dec_current_level()
 	{
-		cgogn_debug_assert(get_current_level() > 0u, "decCurrentLevel : already at minimum resolution level");
+		cgogn_message_assert(get_current_level() > 0u, "decCurrentLevel : already at minimum resolution level");
 		--current_level_ ;
 	}
 
@@ -309,12 +369,12 @@ public:
 
 	inline unsigned int get_dart_level(Dart d) const
 	{
-		return dart_level_[d] ;
+        return (*dart_level_)[d.index] ;
 	}
 
 	inline void set_dart_level(Dart d, unsigned int l)
 	{
-		dart_level_[d] = l ;
+        (*dart_level_)[d.index] = l ;
 	}
 
 	/***************************************************
@@ -322,40 +382,21 @@ public:
 	 ***************************************************/
 
 	/**
-	 * Give a new unique id to all the edges of the map
-	 */
-	inline void init_edge_ids()
-	{
-		id_count_ = 0;
-		DartMarker marker(*this);
-
-		for (Dart d : Inherit)
-		{
-			if(!marker.is_marked(d))
-			{
-				marker.mark_orbit(Edge(d)) ;
-				edge_id_[d] = id_count_ ;
-				edge_id_[Inherit::phi2(d)] = id_count_++ ;
-			}
-		}
-	}
-
-	/**
 	 * Return the next available edge id
 	 */
-	inline unsigned int get_new_edge_id() const
+	inline unsigned int get_new_edge_id()
 	{
 		return id_count_++ ;
 	}
 
 	inline unsigned int get_edge_id(Dart d) const
 	{
-		return edge_id_[d] ;
+        return (*edge_id_)[d.index] ;
 	}
 
 	inline void set_edge_id(Dart d, unsigned int i)
 	{
-		edge_id_[d] = i ;
+        (*edge_id_)[d.index] = i ;
 	}
 
 	inline unsigned int get_tri_refinement_edge_id(Dart d) const
@@ -392,21 +433,21 @@ public:
 		return 0u;
 	}
 
+
+	inline void inc_nb_darts(unsigned int level)
+	{
+		nb_darts_per_level[level]++;
+	}
 };
 
-template <typename DataTraits>
-struct IHCMap2TopoTraits
+template <typename MAP_TRAITS>
+struct IHCMap2Type
 {
-	static const int PRIM_SIZE = 1;
-	typedef IHCMap2_T<DataTraits, IHCMap2TopoTraits<DataTraits>> CONCRETE;
+	typedef IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>> TYPE;
 };
 
-struct IHCMap2DataTraits
-{
-	static const unsigned int CHUNK_SIZE = 4096;
-};
-
-using IHCMap2 = IHCMap2_T<IHCMap2DataTraits, IHCMap2TopoTraits<IHCMap2DataTraits>>;
+template <typename MAP_TRAITS>
+using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 

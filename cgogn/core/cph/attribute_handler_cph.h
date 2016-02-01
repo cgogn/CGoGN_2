@@ -24,8 +24,8 @@
 #ifndef CORE_CPH_ATTRIBUTE_HANDLER_CPH_H_
 #define CORE_CPH_ATTRIBUTE_HANDLER_CPH_H_
 
-#include <core/map/attribute_handler.h>
-#include <utils/assert.h>
+#include <core/cmap/attribute_handler.h>
+#include <core/utils/assert.h>
 
 namespace cgogn
 {
