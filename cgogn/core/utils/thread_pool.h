@@ -34,13 +34,14 @@
 #include <functional>
 
 #include <core/utils/assert.h>
+#include <core/utils/thread.h>
 
 namespace cgogn
 {
 
 class ThreadPool {
 public:
-	ThreadPool(size_t);
+	ThreadPool();
 	ThreadPool(const ThreadPool&) = delete;
 	ThreadPool& operator=(const ThreadPool&) = delete;
 	ThreadPool(ThreadPool&&) = delete;
@@ -48,7 +49,7 @@ public:
 
 	template<class F, class... Args>
 	auto enqueue(F&& f, Args&&... args)
-	-> std::future<typename std::result_of<F(Args...)>::type>;
+	-> std::future<typename std::result_of<F(unsigned int, Args...)>::type>;
 
 	std::vector<std::thread::id> get_threads_ids() const
 	{
@@ -64,7 +65,7 @@ private:
 	// need to keep track of threads so we can join them
 	std::vector< std::thread > workers_;
 	// the task queue
-	std::queue< std::function<void()> > tasks_;
+	std::queue< std::function<void(unsigned int)> > tasks_;
 
 	// synchronization
 	std::mutex queue_mutex_;
@@ -73,16 +74,16 @@ private:
 };
 
 // the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool(size_t threads)
+inline ThreadPool::ThreadPool()
 	:   stop_(false)
 {
-	for(size_t i = 0;i<threads;++i)
+	for(unsigned int i = 0u; i< MAX_NB_THREADS ;++i)
 		workers_.emplace_back(
-					[this]
+					[this,i]
 		{
 			for(;;)
 			{
-				std::function<void()> task;
+				std::function<void(unsigned int)> task;
 
 				{
 					std::unique_lock<std::mutex> lock(this->queue_mutex_);
@@ -94,7 +95,7 @@ inline ThreadPool::ThreadPool(size_t threads)
 					this->tasks_.pop();
 				}
 
-				task();
+				task(i);
 			}
 		}
 		);
@@ -102,13 +103,15 @@ inline ThreadPool::ThreadPool(size_t threads)
 
 // add new work item to the pool
 template<class F, class... Args>
-auto ThreadPool::enqueue(F&& f, Args&&... args) 
--> std::future<typename std::result_of<F(Args...)>::type>
+auto ThreadPool::enqueue(F&& f, Args&&... args)
+-> std::future<typename std::result_of<F(unsigned int, Args...)>::type>
 {
-	using return_type = typename std::result_of<F(Args...)>::type;
+	using return_type = typename std::result_of<F(unsigned int, Args...)>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type()> >(
-				std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+	auto task = std::make_shared< std::packaged_task<return_type(unsigned int)> >([&](unsigned int i)
+	{
+		return std::bind(std::forward<F>(f), i, std::forward<Args>(args)...)();
+	}
 				);
 
 	std::future<return_type> res = task->get_future();
@@ -119,7 +122,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 		if(stop_)
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 
-		tasks_.emplace([task](){ (*task)(); });
+		tasks_.emplace([task](unsigned int i){ (*task)(i); });
 	}
 	condition_.notify_one();
 	return res;

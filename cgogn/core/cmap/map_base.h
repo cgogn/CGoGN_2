@@ -551,7 +551,7 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void parallel_foreach_dart(const FUNC& f, unsigned int nb_threads = NB_THREADS - 1) const
+	inline void parallel_foreach_dart(const FUNC& f) const
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
@@ -578,10 +578,10 @@ public:
 				darts.push_back(it);
 				this->topology_.next(it.index);
 			}
-			futures.emplace_back(thread_pool->enqueue( [&](){
+			futures.emplace_back(thread_pool->enqueue( [&](unsigned int i){
 				const std::vector<Dart>& vec_darts = darts;
 				for (auto d : vec_darts)
-					f(d,0u);
+					f(d,i);
 		}));
 		}
 

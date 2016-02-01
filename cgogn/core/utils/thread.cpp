@@ -24,7 +24,8 @@
 #define CGOGN_UTILS_DLL_EXPORT
 
 #include <core/utils/thread.h>
-
+#include <core/utils/buffers.h>
+#include <core/utils/thread_pool.h>
 
 namespace cgogn
 {
@@ -63,7 +64,7 @@ CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
 
 CGOGN_UTILS_API ThreadPool* get_thread_pool()
 {
-	static std::unique_ptr<ThreadPool> pool(new ThreadPool(NB_THREADS));
+	static std::unique_ptr<ThreadPool> pool(new ThreadPool);
 	return pool.get();
 }
 
