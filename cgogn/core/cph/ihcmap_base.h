@@ -51,11 +51,11 @@ protected:
 
 	std::vector<unsigned int> nb_darts_per_level;
 
-	const ChunkArrayContainer<unsigned char>& topology_;
+    ChunkArrayContainer<unsigned char>& topo_;
 
 public:
-	IHCMapBase(const ChunkArrayContainer<unsigned char>& topology):
-		topology_(topology),
+    IHCMapBase(ChunkArrayContainer<unsigned char>& topology):
+        topo_(topology),
 	    current_level_(0),
         maximum_level_(0)
      {
@@ -64,8 +64,8 @@ public:
 
 	~IHCMapBase()
 	{
-		topology_.remove_attribute(dart_level_);
-        topology_.remove_attribute(edge_id_);
+        topo_.remove_attribute(dart_level_);
+        topo_.remove_attribute(edge_id_);
 	}
 
 	IHCMapBase(Self const&) = delete;
@@ -73,12 +73,12 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-protected:
+public:
 
 	void init()
 	{
-		dart_level_ = topology_.add_attribute<unsigned int>("dartLevel") ;
-		edge_id_ = topology_.add_attribute<unsigned int>("edgeId");
+        dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
+        edge_id_ = topo_.template add_attribute<unsigned int>("edgeId");
 	}
 
 	/***************************************************
@@ -134,9 +134,6 @@ protected:
 		unsigned int d_id = get_edge_id(d);
 		unsigned int e_id = get_edge_id(e);
 
-		// unsigned int d_id = get_edge_id(phi_1(d));
-		// unsigned int e_id = get_edge_id(phi1(d));
-
 		unsigned int id = d_id + e_id;
 
 		if(id == 0u)
@@ -156,10 +153,8 @@ protected:
 	}
 
 	inline unsigned int get_quad_refinement_edge_id(Dart d) const
-	{
-		// unsigned int e_id = get_edge_id(phi1(d));
+    {
 		unsigned int e_id = get_edge_id(d);
-
 
 		if(e_id == 0u)
 			return 1u;

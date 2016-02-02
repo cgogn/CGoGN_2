@@ -26,7 +26,7 @@
 
 
 #include <core/cmap/cmap2.h>
-#include <core/cph/cph.h
+#include <core/cph/ihcmap_base.h>
 // #include <core/cph/attribute_handler_cph.h>
 
 namespace cgogn
@@ -55,16 +55,16 @@ public:
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public CPH<DATA_TRAITS>
+class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public IHCMapBase<DATA_TRAITS>
 {
 public:
 
 	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit_CMAP;
-	typedef CPH Inherit_CPH;
+    typedef IHCMapBase<DATA_TRAITS> Inherit_CPH;
 	typedef IHCMap2_T<DATA_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit;
-	friend typename Inherit::Inherit;
+    friend typename Self::Inherit_CMAP;
+//	friend typename Inherit::Inherit;
 
 	friend class DartMarker_T<Self>;
 
@@ -80,12 +80,12 @@ public:
 	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+    using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
     template <typename T>
-    using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+    using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+    using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
 	template<typename T>
 	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
 	template<typename T>
@@ -112,7 +112,7 @@ protected:
 	}
 
 public:
-    IHCMap2_T() : Inherit_MAP(), Inherit_CPH(this->topology_)
+    IHCMap2_T() : Inherit_CMAP(), Inherit_CPH(this->topology_)
 	{
 		init();    
 	}
@@ -135,7 +135,7 @@ protected:
         cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 	
 		bool finished = false ;
-		unsigned int edge_id = get_edge_id(d) ;
+        unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
 		Dart it = d ;
 		do
 		{
@@ -186,8 +186,7 @@ protected:
 		return Inherit_CMAP::phi2(Inherit_CMAP::phi_1(phi1(d)));
 	}
 
-protected:
-
+public:
 	/**
 	* \brief add a Dart in the map
 	* @return the new Dart
