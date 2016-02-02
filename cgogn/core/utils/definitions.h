@@ -54,6 +54,26 @@
 #define CGOGN_CONSTEXPR constexpr
 #endif
 
+/*
+ * The macro CGOGN_STRONG_INLINE is useful to force inline functions in situations where MSVC needs forceinline
+ *  but gcc or clang are still doing fine.
+*/
+#if (defined _MSC_VER) || (defined __INTEL_COMPILER)
+#define CGOGN_STRONG_INLINE __forceinline
+#else
+#define CGOGN_STRONG_INLINE inline
+#endif
+
+/*
+ * The macro CGOGN_ALWAYS_INLINE is more powerfull than CGOGN_STRONG_INLINE when using clang or gcc.
+ * WARNING : use with caution, it can badly impact the compilation time.
+*/
+#if (defined _MSC_VER) || (defined __INTEL_COMPILER)
+#define CGOGN_ALWAYS_INLINE CGOGN_STRONG_INLINE
+#else
+#define CGOGN_ALWAYS_INLINE __attribute__((always_inline)) inline
+#endif
+
 /**
  * \brief No return declaration for CGOGN symbols.
  */
