@@ -561,9 +561,11 @@ public:
 		const unsigned int nb_chunks = this->nb_darts()/PARALLEL_BUFFER_SIZE + 1u;
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 
-		std::vector<std::vector<Dart>> vd(nb_chunks);
+		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		std::vector<std::vector<Dart>*> dart_buffers;
 		std::vector<Future> futures;
 		futures.reserve(nb_chunks);
+		dart_buffers.reserve(nb_chunks);
 
 
 		Dart it = Dart(this->topology_.begin());
@@ -571,16 +573,16 @@ public:
 
 		for (unsigned int i = 0u; i < nb_chunks; ++i)
 		{
-			std::vector<Dart>& darts  = vd[i];
+			dart_buffers.push_back(dbuffs->get_buffer());
+			std::vector<Dart>& darts(*dart_buffers.back());
 			darts.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned j = 0; j < PARALLEL_BUFFER_SIZE && it != end; ++j)
 			{
 				darts.push_back(it);
 				this->topology_.next(it.index);
 			}
-			futures.emplace_back(thread_pool->enqueue( [&](unsigned int i){
-				const std::vector<Dart>& vec_darts = darts;
-				for (auto d : vec_darts)
+			futures.emplace_back(thread_pool->enqueue( [&darts,&f](unsigned int i){
+				for (auto d : darts)
 					f(d,i);
 		}));
 		}
@@ -589,6 +591,8 @@ public:
 		{
 			fu.wait();
 		}
+		for (auto &b : dart_buffers)
+			dbuffs->release_buffer(b);
 	}
 
 	/**
