@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#define CGOGN_UTILS_DLL_EXPORT
+
 #include <core/utils/thread_pool.h>
 
 namespace cgogn
