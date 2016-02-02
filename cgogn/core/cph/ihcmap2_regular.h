@@ -70,5 +70,4 @@ public:
 
 } // namespace cgogn
 
-
 #endif // CORE_CPH_IHCMAP2_REGULAR_H_
