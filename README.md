@@ -1,5 +1,7 @@
 # CGoGN_2
 
+[![Join the chat at https://gitter.im/cgogn/CGoGN_2](https://badges.gitter.im/cgogn/CGoGN_2.svg)](https://gitter.im/cgogn/CGoGN_2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 CGoGN is a geometric modeling C++ library that provides an efficient implementation of combinatorial maps.
 
 ## Building and installing CGoGN
