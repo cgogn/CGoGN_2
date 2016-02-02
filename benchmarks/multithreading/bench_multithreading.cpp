@@ -117,6 +117,7 @@ int main(int argc, char** argv)
 
 		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
 		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
+		FaceAttributeHandler<Vec3> face_normal_mt = map.add_attribute<Vec3, Map2::FACE>("normal_mt");
 
 
 
@@ -144,7 +145,7 @@ int main(int argc, char** argv)
 			{
 				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f, unsigned int)
 				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
 				});
 			}
 
@@ -154,9 +155,23 @@ int main(int argc, char** argv)
 			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_faces dart marking" << std::endl;
 		}
 
-		// END DART MARKING
+			// END DART MARKING
 
-		// CELL MARKING
+		{
+			// CHECKING NORMALS
+			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			{
+				Vec3 error = face_normal[f] - face_normal_mt[f];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+					std::abort;
+				}
+
+			});
+		}
+
+			// CELL MARKING
 
 		{
 			std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -181,7 +196,7 @@ int main(int argc, char** argv)
 			{
 				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Face f, unsigned int)
 				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
 				});
 			}
 
@@ -192,6 +207,21 @@ int main(int argc, char** argv)
 		}
 
 		// END CELL MARKING
+
+
+		{
+			// CHECKING NORMALS
+			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			{
+				Vec3 error = face_normal[f] - face_normal_mt[f];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+					std::abort;
+				}
+
+			});
+		}
 
 		map.enable_topo_cache<FACE>();
 
@@ -221,7 +251,7 @@ int main(int argc, char** argv)
 			{
 				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Face f, unsigned int)
 				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
 				});
 			}
 
@@ -230,9 +260,24 @@ int main(int argc, char** argv)
 			std::chrono::duration<double> elapsed_seconds = end - start;
 			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_faces topo cache" << std::endl;
 		}
+
+			// END TOPO CACHE
+		{
+			// CHECKING NORMALS
+			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			{
+				Vec3 error = face_normal[f] - face_normal_mt[f];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+					std::abort;
+				}
+
+			});
+		}
 	}
 
-	// END TOPO CACHE
+
 
 	return 0;
 }
