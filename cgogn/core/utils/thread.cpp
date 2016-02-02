@@ -64,8 +64,9 @@ CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
 
 CGOGN_UTILS_API ThreadPool* get_thread_pool()
 {
-	static std::unique_ptr<ThreadPool> pool(new ThreadPool);
-	return pool.get();
+	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
+	static ThreadPool pool;
+	return &pool;
 }
 
 } // namespace cgogn
