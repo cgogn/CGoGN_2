@@ -40,6 +40,7 @@ set(CGOGN_THIRDPARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
 option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." ON)
+option(CGOGN_BUILD_BENCHS "Build the benchmarks" ON)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
 if (NOT MSVC)
 	option(CGOGN_USE_PARALLEL_GLIBCXX "Highly experimental : compiles using the parallel mode." OFF)
@@ -107,7 +108,9 @@ endif(CGOGN_BUILD_TESTS)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 add_subdirectory(${CGOGN_SOURCE_DIR})
-
+if(${CGOGN_BUILD_BENCHS})
+	add_subdirectory(benchmarks)
+endif(${CGOGN_BUILD_BENCHS})
 
 
 ##  TODO a mettre dans un fichier cmake particulier
