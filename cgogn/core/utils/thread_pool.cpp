@@ -47,13 +47,13 @@ ThreadPool::~ThreadPool()
 		worker.join();
 }
 
-
 ThreadPool::ThreadPool() : stop_(false)
 {
 	for(unsigned int i = 0u; i< MAX_NB_THREADS ;++i)
 		workers_.emplace_back(
 					[this,i]
 		{
+			cgogn::thread_start();
 			for(;;)
 			{
 				std::function<void(unsigned int)> task;
@@ -63,7 +63,11 @@ ThreadPool::ThreadPool() : stop_(false)
 					this->condition_.wait(lock,
 										  [this]{ return this->stop_ || !this->tasks_.empty(); });
 					if(this->stop_ && this->tasks_.empty())
+					{
+						cgogn::thread_stop();
 						return;
+					}
+
 					task = std::move(this->tasks_.front());
 					this->tasks_.pop();
 				}
