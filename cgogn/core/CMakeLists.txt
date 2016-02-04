@@ -35,6 +35,7 @@ set(HEADER_FILES
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
+	utils/thread_pool.h
 	utils/thread_barrier.h
 	utils/string.h
 	utils/precision.h
@@ -59,6 +60,7 @@ set(SOURCE_FILES
 
 	utils/assert.cpp
 	utils/thread.cpp
+	utils/thread_pool.cpp
 	utils/serialization.cpp
 )
 

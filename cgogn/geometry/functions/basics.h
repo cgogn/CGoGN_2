@@ -21,52 +21,33 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#ifndef GEOMETRY_FUNCTIONS_BASICS_H_
+#define GEOMETRY_FUNCTIONS_BASICS_H_
 
-#include <core/utils/thread.h>
-#include <core/utils/buffers.h>
-#include <core/utils/thread_pool.h>
+#include <cmath>
 
 namespace cgogn
 {
 
-CGOGN_UTILS_API unsigned int NB_THREADS = get_nb_threads();
-
-CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
-CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
-
-CGOGN_UTILS_API void thread_start()
+namespace geometry
 {
-	if (dart_buffers_thread == nullptr)
-		dart_buffers_thread = new Buffers<Dart>();
 
-	if (uint_buffers_thread == nullptr)
-		uint_buffers_thread = new Buffers<unsigned int>();
+/**
+ * @brief normalize_safe, normalize a non-zero vector
+ * @param v
+ */
+template<typename VEC3>
+inline void normalize_safe(VEC3& v)
+{
+	using Scalar = typename VEC3::Scalar;
+
+	const Scalar norm2 = v.squaredNorm();
+	if (norm2 > Scalar(0))
+		v/=std::sqrt(norm2);
 }
 
-CGOGN_UTILS_API void thread_stop()
-{
-	delete dart_buffers_thread;
-	delete uint_buffers_thread;
-	dart_buffers_thread = nullptr;
-	uint_buffers_thread = nullptr;
-}
-
-CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
-{
-	return dart_buffers_thread;
-}
-
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
-{
-	return uint_buffers_thread;
-}
-
-CGOGN_UTILS_API ThreadPool* get_thread_pool()
-{
-	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
-	static ThreadPool pool;
-	return &pool;
-}
+} // namespace geometry
 
 } // namespace cgogn
+
+#endif // GEOMETRY_FUNCTIONS_BASICS_H_
