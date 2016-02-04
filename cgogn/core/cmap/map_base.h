@@ -148,12 +148,12 @@ protected:
 	}
 
 	/**
-	 * \brief Removes a topological element of PRIM_SIZE 
+	 * \brief Removes a topological element of PRIM_SIZE
 	 * from the topology container
 	 * \details Removing a topological element consists in
 	 * removing PRIM_SIZE lines of the topological container starting
-	 * from index 
-	 * 
+	 * from index
+	 *
 	 * \param int [description]
 	 */
 	inline void remove_topology_element(unsigned int index)
@@ -557,43 +557,53 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
 		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
+		using VecDarts = std::vector<Dart>;
 
-		const unsigned int nb_chunks = this->nb_darts()/PARALLEL_BUFFER_SIZE + 1u;
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
+		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+
+		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		dart_buffers[0].reserve(nb_threads_pool);
+		dart_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
-		std::vector<std::vector<Dart>*> dart_buffers;
-		std::vector<Future> futures;
-		futures.reserve(nb_chunks);
-		dart_buffers.reserve(nb_chunks);
 
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
-		for (unsigned int i = 0u; i < nb_chunks && it != end; ++i)
+		while (it != end)
 		{
-			dart_buffers.push_back(dbuffs->get_buffer());
-			std::vector<Dart>* darts = dart_buffers.back();
-			darts->reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned j = 0u; j < PARALLEL_BUFFER_SIZE && it != end; ++j)
+			for (unsigned i = 0u; i < 2u; ++i)
 			{
-				darts->push_back(it);
-				this->topology_.next(it.index);
+				for (unsigned int j = 0u; j < cgogn::MAX_NB_THREADS && it != end ; ++j)
+				{
+					dart_buffers[i].push_back(dbuffs->get_buffer());
+					std::vector<Dart>& darts = *dart_buffers[i].back();
+					darts.reserve(PARALLEL_BUFFER_SIZE);
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
+					{
+						darts.push_back(it);
+						this->topology_.next(it.index);
+					}
+					futures[i].push_back(thread_pool->enqueue( [&darts ,&f](unsigned int th_id){
+						for (auto d : darts)
+							f(d,th_id);
+					}));
+				}
+				const unsigned int id = (i+1u)%2u;
+				for (auto& fu: futures[id])
+					fu.wait();
+				for (auto &b : dart_buffers[id])
+					dbuffs->release_cell_buffer(b);
+
+				futures[id].clear();
+				dart_buffers[id].clear();
 			}
-
-			futures.push_back(thread_pool->enqueue( [darts ,&f](unsigned int k){
-				for (auto d : (*darts))
-					f(d,k);
-		}));
-
 		}
-
-		for (auto& fu: futures)
-		{
-			fu.wait();
-		}
-		for (auto &b : dart_buffers)
-			dbuffs->release_buffer(b);
 	}
 
 	/**
@@ -735,12 +745,16 @@ protected:
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
-		std::vector<VecCell*> cells_buffers;
-		std::vector<Future> futures;
-		cells_buffers.reserve(512u);
-		futures.reserve(512u);
-
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
+		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+
+		std::array<std::vector<VecCell*>, 2> cells_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		cells_buffers[0].reserve(nb_threads_pool);
+		cells_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		DartMarker dm(*to_concrete());
@@ -749,32 +763,38 @@ protected:
 
 		while (it != end)
 		{
-			const unsigned int index = cells_buffers.size();
-			cells_buffers.push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-			VecCell& cells = *cells_buffers.back();
-			cells.reserve(PARALLEL_BUFFER_SIZE);
-
-			for (unsigned int j = 0u ; j < PARALLEL_BUFFER_SIZE && it != end;)
+			for (unsigned i = 0u; i < 2u; ++i)
 			{
-				if (!dm.is_marked(it))
+				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
 				{
-					dm.template mark_orbit<ORBIT>(it);
-					cells.push_back(Cell<ORBIT>(it));
-					++j;
+					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
+					VecCell& cells = *cells_buffers[i].back();
+					cells.reserve(PARALLEL_BUFFER_SIZE);
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
+					{
+						if (!dm.is_marked(it))
+						{
+							dm.template mark_orbit<ORBIT>(it);
+							cells.push_back(Cell<ORBIT>(it));
+							++k;
+						}
+						this->topology_.next(it.index);
+					}
+					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+						for (auto c : cells)
+							f(c,th_id);
+					}));
 				}
-				this->topology_.next(it.index);
+				const unsigned int id = (i+1u)%2u;
+				for (auto& fu: futures[id])
+					fu.wait();
+				for (auto &b : cells_buffers[id])
+					dbuffs->release_cell_buffer(b);
+
+				futures[id].clear();
+				cells_buffers[id].clear();
 			}
-			futures.emplace_back(thread_pool->enqueue( [&cells_buffers,&f,index](unsigned int i){
-				for (auto c : *(cells_buffers[index]))
-					f(c,i);
-			}));
 		}
-		for (auto& fu: futures)
-		{
-			fu.wait();
-		}
-		for (auto &b : cells_buffers)
-			dbuffs->release_cell_buffer(b);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -799,48 +819,56 @@ protected:
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
-		const unsigned int nb_chunks = this->nb_cells<ORBIT>()/PARALLEL_BUFFER_SIZE + 1u;
-
-		std::vector<VecCell*> cells_buffers;
-		std::vector<Future> futures;
-		cells_buffers.reserve(nb_chunks);
-		futures.reserve(nb_chunks);
-
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
+		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+
+		std::array<std::vector<VecCell*>, 2> cells_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		cells_buffers[0].reserve(nb_threads_pool);
+		cells_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		CellMarker<ORBIT> cm(*to_concrete());
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
-		for (unsigned int i = 0u; i < nb_chunks; ++i)
+		while (it != end)
 		{
-			cells_buffers.push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-			VecCell& cells = *cells_buffers.back();
-			cells.reserve(PARALLEL_BUFFER_SIZE);
-
-			for (unsigned int j = 0u; j < PARALLEL_BUFFER_SIZE && it != end;)
+			for (unsigned i = 0u; i < 2u; ++i)
 			{
-				if (!cm.is_marked(it))
+				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
 				{
-					cm.mark(it);
-					cells.push_back(it);
-					++j;
+					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
+					VecCell& cells = *cells_buffers[i].back();
+					cells.reserve(PARALLEL_BUFFER_SIZE);
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
+					{
+						if (!cm.is_marked(it))
+						{
+							cm.mark(it);
+							cells.push_back(it);
+							++k;
+						}
+						this->topology_.next(it.index);
+					}
+					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+						for (auto c : cells)
+							f(c,th_id);
+					}));
 				}
-				this->topology_.next(it.index);
-			}
-			futures.emplace_back(thread_pool->enqueue( [&cells,&f](unsigned int i){
-				for (auto c : cells)
-					f(c,i);
-			}));
-		}
+				const unsigned int id = (i+1u)%2u;
+				for (auto& fu: futures[id])
+					fu.wait();
+				for (auto &b : cells_buffers[id])
+					dbuffs->release_cell_buffer(b);
 
-		for (auto& fu: futures)
-		{
-			fu.wait();
+				futures[id].clear();
+				cells_buffers[id].clear();
+			}
 		}
-		for (auto &b : cells_buffers)
-			dbuffs->release_cell_buffer(b);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -860,14 +888,17 @@ protected:
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
-		const unsigned int nb_chunks = this->nb_cells<ORBIT>()/PARALLEL_BUFFER_SIZE + 1u;
-
-		std::vector<VecCell*> cells_buffers;
-		std::vector<Future> futures;
-		cells_buffers.reserve(nb_chunks);
-		futures.reserve(nb_chunks);
-
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
+		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+
+		std::array<std::vector<VecCell*>, 2> cells_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		cells_buffers[0].reserve(nb_threads_pool);
+		cells_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
+
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		unsigned int it = this->attributes_[ORBIT].begin();
@@ -876,29 +907,35 @@ protected:
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 		const auto& attr = this->attributes_[ORBIT];
 
-		for (unsigned int i = 0u; i < nb_chunks; ++i)
+		while (it != end)
 		{
-			cells_buffers.push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-			VecCell& cells = *cells_buffers.back();
-			cells.reserve(PARALLEL_BUFFER_SIZE);
-
-			for (unsigned int j = 0u; j < PARALLEL_BUFFER_SIZE && it != end; ++j)
+			for (unsigned i = 0u; i < 2u; ++i)
 			{
-				cells.push_back(cache[it]);
-				attr.next(it);
-			}
-			futures.emplace_back(thread_pool->enqueue( [&cells,&f](unsigned int i){
-				for (auto c : cells)
-					f(c,i);
-			}));
-		}
+				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
+				{
+					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
+					VecCell& cells = *cells_buffers[i].back();
+					cells.reserve(PARALLEL_BUFFER_SIZE);
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
+					{
+						cells.push_back(cache[it]);
+						attr.next(it);
+					}
+					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+						for (auto c : cells)
+							f(c,th_id);
+					}));
+				}
+				const unsigned int id = (i+1u)%2u;
+				for (auto& fu: futures[id])
+					fu.wait();
+				for (auto &b : cells_buffers[id])
+					dbuffs->release_cell_buffer(b);
 
-		for (auto& fu: futures)
-		{
-			fu.wait();
+				futures[id].clear();
+				cells_buffers[id].clear();
+			}
 		}
-		for (auto &b : cells_buffers)
-			dbuffs->release_cell_buffer(b);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
