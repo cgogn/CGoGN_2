@@ -579,9 +579,10 @@ public:
 		{
 			for (unsigned i = 0u; i < 2u; ++i)
 			{
-				for (unsigned int j = 0u; j < cgogn::MAX_NB_THREADS && it != end ; ++j)
+				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
 				{
 					dart_buffers[i].push_back(dbuffs->get_buffer());
+					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
 					std::vector<Dart>& darts = *dart_buffers[i].back();
 					darts.reserve(PARALLEL_BUFFER_SIZE);
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
@@ -602,7 +603,17 @@ public:
 
 				futures[id].clear();
 				dart_buffers[id].clear();
+
+				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+				if (it == end && i == 1u)
+				{
+					for (auto& fu: futures[1u])
+						fu.wait();
+					for (auto &b : dart_buffers[1u])
+						dbuffs->release_buffer(b);
+				}
 			}
+
 		}
 	}
 
@@ -793,6 +804,15 @@ protected:
 
 				futures[id].clear();
 				cells_buffers[id].clear();
+
+				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+				if (it == end && i == 1u)
+				{
+					for (auto& fu: futures[1u])
+						fu.wait();
+					for (auto &b : cells_buffers[1u])
+						dbuffs->release_cell_buffer(b);
+				}
 			}
 		}
 	}
@@ -867,6 +887,15 @@ protected:
 
 				futures[id].clear();
 				cells_buffers[id].clear();
+
+				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+				if (it == end && i == 1u)
+				{
+					for (auto& fu: futures[1u])
+						fu.wait();
+					for (auto &b : cells_buffers[1u])
+						dbuffs->release_cell_buffer(b);
+				}
 			}
 		}
 	}
@@ -934,6 +963,15 @@ protected:
 
 				futures[id].clear();
 				cells_buffers[id].clear();
+
+				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+				if (it == end && i == 1u)
+				{
+					for (auto& fu: futures[1u])
+						fu.wait();
+					for (auto &b : cells_buffers[1u])
+						dbuffs->release_cell_buffer(b);
+				}
 			}
 		}
 	}
