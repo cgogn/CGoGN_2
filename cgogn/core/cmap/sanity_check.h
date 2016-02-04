@@ -24,6 +24,8 @@
 #ifndef CORE_CMAP_SANITY_CHECK_H_
 #define CORE_CMAP_SANITY_CHECK_H_
 
+#include <core/cmap/map_base_data.h>
+
 namespace cgogn
 {
 
@@ -96,15 +98,17 @@ bool is_container_well_referenced(MAP& map)
 	const MAP& const_map = static_cast<const MAP&>(map);
 	const typename MAP::template ChunkArrayContainer<unsigned int>& container = const_map.template get_attribute_container<ORBIT>();
 
+	StandardElementValidator v;
+
 	// a counter is initialized to 0 for each "used" index of the container
-	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+	for (unsigned int i = container.begin(v), end = container.end(); i != end; container.next(i, v))
 		counter[i] = 0;
 
 	// for each dart of the map, the counter corresponding to its embedding index is incremented
 	map.foreach_dart([&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; });
 
 	bool result = true;
-	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+	for (unsigned int i = container.begin(v), end = container.end(); i != end; container.next(i, v))
 	{
 		unsigned int nb_refs = container.get_nb_refs(i);
 		if (nb_refs == 1)

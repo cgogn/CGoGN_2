@@ -52,6 +52,16 @@ public:
 	virtual bool valid(unsigned int) const = 0;
 };
 
+class StandardElementValidator : public ContainerElementValidator
+{
+public:
+
+	inline bool valid(unsigned int index) const override
+	{
+		return true;
+	}
+};
+
 /**
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNKSIZE chunk size for ChunkArray
@@ -394,13 +404,6 @@ public:
 			++it;
 		return it;
 	}
-	inline unsigned int begin() const
-	{
-		unsigned int it = 0u;
-		while (it < nb_max_lines_ && !used(it))
-			++it;
-		return it;
-	}
 
 	/**
 	 * @brief end
@@ -422,13 +425,6 @@ public:
 			++it;
 		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
 	}
-	inline void next(unsigned int& it) const
-	{
-		do
-		{
-			++it;
-		} while (it < nb_max_lines_ && !used(it));
-	}
 
 	/**
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
@@ -441,13 +437,6 @@ public:
 			it += prim_size;
 		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
 	}
-	inline void next_primitive(unsigned int& it, unsigned int prim_size) const
-	{
-		do
-		{
-			it += prim_size;
-		} while (it < nb_max_lines_ && !used(it));
-	}
 
 	/**
 	 * @brief reverse begin of container without browser
@@ -457,13 +446,6 @@ public:
 	{
 		unsigned int it = nb_max_lines_- 1u;
 		while (it != 0xffffffff && !used(it) && !v.valid(it))
-			--it;
-		return it;
-	}
-	inline unsigned int rbegin() const
-	{
-		unsigned int it = nb_max_lines_- 1u;
-		while (it != 0xffffffff && !used(it))
 			--it;
 		return it;
 	}
@@ -487,13 +469,6 @@ public:
 		{
 			--it;
 		} while (it != 0xffffffff && !used(it) && !v.valid(it));
-	}
-	inline void rnext(unsigned int &it) const
-	{
-		do
-		{
-			--it;
-		} while (it != 0xffffffff && !used(it));
 	}
 
 	/**
@@ -571,7 +546,9 @@ public:
 		map_old_new.clear();
 		map_old_new.resize(nb_max_lines_, 0xffffffff);
 
-		unsigned int up = rbegin();
+		StandardElementValidator v;
+
+		unsigned int up = rbegin(v);
 		unsigned int down = 0u;
 
 		while (down < up)
@@ -583,7 +560,7 @@ public:
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
 					copy_line(rdown, up);
-					rnext(up);
+					rnext(up, v);
 				}
 				down += PRIMSIZE;
 			}

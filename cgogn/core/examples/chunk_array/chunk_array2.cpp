@@ -11,6 +11,8 @@ using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, unsigned int>;
 using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
 
+using StandardElementValidator = cgogn::StandardElementValidator;
+
 using DoubleVecList = std::list< std::vector< double > >;
 using StringListVec = std::vector< std::list < std::string > >;
 using StringArray = std::array< std::string, 2>;
@@ -24,6 +26,7 @@ int test_save()
 	std::cout << "=============== TEST SAVE ===============" << std::endl;
 
 	ChunkArrayContainer container;
+	StandardElementValidator v;
 
 	ChunkArray<float>* att1 = container.add_attribute<float>("float");
 	ChunkArray<std::string>* att4 = container.add_attribute<std::string>("std::string");
@@ -34,7 +37,7 @@ int test_save()
 	for (unsigned int i = 0u; i < 10u; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		(*att1)[i] = 0.1f*float(i);
 		(*att4)[i] = std::string(3,char('Z'-i));
@@ -59,7 +62,7 @@ int test_save()
 	container.remove_lines<1>(5);
 
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		if (att1)
 			std::cout << "FLOAT=" << (*att1)[i] << "/";
@@ -113,6 +116,7 @@ int test_load(bool with_register)
 {
 	std::cout << "=============== TEST LOAD ===============" << std::endl;
 	ChunkArrayContainer cont2;
+	StandardElementValidator v;
 
 	if (with_register)
 	{
@@ -131,7 +135,7 @@ int test_load(bool with_register)
 	ChunkArray<StringListVec>* att3 = cont2.get_attribute<StringListVec>("VecListString");
 	ChunkArray<StringArray>* att_string_array = cont2.get_attribute<StringArray>("StringArray");
 
-	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
+	for(unsigned int i = cont2.begin(v); i != cont2.end(); cont2.next(i, v))
 	{
 		if (att1)
 			std::cout << "FLOAT=" << (*att1)[i] << "/";

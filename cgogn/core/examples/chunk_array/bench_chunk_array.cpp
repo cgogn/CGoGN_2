@@ -1,6 +1,7 @@
 
 #include <core/container/chunk_array_container.h>
 #include <core/utils/serialization.h>
+
 #define BLK_SZ 4096
 
 using namespace cgogn;
@@ -43,6 +44,8 @@ int test1()
 	std::cout << "= TEST 1 = ref unsigned char" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
+	StandardElementValidator v;
+
 	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
@@ -50,7 +53,7 @@ int test1()
 	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
@@ -79,6 +82,8 @@ int test2()
 	std::cout << "= TEST 2 = ref bool" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
+	StandardElementValidator v;
+
 	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
@@ -86,7 +91,7 @@ int test2()
 	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
@@ -115,12 +120,14 @@ int test3()
 	std::cout << "= TEST 3 = random bool cleaning" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
+	StandardElementValidator v;
+
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
 	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		att1->set_value(i, true);
 	}
@@ -143,12 +150,14 @@ int test4()
 	std::cout << "= TEST 4 = random bool cleaning with set_false_byte" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ,  bool> container;
+	StandardElementValidator v;
+
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
 	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 	{
 		att1->set_value(i, true);
 	}
@@ -171,21 +180,23 @@ int test5()
 	std::cout << "= TEST 5 = Traversal" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
+	StandardElementValidator v;
+
 	ChunkArray<BLK_SZ,unsigned int>* att1 = container.add_attribute<unsigned int>("uints");
 
 	for (unsigned int i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 		att1->operator[](i) = i;
 
-	for(unsigned int i = container.begin(); i < container.end(); i += 9)
+	for(unsigned int i = container.begin(v); i < container.end(); i += 9)
 		container.remove_lines<1>(i);
 
 	unsigned int  total = 0;
 	for (unsigned int j = 0; j < 50; ++j)
 	{
-		for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		for(unsigned int i = container.begin(v); i != container.end(); container.next(i, v))
 		{
 			if (att1->operator[](i) % i != 0)
 				total += att1->operator[](i);

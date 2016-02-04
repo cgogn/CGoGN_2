@@ -397,29 +397,34 @@ public:
 	class const_iterator
 	{
 	public:
-		const AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+
+		const Self* const ah_ptr_;
+		const ContainerElementValidator& v_;
 		unsigned int index_;
 
-		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline const_iterator(const Self* ah, unsigned int i, const ContainerElementValidator& v) :
 			ah_ptr_(ah),
-			index_(i)
+			index_(i),
+			v_(v)
 		{}
 
 		inline const_iterator(const const_iterator& it) :
 			ah_ptr_(it.ah_ptr_),
-			index_(it.index_)
+			index_(it.index_),
+			v_(it.v_)
 		{}
 
 		inline const_iterator& operator=(const const_iterator& it)
 		{
 			ah_ptr_ = it.ah_ptr_;
 			index_ = it.index_;
+			v_ = it.v_;
 			return *this;
 		}
 
 		inline const_iterator& operator++()
 		{
-			ah_ptr_->chunk_array_cont_->next(index_);
+			ah_ptr_->chunk_array_cont_->next(index_, v_);
 			return *this;
 		}
 
@@ -437,41 +442,53 @@ public:
 
 	inline const_iterator begin() const
 	{
-		return const_iterator(this, this->chunk_array_cont_->begin());
+		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		return const_iterator(this, this->chunk_array_cont_->begin(v), v);
+	}
+
+	inline const_iterator begin(const CMapObserver& o) const
+	{
+		const ContainerElementValidator& v = o.topo();
+		return const_iterator(this, this->chunk_array_cont_->begin(v), v);
 	}
 
 	inline const_iterator end() const
 	{
-		return const_iterator(this, this->chunk_array_cont_->end());
+		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		return const_iterator(this, this->chunk_array_cont_->end(), v);
 	}
 
 
 	class iterator
 	{
 	public:
-		AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+		Self* const ah_ptr_;
+		const ContainerElementValidator& v_;
 		unsigned int index_;
 
-		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline iterator(Self* ah, unsigned int i, const ContainerElementValidator& v) :
 			ah_ptr_(ah),
-			index_(i)
+			index_(i),
+			v_(v)
 		{}
 
 		inline iterator(const iterator& it) :
 			ah_ptr_(it.ah_ptr_),
-			index_(it.index_)
+			index_(it.index_),
+			v_(it.v_)
 		{}
 
 		inline iterator& operator=(const iterator& it)
 		{
 			ah_ptr_ = it.ah_ptr_;
 			index_ = it.index_;
+			v_ = it.v_;
 			return *this;
 		}
 
 		inline iterator& operator++()
 		{
-			ah_ptr_->chunk_array_cont_->next(index_);
+			ah_ptr_->chunk_array_cont_->next(index_, v_);
 			return *this;
 		}
 
@@ -489,12 +506,20 @@ public:
 
 	inline iterator begin()
 	{
-		return iterator(this, this->chunk_array_cont_->begin());
+		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		return iterator(this, this->chunk_array_cont_->begin(v), v);
+	}
+
+	inline iterator begin(const CMapObserver& o)
+	{
+		const ContainerElementValidator& v = o.topo();
+		return const_iterator(this, this->chunk_array_cont_->begin(v), v);
 	}
 
 	inline iterator end()
 	{
-		return iterator(this, this->chunk_array_cont_->end());
+		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		return iterator(this, this->chunk_array_cont_->end(), v);
 	}
 };
 

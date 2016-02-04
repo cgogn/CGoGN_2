@@ -30,6 +30,7 @@
 #include <core/container/chunk_array_container.h>
 #include <core/basic/cell.h>
 #include <core/cmap/map_traits.h>
+#include <core/cmap/cmap_observer.h>
 
 #include <thread>
 #include <mutex>
@@ -90,6 +91,7 @@ public:
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
+	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
@@ -125,6 +127,8 @@ protected:
 
 	/// global topo cache shortcuts
 	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
+
+	StandardCMapObserver standard_observer_;
 
 public:
 

@@ -30,18 +30,6 @@
 namespace cgogn
 {
 
-class StandardElementValidator : public ContainerElementValidator
-{
-public:
-
-	inline bool valid(unsigned int index) const override
-	{
-		return true;
-	}
-};
-
-
-
 class CMapObserver
 {
 protected:
