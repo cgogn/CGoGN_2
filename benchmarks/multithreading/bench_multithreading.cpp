@@ -32,16 +32,17 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-struct MyMapTraits : public cgogn::DefaultMapTraits
-{
-	static const unsigned int CHUNK_SIZE = 8192;
-};
 
-using Map2 = cgogn::CMap2<MyMapTraits>;
+
+using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+
+const cgogn::Orbit VERTEX = Map2::VERTEX;
+using Vertex = cgogn::Cell<VERTEX>;
+
 const cgogn::Orbit FACE = Map2::FACE;
 using Face = cgogn::Cell<FACE>;
 
-const unsigned int ITERATIONS = 10000u;
+const unsigned int ITERATIONS = 1u;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
@@ -275,6 +276,183 @@ int main(int argc, char** argv)
 
 			});
 		}
+
+
+
+		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, VERTEX>("normal");
+		VertexAttributeHandler<Vec3> vertex_normal_mt = map.add_attribute<Vec3, VERTEX>("normal_mt");
+
+
+		// VERTICES NORMALS
+
+
+
+		// DART MARKING
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+			{
+				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices dart marking"  << std::endl;
+	}
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v, unsigned int)
+			{
+				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+
+		// END DART MARKING
+
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices dart marking" << std::endl;
+	}
+
+
+	{
+		// CHECKING  VERTEX NORMALS
+		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+		{
+			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
+			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+			{
+				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
+				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
+				std::abort;
+			}
+
+		});
+	}
+
+
+		// CELL MARKING
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Vertex v)
+			{
+				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices cell marking"  << std::endl;
+	}
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Vertex v, unsigned int)
+			{
+				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+
+
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices cell marking" << std::endl;
+	}
+
+	// END CELL MARKING
+
+
+	{
+		// CHECKING  VERTEX NORMALS
+		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+		{
+			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
+			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+			{
+				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
+				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
+				std::abort;
+			}
+
+		});
+	}
+
+
+
+
+		// TOPO CACHE
+		map.enable_topo_cache<VERTEX>();
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Vertex v)
+			{
+				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices topo cache"  << std::endl;
+	}
+
+	{
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
+		{
+			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Vertex v, unsigned int)
+			{
+				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			});
+		}
+
+
+		end =  std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices topo cache" << std::endl;
+	}
+
+
+	{
+		// CHECKING  VERTEX NORMALS
+		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+		{
+			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
+			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+			{
+				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
+				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
+				std::abort;
+			}
+
+		});
+	}
+
+
+
 	}
 
 
