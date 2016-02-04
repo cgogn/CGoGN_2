@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CPH_CPH_H_
-#define CORE_CPH_CPH_H_
+#ifndef MULTIRESOLUTION_CPH_IHCMAP_BASE_H_
+#define MULTIRESOLUTION_CPH_IHCMAP_BASE_H_
 
 #include <core/container/chunk_array_container.h>
 #include <core/utils/assert.h>
@@ -37,8 +37,8 @@ class IHCMapBase
 
 	template <typename T>
 	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
-    template <typename T>
-    using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
+	template <typename T>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
 
 protected:
 	unsigned int current_level_;
@@ -46,26 +46,26 @@ protected:
 
 	// DartAttributeHandler<unsigned int> dart_level_ ;
 	// DartAttributeHandler<unsigned int> edge_id_ ;
-    ChunkArray<unsigned int>* dart_level_;
-    ChunkArray<unsigned int>* edge_id_;
+	ChunkArray<unsigned int>* dart_level_;
+	ChunkArray<unsigned int>* edge_id_;
 
 	std::vector<unsigned int> nb_darts_per_level;
 
-    ChunkArrayContainer<unsigned char>& topo_;
+	ChunkArrayContainer<unsigned char>& topo_;
 
 public:
-    IHCMapBase(ChunkArrayContainer<unsigned char>& topology):
-        topo_(topology),
-	    current_level_(0),
-        maximum_level_(0)
-     {
-     	init();
-     } 
+	IHCMapBase(ChunkArrayContainer<unsigned char>& topology):
+		topo_(topology),
+		current_level_(0),
+		maximum_level_(0)
+	{
+		init();
+	}
 
 	~IHCMapBase()
 	{
-        topo_.remove_attribute(dart_level_);
-        topo_.remove_attribute(edge_id_);
+		topo_.remove_attribute(dart_level_);
+		topo_.remove_attribute(edge_id_);
 	}
 
 	IHCMapBase(Self const&) = delete;
@@ -77,8 +77,8 @@ public:
 
 	void init()
 	{
-        dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
-        edge_id_ = topo_.template add_attribute<unsigned int>("edgeId");
+		dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
+		edge_id_ = topo_.template add_attribute<unsigned int>("edgeId");
 	}
 
 	/***************************************************
@@ -107,12 +107,12 @@ public:
 
 	inline unsigned int get_dart_level(Dart d) const
 	{
-        return (*dart_level_)[d.index] ;
+		return (*dart_level_)[d.index] ;
 	}
 
 	inline void set_dart_level(Dart d, unsigned int l)
 	{
-        (*dart_level_)[d.index] = l ;
+		(*dart_level_)[d.index] = l ;
 	}
 
 	/***************************************************
@@ -121,12 +121,12 @@ public:
 
 	inline unsigned int get_edge_id(Dart d) const
 	{
-        return (*edge_id_)[d.index] ;
+		return (*edge_id_)[d.index] ;
 	}
 
 	inline void set_edge_id(Dart d, unsigned int i)
 	{
-        (*edge_id_)[d.index] = i ;
+		(*edge_id_)[d.index] = i ;
 	}
 
 	inline unsigned int get_tri_refinement_edge_id(Dart d, Dart e) const
@@ -153,7 +153,7 @@ public:
 	}
 
 	inline unsigned int get_quad_refinement_edge_id(Dart d) const
-    {
+	{
 		unsigned int e_id = get_edge_id(d);
 
 		if(e_id == 0u)
@@ -179,4 +179,4 @@ public:
 } // namespace cgogn
 
 
-#endif // CORE_CPH_CPH_H_
+#endif // MULTIRESOLUTION_CPH_IHCMAP_BASE_H_

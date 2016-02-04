@@ -1,5 +1,5 @@
 
-#include <core/cph/ihcmap2_regular.h>
+#include <multiresolution/cph/ihcmap2_regular.h>
 
 using namespace cgogn;
 

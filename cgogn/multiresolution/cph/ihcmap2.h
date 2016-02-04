@@ -21,13 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CPH_IHCMAP2_H_
-#define CORE_CPH_IHCMAP2_H_
-
+#ifndef MULTIRESOLUTION_CPH_IHCMAP2_H_
+#define MULTIRESOLUTION_CPH_IHCMAP2_H_
 
 #include <core/cmap/cmap2.h>
-#include <core/cph/ihcmap_base.h>
-// #include <core/cph/attribute_handler_cph.h>
+#include <multiresolution/cph/ihcmap_base.h>
+//#include <multiresolution/cph/attribute_handler_cph.h>
 
 namespace cgogn
 {
@@ -35,23 +34,23 @@ namespace cgogn
 template <typename CONTAINER, typename MAP>
 class ContainerCPHBrowser : public ContainerBrowser
 {
-    const CONTAINER& cac_;
-    const MAP* map_;
+	const CONTAINER& cac_;
+	const MAP* map_;
 
 public:
-   ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
-   virtual unsigned int begin() const { return cac_.real_begin(); }
-   virtual unsigned int end() const { return cac_.real_end(); }
-   virtual void next(unsigned int &it)  const
-   {
-       cac_.real_next(it);
-       if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
-           it = cac_.real_end();
-   }
-   virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
-   virtual void enable() {}
-   virtual void disable() {}
-   virtual ~ContainerCPHBrowser() {}
+	ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
+	virtual unsigned int begin() const { return cac_.real_begin(); }
+	virtual unsigned int end() const { return cac_.real_end(); }
+	virtual void next(unsigned int &it)  const
+	{
+		cac_.real_next(it);
+		if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
+			it = cac_.real_end();
+	}
+	virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
+	virtual void enable() {}
+	virtual void disable() {}
+	virtual ~ContainerCPHBrowser() {}
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
@@ -60,11 +59,11 @@ class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public IHCMapBase<DATA_
 public:
 
 	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit_CMAP;
-    typedef IHCMapBase<DATA_TRAITS> Inherit_CPH;
+	typedef IHCMapBase<DATA_TRAITS> Inherit_CPH;
 	typedef IHCMap2_T<DATA_TRAITS, MAP_TYPE> Self;
 
-    friend typename Self::Inherit_CMAP;
-//	friend typename Inherit::Inherit;
+	friend typename Self::Inherit_CMAP;
+	//	friend typename Inherit::Inherit;
 
 	friend class DartMarker_T<Self>;
 
@@ -80,12 +79,12 @@ public:
 	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
-    using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
-    template <typename T>
-    using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
+	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
+	template <typename T>
+	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
 	template<typename T, Orbit ORBIT>
-    using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
+	using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
 	template<typename T>
 	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
 	template<typename T>
@@ -97,24 +96,29 @@ public:
 	template<typename T>
 	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
+//	template<typename T>
+//	using VertexAttributeHandlerCPH = AttributeHandlerCPH<Self, DATA_TRAITS, T, Self::VERTEX>;
+
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
+	ChunkArray<unsigned int>* next_level_cell[NB_ORBITS];
+
 protected:
-    ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
+	ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
 
 	inline void init()
 	{
 		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
-        this->topology_.set_current_browser(cph_browser);
+		this->topology_.set_current_browser(cph_browser);
 
-        // Inherit_CPH::new_level_darts();
+		// Inherit_CPH::new_level_darts();
 	}
 
 public:
-    IHCMap2_T() : Inherit_CMAP(), Inherit_CPH(this->topology_)
+	IHCMap2_T() : Inherit_CMAP(), Inherit_CPH(this->topology_)
 	{
-		init();    
+		init();
 	}
 
 	~IHCMap2_T() override
@@ -132,10 +136,10 @@ protected:
 
 	inline Dart phi1(Dart d) const
 	{
-        cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
-	
+		cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
+
 		bool finished = false ;
-        unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
+		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
 		Dart it = d ;
 		do
 		{
@@ -153,7 +157,7 @@ protected:
 
 	inline Dart phi_1(Dart d) const
 	{
-        cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
+		cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 
 		bool finished = false ;
 		Dart it = Inherit_CMAP::phi_1(d) ;
@@ -199,16 +203,38 @@ public:
 		Inherit_CPH::set_dart_level(d, Inherit_CPH::get_current_level());
 
 		// update max level if needed
-		if(Inherit_CPH::get_current_level() > Inherit_CPH::get_maximum_level()) 
+		if(Inherit_CPH::get_current_level() > Inherit_CPH::get_maximum_level())
 		{
-			Inherit_CPH::set_maximum_level(Inherit_CPH::get_current_level()); 
+			Inherit_CPH::set_maximum_level(Inherit_CPH::get_current_level());
 			// Inherit_CPH::new_level_darts();
 		}
 
-//		Inherit_CPH::inc_nb_darts(get_current_level());
+		//		Inherit_CPH::inc_nb_darts(get_current_level());
 
 		return d ;
 	}
+
+//	template <Orbit ORBIT>
+//	inline unsigned int get_embedding_cph(Cell<ORBIT> c) const
+//	{
+//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+//		cgogn_message_assert(Inherit::is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+//		unsigned int nb_steps = Inherit::get_current_level() - Inherit::get_dart_level(c.dart);
+//		unsigned int index = Inherit::get_embedding(c);
+
+//		unsigned int step = 0;
+//		while(step < nb_steps)
+//		{
+//			step++;
+//			unsigned int next = next_level_cell_[ORBIT]->operator[](index);
+//			//index = next;
+//			if(next != EMBNULL) index = next;
+//			else break;
+//		}
+
+//		return index;
+//	}
 
 protected:
 
@@ -216,45 +242,45 @@ protected:
 	 * Orbits traversal
 	 *******************************************************************************/
 
-    template <typename FUNC>
-    inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
-    {
-        f(d);
-    }
-
-    template <typename FUNC>
-    inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
-    {
-        Dart it = d;
-        do
-        {
-            f(it);
-            it = phi1(it);
-        } while (it != d);
-    }
-
-    template <typename FUNC>
-    inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
-    {
-        f(d);
-        Dart d2 = phi2(d);
-        if (d2 != d)
-            f(d2);
-    }
+	template <typename FUNC>
+	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
+	{
+		f(d);
+	}
 
 	template <typename FUNC>
-    inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
+	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
 		do
 		{
 			f(it);
-            it = Inherit_CMAP::phi2(Inherit_CMAP::phi_1(it));
+			it = phi1(it);
 		} while (it != d);
 	}
 
 	template <typename FUNC>
-    void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
+	inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
+	{
+		f(d);
+		Dart d2 = phi2(d);
+		if (d2 != d)
+			f(d2);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
+	{
+		Dart it = d;
+		do
+		{
+			f(it);
+			it = Inherit_CMAP::phi2(Inherit_CMAP::phi_1(it));
+		} while (it != d);
+	}
+
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
 	{
 		DartMarkerStore marker(*this);
 
@@ -292,31 +318,46 @@ protected:
 					  "Orbit not supported in a CMap2");
 		switch (ORBIT)
 		{
-            case Orbit::DART: foreach_dart_of_DART(c, f); break;
-            case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
-            case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
-            case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
-            case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
-            case Orbit::PHI2_PHI3:
-            case Orbit::PHI1_PHI3:
+			case Orbit::DART: foreach_dart_of_DART(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
+			case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI1_PHI3:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
 
 public:
 
-    inline unsigned int face_degree(Dart d)
-    {
-        unsigned int count = 0 ;
-        Dart it = d ;
-        do
-        {
-            ++count ;
-            it = phi1(it) ;
-        } while (it != d) ;
-        return count ;
-    }
+	inline unsigned int face_degree(Dart d)
+	{
+		unsigned int count = 0 ;
+		Dart it = d ;
+		do
+		{
+			++count ;
+			it = phi1(it) ;
+		} while (it != d) ;
+		return count ;
+	}
+
+//	template <typename MAP, typename T, Orbit ORBIT>
+//	inline AttributeHandlerCPH<MAP, T, ORBIT> add_attribute(const std::string& attribute_name = "")
+//	{
+//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+//	}
+
+//	template <typename MAP, typename T, Orbit ORBIT>
+//	inline bool remove_attribute(AttributeHandlerCPH<MAP, T, ORBIT>& ah)
+//	{
+//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+//	}
 };
+
 
 template <typename MAP_TRAITS>
 struct IHCMap2Type
@@ -329,5 +370,5 @@ using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
-#endif // CORE_CPH_IHCMAP2_H_
+#endif // MULTIRESOLUTION_CPH_IHCMAP2_H_
 

@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CPH_IHCMAP2_REGULAR_H_
-#define CORE_CPH_IHCMAP2_REGULAR_H_
+#ifndef MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_H_
+#define MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_H_
 
-#include <core/cph/ihcmap2.h>
+#include <multiresolution/cph/ihcmap2.h>
 
 namespace cgogn
 {
@@ -51,208 +51,208 @@ public:
 
 	inline void add_triangular_level()
 	{
-        unsigned int cur = Inherit::get_current_level() ;
+		unsigned int cur = Inherit::get_current_level() ;
 
-        Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
+		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
-        //cut edges
-        Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
-        {
-            Dart dd = Inherit::phi2(e);
-            Inherit::cut_edge(e);
+		//cut edges
+		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		{
+			Dart dd = Inherit::phi2(e);
+			Inherit::cut_edge(e);
 
-            unsigned int eid = Inherit::get_edge_id(e);
-            Inherit::set_edge_id(Inherit::phi1(e), eid);
-            Inherit::set_edge_id(Inherit::phi1(dd), eid);
-        });
+			unsigned int eid = Inherit::get_edge_id(e);
+			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			Inherit::set_edge_id(Inherit::phi1(dd), eid);
+		});
 
-        //cut faces
-        Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
-        {
-            Dart old = d ;
+		//cut faces
+		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		{
+			Dart old = d ;
 
-            if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
-                old = Inherit::phi1(old) ;
+			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
+				old = Inherit::phi1(old) ;
 
-            Dart dd = Inherit::phi1(old) ;
-            Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
-            // insert a new edge
-            Inherit::split_face(dd, e) ;
+			Dart dd = Inherit::phi1(old) ;
+			Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
+			// insert a new edge
+			Inherit::split_face(dd, e) ;
 
-            unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-            Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
-            Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
+			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
+			Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
-            dd = e ;
-            e = Inherit::phi1(Inherit::phi1(dd)) ;
-            Inherit::split_face(dd, e) ;
-            id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-            Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
-            Inherit::set_edge_id(Inherit::phi_1(e), id) ;
+			dd = e ;
+			e = Inherit::phi1(Inherit::phi1(dd)) ;
+			Inherit::split_face(dd, e) ;
+			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
+			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
-            dd = e ;
-            e = Inherit::phi1(Inherit::phi1(dd)) ;
-            Inherit::split_face(dd, e) ;
-            id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-            Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
-            Inherit::set_edge_id(Inherit::phi_1(e), id) ;
-        });
+			dd = e ;
+			e = Inherit::phi1(Inherit::phi1(dd)) ;
+			Inherit::split_face(dd, e) ;
+			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
+			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
+		});
 
-        Inherit::set_current_level(cur) ;
+		Inherit::set_current_level(cur) ;
 	}
 
 	inline void add_quadrangular_level()
 	{
-        unsigned int cur = Inherit::get_current_level() ;
+		unsigned int cur = Inherit::get_current_level() ;
 
-        Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
+		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
-        //cut edges
-        Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
-        {
-            Dart dd = Inherit::phi2(e);
-            Inherit::cut_edge(e);
+		//cut edges
+		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		{
+			Dart dd = Inherit::phi2(e);
+			Inherit::cut_edge(e);
 
-            unsigned int eid = Inherit::get_edge_id(e);
-            Inherit::set_edge_id(Inherit::phi1(e), eid);
-            Inherit::set_edge_id(Inherit::phi1(dd), eid);
-        });
+			unsigned int eid = Inherit::get_edge_id(e);
+			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			Inherit::set_edge_id(Inherit::phi1(dd), eid);
+		});
 
-        //cut faces
-        Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
-        {
-            Dart old = d ;
+		//cut faces
+		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		{
+			Dart old = d ;
 
-            if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
-                old = Inherit::phi1(old) ;
+			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
+				old = Inherit::phi1(old) ;
 
-            Dart dd = Inherit::phi1(old) ;
-            Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-            Inherit::split_face(dd, next) ;		// insert a first edge
+			Dart dd = Inherit::phi1(old) ;
+			Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
+			Inherit::split_face(dd, next) ;		// insert a first edge
 
-            Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
-            Dart ne2 = Inherit::phi2(ne) ;
-            Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
+			Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
+			Dart ne2 = Inherit::phi2(ne) ;
+			Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-            unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
-            Inherit::set_edge_id(ne, id) ;
-            Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
+			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+			Inherit::set_edge_id(ne, id) ;
+			Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 
-            id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(ne2));
-            Inherit::set_edge_id(ne2, id) ;					// edges to the next available ids
-            Inherit::set_edge_id(Inherit::phi2(ne2), id) ;
+			id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(ne2));
+			Inherit::set_edge_id(ne2, id) ;					// edges to the next available ids
+			Inherit::set_edge_id(Inherit::phi2(ne2), id) ;
 
-            dd = Inherit::phi1(Inherit::phi1(next)) ;
-            while(dd != ne)				// turn around the face and insert new edges
-            {							// linked to the central vertex
-                Dart tmp = Inherit::phi1(ne) ;
-                Inherit::split_face(tmp, dd) ;
+			dd = Inherit::phi1(Inherit::phi1(next)) ;
+			while(dd != ne)				// turn around the face and insert new edges
+			{							// linked to the central vertex
+				Dart tmp = Inherit::phi1(ne) ;
+				Inherit::split_face(tmp, dd) ;
 
-                Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
+				Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 
-                id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
-                Inherit::set_edge_id(nne, id) ;
-                Inherit::set_edge_id(Inherit::phi2(nne), id) ;
-                dd = Inherit::phi1(Inherit::phi1(dd)) ;
-            }
-        });
+				id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
+				Inherit::set_edge_id(nne, id) ;
+				Inherit::set_edge_id(Inherit::phi2(nne), id) ;
+				dd = Inherit::phi1(Inherit::phi1(dd)) ;
+			}
+		});
 
-        Inherit::set_current_level(cur) ;
+		Inherit::set_current_level(cur) ;
 	}
 
 	inline void add_mixed_level()
 	{
-        unsigned int cur = Inherit::get_current_level() ;
+		unsigned int cur = Inherit::get_current_level() ;
 
-        Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
+		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
-        //cut edges
-        Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
-        {
-            Dart dd = Inherit::phi2(e);
-            Inherit::cut_edge(e);
+		//cut edges
+		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		{
+			Dart dd = Inherit::phi2(e);
+			Inherit::cut_edge(e);
 
-            unsigned int eid = Inherit::get_edge_id(e);
-            Inherit::set_edge_id(Inherit::phi1(e), eid);
-            Inherit::set_edge_id(Inherit::phi1(dd), eid);
-        });
+			unsigned int eid = Inherit::get_edge_id(e);
+			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			Inherit::set_edge_id(Inherit::phi1(dd), eid);
+		});
 
-        //cut faces
-        Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
-        {
-            Dart old = d ;
+		//cut faces
+		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		{
+			Dart old = d ;
 
-            if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
-                old = Inherit::phi1(old) ;
+			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
+				old = Inherit::phi1(old) ;
 
-            unsigned int cur = Inherit::get_current_level();
-            Inherit::set_current_level(cur - 1);
-            unsigned int degree = Inherit::face_degree(old) ;
-            Inherit::set_current_level(cur);
+			unsigned int cur = Inherit::get_current_level();
+			Inherit::set_current_level(cur - 1);
+			unsigned int degree = Inherit::face_degree(old) ;
+			Inherit::set_current_level(cur);
 
-            if(degree == 3)
-            {
-                Dart dd = Inherit::phi1(old) ;
-                Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
-                // insert a new edge
-                Inherit::split_face(dd, e) ;
+			if(degree == 3)
+			{
+				Dart dd = Inherit::phi1(old) ;
+				Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
+				// insert a new edge
+				Inherit::split_face(dd, e) ;
 
-                unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-                Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
-                Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
+				unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
+				Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
-                dd = e ;
-                e = Inherit::phi1(Inherit::phi1(dd)) ;
-                Inherit::split_face(dd, e) ;
-                id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-                Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
-                Inherit::set_edge_id(Inherit::phi_1(e), id) ;
+				dd = e ;
+				e = Inherit::phi1(Inherit::phi1(dd)) ;
+				Inherit::split_face(dd, e) ;
+				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
+				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
-                dd = e ;
-                e = Inherit::phi1(Inherit::phi1(dd)) ;
-                Inherit::split_face(dd, e) ;
-                id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
-                Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
-                Inherit::set_edge_id(Inherit::phi_1(e), id) ;
-            }
-            else
-            {
-                Dart dd = Inherit::phi1(old) ;
-                Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-                Inherit::split_face(dd, next) ;		// insert a first edge
+				dd = e ;
+				e = Inherit::phi1(Inherit::phi1(dd)) ;
+				Inherit::split_face(dd, e) ;
+				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
+				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
+			}
+			else
+			{
+				Dart dd = Inherit::phi1(old) ;
+				Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
+				Inherit::split_face(dd, next) ;		// insert a first edge
 
-                Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
-                Dart ne2 = Inherit::phi2(ne) ;
-                Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
+				Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
+				Dart ne2 = Inherit::phi2(ne) ;
+				Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-                unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
-                Inherit::set_edge_id(ne, id) ;
-                Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
+				unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+				Inherit::set_edge_id(ne, id) ;
+				Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 
-                id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(ne2));
-                Inherit::set_edge_id(ne2, id) ;					// edges to the next available ids
-                Inherit::set_edge_id(Inherit::phi2(ne2), id) ;
+				id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(ne2));
+				Inherit::set_edge_id(ne2, id) ;					// edges to the next available ids
+				Inherit::set_edge_id(Inherit::phi2(ne2), id) ;
 
-                dd = Inherit::phi1(Inherit::phi1(next)) ;
-                while(dd != ne)				// turn around the face and insert new edges
-                {							// linked to the central vertex
-                    Dart tmp = Inherit::phi1(ne) ;
-                    Inherit::split_face(tmp, dd) ;
+				dd = Inherit::phi1(Inherit::phi1(next)) ;
+				while(dd != ne)				// turn around the face and insert new edges
+				{							// linked to the central vertex
+					Dart tmp = Inherit::phi1(ne) ;
+					Inherit::split_face(tmp, dd) ;
 
-                    Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
+					Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 
-                    id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
-                    Inherit::set_edge_id(nne, id) ;
-                    Inherit::set_edge_id(Inherit::phi2(nne), id) ;
-                    dd = Inherit::phi1(Inherit::phi1(dd)) ;
-                }
-            }
-        });
+					id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
+					Inherit::set_edge_id(nne, id) ;
+					Inherit::set_edge_id(Inherit::phi2(nne), id) ;
+					dd = Inherit::phi1(Inherit::phi1(dd)) ;
+				}
+			}
+		});
 
-//        Inherit::set_current_level(cur) ;
+		//        Inherit::set_current_level(cur) ;
 	}
 };
 
 } // namespace cgogn
 
-#endif // CORE_CPH_IHCMAP2_REGULAR_H_
+#endif // MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_H_
