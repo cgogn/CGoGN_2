@@ -29,12 +29,12 @@
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
 
+#include <benchmark/benchmark.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-
-
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+Map2 map;
 
 const cgogn::Orbit VERTEX = Map2::VERTEX;
 using Vertex = cgogn::Cell<VERTEX>;
@@ -52,9 +52,172 @@ using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 template <typename T>
 using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
 
+static void BENCH_Dart_count_single_threaded(benchmark::State& state)
+{
+	while (state.KeepRunning())
+	{
+		unsigned nb_darts = 0u;
+		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
+	}
+}
+
+static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
+{
+	while (state.KeepRunning())
+	{
+		unsigned int nb_darts_2 = 0u;
+		std::vector<unsigned int> nb_darts_per_thread(cgogn::get_nb_threads()+2);
+		for (auto& n : nb_darts_per_thread)
+			n = 0u;
+		nb_darts_2 = 0u;
+		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
+		{
+			nb_darts_per_thread[thread_index]++;
+		});
+		for (unsigned int n : nb_darts_per_thread)
+			nb_darts_2 += n;
+
+		cgogn_assert(nb_darts_2 = map.nb_darts());
+	}
+}
+
+template<cgogn::TraversalStrategy STRATEGY>
+static void BENCH_faces_normals_single_threaded(benchmark::State& state)
+{
+	while(state.KeepRunning())
+	{
+		state.PauseTiming();
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		cgogn_assert(vertex_position.is_valid());
+		FaceAttributeHandler<Vec3> face_normal = map.get_attribute<Vec3, FACE>("normal");
+		cgogn_assert(face_normal.is_valid());
+		state.ResumeTiming();
+
+		map.template foreach_cell<FACE, STRATEGY>([&] (Face f)
+		{
+			face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+		});
+	}
+}
+
+template<cgogn::TraversalStrategy STRATEGY>
+static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
+{
+	while(state.KeepRunning())
+	{
+		state.PauseTiming();
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		cgogn_assert(vertex_position.is_valid());
+		FaceAttributeHandler<Vec3> face_normal_mt = map.get_attribute<Vec3, FACE>("normal_mt");
+		cgogn_assert(face_normal_mt.is_valid());
+		state.ResumeTiming();
+
+		map.template parallel_foreach_cell<FACE, STRATEGY>([&] (Face f,unsigned int)
+		{
+			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+		});
+
+		{
+			state.PauseTiming();
+
+			FaceAttributeHandler<Vec3> face_normal = map.get_attribute<Vec3, FACE>("normal");
+			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			{
+				Vec3 error = face_normal[f] - face_normal_mt[f];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+					std::cerr << "face_normal " << face_normal[f] << std::endl;
+					std::cerr << "face_normal_mt " << face_normal_mt[f] << std::endl;
+				}
+
+			});
+			state.ResumeTiming();
+		}
+
+	}
+}
+
+
+template<cgogn::TraversalStrategy STRATEGY>
+static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
+{
+	while(state.KeepRunning())
+	{
+		state.PauseTiming();
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		cgogn_assert(vertex_position.is_valid());
+		VertexAttributeHandler<Vec3> vartices_normal = map.get_attribute<Vec3, VERTEX>("normal");
+		cgogn_assert(vartices_normal.is_valid());
+		state.ResumeTiming();
+
+		map.template foreach_cell<VERTEX, STRATEGY>([&] (Vertex v)
+		{
+			vartices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+		});
+	}
+}
+
+template<cgogn::TraversalStrategy STRATEGY>
+static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
+{
+	while(state.KeepRunning())
+	{
+		state.PauseTiming();
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		cgogn_assert(vertex_position.is_valid());
+		VertexAttributeHandler<Vec3> vertices_normal_mt = map.get_attribute<Vec3, VERTEX>("normal_mt");
+		cgogn_assert(vertices_normal_mt.is_valid());
+		state.ResumeTiming();
+
+		map.template parallel_foreach_cell<VERTEX, STRATEGY>([&] (Vertex v, unsigned int)
+		{
+			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+		});
+
+		{
+			state.PauseTiming();
+
+			VertexAttributeHandler<Vec3> vertices_normal = map.get_attribute<Vec3, VERTEX>("normal");
+			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+			{
+				Vec3 error = vertices_normal[v] - vertices_normal_mt[v];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of vertices normals" << std::endl;
+					std::cerr << "vertices_normal " << vertices_normal[v] << std::endl;
+					std::cerr << "vertices_normal_mt " << vertices_normal_mt[v] << std::endl;
+				}
+
+			});
+			state.ResumeTiming();
+		}
+	}
+}
+
+BENCHMARK(BENCH_Dart_count_single_threaded);
+BENCHMARK(BENCH_Dart_count_multi_threaded)->UseRealTime();
+
+BENCHMARK_TEMPLATE(BENCH_faces_normals_single_threaded, cgogn::TraversalStrategy::FORCE_DART_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_faces_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_DART_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_faces_normals_single_threaded, cgogn::TraversalStrategy::FORCE_CELL_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_faces_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_CELL_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_faces_normals_single_threaded, cgogn::TraversalStrategy::FORCE_TOPO_CACHE)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_faces_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_TOPO_CACHE)->UseRealTime();
+
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_single_threaded, cgogn::TraversalStrategy::FORCE_DART_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_DART_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_single_threaded, cgogn::TraversalStrategy::FORCE_CELL_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_CELL_MARKING)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_single_threaded, cgogn::TraversalStrategy::FORCE_TOPO_CACHE)->UseRealTime();
+BENCHMARK_TEMPLATE(BENCH_vertices_normals_multi_threaded, cgogn::TraversalStrategy::FORCE_TOPO_CACHE)->UseRealTime();
+
+
 int main(int argc, char** argv)
 {
+	::benchmark::Initialize(&argc, argv);
 	std::string surfaceMesh;
+
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
@@ -64,398 +227,16 @@ int main(int argc, char** argv)
 	else
 		surfaceMesh = std::string(argv[1]);
 
-	Map2 map;
 	cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
-	{
-		// COUNTING DARTS SINGLE THREAD
-		unsigned int nb_darts = 0u;
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-			for (unsigned int i = 0u; i < ITERATIONS; ++i)
-			{
-				nb_darts = 0u;
-				map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
-			}
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || nb darts :" << nb_darts  << std::endl;
-		}
-		// END COUNTING DARTS SINGLE THREAD
-
-		// COUNTING DARTS MULTI-THREADS
-		unsigned int nb_darts_2 = 0u;
-		std::vector<unsigned int> nb_darts_per_thread(cgogn::get_thread_pool()->get_nb_threads());
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-
-			for (unsigned int i = 0u; i < ITERATIONS; ++i)
-			{
-				for (auto& n : nb_darts_per_thread)
-					n = 0u;
-				nb_darts_2 = 0u;
-				//				clock_gettime(CLOCK_REALTIME,&tbegin);
-				map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
-				{
-					cgogn_assert(thread_index< 7);
-					nb_darts_per_thread[thread_index]++;
-				});
-				//				clock_gettime(CLOCK_REALTIME,&tend);
-				//				std::cout << __FILE__ << ":" << __LINE__ << " : "  << (1000000000u*(tend.tv_sec - tbegin.tv_sec) +tend.tv_nsec - tbegin.tv_nsec)/1000u << " microseconds."<<std::endl;
-				for (unsigned int n : nb_darts_per_thread)
-					nb_darts_2 += n;
-				if (nb_darts_2 != nb_darts)
-					std::cerr << "There was an error during the dart counting" << std::endl;
-			}
-
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || nb darts :" << nb_darts_2  << std::endl;
-		}
-		// END COUNTING DARTS MULTI-THREADS
-
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
-		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
-		FaceAttributeHandler<Vec3> face_normal_mt = map.add_attribute<Vec3, Map2::FACE>("normal_mt");
-
-
-
-		// DART MARKING
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
-				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_faces dart marking"  << std::endl;
-		}
-
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f, unsigned int)
-				{
-					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-
-
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_faces dart marking" << std::endl;
-		}
-
-			// END DART MARKING
-
-		{
-			// CHECKING NORMALS
-			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
-			{
-				Vec3 error = face_normal[f] - face_normal_mt[f];
-				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-				{
-					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-					std::abort;
-				}
-
-			});
-		}
-
-			// CELL MARKING
-
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Face f)
-				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_faces cell marking"  << std::endl;
-		}
-
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Face f, unsigned int)
-				{
-					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-
-
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_faces cell marking" << std::endl;
-		}
-
-		// END CELL MARKING
-
-
-		{
-			// CHECKING NORMALS
-			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
-			{
-				Vec3 error = face_normal[f] - face_normal_mt[f];
-				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-				{
-					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-					std::abort;
-				}
-
-			});
-		}
-
-		map.enable_topo_cache<FACE>();
-
-
-//		// TOPO CACHE
-
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Face f)
-				{
-					face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_faces topo cache"  << std::endl;
-		}
-
-		{
-			std::chrono::time_point<std::chrono::system_clock> start, end;
-			start = std::chrono::system_clock::now();
-			for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-			{
-				map.template parallel_foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Face f, unsigned int)
-				{
-					face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
-				});
-			}
-
-
-			end =  std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsed_seconds = end - start;
-			std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_faces topo cache" << std::endl;
-		}
-
-			// END TOPO CACHE
-		{
-			// CHECKING NORMALS
-			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
-			{
-				Vec3 error = face_normal[f] - face_normal_mt[f];
-				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-				{
-					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-					std::abort;
-				}
-
-			});
-		}
-
-
-
-		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, VERTEX>("normal");
-		VertexAttributeHandler<Vec3> vertex_normal_mt = map.add_attribute<Vec3, VERTEX>("normal_mt");
-
-
-		// VERTICES NORMALS
-
-
-
-		// DART MARKING
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
-			{
-				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices dart marking"  << std::endl;
-	}
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v, unsigned int)
-			{
-				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-
-		// END DART MARKING
-
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices dart marking" << std::endl;
-	}
-
-
-	{
-		// CHECKING  VERTEX NORMALS
-		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
-		{
-			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
-			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-			{
-				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
-				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
-				std::abort;
-			}
-
-		});
-	}
-
-
-		// CELL MARKING
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Vertex v)
-			{
-				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices cell marking"  << std::endl;
-	}
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_CELL_MARKING>([&] (Vertex v, unsigned int)
-			{
-				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-
-
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices cell marking" << std::endl;
-	}
-
-	// END CELL MARKING
-
-
-	{
-		// CHECKING  VERTEX NORMALS
-		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
-		{
-			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
-			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-			{
-				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
-				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
-				std::abort;
-			}
-
-		});
-	}
-
-
-
-
-		// TOPO CACHE
-		map.enable_topo_cache<VERTEX>();
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Vertex v)
-			{
-				vertex_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << "SINGLE THREAD  "<< elapsed_seconds.count() << "s  || compute_normal_vertices topo cache"  << std::endl;
-	}
-
-	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now();
-		for (unsigned int i = 0u ; i < ITERATIONS; ++i)
-		{
-			map.template parallel_foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_TOPO_CACHE>([&] (Vertex v, unsigned int)
-			{
-				vertex_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
-			});
-		}
-
-
-		end =  std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		std::cout << std::fixed << cgogn::NB_THREADS << "      THREADS "<< elapsed_seconds.count() << "s  || compute_normal_vertices topo cache" << std::endl;
-	}
-
-
-	{
-		// CHECKING  VERTEX NORMALS
-		map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
-		{
-			Vec3 error = vertex_normal[v] - vertex_normal_mt[v];
-			if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
-			{
-				std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-				std::cerr << "vertex_normal " << vertex_normal[v] << std::endl;
-				std::cerr << "vertex_normal_mt " <<vertex_normal_mt[v] << std::endl;
-				std::abort;
-			}
-
-		});
-	}
-
-
-
-	}
-
-
-
+	map.add_attribute<Vec3, FACE>("normal");
+	map.add_attribute<Vec3, FACE>("normal_mt");
+	map.add_attribute<Vec3, VERTEX>("normal");
+	map.add_attribute<Vec3, VERTEX>("normal_mt");
+	map.enable_topo_cache<FACE>();
+	map.enable_topo_cache<VERTEX>();
+
+	::benchmark::RunSpecifiedBenchmarks();
 	return 0;
 }
+
