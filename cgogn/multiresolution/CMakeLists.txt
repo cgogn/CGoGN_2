@@ -9,6 +9,8 @@ set(HEADER_FILES
         cph/ihcmap2_adaptive.h
         cph/ihcmap2_regular.h
 
+	mrcmap/mrcmap2.h
+
 	mranalysis/lerp_triquad_mra.h
 )
 
