@@ -75,7 +75,17 @@ public:
 	template <Orbit ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
-	MapBase() : Inherit()
+protected:
+
+	NoBoundaryCMapObserver<Self> no_boundary_observer_;
+	BoundaryCMapObserver<Self> boundary_observer_;
+
+public:
+
+	MapBase() :
+		Inherit(),
+		no_boundary_observer_(*this),
+		boundary_observer_(*this)
 	{}
 
 	~MapBase()
@@ -85,8 +95,6 @@ public:
 	MapBase(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
-
-public:
 
 	/**
 	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified

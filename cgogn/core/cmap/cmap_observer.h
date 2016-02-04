@@ -51,6 +51,8 @@ public:
 	}
 };
 
+// All elements observer
+
 class DefaultCMapObserver : public CMapObserver
 {
 public:
@@ -58,6 +60,41 @@ public:
 	DefaultCMapObserver()
 	{
 		this->topo_ = new DefaultElementValidator();
+		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
+		{
+			this->attr_[i] = new DefaultElementValidator();
+		}
+	}
+};
+
+// No boundary observer
+
+template <typename MAP>
+class NoBoundaryDartValidator : public ContainerElementValidator
+{
+protected:
+
+	const MAP& map_;
+
+public:
+
+	NoBoundaryDartValidator(const MAP& map) : map_(map)
+	{}
+
+	inline bool valid(unsigned int index) const override
+	{
+		return !map_.is_boundary(Dart(index));
+	}
+};
+
+template <typename MAP>
+class NoBoundaryCMapObserver : public CMapObserver
+{
+public:
+
+	NoBoundaryCMapObserver(const MAP& map)
+	{
+		this->topo_ = new NoBoundaryDartValidator<MAP>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
 		{
 			this->attr_[i] = new DefaultElementValidator();

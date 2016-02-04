@@ -27,6 +27,7 @@
 #include <core/basic/cell.h>
 #include <core/utils/assert.h>
 #include <core/cmap/map_base_data.h>
+
 namespace cgogn
 {
 
