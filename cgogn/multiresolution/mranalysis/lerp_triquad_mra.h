@@ -26,7 +26,7 @@ public:
         map_(map),
         va_(v)
     {
-        synthesis_filters_.push_back(lerp_tri_quad_odd_synthesis_);
+        synthesis_filters_.emplace_back(lerp_tri_quad_odd_synthesis_);
     }
 
 protected:
