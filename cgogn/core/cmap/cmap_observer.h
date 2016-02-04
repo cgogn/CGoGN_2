@@ -65,6 +65,41 @@ public:
 	}
 };
 
+// Boundary observer
+
+template <typename MAP>
+class BoundaryDartValidator : public ContainerElementValidator
+{
+protected:
+
+	const MAP& map_;
+
+public:
+
+	BoundaryDartValidator(const MAP& map) : map_(map)
+	{}
+
+	inline bool valid(unsigned int index) const override
+	{
+		return map_.is_boundary_dart(Dart(index));
+	}
+};
+
+template <typename MAP>
+class BoundaryCMapObserver : public CMapObserver
+{
+public:
+
+	BoundaryCMapObserver(const MAP& map)
+	{
+		this->topo_ = new BoundaryDartValidator<MAP>(map);
+		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
+		{
+			this->attr_[i] = new StandardElementValidator();
+		}
+	}
+};
+
 } // namespace cgogn
 
 #endif // CORE_CMAP_CMAP_OBSERVER_H_
