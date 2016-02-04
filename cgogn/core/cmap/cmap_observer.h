@@ -21,18 +21,62 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
+#ifndef CORE_CMAP_CMAP_OBSERVER_H_
+#define CORE_CMAP_CMAP_OBSERVER_H_
 
 #include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
 
 namespace cgogn
 {
 
-//ContainerBrowser::~ContainerBrowser()
-//{}
+class StandardElementValidator : public ContainerElementValidator
+{
+public:
 
-template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
-template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
+	inline bool valid(unsigned int index) const override
+	{
+		return true;
+	}
+};
+
+
+
+class CMapObserver
+{
+protected:
+
+	ContainerElementValidator* topo_;
+	std::array<ContainerElementValidator*, NB_ORBITS> attr_;
+
+public:
+
+	inline const ContainerElementValidator& topo() const
+	{
+		return *topo_;
+	}
+
+	template <Orbit ORBIT>
+	inline const ContainerElementValidator& attr() const
+	{
+		return *attr_[ORBIT];
+	}
+};
+
+class StandardCMapObserver : public CMapObserver
+{
+public:
+
+	StandardCMapObserver()
+	{
+		this->topo_ = new StandardElementValidator();
+		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
+		{
+			this->attr_[i] = new StandardElementValidator();
+		}
+	}
+};
 
 } // namespace cgogn
+
+#endif // CORE_CMAP_CMAP_OBSERVER_H_

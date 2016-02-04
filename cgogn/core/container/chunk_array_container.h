@@ -44,36 +44,13 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API ContainerBrowser
+class ContainerElementValidator
 {
 public:
 
-	virtual unsigned int begin() const = 0;
-	virtual unsigned int end() const = 0;
-	virtual void next(unsigned int &it) const = 0;
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const = 0;
-	virtual void enable() = 0;
-	virtual void disable() = 0;
-	virtual ~ContainerBrowser();
+	virtual ~ContainerElementValidator() {}
+	virtual bool valid(unsigned int) const = 0;
 };
-
-template <typename CONTAINER>
-class ContainerStandardBrowser : public ContainerBrowser
-{
-	const CONTAINER* cac_;
-
-public:
-
-	ContainerStandardBrowser(const CONTAINER* cac) : cac_(cac) {}
-	virtual unsigned int begin() const { return cac_->real_begin(); }
-	virtual unsigned int end() const { return cac_->real_end(); }
-	virtual void next(unsigned int &it)  const { cac_->real_next(it); }
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_->real_next_primitive(it,primSz); }
-	virtual void enable() {}
-	virtual void disable() {}
-	virtual ~ContainerStandardBrowser() {}
-};
-
 
 /**
  * @brief class that manage the storage of several ChunkArray
@@ -133,16 +110,6 @@ protected:
 	* size of the container with holes (also index of next inserted line if no holes)
 	*/
 	unsigned int nb_max_lines_;
-
-	/**
-	 * Browser that allow special traversals
-	 */
-	ContainerBrowser* current_browser_;
-
-	/**
-	 * Browser that allow special traversals
-	 */
-	ContainerStandardBrowser<Self>* std_browser_;
 
 	/**
 	 * @brief get array index from name
@@ -208,8 +175,8 @@ public:
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
 	{
-		std_browser_ = new ContainerStandardBrowser<Self>(this);
-		current_browser_= std_browser_;
+//		std_browser_ = new ContainerStandardBrowser<Self>(this);
+//		current_browser_= std_browser_;
 	}
 
 	ChunkArrayContainer(Self const& ) = delete;
@@ -222,10 +189,6 @@ public:
 	 */
 	~ChunkArrayContainer()
 	{
-		if (current_browser_ != std_browser_)
-			delete current_browser_;
-		delete std_browser_;
-
 		for (auto ptr : table_arrays_)
 			delete ptr;
 
@@ -421,30 +384,22 @@ public:
 	}
 
 	/**
-	 * @brief set the current container browser
-	 * @param browser, pointer to a heap-allocated ContainerBrowser
-	 */
-	inline void set_current_browser(ContainerBrowser* browser)
-	{
-		if (current_browser_ != std_browser_)
-			delete current_browser_;
-		current_browser_ = browser;
-	}
-
-	inline void set_standard_browser()
-	{
-		if (current_browser_ != std_browser_)
-			delete current_browser_;
-		current_browser_ = std_browser_;
-	}
-
-	/**
 	 * @brief begin
 	 * @return the index of the first used line of the container
 	 */
+	inline unsigned int begin(const ContainerElementValidator& v) const
+	{
+		unsigned int it = 0u;
+		while (it < nb_max_lines_ && !used(it) && !v.valid(it))
+			++it;
+		return it;
+	}
 	inline unsigned int begin() const
 	{
-		return current_browser_->begin();
+		unsigned int it = 0u;
+		while (it < nb_max_lines_ && !used(it))
+			++it;
+		return it;
 	}
 
 	/**
@@ -453,80 +408,62 @@ public:
 	 */
 	inline unsigned int end() const
 	{
-		return current_browser_->end();
+		return nb_max_lines_;
 	}
 
 	/**
 	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
+	inline void next(unsigned int& it, const ContainerElementValidator& v) const
+	{
+		do
+		{
+			++it;
+		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
+	}
 	inline void next(unsigned int& it) const
 	{
-		current_browser_->next(it);
+		do
+		{
+			++it;
+		} while (it < nb_max_lines_ && !used(it));
 	}
 
 	/**
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
 	 */
-	inline void next_primitive(unsigned int& it, unsigned int prim_size) const
-	{
-		current_browser_->next_primitive(it, prim_size);
-	}
-
-	/**
-	 * @brief begin of container without browser
-	 * @return the real index of the first used line of the container
-	 */
-	inline unsigned int real_begin() const
-	{
-		unsigned int it = 0u;
-		while ((it < nb_max_lines_) && (!used(it)))
-			++it;
-		return it;
-	}
-
-	/**
-	 * @brief end of container without browser
-	 * @return the real index after the last used line of the container
-	 */
-	inline unsigned int real_end() const
-	{
-		return nb_max_lines_;
-	}
-
-	/**
-	 * @brief next without browser
-	 * @param it
-	 */
-	inline void real_next(unsigned int& it) const
-	{
-		do
-		{
-			++it;
-		} while ((it < nb_max_lines_) && (!used(it)));
-	}
-
-	/**
-	 * @brief next primitive without browser
-	 * @param it
-	 */
-	inline void real_next_primitive(unsigned int &it, unsigned int prim_size) const
+	inline void next_primitive(unsigned int& it, unsigned int prim_size, const ContainerElementValidator& v) const
 	{
 		do
 		{
 			it += prim_size;
-		} while ((it < nb_max_lines_) && (!used(it)));
+		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
+	}
+	inline void next_primitive(unsigned int& it, unsigned int prim_size) const
+	{
+		do
+		{
+			it += prim_size;
+		} while (it < nb_max_lines_ && !used(it));
 	}
 
 	/**
 	 * @brief reverse begin of container without browser
-	 * @return the real index of the first used line of the container in reverse order
+	 * @return the index of the first used line of the container in reverse order
 	 */
-	unsigned int real_rbegin() const
+	inline unsigned int rbegin(const ContainerElementValidator& v) const
 	{
 		unsigned int it = nb_max_lines_- 1u;
-		while ((it != 0xffffffff) && (!used(it)))
+		while (it != 0xffffffff && !used(it) && !v.valid(it))
+			--it;
+		return it;
+	}
+	inline unsigned int rbegin() const
+	{
+		unsigned int it = nb_max_lines_- 1u;
+		while (it != 0xffffffff && !used(it))
 			--it;
 		return it;
 	}
@@ -535,7 +472,7 @@ public:
 	 * @brief reverse end of container without browser
 	 * @return the real index before the last used line of the container in reverse order
 	 */
-	unsigned int real_rend() const
+	inline unsigned int rend() const
 	{
 		return 0xffffffff; // -1
 	}
@@ -544,12 +481,19 @@ public:
 	 * @brief reverse next without browser
 	 * @param it
 	 */
-	void real_rnext(unsigned int &it) const
+	inline void rnext(unsigned int &it, const ContainerElementValidator& v) const
 	{
 		do
 		{
 			--it;
-		} while ((it != 0xffffffff) && (!used(it)));
+		} while (it != 0xffffffff && !used(it) && !v.valid(it));
+	}
+	inline void rnext(unsigned int &it) const
+	{
+		do
+		{
+			--it;
+		} while (it != 0xffffffff && !used(it));
 	}
 
 	/**
@@ -606,18 +550,6 @@ public:
 		holes_stack_.swap(container.holes_stack_);
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
-
-		ContainerBrowser* browser = current_browser_;
-
-		if (container.current_browser_ != container.std_browser_)
-			current_browser_ = container.current_browser_;
-		else
-			current_browser_ = std_browser_;
-
-		if (browser != std_browser_)
-			container.current_browser_ = browser;
-		else
-			container.current_browser_ = container.std_browser_;
 	}
 
 	/**
@@ -626,7 +558,7 @@ public:
 	 */
 	float fragmentation() const
 	{
-		return float(size()) / float(real_end());
+		return float(size()) / float(nb_max_lines_);
 	}
 
 	/**
@@ -637,9 +569,9 @@ public:
 	void compact(std::vector<unsigned int>& map_old_new)
 	{
 		map_old_new.clear();
-		map_old_new.resize(real_end(), 0xffffffff);
+		map_old_new.resize(nb_max_lines_, 0xffffffff);
 
-		unsigned int up = real_rbegin();
+		unsigned int up = rbegin();
 		unsigned int down = 0u;
 
 		while (down < up)
@@ -651,7 +583,7 @@ public:
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
 					copy_line(rdown, up);
-					real_rnext(up);
+					rnext(up);
 				}
 				down += PRIMSIZE;
 			}

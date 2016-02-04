@@ -34,6 +34,8 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/cmap/cmap_observer.h>
+
 #include <core/utils/thread_barrier.h>
 #include <core/utils/make_unique.h>
 
@@ -538,16 +540,26 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
+	inline void foreach_dart(const FUNC& f, const CMapObserver& o) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+
+		const ContainerElementValidator& v = o.topo();
+		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
+			 d != end;
+			 this->topology_.next(d.index, v))
+		{
+			f(d);
+		}
+	}
+
+	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index))
-		{
-			f(d);
-		}
+		StandardCMapObserver o;
+		foreach_dart(f, o);
 	}
 
 	template <typename FUNC>
