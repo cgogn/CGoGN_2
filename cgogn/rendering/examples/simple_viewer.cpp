@@ -53,7 +53,7 @@ class Viewer : public QOGLViewer
 {
 public:
 	Viewer();
-	inline Viewer(const Viewer&) = delete;
+	Viewer(const Viewer&) = delete;
 	Viewer& operator=(const Viewer&) = delete;
 
 	virtual void draw();

@@ -23,50 +23,62 @@
 
 #define CGOGN_UTILS_DLL_EXPORT
 
-#include <core/utils/thread.h>
-#include <core/utils/buffers.h>
 #include <core/utils/thread_pool.h>
 
 namespace cgogn
+
 {
 
-CGOGN_UTILS_API unsigned int NB_THREADS = get_nb_threads();
-
-CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
-CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread = nullptr;
-
-CGOGN_UTILS_API void thread_start()
+std::vector<std::thread::id> ThreadPool::get_threads_ids() const
 {
-	if (dart_buffers_thread == nullptr)
-		dart_buffers_thread = new Buffers<Dart>();
-
-	if (uint_buffers_thread == nullptr)
-		uint_buffers_thread = new Buffers<unsigned int>();
+	std::vector<std::thread::id> res;
+	res.reserve(workers_.size());
+	for (const std::thread& w : workers_)
+		res.push_back(w.get_id());
+	return res;
 }
 
-CGOGN_UTILS_API void thread_stop()
+ThreadPool::~ThreadPool()
 {
-	delete dart_buffers_thread;
-	delete uint_buffers_thread;
-	dart_buffers_thread = nullptr;
-	uint_buffers_thread = nullptr;
+	{
+		std::unique_lock<std::mutex> lock(queue_mutex_);
+		stop_ = true;
+	}
+	condition_.notify_all();
+	for(std::thread &worker: workers_)
+		worker.join();
 }
 
-CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
+ThreadPool::ThreadPool()
+	: stop_(false)
 {
-	return dart_buffers_thread;
-}
+	for(unsigned int i = 0u; i< cgogn::get_nb_threads() -1u;++i)
+		workers_.emplace_back(
+					[this,i]
+		{
+			cgogn::thread_start();
+			for(;;)
+			{
+				std::function<void(unsigned int)> task;
 
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
-{
-	return uint_buffers_thread;
-}
+				{
+					std::unique_lock<std::mutex> lock(this->queue_mutex_);
+					this->condition_.wait(lock,
+										  [this]{ return this->stop_ || !this->tasks_.empty(); });
+					if(this->stop_ && this->tasks_.empty())
+					{
+						cgogn::thread_stop();
+						return;
+					}
 
-CGOGN_UTILS_API ThreadPool* get_thread_pool()
-{
-	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
-	static ThreadPool pool;
-	return &pool;
+					task = std::move(this->tasks_.front());
+					this->tasks_.pop();
+				}
+				task(i);
+			}
+		}
+		);
 }
 
 } // namespace cgogn
+

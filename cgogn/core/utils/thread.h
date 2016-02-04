@@ -24,18 +24,31 @@
 #ifndef CORE_UTILS_THREAD_H_
 #define CORE_UTILS_THREAD_H_
 
-#include <core/utils/buffers.h>
+#include <vector>
+
 #include <core/utils/dll.h>
+#include <core/utils/definitions.h>
 #include <core/utils/thread_barrier.h>
+
+#include <core/basic/dart.h>
 
 namespace cgogn
 {
+
+// forward declaration of the ThreadPool class
+class ThreadPool;
+
+// forward declaration of the Buffers class
+template <typename T>
+class Buffers;
 
 /**
  * \brief The maximum nunmber of threads created by the API.
  */
 const unsigned int MAX_NB_THREADS = 8u;
 CGOGN_UTILS_API extern unsigned int NB_THREADS;
+
+CGOGN_UTILS_API ThreadPool* get_thread_pool();
 
 inline unsigned int get_nb_threads()
 {

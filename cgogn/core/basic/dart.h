@@ -64,7 +64,7 @@ struct Dart
 	 *
 	 * \param[in] v the value of the new dart
 	 */
-	explicit Dart(unsigned int v) : index(v)
+	inline explicit Dart(unsigned int v) : index(v)
 	{}
 
 	/**
@@ -72,7 +72,7 @@ struct Dart
 	 * Creates a new Dart from an another one.
 	 * \param[in] d a dart
 	 */
-	Dart(const Dart& d) : index(d.index)
+	inline Dart(const Dart& d) : index(d.index)
 	{}
 
 	/**
@@ -80,7 +80,7 @@ struct Dart
 	 * \retval true if the dart is nil
 	 * \retval false otherwise
 	 */
-	bool is_nil() const { return index == INVALID_INDEX; }
+	inline bool is_nil() const { return index == INVALID_INDEX; }
 
 	/**
 	 * \brief Assigns to the left hand side dart the value
@@ -88,7 +88,7 @@ struct Dart
 	 * \param[in] rhs the dart to assign
 	 * \return The dart with the assigned value
 	 */
-	Dart operator=(Dart rhs) { index = rhs.index; return *this; }
+	inline Dart& operator=(Dart rhs) { index = rhs.index; return *this; }
 
 	/**
 	 * \brief Tests whether the left hand side dart is equal
@@ -97,7 +97,7 @@ struct Dart
 	 * \retval true if \p lhs is equal than \p rhs
 	 * \retval false otherwise
 	 */
-	bool operator==(Dart rhs) const { return index == rhs.index; }
+	inline bool operator==(Dart rhs) const { return index == rhs.index; }
 
 	/**
 	 * \brief Tests whether the left hand side dart is different
@@ -106,23 +106,23 @@ struct Dart
 	 * \retval true if \p lhs is different than \p rhs
 	 * \retval false otherwise
 	 */
-	bool operator!=(Dart rhs) const { return index != rhs.index; }
+	inline bool operator!=(Dart rhs) const { return index != rhs.index; }
 
 	// operator < is needed if we want to use std::set<Dart>
-	bool operator<(Dart rhs) const { return index < rhs.index; }
+	inline bool operator<(Dart rhs) const { return index < rhs.index; }
 	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the dart to print
 	 */
-	friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) { return out << rhs.index; }
+	inline friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) { return out << rhs.index; }
 
 	/**
 	 * \brief Reads a dart from a stream.
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the dart read
 	 */
-	friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
+	inline friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
 };
 
 } // namespace cgogn
