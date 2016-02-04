@@ -98,7 +98,7 @@ bool is_container_well_referenced(MAP& map)
 	const MAP& const_map = static_cast<const MAP&>(map);
 	const typename MAP::template ChunkArrayContainer<unsigned int>& container = const_map.template get_attribute_container<ORBIT>();
 
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	// a counter is initialized to 0 for each "used" index of the container
 	for (unsigned int i = container.begin(v), end = container.end(); i != end; container.next(i, v))

@@ -101,34 +101,33 @@ public:
 
 protected:
 
-	/// topology & embedding indices
+	// topology & embedding indices
 	ChunkArrayContainer<unsigned char> topology_;
 
-	/// per orbit attributes
+	// per orbit attributes
 	ChunkArrayContainer<unsigned int> attributes_[NB_ORBITS];
 
-	/// embedding indices shortcuts
+	// embedding indices shortcuts
 	ChunkArray<unsigned int>* embeddings_[NB_ORBITS];
 
-	/// boundary markers shortcuts
-	ChunkArray<bool>* boundary_markers_[2];
-	// TODO: ?? store in a std::vector ?
+	// boundary marker shortcut
+	ChunkArray<bool>* boundary_marker_;
 
-	/// vector of available mark attributes per thread on the topology container
+	// vector of available mark attributes per thread on the topology container
 	std::vector<ChunkArray<bool>*> mark_attributes_topology_[MAX_NB_THREADS];
 	std::mutex mark_attributes_topology_mutex_;
 
-	/// vector of available mark attributes per orbit per thread on attributes containers
+	// vector of available mark attributes per orbit per thread on attributes containers
 	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][MAX_NB_THREADS];
 	std::mutex mark_attributes_mutex_[NB_ORBITS];
 
-	/// vector of thread ids known by the map that can pretend to data such as mark vectors
+	// vector of thread ids known by the map that can pretend to data such as mark vectors
 	mutable std::vector<std::thread::id> thread_ids_;
 
-	/// global topo cache shortcuts
+	// global topo cache shortcuts
 	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
 
-	StandardCMapObserver standard_observer_;
+	DefaultCMapObserver default_observer_;
 
 public:
 
@@ -148,6 +147,8 @@ public:
 		}
 		for (unsigned int i = 0; i < MAX_NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
+
+		boundary_marker_ = topology_.add_marker_attribute();
 
 		thread_ids_.reserve(MAX_NB_THREADS);
 		this->add_thread(std::this_thread::get_id());
@@ -269,6 +270,8 @@ protected:
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
 
+protected:
+
 	/*******************************************************************************
 	 * Thread management
 	 *******************************************************************************/
@@ -282,19 +285,16 @@ protected:
 	inline void remove_thread(std::thread::id thread_id) const
 	{
 		cgogn_message_assert(std::binary_search(thread_ids_.begin(), thread_ids_.end(), thread_id),"Unable to find the thread.");
-		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
-		cgogn_message_assert((*it)  == thread_id,"Unable to find the thread.");
+		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(), thread_id);
+		cgogn_message_assert(*it == thread_id, "Unable to find the thread.");
 		thread_ids_.erase(it);
 	}
 
 	inline void add_thread(std::thread::id thread_id) const
 	{
-		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
-		if ((it == thread_ids_.end()) || (*it  != thread_id))
-		{
-			thread_ids_.insert(it,thread_id);
-		}
-
+		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(), thread_id);
+		if (it == thread_ids_.end() || *it != thread_id)
+			thread_ids_.insert(it, thread_id);
 	}
 };
 

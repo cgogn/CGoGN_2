@@ -54,6 +54,8 @@ public:
 	typedef Cell<EDGE> Edge;
 	typedef Cell<FACE> Face;
 
+	static const Orbit BOUNDARY = EDGE;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -185,16 +187,6 @@ protected:
 	inline void delete_dart(Dart d)
 	{
 		this->remove_topology_element(d.index);
-
-		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
-		{
-			if(this->embeddings_[orbit])
-			{
-				// get the embedding of the dart
-				unsigned int emb = (*this->embeddings_[orbit])[d.index];
-				this->attributes_[orbit].unref_line(emb);
-			}
-		}
 	}
 
 public:
@@ -343,9 +335,9 @@ protected:
 
 public:
 
-	inline unsigned int degree(Face d) const
+	inline unsigned int degree(Face f) const
 	{
-		return this->nb_darts(d);
+		return this->nb_darts(f);
 	}
 
 protected:

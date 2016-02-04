@@ -51,16 +51,16 @@ public:
 	}
 };
 
-class StandardCMapObserver : public CMapObserver
+class DefaultCMapObserver : public CMapObserver
 {
 public:
 
-	StandardCMapObserver()
+	DefaultCMapObserver()
 	{
-		this->topo_ = new StandardElementValidator();
+		this->topo_ = new DefaultElementValidator();
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
 		{
-			this->attr_[i] = new StandardElementValidator();
+			this->attr_[i] = new DefaultElementValidator();
 		}
 	}
 };
@@ -81,7 +81,7 @@ public:
 
 	inline bool valid(unsigned int index) const override
 	{
-		return map_.is_boundary_dart(Dart(index));
+		return map_.is_boundary(Dart(index));
 	}
 };
 
@@ -95,7 +95,7 @@ public:
 		this->topo_ = new BoundaryDartValidator<MAP>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
 		{
-			this->attr_[i] = new StandardElementValidator();
+			this->attr_[i] = new DefaultElementValidator();
 		}
 	}
 };

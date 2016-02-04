@@ -11,7 +11,7 @@ using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, unsigned int>;
 using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
 
-using StandardElementValidator = cgogn::StandardElementValidator;
+using DefaultElementValidator = cgogn::DefaultElementValidator;
 
 using DoubleVecList = std::list< std::vector< double > >;
 using StringListVec = std::vector< std::list < std::string > >;
@@ -26,7 +26,7 @@ int test_save()
 	std::cout << "=============== TEST SAVE ===============" << std::endl;
 
 	ChunkArrayContainer container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<float>* att1 = container.add_attribute<float>("float");
 	ChunkArray<std::string>* att4 = container.add_attribute<std::string>("std::string");
@@ -116,7 +116,7 @@ int test_load(bool with_register)
 {
 	std::cout << "=============== TEST LOAD ===============" << std::endl;
 	ChunkArrayContainer cont2;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	if (with_register)
 	{

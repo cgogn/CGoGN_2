@@ -9,7 +9,7 @@ using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 template <typename T>
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, T>;
 
-using StandardElementValidator = cgogn::StandardElementValidator;
+using DefaultElementValidator = cgogn::DefaultElementValidator;
 
 
 int test1();
@@ -22,7 +22,7 @@ int test1()
 	std::cout << "=============== TEST 1 ===============" << std::endl;
 
 	ChunkArrayContainer<unsigned int> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
@@ -88,7 +88,7 @@ int test2()
 	std::cout << "=============== TEST 2 ===============" << std::endl;
 
 	ChunkArrayContainer<unsigned char> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 
@@ -161,7 +161,7 @@ int test3()
 	std::cout << "=============== TEST 3 ===============" << std::endl;
 
 	ChunkArrayContainer<bool> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
@@ -221,7 +221,7 @@ int test4()
 	typedef std::vector< std::list< double > > veclistdouble;
 
 	ChunkArrayContainer<unsigned int> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");

@@ -68,10 +68,10 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
-	ChunkArray(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
+	ChunkArray(const Self& ca) = delete;
+	ChunkArray(Self&& ca) = delete;
+	Self& operator=(Self&& ca) = delete;
+	Self& operator=(const Self& ca) = delete;
 
 	~ChunkArray() override
 	{
@@ -83,7 +83,7 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	Self* clone() const override
 	{
 		return new Self();
 	}

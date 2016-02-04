@@ -161,6 +161,15 @@ protected:
 	inline void remove_topology_element(unsigned int index)
 	{
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
+
+		for(unsigned int orbit = Orbit::DART; orbit < NB_ORBITS; ++orbit)
+		{
+			if(this->embeddings_[orbit])
+			{
+				unsigned int emb = (*this->embeddings_[orbit])[index];
+				this->attributes_[orbit].unref_line(emb);
+			}
+		}
 	}
 
 	template <Orbit ORBIT>
@@ -478,6 +487,25 @@ public:
 		return result;
 	}
 
+	inline bool is_boundary(Dart d) const
+	{
+		return (*this->boundary_marker_)[d.index];
+	}
+
+	inline void set_boundary(Dart d, bool b)
+	{
+		this->boundary_marker_->set_value(d.index, b);
+	}
+
+	template <Orbit ORBIT>
+	inline bool is_boundary(Cell<ORBIT> c)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		static_assert(ORBIT == ConcreteMap::BOUNDARY, "Cell is not of current map boundary dimension");
+
+		return is_boundary(c.dart);
+	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
@@ -530,7 +558,7 @@ public:
 
 	inline const_iterator begin() const
 	{
-		const ContainerElementValidator& v = this->standard_observer_.topo();
+		const ContainerElementValidator& v = this->default_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.begin(v)), v);
 	}
 
@@ -542,7 +570,7 @@ public:
 
 	inline const_iterator end() const
 	{
-		const ContainerElementValidator& v = this->standard_observer_.topo();
+		const ContainerElementValidator& v = this->default_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.end()), v);
 	}
 
@@ -554,7 +582,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
-		foreach_dart(f, this->standard_observer_);
+		foreach_dart(f, this->default_observer_);
 	}
 
 	template <typename FUNC>
@@ -574,7 +602,7 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, this->standard_observer_);
+		parallel_foreach_dart(f, this->default_observer_);
 	}
 
 	template <typename FUNC>
@@ -653,7 +681,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f) const
 	{
-		foreach_dart_until(f, this->standard_observer_);
+		foreach_dart_until(f, this->default_observer_);
 	}
 
 	template <typename FUNC>
@@ -681,7 +709,7 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f) const
 	{
-		foreach_cell<ORBIT, STRATEGY>(f, this->standard_observer_);
+		foreach_cell<ORBIT, STRATEGY>(f, this->default_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
@@ -714,7 +742,7 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
 	{
-		parallel_foreach_cell<ORBIT, STRATEGY>(f, this->standard_observer_);
+		parallel_foreach_cell<ORBIT, STRATEGY>(f, this->default_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
@@ -754,7 +782,7 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until(const FUNC& f) const
 	{
-		foreach_cell_until<ORBIT, STRATEGY>(f, this->standard_observer_);
+		foreach_cell_until<ORBIT, STRATEGY>(f, this->default_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>

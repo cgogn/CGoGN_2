@@ -44,7 +44,7 @@ int test1()
 	std::cout << "= TEST 1 = ref unsigned char" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
@@ -82,7 +82,7 @@ int test2()
 	std::cout << "= TEST 2 = ref bool" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
@@ -120,7 +120,7 @@ int test3()
 	std::cout << "= TEST 3 = random bool cleaning" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
@@ -150,7 +150,7 @@ int test4()
 	std::cout << "= TEST 4 = random bool cleaning with set_false_byte" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ,  bool> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
@@ -180,7 +180,7 @@ int test5()
 	std::cout << "= TEST 5 = Traversal" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	StandardElementValidator v;
+	DefaultElementValidator v;
 
 	ChunkArray<BLK_SZ,unsigned int>* att1 = container.add_attribute<unsigned int>("uints");
 

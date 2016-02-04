@@ -63,6 +63,8 @@ public:
 	typedef Cell<Self::FACE> Face;
 	typedef Cell<Self::VOLUME> Volume;
 
+	static const Orbit BOUNDARY = VOLUME;
+
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>

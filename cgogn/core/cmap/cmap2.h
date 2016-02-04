@@ -61,6 +61,8 @@ public:
 	typedef Cell<Self::FACE> Face;
 	typedef Cell<Self::VOLUME> Volume;
 
+	static const Orbit BOUNDARY = FACE;
+
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -221,6 +223,7 @@ public:
 		do
 		{
 			phi2_sew(it, b);
+			this->set_boundary(b, true);
 			it = this->phi1(it);
 			b = this->phi_1(b);
 		} while (it != d);
@@ -272,6 +275,7 @@ protected:
 		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
 		Dart first = add_dart(); // First edge of the face that will fill the hole
+		this->set_boundary(first, true);
 		phi2_sew(d, first);      // phi2-link the new edge to the hole
 
 		Dart d_next = d; // Turn around the hole
@@ -287,6 +291,7 @@ protected:
 			if (d_phi1 != d)
 			{
 				Dart next = add_dart(); // Add a new edge there and link it to the face
+				this->set_boundary(next, true);
 				this->phi1_sew(first, next); // the edge is linked to the face
 				phi2_sew(d_next, next);      // the face is linked to the hole
 			}

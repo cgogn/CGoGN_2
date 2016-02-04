@@ -442,7 +442,7 @@ public:
 
 	inline const_iterator begin() const
 	{
-		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		const ContainerElementValidator& v = this->map_->default_observer_.topo();
 		return const_iterator(this, this->chunk_array_cont_->begin(v), v);
 	}
 
@@ -454,7 +454,7 @@ public:
 
 	inline const_iterator end() const
 	{
-		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		const ContainerElementValidator& v = this->map_->default_observer_.topo();
 		return const_iterator(this, this->chunk_array_cont_->end(), v);
 	}
 
@@ -506,7 +506,7 @@ public:
 
 	inline iterator begin()
 	{
-		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		const ContainerElementValidator& v = this->map_->default_observer_.topo();
 		return iterator(this, this->chunk_array_cont_->begin(v), v);
 	}
 
@@ -518,7 +518,7 @@ public:
 
 	inline iterator end()
 	{
-		const ContainerElementValidator& v = this->map_->standard_observer_.topo();
+		const ContainerElementValidator& v = this->map_->default_observer_.topo();
 		return iterator(this, this->chunk_array_cont_->end(), v);
 	}
 };

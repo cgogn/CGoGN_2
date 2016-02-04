@@ -52,7 +52,7 @@ public:
 	virtual bool valid(unsigned int) const = 0;
 };
 
-class StandardElementValidator : public ContainerElementValidator
+class DefaultElementValidator : public ContainerElementValidator
 {
 public:
 
@@ -546,7 +546,7 @@ public:
 		map_old_new.clear();
 		map_old_new.resize(nb_max_lines_, 0xffffffff);
 
-		StandardElementValidator v;
+		DefaultElementValidator v;
 
 		unsigned int up = rbegin(v);
 		unsigned int down = 0u;
@@ -711,23 +711,21 @@ public:
 	}
 
 	/**
-	* @brief increment the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief increment the reference counter of the given line
 	* @param index index of the line
 	*/
 	void ref_line(unsigned int index)
 	{
-		// static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
 	}
 
 	/**
-	* @brief decrement the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief decrement the reference counter of the given line
 	* @param index index of the line
 	* @return true if the line was removed
 	*/
 	bool unref_line(unsigned int index)
 	{
-		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
 		refs_[index]--;
 		if (refs_[index] == 1u)
 		{
@@ -746,7 +744,6 @@ public:
 	*/
 	T_REF get_nb_refs(unsigned int index) const
 	{
-		// static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
 	}
 
@@ -844,8 +841,6 @@ public:
 		return ok;
 	}
 };
-
-
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
