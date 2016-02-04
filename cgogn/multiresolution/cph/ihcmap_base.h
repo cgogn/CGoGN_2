@@ -115,6 +115,16 @@ public:
 		(*dart_level_)[d.index] = l ;
 	}
 
+    inline void inc_current_level()
+    {
+        set_current_level(get_current_level() + 1);
+    }
+
+    inline void dec_current_level()
+    {
+        set_current_level(get_current_level() - 1);
+    }
+
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *
 	 ***************************************************/

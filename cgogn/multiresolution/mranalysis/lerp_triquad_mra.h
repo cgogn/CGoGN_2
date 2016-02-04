@@ -1,27 +1,37 @@
-#ifndef MRA_H
-#define MRA_H
+#ifndef MULTIRESOLUTION_MRANALYSIS_LERP_TRI_QUAD_MRANALYSIS_H_
+#define MULTIRESOLUTION_MRANALYSIS_LERP_TRI_QUAD_MRANALYSIS_H_
 
+#include <core/basic/dart.h>
+
+namespace cgogn {
 
 template <typename MRMAP, typename VEC3>
 class LerpTriQuadMRAnalysis
 {
 
-    MRMAP& map_;
-    typename MRMAP::VertexAttribute va_;
+public:
+    using Self = LerpTriQuadMRAnalysis<MRMAP, VEC3>;
 
-    LerpTriQuadMRAnalysis(MRMAP& map):
-        map_(map)
-    {
-        synthesis_filters_.emplace_back(lerp_quad_odd_synthesis_);
-    }
+    using VertexAttributeHandler = typename MRMAP::template VertexAttributeHandler<VEC3>;
 
 protected:
     std::vector<std::function<void()>> synthesis_filters_;
     std::vector<std::function<void()>> analysis_filters_;
 
+    MRMAP& map_;
+    VertexAttributeHandler& va_;
+
+public:
+    LerpTriQuadMRAnalysis(MRMAP& map, VertexAttributeHandler& v):
+        map_(map),
+        va_(v)
+    {
+        synthesis_filters_.push_back(lerp_tri_quad_odd_synthesis_);
+    }
+
 protected:
 
-    std::function<void()> lerp_tri_quad_odd_synthesis_ = [] ()
+    std::function<void()> lerp_tri_quad_odd_synthesis_ = [this] ()
     {
         map_.template foreach_cell<MRMAP::FACE>([&] (typename MRMAP::Face f)
         {
@@ -34,11 +44,11 @@ protected:
 
                 map_.template foreach_incident_edge(f, [&] (typename MRMAP::Edge e)
                 {
-                        vf += v[e];
-                        map_.incCurrentLevel();
-                        ef += v[map_.phi1(e)];
-                        map_.decCurrentLevel();
-                        ++count;
+                    vf += va_[e.dart];
+                    map_.inc_current_level();
+                    ef += va_[map_.phi1(e.dart)];
+                    map_.dec_current_level();
+                    ++count;
                 });
 
                 ef /= count;
@@ -46,30 +56,25 @@ protected:
 
                 vf /= count;
 
-                map_.incCurrentLevel() ;
-                Dart midF = map_.phi1(map_.phi1(f));
-                m_position[midF] += vf + ef ;
-                map_.decCurrentLevel() ;
+                map_.inc_current_level() ;
+                Dart midF = map_.phi1(map_.phi1(f.dart));
+                va_[midF] += vf + ef ;
+                map_.dec_current_level() ;
             }
         });
 
         map_.template foreach_cell<MRMAP::EDGE>([&] (typename MRMAP::Edge e)
         {
-            VEC3 ve = (v[e] + v[map_.phi1(e)]) * typename VEC3::TYPE(0.5);
+            VEC3 ve = (va_[e.dart] + va_[map_.phi1(e)]) * 0.5;
 
-            map_.incCurrentLevel() ;
+            map_.inc_current_level() ;
             Dart midV = map_.phi1(e) ;
-            m_position[midV] += ve ;
-            map_.decCurrentLevel() ;
+            va_[midV] += ve ;
+            map_.dec_current_level() ;
         });
     };
 
 public:
-
-    inline set_attribute(typename MRMAP::VertexAttribute<VEC3>& v)
-    {
-        va_ = v;
-    }
 
     void analysis()
     {
@@ -78,17 +83,17 @@ public:
         map_.dec_current_level() ;
 
         for(unsigned int i = 0; i < analysis_filters_.size(); ++i)
-                (*analysis_filters_[i])() ;
+            analysis_filters_[i]();
     }
 
     void synthesis()
     {
-        cgogn_message_assert(map_.getCurrentLevel() < map_.getMaxLevel(), "synthesis : called on max level") ;
+        cgogn_message_assert(map_.get_current_level() < map_.get_maximum_level(), "synthesis : called on max level") ;
 
         for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
-                (*synthesis_filters_[i])() ;
+            synthesis_filters_[i]();
 
-        map_.incCurrentLevel();
+        map_.inc_current_level();
     }
 
     void add_level()
@@ -98,6 +103,7 @@ public:
 
 };
 
+} //namespace cgogn
 
-#endif // MRA_H
+#endif // MULTIRESOLUTION_MRANALYSIS_LERP_TRI_QUAD_MRANALYSIS_H_
 

@@ -249,7 +249,7 @@ public:
 			}
 		});
 
-		//        Inherit::set_current_level(cur) ;
+        Inherit::set_current_level(cur) ;
 	}
 };
 

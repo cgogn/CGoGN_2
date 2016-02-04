@@ -129,7 +129,7 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-protected:
+public:
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
@@ -190,7 +190,6 @@ protected:
 		return Inherit_CMAP::phi2(Inherit_CMAP::phi_1(phi1(d)));
 	}
 
-public:
 	/**
 	* \brief add a Dart in the map
 	* @return the new Dart
@@ -310,6 +309,7 @@ protected:
 		cgogn::get_dart_buffers()->release_buffer(visited_faces);
 	}
 
+public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
