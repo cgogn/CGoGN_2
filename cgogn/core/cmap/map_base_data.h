@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <type_traits>
 #include <sstream>
+#include <iterator>
 
 namespace cgogn
 {
@@ -88,7 +89,7 @@ public:
 	typedef MapBaseData<MAP_TRAITS> Self;
 
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
-
+	static const unsigned int NB_UNKNOWN_THREADS = 4u;
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 
 	template <typename T_REF>
@@ -103,28 +104,30 @@ protected:
 	ChunkArrayContainer<unsigned char> topology_;
 
 	/// per orbit attributes
-	ChunkArrayContainer<unsigned int> attributes_[NB_ORBITS];
+	std::array<ChunkArrayContainer<unsigned int>, NB_ORBITS> attributes_;
 
 	/// embedding indices shortcuts
-	ChunkArray<unsigned int>* embeddings_[NB_ORBITS];
+	std::array<ChunkArray<unsigned int>*, NB_ORBITS> embeddings_;
 
 	/// boundary markers shortcuts
-	ChunkArray<bool>* boundary_markers_[2];
+	std::array<ChunkArray<bool>*, 2> boundary_markers_;
 	// TODO: ?? store in a std::vector ?
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<ChunkArray<bool>*> mark_attributes_topology_[MAX_NB_THREADS];
+	std::vector<std::vector<ChunkArray<bool>*>> mark_attributes_topology_;
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of available mark attributes per orbit per thread on attributes containers
-	std::vector<ChunkArray<bool>*> mark_attributes_[NB_ORBITS][MAX_NB_THREADS];
-	std::mutex mark_attributes_mutex_[NB_ORBITS];
+	std::array<std::vector<std::vector<ChunkArray<bool>*>>, NB_ORBITS> mark_attributes_;
+	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
 
-	/// vector of thread ids known by the map that can pretend to data such as mark vectors
+	/// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
+	/// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
+	/// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
 	mutable std::vector<std::thread::id> thread_ids_;
 
 	/// global topo cache shortcuts
-	ChunkArray<Dart>* global_topo_cache_[NB_ORBITS];
+	std::array<ChunkArray<Dart>*, NB_ORBITS> global_topo_cache_;
 
 public:
 
@@ -137,15 +140,23 @@ public:
 		}
 		for (unsigned int i = 0; i < NB_ORBITS; ++i)
 		{
+			mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+
 			embeddings_[i] = nullptr;
 			global_topo_cache_[i] = nullptr;
-			for (unsigned int j = 0; j < MAX_NB_THREADS; ++j)
+			for (unsigned int j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
 				mark_attributes_[i][j].reserve(8);
 		}
+
+		mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+		mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+
 		for (unsigned int i = 0; i < MAX_NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
 
-		thread_ids_.reserve(MAX_NB_THREADS);
+		thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+		thread_ids_.resize(NB_UNKNOWN_THREADS);
 		this->add_thread(std::this_thread::get_id());
 		const auto& pool_threads_ids = cgogn::get_thread_pool()->get_threads_ids();
 		for (const std::thread::id& ids : pool_threads_ids)
@@ -269,23 +280,62 @@ protected:
 	 * Thread management
 	 *******************************************************************************/
 
+	inline unsigned int add_unknown_thread() const
+	{
+		static unsigned int index = 0u;
+		const std::thread::id& th_id = std::this_thread::get_id();
+		std::cerr << "WARNING: registration of an unknown thread (id :" << th_id << ") in the map." << std::endl;
+		std::cerr << "Data can be lost. Please use add_thread and remove_thread interface." << std::endl;
+		thread_ids_[index] = th_id;
+		const unsigned old_index = index;
+		index  = (index+1u)% NB_UNKNOWN_THREADS;
+		return old_index;
+	}
+
+	inline unsigned int get_unknown_thread_index(std::thread::id thread_id) const
+	{
+		auto end = thread_ids_.begin();
+		std::advance(end, NB_UNKNOWN_THREADS);
+		auto res_it = std::find(thread_ids_.begin(), end, thread_id);
+		if (res_it != end)
+			return std::distance(thread_ids_.begin(), res_it);
+
+		return add_unknown_thread();
+	}
+
 	inline unsigned int get_current_thread_index() const
 	{
-		cgogn_message_assert(std::binary_search(thread_ids_.begin(), thread_ids_.end(), std::this_thread::get_id()),"Unable to find currend thread ID.");
-		return std::distance(thread_ids_.begin(), std::lower_bound(thread_ids_.begin(), thread_ids_.end(), std::this_thread::get_id()));
+		// avoid the unknown threads stored at the beginning of the vector
+		auto real_begin =thread_ids_.begin();
+		std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+		const auto end = thread_ids_.end();
+		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
+		if (it_lower_bound != end)
+			return std::distance(thread_ids_.begin(),it_lower_bound);
+
+		return get_unknown_thread_index(std::this_thread::get_id());
 	}
 
 	inline void remove_thread(std::thread::id thread_id) const
 	{
-		cgogn_message_assert(std::binary_search(thread_ids_.begin(), thread_ids_.end(), thread_id),"Unable to find the thread.");
-		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
+		// avoid the unknown threads stored at the beginning of the vector
+		auto real_begin =thread_ids_.begin();
+		std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+		cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id),"Unable to find the thread.");
+		auto it = std::lower_bound(real_begin, thread_ids_.end(),thread_id);
 		cgogn_message_assert((*it)  == thread_id,"Unable to find the thread.");
 		thread_ids_.erase(it);
 	}
 
 	inline void add_thread(std::thread::id thread_id) const
 	{
-		auto it = std::lower_bound(thread_ids_.begin(), thread_ids_.end(),thread_id);
+		// avoid the unknown threads stored at the beginning of the vector
+		auto real_begin =thread_ids_.begin();
+		std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+		auto it = std::lower_bound(real_begin, thread_ids_.end(),thread_id);
 		if ((it == thread_ids_.end()) || (*it  != thread_id))
 		{
 			thread_ids_.insert(it,thread_id);
