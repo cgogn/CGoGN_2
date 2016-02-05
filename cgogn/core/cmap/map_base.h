@@ -518,15 +518,17 @@ public:
 	 * Traversals
 	 *******************************************************************************/
 
+protected:
+
 	class const_iterator
 	{
 	public:
 
 		const Self& map_;
-		const ContainerElementValidator& v_;
+		const ElementValidator<Dart>& v_;
 		Dart dart_;
 
-		inline const_iterator(const Self& map, Dart d, const ContainerElementValidator& v) :
+		inline const_iterator(const Self& map, Dart d, const ElementValidator<Dart>& v) :
 			map_(map),
 			dart_(d),
 			v_(v)
@@ -548,7 +550,11 @@ public:
 
 		inline const_iterator& operator++()
 		{
-			map_.topology_.next(dart_.index, v_);
+			Dart end = Dart(map_.topology_.end());
+			do
+			{
+				map_.topology_.next(dart_.index);
+			} while (dart_ != end && !v_.valid(dart_));
 			return *this;
 		}
 
@@ -562,25 +568,36 @@ public:
 			cgogn_assert(&map_ == &(it.map_));
 			return dart_ != it.dart_;
 		}
+
+		inline bool operator==(const const_iterator& it) const
+		{
+			cgogn_assert(&map_ == &(it.map_));
+			return dart_ == it.dart_;
+		}
 	};
 
 	inline const_iterator begin() const
 	{
-		const ContainerElementValidator& v = this->default_observer_.topo();
-		return const_iterator(*this, Dart(this->topology_.begin(v)), v);
+		const ElementValidator<Dart>& v = this->default_observer_.topo();
+		return const_iterator(*this, Dart(this->topology_.begin()), v);
 	}
 
-	inline const_iterator begin(const CMapObserver& o) const
+	inline const_iterator begin(const ElementValidator<Dart>& v) const
 	{
-		const ContainerElementValidator& v = o.topo();
-		return const_iterator(*this, Dart(this->topology_.begin(v)), v);
+		Dart d = Dart(this->topology_.begin());
+		Dart end = Dart(this->topology_.end());
+		while (d != end && !v.valid(d))
+			this->topology_.next(d.index);
+		return const_iterator(*this, d, v);
 	}
 
 	inline const_iterator end() const
 	{
-		const ContainerElementValidator& v = this->default_observer_.topo();
+		const ElementValidator<Dart>& v = this->default_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.end()), v);
 	}
+
+public:
 
 	/**
 	 * \brief apply a function on each dart of the map
@@ -598,13 +615,8 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		const ContainerElementValidator& v = o.topo();
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
-		{
-			f(d);
-		}
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
+			f(*it);
 	}
 
 	template <typename FUNC>
@@ -618,8 +630,6 @@ public:
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
-
-		const ContainerElementValidator& v = o.topo();
 
 		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
 		using VecDarts = std::vector<Dart>;
@@ -636,8 +646,8 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		Dart it = Dart(this->topology_.begin(v));
-		const Dart end = Dart(this->topology_.end());
+		const_iterator it = this->begin(o.topo());
+		const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -651,8 +661,8 @@ public:
 					darts.reserve(PARALLEL_BUFFER_SIZE);
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
 					{
-						darts.push_back(it);
-						this->topology_.next(it.index, v);
+						darts.push_back(*it);
+						++it;
 					}
 					futures[i].push_back(thread_pool->enqueue([&darts ,&f] (unsigned int th_id)
 					{
@@ -698,12 +708,9 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
-		const ContainerElementValidator& v = o.topo();
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
 		{
-			if(!f(d))
+			if (!f(*it))
 				break;
 		}
 	}
@@ -826,16 +833,13 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.topo();
 		DartMarker dm(*to_concrete());
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
 		{
-			if (!dm.is_marked(d))
+			if (!dm.is_marked(*it))
 			{
-				dm.template mark_orbit<ORBIT>(d);
-				f(d);
+				dm.template mark_orbit<ORBIT>(*it);
+				f(*it);
 			}
 		}
 	}
@@ -845,8 +849,6 @@ protected:
 	{
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
-
-		const ContainerElementValidator& v = o.topo();
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
@@ -861,8 +863,8 @@ protected:
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		DartMarker dm(*to_concrete());
-		Dart it = Dart(this->topology_.begin(v));
-		const Dart end = Dart(this->topology_.end());
+		const_iterator it = this->begin(o.topo());
+		const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -875,13 +877,13 @@ protected:
 					cells.reserve(PARALLEL_BUFFER_SIZE);
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 					{
-						if (!dm.is_marked(it))
+						if (!dm.is_marked(*it))
 						{
-							dm.template mark_orbit<ORBIT>(it);
-							cells.push_back(Cell<ORBIT>(it));
+							dm.template mark_orbit<ORBIT>(*it);
+							cells.push_back(Cell<ORBIT>(*it));
 							++k;
 						}
-						this->topology_.next(it.index, v);
+						++it;
 					}
 					futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 					{
@@ -901,7 +903,7 @@ protected:
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
 				if (it == end && i == 1u)
 				{
-					for (auto& fu: futures[1u])
+					for (auto& fu : futures[1u])
 						fu.wait();
 					for (auto &b : cells_buffers[1u])
 						dbuffs->release_cell_buffer(b);
@@ -913,16 +915,13 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_cell_marking(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.topo();
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
 		{
-			if (!cm.is_marked(d))
+			if (!cm.is_marked(*it))
 			{
-				cm.mark(d);
-				f(d);
+				cm.mark(*it);
+				f(*it);
 			}
 		}
 	}
@@ -932,8 +931,6 @@ protected:
 	{
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future<typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
-
-		const ContainerElementValidator& v = o.topo();
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
@@ -948,8 +945,8 @@ protected:
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		Dart it = Dart(this->topology_.begin(v));
-		const Dart end = Dart(this->topology_.end());
+		const_iterator it = this->begin(o.topo());
+		const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -962,13 +959,13 @@ protected:
 					cells.reserve(PARALLEL_BUFFER_SIZE);
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 					{
-						if (!cm.is_marked(it))
+						if (!cm.is_marked(*it))
 						{
-							cm.mark(it);
-							cells.push_back(it);
+							cm.mark(*it);
+							cells.push_back(*it);
 							++k;
 						}
-						this->topology_.next(it.index, v);
+						++it;
 					}
 					futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 					{
@@ -988,7 +985,7 @@ protected:
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
 				if (it == end && i == 1u)
 				{
-					for (auto& fu: futures[1u])
+					for (auto& fu : futures[1u])
 						fu.wait();
 					for (auto &b : cells_buffers[1u])
 						dbuffs->release_cell_buffer(b);
@@ -1000,10 +997,10 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.attr<ORBIT>();
-		for (unsigned int i = this->attributes_[ORBIT].begin(v), end = this->attributes_[ORBIT].end();
+//		const ElementValidator<unsigned int>& v = o.attr<ORBIT>();
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
 			 i != end;
-			 this->attributes_[ORBIT].next(i, v))
+			 this->attributes_[ORBIT].next(i))
 		{
 			f((*this->global_topo_cache_[ORBIT])[i]);
 		}
@@ -1014,8 +1011,6 @@ protected:
 	{
 		using VecCell  = std::vector<Cell<ORBIT>>;
 		using Future = std::future<typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
-
-		const ContainerElementValidator& v = o.attr<ORBIT>();
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
@@ -1029,7 +1024,7 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		unsigned int it = this->attributes_[ORBIT].begin(v);
+		unsigned int it = this->attributes_[ORBIT].begin();
 		const unsigned int end = this->attributes_[ORBIT].end();
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
@@ -1047,7 +1042,7 @@ protected:
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
 					{
 						cells.push_back(cache[it]);
-						attr.next(it, v);
+						attr.next(it);
 					}
 					futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 					{
@@ -1079,16 +1074,13 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_dart_marking(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.topo();
 		DartMarker dm(*to_concrete());
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
 		{
-			if (!dm.is_marked(d))
+			if (!dm.is_marked(*it))
 			{
-				dm.template mark_orbit<ORBIT>(d);
-				if(!f(d))
+				dm.template mark_orbit<ORBIT>(*it);
+				if (!f(*it))
 					break;
 			}
 		}
@@ -1097,16 +1089,13 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_cell_marking(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.topo();
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart d = Dart(this->topology_.begin(v)), end = Dart(this->topology_.end());
-			 d != end;
-			 this->topology_.next(d.index, v))
+		for (const_iterator it = this->begin(o.topo()), end = this->end(); it != end; ++it)
 		{
-			if (!cm.is_marked(d))
+			if (!cm.is_marked(*it))
 			{
-				cm.mark(d);
-				if(!f(d))
+				cm.mark(*it);
+				if (!f(*it))
 					break;
 			}
 		}
@@ -1115,10 +1104,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-		const ContainerElementValidator& v = o.attr<ORBIT>();
-		for (unsigned int i = this->attributes_[ORBIT].begin(v), end = this->attributes_[ORBIT].end();
+		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
 			 i != end;
-			 this->attributes_[ORBIT].next(i, v))
+			 this->attributes_[ORBIT].next(i))
 		{
 			if(!f((*this->global_topo_cache_[ORBIT])[i]))
 				break;

@@ -44,24 +44,6 @@
 namespace cgogn
 {
 
-class ContainerElementValidator
-{
-public:
-
-	virtual ~ContainerElementValidator() {}
-	virtual bool valid(unsigned int) const = 0;
-};
-
-class DefaultElementValidator : public ContainerElementValidator
-{
-public:
-
-	inline bool valid(unsigned int index) const override
-	{
-		return true;
-	}
-};
-
 /**
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNKSIZE chunk size for ChunkArray
@@ -397,10 +379,10 @@ public:
 	 * @brief begin
 	 * @return the index of the first used line of the container
 	 */
-	inline unsigned int begin(const ContainerElementValidator& v) const
+	inline unsigned int begin() const
 	{
 		unsigned int it = 0u;
-		while (it < nb_max_lines_ && !used(it) && !v.valid(it))
+		while (it < nb_max_lines_ && !used(it))
 			++it;
 		return it;
 	}
@@ -418,34 +400,34 @@ public:
 	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
-	inline void next(unsigned int& it, const ContainerElementValidator& v) const
+	inline void next(unsigned int& it) const
 	{
 		do
 		{
 			++it;
-		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
+		} while (it < nb_max_lines_ && !used(it));
 	}
 
 	/**
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
 	 */
-	inline void next_primitive(unsigned int& it, unsigned int prim_size, const ContainerElementValidator& v) const
+	inline void next_primitive(unsigned int& it, unsigned int prim_size) const
 	{
 		do
 		{
 			it += prim_size;
-		} while (it < nb_max_lines_ && !used(it) && !v.valid(it));
+		} while (it < nb_max_lines_ && !used(it));
 	}
 
 	/**
 	 * @brief reverse begin of container without browser
 	 * @return the index of the first used line of the container in reverse order
 	 */
-	inline unsigned int rbegin(const ContainerElementValidator& v) const
+	inline unsigned int rbegin() const
 	{
 		unsigned int it = nb_max_lines_- 1u;
-		while (it != 0xffffffff && !used(it) && !v.valid(it))
+		while (it != 0xffffffff && !used(it))
 			--it;
 		return it;
 	}
@@ -463,12 +445,12 @@ public:
 	 * @brief reverse next without browser
 	 * @param it
 	 */
-	inline void rnext(unsigned int &it, const ContainerElementValidator& v) const
+	inline void rnext(unsigned int &it) const
 	{
 		do
 		{
 			--it;
-		} while (it != 0xffffffff && !used(it) && !v.valid(it));
+		} while (it != 0xffffffff && !used(it));
 	}
 
 	/**
@@ -546,9 +528,7 @@ public:
 		map_old_new.clear();
 		map_old_new.resize(nb_max_lines_, 0xffffffff);
 
-		DefaultElementValidator v;
-
-		unsigned int up = rbegin(v);
+		unsigned int up = rbegin();
 		unsigned int down = 0u;
 
 		while (down < up)
@@ -560,7 +540,7 @@ public:
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
 					copy_line(rdown, up);
-					rnext(up, v);
+					rnext(up);
 				}
 				down += PRIMSIZE;
 			}

@@ -226,7 +226,8 @@ protected:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
-		for (Dart d: (*this))
+//		for (Dart d: (*this))
+		this->foreach_dart([this, &nb] (Dart d)
 		{
 			if (phi3(d) == d)
 			{
@@ -284,7 +285,7 @@ protected:
 					} while(f != it);
 				}
 			}
-		}
+		});
 		return nb;
 	}
 

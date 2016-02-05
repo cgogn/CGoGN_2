@@ -30,26 +30,50 @@
 namespace cgogn
 {
 
+template <typename T>
+class ElementValidator
+{
+public:
+
+	virtual ~ElementValidator() {}
+	virtual bool valid(const T&) const = 0;
+};
+
+template <typename T>
+class DefaultElementValidator : public ElementValidator<T>
+{
+public:
+
+	inline bool valid(const T&) const override
+	{
+		return true;
+	}
+};
+
+
+
+
 class CMapObserver
 {
 protected:
 
-	ContainerElementValidator* topo_;
-	std::array<ContainerElementValidator*, NB_ORBITS> attr_;
+	ElementValidator<Dart>* topo_;
+	std::array<ElementValidator<unsigned int>*, NB_ORBITS> attr_;
 
 public:
 
-	inline const ContainerElementValidator& topo() const
+	inline const ElementValidator<Dart>& topo() const
 	{
 		return *topo_;
 	}
 
 	template <Orbit ORBIT>
-	inline const ContainerElementValidator& attr() const
+	inline const ElementValidator<unsigned int>& attr() const
 	{
 		return *attr_[ORBIT];
 	}
 };
+
 
 // All elements observer
 
@@ -59,18 +83,16 @@ public:
 
 	DefaultCMapObserver()
 	{
-		this->topo_ = new DefaultElementValidator();
+		this->topo_ = new DefaultElementValidator<Dart>();
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-		{
-			this->attr_[i] = new DefaultElementValidator();
-		}
+			this->attr_[i] = new DefaultElementValidator<unsigned int>();
 	}
 };
 
 // No boundary observer
 
-template <typename MAP>
-class NoBoundaryDartValidator : public ContainerElementValidator
+template <typename MAP, typename T>
+class NoBoundaryValidator : public ElementValidator<T>
 {
 protected:
 
@@ -78,12 +100,12 @@ protected:
 
 public:
 
-	NoBoundaryDartValidator(const MAP& map) : map_(map)
+	NoBoundaryValidator(const MAP& map) : map_(map)
 	{}
 
-	inline bool valid(unsigned int index) const override
+	inline bool valid(const T& element) const override
 	{
-		return !map_.is_boundary(Dart(index));
+		return !map_.is_boundary(element);
 	}
 };
 
@@ -94,18 +116,16 @@ public:
 
 	NoBoundaryCMapObserver(const MAP& map)
 	{
-		this->topo_ = new NoBoundaryDartValidator<MAP>(map);
+		this->topo_ = new NoBoundaryValidator<MAP, Dart>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-		{
-			this->attr_[i] = new DefaultElementValidator();
-		}
+			this->attr_[i] = new DefaultElementValidator<unsigned int>();
 	}
 };
 
 // Boundary observer
 
-template <typename MAP>
-class BoundaryDartValidator : public ContainerElementValidator
+template <typename MAP, typename T>
+class BoundaryDartValidator : public ElementValidator<T>
 {
 protected:
 
@@ -116,9 +136,9 @@ public:
 	BoundaryDartValidator(const MAP& map) : map_(map)
 	{}
 
-	inline bool valid(unsigned int index) const override
+	inline bool valid(const T& element) const override
 	{
-		return map_.is_boundary(Dart(index));
+		return map_.is_boundary(element);
 	}
 };
 
@@ -129,11 +149,9 @@ public:
 
 	BoundaryCMapObserver(const MAP& map)
 	{
-		this->topo_ = new BoundaryDartValidator<MAP>(map);
+		this->topo_ = new BoundaryDartValidator<MAP, Dart>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-		{
-			this->attr_[i] = new DefaultElementValidator();
-		}
+			this->attr_[i] = new DefaultElementValidator<unsigned int>();
 	}
 };
 

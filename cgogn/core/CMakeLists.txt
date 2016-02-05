@@ -18,6 +18,7 @@ set(HEADER_FILES
 	cmap/cmap2_builder.h
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
+	cmap/cmap_observer.h
 	cmap/attribute_handler.h
 	cmap/sanity_check.h
 

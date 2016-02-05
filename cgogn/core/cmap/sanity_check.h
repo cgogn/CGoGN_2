@@ -98,17 +98,15 @@ bool is_container_well_referenced(MAP& map)
 	const MAP& const_map = static_cast<const MAP&>(map);
 	const typename MAP::template ChunkArrayContainer<unsigned int>& container = const_map.template get_attribute_container<ORBIT>();
 
-	DefaultElementValidator v;
-
 	// a counter is initialized to 0 for each "used" index of the container
-	for (unsigned int i = container.begin(v), end = container.end(); i != end; container.next(i, v))
+	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
 		counter[i] = 0;
 
 	// for each dart of the map, the counter corresponding to its embedding index is incremented
 	map.foreach_dart([&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; });
 
 	bool result = true;
-	for (unsigned int i = container.begin(v), end = container.end(); i != end; container.next(i, v))
+	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
 	{
 		unsigned int nb_refs = container.get_nb_refs(i);
 		if (nb_refs == 1)

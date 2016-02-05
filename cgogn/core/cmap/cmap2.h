@@ -172,7 +172,8 @@ protected:
 	 */
 	void close_map()
 	{
-		for (Dart d : *this)
+//		for (Dart d : *this)
+		this->foreach_dart([this] (Dart d)
 		{
 			if (phi2(d) == d)
 			{
@@ -204,7 +205,7 @@ protected:
 					init_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
 				}
 			}
-		}
+		});
 	}
 
 public:
