@@ -578,7 +578,7 @@ protected:
 
 	inline const_iterator begin() const
 	{
-		const ElementValidator<Dart>& v = this->default_observer_.topo();
+		const ElementValidator<Dart>& v = this->no_boundary_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.begin()), v);
 	}
 
@@ -593,7 +593,7 @@ protected:
 
 	inline const_iterator end() const
 	{
-		const ElementValidator<Dart>& v = this->default_observer_.topo();
+		const ElementValidator<Dart>& v = this->no_boundary_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.end()), v);
 	}
 
@@ -607,7 +607,13 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
-		foreach_dart(f, this->default_observer_);
+		foreach_dart(f, this->no_boundary_observer_);
+	}
+
+	template <typename FUNC>
+	inline void foreach_boundary_dart(const FUNC& f) const
+	{
+		foreach_dart(f, this->boundary_observer_);
 	}
 
 	template <typename FUNC>
@@ -622,7 +628,13 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, this->default_observer_);
+		parallel_foreach_dart(f, this->no_boundary_observer_);
+	}
+
+	template <typename FUNC>
+	inline void parallel_foreach_boundary_dart(const FUNC& f) const
+	{
+		parallel_foreach_dart(f, this->boundary_observer_);
 	}
 
 	template <typename FUNC>
@@ -682,7 +694,7 @@ public:
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
 				if (it == end && i == 1u)
 				{
-					for (auto& fu: futures[1u])
+					for (auto& fu : futures[1u])
 						fu.wait();
 					for (auto &b : dart_buffers[1u])
 						dbuffs->release_buffer(b);
@@ -699,7 +711,13 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f) const
 	{
-		foreach_dart_until(f, this->default_observer_);
+		foreach_dart_until(f, this->no_boundary_observer_);
+	}
+
+	template <typename FUNC>
+	inline void foreach_boundary_dart_until(const FUNC& f) const
+	{
+		foreach_dart_until(f, this->boundary_observer_);
 	}
 
 	template <typename FUNC>
@@ -724,7 +742,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f) const
 	{
-		foreach_cell<ORBIT, STRATEGY>(f, this->default_observer_);
+		foreach_cell<ORBIT, STRATEGY>(f, this->no_boundary_observer_);
+	}
+
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_boundary_cell(const FUNC& f) const
+	{
+		foreach_cell<ORBIT, STRATEGY>(f, this->boundary_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
@@ -757,7 +781,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
 	{
-		parallel_foreach_cell<ORBIT, STRATEGY>(f, this->default_observer_);
+		parallel_foreach_cell<ORBIT, STRATEGY>(f, this->no_boundary_observer_);
+	}
+
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void parallel_foreach_boundary_cell(const FUNC& f) const
+	{
+		parallel_foreach_cell<ORBIT, STRATEGY>(f, this->boundary_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
@@ -797,7 +827,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until(const FUNC& f) const
 	{
-		foreach_cell_until<ORBIT, STRATEGY>(f, this->default_observer_);
+		foreach_cell_until<ORBIT, STRATEGY>(f, this->no_boundary_observer_);
+	}
+
+	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_boundary_cell_until(const FUNC& f) const
+	{
+		foreach_cell_until<ORBIT, STRATEGY>(f, this->boundary_observer_);
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>

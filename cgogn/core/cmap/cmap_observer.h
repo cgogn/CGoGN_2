@@ -39,20 +39,6 @@ public:
 	virtual bool valid(const T&) const = 0;
 };
 
-template <typename T>
-class DefaultElementValidator : public ElementValidator<T>
-{
-public:
-
-	inline bool valid(const T&) const override
-	{
-		return true;
-	}
-};
-
-
-
-
 class CMapObserver
 {
 protected:
@@ -76,6 +62,17 @@ public:
 
 
 // All elements observer
+
+template <typename T>
+class DefaultElementValidator : public ElementValidator<T>
+{
+public:
+
+	inline bool valid(const T&) const override
+	{
+		return true;
+	}
+};
 
 class DefaultCMapObserver : public CMapObserver
 {

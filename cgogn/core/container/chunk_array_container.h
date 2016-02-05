@@ -166,10 +166,7 @@ public:
 	ChunkArrayContainer():
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
-	{
-//		std_browser_ = new ContainerStandardBrowser<Self>(this);
-//		current_browser_= std_browser_;
-	}
+	{}
 
 	ChunkArrayContainer(Self const& ) = delete;
 	ChunkArrayContainer(Self&& ) = delete;
