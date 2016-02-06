@@ -343,9 +343,9 @@ protected:
 
 public:
 
-	inline unsigned int degree(Face d) const
+	inline unsigned int degree(Face f) const
 	{
-		return this->nb_darts(d);
+		return this->nb_darts(f);
 	}
 
 protected:
