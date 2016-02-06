@@ -44,7 +44,7 @@ class CMapObserver
 protected:
 
 	ElementValidator<Dart>* topo_;
-	std::array<ElementValidator<unsigned int>*, NB_ORBITS> attr_;
+	std::array<ElementValidator<Dart>*, NB_ORBITS> attr_;
 
 public:
 
@@ -54,7 +54,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline const ElementValidator<unsigned int>& attr() const
+	inline const ElementValidator<Dart>& attr() const
 	{
 		return *attr_[ORBIT];
 	}
@@ -82,7 +82,7 @@ public:
 	{
 		this->topo_ = new DefaultElementValidator<Dart>();
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultElementValidator<unsigned int>();
+			this->attr_[i] = new DefaultElementValidator<Dart>();
 	}
 };
 
@@ -115,7 +115,7 @@ public:
 	{
 		this->topo_ = new NoBoundaryValidator<MAP, Dart>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultElementValidator<unsigned int>();
+			this->attr_[i] = new DefaultElementValidator<Dart>();
 	}
 };
 
@@ -148,7 +148,7 @@ public:
 	{
 		this->topo_ = new BoundaryDartValidator<MAP, Dart>(map);
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultElementValidator<unsigned int>();
+			this->attr_[i] = new DefaultElementValidator<Dart>();
 	}
 };
 

@@ -400,26 +400,22 @@ public:
 	public:
 
 		const Self* const ah_ptr_;
-		const ElementValidator<unsigned int>& v_;
 		unsigned int index_;
 
-		inline const_iterator(const Self* ah, unsigned int i, const ElementValidator<unsigned int>& v) :
+		inline const_iterator(const Self* ah, unsigned int i) :
 			ah_ptr_(ah),
-			index_(i),
-			v_(v)
+			index_(i)
 		{}
 
 		inline const_iterator(const const_iterator& it) :
 			ah_ptr_(it.ah_ptr_),
-			index_(it.index_),
-			v_(it.v_)
+			index_(it.index_)
 		{}
 
 		inline const_iterator& operator=(const const_iterator& it)
 		{
 			ah_ptr_ = it.ah_ptr_;
 			index_ = it.index_;
-			v_ = it.v_;
 			return *this;
 		}
 
@@ -429,7 +425,7 @@ public:
 			do
 			{
 				ah_ptr_->chunk_array_cont_->next(index_);
-			} while (index_ != end && !v_.valid(index_));
+			} while (index_ != end);
 			return *this;
 		}
 
@@ -447,50 +443,36 @@ public:
 
 	inline const_iterator begin() const
 	{
-		const ElementValidator<unsigned int>& v = this->map_->default_observer_.template attr<ORBIT>();
-		return const_iterator(this, this->chunk_array_cont_->begin(), v);
-	}
-
-	inline const_iterator begin(const ElementValidator<unsigned int>& v) const
-	{
-		unsigned int c = this->chunk_array_cont_->begin();
-		unsigned int end = this->chunk_array_cont_->end();
-		while (c != end && !v.valid(c))
-			this->chunk_array_cont_->next(c);
-		return const_iterator(*this, c, v);
+		return const_iterator(this, this->chunk_array_cont_->begin());
 	}
 
 	inline const_iterator end() const
 	{
-		const ElementValidator<unsigned int>& v = this->map_->default_observer_.template attr<ORBIT>();
-		return const_iterator(this, this->chunk_array_cont_->end(), v);
+		return const_iterator(this, this->chunk_array_cont_->end());
 	}
 
 
 	class iterator
 	{
 	public:
+
 		Self* const ah_ptr_;
-		const ElementValidator<unsigned int>& v_;
 		unsigned int index_;
 
-		inline iterator(Self* ah, unsigned int i, const ElementValidator<unsigned int>& v) :
+		inline iterator(Self* ah, unsigned int i) :
 			ah_ptr_(ah),
-			index_(i),
-			v_(v)
+			index_(i)
 		{}
 
 		inline iterator(const iterator& it) :
 			ah_ptr_(it.ah_ptr_),
-			index_(it.index_),
-			v_(it.v_)
+			index_(it.index_)
 		{}
 
 		inline iterator& operator=(const iterator& it)
 		{
 			ah_ptr_ = it.ah_ptr_;
 			index_ = it.index_;
-			v_ = it.v_;
 			return *this;
 		}
 
@@ -500,7 +482,7 @@ public:
 			do
 			{
 				ah_ptr_->chunk_array_cont_->next(index_);
-			} while (index_ != end && !v_.valid(index_));
+			} while (index_ != end);
 			return *this;
 		}
 
@@ -518,23 +500,12 @@ public:
 
 	inline iterator begin()
 	{
-		const ElementValidator<unsigned int>& v = this->map_->default_observer_.template attr<ORBIT>();
-		return iterator(this, this->chunk_array_cont_->begin(), v);
-	}
-
-	inline iterator begin(const ElementValidator<unsigned int>& v)
-	{
-		unsigned int c = this->chunk_array_cont_->begin();
-		unsigned int end = this->chunk_array_cont_->end();
-		while (c != end && !v.valid(c))
-			this->chunk_array_cont_->next(c);
-		return iterator(*this, c, v);
+		return iterator(this, this->chunk_array_cont_->begin());
 	}
 
 	inline iterator end()
 	{
-		const ElementValidator<unsigned int>& v = this->map_->default_observer_.template attr<ORBIT>();
-		return iterator(this, this->chunk_array_cont_->end(), v);
+		return iterator(this, this->chunk_array_cont_->end());
 	}
 };
 

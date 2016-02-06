@@ -550,7 +550,7 @@ protected:
 
 		inline const_iterator& operator++()
 		{
-			Dart end = Dart(map_.topology_.end());
+			const Dart end = Dart(map_.topology_.end());
 			do
 			{
 				map_.topology_.next(dart_.index);
@@ -585,7 +585,7 @@ protected:
 	inline const_iterator begin(const ElementValidator<Dart>& v) const
 	{
 		Dart d = Dart(this->topology_.begin());
-		Dart end = Dart(this->topology_.end());
+		const Dart end = Dart(this->topology_.end());
 		while (d != end && !v.valid(d))
 			this->topology_.next(d.index);
 		return const_iterator(*this, d, v);
@@ -659,7 +659,7 @@ public:
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		const_iterator it = this->begin(o.topo());
-		const_iterator end = this->end();
+		const const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -900,7 +900,7 @@ protected:
 
 		DartMarker dm(*to_concrete());
 		const_iterator it = this->begin(o.topo());
-		const_iterator end = this->end();
+		const const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -982,7 +982,7 @@ protected:
 
 		CellMarker<ORBIT> cm(*to_concrete());
 		const_iterator it = this->begin(o.topo());
-		const_iterator end = this->end();
+		const const_iterator end = this->end();
 
 		while (it != end)
 		{
@@ -1033,12 +1033,29 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-//		const ElementValidator<unsigned int>& v = o.attr<ORBIT>();
-		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
-			 i != end;
-			 this->attributes_[ORBIT].next(i))
+		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+		const auto& cache = *(this->global_topo_cache_[ORBIT]);
+		const auto& attr = this->attributes_[ORBIT];
+
+		unsigned int it = attr.begin();
+		const unsigned int end = attr.end();
+		Dart d = cache[it];
+		// find first valid dart in the topo cache
+		while (it != end && !v.valid(d))
 		{
-			f((*this->global_topo_cache_[ORBIT])[i]);
+			attr.next(it);
+			d = cache[it];
+		}
+		// apply function over valid darts of the cache
+		while (it != end)
+		{
+			f(d);
+			// next valid dart
+			do
+			{
+				attr.next(it);
+				d = cache[it];
+			} while (it != end && !v.valid(d));
 		}
 	}
 
@@ -1060,11 +1077,20 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		unsigned int it = this->attributes_[ORBIT].begin();
-		const unsigned int end = this->attributes_[ORBIT].end();
-
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 		const auto& attr = this->attributes_[ORBIT];
+
+		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+
+		unsigned int it = attr.begin();
+		const unsigned int end = attr.end();
+		Dart d = cache[it];
+		// find first valid dart in the topo cache
+		while (it != end && !v.valid(d))
+		{
+			attr.next(it);
+			d = cache[it];
+		}
 
 		while (it != end)
 		{
@@ -1078,7 +1104,11 @@ protected:
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
 					{
 						cells.push_back(cache[it]);
-						attr.next(it);
+						do
+						{
+							attr.next(it);
+							d = cache[it];
+						} while (it != end && !v.valid(d));
 					}
 					futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 					{
@@ -1140,12 +1170,30 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
-			 i != end;
-			 this->attributes_[ORBIT].next(i))
+		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+		const auto& cache = *(this->global_topo_cache_[ORBIT]);
+		const auto& attr = this->attributes_[ORBIT];
+
+		unsigned int it = attr.begin();
+		const unsigned int end = attr.end();
+		Dart d = cache[it];
+		// find first valid dart in the topo cache
+		while (it != end && !v.valid(d))
 		{
-			if(!f((*this->global_topo_cache_[ORBIT])[i]))
+			attr.next(it);
+			d = cache[it];
+		}
+		// apply function over valid darts of the cache
+		while (it != end)
+		{
+			if (!f(d))
 				break;
+			// next valid dart
+			do
+			{
+				attr.next(it);
+				d = cache[it];
+			} while (it != end && !v.valid(d));
 		}
 	}
 };
