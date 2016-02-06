@@ -421,11 +421,7 @@ public:
 
 		inline const_iterator& operator++()
 		{
-			unsigned int end = ah_ptr_->chunk_array_cont_->end();
-			do
-			{
-				ah_ptr_->chunk_array_cont_->next(index_);
-			} while (index_ != end);
+			ah_ptr_->chunk_array_cont_->next(index_);
 			return *this;
 		}
 
@@ -478,11 +474,7 @@ public:
 
 		inline iterator& operator++()
 		{
-			unsigned int end = ah_ptr_->chunk_array_cont_->end();
-			do
-			{
-				ah_ptr_->chunk_array_cont_->next(index_);
-			} while (index_ != end);
+			ah_ptr_->chunk_array_cont_->next(index_);
 			return *this;
 		}
 

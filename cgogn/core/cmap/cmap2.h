@@ -50,6 +50,8 @@ public:
 	friend typename Inherit::Inherit;
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
+	friend class Validator<Dart>;
 
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;

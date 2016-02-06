@@ -45,6 +45,8 @@ public:
 
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
+	friend class Validator<Dart>;
 
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;

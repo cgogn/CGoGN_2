@@ -49,9 +49,10 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend typename Inherit::Inherit::Inherit;
+	friend class CMap3Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-	friend class CMap3Builder_T<MapTraits>;
+	friend class Validator<Dart>;
 
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
 	static const Orbit EDGE   = Orbit::PHI2_PHI3;

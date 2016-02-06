@@ -77,15 +77,15 @@ public:
 
 protected:
 
-	NoBoundaryCMapObserver<Self> no_boundary_observer_;
-	BoundaryCMapObserver<Self> boundary_observer_;
+	NoBoundaryCMapObserver<ConcreteMap> no_boundary_observer_;
+	BoundaryCMapObserver<ConcreteMap> boundary_observer_;
 
 public:
 
 	MapBase() :
 		Inherit(),
-		no_boundary_observer_(*this),
-		boundary_observer_(*this)
+		no_boundary_observer_(*to_concrete()),
+		boundary_observer_(*to_concrete())
 	{}
 
 	~MapBase()
@@ -525,10 +525,10 @@ protected:
 	public:
 
 		const Self& map_;
-		const ElementValidator<Dart>& v_;
+		const Validator<Dart>& v_;
 		Dart dart_;
 
-		inline const_iterator(const Self& map, Dart d, const ElementValidator<Dart>& v) :
+		inline const_iterator(const Self& map, Dart d, const Validator<Dart>& v) :
 			map_(map),
 			dart_(d),
 			v_(v)
@@ -578,11 +578,11 @@ protected:
 
 	inline const_iterator begin() const
 	{
-		const ElementValidator<Dart>& v = this->no_boundary_observer_.topo();
+		const Validator<Dart>& v = this->no_boundary_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.begin()), v);
 	}
 
-	inline const_iterator begin(const ElementValidator<Dart>& v) const
+	inline const_iterator begin(const Validator<Dart>& v) const
 	{
 		Dart d = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
@@ -593,7 +593,7 @@ protected:
 
 	inline const_iterator end() const
 	{
-		const ElementValidator<Dart>& v = this->no_boundary_observer_.topo();
+		const Validator<Dart>& v = this->no_boundary_observer_.topo();
 		return const_iterator(*this, Dart(this->topology_.end()), v);
 	}
 
@@ -1033,7 +1033,7 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+		const Validator<Dart>& v = o.attr<ORBIT>();
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 		const auto& attr = this->attributes_[ORBIT];
 
@@ -1080,7 +1080,7 @@ protected:
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 		const auto& attr = this->attributes_[ORBIT];
 
-		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+		const Validator<Dart>& v = o.attr<ORBIT>();
 
 		unsigned int it = attr.begin();
 		const unsigned int end = attr.end();
@@ -1170,7 +1170,7 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_cell_until_topo_cache(const FUNC& f, const CMapObserver& o) const
 	{
-		const ElementValidator<Dart>& v = o.attr<ORBIT>();
+		const Validator<Dart>& v = o.attr<ORBIT>();
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 		const auto& attr = this->attributes_[ORBIT];
 
