@@ -301,15 +301,10 @@ protected:
 	{
 		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
 
-		// cut the edge before d (insert a new dart before d)
-		cut_edge_topo(phi_1(d));
+		Dart nd = cut_edge_topo(phi_1(d));	// cut the edge before d (insert a new dart before d)
+		Dart ne = cut_edge_topo(phi_1(e));	// cut the edge before e (insert a new dart before e)
 		
-		// cut the edge before e (insert a new dart before e)
-		cut_edge_topo(phi_1(e));
-		
-		// phi1sew between the 2 new inserted darts
-		phi1_sew(phi_1(d), phi_1(e));
-
+		phi1_sew(nd, ne);					// subdivide phi1 cycle at the inserted darts
 	}
 
 	inline void reverse_face_topo(Dart d)
