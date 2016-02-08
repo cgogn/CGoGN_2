@@ -24,6 +24,8 @@
 #define CGOGN_UTILS_DLL_EXPORT
 
 #include <core/utils/thread.h>
+#include <core/utils/buffers.h>
+#include <core/utils/thread_pool.h>
 
 namespace cgogn
 {
@@ -58,6 +60,13 @@ CGOGN_UTILS_API Buffers<Dart>* get_dart_buffers()
 CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers()
 {
 	return uint_buffers_thread;
+}
+
+CGOGN_UTILS_API ThreadPool* get_thread_pool()
+{
+	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
+	static ThreadPool pool;
+	return &pool;
 }
 
 } // namespace cgogn

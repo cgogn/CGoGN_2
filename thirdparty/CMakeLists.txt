@@ -13,3 +13,7 @@ endif(CGOGN_BUILD_TESTS)
 if(CGOGN_USE_QT)
 	add_subdirectory(libQGLViewer/QOGLViewer)
 endif(CGOGN_USE_QT)
+
+if (CGOGN_BUILD_BENCHS)
+	add_subdirectory(google-benchmark)
+endif(CGOGN_BUILD_BENCHS)

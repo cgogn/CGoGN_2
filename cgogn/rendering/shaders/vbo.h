@@ -27,7 +27,7 @@
 
 #include <QOpenGLBuffer>
 
-#include <core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
+#include <core/cmap/attribute_handler.h>
 #include <geometry/types/geometry_traits.h>
 
 namespace cgogn

@@ -21,25 +21,29 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <qoglviewer.h>
 #include <QApplication>
 #include <QMatrix4x4>
 
+#include <qoglviewer.h>
+
+#include <core/cmap/cmap2.h>
+
+#include <io/map_import.h>
+
+#include <geometry/algos/bounding_box.h>
+#include <geometry/algos/normal.h>
+
+#include <rendering/map_render.h>
 #include <rendering/shaders/shader_simple_color.h>
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/shader_vector_per_vertex.h>
 #include <rendering/shaders/vbo.h>
 
-#include <core/cmap/cmap2.h>
-#include <io/map_import.h>
-#include <geometry/algos/bounding_box.h>
-#include <rendering/map_render.h>
-#include <geometry/algos/normal.h>
-
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -48,8 +52,17 @@ using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 class Viewer : public QOGLViewer
 {
 public:
+	Viewer();
+	Viewer(const Viewer&) = delete;
+	Viewer& operator=(const Viewer&) = delete;
 
-	Map2 map;
+	virtual void draw();
+	virtual void init();
+	void import(const std::string& surfaceMesh);
+	virtual ~Viewer();
+
+private:
+	Map2 map_;
 	VertexAttributeHandler<Vec3> vertex_position_;
 	VertexAttributeHandler<Vec3> vertex_normal_;
 
@@ -57,17 +70,13 @@ public:
 
 	cgogn::rendering::MapRender* render_;
 
-	virtual void draw();
-	virtual void init();
-
-	void import(const std::string& surfaceMesh);
-
 	cgogn::rendering::VBO* vbo_pos_;
 	cgogn::rendering::VBO* vbo_norm_;
 
 	cgogn::rendering::ShaderSimpleColor* shader1_;
 	cgogn::rendering::ShaderFlat* shader2_;
 	cgogn::rendering::ShaderVectorPerVertex* shader3_;
+
 };
 
 
@@ -78,12 +87,12 @@ public:
 
 void Viewer::import(const std::string& surfaceMesh)
 {
-	cgogn::io::import_surface<Vec3>(map, surfaceMesh);
+	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	vertex_position_ = map.get_attribute<Vec3, Map2::VERTEX>("position");
-	vertex_normal_ = map.add_attribute<Vec3, Map2::VERTEX>("normal");
+	vertex_position_ = map_.get_attribute<Vec3, Map2::VERTEX>("position");
+	vertex_normal_ = map_.add_attribute<Vec3, Map2::VERTEX>("normal");
 
-	cgogn::geometry::compute_normal_vertices<Vec3>(map, vertex_position_, vertex_normal_);
+	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size());
@@ -91,6 +100,29 @@ void Viewer::import(const std::string& surfaceMesh)
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
+
+Viewer::~Viewer()
+{
+	delete render_;
+	delete vbo_pos_;
+	delete vbo_norm_;
+	delete shader1_;
+	delete shader2_;
+	delete shader3_;
+}
+
+Viewer::Viewer() :
+	map_(),
+	vertex_position_(),
+	vertex_normal_(),
+	bb_(),
+	render_(nullptr),
+	vbo_pos_(nullptr),
+	vbo_norm_(nullptr),
+	shader1_(nullptr),
+	shader2_(nullptr),
+	shader3_(nullptr)
+{}
 
 void Viewer::draw()
 {
@@ -143,9 +175,9 @@ void Viewer::init()
 
 	render_ = new cgogn::rendering::MapRender();
 
-	render_->init_primitives(map, cgogn::rendering::POINTS);
-	render_->init_primitives(map, cgogn::rendering::LINES);
-	render_->init_primitives(map, cgogn::rendering::TRIANGLES);
+	render_->init_primitives(map_, cgogn::rendering::POINTS);
+	render_->init_primitives(map_, cgogn::rendering::LINES);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES);
 
 	shader1_ = new cgogn::rendering::ShaderSimpleColor;
 	shader1_->add_vao();
