@@ -260,9 +260,118 @@ public:
 		return f;
 	}
 
+	inline Vertex cut_edge(Edge e)
+	{
+		Dart nd = cut_edge_topo(e);
+
+		Vertex v(nd);
+
+		if(this->template is_orbit_embedded<Orbit::DART>())
+		{
+			init_orbit_embedding<Orbit::DART>(this->phi1(e), this->template add_attribute_element<Orbit::DART>());
+			init_orbit_embedding<Orbit::DART>(phi2(e), this->template add_attribute_element<Orbit::DART>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI21>())
+		{
+			init_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI2>())
+		{
+			this->template set_embedding<Orbit::PHI2>(phi2(e), this->template get_embedding<Orbit::PHI2>(e));
+			init_orbit_embedding<Orbit::PHI2>(this->phi1(e), this->template add_attribute_element<Orbit::PHI2>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
+		{
+			this->template set_embedding<Orbit::PHI1>(nd, this->template get_embedding<Orbit::PHI1>(e.dart));
+			Dart nd2 = phi2(nd);
+			this->template set_embedding<Orbit::PHI1>(this->phi1(nd2), this->template get_embedding<Orbit::PHI1>(nd2));
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
+		{
+			this->template set_embedding<Orbit::PHI1_PHI2>(nd, this->template get_embedding<Orbit::PHI1_PHI2>(e.dart));
+			Dart nd2 = phi2(nd);
+			this->template set_embedding<Orbit::PHI1_PHI2>(this->phi1(nd2), this->template get_embedding<Orbit::PHI1_PHI2>(nd2));
+		}
+
+		return v;
+	}
+
+	inline void split_face(Dart d, Dart e)
+	{
+		split_face_topo(d,e);
+
+		if(this->template is_orbit_embedded<Orbit::DART>())
+		{
+			init_orbit_embedding<Orbit::DART>(this->phi_1(e), this->template add_attribute_element<Orbit::DART>());
+			init_orbit_embedding<Orbit::DART>(this->phi_1(d), this->template add_attribute_element<Orbit::DART>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI21>())
+		{
+			this->template set_embedding<Orbit::PHI21>(this->phi_1(e), this->template get_embedding<Orbit::PHI21>(d));
+			this->template set_embedding<Orbit::PHI21>(this->phi_1(d), this->template get_embedding<Orbit::PHI21>(e));
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI2>())
+		{
+			init_orbit_embedding<Orbit::PHI2>(this->phi_1(d), this->template add_attribute_element<Orbit::PHI2>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
+		{
+			this->template set_embedding<Orbit::PHI1>(this->phi_1(d), this->template get_embedding<Orbit::PHI1>(d));
+			init_orbit_embedding<Orbit::PHI1>(e, this->template add_attribute_element<Orbit::PHI1>());
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
+		{
+			set_embedding<Orbit::PHI1_PHI2>(this->phi_1(e), this->template get_embedding<Orbit::PHI1_PHI2>(d));
+			set_embedding<Orbit::PHI1_PHI2>(this->phi_1(d), this->template get_embedding<Orbit::PHI1_PHI2>(d));
+		}
+	}
+
+
 	inline unsigned int degree(Face f) const
 	{
 		return Inherit::degree(f);
+	}
+
+
+protected:
+
+	inline Dart cut_edge_topo(Dart d)
+	{
+		Dart e = phi2(d);
+
+		//remove old phi2 links
+		phi2_unsew(d);
+
+		//cut the 1-edge of d
+		Dart nd = Inherit::cut_edge_topo(d);
+		//cut the 1-edge of e = phi2(d)
+		Dart ne = Inherit::cut_edge_topo(e);
+
+		//add new phi2links
+		phi2_sew(d, ne);
+		phi2_sew(e, nd);
+
+		return nd;
+	}
+
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_message_assert(d != e, "split_face: d == e");
+		// cgogn_message_assert(this->same_face(d,e), "split_face: d et e are not from same face");
+
+		Dart dd = Inherit::cut_edge_topo(this->phi_1(d));
+		Dart ee = Inherit::cut_edge_topo(this->phi_1(e));
+
+		Inherit::split_face_topo(dd, ee);
+		phi2_sew(dd, ee);
 	}
 
 protected:
