@@ -190,27 +190,26 @@ protected:
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						init_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+						this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
 					});
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI21>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template init_embedding<Orbit::PHI21>(fd, this->template get_embedding<Orbit::PHI21>(this->phi1(phi2(fd))));
+						this->template set_embedding<Orbit::PHI21>(fd, this->template get_embedding<Orbit::PHI21>(this->phi1(phi2(fd))));
 					});
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI2>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template init_embedding<Orbit::PHI2>(fd, this->template get_embedding<Orbit::PHI2>(phi2(fd)));
+						this->template set_embedding<Orbit::PHI2>(fd, this->template get_embedding<Orbit::PHI2>(phi2(fd)));
 					});
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI1>())
 				{
-					unsigned int idx = this->template add_attribute_element<Orbit::PHI1>();
-					init_orbit_embedding<Orbit::PHI1>(new_face, idx);
+					this->template set_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
 				}
 			}
 		}
@@ -243,7 +242,7 @@ public:
 		{
 			foreach_dart_of_orbit<FACE>(f, [this] (Dart fd)
 			{
-				init_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+				this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
@@ -251,7 +250,7 @@ public:
 		{
 			foreach_incident_vertex(f, [this] (Cell<Orbit::PHI21> c)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
+				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
 			});
 		}
 
@@ -259,15 +258,15 @@ public:
 		{
 			foreach_incident_edge(f, [this] (Cell<Orbit::PHI2> c)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
+				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
 			});
 		}
 
 		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			init_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+			this->template set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
-			init_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
+			this->template set_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
 
 		return f;
 	}
@@ -630,24 +629,6 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
-	}
-
-protected:
-
-	/*******************************************************************************
-	 * Embedding management
-	 *******************************************************************************/
-
-	template <Orbit ORBIT>
-	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
-	}
-
-	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) {	this->template set_embedding<ORBIT>(d, emb); });
 	}
 };
 

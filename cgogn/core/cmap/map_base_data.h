@@ -250,6 +250,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
@@ -257,26 +258,17 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline void init_embedding(Dart d, unsigned int emb)
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-
-		this->attributes_[ORBIT].ref_line(emb); // ref the new emb
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
-	}
-
-	template <Orbit ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		unsigned int old = get_embedding<ORBIT>(d);
+		unsigned int old = (*embeddings_[ORBIT])[d.index];
 
 		if (old == emb)	return;
 
-		this->attributes_[ORBIT].unref_line(old); // unref the old emb
+		if (old != EMBNULL)
+			this->attributes_[ORBIT].unref_line(old); // unref the old emb
 		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
 
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart

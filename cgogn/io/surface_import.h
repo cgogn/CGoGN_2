@@ -197,7 +197,7 @@ public:
 				for (unsigned int j = 0; j < nbe; ++j)
 				{
 					unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template init_embedding<VERTEX>(d, vertex_index);
+					mbuild.template set_embedding<VERTEX>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}

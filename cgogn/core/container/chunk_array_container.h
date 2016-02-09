@@ -703,6 +703,9 @@ public:
 	*/
 	bool unref_line(unsigned int index)
 	{
+		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+		cgogn_message_assert(refs_[index] > 1u, "Container: unref line with nb_ref == 1");
+
 		refs_[index]--;
 		if (refs_[index] == 1u)
 		{
