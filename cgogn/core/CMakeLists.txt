@@ -59,6 +59,7 @@ set(SOURCE_FILES
 	container/chunk_array_factory.cpp
 
 	utils/assert.cpp
+	utils/name_types.cpp
 	utils/thread.cpp
 	utils/thread_pool.cpp
 	utils/serialization.cpp
