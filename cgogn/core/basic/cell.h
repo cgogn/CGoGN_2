@@ -50,6 +50,8 @@ enum Orbit: unsigned int
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
+static const unsigned int EMBNULL = 0xffffffff;
+
 inline std::string orbit_name(Orbit orbit)
 {
 	switch(orbit)
@@ -66,7 +68,6 @@ inline std::string orbit_name(Orbit orbit)
 	}
 	return "UNKNOWN";
 }
-
 
 /**
  * \brief Cellular typing
