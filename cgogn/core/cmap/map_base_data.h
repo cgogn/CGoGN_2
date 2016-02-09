@@ -256,14 +256,13 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
-		unsigned int old = (*embeddings_[ORBIT])[d.index];
+		const unsigned int old = (*embeddings_[ORBIT])[d.index];
 
-		if (old == emb)	return;
-
+		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
 		if (old != EMBNULL)
 			this->attributes_[ORBIT].unref_line(old); // unref the old emb
-		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
 
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
