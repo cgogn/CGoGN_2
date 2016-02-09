@@ -144,6 +144,11 @@ protected:
 	{
 		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
+		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
+		{
+			if(this->embeddings_[orbit])
+				(*this->embeddings_[orbit])[idx] = EMBNULL;
+		}
 		return idx;
 	}
 
@@ -159,6 +164,15 @@ protected:
 	inline void remove_topology_element(unsigned int index)
 	{
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
+
+		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
+		{
+			if(this->embeddings_[orbit])
+			{
+				unsigned int emb = (*this->embeddings_[orbit])[index];
+				this->attributes_[orbit].unref_line(emb);
+			}
+		}
 	}
 
 	template <Orbit ORBIT>
@@ -309,12 +323,24 @@ protected:
 		ChunkArray<unsigned int>* ca = this->topology_.template add_attribute<unsigned int>(oss.str());
 		this->embeddings_[ORBIT] = ca;
 
-		// initialize the indices of the existing orbits
-		ConcreteMap* cmap = to_concrete();
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
+		// initialize all darts indices to EMBNULL for this ORBIT
+		foreach_dart([this] (Dart d)
 		{
-			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+			(*this->embeddings_[ORBIT])[d.index] = EMBNULL;
 		});
+
+		// initialize the indices of the existing orbits
+		foreach_cell<ORBIT, FORCE_DART_MARKING>([this] (Cell<ORBIT> c)
+		{
+			set_orbit_embedding(c, add_attribute_element<ORBIT>());
+		});
+	}
+
+	template <Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	{
+		ConcreteMap* cmap = to_concrete();
+		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) { cmap->template set_embedding<ORBIT>(d, emb); });
 	}
 
 public:
