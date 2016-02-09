@@ -211,12 +211,12 @@ public:
 		{
 			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
 			{
-				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
+				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
 		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->template set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		return f;
 	}
