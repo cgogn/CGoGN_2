@@ -174,8 +174,13 @@ protected:
 	 */
 	void close_map()
 	{
-//		for (Dart d : *this)
-		this->foreach_dart([this] (Dart d)
+		std::vector<Dart> fix_point_darts;
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts.push_back(d);
+		});
+		for (Dart d : fix_point_darts)
 		{
 			if (phi2(d) == d)
 			{
@@ -204,10 +209,11 @@ protected:
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI1>())
 				{
-					init_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
+					unsigned int idx = this->template add_attribute_element<Orbit::PHI1>();
+					init_orbit_embedding<Orbit::PHI1>(new_face, idx);
 				}
 			}
-		});
+		}
 	}
 
 public:

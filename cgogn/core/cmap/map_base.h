@@ -333,7 +333,8 @@ protected:
 		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap] (Cell<ORBIT> c)
 		{
 			cmap->init_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
-		});
+		},
+		this->default_observer_);
 	}
 
 public:
@@ -356,7 +357,8 @@ public:
 			if (counter[c] > 0)
 				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
 			counter[c]++;
-		});
+		},
+		this->default_observer_);
 
 		remove_attribute(counter);
 	}
@@ -418,7 +420,8 @@ public:
 		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
 		{
 			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
-		});
+		},
+		this->default_observer_);
 	}
 
 	template <Orbit ORBIT>

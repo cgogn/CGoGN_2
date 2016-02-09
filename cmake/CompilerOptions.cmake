@@ -81,6 +81,16 @@ if (NOT MSVC)
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 
+
+
+	if(${CGOGN_USE_CXX11_ABI})
+		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
+	else()
+		remove_definitions("-D_GLIBCXX_USE_CXX11_ABI")
+	endif()
+
+	remove_definitions("-D_GLIBCXX_USE_DEPRECATED")
+
 	# see https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_macros.html
 	if (${CGOGN_USE_GLIBCXX_DEBUG})
 		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_DEBUG")
@@ -96,8 +106,6 @@ if (NOT MSVC)
 			add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_PARALLEL")
 		endif(${CGOGN_USE_GLIBCXX_DEBUG})
 	endif(${CGOGN_USE_PARALLEL_GLIBCXX})
-
-	remove_definitions("-D_GLIBCXX_USE_DEPRECATED")
 
 	# Enable SSE3 instruction set
 	add_flags(CMAKE_CXX_FLAGS "-msse3")

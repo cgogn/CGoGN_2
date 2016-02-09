@@ -47,7 +47,6 @@ public:
 	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
 
 	static NamePtrMap map_CA_;
-	static bool known_types_initialized_;
 
 	/**
 	 * @brief register a type
@@ -64,6 +63,8 @@ public:
 
 	static void register_known_types()
 	{
+		static bool known_types_initialized_ = false;
+
 		if (known_types_initialized_)
 			return;
 
@@ -117,9 +118,6 @@ public:
 
 template <unsigned int CHUNKSIZE>
 typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
-
-template <unsigned int CHUNKSIZE>
-bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))

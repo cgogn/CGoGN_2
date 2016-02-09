@@ -799,17 +799,20 @@ public:
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
-		for (unsigned int i = 0u; i < buff1[0]; ++i)
+		for (unsigned int i = 0u; i < names_.size();)
 		{
 			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
 			if (cag)
 			{
 				table_arrays_.push_back(cag);
 				ok &= table_arrays_.back()->load(fs);
+				++i;
 			}
 			else
 			{
-				std::cerr << "ChunkArrayContainer: could not load attribute of type "<< type_names_[i] << std::endl;
+				std::cerr << "ChunkArrayContainer: could not load attribute" << names_[i] << " of type "<< type_names_[i] << std::endl;
+				type_names_.erase(type_names_.begin()+i);
+				names_.erase(names_.begin()+i);
 				ChunkArrayGen::skip(fs);
 			}
 		}
