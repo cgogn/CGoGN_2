@@ -201,7 +201,7 @@ protected:
 	*/
 	inline ChunkArray<bool>* get_topology_mark_attribute()
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
@@ -222,7 +222,7 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
@@ -284,18 +284,18 @@ protected:
 		return old_index;
 	}
 
-	inline unsigned int get_unknown_thread_index(std::thread::id thread_id) const
+	inline std::size_t get_unknown_thread_index(std::thread::id thread_id) const
 	{
 		auto end = thread_ids_.begin();
 		std::advance(end, NB_UNKNOWN_THREADS);
 		auto res_it = std::find(thread_ids_.begin(), end, thread_id);
 		if (res_it != end)
-			return (unsigned int)(std::distance(thread_ids_.begin(), res_it));
+			return std::distance(thread_ids_.begin(), res_it);
 
 		return add_unknown_thread();
 	}
 
-	inline unsigned int get_current_thread_index() const
+	inline std::size_t get_current_thread_index() const
 	{
 		// avoid the unknown threads stored at the beginning of the vector
 		auto real_begin =thread_ids_.begin();
@@ -304,7 +304,7 @@ protected:
 		const auto end = thread_ids_.end();
 		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
 		if (it_lower_bound != end)
-			return (unsigned int)(std::distance(thread_ids_.begin(),it_lower_bound));
+			return std::distance(thread_ids_.begin(),it_lower_bound);
 
 		return get_unknown_thread_index(std::this_thread::get_id());
 	}
