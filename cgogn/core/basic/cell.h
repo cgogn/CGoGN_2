@@ -29,6 +29,8 @@
 #include <core/utils/assert.h>
 #include <core/utils/definitions.h>
 
+#include <climits>
+
 /**
  * \file core/basic/cell.h
  * \brief Orbit and cell definitions used in cgogn.
@@ -50,7 +52,7 @@ enum Orbit: unsigned int
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
-static const unsigned int EMBNULL = 0xffffffff;
+static const unsigned int EMBNULL = UINT_MAX;
 
 inline std::string orbit_name(Orbit orbit)
 {
