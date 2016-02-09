@@ -16,7 +16,8 @@ set(HEADER_FILES
 
 	mrcmap/mrcmap2.h
 
-	mranalysis/lerp_triquad_mra.h
+        mra/mr_analysis.h
+        mra/lerp_triquad_mra.h
 )
 
 set(SOURCE_FILES

@@ -1,7 +1,7 @@
 
 #include <multiresolution/cph/ihcmap2_regular.h>
 
-#include <multiresolution/mranalysis/lerp_triquad_mra.h>
+#include <multiresolution/mra/lerp_triquad_mra.h>
 
 #include <geometry/types/eigen.h>
 
