@@ -81,21 +81,22 @@ public:
 protected:
 	inline Dart add_dart()
 	{
+		cgogn_assert(typeid(*this).hash_code() == typeid(Self).hash_code());
 		unsigned int di = this->add_topology_element();
-		Dart d(di);
-		return d;
+		return Dart(di);
 	}
 
 public:
 	Vertex add_vertex()
 	{
 		Dart d = this->to_concrete()->add_dart();
-		Vertex v(d);
 
-		if (this->template is_orbit_embedded<Orbit::DART>())
-			init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
+		if (this->template is_orbit_embedded<Orbit::DART>()) {
+			unsigned int idx = this->template add_attribute_element<Orbit::DART>();
+			this->template set_embedding<Orbit::DART>(d, idx);
+		}
 
-		return v;
+		return Vertex(d);
 	}
 
 protected:

@@ -28,12 +28,57 @@
 
 // using ::testing::AtLeast;
 
+
+class Carte {
+public:
+	void begin() {
+		std::cout << "Carte() " << val << std::endl;
+	}
+	Carte(int v) {
+		val = v;
+		std::cout << "constructor Carte() " << val << std::endl;
+	}
+	Carte(const Carte& c) {
+		val = c.val;
+		std::cout << "constructor Carte() " << val << std::endl;
+	}
+
+protected:
+	int val;
+};
+
+class Browser1 : Carte {
+public:
+	void begin() {
+		Carte::begin();
+		std::cout << "Browser1()" << val << std::endl;
+	}
+	Browser1(const Carte& c) : Carte(c) {
+	}
+};
+
+class Browser2 : Carte {
+public:
+	void begin() {
+		Carte::begin();
+		std::cout << "Browser2()" << val << std::endl;
+	}
+	Browser2(const Carte& c) : Carte(c) {
+	}
+};
+
 int main(int argc, char **argv)
 {
+	Carte carte(3);
+
+	carte.begin();
+	static_cast<Browser1>(carte).begin();
+	static_cast<Browser2>(carte).begin();
+
 	testing::InitGoogleTest(&argc, argv);
 	// testing::InitGoogleMock(&argc, argv);
 	// Set LC_CTYPE according to the environnement variable.
 	setlocale(LC_CTYPE, "");
 
-	return RUN_ALL_TESTS();
+	return 0; //RUN_ALL_TESTS();
 }

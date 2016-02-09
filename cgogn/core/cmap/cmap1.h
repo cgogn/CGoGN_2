@@ -172,13 +172,11 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
+		cgogn_assert(typeid(*this).hash_code() == typeid(Self).hash_code());
 		unsigned int di = this->add_topology_element();
-
 		Dart d(di);
-
 		(*phi1_)[di] = d;
 		(*phi_1_)[di] = d;
-
 		return d;
 	}
 
@@ -187,38 +185,9 @@ protected:
 		this->remove_topology_element(d.index);
 	}
 
-public:
-
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
-
-	/**
-	 * \brief add_face
-	 * @param nb_edges
-	 * @return
-	 */
-	Face add_face(unsigned int nb_edges)
-	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
-
-		Dart d = add_face_topo(nb_edges);
-
-		Face f(d);
-
-		if (this->template is_orbit_embedded<Orbit::DART>())
-		{
-			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
-			{
-				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->template set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
-
-		return f;
-	}
 
 protected:
 
@@ -253,8 +222,8 @@ protected:
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->to_concrete()->add_dart(); // Create a new dart
-		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
+		Dart e = this->to_concrete()->add_dart();	// Create a new dart e
+		phi1_sew(d, e);								// Insert e between d and phi1(d)
 		return e;
 	}
 
@@ -293,7 +262,7 @@ protected:
 
 		Dart nd = cut_edge_topo(phi_1(d));	// cut the edge before d (insert a new dart before d)
 		Dart ne = cut_edge_topo(phi_1(e));	// cut the edge before e (insert a new dart before e)
-		
+
 		phi1_sew(nd, ne);					// subdivide phi1 cycle at the inserted darts
 	}
 
@@ -306,7 +275,7 @@ protected:
 		if (e == d) return;
 
 		// Only two edges: nothing to do
-		if (phi1(e) == d) return;	
+		if (phi1(e) == d) return;
 
 		// Detach e from the face of d
 		phi1_unsew(d);
@@ -327,6 +296,35 @@ protected:
 	}
 
 public:
+
+	/**
+	 * \brief add_face
+	 * @param nb_edges
+	 * @return
+	 */
+	Face add_face(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+
+		Dart d = add_face_topo(nb_edges);
+		Face f(d);
+
+		if (this->template is_orbit_embedded<Orbit::DART>())
+		{
+			foreach_dart_of_PHI1(d, [this] (Dart e)
+			{
+				unsigned int idx = this->template add_attribute_element<Orbit::DART>();
+				this->template set_embedding<Orbit::DART>(e, idx);
+			});
+		}
+
+		if (this->template is_orbit_embedded<Orbit::PHI1>()) {
+			unsigned int idx = this->template add_attribute_element<Orbit::PHI1>();
+			this->template set_orbit_embedding(f, idx);
+		}
+
+		return f;
+	}
 
 	inline unsigned int degree(Face f) const
 	{

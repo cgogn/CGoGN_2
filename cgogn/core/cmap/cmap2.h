@@ -51,6 +51,7 @@ public:
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -160,6 +161,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
+		cgogn_assert(typeid(*this).hash_code() == typeid(Self).hash_code());
 		Dart d = Inherit::add_dart();
 		(*phi2_)[d.index] = d;
 		return d;
@@ -176,30 +178,37 @@ protected:
 			{
 				close_hole_topo(d);
 				Dart new_face = phi2(d);
-				if (this->template is_orbit_embedded<Orbit::DART>())
+				if (this->template is_orbit_embedded<DART>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+						this->template set_orbit_embedding<DART>(fd, this->template add_attribute_element<DART>());
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI21>())
+				if (this->template is_orbit_embedded<VERTEX>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_embedding<Orbit::PHI21>(fd, this->template get_embedding<Orbit::PHI21>(this->phi1(phi2(fd))));
+						this->template set_embedding<VERTEX>(fd, this->template get_embedding<VERTEX>(this->phi1(phi2(fd))));
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI2>())
+				if (this->template is_orbit_embedded<EDGE>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_embedding<Orbit::PHI2>(fd, this->template get_embedding<Orbit::PHI2>(phi2(fd)));
+						this->template set_embedding<EDGE>(fd, this->template get_embedding<EDGE>(phi2(fd)));
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI1>())
+				if (this->template is_orbit_embedded<FACE>())
 				{
-					this->template set_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
+					this->template set_orbit_embedding<FACE>(new_face, this->template add_attribute_element<FACE>());
+				}
+				if (this->template is_orbit_embedded<VOLUME>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this,new_face] (Dart fd)
+					{
+						this->template set_embedding<VOLUME>(fd, this->template get_embedding<VOLUME>(new_face));
+					});
 				}
 			}
 		}
@@ -229,9 +238,9 @@ public:
 
 		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
-			foreach_dart_of_orbit<FACE>(f, [this] (Dart fd)
+			this->foreach_dart_of_orbit(f, [this] (Cell<Orbit::DART> df)
 			{
-				this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+				this->template set_orbit_embedding(df, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
@@ -255,7 +264,7 @@ public:
 			this->template set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
-			this->template set_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
+			this->template set_orbit_embedding(Volume(d), this->template add_attribute_element<Orbit::PHI1_PHI2>());
 
 		return f;
 	}
@@ -270,33 +279,31 @@ public:
 
 			if(this->template is_orbit_embedded<Orbit::DART>())
 			{
-				this->template init_embedding<Orbit::DART>(nd, this->template add_attribute_element<Orbit::DART>());
-				this->template init_embedding<Orbit::DART>(ne, this->template add_attribute_element<Orbit::DART>());
+				this->template set_embedding<Orbit::DART>(nd, this->template add_attribute_element<Orbit::DART>());
+				this->template set_embedding<Orbit::DART>(ne, this->template add_attribute_element<Orbit::DART>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI21>())
 			{
-				init_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
+				this->template set_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI2>())
 			{
-				this->template init_embedding<Orbit::PHI2>(ne, this->template get_embedding<Orbit::PHI2>(d.dart));
-				// pour que le unref du set_orbit suivant fonctionne
-				this->template init_embedding<Orbit::PHI2>(nd, this->template get_embedding<Orbit::PHI2>(e));
-				set_orbit_embedding<Orbit::PHI2>(nd, this->template add_attribute_element<Orbit::PHI2>());
+				this->template set_embedding<Orbit::PHI2>(ne, this->template get_embedding<Orbit::PHI2>(d.dart));
+				this->template set_orbit_embedding(Edge(nd), this->template add_attribute_element<Orbit::PHI2>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI1>())
 			{
-				this->template init_embedding<Orbit::PHI1>(nd, this->template get_embedding<Orbit::PHI1>(d.dart));
-				this->template init_embedding<Orbit::PHI1>(ne, this->template get_embedding<Orbit::PHI1>(e));
+				this->template set_embedding<Orbit::PHI1>(nd, this->template get_embedding<Orbit::PHI1>(d.dart));
+				this->template set_embedding<Orbit::PHI1>(ne, this->template get_embedding<Orbit::PHI1>(e));
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			{
-				this->template init_embedding<Orbit::PHI1_PHI2>(nd, this->template get_embedding<Orbit::PHI1_PHI2>(d.dart));
-				this->template init_embedding<Orbit::PHI1_PHI2>(ne, this->template get_embedding<Orbit::PHI1_PHI2>(e));
+				this->template set_embedding<Orbit::PHI1_PHI2>(nd, this->template get_embedding<Orbit::PHI1_PHI2>(d.dart));
+				this->template set_embedding<Orbit::PHI1_PHI2>(ne, this->template get_embedding<Orbit::PHI1_PHI2>(e));
 			}
 
 			return v;
@@ -310,33 +317,31 @@ public:
 
 			if(this->template is_orbit_embedded<Orbit::DART>())
 			{
-				this->template init_embedding<Orbit::DART>(nd, this->template add_attribute_element<Orbit::DART>());
-				this->template init_embedding<Orbit::DART>(ne, this->template add_attribute_element<Orbit::DART>());
+				this->template set_embedding<Orbit::DART>(nd, this->template add_attribute_element<Orbit::DART>());
+				this->template set_embedding<Orbit::DART>(ne, this->template add_attribute_element<Orbit::DART>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI21>())
 			{
-				this->template init_embedding<Orbit::PHI21>(nd, this->template get_embedding<Orbit::PHI21>(d));
-				this->template init_embedding<Orbit::PHI21>(ne, this->template get_embedding<Orbit::PHI21>(e));
+				this->template set_embedding<Orbit::PHI21>(nd, this->template get_embedding<Orbit::PHI21>(d));
+				this->template set_embedding<Orbit::PHI21>(ne, this->template get_embedding<Orbit::PHI21>(e));
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI2>())
 			{
-				init_orbit_embedding<Orbit::PHI2>(nd, this->template add_attribute_element<Orbit::PHI2>());
+				this->template set_orbit_embedding<Orbit::PHI2>(nd, this->template add_attribute_element<Orbit::PHI2>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI1>())
 			{
-				this->template init_embedding<Orbit::PHI1>(ne, this->template get_embedding<Orbit::PHI1>(d));
-				// pour que le unref du set_orbit suivant fonctionne
-				this->template init_embedding<Orbit::PHI1>(nd, this->template get_embedding<Orbit::PHI1>(e));
-				init_orbit_embedding<Orbit::PHI1>(e, this->template add_attribute_element<Orbit::PHI1>());
+				this->template set_embedding<Orbit::PHI1>(ne, this->template get_embedding<Orbit::PHI1>(d));
+				this->template set_orbit_embedding<Orbit::PHI1>(e, this->template add_attribute_element<Orbit::PHI1>());
 			}
 
 			if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			{
-				init_orbit_embedding<Orbit::PHI1_PHI2>(nd, this->template get_embedding<Orbit::PHI1_PHI2>(d));
-				init_orbit_embedding<Orbit::PHI1_PHI2>(ne, this->template get_embedding<Orbit::PHI1_PHI2>(d));
+				this->template set_orbit_embedding<Orbit::PHI1_PHI2>(nd, this->template get_embedding<Orbit::PHI1_PHI2>(d));
+				this->template set_orbit_embedding<Orbit::PHI1_PHI2>(ne, this->template get_embedding<Orbit::PHI1_PHI2>(d));
 			}
 		}
 
