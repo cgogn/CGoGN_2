@@ -70,9 +70,9 @@ public:
 
 	inline void init_parent_vertex_embedding(Dart d, unsigned int emb)
 	{
-		map_.foreach_dart_of_PHI21(d,[&](Dart dit)
+		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
 		{
-			map_.template init_embedding<CMap3::VERTEX>(dit,emb);
+			map_.template set_embedding<CMap3::VERTEX>(dit, emb);
 		});
 	}
 
