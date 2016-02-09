@@ -172,6 +172,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 
 		Dart d(di);
@@ -185,16 +186,6 @@ protected:
 	inline void delete_dart(Dart d)
 	{
 		this->remove_topology_element(d.index);
-
-		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
-		{
-			if(this->embeddings_[orbit])
-			{
-				// get the embedding of the dart
-				unsigned int emb = (*this->embeddings_[orbit])[d.index];
-				this->attributes_[orbit].unref_line(emb);
-			}
-		}
 	}
 
 public:
@@ -220,12 +211,12 @@ public:
 		{
 			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
 			{
-				init_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
+				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
 		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			init_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		return f;
 	}
@@ -462,24 +453,6 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		f(Edge(phi1(e.dart)));
 		f(Edge(phi_1(e.dart)));
-	}
-
-protected:
-
-	/*******************************************************************************
-	 * Embedding management
-	 *******************************************************************************/
-
-	template <Orbit ORBIT>
-	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
-	}
-
-	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
 	}
 };
 

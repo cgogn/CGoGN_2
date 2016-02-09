@@ -29,6 +29,8 @@
 #include <core/utils/assert.h>
 #include <core/utils/definitions.h>
 
+#include <climits>
+
 /**
  * \file core/basic/cell.h
  * \brief Orbit and cell definitions used in cgogn.
@@ -50,6 +52,8 @@ enum Orbit: unsigned int
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
+static const unsigned int EMBNULL = UINT_MAX;
+
 inline std::string orbit_name(Orbit orbit)
 {
 	switch(orbit)
@@ -62,11 +66,10 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
-		default: cgogn_assert_not_reached("This orbit does not exist"); break;
+		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
-	return "UNKNOWN";
+//	return "UNKNOWN";
 }
-
 
 /**
  * \brief Cellular typing

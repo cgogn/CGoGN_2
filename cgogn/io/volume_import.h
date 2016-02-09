@@ -155,9 +155,6 @@ public:
 
 		typename Map::DartMarkerStore m(map);
 
-		unsigned int vemb = std::numeric_limits<unsigned int>::max();
-		//auto fsetemb = [&] (Dart d) { map.template initDartEmbedding<VERTEX>(d, vemb); };
-
 		//for each volume of table
 		for(unsigned int i = 0u; i < this->nb_volumes_; ++i)
 		{
@@ -243,7 +240,7 @@ public:
 				for (Dart dv : vertices_of_prism)
 				{
 					const unsigned int emb = edgesBuffer[buffer_id++];
-					mbuild.init_parent_vertex_embedding(dv,vemb);
+					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
 					do

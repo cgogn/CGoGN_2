@@ -24,19 +24,24 @@
 #ifndef CORE_CMAP_MAP_BASE_DATA_H_
 #define CORE_CMAP_MAP_BASE_DATA_H_
 
-#include <core/utils/definitions.h>
-#include <core/utils/thread.h>
-#include <core/utils/thread_pool.h>
-#include <core/container/chunk_array_container.h>
-#include <core/basic/cell.h>
-#include <core/cmap/map_traits.h>
-
 #include <thread>
 #include <mutex>
 #include <algorithm>
 #include <type_traits>
 #include <sstream>
 #include <iterator>
+
+#include <core/utils/definitions.h>
+#include <core/utils/thread.h>
+#include <core/utils/thread_pool.h>
+#include <core/utils/name_types.h>
+#include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
+#include <core/cmap/map_traits.h>
+
+
+#define CGOGN_CHECK_CONCRETE_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
+	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
 
 namespace cgogn
 {
@@ -201,7 +206,7 @@ protected:
 	*/
 	inline ChunkArray<bool>* get_topology_mark_attribute()
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
@@ -222,7 +227,7 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
@@ -244,6 +249,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
@@ -251,27 +257,17 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline void init_embedding(Dart d, unsigned int emb)
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-
-		this->attributes_[ORBIT].ref_line(emb); // ref the new emb
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
-	}
-
-	template <Orbit ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
-		unsigned int old = get_embedding<ORBIT>(d);
+		const unsigned int old = (*embeddings_[ORBIT])[d.index];
 
-		if (old == emb)	return;
-
-		this->attributes_[ORBIT].unref_line(old); // unref the old emb
 		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
+		if (old != EMBNULL)
+			this->attributes_[ORBIT].unref_line(old); // unref the old emb
 
 		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
 	}
@@ -292,7 +288,7 @@ protected:
 		return old_index;
 	}
 
-	inline unsigned int get_unknown_thread_index(std::thread::id thread_id) const
+	inline std::size_t get_unknown_thread_index(std::thread::id thread_id) const
 	{
 		auto end = thread_ids_.begin();
 		std::advance(end, NB_UNKNOWN_THREADS);
@@ -303,7 +299,7 @@ protected:
 		return add_unknown_thread();
 	}
 
-	inline unsigned int get_current_thread_index() const
+	inline std::size_t get_current_thread_index() const
 	{
 		// avoid the unknown threads stored at the beginning of the vector
 		auto real_begin =thread_ids_.begin();

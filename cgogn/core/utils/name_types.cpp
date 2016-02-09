@@ -21,85 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_BUILDER_H_
-#define CORE_MAP_MAP2_BUILDER_H_
+#define CGOGN_UTILS_DLL_EXPORT
 
-#include <core/cmap/cmap2.h>
+#include <core/utils/name_types.h>
+
+#ifdef __GNUG__
+#include <memory>
+#include <cxxabi.h>
+#endif // __GNUG__
+
 
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class CMap2Builder_T
+namespace internal
 {
-public:
 
-	using Self = CMap2Builder_T<MAP_TRAITS>;
-	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
+/**
+ * @brief demangle, trying demangling a typename using the cxxabi
+ * @param str, a type name
+ * @return the demangled type name is succeded, otherwise a copy of str
+ */
+CGOGN_UTILS_API std::string demangle(const std::string& str)
+{
+#ifndef __GNUG__
+	return str;
+#else
+	int status = std::numeric_limits<int>::max();
+	std::unique_ptr<char, void(*)(void*)> res{ abi::__cxa_demangle(str.c_str(), NULL, NULL, &status), std::free };
+	if (status == 0)
+		return std::string(res.get());
+	else
+		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
+	return str;
+#endif // __GNUG__
+}
 
-	template <typename T>
-	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
-
-	inline CMap2Builder_T(CMap2& map) : map_(map)
-	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
-
-public:
-
-	template <Orbit ORBIT>
-	inline void create_embedding()
-	{
-		map_.template create_embedding<ORBIT>();
-	}
-
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
-	{
-		map_.attributes_[ORBIT].swap(cac);
-	}
-
-	template <Orbit ORBIT>
-	inline void set_embedding(Dart d, unsigned int emb)
-	{
-		map_.template set_embedding<ORBIT>(d, emb);
-	}
-
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
-	}
-
-	inline Dart add_face_topo(unsigned int nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
-	}
-
-	inline void close_map()
-	{
-		map_.close_map();
-	}
-
-private:
-
-	CMap2& map_;
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
-
+} // namespace internal
 } // namespace cgogn
-
-
-#endif // CORE_MAP_MAP2_BUILDER_H_
-
