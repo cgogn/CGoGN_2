@@ -46,7 +46,7 @@ public:
 	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
 	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
 
-	static NamePtrMap map_CA_;
+	static NamePtrMap* map_CA_;
 
 	/**
 	 * @brief register a type
@@ -57,8 +57,8 @@ public:
 	static void register_CA()
 	{
 		std::string&& keyType(name_of_type(T()));
-		if(map_CA_.find(keyType) == map_CA_.end())
-			map_CA_[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
+		if(map_CA_->find(keyType) == map_CA_->end())
+			(*map_CA_)[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
 	}
 
 	static void register_known_types()
@@ -98,9 +98,9 @@ public:
 	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
 	{
 		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename NamePtrMap::const_iterator it = map_CA_.find(keyType);
+		typename NamePtrMap::const_iterator it = map_CA_->find(keyType);
 
-		if(it != map_CA_.end())
+		if(it != map_CA_->end())
 		{
 			tmp = (it->second)->clone();
 		}
@@ -112,12 +112,12 @@ public:
 
 	static void reset()
 	{
-		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = NamePtrMap();
+		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = new NamePtrMap();
 	}
 };
 
 template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
+typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap* ChunkArrayFactory<CHUNKSIZE>::map_CA_ = nullptr;//typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))

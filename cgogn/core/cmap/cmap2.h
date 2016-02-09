@@ -240,7 +240,7 @@ public:
 		{
 			foreach_incident_vertex(f, [this] (Cell<Orbit::PHI21> c)
 			{
-				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
+				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
 			});
 		}
 
@@ -248,12 +248,12 @@ public:
 		{
 			foreach_incident_edge(f, [this] (Cell<Orbit::PHI2> c)
 			{
-				this->template set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
+				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
 			});
 		}
 
 		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->template set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			this->template set_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());

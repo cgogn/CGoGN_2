@@ -77,7 +77,7 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 		for (unsigned int n : nb_darts_per_thread)
 			nb_darts_2 += n;
 
-		cgogn_assert(nb_darts_2 = map.nb_darts());
+		cgogn_assert(nb_darts_2 == map.nb_darts());
 	}
 }
 
