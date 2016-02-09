@@ -34,106 +34,107 @@ template <typename DATA_TRAITS>
 class CPHBase
 {
 
-    typedef CPHBase<DATA_TRAITS> Self;
+public:
+	typedef CPHBase<DATA_TRAITS> Self;
 
-    template <typename T>
-    using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
-    template <typename T>
-    using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
+	template <typename T>
+	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
+	template <typename T>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
 
 protected:
-    unsigned int current_level_;
-    unsigned int maximum_level_;
+	unsigned int current_level_;
+	unsigned int maximum_level_;
 
-    ChunkArray<unsigned int>* dart_level_;
+	ChunkArray<unsigned int>* dart_level_;
 
-    std::vector<unsigned int> nb_darts_per_level;
+	std::vector<unsigned int> nb_darts_per_level;
 
-    ChunkArrayContainer<unsigned char>& topo_;
-
-public:
-    CPHBase(ChunkArrayContainer<unsigned char>& topology):
-        topo_(topology),
-        current_level_(0)
-    {
-        init();
-    }
-
-    ~CPHBase()
-    {
-        topo_.remove_attribute(dart_level_);
-    }
-
-    CPHBase(Self const&) = delete;
-    CPHBase(Self &&) = delete;
-    Self& operator=(Self const&) = delete;
-    Self& operator=(Self &&) = delete;
+	ChunkArrayContainer<unsigned char>& topo_;
 
 public:
+	CPHBase(ChunkArrayContainer<unsigned char>& topology):
+		topo_(topology),
+		current_level_(0)
+	{
+		init();
+	}
 
-    void init()
-    {
-        dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
-    }
+	virtual ~CPHBase()
+	{
+		topo_.remove_attribute(dart_level_);
+	}
 
-    /***************************************************
-     *              LEVELS MANAGEMENT                  *
-     ***************************************************/
+	CPHBase(Self const&) = delete;
+	CPHBase(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
 
-    inline unsigned int get_current_level() const
-    {
-        return current_level_ ;
-    }
+public:
 
-    inline void set_current_level(unsigned int l)
-    {
-        current_level_ = l ;
-    }
+	void init()
+	{
+		dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
+	}
 
-    inline unsigned int get_maximum_level() const
-    {
-        return maximum_level_ ;
-    }
+	/***************************************************
+	 *              LEVELS MANAGEMENT                  *
+	 ***************************************************/
 
-    inline void set_maximum_level(unsigned int l)
-    {
-        maximum_level_ = l;
-    }
+	inline unsigned int get_current_level() const
+	{
+		return current_level_ ;
+	}
 
-    inline unsigned int get_dart_level(Dart d) const
-    {
-        return (*dart_level_)[d.index] ;
-    }
+	inline void set_current_level(unsigned int l)
+	{
+		current_level_ = l ;
+	}
 
-    inline void set_dart_level(Dart d, unsigned int l)
-    {
-        (*dart_level_)[d.index] = l ;
-    }
+	inline unsigned int get_maximum_level() const
+	{
+		return maximum_level_ ;
+	}
 
-    inline void inc_current_level()
-    {
-        set_current_level(get_current_level() + 1);
-    }
+	inline void set_maximum_level(unsigned int l)
+	{
+		maximum_level_ = l;
+	}
 
-    inline void dec_current_level()
-    {
-        set_current_level(get_current_level() - 1);
-    }
+	inline unsigned int get_dart_level(Dart d) const
+	{
+		return (*dart_level_)[d.index] ;
+	}
 
-    inline void inc_nb_darts(unsigned int level)
-    {
-            cgogn_message_assert(level < get_maximum_level(), "inc_nb_darts : already at maximum resolution level");
-            nb_darts_per_level[level]++;
-    }
+	inline void set_dart_level(Dart d, unsigned int l)
+	{
+		(*dart_level_)[d.index] = l ;
+	}
 
-    /***************************************************
-     *              NB DARTS PER LEVEL                 *
-     ***************************************************/
+	inline void inc_current_level()
+	{
+		set_current_level(get_current_level() + 1);
+	}
 
-    inline void new_level_darts()
-    {
-            nb_darts_per_level.push_back(0);
-    }
+	inline void dec_current_level()
+	{
+		set_current_level(get_current_level() - 1);
+	}
+
+	inline void inc_nb_darts(unsigned int level)
+	{
+		cgogn_message_assert(level < get_maximum_level(), "inc_nb_darts : already at maximum resolution level");
+		nb_darts_per_level[level]++;
+	}
+
+	/***************************************************
+	 *              NB DARTS PER LEVEL                 *
+	 ***************************************************/
+
+	inline void new_level_darts()
+	{
+		nb_darts_per_level.push_back(0);
+	}
 };
 
 }

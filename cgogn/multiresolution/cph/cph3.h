@@ -21,105 +21,72 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH2_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#ifndef MULTIRESOLUTION_CPH_CPH3_BASE_H_
+#define MULTIRESOLUTION_CPH_CPH3_BASE_H_
 
-#include <multiresolution/cph/cph_base.h>
+#include <multiresolution/cph/cph2.h>
 
 namespace cgogn
 {
 
 template <typename DATA_TRAITS>
-class CPH2 : public CPHBase<DATA_TRAITS>
+class CPH3 : CPH2<DATA_TRAITS>
 {
 
 public:
-	typedef CPH2<DATA_TRAITS> Self;
-	typedef CPHBase<DATA_TRAITS> Inherit;
-
-	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	typedef CPH3<DATA_TRAITS> Self;
+	typedef CPH2<DATA_TRAITS> Inherit;
 
 protected:
-	ChunkArray<unsigned int>* edge_id_;
+	ChunkArray<unsigned int>* face_id_;
 
 public:
-	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
+	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
 		init();
 	}
 
-	~CPH2() override
+	~CPH3() override
 	{
-		this->topo_.remove_attribute(edge_id_);
+		this->topo_.remove_attribute(face_id_);
 	}
 
-	CPH2(Self const&) = delete;
-	CPH2(Self &&) = delete;
+	CPH3(Self const&) = delete;
+	CPH3(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-
 protected:
-	inline void init()
+	void init()
 	{
-		edge_id_ = this->topo_.template add_attribute<unsigned int>("edgeId");
+		face_id_ = this->topo_.template add_attribute<unsigned int>("faceId");
 	}
 
 public:
 	/***************************************************
-	 *             EDGE ID MANAGEMENT                  *
+	 *             FACE ID MANAGEMENT                  *
 	 ***************************************************/
-
-	inline unsigned int get_edge_id(Dart d) const
+	inline unsigned int get_face_id(Dart d) const
 	{
-		return (*edge_id_)[d.index] ;
+		return (*face_id_)[d.index] ;
 	}
 
-	inline void set_edge_id(Dart d, unsigned int i)
+	inline void set_face_id(Dart d, unsigned int i)
 	{
-		(*edge_id_)[d.index] = i ;
+		(*face_id_)[d.index] = i ;
 	}
 
-	inline unsigned int get_tri_refinement_edge_id(Dart d, Dart e) const
+	inline unsigned int get_tri_refinement_face_id(Dart d, Dart e) const
 	{
-		unsigned int d_id = get_edge_id(d);
-		unsigned int e_id = get_edge_id(e);
 
-		unsigned int id = d_id + e_id;
-
-		if(id == 0u)
-			return 1u;
-		else if(id == 1u)
-			return 2u;
-		else if(id == 2u)
-		{
-			if(d_id == e_id)
-				return 0u;
-			else
-				return 1u;
-		}
-
-		//else if(id == 3)
-		return 0u;
 	}
 
-	inline unsigned int get_quad_refinement_edge_id(Dart d) const
+	inline unsigned int get_quad_refinement_face_id(Dart d) const
 	{
-		unsigned int e_id = get_edge_id(d);
 
-		if(e_id == 0u)
-			return 1u;
-
-		//else if(e_id == 1)
-		return 0u;
 	}
-
 };
 
 } // namespace cgogn
 
-
-#endif // MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#endif // MULTIRESOLUTION_CPH_CPH3_BASE_H_

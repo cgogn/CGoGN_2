@@ -6,13 +6,13 @@ set(HEADER_FILES
         dll.h
 
         cph/attribute_handler_cph.h
-
         cph/cph_base.h
         cph/cph2.h
-
+        cph/cph3.h
         cph/ihcmap2.h
         cph/ihcmap2_adaptive.h
         cph/ihcmap2_regular.h
+        cph/ihcmap3.h
 
 	mrcmap/mrcmap2.h
 

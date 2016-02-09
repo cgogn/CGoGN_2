@@ -59,7 +59,7 @@ public:
 		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
-			Inherit::cut_edge(e);
+//			Inherit::cut_edge(e);
 
 			unsigned int eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
@@ -77,7 +77,7 @@ public:
 			Dart dd = Inherit::phi1(old) ;
 			Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
 			// insert a new edge
-			Inherit::split_face(dd, e) ;
+//			Inherit::split_face(dd, e) ;
 
 			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
@@ -85,14 +85,14 @@ public:
 
 			dd = e ;
 			e = Inherit::phi1(Inherit::phi1(dd)) ;
-			Inherit::split_face(dd, e) ;
+//			Inherit::split_face(dd, e) ;
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
 			dd = e ;
 			e = Inherit::phi1(Inherit::phi1(dd)) ;
-			Inherit::split_face(dd, e) ;
+//			Inherit::split_face(dd, e) ;
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
@@ -111,7 +111,7 @@ public:
 		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
-			Inherit::cut_edge(e);
+//			Inherit::cut_edge(e);
 
 			unsigned int eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
@@ -128,11 +128,11 @@ public:
 
 			Dart dd = Inherit::phi1(old) ;
 			Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-			Inherit::split_face(dd, next) ;		// insert a first edge
+//			Inherit::split_face(dd, next) ;		// insert a first edge
 
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
 			Dart ne2 = Inherit::phi2(ne) ;
-			Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
+//			Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
 			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id) ;
@@ -146,7 +146,7 @@ public:
 			while(dd != ne)				// turn around the face and insert new edges
 			{							// linked to the central vertex
 				Dart tmp = Inherit::phi1(ne) ;
-				Inherit::split_face(tmp, dd) ;
+//				Inherit::split_face(tmp, dd) ;
 
 				Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 
@@ -170,7 +170,7 @@ public:
 		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
-			Inherit::cut_edge(e);
+//			Inherit::cut_edge(e);
 
 			unsigned int eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
@@ -195,7 +195,7 @@ public:
 				Dart dd = Inherit::phi1(old) ;
 				Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
 				// insert a new edge
-				Inherit::split_face(dd, e) ;
+//				Inherit::split_face(dd, e) ;
 
 				unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
@@ -203,14 +203,14 @@ public:
 
 				dd = e ;
 				e = Inherit::phi1(Inherit::phi1(dd)) ;
-				Inherit::split_face(dd, e) ;
+//				Inherit::split_face(dd, e) ;
 				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
 				dd = e ;
 				e = Inherit::phi1(Inherit::phi1(dd)) ;
-				Inherit::split_face(dd, e) ;
+//				Inherit::split_face(dd, e) ;
 				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
@@ -219,11 +219,11 @@ public:
 			{
 				Dart dd = Inherit::phi1(old) ;
 				Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-				Inherit::split_face(dd, next) ;		// insert a first edge
+//				Inherit::split_face(dd, next) ;		// insert a first edge
 
 				Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
 				Dart ne2 = Inherit::phi2(ne) ;
-				Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
+//				Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
 				unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 				Inherit::set_edge_id(ne, id) ;
@@ -237,7 +237,7 @@ public:
 				while(dd != ne)				// turn around the face and insert new edges
 				{							// linked to the central vertex
 					Dart tmp = Inherit::phi1(ne) ;
-					Inherit::split_face(tmp, dd) ;
+//					Inherit::split_face(tmp, dd) ;
 
 					Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 
