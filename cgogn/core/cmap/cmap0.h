@@ -120,24 +120,6 @@ protected:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
-
-protected:
-
-	/*******************************************************************************
-	 * Embedding management
-	 *******************************************************************************/
-
-	template <Orbit ORBIT>
-	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
-	}
-
-	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
-	}
 };
 
 template <typename MAP_TRAITS>
