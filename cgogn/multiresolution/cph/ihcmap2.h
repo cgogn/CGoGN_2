@@ -25,7 +25,7 @@
 #define MULTIRESOLUTION_CPH_IHCMAP2_H_
 
 #include <core/cmap/cmap2.h>
-#include <multiresolution/cph/ihcmap_base.h>
+#include <multiresolution/cph/cph2.h>
 //#include <multiresolution/cph/attribute_handler_cph.h>
 
 namespace cgogn
@@ -54,12 +54,12 @@ public:
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public IHCMapBase<DATA_TRAITS>
+class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public CPH2<DATA_TRAITS>
 {
 public:
 
 	typedef CMap2_T<DATA_TRAITS, MAP_TYPE> Inherit_CMAP;
-	typedef IHCMapBase<DATA_TRAITS> Inherit_CPH;
+	typedef CPH2<DATA_TRAITS> Inherit_CPH;
 	typedef IHCMap2_T<DATA_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit_CMAP;

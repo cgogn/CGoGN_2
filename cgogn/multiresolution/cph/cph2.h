@@ -21,55 +21,37 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP_BASE_H_
-#define MULTIRESOLUTION_CPH_IHCMAP_BASE_H_
+#ifndef MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#define MULTIRESOLUTION_CPH_CPH2_BASE_H_
 
-#include <core/container/chunk_array_container.h>
-#include <core/utils/assert.h>
+#include <multiresolution/cph/cph_base.h>
 
 namespace cgogn
 {
 
 template <typename DATA_TRAITS>
-class IHCMapBase
+class CPH2 : CPHBase<DATA_TRAITS>
 {
-	typedef IHCMapBase<DATA_TRAITS> Self;
-
-	template <typename T>
-	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
-	template <typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
+	typedef CPH2<DATA_TRAITS> Self;
+	typedef CPHBase<DATA_TRAITS> Inherit;
 
 protected:
-	unsigned int current_level_;
-	unsigned int maximum_level_;
-
-	// DartAttributeHandler<unsigned int> dart_level_ ;
-	// DartAttributeHandler<unsigned int> edge_id_ ;
-	ChunkArray<unsigned int>* dart_level_;
 	ChunkArray<unsigned int>* edge_id_;
 
-	std::vector<unsigned int> nb_darts_per_level;
-
-	ChunkArrayContainer<unsigned char>& topo_;
 
 public:
-	IHCMapBase(ChunkArrayContainer<unsigned char>& topology):
-		topo_(topology),
-		current_level_(0),
-		maximum_level_(0)
+	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
 		init();
 	}
 
-	~IHCMapBase()
+	~CPH2()
 	{
-		topo_.remove_attribute(dart_level_);
 		topo_.remove_attribute(edge_id_);
 	}
 
-	IHCMapBase(Self const&) = delete;
-	IHCMapBase(Self &&) = delete;
+	CPH2(Self const&) = delete;
+	CPH2(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
@@ -77,53 +59,8 @@ public:
 
 	void init()
 	{
-		dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
 		edge_id_ = topo_.template add_attribute<unsigned int>("edgeId");
 	}
-
-	/***************************************************
-	 *              LEVELS MANAGEMENT                  *
-	 ***************************************************/
-
-	inline unsigned int get_current_level() const
-	{
-		return current_level_ ;
-	}
-
-	inline void set_current_level(unsigned int l)
-	{
-		current_level_ = l ;
-	}
-
-	inline unsigned int get_maximum_level() const
-	{
-		return maximum_level_ ;
-	}
-
-	inline void set_maximum_level(unsigned int l)
-	{
-		maximum_level_ = l;
-	}
-
-	inline unsigned int get_dart_level(Dart d) const
-	{
-		return (*dart_level_)[d.index] ;
-	}
-
-	inline void set_dart_level(Dart d, unsigned int l)
-	{
-		(*dart_level_)[d.index] = l ;
-	}
-
-    inline void inc_current_level()
-    {
-        set_current_level(get_current_level() + 1);
-    }
-
-    inline void dec_current_level()
-    {
-        set_current_level(get_current_level() - 1);
-    }
 
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *
@@ -173,20 +110,9 @@ public:
 		return 0u;
 	}
 
-	inline void inc_nb_darts(unsigned int level)
-	{
-		cgogn_message_assert(level < get_maximum_level(), "inc_nb_darts : already at maximum resolution level");
-		nb_darts_per_level[level]++;
-	}
-
-	inline void new_level_darts()
-	{
-		nb_darts_per_level.push_back(0);
-	}
-
 };
 
 } // namespace cgogn
 
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP_BASE_H_
+#endif // MULTIRESOLUTION_CPH_CPH2_BASE_H_

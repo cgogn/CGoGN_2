@@ -3,8 +3,13 @@ project(cgogn_multiresolution
 )
 
 set(HEADER_FILES
+        dll.h
+
         cph/attribute_handler_cph.h
-        cph/ihcmap_base.h
+
+        cph/cph_base.h
+        cph/cph2.h
+
         cph/ihcmap2.h
         cph/ihcmap2_adaptive.h
         cph/ihcmap2_regular.h
