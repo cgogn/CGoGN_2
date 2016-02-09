@@ -160,6 +160,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		Dart d = Inherit::add_dart();
 		(*phi2_)[d.index] = d;
 		return d;

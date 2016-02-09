@@ -172,6 +172,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 
 		Dart d(di);
