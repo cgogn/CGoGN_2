@@ -37,7 +37,8 @@
 /*
  * Thread local storage. In VS <1900 it works only with POD types.
 */
-#if defined(_MSC_VER) && _MSC_VER < 1900
+//#if defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(_MSC_VER)
 #define CGOGN_TLS __declspec( thread )
 #else
 #define CGOGN_TLS __thread

@@ -172,7 +172,7 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
-		cgogn_assert(typeid(*this).hash_code() == typeid(Self).hash_code());
+		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
 		(*phi1_)[di] = d;

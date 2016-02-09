@@ -586,7 +586,7 @@ public:
 		using VecDarts = std::vector<Dart>;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -783,7 +783,7 @@ protected:
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -866,7 +866,7 @@ protected:
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -944,7 +944,7 @@ protected:
 		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const unsigned int nb_threads_pool = thread_pool->get_nb_threads();
+		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
