@@ -24,19 +24,24 @@
 #ifndef CORE_CMAP_MAP_BASE_DATA_H_
 #define CORE_CMAP_MAP_BASE_DATA_H_
 
-#include <core/utils/definitions.h>
-#include <core/utils/thread.h>
-#include <core/utils/thread_pool.h>
-#include <core/container/chunk_array_container.h>
-#include <core/basic/cell.h>
-#include <core/cmap/map_traits.h>
-
 #include <thread>
 #include <mutex>
 #include <algorithm>
 #include <type_traits>
 #include <sstream>
 #include <iterator>
+
+#include <core/utils/definitions.h>
+#include <core/utils/thread.h>
+#include <core/utils/thread_pool.h>
+#include <core/utils/name_types.h>
+#include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
+#include <core/cmap/map_traits.h>
+
+
+#define CGOGN_CHECK_CONCRETE_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
+	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
 
 namespace cgogn
 {
