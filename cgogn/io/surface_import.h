@@ -207,7 +207,8 @@ public:
 		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
 
-		for (Dart d : map)
+//		for (Dart d : map)
+		map.foreach_dart([&] (Dart d)
 		{
 			if (map.phi2(d) == d)
 			{
@@ -241,7 +242,7 @@ public:
 				if (!first_OK)
 					need_vertex_unicity_check = true;
 			}
-		}
+		});
 
 		if (nb_boundary_edges > 0)
 			mbuild.close_map();

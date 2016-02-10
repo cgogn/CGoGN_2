@@ -27,6 +27,7 @@
 #include <core/basic/cell.h>
 #include <core/utils/assert.h>
 #include <core/cmap/map_base_data.h>
+
 namespace cgogn
 {
 
@@ -397,10 +398,11 @@ public:
 	class const_iterator
 	{
 	public:
-		const AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+
+		const Self* const ah_ptr_;
 		unsigned int index_;
 
-		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline const_iterator(const Self* ah, unsigned int i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -449,10 +451,11 @@ public:
 	class iterator
 	{
 	public:
-		AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+
+		Self* const ah_ptr_;
 		unsigned int index_;
 
-		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline iterator(Self* ah, unsigned int i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}

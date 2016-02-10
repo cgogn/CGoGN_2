@@ -9,6 +9,7 @@ using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 template <typename T>
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, T>;
 
+
 int test1();
 int test2();
 int test3();
@@ -19,6 +20,7 @@ int test1()
 	std::cout << "=============== TEST 1 ===============" << std::endl;
 
 	ChunkArrayContainer<unsigned int> container;
+
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
 
@@ -34,7 +36,6 @@ int test1()
 	container.remove_lines<1>(3);
 	container.remove_lines<1>(19);
 	container.remove_lines<1>(35);
-
 
 	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
 	{
@@ -84,6 +85,7 @@ int test2()
 	std::cout << "=============== TEST 2 ===============" << std::endl;
 
 	ChunkArrayContainer<unsigned char> container;
+
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 
 	for (int i = 0; i < 13; ++i)
@@ -155,6 +157,7 @@ int test3()
 	std::cout << "=============== TEST 3 ===============" << std::endl;
 
 	ChunkArrayContainer<bool> container;
+
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
 	ChunkArray<std::list<int> >* att3 = container.add_attribute<std::list<int> >("L_entier");
@@ -211,7 +214,9 @@ int test4()
 	std::cout << "=============== TEST 4 ===============" << std::endl;
 	typedef std::vector< std::vector< double > > vecvecdouble;
 	typedef std::vector< std::list< double > > veclistdouble;
+
 	ChunkArrayContainer<unsigned int> container;
+
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<bool>* att3 = container.add_attribute<bool>("bools");
@@ -266,8 +271,6 @@ int test4()
 
 	return 0;
 }
-
-
 
 int main()
 {

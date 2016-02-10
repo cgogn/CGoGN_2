@@ -45,6 +45,8 @@ public:
 
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
+	friend class Validator<Dart>;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
@@ -54,6 +56,8 @@ public:
 	typedef Cell<VERTEX> Vertex;
 	typedef Cell<EDGE> Edge;
 	typedef Cell<FACE> Face;
+
+	static const Orbit BOUNDARY = EDGE;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

@@ -29,8 +29,8 @@
 namespace cgogn
 {
 
-ContainerBrowser::~ContainerBrowser()
-{}
+//ContainerBrowser::~ContainerBrowser()
+//{}
 
 template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
 template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;

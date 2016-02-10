@@ -49,9 +49,10 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend typename Inherit::Inherit::Inherit;
+	friend class CMap3Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-	friend class CMap3Builder_T<MapTraits>;
+	friend class Validator<Dart>;
 
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
 	static const Orbit EDGE   = Orbit::PHI2_PHI3;
@@ -62,6 +63,8 @@ public:
 	typedef Cell<Self::EDGE> Edge;
 	typedef Cell<Self::FACE> Face;
 	typedef Cell<Self::VOLUME> Volume;
+
+	static const Orbit BOUNDARY = VOLUME;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -224,7 +227,8 @@ protected:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
-		for (Dart d: (*this))
+//		for (Dart d: (*this))
+		this->foreach_dart([this, &nb] (Dart d)
 		{
 			if (phi3(d) == d)
 			{
@@ -282,7 +286,7 @@ protected:
 					} while(f != it);
 				}
 			}
-		}
+		});
 		return nb;
 	}
 
