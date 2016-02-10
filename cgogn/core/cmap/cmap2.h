@@ -51,7 +51,7 @@ public:
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-	friend class Validator<Dart>;
+	friend class DartValidator;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;

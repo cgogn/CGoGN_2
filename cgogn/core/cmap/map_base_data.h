@@ -135,8 +135,6 @@ protected:
 	/// global topo cache shortcuts
 	std::array<ChunkArray<Dart>*, NB_ORBITS> global_topo_cache_;
 
-	DefaultCMapObserver default_observer_;
-
 public:
 
 	MapBaseData() : Inherit()

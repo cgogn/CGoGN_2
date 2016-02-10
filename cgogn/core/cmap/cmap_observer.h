@@ -30,13 +30,12 @@
 namespace cgogn
 {
 
-template <typename T>
-class Validator
+class DartValidator
 {
 public:
 
-	virtual ~Validator() {}
-	virtual bool valid(const T&) const = 0;
+	virtual ~DartValidator() {}
+	virtual bool valid(Dart) const = 0;
 
 protected:
 
@@ -51,53 +50,41 @@ class CMapObserver
 {
 protected:
 
-	Validator<Dart>* topo_;
-	std::array<Validator<Dart>*, NB_ORBITS> attr_;
+	DartValidator* topo_;
+	std::array<DartValidator*, NB_ORBITS> attr_;
 
 public:
 
-	inline const Validator<Dart>& topo() const
-	{
-		return *topo_;
-	}
-
-	template <Orbit ORBIT>
-	inline const Validator<Dart>& attr() const
-	{
-		return *attr_[ORBIT];
-	}
+	inline const DartValidator& topo() const { return *topo_; }
+	template <Orbit ORBIT> inline const DartValidator& attr() const { return *attr_[ORBIT]; }
 };
 
 
 // All elements observer
 
-template <typename T>
-class DefaultValidator : public Validator<T>
+class CompleteDartValidator : public DartValidator
 {
 public:
 
-	inline bool valid(const T&) const override
-	{
-		return true;
-	}
+	inline bool valid(Dart) const override { return true; }
 };
 
-class DefaultCMapObserver : public CMapObserver
+class CompleteCMapObserver : public CMapObserver
 {
 public:
 
-	DefaultCMapObserver()
+	CompleteCMapObserver()
 	{
-		this->topo_ = new DefaultValidator<Dart>();
+		this->topo_ = new CompleteDartValidator();
 		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultValidator<Dart>();
+			this->attr_[i] = new CompleteDartValidator();
 	}
 };
 
 // No boundary observer
 
 template <typename MAP>
-class NoBoundaryDartValidator : public Validator<Dart>
+class NoBoundaryDartValidator : public DartValidator
 {
 protected:
 
@@ -105,13 +92,8 @@ protected:
 
 public:
 
-	NoBoundaryDartValidator(const MAP& map) : map_(map)
-	{}
-
-	inline bool valid(const Dart& d) const override
-	{
-		return !map_.is_boundary(d);
-	}
+	NoBoundaryDartValidator(const MAP& map) : map_(map) {}
+	inline bool valid(Dart d) const override { return !map_.is_boundary(d); }
 };
 
 template <typename MAP>
@@ -122,15 +104,20 @@ public:
 	NoBoundaryCMapObserver(const MAP& map)
 	{
 		this->topo_ = new NoBoundaryDartValidator<MAP>(map);
-		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultValidator<Dart>();
+		for (unsigned int orbit = Orbit::DART; orbit < NB_ORBITS; ++orbit)
+		{
+			if (orbit == MAP::BOUNDARY)
+				this->attr_[orbit] = new NoBoundaryDartValidator<MAP>(map);
+			else
+				this->attr_[orbit] = new CompleteDartValidator();
+		}
 	}
 };
 
 // Boundary observer
 
 template <typename MAP>
-class BoundaryDartValidator : public Validator<Dart>
+class BoundaryDartValidator : public DartValidator
 {
 protected:
 
@@ -138,42 +125,35 @@ protected:
 
 public:
 
-	BoundaryDartValidator(const MAP& map) : map_(map)
-	{}
-
-	inline bool valid(const Dart& d) const override
-	{
-		return map_.is_boundary(d);
-	}
+	BoundaryDartValidator(const MAP& map) : map_(map) {}
+	inline bool valid(Dart d) const override { return map_.is_boundary(d); }
 };
 
-template <typename MAP, Orbit ORBIT>
-class BoundaryCellValidator : public Validator<Dart>
-{
-protected:
+//template <typename MAP, Orbit ORBIT>
+//class BoundaryCellValidator : public DartValidator
+//{
+//protected:
 
-	const MAP& map_;
+//	const MAP& map_;
 
-public:
+//public:
 
-	BoundaryCellValidator(const MAP& map) : map_(map)
-	{}
-
-	inline bool valid(const Dart& d) const override
-	{
-		bool result = false;
-		this->template foreach_dart_of_orbit_until<ORBIT, MAP>(map_, Cell<ORBIT>(d), [&] (Dart dd)
-		{
-			if (map_.is_boundary(dd))
-			{
-				result = true;
-				return false;
-			}
-			return true;
-		});
-		return result;
-	}
-};
+//	BoundaryCellValidator(const MAP& map) : map_(map) {}
+//	inline bool valid(const Dart& d) const override
+//	{
+//		bool result = false;
+//		this->template foreach_dart_of_orbit_until<ORBIT, MAP>(map_, Cell<ORBIT>(d), [&] (Dart dd)
+//		{
+//			if (map_.is_boundary(dd))
+//			{
+//				result = true;
+//				return false;
+//			}
+//			return true;
+//		});
+//		return result;
+//	}
+//};
 
 template <typename MAP>
 class BoundaryCMapObserver : public CMapObserver
@@ -183,14 +163,13 @@ public:
 	BoundaryCMapObserver(const MAP& map)
 	{
 		this->topo_ = new BoundaryDartValidator<MAP>(map);
-		for (unsigned int i = Orbit::DART; i < NB_ORBITS; ++i)
-			this->attr_[i] = new DefaultValidator<Dart>();
-
-		delete this->attr_[MAP::VERTEX];
-		this->attr_[MAP::VERTEX] = new BoundaryCellValidator<MAP, MAP::VERTEX>(map);
-
-		delete this->attr_[MAP::EDGE];
-		this->attr_[MAP::EDGE] = new BoundaryCellValidator<MAP, MAP::EDGE>(map);
+		for (unsigned int orbit = Orbit::DART; orbit < NB_ORBITS; ++orbit)
+		{
+			if (orbit == MAP::BOUNDARY)
+				this->attr_[orbit] = new BoundaryDartValidator<MAP>(map);
+			else
+				this->attr_[orbit] = new CompleteDartValidator();
+		}
 	}
 };
 
