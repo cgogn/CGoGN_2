@@ -37,18 +37,18 @@ public:
 	typedef LerpTriQuadMRAnalysis<MRMAP, VEC3> Self;
 	typedef MRAnalysis<MRMAP> Inherit;
 
-    using VertexAttributeHandler = typename MRMAP::template VertexAttributeHandler<VEC3>;
+	using VertexAttributeHandler = typename MRMAP::template VertexAttributeHandler<VEC3>;
 
 protected:
-    VertexAttributeHandler& va_;
+	VertexAttributeHandler& va_;
 
 public:
 	LerpTriQuadMRAnalysis(MRMAP& map, VertexAttributeHandler& v):
 		Inherit(map),
-        va_(v)
-    {
+		va_(v)
+	{
 		this->synthesis_filters_.push_back(lerp_tri_quad_odd_synthesis_);
-    }
+	}
 
 	LerpTriQuadMRAnalysis(Self const& ) = delete;
 	LerpTriQuadMRAnalysis(Self&& ) = delete;
@@ -60,55 +60,55 @@ public:
 
 protected:
 
-    std::function<void()> lerp_tri_quad_odd_synthesis_ = [this] ()
-    {
-		this->map_.template foreach_cell<MRMAP::FACE>([&] (MRMAP::Face f)
-        {
+	std::function<void()> lerp_tri_quad_odd_synthesis_ = [this] ()
+	{
+		this->map_.template foreach_cell<MRMAP::FACE>([&] (typename MRMAP::Face f)
+		{
 			if(this->map_.degree(f) != 3)
-            {
-                VEC3 vf(0.0);
-                VEC3 ef(0.0);
+			{
+				VEC3 vf(0.0);
+				VEC3 ef(0.0);
 
-                unsigned int count = 0;
+				unsigned int count = 0;
 
-				this->map_.foreach_incident_edge(f, [&] (MRMAP::Edge e)
-                {
-                    vf += va_[e.dart];
+				this->map_.foreach_incident_edge(f, [&] (typename MRMAP::Edge e)
+				{
+					vf += va_[e.dart];
 					this->map_.inc_current_level();
 					ef += va_[this->map_.phi1(e.dart)];
 					this->map_.dec_current_level();
-                    ++count;
-                });
+					++count;
+				});
 
-                ef /= count;
-                ef *= 2.0;
+				ef /= count;
+				ef *= 2.0;
 
-                vf /= count;
+				vf /= count;
 
 				this->map_.inc_current_level() ;
 				Dart midF = this->map_.phi1(this->map_.phi1(f.dart));
-                va_[midF] += vf + ef ;
+				va_[midF] += vf + ef ;
 				this->map_.dec_current_level() ;
-            }
-        });
+			}
+		});
 
-		this->map_.template foreach_cell<MRMAP::EDGE>([&] (MRMAP::Edge e)
-        {
+		this->map_.template foreach_cell<MRMAP::EDGE>([&] (typename MRMAP::Edge e)
+		{
 			VEC3 ve = (va_[e.dart] + va_[this->map_.phi1(e)]) * 0.5;
 
 			this->map_.inc_current_level() ;
 			Dart midV = this->map_.phi1(e) ;
-            va_[midV] += ve ;
+			va_[midV] += ve ;
 			this->map_.dec_current_level() ;
-        });
-    };
+		});
+	};
 
 public:
 
 	void add_level() override
-    {
+	{
 		this->map_.add_mixed_level();
-    }
+	}
 
 };
 

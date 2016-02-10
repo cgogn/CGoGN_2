@@ -47,7 +47,6 @@ public:
 	IHCMap2Adaptive(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
-	inline ~IHCMap2Adaptive() = default;
 
 public:
 	/***************************************************
@@ -62,12 +61,9 @@ public:
 	 */
 	unsigned int edge_level(Dart d)
 	{
-		cgogn_message_assert(Inherit::getDartLevel(d) <= Inherit::getCurrentLevel(),
+		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
-
-		unsigned int ld = Inherit::getDartLevel(d);
-		unsigned int ldd = Inherit::getDartLevel(Inherit::phi1(d));
-		return ld < ldd ? ldd : ld;
+		return std::max(Inherit::get_dart_level(d),Inherit::get_dart_level(Inherit::phi1(d)));
 	}
 
 	/**
@@ -290,7 +286,7 @@ public:
 				unsigned int cur2 = Inherit::get_current_level();
 				Inherit::set_current_level(cur2 + 1);
 				if(Inherit::get_dart_level(Inherit::phi1(fit)) == Inherit::get_current_level()
-						&& Inherit::get_edge_id(m_map.phi1(fit)) != Inherit::get_edge_id(fit))
+						&& Inherit::get_edge_id(this->phi1(fit)) != Inherit::get_edge_id(fit))
 					subdOnce = false ;
 				Inherit::set_current_level(cur2);
 			}
@@ -411,7 +407,7 @@ public:
 			it = Inherit::phi1(it);
 		} while(it != old);
 
-		Inherit::setCurrentLevel(fLevel + 1);	// go to the next level to perform face subdivision
+		Inherit::set_current_level(fLevel + 1);	// go to the next level to perform face subdivision
 
 		if((degree == 3) && triQuad)					// if subdividing a triangle
 		{
@@ -447,10 +443,10 @@ public:
 		else											// if subdividing a polygonal face
 		{
 			Dart dd = Inherit::phi1(old);
-			Dart next = m_map.phi1(dd);
+			Dart next = this->phi1(dd);
 			//            (*vertexVertexFunctor)(next);
 			next = Inherit::phi1(next);
-			Inherit::splitFace(dd, next);	// insert a first edge
+			Inherit::split_face(dd, next);	// insert a first edge
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd));
 			Dart ne2 = Inherit::phi2(ne);
 			Inherit::cut_edge(ne);				// cut the new edge to insert the central vertex
@@ -469,7 +465,7 @@ public:
 			dd = Inherit::phi1(dd);
 			while(dd != ne)								// turn around the face and insert new edges
 			{											// linked to the central vertex
-				Inherit::splitFace(Inherit::phi1(ne), dd);
+				Inherit::split_face(Inherit::phi1(ne), dd);
 				Dart nne = Inherit::phi2(Inherit::phi_1(dd));
 
 				id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
@@ -518,7 +514,7 @@ public:
 				Inherit::set_current_level(Inherit::get_maximum_level());
 				Inherit::merge_faces(innerEdge);
 				Inherit::set_current_level(cur);
-				fit = m_map.phi1(fit);
+				fit = this->phi1(fit);
 			} while(fit != d);
 		}
 		else
@@ -539,6 +535,11 @@ public:
 		} while(fit != d);
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
+extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Adaptive<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
+
 
 } // namespace cgogn
 

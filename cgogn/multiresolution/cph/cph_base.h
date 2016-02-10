@@ -24,8 +24,12 @@
 #ifndef MULTIRESOLUTION_CPH_CPH_BASE_H_
 #define MULTIRESOLUTION_CPH_CPH_BASE_H_
 
-#include <core/container/chunk_array_container.h>
 #include <core/utils/assert.h>
+#include <core/basic/dart.h>
+#include <core/container/chunk_array_container.h>
+#include <core/cmap/map_traits.h>
+
+#include <multiresolution/dll.h>
 
 namespace cgogn
 {
@@ -35,7 +39,7 @@ class CPHBase
 {
 
 public:
-	typedef CPHBase<DATA_TRAITS> Self;
+	using Self = CPHBase<DATA_TRAITS>;
 
 	template <typename T>
 	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
@@ -137,6 +141,12 @@ public:
 	}
 };
 
-}
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
+extern template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
+
+
+} // namespace cgogn
 
 #endif // MULTIRESOLUTION_CPH_CPH_BASE_H_

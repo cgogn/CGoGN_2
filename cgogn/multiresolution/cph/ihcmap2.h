@@ -54,7 +54,7 @@ public:
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public CPH2<DATA_TRAITS>
+class IHCMap2_T : virtual public CMap2_T<DATA_TRAITS, MAP_TYPE>, virtual public CPH2<DATA_TRAITS>
 {
 public:
 
@@ -358,7 +358,6 @@ public:
 //	}
 };
 
-
 template <typename MAP_TRAITS>
 struct IHCMap2Type
 {
@@ -367,6 +366,12 @@ struct IHCMap2Type
 
 template <typename MAP_TRAITS>
 using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
+extern template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
+
+
 
 } // namespace cgogn
 
