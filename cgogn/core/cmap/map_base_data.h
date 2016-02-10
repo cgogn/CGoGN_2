@@ -265,11 +265,12 @@ protected:
 
 		const unsigned int old = (*embeddings_[ORBIT])[d.index];
 
-		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
+		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
+		this->attributes_[ORBIT].ref_line(emb);			// ref the new emb
 		if (old != EMBNULL)
-			this->attributes_[ORBIT].unref_line(old); // unref the old emb
+			this->attributes_[ORBIT].unref_line(old);	// unref the old emb
 
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+		(*this->embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
 	}
 
 	/*******************************************************************************

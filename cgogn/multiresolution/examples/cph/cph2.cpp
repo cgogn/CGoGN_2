@@ -26,7 +26,7 @@ int main()
 	map.add_face(4);
 
 	std::cout << "before add level Faces :" << std::endl;
-	map.template foreach_cell<IHMap2::FACE>([&] (typename IHMap2::Face v)
+	map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face v)
 	{
 		std::cout << v << std::endl;
 	});
@@ -38,7 +38,7 @@ int main()
         lerp.synthesis();
 
         std::cout << "after add level Faces :" << std::endl;
-        map.template foreach_cell<IHMap2::FACE>([&] (typename IHMap2::Face f)
+        map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face f)
         {
             std::cout << f << " | " << map.get_dart_level(f.dart) << std::endl;
         });
@@ -51,7 +51,7 @@ int main()
         map.set_current_level(cur - 1);
 
         std::cout << "after add level Faces :" << std::endl;
-        map.template foreach_cell<IHMap2::FACE>([&] (typename IHMap2::Face f)
+        map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face f)
         {
             std::cout << f << " | " << map.get_dart_level(f.dart) << std::endl;
         });

@@ -51,6 +51,7 @@ public:
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -176,31 +177,40 @@ protected:
 			if (phi2(d) == d)
 			{
 				close_hole_topo(d);
-				Dart new_face = phi2(d);
-				if (this->template is_orbit_embedded<Orbit::DART>())
+				const Dart new_face = phi2(d);
+
+				if (this->template is_orbit_embedded<DART>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+						this->template set_orbit_embedding<DART>(fd, this->template add_attribute_element<DART>());
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI21>())
+				if (this->template is_orbit_embedded<VERTEX>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_embedding<Orbit::PHI21>(fd, this->template get_embedding<Orbit::PHI21>(this->phi1(phi2(fd))));
+						this->template set_embedding<VERTEX>(fd, this->template get_embedding<VERTEX>(this->phi1(phi2(fd))));
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI2>())
+				if (this->template is_orbit_embedded<EDGE>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
 					{
-						this->template set_embedding<Orbit::PHI2>(fd, this->template get_embedding<Orbit::PHI2>(phi2(fd)));
+						this->template set_embedding<EDGE>(fd, this->template get_embedding<EDGE>(phi2(fd)));
 					});
 				}
-				if (this->template is_orbit_embedded<Orbit::PHI1>())
+				if (this->template is_orbit_embedded<FACE>())
 				{
-					this->template set_orbit_embedding<Orbit::PHI1>(new_face, this->template add_attribute_element<Orbit::PHI1>());
+					this->template set_orbit_embedding<FACE>(new_face, this->template add_attribute_element<FACE>());
+				}
+				if (this->template is_orbit_embedded<VOLUME>())
+				{
+					const unsigned int idx = this->template get_embedding<VOLUME>(d);
+					foreach_dart_of_orbit<FACE>(new_face, [this, idx] (Dart fd)
+					{
+						this->template set_embedding<VOLUME>(fd, idx);
+					});
 				}
 			}
 		}
@@ -228,37 +238,114 @@ public:
 
 		Face f(d);
 
-		if (this->template is_orbit_embedded<Orbit::DART>())
+		if (this->template is_orbit_embedded<DART>())
 		{
-			foreach_dart_of_orbit<FACE>(f, [this] (Dart fd)
+			this->foreach_dart_of_orbit(f, [this] (Dart df)
 			{
-				this->template set_orbit_embedding<Orbit::DART>(fd, this->template add_attribute_element<Orbit::DART>());
+				this->template set_orbit_embedding<DART>(df, this->template add_attribute_element<DART>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<Orbit::PHI21>())
+		if (this->template is_orbit_embedded<VERTEX>())
 		{
-			foreach_incident_vertex(f, [this] (Cell<Orbit::PHI21> c)
+			foreach_incident_vertex(f, [this] (Vertex v)
 			{
-				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI21>());
+				this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<Orbit::PHI2>())
+		if (this->template is_orbit_embedded<EDGE>())
 		{
-			foreach_incident_edge(f, [this] (Cell<Orbit::PHI2> c)
+			foreach_incident_edge(f, [this] (Edge e)
 			{
-				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::PHI2>());
+				this->set_orbit_embedding(e, this->template add_attribute_element<EDGE>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
 
-		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
-			this->template set_orbit_embedding<Orbit::PHI1_PHI2>(d, this->template add_attribute_element<Orbit::PHI1_PHI2>());
+		if (this->template is_orbit_embedded<VOLUME>())
+			this->set_orbit_embedding(Volume(d), this->template add_attribute_element<VOLUME>());
 
 		return f;
+	}
+
+	inline Vertex cut_edge(Edge d)
+	{
+		const Dart e = phi2(d);
+		const Dart nd = cut_edge_topo(d);
+		const Dart ne = phi2(d);
+		const Vertex v(nd);
+
+		if(this->template is_orbit_embedded<DART>())
+		{
+			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
+			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
+		}
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
+		}
+
+		if (this->template is_orbit_embedded<EDGE>())
+		{
+			this->template set_embedding<EDGE>(ne, this->template get_embedding<EDGE>(d.dart));
+			this->set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+		{
+			this->template set_embedding<FACE>(nd, this->template get_embedding<FACE>(d.dart));
+			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(e));
+		}
+
+		if (this->template is_orbit_embedded<VOLUME>())
+		{
+			const unsigned int idx = this->template get_embedding<VOLUME>(d.dart);
+			this->template set_embedding<VOLUME>(nd, idx);
+			this->template set_embedding<VOLUME>(ne, idx);
+		}
+
+		return v;
+	}
+
+	inline void split_face(Dart d, Dart e)
+	{
+		split_face_topo(d,e);
+		const Dart nd = this->phi_1(e);
+		const Dart ne = this->phi_1(d);
+
+		if(this->template is_orbit_embedded<DART>())
+		{
+			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
+			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
+		}
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(d));
+			this->template set_embedding<VERTEX>(ne, this->template get_embedding<VERTEX>(e));
+		}
+
+		if (this->template is_orbit_embedded<EDGE>())
+		{
+			this->template set_orbit_embedding<EDGE>(nd, this->template add_attribute_element<EDGE>());
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+		{
+			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(d));
+			this->template set_orbit_embedding<FACE>(e, this->template add_attribute_element<FACE>());
+		}
+
+		if (this->template is_orbit_embedded<VOLUME>())
+		{
+			const unsigned int idx = this->template get_embedding<VOLUME>(d);
+			this->template set_orbit_embedding<VOLUME>(nd, idx);
+			this->template set_orbit_embedding<VOLUME>(ne, idx);
+		}
 	}
 
 	inline unsigned int degree(Face f) const
@@ -267,6 +354,33 @@ public:
 	}
 
 protected:
+
+	inline Dart cut_edge_topo(Dart d)
+	{
+		Dart e = phi2(d);						// Get the adjacent 1D-edge
+
+		phi2_unsew(d);							// Unsew the initial 2D-edge,
+		// separating its two 1D-edges
+		Dart nd = Inherit::cut_edge_topo(d);
+		Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
+
+		phi2_sew(d, ne);						// Sew the new 1D-edges
+		phi2_sew(e, nd);						// To build the new 2D-edges
+
+		return nd;
+	}
+
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
+
+		Dart nd = Inherit::cut_edge_topo(this->phi_1(d));	// cut the edge before d (insert a new dart before d)
+		Dart ne = Inherit::cut_edge_topo(this->phi_1(e));	// cut the edge before e (insert a new dart before e)
+
+		Inherit::split_face_topo(nd, ne);					// subdivide phi1 cycle at the inserted darts
+		phi2_sew(nd, ne);									// build the new 2D-edge from the inserted darts
+	}
 
 	inline void close_hole_topo(Dart d)
 	{

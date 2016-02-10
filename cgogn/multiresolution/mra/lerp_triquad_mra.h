@@ -62,7 +62,7 @@ protected:
 
     std::function<void()> lerp_tri_quad_odd_synthesis_ = [this] ()
     {
-		this->map_.template foreach_cell<MRMAP::FACE>([&] (typename MRMAP::Face f)
+		this->map_.template foreach_cell<MRMAP::FACE>([&] (MRMAP::Face f)
         {
 			if(this->map_.degree(f) != 3)
             {
@@ -71,7 +71,7 @@ protected:
 
                 unsigned int count = 0;
 
-				this->map_.template foreach_incident_edge(f, [&] (typename MRMAP::Edge e)
+				this->map_.foreach_incident_edge(f, [&] (MRMAP::Edge e)
                 {
                     vf += va_[e.dart];
 					this->map_.inc_current_level();
@@ -92,7 +92,7 @@ protected:
             }
         });
 
-		this->map_.template foreach_cell<MRMAP::EDGE>([&] (typename MRMAP::Edge e)
+		this->map_.template foreach_cell<MRMAP::EDGE>([&] (MRMAP::Edge e)
         {
 			VEC3 ve = (va_[e.dart] + va_[this->map_.phi1(e)]) * 0.5;
 

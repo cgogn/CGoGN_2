@@ -37,6 +37,10 @@ public:
 	typedef IHCMap2<MAP_TRAITS> Inherit;
 	typedef IHCMap2Regular<MAP_TRAITS> Self;
 
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using Face = typename Inherit::Face;
+	using Volume = typename Inherit::Volume;
 
 	IHCMap2Regular() : Inherit()
 	{}

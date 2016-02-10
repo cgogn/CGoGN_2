@@ -46,6 +46,7 @@ public:
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -174,12 +175,9 @@ protected:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
-
 		Dart d(di);
-
 		(*phi1_)[di] = d;
 		(*phi_1_)[di] = d;
-
 		return d;
 	}
 
@@ -188,38 +186,9 @@ protected:
 		this->remove_topology_element(d.index);
 	}
 
-public:
-
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
-
-	/**
-	 * \brief add_face
-	 * @param nb_edges
-	 * @return
-	 */
-	Face add_face(unsigned int nb_edges)
-	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
-
-		Dart d = add_face_topo(nb_edges);
-
-		Face f(d);
-
-		if (this->template is_orbit_embedded<Orbit::DART>())
-		{
-			foreach_incident_vertex(f, [this] (Cell<Orbit::DART> c)
-			{
-				this->set_orbit_embedding(c, this->template add_attribute_element<Orbit::DART>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
-
-		return f;
-	}
 
 protected:
 
@@ -254,8 +223,8 @@ protected:
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->to_concrete()->add_dart(); // Create a new dart
-		phi1_sew(d, e);				// Insert dart e between d and phi1(d)
+		Dart e = this->to_concrete()->add_dart();	// Create a new dart e
+		phi1_sew(d, e);								// Insert e between d and phi1(d)
 		return e;
 	}
 
@@ -292,15 +261,10 @@ protected:
 	{
 		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
 
-		// cut the edge before d (insert a new dart before d)
-		cut_edge_topo(phi_1(d));
-		
-		// cut the edge before e (insert a new dart before e)
-		cut_edge_topo(phi_1(e));
-		
-		// phi1sew between the 2 new inserted darts
-		phi1_sew(phi_1(d), phi_1(e));
+		Dart nd = cut_edge_topo(phi_1(d));	// cut the edge before d (insert a new dart before d)
+		Dart ne = cut_edge_topo(phi_1(e));	// cut the edge before e (insert a new dart before e)
 
+		phi1_sew(nd, ne);					// subdivide phi1 cycle at the inserted darts
 	}
 
 	inline void reverse_face_topo(Dart d)
@@ -312,7 +276,7 @@ protected:
 		if (e == d) return;
 
 		// Only two edges: nothing to do
-		if (phi1(e) == d) return;	
+		if (phi1(e) == d) return;
 
 		// Detach e from the face of d
 		phi1_unsew(d);
@@ -333,6 +297,31 @@ protected:
 	}
 
 public:
+
+	/**
+	 * \brief add_face
+	 * @param nb_edges
+	 * @return
+	 */
+	Face add_face(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+
+		const Face f(this->add_face_topo(nb_edges));
+
+		if (this->template is_orbit_embedded<DART>())
+		{
+			foreach_dart_of_orbit(f, [this](Dart d)
+			{
+				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+
+		return f;
+	}
 
 	inline unsigned int degree(Face f) const
 	{
@@ -378,7 +367,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
 
@@ -397,9 +386,11 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_return_type(FUNC, bool),
+					  "Wrong function return type");
+
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
 		switch (ORBIT)
 		{
@@ -411,7 +402,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
 
