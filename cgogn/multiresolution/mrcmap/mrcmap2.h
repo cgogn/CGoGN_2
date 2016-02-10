@@ -31,20 +31,22 @@ namespace cgogn
 {
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class MRCMap2_T
+class MRCMap2_T : public MRBase<CMap2_T<MAP_TRAITS, MAP_TYPE>>
 {
 public:
 
 	typedef MRCMap2_T<MAP_TRAITS, MAP_TYPE> Self;
 	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> CMap2;
 
-	template<typename T>
-	using ChunkArray =  typename CMap2::template ChunkArray<T>;
+	static const Orbit VERTEX = CMap2::VERTEX;
+	static const Orbit EDGE   = CMap2::EDGE;
+	static const Orbit FACE   = CMap2::FACE;
+	static const Orbit VOLUME = CMap2::VOLUME;
 
-protected:
-
-	MRBase<CMap2> mrmap2;
-
+	typedef CMap2::Vertex Vertex;
+	typedef CMap2::Edge Edge;
+	typedef CMap2::Face Face;
+	typedef CMap2::Volume Volume;
 
 public:
 
@@ -65,22 +67,37 @@ protected:
 	 * Orbits traversal
 	 *******************************************************************************/
 
+	inline Dart phi1(Dart d)
+	{
+		return this->current()->phi1(d);
+	}
+
+	inline Dart phi_1(Dart d)
+	{
+		return this->current()->phi_1(d);
+	}
+
+	inline Dart phi2(Dart d)
+	{
+		return this->current()->phi2(d);
+	}
+
 	template <typename FUNC>
 	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
 	{
-		mrmap2.current()->foreach_dart_of_vertex(d, f);
+		this->current()->foreach_dart_of_vertex(d, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
 	{
-		mrmap2.current()->foreach_dart_of_face(d, f);
+		this->current()->foreach_dart_of_face(d, f);
 	}
 
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		mrmap2.current()->foreach_dart_of_volume(d, f);
+		this->current()->foreach_dart_of_volume(d, f);
 	}
 
 public:
@@ -101,6 +118,15 @@ public:
 		}
 	}
 };
+
+template <typename MAP_TRAITS>
+struct MRCMap2Type
+{
+	typedef MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>> TYPE;
+};
+
+template <typename MAP_TRAITS>
+using MRCMap2 = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 

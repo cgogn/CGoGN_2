@@ -68,15 +68,15 @@ public:
 	friend class DartMarker_T<Self>;
 
 	static const Orbit DART = Orbit::DART;
-	static const Orbit VERTEX = Orbit::PHI21;
-	static const Orbit EDGE   = Orbit::PHI2;
-	static const Orbit FACE   = Orbit::PHI1;
-	static const Orbit VOLUME = Orbit::PHI1_PHI2;
+	static const Orbit VERTEX = Inherit_CMAP::VERTEX;
+	static const Orbit EDGE   = Inherit_CMAP::EDGE;
+	static const Orbit FACE   = Inherit_CMAP::FACE;
+	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
-	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
+	typedef Inherit_CMAP::Vertex Vertex;
+	typedef Inherit_CMAP::Edge Edge;
+	typedef Inherit_CMAP::Face Face;
+	typedef Inherit_CMAP::Volume Volume;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
