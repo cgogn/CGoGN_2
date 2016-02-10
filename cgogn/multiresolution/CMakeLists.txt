@@ -14,6 +14,7 @@ set(HEADER_FILES
         cph/ihcmap2_regular.h
         cph/ihcmap3.h
 
+        mrcmap/mr_base.h
 	mrcmap/mrcmap2.h
 
         mra/mr_analysis.h

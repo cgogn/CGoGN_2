@@ -21,12 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MRCMAP_MRCMAP2_H_
-#define CORE_MRCMAP_MRCMAP2_H_
+#ifndef MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
+#define MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
 
-#include <core/map/cmap2.h>
-#include <deque>
-#include <stack>
+#include <core/cmap/cmap2.h>
+#include <multiresolution/mrcmap/mr_base.h>
 
 namespace cgogn
 {
@@ -42,64 +41,10 @@ public:
 	template<typename T>
 	using ChunkArray =  typename CMap2::template ChunkArray<T>;
 
-
 protected:
-	/**
-	 * pointers to maps (one for each level)
-	 */
-	std::deque<CMap2*> maps_;
 
-	/**
-	 * pointers to attributs that stores next level 
-	 * correspondance indices for each dart 
-	 */
-	std::deque<ChunkArray<unsigned int>*> next_level_indices_;
+	MRBase<CMap2> mrmap2;
 
-	/**
-	 * pointers to attributs that stores previous level 
-	 * correspondance indices for each dart 
-	 */
-	std::deque<ChunkArray<unsigned int>*> previous_level_indices_;
-
-	/**
-	 * stack for current level temporary storage
-	 */
-	std::stack<unsigned int, std::vector<unsigned int>> levels_stack_ ;
-
-	/**
-	 * current level in multiresolution map
-	 */
-	unsigned int current_level_;
-
-	//TODO le niveau courant doit etre par thread 
-	//appele sur la carte et non plus un champs de
-	//la classe carte
-
-
-
-	inline void add_level_back()
-	{
-		//ajouter une carte par copie dans maps_
-		//ajouter un chunkarray dans next_
-		CMap2* last = maps_.back();
-		maps_.emplace_back(last);
-	}
-
-	inline void remove_level_back()
-	{
-		maps_.pop_back();
-	}
-
-	inline void add_level_front()
-	{
-		CMap2* first = maps_.front();
-		maps.emplace_front(first);
-	}
-
-	inline void remove_level_front()
-	{
-		maps_.pop_front();
-	}
 
 public:
 
@@ -115,60 +60,7 @@ public:
 	Self& operator=(Self &&) = delete;
 
 
-	//1 thread par niveau = 1 thread par carte
-	//n thread par niveau = n thread par carte
-
-	inline unsigned int get_maximum_level() const
-	{
-		return static_cast<unsigned int>(maps_.size());
-	}
-
-	inline unsigned int get_current_level() const
-	{
-		return current_level_;
-	}
-
-	inline void set_current_level(unsigned int l)
-	{
-		current_level_ = l;
-	}
-
-	inline void inc_current_level()
-	{
-		cgogn_debug_assert(get_current_level() < maps_.size() - 1, "incCurrentLevel : already at maximum resolution level");
-		++current_level_;
-	}
-
-	inline void dec_current_level()
-	{
-		cgogn_debug_assert(get_current_level() > 0, "decCurrentLevel : already at minimum resolution level");
-		--current_level_;
-	}
-
-	/**
-	 * store current resolution level on a stack
-	 */
-	inline void push_level()
-	{
-		levels_stack_.push_back(get_current_level()) ;
-	}
-
-	/**
-	 * set as current the resolution level of the top of the stack
-	 */
-	inline void pop_level()
-	{
-		set_current_level(levels_stack_.back()) ;
-		levels_stack_.pop_back() ;
-	}
-
-	inline const CMap2* current() const
-	{
-		return maps_[get_current_level()];
-	}
-
 protected:
-
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
@@ -176,21 +68,22 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_vertex(Dart d, const FUNC& f) const
 	{
-		current()->foreach_dart_of_vertex(d, f);
+		mrmap2.current()->foreach_dart_of_vertex(d, f);
 	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_face(Dart d, const FUNC& f) const
 	{
-		current()->foreach_dart_of_face(d, f);
+		mrmap2.current()->foreach_dart_of_face(d, f);
 	}
 
 	template <typename FUNC>
 	void foreach_dart_of_volume(Dart d, const FUNC& f) const
 	{
-		current()->foreach_dart_of_volume(d, f);
+		mrmap2.current()->foreach_dart_of_volume(d, f);
 	}
 
+public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -211,4 +104,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_MRCMAP_MRCMAP2_H_
+#endif // MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
