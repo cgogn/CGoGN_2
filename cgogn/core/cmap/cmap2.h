@@ -289,7 +289,7 @@ public:
 		if (this->template is_orbit_embedded<EDGE>())
 		{
 			this->template set_embedding<EDGE>(ne, this->template get_embedding<EDGE>(d.dart));
-			this->template set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
+			this->template set_orbit_embedding<EDGE>(nd, this->template add_attribute_element<EDGE>());
 		}
 
 		if (this->template is_orbit_embedded<FACE>())
@@ -461,23 +461,12 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-//		static_assert(check_func_parameter_type(FUNC, Dart),
-//					  "Wrong function parameter type");
-
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap1");
-//		static_assert(ORBIT == DART || ORBIT == VERTEX || ORBIT == EDGE ||
-//					  ORBIT == FACE || ORBIT == VOLUME,
-//					  "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
-//			case DART: this->foreach_dart_of_DART(c, f); break;
-//			case VERTEX: foreach_dart_of_PHI21(c, f); break;
-//			case EDGE: foreach_dart_of_PHI2(c, f); break;
-//			case FACE: this->foreach_dart_of_PHI1(c, f); break;
-//			case VOLUME: foreach_dart_of_PHI1_PHI2(c, f); break;
 			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
@@ -547,25 +536,15 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		//		static_assert(check_func_parameter_type(FUNC, Dart),
-		//					  "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap1");
-//		static_assert(ORBIT == DART || ORBIT == VERTEX || ORBIT == EDGE ||
-//					  ORBIT == FACE || ORBIT == VOLUME,
-//					  "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
-//			case DART: this->foreach_dart_of_DART(c, f); break;
-//			case VERTEX: foreach_dart_of_PHI21_until(c, f); break;
-//			case EDGE: foreach_dart_of_PHI2_until(c, f); break;
-//			case FACE: this->foreach_dart_of_PHI1_until(c, f); break;
-//			case VOLUME: foreach_dart_of_PHI1_PHI2_until(c, f); break;
 			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c, f); break;
@@ -581,7 +560,7 @@ protected:
 public:
 
 	/*******************************************************************************
-	 * Incidence traversal
+	 * Incidence traversalset_embeddind
 	 *******************************************************************************/
 
 	template <typename FUNC>

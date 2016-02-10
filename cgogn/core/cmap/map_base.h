@@ -340,7 +340,9 @@ protected:
 	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		ConcreteMap* cmap = to_concrete();
-		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) { cmap->template set_embedding<ORBIT>(d, emb); });
+		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
+			cmap->template set_embedding<ORBIT>(d, emb);
+		});
 	}
 
 public:
