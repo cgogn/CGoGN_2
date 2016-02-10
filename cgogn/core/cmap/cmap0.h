@@ -81,21 +81,19 @@ public:
 protected:
 	inline Dart add_dart()
 	{
-		cgogn_assert(typeid(*this).hash_code() == typeid(Self).hash_code());
-		unsigned int di = this->add_topology_element();
-		return Dart(di);
+		CGOGN_CHECK_CONCRETE_TYPE;
+		return Dart(this->add_topology_element());
 	}
 
 public:
 	Vertex add_vertex()
 	{
-		Dart d = this->to_concrete()->add_dart();
+		const Dart d = this->to_concrete()->add_dart();
 
-		if (this->template is_orbit_embedded<Orbit::DART>()) {
-			unsigned int idx = this->template add_attribute_element<Orbit::DART>();
-			this->template set_embedding<Orbit::DART>(d, idx);
+		if (this->template is_orbit_embedded<DART>()) {
+			unsigned int idx = this->template add_attribute_element<DART>();
+			this->template set_embedding<DART>(d, idx);
 		}
-
 		return Vertex(d);
 	}
 

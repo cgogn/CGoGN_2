@@ -303,8 +303,9 @@ public:
 
 		if (this->template is_orbit_embedded<VOLUME>())
 		{
-			this->template set_embedding<VOLUME>(nd, this->template get_embedding<VOLUME>(d.dart));
-			this->template set_embedding<VOLUME>(ne, this->template get_embedding<VOLUME>(e));
+			const unsigned int idx = this->template get_embedding<VOLUME>(d.dart);
+			this->template set_embedding<VOLUME>(nd, idx);
+			this->template set_embedding<VOLUME>(ne, idx);
 		}
 
 		return v;
@@ -341,8 +342,9 @@ public:
 
 		if (this->template is_orbit_embedded<VOLUME>())
 		{
-			this->template set_orbit_embedding<VOLUME>(nd, this->template get_embedding<VOLUME>(d));
-			this->template set_orbit_embedding<VOLUME>(ne, this->template get_embedding<VOLUME>(d));
+			const unsigned int idx = this->template get_embedding<VOLUME>(d);
+			this->template set_orbit_embedding<VOLUME>(nd, idx);
+			this->template set_orbit_embedding<VOLUME>(ne, idx);
 		}
 	}
 
