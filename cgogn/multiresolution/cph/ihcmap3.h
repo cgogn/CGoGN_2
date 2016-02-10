@@ -33,7 +33,7 @@ namespace cgogn
 
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap3_T :virtual public CMap3_T<DATA_TRAITS, MAP_TYPE>, virtual public CPH3<DATA_TRAITS>
+class IHCMap3_T :public CMap3_T<DATA_TRAITS, MAP_TYPE>, public CPH3<DATA_TRAITS> // Can't use virtual inheritance because of the use of the CRTP
 {
 public:
 
