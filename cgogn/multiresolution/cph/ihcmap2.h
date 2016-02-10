@@ -54,7 +54,7 @@ public:
 };
 
 template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : virtual public CMap2_T<DATA_TRAITS, MAP_TYPE>, virtual public CPH2<DATA_TRAITS>
+class IHCMap2_T : public CMap2_T<DATA_TRAITS, MAP_TYPE>, public CPH2<DATA_TRAITS> // Can't use virtual inheritance because of the use of the CRTP
 {
 public:
 
