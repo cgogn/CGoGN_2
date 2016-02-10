@@ -307,22 +307,18 @@ public:
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart d = add_face_topo(nb_edges);
-		Face f(d);
+		const Face f(this->add_face_topo(nb_edges));
 
 		if (this->template is_orbit_embedded<DART>())
 		{
-			foreach_dart_of_orbit<FACE>(d, [this] (Dart e)
+			foreach_dart_of_orbit(f, [this](Dart d)
 			{
-				unsigned int idx = this->template add_attribute_element<DART>();
-				this->template set_embedding<DART>(e, idx);
+				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<FACE>()) {
-			unsigned int idx = this->template add_attribute_element<FACE>();
-			this->template set_orbit_embedding(f, idx);
-		}
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
 
 		return f;
 	}

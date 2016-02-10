@@ -266,7 +266,7 @@ public:
 			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
 
 		if (this->template is_orbit_embedded<VOLUME>())
-			this->template set_orbit_embedding(Volume(d), this->template add_attribute_element<VOLUME>());
+			this->set_orbit_embedding(Volume(d), this->template add_attribute_element<VOLUME>());
 
 		return f;
 	}
@@ -286,13 +286,13 @@ public:
 
 		if (this->template is_orbit_embedded<VERTEX>())
 		{
-			this->template set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
+			this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
 		}
 
 		if (this->template is_orbit_embedded<EDGE>())
 		{
 			this->template set_embedding<EDGE>(ne, this->template get_embedding<EDGE>(d.dart));
-			this->template set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
+			this->set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
 		}
 
 		if (this->template is_orbit_embedded<FACE>())
