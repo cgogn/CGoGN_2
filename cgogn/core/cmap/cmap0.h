@@ -45,9 +45,16 @@ public:
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
+	static const Orbit EDGE   = Orbit::DART;
+	static const Orbit FACE   = Orbit::DART;
+	static const Orbit VOLUME = Orbit::DART;
 
 	typedef Cell<Self::VERTEX> Vertex;
+	typedef Cell<Self::EDGE> Edge;
+	typedef Cell<Self::FACE> Face;
+	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -91,9 +98,9 @@ public:
 	{
 		Dart d = this->to_concrete()->add_dart();
 
-		if (this->template is_orbit_embedded<Orbit::DART>()) {
-			unsigned int idx = this->template add_attribute_element<Orbit::DART>();
-			this->template set_embedding<Orbit::DART>(d, idx);
+		if (this->template is_orbit_embedded<DART>()) {
+			unsigned int idx = this->template add_attribute_element<DART>();
+			this->template set_embedding<DART>(d, idx);
 		}
 
 		return Vertex(d);
@@ -108,6 +115,11 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
+
+		static_assert(ORBIT == Orbit::DART,
+					  "Orbit not supported in a CMap1");
 		switch(ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
@@ -118,7 +130,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
 };
