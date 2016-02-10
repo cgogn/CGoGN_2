@@ -410,7 +410,7 @@ protected:
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
-					  "Orbit not supported in a CMap1");
+					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
 		{
@@ -489,15 +489,13 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
-					  "Orbit not supported in a CMap1");
+					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
 		{
