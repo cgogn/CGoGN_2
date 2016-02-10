@@ -95,13 +95,12 @@ protected:
 public:
 	Vertex add_vertex()
 	{
-		const Dart d = this->to_concrete()->add_dart();
+		const Vertex v(this->to_concrete()->add_dart());
 
-		if (this->template is_orbit_embedded<DART>()) {
-			unsigned int idx = this->template add_attribute_element<DART>();
-			this->template set_embedding<DART>(d, idx);
-		}
-		return Vertex(d);
+		if (this->template is_orbit_embedded<DART>())
+			this->template set_embedding<DART>(v.dart, this->template add_attribute_element<DART>());
+
+		return v;
 	}
 
 protected:
