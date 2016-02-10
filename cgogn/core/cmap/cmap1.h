@@ -46,6 +46,7 @@ public:
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -309,17 +310,17 @@ public:
 		Dart d = add_face_topo(nb_edges);
 		Face f(d);
 
-		if (this->template is_orbit_embedded<Orbit::DART>())
+		if (this->template is_orbit_embedded<DART>())
 		{
-			foreach_dart_of_PHI1(d, [this] (Dart e)
+			foreach_dart_of_orbit<FACE>(d, [this] (Dart e)
 			{
-				unsigned int idx = this->template add_attribute_element<Orbit::DART>();
-				this->template set_embedding<Orbit::DART>(e, idx);
+				unsigned int idx = this->template add_attribute_element<DART>();
+				this->template set_embedding<DART>(e, idx);
 			});
 		}
 
-		if (this->template is_orbit_embedded<Orbit::PHI1>()) {
-			unsigned int idx = this->template add_attribute_element<Orbit::PHI1>();
+		if (this->template is_orbit_embedded<FACE>()) {
+			unsigned int idx = this->template add_attribute_element<FACE>();
 			this->template set_orbit_embedding(f, idx);
 		}
 
