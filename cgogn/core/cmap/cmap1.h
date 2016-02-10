@@ -46,6 +46,7 @@ public:
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -311,7 +312,7 @@ public:
 
 		if (this->template is_orbit_embedded<DART>())
 		{
-			foreach_dart_of_PHI1(d, [this] (Dart e)
+			foreach_dart_of_orbit<FACE>(d, [this] (Dart e)
 			{
 				unsigned int idx = this->template add_attribute_element<DART>();
 				this->template set_embedding<DART>(e, idx);
@@ -370,7 +371,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
 
@@ -389,9 +390,11 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_return_type(FUNC, bool),
+					  "Wrong function return type");
+
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
 		switch (ORBIT)
 		{
@@ -403,7 +406,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
+			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
 

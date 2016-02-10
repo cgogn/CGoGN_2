@@ -73,10 +73,10 @@ public:
 	static const Orbit FACE   = Inherit_CMAP::FACE;
 	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
-	typedef Inherit_CMAP::Vertex Vertex;
-	typedef Inherit_CMAP::Edge Edge;
-	typedef Inherit_CMAP::Face Face;
-	typedef Inherit_CMAP::Volume Volume;
+	using Vertex = typename Inherit_CMAP::Vertex;
+	using Edge = typename Inherit_CMAP::Edge;
+	using Face = typename Inherit_CMAP::Face;
+	using Volume = typename Inherit_CMAP::Volume;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;

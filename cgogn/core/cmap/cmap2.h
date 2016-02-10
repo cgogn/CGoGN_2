@@ -242,7 +242,7 @@ public:
 		{
 			this->foreach_dart_of_orbit(f, [this] (Dart df)
 			{
-				this->template set_embedding<DART>(df, this->template add_attribute_element<DART>());
+				this->template set_orbit_embedding<DART>(df, this->template add_attribute_element<DART>());
 			});
 		}
 
