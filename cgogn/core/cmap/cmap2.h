@@ -49,7 +49,10 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend class CMap2Builder_T<MapTraits>;
-	friend class DartMarker_T<Self>;
+	template<typename T>
+	friend class DartMarker_T;
+	template<typename T>
+	friend class DartMarkerStore;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
@@ -617,7 +620,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<VERTEX>(d);
+				marker.template mark_orbit<VERTEX>(d);
 				f(d);
 			}
 		});
@@ -632,7 +635,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<EDGE>(d);
+				marker.template mark_orbit<EDGE>(d);
 				f(d);
 			}
 		});
@@ -647,7 +650,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<FACE>(d);
+				marker.template mark_orbit<FACE>(d);
 				f(d);
 			}
 		});

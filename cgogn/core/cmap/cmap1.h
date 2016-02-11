@@ -44,7 +44,10 @@ public:
 	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
-	friend class DartMarker_T<Self>;
+	template<typename T>
+	friend class DartMarker_T;
+	template<typename T>
+	friend class DartMarkerStore;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
