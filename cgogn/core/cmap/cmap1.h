@@ -174,9 +174,8 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
 		(*phi1_)[di] = d;
@@ -199,7 +198,7 @@ protected:
 	{
 		cgogn_message_assert(nb_edges > 0u, "Cannot create a face with no edge");
 
-		Dart d = this->to_concrete()->add_dart();
+		Dart d = this->add_dart();
 		for (unsigned int i = 1u; i < nb_edges; ++i)
 			cut_edge_topo(d);
 
@@ -226,8 +225,8 @@ protected:
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->to_concrete()->add_dart();	// Create a new dart e
-		phi1_sew(d, e);								// Insert e between d and phi1(d)
+		Dart e = this->add_dart();		// Create a new dart e
+		phi1_sew(d, e);					// Insert e between d and phi1(d)
 		return e;
 	}
 

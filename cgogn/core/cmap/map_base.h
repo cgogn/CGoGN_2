@@ -136,6 +136,11 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
+	inline Dart add_dart()
+	{
+		return this->to_concrete()->add_dart_internal();
+	}
+
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/

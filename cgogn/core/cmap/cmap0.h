@@ -86,7 +86,7 @@ public:
 	Self& operator=(Self &&) = delete;
 
 protected:
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 		return Dart(this->add_topology_element());

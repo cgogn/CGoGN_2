@@ -162,10 +162,9 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-		Dart d = Inherit::add_dart();
+		Dart d = Inherit::add_dart_internal();
 		(*phi2_)[d.index] = d;
 		return d;
 	}
@@ -389,7 +388,7 @@ protected:
 	{
 		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
-		Dart first = add_dart(); // First edge of the face that will fill the hole
+		Dart first = this->add_dart(); // First edge of the face that will fill the hole
 		phi2_sew(d, first);      // phi2-link the new edge to the hole
 
 		Dart d_next = d; // Turn around the hole
@@ -404,7 +403,7 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart next = add_dart(); // Add a new edge there and link it to the face
+				Dart next = this->add_dart(); // Add a new edge there and link it to the face
 				this->phi1_sew(first, next); // the edge is linked to the face
 				phi2_sew(d_next, next);      // the face is linked to the hole
 			}
