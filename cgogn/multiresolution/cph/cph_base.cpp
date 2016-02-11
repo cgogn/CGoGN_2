@@ -20,10 +20,14 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define MULTIRESOLUTION_CPH_CPH_BASE_CPP_
+#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
+
+#include <multiresolution/cph/cph_base.h>
 
 namespace cgogn
 {
 
-	
+template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
 
 } // namespace cgogn

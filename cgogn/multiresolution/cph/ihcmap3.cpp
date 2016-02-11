@@ -21,80 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH3_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH3_BASE_H_
+#define CGOGN_CORE_DLL_EXPORT
+#define MULTIRESOLUTION_CPH_IHCMAP3_CPP_
 
-#include <multiresolution/cph/cph2.h>
+#include <multiresolution/cph/ihcmap3.h>
 
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH3 : public CPH2<DATA_TRAITS>
-{
-
-public:
-	using Self =  CPH3<DATA_TRAITS>;
-	using Inherit = CPH2<DATA_TRAITS>;
-	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
-
-protected:
-	ChunkArray<unsigned int>* face_id_;
-
-public:
-	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
-	{
-		init();
-	}
-
-	~CPH3() override
-	{
-		this->topo_.remove_attribute(face_id_);
-	}
-
-	CPH3(Self const&) = delete;
-	CPH3(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
-protected:
-	void init()
-	{
-		face_id_ = this->topo_.template add_attribute<unsigned int>("faceId");
-	}
-
-public:
-	/***************************************************
-	 *             FACE ID MANAGEMENT                  *
-	 ***************************************************/
-	inline unsigned int get_face_id(Dart d) const
-	{
-		return (*face_id_)[d.index] ;
-	}
-
-	inline void set_face_id(Dart d, unsigned int i)
-	{
-		(*face_id_)[d.index] = i ;
-	}
-
-	inline unsigned int get_tri_refinement_face_id(Dart d, Dart e) const
-	{
-
-	}
-
-	inline unsigned int get_quad_refinement_face_id(Dart d) const
-	{
-
-	}
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH3_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH3<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH3_CPP_))
+template class CGOGN_MULTIRESOLUTION_API IHCMap3_T<DefaultMapTraits, IHCMap3Type<DefaultMapTraits>>;
 
 } // namespace cgogn
-
-#endif // MULTIRESOLUTION_CPH_CPH3_BASE_H_

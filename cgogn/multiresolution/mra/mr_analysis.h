@@ -34,15 +34,15 @@ public:
 
 
 protected:
-    MRMAP& map_;
+	MRMAP& map_;
 
-    std::vector<std::function<void()>> synthesis_filters_;
-    std::vector<std::function<void()>> analysis_filters_;
+	std::vector<std::function<void()>> synthesis_filters_;
+	std::vector<std::function<void()>> analysis_filters_;
 
 public:
-    MRAnalysis(MRMAP& map):
-        map_(map)
-    {}
+	MRAnalysis(MRMAP& map):
+		map_(map)
+	{}
 
 	MRAnalysis(Self const& ) = delete;
 	MRAnalysis(Self&& ) = delete;
@@ -52,25 +52,25 @@ public:
 	virtual ~MRAnalysis()
 	{}
 
-    void analysis()
-    {
-        cgogn_message_assert(map_.get_current_level() > 0, "analysis : called on level 0") ;
+	void analysis()
+	{
+		cgogn_message_assert(map_.get_current_level() > 0, "analysis : called on level 0") ;
 
-        map_.dec_current_level() ;
+		map_.dec_current_level() ;
 
-        for(unsigned int i = 0; i < analysis_filters_.size(); ++i)
-            analysis_filters_[i]();
-    }
+		for(unsigned int i = 0; i < analysis_filters_.size(); ++i)
+			analysis_filters_[i]();
+	}
 
-    void synthesis()
-    {
-        cgogn_message_assert(map_.get_current_level() < map_.get_maximum_level(), "synthesis : called on max level") ;
+	void synthesis()
+	{
+		cgogn_message_assert(map_.get_current_level() < map_.get_maximum_level(), "synthesis : called on max level") ;
 
-        for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
-            synthesis_filters_[i]();
+		for(unsigned int i = 0; i < synthesis_filters_.size(); ++i)
+			synthesis_filters_[i]();
 
-        map_.inc_current_level();
-    }
+		map_.inc_current_level();
+	}
 
 	virtual void add_level() = 0;
 };

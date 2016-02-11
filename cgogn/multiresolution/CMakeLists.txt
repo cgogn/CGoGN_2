@@ -3,26 +3,33 @@ project(cgogn_multiresolution
 )
 
 set(HEADER_FILES
-        dll.h
+	dll.h
 
-        cph/attribute_handler_cph.h
-        cph/cph_base.h
-        cph/cph2.h
-        cph/cph3.h
-        cph/ihcmap2.h
-        cph/ihcmap2_adaptive.h
-        cph/ihcmap2_regular.h
-        cph/ihcmap3.h
+	cph/attribute_handler_cph.h
+	cph/cph_base.h
+	cph/cph2.h
+	cph/cph3.h
+	cph/ihcmap2.h
+	cph/ihcmap2_adaptive.h
+	cph/ihcmap2_regular.h
+	cph/ihcmap3.h
 
-        mrcmap/mr_base.h
+	mrcmap/mr_base.h
 	mrcmap/mrcmap2.h
 
-        mra/mr_analysis.h
-        mra/lerp_triquad_mra.h
+	mra/mr_analysis.h
+	mra/lerp_triquad_mra.h
 )
 
 set(SOURCE_FILES
-	cph/ihcmap_base.cpp
+	cph/cph_base.cpp
+	cph/cph2.cpp
+	cph/cph3.cpp
+
+	cph/ihcmap2.cpp
+	cph/ihcmap2_adaptive.cpp
+	cph/ihcmap2_regular.cpp
+	cph/ihcmap3.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
