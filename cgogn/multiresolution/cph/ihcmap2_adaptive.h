@@ -29,22 +29,27 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class IHCMap2Adaptive : IHCMap2<MAP_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class IHCMap2Adaptive_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-	typedef IHCMap2<MAP_TRAITS> Inherit;
-	typedef IHCMap2Adaptive<MAP_TRAITS> Self;
+	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE>;
+	friend class Inherit::Inherit_CMAP;
 
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using Face = typename Inherit::Face;
+	using Volume = typename Inherit::Volume;
 
-	IHCMap2Adaptive() : Inherit()
+	IHCMap2Adaptive_T() : Inherit()
 	{}
 
-	~IHCMap2Adaptive() override
+	~IHCMap2Adaptive_T() override
 	{}
 
-	IHCMap2Adaptive(const Self&) = delete;
-	IHCMap2Adaptive(Self&&) = delete;
+	IHCMap2Adaptive_T(const Self&) = delete;
+	IHCMap2Adaptive_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
 
@@ -449,7 +454,7 @@ public:
 			this->split_face_topo(dd,next);// previously : Inherit::split_face(dd, next); TODO : write split_face for ihcmap2 // insert a first edge
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd));
 			Dart ne2 = Inherit::phi2(ne);
-			this->cut_edge_topo(ne);// previously : Inherit::cut_edge(ne); TODO : write cut_edge for ihcmap2// cut the new edge to insert the central vertex
+			this->cut_edge(ne);// previously : Inherit::cut_edge(ne); TODO : write cut_edge for ihcmap2// cut the new edge to insert the central vertex
 
 			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id);
@@ -536,8 +541,17 @@ public:
 	}
 };
 
+template <typename MAP_TRAITS>
+struct IHCMap2AdaptiveType
+{
+	typedef IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>> TYPE;
+};
+
+template <typename MAP_TRAITS>
+using IHCMap2Adaptive = IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>>;
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Adaptive<DefaultMapTraits>;
+extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Adaptive_T<DefaultMapTraits, IHCMap2AdaptiveType<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
 
 
