@@ -41,12 +41,10 @@ template <Orbit ORBIT, typename MAP>
 bool is_well_embedded(const MAP& map)
 {
 	bool result = true;
-	CompleteCMapObserver obs;
-	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>([&] (Cell<ORBIT> c)
-	{
-		result = map.template is_well_embedded<ORBIT>(c);
-	},
-	obs);
+	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>(
+		[&] (Cell<ORBIT> c) { result = map.template is_well_embedded<ORBIT>(c); },
+		[] (Dart) { return true; }
+	);
 	return result;
 }
 
@@ -105,8 +103,10 @@ bool is_container_well_referenced(MAP& map)
 		counter[i] = 0;
 
 	// for each dart of the map, the counter corresponding to its embedding index is incremented
-	CompleteCMapObserver obs;
-	map.foreach_dart([&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; }, obs);
+	map.foreach_dart(
+		[&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; },
+		[] (Dart) { return true; }
+	);
 
 	bool result = true;
 	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))

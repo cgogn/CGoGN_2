@@ -38,8 +38,7 @@
 #include <core/container/chunk_array_container.h>
 #include <core/basic/cell.h>
 #include <core/cmap/map_traits.h>
-#include <core/cmap/cmap_observer.h>
-
+#include <core/cmap/cmap_mask.h>
 
 #define CGOGN_CHECK_CONCRETE_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
