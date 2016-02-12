@@ -141,6 +141,11 @@ protected:
 		return this->to_concrete()->add_dart_internal();
 	}
 
+	inline void delete_dart(Dart d)
+	{
+		this->remove_topology_element(d.index);
+	}
+
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/

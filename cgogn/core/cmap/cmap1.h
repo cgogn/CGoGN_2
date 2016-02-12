@@ -183,11 +183,6 @@ protected:
 		return d;
 	}
 
-	inline void delete_dart(Dart d)
-	{
-		this->remove_topology_element(d.index);
-	}
-
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
