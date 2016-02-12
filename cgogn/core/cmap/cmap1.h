@@ -89,19 +89,40 @@ protected:
 		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
 	}
 
+public:
+
+	CMap1_T() : Inherit()
+	{
+		init();
+	}
+
+	~CMap1_T() override
+	{}
+
+	CMap1_T(Self const&) = delete;
+	CMap1_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
 
-	/**
-	 * \brief Link the current dart to dart d with a permutation
-	 * @param d the dart to which the current is linked
+protected:
+
+	/*!
+	 * \brief Link two darts with the phi1 permutation what either merge or split their orbit(s).
+	 * @param d: the first dart
+	 * @param e: the second dart
 	 * - Before: d->f and e->g
 	 * - After:  d->g and e->f
-	 * Join the permutations cycles of dart d and e
+	 * Join the orbits of dart d and e if they are distinct
 	 * - Starting from two cycles : d->f->...->d and e->g->...->e
 	 * - It makes one cycle d->g->...->e->f->...->d
 	 * If e = g then insert e in the cycle of d : d->e->f->...->d
+	 * If d and e are in the same orbit of phi1, this orbit is split in two cycles.
+	 * - Starting with d->g->...e->f->...->d
+	 * - It makes two cycles : d->f->...->d and e->g->...->e
 	 */
 	void phi1_sew(Dart d, Dart e)
 	{
@@ -113,8 +134,8 @@ protected:
 		(*phi_1_)[f.index] = e;
 	}
 
-	/**
-	 * \brief Unlink the successor of a given dart in a permutation
+	/*!
+	 * \brief Remove the successor of a given dart from its permutation
 	 * @param d a dart
 	 * - Before: d->e->f
 	 * - After:  d->f and e->e
@@ -129,26 +150,13 @@ protected:
 		(*phi_1_)[e.index] = e;
 	}
 
-public:
-
-	CMap1_T() : Inherit()
-	{
-		init();
-	}
-
-	virtual ~CMap1_T() override
-	{}
-
-	CMap1_T(Self const&) = delete;
-	CMap1_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
 
-	/**
+public:
+
+	/*!
 	 * \brief phi1
 	 * @param d
 	 * @return phi1(d)
@@ -158,7 +166,7 @@ public:
 		return (*phi1_)[d.index];
 	}
 
-	/**
+	/*!
 	 * \brief phi_1
 	 * @param d
 	 * @return phi_1(d)
@@ -170,7 +178,7 @@ public:
 
 protected:
 
-	/**
+	/*!
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
@@ -206,11 +214,11 @@ protected:
 		while(e != d)
 		{
 			Dart f = phi1(e);
-			this->delete_dart(e);
+			this->remove_dart(e);
 			e = f;
 		}
 
-		this->delete_dart(d);
+		this->remove_dart(d);
 	}
 
 	/**
@@ -225,43 +233,22 @@ protected:
 		return e;
 	}
 
-	inline void uncut_edge_topo(Dart d)
-	{
-		Dart d1 = phi1(d);
-		// Dart d is linked to the successor of its successor
-		phi1_unsew(d);
-		// Dart d1 is erased
-		this->delete_dart(d1);
-	}
-
-	inline void collapse_edge_topo(Dart d)
-	{
-		// Dart before d is linked to its successor
-		phi1_unsew(phi_1(d));
-		// Dart d is erased
-		this->delete_dart(d);
-	}
-
 	inline void split_face_topo(Dart d, Dart e)
 	{
 		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
 		phi1_sew(phi_1(d), phi_1(e));
 	}
-
-	inline void merge_faces_topo(Dart d, Dart e)
+	/**
+	 * \brief remove edge d from its face and delete it
+	 * @param d : the edge to collapse
+	 * the edge preceeding d in the face is linked to the successor of d
+	 */
+	inline void collapse_edge_topo(Dart d)
 	{
-		cgogn_assert(!this->same_cell(Face(d), Face(e)));
-		phi1_sew(phi_1(d), phi_1(e));
-	}
-
-	inline void link_faces_topo(Dart d, Dart e)
-	{
-		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
-
-		Dart nd = cut_edge_topo(phi_1(d));	// cut the edge before d (insert a new dart before d)
-		Dart ne = cut_edge_topo(phi_1(e));	// cut the edge before e (insert a new dart before e)
-
-		phi1_sew(nd, ne);					// subdivide phi1 cycle at the inserted darts
+		Dart e = phi_1(d);
+		cgogn_message_assert(e != d,"phi1_unsew: Cannot collapse fixed point");
+		phi1_unsew(e);
+		this->remove_dart(d);
 	}
 
 	inline void reverse_face_topo(Dart d)
@@ -292,6 +279,10 @@ protected:
 		// Sew the last edge
 		phi1_sew(e, d);
 	}
+
+	/*******************************************************************************
+	 * High-level embedded operations
+	 *******************************************************************************/
 
 public:
 
@@ -417,14 +408,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}
 
 	/*******************************************************************************

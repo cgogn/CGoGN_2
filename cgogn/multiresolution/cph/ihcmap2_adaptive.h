@@ -223,12 +223,12 @@ public:
 			Dart d2 = Inherit::phi2(d) ;
 			unsigned int cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
-//			if(Inherit::vertexDegree(Inherit::phi1(d)) == 2)
-//			{
-//				degree2 = true ;
-//				if(edge_is_subdivided(d) || edge_is_subdivided(d2))
-//					subdOnce = false ;
-//			}
+			if(this->degree(typename Inherit::Vertex(Inherit::phi1(d))) == 2)
+			{
+				degree2 = true ;
+				if(edge_is_subdivided(d) || edge_is_subdivided(d2))
+					subdOnce = false ;
+			}
 			Inherit::set_current_level(cur);
 
 		}
@@ -388,7 +388,7 @@ protected:
 		//	unsigned int dl = Inherit::get_dart_level(e);
 		//	Inherit::set_dart_level(Inherit::phi1(e), dl);
 		//	Inherit::collapseEdge(e);
-//		Inherit::uncut_edge(d);
+		this->uncut_edge(d);
 		Inherit::set_current_level(cur);
 	}
 
@@ -531,7 +531,7 @@ public:
 				Inherit::set_current_level(cur + 1);
 				Dart innerEdge = Inherit::phi1(fit);
 				Inherit::set_current_level(Inherit::get_maximum_level());
-//				Inherit::merge_faces(innerEdge);
+				this->merge_faces(innerEdge);
 				Inherit::set_current_level(cur);
 				fit = this->phi1(fit);
 			} while(fit != d);
@@ -541,7 +541,7 @@ public:
 			Inherit::set_current_level(cur + 1);
 			Dart centralV = Inherit::phi1(Inherit::phi1(d));
 			Inherit::set_current_level(Inherit::get_maximum_level());
-//			Inherit::delete_vertex(centralV);
+			this->delete_vertex(centralV);
 			Inherit::set_current_level(cur);
 		}
 

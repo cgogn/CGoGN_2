@@ -96,37 +96,6 @@ protected:
 		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
 	}
 
-	/*******************************************************************************
-	 * Low-level topological operations
-	 *******************************************************************************/
-
-	/**
-	 * \brief Link dart d with dart e by an involution
-	 * @param d,e the darts to link
-	 *	- Before: d->d and e->e
-	 *	- After:  d->e and e->d
-	 */
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		cgogn_assert(phi2(d) == d);
-		cgogn_assert(phi2(e) == e);
-		(*phi2_)[d.index] = e;
-		(*phi2_)[e.index] = d;
-	}
-
-	/**
-	 * \brief Unlink the current dart by an involution
-	 * @param d the dart to unlink
-	 * - Before: d->e and e->d
-	 * - After:  d->d and e->e
-	 */
-	inline void phi2_unsew(Dart d)
-	{
-		Dart e = phi2(d);
-		(*phi2_)[d.index] = d;
-		(*phi2_)[e.index] = e;
-	}
-
 public:
 
 	CMap2_T() : Inherit()
@@ -143,8 +112,41 @@ public:
 	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
+	/**
+	 * \brief Link dart d with dart e by the phi2 involution
+	 * @param d,e the darts to link
+	 *	- Before: d->d and e->e
+	 *	- After:  d->e and e->d
+	 */
+	inline void phi2_sew(Dart d, Dart e)
+	{
+		cgogn_assert(phi2(d) == d);
+		cgogn_assert(phi2(e) == e);
+		(*phi2_)[d.index] = e;
+		(*phi2_)[e.index] = d;
+	}
+
+	/**
+	 * \brief Remove the phi2 link of the current dart and its linked dart
+	 * @param d the dart to unlink
+	 * - Before: d->e and e->d
+	 * - After:  d->d and e->e
+	 */
+	inline void phi2_unsew(Dart d)
+	{
+		Dart e = phi2(d);
+		(*phi2_)[d.index] = d;
+		(*phi2_)[e.index] = e;
+	}
+
+	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
+
+public:
 
 	/**
 	 * \brief phi2
@@ -220,11 +222,12 @@ protected:
 		}
 	}
 
-public:
 
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
+
+public:
 
 	Face add_face(unsigned int nb_edges)
 	{
@@ -252,6 +255,13 @@ public:
 		return this->to_concrete()->cut_edge_update_emb(e.dart, e2, nd);
 	}
 
+	/**
+	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
+	 * @param d : first vertex
+	 * @param e : second vertex
+	 * Darts d and e should belong to the same face and be distinct from each other.
+	 * An edge made of two new darts is inserted between the two given vertices.
+	 */
 	inline void split_face(Dart d, Dart e)
 	{
 		split_face_topo(d,e);
