@@ -311,11 +311,24 @@ public:
 		return v;
 	}
 
+	/**
+	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
+	 * @param d : first vertex
+	 * @param e : second vertex
+	 * Darts d and e should belong to the same face and be distinct from each other.
+	 * An edge made of two new darts is inserted between the two given vertices.
+	 */
 	inline void split_face(Dart d, Dart e)
 	{
-		split_face_topo(d,e);
-		const Dart nd = this->phi_1(e);
-		const Dart ne = this->phi_1(d);
+		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
+
+		Dart dd = this->phi_1(d);
+		Dart ee = this->phi_1(e);
+		Dart nd = Inherit::cut_edge_topo(dd);	// cut the edge before d (insert a new dart before d)
+		Dart ne = Inherit::cut_edge_topo(ee);	// cut the edge before e (insert a new dart before e)
+		this->phi1_sew(dd, ee);					// subdivide phi1 cycle at the inserted darts
+		phi2_sew(nd, ne);						// build the new 2D-edge from the inserted darts
 
 		if(this->template is_orbit_embedded<DART>())
 		{
@@ -325,8 +338,8 @@ public:
 
 		if (this->template is_orbit_embedded<VERTEX>())
 		{
-			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(d));
-			this->template set_embedding<VERTEX>(ne, this->template get_embedding<VERTEX>(e));
+			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(e));
+			this->template set_embedding<VERTEX>(ne, this->template get_embedding<VERTEX>(d));
 		}
 
 		if (this->template is_orbit_embedded<EDGE>())
@@ -353,6 +366,11 @@ public:
 		return Inherit::degree(f);
 	}
 
+	inline unsigned int degree(Vertex v) const
+	{
+		return this->nb_darts(v);
+	}
+
 protected:
 
 	inline Dart cut_edge_topo(Dart d)
@@ -368,18 +386,6 @@ protected:
 		phi2_sew(e, nd);						// To build the new 2D-edges
 
 		return nd;
-	}
-
-	inline void split_face_topo(Dart d, Dart e)
-	{
-		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
-		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
-
-		Dart nd = Inherit::cut_edge_topo(this->phi_1(d));	// cut the edge before d (insert a new dart before d)
-		Dart ne = Inherit::cut_edge_topo(this->phi_1(e));	// cut the edge before e (insert a new dart before e)
-
-		Inherit::split_face_topo(nd, ne);					// subdivide phi1 cycle at the inserted darts
-		phi2_sew(nd, ne);									// build the new 2D-edge from the inserted darts
 	}
 
 	inline void close_hole_topo(Dart d)

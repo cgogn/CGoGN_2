@@ -217,7 +217,7 @@ public:
 			Dart d2 = Inherit::phi2(d) ;
 			unsigned int cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
-			if(Inherit::vertexDegree(Inherit::phi1(d)) == 2)
+			if(Inherit::degree(typename Inherit::Vertex(Inherit::phi1(d))) == 2)
 			{
 				degree2 = true ;
 				if(edge_is_subdivided(d) || edge_is_subdivided(d2))

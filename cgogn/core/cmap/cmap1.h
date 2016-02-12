@@ -46,7 +46,6 @@ public:
 	friend typename Self::Inherit;
 	friend class DartMarker_T<Self>;
 
-	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -86,9 +85,26 @@ protected:
 		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
 	}
 
+public:
+
+	CMap1_T() : Inherit()
+	{
+		init();
+	}
+
+	virtual ~CMap1_T() override
+	{}
+
+	CMap1_T(Self const&) = delete;
+	CMap1_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * \brief Link the current dart to dart d with a permutation
@@ -126,24 +142,11 @@ protected:
 		(*phi_1_)[e.index] = e;
 	}
 
-public:
-
-	CMap1_T() : Inherit()
-	{
-		init();
-	}
-
-	virtual ~CMap1_T() override
-	{}
-
-	CMap1_T(Self const&) = delete;
-	CMap1_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
 	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
+
+public:
 
 	/**
 	 * \brief phi1
@@ -181,7 +184,7 @@ protected:
 		return d;
 	}
 
-	inline void delete_dart(Dart d)
+	inline void remove_dart(Dart d)
 	{
 		this->remove_topology_element(d.index);
 	}
@@ -203,17 +206,17 @@ protected:
 		return d;
 	}
 
-	inline void delete_face_topo(Dart d)
+	inline void remove_face_topo(Dart d)
 	{
 		Dart e = phi1(d);
 		while(e != d)
 		{
 			Dart f = phi1(e);
-			delete_dart(e);
+			remove_dart(e);
 			e = f;
 		}
 
-		delete_dart(d);
+		remove_dart(d);
 	}
 
 	/**
@@ -228,43 +231,17 @@ protected:
 		return e;
 	}
 
-	inline void uncut_edge_topo(Dart d)
-	{
-		Dart d1 = phi1(d);
-		// Dart d is linked to the successor of its successor
-		phi1_unsew(d);
-		// Dart d1 is erased
-		delete_dart(d1);
-	}
-
+	/**
+	 * \brief remove edge d from its face and delete it
+	 * @param d : the edge to collapse
+	 * the edge preceeding d in the face is linked to the successor of d
+	 */
 	inline void collapse_edge_topo(Dart d)
 	{
-		// Dart before d is linked to its successor
-		phi1_unsew(phi_1(d));
-		// Dart d is erased
-		delete_dart(d);
-	}
-
-	inline void split_face_topo(Dart d, Dart e)
-	{
-		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
-		phi1_sew(phi_1(d), phi_1(e));
-	}
-
-	inline void merge_faces_topo(Dart d, Dart e)
-	{
-		cgogn_assert(!this->same_cell(Face(d), Face(e)));
-		phi1_sew(phi_1(d), phi_1(e));
-	}
-
-	inline void link_faces_topo(Dart d, Dart e)
-	{
-		cgogn_assert(d != e && !this->same_cell(Face(d), Face(e)));
-
-		Dart nd = cut_edge_topo(phi_1(d));	// cut the edge before d (insert a new dart before d)
-		Dart ne = cut_edge_topo(phi_1(e));	// cut the edge before e (insert a new dart before e)
-
-		phi1_sew(nd, ne);					// subdivide phi1 cycle at the inserted darts
+		Dart e = phi_1(d);
+		cgogn_message_assert(e != d,"phi1_unsew: Cannot collapse fixed point");
+		phi1_unsew(e);
+		remove_dart(d);
 	}
 
 	inline void reverse_face_topo(Dart d)
@@ -296,6 +273,10 @@ protected:
 		phi1_sew(e, d);
 	}
 
+	/*******************************************************************************
+	 * High-level embedded operations
+	 *******************************************************************************/
+
 public:
 
 	/**
@@ -309,16 +290,16 @@ public:
 
 		const Face f(this->add_face_topo(nb_edges));
 
-		if (this->template is_orbit_embedded<DART>())
+		if (this->template is_orbit_embedded<Orbit::DART>())
 		{
 			foreach_dart_of_orbit(f, [this](Dart d)
 			{
-				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
+				this->template set_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
 			});
 		}
 
-		if (this->template is_orbit_embedded<FACE>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
 
 		return f;
 	}
@@ -416,14 +397,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<FACE>(f, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}
 
 	/*******************************************************************************
