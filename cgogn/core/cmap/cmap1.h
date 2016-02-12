@@ -206,11 +206,11 @@ protected:
 		while(e != d)
 		{
 			Dart f = phi1(e);
-			delete_dart(e);
+			this->delete_dart(e);
 			e = f;
 		}
 
-		delete_dart(d);
+		this->delete_dart(d);
 	}
 
 	/**
@@ -231,7 +231,7 @@ protected:
 		// Dart d is linked to the successor of its successor
 		phi1_unsew(d);
 		// Dart d1 is erased
-		delete_dart(d1);
+		this->delete_dart(d1);
 	}
 
 	inline void collapse_edge_topo(Dart d)
@@ -239,7 +239,7 @@ protected:
 		// Dart before d is linked to its successor
 		phi1_unsew(phi_1(d));
 		// Dart d is erased
-		delete_dart(d);
+		this->delete_dart(d);
 	}
 
 	inline void split_face_topo(Dart d, Dart e)
@@ -302,6 +302,7 @@ public:
 	 */
 	Face add_face(unsigned int nb_edges)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
 		const Face f(this->add_face_topo(nb_edges));

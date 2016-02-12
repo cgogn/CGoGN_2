@@ -281,6 +281,7 @@ protected:
 	 */
 	inline unsigned int close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
 		for (Dart d: (*this))

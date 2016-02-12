@@ -174,6 +174,8 @@ protected:
 	 */
 	void close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		for (Dart d : *this)
 		{
 			if (phi2(d) == d)
@@ -226,6 +228,7 @@ public:
 
 	Face add_face(unsigned int nb_edges)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
 		Dart d = Inherit::add_face_topo(nb_edges);
@@ -275,6 +278,8 @@ public:
 
 	inline Vertex cut_edge(Edge d)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		const Dart e = phi2(d);
 		const Dart nd = cut_edge_topo(d);
 		const Dart ne = phi2(d);
@@ -315,6 +320,7 @@ public:
 
 	inline void split_face(Dart d, Dart e)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		split_face_topo(d,e);
 		const Dart nd = this->phi_1(e);
 		const Dart ne = this->phi_1(d);

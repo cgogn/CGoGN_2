@@ -40,8 +40,10 @@
 #include <core/cmap/map_traits.h>
 
 
-#define CGOGN_CHECK_CONCRETE_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
+#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value,"The concrete map type has to be equal to Self")
+#define CGOGN_CHECK_DYNAMIC_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
+
 
 namespace cgogn
 {
