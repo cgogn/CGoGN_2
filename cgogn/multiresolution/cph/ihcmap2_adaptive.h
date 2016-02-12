@@ -33,6 +33,7 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class IHCMap2Adaptive_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
+	using MapType = MAP_TYPE;
 	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE>;
 	friend class Inherit::Inherit_CMAP;
@@ -318,6 +319,19 @@ public:
 	}
 
 protected:
+	inline Vertex cut_edge_update_emb(Dart e, Dart e2, Dart nd)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		std::cerr << "IHCMap2Adaptive_T::cut_edge_update_emb method is not implemented yet." << std::endl;
+		return Vertex();
+	}
+
+	inline void split_face_update_emb(Dart e, Dart e2)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		std::cerr << "IHCMap2Adaptive_T::split_face_update_emb method is not implemented yet." << std::endl;
+	}
+
 	/***************************************************
 	 *               SUBDIVISION                       *
 	 ***************************************************/
@@ -340,7 +354,7 @@ protected:
 
 		Inherit::set_current_level(eLevel + 1);
 
-		this->cut_edge_topo(d);// previously : Inherit::cut_edge(d); TODO : write cut_edge for ihcmap2
+		this->cut_edge(d);
 		unsigned int eId = Inherit::get_edge_id(d);
 		Inherit::set_edge_id(Inherit::phi1(d), eId);
 		Inherit::set_edge_id(Inherit::phi1(dd), eId);
@@ -421,7 +435,7 @@ public:
 			//            (*vertexVertexFunctor)(e) ;
 
 			e = Inherit::phi1(e);
-			this->split_face_topo(dd,e); // previously Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
+			this->split_face(dd,e);
 
 			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);		// set the edge id of the inserted
@@ -431,7 +445,7 @@ public:
 			e = Inherit::phi1(dd);
 			//            (*vertexVertexFunctor)(e);
 			e = Inherit::phi1(e);
-			this->split_face_topo(dd,e); // previously : Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
+			this->split_face(dd,e);
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);
 			Inherit::set_edge_id(Inherit::phi_1(e), id);
@@ -440,7 +454,7 @@ public:
 			e = Inherit::phi1(dd);
 			//            (*vertexVertexFunctor)(e);
 			e = Inherit::phi1(e);
-			this->split_face_topo(dd,e);// previously : Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
+			this->split_face(dd,e);
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);
 			Inherit::set_edge_id(Inherit::phi_1(e), id);
@@ -451,10 +465,10 @@ public:
 			Dart next = this->phi1(dd);
 			//            (*vertexVertexFunctor)(next);
 			next = Inherit::phi1(next);
-			this->split_face_topo(dd,next);// previously : Inherit::split_face(dd, next); TODO : write split_face for ihcmap2 // insert a first edge
+			this->split_face(dd,next); // insert a first edge
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd));
 			Dart ne2 = Inherit::phi2(ne);
-			this->cut_edge(ne);// previously : Inherit::cut_edge(ne); TODO : write cut_edge for ihcmap2// cut the new edge to insert the central vertex
+			this->cut_edge(ne); // cut the new edge to insert the central vertex
 
 			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id);
@@ -470,7 +484,7 @@ public:
 			dd = Inherit::phi1(dd);
 			while(dd != ne)								// turn around the face and insert new edges
 			{											// linked to the central vertex
-				this->split_face_topo(Inherit::phi1(ne), dd);// previously : Inherit::split_face(Inherit::phi1(ne), dd); TODO : write split_face for ihcmap2
+				this->split_face(Inherit::phi1(ne), dd);
 				Dart nne = Inherit::phi2(Inherit::phi_1(dd));
 
 				id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));

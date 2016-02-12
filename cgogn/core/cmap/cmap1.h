@@ -302,11 +302,21 @@ public:
 	 */
 	Face add_face(unsigned int nb_edges)
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		const Face f(this->add_face_topo(nb_edges));
+		return this->to_concrete()->add_face_update_emb(this->add_face_topo(nb_edges));
+	}
 
+	inline unsigned int degree(Face f) const
+	{
+		return this->nb_darts(f);
+	}
+
+protected:
+
+	Face add_face_update_emb(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		if (this->template is_orbit_embedded<DART>())
 		{
 			foreach_dart_of_orbit(f, [this](Dart d)
@@ -320,13 +330,6 @@ public:
 
 		return f;
 	}
-
-	inline unsigned int degree(Face f) const
-	{
-		return this->nb_darts(f);
-	}
-
-protected:
 
 	/*******************************************************************************
 	 * Orbits traversal

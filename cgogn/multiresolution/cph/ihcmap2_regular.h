@@ -33,9 +33,10 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class IHCMap2Regular_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-
+	using MapType = MAP_TYPE;
 	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = IHCMap2Regular_T<MAP_TRAITS,MAP_TYPE>;
+	friend typename Inherit::Inherit_CMAP;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -254,6 +255,13 @@ public:
 		});
 
 		Inherit::set_current_level(cur) ;
+	}
+protected:
+	inline Face add_face_update_emb(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		std::cerr << "IHCMap2Regular_T::add_face_update_emb method is not implemented yet." << std::endl;
+		return f;
 	}
 };
 
