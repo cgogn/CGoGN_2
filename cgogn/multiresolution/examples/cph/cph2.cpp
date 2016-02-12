@@ -23,7 +23,7 @@ int main()
 
     LerpTriQuadMRAnalysis<IHMap2, Vec3> lerp(map, position);
 
-	map.add_face(4);
+//	map.add_face(4); // TODO : write add_face for IHMap2 !
 
 	std::cout << "before add level Faces :" << std::endl;
 	map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face v)

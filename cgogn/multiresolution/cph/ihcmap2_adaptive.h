@@ -217,12 +217,12 @@ public:
 			Dart d2 = Inherit::phi2(d) ;
 			unsigned int cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
-			if(Inherit::vertexDegree(Inherit::phi1(d)) == 2)
-			{
-				degree2 = true ;
-				if(edge_is_subdivided(d) || edge_is_subdivided(d2))
-					subdOnce = false ;
-			}
+//			if(Inherit::vertexDegree(Inherit::phi1(d)) == 2)
+//			{
+//				degree2 = true ;
+//				if(edge_is_subdivided(d) || edge_is_subdivided(d2))
+//					subdOnce = false ;
+//			}
 			Inherit::set_current_level(cur);
 
 		}
@@ -335,7 +335,7 @@ protected:
 
 		Inherit::set_current_level(eLevel + 1);
 
-		Inherit::cut_edge(d);
+		this->cut_edge_topo(d);// previously : Inherit::cut_edge(d); TODO : write cut_edge for ihcmap2
 		unsigned int eId = Inherit::get_edge_id(d);
 		Inherit::set_edge_id(Inherit::phi1(d), eId);
 		Inherit::set_edge_id(Inherit::phi1(dd), eId);
@@ -369,7 +369,7 @@ protected:
 		//	unsigned int dl = Inherit::get_dart_level(e);
 		//	Inherit::set_dart_level(Inherit::phi1(e), dl);
 		//	Inherit::collapseEdge(e);
-		Inherit::uncut_edge(d);
+//		Inherit::uncut_edge(d);
 		Inherit::set_current_level(cur);
 	}
 
@@ -416,7 +416,7 @@ public:
 			//            (*vertexVertexFunctor)(e) ;
 
 			e = Inherit::phi1(e);
-			Inherit::split_face(dd, e);
+			this->split_face_topo(dd,e); // previously Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
 
 			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);		// set the edge id of the inserted
@@ -426,7 +426,7 @@ public:
 			e = Inherit::phi1(dd);
 			//            (*vertexVertexFunctor)(e);
 			e = Inherit::phi1(e);
-			Inherit::split_face(dd, e);
+			this->split_face_topo(dd,e); // previously : Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);
 			Inherit::set_edge_id(Inherit::phi_1(e), id);
@@ -435,7 +435,7 @@ public:
 			e = Inherit::phi1(dd);
 			//            (*vertexVertexFunctor)(e);
 			e = Inherit::phi1(e);
-			Inherit::split_face(dd, e);
+			this->split_face_topo(dd,e);// previously : Inherit::split_face(dd, e); TODO : write split_face for ihcmap2
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);
 			Inherit::set_edge_id(Inherit::phi_1(e), id);
@@ -446,10 +446,10 @@ public:
 			Dart next = this->phi1(dd);
 			//            (*vertexVertexFunctor)(next);
 			next = Inherit::phi1(next);
-			Inherit::split_face(dd, next);	// insert a first edge
+			this->split_face_topo(dd,next);// previously : Inherit::split_face(dd, next); TODO : write split_face for ihcmap2 // insert a first edge
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd));
 			Dart ne2 = Inherit::phi2(ne);
-			Inherit::cut_edge(ne);				// cut the new edge to insert the central vertex
+			this->cut_edge_topo(ne);// previously : Inherit::cut_edge(ne); TODO : write cut_edge for ihcmap2// cut the new edge to insert the central vertex
 
 			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id);
@@ -465,7 +465,7 @@ public:
 			dd = Inherit::phi1(dd);
 			while(dd != ne)								// turn around the face and insert new edges
 			{											// linked to the central vertex
-				Inherit::split_face(Inherit::phi1(ne), dd);
+				this->split_face_topo(Inherit::phi1(ne), dd);// previously : Inherit::split_face(Inherit::phi1(ne), dd); TODO : write split_face for ihcmap2
 				Dart nne = Inherit::phi2(Inherit::phi_1(dd));
 
 				id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(nne)));
@@ -512,7 +512,7 @@ public:
 				Inherit::set_current_level(cur + 1);
 				Dart innerEdge = Inherit::phi1(fit);
 				Inherit::set_current_level(Inherit::get_maximum_level());
-				Inherit::merge_faces(innerEdge);
+//				Inherit::merge_faces(innerEdge);
 				Inherit::set_current_level(cur);
 				fit = this->phi1(fit);
 			} while(fit != d);
@@ -522,7 +522,7 @@ public:
 			Inherit::set_current_level(cur + 1);
 			Dart centralV = Inherit::phi1(Inherit::phi1(d));
 			Inherit::set_current_level(Inherit::get_maximum_level());
-			Inherit::delete_vertex(centralV);
+//			Inherit::delete_vertex(centralV);
 			Inherit::set_current_level(cur);
 		}
 
