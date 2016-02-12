@@ -269,6 +269,12 @@ protected:
 			return false;
 		}
 
+		if (line.rfind("BINARY") != std::string::npos)
+		{
+			return import_OFF_BIN<VEC3>(fp);
+		}
+
+
 		// read number of vertices, edges, faces
 		do
 		{
@@ -335,6 +341,95 @@ protected:
 
 		return true;
 	}
+
+	inline unsigned int changeEndianness(unsigned int x)
+	{
+		return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
+	}
+
+
+	template <typename VEC3>
+	bool import_OFF_BIN(std::ifstream& fp)
+	{
+		std::string line;
+
+			char buffer1[12];
+		fp.read(buffer1,12);
+
+		nb_vertices_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1)));
+		nb_faces_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1+4)));
+		nb_edges_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1+8)));
+
+
+		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
+
+		// read vertices position
+		float* buff_pos = new float[3*nb_vertices_];
+		fp.read(reinterpret_cast<char*>(buff_pos),12*nb_vertices_);
+
+		//endian
+		unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
+		for (unsigned int i=0; i< 3*nb_vertices_;++i)
+		{
+			*ptr = changeEndianness(*ptr);
+			++ptr;
+		}
+
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(nb_vertices_);
+
+		for (unsigned int i = 0; i < nb_vertices_; ++i)
+		{
+			VEC3 pos{buff_pos[3*i], buff_pos[3*i+1], buff_pos[3*i+2]};
+
+			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+			(*position)[vertex_id] = pos;
+
+			vertices_id.push_back(vertex_id);
+		}
+
+		delete[] buff_pos;
+
+		// read faces (vertex indices)
+		int current_pos = fp.tellg();
+
+		fp.seekg (0, fp.end);
+		int length_file = fp.tellg();
+		fp.seekg (current_pos, fp.beg);
+
+		unsigned int nb_buff_ind = (length_file - current_pos)/4;
+
+		unsigned int* buff_ind = new unsigned int[nb_buff_ind];
+
+		fp.read(reinterpret_cast<char*>(buff_ind),nb_buff_ind*4);
+
+		ptr = buff_ind;
+		for (unsigned int i=0; i< nb_buff_ind;++i)
+		{
+			*ptr = changeEndianness(*ptr);
+			++ptr;
+		}
+
+		unsigned int* ind_ptr = buff_ind;
+
+		faces_nb_edges_.reserve(nb_faces_);
+		faces_vertex_indices_.reserve(nb_vertices_ * 8);
+		for (unsigned int i = 0; i < nb_faces_; ++i)
+		{
+			unsigned int n = *ind_ptr++;
+			faces_nb_edges_.push_back(n);
+			for (unsigned int j = 0; j < n; ++j)
+			{
+				unsigned int index = *ind_ptr++;
+				faces_vertex_indices_.push_back(vertices_id[index]);
+			}
+		}
+
+		delete[] buff_ind;
+
+		return true;
+	}
+
 
 	template <typename VEC3>
 	bool import_OBJ(std::ifstream& fp)
