@@ -24,6 +24,8 @@
 #ifndef CORE_CMAP_SANITY_CHECK_H_
 #define CORE_CMAP_SANITY_CHECK_H_
 
+#include <core/cmap/map_base_data.h>
+
 namespace cgogn
 {
 
@@ -39,10 +41,10 @@ template <Orbit ORBIT, typename MAP>
 bool is_well_embedded(const MAP& map)
 {
 	bool result = true;
-	map.template foreach_cell<ORBIT>([&] (Cell<ORBIT> c)
-	{
-		result = map.template is_well_embedded<ORBIT>(c);
-	});
+	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>(
+		[&] (Cell<ORBIT> c) { result = map.template is_well_embedded<ORBIT>(c); },
+		[] (Dart) { return true; }
+	);
 	return result;
 }
 
@@ -101,7 +103,10 @@ bool is_container_well_referenced(MAP& map)
 		counter[i] = 0;
 
 	// for each dart of the map, the counter corresponding to its embedding index is incremented
-	map.foreach_dart([&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; });
+	map.foreach_dart(
+		[&] (Dart d) { counter[map.template get_embedding<ORBIT>(d)]++; },
+		[] (Dart) { return true; }
+	);
 
 	bool result = true;
 	for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))

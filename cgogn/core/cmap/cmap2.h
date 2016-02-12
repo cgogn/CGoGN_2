@@ -172,7 +172,13 @@ protected:
 	 */
 	void close_map()
 	{
-		for (Dart d : *this)
+		std::vector<Dart> fix_point_darts;
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts.push_back(d);
+		});
+		for (Dart d : fix_point_darts)
 		{
 			if (phi2(d) == d)
 			{

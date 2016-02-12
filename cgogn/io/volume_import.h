@@ -288,7 +288,7 @@ public:
 
 		//reconstruct neighbourhood
 		unsigned int nbBoundaryFaces = 0;
-		for (Dart d : map)
+		map.foreach_dart([&] (Dart d)
 		{
 			if (m.is_marked(d))
 			{
@@ -331,7 +331,7 @@ public:
 					++nbBoundaryFaces;
 				}
 			}
-		}
+		});
 
 		if (nbBoundaryFaces > 0)
 		{

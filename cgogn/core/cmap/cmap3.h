@@ -224,7 +224,13 @@ protected:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
-		for (Dart d: (*this))
+		std::vector<Dart> fix_point_darts;
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi3(d) == d)
+				fix_point_darts.push_back(d);
+		});
+		for (Dart d : fix_point_darts)
 		{
 			if (phi3(d) == d)
 			{

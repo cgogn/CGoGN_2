@@ -93,10 +93,7 @@ int test1(MAP& map)
 	dm.mark(d1);
 
 	std::cout << "Darts :" << std::endl;
-	for (Dart dit : map)
-	{
-		std::cout << dit << std::endl;
-	}
+	map.foreach_dart([] (Dart d) { std::cout << d << std::endl; });
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
