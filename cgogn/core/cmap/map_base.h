@@ -75,21 +75,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 
-protected:
-
-	std::function<bool(Dart)> no_boundary_mask_;
-	std::function<bool(Dart)> boundary_mask_;
-	std::function<bool(Dart)> complete_mask_;
-
-public:
-
 	MapBase() :
 		Inherit()
-	{
-		no_boundary_mask_ = [this] (Dart d) { return !this->is_boundary(d); };
-		boundary_mask_ = [this] (Dart d) { return this->is_boundary(d); };
-		complete_mask_ = [] (Dart) { return true; };
-	}
+	{}
 
 	~MapBase()
 	{}
@@ -337,18 +325,16 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart([this] (Dart d)
-		{
-			(*this->embeddings_[ORBIT])[d.index] = EMBNULL;
-		},
-		complete_mask_);
+		foreach_dart(
+			[this] (Dart d) { (*this->embeddings_[ORBIT])[d.index] = EMBNULL; },
+			[] (Dart) { return true; }
+		);
 
 		// initialize the indices of the existing orbits
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([this] (Cell<ORBIT> c)
-		{
-			set_orbit_embedding(c, add_attribute_element<ORBIT>());
-		},
-		complete_mask_);
+		foreach_cell<ORBIT, FORCE_DART_MARKING>(
+			[this] (Cell<ORBIT> c) { set_orbit_embedding(c, add_attribute_element<ORBIT>()); },
+			[] (Dart) { return true; }
+		);
 	}
 
 	template <Orbit ORBIT>
@@ -375,13 +361,15 @@ public:
 		for (unsigned int& i : counter) i = 0;
 
 		ConcreteMap* cmap = to_concrete();
-		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
-		{
-			if (counter[c] > 0)
-				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
-			counter[c]++;
-		},
-		complete_mask_);
+		foreach_cell<ORBIT, FORCE_DART_MARKING>(
+			[cmap, &counter] (Cell<ORBIT> c)
+			{
+				if (counter[c] > 0)
+					cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+				counter[c]++;
+			},
+			[] (Dart) { return true; }
+		);
 
 		remove_attribute(counter);
 	}
@@ -440,11 +428,10 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
-		foreach_cell<ORBIT, FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
-		{
-			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
-		},
-		complete_mask_);
+		foreach_cell<ORBIT, FORCE_CELL_MARKING>(
+			[this] (Cell<ORBIT> c) { (*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart; },
+			[] (Dart) { return true; }
+		);
 	}
 
 	template <Orbit ORBIT>
@@ -632,13 +619,13 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
-		foreach_dart(f, this->no_boundary_mask_);
+		foreach_dart(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_boundary_dart(const FUNC& f) const
 	{
-		foreach_dart(f, this->boundary_mask_);
+		foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <typename FUNC, typename MASK>
@@ -655,13 +642,13 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, this->no_boundary_mask_);
+		parallel_foreach_dart(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_boundary_dart(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, this->boundary_mask_);
+		parallel_foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <typename FUNC, typename MASK>
@@ -740,13 +727,13 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f) const
 	{
-		foreach_dart_until(f, this->no_boundary_mask_);
+		foreach_dart_until(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_boundary_dart_until(const FUNC& f) const
 	{
-		foreach_dart_until(f, this->boundary_mask_);
+		foreach_dart_until(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <typename FUNC, typename MASK>
@@ -773,13 +760,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f) const
 	{
-		foreach_cell<ORBIT, STRATEGY>(f, no_boundary_mask_);
+		foreach_cell<ORBIT, STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_boundary_cell(const FUNC& f) const
 	{
-		foreach_cell<ORBIT, STRATEGY>(f, this->boundary_mask_);
+		foreach_cell<ORBIT, STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -814,13 +801,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
 	{
-		parallel_foreach_cell<ORBIT, STRATEGY>(f, no_boundary_mask_);
+		parallel_foreach_cell<ORBIT, STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_boundary_cell(const FUNC& f) const
 	{
-		parallel_foreach_cell<ORBIT, STRATEGY>(f, boundary_mask_);
+		parallel_foreach_cell<ORBIT, STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -862,13 +849,13 @@ public:
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until(const FUNC& f) const
 	{
-		foreach_cell_until<ORBIT, STRATEGY>(f, this->no_boundary_mask_);
+		foreach_cell_until<ORBIT, STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_boundary_cell_until(const FUNC& f) const
 	{
-		foreach_cell_until<ORBIT, STRATEGY>(f, this->boundary_mask_);
+		foreach_cell_until<ORBIT, STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <Orbit ORBIT, TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
