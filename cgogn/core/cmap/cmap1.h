@@ -92,7 +92,7 @@ public:
 		init();
 	}
 
-	virtual ~CMap1_T() override
+	~CMap1_T() override
 	{}
 
 	CMap1_T(Self const&) = delete;
@@ -106,15 +106,19 @@ public:
 
 protected:
 
-	/**
-	 * \brief Link the current dart to dart d with a permutation
-	 * @param d the dart to which the current is linked
+	/*!
+	 * \brief Link two darts with the phi1 permutation what either merge or split their orbit(s).
+	 * @param d: the first dart
+	 * @param e: the second dart
 	 * - Before: d->f and e->g
 	 * - After:  d->g and e->f
-	 * Join the permutations cycles of dart d and e
+	 * Join the orbits of dart d and e if they are distinct
 	 * - Starting from two cycles : d->f->...->d and e->g->...->e
 	 * - It makes one cycle d->g->...->e->f->...->d
 	 * If e = g then insert e in the cycle of d : d->e->f->...->d
+	 * If d and e are in the same orbit of phi1, this orbit is split in two cycles.
+	 * - Starting with d->g->...e->f->...->d
+	 * - It makes two cycles : d->f->...->d and e->g->...->e
 	 */
 	void phi1_sew(Dart d, Dart e)
 	{
@@ -126,8 +130,8 @@ protected:
 		(*phi_1_)[f.index] = e;
 	}
 
-	/**
-	 * \brief Unlink the successor of a given dart in a permutation
+	/*!
+	 * \brief Remove the successor of a given dart from its permutation
 	 * @param d a dart
 	 * - Before: d->e->f
 	 * - After:  d->f and e->e
@@ -148,7 +152,7 @@ protected:
 
 public:
 
-	/**
+	/*!
 	 * \brief phi1
 	 * @param d
 	 * @return phi1(d)
@@ -158,7 +162,7 @@ public:
 		return (*phi1_)[d.index];
 	}
 
-	/**
+	/*!
 	 * \brief phi_1
 	 * @param d
 	 * @return phi_1(d)
@@ -170,7 +174,7 @@ public:
 
 protected:
 
-	/**
+	/*!
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
@@ -184,6 +188,10 @@ protected:
 		return d;
 	}
 
+	/*!
+	 * \brief remove a dart from the map
+	 * \param d: the dart to remove
+	 */
 	inline void remove_dart(Dart d)
 	{
 		this->remove_topology_element(d.index);

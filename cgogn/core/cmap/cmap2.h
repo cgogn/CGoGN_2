@@ -93,37 +93,6 @@ protected:
 		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
 	}
 
-	/*******************************************************************************
-	 * Low-level topological operations
-	 *******************************************************************************/
-
-	/**
-	 * \brief Link dart d with dart e by an involution
-	 * @param d,e the darts to link
-	 *	- Before: d->d and e->e
-	 *	- After:  d->e and e->d
-	 */
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		cgogn_assert(phi2(d) == d);
-		cgogn_assert(phi2(e) == e);
-		(*phi2_)[d.index] = e;
-		(*phi2_)[e.index] = d;
-	}
-
-	/**
-	 * \brief Unlink the current dart by an involution
-	 * @param d the dart to unlink
-	 * - Before: d->e and e->d
-	 * - After:  d->d and e->e
-	 */
-	inline void phi2_unsew(Dart d)
-	{
-		Dart e = phi2(d);
-		(*phi2_)[d.index] = d;
-		(*phi2_)[e.index] = e;
-	}
-
 public:
 
 	CMap2_T() : Inherit()
@@ -140,8 +109,41 @@ public:
 	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
+	/**
+	 * \brief Link dart d with dart e by the phi2 involution
+	 * @param d,e the darts to link
+	 *	- Before: d->d and e->e
+	 *	- After:  d->e and e->d
+	 */
+	inline void phi2_sew(Dart d, Dart e)
+	{
+		cgogn_assert(phi2(d) == d);
+		cgogn_assert(phi2(e) == e);
+		(*phi2_)[d.index] = e;
+		(*phi2_)[e.index] = d;
+	}
+
+	/**
+	 * \brief Remove the phi2 link of the current dart and its linked dart
+	 * @param d the dart to unlink
+	 * - Before: d->e and e->d
+	 * - After:  d->d and e->e
+	 */
+	inline void phi2_unsew(Dart d)
+	{
+		Dart e = phi2(d);
+		(*phi2_)[d.index] = d;
+		(*phi2_)[e.index] = e;
+	}
+
+	/*******************************************************************************
 	 * Basic topological operations
 	 *******************************************************************************/
+
+public:
 
 	/**
 	 * \brief phi2
@@ -167,60 +169,58 @@ protected:
 		return d;
 	}
 
-	/**
-	 * @brief close_map closes the map so that there are no phi2 fix points
-	 */
-	void close_map()
-	{
-		for (Dart d : *this)
+	/*******************************************************************************
+	 * High-level topological operations
+	 *******************************************************************************/
+
+	protected:
+
+		inline Dart cut_edge_topo(Dart d)
 		{
-			if (phi2(d) == d)
-			{
-				close_hole_topo(d);
-				const Dart new_face = phi2(d);
+			Dart e = phi2(d);						// Get the adjacent 1D-edge
 
-				if (this->template is_orbit_embedded<DART>())
-				{
-					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
-					{
-						this->template set_orbit_embedding<DART>(fd, this->template add_attribute_element<DART>());
-					});
-				}
-				if (this->template is_orbit_embedded<VERTEX>())
-				{
-					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
-					{
-						this->template set_embedding<VERTEX>(fd, this->template get_embedding<VERTEX>(this->phi1(phi2(fd))));
-					});
-				}
-				if (this->template is_orbit_embedded<EDGE>())
-				{
-					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
-					{
-						this->template set_embedding<EDGE>(fd, this->template get_embedding<EDGE>(phi2(fd)));
-					});
-				}
-				if (this->template is_orbit_embedded<FACE>())
-				{
-					this->template set_orbit_embedding<FACE>(new_face, this->template add_attribute_element<FACE>());
-				}
-				if (this->template is_orbit_embedded<VOLUME>())
-				{
-					const unsigned int idx = this->template get_embedding<VOLUME>(d);
-					foreach_dart_of_orbit<FACE>(new_face, [this, idx] (Dart fd)
-					{
-						this->template set_embedding<VOLUME>(fd, idx);
-					});
-				}
-			}
+			phi2_unsew(d);							// Unsew the initial 2D-edge,
+			// separating its two 1D-edges
+			Dart nd = Inherit::cut_edge_topo(d);
+			Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
+
+			phi2_sew(d, ne);						// Sew the new 1D-edges
+			phi2_sew(e, nd);						// To build the new 2D-edges
+
+			return nd;
 		}
-	}
 
-public:
+		inline void close_hole_topo(Dart d)
+		{
+			cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+			Dart first = add_dart(); // First edge of the face that will fill the hole
+			phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+			Dart d_next = d; // Turn around the hole
+			Dart d_phi1;     // to complete the face
+			do
+			{
+				do
+				{
+					d_phi1 = this->phi1(d_next); // Search and put in d_next
+					d_next = phi2(d_phi1);       // the next dart of the hole
+				} while (d_next != d_phi1 && d_phi1 != d);
+
+				if (d_phi1 != d)
+				{
+					Dart next = add_dart(); // Add a new edge there and link it to the face
+					this->phi1_sew(first, next); // the edge is linked to the face
+					phi2_sew(d_next, next);      // the face is linked to the hole
+				}
+			} while (d_phi1 != d);
+		}
 
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
+
+public:
 
 	Face add_face(unsigned int nb_edges)
 	{
@@ -311,6 +311,27 @@ public:
 		return v;
 	}
 
+	inline void collapse_edge(Edge d)
+	{
+		const Dart d1 = this->phi1(d);
+		cgogn_message_assert(d1 != d, "collapse_edge: cannot collapse in degenerated face");
+		cgogn_message_assert(d1 != this->phi_1(d), "collapse_edge: collapse will produce degenerated face");
+
+		const Dart e = this->phi2(d);
+		cgogn_message_assert(this->phi1(e) != e, "collapse_edge: cannot collapse in degenerated face");
+		cgogn_message_assert(this->phi1(e) != this->phi_1(e), "collapse_edge: collapse will produce degenerated face");
+
+		unsigned int idx = this->template get_embedding<VERTEX>(d.dart);
+
+		Inherit::collapse_edge_topo(d);
+		Inherit::collapse_edge_topo(e);
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			this->set_orbit_embedding(Vertex(d1), idx);
+		}
+	}
+
 	/**
 	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
 	 * @param d : first vertex
@@ -361,6 +382,55 @@ public:
 		}
 	}
 
+	/**
+	 * @brief close_map closes the map so that there are no phi2 fix points
+	 */
+	void close_map()
+	{
+		for (Dart d : *this)
+		{
+			if (phi2(d) == d)
+			{
+				close_hole_topo(d);
+				const Dart new_face = phi2(d);
+
+				if (this->template is_orbit_embedded<DART>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
+					{
+						this->template set_orbit_embedding<DART>(fd, this->template add_attribute_element<DART>());
+					});
+				}
+				if (this->template is_orbit_embedded<VERTEX>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
+					{
+						this->template set_embedding<VERTEX>(fd, this->template get_embedding<VERTEX>(this->phi1(phi2(fd))));
+					});
+				}
+				if (this->template is_orbit_embedded<EDGE>())
+				{
+					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
+					{
+						this->template set_embedding<EDGE>(fd, this->template get_embedding<EDGE>(phi2(fd)));
+					});
+				}
+				if (this->template is_orbit_embedded<FACE>())
+				{
+					this->template set_orbit_embedding<FACE>(new_face, this->template add_attribute_element<FACE>());
+				}
+				if (this->template is_orbit_embedded<VOLUME>())
+				{
+					const unsigned int idx = this->template get_embedding<VOLUME>(d);
+					foreach_dart_of_orbit<FACE>(new_face, [this, idx] (Dart fd)
+					{
+						this->template set_embedding<VOLUME>(fd, idx);
+					});
+				}
+			}
+		}
+	}
+
 	inline unsigned int degree(Face f) const
 	{
 		return Inherit::degree(f);
@@ -371,48 +441,6 @@ public:
 		return this->nb_darts(v);
 	}
 
-protected:
-
-	inline Dart cut_edge_topo(Dart d)
-	{
-		Dart e = phi2(d);						// Get the adjacent 1D-edge
-
-		phi2_unsew(d);							// Unsew the initial 2D-edge,
-		// separating its two 1D-edges
-		Dart nd = Inherit::cut_edge_topo(d);
-		Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
-
-		phi2_sew(d, ne);						// Sew the new 1D-edges
-		phi2_sew(e, nd);						// To build the new 2D-edges
-
-		return nd;
-	}
-
-	inline void close_hole_topo(Dart d)
-	{
-		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
-
-		Dart first = add_dart(); // First edge of the face that will fill the hole
-		phi2_sew(d, first);      // phi2-link the new edge to the hole
-
-		Dart d_next = d; // Turn around the hole
-		Dart d_phi1;     // to complete the face
-		do
-		{
-			do
-			{
-				d_phi1 = this->phi1(d_next); // Search and put in d_next
-				d_next = phi2(d_phi1);       // the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
-
-			if (d_phi1 != d)
-			{
-				Dart next = add_dart(); // Add a new edge there and link it to the face
-				this->phi1_sew(first, next); // the edge is linked to the face
-				phi2_sew(d_next, next);      // the face is linked to the hole
-			}
-		} while (d_phi1 != d);
-	}
 
 	/*******************************************************************************
 	 * Orbits traversal
