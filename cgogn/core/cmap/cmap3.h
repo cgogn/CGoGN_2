@@ -49,12 +49,14 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend typename Inherit::Inherit::Inherit;
+	friend typename Inherit::Inherit::Inherit::Inherit;
 	template<typename T>
 	friend class DartMarker_T;
 	template<typename T>
 	friend class DartMarkerStore;
 	friend class CMap3Builder_T<MapTraits>;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
 	static const Orbit EDGE   = Orbit::PHI2_PHI3;
 	static const Orbit FACE   = Orbit::PHI1_PHI3;

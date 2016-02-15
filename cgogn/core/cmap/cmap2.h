@@ -48,6 +48,7 @@ public:
 
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
+	friend typename Inherit::Inherit::Inherit;
 	friend class CMap2Builder_T<MapTraits>;
 	template<typename T>
 	friend class DartMarker_T;
@@ -116,6 +117,18 @@ public:
 	 *******************************************************************************/
 
 	/**
+	* \brief Add a Dart in the map (i.e. add a line in the topology container)
+	* @return the new Dart (i.e. the index of the added line)
+	* The dart is defined as a fixed point for PHI2.
+	*/
+	inline Dart add_dart_internal()
+	{
+		Dart d = Inherit::add_dart_internal();
+		(*phi2_)[d.index] = d;
+		return d;
+	}
+
+	/**
 	 * \brief Link dart d with dart e by the phi2 involution
 	 * @param d,e the darts to link
 	 *	- Before: d->d and e->e
@@ -158,18 +171,78 @@ public:
 		return (*phi2_)[d.index];
 	}
 
+	/*******************************************************************************
+	 * High-level topological operations
+	 *******************************************************************************/
+
 protected:
 
-	/**
-	* \brief add a Dart in the map
-	* @return the new Dart
-	*/
-	inline Dart add_dart_internal()
+	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart d = Inherit::add_dart_internal();
-		(*phi2_)[d.index] = d;
-		return d;
+		Dart e = phi2(d);						// Get the adjacent 1D-edge
+
+		phi2_unsew(d);							// Unsew the initial 2D-edge,
+		// separating its two 1D-edges
+		Dart nd = Inherit::cut_edge_topo(d);
+		Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
+
+		phi2_sew(d, ne);						// Sew the new 1D-edges
+		phi2_sew(e, nd);						// To build the new 2D-edges
+
+		return nd;
 	}
+
+	/**
+	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
+	 * @param d : first vertex
+	 * @param e : second vertex
+	 * Darts d and e should belong to the same face and be distinct from each other.
+	 * An edge made of two new darts is inserted between the two given vertices.
+	 */
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
+
+		Dart dd = this->phi_1(d);
+		Dart ee = this->phi_1(e);
+		Dart nd = Inherit::cut_edge_topo(dd);	// cut the edge before d (insert a new dart before d)
+		Dart ne = Inherit::cut_edge_topo(ee);	// cut the edge before e (insert a new dart before e)
+		this->phi1_sew(dd, ee);					// subdivide phi1 cycle at the inserted darts
+		phi2_sew(nd, ne);						// build the new 2D-edge from the inserted darts
+	}
+
+	inline void close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+		Dart first = this->add_dart_internal(); // First edge of the face that will fill the hole
+		phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+		Dart d_next = d; // Turn around the hole
+		Dart d_phi1;     // to complete the face
+		do
+		{
+			do
+			{
+				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_next = phi2(d_phi1);       // the next dart of the hole
+			} while (d_next != d_phi1 && d_phi1 != d);
+
+			if (d_phi1 != d)
+			{
+				Dart next = this->add_dart_internal(); // Add a new edge there and link it to the face
+				this->phi1_sew(first, next); // the edge is linked to the face
+				phi2_sew(d_next, next);      // the face is linked to the hole
+			}
+		} while (d_phi1 != d);
+	}
+
+	/*******************************************************************************
+	 * High-level embedded operations
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * @brief close_map closes the map so that there are no phi2 fix points
@@ -222,74 +295,6 @@ protected:
 		}
 	}
 
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
-
-public:
-
-	Face add_face(unsigned int nb_edges)
-	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
-
-		Dart d = Inherit::add_face_topo(nb_edges);
-		Dart b = Inherit::add_face_topo(nb_edges);
-
-		Dart it = d;
-		do
-		{
-			phi2_sew(it, b);
-			it = this->phi1(it);
-			b = this->phi_1(b);
-		} while (it != d);
-
-		return this->to_concrete()->add_face_update_emb(d);
-	}
-
-	inline Vertex cut_edge(Edge e)
-	{
-		const Dart e2 = phi2(e);
-		const Dart nd = cut_edge_topo(e);
-
-		return this->to_concrete()->cut_edge_update_emb(e.dart, e2, nd);
-	}
-
-	/**
-	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
-	 * @param d : first vertex
-	 * @param e : second vertex
-	 * Darts d and e should belong to the same face and be distinct from each other.
-	 * An edge made of two new darts is inserted between the two given vertices.
-	 */
-	inline void split_face(Dart d, Dart e)
-	{
-		split_face_topo(d,e);
-		this->to_concrete()->split_face_update_emb(d,e);
-	}
-
-	inline unsigned int degree(Face f) const
-	{
-		return Inherit::degree(f);
-	}
-
-protected:
-
-	inline Dart cut_edge_topo(Dart d)
-	{
-		Dart e = phi2(d);						// Get the adjacent 1D-edge
-
-		phi2_unsew(d);							// Unsew the initial 2D-edge,
-		// separating its two 1D-edges
-		Dart nd = Inherit::cut_edge_topo(d);
-		Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
-
-		phi2_sew(d, ne);						// Sew the new 1D-edges
-		phi2_sew(e, nd);						// To build the new 2D-edges
-
-		return nd;
-	}
-
 	inline Vertex cut_edge_update_emb(Dart e, Dart e2, Dart nd)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
@@ -327,18 +332,6 @@ protected:
 			this->template set_embedding<VOLUME>(ne, idx);
 		}
 		return v;
-	}
-
-	inline void split_face_topo(Dart d, Dart e)
-	{
-		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
-		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
-
-		Dart nd = Inherit::cut_edge_topo(this->phi_1(d));	// cut the edge before d (insert a new dart before d)
-		Dart ne = Inherit::cut_edge_topo(this->phi_1(e));	// cut the edge before e (insert a new dart before e)
-
-		Inherit::split_face_topo(nd, ne);					// subdivide phi1 cycle at the inserted darts
-		phi2_sew(nd, ne);									// build the new 2D-edge from the inserted darts
 	}
 
 	inline void split_face_update_emb(Dart d, Dart e)
@@ -414,30 +407,50 @@ protected:
 		return f;
 	}
 
-	inline void close_hole_topo(Dart d)
+public:
+
+	Face add_face(unsigned int nb_edges)
 	{
-		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		Dart first = this->add_dart(); // First edge of the face that will fill the hole
-		phi2_sew(d, first);      // phi2-link the new edge to the hole
+		Dart d = Inherit::add_face_topo(nb_edges);
+		Dart b = Inherit::add_face_topo(nb_edges);
 
-		Dart d_next = d; // Turn around the hole
-		Dart d_phi1;     // to complete the face
+		Dart it = d;
 		do
 		{
-			do
-			{
-				d_phi1 = this->phi1(d_next); // Search and put in d_next
-				d_next = phi2(d_phi1);       // the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
+			phi2_sew(it, b);
+			it = this->phi1(it);
+			b = this->phi_1(b);
+		} while (it != d);
 
-			if (d_phi1 != d)
-			{
-				Dart next = this->add_dart(); // Add a new edge there and link it to the face
-				this->phi1_sew(first, next); // the edge is linked to the face
-				phi2_sew(d_next, next);      // the face is linked to the hole
-			}
-		} while (d_phi1 != d);
+		return this->to_concrete()->add_face_update_emb(d);
+	}
+
+	inline Vertex cut_edge(Edge e)
+	{
+		const Dart e2 = phi2(e);
+		const Dart nd = cut_edge_topo(e);
+
+		return this->to_concrete()->cut_edge_update_emb(e.dart, e2, nd);
+	}
+
+	/**
+	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
+	 * @param d : first vertex
+	 * @param e : second vertex
+	 * Darts d and e should belong to the same face and be distinct from each other.
+	 * An edge made of two new darts is inserted between the two given vertices.
+	 */
+	inline void split_face(Dart d, Dart e)
+	{
+		split_face_topo(d,e);
+		this->to_concrete()->split_face_update_emb(d,e);
+	}
+
+	inline unsigned int degree(Face f) const
+	{
+		return Inherit::degree(f);
 	}
 
 	/*******************************************************************************
@@ -473,31 +486,31 @@ protected:
 		// For every face added to the list
 		for(unsigned int i = 0; i < visited_faces->size(); ++i)
 		{
-			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
+			Dart e = (*visited_faces)[i];
+			if (!marker.is_marked(e))	// Face has not been visited yet
 			{
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
-				Dart e = (*visited_faces)[i];
+				Dart it = e;
 				do
 				{
-					f(e); // apply the function to the darts of the face
-					marker.mark(e);				// Mark
-					Dart adj = phi2(e);			// Get adjacent face
+					f(it); // apply the function to the darts of the face
+					marker.mark(it);				// Mark
+					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					e = this->phi1(e);
-				} while (e != (*visited_faces)[i]);
+					it = this->phi1(it);
+				} while (it != e);
 			}
 		}
-
 		cgogn::get_dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
-					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
+					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap2");
 
 		switch (ORBIT)
@@ -544,37 +557,39 @@ protected:
 		// For every face added to the list
 		for(unsigned int i = 0; i < visited_faces->size(); ++i)
 		{
-			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
+			Dart e = (*visited_faces)[i];
+			if (!marker.is_marked(e))	// Face has not been visited yet
 			{
 				// mark visited darts (current face)
 				// and add non visited adjacent faces to the list of face
-				Dart e = (*visited_faces)[i];
+				Dart it = e;
 				do
 				{
-					if (!f(e)) // apply the function to the darts of the face
+					if (!f(it)) // apply the function to the darts of the face
 					{
 						cgogn::get_dart_buffers()->release_buffer(visited_faces);
 						return;
 					}
-					marker.mark(e);				// Mark
-					Dart adj = phi2(e);			// Get adjacent face
+					marker.mark(it);				// Mark
+					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					e = this->phi1(e);
-				} while (e != (*visited_faces)[i]);
+					it = this->phi1(it);
+				} while (it != e);
 			}
 		}
-
 		cgogn::get_dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
-					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+		static_assert(check_func_return_type(FUNC, bool),
+					  "Wrong function return type");
+
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
+					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap2");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
 		switch (ORBIT)
 		{
@@ -596,19 +611,36 @@ public:
 	 * Incidence traversal
 	 *******************************************************************************/
 
-	template <typename FUNC>
-	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
+	template <Orbit ORBIT_OUT, Orbit ORBIT_IN, typename FUNC>
+	inline void foreach_incident_cell(Cell<ORBIT_IN> v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, f);
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT_OUT>),
+					  "Wrong function cell parameter type");
+
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit<ORBIT_IN>(v, [&] (Dart d)
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.template mark_orbit<ORBIT_OUT>(d);
+				f(d);
+			}
+		});
 	}
 
-	template <typename FUNC>
-	inline void foreach_incident_face(Vertex v, const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, f);
-	}
+//	template <typename FUNC>
+//	inline void foreach_incident_edge(Vertex v, const FUNC& f) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+//		foreach_dart_of_orbit(v, f);
+//	}
+
+//	template <typename FUNC>
+//	inline void foreach_incident_face(Vertex v, const FUNC& f) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+//		foreach_dart_of_orbit(v, f);
+//	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const

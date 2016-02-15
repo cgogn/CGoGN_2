@@ -24,7 +24,7 @@
 #ifndef CORE_CMAP_CMAP1_H_
 #define CORE_CMAP_CMAP1_H_
 
-#include <core/cmap/map_base.h>
+#include <core/cmap/cmap0.h>
 #include <core/basic/dart.h>
 #include <core/utils/assert.h>
 
@@ -32,7 +32,7 @@ namespace cgogn
 {
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap1_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
@@ -40,10 +40,11 @@ public:
 
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
+	friend typename Inherit::Inherit;
 	template<typename T>
 	friend class DartMarker_T;
 	template<typename T>
@@ -53,10 +54,12 @@ public:
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
+	static const Orbit VOLUME = Orbit::PHI1;
 
-	typedef Cell<VERTEX> Vertex;
-	typedef Cell<EDGE> Edge;
-	typedef Cell<FACE> Face;
+	typedef Cell<Self::VERTEX> Vertex;
+	typedef Cell<Self::EDGE> Edge;
+	typedef Cell<Self::FACE> Face;
+	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -71,6 +74,8 @@ public:
 	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
 	template <typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	template <typename T>
+	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -109,6 +114,19 @@ public:
 	 *******************************************************************************/
 
 protected:
+
+	/*!
+	* \brief Add a Dart in the map (i.e. add a line in the topology container)
+	* @return the new Dart (i.e. the index of the added line)
+	* The dart is defined as a fixed point for PHI1.
+	*/
+	inline Dart add_dart_internal()
+	{
+		Dart d = Inherit::add_dart_internal();
+		(*phi1_)[d.index] = d;
+		(*phi_1_)[d.index] = d;
+		return d;
+	}
 
 	/*!
 	 * \brief Link two darts with the phi1 permutation what either merge or split their orbit(s).
@@ -176,39 +194,33 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
-protected:
-
-	/*!
-	* \brief add a Dart in the map
-	* @return the new Dart
-	*/
-	inline Dart add_dart_internal()
-	{
-		unsigned int di = this->add_topology_element();
-		Dart d(di);
-		(*phi1_)[di] = d;
-		(*phi_1_)[di] = d;
-		return d;
-	}
-
 	/*******************************************************************************
 	 * High-level topological operations
 	 *******************************************************************************/
 
 protected:
 
-	inline Dart add_face_topo(unsigned int nb_edges)
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face
+	 */
+	inline Dart add_face_topo(unsigned int size)
 	{
-		cgogn_message_assert(nb_edges > 0u, "Cannot create a face with no edge");
+		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
-		Dart d = this->add_dart();
-		for (unsigned int i = 1u; i < nb_edges; ++i)
+		Dart d = this->add_dart_internal();
+		for (unsigned int i = 1u; i < size; ++i)
 			cut_edge_topo(d);
 
 		return d;
 	}
 
-	inline void delete_face_topo(Dart d)
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
+	inline void remove_face_topo(Dart d)
 	{
 		Dart e = phi1(d);
 		while(e != d)
@@ -222,24 +234,20 @@ protected:
 	}
 
 	/**
-	 * \brief cut_edge
-	 * @param d
-	 * @return
+	 * \brief Cut an edge.
+	 * \param d : a dart of the edge to cut
+	 * \return the inserted new dart
+	 * The edge of d is cut by inserting a new dart after d in the PHI orbit.
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->add_dart();		// Create a new dart e
-		phi1_sew(d, e);					// Insert e between d and phi1(d)
+		Dart e = this->add_dart_internal();	// Create a new dart e
+		phi1_sew(d, e);						// Insert e between d and phi1(d)
 		return e;
 	}
 
-	inline void split_face_topo(Dart d, Dart e)
-	{
-		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
-		phi1_sew(phi_1(d), phi_1(e));
-	}
 	/**
-	 * \brief remove edge d from its face and delete it
+	 * \brief Remove edge d from its face and delete it
 	 * @param d : the edge to collapse
 	 * the edge preceeding d in the face is linked to the successor of d
 	 */
@@ -253,31 +261,21 @@ protected:
 
 	inline void reverse_face_topo(Dart d)
 	{
-		// Dart e is the first edge of the new face
-		Dart e = phi1(d);
+		Dart e = phi1(d);			// Dart e is the first edge of the new face
 
-		// Only one edge: nothing to do
-		if (e == d) return;
+		if (e == d) return;			// Only one edge: nothing to do
+		if (phi1(e) == d) return;	// Only two edges: nothing to do
 
-		// Only two edges: nothing to do
-		if (phi1(e) == d) return;
+		phi1_unsew(d);				// Detach e from the face of d
 
-		// Detach e from the face of d
-		phi1_unsew(d);
-
-		// While the face of d contains more than two edges
 		Dart dNext = phi1(d);
-		while (dNext != d)
+		while (dNext != d)			// While the face of d contains more than two edges
 		{
-			// Unsew the edge after d
-			phi1_unsew(d);
-			// Sew it after e (thus in reverse order)
-			phi1_sew(e, dNext);
+			phi1_unsew(d);			// Unsew the edge after d
+			phi1_sew(e, dNext);		// Sew it after e (thus in reverse order)
 			dNext = phi1(d);
 		}
-
-		// Sew the last edge
-		phi1_sew(e, d);
+		phi1_sew(e, d);				// Sew the last edge
 	}
 
 	/*******************************************************************************
@@ -286,16 +284,16 @@ protected:
 
 public:
 
-	/**
-	 * \brief add_face
-	 * @param nb_edges
-	 * @return
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face
 	 */
-	Face add_face(unsigned int nb_edges)
+	Face add_face(unsigned int size)
 	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+		cgogn_message_assert(size > 0, "Cannot create an empty face");
 
-		return this->to_concrete()->add_face_update_emb(this->add_face_topo(nb_edges));
+		return this->to_concrete()->add_face_update_emb(this->add_face_topo(size));
 	}
 
 	inline unsigned int degree(Face f) const
@@ -327,12 +325,6 @@ protected:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
-
-	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
@@ -351,7 +343,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
@@ -386,7 +378,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
@@ -422,21 +414,25 @@ public:
 	 * Adjacence traversal
 	 *******************************************************************************/
 
-	template <typename FUNC>
-	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		f(Vertex(phi1(v.dart)));
-		f(Vertex(phi_1(v.dart)));
-	}
+// To remove
 
-	template <typename FUNC>
-	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		f(Edge(phi1(e.dart)));
-		f(Edge(phi_1(e.dart)));
-	}
+//	template <typename FUNC>
+//	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+//		f(Vertex(phi1(v.dart)));
+//		f(Vertex(phi_1(v.dart)));
+//	}
+
+// To remove
+
+//	template <typename FUNC>
+//	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+//		f(Edge(phi1(e.dart)));
+//		f(Edge(phi_1(e.dart)));
+//	}
 };
 
 template <typename MAP_TRAITS>

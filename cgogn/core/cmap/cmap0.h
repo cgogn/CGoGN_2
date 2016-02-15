@@ -47,8 +47,14 @@ public:
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
+	static const Orbit EDGE   = Orbit::DART;
+	static const Orbit FACE   = Orbit::DART;
+	static const Orbit VOLUME = Orbit::DART;
 
 	typedef Cell<Self::VERTEX> Vertex;
+	typedef Cell<Self::EDGE> Edge;
+	typedef Cell<Self::FACE> Face;
+	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -59,6 +65,12 @@ public:
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
 	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	template <typename T>
+	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
+	template <typename T>
+	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	template <typename T>
+	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -79,22 +91,42 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
 protected:
+
+	/*!
+	* \brief Add a Dart in the map (i.e. add a line in the topology container)
+	* @return the new Dart (i.e. the index of the added line)
+	*/
 	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 		return Dart(this->add_topology_element());
 	}
 
+	/*******************************************************************************
+	 * High-level embedded operations
+	 *******************************************************************************/
+
 public:
-	Vertex add_vertex()
+
+	/*!
+	* \brief Add an embedded Dart in the map.
+	* @return the new inserted Dart
+	* If a DART attribute has been added to the Map,
+	* the inserted Dart is embedded on a new attribute element.
+	*/
+	Dart add_dart()
 	{
-		const Vertex v(this->add_dart());
+		CGOGN_CHECK_CONCRETE_TYPE;
+		const Dart d = this->add_dart_internal();
 
 		if (this->template is_orbit_embedded<DART>())
-			this->template set_embedding<DART>(v.dart, this->template add_attribute_element<DART>());
+			this->template set_embedding<DART>(d, this->template add_attribute_element<DART>());
 
-		return v;
+		return d;
 	}
 
 protected:
@@ -103,6 +135,12 @@ protected:
 	 * Orbits traversal
 	 *******************************************************************************/
 
+	template <typename FUNC>
+	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
+	{
+		f(d);
+	}
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -110,7 +148,7 @@ protected:
 					  "Orbit not supported in a CMap1");
 		switch(ORBIT)
 		{
-			case Orbit::DART: f(c.dart); break;
+			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
 			case Orbit::PHI1:
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
