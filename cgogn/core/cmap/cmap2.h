@@ -49,7 +49,10 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend class CMap2Builder_T<MapTraits>;
-	friend class DartMarker_T<Self>;
+	template<typename T>
+	friend class DartMarker_T;
+	template<typename T>
+	friend class DartMarkerStore;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
@@ -161,225 +164,11 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-		Dart d = Inherit::add_dart();
+		Dart d = Inherit::add_dart_internal();
 		(*phi2_)[d.index] = d;
 		return d;
-	}
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
-
-	protected:
-
-		inline Dart cut_edge_topo(Dart d)
-		{
-			Dart e = phi2(d);						// Get the adjacent 1D-edge
-
-			phi2_unsew(d);							// Unsew the initial 2D-edge,
-			// separating its two 1D-edges
-			Dart nd = Inherit::cut_edge_topo(d);
-			Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
-
-			phi2_sew(d, ne);						// Sew the new 1D-edges
-			phi2_sew(e, nd);						// To build the new 2D-edges
-
-			return nd;
-		}
-
-		inline void close_hole_topo(Dart d)
-		{
-			cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
-
-			Dart first = add_dart(); // First edge of the face that will fill the hole
-			phi2_sew(d, first);      // phi2-link the new edge to the hole
-
-			Dart d_next = d; // Turn around the hole
-			Dart d_phi1;     // to complete the face
-			do
-			{
-				do
-				{
-					d_phi1 = this->phi1(d_next); // Search and put in d_next
-					d_next = phi2(d_phi1);       // the next dart of the hole
-				} while (d_next != d_phi1 && d_phi1 != d);
-
-				if (d_phi1 != d)
-				{
-					Dart next = add_dart(); // Add a new edge there and link it to the face
-					this->phi1_sew(first, next); // the edge is linked to the face
-					phi2_sew(d_next, next);      // the face is linked to the hole
-				}
-			} while (d_phi1 != d);
-		}
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
-
-public:
-
-	Face add_face(unsigned int nb_edges)
-	{
-		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
-
-		Dart d = Inherit::add_face_topo(nb_edges);
-		Dart b = Inherit::add_face_topo(nb_edges);
-		Dart it = d;
-		do
-		{
-			phi2_sew(it, b);
-			it = this->phi1(it);
-			b = this->phi_1(b);
-		} while (it != d);
-
-		Face f(d);
-
-		if (this->template is_orbit_embedded<DART>())
-		{
-			this->foreach_dart_of_orbit(f, [this] (Dart df)
-			{
-				this->template set_orbit_embedding<DART>(df, this->template add_attribute_element<DART>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<VERTEX>())
-		{
-			foreach_incident_vertex(f, [this] (Vertex v)
-			{
-				this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<EDGE>())
-		{
-			foreach_incident_edge(f, [this] (Edge e)
-			{
-				this->set_orbit_embedding(e, this->template add_attribute_element<EDGE>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<FACE>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
-
-		if (this->template is_orbit_embedded<VOLUME>())
-			this->set_orbit_embedding(Volume(d), this->template add_attribute_element<VOLUME>());
-
-		return f;
-	}
-
-	inline Vertex cut_edge(Edge d)
-	{
-		const Dart e = phi2(d);
-		const Dart nd = cut_edge_topo(d);
-		const Dart ne = phi2(d);
-		const Vertex v(nd);
-
-		if(this->template is_orbit_embedded<DART>())
-		{
-			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
-			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
-		}
-
-		if (this->template is_orbit_embedded<VERTEX>())
-		{
-			this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
-		}
-
-		if (this->template is_orbit_embedded<EDGE>())
-		{
-			this->template set_embedding<EDGE>(ne, this->template get_embedding<EDGE>(d.dart));
-			this->set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
-		}
-
-		if (this->template is_orbit_embedded<FACE>())
-		{
-			this->template set_embedding<FACE>(nd, this->template get_embedding<FACE>(d.dart));
-			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(e));
-		}
-
-		if (this->template is_orbit_embedded<VOLUME>())
-		{
-			const unsigned int idx = this->template get_embedding<VOLUME>(d.dart);
-			this->template set_embedding<VOLUME>(nd, idx);
-			this->template set_embedding<VOLUME>(ne, idx);
-		}
-
-		return v;
-	}
-
-	inline void collapse_edge(Edge d)
-	{
-		const Dart d1 = this->phi1(d);
-		cgogn_message_assert(d1 != d, "collapse_edge: cannot collapse in degenerated face");
-		cgogn_message_assert(d1 != this->phi_1(d), "collapse_edge: collapse will produce degenerated face");
-
-		const Dart e = this->phi2(d);
-		cgogn_message_assert(this->phi1(e) != e, "collapse_edge: cannot collapse in degenerated face");
-		cgogn_message_assert(this->phi1(e) != this->phi_1(e), "collapse_edge: collapse will produce degenerated face");
-
-		unsigned int idx = this->template get_embedding<VERTEX>(d.dart);
-
-		Inherit::collapse_edge_topo(d);
-		Inherit::collapse_edge_topo(e);
-
-		if (this->template is_orbit_embedded<VERTEX>())
-		{
-			this->set_orbit_embedding(Vertex(d1), idx);
-		}
-	}
-
-	/**
-	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
-	 * @param d : first vertex
-	 * @param e : second vertex
-	 * Darts d and e should belong to the same face and be distinct from each other.
-	 * An edge made of two new darts is inserted between the two given vertices.
-	 */
-	inline void split_face(Dart d, Dart e)
-	{
-		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
-		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
-
-		Dart dd = this->phi_1(d);
-		Dart ee = this->phi_1(e);
-		Dart nd = Inherit::cut_edge_topo(dd);	// cut the edge before d (insert a new dart before d)
-		Dart ne = Inherit::cut_edge_topo(ee);	// cut the edge before e (insert a new dart before e)
-		this->phi1_sew(dd, ee);					// subdivide phi1 cycle at the inserted darts
-		phi2_sew(nd, ne);						// build the new 2D-edge from the inserted darts
-
-		if(this->template is_orbit_embedded<DART>())
-		{
-			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
-			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
-		}
-
-		if (this->template is_orbit_embedded<VERTEX>())
-		{
-			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(e));
-			this->template set_embedding<VERTEX>(ne, this->template get_embedding<VERTEX>(d));
-		}
-
-		if (this->template is_orbit_embedded<EDGE>())
-		{
-			this->template set_orbit_embedding<EDGE>(nd, this->template add_attribute_element<EDGE>());
-		}
-
-		if (this->template is_orbit_embedded<FACE>())
-		{
-			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(d));
-			this->template set_orbit_embedding<FACE>(e, this->template add_attribute_element<FACE>());
-		}
-
-		if (this->template is_orbit_embedded<VOLUME>())
-		{
-			const unsigned int idx = this->template get_embedding<VOLUME>(d);
-			this->template set_orbit_embedding<VOLUME>(nd, idx);
-			this->template set_orbit_embedding<VOLUME>(ne, idx);
-		}
 	}
 
 	/**
@@ -387,6 +176,8 @@ public:
 	 */
 	void close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		for (Dart d : *this)
 		{
 			if (phi2(d) == d)
@@ -431,16 +222,223 @@ public:
 		}
 	}
 
+
+	/*******************************************************************************
+	 * High-level topological operations
+	 *******************************************************************************/
+
+public:
+
+	Face add_face(unsigned int nb_edges)
+	{
+		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
+
+		Dart d = Inherit::add_face_topo(nb_edges);
+		Dart b = Inherit::add_face_topo(nb_edges);
+
+		Dart it = d;
+		do
+		{
+			phi2_sew(it, b);
+			it = this->phi1(it);
+			b = this->phi_1(b);
+		} while (it != d);
+
+		return this->to_concrete()->add_face_update_emb(d);
+	}
+
+	inline Vertex cut_edge(Edge e)
+	{
+		const Dart e2 = phi2(e);
+		const Dart nd = cut_edge_topo(e);
+
+		return this->to_concrete()->cut_edge_update_emb(e.dart, e2, nd);
+	}
+
+	/**
+	 * @brief Split the face of d and e by inserting an edge between the vertex of d and e
+	 * @param d : first vertex
+	 * @param e : second vertex
+	 * Darts d and e should belong to the same face and be distinct from each other.
+	 * An edge made of two new darts is inserted between the two given vertices.
+	 */
+	inline void split_face(Dart d, Dart e)
+	{
+		split_face_topo(d,e);
+		this->to_concrete()->split_face_update_emb(d,e);
+	}
+
 	inline unsigned int degree(Face f) const
 	{
 		return Inherit::degree(f);
 	}
 
-	inline unsigned int degree(Vertex v) const
+protected:
+
+	inline Dart cut_edge_topo(Dart d)
 	{
-		return this->nb_darts(v);
+		Dart e = phi2(d);						// Get the adjacent 1D-edge
+
+		phi2_unsew(d);							// Unsew the initial 2D-edge,
+		// separating its two 1D-edges
+		Dart nd = Inherit::cut_edge_topo(d);
+		Dart ne = Inherit::cut_edge_topo(e);	// Cut the two adjacent 1D-edges
+
+		phi2_sew(d, ne);						// Sew the new 1D-edges
+		phi2_sew(e, nd);						// To build the new 2D-edges
+
+		return nd;
 	}
 
+	inline Vertex cut_edge_update_emb(Dart e, Dart e2, Dart nd)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart ne = phi2(e);
+		const Vertex v(nd);
+
+		if(this->template is_orbit_embedded<DART>())
+		{
+			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
+			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
+		}
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
+		}
+
+		if (this->template is_orbit_embedded<EDGE>())
+		{
+			this->template set_embedding<EDGE>(ne, this->template get_embedding<EDGE>(e));
+			this->set_orbit_embedding(Edge(nd), this->template add_attribute_element<EDGE>());
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+		{
+			this->template set_embedding<FACE>(nd, this->template get_embedding<FACE>(e));
+			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(e2));
+		}
+
+		if (this->template is_orbit_embedded<VOLUME>())
+		{
+			const unsigned int idx = this->template get_embedding<VOLUME>(e);
+			this->template set_embedding<VOLUME>(nd, idx);
+			this->template set_embedding<VOLUME>(ne, idx);
+		}
+		return v;
+	}
+
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_message_assert(d != e, "split_face: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "split_face: d and e should belong to the same face");
+
+		Dart nd = Inherit::cut_edge_topo(this->phi_1(d));	// cut the edge before d (insert a new dart before d)
+		Dart ne = Inherit::cut_edge_topo(this->phi_1(e));	// cut the edge before e (insert a new dart before e)
+
+		Inherit::split_face_topo(nd, ne);					// subdivide phi1 cycle at the inserted darts
+		phi2_sew(nd, ne);									// build the new 2D-edge from the inserted darts
+	}
+
+	inline void split_face_update_emb(Dart d, Dart e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		const Dart nd = this->phi_1(e);
+		const Dart ne = this->phi_1(d);
+
+		if(this->template is_orbit_embedded<DART>())
+		{
+			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
+			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
+		}
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(d));
+			this->template set_embedding<VERTEX>(ne, this->template get_embedding<VERTEX>(e));
+		}
+
+		if (this->template is_orbit_embedded<EDGE>())
+		{
+			this->template set_orbit_embedding<EDGE>(nd, this->template add_attribute_element<EDGE>());
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+		{
+			this->template set_embedding<FACE>(ne, this->template get_embedding<FACE>(d));
+			this->template set_orbit_embedding<FACE>(e, this->template add_attribute_element<FACE>());
+		}
+
+		if (this->template is_orbit_embedded<VOLUME>())
+		{
+			const unsigned int idx = this->template get_embedding<VOLUME>(d);
+			this->template set_orbit_embedding<VOLUME>(nd, idx);
+			this->template set_orbit_embedding<VOLUME>(ne, idx);
+		}
+	}
+
+	inline Face add_face_update_emb(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		if (this->template is_orbit_embedded<DART>())
+		{
+			this->foreach_dart_of_orbit(f, [this] (Dart df)
+			{
+				this->template set_orbit_embedding<DART>(df, this->template add_attribute_element<DART>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<VERTEX>())
+		{
+			foreach_incident_vertex(f, [this] (Vertex v)
+			{
+				this->set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<EDGE>())
+		{
+			foreach_incident_edge(f, [this] (Edge e)
+			{
+				this->set_orbit_embedding(e, this->template add_attribute_element<EDGE>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+
+		if (this->template is_orbit_embedded<VOLUME>())
+			this->set_orbit_embedding(Volume(f.dart), this->template add_attribute_element<VOLUME>());
+
+		return f;
+	}
+
+	inline void close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+		Dart first = this->add_dart(); // First edge of the face that will fill the hole
+		phi2_sew(d, first);      // phi2-link the new edge to the hole
+
+		Dart d_next = d; // Turn around the hole
+		Dart d_phi1;     // to complete the face
+		do
+		{
+			do
+			{
+				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_next = phi2(d_phi1);       // the next dart of the hole
+			} while (d_next != d_phi1 && d_phi1 != d);
+
+			if (d_phi1 != d)
+			{
+				Dart next = this->add_dart(); // Add a new edge there and link it to the face
+				this->phi1_sew(first, next); // the edge is linked to the face
+				phi2_sew(d_next, next);      // the face is linked to the hole
+			}
+		} while (d_phi1 != d);
+	}
 
 	/*******************************************************************************
 	 * Orbits traversal
@@ -651,7 +649,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<VERTEX>(d);
+				marker.template mark_orbit<VERTEX>(d);
 				f(d);
 			}
 		});
@@ -666,7 +664,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<EDGE>(d);
+				marker.template mark_orbit<EDGE>(d);
 				f(d);
 			}
 		});
@@ -681,7 +679,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<FACE>(d);
+				marker.template mark_orbit<FACE>(d);
 				f(d);
 			}
 		});

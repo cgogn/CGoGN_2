@@ -29,27 +29,28 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class IHCMap2Regular : public IHCMap2<MAP_TRAITS>
+template <typename MAP_TRAITS, typename MAP_TYPE>
+class IHCMap2Regular_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-
-	typedef IHCMap2<MAP_TRAITS> Inherit;
-	typedef IHCMap2Regular<MAP_TRAITS> Self;
+	using MapType = MAP_TYPE;
+	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = IHCMap2Regular_T<MAP_TRAITS,MAP_TYPE>;
+	friend typename Inherit::Inherit_CMAP;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Regular() : Inherit()
+	IHCMap2Regular_T() : Inherit()
 	{}
 
-	IHCMap2Regular(const Self&) = delete;
-	IHCMap2Regular(Self&&) = delete;
+	IHCMap2Regular_T(const Self&) = delete;
+	IHCMap2Regular_T(Self&&) = delete;
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
-	inline ~IHCMap2Regular() = default;
+	inline ~IHCMap2Regular_T() = default;
 
 public:
 
@@ -255,10 +256,26 @@ public:
 
 		Inherit::set_current_level(cur) ;
 	}
+protected:
+	inline Face add_face_update_emb(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		std::cerr << "IHCMap2Regular_T::add_face_update_emb method is not implemented yet." << std::endl;
+		return f;
+	}
 };
 
+template <typename MAP_TRAITS>
+struct IHCMap2RegularType
+{
+	typedef IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>> TYPE;
+};
+
+template <typename MAP_TRAITS>
+using IHCMap2Regular = IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>>;
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular<DefaultMapTraits>;
+extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular_T<DefaultMapTraits, IHCMap2RegularType<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_))
 
 } // namespace cgogn

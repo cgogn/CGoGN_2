@@ -44,8 +44,12 @@ public:
 	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
 	friend typename Self::Inherit;
-	friend class DartMarker_T<Self>;
+	template<typename T>
+	friend class DartMarker_T;
+	template<typename T>
+	friend class DartMarkerStore;
 
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
 	static const Orbit EDGE   = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -178,23 +182,13 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
 		(*phi1_)[di] = d;
 		(*phi_1_)[di] = d;
 		return d;
-	}
-
-	/*!
-	 * \brief remove a dart from the map
-	 * \param d: the dart to remove
-	 */
-	inline void remove_dart(Dart d)
-	{
-		this->remove_topology_element(d.index);
 	}
 
 	/*******************************************************************************
@@ -207,24 +201,24 @@ protected:
 	{
 		cgogn_message_assert(nb_edges > 0u, "Cannot create a face with no edge");
 
-		Dart d = this->to_concrete()->add_dart();
+		Dart d = this->add_dart();
 		for (unsigned int i = 1u; i < nb_edges; ++i)
 			cut_edge_topo(d);
 
 		return d;
 	}
 
-	inline void remove_face_topo(Dart d)
+	inline void delete_face_topo(Dart d)
 	{
 		Dart e = phi1(d);
 		while(e != d)
 		{
 			Dart f = phi1(e);
-			remove_dart(e);
+			this->remove_dart(e);
 			e = f;
 		}
 
-		remove_dart(d);
+		this->remove_dart(d);
 	}
 
 	/**
@@ -234,11 +228,16 @@ protected:
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->to_concrete()->add_dart();	// Create a new dart e
-		phi1_sew(d, e);								// Insert e between d and phi1(d)
+		Dart e = this->add_dart();		// Create a new dart e
+		phi1_sew(d, e);					// Insert e between d and phi1(d)
 		return e;
 	}
 
+	inline void split_face_topo(Dart d, Dart e)
+	{
+		cgogn_assert(d != e && this->same_cell(Face(d), Face(e)));
+		phi1_sew(phi_1(d), phi_1(e));
+	}
 	/**
 	 * \brief remove edge d from its face and delete it
 	 * @param d : the edge to collapse
@@ -249,7 +248,7 @@ protected:
 		Dart e = phi_1(d);
 		cgogn_message_assert(e != d,"phi1_unsew: Cannot collapse fixed point");
 		phi1_unsew(e);
-		remove_dart(d);
+		this->remove_dart(d);
 	}
 
 	inline void reverse_face_topo(Dart d)
@@ -296,20 +295,7 @@ public:
 	{
 		cgogn_message_assert(nb_edges > 0, "Cannot create a face with no edge");
 
-		const Face f(this->add_face_topo(nb_edges));
-
-		if (this->template is_orbit_embedded<Orbit::DART>())
-		{
-			foreach_dart_of_orbit(f, [this](Dart d)
-			{
-				this->template set_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<Orbit::PHI1>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
-
-		return f;
+		return this->to_concrete()->add_face_update_emb(this->add_face_topo(nb_edges));
 	}
 
 	inline unsigned int degree(Face f) const
@@ -318,6 +304,23 @@ public:
 	}
 
 protected:
+
+	Face add_face_update_emb(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		if (this->template is_orbit_embedded<DART>())
+		{
+			foreach_dart_of_orbit(f, [this](Dart d)
+			{
+				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+
+		return f;
+	}
 
 	/*******************************************************************************
 	 * Orbits traversal

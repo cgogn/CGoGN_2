@@ -49,8 +49,10 @@ public:
 	friend typename Self::Inherit;
 	friend typename Inherit::Inherit;
 	friend typename Inherit::Inherit::Inherit;
-	friend class DartMarker_T<Self>;
-	friend class cgogn::DartMarkerStore<Self>;
+	template<typename T>
+	friend class DartMarker_T;
+	template<typename T>
+	friend class DartMarkerStore;
 	friend class CMap3Builder_T<MapTraits>;
 
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
@@ -215,6 +217,63 @@ protected:
 		return dres;
 	}
 
+	inline void close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+		DartMarkerStore dmarker(*this);
+		DartMarkerStore boundary_marker(*this);
+
+		std::vector<Dart> visitedFaces;	// Faces that are traversed
+		visitedFaces.reserve(1024);
+
+		visitedFaces.push_back(d);		// Start with the face of d
+		dmarker.template mark_orbit<Orbit::PHI1>(d);
+
+		unsigned int count = 0u;
+
+		// For every face added to the list
+		for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
+		{
+			Dart it = visitedFaces[i];
+			Dart f = it;
+
+			const Dart b = this->add_face_topo(this->degree(Face(f)));
+			boundary_marker.template mark_orbit<Orbit::PHI1>(b);
+			++count;
+
+			Dart bit = b;
+			do
+			{
+				Dart e = this->phi3(this->phi2(f));;
+				bool found = false;
+				do
+				{
+					if (phi3(e) == e)
+					{
+						found = true;
+						if(!dmarker.is_marked(e))
+						{
+							visitedFaces.push_back(e);
+							dmarker.template mark_orbit<Orbit::PHI1>(e);
+						}
+					} else {
+						if(boundary_marker.is_marked(e))
+						{
+							found = true;
+							this->phi2_sew(e, bit);
+						} else {
+							e = this->phi3(this->phi2(e));
+						}
+					}
+				} while(!found);
+
+				phi3_sew(f, bit);
+				bit = this->phi_1(bit);
+				f = this->phi1(f);
+			} while(f != it);
+		}
+	}
+
 	/**
 	 * @brief close_map : /!\ DO NOT USE /!\ Close the map removing topological holes (only for import/creation)
 	 * Add volumes to the map that close every existing hole.
@@ -222,6 +281,7 @@ protected:
 	 */
 	inline unsigned int close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
 		for (Dart d: (*this))
@@ -229,57 +289,69 @@ protected:
 			if (phi3(d) == d)
 			{
 				++nb;
-				DartMarkerStore dmarker(*this);
-				DartMarkerStore boundary_marker(*this);
+				close_hole_topo(d);
+				const Dart new_volume = phi3(d);
 
-				std::vector<Dart> visitedFaces;	// Faces that are traversed
-				visitedFaces.reserve(1024);
-
-				visitedFaces.push_back(d);		// Start with the face of d
-				dmarker.template mark_orbit<Orbit::PHI1>(d);
-
-				unsigned int count = 0u;
-
-				// For every face added to the list
-				for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
+				if (this->template is_orbit_embedded<Orbit::DART>())
 				{
-					Dart it = visitedFaces[i];
-					Dart f = it;
-
-					const Dart b = this->add_face_topo(this->degree(Face(f)));
-					boundary_marker.template mark_orbit<Orbit::PHI1>(b);
-					++count;
-
-					Dart bit = b;
-					do
+					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						Dart e = this->phi3(this->phi2(f));;
-						bool found = false;
-						do
-						{
-							if (phi3(e) == e)
-							{
-								found = true;
-								if(!dmarker.is_marked(e))
-								{
-									visitedFaces.push_back(e);
-									dmarker.template mark_orbit<Orbit::PHI1>(e);
-								}
-							} else {
-								if(boundary_marker.is_marked(e))
-								{
-									found = true;
-									this->phi2_sew(e, bit);
-								} else {
-									e = this->phi3(this->phi2(e));
-								}
-							}
-						} while(!found);
+						this->template set_orbit_embedding<Orbit::DART>(wd, this->template add_attribute_element<DART>());
+					});
+				}
 
-						phi3_sew(f, bit);
-						bit = this->phi_1(bit);
-						f = this->phi1(f);
-					} while(f != it);
+				if (this->template is_orbit_embedded<Orbit::PHI21>()) // cmap2 vertices
+				{
+
+					Inherit::foreach_incident_vertex(Volume(new_volume), [this] (Cell<Orbit::PHI21> v)
+					{
+						this->set_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
+					});
+				}
+
+				if (this->template is_orbit_embedded<Orbit::PHI2>()) // cmap2 edges
+				{
+					Inherit::foreach_incident_edge(Volume(new_volume), [this] (Cell<Orbit::PHI2> e)
+					{
+						this->set_orbit_embedding(e, this->template add_attribute_element<Orbit::PHI2>());
+					});
+				}
+
+				if (this->template is_orbit_embedded<Orbit::PHI1>()) // cmap2 faces
+				{
+					Inherit::foreach_incident_face(Volume(new_volume), [this] (Cell<Orbit::PHI1> f)
+					{
+						this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+					});
+				}
+
+				if (this->template is_orbit_embedded<Orbit::PHI21_PHI31>())
+				{
+					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
+					{
+						this->template set_embedding<Orbit::PHI21_PHI31>(wd, this->template get_embedding<Orbit::PHI21_PHI31>(this->phi1(phi3(wd))));
+					});
+				}
+
+				if (this->template is_orbit_embedded<Orbit::PHI2_PHI3>())
+				{
+					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
+					{
+						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+					});
+				}
+
+				if (this->template is_orbit_embedded<Orbit::PHI1_PHI3>())
+				{
+					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
+					{
+						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+					});
+
+				}
+				if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
+				{
+					this->template set_orbit_embedding<Orbit::PHI1_PHI2>(new_volume, this->template add_attribute_element<Orbit::PHI1_PHI2>());
 				}
 			}
 		}
@@ -321,10 +393,9 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-		Dart d = Inherit::add_dart();
+		Dart d = Inherit::add_dart_internal();
 		(*phi3_)[d.index] = d;
 		return d;
 	}

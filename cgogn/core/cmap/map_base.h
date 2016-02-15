@@ -136,6 +136,16 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
+	inline Dart add_dart()
+	{
+		return this->to_concrete()->add_dart_internal();
+	}
+
+	inline void remove_dart(Dart d)
+	{
+		this->remove_topology_element(d.index);
+	}
+
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/

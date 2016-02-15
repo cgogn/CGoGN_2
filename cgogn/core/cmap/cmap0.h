@@ -47,14 +47,8 @@ public:
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::DART;
-	static const Orbit EDGE   = Orbit::DART;
-	static const Orbit FACE   = Orbit::DART;
-	static const Orbit VOLUME = Orbit::DART;
 
 	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -86,7 +80,7 @@ public:
 	Self& operator=(Self &&) = delete;
 
 protected:
-	inline Dart add_dart()
+	inline Dart add_dart_internal()
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 		return Dart(this->add_topology_element());
@@ -95,7 +89,7 @@ protected:
 public:
 	Vertex add_vertex()
 	{
-		const Vertex v(this->to_concrete()->add_dart());
+		const Vertex v(this->add_dart());
 
 		if (this->template is_orbit_embedded<DART>())
 			this->template set_embedding<DART>(v.dart, this->template add_attribute_element<DART>());
