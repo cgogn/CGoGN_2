@@ -261,6 +261,7 @@ protected:
 		std::string line;
 		line.reserve(512);
 
+		// local function for reading double with comment ignoring
 		auto read_double = [&fp,&line]() -> double
 		{
 			fp >> line;
@@ -272,6 +273,7 @@ protected:
 			return std::stod(line);
 		};
 
+		// local function for reading int with comment ignoring
 		auto read_uint = [&fp,&line]() -> unsigned int
 		{
 			fp >> line;
@@ -294,6 +296,7 @@ protected:
 			return false;
 		}
 
+		// check if binary file
 		if (line.rfind("BINARY") != std::string::npos)
 		{
 			return import_OFF_BIN<VEC3>(fp);
@@ -344,15 +347,16 @@ protected:
 		return true;
 	}
 
-	inline unsigned int changeEndianness(unsigned int x)
-	{
-		return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
-	}
-
-
 	template <typename VEC3>
 	bool import_OFF_BIN(std::ifstream& fp)
 	{
+
+		// local function for little/big endian conversion
+		auto changeEndianness = [](unsigned int x) -> unsigned int
+		{
+			return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
+		};
+
 		char buffer1[12];
 		fp.read(buffer1,12);
 
