@@ -648,14 +648,9 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT_OUT>),
 					  "Wrong function cell parameter type");
 
-		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit<ORBIT_IN>(v, [&] (Dart d)
 		{
-			if (!marker.is_marked(d))
-			{
-				marker.template mark_orbit<ORBIT_OUT>(d);
 				f(Cell<ORBIT_OUT>(d));
-			}
 		});
 	}
 
