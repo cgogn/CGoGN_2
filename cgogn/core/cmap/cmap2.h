@@ -484,6 +484,11 @@ public:
 		return Inherit::degree(f);
 	}
 
+	inline unsigned int degree(Vertex v) const
+	{
+		return this->nb_darts(v);
+	}
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/

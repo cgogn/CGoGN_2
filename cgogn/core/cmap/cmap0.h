@@ -46,15 +46,6 @@ public:
 	friend class DartMarker_T<Self>;
 
 	static const Orbit DART	  = Orbit::DART;
-	static const Orbit VERTEX = Orbit::DART;
-	static const Orbit EDGE   = Orbit::DART;
-	static const Orbit FACE   = Orbit::DART;
-	static const Orbit VOLUME = Orbit::DART;
-
-	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -64,13 +55,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
-	template <typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
-	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
-	template <typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
+	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
