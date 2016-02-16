@@ -107,7 +107,7 @@ protected:
 	}
 
 	/*******************************************************************************
-	 * High-level embedded operations
+	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
 public:

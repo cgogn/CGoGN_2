@@ -195,7 +195,7 @@ public:
 	}
 
 	/*******************************************************************************
-	 * High-level topological operations
+	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
 protected:
@@ -216,6 +216,36 @@ protected:
 		return d;
 	}
 
+public:
+
+	/*!
+	 * \brief Add an embedded face in the map.
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face. If the map has DART or FACE attributes,
+	 * the inserted darts are automatically embedded on new attribute elements.
+	 */
+	Face add_face(unsigned int size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Face f(add_face_topo(size));
+
+		if (this->template is_orbit_embedded<DART>())
+		{
+			foreach_dart_of_orbit(f, [this](Dart d)
+			{
+				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
+			});
+		}
+
+		if (this->template is_orbit_embedded<FACE>())
+			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+
+		return f;
+	}
+
+protected:
+
 	/*!
 	 * \brief Remove a face from the map.
 	 * \param d : a dart of the face to remove
@@ -235,9 +265,9 @@ protected:
 
 	/**
 	 * \brief Cut an edge.
-	 * \param d : a dart of the edge to cut
+	 * \param d : the dart that represents the edge to cut
 	 * \return the inserted new dart
-	 * The edge of d is cut by inserting a new dart after d in the PHI orbit.
+	 * The edge of d is cut by inserting a new dart after d in the Phi1 orbit.
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
@@ -278,51 +308,16 @@ protected:
 		phi1_sew(e, d);				// Sew the last edge
 	}
 
-	/*******************************************************************************
-	 * High-level embedded operations
-	 *******************************************************************************/
-
-public:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of darts in the built face
-	 * \return A dart of the built face
-	 */
-	Face add_face(unsigned int size)
-	{
-		cgogn_message_assert(size > 0, "Cannot create an empty face");
-
-		return this->to_concrete()->add_face_update_emb(this->add_face_topo(size));
-	}
-
 	inline unsigned int degree(Face f) const
 	{
 		return this->nb_darts(f);
 	}
 
-protected:
-
-	Face add_face_update_emb(Face f)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-		if (this->template is_orbit_embedded<DART>())
-		{
-			foreach_dart_of_orbit(f, [this](Dart d)
-			{
-				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
-			});
-		}
-
-		if (this->template is_orbit_embedded<FACE>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
-
-		return f;
-	}
-
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
@@ -396,19 +391,21 @@ public:
 	 * Incidence traversal
 	 *******************************************************************************/
 
-	template <typename FUNC>
-	inline void foreach_incident_vertex(Face f, const FUNC& func) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
-	}
+// To remove : on a pas la notion de Vertex ou de Edge ici ...
 
-	template <typename FUNC>
-	inline void foreach_incident_edge(Face f, const FUNC& func) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
-	}
+//	template <typename FUNC>
+//	inline void foreach_incident_vertex(Face f, const FUNC& func) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+//		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
+//	}
+
+//	template <typename FUNC>
+//	inline void foreach_incident_edge(Face f, const FUNC& func) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+//		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
+//	}
 
 	/*******************************************************************************
 	 * Adjacence traversal
