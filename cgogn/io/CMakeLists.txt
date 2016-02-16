@@ -6,6 +6,7 @@ set(HEADER_FILES
 	surface_import.h
 	volume_import.h
 	map_import.h
+	map_export.h
 	dll.h
 	)
 

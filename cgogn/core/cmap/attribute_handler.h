@@ -350,6 +350,15 @@ public:
 	}
 
 	/**
+	 * \brief getDataVector
+	 * @return
+	 */
+	TChunkArray* get_data()
+	{
+		return chunk_array_;
+	}
+
+	/**
 	 * \brief operator []
 	 * @param c
 	 * @return
