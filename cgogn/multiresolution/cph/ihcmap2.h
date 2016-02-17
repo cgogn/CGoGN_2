@@ -196,6 +196,8 @@ public:
 	*/
 	inline void init_dart(Dart d)
 	{
+		Inherit_CMAP::init_dart(d);
+
 		Inherit_CPH::set_edge_id(d, 0);
 		Inherit_CPH::set_dart_level(d, Inherit_CPH::get_current_level());
 

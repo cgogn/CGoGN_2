@@ -199,9 +199,9 @@ public:
 		* \brief add a Dart in the map
 		* @return the new Dart
 		*/
-	inline Dart add_dart_internal()
+	inline void init_dart(Dart d)
 	{
-		Dart d = Inherit_CMAP::add_dart_internal();
+		Inherit_CMAP::init_dart(d);
 
 		Inherit_CPH::set_edge_id(d, 0);
 		Inherit_CPH::set_face_id(d, 0);
@@ -215,8 +215,6 @@ public:
 		}
 
 		//		Inherit_CPH::inc_nb_darts(get_current_level());
-
-		return d ;
 	}
 
 protected:
