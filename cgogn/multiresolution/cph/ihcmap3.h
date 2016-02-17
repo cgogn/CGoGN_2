@@ -108,8 +108,6 @@ protected:
 	{
 		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
 		this->topology_.set_current_browser(cph_browser);
-
-		// Inherit_CPH::new_level_darts();
 	}
 
 public:
@@ -203,6 +201,7 @@ public:
 	{
 		Inherit_CMAP::init_dart(d);
 
+		Inherit_CPH::inc_nb_darts();
 		Inherit_CPH::set_edge_id(d, 0);
 		Inherit_CPH::set_face_id(d, 0);
 		Inherit_CPH::set_dart_level(d, Inherit_CPH::get_current_level());
@@ -211,10 +210,7 @@ public:
 		if(Inherit_CPH::get_current_level() > Inherit_CPH::get_maximum_level())
 		{
 			Inherit_CPH::set_maximum_level(Inherit_CPH::get_current_level());
-			// Inherit_CPH::new_level_darts();
 		}
-
-		//		Inherit_CPH::inc_nb_darts(get_current_level());
 	}
 
 protected:

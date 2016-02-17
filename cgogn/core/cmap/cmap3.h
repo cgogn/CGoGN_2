@@ -98,9 +98,36 @@ protected:
 		phi3_ = this->topology_.template add_attribute<Dart>("phi3");
 	}
 
+public:
+
+	CMap3_T() : Inherit()
+	{
+		init();
+	}
+
+	~CMap3_T() override
+	{}
+
+	CMap3_T(Self const&) = delete;
+	CMap3_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
+
+protected:
+
+	/**
+	* \brief Init an newly added dart.
+	* The dart is defined as a fixed point for PHI3.
+	*/
+	inline void init_dart(Dart d)
+	{
+		Inherit::init_dart(d);
+		(*phi3_)[d.index] = d;
+	}
 
 	/**
 	 * \brief Link dart d with dart e by an involution
@@ -117,7 +144,7 @@ protected:
 	}
 
 	/**
-	 * \brief Unlink the current dart by an involution
+	 * \brief Remove the phi3 link between the current dart and its linked dart
 	 * @param d the dart to unlink
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
@@ -128,6 +155,28 @@ protected:
 		(*phi3_)[d.index] = d;
 		(*phi3_)[e.index] = e;
 	}
+
+	/*******************************************************************************
+	 * Basic topological operations
+	 *******************************************************************************/
+
+public:
+
+	/**
+	 * \brief phi3
+	 * @param d
+	 * @return phi3(d)
+	 */
+	inline Dart phi3(Dart d) const
+	{
+		return (*phi3_)[d.index];
+	}
+
+	/*******************************************************************************
+	 * High-level embedded and topological operations
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
@@ -353,51 +402,6 @@ protected:
 	}
 
 public:
-
-	CMap3_T() : Inherit()
-	{
-		init();
-	}
-
-	~CMap3_T() override
-	{}
-
-	CMap3_T(Self const&) = delete;
-	CMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
-	/*******************************************************************************
-	 * Basic topological operations
-	 *******************************************************************************/
-
-	/**
-	 * \brief phi3
-	 * @param d
-	 * @return phi3(d)
-	 */
-	inline Dart phi3(Dart d) const
-	{
-		return (*phi3_)[d.index];
-	}
-
-protected:
-
-	/**
-	* \brief add a Dart in the map
-	* @return the new Dart
-	*/
-	inline void init_dart(Dart d)
-	{
-		Inherit::init_dart(d);
-		(*phi3_)[d.index] = d;
-	}
-
-public:
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
 
 	inline unsigned int degree(Face f) const
 	{

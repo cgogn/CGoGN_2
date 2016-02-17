@@ -116,6 +116,8 @@ public:
 	 * Low-level topological operations
 	 *******************************************************************************/
 
+protected:
+
 	/**
 	* \brief Init an newly added dart.
 	* The dart is defined as a fixed point for PHI2.
@@ -141,7 +143,7 @@ public:
 	}
 
 	/**
-	 * \brief Remove the phi2 link of the current dart and its linked dart
+	 * \brief Remove the phi2 link between the current dart and its linked dart
 	 * @param d the dart to unlink
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
@@ -242,11 +244,16 @@ public:
 	}
 
 protected:
-	void merge_adjacent_edge(Dart d)	{
+	void merge_adjacent_edges_topo(Dart d)	{
 		Dart e = this->phi_1(this->phi2(d));
 		cgogn_message_assert(d == this->phi_1(this->phi2(e)),
 							 "merge_adjacent_edge: the degree of the vertex of d should be 2");
+// TODO
+	}
 
+	void merge_adjacent_faces_topo(Dart d)	{
+		Dart e = this->phi2(d);
+// TODO
 	}
 
 protected:
@@ -831,8 +838,6 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Or
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Orbit::PHI1_PHI2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
-
-
 
 } // namespace cgogn
 

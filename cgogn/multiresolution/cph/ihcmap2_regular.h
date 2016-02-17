@@ -36,7 +36,11 @@ public:
 	using MapType = MAP_TYPE;
 	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = IHCMap2Regular_T<MAP_TRAITS,MAP_TYPE>;
+
 	friend typename Inherit::Inherit_CMAP;
+	friend typename Inherit::Inherit_CMAP::Inherit;
+	friend typename Inherit::Inherit_CMAP::Inherit::Inherit;
+	friend typename Inherit::Inherit_CMAP::Inherit::Inherit::Inherit;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -51,6 +55,21 @@ public:
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
 	inline ~IHCMap2Regular_T() = default;
+
+	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
+protected:
+
+	/**
+	* \brief Init an newly added dart.
+	* The dart is added to the current level of resolution
+	*/
+	inline void init_dart(Dart d)
+	{
+		Inherit::init_dart(d);
+	}
 
 public:
 

@@ -33,10 +33,18 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class IHCMap2Adaptive_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-	using MapType = MAP_TYPE;
-	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
-	using Self = IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE>;
-	friend class Inherit::Inherit_CMAP;
+
+	static const int PRIM_SIZE = 1;
+
+	typedef MAP_TRAITS MapTraits;
+	typedef MAP_TYPE MapType;
+	typedef IHCMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
+	typedef IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE> Self;
+
+	friend typename Inherit::Inherit_CMAP;
+	friend typename Inherit::Inherit_CMAP::Inherit;
+	friend typename Inherit::Inherit_CMAP::Inherit::Inherit;
+	friend typename Inherit::Inherit_CMAP::Inherit::Inherit::Inherit;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -54,10 +62,26 @@ public:
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
 
-public:
+	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
+
+protected:
+
+	/**
+	* \brief Init an newly added dart.
+	* The dart is added to the current level of resolution
+	*/
+	inline void init_dart(Dart d)
+	{
+		Inherit::init_dart(d);
+	}
+
 	/***************************************************
 	 *               CELLS INFORMATION                 *
 	 ***************************************************/
+
+public:
 
 	/**
 	 * Return the level of the edge of d in the current level map
@@ -388,7 +412,7 @@ protected:
 		//	unsigned int dl = Inherit::get_dart_level(e);
 		//	Inherit::set_dart_level(Inherit::phi1(e), dl);
 		//	Inherit::collapseEdge(e);
-		this->uncut_edge(d);
+		this->merge_adjacent_edges_topo(d);
 		Inherit::set_current_level(cur);
 	}
 
@@ -531,7 +555,7 @@ public:
 				Inherit::set_current_level(cur + 1);
 				Dart innerEdge = Inherit::phi1(fit);
 				Inherit::set_current_level(Inherit::get_maximum_level());
-				this->merge_faces(innerEdge);
+				this->merge_adjacent_faces_topo(innerEdge);
 				Inherit::set_current_level(cur);
 				fit = this->phi1(fit);
 			} while(fit != d);
@@ -541,7 +565,7 @@ public:
 			Inherit::set_current_level(cur + 1);
 			Dart centralV = Inherit::phi1(Inherit::phi1(d));
 			Inherit::set_current_level(Inherit::get_maximum_level());
-			this->delete_vertex(centralV);
+// TODO			this->delete_vertex(centralV);
 			Inherit::set_current_level(cur);
 		}
 
