@@ -110,12 +110,11 @@ protected:
 	* @return the new Dart (i.e. the index of the added line)
 	* The dart is defined as a fixed point for PHI1.
 	*/
-	inline Dart add_dart_internal()
+	inline void init_dart(Dart d)
 	{
-		Dart d = Inherit::add_dart_internal();
+		Inherit::init_dart(d);
 		(*phi1_)[d.index] = d;
 		(*phi_1_)[d.index] = d;
-		return d;
 	}
 
 	/*!
@@ -199,7 +198,7 @@ protected:
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
-		Dart d = this->add_dart_internal();
+		Dart d = this->add_dart();
 		for (unsigned int i = 1u; i < size; ++i)
 			cut_edge_topo(d);
 
@@ -261,8 +260,8 @@ protected:
 	 */
 	inline Dart cut_edge_topo(Dart d)
 	{
-		Dart e = this->add_dart_internal();	// Create a new dart e
-		phi1_sew(d, e);						// Insert e between d and phi1(d)
+		Dart e = this->add_dart();	// Create a new dart e
+		phi1_sew(d, e);				// Insert e between d and phi1(d)
 		return e;
 	}
 

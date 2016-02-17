@@ -138,7 +138,9 @@ protected:
 
 	inline Dart add_dart()
 	{
-		return this->to_concrete()->add_dart_internal();
+		Dart d(this->add_topology_element());
+		this->to_concrete()->init_dart(d);
+		return d;
 	}
 
 	inline void remove_dart(Dart d)
@@ -154,9 +156,9 @@ protected:
 	{
 		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
-		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
-			if(this->embeddings_[orbit])
+			if (this->embeddings_[orbit])
 				(*this->embeddings_[orbit])[idx] = EMBNULL;
 		}
 		return idx;

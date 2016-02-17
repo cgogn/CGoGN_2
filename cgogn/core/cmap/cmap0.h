@@ -86,9 +86,8 @@ protected:
 	* \brief Add a Dart in the map (i.e. add a line in the topology container)
 	* @return the new Dart (i.e. the index of the added line)
 	*/
-	inline Dart add_dart_internal()
+	inline void init_dart(Dart d)
 	{
-		return Dart(this->add_topology_element());
 	}
 
 	/*******************************************************************************
@@ -103,10 +102,10 @@ public:
 	* If a DART attribute has been added to the Map,
 	* the inserted Dart is embedded on a new attribute element.
 	*/
-	Dart add_dart()
+	Dart add_embedded_dart()
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		const Dart d = this->add_dart_internal();
+		const Dart d = this->add_dart();
 
 		if (this->template is_orbit_embedded<DART>())
 			this->template set_embedding<DART>(d, this->template add_attribute_element<DART>());

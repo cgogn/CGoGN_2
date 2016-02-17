@@ -395,11 +395,10 @@ protected:
 	* \brief add a Dart in the map
 	* @return the new Dart
 	*/
-	inline Dart add_dart_internal()
+	inline void init_dart(Dart d)
 	{
-		Dart d = Inherit::add_dart_internal();
+		Inherit::init_dart(d);
 		(*phi3_)[d.index] = d;
-		return d;
 	}
 
 public:

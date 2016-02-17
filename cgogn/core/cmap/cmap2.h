@@ -121,11 +121,10 @@ public:
 	* @return the new Dart (i.e. the index of the added line)
 	* The dart is defined as a fixed point for PHI2.
 	*/
-	inline Dart add_dart_internal()
+	inline void init_dart(Dart d)
 	{
-		Dart d = Inherit::add_dart_internal();
+		Inherit::init_dart(d);
 		(*phi2_)[d.index] = d;
-		return d;
 	}
 
 	/**
@@ -247,6 +246,14 @@ public:
 			this->template set_embedding<VOLUME>(nf, idx);
 		}
 		return Vertex(ne);
+	}
+
+protected:
+	void merge_adjacent_edge(Dart d)	{
+		Dart e = this->phi_1(this->phi2(d));
+		cgogn_message_assert(d == this->phi_1(this->phi2(e)),
+							 "merge_adjacent_edge: the degree of the vertex of d should be 2");
+
 	}
 
 protected:
@@ -402,24 +409,24 @@ protected:
 	{
 		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
-		Dart first = this->add_dart_internal(); // First edge of the face that will fill the hole
-		phi2_sew(d, first);      // phi2-link the new edge to the hole
+		Dart first = this->add_dart();	// First edge of the face that will fill the hole
+		phi2_sew(d, first);				// phi2-link the new edge to the hole
 
-		Dart d_next = d; // Turn around the hole
-		Dart d_phi1;     // to complete the face
+		Dart d_next = d;				// Turn around the hole
+		Dart d_phi1;					// to complete the face
 		do
 		{
 			do
 			{
-				d_phi1 = this->phi1(d_next); // Search and put in d_next
-				d_next = phi2(d_phi1);       // the next dart of the hole
+				d_phi1 = this->phi1(d_next);	// Search and put in d_next
+				d_next = phi2(d_phi1);			// the next dart of the hole
 			} while (d_next != d_phi1 && d_phi1 != d);
 
 			if (d_phi1 != d)
 			{
-				Dart next = this->add_dart_internal(); // Add a new edge there and link it to the face
-				this->phi1_sew(first, next); // the edge is linked to the face
-				phi2_sew(d_next, next);      // the face is linked to the hole
+				Dart next = this->add_dart();	// Add a new edge there and link it to the face
+				this->phi1_sew(first, next);	// the edge is linked to the face
+				phi2_sew(d_next, next);			// the face is linked to the hole
 			}
 		} while (d_phi1 != d);
 	}
