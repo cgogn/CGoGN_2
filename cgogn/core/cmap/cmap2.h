@@ -117,8 +117,7 @@ public:
 	 *******************************************************************************/
 
 	/**
-	* \brief Add a Dart in the map (i.e. add a line in the topology container)
-	* @return the new Dart (i.e. the index of the added line)
+	* \brief Init an newly added dart.
 	* The dart is defined as a fixed point for PHI2.
 	*/
 	inline void init_dart(Dart d)
@@ -216,12 +215,6 @@ public:
 		const Dart ne = cut_edge_topo(e);
 		const Dart nf = phi2(e);
 
-		if(this->template is_orbit_embedded<DART>())
-		{
-			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
-			this->template set_embedding<DART>(nf, this->template add_attribute_element<DART>());
-		}
-
 		if (this->template is_orbit_embedded<VERTEX>())
 		{
 			this->template set_orbit_embedding<VERTEX>(ne, this->template add_attribute_element<VERTEX>());
@@ -300,12 +293,6 @@ public:
 		const Dart nd = this->phi_1(d);
 		const Dart ne = this->phi_1(e);
 
-		if(this->template is_orbit_embedded<DART>())
-		{
-			this->template set_embedding<DART>(nd, this->template add_attribute_element<DART>());
-			this->template set_embedding<DART>(ne, this->template add_attribute_element<DART>());
-		}
-
 		if (this->template is_orbit_embedded<VERTEX>())
 		{
 			this->template set_embedding<VERTEX>(nd, this->template get_embedding<VERTEX>(e));
@@ -369,14 +356,6 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		Dart d = add_face_topo(size);
-
-		if (this->template is_orbit_embedded<DART>())
-		{
-			this->foreach_dart_of_orbit<FACE>(d, [this] (Dart df)
-			{
-				this->template set_orbit_embedding<DART>(df, this->template add_attribute_element<DART>());
-			});
-		}
 
 		if (this->template is_orbit_embedded<VERTEX>())
 		{
@@ -447,13 +426,6 @@ protected:
 				close_hole_topo(d);
 				const Dart new_face = phi2(d);
 
-				if (this->template is_orbit_embedded<DART>())
-				{
-					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)
-					{
-						this->template set_orbit_embedding<DART>(fd, this->template add_attribute_element<DART>());
-					});
-				}
 				if (this->template is_orbit_embedded<VERTEX>())
 				{
 					foreach_dart_of_orbit<FACE>(new_face, [this] (Dart fd)

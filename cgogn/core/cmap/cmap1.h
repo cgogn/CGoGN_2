@@ -106,8 +106,7 @@ public:
 protected:
 
 	/*!
-	* \brief Add a Dart in the map (i.e. add a line in the topology container)
-	* @return the new Dart (i.e. the index of the added line)
+	* \brief Init an newly added dart.
 	* The dart is defined as a fixed point for PHI1.
 	*/
 	inline void init_dart(Dart d)
@@ -218,14 +217,6 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		Face f(add_face_topo(size));
-
-		if (this->template is_orbit_embedded<DART>())
-		{
-			foreach_dart_of_orbit(f, [this](Dart d)
-			{
-				this->template set_orbit_embedding<DART>(d, this->template add_attribute_element<DART>());
-			});
-		}
 
 		if (this->template is_orbit_embedded<FACE>())
 			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());

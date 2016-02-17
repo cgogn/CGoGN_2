@@ -294,14 +294,6 @@ protected:
 				close_hole_topo(d);
 				const Dart new_volume = phi3(d);
 
-				if (this->template is_orbit_embedded<Orbit::DART>())
-				{
-					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
-					{
-						this->template set_orbit_embedding<Orbit::DART>(wd, this->template add_attribute_element<DART>());
-					});
-				}
-
 				if (this->template is_orbit_embedded<Orbit::PHI21>()) // cmap2 vertices
 				{
 
