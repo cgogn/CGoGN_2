@@ -65,12 +65,9 @@ public:
 	typedef CPH2<MAP_TRAITS> Inherit_CPH;
 	typedef IHCMap2_T<MAP_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit_CMAP;
-	friend typename Inherit_CMAP::Inherit;
-	friend typename Inherit_CMAP::Inherit::Inherit;
-	friend typename Inherit_CMAP::Inherit::Inherit::Inherit;
-
-	friend class DartMarker_T<Self>;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	template<typename T> friend class DartMarker_T;
+	template<typename T> friend class DartMarkerStore;
 
 	static const Orbit DART   = Inherit_CMAP::DART;
 	static const Orbit VERTEX = Inherit_CMAP::VERTEX;
@@ -250,15 +247,19 @@ public:
 	 */
 	Face add_face(unsigned int size)
 	{
-		Dart d = this->add_face_topo(size);
+		Face f = this->add_face_topo(size);
+
+		if (this->template is_orbit_embedded<DART>())
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->template new_embedding<DART>(d);
+			});
 
 		if (this->template is_orbit_embedded<VERTEX>())
-		{
-			this->foreach_dart_of_orbit<FACE>(d, [this] (Vertex v)
+			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->template set_orbit_embedding(v, this->template add_attribute_element<VERTEX>());
+				this->template new_embedding<VERTEX>(v);
 			});
-		}
 
 		if (this->template is_orbit_embedded<EDGE>())
 			cgogn_assert_not_reached("Not implemented");
@@ -269,7 +270,7 @@ public:
 		if (this->template is_orbit_embedded<VOLUME>())
 			cgogn_assert_not_reached("Not implemented");
 
-		return Face(d);
+		return f;
 	}
 
 	inline unsigned int face_degree(Dart d)

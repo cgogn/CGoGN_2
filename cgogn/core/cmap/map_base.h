@@ -182,7 +182,8 @@ protected:
 			if(this->embeddings_[orbit])
 			{
 				unsigned int emb = (*this->embeddings_[orbit])[index];
-				this->attributes_[orbit].unref_line(emb);
+				if (emb != EMBNULL)
+					this->attributes_[orbit].unref_line(emb);
 			}
 		}
 	}
@@ -336,25 +337,52 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart([this] (Dart d)
+		foreach_dart([this,ca] (Dart d)
 		{
-			(*this->embeddings_[ORBIT])[d.index] = EMBNULL;
+			(*ca)[d.index] = EMBNULL;
 		});
 
 		// initialize the indices of the existing orbits
 		foreach_cell<ORBIT, FORCE_DART_MARKING>([this] (Cell<ORBIT> c)
 		{
-			set_orbit_embedding(c, add_attribute_element<ORBIT>());
+			new_orbit_embedding(c);
 		});
 	}
 
 	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	inline unsigned int new_embedding(Dart d)
 	{
+		unsigned int emb = add_attribute_element<ORBIT>();
+		this->template set_embedding<ORBIT>(d, emb);
+		return emb;
+	}
+
+	template <Orbit ORBIT>
+	inline unsigned int copy_embedding(Dart d, Dart e)
+	{
+		unsigned int emb = this->template get_embedding<ORBIT>(e);
+		this->template set_embedding<ORBIT>(d, emb);
+		return emb;
+	}
+
+//	template <Orbit ORBIT>
+//	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+//	{
+//		ConcreteMap* cmap = to_concrete();
+//		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
+//			cmap->template set_embedding<ORBIT>(d, emb);
+//		});
+//	}
+
+	template <Orbit ORBIT>
+	inline unsigned int new_orbit_embedding(Cell<ORBIT> c)
+	{
+		unsigned int emb = add_attribute_element<ORBIT>();
 		ConcreteMap* cmap = to_concrete();
 		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
 			cmap->template set_embedding<ORBIT>(d, emb);
 		});
+		return emb;
 	}
 
 public:
@@ -374,8 +402,12 @@ public:
 		ConcreteMap* cmap = to_concrete();
 		foreach_cell<ORBIT, FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
 		{
+			// Je ne comprends pas cet algo ?! (David)
+			// foreach_cell passe une seule fois par cellule ? => counter[c] est toujours nul
+			// En plus le brin c pourrait être n'importe quel brin de la cellule
+			// donc on peut passer plusieurs fois par la cellule, en comptant des brins distincts
 			if (counter[c] > 0)
-				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+				cmap->new_orbit_embedding(c);
 			counter[c]++;
 		});
 

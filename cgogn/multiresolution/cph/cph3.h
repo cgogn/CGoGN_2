@@ -52,8 +52,6 @@ public:
 
 	~CPH3() override
 	{
-		// TODO : check the way the destructors free memory in the class hierarchy
-		// this->topo_.remove_attribute(face_id_);
 	}
 
 	CPH3(Self const&) = delete;

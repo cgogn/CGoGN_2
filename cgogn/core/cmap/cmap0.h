@@ -25,7 +25,6 @@
 #define CORE_CMAP_CMAP0_H_
 
 #include <core/cmap/map_base.h>
-#include <core/basic/dart.h>
 
 namespace cgogn
 {
@@ -35,15 +34,14 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
-
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
 	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit;
-	friend class DartMarker_T<Self>;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+
+	static const int PRIM_SIZE = 1;
 
 	static const Orbit DART	  = Orbit::DART;
 
@@ -77,31 +75,33 @@ public:
 	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
-	 * Low-level topological operations
-	 *******************************************************************************/
-
-protected:
-
-	/*!
-	* \brief Init an newly added dart.
-	* If a DART attribute has been added to the Map,
-	* the inserted Dart is embedded on a new attribute element.
-	*/
-	inline void init_dart(Dart d)
-	{
-		if (this->template is_orbit_embedded<DART>())
-			this->template set_embedding<DART>(d, this->template add_attribute_element<DART>());
-	}
-
-	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
-protected:
+public:
+
+	/*!
+	 * \brief Add an embedded vertex (or dart) in the map.
+	 * \return The added dart. If the map has DART attributes,
+	 * the inserted darts are automatically embedded on new attribute elements.
+	 */
+	Dart add_vertex()
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d = this->add_dart();
+
+		if (this->template is_orbit_embedded<DART>())
+			this->new_embedding<DART>(d);
+
+		return d;
+	}
 
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
@@ -114,18 +114,7 @@ protected:
 	{
 		static_assert(ORBIT == Orbit::DART,
 					  "Orbit not supported in a CMap1");
-		switch(ORBIT)
-		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
-			case Orbit::PHI1:
-			case Orbit::PHI2:
-			case Orbit::PHI1_PHI2:
-			case Orbit::PHI1_PHI3:
-			case Orbit::PHI2_PHI3:
-			case Orbit::PHI21:
-			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("This orbit is not handled"); break;
-		}
+		this->foreach_dart_of_DART(c, f);
 	}
 };
 

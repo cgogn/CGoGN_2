@@ -56,8 +56,6 @@ public:
 
 	~CPH2() override
 	{
-		// TODO : check the way the destructors free memory in the class hierarchy
-		// this->topo_->remove_attribute(edge_id_);
 	}
 
 	CPH2(Self const&) = delete;

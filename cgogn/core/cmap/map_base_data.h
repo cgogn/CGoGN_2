@@ -233,11 +233,11 @@ protected:
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
-public:
-
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
+
+public:
 
 	template <Orbit ORBIT>
 	inline bool is_orbit_embedded() const

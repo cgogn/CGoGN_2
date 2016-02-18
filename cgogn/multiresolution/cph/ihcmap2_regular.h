@@ -37,10 +37,7 @@ public:
 	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = IHCMap2Regular_T<MAP_TRAITS,MAP_TYPE>;
 
-	friend typename Inherit::Inherit_CMAP;
-	friend typename Inherit::Inherit_CMAP::Inherit;
-	friend typename Inherit::Inherit_CMAP::Inherit::Inherit;
-	friend typename Inherit::Inherit_CMAP::Inherit::Inherit::Inherit;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -101,7 +98,7 @@ public:
 			Dart dd = Inherit::phi1(old) ;
 			Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
 			// insert a new edge
-			//			Inherit::split_face(dd, e) ;
+			//			Inherit::cut_face(dd, e) ;
 
 			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
@@ -109,14 +106,14 @@ public:
 
 			dd = e ;
 			e = Inherit::phi1(Inherit::phi1(dd)) ;
-			//			Inherit::split_face(dd, e) ;
+			//			Inherit::cut_face(dd, e) ;
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
 			dd = e ;
 			e = Inherit::phi1(Inherit::phi1(dd)) ;
-			//			Inherit::split_face(dd, e) ;
+			//			Inherit::cut_face(dd, e) ;
 			id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;
@@ -152,7 +149,7 @@ public:
 
 			Dart dd = Inherit::phi1(old) ;
 			Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-			//			Inherit::split_face(dd, next) ;		// insert a first edge
+			//			Inherit::cut_face(dd, next) ;		// insert a first edge
 
 			Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
 			Dart ne2 = Inherit::phi2(ne) ;
@@ -170,7 +167,7 @@ public:
 			while(dd != ne)				// turn around the face and insert new edges
 			{							// linked to the central vertex
 				Dart tmp = Inherit::phi1(ne) ;
-				//				Inherit::split_face(tmp, dd) ;
+				//				Inherit::cut_face(tmp, dd) ;
 
 				Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 
@@ -219,7 +216,7 @@ public:
 				Dart dd = Inherit::phi1(old) ;
 				Dart e = Inherit::phi1(Inherit::phi1(dd)) ;
 				// insert a new edge
-				//				Inherit::split_face(dd, e) ;
+				//				Inherit::cut_face(dd, e) ;
 
 				unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
@@ -227,14 +224,14 @@ public:
 
 				dd = e ;
 				e = Inherit::phi1(Inherit::phi1(dd)) ;
-				//				Inherit::split_face(dd, e) ;
+				//				Inherit::cut_face(dd, e) ;
 				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
 
 				dd = e ;
 				e = Inherit::phi1(Inherit::phi1(dd)) ;
-				//				Inherit::split_face(dd, e) ;
+				//				Inherit::cut_face(dd, e) ;
 				id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;
@@ -243,7 +240,7 @@ public:
 			{
 				Dart dd = Inherit::phi1(old) ;
 				Dart next = Inherit::phi1(Inherit::phi1(dd)) ;
-				//				Inherit::split_face(dd, next) ;		// insert a first edge
+				//				Inherit::cut_face(dd, next) ;		// insert a first edge
 
 				Dart ne = Inherit::phi2(Inherit::phi_1(dd)) ;
 				Dart ne2 = Inherit::phi2(ne) ;
@@ -261,7 +258,7 @@ public:
 				while(dd != ne)				// turn around the face and insert new edges
 				{							// linked to the central vertex
 					Dart tmp = Inherit::phi1(ne) ;
-					//					Inherit::split_face(tmp, dd) ;
+					//					Inherit::cut_face(tmp, dd) ;
 
 					Dart nne = Inherit::phi2(Inherit::phi_1(dd)) ;
 

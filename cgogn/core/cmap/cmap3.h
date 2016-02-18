@@ -39,22 +39,17 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
-
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
 	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap3_T<MAP_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit;
-	friend typename Inherit::Inherit;
-	friend typename Inherit::Inherit::Inherit;
-	friend typename Inherit::Inherit::Inherit::Inherit;
-	template<typename T>
-	friend class DartMarker_T;
-	template<typename T>
-	friend class DartMarkerStore;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
+	template<typename T> friend class DartMarker_T;
+	template<typename T> friend class DartMarkerStore;
+
+	static const int PRIM_SIZE = 1;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
@@ -341,30 +336,31 @@ protected:
 			{
 				++nb;
 				close_hole_topo(d);
-				const Dart new_volume = phi3(d);
+				const Volume new_volume = phi3(d);
 
-				if (this->template is_orbit_embedded<Orbit::PHI21>()) // cmap2 vertices
-				{
-
-					Inherit::foreach_incident_vertex(Volume(new_volume), [this] (Cell<Orbit::PHI21> v)
+				if (this->template is_orbit_embedded<DART>())
+					foreach_dart_of_orbit(new_volume, [this] (Dart d)
 					{
-						this->set_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
+						this->template new_embedding<DART>(d);
 					});
-				}
 
-				if (this->template is_orbit_embedded<Orbit::PHI2>()) // cmap2 edges
-				{
-					Inherit::foreach_incident_edge(Volume(new_volume), [this] (Cell<Orbit::PHI2> e)
+				if (this->template is_orbit_embedded<Inherit::VERTEX>())
+					Inherit::foreach_incident_vertex(new_volume, [this] (Cell<Inherit::VERTEX> v)
 					{
-						this->set_orbit_embedding(e, this->template add_attribute_element<Orbit::PHI2>());
+						this->new_orbit_embedding(v);
 					});
-				}
 
-				if (this->template is_orbit_embedded<Orbit::PHI1>()) // cmap2 faces
-				{
-					Inherit::foreach_incident_face(Volume(new_volume), [this] (Cell<Orbit::PHI1> f)
+				if (this->template is_orbit_embedded<Inherit::EDGE>())
+					Inherit::foreach_incident_edge(new_volume, [this] (Cell<Inherit::EDGE> e)
 					{
-						this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+						this->new_orbit_embedding(e);
+					});
+
+				if (this->template is_orbit_embedded<Inherit::FACE>()) // cmap2 faces
+				{
+					Inherit::foreach_incident_face(new_volume, [this] (Cell<Inherit::FACE> f)
+					{
+						this->new_orbit_embedding(f);
 					});
 				}
 
@@ -372,7 +368,7 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI21_PHI31>(wd, this->template get_embedding<Orbit::PHI21_PHI31>(this->phi1(phi3(wd))));
+						this->template copy_embedding<Orbit::PHI21_PHI31>(wd, this->phi1(phi3(wd)));
 					});
 				}
 
@@ -380,7 +376,7 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+						this->template copy_embedding<Orbit::PHI2_PHI3>(wd, phi3(wd));
 					});
 				}
 
@@ -388,13 +384,13 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+						this->template copy_embedding<Orbit::PHI2_PHI3>(wd, phi3(wd));
 					});
 
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 				{
-					this->template set_orbit_embedding<Orbit::PHI1_PHI2>(new_volume, this->template add_attribute_element<Orbit::PHI1_PHI2>());
+					this->template new_orbit_embedding<Orbit::PHI1_PHI2>(new_volume);
 				}
 			}
 		}

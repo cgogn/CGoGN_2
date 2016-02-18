@@ -25,8 +25,6 @@
 #define CORE_CMAP_CMAP1_H_
 
 #include <core/cmap/cmap0.h>
-#include <core/basic/dart.h>
-#include <core/utils/assert.h>
 
 namespace cgogn
 {
@@ -36,19 +34,16 @@ class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
-
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
 	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit;
-	friend typename Inherit::Inherit;
-	template<typename T>
-	friend class DartMarker_T;
-	template<typename T>
-	friend class DartMarkerStore;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	template<typename T> friend class DartMarker_T;
+	template<typename T> friend class DartMarkerStore;
+
+	static const int PRIM_SIZE = 1;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -111,7 +106,6 @@ protected:
 	*/
 	inline void init_dart(Dart d)
 	{
-		Inherit::init_dart(d);
 		(*phi1_)[d.index] = d;
 		(*phi_1_)[d.index] = d;
 	}
@@ -193,7 +187,7 @@ protected:
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Dart add_face_topo(unsigned int size)
+	inline Face add_face_topo(unsigned int size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
@@ -201,7 +195,7 @@ protected:
 		for (unsigned int i = 1u; i < size; ++i)
 			cut_edge_topo(d);
 
-		return d;
+		return Face(d);
 	}
 
 public:
@@ -216,10 +210,16 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Face f(add_face_topo(size));
+		Face f = add_face_topo(size);
+
+		if (this->template is_orbit_embedded<DART>())
+			foreach_dart_of_PHI1(f.dart, [this] (Dart d)
+			{
+				this->template new_embedding<DART>(d);
+			});
 
 		if (this->template is_orbit_embedded<FACE>())
-			this->set_orbit_embedding(f, this->template add_attribute_element<FACE>());
+			this->new_orbit_embedding(f);
 
 		return f;
 	}
@@ -287,6 +287,8 @@ protected:
 		}
 		phi1_sew(e, d);				// Sew the last edge
 	}
+
+public:
 
 	inline unsigned int degree(Face f) const
 	{
@@ -371,6 +373,21 @@ public:
 	 * Incidence traversal
 	 *******************************************************************************/
 
+	template <Orbit ORBIT_OUT, Orbit ORBIT_IN, typename FUNC>
+	inline void foreach_incident_cell(Cell<ORBIT_IN> c, const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT_OUT>),
+					  "Wrong function cell parameter type");
+
+		static_assert((ORBIT_IN == FACE && ORBIT_OUT == DART),
+					  "Invalid incidence relation");
+
+		foreach_dart_of_orbit<ORBIT_IN>(c, [&] (Dart d)
+		{
+				f(Cell<ORBIT_OUT>(d));
+		});
+	}
+
 // To remove : on a pas la notion de Vertex ou de Edge ici ...
 
 //	template <typename FUNC>
@@ -431,8 +448,6 @@ extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Orbit::
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Orbit::DART>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Orbit::PHI1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
-
-
 
 } // namespace cgogn
 
