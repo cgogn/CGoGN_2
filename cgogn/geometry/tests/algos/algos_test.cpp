@@ -28,6 +28,7 @@
 #include <geometry/algos/area.h>
 #include <geometry/algos/centroid.h>
 #include <geometry/algos/normal.h>
+#include <geometry/algos/ear_triangulation.h>
 
 #include <io/map_import.h>
 
@@ -185,5 +186,82 @@ TEST(Algos_TEST, QuadNormal)
 		EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], 0.));
 		EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], 0.));
 		EXPECT_TRUE(cgogn::almost_equal_relative(cross[2], 0.));
+	}
+}
+
+
+TEST(Algos_TEST, EarTriangulation)
+{
+	// with array
+	{
+		CMap2 map;
+		VertexAttributeHandler<StdArray> vertex_position = map.add_attribute<StdArray, CMap2::VERTEX>("position");
+
+		CMap2::Face f = map.add_face(5);
+		cgogn::Dart d = f.dart;
+
+		vertex_position[CMap2::Vertex(d)] = StdArray(0,0,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = StdArray(10,0,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = StdArray(10,10,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = StdArray(5,5,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = StdArray(0,10,0);
+
+		std::vector<unsigned int> indices;
+		cgogn::geometry::compute_ear_triangulation<StdArray>(map,f,vertex_position,indices);
+		EXPECT_TRUE(indices.size() == 9);
+
+		double area = 0.0;
+		for (size_t i=0; i<indices.size(); i+=3)
+		{
+			const StdArray& A = vertex_position[indices[i]];
+			const StdArray& B = vertex_position[indices[i+1]];
+			const StdArray& C = vertex_position[indices[i+2]];
+			area += cgogn::geometry::triangle_area(A,B,C);
+		}
+		EXPECT_DOUBLE_EQ(area,75.0);
+
+		cgogn::geometry::apply_ear_triangulation<StdArray>(map,f,vertex_position);
+		EXPECT_TRUE(map.nb_cells<CMap2::FACE>()==4);
+		EXPECT_TRUE(map.nb_cells<CMap2::EDGE>()==7);
+	}
+	// with Eigen
+	{
+		CMap2 map;
+		VertexAttributeHandler<EigenVec3d> vertex_position = map.add_attribute<EigenVec3d, CMap2::VERTEX>("position");
+
+		CMap2::Face f = map.add_face(5);
+		cgogn::Dart d = f.dart;
+
+		vertex_position[CMap2::Vertex(d)] = EigenVec3d(0,0,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = EigenVec3d(10,0,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = EigenVec3d(10,10,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = EigenVec3d(5,5,0);
+		d = map.phi1(d);
+		vertex_position[CMap2::Vertex(d)] = EigenVec3d(0,10,0);
+
+		std::vector<unsigned int> indices;
+		cgogn::geometry::compute_ear_triangulation<EigenVec3d>(map,f,vertex_position,indices);
+		EXPECT_TRUE(indices.size() == 9);
+
+		double area = 0.0;
+		for (size_t i=0; i<indices.size(); i+=3)
+		{
+			const EigenVec3d& A = vertex_position[indices[i]];
+			const EigenVec3d& B = vertex_position[indices[i+1]];
+			const EigenVec3d& C = vertex_position[indices[i+2]];
+			area += cgogn::geometry::triangle_area(A,B,C);
+		}
+		EXPECT_DOUBLE_EQ(area,75.0);
+
+		cgogn::geometry::apply_ear_triangulation<EigenVec3d>(map,f,vertex_position);
+		EXPECT_TRUE(map.nb_cells<CMap2::FACE>()==4);
+		EXPECT_TRUE(map.nb_cells<CMap2::EDGE>()==7);
 	}
 }

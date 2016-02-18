@@ -328,6 +328,12 @@ public:
 		return this->nb_darts(f);
 	}
 
+	inline bool is_triangle(Face f)
+	{
+		return (f.dart == phi1(phi1(phi1(f.dart))));
+	}
+
+
 protected:
 
 	/*******************************************************************************

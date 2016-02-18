@@ -28,11 +28,11 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <climits>
 
+#include <geometry/algos/normal.h>
+#include <geometry/algos/ear_triangulation.h>
 
-
-#include <core/cmap/cmap2.h>
-//#include <core/cmap/cmap3.h>
 
 
 
@@ -73,13 +73,13 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(0xffffffff);
+	ids.get_data()->set_all_values(UINT_MAX);
 	unsigned int count = 0;
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
 		{
-			if (ids[v]==0xffffffff)
+			if (ids[v]==UINT_MAX)
 			{
 				ids[v] = count++;
 				const VEC3& P = position[v];
@@ -152,7 +152,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(0xffffffff);
+	ids.get_data()->set_all_values(UINT_MAX);
 	unsigned int count = 0;
 
 	static const unsigned int BUFFER_SZ = 1024*1024;
@@ -164,7 +164,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	{
 		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
 		{
-			if (ids[v]==0xffffffff)
+			if (ids[v]==UINT_MAX)
 			{
 				ids[v] = count++;
 				VEC3 P = position[v];
@@ -236,7 +236,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 
 /**
- * @brief export surface in obj format
+ * @brief export surface in obj format (positions only)
  * @param map the map to export
  * @param position the position attribute of vertices
  * @param filename the name of file to save
@@ -255,16 +255,18 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// set precision for float output
 	fp<< std::setprecision(12);
 
+
 	// two passes of traversal to avoid huge buffer (with same performance);
+	fp << std::endl << "# vertices" << std::endl;
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(0xffffffff);
+	ids.get_data()->set_all_values(UINT_MAX);
 	unsigned int count = 1;
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
 		{
-			if (ids[v]==0xffffffff)
+			if (ids[v]==UINT_MAX)
 			{
 				ids[v] = count++;
 				const VEC3& P = position[v];
@@ -273,6 +275,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 		});
 	});
 
+	fp << std::endl << "# faces" << std::endl;
 	// second pass to save primitives
 	std::vector<unsigned int> prim;
 	prim.reserve(20);
@@ -290,6 +293,189 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	fp.close();
 	return true;
 }
+
+
+
+/**
+ * @brief export surface in obj format (positions & normals)
+ * @param map the map to export
+ * @param position the position attribute of vertices
+ * @param filename the name of file to save
+ * @return ok ?
+ */
+template <typename VEC3, typename MAP>
+bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position,  const typename MAP::template VertexAttributeHandler<VEC3>& normal, const std::string& filename)
+{
+	std::ofstream fp(filename.c_str(), std::ios::out);
+	if (!fp.good())
+	{
+		std::cout << "Unable to open file " << filename << std::endl;
+		return false;
+	}
+
+	// set precision for float output
+	fp<< std::setprecision(12);
+
+	fp << std::endl << "# vertices" << std::endl;
+	// two passes of traversal to avoid huge buffer (with same performance);
+	// first pass to save positions & store contiguous indices (from 1 because of obj format)
+	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
+	ids.get_data()->set_all_values(UINT_MAX);
+	unsigned int count = 1;
+	std::vector<unsigned int> indices;
+	indices.reserve(map.template nb_cells<MAP::VERTEX>());
+	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+	{
+		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
+		{
+			if (ids[v]==UINT_MAX)
+			{
+				indices.push_back(map.template get_embedding<MAP::VERTEX>(v));
+				ids[v] = count++;
+				const VEC3& P = position[v];
+				fp <<"v " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+			}
+		});
+	});
+
+	fp << std::endl << "# normals" << std::endl;
+	// save normals
+	for (unsigned int i: indices)
+	{
+		const VEC3& N = normal[i];
+		fp <<"vn " << N[0] << " " << N[1] << " " << N[2] << std::endl;
+	}
+
+	fp << std::endl << "# faces" << std::endl;
+	// second pass to save primitives
+	std::vector<unsigned int> prim;
+	prim.reserve(20);
+	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+	{
+		fp << "f";
+		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
+		{
+			fp << " " << ids[v] << "//" << ids[v];
+		});
+		fp << std::endl;
+	});
+
+	map.remove_attribute(ids);
+	fp.close();
+	return true;
+}
+
+
+
+template <typename VEC3, typename MAP>
+bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+{
+	std::ofstream fp(filename.c_str(), std::ios::out);
+	if (!fp.good())
+	{
+		std::cout << "Unable to open file " << filename << std::endl;
+		return false;
+	}
+
+	// set precision for float output
+	fp<< std::setprecision(12);
+
+	fp << "solid" << filename << std::endl;
+
+	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+	{
+		std::vector<unsigned int> table_indices;
+		table_indices.reserve(768);
+
+		if (map.is_triangle(f))
+		{
+			VEC3 N = geometry::face_normal(map,f,position);
+			fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
+			fp << "  outer loop"<< std::endl;
+			map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
+			{
+				const VEC3& P = position[v];
+				fp <<"    vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+			});
+			fp << "  endloop"<< std::endl;
+			fp << "endfacet"<< std::endl;
+		}
+		else
+		{
+			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
+			for(unsigned int i=0; i<table_indices.size(); i+=3)
+			{
+				const VEC3& A = position[i];
+				const VEC3& B = position[i+1];
+				const VEC3& C = position[i+2];
+				VEC3 N = geometry::triangle_normal(A,B,C);
+				fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
+				fp << "  outer loop"<< std::endl;
+				fp <<"    vertex " << A[0] << " " << A[1] << " " << A[2] << std::endl;
+				fp <<"    vertex " << B[0] << " " << B[1] << " " << B[2] << std::endl;
+				fp <<"    vertex " << C[0] << " " << C[1] << " " << C[2] << std::endl;
+				fp << "  endloop"<< std::endl;
+				fp << "endfacet"<< std::endl;
+			}
+		}
+	});
+
+	fp << "endsolid" << filename << std::endl;
+
+	fp.close();
+	return true;
+}
+
+
+
+//template <typename VEC3, typename MAP>
+//bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+//{
+//	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
+//	if (!fp.good())
+//	{
+//		std::cout << "Unable to open file " << filename << std::endl;
+//		return false;
+//	}
+
+//	unsigned int header[21];
+//	header[20] = map.template nb_cells<MAP::FACE>();
+
+//	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+//	{
+//		VEC3 N = geometry::face_normal(map,f,position);
+
+
+//		fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
+//		fp << "  outer loop"<< std::endl;
+//		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
+//		{
+//			const VEC3& P = position[v];
+//			fp <<"    vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+//		});
+//		fp << "  endloop"<< std::endl;
+//		fp << "endfacet"<< std::endl;
+//	});
+//	fp << "endfacet"<< std::endl;
+
+//	fp << "endsolid" << filename << std::endl;
+
+//	fp.close();
+//	return true;
+//}
+
+//UINT8[80] – Header
+//UINT32 – Number of triangles
+
+//foreach triangle
+//REAL32[3] – Normal vector
+//REAL32[3] – Vertex 1
+//REAL32[3] – Vertex 2
+//REAL32[3] – Vertex 3
+//UINT16 – Attribute byte count
+//end
+
+
 
 
 
