@@ -200,15 +200,15 @@ TEST(Algos_TEST, EarTriangulation)
 		CMap2::Face f = map.add_face(5);
 		cgogn::Dart d = f.dart;
 
-		vertex_position[CMap2::Vertex(d)] = StdArray(0,0,0);
+		vertex_position[CMap2::Vertex(d)] = StdArray(0.0,0.0,0.0);
 		d = map.phi1(d);
-		vertex_position[CMap2::Vertex(d)] = StdArray(10,0,0);
+		vertex_position[CMap2::Vertex(d)] = StdArray(10.0,0.0,0.0);
 		d = map.phi1(d);
-		vertex_position[CMap2::Vertex(d)] = StdArray(10,10,0);
+		vertex_position[CMap2::Vertex(d)] = StdArray(10.0,10.0,0.0);
 		d = map.phi1(d);
-		vertex_position[CMap2::Vertex(d)] = StdArray(5,5,0);
+		vertex_position[CMap2::Vertex(d)] = StdArray(5.0,5.0,0.0);
 		d = map.phi1(d);
-		vertex_position[CMap2::Vertex(d)] = StdArray(0,10,0);
+		vertex_position[CMap2::Vertex(d)] = StdArray(0.0,10.0,0.0);
 
 		std::vector<unsigned int> indices;
 		cgogn::geometry::compute_ear_triangulation<StdArray>(map,f,vertex_position,indices);

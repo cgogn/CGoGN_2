@@ -154,7 +154,7 @@ class EarTriangulation
 		Scalar dotpr2 = Scalar(std::acos(-(v1.dot(v3))) / (M_PI/2.0));
 
 
-//		if (!convex_)	// if convex no need to test if vertex is an ear (yes)
+		if (!convex_)	// if convex no need to test if vertex is an ear (yes)
 		{
 			VEC3 nv1 = v1.cross(v2);
 			VEC3 nv2 = v1.cross(v3);
@@ -188,6 +188,9 @@ class EarTriangulation
 		vp2->value_ = dotpr2;
 		vp->length_ = Scalar((Td-Ta).squaredNorm());
 		vp2->ear_ = ears_.insert(vp2);
+
+		// polygon if convex only if all vertices have convex angle (last have ...)
+		convex_ = (*(ears_.rbegin()))->value_ < 5.0f;
 	}
 
 	Scalar compute_ear_angle(const VEC3& P1, const VEC3& P2,  const VEC3& P3)
@@ -256,7 +259,7 @@ public:
 		VertexPoly* vpp = NULL;
 		VertexPoly* prem = NULL;
 		nb_verts_ = 0;
-		unsigned int nbe = 0;
+		convex_ = true;
 		Vertex a = f.dart;
 		Vertex b = Vertex(map_.phi1(a));
 		Vertex c = Vertex(map_.phi1(b));
@@ -269,8 +272,9 @@ public:
 			Scalar val = compute_ear_angle(P1, P2, P3);
 			VertexPoly* vp = new VertexPoly(b, val, Scalar((P3-P1).squaredNorm()), vpp);
 
-			if (vp->value_ < 5.0f)
-				nbe++;
+			if (vp->value_ > 5.0f)  // concav angle
+				convex_ = false;
+
 			if (vpp == NULL)
 				prem = vp;
 			vpp = vp;
@@ -282,7 +286,6 @@ public:
 
 		VertexPoly::close(prem, vpp);
 
-		convex_ = (nbe == nb_verts_);
 		if (convex_)
 		{
 			// second pass with no test of intersections with polygons
@@ -343,7 +346,6 @@ public:
 				ears_.erase(be->prev_->ear_);
 				be = VertexPoly::erase(be); 	// and remove ear vertex from polygon
 				recompute_2_ears(be);
-				convex_ = convex_ && (*(ears_.rbegin()))->value_ < 5.0f; // ?
 			}
 			else		// finish (no need to update ears)
 			{
@@ -385,7 +387,6 @@ public:
 				be ->prev_->vert_ = Vertex(map_.phi2(map_.phi_1(be ->prev_->vert_.dart)));
 				be = VertexPoly::erase(be); 	// and remove ear vertex from polygon
 				recompute_2_ears(be);
-				convex_ = convex_ && (*(ears_.rbegin()))->value_ < 5.0f; // ??
 			}
 			else		// finish (no need to update ears)
 			{
