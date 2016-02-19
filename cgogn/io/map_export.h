@@ -391,39 +391,40 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 
 	fp << "solid" << filename << std::endl;
 
+	std::vector<unsigned int> table_indices;
+	table_indices.reserve(256);
+
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
-		std::vector<unsigned int> table_indices;
-		table_indices.reserve(768);
-
 		if (map.is_triangle(f))
 		{
-			VEC3 N = geometry::face_normal(map,f,position);
+			VEC3 N = geometry::face_normal<VEC3>(map,f,position);
 			fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
-			fp << "  outer loop"<< std::endl;
+			fp << "outer loop"<< std::endl;
 			map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
 			{
 				const VEC3& P = position[v];
-				fp <<"    vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+				fp <<"vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
 			});
-			fp << "  endloop"<< std::endl;
+			fp << "endloop"<< std::endl;
 			fp << "endfacet"<< std::endl;
 		}
 		else
 		{
+			table_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
 			for(unsigned int i=0; i<table_indices.size(); i+=3)
 			{
-				const VEC3& A = position[i];
-				const VEC3& B = position[i+1];
-				const VEC3& C = position[i+2];
+				const VEC3& A = position[table_indices[i]];
+				const VEC3& B = position[table_indices[i+1]];
+				const VEC3& C = position[table_indices[i+2]];
 				VEC3 N = geometry::triangle_normal(A,B,C);
 				fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
-				fp << "  outer loop"<< std::endl;
-				fp <<"    vertex " << A[0] << " " << A[1] << " " << A[2] << std::endl;
-				fp <<"    vertex " << B[0] << " " << B[1] << " " << B[2] << std::endl;
-				fp <<"    vertex " << C[0] << " " << C[1] << " " << C[2] << std::endl;
-				fp << "  endloop"<< std::endl;
+				fp << "outer loop"<< std::endl;
+				fp << "vertex " << A[0] << " " << A[1] << " " << A[2] << std::endl;
+				fp << "vertex " << B[0] << " " << B[1] << " " << B[2] << std::endl;
+				fp << "vertex " << C[0] << " " << C[1] << " " << C[2] << std::endl;
+				fp << "endloop"<< std::endl;
 				fp << "endfacet"<< std::endl;
 			}
 		}
@@ -482,12 +483,14 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 			buffer_floats[i++]= float(B[j]);
 		for (unsigned int j=0; j<3; ++j)
 			buffer_floats[i++]= float(C[j]);
-		fp.write(reinterpret_cast<char*>(buffer_floats),12*sizeof(float)+2); // +2 for #@! ushort at end of each triangle
+		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float)+2); // +2 for #@! ushort at end of each triangle
 	};
 
 	// indices for ear triangulation
 	std::vector<unsigned int> table_indices;
 	table_indices.reserve(768);
+
+	unsigned int nb_tri = 0;
 
 	// write face cutted in triangle if necessary
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
@@ -495,25 +498,35 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 		if (map.is_triangle(f))
 		{
 			Dart d = f.dart;
-			const VEC3& A = position[MAP::Vertex(d)];
+			const VEC3& A = position[typename MAP::Vertex(d)];
 			d = map.phi1(d);
-			const VEC3& B = position[MAP::Vertex(d)];
+			const VEC3& B = position[typename MAP::Vertex(d)];
 			d = map.phi1(d);
-			const VEC3& C = position[MAP::Vertex(d)];
+			const VEC3& C = position[typename MAP::Vertex(d)];
 			write_tri(A,B,C);
+			++nb_tri;
 		}
 		else
 		{
+			table_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
 			for(unsigned int i=0; i<table_indices.size(); i+=3)
 			{
-				const VEC3& A = position[i];
-				const VEC3& B = position[i+1];
-				const VEC3& C = position[i+2];
+				const VEC3& A = position[table_indices[i]];
+				const VEC3& B = position[table_indices[i+1]];
+				const VEC3& C = position[table_indices[i+2]];
 				write_tri(A,B,C);
+				++nb_tri;
 			}
 		}
 	});
+
+	// update nb of triangles in file if necessary
+	if (nb_tri != header[20])
+	{
+		fp.seekp(80);
+		fp.write(reinterpret_cast<char*>(&nb_tri),sizeof(unsigned int));
+	}
 
 	fp.close();
 	return true;
