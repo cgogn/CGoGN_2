@@ -69,16 +69,18 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	static const Orbit DART   = Inherit_CMAP::DART;
-	static const Orbit VERTEX = Inherit_CMAP::VERTEX;
-	static const Orbit EDGE   = Inherit_CMAP::EDGE;
-	static const Orbit FACE   = Inherit_CMAP::FACE;
-	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
+//	static const Orbit DART   = Inherit_CMAP::DART;
+//	static const Orbit VERTEX = Inherit_CMAP::VERTEX;
+//	static const Orbit EDGE   = Inherit_CMAP::EDGE;
+//	static const Orbit FACE   = Inherit_CMAP::FACE;
+//	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
-	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
+	typedef Cell<Orbit::DART>		Vertex0;
+	typedef Cell<Orbit::PHI21>		Vertex2;
+	typedef Cell<Orbit::PHI2>		Edge2;
+	typedef Cell<Orbit::PHI1>		Face2;
+	typedef Cell<Orbit::PHI1_PHI2>	Volume2;
+
 
 	template <typename T>
 	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
@@ -88,15 +90,15 @@ public:
 	template<typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
 	template<typename T>
-	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
+	using DartAttributeHandler = AttributeHandler<T, Orbit::DART>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Orbit::PHI21>;
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Orbit::PHI2>;
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Orbit::PHI1>;
 	template<typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
+	using VolumeAttributeHandler = AttributeHandler<T, Orbit::PHI1_PHI2>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -245,29 +247,29 @@ public:
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 * Actually a FACE attribute is created, if needed, for the new face.
 	 */
-	Face add_face(unsigned int size)
+	Face2 add_face(unsigned int size)
 	{
-		Face f = this->add_face_topo(size);
+		Face2 f = this->add_face_topo(size);
 
-		if (this->template is_orbit_embedded<DART>())
+		if (this->template is_orbit_embedded<Orbit::DART>())
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->template new_embedding<DART>(d);
+				this->template new_embedding<Orbit::DART>(d);
 			});
 
-		if (this->template is_orbit_embedded<VERTEX>())
+		if (this->template is_orbit_embedded<Orbit::PHI21>())
 			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->template new_embedding<VERTEX>(v);
+				this->template new_embedding<Orbit::PHI21>(v);
 			});
 
-		if (this->template is_orbit_embedded<EDGE>())
+		if (this->template is_orbit_embedded<Orbit::PHI2>())
 			cgogn_assert_not_reached("Not implemented");
 
-		if (this->template is_orbit_embedded<FACE>())
+		if (this->template is_orbit_embedded<Orbit::PHI1>())
 			cgogn_assert_not_reached("Not implemented");
 
-		if (this->template is_orbit_embedded<VOLUME>())
+		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 			cgogn_assert_not_reached("Not implemented");
 
 		return f;

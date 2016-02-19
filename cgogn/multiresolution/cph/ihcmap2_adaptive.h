@@ -43,10 +43,10 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 
-	using Vertex = typename Inherit::Vertex;
-	using Edge = typename Inherit::Edge;
-	using Face = typename Inherit::Face;
-	using Volume = typename Inherit::Volume;
+	using Vertex = typename Inherit::Vertex2;
+	using Edge = typename Inherit::Edge2;
+	using Face = typename Inherit::Face2;
+	using Volume = typename Inherit::Volume2;
 
 	IHCMap2Adaptive_T() : Inherit()
 	{}
@@ -244,7 +244,7 @@ public:
 			Dart d2 = Inherit::phi2(d) ;
 			unsigned int cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
-			if(this->degree(typename Inherit::Vertex(Inherit::phi1(d))) == 2)
+			if(this->degree(typename Inherit::Vertex2(Inherit::phi1(d))) == 2)
 			{
 				degree2 = true ;
 				if(edge_is_subdivided(d) || edge_is_subdivided(d2))

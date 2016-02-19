@@ -34,6 +34,8 @@ class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const int PRIM_SIZE = 1;
+
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
 	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Inherit;
@@ -43,12 +45,14 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	static const int PRIM_SIZE = 1;
+//	static const Orbit DART	  = Orbit::DART;
+//	static const Orbit FACE   = Orbit::PHI1;
 
-	static const Orbit DART	  = Orbit::DART;
-	static const Orbit FACE   = Orbit::PHI1;
+	typedef Cell<Orbit::DART> Vertex1;
+	typedef Cell<Orbit::PHI1> Face1;
 
-	typedef Cell<Self::FACE> Face;
+	typedef Vertex1	Vertex;
+	typedef Face1	Face;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -58,9 +62,9 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
+	using DartAttributeHandler = AttributeHandler<T, Orbit::DART>;
 	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Orbit::PHI1>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -106,6 +110,7 @@ protected:
 	*/
 	inline void init_dart(Dart d)
 	{
+		Inherit::init_dart(d);
 		(*phi1_)[d.index] = d;
 		(*phi_1_)[d.index] = d;
 	}
@@ -182,20 +187,72 @@ public:
 
 protected:
 
+	/**
+	 * \brief Split a vertex.
+	 * \param d : a dart of the vertex
+	 * \return A dart of inserted vertex
+	 * A new vertex is inserted after v in the PHI1 orbit.
+	 */
+	inline Dart split_vertex_topo(Dart d)
+	{
+		Dart e = this->add_dart();	// Create a new dart e
+		phi1_sew(d, e);				// Insert e between d and phi1(d)
+		return e;
+	}
+
+public:
+
+	/**
+	 * \brief Split a vertex.
+	 * \param d : a vertex
+	 * \return The inserted vertex
+	 * A new vertex is inserted after v in the PHI1 orbit.
+	 * If the map has DART or FACE attributes, the inserted darts
+	 * are automatically embedded on new attribute elements.
+	 */
+	inline Vertex1 split_vertex(Vertex1 v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Vertex1 nv = split_vertex_topo(v);
+
+		if (this->is_embedded(nv)) this->new_embedding(nv);
+
+		if (this->is_embedded(Face1(nv))) this->copy_embedding(Face1(nv), Face1(v));
+
+		return nv;
+	}
+
+	/**
+	 * \brief Remove a vertex from its face and delete it.
+	 * @param v : a vertex
+	 * The vertex that preceeds v in the face is linked its successor.
+	 */
+	inline void remove_vertex(Vertex1 v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart e = phi_1(v);
+		if (e != v.dart) phi1_unsew(e);
+		this->remove_dart(v.dart);
+	}
+
+protected:
+
 	/*!
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Face add_face_topo(unsigned int size)
+	inline Dart add_face_topo(unsigned int size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
 		Dart d = this->add_dart();
 		for (unsigned int i = 1u; i < size; ++i)
-			cut_edge_topo(d);
+			split_vertex_topo(d);
 
-		return Face(d);
+		return d;
 	}
 
 public:
@@ -206,32 +263,30 @@ public:
 	 * \return A dart of the built face. If the map has DART or FACE attributes,
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 */
-	Face add_face(unsigned int size)
+	Face1 add_face(unsigned int size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Face f = add_face_topo(size);
+		Face1 f = add_face_topo(size);
 
-		if (this->template is_orbit_embedded<DART>())
-			foreach_dart_of_PHI1(f.dart, [this] (Dart d)
+		if (this->is_embedded(Vertex1(f)))
+			foreach_dart_of_PHI1(f.dart, [this] (Vertex1 v)
 			{
-				this->template new_embedding<DART>(d);
+				this->new_embedding(v);
 			});
 
-		if (this->template is_orbit_embedded<FACE>())
-			this->new_orbit_embedding(f);
+		if (this->is_embedded(f)) this->new_orbit_embedding(f);
 
 		return f;
 	}
-
-protected:
 
 	/*!
 	 * \brief Remove a face from the map.
 	 * \param d : a dart of the face to remove
 	 */
-	inline void remove_face_topo(Dart d)
+	inline void remove_face(Face1 f)
 	{
+		Dart d = f.dart;
 		Dart e = phi1(d);
 		while(e != d)
 		{
@@ -243,31 +298,7 @@ protected:
 		this->remove_dart(d);
 	}
 
-	/**
-	 * \brief Cut an edge.
-	 * \param d : the dart that represents the edge to cut
-	 * \return the inserted new dart
-	 * The edge of d is cut by inserting a new dart after d in the Phi1 orbit.
-	 */
-	inline Dart cut_edge_topo(Dart d)
-	{
-		Dart e = this->add_dart();	// Create a new dart e
-		phi1_sew(d, e);				// Insert e between d and phi1(d)
-		return e;
-	}
-
-	/**
-	 * \brief Remove edge d from its face and delete it
-	 * @param d : the edge to collapse
-	 * the edge preceeding d in the face is linked to the successor of d
-	 */
-	inline void collapse_edge_topo(Dart d)
-	{
-		Dart e = phi_1(d);
-		cgogn_message_assert(e != d,"phi1_unsew: Cannot collapse fixed point");
-		phi1_unsew(e);
-		this->remove_dart(d);
-	}
+protected:
 
 	inline void reverse_face_topo(Dart d)
 	{
@@ -290,7 +321,7 @@ protected:
 
 public:
 
-	inline unsigned int degree(Face f) const
+	inline unsigned int degree(Face1 f) const
 	{
 		return this->nb_darts(f);
 	}
@@ -373,60 +404,13 @@ public:
 	 * Incidence traversal
 	 *******************************************************************************/
 
-	template <Orbit ORBIT_OUT, Orbit ORBIT_IN, typename FUNC>
-	inline void foreach_incident_cell(Cell<ORBIT_IN> c, const FUNC& f) const
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face1 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT_OUT>),
+		static_assert(check_func_parameter_type(FUNC, Vertex1),
 					  "Wrong function cell parameter type");
-
-		static_assert((ORBIT_IN == FACE && ORBIT_OUT == DART),
-					  "Invalid incidence relation");
-
-		foreach_dart_of_orbit<ORBIT_IN>(c, [&] (Dart d)
-		{
-				f(Cell<ORBIT_OUT>(d));
-		});
+		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}
-
-// To remove : on a pas la notion de Vertex ou de Edge ici ...
-
-//	template <typename FUNC>
-//	inline void foreach_incident_vertex(Face f, const FUNC& func) const
-//	{
-//		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-//		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
-//	}
-
-//	template <typename FUNC>
-//	inline void foreach_incident_edge(Face f, const FUNC& func) const
-//	{
-//		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-//		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
-//	}
-
-	/*******************************************************************************
-	 * Adjacence traversal
-	 *******************************************************************************/
-
-// To remove
-
-//	template <typename FUNC>
-//	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
-//	{
-//		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-//		f(Vertex(phi1(v.dart)));
-//		f(Vertex(phi_1(v.dart)));
-//	}
-
-// To remove
-
-//	template <typename FUNC>
-//	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
-//	{
-//		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-//		f(Edge(phi1(e.dart)));
-//		f(Edge(phi_1(e.dart)));
-//	}
 };
 
 template <typename MAP_TRAITS>

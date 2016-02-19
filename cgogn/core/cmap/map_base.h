@@ -350,18 +350,24 @@ protected:
 	}
 
 	template <Orbit ORBIT>
-	inline unsigned int new_embedding(Dart d)
+	inline bool is_embedded(Cell<ORBIT> /* c */)
+	{
+		return this->template is_orbit_embedded<ORBIT>();
+	}
+
+	template <Orbit ORBIT>
+	inline unsigned int new_embedding(Cell<ORBIT> c)
 	{
 		unsigned int emb = add_attribute_element<ORBIT>();
-		this->template set_embedding<ORBIT>(d, emb);
+		this->template set_embedding<ORBIT>(c.dart, emb);
 		return emb;
 	}
 
 	template <Orbit ORBIT>
-	inline unsigned int copy_embedding(Dart d, Dart e)
+	inline unsigned int copy_embedding(Cell<ORBIT> c, Cell<ORBIT> d)
 	{
-		unsigned int emb = this->template get_embedding<ORBIT>(e);
-		this->template set_embedding<ORBIT>(d, emb);
+		unsigned int emb = this->template get_embedding<ORBIT>(d.dart);
+		this->template set_embedding<ORBIT>(c.dart, emb);
 		return emb;
 	}
 

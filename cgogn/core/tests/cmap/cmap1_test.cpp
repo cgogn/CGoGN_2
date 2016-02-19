@@ -36,7 +36,7 @@ class CMap1Test: public ::testing::Test
 
 public:
 	typedef CMap1<DefaultMapTraits> myCMap1;
-	typedef myCMap1::Face Face;
+	typedef myCMap1::Face1 Face;
 
 protected:
 	myCMap1 cmap_;

@@ -57,12 +57,12 @@ template <typename MAP>
 int test1(MAP& map)
 {
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::Vertex2::SELF_ORBIT>("floats");
 
-	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Orbit::PHI1>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, Orbit::PHI21>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
@@ -88,7 +88,7 @@ int test1(MAP& map)
 //	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
 
 	DartMarker<MAP> dm(map);
-	CellMarker<MAP, MAP::VERTEX> cm(map);
+	CellMarker<MAP, Orbit::PHI21> cm(map);
 
 	dm.mark(d1);
 
@@ -100,7 +100,7 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
+	map.template foreach_cell<MAP::Vertex2::SELF_ORBIT>([&] (typename MAP::Vertex2 v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;
@@ -113,7 +113,7 @@ int test1(MAP& map)
 //	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
+//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::Vertex);
 //	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
 //	for (unsigned int i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();

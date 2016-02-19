@@ -83,6 +83,8 @@ class Cell
 {
 public:
 
+	static const Orbit SELF_ORBIT = ORBIT;
+
 	/**
 	 * \brief the dart representing this cell
 	 */

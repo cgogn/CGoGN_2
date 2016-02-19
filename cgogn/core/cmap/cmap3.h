@@ -344,21 +344,21 @@ protected:
 						this->template new_embedding<DART>(d);
 					});
 
-				if (this->template is_orbit_embedded<Inherit::VERTEX>())
-					Inherit::foreach_incident_vertex(new_volume, [this] (Cell<Inherit::VERTEX> v)
+				if (this->template is_orbit_embedded<Orbit::PHI21>())
+					Inherit::foreach_incident_vertex(new_volume, [this] (Cell<Orbit::PHI21> v)
 					{
 						this->new_orbit_embedding(v);
 					});
 
-				if (this->template is_orbit_embedded<Inherit::EDGE>())
-					Inherit::foreach_incident_edge(new_volume, [this] (Cell<Inherit::EDGE> e)
+				if (this->template is_orbit_embedded<Orbit::PHI2>())
+					Inherit::foreach_incident_edge(new_volume, [this] (Cell<Orbit::PHI2> e)
 					{
 						this->new_orbit_embedding(e);
 					});
 
-				if (this->template is_orbit_embedded<Inherit::FACE>()) // cmap2 faces
+				if (this->template is_orbit_embedded<Orbit::PHI1>()) // cmap2 faces
 				{
-					Inherit::foreach_incident_face(new_volume, [this] (Cell<Inherit::FACE> f)
+					Inherit::foreach_incident_face(new_volume, [this] (Cell<Orbit::PHI1> f)
 					{
 						this->new_orbit_embedding(f);
 					});
@@ -401,7 +401,7 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		return Inherit::degree(typename Inherit::Face(f.dart));
+		return Inherit::degree(typename Inherit::Face2(f.dart));
 	}
 
 protected:
@@ -621,7 +621,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<Inherit::VERTEX>(d);
+				marker.mark_orbit<Orbit::PHI21>(d);
 				f(d);
 			}
 		});
@@ -653,14 +653,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
