@@ -73,7 +73,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(UINT_MAX);
+	ids.set_all_container_values(UINT_MAX);
 	unsigned int count = 0;
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
@@ -152,7 +152,16 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(UINT_MAX);
+
+	std::chrono::time_point<std::chrono::system_clock> start, end;
+	start = std::chrono::system_clock::now();
+
+	ids.set_all_container_values(UINT_MAX);
+
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::cout << "set_all_container_values: " << elapsed_seconds.count() << "s\n";
+
 	unsigned int count = 0;
 
 	static const unsigned int BUFFER_SZ = 1024*1024;
@@ -260,7 +269,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	fp << std::endl << "# vertices" << std::endl;
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(UINT_MAX);
+	ids.set_all_container_values(UINT_MAX);
 	unsigned int count = 1;
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
@@ -320,7 +329,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two passes of traversal to avoid huge buffer (with same performance);
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
-	ids.get_data()->set_all_values(UINT_MAX);
+	ids.set_all_container_values(UINT_MAX);
 	unsigned int count = 1;
 	std::vector<unsigned int> indices;
 	indices.reserve(map.template nb_cells<MAP::VERTEX>());
@@ -428,52 +437,88 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 
 
 
-//template <typename VEC3, typename MAP>
-//bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
-//{
-//	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
-//	if (!fp.good())
-//	{
-//		std::cout << "Unable to open file " << filename << std::endl;
-//		return false;
-//	}
+template <typename VEC3, typename MAP>
+bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+{
 
-//	unsigned int header[21];
-//	header[20] = map.template nb_cells<MAP::FACE>();
+	//UINT8[80] – Header
+	//UINT32 – Number of triangles
 
-//	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
-//	{
-//		VEC3 N = geometry::face_normal(map,f,position);
+	//foreach triangle
+	//REAL32[3] – Normal vector
+	//REAL32[3] – Vertex 1
+	//REAL32[3] – Vertex 2
+	//REAL32[3] – Vertex 3
+	//UINT16 – Attribute byte count
+	//end
 
 
-//		fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
-//		fp << "  outer loop"<< std::endl;
-//		map.template foreach_incident_vertex(f, [&] (typename MAP::Vertex v)
-//		{
-//			const VEC3& P = position[v];
-//			fp <<"    vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
-//		});
-//		fp << "  endloop"<< std::endl;
-//		fp << "endfacet"<< std::endl;
-//	});
-//	fp << "endfacet"<< std::endl;
+	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
+	if (!fp.good())
+	{
+		std::cout << "Unable to open file " << filename << std::endl;
+		return false;
+	}
 
-//	fp << "endsolid" << filename << std::endl;
+	// header + nb triangles
+	unsigned int header[21];
+	header[20] = map.template nb_cells<MAP::FACE>();
+	fp.write(reinterpret_cast<char*>(header),21*sizeof(unsigned int));
 
-//	fp.close();
-//	return true;
-//}
+	// buffer
+	std::array<float,(3*4+1)> buffer_floats; // +1 for #@! ushort at end of each triangle
+	buffer_floats[12] = 0.0f;
 
-//UINT8[80] – Header
-//UINT32 – Number of triangles
+	// local function for writing a triangle
+	auto write_tri = [&] (const VEC3& A, const VEC3& B, const VEC3& C)
+	{
+		VEC3 N = geometry::triangle_normal(A,B,C);
+		unsigned int i=0;
+		for (unsigned int j=0; j<3; ++j)
+			buffer_floats[i++]= float(N[j]);
+		for (unsigned int j=0; j<3; ++j)
+			buffer_floats[i++]= float(A[j]);
+		for (unsigned int j=0; j<3; ++j)
+			buffer_floats[i++]= float(B[j]);
+		for (unsigned int j=0; j<3; ++j)
+			buffer_floats[i++]= float(C[j]);
+		fp.write(reinterpret_cast<char*>(buffer_floats),12*sizeof(float)+2); // +2 for #@! ushort at end of each triangle
+	};
 
-//foreach triangle
-//REAL32[3] – Normal vector
-//REAL32[3] – Vertex 1
-//REAL32[3] – Vertex 2
-//REAL32[3] – Vertex 3
-//UINT16 – Attribute byte count
-//end
+	// indices for ear triangulation
+	std::vector<unsigned int> table_indices;
+	table_indices.reserve(768);
+
+	// write face cutted in triangle if necessary
+	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+	{
+		if (map.is_triangle(f))
+		{
+			Dart d = f.dart;
+			const VEC3& A = position[MAP::Vertex(d)];
+			d = map.phi1(d);
+			const VEC3& B = position[MAP::Vertex(d)];
+			d = map.phi1(d);
+			const VEC3& C = position[MAP::Vertex(d)];
+			write_tri(A,B,C);
+		}
+		else
+		{
+			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
+			for(unsigned int i=0; i<table_indices.size(); i+=3)
+			{
+				const VEC3& A = position[i];
+				const VEC3& B = position[i+1];
+				const VEC3& C = position[i+2];
+				write_tri(A,B,C);
+			}
+		}
+	});
+
+	fp.close();
+	return true;
+}
+
 
 
 

@@ -350,12 +350,12 @@ public:
 	}
 
 	/**
-	 * \brief getDataVector
-	 * @return
+	 * \brief affect a value to all elements of container (even holes)
+	 * @param val value to affect
 	 */
-	TChunkArray* get_data()
+	inline void set_all_container_values(const T& val)
 	{
-		return chunk_array_;
+		chunk_array_->set_all_values(val);
 	}
 
 	/**
