@@ -54,9 +54,9 @@ TEST_F(CMap1Test, addFace)
 
 	cmap_.split_vertex(Vertex(f.dart));
 
-	EXPECT_TRUE(is_well_embedded<Face::SELF_ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Face::SELF_ORBIT>(cmap_));
-	EXPECT_TRUE(is_container_well_referenced<Face::SELF_ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_container_well_referenced<Face::ORBIT>(cmap_));
 
 }
 

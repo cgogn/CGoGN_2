@@ -57,12 +57,12 @@ template <typename MAP>
 int test1(MAP& map)
 {
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::Vertex::ORBIT>("floats");
 
-	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
@@ -88,7 +88,7 @@ int test1(MAP& map)
 //	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
 
 	DartMarker<MAP> dm(map);
-	CellMarker<MAP, MAP::VERTEX> cm(map);
+	CellMarker<MAP, MAP::Vertex::ORBIT> cm(map);
 
 	dm.mark(d1);
 
@@ -138,7 +138,7 @@ int main()
 	Map1 map1;
 	Map2 map2;
 //	Map3 map3;
-	test1(map1);
+//	test1(map1);
 	test1(map2);
 //	test1(map3);
 

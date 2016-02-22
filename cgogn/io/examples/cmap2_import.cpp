@@ -60,23 +60,23 @@ int main(int argc, char** argv)
 		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
 
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::SELF_ORBIT>("position");
-		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::SELF_ORBIT>("normal");
-		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::SELF_ORBIT>("normal");
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
-		map.enable_topo_cache<Map2::Face::SELF_ORBIT>();
-		map.enable_topo_cache<Map2::Vertex::SELF_ORBIT>();
-		map.enable_topo_cache<Map2::Edge::SELF_ORBIT>();
+		map.enable_topo_cache<Map2::Face::ORBIT>();
+		map.enable_topo_cache<Map2::Vertex::ORBIT>();
+		map.enable_topo_cache<Map2::Edge::ORBIT>();
 
 
-		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::SELF_ORBIT>(map) << std::endl;
-		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::SELF_ORBIT>(map) << std::endl;
+		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::SELF_ORBIT>(map) << std::endl;
-		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::SELF_ORBIT>(map) << std::endl;
+		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::SELF_ORBIT>(map) << std::endl;
-		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::SELF_ORBIT>(map) << std::endl;
+		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
 
 
 		unsigned int nb_faces = 0;

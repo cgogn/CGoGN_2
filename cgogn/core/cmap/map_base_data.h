@@ -246,6 +246,13 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
+	template <class Cell>
+	inline bool is_embedded() const
+	{
+		static_assert(Cell::ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[Cell::ORBIT] != nullptr;
+	}
+
 	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{

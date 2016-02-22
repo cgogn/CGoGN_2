@@ -82,8 +82,7 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 
 	VEC3 n{0,0,0};
 	const VEC3& p = position[v.dart];
-//	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
-	map.template foreach_incident_cell<Orbit::PHI1>(v, [&] (Cell<Orbit::PHI1> f)
+	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
 		VEC3 facen = face_normal<VEC3>(map, f, position);
 		const VEC3& p1 = position[map.phi1(f.dart)];
@@ -104,8 +103,7 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 
 	VEC3 n{0,0,0};
 	const VEC3& p = position[v.dart];
-//	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
-	map.template foreach_incident_cell<Orbit::PHI1>(v, [&] (Cell<Orbit::PHI1> f)
+	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
 		VEC3 facen = fnormal[f];
 		const VEC3& p1 = position[map.phi1(f.dart)];
