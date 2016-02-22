@@ -30,6 +30,7 @@
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
 #include <core/utils/string.h>
+#include <io/import_ply_data.h>
 
 #include <io/dll.h>
 
@@ -43,7 +44,8 @@ enum SurfaceFileType
 {
 	SurfaceFileType_UNKNOWN = 0,
 	SurfaceFileType_OFF,
-	SurfaceFileType_OBJ
+	SurfaceFileType_OBJ,
+	SurfaceFileType_PLY
 };
 
 inline SurfaceFileType get_file_type(const std::string& filename)
@@ -53,6 +55,8 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 		return SurfaceFileType_OFF;
 	if (extension == "obj")
 		return SurfaceFileType_OBJ;
+	if (extension == "ply")
+		return SurfaceFileType_PLY;
 	return SurfaceFileType_UNKNOWN;
 }
 
@@ -142,6 +146,11 @@ public:
 		case SurfaceFileType_OBJ :
 			result = import_OBJ<VEC3>(fp);
 			break;
+		case SurfaceFileType_PLY :
+			fp.close();
+			result = import_ply<VEC3>(filename);
+			break;
+
 		}
 
 		if (!result)
@@ -258,6 +267,8 @@ protected:
 	template <typename VEC3>
 	bool import_OFF(std::ifstream& fp)
 	{
+		using Scalar = typename VEC3::Scalar;
+
 		std::string line;
 		line.reserve(512);
 
@@ -321,7 +332,7 @@ protected:
 			double y = read_double();
 			double z = read_double();
 
-			VEC3 pos{x, y, z};
+			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
 			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
@@ -460,6 +471,8 @@ protected:
 	template <typename VEC3>
 	bool import_OBJ(std::ifstream& fp)
 	{
+		using Scalar = typename VEC3::Scalar;
+
 		ChunkArray<VEC3>* position =
 			vertex_attributes_.template add_attribute<VEC3>("position");
 
@@ -487,7 +500,7 @@ protected:
 				oss >> y;
 				oss >> z;
 
-				VEC3 pos{x, y, z};
+				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
 				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
@@ -557,6 +570,74 @@ protected:
 
 		return true;
 	}
+
+
+
+	template <typename VEC3>
+	bool import_ply(const std::string& filename)
+	{
+
+		PlyImportData pid;
+
+		if (! pid.read_file(filename) )
+		{
+			std::cerr << "Unable to open file " << filename << std::endl;
+			return false;
+		}
+
+		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* color;
+		if (pid.has_colors())
+		{
+			 color = vertex_attributes_.template add_attribute<VEC3>("color");
+		}
+
+		nb_vertices_ = pid.nb_vertices();
+		nb_faces_ = pid.nb_faces();
+
+		
+		// read vertices position
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(nb_vertices_);
+
+		for (unsigned int i = 0; i < nb_vertices_; ++i)
+		{
+			VEC3 pos;
+			pid.vertex_position(i, pos);
+
+			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+			(*position)[vertex_id] = pos;
+
+			vertices_id.push_back(vertex_id);
+
+			if (pid.has_colors())
+			{
+				VEC3 rgb;
+				pid.vertex_color_float32(i, rgb);
+
+				(*color)[vertex_id] = pos;
+			}
+		}
+
+		// read faces (vertex indices)
+		faces_nb_edges_.reserve(nb_faces_);
+		faces_vertex_indices_.reserve(nb_vertices_ * 8);
+		for (unsigned int i = 0; i < nb_faces_; ++i)
+		{
+			unsigned int n = pid.get_face_valence(i);
+			faces_nb_edges_.push_back(n);
+			int* indices = pid.get_face_indices(i);
+			for (unsigned int j = 0; j < n; ++j)
+			{
+				unsigned int index = (unsigned int)(indices[j]);
+				faces_vertex_indices_.push_back(vertices_id[index]);
+			}
+		}
+
+		return true;
+	}
+
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))
