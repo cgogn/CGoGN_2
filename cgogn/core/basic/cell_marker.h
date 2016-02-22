@@ -34,7 +34,7 @@ namespace cgogn
 //class CGOGN_CORE_API CellMarkerGen
 //{
 //public:
-//	typedef CellMarkerGen Self;
+//	using Self = CellMarkerGen;
 //	CellMarkerGen()
 //	{}
 
@@ -113,9 +113,9 @@ class CellMarker : public CellMarker_T<MAP, ORBIT>
 {
 public:
 
-	typedef CellMarker_T<MAP, ORBIT> Inherit;
-	typedef CellMarker< MAP, ORBIT > Self;
-	typedef typename Inherit::Map Map;
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarker< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
 
 	CellMarker(Map& map) :
 		Inherit(map)
@@ -147,10 +147,9 @@ class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 {
 public:
 
-	typedef CellMarker_T<MAP, ORBIT> Inherit;
-	typedef CellMarkerStore< MAP, ORBIT > Self;
-
-	typedef typename Inherit::Map Map;
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarkerStore< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
 
 protected:
 

@@ -389,7 +389,7 @@ public:
 template <typename MAP_TRAITS>
 struct IHCMap3Type
 {
-	typedef IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>> TYPE;
+	using TYPE = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

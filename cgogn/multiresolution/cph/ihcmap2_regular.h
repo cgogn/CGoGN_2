@@ -284,7 +284,7 @@ protected:
 template <typename MAP_TRAITS>
 struct IHCMap2RegularType
 {
-	typedef IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>> TYPE;
+	using TYPE = IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

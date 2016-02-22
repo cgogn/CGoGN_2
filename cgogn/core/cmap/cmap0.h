@@ -36,18 +36,18 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap0_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-//		static const Orbit VERTEX = Orbit::DART;
+	static const Orbit VERTEX = Orbit::DART;
 
-	typedef Cell<Orbit::DART> Vertex;
+	using Vertex = Cell<Orbit::DART>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -57,7 +57,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using DartAttributeHandler = AttributeHandler<T, Orbit::DART>;
+	using VertexAttributeHandler = AttributeHandler<T, VERTEX>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -148,7 +148,7 @@ protected:
 template <typename MAP_TRAITS>
 struct CMap0Type
 {
-	typedef CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

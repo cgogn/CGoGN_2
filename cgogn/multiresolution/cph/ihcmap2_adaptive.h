@@ -36,10 +36,10 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef IHCMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 
@@ -579,7 +579,7 @@ public:
 template <typename MAP_TRAITS>
 struct IHCMap2AdaptiveType
 {
-	typedef IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>> TYPE;
+	using TYPE = IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

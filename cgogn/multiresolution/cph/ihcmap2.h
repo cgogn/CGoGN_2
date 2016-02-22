@@ -59,11 +59,11 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit_CMAP;
-	typedef CPH2<MAP_TRAITS> Inherit_CPH;
-	typedef IHCMap2_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit_CMAP = CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Inherit_CPH = CPH2<MAP_TRAITS>;
+	using Self = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	template<typename T> friend class DartMarker_T;
@@ -75,11 +75,11 @@ public:
 //	static const Orbit FACE   = Inherit_CMAP::FACE;
 //	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
-	typedef Cell<Orbit::DART>		Vertex0;
-	typedef Cell<Orbit::PHI21>		Vertex2;
-	typedef Cell<Orbit::PHI2>		Edge2;
-	typedef Cell<Orbit::PHI1>		Face2;
-	typedef Cell<Orbit::PHI1_PHI2>	Volume2;
+	using Vertex0 = Cell<Orbit::DART>	;
+	using Vertex2 = Cell<Orbit::PHI21>	;
+	using Edge2 = Cell<Orbit::PHI2>	;
+	using Face2 = Cell<Orbit::PHI1>	;
+	using Volume2 = Cell<Orbit::PHI1_PHI2>;
 
 
 	template <typename T>
@@ -370,7 +370,7 @@ public:
 template <typename MAP_TRAITS>
 struct IHCMap2Type
 {
-	typedef IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>> TYPE;
+	using TYPE = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

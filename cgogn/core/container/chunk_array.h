@@ -49,9 +49,9 @@ class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
-	typedef ChunkArray<CHUNKSIZE, T> Self;
-	typedef T value_type;
+	using Inherit = ChunkArrayGen<CHUNKSIZE>;
+	using Self = ChunkArray<CHUNKSIZE, T>;
+	using value_type = T;
 
 protected:
 
@@ -391,9 +391,9 @@ class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
-	typedef ChunkArray<CHUNKSIZE, bool> Self;
-	typedef unsigned int value_type;
+	using Inherit = ChunkArrayGen<CHUNKSIZE>;
+	using Self = ChunkArray<CHUNKSIZE, bool>;
+	using value_type = unsigned int;
 
 protected:
 
