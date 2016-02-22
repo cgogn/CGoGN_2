@@ -401,7 +401,7 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		return Inherit::degree(typename Inherit::Face2(f.dart));
+		return Inherit::degree(typename Inherit::Face(f.dart));
 	}
 
 protected:

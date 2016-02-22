@@ -48,11 +48,8 @@ public:
 //	static const Orbit DART	  = Orbit::DART;
 //	static const Orbit FACE   = Orbit::PHI1;
 
-	typedef Cell<Orbit::DART> Vertex1;
-	typedef Cell<Orbit::PHI1> Face1;
-
-	typedef Vertex1	Vertex;
-	typedef Face1	Face;
+	typedef Cell<Orbit::DART> Vertex;
+	typedef Cell<Orbit::PHI1> Face;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -210,15 +207,16 @@ public:
 	 * If the map has DART or FACE attributes, the inserted darts
 	 * are automatically embedded on new attribute elements.
 	 */
-	inline Vertex1 split_vertex(Vertex1 v)
+	inline Vertex split_vertex(Vertex v)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Vertex1 nv = split_vertex_topo(v);
+		Vertex nv = split_vertex_topo(v);
 
-		if (this->is_embedded(nv)) this->new_embedding(nv);
+		if (this->template is_orbit_embedded<DART>()) this->new_embedding(nv);
 
-		if (this->is_embedded(Face1(nv))) this->copy_embedding(Face1(nv), Face1(v));
+		if (this->template is_orbit_embedded<PHI1>())
+			this->copy_embedding(Face(nv.dart), Face(v.dart));
 
 		return nv;
 	}
@@ -228,7 +226,7 @@ public:
 	 * @param v : a vertex
 	 * The vertex that preceeds v in the face is linked its successor.
 	 */
-	inline void remove_vertex(Vertex1 v)
+	inline void remove_vertex(Vertex v)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -263,19 +261,19 @@ public:
 	 * \return A dart of the built face. If the map has DART or FACE attributes,
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 */
-	Face1 add_face(unsigned int size)
+	Face add_face(unsigned int size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Face1 f = add_face_topo(size);
+		Face f = add_face_topo(size);
 
-		if (this->is_embedded(Vertex1(f)))
-			foreach_dart_of_PHI1(f.dart, [this] (Vertex1 v)
+		if (this->template is_orbit_embedded<DART>())
+			foreach_dart_of_PHI1(f.dart, [this] (Vertex v)
 			{
 				this->new_embedding(v);
 			});
 
-		if (this->is_embedded(f)) this->new_orbit_embedding(f);
+		if (this->template is_orbit_embedded<PHI1>()) this->new_orbit_embedding(f);
 
 		return f;
 	}
@@ -284,7 +282,7 @@ public:
 	 * \brief Remove a face from the map.
 	 * \param d : a dart of the face to remove
 	 */
-	inline void remove_face(Face1 f)
+	inline void remove_face(Face f)
 	{
 		Dart d = f.dart;
 		Dart e = phi1(d);
@@ -321,7 +319,7 @@ protected:
 
 public:
 
-	inline unsigned int degree(Face1 f) const
+	inline unsigned int degree(Face f) const
 	{
 		return this->nb_darts(f);
 	}
@@ -405,9 +403,9 @@ public:
 	 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(Face1 f, const FUNC& func) const
+	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex1),
+		static_assert(check_func_parameter_type(FUNC, Vertex),
 					  "Wrong function cell parameter type");
 		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
 	}

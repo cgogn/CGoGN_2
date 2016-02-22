@@ -33,7 +33,7 @@ namespace cgogn
 class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 public:
-	typedef CMap1TopoTest::Face1 Face;
+	typedef CMap1TopoTest::Face Face;
 
 protected:
 

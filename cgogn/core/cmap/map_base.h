@@ -350,12 +350,6 @@ protected:
 	}
 
 	template <Orbit ORBIT>
-	inline bool is_embedded(Cell<ORBIT> /* c */)
-	{
-		return this->template is_orbit_embedded<ORBIT>();
-	}
-
-	template <Orbit ORBIT>
 	inline unsigned int new_embedding(Cell<ORBIT> c)
 	{
 		unsigned int emb = add_attribute_element<ORBIT>();

@@ -113,7 +113,7 @@ int test1(MAP& map)
 	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
+//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::Vertex);
 //	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
 //	for (unsigned int i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();

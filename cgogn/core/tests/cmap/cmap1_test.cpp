@@ -36,7 +36,8 @@ class CMap1Test: public ::testing::Test
 
 public:
 	typedef CMap1<DefaultMapTraits> myCMap1;
-	typedef myCMap1::Face1 Face;
+	typedef myCMap1::Vertex Vertex;
+	typedef myCMap1::Face Face;
 
 protected:
 	myCMap1 cmap_;
@@ -51,11 +52,11 @@ TEST_F(CMap1Test, addFace)
 {
 	Face f = cmap_.add_face(10);
 
-//	cmap_.cut_edge(Edge(f));
+	cmap_.split_vertex(Vertex(f.dart));
 
-//	EXPECT_TRUE(is_well_embedded<myCMap1::FACE>(cmap_));
-//	EXPECT_TRUE(is_orbit_embedding_unique<myCMap1::FACE>(cmap_));
-//	EXPECT_TRUE(is_container_well_referenced<myCMap1::FACE>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::SELF_ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::SELF_ORBIT>(cmap_));
+	EXPECT_TRUE(is_container_well_referenced<Face::SELF_ORBIT>(cmap_));
 
 }
 
