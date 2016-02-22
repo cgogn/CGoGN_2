@@ -54,7 +54,7 @@ TEST_F(CMap1Test, addFace)
 	cmap_.add_attribute<int, Vertex::ORBIT>("int_v");
 	Face f = cmap_.add_face(10);
 
-	cmap_.cut_edge(f.dart);
+	cmap_.split_vertex(f.dart);
 
 
 	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));

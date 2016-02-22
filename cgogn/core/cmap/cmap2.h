@@ -371,7 +371,7 @@ public:
 			foreach_dart_of_orbit(f, [this] (CDart d)
 			{
 				this->new_embedding(d);
-				this->new_embedding(phi2(d));
+				this->new_embedding(CDart(phi2(d)));
 			});
 
 		if (this->template is_embedded<Vertex>())
