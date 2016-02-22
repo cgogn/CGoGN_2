@@ -50,6 +50,8 @@ protected:
 
 TEST_F(CMap1Test, addFace)
 {
+	cmap_.add_attribute<int, Face::ORBIT>("int");
+
 	Face f = cmap_.add_face(10);
 
 	cmap_.split_vertex(Vertex(f.dart));
