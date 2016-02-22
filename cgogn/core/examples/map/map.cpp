@@ -57,7 +57,7 @@ template <typename MAP>
 int test1(MAP& map)
 {
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::Vertex2::SELF_ORBIT>("floats");
+	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::Vertex::SELF_ORBIT>("floats");
 
 	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Orbit::PHI1>("floats");
 
@@ -100,7 +100,7 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.template foreach_cell<MAP::Vertex2::SELF_ORBIT>([&] (typename MAP::Vertex2 v)
+	map.template foreach_cell<MAP::Vertex::SELF_ORBIT>([&] (typename MAP::Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;

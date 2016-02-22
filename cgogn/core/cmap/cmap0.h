@@ -47,9 +47,7 @@ public:
 
 //		static const Orbit VERTEX = Orbit::DART;
 
-	typedef Cell<Orbit::DART> Vertex0;
-
-	typedef Vertex0 Vertex;
+	typedef Cell<Orbit::DART> Vertex;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -104,13 +102,14 @@ public:
 	 * \return The added dart. If the map has DART attributes,
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 */
-	inline Vertex0 add_vertex()
+	inline Vertex add_vertex()
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Vertex0 v(this->add_dart());
+		Vertex v = this->add_dart();
 
-		if (this->is_embedded(v)) this->new_embedding(v);
+		if (this->template is_orbit_embedded<DART>())
+			this->new_embedding(v);
 
 		return v;
 	}
@@ -118,11 +117,11 @@ public:
 	/*!
 	 * \brief Remove a vertex (or dart) from the map.
 	 */
-	inline void remove_vertex(Vertex0 d)
+	inline void remove_vertex(Vertex v)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		this->remove_dart(d.dart);
+		this->remove_dart(v.dart);
 	}
 
 	/*******************************************************************************
