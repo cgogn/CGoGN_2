@@ -423,10 +423,10 @@ extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
 
 } // namespace cgogn
