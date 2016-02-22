@@ -245,7 +245,7 @@ public:
 		positions_(position),
 		ears_(cmp_VP)
 	{
-		if (map_.is_triangle(f))
+		if (map_.has_degree(f,3))
 		{
 			face_ = f;
 			nb_verts_ = 3;
@@ -437,7 +437,7 @@ static void apply_ear_triangulations(MAP& map, const typename MAP::template Vert
 {
 	map.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 	{
-		if (!map.is_triangle(f))
+		if (!map.has_degree(f,3))
 		{
 			EarTriangulation<VEC3,MAP> tri(map, f, position);
 			tri.triangulate();
