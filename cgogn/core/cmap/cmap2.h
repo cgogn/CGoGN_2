@@ -721,7 +721,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit<Volume::ORBIT>(w, [&] (Dart d)
+		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{
@@ -749,7 +749,7 @@ public:
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_orbit<Face::ORBIT>(vd, [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
 			{
 				// skip Vertex v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
@@ -764,7 +764,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_orbit<Vertex::ORBIT>(ed, [&f, ed] (Dart vd)
+			this->foreach_dart_of_orbit(Vertex(ed), [&f, ed] (Dart vd)
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -779,7 +779,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_orbit<Face::ORBIT>(ed, [&f, ed] (Dart fd)
+			this->foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
 			{
 				// skip Edge e itself
 				if (fd != ed)
@@ -795,7 +795,7 @@ public:
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			this->foreach_dart_of_orbit<Vertex::ORBIT>(fd, [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_orbit(Vertex(fd), [&func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
