@@ -156,8 +156,8 @@ extern template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
 
 } // namespace cgogn
