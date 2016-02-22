@@ -207,13 +207,13 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const CDart ne = cut_edge_topo(e);
-		const CDart nf = phi2(e);
-		const CDart  f = phi2(ne);
+		const Dart ne = cut_edge_topo(e);
+		const Dart nf = phi2(e);
+		const Dart  f = phi2(ne);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_embedding(ne);
-			this->new_embedding(nf);
+			this->new_embedding(CDart(ne));
+			this->new_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -297,34 +297,34 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		cut_face_topo(d,e);
-		CDart nd = this->phi_1(d);
-		CDart ne = this->phi_1(e);
+		Dart nd = this->phi_1(d);
+		Dart ne = this->phi_1(e);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_embedding(nd);
-			this->new_embedding(ne);
+			this->new_embedding(CDart(nd));
+			this->new_embedding(CDart(ne));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->copy_embedding(Vertex(nd.dart), e);
-			this->copy_embedding(Vertex(ne.dart), d);
+			this->copy_embedding(Vertex(nd), e);
+			this->copy_embedding(Vertex(ne), d);
 		}
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->new_orbit_embedding(Edge(nd.dart));
+			this->new_orbit_embedding(Edge(nd));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(nd.dart), Face(d.dart));
-			this->new_orbit_embedding(Face(ne.dart));
+			this->copy_embedding(Face(nd), Face(d.dart));
+			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			unsigned int idx = this->copy_embedding(Volume(nd.dart), Volume(d.dart));
+			unsigned int idx = this->copy_embedding(Volume(nd), Volume(d.dart));
 			this->set_embedding(Volume(ne), idx);
 		}
 	}
@@ -643,6 +643,39 @@ public:
 	 *******************************************************************************/
 
 	public:
+
+	template <typename CellIn, typename FUNC>
+	inline void foreach_incident_cell(CellIn c, const FUNC& func) const
+	{
+		using CellOut = typename function_traits<FUNC>::template arg<0>::type;
+
+		static_assert((CellIn::ORBIT == Vertex::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
+					  (CellIn::ORBIT == Vertex::ORBIT && CellOut::ORBIT == Face::ORBIT) ||
+					  (CellIn::ORBIT == Edge::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
+					  (CellIn::ORBIT == Edge::ORBIT && CellOut::ORBIT == Face::ORBIT) ||
+					  (CellIn::ORBIT == Face::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
+					  (CellIn::ORBIT == Face::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
+					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
+					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
+					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Face::ORBIT)
+					, "Undefined incidence relation");
+
+		if (CellIn::ORBIT == Volume::ORBIT) {
+			DartMarkerStore marker(*this);
+			foreach_dart_of_orbit(c, [&] (CellOut d)
+			{
+				if (!marker.is_marked(d))
+				{
+					marker.template mark_orbit(d);
+					func(d);
+				}
+			});
+
+		}
+		else {
+			foreach_dart_of_orbit(c, func);
+		}
+	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const

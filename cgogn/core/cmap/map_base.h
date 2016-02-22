@@ -403,10 +403,6 @@ public:
 		ConcreteMap* cmap = to_concrete();
 		foreach_cell<FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
 		{
-			// Je ne comprends pas cet algo ?! (David)
-			// foreach_cell passe une seule fois par cellule ? => counter[c] est toujours nul
-			// En plus le brin c pourrait être n'importe quel brin de la cellule
-			// donc on peut passer plusieurs fois par la cellule, en comptant des brins distincts
 			if (counter[c] > 0)
 				cmap->new_orbit_embedding(c);
 			counter[c]++;

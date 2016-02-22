@@ -52,7 +52,8 @@ inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Fa
 	{
 		typename VEC3_T::Scalar area{0};
 		VEC3_T center = centroid<VEC3_T>(map, f, position);
-		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
+//		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
+		map.foreach_incident_cell(f, [&] (typename MAP::Edge e)
 		{
 			area += triangle_area<VEC3_T>(center, position[e.dart], position[map.phi1(e.dart)]);
 		});
