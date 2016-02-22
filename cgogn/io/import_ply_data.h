@@ -25,7 +25,7 @@
 #ifndef _IMPORT_PLY_DATA_H
 #define _IMPORT_PLY_DATA_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 #include <string>
 

@@ -24,8 +24,8 @@
 #define IO_IMPORT_PLY_DATA_CPP_
 
 #include <io/import_ply_data.h>
-#include <stdlib.h>
-#include <locale.h>
+#include <cstdlib>
+#include <clocale>
 #include <fstream>
 
 
