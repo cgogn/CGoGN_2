@@ -45,8 +45,6 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	static const Orbit VERTEX = Orbit::DART;
-
 	using Vertex = Cell<Orbit::DART>;
 
 	template <typename T>

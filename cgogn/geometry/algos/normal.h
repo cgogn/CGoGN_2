@@ -80,7 +80,7 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 {
 	using Scalar = typename VEC3::Scalar;
 
-	VEC3 n{0,0,0};
+	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
 	const VEC3& p = position[v.dart];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
@@ -101,7 +101,7 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 {
 	using Scalar = typename VEC3::Scalar;
 
-	VEC3 n{0,0,0};
+	VEC3 n{Scalar{0}, Scalar{0} ,Scalar{0}};
 	const VEC3& p = position[v.dart];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{

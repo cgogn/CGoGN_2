@@ -44,8 +44,8 @@ const cgogn::Orbit FACE = Face::ORBIT;
 
 const unsigned int ITERATIONS = 1u;
 
-using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = Eigen::Vector3d;
+using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -127,8 +127,8 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
 				{
 					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
-					std::cerr << "face_normal " << face_normal[f] << std::endl;
-					std::cerr << "face_normal_mt " << face_normal_mt[f] << std::endl;
+//					std::cerr << "face_normal " << face_normal[f] << std::endl;
+//					std::cerr << "face_normal_mt " << face_normal_mt[f] << std::endl;
 				}
 
 			});
@@ -185,8 +185,8 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
 				{
 					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of vertices normals" << std::endl;
-					std::cerr << "vertices_normal " << vertices_normal[v] << std::endl;
-					std::cerr << "vertices_normal_mt " << vertices_normal_mt[v] << std::endl;
+//					std::cerr << "vertices_normal " << vertices_normal[v] << std::endl;
+//					std::cerr << "vertices_normal_mt " << vertices_normal_mt[v] << std::endl;
 				}
 
 			});

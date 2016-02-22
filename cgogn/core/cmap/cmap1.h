@@ -45,8 +45,8 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	using Vertex = Cell<Orbit::DART>;
-	using Face = Cell<Orbit::PHI1>;
+	using Vertex	= Cell<Orbit::DART>;
+	using Face		= Cell<Orbit::PHI1>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -405,7 +405,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex),
 					  "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Face::ORBIT>(f, func);
+		foreach_dart_of_orbit(f, func);
 	}
 };
 

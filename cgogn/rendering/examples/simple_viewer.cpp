@@ -42,8 +42,8 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = Eigen::Vector3d;
+using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -89,8 +89,8 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::VERTEX>("position");
-	vertex_normal_ = map_.add_attribute<Vec3, Map2::VERTEX>("normal");
+	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
