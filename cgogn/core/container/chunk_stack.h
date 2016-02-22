@@ -40,9 +40,9 @@ template <unsigned int CHUNKSIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
 public:
-	typedef ChunkArray<CHUNKSIZE, T> Inherit;
-	typedef ChunkStack<CHUNKSIZE, T> Self;
-	typedef T value_type;
+	using Inherit = ChunkArray<CHUNKSIZE, T>;
+	using Self = ChunkStack<CHUNKSIZE, T>;
+	using value_type = T;
 
 protected:
 

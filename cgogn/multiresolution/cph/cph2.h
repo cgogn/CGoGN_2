@@ -35,8 +35,8 @@ class CPH2 : public CPHBase<DATA_TRAITS>
 
 public:
 
-	typedef CPH2<DATA_TRAITS> Self;
-	typedef CPHBase<DATA_TRAITS> Inherit;
+	using Self = CPH2<DATA_TRAITS>;
+	using Inherit = CPHBase<DATA_TRAITS>;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;

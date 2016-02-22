@@ -37,10 +37,10 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 Map2 map;
 
 using Vertex = Map2::Vertex;
-const cgogn::Orbit VERTEX = Vertex::SELF_ORBIT;
+const cgogn::Orbit VERTEX = Vertex::ORBIT;
 
 using Face = Map2::Face;
-const cgogn::Orbit FACE = Face::SELF_ORBIT;
+const cgogn::Orbit FACE = Face::ORBIT;
 
 const unsigned int ITERATIONS = 1u;
 

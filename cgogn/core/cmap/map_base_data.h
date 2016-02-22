@@ -55,7 +55,7 @@ class CGOGN_CORE_API MapGen
 {
 public:
 
-	typedef MapGen Self;
+	using Self = MapGen;
 
 protected:
 
@@ -92,8 +92,8 @@ class MapBaseData : public MapGen
 {
 public:
 
-	typedef MapGen Inherit;
-	typedef MapBaseData<MAP_TRAITS> Self;
+	using Inherit = MapGen;
+	using Self = MapBaseData<MAP_TRAITS>;
 
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const unsigned int NB_UNKNOWN_THREADS = 4u;

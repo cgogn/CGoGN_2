@@ -40,7 +40,7 @@ class CPHBase
 
 public:
 
-	typedef CPHBase<DATA_TRAITS> Self;
+	using Self = CPHBase<DATA_TRAITS>;
 
 	template <typename T>
 	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
