@@ -718,7 +718,7 @@ public:
 	inline void foreach_cell(const FUNC& f) const
 	{
 		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-//		static_assert(check_func_parameter_type(FUNC, Cell<ORBIT>), "Wrong function cell parameter type");
+		static const Orbit ORBIT = cell_type::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -732,7 +732,7 @@ public:
 				foreach_cell_topo_cache(f);
 				break;
 			case AUTO :
-				if (is_topo_cache_enabled<cell_type::ORBIT>())
+				if (is_topo_cache_enabled<ORBIT>())
 					foreach_cell_topo_cache(f);
 				else if (this->template is_embedded<cell_type>())
 					foreach_cell_cell_marking(f);
@@ -850,49 +850,52 @@ protected:
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
+		unsigned i = 0u;	// buffer id (0/1)
+		unsigned int j = 0u;// thread id (0..nb_threads_pool)
 		while (it != end)
 		{
-			for (unsigned i = 0u; i < 2u; ++i)
+			// fill buffer
+			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
+			VecCell& cells = *cells_buffers[i].back();
+			cells.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
+				if (!dm.is_marked(it))
 				{
-					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-					VecCell& cells = *cells_buffers[i].back();
-					cells.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
-					{
-						if (!dm.is_marked(it))
-						{
-							dm.template mark_orbit<ORBIT>(it);
-							cells.push_back(Cell<ORBIT>(it));
-							++k;
-						}
-						this->topology_.next(it.index);
-					}
-					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
-						for (auto c : cells)
-							f(c,th_id);
-					}));
+					dm.template mark_orbit<ORBIT>(it);
+					cells.push_back(Cell<ORBIT>(it));
+					++k;
 				}
+				this->topology_.next(it.index);
+			}
+			//launch thread
+			futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+				for (auto c : cells)
+					f(c,th_id);
+				}));
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
 				const unsigned int id = (i+1u)%2u;
 				for (auto& fu: futures[id])
 					fu.wait();
 				for (auto &b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
-
 				futures[id].clear();
 				cells_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == end && i == 1u)
-				{
-					for (auto& fu: futures[1u])
-						fu.wait();
-					for (auto &b : cells_buffers[1u])
-						dbuffs->release_cell_buffer(b);
-				}
 			}
 		}
+
+		// clean all at end
+		for (auto& fu: futures[0u])
+			fu.wait();
+		for (auto &b : cells_buffers[0u])
+			dbuffs->release_cell_buffer(b);
+		for (auto& fu: futures[1u])
+			fu.wait();
+		for (auto &b : cells_buffers[1u])
+			dbuffs->release_cell_buffer(b);
 	}
 
 	template <typename FUNC>
@@ -938,49 +941,53 @@ protected:
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
+		unsigned i = 0u;	// buffer id (0/1)
+		unsigned int j = 0u;// thread id (0..nb_threads_pool)
 		while (it != end)
 		{
-			for (unsigned i = 0u; i < 2u; ++i)
+			// fill buffer
+			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
+			VecCell& cells = *cells_buffers[i].back();
+			cells.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
+				if (!cm.is_marked(it))
 				{
-					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-					VecCell& cells = *cells_buffers[i].back();
-					cells.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
-					{
-						if (!cm.is_marked(it))
-						{
-							cm.mark(it);
-							cells.push_back(it);
-							++k;
-						}
-						this->topology_.next(it.index);
-					}
-					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
-						for (auto c : cells)
-							f(c,th_id);
-					}));
+					cm.mark(it);
+					cells.push_back(it);
+					++k;
 				}
+				this->topology_.next(it.index);
+			}
+			//launch thread
+			futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+				for (auto c : cells)
+					f(c,th_id);
+				}));
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
 				const unsigned int id = (i+1u)%2u;
 				for (auto& fu: futures[id])
 					fu.wait();
 				for (auto &b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
-
 				futures[id].clear();
 				cells_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == end && i == 1u)
-				{
-					for (auto& fu: futures[1u])
-						fu.wait();
-					for (auto &b : cells_buffers[1u])
-						dbuffs->release_cell_buffer(b);
-				}
 			}
 		}
+
+		// clean all at end
+		for (auto& fu: futures[0u])
+			fu.wait();
+		for (auto &b : cells_buffers[0u])
+			dbuffs->release_cell_buffer(b);
+		for (auto& fu: futures[1u])
+			fu.wait();
+		for (auto &b : cells_buffers[1u])
+			dbuffs->release_cell_buffer(b);
+
 	}
 
 	template <typename FUNC>
@@ -1008,60 +1015,56 @@ protected:
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
 
-		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
 
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		const auto& attr = this->attributes_[ORBIT];
+		unsigned int it = attr.begin();
+		unsigned int end = attr.end();
 
-		unsigned int it = this->attributes_[ORBIT].begin();
-		const unsigned int end = this->attributes_[ORBIT].end();
+		unsigned int nbc = PARALLEL_BUFFER_SIZE;
+
+		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
+		if ( (end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+			nbc = (end - it) / nb_threads_pool;
+
+		unsigned int local_end = it+nbc;
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
-		const auto& attr = this->attributes_[ORBIT];
 
+		unsigned int i=0; // used buffered futures 0/1
+		unsigned int j=0;// thread num
 		while (it != end)
 		{
-			for (unsigned i = 0u; i < 2u; ++i)
-			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
+			futures[i].push_back(thread_pool->enqueue( [&cache,&attr,it,local_end,&f](unsigned int th_id){
+				unsigned int loc_it = it;
+				while (loc_it < local_end)
 				{
-					cells_buffers[i].push_back(dbuffs->template get_cell_buffer<Cell<ORBIT>>());
-					VecCell& cells = *cells_buffers[i].back();
-					cells.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
-					{
-						cells.push_back(cache[it]);
-						attr.next(it);
-					}
-					futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
-						for (auto c : cells)
-							f(c,th_id);
-					}));
+					f(cache[loc_it],th_id);
+					attr.next(loc_it);
 				}
+			}));
+			it = local_end;
+			local_end = std::min(local_end+nbc,end);
+
+			if (++j == nb_threads_pool) // change thread
+			{	// again from 0 & change buffer
+				j = 0;
 				const unsigned int id = (i+1u)%2u;
 				for (auto& fu: futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
-					dbuffs->release_cell_buffer(b);
-
 				futures[id].clear();
-				cells_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == end && i == 1u)
-				{
-					for (auto& fu: futures[1u])
-						fu.wait();
-					for (auto &b : cells_buffers[1u])
-						dbuffs->release_cell_buffer(b);
-				}
+				i = id;
 			}
 		}
+
+		// wait for remaining running threads
+		for (auto& fu: futures[0u])
+			fu.wait();
+		for (auto& fu: futures[1u])
+			fu.wait();
 	}
 
 	template <typename FUNC>
