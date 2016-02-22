@@ -17,7 +17,7 @@ using VertexAttributeHandler = IHMap2::VertexAttributeHandler<T>;
 
 
 int main()
-{
+{	
 	IHMap2 map;
 	VertexAttributeHandler<Vec3> position = map.get_attribute<Vec3, IHMap2::VERTEX>("position");
 
@@ -25,7 +25,7 @@ int main()
 
 	map.add_face(4);
 	std::cout << "before add level Faces :" << std::endl;
-	map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face v)
+	map.foreach_cell([&] (IHMap2::Face v)
 	{
 		std::cout << v << std::endl;
 	});
@@ -37,7 +37,7 @@ int main()
 		lerp.synthesis();
 
 		std::cout << "after add level Faces :" << std::endl;
-		map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face f)
+		map.foreach_cell([&] (IHMap2::Face f)
 		{
 			std::cout << f << " | " << map.get_dart_level(f.dart) << std::endl;
 		});
@@ -50,7 +50,7 @@ int main()
 		map.set_current_level(cur - 1);
 
 		std::cout << "after add level Faces :" << std::endl;
-		map.template foreach_cell<IHMap2::FACE>([&] (IHMap2::Face f)
+		map.foreach_cell([&] (IHMap2::Face f)
 		{
 			std::cout << f << " | " << map.get_dart_level(f.dart) << std::endl;
 		});

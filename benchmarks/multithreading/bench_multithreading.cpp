@@ -93,7 +93,7 @@ static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 		cgogn_assert(face_normal.is_valid());
 		state.ResumeTiming();
 
-		map.template foreach_cell<FACE, STRATEGY>([&] (Face f)
+		map.template foreach_cell<STRATEGY>([&] (Face f)
 		{
 			face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
 		});
@@ -112,7 +112,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(face_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		map.template parallel_foreach_cell<FACE, STRATEGY>([&] (Face f,unsigned int)
+		map.template parallel_foreach_cell<STRATEGY>([&] (Face f,unsigned int)
 		{
 			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
 		});
@@ -121,7 +121,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 			state.PauseTiming();
 
 			FaceAttributeHandler<Vec3> face_normal = map.get_attribute<Vec3, FACE>("normal");
-			map.template foreach_cell<FACE, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
 			{
 				Vec3 error = face_normal[f] - face_normal_mt[f];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
@@ -151,7 +151,7 @@ static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 		cgogn_assert(vartices_normal.is_valid());
 		state.ResumeTiming();
 
-		map.template foreach_cell<VERTEX, STRATEGY>([&] (Vertex v)
+		map.template foreach_cell<STRATEGY>([&] (Vertex v)
 		{
 			vartices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
 		});
@@ -170,7 +170,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(vertices_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		map.template parallel_foreach_cell<VERTEX, STRATEGY>([&] (Vertex v, unsigned int)
+		map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, unsigned int)
 		{
 			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
 		});
@@ -179,7 +179,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 			state.PauseTiming();
 
 			VertexAttributeHandler<Vec3> vertices_normal = map.get_attribute<Vec3, VERTEX>("normal");
-			map.template foreach_cell<VERTEX, cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+			map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
 			{
 				Vec3 error = vertices_normal[v] - vertices_normal_mt[v];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))

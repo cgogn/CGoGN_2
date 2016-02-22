@@ -77,7 +77,7 @@ public:
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
-		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
@@ -88,7 +88,7 @@ public:
 		});
 
 		//cut faces
-		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
 			Dart old = d ;
 
@@ -129,7 +129,7 @@ public:
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
-		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
@@ -140,7 +140,7 @@ public:
 		});
 
 		//cut faces
-		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
 			Dart old = d ;
 
@@ -188,7 +188,7 @@ public:
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
-		Inherit::template foreach_cell<Inherit::EDGE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
@@ -199,7 +199,7 @@ public:
 		});
 
 		//cut faces
-		Inherit::template foreach_cell<Inherit::FACE, TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
+		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
 			Dart old = d ;
 

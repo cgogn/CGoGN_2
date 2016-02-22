@@ -78,13 +78,11 @@ inline std::string orbit_name(Orbit orbit)
  * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
-template <Orbit ORBIT>
+template <Orbit ORBIT_VAL>
 class Cell
 {
 public:
-
-	static const Orbit SELF_ORBIT = ORBIT;
-
+	static const Orbit ORBIT = ORBIT_VAL;
 	/**
 	 * \brief the dart representing this cell
 	 */
@@ -97,7 +95,7 @@ public:
 	{}
 
 	/**
-	 * \brief Creates a new Cell with a dart.
+	 * \brief Creates a new Cell with a dart. 
 	 * \param[in] d dart to convert to a cell of a given orbit
 	 */
 	inline Cell(Dart d) : dart(d)
@@ -116,7 +114,7 @@ public:
 
 	/**
 	 * \brief Cast operator.
-	 * \return the dart
+	 * \return the dart 
 	 */
 	inline operator Dart() const { return dart; }
 
