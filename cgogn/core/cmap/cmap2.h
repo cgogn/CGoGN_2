@@ -372,22 +372,23 @@ public:
 			foreach_dart_of_orbit(f, [this] (CDart d)
 			{
 				this->new_embedding(d);
+				this->new_embedding(phi2(d));
 			});
 
 		if (this->template is_embedded<Vertex>())
 			foreach_dart_of_orbit(f, [this] (Vertex v)
 			{
-				this->new_embedding(v);
+				this->new_orbit_embedding(v);
 			});
 
 		if (this->template is_embedded<Edge>())
 			foreach_dart_of_orbit(f, [this] (Edge e)
 			{
-				this->new_embedding(e);
+				this->new_orbit_embedding(e);
 			});
 
 		if (this->template is_embedded<Face>())
-			this->new_embedding(f);
+			this->new_orbit_embedding(f);
 
 		if (this->template is_embedded<Volume>())
 			this->new_orbit_embedding(Volume(f.dart));
