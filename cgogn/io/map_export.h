@@ -152,14 +152,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, MAP::VERTEX>("indices");
 
-	std::chrono::time_point<std::chrono::system_clock> start, end;
-	start = std::chrono::system_clock::now();
-
 	ids.set_all_container_values(UINT_MAX);
-
-	end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsed_seconds = end - start;
-	std::cout << "set_all_container_values: " << elapsed_seconds.count() << "s\n";
 
 	unsigned int count = 0;
 

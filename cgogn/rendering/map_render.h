@@ -93,7 +93,6 @@ public:
 		});
 	}
 
-//	template <typename MAP>
 	template <typename VEC3, typename MAP>
 	void init_triangles(MAP& m, std::vector<unsigned int>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
@@ -101,7 +100,7 @@ public:
 //		table_indices.reserve(m.get_nb_darts()/3);
 		m.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
 		{
-			if (m.is_triangle(f))
+			if (m.has_degree(f,3))
 			{
 				table_indices.push_back(m.template get_embedding<MAP::VERTEX>(f.dart));
 				table_indices.push_back(m.template get_embedding<MAP::VERTEX>(m.phi1(f.dart)));
@@ -109,7 +108,7 @@ public:
 			}
 			else
 			{
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,table_indices);
+cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,table_indices);
 			}
 		});
 	}
