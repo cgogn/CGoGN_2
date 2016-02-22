@@ -645,39 +645,6 @@ public:
 
 	public:
 
-	template <typename CellIn, typename FUNC>
-	inline void foreach_incident_cell(CellIn c, const FUNC& func) const
-	{
-		using CellOut = typename function_traits<FUNC>::template arg<0>::type;
-
-		static_assert((CellIn::ORBIT == Vertex::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
-					  (CellIn::ORBIT == Vertex::ORBIT && CellOut::ORBIT == Face::ORBIT) ||
-					  (CellIn::ORBIT == Edge::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
-					  (CellIn::ORBIT == Edge::ORBIT && CellOut::ORBIT == Face::ORBIT) ||
-					  (CellIn::ORBIT == Face::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
-					  (CellIn::ORBIT == Face::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
-					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Vertex::ORBIT) ||
-					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Edge::ORBIT) ||
-					  (CellIn::ORBIT == Volume::ORBIT && CellOut::ORBIT == Face::ORBIT)
-					, "Undefined incidence relation");
-
-		if (CellIn::ORBIT == Volume::ORBIT) {
-			DartMarkerStore marker(*this);
-			foreach_dart_of_orbit(c, [&] (CellOut d)
-			{
-				if (!marker.is_marked(d))
-				{
-					marker.template mark_orbit(d);
-					func(d);
-				}
-			});
-
-		}
-		else {
-			foreach_dart_of_orbit(c, func);
-		}
-	}
-
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{

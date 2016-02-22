@@ -38,8 +38,7 @@ inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template Ve
 	T result;
 	result.setZero();
 	unsigned int count = 0;
-//	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
-	map.foreach_incident_cell(c, [&] (typename MAP::Vertex v)
+	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
 	{
 		result += attribute[v];
 		++count;
