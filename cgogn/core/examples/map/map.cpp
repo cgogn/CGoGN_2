@@ -56,13 +56,16 @@ void fonc_non_const(typename MAP::template VertexAttributeHandler<float>& ah)
 template <typename MAP>
 int test1(MAP& map)
 {
-	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::Vertex::ORBIT>("floats");
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
 
-	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::Face::ORBIT>("floats");
+	// add an attribute on vertex of map with
+	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, Vertex::ORBIT>("floats");
+
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
@@ -100,7 +103,7 @@ int test1(MAP& map)
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.foreach_cell([&] (typename MAP::Vertex v)
+	map.foreach_cell([&] (Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;

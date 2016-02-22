@@ -421,13 +421,13 @@ protected:
 		{
 			f((*marked_darts)[i]);
 
-			Dart d2 = this->phi2((*marked_darts)[i]);
-			Dart d21 = this->phi1(d2); // turn in volume
-			Dart d23 = phi3(d2); // change volume
+			Dart d1 = this->phi1((*marked_darts)[i]);
+			Dart d21 = this->phi2(d1); // turn in volume
+			Dart d31 = phi3(d1); // change volume
 			if(!marker.is_marked(d21))
 				marker.mark(d21);
-			if(!marker.is_marked(d23))
-				marker.mark(d23);
+			if(!marker.is_marked(d31))
+				marker.mark(d31);
 		}
 	}
 

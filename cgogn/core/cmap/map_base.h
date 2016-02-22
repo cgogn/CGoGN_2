@@ -495,15 +495,15 @@ public:
 	 * @param c1 first cell to compare
 	 * @param c2 second cell to compare
 	 */
-	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
+	template <class CellType>
+	bool same_cell(CellType c1, CellType c2) const
 	{
-		if (this->template is_embedded<Cell<ORBIT>>())
+		if (this->template is_embedded<CellType>())
 			return this->get_embedding(c1) == this->get_embedding(c2);
 
 		const ConcreteMap* cmap = to_concrete();
 		bool result = false;
-		cmap->template foreach_dart_of_orbit_until<ORBIT>(c1, [&] (Dart d) -> bool
+		cmap->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
 			{

@@ -717,11 +717,11 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_face(Volume v, const FUNC& f) const
+	inline void foreach_incident_face(Volume w, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit<Volume::ORBIT>(v, [&] (Dart d)
+		foreach_dart_of_orbit<Volume::ORBIT>(w, [&] (Dart d)
 		{
 			if (!marker.is_marked(d))
 			{

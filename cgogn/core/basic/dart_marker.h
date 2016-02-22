@@ -32,23 +32,8 @@
 namespace cgogn
 {
 
-//class CGOGN_CORE_API DartMarkerGen
-//{
-//public:
-//	using Self = DartMarkerGen;
-//	DartMarkerGen()
-//	{}
-
-//	virtual ~DartMarkerGen();
-
-//	DartMarkerGen(const Self& dm) = delete;
-//	DartMarkerGen(Self&& dm) = delete;
-//	DartMarkerGen& operator=(Self&& dm) = delete;
-//	DartMarkerGen& operator=(const Self& dm) = delete;
-//};
-
 template <typename MAP>
-class DartMarker_T // : public DartMarkerGen
+class DartMarker_T
 {
 public:
 
@@ -63,13 +48,12 @@ protected:
 
 public:
 	DartMarker_T(const MAP& map) :
-//		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
-	virtual ~DartMarker_T() // override
+	virtual ~DartMarker_T()
 	{
 		if (MapGen::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
