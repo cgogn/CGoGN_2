@@ -826,14 +826,14 @@ extern template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
