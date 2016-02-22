@@ -154,9 +154,9 @@ protected:
 
 	inline unsigned int add_topology_element()
 	{
-		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
+		const unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
-		for (unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (unsigned int orbit = 0u; orbit < NB_ORBITS; ++orbit)
 		{
 			if (this->embeddings_[orbit])
 				(*this->embeddings_[orbit])[idx] = EMBNULL;
@@ -359,11 +359,9 @@ protected:
 	}
 
 	template <Orbit ORBIT>
-	inline unsigned int copy_embedding(Cell<ORBIT> c, Cell<ORBIT> d)
+	inline void copy_embedding(Cell<ORBIT> dest, Cell<ORBIT> src)
 	{
-		unsigned int emb = this->template get_embedding<ORBIT>(d.dart);
-		this->template set_embedding<ORBIT>(c.dart, emb);
-		return emb;
+		this->set_embedding(dest, this->get_embedding(src));
 	}
 
 //	template <Orbit ORBIT>

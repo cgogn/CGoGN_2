@@ -478,7 +478,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2: this->foreach_dart_of_PHI2(c, f); break;
 			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c, f); break;

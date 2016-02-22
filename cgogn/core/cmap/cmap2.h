@@ -207,40 +207,39 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Dart ne = cut_edge_topo(e);
+		const Vertex v = cut_edge_topo(e);
 		const Dart nf = phi2(e);
-		const Dart  f = phi2(ne);
+		const Dart  f = phi2(v);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_embedding(CDart(ne));
+			this->new_embedding(CDart(v));
 			this->new_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			const unsigned int idx = this->new_embedding(Vertex(ne));
-			this->set_embedding(Vertex(nf), idx);
+			this->new_embedding(Vertex(v));
 		}
 
 		if (this->template is_embedded<Edge>())
 		{
 			this->copy_embedding(Edge(nf), e);
-			this->new_orbit_embedding(Edge(ne));
+			this->new_orbit_embedding(Edge(v));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(ne), Face(e));
+			this->copy_embedding(Face(v), Face(e));
 			this->copy_embedding(Face(nf), Face(f));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding(Volume(ne),Volume(e));
+			this->copy_embedding(Volume(v),Volume(e));
 			this->copy_embedding(Volume(nf), Volume(e));
 		}
 
-		return Vertex(ne);
+		return v;
 	}
 
 protected:
@@ -324,8 +323,8 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			unsigned int idx = this->copy_embedding(Volume(nd), Volume(d.dart));
-			this->set_embedding(Volume(ne), idx);
+			this->copy_embedding(Volume(nd), Volume(d.dart));
+			this->copy_embedding(Volume(ne), Volume(d.dart));
 		}
 	}
 
@@ -366,7 +365,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Face f = add_face_topo(size);
+		const Face f = add_face_topo(size);
 
 		if (this->template is_embedded<CDart>())
 			foreach_dart_of_orbit(f, [this] (CDart d)
@@ -549,7 +548,7 @@ public:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
@@ -627,7 +626,7 @@ public:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c, f); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c, f); break;
