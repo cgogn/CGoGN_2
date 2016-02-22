@@ -60,22 +60,22 @@ int main(int argc, char** argv)
 		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
 
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
-		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex2::SELF_ORBIT>("position");
+		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex2::SELF_ORBIT>("normal");
 		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
 
 		map.enable_topo_cache<Map2::FACE>();
-		map.enable_topo_cache<Map2::VERTEX>();
+		map.enable_topo_cache<Map2::Vertex2::SELF_ORBIT>();
 		map.enable_topo_cache<Map2::EDGE>();
 
 
-		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex2::SELF_ORBIT>(map) << std::endl;
 		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::FACE>(map) << std::endl;
 
-		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex2::SELF_ORBIT>(map) << std::endl;
 		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::FACE>(map) << std::endl;
 
-		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::VERTEX>(map) << std::endl;
+		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex2::SELF_ORBIT>(map) << std::endl;
 		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::FACE>(map) << std::endl;
 
 

@@ -153,7 +153,7 @@ public:
 	void create_map(Map& map)
 	{
 		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
-		const Orbit VERTEX = Map::VERTEX;
+		const Orbit VERTEX = Map::Vertex2::SELF_ORBIT;
 
 		if (this->nb_vertices_ == 0u)
 			return;

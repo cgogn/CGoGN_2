@@ -39,7 +39,8 @@ class CPHBase
 {
 
 public:
-	using Self = CPHBase<DATA_TRAITS>;
+
+	typedef CPHBase<DATA_TRAITS> Self;
 
 	template <typename T>
 	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
@@ -47,39 +48,41 @@ public:
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
 
 protected:
+
 	unsigned int current_level_;
 	unsigned int maximum_level_;
 
+	/*!
+	 * \brief Store the current number of darts per resolution level.
+	 * This information is used to detect that a level of resolution
+	 * becomes empty (contains no more dart) and that the maximum_level
+	 * of the hierarchy should be decremented.
+	 */
+	std::vector<unsigned int> nb_darts_per_level_;
+
 	ChunkArray<unsigned int>* dart_level_;
 
-	std::vector<unsigned int> nb_darts_per_level;
-
-	ChunkArrayContainer<unsigned char>& topo_;
-
 public:
+
 	CPHBase(ChunkArrayContainer<unsigned char>& topology):
-		topo_(topology),
-		current_level_(0)
+		current_level_(0u),
+		maximum_level_(0u)
 	{
-		init();
+		nb_darts_per_level_.reserve(32u);
+		nb_darts_per_level_.push_back(0);
+		dart_level_ = topology.template add_attribute<unsigned int>("dartLevel") ;
 	}
 
 	virtual ~CPHBase()
 	{
-		topo_.remove_attribute(dart_level_);
+		// TODO : check the way the destructors free memory in the class hierarchy
+		// topo_->remove_attribute(dart_level_);
 	}
 
 	CPHBase(Self const&) = delete;
 	CPHBase(Self &&) = delete;
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
-
-public:
-
-	void init()
-	{
-		dart_level_ = topo_.template add_attribute<unsigned int>("dartLevel") ;
-	}
 
 	/***************************************************
 	 *              LEVELS MANAGEMENT                  *
@@ -117,28 +120,33 @@ public:
 
 	inline void inc_current_level()
 	{
-		set_current_level(get_current_level() + 1);
+		current_level_++;
+
+		while (nb_darts_per_level_.size() < current_level_+1u)
+			nb_darts_per_level_.push_back(0);
+
+		if (current_level_ > maximum_level_)
+			maximum_level_ = current_level_;
 	}
 
 	inline void dec_current_level()
 	{
-		set_current_level(get_current_level() - 1);
+		cgogn_message_assert(current_level_ > 0u, "dec_current_level : already at minimal resolution level");
+
+		if (current_level_ == maximum_level_) {
+			if (nb_darts_per_level_[current_level_] == 0u) {
+				maximum_level_--;
+				nb_darts_per_level_.pop_back();
+			}
+		}
+		current_level_--;
 	}
 
-	inline void inc_nb_darts(unsigned int level)
+	inline void inc_nb_darts()
 	{
-		cgogn_message_assert(level < get_maximum_level(), "inc_nb_darts : already at maximum resolution level");
-		nb_darts_per_level[level]++;
+		nb_darts_per_level_[current_level_]++;
 	}
 
-	/***************************************************
-	 *              NB DARTS PER LEVEL                 *
-	 ***************************************************/
-
-	inline void new_level_darts()
-	{
-		nb_darts_per_level.push_back(0);
-	}
 };
 
 

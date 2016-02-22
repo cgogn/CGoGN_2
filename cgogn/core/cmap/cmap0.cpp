@@ -21,110 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#define CGOGN_CORE_DLL_EXPORT
+#define CORE_MAP_MAP0_CPP_
 
-#include <core/cmap/cmap1.h>
+#include <core/cmap/cmap0.h>
 
 namespace cgogn
 {
 
-
-class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
-{
-public:
-	typedef CMap1TopoTest::Face1 Face;
-
-protected:
-
-	CMap1TopoTest()
-	{}
-};
-
-
-TEST_F(CMap1TopoTest, testAddDart)
-{
-
-}
-
-TEST_F(CMap1TopoTest, testDeleteDart)
-{
-
-}
-
-TEST_F(CMap1TopoTest, testFaceDegree)
-{
-	Dart d = this->add_face_topo(10);
-	EXPECT_EQ(10, this->degree(Face(d)));
-}
-
-TEST_F(CMap1TopoTest, testSplitVertex)
-{
-	Dart d = this->add_face_topo(10);
-	Dart d1 = this->phi1(d);
-
-	Dart e = this->split_vertex_topo(d);
-
-	EXPECT_EQ(d1.index, this->phi1(e).index);
-	EXPECT_EQ(d.index, this->phi_1(e).index);
-	EXPECT_EQ(11, this->degree(Face(d)));
-}
-
-TEST_F(CMap1TopoTest, testRemoveVertex)
-{
-	Dart d = this->add_face_topo(10);
-	Dart d_1 = this->phi_1(d);
-	Dart d1 = this->phi1(d);
-
-	this->remove_vertex(d);
-
-	EXPECT_EQ(d1.index, this->phi1(d_1).index);
-	EXPECT_EQ(9, this->degree(Face(d_1)));
-}
-
-TEST_F(CMap1TopoTest, testReverseFace)
-{
-	Dart d = this->add_face_topo(10);
-	std::vector<Dart> successors;
-
-	{
-		Dart dit = d;
-		do
-		{
-			successors.push_back(this->phi1(dit));
-			dit = this->phi1(dit);
-		}
-		while(dit != d);
-	}
-
-	this->reverse_face_topo(d);
-
-	{
-		Dart dit = d;
-		unsigned i = 0;
-		do
-		{
-			EXPECT_EQ(this->phi_1(dit).index, successors[i].index);
-			dit = this->phi_1(dit);
-			++i;
-		}
-		while(dit != d);
-	}
-}
-
-TEST_F(CMap1TopoTest, testForEachDartOfVertex)
-{
-
-}
-
-TEST_F(CMap1TopoTest, testForEachDartOfEdge)
-{
-
-}
-
-TEST_F(CMap1TopoTest, testForEachDartOfFace)
-{
-
-}
+    template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<DefaultMapTraits>>;
+    template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
+    template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
+    template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
+    template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, Orbit::DART>;
+    template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, Orbit::DART>;
 
 } // namespace cgogn

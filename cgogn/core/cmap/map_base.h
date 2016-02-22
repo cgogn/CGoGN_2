@@ -138,7 +138,9 @@ protected:
 
 	inline Dart add_dart()
 	{
-		return this->to_concrete()->add_dart_internal();
+		Dart d(this->add_topology_element());
+		this->to_concrete()->init_dart(d);
+		return d;
 	}
 
 	inline void remove_dart(Dart d)
@@ -154,9 +156,9 @@ protected:
 	{
 		unsigned int idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		this->topology_.init_markers_of_line(idx);
-		for(unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (unsigned int orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
-			if(this->embeddings_[orbit])
+			if (this->embeddings_[orbit])
 				(*this->embeddings_[orbit])[idx] = EMBNULL;
 		}
 		return idx;
@@ -180,7 +182,8 @@ protected:
 			if(this->embeddings_[orbit])
 			{
 				unsigned int emb = (*this->embeddings_[orbit])[index];
-				this->attributes_[orbit].unref_line(emb);
+				if (emb != EMBNULL)
+					this->attributes_[orbit].unref_line(emb);
 			}
 		}
 	}
@@ -334,25 +337,58 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart([this] (Dart d)
+		foreach_dart([this,ca] (Dart d)
 		{
-			(*this->embeddings_[ORBIT])[d.index] = EMBNULL;
+			(*ca)[d.index] = EMBNULL;
 		});
 
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c)
 		{
-			set_orbit_embedding(c, add_attribute_element<ORBIT>());
+			new_orbit_embedding(c);
 		});
 	}
 
 	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	inline bool is_embedded(Cell<ORBIT> /* c */)
 	{
+		return this->template is_orbit_embedded<ORBIT>();
+	}
+
+	template <Orbit ORBIT>
+	inline unsigned int new_embedding(Cell<ORBIT> c)
+	{
+		unsigned int emb = add_attribute_element<ORBIT>();
+		this->template set_embedding<ORBIT>(c.dart, emb);
+		return emb;
+	}
+
+	template <Orbit ORBIT>
+	inline unsigned int copy_embedding(Cell<ORBIT> c, Cell<ORBIT> d)
+	{
+		unsigned int emb = this->template get_embedding<ORBIT>(d.dart);
+		this->template set_embedding<ORBIT>(c.dart, emb);
+		return emb;
+	}
+
+//	template <Orbit ORBIT>
+//	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+//	{
+//		ConcreteMap* cmap = to_concrete();
+//		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
+//			cmap->template set_embedding<ORBIT>(d, emb);
+//		});
+//	}
+
+	template <Orbit ORBIT>
+	inline unsigned int new_orbit_embedding(Cell<ORBIT> c)
+	{
+		unsigned int emb = add_attribute_element<ORBIT>();
 		ConcreteMap* cmap = to_concrete();
 		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
 			cmap->template set_embedding<ORBIT>(d, emb);
 		});
+		return emb;
 	}
 
 public:
@@ -372,8 +408,12 @@ public:
 		ConcreteMap* cmap = to_concrete();
 		foreach_cell<FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
 		{
+			// Je ne comprends pas cet algo ?! (David)
+			// foreach_cell passe une seule fois par cellule ? => counter[c] est toujours nul
+			// En plus le brin c pourrait être n'importe quel brin de la cellule
+			// donc on peut passer plusieurs fois par la cellule, en comptant des brins distincts
 			if (counter[c] > 0)
-				cmap->set_orbit_embedding(c, cmap->template add_attribute_element<ORBIT>());
+				cmap->new_orbit_embedding(c);
 			counter[c]++;
 		});
 

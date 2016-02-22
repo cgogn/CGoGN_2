@@ -39,22 +39,19 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
-
 	typedef MAP_TRAITS MapTraits;
 	typedef MAP_TYPE MapType;
 	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
 	typedef CMap3_T<MAP_TRAITS, MAP_TYPE> Self;
 
-	friend typename Self::Inherit;
-	friend typename Inherit::Inherit;
-	friend typename Inherit::Inherit::Inherit;
-	template<typename T>
-	friend class DartMarker_T;
-	template<typename T>
-	friend class DartMarkerStore;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
+	template<typename T> friend class DartMarker_T;
+	template<typename T> friend class DartMarkerStore;
 
+	static const int PRIM_SIZE = 1;
+
+	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
 	static const Orbit EDGE   = Orbit::PHI2_PHI3;
 	static const Orbit FACE   = Orbit::PHI1_PHI3;
@@ -96,9 +93,36 @@ protected:
 		phi3_ = this->topology_.template add_attribute<Dart>("phi3");
 	}
 
+public:
+
+	CMap3_T() : Inherit()
+	{
+		init();
+	}
+
+	~CMap3_T() override
+	{}
+
+	CMap3_T(Self const&) = delete;
+	CMap3_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
+
+protected:
+
+	/**
+	* \brief Init an newly added dart.
+	* The dart is defined as a fixed point for PHI3.
+	*/
+	inline void init_dart(Dart d)
+	{
+		Inherit::init_dart(d);
+		(*phi3_)[d.index] = d;
+	}
 
 	/**
 	 * \brief Link dart d with dart e by an involution
@@ -115,7 +139,7 @@ protected:
 	}
 
 	/**
-	 * \brief Unlink the current dart by an involution
+	 * \brief Remove the phi3 link between the current dart and its linked dart
 	 * @param d the dart to unlink
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
@@ -126,6 +150,28 @@ protected:
 		(*phi3_)[d.index] = d;
 		(*phi3_)[e.index] = e;
 	}
+
+	/*******************************************************************************
+	 * Basic topological operations
+	 *******************************************************************************/
+
+public:
+
+	/**
+	 * \brief phi3
+	 * @param d
+	 * @return phi3(d)
+	 */
+	inline Dart phi3(Dart d) const
+	{
+		return (*phi3_)[d.index];
+	}
+
+	/*******************************************************************************
+	 * High-level embedded and topological operations
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
@@ -290,38 +336,31 @@ protected:
 			{
 				++nb;
 				close_hole_topo(d);
-				const Dart new_volume = phi3(d);
+				const Volume new_volume = phi3(d);
 
-				if (this->template is_orbit_embedded<Orbit::DART>())
-				{
-					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
+				if (this->template is_orbit_embedded<DART>())
+					foreach_dart_of_orbit(new_volume, [this] (Dart d)
 					{
-						this->template set_orbit_embedding<Orbit::DART>(wd, this->template add_attribute_element<DART>());
+						this->template new_embedding<DART>(d);
 					});
-				}
 
-				if (this->template is_orbit_embedded<Orbit::PHI21>()) // cmap2 vertices
-				{
-
-					Inherit::foreach_incident_vertex(Volume(new_volume), [this] (Cell<Orbit::PHI21> v)
+				if (this->template is_orbit_embedded<Orbit::PHI21>())
+					Inherit::foreach_incident_vertex(new_volume, [this] (Cell<Orbit::PHI21> v)
 					{
-						this->set_orbit_embedding(v, this->template add_attribute_element<Orbit::PHI21>());
+						this->new_orbit_embedding(v);
 					});
-				}
 
-				if (this->template is_orbit_embedded<Orbit::PHI2>()) // cmap2 edges
-				{
-					Inherit::foreach_incident_edge(Volume(new_volume), [this] (Cell<Orbit::PHI2> e)
+				if (this->template is_orbit_embedded<Orbit::PHI2>())
+					Inherit::foreach_incident_edge(new_volume, [this] (Cell<Orbit::PHI2> e)
 					{
-						this->set_orbit_embedding(e, this->template add_attribute_element<Orbit::PHI2>());
+						this->new_orbit_embedding(e);
 					});
-				}
 
 				if (this->template is_orbit_embedded<Orbit::PHI1>()) // cmap2 faces
 				{
-					Inherit::foreach_incident_face(Volume(new_volume), [this] (Cell<Orbit::PHI1> f)
+					Inherit::foreach_incident_face(new_volume, [this] (Cell<Orbit::PHI1> f)
 					{
-						this->set_orbit_embedding(f, this->template add_attribute_element<Orbit::PHI1>());
+						this->new_orbit_embedding(f);
 					});
 				}
 
@@ -329,7 +368,7 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI21_PHI31>(wd, this->template get_embedding<Orbit::PHI21_PHI31>(this->phi1(phi3(wd))));
+						this->template copy_embedding<Orbit::PHI21_PHI31>(wd, this->phi1(phi3(wd)));
 					});
 				}
 
@@ -337,7 +376,7 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+						this->template copy_embedding<Orbit::PHI2_PHI3>(wd, phi3(wd));
 					});
 				}
 
@@ -345,13 +384,13 @@ protected:
 				{
 					foreach_dart_of_orbit<Orbit::PHI1_PHI2>(new_volume, [this] (Dart wd)
 					{
-						this->template set_embedding<Orbit::PHI2_PHI3>(wd, this->template get_embedding<Orbit::PHI2_PHI3>(phi3(wd)));
+						this->template copy_embedding<Orbit::PHI2_PHI3>(wd, phi3(wd));
 					});
 
 				}
 				if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
 				{
-					this->template set_orbit_embedding<Orbit::PHI1_PHI2>(new_volume, this->template add_attribute_element<Orbit::PHI1_PHI2>());
+					this->template new_orbit_embedding<Orbit::PHI1_PHI2>(new_volume);
 				}
 			}
 		}
@@ -360,55 +399,9 @@ protected:
 
 public:
 
-	CMap3_T() : Inherit()
-	{
-		init();
-	}
-
-	~CMap3_T() override
-	{}
-
-	CMap3_T(Self const&) = delete;
-	CMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
-	/*******************************************************************************
-	 * Basic topological operations
-	 *******************************************************************************/
-
-	/**
-	 * \brief phi3
-	 * @param d
-	 * @return phi3(d)
-	 */
-	inline Dart phi3(Dart d) const
-	{
-		return (*phi3_)[d.index];
-	}
-
-protected:
-
-	/**
-	* \brief add a Dart in the map
-	* @return the new Dart
-	*/
-	inline Dart add_dart_internal()
-	{
-		Dart d = Inherit::add_dart_internal();
-		(*phi3_)[d.index] = d;
-		return d;
-	}
-
-public:
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
-
 	inline unsigned int degree(Face f) const
 	{
-		return Inherit::degree(typename Inherit::Face(f.dart));
+		return Inherit::degree(typename Inherit::Face2(f.dart));
 	}
 
 protected:
@@ -628,7 +621,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<Inherit::VERTEX>(d);
+				marker.mark_orbit<Orbit::PHI21>(d);
 				f(d);
 			}
 		});
@@ -660,14 +653,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
