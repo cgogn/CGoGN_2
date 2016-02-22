@@ -49,13 +49,13 @@ int main(int argc, char** argv)
 
 
 		unsigned int nbw = 0u;
-		map.foreach_cell<Map3::VOLUME>([&nbw] (Map3::Volume)
+		map.foreach_cell([&nbw] (Map3::Volume)
 		{
 			++nbw;
 		});
 
 		unsigned int nbf = 0u;
-		map.foreach_cell<Map3::FACE>([&] (Map3::Face f)
+		map.foreach_cell([&] (Map3::Face f)
 		{
 			++nbf;
 			Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 		});
 
 		unsigned int nbv = 0;
-		map.foreach_cell<Map3::VERTEX>([&] (Map3::Vertex v)
+		map.foreach_cell([&] (Map3::Vertex v)
 		{
 			++nbv;
 			unsigned int nb_incident = 0;
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 		});
 
 		unsigned int nbe = 0;
-		map.foreach_cell<Map3::EDGE>([&nbe] (Map3::Edge)
+		map.foreach_cell([&nbe] (Map3::Edge)
 		{
 			++nbe;
 		});

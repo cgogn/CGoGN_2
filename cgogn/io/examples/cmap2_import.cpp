@@ -80,14 +80,14 @@ int main(int argc, char** argv)
 
 
 		unsigned int nb_faces = 0;
-		map.foreach_cell<Map2::FACE>([&nb_faces] (Map2::Face) { nb_faces++; });
+		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });
 		std::cout << "nb faces -> " << nb_faces << std::endl;
 
 		unsigned int nb_faces_2 = 0;
 		std::vector<unsigned int> nb_faces_per_thread(cgogn::NB_THREADS - 1);
 		for (unsigned int& n : nb_faces_per_thread)
 			n = 0;
-		map.parallel_foreach_cell<Map2::FACE>([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
+		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
 		{
 			nb_faces_per_thread[thread_index]++;
 		});

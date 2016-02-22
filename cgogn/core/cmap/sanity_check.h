@@ -39,7 +39,7 @@ template <Orbit ORBIT, typename MAP>
 bool is_well_embedded(const MAP& map)
 {
 	bool result = true;
-	map.template foreach_cell<ORBIT>([&] (Cell<ORBIT> c)
+	map.foreach_cell([&] (Cell<ORBIT> c)
 	{
 		result = map.template is_well_embedded<ORBIT>(c);
 	});
@@ -63,7 +63,7 @@ bool is_orbit_embedding_unique(MAP& map)
 	for (unsigned int& i : counter) i = 0;
 
 	bool result = true;
-	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>([&] (Cell<ORBIT> c)
+	map.template foreach_cell<FORCE_DART_MARKING>([&] (Cell<ORBIT> c)
 	{
 		if (counter[c] > 0)
 		{

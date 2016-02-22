@@ -75,7 +75,7 @@ public:
 	void init_points(MAP& m, std::vector<unsigned int>& table_indices)
 	{
 //		table_indices.reserve(m.get_nb_darts()/6);
-		m.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
+		m.foreach_cell([&] (typename MAP::Vertex v)
 		{
 			table_indices.push_back(m.get_embedding(v));
 		});
@@ -85,7 +85,7 @@ public:
 	void init_lines(MAP& m, std::vector<unsigned int>& table_indices)
 	{
 //		table_indices.reserve(m.get_nb_darts()/2);
-		m.template foreach_cell<MAP::EDGE>([&] (typename MAP::Edge e)
+		m.foreach_cell([&] (typename MAP::Edge e)
 		{
 			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(e.dart));
 			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(m.phi1(e.dart)));
@@ -97,7 +97,7 @@ public:
 	{
 		// reserve more ?
 //		table_indices.reserve(m.get_nb_darts()/3);
-		m.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+		m.foreach_cell([&] (typename MAP::Face f)
 		{
 			Dart d = f;
 			Dart d1 = m.phi1(d);
