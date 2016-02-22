@@ -107,10 +107,11 @@ int test1(MAP& map)
 	});
 	std::cout << "End Vertices" << std::endl;
 
-	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
-	{
-		ah[v] = 4.0f;
-	});
+	// the method foreach_adjacent_vertex_through_edge is not well defined for a MAP1
+//	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
+//	{
+//		ah[v] = 4.0f;
+//	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 //	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::Vertex);

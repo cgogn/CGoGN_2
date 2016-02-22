@@ -39,10 +39,10 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap3_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap3_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
@@ -57,10 +57,10 @@ public:
 	static const Orbit FACE   = Orbit::PHI1_PHI3;
 	static const Orbit VOLUME = Orbit::PHI1_PHI2;
 
-	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
+	using Vertex = Cell<Self::VERTEX>;
+	using Edge = Cell<Self::EDGE>;
+	using Face = Cell<Self::FACE>;
+	using Volume = Cell<Self::VOLUME>;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -915,7 +915,7 @@ public:
 template <typename MAP_TRAITS>
 struct CMap3Type
 {
-	typedef CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

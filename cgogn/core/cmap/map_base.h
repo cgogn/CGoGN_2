@@ -53,8 +53,8 @@ class MapBase : public MapBaseData<MAP_TRAITS>
 {
 public:
 
-	typedef MapBaseData<MAP_TRAITS> Inherit;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Self;
+	using Inherit = MapBaseData<MAP_TRAITS>;
+	using Self = MapBase<MAP_TRAITS, MAP_TYPE>;
 
 	template <typename MAP> friend class DartMarker_T;
 	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;

@@ -36,17 +36,17 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE ;
+	using Inherit = CMap0_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	typedef Cell<Orbit::DART> Vertex;
-	typedef Cell<Orbit::PHI1> Face;
+	using Vertex = Cell<Orbit::DART>;
+	using Face = Cell<Orbit::PHI1>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -342,6 +342,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
+					  "Orbit not supported in a CMap1");
+
 		switch (ORBIT)
 		{
 			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
@@ -373,6 +376,9 @@ protected:
 	{
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
+
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
+					  "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
@@ -406,7 +412,7 @@ public:
 template <typename MAP_TRAITS>
 struct CMap1Type
 {
-	typedef CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

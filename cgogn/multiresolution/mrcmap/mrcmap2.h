@@ -35,18 +35,18 @@ class MRCMap2_T : public MRBase<CMap2_T<MAP_TRAITS, MAP_TYPE>>
 {
 public:
 
-	typedef MRCMap2_T<MAP_TRAITS, MAP_TYPE> Self;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> CMap2;
+	using Self = MRCMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using CMap2 = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 
 	static const Orbit VERTEX = CMap2::VERTEX;
 	static const Orbit EDGE   = CMap2::EDGE;
 	static const Orbit FACE   = CMap2::FACE;
 	static const Orbit VOLUME = CMap2::VOLUME;
 
-	typedef CMap2::Vertex Vertex;
-	typedef CMap2::Edge Edge;
-	typedef CMap2::Face Face;
-	typedef CMap2::Volume Volume;
+	using Vertex = CMap2::Vertex;
+	using Edge = CMap2::Edge;
+	using Face = CMap2::Face;
+	using Volume = CMap2::Volume;
 
 public:
 
@@ -122,7 +122,7 @@ public:
 template <typename MAP_TRAITS>
 struct MRCMap2Type
 {
-	typedef MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>> TYPE;
+	using TYPE = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

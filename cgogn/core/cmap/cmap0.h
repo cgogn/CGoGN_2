@@ -36,16 +36,18 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap0_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	typedef Cell<Orbit::DART> Vertex;
+	static const Orbit VERTEX = Orbit::DART;
+
+	using Vertex = Cell<Orbit::DART>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -145,7 +147,7 @@ protected:
 template <typename MAP_TRAITS>
 struct CMap0Type
 {
-	typedef CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

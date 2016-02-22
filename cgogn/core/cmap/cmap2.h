@@ -41,10 +41,10 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef CMap1_T<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = CMap1_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
@@ -57,11 +57,11 @@ public:
 	static const Orbit FACE   = Orbit::PHI1;
 //	static const Orbit VOLUME = Orbit::PHI1_PHI2;
 
-	typedef Cell<Orbit::DART>		CDart;
-	typedef Cell<Orbit::PHI21>		Vertex;
-	typedef Cell<Orbit::PHI2>		Edge;
-	typedef Cell<Orbit::PHI1>		Face;
-	typedef Cell<Orbit::PHI1_PHI2>	Volume;
+	using CDart = Cell<Orbit::DART>	;
+	using Vertex = Cell<Orbit::PHI21>	;
+	using Edge = Cell<Orbit::PHI2>	;
+	using Face = Cell<Orbit::PHI1>	;
+	using Volume = Cell<Orbit::PHI1_PHI2>;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -548,6 +548,10 @@ public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
+					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  "Orbit not supported in a CMap2");
+
 		switch (ORBIT)
 		{
 			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
@@ -621,6 +625,10 @@ public:
 	{
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
+
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
+					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  "Orbit not supported in a CMap2");
 
 		switch (ORBIT)
 		{
@@ -815,7 +823,7 @@ public:
 template <typename MAP_TRAITS>
 struct CMap2Type
 {
-	typedef CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

@@ -35,9 +35,9 @@ class CMap1Test: public ::testing::Test
 {
 
 public:
-	typedef CMap1<DefaultMapTraits> myCMap1;
-	typedef myCMap1::Vertex Vertex;
-	typedef myCMap1::Face Face;
+	using myCMap1 = CMap1<DefaultMapTraits>;
+	using Vertex = myCMap1::Vertex;
+	using Face = myCMap1::Face;
 
 protected:
 	myCMap1 cmap_;
