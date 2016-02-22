@@ -36,7 +36,7 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	using MapTraits = MAP_TRAITS ;
+	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE ;
 	using Inherit = CMap0_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
@@ -45,8 +45,8 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	using Vertex = Cell<Orbit::DART>;
-	using Face = Cell<Orbit::PHI1>;
+	using Vertex	= Cell<Orbit::DART>;
+	using Face		= Cell<Orbit::PHI1>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -56,7 +56,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using DartAttributeHandler = AttributeHandler<T, Orbit::DART>;
+	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
 	template <typename T>
 	using FaceAttributeHandler = AttributeHandler<T, Face::ORBIT>;
 
@@ -210,9 +210,10 @@ public:
 
 		Vertex nv = split_vertex_topo(v);
 
-		if (this->template is_orbit_embedded<DART>()) this->new_embedding(nv);
+		if (this->template is_embedded<Vertex>())
+			this->new_embedding(nv);
 
-		if (this->template is_orbit_embedded<PHI1>())
+		if (this->template is_embedded<Face>())
 			this->copy_embedding(Face(nv.dart), Face(v.dart));
 
 		return nv;
@@ -264,13 +265,13 @@ public:
 
 		Face f = add_face_topo(size);
 
-		if (this->template is_orbit_embedded<DART>())
-			foreach_dart_of_PHI1(f.dart, [this] (Vertex v)
+		if (this->template is_embedded<Vertex>())
+			foreach_dart_of_orbit(f, [this] (Vertex v)
 			{
 				this->new_embedding(v);
 			});
 
-		if (this->template is_orbit_embedded<PHI1>()) this->new_orbit_embedding(f);
+		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
 
 		return f;
 	}
@@ -354,7 +355,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("This orbit is not handled"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
 		}
 	}
 
@@ -389,7 +390,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("This orbit is not handled"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
 		}
 	}
 
@@ -404,7 +405,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex),
 					  "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Orbit::PHI1>(f, func);
+		foreach_dart_of_orbit(f, func);
 	}
 };
 
@@ -422,10 +423,10 @@ extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Orbit::DART>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Orbit::PHI1>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Orbit::DART>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Orbit::PHI1>;
+extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
 
 } // namespace cgogn

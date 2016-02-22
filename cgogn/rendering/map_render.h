@@ -87,8 +87,8 @@ public:
 //		table_indices.reserve(m.get_nb_darts()/2);
 		m.foreach_cell([&] (typename MAP::Edge e)
 		{
-			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(e.dart));
-			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(m.phi1(e.dart)));
+			table_indices.push_back(m.template get_embedding<MAP::Vertex::ORBIT>(e.dart));
+			table_indices.push_back(m.template get_embedding<MAP::Vertex::ORBIT>(m.phi1(e.dart)));
 		});
 	}
 
@@ -102,12 +102,12 @@ public:
 			Dart d = f;
 			Dart d1 = m.phi1(d);
 			Dart d2 = m.phi1(d1);
-			unsigned int d_e = m.template get_embedding<MAP::VERTEX>(d);
-			unsigned int d1_e = m.template get_embedding<MAP::VERTEX>(d1);
+			unsigned int d_e = m.template get_embedding<MAP::Vertex::ORBIT>(d);
+			unsigned int d1_e = m.template get_embedding<MAP::Vertex::ORBIT>(d1);
 			unsigned int d2_e;
 			do
 			{
-				d2_e = m.template get_embedding<MAP::VERTEX>(d2);
+				d2_e = m.template get_embedding<MAP::Vertex::ORBIT>(d2);
 
 				table_indices.push_back(d_e);
 				table_indices.push_back(d1_e);

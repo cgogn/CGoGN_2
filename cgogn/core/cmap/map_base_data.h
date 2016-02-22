@@ -246,11 +246,18 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
+	template <class Cell>
+	inline bool is_embedded() const
+	{
+		static_assert(Cell::ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[Cell::ORBIT] != nullptr;
+	}
+
 	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
@@ -262,7 +269,7 @@ protected:
 	inline void set_embedding(Cell<ORBIT> c, unsigned int emb)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
 		const unsigned int old = (*embeddings_[ORBIT])[c.dart.index];

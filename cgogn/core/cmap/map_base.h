@@ -296,7 +296,7 @@ protected:
 		else
 		{
 			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
-			if (!this->template is_orbit_embedded<ORBIT>())
+			if (!this->template is_embedded<Cell<ORBIT>>())
 				create_embedding<ORBIT>();
 			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
 			return ca;
@@ -311,7 +311,8 @@ protected:
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_embedded<Cell<ORBIT>>(),
+							 "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
@@ -327,7 +328,7 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
+		cgogn_message_assert(!this->template is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -497,7 +498,7 @@ public:
 	template <Orbit ORBIT>
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_orbit_embedded<ORBIT>())
+		if (this->template is_embedded<Cell<ORBIT>>())
 			return this->get_embedding(c1) == this->get_embedding(c2);
 
 		const ConcreteMap* cmap = to_concrete();
@@ -737,7 +738,7 @@ public:
 			case AUTO :
 				if (is_topo_cache_enabled<cell_type::ORBIT>())
 					foreach_cell_topo_cache(f);
-				else if (this->template is_orbit_embedded<cell_type::ORBIT>())
+				else if (this->template is_embedded<cell_type>())
 					foreach_cell_cell_marking(f);
 				else
 					foreach_cell_dart_marking(f);

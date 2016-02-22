@@ -45,8 +45,6 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	static const Orbit VERTEX = Orbit::DART;
-
 	using Vertex = Cell<Orbit::DART>;
 
 	template <typename T>
@@ -57,7 +55,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -108,7 +106,7 @@ public:
 
 		Vertex v = this->add_dart();
 
-		if (this->template is_orbit_embedded<DART>())
+		if (this->template is_embedded<Vertex>())
 			this->new_embedding(v);
 
 		return v;
@@ -139,8 +137,7 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART,
-					  "Orbit not supported in a CMap0");
+		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		this->foreach_dart_of_DART(c, f);
 	}
 };
@@ -159,8 +156,8 @@ extern template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, Orbit::DART>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, Orbit::DART>;
+extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, Vertex::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
 
 } // namespace cgogn

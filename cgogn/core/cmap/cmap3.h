@@ -39,6 +39,8 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const int PRIM_SIZE = 1;
+
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
 	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
@@ -48,8 +50,6 @@ public:
 	friend class CMap3Builder_T<MapTraits>;
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
-
-	static const int PRIM_SIZE = 1;
 
 	static const Orbit DART	  = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21_PHI31;
