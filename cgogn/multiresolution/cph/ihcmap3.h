@@ -241,12 +241,6 @@ protected:
 		 *******************************************************************************/
 
 	template <typename FUNC>
-	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
-
-	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
 		Dart it = d;

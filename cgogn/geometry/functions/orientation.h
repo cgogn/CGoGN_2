@@ -25,6 +25,8 @@
 #define GEOMETRY_ORIENTATION_H_
 
 #include <geometry/types/plane_3d.h>
+#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/normal.h>
 
 namespace cgogn
 {
@@ -60,6 +62,30 @@ Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T
 	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 	return Plane3D<VEC3_T>(N, PP).orient(P);
 }
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	using Scalar = typename vector_traits<VEC3_T>::Scalar;
+	static const auto triple_positive = [] (const VEC3_T& U, const VEC3_T& V, const VEC3_T& W) -> bool
+	{
+		return U.dot(V.cross(W)) >= Scalar(0);
+	};
+
+	if (triple_positive(P-Ta, Tb-Ta, normal) ||
+		triple_positive(P-Tb, Tc-Tb, normal) ||
+		triple_positive(P-Tc, Ta-Tc, normal) )
+		return false;
+
+	return true;
+}
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	return in_triangle(P, triangle_normal(Ta, Tb, Tc), Ta, Tb,Tc );
+}
+
 
 } // namespace geometry
 

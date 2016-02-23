@@ -322,6 +322,21 @@ public:
 		return this->nb_darts(f);
 	}
 
+	inline bool has_degree(Face f, unsigned int degree)
+	{
+		Dart it = f.dart ;
+		for (unsigned int i=1;i<degree; ++i)
+		{
+			it = phi1(it) ;
+			if (it == f.dart)
+				return false;
+		}
+		it = phi1(it) ;
+		return (it == f.dart);
+	}
+
+protected:
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
@@ -382,7 +397,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
@@ -428,6 +443,8 @@ extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<D
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
+
+
 
 } // namespace cgogn
 

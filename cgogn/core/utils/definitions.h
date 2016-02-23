@@ -130,12 +130,38 @@
 
 #ifdef _MSC_VER
 	// no warning with VS 2013 and \W4
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 #endif
 
 
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)
+
+#define CGOGN_LITTLE_ENDIAN	1234
+#define CGOGN_BIG_ENDIAN	4321
+#define CGOGN_ENDIANNESS	0
+
+#if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN || \
+	defined(__BYTE_ORDER__) && __BYTE_ORDER__ ==__ORDER_BIG_ENDIAN__ || \
+	defined(__BIG_ENDIAN__) || \
+	defined(__ARMEB__) || \
+	defined(__THUMBEB__) || \
+	defined(__AARCH64EB__) || \
+	defined(_MIBSEB) || defined(__MIBSEB) || defined(__MIBSEB__)
+#define CGOGN_ENDIANNESS CGOGN_BIG_ENDIAN
+#else
+#if defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN || \
+	defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ || \
+	defined(__LITTLE_ENDIAN__) || \
+	defined(__ARMEL__) || \
+	defined(__THUMBEL__) || \
+	defined(__AARCH64EL__) || \
+	defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
+#define CGOGN_ENDIANNESS CGOGN_LITTLE_ENDIAN
+#else
+#error "Unable to determine the architecture."
+#endif
+#endif
 
 #endif // CORE_UTILS_DEFINITIONS_H_

@@ -39,6 +39,8 @@
 #include <rendering/shaders/shader_vector_per_vertex.h>
 #include <rendering/shaders/vbo.h>
 
+#include <geometry/algos/ear_triangulation.h>
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
@@ -175,9 +177,9 @@ void Viewer::init()
 
 	render_ = new cgogn::rendering::MapRender();
 
-	render_->init_primitives(map_, cgogn::rendering::POINTS);
-	render_->init_primitives(map_, cgogn::rendering::LINES);
-	render_->init_primitives(map_, cgogn::rendering::TRIANGLES);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, vertex_position_);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES, vertex_position_);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
 	shader1_ = new cgogn::rendering::ShaderSimpleColor;
 	shader1_->add_vao();
