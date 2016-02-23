@@ -346,6 +346,15 @@ public:
 	}
 
 	/**
+	 * \brief affect a value to all elements of container (even holes)
+	 * @param val value to affect
+	 */
+	inline void set_all_container_values(const T& val)
+	{
+		chunk_array_->set_all_values(val);
+	}
+
+	/**
 	 * \brief operator []
 	 * @param c
 	 * @return

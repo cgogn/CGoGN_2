@@ -8,9 +8,11 @@ set(HEADER_FILES
 	algos/area.h
 	algos/centroid.h
 	algos/normal.h
+	algos/ear_triangulation.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
+	functions/inclusion.h
 	types/bounding_box.h
 	types/eigen.h
 	types/geometry_traits.h

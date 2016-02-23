@@ -511,7 +511,7 @@ public:
 		else
 		{
 			unsigned int result = 0;
-			foreach_cell<ORBIT>([&result] (Cell<ORBIT>) { ++result; });
+			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
 	}

@@ -381,6 +381,15 @@ public:
 		cgogn_assert(i / CHUNKSIZE < table_data_.size());
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
+
+	inline void set_all_values( const T& v)
+	{
+		for(T* chunk : table_data_)
+		{
+			for(unsigned int i=0; i<CHUNKSIZE; ++i)
+				*chunk++ = v;
+		}
+	}
 };
 
 /**
