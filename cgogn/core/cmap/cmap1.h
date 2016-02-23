@@ -266,9 +266,9 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Vertex v)
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(v);
+				this->new_orbit_embedding(Vertex(d));
 			});
 
 		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
@@ -357,13 +357,15 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
@@ -389,6 +391,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
 
@@ -398,7 +402,7 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
@@ -420,7 +424,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex),
 					  "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, func);
+		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
 };
 
