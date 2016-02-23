@@ -376,10 +376,9 @@ protected:
 	template <Orbit ORBIT>
 	inline unsigned int new_orbit_embedding(Cell<ORBIT> c)
 	{
-		unsigned int emb = add_attribute_element<ORBIT>();
-		ConcreteMap* cmap = to_concrete();
-		cmap->foreach_dart_of_orbit(c, [cmap, emb] (Dart d) {
-			cmap->template set_embedding<ORBIT>(d, emb);
+		const unsigned int emb = add_attribute_element<ORBIT>();
+		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d) {
+			this->template set_embedding<ORBIT>(d, emb);
 		});
 		return emb;
 	}
