@@ -266,9 +266,9 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Vertex v)
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(v);
+				this->new_orbit_embedding(Vertex(d));
 			});
 
 		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
@@ -357,6 +357,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
+
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
 

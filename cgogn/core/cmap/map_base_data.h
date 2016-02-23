@@ -266,20 +266,20 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline void set_embedding(Cell<ORBIT> c, unsigned int emb)
+	inline void set_embedding(Dart d, unsigned int emb)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
-		const unsigned int old = (*embeddings_[ORBIT])[c.dart.index];
+		const unsigned int old = (*embeddings_[ORBIT])[d.dart.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
 		attributes_[ORBIT].ref_line(emb);			// ref the new emb
 		if (old != EMBNULL)
 			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
-		(*embeddings_[ORBIT])[c.dart.index] = emb;		// affect the embedding to the dart
+		(*embeddings_[ORBIT])[d.dart.index] = emb;		// affect the embedding to the dart
 	}
 
 	/*******************************************************************************

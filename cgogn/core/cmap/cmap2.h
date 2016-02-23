@@ -193,10 +193,10 @@ public:
 
 	/**
 	 * \brief Cut an embedded edge.
-	 * \param d : A dart that represents the edge to cut
+	 * \param e : A dart that represents the edge to cut
 	 * \return A dart of the inserted vertex
-	 * The edge of d is cut by inserting a new vertex.
-	 * The returned dart is the dart of the inserted vertex that belongs to the face of d.
+	 * The edge e is cut by inserting a new vertex.
+	 * The returned dart is the dart of the inserted vertex that belongs to the face of e.
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 *  - Actually a Vertex attribute is created, if needed, for the inserted vertex.
@@ -218,7 +218,7 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->new_orbit_embedding(Vertex(v));
+			this->new_orbit_embedding(v);
 		}
 
 		if (this->template is_embedded<Edge>())
