@@ -107,7 +107,7 @@ public:
 		Vertex v = this->add_dart();
 
 		if (this->template is_embedded<Vertex>())
-			this->new_embedding(v);
+			this->new_orbit_embedding(v);
 
 		return v;
 	}

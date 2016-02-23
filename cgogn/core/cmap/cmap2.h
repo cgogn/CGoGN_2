@@ -208,17 +208,17 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		const Vertex v = cut_edge_topo(e);
-		const Dart nf = phi2(e);
-		const Dart  f = phi2(v);
+		const Dart  nf = phi2(e);
+		const Dart   f = phi2(v);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_embedding(CDart(v));
-			this->new_embedding(CDart(nf));
+			this->new_orbit_embedding(CDart(v));
+			this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->new_embedding(Vertex(v));
+			this->new_orbit_embedding(Vertex(v));
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -300,8 +300,8 @@ public:
 		Dart ne = this->phi_1(e);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_embedding(CDart(nd));
-			this->new_embedding(CDart(ne));
+			this->new_orbit_embedding(CDart(nd));
+			this->new_orbit_embedding(CDart(ne));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -370,8 +370,8 @@ public:
 		if (this->template is_embedded<CDart>())
 			foreach_dart_of_orbit(f, [this] (CDart d)
 			{
-				this->new_embedding(d);
-				this->new_embedding(CDart(phi2(d)));
+				this->new_orbit_embedding(d);
+				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 
 		if (this->template is_embedded<Vertex>())
@@ -442,7 +442,7 @@ protected:
 				if (this->template is_embedded<CDart>())
 					foreach_dart_of_orbit(new_face, [this] (CDart d)
 					{
-						this->new_embedding(d);
+						this->new_orbit_embedding(d);
 					});
 
 				if (this->template is_embedded<Vertex>())
@@ -483,7 +483,7 @@ public:
 
 	inline unsigned int degree(Vertex v) const
 	{
-		return this->nb_darts(v);
+		return this->nb_darts_of_orbit(v);
 	}
 
 	/*******************************************************************************

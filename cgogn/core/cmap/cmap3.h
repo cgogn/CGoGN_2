@@ -51,7 +51,7 @@ public:
 	template<typename T> friend class DartMarker_T;
 	template<typename T> friend class DartMarkerStore;
 
-	using CDart = typename Inherit::CDart;
+	using CDart = Cell<Orbit::DART>;
 	using Vertex = Cell<Orbit::PHI21_PHI31>;
 	using Edge = Cell<Orbit::PHI2_PHI3>;
 	using Face = Cell<Orbit::PHI1_PHI3>;
@@ -339,7 +339,7 @@ protected:
 				if (this->template is_embedded<CDart>())
 					foreach_dart_of_orbit(new_volume, [this] (Dart d)
 					{
-						this->new_embedding(CDart(d));
+						this->new_orbit_embedding(CDart(d));
 					});
 
 				if (this->template is_embedded<Vertex2>())
@@ -466,8 +466,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
+//		static_assert(check_func_parameter_type(FUNC, Dart),
+//					  "Wrong function parameter type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||

@@ -211,7 +211,7 @@ public:
 		Vertex nv = split_vertex_topo(v);
 
 		if (this->template is_embedded<Vertex>())
-			this->new_embedding(nv);
+			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
 			this->copy_embedding(Face(nv.dart), Face(v.dart));
@@ -222,7 +222,7 @@ public:
 	/**
 	 * \brief Remove a vertex from its face and delete it.
 	 * @param v : a vertex
-	 * The vertex that preceeds v in the face is linked its successor.
+	 * The vertex that preceeds v in the face is linked to the successor of v.
 	 */
 	inline void remove_vertex(Vertex v)
 	{
@@ -268,7 +268,7 @@ public:
 		if (this->template is_embedded<Vertex>())
 			foreach_dart_of_orbit(f, [this] (Vertex v)
 			{
-				this->new_embedding(v);
+				this->new_orbit_embedding(v);
 			});
 
 		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
@@ -283,12 +283,12 @@ public:
 	inline void remove_face(Face f)
 	{
 		Dart d = f.dart;
-		Dart e = phi1(d);
-		while(e != d)
+		Dart it = phi1(d);
+		while(it != d)
 		{
-			Dart f = phi1(e);
-			this->remove_dart(e);
-			e = f;
+			Dart next = phi1(it);
+			this->remove_dart(it);
+			it = next;
 		}
 
 		this->remove_dart(d);
@@ -319,7 +319,7 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		return this->nb_darts(f);
+		return this->nb_darts_of_orbit(f);
 	}
 
 	/*******************************************************************************

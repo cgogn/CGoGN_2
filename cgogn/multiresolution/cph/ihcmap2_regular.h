@@ -39,10 +39,10 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 
-	using Vertex = typename Inherit::Vertex2;
-	using Edge = typename Inherit::Edge2;
-	using Face = typename Inherit::Face2;
-	using Volume = typename Inherit::Volume2;
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using Face = typename Inherit::Face;
+	using Volume = typename Inherit::Volume;
 
 	IHCMap2Regular_T() : Inherit()
 	{}

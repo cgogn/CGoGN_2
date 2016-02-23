@@ -75,11 +75,11 @@ public:
 //	static const Orbit FACE   = Inherit_CMAP::FACE;
 //	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
-	using Vertex0 = Cell<Orbit::DART>	;
-	using Vertex2 = Cell<Orbit::PHI21>	;
-	using Edge2 = Cell<Orbit::PHI2>	;
-	using Face2 = Cell<Orbit::PHI1>	;
-	using Volume2 = Cell<Orbit::PHI1_PHI2>;
+	using CDart		= typename Inherit_CMAP::CDart;
+	using Vertex	= typename Inherit_CMAP::Vertex;
+	using Edge		= typename Inherit_CMAP::Edge;
+	using Face		= typename Inherit_CMAP::Face;
+	using Volume	= typename Inherit_CMAP::Volume;
 
 
 	template <typename T>
@@ -221,7 +221,7 @@ public:
 //	inline unsigned int get_embedding_cph(Cell<ORBIT> c) const
 //	{
 //		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-//		cgogn_message_assert(Inherit::is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+//		cgogn_message_assert(Inherit::is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
 
 //		unsigned int nb_steps = Inherit::get_current_level() - Inherit::get_dart_level(c.dart);
 //		unsigned int index = Inherit::get_embedding(c);
@@ -247,29 +247,29 @@ public:
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 * Actually a FACE attribute is created, if needed, for the new face.
 	 */
-	Face2 add_face(unsigned int size)
+	Face add_face(unsigned int size)
 	{
-		Face2 f = this->add_face_topo(size);
+		Face f = this->add_face_topo(size);
 
-		if (this->template is_orbit_embedded<Orbit::DART>())
+		if (this->template is_embedded<CDart>())
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->template new_embedding<Orbit::DART>(d);
+				this->template new_orbit_embedding<Orbit::DART>(d);
 			});
 
-		if (this->template is_orbit_embedded<Orbit::PHI21>())
+		if (this->template is_embedded<Vertex>())
 			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->template new_embedding<Orbit::PHI21>(v);
+				this->template new_orbit_embedding<Orbit::PHI21>(v);
 			});
 
-		if (this->template is_orbit_embedded<Orbit::PHI2>())
+		if (this->template is_embedded<Edge>())
 			cgogn_assert_not_reached("Not implemented");
 
-		if (this->template is_orbit_embedded<Orbit::PHI1>())
+		if (this->template is_embedded<Face>())
 			cgogn_assert_not_reached("Not implemented");
 
-		if (this->template is_orbit_embedded<Orbit::PHI1_PHI2>())
+		if (this->template is_embedded<Volume>())
 			cgogn_assert_not_reached("Not implemented");
 
 		return f;

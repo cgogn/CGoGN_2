@@ -239,12 +239,12 @@ protected:
 
 public:
 
-	template <Orbit ORBIT>
-	inline bool is_orbit_embedded() const
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return embeddings_[ORBIT] != nullptr;
-	}
+//	template <Orbit ORBIT>
+//	inline bool is_orbit_embedded() const
+//	{
+//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+//		return embeddings_[ORBIT] != nullptr;
+//	}
 
 	template <class Cell>
 	inline bool is_embedded() const
@@ -275,11 +275,11 @@ protected:
 		const unsigned int old = (*embeddings_[ORBIT])[c.dart.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
-		this->attributes_[ORBIT].ref_line(emb);			// ref the new emb
+		attributes_[ORBIT].ref_line(emb);			// ref the new emb
 		if (old != EMBNULL)
-			this->attributes_[ORBIT].unref_line(old);	// unref the old emb
+			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
-		(*this->embeddings_[ORBIT])[c.dart.index] = emb;		// affect the embedding to the dart
+		(*embeddings_[ORBIT])[c.dart.index] = emb;		// affect the embedding to the dart
 	}
 
 	/*******************************************************************************
