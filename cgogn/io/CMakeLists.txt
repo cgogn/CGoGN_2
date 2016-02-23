@@ -1,17 +1,22 @@
 project(cgogn_io
-	LANGUAGES CXX
+	LANGUAGES CXX C
 	)
 
 set(HEADER_FILES
 	surface_import.h
 	volume_import.h
 	map_import.h
+	map_export.h
+	ply.h
+	import_ply_data.h
 	dll.h
 	)
 
 set(SOURCE_FILES
 	surface_import.cpp
 	volume_import.cpp
+	ply.c
+	import_ply_data.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

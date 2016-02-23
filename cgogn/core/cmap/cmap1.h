@@ -173,7 +173,6 @@ protected:
 	*/
 	inline Dart add_dart()
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 		unsigned int di = this->add_topology_element();
 		Dart d(di);
 		(*phi1_)[di] = d;
@@ -327,6 +326,22 @@ public:
 	{
 		return this->nb_darts(f);
 	}
+
+	
+	inline bool has_degree(Face f, unsigned int degree)
+	{
+		Dart it = f.dart ;
+		for (unsigned int i=1;i<degree; ++i)
+		{
+			it = phi1(it) ;
+			if (it == f.dart)
+				return false;
+		}
+		it = phi1(it) ;
+		return (it == f.dart);
+
+	}
+
 
 protected:
 
