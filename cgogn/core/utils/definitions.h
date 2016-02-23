@@ -140,7 +140,6 @@
 
 #define CGOGN_LITTLE_ENDIAN	1234
 #define CGOGN_BIG_ENDIAN	4321
-#define CGOGN_ENDIANNESS	0
 
 #if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN || \
 	defined(__BYTE_ORDER__) && __BYTE_ORDER__ ==__ORDER_BIG_ENDIAN__ || \
@@ -160,7 +159,7 @@
 	defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
 #define CGOGN_ENDIANNESS CGOGN_LITTLE_ENDIAN
 #else
-#error "Unable to determine the architecture."
+#define CGOGN_ENDIANNESS	0
 #endif
 #endif
 
