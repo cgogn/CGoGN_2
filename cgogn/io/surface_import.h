@@ -63,6 +63,7 @@ public:
 
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Map = CMap2<MAP_TRAITS>;
+	using Vertex = typename Map::Vertex;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -153,7 +154,6 @@ public:
 	void create_map(Map& map)
 	{
 		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
-		const Orbit VERTEX = Map::Vertex::ORBIT;
 
 		if (this->nb_vertices_ == 0u)
 			return;
@@ -161,11 +161,11 @@ public:
 		MapBuilder mbuild(map);
 		map.clear_and_remove_attributes();
 
-		mbuild.template create_embedding<VERTEX>();
-		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
+		mbuild.template create_embedding<Vertex::ORBIT>();
+		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
-			map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+			map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
 		std::vector<unsigned int> vertices_buffer;
@@ -193,11 +193,11 @@ public:
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-				Dart d = mbuild.add_face_topo(nbe);
-				for (unsigned int j = 0; j < nbe; ++j)
+				Dart d = mbuild.add_face_topo_parent(nbe);
+				for (unsigned int j = 0u; j < nbe; ++j)
 				{
-					unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template set_embedding<VERTEX>(d, vertex_index);
+					const unsigned int vertex_index = vertices_buffer[j];
+					mbuild.set_embedding(Vertex(d), vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
@@ -211,7 +211,7 @@ public:
 		{
 			if (map.phi2(d) == d)
 			{
-				unsigned int vertex_index = map.template get_embedding<VERTEX>(d);
+				unsigned int vertex_index = map.get_embedding(Vertex(d));
 
 				std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
 				bool phi2_found = false;
@@ -221,7 +221,7 @@ public:
 					it != next_vertex_darts.end() && !phi2_found;
 					++it)
 				{
-					if (map.template get_embedding<VERTEX>(map.phi1(*it)) == vertex_index)
+					if (map.get_embedding(Vertex(map.phi1(*it))) == vertex_index)
 					{
 						if (map.phi2(*it) == *it)
 						{
@@ -247,7 +247,7 @@ public:
 			mbuild.close_map();
 
 		if (need_vertex_unicity_check)
-			map.template enforce_unique_orbit_embedding<VERTEX>();
+			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();

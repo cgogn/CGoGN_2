@@ -54,6 +54,7 @@ public:
 
 	using Self = VolumeImport<MAP_TRAITS>;
 	using Map = CMap3<MAP_TRAITS>;
+	using Vertex = typename Map::Vertex;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -135,7 +136,6 @@ public:
 
 	bool create_map(Map& map)
 	{
-		const Orbit VERTEX = Map::VERTEX;
 		using Face = typename Map::Face;
 
 		if (this->nb_vertices_ == 0u)
@@ -144,9 +144,9 @@ public:
 		MapBuilder mbuild(map);
 		map.clear_and_remove_attributes();
 
-		mbuild.template create_embedding<VERTEX>();
-		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
-		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+		mbuild.template create_embedding<Vertex::ORBIT>();
+		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
+		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int index = 0u;
 		// buffer for tempo faces (used to remove degenerated edges)
@@ -297,8 +297,8 @@ public:
 				Dart good_dart;
 				for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
 				{
-					if(map.template get_embedding<VERTEX>(map.phi1(*it)) == map.template get_embedding<VERTEX>(d) &&
-							map.template get_embedding<VERTEX>(map.phi_1(*it)) == map.template get_embedding<VERTEX>(map.phi1(map.phi1(d))))
+					if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d)) &&
+							map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d)))))
 					{
 						good_dart = *it;
 					}

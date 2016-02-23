@@ -50,13 +50,15 @@ protected:
 
 TEST_F(CMap1Test, addFace)
 {
-	cmap_.add_attribute<int, Face::ORBIT>("int");
-
+	cmap_.add_attribute<int, Face::ORBIT>("int_f");
+	cmap_.add_attribute<int, Vertex::ORBIT>("int_v");
 	Face f = cmap_.add_face(10);
 
-	cmap_.split_vertex(Vertex(f.dart));
+	cmap_.split_vertex(f.dart);
+
 
 	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
 	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
 	EXPECT_TRUE(is_container_well_referenced<Face::ORBIT>(cmap_));
 

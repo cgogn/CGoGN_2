@@ -19,6 +19,7 @@ using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
 template <typename T>
 using FaceAttributeHandler = Map3::FaceAttributeHandler<T>;
 
+
 int main(int argc, char** argv)
 {
 	std::string volumeMesh;
@@ -40,12 +41,12 @@ int main(int argc, char** argv)
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-		map.enable_topo_cache<Map3::VOLUME>();
-		map.enable_topo_cache<Map3::FACE>();
-		map.enable_topo_cache<Map3::VERTEX>();
-		map.enable_topo_cache<Map3::EDGE>();
+		map.enable_topo_cache<Map3::Volume::ORBIT>();
+		map.enable_topo_cache<Map3::Face::ORBIT>();
+		map.enable_topo_cache<Map3::Vertex::ORBIT>();
+		map.enable_topo_cache<Map3::Edge::ORBIT>();
 
 
 		unsigned int nbw = 0u;
