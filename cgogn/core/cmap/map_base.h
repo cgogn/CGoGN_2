@@ -355,15 +355,15 @@ protected:
 	{
 		const unsigned int emb = add_attribute_element<ORBIT>();
 		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d) {
-			this->set_embedding(Cell<ORBIT>(d), emb);
+			this->template set_embedding<ORBIT>(d, emb);
 		});
 		return emb;
 	}
 
 	template <Orbit ORBIT>
-	inline void copy_embedding(Cell<ORBIT> dest, Cell<ORBIT> src)
+	inline void copy_embedding(Dart dest, Dart src)
 	{
-		this->set_embedding(dest, this->get_embedding(src));
+		this->template set_embedding<ORBIT>(dest, this->get_embedding(Cell<ORBIT>(src)));
 	}
 
 public:

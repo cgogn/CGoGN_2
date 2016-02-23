@@ -193,10 +193,10 @@ public:
 
 	/**
 	 * \brief Cut an embedded edge.
-	 * \param d : A dart that represents the edge to cut
+	 * \param e : A dart that represents the edge to cut
 	 * \return A dart of the inserted vertex
-	 * The edge of d is cut by inserting a new vertex.
-	 * The returned dart is the dart of the inserted vertex that belongs to the face of d.
+	 * The edge e is cut by inserting a new vertex.
+	 * The returned dart is the dart of the inserted vertex that belongs to the face of e.
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 *  - Actually a Vertex attribute is created, if needed, for the inserted vertex.
@@ -218,25 +218,25 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->new_orbit_embedding(Vertex(v));
+			this->new_orbit_embedding(v);
 		}
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->copy_embedding(Edge(nf), e);
+			this->template copy_embedding<Edge::ORBIT>(nf, e);
 			this->new_orbit_embedding(Edge(v));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(v), Face(e));
-			this->copy_embedding(Face(nf), Face(f));
+			this->template copy_embedding<Face::ORBIT>(v, e);
+			this->template copy_embedding<Face::ORBIT>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding(Volume(v),Volume(e));
-			this->copy_embedding(Volume(nf), Volume(e));
+			this->template copy_embedding<Volume::ORBIT>(v,e);
+			this->template copy_embedding<Volume::ORBIT>(nf, e);
 		}
 
 		return v;
@@ -306,8 +306,8 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->copy_embedding(Vertex(nd), e);
-			this->copy_embedding(Vertex(ne), d);
+			this->template copy_embedding<Vertex::ORBIT>(nd, e.dart);
+			this->template copy_embedding<Vertex::ORBIT>(ne, d.dart);
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -317,14 +317,14 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(nd), Face(d.dart));
+			this->template copy_embedding<Face::ORBIT>(nd, d.dart);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding(Volume(nd), Volume(d.dart));
-			this->copy_embedding(Volume(ne), Volume(d.dart));
+			this->template copy_embedding<Volume::ORBIT>(nd, d.dart);
+			this->template copy_embedding<Volume::ORBIT>(ne, d.dart);
 		}
 	}
 
@@ -448,13 +448,13 @@ protected:
 				if (this->template is_embedded<Vertex>())
 					foreach_dart_of_orbit(new_face, [this] (Dart v)
 					{
-						this->copy_embedding(Vertex(v), Vertex(this->phi1(phi2(v))));
+						this->template copy_embedding<Vertex::ORBIT>(v, this->phi1(phi2(v)));
 					});
 
 				if (this->template is_embedded<Edge>())
 					foreach_dart_of_orbit(new_face, [this] (Dart e)
 					{
-						this->copy_embedding(Edge(e), Edge(phi2(e)));
+						this->template copy_embedding<Edge::ORBIT>(e, phi2(e));
 					});
 
 				if (this->template is_embedded<Face>())
@@ -467,7 +467,7 @@ protected:
 					const unsigned int idx = this->template get_embedding(Volume(d));
 					foreach_dart_of_orbit(new_face, [this, idx] (Dart v)
 					{
-						this->set_embedding(Volume(v), idx);
+						this->template set_embedding<Volume::ORBIT>(v, idx);
 					});
 				}
 			}

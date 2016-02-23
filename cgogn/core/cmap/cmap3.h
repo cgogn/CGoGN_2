@@ -366,7 +366,7 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->copy_embedding(Vertex(wd), Vertex(this->phi1(phi3(wd))));
+						this->template copy_embedding<Vertex::ORBIT>(wd, this->phi1(phi3(wd)));
 					});
 				}
 
@@ -374,7 +374,7 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->copy_embedding(Edge(wd), Edge(phi3(wd)));
+						this->template copy_embedding<Edge::ORBIT>(wd, phi3(wd));
 					});
 				}
 
@@ -382,7 +382,7 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->copy_embedding(Face(wd), Face(phi3(wd)));
+						this->template copy_embedding<Face::ORBIT>(wd, phi3(wd));
 					});
 
 				}
