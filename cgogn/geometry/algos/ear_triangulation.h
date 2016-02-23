@@ -24,10 +24,10 @@
 #ifndef GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
 #define GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
 
-#include <geometry/algos/normal.h>
-#include <geometry/functions/orientation.h>
-
 #include <set>
+
+#include <geometry/algos/normal.h>
+#include <geometry/functions/inclusion.h>
 
 namespace cgogn
 {

@@ -21,10 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
+#ifndef GEOMETRY_INCLUSION_H_
+#define GEOMETRY_INCLUSION_H_
 
-#include <geometry/types/plane_3d.h>
+#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/normal.h>
 
 namespace cgogn
 {
@@ -32,37 +33,33 @@ namespace cgogn
 namespace geometry
 {
 
-/**
- * return the orientation of point P w.r.t. the plane defined by 3 points
- * @param P the point
- * @param A plane point 1
- * @param B plane point 2
- * @param C plane point 3
- * @return the orientation
- */
+
 template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A, B, C).orient(P);
+	using Scalar = typename vector_traits<VEC3_T>::Scalar;
+	static const auto triple_positive = [] (const VEC3_T& U, const VEC3_T& V, const VEC3_T& W) -> bool
+	{
+		return U.dot(V.cross(W)) >= Scalar(0);
+	};
+
+	if (triple_positive(P-Ta, Tb-Ta, normal) ||
+		triple_positive(P-Tb, Tc-Tb, normal) ||
+		triple_positive(P-Tc, Ta-Tc, normal) )
+		return false;
+
+	return true;
 }
 
-/**
- * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
- * @param P the point
- * @param N plane normal
- * @param PP plane point
- * @return the orientation
- */
 template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P);
+	return in_triangle(P, triangle_normal(Ta, Tb, Tc), Ta, Tb,Tc );
 }
+
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // GEOMETRY_INCLUSION_H_
