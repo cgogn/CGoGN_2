@@ -42,8 +42,8 @@ public:
 	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	template<typename T> friend class cgogn::DartMarker_T;
+	template<typename T> friend class cgogn::DartMarkerStore;
 
 	using Vertex	= Cell<Orbit::DART>;
 	using Face		= Cell<Orbit::PHI1>;

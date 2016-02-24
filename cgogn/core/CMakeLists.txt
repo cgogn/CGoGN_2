@@ -72,6 +72,9 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 if(NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
 endif()
+if(MSVC)
+	target_compile_options(${PROJECT_NAME} PUBLIC "-D_USE_MATH_DEFINES")
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 

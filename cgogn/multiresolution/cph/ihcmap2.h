@@ -66,8 +66,8 @@ public:
 	using Self = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	template<typename T> friend class cgogn::DartMarker_T;
+	template<typename T> friend class cgogn::DartMarkerStore;
 
 //	static const Orbit DART   = Inherit_CMAP::DART;
 //	static const Orbit VERTEX = Inherit_CMAP::VERTEX;

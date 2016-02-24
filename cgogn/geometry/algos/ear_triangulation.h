@@ -303,7 +303,7 @@ public:
 
 		if (nb_verts_ ==3)
 		{
-			map_.template foreach_incident_vertex(face_, [&] (Vertex v)
+			map_.foreach_incident_vertex(face_, [&] (Vertex v)
 			{
 				table_indices.push_back(map_.get_embedding(v));
 			});

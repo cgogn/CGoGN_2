@@ -48,8 +48,8 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	template<typename T> friend class cgogn::DartMarker_T;
+	template<typename T> friend class cgogn::DartMarkerStore;
 
 	using CDart = Cell<Orbit::DART>;
 	using Vertex = Cell<Orbit::PHI21_PHI31>;
@@ -298,7 +298,7 @@ protected:
 						if(!dmarker.is_marked(e))
 						{
 							visitedFaces.push_back(e);
-							dmarker.template mark_orbit(Face2(e));
+							dmarker.mark_orbit(Face2(e));
 						}
 					} else {
 						if(boundary_marker.is_marked(e))

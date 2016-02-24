@@ -48,8 +48,8 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	template<typename T> friend class cgogn::DartMarker_T;
+	template<typename T> friend class cgogn::DartMarkerStore;
 
 	using CDart		= Cell<Orbit::DART>;
 	using Vertex	= Cell<Orbit::PHI21>;
@@ -464,7 +464,7 @@ protected:
 
 				if (this->template is_embedded<Volume>())
 				{
-					const unsigned int idx = this->template get_embedding(Volume(d));
+					const unsigned int idx = this->get_embedding(Volume(d));
 					foreach_dart_of_orbit(new_face, [this, idx] (Dart v)
 					{
 						this->template set_embedding<Volume::ORBIT>(v, idx);
