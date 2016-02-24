@@ -65,7 +65,7 @@ public:
 	template <Orbit ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
-		map_.template set_embedding<ORBIT>(d, emb);
+		map_.set_embedding<ORBIT>(d, emb);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)
@@ -78,9 +78,9 @@ public:
 		map_.phi2_unsew(d);
 	}
 
-	inline Dart add_face_topo(unsigned int nb_edges)
+	inline Dart add_face_topo_parent(unsigned int nb_edges)
 	{
-		return map_.add_face_topo(nb_edges);
+		return map_.CMap2::Inherit::add_face_topo(nb_edges);
 	}
 
 	inline void close_map()

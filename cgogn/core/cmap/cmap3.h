@@ -25,7 +25,6 @@
 #define CORE_CMAP_CMAP3_H_
 
 #include <core/cmap/cmap2.h>
-#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
@@ -41,27 +40,26 @@ public:
 
 	static const int PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef CMap2_T<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap3_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap3_T<MAP_TRAITS, MAP_TYPE>;
 
-	friend typename Self::Inherit;
-	friend typename Inherit::Inherit;
-	friend typename Inherit::Inherit::Inherit;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	friend class CMap3Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-	friend class CMap3Builder_T<MapTraits>;
+	//friend class DartMarkerStore<Self>;
+	//template<typename T> friend class DartMarker_T;
 
-	static const Orbit VERTEX = Orbit::PHI21_PHI31;
-	static const Orbit EDGE   = Orbit::PHI2_PHI3;
-	static const Orbit FACE   = Orbit::PHI1_PHI3;
-	static const Orbit VOLUME = Orbit::PHI1_PHI2;
-
-	typedef Cell<Self::VERTEX> Vertex;
-	typedef Cell<Self::EDGE> Edge;
-	typedef Cell<Self::FACE> Face;
-	typedef Cell<Self::VOLUME> Volume;
+	using CDart = Cell<Orbit::DART>;
+	using Vertex = Cell<Orbit::PHI21_PHI31>;
+	using Edge = Cell<Orbit::PHI2_PHI3>;
+	using Face = Cell<Orbit::PHI1_PHI3>;
+	using Volume = Cell<Orbit::PHI1_PHI2>;
+	using Vertex2 = typename Inherit::Vertex;
+	using Edge2 = typename Inherit::Edge;
+	using Face2 = typename Inherit::Face;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -71,13 +69,13 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
 	template <typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
+	using EdgeAttributeHandler = AttributeHandler<T, Edge::ORBIT>;
 	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	using FaceAttributeHandler = AttributeHandler<T, Face::ORBIT>;
 	template <typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
+	using VolumeAttributeHandler = AttributeHandler<T, Volume::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -94,9 +92,36 @@ protected:
 		phi3_ = this->topology_.template add_attribute<Dart>("phi3");
 	}
 
+public:
+
+	CMap3_T() : Inherit()
+	{
+		init();
+	}
+
+	~CMap3_T() override
+	{}
+
+	CMap3_T(Self const&) = delete;
+	CMap3_T(Self &&) = delete;
+	Self& operator=(Self const&) = delete;
+	Self& operator=(Self &&) = delete;
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
+
+protected:
+
+	/**
+	* \brief Init an newly added dart.
+	* The dart is defined as a fixed point for PHI3.
+	*/
+	inline void init_dart(Dart d)
+	{
+		Inherit::init_dart(d);
+		(*phi3_)[d.index] = d;
+	}
 
 	/**
 	 * \brief Link dart d with dart e by an involution
@@ -113,7 +138,7 @@ protected:
 	}
 
 	/**
-	 * \brief Unlink the current dart by an involution
+	 * \brief Remove the phi3 link between the current dart and its linked dart
 	 * @param d the dart to unlink
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
@@ -124,6 +149,28 @@ protected:
 		(*phi3_)[d.index] = d;
 		(*phi3_)[e.index] = e;
 	}
+
+	/*******************************************************************************
+	 * Basic topological operations
+	 *******************************************************************************/
+
+public:
+
+	/**
+	 * \brief phi3
+	 * @param d
+	 * @return phi3(d)
+	 */
+	inline Dart phi3(Dart d) const
+	{
+		return (*phi3_)[d.index];
+	}
+
+	/*******************************************************************************
+	 * High-level embedded and topological operations
+	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
@@ -140,7 +187,7 @@ protected:
 		// creation of triangles around circunference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			m_tableVertDarts.push_back(this->add_face_topo(3u));
+			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
 		}
 
 		// sewing the triangles
@@ -155,7 +202,7 @@ protected:
 		this->phi2_sew(this->phi1(m_tableVertDarts[0ul]), this->phi_1(m_tableVertDarts[n-1u]));
 
 		//sewing the bottom face
-		Dart base = this->add_face_topo(n);
+		Dart base = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = base;
 		for(unsigned int i = 0u; i < n; ++i)
 		{
@@ -180,7 +227,7 @@ protected:
 		// creation of quads around circunference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			m_tableVertDarts.emplace_back(this->add_face_topo(4));
+			m_tableVertDarts.emplace_back(this->Inherit::Inherit::add_face_topo(4));
 		}
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
@@ -200,8 +247,8 @@ protected:
 		this->phi2_sew(this->phi1(m_tableVertDarts[0]), this->phi_1(m_tableVertDarts[n-1u]));
 
 		//sewing the top & bottom faces
-		Dart top = this->add_face_topo(n);
-		Dart bottom = this->add_face_topo(n);
+		Dart top = this->Inherit::Inherit::add_face_topo(n);
+		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = top;
 		for(unsigned int i = 0u; i < n; ++i)
 		{
@@ -215,6 +262,63 @@ protected:
 		return dres;
 	}
 
+	inline void close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+		DartMarkerStore dmarker(*this);
+		DartMarkerStore boundary_marker(*this);
+
+		std::vector<Dart> visitedFaces;	// Faces that are traversed
+		visitedFaces.reserve(1024);
+
+		visitedFaces.push_back(d);		// Start with the face of d
+		dmarker.template mark_orbit<Orbit::PHI1>(d);
+
+		unsigned int count = 0u;
+
+		// For every face added to the list
+		for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
+		{
+			Dart it = visitedFaces[i];
+			Dart f = it;
+
+			const Dart b = this->Inherit::Inherit::add_face_topo(this->degree(Face(f)));
+			boundary_marker.template mark_orbit<Orbit::PHI1>(b);
+			++count;
+
+			Dart bit = b;
+			do
+			{
+				Dart e = this->phi3(this->phi2(f));;
+				bool found = false;
+				do
+				{
+					if (phi3(e) == e)
+					{
+						found = true;
+						if(!dmarker.is_marked(e))
+						{
+							visitedFaces.push_back(e);
+							dmarker.template mark_orbit<Orbit::PHI1>(e);
+						}
+					} else {
+						if(boundary_marker.is_marked(e))
+						{
+							found = true;
+							this->phi2_sew(e, bit);
+						} else {
+							e = this->phi3(this->phi2(e));
+						}
+					}
+				} while(!found);
+
+				phi3_sew(f, bit);
+				bit = this->phi_1(bit);
+				f = this->phi1(f);
+			} while(f != it);
+		}
+	}
+
 	/**
 	 * @brief close_map : /!\ DO NOT USE /!\ Close the map removing topological holes (only for import/creation)
 	 * Add volumes to the map that close every existing hole.
@@ -222,6 +326,7 @@ protected:
 	 */
 	inline unsigned int close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
 		// Search the map for topological holes (fix points of phi3)
 		unsigned int nb = 0u;
 		for (Dart d: (*this))
@@ -229,57 +334,62 @@ protected:
 			if (phi3(d) == d)
 			{
 				++nb;
-				DartMarkerStore dmarker(*this);
-				DartMarkerStore boundary_marker(*this);
+				close_hole_topo(d);
+				const Volume new_volume = phi3(d);
 
-				std::vector<Dart> visitedFaces;	// Faces that are traversed
-				visitedFaces.reserve(1024);
-
-				visitedFaces.push_back(d);		// Start with the face of d
-				dmarker.template mark_orbit<Orbit::PHI1>(d);
-
-				unsigned int count = 0u;
-
-				// For every face added to the list
-				for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
-				{
-					Dart it = visitedFaces[i];
-					Dart f = it;
-
-					const Dart b = this->add_face_topo(this->degree(Face(f)));
-					boundary_marker.template mark_orbit<Orbit::PHI1>(b);
-					++count;
-
-					Dart bit = b;
-					do
+				if (this->template is_embedded<CDart>())
+					foreach_dart_of_orbit(new_volume, [this] (Dart d)
 					{
-						Dart e = this->phi3(this->phi2(f));;
-						bool found = false;
-						do
-						{
-							if (phi3(e) == e)
-							{
-								found = true;
-								if(!dmarker.is_marked(e))
-								{
-									visitedFaces.push_back(e);
-									dmarker.template mark_orbit<Orbit::PHI1>(e);
-								}
-							} else {
-								if(boundary_marker.is_marked(e))
-								{
-									found = true;
-									this->phi2_sew(e, bit);
-								} else {
-									e = this->phi3(this->phi2(e));
-								}
-							}
-						} while(!found);
+						this->new_orbit_embedding(CDart(d));
+					});
 
-						phi3_sew(f, bit);
-						bit = this->phi_1(bit);
-						f = this->phi1(f);
-					} while(f != it);
+				if (this->template is_embedded<Vertex2>())
+					Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
+					{
+						this->new_orbit_embedding(v);
+					});
+
+				if (this->template is_embedded<Edge2>())
+					Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
+					{
+						this->new_orbit_embedding(e);
+					});
+
+				if (this->template is_embedded<Face2>())
+				{
+					Inherit::foreach_incident_face(new_volume, [this] (Face2 f)
+					{
+						this->new_orbit_embedding(f);
+					});
+				}
+
+				if (this->template is_embedded<Vertex>())
+				{
+					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					{
+						this->copy_embedding(Vertex(wd), Vertex(this->phi1(phi3(wd))));
+					});
+				}
+
+				if (this->template is_embedded<Edge>())
+				{
+					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					{
+						this->copy_embedding(Edge(wd), Edge(phi3(wd)));
+					});
+				}
+
+				if (this->template is_embedded<Face>())
+				{
+					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					{
+						this->copy_embedding(Face(wd), Face(phi3(wd)));
+					});
+
+				}
+				if (this->template is_embedded<Volume>())
+				{
+					this->new_orbit_embedding(new_volume);
 				}
 			}
 		}
@@ -287,53 +397,6 @@ protected:
 	}
 
 public:
-
-	CMap3_T() : Inherit()
-	{
-		init();
-	}
-
-	~CMap3_T() override
-	{}
-
-	CMap3_T(Self const&) = delete;
-	CMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
-	/*******************************************************************************
-	 * Basic topological operations
-	 *******************************************************************************/
-
-	/**
-	 * \brief phi3
-	 * @param d
-	 * @return phi3(d)
-	 */
-	inline Dart phi3(Dart d) const
-	{
-		return (*phi3_)[d.index];
-	}
-
-protected:
-
-	/**
-	* \brief add a Dart in the map
-	* @return the new Dart
-	*/
-	inline Dart add_dart()
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-		Dart d = Inherit::add_dart();
-		(*phi3_)[d.index] = d;
-		return d;
-	}
-
-public:
-
-	/*******************************************************************************
-	 * High-level topological operations
-	 *******************************************************************************/
 
 	inline unsigned int degree(Face f) const
 	{
@@ -357,13 +420,13 @@ protected:
 		{
 			f((*marked_darts)[i]);
 
-			Dart d2 = this->phi2((*marked_darts)[i]);
-			Dart d21 = this->phi1(d2); // turn in volume
-			Dart d23 = phi3(d2); // change volume
+			Dart d1 = this->phi1((*marked_darts)[i]);
+			Dart d21 = this->phi2(d1); // turn in volume
+			Dart d31 = phi3(d1); // change volume
 			if(!marker.is_marked(d21))
 				marker.mark(d21);
-			if(!marker.is_marked(d23))
-				marker.mark(d23);
+			if(!marker.is_marked(d31))
+				marker.mark(d31);
 		}
 	}
 
@@ -404,8 +467,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
+//		static_assert(check_func_parameter_type(FUNC, Dart),
+//					  "Wrong function parameter type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
@@ -414,7 +477,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2: this->foreach_dart_of_PHI2(c, f); break;
 			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c, f); break;
@@ -557,7 +620,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<Inherit::VERTEX>(d);
+				marker.mark_orbit<Orbit::PHI21>(d);
 				f(d);
 			}
 		});
@@ -589,14 +652,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Inherit::FACE>(f.dart, func);
+		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
 	}
 
 	template <typename FUNC>
@@ -647,14 +710,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
-		marker_vertex.mark_orbit<VERTEX>(v);
+		marker_vertex.mark_orbit<Vertex::ORBIT>(v);
 		foreach_incident_face(v, [&] (Face inc_face)
 		{
 			foreach_incident_vertex(inc_face, [&] (Vertex vertex_of_face)
 			{
 				if (!marker_vertex.is_marked(vertex_of_face))
 				{
-					marker_vertex.mark_orbit<VERTEX>(vertex_of_face);
+					marker_vertex.mark_orbit<Vertex::ORBIT>(vertex_of_face);
 					f(vertex_of_face);
 				}
 			});
@@ -666,14 +729,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
-		marker_vertex.mark_orbit<VERTEX>(v);
+		marker_vertex.mark_orbit<Vertex::ORBIT>(v);
 		foreach_incident_volume(v, [&] (Volume inc_vol)
 		{
 			foreach_incident_vertex(inc_vol, [&] (Vertex inc_vert)
 			{
 				if (!marker_vertex.is_marked(inc_vert))
 				{
-					marker_vertex.mark_orbit<VERTEX>(inc_vert);
+					marker_vertex.mark_orbit<Vertex::ORBIT>(inc_vert);
 					f(inc_vert);
 				}
 			});
@@ -699,14 +762,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
-		marker_edge.mark_orbit<EDGE>(e);
+		marker_edge.mark_orbit<Edge::ORBIT>(e);
 		foreach_incident_face(e, [&] (Face inc_face)
 		{
 			foreach_incident_edge(inc_face, [&] (Edge inc_edge)
 			{
 				if (!marker_edge.is_marked(inc_edge))
 				{
-					marker_edge.mark_orbit<EDGE>(inc_edge);
+					marker_edge.mark_orbit<Edge::ORBIT>(inc_edge);
 					f(inc_edge);
 				}
 			});
@@ -718,14 +781,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
-		marker_edge.mark_orbit<EDGE>(e);
+		marker_edge.mark_orbit<Edge::ORBIT>(e);
 		foreach_incident_volume(e, [&] (Volume inc_vol)
 		{
 			foreach_incident_edge(inc_vol, [&] (Edge inc_edge)
 			{
 				if (!marker_edge.is_marked(inc_edge))
 				{
-					marker_edge.mark_orbit<EDGE>(inc_edge);
+					marker_edge.mark_orbit<Edge::ORBIT>(inc_edge);
 					f(inc_edge);
 				}
 			});
@@ -737,14 +800,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
-		marker_face.mark_orbit<FACE>(f);
+		marker_face.mark_orbit<Face::ORBIT>(f);
 		foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			foreach_incident_face(f, [&](Face inc_fac)
 			{
 				if (!marker_face.is_marked(inc_fac))
 				{
-					marker_face.mark_orbit<FACE>(inc_fac);
+					marker_face.mark_orbit<Face::ORBIT>(inc_fac);
 					func(inc_fac);
 				}
 			});
@@ -770,21 +833,21 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
-		marker_face.mark_orbit<FACE>(f);
-		foreach_incident_face<VOLUME>(f.dart, [&] (Face inc_face)
+		marker_face.mark_orbit<Face::ORBIT>(f);
+		foreach_incident_face(Volume(f.dart), [&] (Face inc_face)
 		{
 			if (!marker_face.is_marked(inc_face))
 			{
-				marker_face.mark_orbit<FACE>((inc_face));
+				marker_face.mark_orbit<Face::ORBIT>((inc_face));
 				func(inc_face);
 			}
 		});
 
-		foreach_incident_face<VOLUME>(phi3(f), [&] (Face inc_face)
+		foreach_incident_face(Volume(phi3(f)), [&] (Face inc_face)
 		{
 			if (!marker_face.is_marked(inc_face))
 			{
-				marker_face.mark_orbit<FACE>((inc_face));
+				marker_face.mark_orbit<Face::ORBIT>((inc_face));
 				func(inc_face);
 			}
 		});
@@ -795,14 +858,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<VOLUME>(v);
+		marker_volume.mark_orbit<Volume::ORBIT>(v);
 		foreach_incident_vertex(v, [&] (Vertex inc_vert)
 		{
 			foreach_incident_volume(inc_vert, [&](Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<VOLUME>(inc_vol);
+					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -814,14 +877,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<VOLUME>(v);
+		marker_volume.mark_orbit<Volume::ORBIT>(v);
 		foreach_incident_edge(v, [&] (Edge inc_edge)
 		{
 			foreach_incident_volume(inc_edge, [&] (Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<VOLUME>(inc_vol);
+					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -833,14 +896,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<VOLUME>(v);
+		marker_volume.mark_orbit<Volume::ORBIT>(v);
 		foreach_incident_face(v, [&] (Edge inc_face)
 		{
 			foreach_incident_volume(inc_face, [&] (Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<VOLUME>(inc_vol);
+					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -851,25 +914,25 @@ public:
 template <typename MAP_TRAITS>
 struct CMap3Type
 {
-	typedef CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>
 using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
-extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
+//extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn

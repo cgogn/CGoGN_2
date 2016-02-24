@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
 
 inline unsigned int changeEndian(unsigned int x)
@@ -58,9 +59,9 @@ int main(int argc, char **argv)
 		*ptr = changeEndian(*ptr);
 		ptr++;
 	}
-		
 
-	ofs.write(reinterpret_cast<char*>(vertices),4*3*nv);	
+
+	ofs.write(reinterpret_cast<char*>(vertices),4*3*nv);
 
 	delete[] vertices;
 
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 		ptr++;
 	}
 
-	ofs.write(reinterpret_cast<char*>(&(prim[0])),4*prim.size());	
+	ofs.write(reinterpret_cast<char*>(&(prim[0])),4*prim.size());
 
 	ofs.close();
 	ifs.close();

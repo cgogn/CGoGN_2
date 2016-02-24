@@ -34,8 +34,9 @@ class CPH2 : public CPHBase<DATA_TRAITS>
 {
 
 public:
-	typedef CPH2<DATA_TRAITS> Self;
-	typedef CPHBase<DATA_TRAITS> Inherit;
+
+	using Self = CPH2<DATA_TRAITS>;
+	using Inherit = CPHBase<DATA_TRAITS>;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -43,17 +44,18 @@ public:
 	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
 
 protected:
+
 	ChunkArray<unsigned int>* edge_id_;
 
 public:
+
 	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		init();
+		edge_id_ = topology.template add_attribute<unsigned int>("edgeId");
 	}
 
 	~CPH2() override
 	{
-		this->topo_.remove_attribute(edge_id_);
 	}
 
 	CPH2(Self const&) = delete;
@@ -61,14 +63,6 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-
-protected:
-	inline void init()
-	{
-		edge_id_ = this->topo_.template add_attribute<unsigned int>("edgeId");
-	}
-
-public:
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *
 	 ***************************************************/
@@ -101,8 +95,7 @@ public:
 			else
 				return 1u;
 		}
-
-		//else if(id == 3)
+		// else if(id == 3)
 		return 0u;
 	}
 
@@ -112,8 +105,7 @@ public:
 
 		if(e_id == 0u)
 			return 1u;
-
-		//else if(e_id == 1)
+		// else if(e_id == 1)
 		return 0u;
 	}
 

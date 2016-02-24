@@ -36,6 +36,7 @@ public:
 
 	using Self = CMap3Builder_T<MAP_TRAITS>;
 	using CMap3 = cgogn::CMap3<MAP_TRAITS>;
+	using Vertex = typename CMap3::Vertex;
 
 	template <typename T>
 	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
@@ -66,7 +67,7 @@ public:
 	{
 		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
 		{
-			map_.template set_embedding<CMap3::VERTEX>(dit, emb);
+			map_.set_embedding<Orbit::PHI21>(dit, emb);
 		});
 	}
 
