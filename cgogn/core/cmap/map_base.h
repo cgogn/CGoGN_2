@@ -138,8 +138,8 @@ protected:
 
 	inline Dart add_dart()
 	{
-		Dart d(this->add_topology_element());
-		this->to_concrete()->init_dart(d);
+		Dart d(add_topology_element());
+		to_concrete()->init_dart(d);
 		return d;
 	}
 
@@ -470,9 +470,8 @@ public:
 		if (this->template is_embedded<ORBIT>())
 			return get_embedding(c1) == get_embedding(c2);
 
-		const ConcreteMap* cmap = to_concrete();
 		bool result = false;
-		cmap->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
+		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
 			{
@@ -515,9 +514,8 @@ public:
 	template <Orbit ORBIT>
 	unsigned int nb_darts_of_orbit(Cell<ORBIT> c) const
 	{
-		const ConcreteMap* cmap = to_concrete();
 		unsigned int result = 0u;
-		cmap->foreach_dart_of_orbit(c, [&result] (Dart) { ++result; });
+		to_concrete()->foreach_dart_of_orbit(c, [&result] (Dart) { ++result; });
 		return result;
 	}
 
