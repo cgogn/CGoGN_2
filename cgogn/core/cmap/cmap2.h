@@ -49,7 +49,7 @@ public:
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
-	friend class DartMarkerStore<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
 
 	using CDart		= Cell<Orbit::DART>;
 	using Vertex	= Cell<Orbit::PHI21>;
