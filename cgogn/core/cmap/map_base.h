@@ -286,7 +286,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArray<bool>* ca = this->mark_attributes_[ORBIT][thread].back();
@@ -363,7 +363,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void copy_embedding(Cell<ORBIT> dest, Cell<ORBIT> src)
 	{
-		this->set_embedding(dest, this->get_embedding(src));
+		this->set_embedding<ORBIT>(dest, this->get_embedding(src));
 	}
 
 public:

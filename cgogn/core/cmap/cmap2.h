@@ -48,8 +48,9 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	//friend class DartMarker_T<Self>;
+	//template<typename T> friend class DartMarker_T;
+	//template<typename T> friend class DartMarkerStore;
 
 	using CDart		= Cell<Orbit::DART>;
 	using Vertex	= Cell<Orbit::PHI21>;
@@ -464,10 +465,10 @@ protected:
 
 				if (this->template is_embedded<Volume>())
 				{
-					const unsigned int idx = this->template get_embedding(Volume(d));
-					foreach_dart_of_orbit(new_face, [this, idx] (Volume v)
+					const unsigned int idx = this->get_embedding(Volume(d));
+					foreach_dart_of_orbit(new_face, [this, idx] (Dart v)
 					{
-						this->set_embedding(v, idx);
+						this->set_embedding<Orbit::PHI1_PHI2>(v, idx);
 					});
 				}
 			}
@@ -695,7 +696,7 @@ public:
 		{
 			if (!marker.is_marked(v))
 			{
-				marker.template mark_orbit(v);
+				marker.mark_orbit(v);
 				f(v);
 			}
 		});
@@ -710,7 +711,7 @@ public:
 		{
 			if (!marker.is_marked(e))
 			{
-				marker.template mark_orbit(e);
+				marker.mark_orbit(e);
 				f(e);
 			}
 		});
@@ -822,7 +823,7 @@ template <typename MAP_TRAITS>
 using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_CPP_))
-extern template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
+//extern template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;

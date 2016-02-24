@@ -42,8 +42,9 @@ public:
 	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	template<typename T> friend class DartMarker_T;
-	template<typename T> friend class DartMarkerStore;
+	friend class DartMarker_T<Self>;
+	//template<typename T> friend class DartMarker_T;
+	//template<typename T> friend class DartMarkerStore;
 
 	using Vertex	= Cell<Orbit::DART>;
 	using Face		= Cell<Orbit::PHI1>;
@@ -437,7 +438,7 @@ template <typename MAP_TRAITS>
 using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
-extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
+//extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
