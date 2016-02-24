@@ -21,45 +21,110 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/utils/precision.h>
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/functions/normal.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <iostream>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-//using EigenVec3d = Eigen::Vector3d;
+#include <core/cmap/cmap1.h>
 
-TEST(Normal_TEST, TriangleNormal)
+namespace cgogn
 {
+
+
+class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
+{
+public:
+	using Face = CMap1TopoTest::Face;
+
+protected:
+
+	CMap1TopoTest()
+	{}
+};
+
+
+TEST_F(CMap1TopoTest, testAddDart)
+{
+
+}
+
+TEST_F(CMap1TopoTest, testDeleteDart)
+{
+
+}
+
+TEST_F(CMap1TopoTest, testFaceDegree)
+{
+	Dart d = this->add_face_topo(10);
+	EXPECT_EQ(10, this->degree(Face(d)));
+}
+
+TEST_F(CMap1TopoTest, testSplitVertex)
+{
+	Dart d = this->add_face_topo(10);
+	Dart d1 = this->phi1(d);
+
+	Dart e = this->split_vertex_topo(d);
+
+	EXPECT_EQ(d1.index, this->phi1(e).index);
+	EXPECT_EQ(d.index, this->phi_1(e).index);
+	EXPECT_EQ(11, this->degree(Face(d)));
+}
+
+TEST_F(CMap1TopoTest, testRemoveVertex)
+{
+	Dart d = this->add_face_topo(10);
+	Dart d_1 = this->phi_1(d);
+	Dart d1 = this->phi1(d);
+
+	this->remove_vertex(d);
+
+	EXPECT_EQ(d1.index, this->phi1(d_1).index);
+	EXPECT_EQ(9, this->degree(Face(d_1)));
+}
+
+TEST_F(CMap1TopoTest, testReverseFace)
+{
+	Dart d = this->add_face_topo(10);
+	std::vector<Dart> successors;
+
 	{
-		StdArray p0(1.,3.,-5.);
-		StdArray p1(7.,-4.,0.1);
-		StdArray p2(-15.,-2.,15.);
-		StdArray n = cgogn::geometry::triangle_normal(p0,p1,p2);
-		cgogn::almost_equal_relative(n.dot(p1-p0), 0.);
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-//		EXPECT_DOUBLE_EQ(n.dot(p1-p0), 0.); // is false !
-		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
+		Dart dit = d;
+		do
+		{
+			successors.push_back(this->phi1(dit));
+			dit = this->phi1(dit);
+		}
+		while(dit != d);
 	}
+
+	this->reverse_face_topo(d);
+
 	{
-//		EigenVec3d p0(1,3,-5);
-//		EigenVec3d p1(7,-4,0.1);
-//		EigenVec3d p2(-15,-2,15);
-//		EigenVec3d n = cgogn::geometry::triangle_normal(p0,p1,p2);
-////		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-//		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-////		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
-//		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
+		Dart dit = d;
+		unsigned i = 0;
+		do
+		{
+			EXPECT_EQ(this->phi_1(dit).index, successors[i].index);
+			dit = this->phi_1(dit);
+			++i;
+		}
+		while(dit != d);
 	}
 }
+
+TEST_F(CMap1TopoTest, testForEachDartOfVertex)
+{
+
+}
+
+TEST_F(CMap1TopoTest, testForEachDartOfEdge)
+{
+
+}
+
+TEST_F(CMap1TopoTest, testForEachDartOfFace)
+{
+
+}
+
+} // namespace cgogn

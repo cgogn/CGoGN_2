@@ -21,45 +21,45 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/utils/precision.h>
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
+#ifndef GEOMETRY_INCLUSION_H_
+#define GEOMETRY_INCLUSION_H_
+
+#include <geometry/types/geometry_traits.h>
 #include <geometry/functions/normal.h>
-#include <gtest/gtest.h>
-#include <iostream>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-//using EigenVec3d = Eigen::Vector3d;
-
-TEST(Normal_TEST, TriangleNormal)
+namespace cgogn
 {
+
+namespace geometry
+{
+
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	using Scalar = typename vector_traits<VEC3_T>::Scalar;
+	static const auto triple_positive = [] (const VEC3_T& U, const VEC3_T& V, const VEC3_T& W) -> bool
 	{
-		StdArray p0(1.,3.,-5.);
-		StdArray p1(7.,-4.,0.1);
-		StdArray p2(-15.,-2.,15.);
-		StdArray n = cgogn::geometry::triangle_normal(p0,p1,p2);
-		cgogn::almost_equal_relative(n.dot(p1-p0), 0.);
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-//		EXPECT_DOUBLE_EQ(n.dot(p1-p0), 0.); // is false !
-		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
-	}
-	{
-//		EigenVec3d p0(1,3,-5);
-//		EigenVec3d p1(7,-4,0.1);
-//		EigenVec3d p2(-15,-2,15);
-//		EigenVec3d n = cgogn::geometry::triangle_normal(p0,p1,p2);
-////		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-//		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-////		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
-//		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
-	}
+		return U.dot(V.cross(W)) >= Scalar(0);
+	};
+
+	if (triple_positive(P-Ta, Tb-Ta, normal) ||
+		triple_positive(P-Tb, Tc-Tb, normal) ||
+		triple_positive(P-Tc, Ta-Tc, normal) )
+		return false;
+
+	return true;
 }
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	return in_triangle(P, triangle_normal(Ta, Tb, Tc), Ta, Tb,Tc );
+}
+
+
+} // namespace geometry
+
+} // namespace cgogn
+
+#endif // GEOMETRY_INCLUSION_H_

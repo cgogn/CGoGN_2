@@ -108,21 +108,31 @@ struct Dart
 	 */
 	inline bool operator!=(Dart rhs) const { return index != rhs.index; }
 
+// To remove
 	// operator < is needed if we want to use std::set<Dart>
-	inline bool operator<(Dart rhs) const { return index < rhs.index; }
-	/**
-	 * \brief Prints a dart to a stream.
-	 * \param[out] out the stream to print on
-	 * \param[in] rhs the dart to print
-	 */
-	inline friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) { return out << rhs.index; }
+//	inline bool operator<(Dart rhs) const { return index < rhs.index; }
+//	/**
+//	 * \brief Prints a dart to a stream.
+//	 * \param[out] out the stream to print on
+//	 * \param[in] rhs the dart to print
+//	 */
+
+	// -1 should be less system dependent
+	inline friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) {
+		if (rhs.is_nil())
+			return out << -1;
+		else
+			return out << rhs.index;
+	}
 
 	/**
 	 * \brief Reads a dart from a stream.
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the dart read
 	 */
-	inline friend std::istream& operator>>(std::istream &in, Dart& rhs) { in >> rhs.index; return in; }
+	inline friend std::istream& operator>>(std::istream &in, Dart& rhs) {
+		in >> rhs.index; return in;
+	}
 };
 
 } // namespace cgogn

@@ -68,7 +68,6 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
 		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
-//	return "UNKNOWN";
 }
 
 /**
@@ -79,11 +78,11 @@ inline std::string orbit_name(Orbit orbit)
  * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
-template <Orbit ORBIT>
+template <Orbit ORBIT_VAL>
 class Cell
 {
 public:
-
+	static const Orbit ORBIT = ORBIT_VAL;
 	/**
 	 * \brief the dart representing this cell
 	 */

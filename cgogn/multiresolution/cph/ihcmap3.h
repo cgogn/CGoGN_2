@@ -108,8 +108,6 @@ protected:
 	{
 		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
 		this->topology_.set_current_browser(cph_browser);
-
-		// Inherit_CPH::new_level_darts();
 	}
 
 public:
@@ -199,10 +197,11 @@ public:
 		* \brief add a Dart in the map
 		* @return the new Dart
 		*/
-	inline Dart add_dart()
+	inline void init_dart(Dart d)
 	{
-		Dart d = Inherit_CMAP::add_dart();
+		Inherit_CMAP::init_dart(d);
 
+		Inherit_CPH::inc_nb_darts();
 		Inherit_CPH::set_edge_id(d, 0);
 		Inherit_CPH::set_face_id(d, 0);
 		Inherit_CPH::set_dart_level(d, Inherit_CPH::get_current_level());
@@ -211,12 +210,7 @@ public:
 		if(Inherit_CPH::get_current_level() > Inherit_CPH::get_maximum_level())
 		{
 			Inherit_CPH::set_maximum_level(Inherit_CPH::get_current_level());
-			// Inherit_CPH::new_level_darts();
 		}
-
-		//		Inherit_CPH::inc_nb_darts(get_current_level());
-
-		return d ;
 	}
 
 protected:
@@ -245,12 +239,6 @@ protected:
 	/*******************************************************************************
 		 * Orbits traversal
 		 *******************************************************************************/
-
-	template <typename FUNC>
-	inline void foreach_dart_of_DART(Dart d, const FUNC& f) const
-	{
-		f(d);
-	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
@@ -395,7 +383,7 @@ public:
 template <typename MAP_TRAITS>
 struct IHCMap3Type
 {
-	typedef IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>> TYPE;
+	using TYPE = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>

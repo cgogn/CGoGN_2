@@ -12,6 +12,7 @@ set(HEADER_FILES
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
+	functions/inclusion.h
 	types/bounding_box.h
 	types/eigen.h
 	types/geometry_traits.h

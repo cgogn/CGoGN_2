@@ -209,8 +209,8 @@ int test3()
 int test4()
 {
 	std::cout << "=============== TEST 4 ===============" << std::endl;
-	typedef std::vector< std::vector< double > > vecvecdouble;
-	typedef std::vector< std::list< double > > veclistdouble;
+	using vecvecdouble = std::vector< std::vector< double > >;
+	using veclistdouble = std::vector< std::list< double > >;
 	ChunkArrayContainer<unsigned int> container;
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");

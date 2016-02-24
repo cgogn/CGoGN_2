@@ -47,12 +47,11 @@ protected:
 public:
 	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		init();
+		face_id_ = topology.template add_attribute<unsigned int>("faceId");
 	}
 
 	~CPH3() override
 	{
-		this->topo_.remove_attribute(face_id_);
 	}
 
 	CPH3(Self const&) = delete;
@@ -60,16 +59,10 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-protected:
-	void init()
-	{
-		face_id_ = this->topo_.template add_attribute<unsigned int>("faceId");
-	}
-
-public:
 	/***************************************************
 	 *             FACE ID MANAGEMENT                  *
 	 ***************************************************/
+
 	inline unsigned int get_face_id(Dart d) const
 	{
 		return (*face_id_)[d.index] ;

@@ -24,10 +24,10 @@
 #ifndef GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
 #define GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
 
-#include <geometry/algos/normal.h>
-
-
 #include <set>
+
+#include <geometry/algos/normal.h>
+#include <geometry/functions/inclusion.h>
 
 namespace cgogn
 {
@@ -44,15 +44,11 @@ class EarTriangulation
 	using Face   = typename MAP::Face;
 	using Scalar = typename VEC3::Scalar;
 
-	// forward declaration
-	class VertexPoly;
-
-	// multiset typedef for simple writing
-	typedef std::multiset<VertexPoly*, bool(*)(VertexPoly*,VertexPoly*)> VPMS;
-
 	class VertexPoly
 	{
 	public:
+		using VPMS = std::multiset<VertexPoly*, bool(*)(VertexPoly*,VertexPoly*)>;
+
 		int id;
 		Vertex vert_;
 		Scalar value_;
@@ -61,9 +57,9 @@ class EarTriangulation
 		VertexPoly* next_;
 		typename VPMS::iterator ear_;
 
-		VertexPoly(Vertex ve, Scalar va, Scalar l, VertexPoly* p = NULL) : vert_(ve), value_(va), length_(l), prev_(p), next_(NULL)
+		VertexPoly(Vertex ve, Scalar va, Scalar l, VertexPoly* p = nullptr) : vert_(ve), value_(va), length_(l), prev_(p), next_(nullptr)
 		{
-			if (prev_ != NULL)
+			if (prev_ != nullptr)
 				prev_->next_ = this;
 		}
 
@@ -83,6 +79,8 @@ class EarTriangulation
 			return tmp;
 		}
 	};
+
+	using VPMS = typename VertexPoly::VPMS;
 
 
 	/// normal to polygon (for orientation of angles)
@@ -114,22 +112,7 @@ class EarTriangulation
 		return lhs->value_ < rhs->value_;
 	}
 
-	bool in_triangle(const VEC3& P, const VEC3& normal, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
-	{
-		auto triple_positive = [] (const VEC3& U, const VEC3& V, const VEC3& W) -> bool
-		{ return U.dot(V.cross(W)) >= Scalar(0); };
 
-		if (triple_positive(P-Ta, Tb-Ta, normal))
-			return false;
-
-		if (triple_positive(P-Tb, Tc-Tb, normal))
-			return false;
-
-		if (triple_positive(P-Tc, Ta-Tc, normal))
-			return false;
-
-		return true;
-	}
 
 	void recompute_2_ears(VertexPoly* vp)
 	{
@@ -150,8 +133,8 @@ class EarTriangulation
 		v2.normalize();
 		v3.normalize();
 
-		Scalar dotpr1 = Scalar(std::acos(v1.dot(v2)) / (M_PI/2.0));
-		Scalar dotpr2 = Scalar(std::acos(-(v1.dot(v3))) / (M_PI/2.0));
+		Scalar dotpr1 = std::acos(v1.dot(v2)) / Scalar(M_PI_2);
+		Scalar dotpr2 = std::acos(-(v1.dot(v3))) / Scalar(M_PI_2);
 
 
 		if (!convex_)	// if convex no need to test if vertex is an ear (yes)
@@ -200,7 +183,7 @@ class EarTriangulation
 		v1.normalize();
 		v2.normalize();
 
-		Scalar dotpr = Scalar(std::acos(v1.dot(v2)) / (M_PI/2.0) );
+		Scalar dotpr = std::acos(v1.dot(v2)) / Scalar(M_PI_2);
 
 		VEC3 vn = v1.cross(v2);
 		if (vn.dot(normalPoly_) > 0.0f)
@@ -256,8 +239,8 @@ public:
 		normalPoly_  = geometry::face_normal<VEC3>(map_,f,position);
 
 		// first pass create polygon in chained list with angle computation
-		VertexPoly* vpp = NULL;
-		VertexPoly* prem = NULL;
+		VertexPoly* vpp = nullptr;
+		VertexPoly* prem = nullptr;
 		nb_verts_ = 0;
 		convex_ = true;
 		Vertex a = f.dart;
@@ -275,7 +258,7 @@ public:
 			if (vp->value_ > 5.0f)  // concav angle
 				convex_ = false;
 
-			if (vpp == NULL)
+			if (vpp == nullptr)
 				prem = vp;
 			vpp = vp;
 			a = b;
@@ -374,7 +357,7 @@ public:
 			typename VPMS::iterator be_it = ears_.begin(); // best ear
 			VertexPoly* be = *be_it;
 
-			map_.split_face(be->prev_->vert_, be->next_->vert_);
+			map_.cut_face(be->prev_->vert_, be->next_->vert_);
 			nb_verts_--;
 
 			if (nb_verts_ > 3)	// do not recompute if only one triangle left

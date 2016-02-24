@@ -43,9 +43,9 @@ class ChunkArrayFactory
 	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
-	typedef std::unique_ptr<NamePtrMap> UniqueNamePtrMap;
+	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNKSIZE> >;
+	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
+	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
 	static UniqueNamePtrMap map_CA_;
 

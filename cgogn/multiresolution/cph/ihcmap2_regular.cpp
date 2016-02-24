@@ -29,6 +29,6 @@
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular<DefaultMapTraits>;
+template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular_T<DefaultMapTraits, IHCMap2RegularType<DefaultMapTraits>>;
 
 } // namespace cgogn
