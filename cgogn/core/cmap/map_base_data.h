@@ -248,11 +248,10 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
-	template <class Cell>
+	template <class CellType>
 	inline bool is_embedded() const
 	{
-		static_assert(Cell::ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return embeddings_[Cell::ORBIT] != nullptr;
+		return is_embedded<CellType::ORBIT>();
 	}
 
 	template <Orbit ORBIT>
@@ -284,10 +283,23 @@ protected:
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
 	}
 
+	template <class CellType>
+	inline void set_embedding(Dart d, unsigned int emb)
+	{
+		set_embedding<CellType::ORBIT>(d, emb);
+	}
+
 	template <Orbit ORBIT>
 	inline void copy_embedding(Dart dest, Dart src)
 	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		this->template set_embedding<ORBIT>(dest, get_embedding(Cell<ORBIT>(src)));
+	}
+
+	template <class CellType>
+	inline void copy_embedding(Dart dest, Dart src)
+	{
+		copy_embedding<CellType::ORBIT>(dest, src);
 	}
 
 	/*******************************************************************************
