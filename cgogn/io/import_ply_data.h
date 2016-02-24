@@ -29,7 +29,7 @@
 #include <cmath>
 #include <string>
 
-#include <io/ply.h>
+#include <ply.h>
 #include <io/dll.h>
 
 namespace cgogn
