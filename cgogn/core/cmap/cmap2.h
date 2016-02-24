@@ -54,7 +54,7 @@ public:
 	using CDart		= Cell<Orbit::DART>;
 	using Vertex	= Cell<Orbit::PHI21>;
 	using Edge		= Cell<Orbit::PHI2>;
-	using Face		= Cell<Orbit::PHI1>;
+	using Face		= typename Inherit::Face;
 	using Volume	= Cell<Orbit::PHI1_PHI2>;
 
 	template <typename T>
@@ -666,42 +666,42 @@ public:
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [&func](Dart e) {func(Edge(e));});
+		foreach_dart_of_orbit(v, [&func] (Dart d) { func(Edge(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [&func](Dart f) {func(Face(f));});
+		foreach_dart_of_orbit(v, [&func] (Dart d) { func(Face(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func](Dart v) {func(Vertex(v));});
+		foreach_dart_of_orbit(e, [&func] (Dart d) { func(Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func](Dart f) {func(Face(f));});
+		foreach_dart_of_orbit(e, [&func] (Dart d) { func(Face(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
+		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func](Dart e) {func(Edge(e));});
+		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Edge(d)); });
 	}
 
 	template <typename FUNC>
@@ -709,12 +709,12 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart v)
+		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
-			if (!marker.is_marked(v))
+			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit(Vertex(v));
-				f(Vertex(v));
+				marker.mark_orbit(Vertex(d));
+				f(Vertex(d));
 			}
 		});
 	}
@@ -724,12 +724,12 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart e)
+		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
-			if (!marker.is_marked(e))
+			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit(Edge(e));
-				f(Edge(e));
+				marker.mark_orbit(Edge(d));
+				f(Edge(d));
 			}
 		});
 	}

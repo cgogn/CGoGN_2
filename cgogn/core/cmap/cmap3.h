@@ -51,19 +51,19 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart = Cell<Orbit::DART>;
-	using Vertex = Cell<Orbit::PHI21_PHI31>;
-	using Edge = Cell<Orbit::PHI2_PHI3>;
-	using Face = Cell<Orbit::PHI1_PHI3>;
-	using Volume = Cell<Orbit::PHI1_PHI2>;
-	using Vertex2 = typename Inherit::Vertex;
-	using Edge2 = typename Inherit::Edge;
-	using Face2 = typename Inherit::Face;
+	using CDart		= typename Inherit::CDart;
+	using Vertex	= Cell<Orbit::PHI21_PHI31>;
+	using Edge		= Cell<Orbit::PHI2_PHI3>;
+	using Face		= Cell<Orbit::PHI1_PHI3>;
+	using Volume	= typename Inherit::Volume;
+	using Vertex2	= typename Inherit::Vertex;
+	using Edge2		= typename Inherit::Edge;
+	using Face2		= typename Inherit::Face;
 
 	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
@@ -183,11 +183,9 @@ protected:
 		std::vector<Dart> m_tableVertDarts;
 		m_tableVertDarts.reserve(n);
 
-		// creation of triangles around circunference and storing vertices
+		// creation of triangles around circumference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
-		{
 			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
-		}
 
 		// sewing the triangles
 		for (unsigned int i = 0u; i < n-1u; ++i)
@@ -197,10 +195,10 @@ protected:
 			this->phi2_sew(d,e);
 		}
 
-		//sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0ul]), this->phi_1(m_tableVertDarts[n-1u]));
+		// sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
 
-		//sewing the bottom face
+		// sewing the bottom face
 		Dart base = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = base;
 		for(unsigned int i = 0u; i < n; ++i)
@@ -208,7 +206,8 @@ protected:
 			this->phi2_sew(m_tableVertDarts[i], base);
 			base = this->phi1(base);
 		}
-		//return a dart from the base
+
+		// return a dart from the base
 		return dres;
 	}
 
@@ -225,15 +224,11 @@ protected:
 
 		// creation of quads around circunference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
-		{
-			m_tableVertDarts.emplace_back(this->Inherit::Inherit::add_face_topo(4));
-		}
+			m_tableVertDarts.emplace_back(this->Inherit::Inherit::add_face_topo(4u));
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
 		for (unsigned int i = 0u; i < n; ++i)
-		{
 			m_tableVertDarts.emplace_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-		}
 
 		// sewing the quads
 		for (unsigned int i = 0u; i < n-1u; ++i)
@@ -242,10 +237,10 @@ protected:
 			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
 			this->phi2_sew(d,e);
 		}
-		//sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0]), this->phi_1(m_tableVertDarts[n-1u]));
+		// sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
 
-		//sewing the top & bottom faces
+		// sewing the top & bottom faces
 		Dart top = this->Inherit::Inherit::add_face_topo(n);
 		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = top;
@@ -257,13 +252,14 @@ protected:
 			bottom = this->phi_1(bottom);
 		}
 
-		//return a dart from the base
+		// return a dart from the base
 		return dres;
 	}
 
 	inline void close_hole_topo(Dart d)
 	{
 		cgogn_message_assert(phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+
 		DartMarkerStore dmarker(*this);
 		DartMarkerStore boundary_marker(*this);
 
@@ -295,19 +291,21 @@ protected:
 					if (phi3(e) == e)
 					{
 						found = true;
-						if(!dmarker.is_marked(e))
+						if (!dmarker.is_marked(e))
 						{
 							visitedFaces.push_back(e);
 							dmarker.mark_orbit(Face2(e));
 						}
-					} else {
-						if(boundary_marker.is_marked(e))
+					}
+					else
+					{
+						if (boundary_marker.is_marked(e))
 						{
 							found = true;
 							this->phi2_sew(e, bit);
-						} else {
-							e = this->phi3(this->phi2(e));
 						}
+						else
+							e = this->phi3(this->phi2(e));
 					}
 				} while(!found);
 
@@ -337,22 +335,28 @@ protected:
 				const Volume new_volume = phi3(d);
 
 				if (this->template is_embedded<CDart>())
+				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart d)
 					{
 						this->new_orbit_embedding(CDart(d));
 					});
+				}
 
 				if (this->template is_embedded<Vertex2>())
+				{
 					Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
 					{
 						this->new_orbit_embedding(v);
 					});
+				}
 
 				if (this->template is_embedded<Edge2>())
+				{
 					Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
 					{
 						this->new_orbit_embedding(e);
 					});
+				}
 
 				if (this->template is_embedded<Face2>())
 				{
@@ -366,7 +370,7 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->template copy_embedding<Vertex::ORBIT>(wd, this->phi1(phi3(wd)));
+						this->template copy_embedding<Vertex>(wd, this->phi1(phi3(wd)));
 					});
 				}
 
@@ -374,7 +378,7 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->template copy_embedding<Edge::ORBIT>(wd, phi3(wd));
+						this->template copy_embedding<Edge>(wd, phi3(wd));
 					});
 				}
 
@@ -382,10 +386,10 @@ protected:
 				{
 					foreach_dart_of_orbit(new_volume, [this] (Dart wd)
 					{
-						this->template copy_embedding<Face::ORBIT>(wd, phi3(wd));
+						this->template copy_embedding<Face>(wd, phi3(wd));
 					});
-
 				}
+
 				if (this->template is_embedded<Volume>())
 				{
 					this->new_orbit_embedding(new_volume);
@@ -399,7 +403,7 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		return Inherit::degree(typename Inherit::Face(f.dart));
+		return Inherit::degree(Face2(f.dart));
 	}
 
 protected:
@@ -466,9 +470,7 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
-
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
@@ -551,11 +553,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool),
-					  "Wrong function return type");
-
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
@@ -653,14 +652,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(Face2(f.dart), [&func](Dart v) {func(Vertex(v));});
+		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { func(Vertex(v)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(Face2(f.dart), [&func](Dart e) {func(Edge(e));});
+		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart e) { func(Edge(e)); });
 	}
 
 	template <typename FUNC>
