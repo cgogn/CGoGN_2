@@ -48,8 +48,8 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
-	template<typename T> friend class cgogn::DartMarker_T;
-	template<typename T> friend class cgogn::DartMarkerStore;
+	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
 
 	using CDart = Cell<Orbit::DART>;
 	using Vertex = Cell<Orbit::PHI21_PHI31>;
@@ -477,13 +477,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1(c.dart, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c.dart, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2(c, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21(c, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -564,13 +564,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c.dart, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -926,14 +926,14 @@ extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<Default
 extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI21_PHI31>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI2_PHI3>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI3>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, Orbit::PHI1_PHI2>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn

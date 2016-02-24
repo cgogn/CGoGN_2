@@ -42,8 +42,8 @@ public:
 	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	template<typename T> friend class cgogn::DartMarker_T;
-	template<typename T> friend class cgogn::DartMarkerStore;
+	friend class DartMarker_T<Self>;
+	friend class DartMarkerStore<Self>;
 
 	using Vertex	= Cell<Orbit::DART>;
 	using Face		= Cell<Orbit::PHI1>;
@@ -359,13 +359,14 @@ protected:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart),
 					  "Wrong function parameter type");
+
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
 					  "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
@@ -402,7 +403,7 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:

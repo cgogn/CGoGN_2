@@ -286,7 +286,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArray<bool>* ca = this->mark_attributes_[ORBIT][thread].back();

@@ -29,7 +29,7 @@
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
+//	template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
 	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;

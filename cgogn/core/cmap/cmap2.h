@@ -48,8 +48,8 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
-	template<typename T> friend class cgogn::DartMarker_T;
-	template<typename T> friend class cgogn::DartMarkerStore;
+	friend class DartMarker_T<Self>;
+	friend class DartMarkerStore<Self>;
 
 	using CDart		= Cell<Orbit::DART>;
 	using Vertex	= Cell<Orbit::PHI21>;

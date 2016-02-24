@@ -42,8 +42,8 @@ public:
 	using Self = CMap0_T<MAP_TRAITS, MAP_TYPE>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	template<typename T> friend class cgogn::DartMarker_T;
-	template<typename T> friend class cgogn::DartMarkerStore;
+	friend class DartMarker_T<Self>;;
+	friend class DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
 
@@ -85,7 +85,7 @@ protected:
 	/*!
 	* \brief Init an newly added dart.
 	*/
-	inline void init_dart(Dart d)
+	inline void init_dart(Dart /*d*/)
 	{
 	}
 
