@@ -214,7 +214,7 @@ public:
 			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
-			this->copy_embedding(Face(nv.dart), Face(v.dart));
+			this->template copy_embedding<Face::ORBIT>(nv.dart,v.dart);
 
 		return nv;
 	}
@@ -266,9 +266,9 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Dart d)
+			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->new_orbit_embedding(v);
+				this->new_orbit_embedding(Vertex(v));
 			});
 
 		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
