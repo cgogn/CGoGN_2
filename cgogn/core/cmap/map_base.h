@@ -222,7 +222,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		if (!this->template is_embedded<Cell<ORBIT>>())
+		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
 		return AttributeHandler<T, ORBIT>(this, ca);
@@ -296,7 +296,7 @@ protected:
 		else
 		{
 			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
-			if (!this->template is_embedded<Cell<ORBIT>>())
+			if (!this->template is_embedded<ORBIT>())
 				create_embedding<ORBIT>();
 			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
 			return ca;
@@ -311,7 +311,7 @@ protected:
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(this->template is_embedded<Cell<ORBIT>>(),
+		cgogn_message_assert(this->template is_embedded<ORBIT>(),
 							 "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
@@ -328,7 +328,7 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit is already embedded");
+		cgogn_message_assert(!this->template is_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -360,12 +360,6 @@ protected:
 		return emb;
 	}
 
-	template <Orbit ORBIT>
-	inline void copy_embedding(Dart dest, Dart src)
-	{
-		this->template set_embedding<ORBIT>(dest, this->get_embedding(Cell<ORBIT>(src)));
-	}
-
 public:
 
 	/**
@@ -375,7 +369,7 @@ public:
 	void enforce_unique_orbit_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(this->template is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_counter");
 		for (unsigned int& i : counter) i = 0;
@@ -422,14 +416,14 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	bool is_topo_cache_enabled() const
+	inline bool is_topo_cache_enabled() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return this->global_topo_cache_[ORBIT] != nullptr;
 	}
 
 	template <Orbit ORBIT>
-	void enable_topo_cache()
+	inline void enable_topo_cache()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(!is_topo_cache_enabled<ORBIT>(), "Trying to enable an enabled global topo cache");
@@ -439,7 +433,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	void update_topo_cache()
+	inline void update_topo_cache()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
@@ -451,7 +445,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	void disable_topo_cache()
+	inline void disable_topo_cache()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to disable a disabled global topo cache");
@@ -470,11 +464,11 @@ public:
 	 * @param c1 first cell to compare
 	 * @param c2 second cell to compare
 	 */
-	template <class CellType>
-	bool same_cell(CellType c1, CellType c2) const
+	template <Orbit ORBIT>
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_embedded<CellType>())
-			return this->get_embedding(c1) == this->get_embedding(c2);
+		if (this->template is_embedded<ORBIT>())
+			return get_embedding(c1) == get_embedding(c2);
 
 		const ConcreteMap* cmap = to_concrete();
 		bool result = false;
@@ -505,7 +499,7 @@ public:
 	template <Orbit ORBIT>
 	unsigned int nb_cells() const
 	{
-		if (this->template is_embedded<Cell<ORBIT>>())
+		if (this->template is_embedded<ORBIT>())
 			return this->attributes_[ORBIT].size();
 		else
 		{
@@ -607,7 +601,7 @@ public:
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
 
-		using Future = std::future< typename std::result_of<FUNC(Dart, unsigned int)>::type >;
+		using Future = std::future<typename std::result_of<FUNC(Dart, unsigned int)>::type>;
 		using VecDarts = std::vector<Dart>;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
@@ -620,7 +614,6 @@ public:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		Dart it = Dart(this->topology_.begin());
@@ -628,7 +621,7 @@ public:
 
 		while (it != end)
 		{
-			for (unsigned i = 0u; i < 2u; ++i)
+			for (unsigned int i = 0u; i < 2u; ++i)
 			{
 				for (unsigned int j = 0u; j < nb_threads_pool && it != end ; ++j)
 				{
@@ -641,13 +634,14 @@ public:
 						darts.push_back(it);
 						this->topology_.next(it.index);
 					}
-					futures[i].push_back(thread_pool->enqueue( [&darts ,&f](unsigned int th_id){
+					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
+					{
 						for (auto d : darts)
 							f(d,th_id);
 					}));
 				}
 				const unsigned int id = (i+1u)%2u;
-				for (auto& fu: futures[id])
+				for (auto& fu : futures[id])
 					fu.wait();
 				for (auto &b : dart_buffers[id])
 					dbuffs->release_cell_buffer(b);
@@ -658,13 +652,12 @@ public:
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
 				if (it == end && i == 1u)
 				{
-					for (auto& fu: futures[1u])
+					for (auto& fu : futures[1u])
 						fu.wait();
 					for (auto &b : dart_buffers[1u])
 						dbuffs->release_buffer(b);
 				}
 			}
-
 		}
 	}
 
@@ -696,8 +689,8 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -713,7 +706,7 @@ public:
 			case AUTO :
 				if (is_topo_cache_enabled<ORBIT>())
 					foreach_cell_topo_cache(f);
-				else if (this->template is_embedded<cell_type>())
+				else if (this->template is_embedded<CellType>())
 					foreach_cell_cell_marking(f);
 				else
 					foreach_cell_dart_marking(f);
@@ -789,8 +782,7 @@ protected:
 	template <typename FUNC>
 	inline void foreach_cell_dart_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
@@ -799,7 +791,7 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.template mark_orbit<ORBIT>(d);
+				dm.mark_orbit(CellType(d));
 				f(d);
 			}
 		}
@@ -808,10 +800,10 @@ protected:
 	template <typename FUNC>
 	inline void parallel_foreach_cell_dart_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
-		using VecCell  = std::vector<Cell<ORBIT>>;
-		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
+		using VecCell = std::vector<Cell<ORBIT>>;
+		using Future = std::future<typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
@@ -829,8 +821,8 @@ protected:
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
-		unsigned i = 0u;	// buffer id (0/1)
-		unsigned int j = 0u;// thread id (0..nb_threads_pool)
+		unsigned int i = 0u; // buffer id (0/1)
+		unsigned int j = 0u; // thread id (0..nb_threads_pool)
 		while (it != end)
 		{
 			// fill buffer
@@ -848,16 +840,17 @@ protected:
 				this->topology_.next(it.index);
 			}
 			//launch thread
-			futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
+			{
 				for (auto c : cells)
 					f(c,th_id);
-				}));
+			}));
 			// next thread
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
 				const unsigned int id = (i+1u)%2u;
-				for (auto& fu: futures[id])
+				for (auto& fu : futures[id])
 					fu.wait();
 				for (auto &b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
@@ -867,11 +860,11 @@ protected:
 		}
 
 		// clean all at end
-		for (auto& fu: futures[0u])
+		for (auto& fu : futures[0u])
 			fu.wait();
 		for (auto &b : cells_buffers[0u])
 			dbuffs->release_cell_buffer(b);
-		for (auto& fu: futures[1u])
+		for (auto& fu : futures[1u])
 			fu.wait();
 		for (auto &b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
@@ -880,8 +873,8 @@ protected:
 	template <typename FUNC>
 	inline void foreach_cell_cell_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
@@ -899,10 +892,10 @@ protected:
 	template <typename FUNC>
 	inline void parallel_foreach_cell_cell_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
-		using VecCell  = std::vector<Cell<ORBIT>>;
-		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
+		using VecCell = std::vector<Cell<ORBIT>>;
+		using Future = std::future<typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
@@ -920,8 +913,8 @@ protected:
 		Dart it = Dart(this->topology_.begin());
 		const Dart end = Dart(this->topology_.end());
 
-		unsigned i = 0u;	// buffer id (0/1)
-		unsigned int j = 0u;// thread id (0..nb_threads_pool)
+		unsigned int i = 0u; // buffer id (0/1)
+		unsigned int j = 0u; // thread id (0..nb_threads_pool)
 		while (it != end)
 		{
 			// fill buffer
@@ -938,17 +931,18 @@ protected:
 				}
 				this->topology_.next(it.index);
 			}
-			//launch thread
-			futures[i].push_back(thread_pool->enqueue( [&cells,&f](unsigned int th_id){
+			// launch thread
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
+			{
 				for (auto c : cells)
-					f(c,th_id);
-				}));
+					f(c, th_id);
+			}));
 			// next thread
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
 				const unsigned int id = (i+1u)%2u;
-				for (auto& fu: futures[id])
+				for (auto& fu : futures[id])
 					fu.wait();
 				for (auto &b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
@@ -958,11 +952,11 @@ protected:
 		}
 
 		// clean all at end
-		for (auto& fu: futures[0u])
+		for (auto& fu : futures[0u])
 			fu.wait();
 		for (auto &b : cells_buffers[0u])
 			dbuffs->release_cell_buffer(b);
-		for (auto& fu: futures[1u])
+		for (auto& fu : futures[1u])
 			fu.wait();
 		for (auto &b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
@@ -972,8 +966,8 @@ protected:
 	template <typename FUNC>
 	inline void foreach_cell_topo_cache(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
 
 		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
 			 i != end;
@@ -986,10 +980,10 @@ protected:
 	template <typename FUNC>
 	inline void parallel_foreach_cell_topo_cache(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
-		using VecCell  = std::vector<Cell<ORBIT>>;
-		using Future = std::future< typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type >;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
+		using VecCell = std::vector<Cell<ORBIT>>;
+		using Future = std::future<typename std::result_of<FUNC(Cell<ORBIT>, unsigned int)>::type>;
 
 		ThreadPool* thread_pool = cgogn::get_thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
@@ -998,7 +992,6 @@ protected:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-
 		const auto& attr = this->attributes_[ORBIT];
 		unsigned int it = attr.begin();
 		unsigned int end = attr.end();
@@ -1006,18 +999,19 @@ protected:
 		unsigned int nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ( (end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+		if ((end - it) < 16 * nb_threads_pool * PARALLEL_BUFFER_SIZE)
 			nbc = (end - it) / nb_threads_pool;
 
 		unsigned int local_end = it+nbc;
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 
-		unsigned int i=0; // used buffered futures 0/1
-		unsigned int j=0;// thread num
+		unsigned int i = 0; // used buffered futures 0/1
+		unsigned int j = 0; // thread num
 		while (it != end)
 		{
-			futures[i].push_back(thread_pool->enqueue( [&cache,&attr,it,local_end,&f](unsigned int th_id){
+			futures[i].push_back(thread_pool->enqueue([&cache, &attr, it, local_end, &f] (unsigned int th_id)
+			{
 				unsigned int loc_it = it;
 				while (loc_it < local_end)
 				{
@@ -1026,12 +1020,12 @@ protected:
 				}
 			}));
 			it = local_end;
-			local_end = std::min(local_end+nbc,end);
+			local_end = std::min(local_end + nbc, end);
 
 			if (++j == nb_threads_pool) // change thread
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu: futures[id])
 					fu.wait();
 				futures[id].clear();
@@ -1040,17 +1034,16 @@ protected:
 		}
 
 		// wait for remaining running threads
-		for (auto& fu: futures[0u])
+		for (auto& fu : futures[0u])
 			fu.wait();
-		for (auto& fu: futures[1u])
+		for (auto& fu : futures[1u])
 			fu.wait();
 	}
 
 	template <typename FUNC>
 	inline void foreach_cell_until_dart_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
@@ -1059,7 +1052,7 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.template mark_orbit<ORBIT>(d);
+				dm.mark_orbit(CellType(d));
 				if(!f(d))
 					break;
 			}
@@ -1069,8 +1062,8 @@ protected:
 	template <typename FUNC>
 	inline void foreach_cell_until_cell_marking(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
 		for (Dart d = Dart(this->topology_.begin()), end = Dart(this->topology_.end());
@@ -1089,8 +1082,8 @@ protected:
 	template <typename FUNC>
 	inline void foreach_cell_until_topo_cache(const FUNC& f) const
 	{
-		using cell_type = typename function_traits<FUNC>::template arg<0>::type;
-		static const Orbit ORBIT = cell_type::ORBIT;
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static const Orbit ORBIT = CellType::ORBIT;
 
 		for (unsigned int i = this->attributes_[ORBIT].begin(), end = this->attributes_[ORBIT].end();
 			 i != end;
