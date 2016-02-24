@@ -43,8 +43,7 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class DartMarker_T<Self>;
-	//template<typename T> friend class DartMarker_T;
-	//template<typename T> friend class DartMarkerStore;
+	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
 

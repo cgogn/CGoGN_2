@@ -43,8 +43,7 @@ public:
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class DartMarker_T<Self>;
-	//template<typename T> friend class DartMarker_T;
-	//template<typename T> friend class DartMarkerStore;
+	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex	= Cell<Orbit::DART>;
 	using Face		= Cell<Orbit::PHI1>;
@@ -215,7 +214,7 @@ public:
 			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
-			this->copy_embedding(Face(nv.dart), Face(v.dart));
+			this->template copy_embedding<Face::ORBIT>(nv.dart,v.dart);
 
 		return nv;
 	}
@@ -267,9 +266,9 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Dart d)
+			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->new_orbit_embedding(Vertex(d));
+				this->new_orbit_embedding(Vertex(v));
 			});
 
 		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
@@ -393,6 +392,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
 
@@ -424,7 +425,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex),
 					  "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, func);
+		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
 };
 
@@ -438,7 +439,7 @@ template <typename MAP_TRAITS>
 using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
-//extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <string>
 
 inline unsigned int changeEndian(unsigned int x)
 {

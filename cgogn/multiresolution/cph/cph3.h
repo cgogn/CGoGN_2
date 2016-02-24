@@ -75,12 +75,12 @@ public:
 
 	inline unsigned int get_tri_refinement_face_id(Dart d, Dart e) const
 	{
-
+		return 0u;
 	}
 
 	inline unsigned int get_quad_refinement_face_id(Dart d) const
 	{
-
+		return 0u;
 	}
 };
 
