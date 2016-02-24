@@ -25,6 +25,7 @@
 #define CORE_CMAP_CMAP3_H_
 
 #include <core/cmap/cmap2.h>
+#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
@@ -49,8 +50,6 @@ public:
 	friend class CMap3Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-	//friend class DartMarkerStore<Self>;
-	//template<typename T> friend class DartMarker_T;
 
 	using CDart = Cell<Orbit::DART>;
 	using Vertex = Cell<Orbit::PHI21_PHI31>;
@@ -272,7 +271,7 @@ protected:
 		visitedFaces.reserve(1024);
 
 		visitedFaces.push_back(d);		// Start with the face of d
-		dmarker.template mark_orbit<Orbit::PHI1>(d);
+		dmarker.mark_orbit(Face2(d));
 
 		unsigned int count = 0u;
 
@@ -283,7 +282,7 @@ protected:
 			Dart f = it;
 
 			const Dart b = this->Inherit::Inherit::add_face_topo(this->degree(Face(f)));
-			boundary_marker.template mark_orbit<Orbit::PHI1>(b);
+			boundary_marker.mark_orbit(Face2(b));
 			++count;
 
 			Dart bit = b;
@@ -299,7 +298,7 @@ protected:
 						if(!dmarker.is_marked(e))
 						{
 							visitedFaces.push_back(e);
-							dmarker.template mark_orbit<Orbit::PHI1>(e);
+							dmarker.mark_orbit(Face2(e));
 						}
 					} else {
 						if(boundary_marker.is_marked(e))
@@ -467,8 +466,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-//		static_assert(check_func_parameter_type(FUNC, Dart),
-//					  "Wrong function parameter type");
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
@@ -552,6 +551,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, Dart),
+					  "Wrong function parameter type");
+
 		static_assert(check_func_return_type(FUNC, bool),
 					  "Wrong function return type");
 
@@ -562,7 +564,7 @@ protected:
 
 		switch (ORBIT)
 		{
-			case Orbit::DART: this->foreach_dart_of_DART(c, f); break;
+			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
 			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
@@ -620,7 +622,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				marker.mark_orbit<Orbit::PHI21>(d);
+				marker.mark_orbit(Vertex2(d));
 				f(d);
 			}
 		});
@@ -652,14 +654,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
+		foreach_dart_of_orbit(Face2(f.dart), [&func](Dart v) {func(Vertex(v));});
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		foreach_dart_of_orbit<Orbit::PHI1>(f.dart, func);
+		foreach_dart_of_orbit(Face2(f.dart), [&func](Dart e) {func(Edge(e));});
 	}
 
 	template <typename FUNC>
@@ -710,14 +712,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
-		marker_vertex.mark_orbit<Vertex::ORBIT>(v);
+		marker_vertex.mark_orbit(v);
 		foreach_incident_face(v, [&] (Face inc_face)
 		{
 			foreach_incident_vertex(inc_face, [&] (Vertex vertex_of_face)
 			{
 				if (!marker_vertex.is_marked(vertex_of_face))
 				{
-					marker_vertex.mark_orbit<Vertex::ORBIT>(vertex_of_face);
+					marker_vertex.mark_orbit(vertex_of_face);
 					f(vertex_of_face);
 				}
 			});
@@ -729,14 +731,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
-		marker_vertex.mark_orbit<Vertex::ORBIT>(v);
+		marker_vertex.mark_orbit(v);
 		foreach_incident_volume(v, [&] (Volume inc_vol)
 		{
 			foreach_incident_vertex(inc_vol, [&] (Vertex inc_vert)
 			{
 				if (!marker_vertex.is_marked(inc_vert))
 				{
-					marker_vertex.mark_orbit<Vertex::ORBIT>(inc_vert);
+					marker_vertex.mark_orbit(inc_vert);
 					f(inc_vert);
 				}
 			});
@@ -762,14 +764,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
-		marker_edge.mark_orbit<Edge::ORBIT>(e);
+		marker_edge.mark_orbit(e);
 		foreach_incident_face(e, [&] (Face inc_face)
 		{
 			foreach_incident_edge(inc_face, [&] (Edge inc_edge)
 			{
 				if (!marker_edge.is_marked(inc_edge))
 				{
-					marker_edge.mark_orbit<Edge::ORBIT>(inc_edge);
+					marker_edge.mark_orbit(inc_edge);
 					f(inc_edge);
 				}
 			});
@@ -781,14 +783,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
-		marker_edge.mark_orbit<Edge::ORBIT>(e);
+		marker_edge.mark_orbit(e);
 		foreach_incident_volume(e, [&] (Volume inc_vol)
 		{
 			foreach_incident_edge(inc_vol, [&] (Edge inc_edge)
 			{
 				if (!marker_edge.is_marked(inc_edge))
 				{
-					marker_edge.mark_orbit<Edge::ORBIT>(inc_edge);
+					marker_edge.mark_orbit(inc_edge);
 					f(inc_edge);
 				}
 			});
@@ -800,14 +802,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
-		marker_face.mark_orbit<Face::ORBIT>(f);
+		marker_face.mark_orbit(f);
 		foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			foreach_incident_face(f, [&](Face inc_fac)
 			{
 				if (!marker_face.is_marked(inc_fac))
 				{
-					marker_face.mark_orbit<Face::ORBIT>(inc_fac);
+					marker_face.mark_orbit(inc_fac);
 					func(inc_fac);
 				}
 			});
@@ -833,12 +835,12 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
-		marker_face.mark_orbit<Face::ORBIT>(f);
+		marker_face.mark_orbit(f);
 		foreach_incident_face(Volume(f.dart), [&] (Face inc_face)
 		{
 			if (!marker_face.is_marked(inc_face))
 			{
-				marker_face.mark_orbit<Face::ORBIT>((inc_face));
+				marker_face.mark_orbit((inc_face));
 				func(inc_face);
 			}
 		});
@@ -847,7 +849,7 @@ public:
 		{
 			if (!marker_face.is_marked(inc_face))
 			{
-				marker_face.mark_orbit<Face::ORBIT>((inc_face));
+				marker_face.mark_orbit((inc_face));
 				func(inc_face);
 			}
 		});
@@ -858,14 +860,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<Volume::ORBIT>(v);
+		marker_volume.mark_orbit(v);
 		foreach_incident_vertex(v, [&] (Vertex inc_vert)
 		{
 			foreach_incident_volume(inc_vert, [&](Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
+					marker_volume.mark_orbit(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -877,14 +879,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<Volume::ORBIT>(v);
+		marker_volume.mark_orbit(v);
 		foreach_incident_edge(v, [&] (Edge inc_edge)
 		{
 			foreach_incident_volume(inc_edge, [&] (Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
+					marker_volume.mark_orbit(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -896,14 +898,14 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
-		marker_volume.mark_orbit<Volume::ORBIT>(v);
+		marker_volume.mark_orbit(v);
 		foreach_incident_face(v, [&] (Edge inc_face)
 		{
 			foreach_incident_volume(inc_face, [&] (Volume inc_vol)
 			{
 				if (!marker_volume.is_marked(inc_vol))
 				{
-					marker_volume.mark_orbit<Volume::ORBIT>(inc_vol);
+					marker_volume.mark_orbit(inc_vol);
 					f(inc_vol);
 				}
 			});
@@ -921,7 +923,7 @@ template <typename MAP_TRAITS>
 using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
-//extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;

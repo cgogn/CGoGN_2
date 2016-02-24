@@ -65,7 +65,7 @@ public:
 	template <Orbit ORBIT>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
-		map_.set_embedding<ORBIT>(d, emb);
+		map_.template set_embedding<ORBIT>(d, emb);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)

@@ -363,7 +363,7 @@ protected:
 	template <Orbit ORBIT>
 	inline void copy_embedding(Dart dest, Dart src)
 	{
-		this->set_embedding<ORBIT>(dest, this->get_embedding<ORBIT>(src));
+		this->template set_embedding<ORBIT>(dest, this->get_embedding(Cell<ORBIT>(src)));
 	}
 
 public:
