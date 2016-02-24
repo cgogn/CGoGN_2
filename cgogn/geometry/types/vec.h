@@ -58,7 +58,7 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
-	inline Vec_T() : data_() {}
+//	inline Vec_T() : data_() {}
 
 	template <typename... Args>
 	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... })

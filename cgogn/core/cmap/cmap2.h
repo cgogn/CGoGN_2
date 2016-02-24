@@ -25,14 +25,12 @@
 #define CORE_CMAP_CMAP2_H_
 
 #include <core/cmap/cmap1.h>
-#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 // forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS>
-class CMap2Builder_T;
+template <typename MAP_TRAITS> class CMap2Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
@@ -208,39 +206,39 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex v = cut_edge_topo(e);
-		const Dart  nf = phi2(e);
-		const Dart   f = phi2(v);
+		const Dart ne = cut_edge_topo(e);
+		const Dart nf = phi2(e);
+		const Dart  f = phi2(ne);
 
 		if (this->template is_embedded<CDart>()) {
-			this->new_orbit_embedding(CDart(v));
+			this->new_orbit_embedding(CDart(ne));
 			this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->new_orbit_embedding(v);
+			this->new_orbit_embedding(Vertex(ne));
 		}
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->copy_embedding(Edge(nf), e);
-			this->new_orbit_embedding(Edge(v));
+			this->copy_embedding<Edge::ORBIT>(nf, e);
+			this->new_orbit_embedding(Edge(ne));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(v), Face(e));
-			this->copy_embedding(Face(nf), Face(f));
+			this->copy_embedding<Face::ORBIT>(ne, e);
+			this->copy_embedding<Face::ORBIT>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding(Volume(v),Volume(e));
-			this->copy_embedding(Volume(nf), Volume(e));
+			this->copy_embedding<Volume::ORBIT>(ne, e);
+			this->copy_embedding<Volume::ORBIT>(nf, e);
 		}
 
-		return v;
+		return Vertex(ne);
 	}
 
 protected:
@@ -307,8 +305,8 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->copy_embedding(Vertex(nd), e);
-			this->copy_embedding(Vertex(ne), d);
+			this->copy_embedding<Vertex::ORBIT>(nd, e);
+			this->copy_embedding<Vertex::ORBIT>(ne, d);
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -318,14 +316,14 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding(Face(nd), Face(d.dart));
+			this->copy_embedding<Face::ORBIT>(nd, d.dart);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding(Volume(nd), Volume(d.dart));
-			this->copy_embedding(Volume(ne), Volume(d.dart));
+			this->copy_embedding<Volume::ORBIT>(nd, d.dart);
+			this->copy_embedding<Volume::ORBIT>(ne, d.dart);
 		}
 	}
 
@@ -369,26 +367,28 @@ public:
 		const Face f = add_face_topo(size);
 
 		if (this->template is_embedded<CDart>())
-			foreach_dart_of_orbit(f, [this] (CDart d)
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(d);
+				this->new_orbit_embedding(CDart(d));
 				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Vertex v)
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(v);
+				this->new_orbit_embedding(Vertex(d));
 			});
 
 		if (this->template is_embedded<Edge>())
-			foreach_dart_of_orbit(f, [this] (Edge e)
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(e);
+				this->new_orbit_embedding(Edge(d));
 			});
 
-		if (this->template is_embedded<Face>())
+		if (this->template is_embedded<Face>()) {
 			this->new_orbit_embedding(f);
+			this->new_orbit_embedding(Face(phi2(f.dart)));
+		}
 
 		if (this->template is_embedded<Volume>())
 			this->new_orbit_embedding(Volume(f.dart));
@@ -417,14 +417,11 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart next = this->add_dart();	// Add a new edge there and link it to the face
-				this->phi1_sew(first, next);	// the edge is linked to the face
-				phi2_sew(d_next, next);			// the face is linked to the hole
+				Dart next = this->split_vertex_topo(first);	// Add a new vertex into the built face
+				phi2_sew(d_next, next);						// and link the face to the hole
 			}
 		} while (d_phi1 != d);
 	}
-
-protected:
 
 	/**
 	 * @brief close_map closes the map so that there are no phi2 fix points
@@ -441,21 +438,21 @@ protected:
 				const Face new_face = phi2(d);
 
 				if (this->template is_embedded<CDart>())
-					foreach_dart_of_orbit(new_face, [this] (CDart d)
+					foreach_dart_of_orbit(new_face, [this] (Dart e)
 					{
-						this->new_orbit_embedding(d);
+						this->new_orbit_embedding(CDart(e));
 					});
 
 				if (this->template is_embedded<Vertex>())
-					foreach_dart_of_orbit(new_face, [this] (Vertex v)
+					foreach_dart_of_orbit(new_face, [this] (Dart e)
 					{
-						this->copy_embedding(v, Vertex(this->phi1(phi2(v))));
+						this->copy_embedding<Vertex::ORBIT>(e, this->phi1(phi2(e)));
 					});
 
 				if (this->template is_embedded<Edge>())
-					foreach_dart_of_orbit(new_face, [this] (Edge e)
+					foreach_dart_of_orbit(new_face, [this] (Dart e)
 					{
-						this->copy_embedding(e, Edge(phi2(e)));
+						this->copy_embedding<Edge::ORBIT>(e, phi2(e));
 					});
 
 				if (this->template is_embedded<Face>())
@@ -465,10 +462,10 @@ protected:
 
 				if (this->template is_embedded<Volume>())
 				{
-					const unsigned int idx = this->get_embedding(Volume(d));
-					foreach_dart_of_orbit(new_face, [this, idx] (Dart v)
+					const unsigned int idx = this->get_embedding<Volume::ORBIT>(d);
+					foreach_dart_of_orbit(new_face, [this, idx] (Dart e)
 					{
-						this->set_embedding<Orbit::PHI1_PHI2>(v, idx);
+						this->set_embedding<Volume::ORBIT>(e, idx);
 					});
 				}
 			}

@@ -215,7 +215,7 @@ public:
 			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
-			this->copy_embedding(Face(nv.dart), Face(v.dart));
+			this->copy_embedding<Face::ORBIT>(nv.dart, v.dart);
 
 		return nv;
 	}

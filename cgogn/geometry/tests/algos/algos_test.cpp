@@ -43,9 +43,9 @@ using EigenVec3d = Eigen::Vector3d;
 using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 template <typename T>
 using VertexAttributeHandler = CMap2::VertexAttributeHandler<T>;
-using Vertex = typename CMap2::Vertex;
-using Edge = typename CMap2::Edge;
-using Face = typename CMap2::Face;
+using Vertex = CMap2::Vertex;
+using Edge = CMap2::Edge;
+using Face = CMap2::Face;
 
 TEST(Algos_TEST, TriangleArea)
 {
