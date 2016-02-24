@@ -5,7 +5,6 @@ project(cgogn_rendering
 find_package(Qt5Widgets)
 #find_package(Qt5OpenGL)
 
-
 set(HEADER_FILES
 	dll.h
 	map_render.h
@@ -23,7 +22,6 @@ set(SOURCE_FILES
 	shaders/shader_color_per_vertex.cpp
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
-
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

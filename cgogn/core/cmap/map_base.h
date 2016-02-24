@@ -468,7 +468,7 @@ public:
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
 		if (this->template is_embedded<ORBIT>())
-			return get_embedding(c1) == get_embedding(c2);
+			return this->get_embedding(c1) == this->get_embedding(c2);
 
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
