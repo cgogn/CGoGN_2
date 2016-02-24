@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
 
 inline unsigned int changeEndian(unsigned int x)

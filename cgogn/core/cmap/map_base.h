@@ -361,9 +361,9 @@ protected:
 	}
 
 	template <Orbit ORBIT>
-	inline void copy_embedding(Cell<ORBIT> dest, Cell<ORBIT> src)
+	inline void copy_embedding(Dart dest, Dart src)
 	{
-		this->set_embedding<ORBIT>(dest, this->get_embedding(src));
+		this->set_embedding<ORBIT>(dest, this->get_embedding<ORBIT>(src));
 	}
 
 public:
@@ -380,11 +380,10 @@ public:
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_counter");
 		for (unsigned int& i : counter) i = 0;
 
-		ConcreteMap* cmap = to_concrete();
-		foreach_cell<FORCE_DART_MARKING>([cmap, &counter] (Cell<ORBIT> c)
+		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
 		{
 			if (counter[c] > 0)
-				cmap->new_orbit_embedding(c);
+				this->new_orbit_embedding(c);
 			counter[c]++;
 		});
 
