@@ -17,3 +17,5 @@ endif(CGOGN_USE_QT)
 if (CGOGN_BUILD_BENCHS)
 	add_subdirectory(google-benchmark)
 endif(CGOGN_BUILD_BENCHS)
+
+add_subdirectory(OffBinConverter)
