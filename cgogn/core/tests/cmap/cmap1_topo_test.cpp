@@ -21,6 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <cstdlib>
+#include <ctime>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -32,24 +35,108 @@ namespace cgogn
 
 class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
 {
+
 public:
-	using Face = CMap1TopoTest::Face;
+
+	static const int NB_MAX = 1000;
+
+	using Vertex = CMap1TopoTest::Vertex;
+	using Face   = CMap1TopoTest::Face;
 
 protected:
 
-	CMap1TopoTest()
-	{}
+	/*!
+	 * \brief Generate a random set of faces.
+	*/
+	CMap1TopoTest() : nb_darts_(0)
+	{
+		std::srand(static_cast<unsigned int>(std::time(0)));
+	}
+
+	bool dartIntegrity(Dart d) {
+		return (phi1(phi_1(d)) == d && phi_1(phi1(d)) == d);
+	}
+
+	bool mapIntegrity() {
+		bool result = true;
+		foreach_dart( [&] (Dart d) {
+			if (!dartIntegrity(d)) {
+				result = false;
+				return ;
+			}
+		});
+		return result;
+	}
+
+	int randomDarts() {
+		int n = std::rand() % NB_MAX;
+		for (int i = 0; i < n; ++i)
+			tdarts_[i] = add_dart();
+
+		return n;
+	}
+
+	int randomFaces() {
+		int count = 0;
+		for (int i = 0; i < NB_MAX; ++i) {
+			int n = std::rand() % 100;
+			Dart d = add_face_topo(n);
+			count += n;
+
+			for (int k = std::rand() % n; k > 0; ++k)
+				d = phi1(d);
+
+			tdarts_[i] = d;
+		}
+		return count;
+	}
+
+	std::array<Dart, NB_MAX> tdarts_;
+	int nb_darts_;
 };
 
 
 TEST_F(CMap1TopoTest, testAddDart)
 {
-
+	int n = randomDarts();
+	EXPECT_EQ(nb_darts(), n);
+	EXPECT_TRUE(mapIntegrity());
 }
 
 TEST_F(CMap1TopoTest, testDeleteDart)
 {
+	int n = randomDarts();
+	int count = n;
+	for (int i = 0; i < n; ++i) {
+		if (std::rand() % 3 == 1) {
+			remove_dart(tdarts_[i]);
+			--count;
+		}
+	}
+	EXPECT_EQ(nb_darts(), count);
+	EXPECT_TRUE(mapIntegrity());
+}
 
+TEST_F(CMap1TopoTest, testPhi1SewUnSew)
+{
+	int n = randomDarts();
+	for (int i = 0; i < 1000; ++i) {
+		Dart d = tdarts_[std::rand() % n];
+		Dart e = tdarts_[std::rand() % n];
+		Dart f = tdarts_[std::rand() % n];
+		Dart nd = phi1(d);
+		Dart ne = phi1(e);
+		phi1_sew(d, e);
+		EXPECT_TRUE(phi1(d) == ne);
+		EXPECT_TRUE(phi1(e) == nd);
+		Dart nf1 = phi1(f);
+		Dart nf2 = phi1(nf1);
+		phi1_unsew(f);
+		EXPECT_TRUE(phi1(nf1) == nf1);
+		EXPECT_TRUE(phi1(f) == nf2);
+	}
+	EXPECT_EQ(nb_darts(), n);
+	EXPECT_TRUE(mapIntegrity());
 }
 
 TEST_F(CMap1TopoTest, testFaceDegree)
