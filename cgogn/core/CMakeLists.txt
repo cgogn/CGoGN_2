@@ -31,6 +31,7 @@ set(HEADER_FILES
 	utils/buffers.h
 	utils/definitions.h
 	utils/dll.h
+	utils/endian.h
 	utils/make_unique.h
 	utils/name_types.h
 	utils/serialization.h
