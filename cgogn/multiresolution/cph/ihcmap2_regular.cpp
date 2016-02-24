@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
+#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
 #define MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_
 
 #include <multiresolution/cph/ihcmap2_regular.h>
