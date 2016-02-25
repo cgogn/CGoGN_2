@@ -15,6 +15,8 @@ set(HEADER_FILES
 	shaders/shader_color_per_vertex.h
 	shaders/shader_flat.h
 	shaders/shader_vector_per_vertex.h
+	shaders/shader_phong.h
+	drawer.h
 	)
 
 set(SOURCE_FILES
@@ -23,7 +25,8 @@ set(SOURCE_FILES
 	shaders/shader_color_per_vertex.cpp
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
-
+	shaders/shader_phong.cpp
+	drawer.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -67,6 +67,11 @@ public:
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
 
+	inline const Scalar* data() const
+	{
+		return data_.data();
+	}
+
 	inline Scalar& operator[](std::size_t i)
 	{
 		return data_[i];

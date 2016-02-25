@@ -46,9 +46,9 @@ protected:
 
 public:
 
-	inline VBO() :
-		nb_vectors_(0),
-		vector_dimension_(0)
+	inline VBO(unsigned int vec_dim) :
+		nb_vectors_(),
+		vector_dimension_(vec_dim)
 	{
 		buffer_.create();
 		buffer_.bind();
@@ -171,6 +171,109 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 		cgogn_assert_not_reached("only float or double allowed for vbo");
 	}
 }
+
+
+
+template <typename ATTR, typename FUNC>
+void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
+{
+	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
+
+	const typename ATTR::TChunkArray* ca = attr.get_data();
+
+	std::vector<void*> chunk_addr;
+	unsigned int byte_chunk_size;
+	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+
+	typedef std::array<float,2> Vec2f;
+	typedef std::array<float,3> Vec3f;
+	typedef std::array<float,4> Vec4f;
+
+	typedef typename function_traits<FUNC>::result_type OutputConvert;
+	typedef inside_type(ATTR) InputConvert;
+
+	unsigned int vec_dim = 0;
+	if (check_func_return_type(FUNC,float) )
+		vec_dim = 1;
+	else if (check_func_return_type(FUNC,Vec2f) )
+		vec_dim = 2;
+	else if (check_func_return_type(FUNC,Vec3f) )
+		vec_dim = 3;
+	else if (check_func_return_type(FUNC,Vec4f) )
+		vec_dim = 4;
+	else
+	{
+		cgogn_message_assert(false, "update_vbo: convert output must be float or std::array<float,2/3/4>" );
+	}
+
+	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+
+	// copy (after conversion)
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	for (unsigned int i = 0; i < nb_chunks; ++i)
+	{
+		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
+		for (unsigned int j = 0; j < ATTR::CHUNKSIZE; ++j)
+			*dst++ = convert(typed_chunk[j]);
+	}
+	vbo.release_pointer();
+}
+
+template <typename ATTR, typename ATTR2, typename FUNC>
+void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& convert)
+{
+	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arg");
+
+	const typename ATTR::TChunkArray* ca = attr.get_data();
+	std::vector<void*> chunk_addr;
+	unsigned int byte_chunk_size;
+	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+
+	const typename ATTR::TChunkArray* ca2 = attr2.get_data();
+	std::vector<void*> chunk_addr2;
+	unsigned int nb_chunks2 = ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
+
+
+	typedef std::array<float,2> Vec2f;
+	typedef std::array<float,3> Vec3f;
+	typedef std::array<float,4> Vec4f;
+
+	typedef typename function_traits<FUNC>::result_type OutputConvert;
+	typedef inside_type(ATTR) InputConvert;
+	typedef inside_type(ATTR) InputConvert2;
+
+	unsigned int vec_dim = 0;
+	if (check_func_return_type(FUNC,float) )
+		vec_dim = 1;
+	else if (check_func_return_type(FUNC,Vec2f) )
+		vec_dim = 2;
+	else if (check_func_return_type(FUNC,Vec3f) )
+		vec_dim = 3;
+	else if (check_func_return_type(FUNC,Vec4f) )
+		vec_dim = 4;
+	else
+	{
+		cgogn_message_assert(false, "update_vbo: convert output must be float or std::array<float,2/3/4>" );
+	}
+
+	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+
+	// copy (after conversion)
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	for (unsigned int i = 0; i < nb_chunks; ++i)
+	{
+		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
+		InputConvert2* typed_chunk2 = static_cast<InputConvert2*>(chunk_addr2[i]);
+		for (unsigned int j = 0; j < ATTR::CHUNKSIZE; ++j)
+			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
+	}
+	vbo.release_pointer();
+}
+
+
+
+
+
 
 } // namespace rendering
 
