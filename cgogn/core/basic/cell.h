@@ -68,7 +68,6 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
 		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
-//	return "UNKNOWN";
 }
 
 /**
@@ -79,10 +78,13 @@ inline std::string orbit_name(Orbit orbit)
  * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
-template <Orbit ORBIT>
+template <Orbit ORBIT_VAL>
 class Cell
 {
 public:
+
+	static const Orbit ORBIT = ORBIT_VAL;
+	using Self = Cell<ORBIT>;
 
 	/**
 	 * \brief the dart representing this cell
@@ -107,7 +109,7 @@ public:
 	 * Creates a new Cell from an another one.
 	 * \param[in] c a cell
 	 */
-	inline Cell(const Cell<ORBIT>& c) : dart(c.dart)
+	inline Cell(const Self& c) : dart(c.dart)
 	{}
 
 	//TODO
@@ -132,21 +134,21 @@ public:
 	 * \param[in] rhs the cell to assign
 	 * \return The cell with the assigned value
 	 */
-	Cell<ORBIT> operator=(Cell<ORBIT> rhs) { dart = rhs.dart; return *this; }
+	Self operator=(Self rhs) { dart = rhs.dart; return *this; }
 
 	/**
 	 * \brief Prints a cell to a stream.
 	 * \param[out] out the stream to print on
 	 * \param[in] rhs the cell to print
 	 */
-	friend std::ostream& operator<<(std::ostream &out, const Cell<ORBIT>& rhs) { return out << rhs.dart; }
+	friend std::ostream& operator<<(std::ostream &out, const Self& rhs) { return out << rhs.dart; }
 
 	/**
 	 * \brief Reads a cell from a stream.
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the cell read
 	 */
-	friend std::istream& operator>>(std::istream &in, Cell<ORBIT>& rhs) { in >> rhs.dart; return in; }
+	friend std::istream& operator>>(std::istream &in, Self& rhs) { in >> rhs.dart; return in; }
 
 	/**
 	* \brief Name of this CGoGN type

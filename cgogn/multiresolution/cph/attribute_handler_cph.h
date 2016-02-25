@@ -39,10 +39,10 @@ class AttributeHandlerCPH : public AttributeHandler<DATA_TRAITS, T, ORBIT>
 {
 public:
 
-	typedef AttributeHandler<DATA_TRAITS, T, ORBIT> Inherit;
-	typedef AttributeHandlerCPH<MAP, DATA_TRAITS, T, ORBIT> Self;
+	using Inherit = AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using Self = AttributeHandlerCPH<MAP, DATA_TRAITS, T, ORBIT>;
 
-	typedef T value_type;
+	using value_type = T;
 
 	using MapData =     typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;

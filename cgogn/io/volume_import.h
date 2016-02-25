@@ -54,6 +54,7 @@ public:
 
 	using Self = VolumeImport<MAP_TRAITS>;
 	using Map = CMap3<MAP_TRAITS>;
+	using Vertex = typename Map::Vertex;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -72,7 +73,7 @@ public:
 	unsigned int nb_faces_;
 	unsigned int nb_volumes_;
 
-	std::vector<unsigned int> volumes_nb_faces_;
+	std::vector<unsigned int> volumes_nb_vertices_;
 	std::vector<unsigned int> volumes_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
@@ -81,7 +82,7 @@ public:
 		nb_vertices_(0u)
 	  ,nb_edges_(0u)
 	  ,nb_faces_(0u)
-	  ,volumes_nb_faces_()
+	  ,volumes_nb_vertices_()
 	  ,volumes_vertex_indices_()
 	{}
 
@@ -98,7 +99,7 @@ public:
 		nb_vertices_ = 0;
 		nb_edges_ = 0;
 		nb_faces_ = 0;
-		volumes_nb_faces_.clear();
+		volumes_nb_vertices_.clear();
 		volumes_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();
 	}
@@ -135,7 +136,6 @@ public:
 
 	bool create_map(Map& map)
 	{
-		const Orbit VERTEX = Map::VERTEX;
 		using Face = typename Map::Face;
 
 		if (this->nb_vertices_ == 0u)
@@ -144,9 +144,9 @@ public:
 		MapBuilder mbuild(map);
 		map.clear_and_remove_attributes();
 
-		mbuild.template create_embedding<VERTEX>();
-		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
-		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+		mbuild.template create_embedding<Vertex::ORBIT>();
+		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
+		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int index = 0u;
 		// buffer for tempo faces (used to remove degenerated edges)
@@ -159,11 +159,11 @@ public:
 		for(unsigned int i = 0u; i < this->nb_volumes_; ++i)
 		{
 			// store volume in buffer, removing degenated faces
-			const unsigned int nbf = this->volumes_nb_faces_[i];
+			const unsigned int nbv = this->volumes_nb_vertices_[i];
 
 			edgesBuffer.clear();
 			unsigned int prec = std::numeric_limits<unsigned int>::max();
-			for (unsigned int j = 0u; j < nbf; ++j)
+			for (unsigned int j = 0u; j < nbv; ++j)
 			{
 				unsigned int em = this->volumes_vertex_indices_[index++];
 				if (em != prec)
@@ -173,7 +173,7 @@ public:
 				}
 			}
 
-			if(nbf == 4u) //tetrahedral case
+			if(nbv == 4u) //tetrahedral case
 			{
 				const Dart d = mbuild.add_pyramid_topo(3u);
 
@@ -198,7 +198,7 @@ public:
 					} while(dd != dv);
 				}
 			}
-			else if(nbf == 5u) //pyramidal case
+			else if(nbv == 5u) //pyramidal case
 			{
 				Dart d = mbuild.add_pyramid_topo(4u);
 
@@ -224,7 +224,7 @@ public:
 					} while(dd != dv);
 				}
 			}
-			else if(nbf == 6u) //prism case
+			else if(nbv == 6u) //prism case
 			{
 				Dart d = mbuild.add_prism_topo(3u);
 				const std::array<Dart, 6> vertices_of_prism = {
@@ -251,7 +251,7 @@ public:
 					} while(dd != dv);
 				}
 			}
-			else if(nbf == 8u) //hexahedral case
+			else if(nbv == 8u) //hexahedral case
 			{
 				Dart d = mbuild.add_prism_topo(4u);
 				const std::array<Dart, 8> vertices_of_hexa = {
@@ -297,8 +297,8 @@ public:
 				Dart good_dart;
 				for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
 				{
-					if(map.template get_embedding<VERTEX>(map.phi1(*it)) == map.template get_embedding<VERTEX>(d) &&
-							map.template get_embedding<VERTEX>(map.phi_1(*it)) == map.template get_embedding<VERTEX>(map.phi1(map.phi1(d))))
+					if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d)) &&
+							map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d)))))
 					{
 						good_dart = *it;
 					}
@@ -477,7 +477,7 @@ protected:
 		{
 			if (typeVols[i]==12u)
 			{
-				volumes_nb_faces_.push_back(8u);
+				volumes_nb_vertices_.push_back(8u);
 
 				std::array<unsigned int, 8> pt;
 				VEC3 const& P = position->operator [](verticesID[indices[currentOffset+4]]);
@@ -520,7 +520,7 @@ protected:
 			}
 			else if (typeVols[i]==10u)
 			{
-				volumes_nb_faces_.push_back(4u);
+				volumes_nb_vertices_.push_back(4u);
 
 				std::array<unsigned int, 4> pt;
 				pt[0] = indices[currentOffset];

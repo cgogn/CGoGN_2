@@ -26,10 +26,12 @@
 
 #include <istream>
 
+#include <core/utils/endian.h>
 #include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
 #include <core/utils/string.h>
+#include <io/import_ply_data.h>
 
 #include <io/dll.h>
 
@@ -43,7 +45,8 @@ enum SurfaceFileType
 {
 	SurfaceFileType_UNKNOWN = 0,
 	SurfaceFileType_OFF,
-	SurfaceFileType_OBJ
+	SurfaceFileType_OBJ,
+	SurfaceFileType_PLY
 };
 
 inline SurfaceFileType get_file_type(const std::string& filename)
@@ -53,6 +56,8 @@ inline SurfaceFileType get_file_type(const std::string& filename)
 		return SurfaceFileType_OFF;
 	if (extension == "obj")
 		return SurfaceFileType_OBJ;
+	if (extension == "ply")
+		return SurfaceFileType_PLY;
 	return SurfaceFileType_UNKNOWN;
 }
 
@@ -63,6 +68,7 @@ public:
 
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Map = CMap2<MAP_TRAITS>;
+	using Vertex = typename Map::Vertex;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -142,6 +148,11 @@ public:
 		case SurfaceFileType_OBJ :
 			result = import_OBJ<VEC3>(fp);
 			break;
+		case SurfaceFileType_PLY :
+			fp.close();
+			result = import_ply<VEC3>(filename);
+			break;
+
 		}
 
 		if (!result)
@@ -153,7 +164,6 @@ public:
 	void create_map(Map& map)
 	{
 		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
-		const Orbit VERTEX = Map::VERTEX;
 
 		if (this->nb_vertices_ == 0u)
 			return;
@@ -161,11 +171,11 @@ public:
 		MapBuilder mbuild(map);
 		map.clear_and_remove_attributes();
 
-		mbuild.template create_embedding<VERTEX>();
-		mbuild.template swap_chunk_array_container<VERTEX>(this->vertex_attributes_);
+		mbuild.template create_embedding<Vertex::ORBIT>();
+		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
 		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
-			map.template add_attribute<std::vector<Dart>, VERTEX>("darts_per_vertex");
+			map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
 		std::vector<unsigned int> vertices_buffer;
@@ -193,11 +203,11 @@ public:
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-				Dart d = mbuild.add_face_topo(nbe);
-				for (unsigned int j = 0; j < nbe; ++j)
+				Dart d = mbuild.add_face_topo_parent(nbe);
+				for (unsigned int j = 0u; j < nbe; ++j)
 				{
-					unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template set_embedding<VERTEX>(d, vertex_index);
+					const unsigned int vertex_index = vertices_buffer[j];
+					mbuild.template set_embedding<Vertex::ORBIT>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
@@ -211,7 +221,7 @@ public:
 		{
 			if (map.phi2(d) == d)
 			{
-				unsigned int vertex_index = map.template get_embedding<VERTEX>(d);
+				unsigned int vertex_index = map.get_embedding(Vertex(d));
 
 				std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
 				bool phi2_found = false;
@@ -221,7 +231,7 @@ public:
 					it != next_vertex_darts.end() && !phi2_found;
 					++it)
 				{
-					if (map.template get_embedding<VERTEX>(map.phi1(*it)) == vertex_index)
+					if (map.get_embedding(Vertex(map.phi1(*it))) == vertex_index)
 					{
 						if (map.phi2(*it) == *it)
 						{
@@ -247,7 +257,7 @@ public:
 			mbuild.close_map();
 
 		if (need_vertex_unicity_check)
-			map.template enforce_unique_orbit_embedding<VERTEX>();
+			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
@@ -258,7 +268,36 @@ protected:
 	template <typename VEC3>
 	bool import_OFF(std::ifstream& fp)
 	{
+		using Scalar = typename VEC3::Scalar;
+
 		std::string line;
+		line.reserve(512);
+
+		// local function for reading double with comment ignoring
+		auto read_double = [&fp,&line]() -> double
+		{
+			fp >> line;
+			while (line[0]=='#')
+			{
+				fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				fp >> line;
+			}
+			return std::stod(line);
+		};
+
+		// local function for reading int with comment ignoring
+		auto read_uint = [&fp,&line]() -> unsigned int
+		{
+			fp >> line;
+			while (line[0]=='#')
+			{
+				fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				fp >> line;
+			}
+			return (unsigned int)(std::stoul(line));
+		};
+
+
 
 		// read OFF header
 		std::getline(fp, line);
@@ -269,18 +308,17 @@ protected:
 			return false;
 		}
 
-		// read number of vertices, edges, faces
-		do
+		// check if binary file
+		if (line.rfind("BINARY") != std::string::npos)
 		{
-			std::getline(fp, line);
-		} while (line.size() == 0);
-		{ // limit scope of oss
-			std::stringstream oss(line);
-
-			oss >> nb_vertices_;
-			oss >> nb_faces_;
-			oss >> nb_edges_;
+			return import_OFF_BIN<VEC3>(fp);
 		}
+
+
+		// read number of vertices, edges, faces
+		nb_vertices_ = read_uint();
+		nb_faces_ = read_uint();
+		nb_edges_ = read_uint();
 
 		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
 
@@ -290,19 +328,12 @@ protected:
 
 		for (unsigned int i = 0; i < nb_vertices_; ++i)
 		{
-			do
-			{
-				std::getline(fp, line);
-			} while (line.size() == 0);
 
-			std::stringstream oss(line);
+			double x = read_double();
+			double y = read_double();
+			double z = read_double();
 
-			double x, y, z;
-			oss >> x;
-			oss >> y;
-			oss >> z;
-
-			VEC3 pos{x, y, z};
+			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
 			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
@@ -315,30 +346,127 @@ protected:
 		faces_vertex_indices_.reserve(nb_vertices_ * 8);
 		for (unsigned int i = 0; i < nb_faces_; ++i)
 		{
-			do
-			{
-				std::getline(fp, line);
-			} while (line.size() == 0);
-
-			std::stringstream oss(line);
-
-			unsigned short n;
-			oss >> n;
+			unsigned int n = read_uint();
 			faces_nb_edges_.push_back(n);
 			for (unsigned int j = 0; j < n; ++j)
 			{
-				unsigned int index;
-				oss >> index;
+				unsigned int index = read_uint();
 				faces_vertex_indices_.push_back(vertices_id[index]);
 			}
+
 		}
 
 		return true;
 	}
 
 	template <typename VEC3>
+	bool import_OFF_BIN(std::ifstream& fp)
+	{
+		char buffer1[12];
+		fp.read(buffer1,12);
+
+		nb_vertices_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1)));
+		nb_faces_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
+		nb_edges_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
+
+
+		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
+
+
+		static const unsigned int BUFFER_SZ = 1024*1024;
+		float* buff_pos = new float[3*BUFFER_SZ];
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(nb_vertices_);
+
+		unsigned j = BUFFER_SZ;
+		for (unsigned int i = 0; i < nb_vertices_; ++i,++j)
+		{
+			if (j == BUFFER_SZ)
+			{
+				j = 0;
+				// read from file into buffer
+				if (i+BUFFER_SZ < nb_vertices_)
+					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*BUFFER_SZ);
+				else
+					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*(nb_vertices_-i));
+
+				//endian
+				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
+				for (unsigned int i=0; i< 3*BUFFER_SZ;++i)
+				{
+					*ptr = swap_endianness_system_big(*ptr);
+					++ptr;
+				}
+			}
+
+			VEC3 pos{buff_pos[3*j], buff_pos[3*j+1], buff_pos[3*j+2]};
+
+			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+			(*position)[vertex_id] = pos;
+
+			vertices_id.push_back(vertex_id);
+		}
+
+		delete[] buff_pos;
+
+		// read faces (vertex indices)
+
+		unsigned int* buff_ind = new unsigned int[BUFFER_SZ];
+		faces_nb_edges_.reserve(nb_faces_);
+		faces_vertex_indices_.reserve(nb_vertices_ * 8);
+
+		unsigned int* ptr = buff_ind;
+		unsigned int nb_read = BUFFER_SZ;
+		for (unsigned int i = 0; i < nb_faces_; ++i)
+		{
+			if (nb_read == BUFFER_SZ)
+			{
+				fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
+				ptr = buff_ind;
+				for (unsigned int i=0; i< BUFFER_SZ;++i)
+				{
+					*ptr = swap_endianness_system_big(*ptr);
+					++ptr;
+				}
+				ptr = buff_ind;
+				nb_read =0;
+			}
+
+			unsigned int n = *ptr++;
+			nb_read++;
+
+			faces_nb_edges_.push_back(n);
+			for (unsigned int j = 0; j < n; ++j)
+			{
+				if (nb_read == BUFFER_SZ)
+				{
+					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
+					ptr = buff_ind;
+					for (unsigned int i=0; i< BUFFER_SZ;++i)
+					{
+						*ptr = swap_endianness_system_big(*ptr);
+						++ptr;
+					}
+					ptr = buff_ind;
+					nb_read=0;
+				}
+				unsigned int index = *ptr++;
+				nb_read++;
+				faces_vertex_indices_.push_back(vertices_id[index]);
+			}
+		}
+
+		delete[] buff_ind;
+
+		return true;
+	}
+
+
+	template <typename VEC3>
 	bool import_OBJ(std::ifstream& fp)
 	{
+		using Scalar = typename VEC3::Scalar;
+
 		ChunkArray<VEC3>* position =
 			vertex_attributes_.template add_attribute<VEC3>("position");
 
@@ -366,7 +494,7 @@ protected:
 				oss >> y;
 				oss >> z;
 
-				VEC3 pos{x, y, z};
+				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
 				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
@@ -436,6 +564,74 @@ protected:
 
 		return true;
 	}
+
+
+
+	template <typename VEC3>
+	bool import_ply(const std::string& filename)
+	{
+
+		PlyImportData pid;
+
+		if (! pid.read_file(filename) )
+		{
+			std::cerr << "Unable to open file " << filename << std::endl;
+			return false;
+		}
+
+		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* color;
+		if (pid.has_colors())
+		{
+			 color = vertex_attributes_.template add_attribute<VEC3>("color");
+		}
+
+		nb_vertices_ = pid.nb_vertices();
+		nb_faces_ = pid.nb_faces();
+
+		
+		// read vertices position
+		std::vector<unsigned int> vertices_id;
+		vertices_id.reserve(nb_vertices_);
+
+		for (unsigned int i = 0; i < nb_vertices_; ++i)
+		{
+			VEC3 pos;
+			pid.vertex_position(i, pos);
+
+			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
+			(*position)[vertex_id] = pos;
+
+			vertices_id.push_back(vertex_id);
+
+			if (pid.has_colors())
+			{
+				VEC3 rgb;
+				pid.vertex_color_float32(i, rgb);
+
+				(*color)[vertex_id] = pos;
+			}
+		}
+
+		// read faces (vertex indices)
+		faces_nb_edges_.reserve(nb_faces_);
+		faces_vertex_indices_.reserve(nb_vertices_ * 8);
+		for (unsigned int i = 0; i < nb_faces_; ++i)
+		{
+			unsigned int n = pid.get_face_valence(i);
+			faces_nb_edges_.push_back(n);
+			int* indices = pid.get_face_indices(i);
+			for (unsigned int j = 0; j < n; ++j)
+			{
+				unsigned int index = (unsigned int)(indices[j]);
+				faces_vertex_indices_.push_back(vertices_id[index]);
+			}
+		}
+
+		return true;
+	}
+
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))

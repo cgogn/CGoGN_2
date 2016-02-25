@@ -41,7 +41,7 @@ template <Orbit ORBIT, typename MAP>
 bool is_well_embedded(const MAP& map)
 {
 	bool result = true;
-	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>(
+	map.foreach_cell(
 		[&] (Cell<ORBIT> c) { result = map.template is_well_embedded<ORBIT>(c); },
 		[] (Dart) { return true; }
 	);
@@ -59,13 +59,13 @@ template <Orbit ORBIT, typename MAP>
 bool is_orbit_embedding_unique(MAP& map)
 {
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-	cgogn_message_assert(map.template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+	cgogn_message_assert(map.template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 	typename MAP::template AttributeHandler<unsigned int, ORBIT> counter = map.template add_attribute<unsigned int, ORBIT>("__tmp_counter");
 	for (unsigned int& i : counter) i = 0;
 
 	bool result = true;
-	map.template foreach_cell<ORBIT, FORCE_DART_MARKING>([&] (Cell<ORBIT> c)
+	map.template foreach_cell<FORCE_DART_MARKING>([&] (Cell<ORBIT> c)
 	{
 		if (counter[c] > 0)
 		{
@@ -91,7 +91,7 @@ template <Orbit ORBIT, typename MAP>
 bool is_container_well_referenced(MAP& map)
 {
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-	cgogn_message_assert(map.template is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+	cgogn_message_assert(map.template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 	typename MAP::template AttributeHandler<unsigned int, ORBIT> counter = map.template add_attribute<unsigned int, ORBIT>("__tmp_counter");
 

@@ -29,6 +29,7 @@
 #include <QOpenGLFunctions>
 
 #include <core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
+#include <geometry/algos/ear_triangulation.h>
 
 namespace cgogn
 {
@@ -74,8 +75,8 @@ public:
 	template <typename MAP>
 	void init_points(MAP& m, std::vector<unsigned int>& table_indices)
 	{
-//		table_indices.reserve(m.get_nb_darts()/6);
-		m.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
+		//		table_indices.reserve(m.get_nb_darts()/6);
+		m.foreach_cell([&] (typename MAP::Vertex v)
 		{
 			table_indices.push_back(m.get_embedding(v));
 		});
@@ -84,45 +85,40 @@ public:
 	template <typename MAP>
 	void init_lines(MAP& m, std::vector<unsigned int>& table_indices)
 	{
-//		table_indices.reserve(m.get_nb_darts()/2);
-		m.template foreach_cell<MAP::EDGE>([&] (typename MAP::Edge e)
+		using Vertex = typename MAP::Vertex;
+		using Edge = typename MAP::Edge;
+		//		table_indices.reserve(m.get_nb_darts()/2);
+		m.foreach_cell([&] (Edge e)
 		{
-			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(e.dart));
-			table_indices.push_back(m.template get_embedding<MAP::VERTEX>(m.phi1(e.dart)));
+			table_indices.push_back(m.get_embedding(Vertex(e.dart)));
+			table_indices.push_back(m.get_embedding(Vertex(m.phi1(e.dart))));
 		});
 	}
 
-	template <typename MAP>
-	void init_triangles(MAP& m, std::vector<unsigned int>& table_indices)
+	template <typename VEC3, typename MAP>
+	void init_triangles(MAP& m, std::vector<unsigned int>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
+		using Vertex = typename MAP::Vertex;
+		using Face = typename MAP::Face;
 		// reserve more ?
-//		table_indices.reserve(m.get_nb_darts()/3);
-		m.template foreach_cell<MAP::FACE>([&] (typename MAP::Face f)
+		//		table_indices.reserve(m.get_nb_darts()/3);
+		m.foreach_cell([&] (Face f)
 		{
-			Dart d = f;
-			Dart d1 = m.phi1(d);
-			Dart d2 = m.phi1(d1);
-			unsigned int d_e = m.template get_embedding<MAP::VERTEX>(d);
-			unsigned int d1_e = m.template get_embedding<MAP::VERTEX>(d1);
-			unsigned int d2_e;
-			do
+			if (m.has_degree(f,3))
 			{
-				d2_e = m.template get_embedding<MAP::VERTEX>(d2);
-
-				table_indices.push_back(d_e);
-				table_indices.push_back(d1_e);
-				table_indices.push_back(d2_e);
-
-				d1 = d2;
-				d2 = m.phi1(d1);
-				d1_e = d2_e;
-
-			} while (d2 != d);
+				table_indices.push_back(m.get_embedding(Vertex(f.dart)));
+				table_indices.push_back(m.get_embedding(Vertex(m.phi1(f.dart))));
+				table_indices.push_back(m.get_embedding(Vertex(m.phi1(m.phi1(f.dart)))));
+			}
+			else
+			{
+				cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,table_indices);
+			}
 		});
 	}
 
-	template <typename MAP>
-	void init_primitives(MAP& m, DrawingType prim)
+	template <typename VEC3, typename MAP>
+	void init_primitives(MAP& m, DrawingType prim, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
 		std::vector<unsigned int> table_indices;
 
@@ -135,7 +131,7 @@ public:
 				init_lines(m, table_indices);
 				break;
 			case TRIANGLES:
-				init_triangles(m, table_indices);
+				init_triangles<VEC3>(m, table_indices, position);
 				break;
 			default:
 				break;

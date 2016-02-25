@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
+#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
 #define MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_
 
 #include <multiresolution/cph/ihcmap2_regular.h>
@@ -29,6 +29,6 @@
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular<DefaultMapTraits>;
+template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular_T<DefaultMapTraits, IHCMap2RegularType<DefaultMapTraits>>;
 
 } // namespace cgogn

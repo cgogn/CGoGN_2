@@ -39,9 +39,8 @@ class AttributeHandlerGen
 {
 public:
 
-	typedef AttributeHandlerGen<DATA_TRAITS> Self;
-
-	typedef MapBaseData<DATA_TRAITS> MapData;
+	using Self = AttributeHandlerGen<DATA_TRAITS>;
+	using MapData = MapBaseData<DATA_TRAITS>;
 
 protected:
 
@@ -111,10 +110,9 @@ class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
 {
 public:
 
-	typedef AttributeHandlerGen<DATA_TRAITS>          Inherit;
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Self;
-
-	typedef typename Inherit::MapData                 MapData;
+	using Inherit = AttributeHandlerGen<DATA_TRAITS>;
+	using Self = AttributeHandlerOrbit<DATA_TRAITS, ORBIT>;
+	using MapData = typename Inherit::MapData;
 
 	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
 
@@ -196,11 +194,9 @@ class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
 {
 public:
 
-	typedef AttributeHandlerOrbit<DATA_TRAITS, ORBIT> Inherit;
-	typedef AttributeHandler<DATA_TRAITS, T, ORBIT>   Self;
-
-	typedef T value_type;
-
+	using Inherit = AttributeHandlerOrbit<DATA_TRAITS, ORBIT>;
+	using Self = AttributeHandler<DATA_TRAITS, T, ORBIT>;
+	using value_type =  T;
 	using MapData =     typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -347,6 +343,15 @@ public:
 	TChunkArray const* get_data() const
 	{
 		return chunk_array_;
+	}
+
+	/**
+	 * \brief affect a value to all elements of container (even holes)
+	 * @param val value to affect
+	 */
+	inline void set_all_container_values(const T& val)
+	{
+		chunk_array_->set_all_values(val);
 	}
 
 	/**

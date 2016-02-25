@@ -49,9 +49,9 @@ class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
-	typedef ChunkArray<CHUNKSIZE, T> Self;
-	typedef T value_type;
+	using Inherit = ChunkArrayGen<CHUNKSIZE>;
+	using Self = ChunkArray<CHUNKSIZE, T>;
+	using value_type = T;
 
 protected:
 
@@ -381,6 +381,15 @@ public:
 		cgogn_assert(i / CHUNKSIZE < table_data_.size());
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
+
+	inline void set_all_values( const T& v)
+	{
+		for(T* chunk : table_data_)
+		{
+			for(unsigned int i=0; i<CHUNKSIZE; ++i)
+				*chunk++ = v;
+		}
+	}
 };
 
 /**
@@ -391,9 +400,9 @@ class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Inherit;
-	typedef ChunkArray<CHUNKSIZE, bool> Self;
-	typedef unsigned int value_type;
+	using Inherit = ChunkArrayGen<CHUNKSIZE>;
+	using Self = ChunkArray<CHUNKSIZE, bool>;
+	using value_type = unsigned int;
 
 protected:
 

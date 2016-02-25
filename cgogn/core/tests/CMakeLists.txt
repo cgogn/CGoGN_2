@@ -6,6 +6,7 @@ set(SOURCE_FILES
 	basic/dart_test.cpp
 	basic/cell_test.cpp
 	container/chunk_array_container_test.cpp
+	cmap/cmap1_topo_test.cpp
 	cmap/cmap1_test.cpp
 	utils/name_types_test.cpp
 

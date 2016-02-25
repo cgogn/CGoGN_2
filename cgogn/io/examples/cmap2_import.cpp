@@ -18,7 +18,8 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 
 using Map2 = cgogn::CMap2<MyMapTraits>;
 
-using Vec3 = Eigen::Vector3d;
+//using Vec3 = Eigen::Vector3d;
+using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -60,34 +61,34 @@ int main(int argc, char** argv)
 		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
 
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::VERTEX>("position");
-		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::VERTEX>("normal");
-		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::FACE>("normal");
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
-		map.enable_topo_cache<Map2::FACE>();
-		map.enable_topo_cache<Map2::VERTEX>();
-		map.enable_topo_cache<Map2::EDGE>();
+		map.enable_topo_cache<Map2::Face::ORBIT>();
+		map.enable_topo_cache<Map2::Vertex::ORBIT>();
+		map.enable_topo_cache<Map2::Edge::ORBIT>();
 
 
-		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::VERTEX>(map) << std::endl;
-		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::FACE>(map) << std::endl;
+		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::VERTEX>(map) << std::endl;
-		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::FACE>(map) << std::endl;
+		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::VERTEX>(map) << std::endl;
-		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::FACE>(map) << std::endl;
+		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
+		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
 
 
 		unsigned int nb_faces = 0;
-		map.foreach_cell<Map2::FACE>([&nb_faces] (Map2::Face) { nb_faces++; });
+		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });
 		std::cout << "nb faces -> " << nb_faces << std::endl;
 
 		unsigned int nb_faces_2 = 0;
 		std::vector<unsigned int> nb_faces_per_thread(cgogn::NB_THREADS - 1);
 		for (unsigned int& n : nb_faces_per_thread)
 			n = 0;
-		map.parallel_foreach_cell<Map2::FACE>([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
+		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face, unsigned int thread_index)
 		{
 			nb_faces_per_thread[thread_index]++;
 		});

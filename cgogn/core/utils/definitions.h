@@ -130,10 +130,9 @@
 
 #ifdef _MSC_VER
 	// no warning with VS 2013 and \W4
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 #endif
-
 
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)

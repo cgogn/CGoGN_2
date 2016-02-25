@@ -25,82 +25,43 @@
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
+#include <core/cmap/map_traits.h>
+#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
-
-// class CMap1TopoMock : public CMap1<DefaultMapTraits> {
-// public:
-//     MOCK_METHOD0( add_dart, Dart() );
-//     MOCK_METHOD1( cut_edge_topo, Dart(Dart d) );
-//     MOCK_METHOD1( add_face_topo, Dart(unsigned int nb_edges) );
-// };
-
-class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
+class CMap1Test: public ::testing::Test
 {
-
-	using CMap1 = cgogn::CMap1<DefaultMapTraits>;
 
 public:
-	CMap1 cmap_;
-	Dart d_;
+	using myCMap1 = CMap1<DefaultMapTraits>;
+	using Vertex = myCMap1::Vertex;
+	using Face = myCMap1::Face;
 
 protected:
+	myCMap1 cmap_;
 
-	CMap1TopoTest()
+	CMap1Test()
 	{}
 
-	void SetUp()
-	{
-		d_ = this->add_face_topo(10);
-	}
 
-	void TearDown()
-	{}
 };
 
-TEST_F(CMap1TopoTest, testFaceDegree)
+TEST_F(CMap1Test, addFace)
 {
-	EXPECT_EQ(10, this->degree(d_));
+	cmap_.add_attribute<int, Face::ORBIT>("int_f");
+	cmap_.add_attribute<int, Vertex::ORBIT>("int_v");
+	Face f = cmap_.add_face(10);
+
+	cmap_.split_vertex(f.dart);
+
+
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_container_well_referenced<Face::ORBIT>(cmap_));
+
 }
-
-TEST_F(CMap1TopoTest, testCutEdge)
-{
-	Dart d1 = this->phi1(d_);
-	Dart e = this->cut_edge_topo(d_);
-
-	EXPECT_EQ(d1.index, this->phi1(e).index);
-	EXPECT_EQ(d_.index, this->phi_1(e).index);
-	EXPECT_EQ(11, this->degree(d_));
-}
-
-TEST_F(CMap1TopoTest, testUncutEdge)
-{
-	Dart e = this->phi1(d_);
-	Dart d1 = this->phi1(e);
-	this->uncut_edge_topo(e);
-
-	EXPECT_EQ(d1.index, this->phi1(d_).index);
-	EXPECT_EQ(10, this->degree(d_));
-}
-
-TEST_F(CMap1TopoTest, testSplitFace)
-{
-	Dart e = this->phi1(d_);
-	Dart d1 = this->phi1(e);
-	this->uncut_edge_topo(e);
-
-	EXPECT_EQ(d1.index, this->phi1(d_).index);
-	EXPECT_EQ(10, this->degree(d_));
-}
-
-// TEST_F(CMap1TopoTest, testDeleteFace)
-// {
-// 	this->delete_face_topo(d_);
-//  	EXPECT_EQ(0, this->degree(d_));
-// }
-
-
 
 } // namespace cgogn
