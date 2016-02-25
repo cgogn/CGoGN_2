@@ -474,9 +474,7 @@ protected:
 				}
 
 				if (this->template is_embedded<Face>())
-				{
 					this->new_orbit_embedding(new_face);
-				}
 
 				if (this->template is_embedded<Volume>())
 				{

@@ -181,7 +181,7 @@ protected:
 		std::vector<Dart> m_tableVertDarts;
 		m_tableVertDarts.reserve(n);
 
-		// creation of triangles around circunference and storing vertices
+		// creation of triangles around circumference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
 			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
 
@@ -226,9 +226,7 @@ protected:
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
 		for (unsigned int i = 0u; i < n; ++i)
-		{
 			m_tableVertDarts.emplace_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-		}
 
 		// sewing the quads
 		for (unsigned int i = 0u; i < n-1u; ++i)
@@ -237,10 +235,10 @@ protected:
 			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
 			this->phi2_sew(d,e);
 		}
-		//sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0]), this->phi_1(m_tableVertDarts[n-1u]));
+		// sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
 
-		//sewing the top & bottom faces
+		// sewing the top & bottom faces
 		Dart top = this->Inherit::Inherit::add_face_topo(n);
 		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = top;
@@ -252,7 +250,7 @@ protected:
 			bottom = this->phi_1(bottom);
 		}
 
-		//return a dart from the base
+		// return a dart from the base
 		return dres;
 	}
 
