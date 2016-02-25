@@ -25,6 +25,7 @@
 #include <QMatrix4x4>
 
 #include <qoglviewer.h>
+#include <QKeyEvent>
 
 #include <core/cmap/cmap2.h>
 
@@ -63,6 +64,8 @@ public:
 
 	virtual void draw();
 	virtual void init();
+
+	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surfaceMesh);
 	virtual ~Viewer();
 
@@ -80,13 +83,20 @@ private:
 	cgogn::rendering::VBO* vbo_color_;
 
 
-	cgogn::rendering::ShaderSimpleColor* shader1_;
-	cgogn::rendering::ShaderFlat* shader2_;
-	cgogn::rendering::ShaderVectorPerVertex* shader3_;
+	cgogn::rendering::ShaderSimpleColor* shader_vertex_edge_;
+	cgogn::rendering::ShaderFlat* shader_flat_;
+	cgogn::rendering::ShaderVectorPerVertex* shader_normal_;
 	cgogn::rendering::ShaderPhong* shader_phong_;
 
 	cgogn::rendering::Drawer* drawer_;
-	cgogn::rendering::Drawer* drawer2_;
+//	cgogn::rendering::Drawer* drawer2_;
+
+	bool phong_rendering_;
+	bool flat_rendering_;
+	bool vertices_rendering_;
+	bool edge_rendering_;
+	bool normal_rendering_;
+	bool bb_rendering_;
 
 };
 
@@ -118,9 +128,9 @@ Viewer::~Viewer()
 	delete vbo_pos_;
 	delete vbo_norm_;
 	delete vbo_color_;
-	delete shader1_;
-	delete shader2_;
-	delete shader3_;
+	delete shader_vertex_edge_;
+	delete shader_flat_;
+	delete shader_normal_;
 	delete shader_phong_;
 }
 
@@ -132,10 +142,48 @@ Viewer::Viewer() :
 	render_(nullptr),
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
-	shader1_(nullptr),
-	shader2_(nullptr),
-	shader3_(nullptr)
+	shader_vertex_edge_(nullptr),
+	shader_flat_(nullptr),
+	shader_normal_(nullptr),
+	phong_rendering_(true),
+	flat_rendering_(false),
+	vertices_rendering_(false),
+	edge_rendering_(false),
+	normal_rendering_(false),
+	bb_rendering_(true)
 {}
+
+void Viewer::keyPressEvent(QKeyEvent *ev)
+{
+	switch (ev->key()) {
+		case Qt::Key_P:
+			phong_rendering_ = true;
+			flat_rendering_ = false;
+			break;
+		case Qt::Key_F:
+			flat_rendering_ = true;
+			phong_rendering_ = false;
+			break;
+		case Qt::Key_N:
+			normal_rendering_ = !normal_rendering_;
+			break;
+		case Qt::Key_E:
+			edge_rendering_ = !edge_rendering_;
+			break;
+		case Qt::Key_V:
+			vertices_rendering_ = !vertices_rendering_;
+			break;
+		case Qt::Key_B:
+			bb_rendering_ = !bb_rendering_;
+			break;
+		case Qt::Key_Escape:
+			exit(0);
+			break;
+		default:
+			break;
+	}
+	update();
+}
 
 void Viewer::draw()
 {
@@ -144,46 +192,61 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-//	shader1_->bind();
-//	shader1_->set_matrices(proj,view);
-//	shader1_->bind_vao(0);
+	shader_vertex_edge_->bind();
+	shader_vertex_edge_->set_matrices(proj,view);
+	shader_vertex_edge_->bind_vao(0);
 
-//	glPointSize(5.0f);
-//	shader1_->set_color(QColor(255,0,0));
-//	render_->draw(cgogn::rendering::POINTS);
+	if (vertices_rendering_)
+	{
+		glPointSize(3.0f);
+		shader_vertex_edge_->set_color(QColor(255,0,0));
+		render_->draw(cgogn::rendering::POINTS);
+	}
 
-//	shader1_->set_color(QColor(255,255,0));
-//	render_->draw(cgogn::rendering::LINES);
+	if (edge_rendering_)
+	{
+		shader_vertex_edge_->set_color(QColor(255,255,0));
+		render_->draw(cgogn::rendering::LINES);
+	}
 
-//	shader1_->release_vao(0);
-//	shader1_->release();
+	shader_vertex_edge_->release_vao(0);
+	shader_vertex_edge_->release();
 
-//	glEnable(GL_POLYGON_OFFSET_FILL);
-//	glPolygonOffset(1.0f, 1.0f);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1.0f, 1.0f);
 
-//	shader2_->bind();
-//	shader2_->set_matrices(proj,view);
-//	shader2_->bind_vao(0);
-//	render_->draw(cgogn::rendering::TRIANGLES);
-//	shader2_->release_vao(0);
-//	shader2_->release();
+	if (flat_rendering_)
+	{
+		shader_flat_->bind();
+		shader_flat_->set_matrices(proj,view);
+		shader_flat_->bind_vao(0);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		shader_flat_->release_vao(0);
+		shader_flat_->release();
+	}
 
-//	shader3_->bind();
-//	shader3_->set_matrices(proj,view);
-//	shader3_->bind_vao(0);
-//	render_->draw(cgogn::rendering::POINTS);
-//	shader3_->release_vao(0);
-//	shader3_->release();
+	if (phong_rendering_)
+	{
+		shader_phong_->bind();
+		shader_phong_->set_matrices(proj,view);
+		shader_phong_->bind_vao(0);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		shader_phong_->release_vao(0);
+		shader_phong_->release();
+	}
 
-	shader_phong_->bind();
-	shader_phong_->set_matrices(proj,view);
-	shader_phong_->bind_vao(0);
-	render_->draw(cgogn::rendering::TRIANGLES);
-	shader_phong_->release_vao(0);
-	shader_phong_->release();
+	if (normal_rendering_)
+	{
+		shader_normal_->bind();
+		shader_normal_->set_matrices(proj,view);
+		shader_normal_->bind_vao(0);
+		render_->draw(cgogn::rendering::POINTS);
+		shader_normal_->release_vao(0);
+		shader_normal_->release();
+	}
 
-
-	drawer_->callList(proj,view);
+	if (bb_rendering_)
+		drawer_->callList(proj,view);
 }
 
 void Viewer::init()
@@ -210,28 +273,28 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES, vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
-	shader1_ = new cgogn::rendering::ShaderSimpleColor;
-	shader1_->add_vao();
-	shader1_->set_vao(0, vbo_pos_);
+	shader_vertex_edge_ = new cgogn::rendering::ShaderSimpleColor;
+	shader_vertex_edge_->add_vao();
+	shader_vertex_edge_->set_vao(0, vbo_pos_);
 
-	shader2_ = new cgogn::rendering::ShaderFlat;
-	shader2_->add_vao();
-	shader2_->set_vao(0, vbo_pos_);
+	shader_flat_ = new cgogn::rendering::ShaderFlat;
+	shader_flat_->add_vao();
+	shader_flat_->set_vao(0, vbo_pos_);
 
-	shader2_->bind();
-	shader2_->set_front_color(QColor(0,200,0));
-	shader2_->set_back_color(QColor(0,0,200));
-	shader2_->set_ambiant_color(QColor(5,5,5));
-	shader2_->release();
+	shader_flat_->bind();
+	shader_flat_->set_front_color(QColor(0,200,0));
+	shader_flat_->set_back_color(QColor(0,0,200));
+	shader_flat_->set_ambiant_color(QColor(5,5,5));
+	shader_flat_->release();
 
-	shader3_ = new cgogn::rendering::ShaderVectorPerVertex;
-	shader3_->add_vao();
-	shader3_->set_vao(0, vbo_pos_, vbo_norm_);
+	shader_normal_ = new cgogn::rendering::ShaderVectorPerVertex;
+	shader_normal_->add_vao();
+	shader_normal_->set_vao(0, vbo_pos_, vbo_norm_);
 
-	shader3_->bind();
-	shader3_->set_color(QColor(200,0,0));
-	shader3_->set_length(bb_.diag_size()/50);
-	shader3_->release();
+	shader_normal_->bind();
+	shader_normal_->set_color(QColor(200,0,200));
+	shader_normal_->set_length(bb_.diag_size()/50);
+	shader_normal_->release();
 
 
 	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
@@ -239,8 +302,8 @@ void Viewer::init()
 	shader_phong_->set_vao(0, vbo_pos_, vbo_norm_, vbo_color_);
 
 	shader_phong_->bind();
-	shader_phong_->set_front_color(QColor(0,200,0));
-	shader_phong_->set_back_color(QColor(0,0,200));
+//	shader_phong_->set_front_color(QColor(0,200,0));
+//	shader_phong_->set_back_color(QColor(0,0,200));
 	shader_phong_->set_ambiant_color(QColor(5,5,5));
 	shader_phong_->set_double_side(true);
 	shader_phong_->set_specular_color(QColor(255,255,255));
@@ -251,11 +314,11 @@ void Viewer::init()
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
 	drawer_->new_list();
-	drawer_->begin(GL_LINES);
-	drawer_->color3f(0.5,0.5,0.5);
-	drawer_->vertex3fv(bb_.min().data()); // fv work with float & double
-	drawer_->vertex3fv(bb_.max().data());
-	drawer_->end();
+//	drawer_->begin(GL_LINES);
+//	drawer_->color3f(0.5,0.5,0.5);
+//	drawer_->vertex3fv(bb_.min().data()); // fv work with float & double
+//	drawer_->vertex3fv(bb_.max().data());
+//	drawer_->end();
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,1.0,1.0);
 		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
