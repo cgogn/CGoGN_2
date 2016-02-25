@@ -201,7 +201,7 @@ public:
 	 * \param d : a vertex
 	 * \return The inserted vertex
 	 * A new vertex is inserted after v in the PHI1 orbit.
-	 * If the map has DART or FACE attributes, the inserted darts
+	 * If the map has Vertex or Face attributes, the inserted cells
 	 * are automatically embedded on new attribute elements.
 	 */
 	inline Vertex split_vertex(Vertex v)
@@ -214,7 +214,7 @@ public:
 			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
-			this->template copy_embedding<Face::ORBIT>(nv.dart,v.dart);
+			this->template copy_embedding<Face>(nv.dart, v.dart);
 
 		return nv;
 	}
@@ -254,10 +254,10 @@ protected:
 public:
 
 	/*!
-	 * \brief Add an embedded face in the map.
-	 * \param size : the number of darts in the built face
-	 * \return A dart of the built face. If the map has DART or FACE attributes,
-	 * the inserted darts are automatically embedded on new attribute elements.
+	 * \brief Add a face in the map.
+	 * \param size : the number of edges in the built face
+	 * \return The built face. If the map has Vertex or Face attributes,
+	 * the new inserted cells are automatically embedded on new attribute elements.
 	 */
 	Face add_face(unsigned int size)
 	{
@@ -266,12 +266,15 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
-			foreach_dart_of_orbit(f, [this] (Dart v)
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->new_orbit_embedding(Vertex(v));
+				this->new_orbit_embedding(Vertex(d));
 			});
+		}
 
-		if (this->template is_embedded<Face>()) this->new_orbit_embedding(f);
+		if (this->template is_embedded<Face>())
+			this->new_orbit_embedding(f);
 
 		return f;
 	}
@@ -357,11 +360,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
-
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
-					  "Orbit not supported in a CMap1");
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1, "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
@@ -392,13 +392,9 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart),
-					  "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool),
-					  "Wrong function return type");
-
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1,
-					  "Orbit not supported in a CMap1");
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1, "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
 		{
@@ -423,8 +419,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex),
-					  "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
 };
@@ -448,8 +443,6 @@ extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<D
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
-
-
 
 } // namespace cgogn
 
