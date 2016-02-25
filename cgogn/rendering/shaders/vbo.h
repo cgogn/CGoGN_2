@@ -82,7 +82,11 @@ public:
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
 			buffer_.allocate(total * sizeof(float));
 		nb_vectors_ = nb_vectors;
-		vector_dimension_ = vector_dimension;
+		if (vector_dimension != vector_dimension_)
+		{
+			vector_dimension_ = vector_dimension;
+			std::cout << " Warning, changing the VBO vector_dimension"<< std::endl;
+		}
 		buffer_.release();
 	}
 
@@ -124,9 +128,17 @@ public:
 	}
 };
 
+/**
+ * @brief update vbo from one AttributeHandler
+ * @param attr AttributeHandler (must contain float or vec<float>
+ * @param vbo vbo to update
+ * @param convert conversion lambda
+ */
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO& vbo)
 {
+	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
+
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 
 	std::vector<void*> chunk_addr;
@@ -166,32 +178,38 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 		vbo.release_pointer();
 		delete[] float_buffer;
 	}
-	else
-	{
-		cgogn_assert_not_reached("only float or double allowed for vbo");
-	}
 }
 
 
-
+/**
+ * @brief update vbo from one AttributeHandler with conversion lambda
+ * @param attr AttributeHandler
+ * @param vbo vbo to update
+ * @param convert conversion lambda
+ */
 template <typename ATTR, typename FUNC>
 void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 {
+	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
 
-	const typename ATTR::TChunkArray* ca = attr.get_data();
+	// check that convert param  is compatible with attr
+	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type InputConvert;
+	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
+	// get chunk data pointers
+	const typename ATTR::TChunkArray* ca = attr.get_data();
 	std::vector<void*> chunk_addr;
 	unsigned int byte_chunk_size;
 	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 
+	// check that out of convert is float or std::array<float,2/3/4>
 	typedef std::array<float,2> Vec2f;
 	typedef std::array<float,3> Vec3f;
 	typedef std::array<float,4> Vec4f;
+	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
-	typedef typename function_traits<FUNC>::result_type OutputConvert;
-	typedef inside_type(ATTR) InputConvert;
-
+	// set vec dimension
 	unsigned int vec_dim = 0;
 	if (check_func_return_type(FUNC,float) )
 		vec_dim = 1;
@@ -201,14 +219,11 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 		vec_dim = 3;
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
-	else
-	{
-		cgogn_message_assert(false, "update_vbo: convert output must be float or std::array<float,2/3/4>" );
-	}
 
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
+	typedef typename function_traits<FUNC>::result_type OutputConvert;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
 	for (unsigned int i = 0; i < nb_chunks; ++i)
 	{
@@ -219,11 +234,32 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	vbo.release_pointer();
 }
 
+
+/**
+ * @brief update vbo from two AttributeHandlers with conversion lambda
+ * @param attr first AttributeHandler
+ * @param attr2 second AttributeHandler
+ * @param vbo vbo to update
+ * @param convert conversion lambda
+ */
 template <typename ATTR, typename ATTR2, typename FUNC>
 void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& convert)
 {
+	// check that convert has 2 param
 	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arg");
 
+	//check that attr & attr2 are on same orbit
+	static_assert(ATTR::orbit_value == ATTR2::orbit_value, "attributes must be on same orbit");
+
+	// check that convert param 1 is compatible with attr
+	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type InputConvert;
+	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
+
+	// check that convert param 2 is compatible with attr2
+	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<1>::type>::type >::type InputConvert2;
+	static_assert(std::is_same<InputConvert,inside_type(ATTR2) >::value, "wrong parameter 2");
+
+	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 	std::vector<void*> chunk_addr;
 	unsigned int byte_chunk_size;
@@ -231,17 +267,15 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 
 	const typename ATTR::TChunkArray* ca2 = attr2.get_data();
 	std::vector<void*> chunk_addr2;
-	unsigned int nb_chunks2 = ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
+	ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
 
-
+	// check that out of convert is float or std::array<float,2/3/4>
 	typedef std::array<float,2> Vec2f;
 	typedef std::array<float,3> Vec3f;
 	typedef std::array<float,4> Vec4f;
+	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
-	typedef typename function_traits<FUNC>::result_type OutputConvert;
-	typedef inside_type(ATTR) InputConvert;
-	typedef inside_type(ATTR) InputConvert2;
-
+	// set vec dimension
 	unsigned int vec_dim = 0;
 	if (check_func_return_type(FUNC,float) )
 		vec_dim = 1;
@@ -251,14 +285,13 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 		vec_dim = 3;
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
-	else
-	{
-		cgogn_message_assert(false, "update_vbo: convert output must be float or std::array<float,2/3/4>" );
-	}
 
+	// allocate vbo
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
+	// out type conversion
+	typedef typename function_traits<FUNC>::result_type OutputConvert;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
 	for (unsigned int i = 0; i < nb_chunks; ++i)
 	{

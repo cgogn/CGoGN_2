@@ -106,7 +106,7 @@ void Viewer::import(const std::string& surfaceMesh)
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
-	setSceneRadius(bb_.diag_size());
+	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
@@ -184,7 +184,6 @@ void Viewer::draw()
 
 
 	drawer_->callList(proj,view);
-	drawer2_->callList(proj,view);
 }
 
 void Viewer::init()
@@ -197,15 +196,11 @@ void Viewer::init()
 	vbo_norm_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
 
+	// fill a color vbo with abs of normals
 	vbo_color_ = new cgogn::rendering::VBO(3);
-//	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_,[] (const Vec3& n) -> std::array<float,3>
-//	{
-//		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
-//	});
-
-	cgogn::rendering::update_vbo(vertex_normal_, vertex_normal_, *vbo_color_, [] (const Vec3& n, const Vec3& n2) -> std::array<float,3>
+	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_,[] (const Vec3& n) -> std::array<float,3>
 	{
-		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n2[2]))};
+		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 
@@ -284,28 +279,6 @@ void Viewer::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = new cgogn::rendering::Drawer;
-	drawer2_->new_list();
-	drawer2_->begin(GL_TRIANGLES);
-		drawer2_->color3f(0.0,1.0,1.0);
-		drawer2_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
-		drawer2_->color3f(1.0,1.0,0.0);
-		drawer2_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.min()[2]);
-		drawer2_->color3f(1.0,0.0,1.0);
-		drawer2_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.min()[2]);
-	drawer2_->end();
-
-	drawer2_->pointSize(5.0);
-	drawer2_->begin(GL_POINTS);
-		drawer2_->color3f(0.0,1.0,1.0);
-		drawer2_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.max()[2]);
-		drawer2_->color3f(1.0,1.0,0.0);
-		drawer2_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.max()[2]);
-		drawer2_->color3f(1.0,0.0,1.0);
-		drawer2_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
-	drawer2_->end();
-
-	drawer2_->end_list();
 }
 
 int main(int argc, char** argv)
