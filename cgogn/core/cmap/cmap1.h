@@ -266,10 +266,12 @@ public:
 		Face f = add_face_topo(size);
 
 		if (this->template is_embedded<Vertex>())
+		{
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(Vertex(d));
 			});
+		}
 
 		if (this->template is_embedded<Face>())
 			this->new_orbit_embedding(f);
