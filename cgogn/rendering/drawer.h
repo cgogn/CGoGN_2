@@ -28,6 +28,7 @@
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/dll.h>
+#include <QOpenGLFunctions_3_3_Core>
 
 //#include <geometry/types/vec.h>
 namespace cgogn
@@ -37,7 +38,7 @@ namespace rendering
 {
 
 
-class CGOGN_RENDERING_API Drawer
+class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
 {
 	struct PrimParam
 	{
@@ -65,6 +66,8 @@ protected:
 	float current_size_;
 	static ShaderColorPerVertex* shader_cpv_;
 
+	QOpenGLFunctions_3_3_Core* ogl33_;
+
 public:
 
 	/**
@@ -72,7 +75,7 @@ public:
 	 * @param lineMode 0:simple thin Line / 1:line with possible width /2:3D Lines
 	 * @Warning need OpenGL context
 	 */
-	Drawer();
+	Drawer(QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
 	 * release buffers and shader

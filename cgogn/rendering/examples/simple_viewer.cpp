@@ -249,7 +249,7 @@ void Viewer::init()
 
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::Drawer;
+	drawer_ = new cgogn::rendering::Drawer(this);
 	drawer_->new_list();
 	drawer_->begin(GL_LINES);
 	drawer_->color3f(0.5,0.5,0.5);

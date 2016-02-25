@@ -36,7 +36,8 @@ namespace rendering
 
 ShaderColorPerVertex* Drawer::shader_cpv_= NULL;
 
-Drawer::Drawer() :
+Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
+	ogl33_(ogl33),
 	current_size_(1.0f)
 {
 	vbo_pos_ = new VBO(3);
@@ -145,7 +146,7 @@ void Drawer::end_list()
 
 void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+//	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
 	if (begins_.empty())
 		return;
@@ -155,19 +156,18 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 	shader_cpv_->bind_vao(vao_);
 	for (auto& pp : begins_point_)
 	{
-		glPointSize(pp.width);
-		ogl->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		ogl33_->glPointSize(pp.width);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
 	for (auto& pp : begins_line_)
 	{
-		glLineWidth(3.0);
-		ogl->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
 	for (auto& pp : begins_face_)
 	{
-		ogl->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
 	shader_cpv_->release_vao(vao_);

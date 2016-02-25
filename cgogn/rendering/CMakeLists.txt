@@ -16,6 +16,7 @@ set(HEADER_FILES
 	shaders/shader_flat.h
 	shaders/shader_vector_per_vertex.h
 	shaders/shader_phong.h
+	shaders/shader_bold_line.h
 	drawer.h
 	)
 
@@ -26,6 +27,7 @@ set(SOURCE_FILES
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
 	shaders/shader_phong.cpp
+	shaders/shader_bold_line.cpp
 	drawer.cpp
 	)
 
