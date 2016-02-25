@@ -37,8 +37,7 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-//using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-using StdArray = Eigen::Vector3d;
+using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3d = Eigen::Vector3d;
 
 using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
