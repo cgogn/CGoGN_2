@@ -31,6 +31,7 @@ set(HEADER_FILES
 	utils/buffers.h
 	utils/definitions.h
 	utils/dll.h
+	utils/endian.h
 	utils/make_unique.h
 	utils/name_types.h
 	utils/serialization.h
@@ -45,9 +46,9 @@ set(SOURCE_FILES
 	basic/dart_marker.cpp
 
 	cmap/map_base_data.cpp
-        cmap/cmap0.cpp
-        cmap/cmap1.cpp
-        cmap/cmap2.cpp
+	cmap/cmap0.cpp
+	cmap/cmap1.cpp
+	cmap/cmap2.cpp
 	cmap/cmap3.cpp
 	cmap/cmap2_builder.cpp
 	cmap/cmap3_builder.cpp
@@ -79,7 +80,6 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/core>
 )
