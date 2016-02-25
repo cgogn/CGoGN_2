@@ -32,13 +32,12 @@
 namespace cgogn
 {
 
+#define NB_MAX 1000
 
 class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 
 public:
-
-	static const int NB_MAX = 1000;
 
 	using Vertex = CMap1TopoTest::Vertex;
 	using Face   = CMap1TopoTest::Face;
@@ -48,7 +47,7 @@ protected:
 	/*!
 	 * \brief Generate a random set of faces.
 	*/
-	CMap1TopoTest() : nb_darts_(0)
+	CMap1TopoTest()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 	}
@@ -69,7 +68,7 @@ protected:
 	}
 
 	int randomDarts() {
-		int n = std::rand() % NB_MAX;
+		int n = 1 + std::rand() % (NB_MAX-1);
 		for (int i = 0; i < n; ++i)
 			tdarts_[i] = add_dart();
 
@@ -79,11 +78,11 @@ protected:
 	int randomFaces() {
 		int count = 0;
 		for (int i = 0; i < NB_MAX; ++i) {
-			int n = std::rand() % 100;
+			int n = 1 + std::rand() % 100;
 			Dart d = add_face_topo(n);
 			count += n;
 
-			for (int k = std::rand() % n; k > 0; ++k)
+			while (std::rand()%10 != 1)
 				d = phi1(d);
 
 			tdarts_[i] = d;
@@ -92,7 +91,6 @@ protected:
 	}
 
 	std::array<Dart, NB_MAX> tdarts_;
-	int nb_darts_;
 };
 
 
@@ -139,79 +137,98 @@ TEST_F(CMap1TopoTest, testPhi1SewUnSew)
 	EXPECT_TRUE(mapIntegrity());
 }
 
-TEST_F(CMap1TopoTest, testFaceDegree)
-{
-	Dart d = this->add_face_topo(10);
-	EXPECT_EQ(10, this->degree(Face(d)));
-}
 
 TEST_F(CMap1TopoTest, testSplitVertex)
 {
-	Dart d = this->add_face_topo(10);
-	Dart d1 = this->phi1(d);
+	int n = randomFaces();
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
 
-	Dart e = this->split_vertex_topo(d);
-
-	EXPECT_EQ(d1.index, this->phi1(e).index);
-	EXPECT_EQ(d.index, this->phi_1(e).index);
-	EXPECT_EQ(11, this->degree(Face(d)));
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = degree(Face(d));
+		split_vertex_topo(d);
+		EXPECT_EQ(degree(Face(d)), k+1);
+	}
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n+NB_MAX);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
 }
 
 TEST_F(CMap1TopoTest, testRemoveVertex)
 {
-	Dart d = this->add_face_topo(10);
-	Dart d_1 = this->phi_1(d);
-	Dart d1 = this->phi1(d);
+	int n = randomFaces();
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
 
-	this->remove_vertex(d);
+	int count = 0;
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = degree(Face(d));
+		if (k > 1) {
+			Dart e = phi1(d);
+			remove_vertex(Vertex(d));
+			++count;
+			EXPECT_EQ(degree(Face(e)), k-1);
+		}
+	}
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n-count);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
+}
 
-	EXPECT_EQ(d1.index, this->phi1(d_1).index);
-	EXPECT_EQ(9, this->degree(Face(d_1)));
+TEST_F(CMap1TopoTest, testAddFace)
+{
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 0);
+	EXPECT_TRUE(mapIntegrity());
+	int n = randomFaces();
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
 }
 
 TEST_F(CMap1TopoTest, testReverseFace)
 {
-	Dart d = this->add_face_topo(10);
-	std::vector<Dart> successors;
+	int n = randomFaces();
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face f = tdarts_[i];
+		unsigned int k = degree(f);
 
-	{
-		Dart dit = d;
-		do
-		{
-			successors.push_back(this->phi1(dit));
-			dit = this->phi1(dit);
-		}
-		while(dit != d);
-	}
+		std::vector<Dart> face_darts;
+		foreach_dart_of_orbit(f, [&] (Dart d) {
+			face_darts.push_back(d);
+		});
 
-	this->reverse_face_topo(d);
+		reverse_face_topo(tdarts_[i]);
+		EXPECT_EQ(degree(Face(tdarts_[i])), k);
 
-	{
-		Dart dit = d;
-		unsigned i = 0;
-		do
-		{
-			EXPECT_EQ(this->phi_1(dit).index, successors[i].index);
-			dit = this->phi_1(dit);
-			++i;
-		}
-		while(dit != d);
+		f = phi1(f);
+		foreach_dart_of_orbit(f, [&] (Dart d) {
+			EXPECT_TRUE(face_darts.back() == d);
+			face_darts.pop_back();
+		});
+		EXPECT_TRUE(face_darts.empty());
 	}
 }
 
-TEST_F(CMap1TopoTest, testForEachDartOfVertex)
+TEST_F(CMap1TopoTest, testDegree)
 {
-
+	Face f = this->add_face_topo(10);
+	EXPECT_EQ(degree(f),10);
 }
 
-TEST_F(CMap1TopoTest, testForEachDartOfEdge)
+TEST_F(CMap1TopoTest, testHasDegree)
 {
-
+	Face f = this->add_face_topo(10);
+	EXPECT_TRUE(has_degree(f,10));
+	EXPECT_FALSE(has_degree(f,0));
+	EXPECT_FALSE(has_degree(f,9));
+	EXPECT_FALSE(has_degree(f,11));
 }
 
-TEST_F(CMap1TopoTest, testForEachDartOfFace)
-{
-
-}
+// The traversal methods are tested through the nb_cells calls and wihtin other methods
 
 } // namespace cgogn

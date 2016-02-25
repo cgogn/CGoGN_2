@@ -221,20 +221,20 @@ public:
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->copy_embedding<Edge::ORBIT>(nf, e);
+			this->template copy_embedding<Edge::ORBIT>(nf, e);
 			this->new_orbit_embedding(Edge(ne));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding<Face::ORBIT>(ne, e);
-			this->copy_embedding<Face::ORBIT>(nf, f);
+			this->template copy_embedding<Face::ORBIT>(ne, e);
+			this->template copy_embedding<Face::ORBIT>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding<Volume::ORBIT>(ne, e);
-			this->copy_embedding<Volume::ORBIT>(nf, e);
+			this->template copy_embedding<Volume::ORBIT>(ne, e);
+			this->template copy_embedding<Volume::ORBIT>(nf, e);
 		}
 
 		return Vertex(ne);
@@ -304,8 +304,8 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->copy_embedding<Vertex::ORBIT>(nd, e);
-			this->copy_embedding<Vertex::ORBIT>(ne, d);
+			this->template copy_embedding<Vertex::ORBIT>(nd, e);
+			this->template copy_embedding<Vertex::ORBIT>(ne, d);
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -315,14 +315,14 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->copy_embedding<Face::ORBIT>(nd, d.dart);
+			this->template copy_embedding<Face::ORBIT>(nd, d.dart);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->copy_embedding<Volume::ORBIT>(nd, d.dart);
-			this->copy_embedding<Volume::ORBIT>(ne, d.dart);
+			this->template copy_embedding<Volume::ORBIT>(nd, d.dart);
+			this->template copy_embedding<Volume::ORBIT>(ne, d.dart);
 		}
 	}
 
@@ -445,13 +445,13 @@ protected:
 				if (this->template is_embedded<Vertex>())
 					foreach_dart_of_orbit(new_face, [this] (Dart d)
 					{
-						this->copy_embedding<Vertex::ORBIT>(d, this->phi1(phi2(d)));
+						this->template copy_embedding<Vertex::ORBIT>(d, this->phi1(phi2(d)));
 					});
 
 				if (this->template is_embedded<Edge>())
 					foreach_dart_of_orbit(new_face, [this] (Dart d)
 					{
-						this->copy_embedding<Edge::ORBIT>(d, phi2(d));
+						this->template copy_embedding<Edge::ORBIT>(d, phi2(d));
 					});
 
 				if (this->template is_embedded<Face>())
@@ -461,10 +461,10 @@ protected:
 
 				if (this->template is_embedded<Volume>())
 				{
-					const unsigned int idx = this->get_embedding<Volume::ORBIT>(d);
+					const unsigned int idx = this->template get_embedding<Volume::ORBIT>(d);
 					foreach_dart_of_orbit(new_face, [this, idx] (Dart e)
 					{
-						this->set_embedding<Volume::ORBIT>(e, idx);
+						this->template set_embedding<Volume::ORBIT>(e, idx);
 					});
 				}
 			}
