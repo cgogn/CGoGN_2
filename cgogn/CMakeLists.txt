@@ -6,4 +6,4 @@ if(CGOGN_USE_QT)
 	add_subdirectory(rendering)
 endif(CGOGN_USE_QT)
 
-#add_subdirectory(multiresolution)
+add_subdirectory(multiresolution)
