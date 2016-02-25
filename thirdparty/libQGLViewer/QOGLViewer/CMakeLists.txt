@@ -1,4 +1,4 @@
-set(QOGLViewer_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
+set(CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
 
 
 PROJECT(QOGLViewer)
@@ -48,7 +48,6 @@ endif()
 
 add_library(QOGLViewer SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(QOGLViewer  ${OPENGL_LIBRARY} Qt5::Widgets)
-
 
 
 
