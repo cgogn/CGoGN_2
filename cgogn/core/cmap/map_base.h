@@ -533,15 +533,6 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
-	template <Orbit ORBIT>
-	inline bool is_boundary(Cell<ORBIT> c)
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		static_assert(ORBIT == ConcreteMap::BOUNDARY, "Cell is not of current map boundary dimension");
-
-		return is_boundary(c.dart);
-	}
-
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
