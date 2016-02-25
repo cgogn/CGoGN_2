@@ -1,4 +1,4 @@
-set(TinyXml2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "TinyXml2 include directory")
+set(CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "TinyXml2 include directory")
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(tinyxml2)
