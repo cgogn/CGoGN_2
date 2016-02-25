@@ -384,6 +384,7 @@ public:
 			{
 				this->new_orbit_embedding(Vertex(d));
 			});
+		}
 
 		if (this->template is_embedded<Edge>())
 		{

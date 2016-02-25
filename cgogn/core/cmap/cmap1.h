@@ -214,7 +214,7 @@ public:
 			this->new_orbit_embedding(nv);
 
 		if (this->template is_embedded<Face>())
-			this->template copy_embedding<Face::ORBIT>(nv.dart, v.dart);
+			this->template copy_embedding<Face>(nv.dart, v.dart);
 
 		return nv;
 	}
@@ -335,7 +335,7 @@ public:
 			return result;
 		});
 		return (result && degree == 0);
-
+//
 //		Dart it = f.dart ;
 //		for (unsigned int i=1;i<degree; ++i)
 //		{
