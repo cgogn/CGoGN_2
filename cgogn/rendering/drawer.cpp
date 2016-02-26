@@ -27,6 +27,7 @@
 
 #include <QOpenGLFunctions>
 #include <iostream>
+#include<QColor>
 
 namespace cgogn
 {
@@ -35,6 +36,7 @@ namespace rendering
 {
 
 ShaderColorPerVertex* Drawer::shader_cpv_= NULL;
+ShaderBoldLine* Drawer::shader_bl_= NULL;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	ogl33_(ogl33),
@@ -46,10 +48,17 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	if (shader_cpv_ == NULL)
 		shader_cpv_ = new ShaderColorPerVertex();
 
-
 	vao_ = shader_cpv_->add_vao();
 	shader_cpv_->set_vao(vao_,vbo_pos_,vbo_col_);
 
+	if (shader_bl_ == NULL)
+		shader_bl_ = new ShaderBoldLine(false);
+
+	vao2_ = shader_bl_->add_vao();
+	shader_bl_->bind();
+	shader_bl_->set_color(QColor(255,255,0,255));
+	shader_bl_->release();
+	shader_bl_->set_vao(vao2_,vbo_pos_/*,vbo_col_*/);
 }
 
 Drawer::~Drawer()
@@ -61,20 +70,36 @@ void Drawer::new_list()
 {
 	data_pos_.clear();
 	data_col_.clear();
-	begins_.clear();
+	begins_point_.clear();
+	begins_line_.clear();
+	begins_face_.clear();
 }
 
 void Drawer::begin(GLenum mode)
 {
-	if (mode == GL_POINTS)
-		begins_.push_back(PrimParam(data_pos_.size(), mode, current_size_));
-	else
-		begins_.push_back(PrimParam(data_pos_.size(), mode, 1.0));
+	switch (mode)
+	{
+	case GL_POINTS:
+		begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_));
+		current_begin_ = &begins_point_;
+			break;
+	case GL_LINES:
+	case GL_LINE_STRIP:
+	case GL_LINE_LOOP:
+		begins_line_.push_back(PrimParam(data_pos_.size(), mode, current_size_));
+		current_begin_ = &begins_line_;
+		break;
+	default:
+		begins_face_.push_back(PrimParam(data_pos_.size(), mode, 1.0f));
+		current_begin_ = &begins_face_;
+		break;
+	}
+
 }
 
 void Drawer::end()
 {
-	begins_.back().nb = data_pos_.size() - begins_.back().begin;
+	current_begin_->back().nb = data_pos_.size() - current_begin_->back().begin;
 }
 
 
@@ -124,32 +149,11 @@ void Drawer::end_list()
 	data_pos_.shrink_to_fit();
 	data_col_.clear();
 	data_col_.shrink_to_fit();
-
-	for (const auto& beg : begins_)
-	{
-		switch (beg.mode)
-		{
-		case GL_POINTS:
-			begins_point_.push_back(beg);
-			break;
-		case GL_LINES:
-		case GL_LINE_STRIP:
-		case GL_LINE_LOOP:
-			begins_line_.push_back(beg);
-			break;
-		default:
-			begins_face_.push_back(beg);
-			break;
-		}
-	}
 }
 
 void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
 //	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	if (begins_.empty())
-		return;
 
 	shader_cpv_->bind();
 	shader_cpv_->set_matrices(projection,modelview);
@@ -160,10 +164,6 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
-	for (auto& pp : begins_line_)
-	{
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-	}
 
 	for (auto& pp : begins_face_)
 	{
@@ -172,6 +172,26 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 
 	shader_cpv_->release_vao(vao_);
 	shader_cpv_->release();
+
+
+	shader_bl_->bind();
+	shader_bl_->set_matrices(projection,modelview);
+	shader_bl_->bind_vao(vao2_);
+
+	ogl33_->glEnable(GL_BLEND);
+	ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	for (auto& pp : begins_line_)
+	{
+		shader_bl_->set_width(pp.width);
+		shader_bl_->set_color(QColor(255,255,0));
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+	}
+	ogl33_->glDisable(GL_BLEND);
+
+	shader_bl_->release_vao(vao2_);
+	shader_bl_->release();
+
 
 }
 

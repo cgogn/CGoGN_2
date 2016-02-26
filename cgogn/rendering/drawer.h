@@ -26,6 +26,7 @@
 
 #include <rendering/shaders/shader_color_per_vertex.h>
 #include <rendering/shaders/shader_flat.h>
+#include <rendering/shaders/shader_bold_line.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
@@ -55,16 +56,20 @@ protected:
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
 	unsigned int vao_;
+	unsigned int vao2_;
+
 
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
-	std::vector<PrimParam> begins_;
 	std::vector<PrimParam> begins_point_;
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_face_;
 
+	std::vector<PrimParam>* current_begin_;
+
 	float current_size_;
 	static ShaderColorPerVertex* shader_cpv_;
+	static ShaderBoldLine* shader_bl_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
