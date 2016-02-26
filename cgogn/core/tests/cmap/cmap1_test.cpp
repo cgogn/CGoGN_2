@@ -31,37 +31,125 @@
 namespace cgogn
 {
 
+#define NB_MAX 1000
+
 class CMap1Test: public ::testing::Test
 {
 
 public:
-	using myCMap1 = CMap1<DefaultMapTraits>;
-	using Vertex = myCMap1::Vertex;
-	using Face = myCMap1::Face;
+
+	using testCMap1 = CMap1<DefaultMapTraits>;
+	using Vertex = testCMap1::Vertex;
+	using Face = testCMap1::Face;
 
 protected:
-	myCMap1 cmap_;
+
+	testCMap1 cmap_;
 
 	CMap1Test()
-	{}
+	{
+		std::srand(static_cast<unsigned int>(std::time(0)));
 
+		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int, Face::ORBIT>("faces");
+	}
 
+	int randomFaces() {
+		int count = 0;
+		for (int i = 0; i < NB_MAX; ++i) {
+			int n = 1 + std::rand() % 100;
+			Dart d = cmap_.add_face(n);
+			count += n;
+
+			while (std::rand()%10 != 1)
+				d = cmap_.phi1(d);
+
+			tdarts_[i] = d;
+		}
+		return count;
+	}
+
+	std::array<Dart, NB_MAX> tdarts_;
 };
+
+TEST_F(CMap1Test, testCMap1Constructor)
+{
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 0u);
+}
 
 TEST_F(CMap1Test, addFace)
 {
-	cmap_.add_attribute<int, Face::ORBIT>("int_f");
-	cmap_.add_attribute<int, Vertex::ORBIT>("int_v");
-	Face f = cmap_.add_face(10);
+	int n = randomFaces();
 
-	cmap_.split_vertex(f.dart);
-
-
-	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
 	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
-	EXPECT_TRUE(is_container_well_referenced<Face::ORBIT>(cmap_));
+}
 
+TEST_F(CMap1Test, testSplitVertex)
+{
+	int n = randomFaces();
+
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = cmap_.degree(Face(d));
+		cmap_.split_vertex(Vertex(d));
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n+NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+}
+
+TEST_F(CMap1Test, testRemoveVertex)
+{
+	int n = randomFaces();
+
+	int countVertex = n;
+	int countFace = NB_MAX;
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = cmap_.degree(d);
+		cmap_.remove_vertex(Vertex(d));
+		--countVertex;
+		if (k == 1u) --countFace;
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+}
+
+TEST_F(CMap1Test, testRemoveFace)
+{
+	int n = randomFaces();
+
+	int countVertex = n;
+	int countFace = NB_MAX;
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = cmap_.degree(d);
+		cmap_.remove_face(d);
+		countVertex -= k;
+		--countFace;
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
 }
 
 } // namespace cgogn

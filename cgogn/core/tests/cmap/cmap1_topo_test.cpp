@@ -45,6 +45,11 @@ public:
 protected:
 
 	/*!
+	 * \brief An array of randomly genrated darts on which the methods are tested.
+	 */
+	std::array<Dart, NB_MAX> tdarts_;
+
+	/*!
 	 * \brief Generate a random set of faces.
 	*/
 	CMap1TopoTest()
@@ -89,14 +94,19 @@ protected:
 		}
 		return count;
 	}
-
-	std::array<Dart, NB_MAX> tdarts_;
 };
 
+TEST_F(CMap1TopoTest, testCMap1Constructor)
+{
+	EXPECT_EQ(nb_darts(), 0u);
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0u);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 0u);
+}
 
 TEST_F(CMap1TopoTest, testAddDart)
 {
 	int n = randomDarts();
+
 	EXPECT_EQ(nb_darts(), n);
 	EXPECT_TRUE(mapIntegrity());
 }
@@ -104,6 +114,7 @@ TEST_F(CMap1TopoTest, testAddDart)
 TEST_F(CMap1TopoTest, testDeleteDart)
 {
 	int n = randomDarts();
+
 	int count = n;
 	for (int i = 0; i < n; ++i) {
 		if (std::rand() % 3 == 1) {
@@ -111,6 +122,7 @@ TEST_F(CMap1TopoTest, testDeleteDart)
 			--count;
 		}
 	}
+
 	EXPECT_EQ(nb_darts(), count);
 	EXPECT_TRUE(mapIntegrity());
 }
@@ -118,6 +130,7 @@ TEST_F(CMap1TopoTest, testDeleteDart)
 TEST_F(CMap1TopoTest, testPhi1SewUnSew)
 {
 	int n = randomDarts();
+
 	for (int i = 0; i < 1000; ++i) {
 		Dart d = tdarts_[std::rand() % n];
 		Dart e = tdarts_[std::rand() % n];
@@ -133,17 +146,23 @@ TEST_F(CMap1TopoTest, testPhi1SewUnSew)
 		EXPECT_TRUE(phi1(nf1) == nf1);
 		EXPECT_TRUE(phi1(f) == nf2);
 	}
+
 	EXPECT_EQ(nb_darts(), n);
 	EXPECT_TRUE(mapIntegrity());
 }
 
+TEST_F(CMap1TopoTest, testAddFace)
+{
+	int n = randomFaces();
+
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(mapIntegrity());
+}
 
 TEST_F(CMap1TopoTest, testSplitVertex)
 {
 	int n = randomFaces();
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
-	EXPECT_TRUE(mapIntegrity());
 
 	for (int i = 0; i < NB_MAX; ++i) {
 		Face d = tdarts_[i];
@@ -151,6 +170,7 @@ TEST_F(CMap1TopoTest, testSplitVertex)
 		split_vertex_topo(d);
 		EXPECT_EQ(degree(Face(d)), k+1);
 	}
+
 	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n+NB_MAX);
 	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(mapIntegrity());
@@ -159,40 +179,53 @@ TEST_F(CMap1TopoTest, testSplitVertex)
 TEST_F(CMap1TopoTest, testRemoveVertex)
 {
 	int n = randomFaces();
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
-	EXPECT_TRUE(mapIntegrity());
 
-	int count = 0;
+	int countVertex = n;
+	int countFace = NB_MAX;
 	for (int i = 0; i < NB_MAX; ++i) {
 		Face d = tdarts_[i];
 		unsigned int k = degree(Face(d));
 		if (k > 1) {
 			Dart e = phi1(d);
 			remove_vertex(Vertex(d));
-			++count;
+			--countVertex;
 			EXPECT_EQ(degree(Face(e)), k-1);
 		}
+		else {
+			remove_vertex(Vertex(d));
+			--countFace;
+			--countVertex;
+		}
 	}
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n-count);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFace);
 	EXPECT_TRUE(mapIntegrity());
 }
 
-TEST_F(CMap1TopoTest, testAddFace)
+TEST_F(CMap1TopoTest, testRemoveFace)
 {
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 0);
-	EXPECT_TRUE(mapIntegrity());
 	int n = randomFaces();
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+
+	int countVertex = n;
+	int countFace = NB_MAX;
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = degree(Face(d));
+		remove_face(d);
+		countVertex -= k;
+		--countFace;
+	}
+
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFace);
 	EXPECT_TRUE(mapIntegrity());
 }
 
 TEST_F(CMap1TopoTest, testReverseFace)
 {
 	int n = randomFaces();
+
 	for (int i = 0; i < NB_MAX; ++i) {
 		Face f = tdarts_[i];
 		unsigned int k = degree(f);
@@ -217,12 +250,14 @@ TEST_F(CMap1TopoTest, testReverseFace)
 TEST_F(CMap1TopoTest, testDegree)
 {
 	Face f = this->add_face_topo(10);
+
 	EXPECT_EQ(degree(f),10);
 }
 
 TEST_F(CMap1TopoTest, testHasDegree)
 {
 	Face f = this->add_face_topo(10);
+
 	EXPECT_TRUE(has_degree(f,10));
 	EXPECT_FALSE(has_degree(f,0));
 	EXPECT_FALSE(has_degree(f,9));
