@@ -29,7 +29,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 1000
+#define NB_MAX 100
 
 class CMap0Test: public ::testing::Test
 {
@@ -65,9 +65,11 @@ TEST_F(CMap0Test, testCMap0Constructor)
 
 TEST_F(CMap0Test, testAddVertex)
 {
-	int n = addVertices();
-
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	for (int i = 1; i< NB_MAX; ++i) {
+		cmap_.add_vertex();
+		EXPECT_EQ(cmap_.nb_darts(), i);
+		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), i);
+	}
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -75,16 +77,16 @@ TEST_F(CMap0Test, testRemoveVertex)
 {
 	int n = addVertices();
 
-	int countVertex = n;
+	int countVertices = n;
 	for (int i = 0; i < n; ++i) {
 		Vertex d = tdarts_[i];
 		if (i%2 == 1) {
 			cmap_.remove_vertex(Vertex(d));
-			--countVertex;
+			--countVertices;
+			EXPECT_EQ(cmap_.nb_darts(), countVertices);
+			EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 		}
 	}
-
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
