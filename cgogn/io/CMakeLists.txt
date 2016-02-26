@@ -8,6 +8,7 @@ set(HEADER_FILES
 	map_import.h
 	map_export.h
 	import_ply_data.h
+	vtk_cell_types.h
 	dll.h
 )
 
