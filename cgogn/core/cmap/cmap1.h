@@ -327,26 +327,15 @@ public:
 
 	inline bool has_degree(Face f, unsigned int degree)
 	{
-		bool result = true;
-
-		foreach_dart_of_orbit_until(f, [&result,&degree] (Dart d) {
-			if (degree == 0) {
-				result = false;
-			}
-			--degree;
-			return result;
-		});
-		return (result && degree == 0);
-//
-//		Dart it = f.dart ;
-//		for (unsigned int i=1;i<degree; ++i)
-//		{
-//			it = phi1(it) ;
-//			if (it == f.dart)
-//				return false;
-//		}
-//		it = phi1(it) ;
-//		return (it == f.dart);
+		Dart it = f.dart ;
+		for (unsigned int i=1;i<degree; ++i)
+		{
+			it = phi1(it) ;
+			if (it == f.dart)
+				return false;
+		}
+		it = phi1(it) ;
+		return (it == f.dart);
 	}
 
 protected:
