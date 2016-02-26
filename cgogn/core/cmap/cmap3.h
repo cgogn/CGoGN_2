@@ -25,14 +25,12 @@
 #define CORE_CMAP_CMAP3_H_
 
 #include <core/cmap/cmap2.h>
-#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 // forward declaration of CMap3Builder_T
-template <typename MAP_TRAITS>
-class CMap3Builder_T;
+template <typename MAP_TRAITS> class CMap3Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>

@@ -25,14 +25,12 @@
 #define CORE_CMAP_CMAP2_H_
 
 #include <core/cmap/cmap1.h>
-#include <core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 // forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS>
-class CMap2Builder_T;
+template <typename MAP_TRAITS> class CMap2Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
@@ -51,7 +49,7 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart		= Cell<Orbit::DART>;
+	using CDart		= typename Inherit::Vertex;
 	using Vertex	= Cell<Orbit::PHI21>;
 	using Edge		= Cell<Orbit::PHI2>;
 	using Face		= typename Inherit::Face;
@@ -429,9 +427,8 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart next = this->add_dart();	// Add a new edge there and link it to the face
-				this->phi1_sew(first, next);	// the edge is linked to the face
-				phi2_sew(d_next, next);			// the face is linked to the hole
+				Dart next = this->split_vertex_topo(first);	// Add a new vertex into the built face
+				phi2_sew(d_next, next);						// and link the face to the hole
 			}
 		} while (d_phi1 != d);
 	}

@@ -255,7 +255,7 @@ public:
 
 	/*!
 	 * \brief Add a face in the map.
-	 * \param size : the number of edges in the built face
+	 * \param size : the number of vertices in the built face
 	 * \return The built face. If the map has Vertex or Face attributes,
 	 * the new inserted cells are automatically embedded on new attribute elements.
 	 */
@@ -443,6 +443,8 @@ extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<D
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
+
+
 
 } // namespace cgogn
 

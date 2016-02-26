@@ -21,73 +21,73 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH3_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH3_BASE_H_
+#include <gtest/gtest.h>
 
-#include <multiresolution/cph/cph2.h>
+#include <core/cmap/cmap0.h>
+#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH3 : public CPH2<DATA_TRAITS>
+#define NB_MAX 1000
+
+class CMap0Test: public ::testing::Test
 {
 
 public:
-	using Self =  CPH3<DATA_TRAITS>;
-	using Inherit = CPH2<DATA_TRAITS>;
-	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+
+	using testCMap0 = CMap0<DefaultMapTraits>;
+	using Vertex = testCMap0::Vertex;
 
 protected:
-	ChunkArray<unsigned int>* face_id_;
 
-public:
-	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
+	testCMap0 cmap_;
+
+	CMap0Test()
 	{
-		face_id_ = topology.template add_attribute<unsigned int>("faceId");
+		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
 
-	~CPH3() override
-	{
-	}
+	std::array<Dart, NB_MAX> tdarts_;
 
-	CPH3(Self const&) = delete;
-	CPH3(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	int addVertices() {
+		for (int i = 0; i < NB_MAX; ++i)
+			tdarts_[i] = cmap_.add_vertex();
 
-	/***************************************************
-	 *             FACE ID MANAGEMENT                  *
-	 ***************************************************/
-
-	inline unsigned int get_face_id(Dart d) const
-	{
-		return (*face_id_)[d.index] ;
-	}
-
-	inline void set_face_id(Dart d, unsigned int i)
-	{
-		(*face_id_)[d.index] = i ;
-	}
-
-	inline unsigned int get_tri_refinement_face_id(Dart /*d*/, Dart /*e*/) const
-	{
-		return 0u;
-	}
-
-	inline unsigned int get_quad_refinement_face_id(Dart /*d*/) const
-	{
-		return 0u;
+		return NB_MAX;
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH3_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH3<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH3_CPP_))
+TEST_F(CMap0Test, testCMap0Constructor)
+{
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+}
+
+TEST_F(CMap0Test, testAddVertex)
+{
+	int n = addVertices();
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+}
+
+TEST_F(CMap0Test, testRemoveVertex)
+{
+	int n = addVertices();
+
+	int countVertex = n;
+	for (int i = 0; i < n; ++i) {
+		Vertex d = tdarts_[i];
+		if (i%2 == 1) {
+			cmap_.remove_vertex(Vertex(d));
+			--countVertex;
+		}
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+}
 
 } // namespace cgogn
-
-#endif // MULTIRESOLUTION_CPH_CPH3_BASE_H_
