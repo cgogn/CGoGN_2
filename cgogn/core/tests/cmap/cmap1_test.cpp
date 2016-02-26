@@ -85,10 +85,7 @@ TEST_F(CMap1Test, addFace)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
-	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 TEST_F(CMap1Test, testSplitVertex)
@@ -103,10 +100,7 @@ TEST_F(CMap1Test, testSplitVertex)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n+NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
-	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 TEST_F(CMap1Test, testRemoveVertex)
@@ -125,10 +119,7 @@ TEST_F(CMap1Test, testRemoveVertex)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
-	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 TEST_F(CMap1Test, testRemoveFace)
@@ -147,10 +138,7 @@ TEST_F(CMap1Test, testRemoveFace)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
-	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_well_embedded<Face::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
-	EXPECT_TRUE(is_orbit_embedding_unique<Face::ORBIT>(cmap_));
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 } // namespace cgogn

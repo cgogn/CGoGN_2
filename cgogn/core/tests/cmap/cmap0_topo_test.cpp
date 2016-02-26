@@ -24,14 +24,13 @@
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap0.h>
-#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
 #define NB_MAX 1000
 
-class CMap0Test: public ::testing::Test
+class CMap0TopoTest: public ::testing::Test
 {
 
 public:
@@ -43,9 +42,8 @@ protected:
 
 	testCMap0 cmap_;
 
-	CMap0Test()
+	CMap0TopoTest()
 	{
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
 
 	std::array<Dart, NB_MAX> tdarts_;
@@ -58,20 +56,22 @@ protected:
 	}
 };
 
-TEST_F(CMap0Test, testCMap0Constructor)
+TEST_F(CMap0TopoTest, testCMap0Constructor)
 {
+	EXPECT_EQ(cmap_.nb_darts(), 0u);
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
 }
 
-TEST_F(CMap0Test, testAddVertex)
+TEST_F(CMap0TopoTest, testAddVertex)
 {
 	int n = addVertices();
 
+	EXPECT_EQ(cmap_.nb_darts(), n);
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap0Test, testRemoveVertex)
+TEST_F(CMap0TopoTest, testRemoveVertex)
 {
 	int n = addVertices();
 
@@ -84,6 +84,7 @@ TEST_F(CMap0Test, testRemoveVertex)
 		}
 	}
 
+	EXPECT_EQ(cmap_.nb_darts(), countVertex);
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }

@@ -404,11 +404,82 @@ public:
 			result = false;
 			std::map<unsigned int, Dart>::iterator it;
 			for (auto const& de : emb_set)
-				std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
+			std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
 			std::cout << std::endl;
 		}
 
 		return result;
+	}
+
+	/**
+	 * \brief Tests if all \p ORBIT orbits are well embedded
+	 * \details An orbit is well embedded if all its darts
+	 * have the same embedding (index)
+	 *
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <typename CellType>
+	bool is_well_embedded()
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> marker(*cmap);
+		bool result = true;
+
+		cmap->foreach_cell_until_dart_marking([&] (CellType c)
+		{
+			// insure that two cells do not share the same index
+			if (marker.is_marked(c))
+			{
+				result = false;
+				return false;
+			}
+			marker.mark(c);
+			// check used indices are valid
+			unsigned int idx = this->get_embedding(c);
+			if (idx == EMBNULL)
+			{
+				result = false;
+				return false;
+			}
+			// check all darts of the cell use the same index (and thus not equal to EMBNULL)
+			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+			{
+				if (this->template get_embedding<ORBIT>(d) != idx)
+					result = false;
+				return result;
+			});
+
+			return result;
+
+		});
+		return result;
+	}
+
+	bool check_map_integrity()
+	{
+		ConcreteMap* cmap = to_concrete();
+		bool result = true;
+
+		foreach_dart_until( [&cmap,&result] (Dart d) {
+			if (!cmap->check_integrity(d)) result = false;
+			return result;
+		});
+		if (!result) {
+			std::cerr << "Integrity of the topology is broken" << std::endl;
+			return false;
+		}
+
+		result = cmap->check_embedding_integrity();
+		if (!result) {
+			std::cerr << "Integrity of the embeddings is broken" << std::endl;
+			return false;
+		}
+		return true;
 	}
 
 	/*******************************************************************************

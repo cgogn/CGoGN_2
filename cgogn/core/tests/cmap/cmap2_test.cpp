@@ -21,9 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <cstdlib>
+#include <ctime>
+
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap0.h>
+#include <core/cmap/cmap2.h>
 #include <core/cmap/sanity_check.h>
 
 namespace cgogn
@@ -31,60 +34,63 @@ namespace cgogn
 
 #define NB_MAX 1000
 
-class CMap0Test: public ::testing::Test
+class CMap2Test: public ::testing::Test
 {
 
 public:
 
-	using testCMap0 = CMap0<DefaultMapTraits>;
-	using Vertex = testCMap0::Vertex;
+	using testCMap2 = CMap2<DefaultMapTraits>;
+	using Vertex = testCMap2::Vertex;
+	using Edge = testCMap2::Edge;
+	using Face = testCMap2::Face;
+	using Volume = testCMap2::Volume;
 
 protected:
 
-	testCMap0 cmap_;
+	testCMap2 cmap_;
 
-	CMap0Test()
+	CMap2Test()
 	{
+		std::srand(static_cast<unsigned int>(std::time(0)));
+
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int, Face::ORBIT>("faces");
+	}
+
+	int randomFaces() {
+		int count = 0;
+		for (int i = 0; i < NB_MAX; ++i) {
+			int n = 1 + std::rand() % 100;
+			Dart d = cmap_.add_face(n);
+			count += n;
+
+			while (std::rand()%10 != 1)
+				d = cmap_.phi1(d);
+
+			tdarts_[i] = d;
+		}
+		return count;
 	}
 
 	std::array<Dart, NB_MAX> tdarts_;
-
-	int addVertices() {
-		for (int i = 0; i < NB_MAX; ++i)
-			tdarts_[i] = cmap_.add_vertex();
-
-		return NB_MAX;
-	}
 };
 
-TEST_F(CMap0Test, testCMap0Constructor)
+TEST_F(CMap2Test, testCMap2Constructor)
 {
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 0u);
 }
 
-TEST_F(CMap0Test, testAddVertex)
+TEST_F(CMap2Test, addFace)
 {
-	int n = addVertices();
+	int n = randomFaces();
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_TRUE(cmap_.check_map_integrity());
-}
-
-TEST_F(CMap0Test, testRemoveVertex)
-{
-	int n = addVertices();
-
-	int countVertex = n;
-	for (int i = 0; i < n; ++i) {
-		Vertex d = tdarts_[i];
-		if (i%2 == 1) {
-			cmap_.remove_vertex(Vertex(d));
-			--countVertex;
-		}
-	}
-
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), n);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2*NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

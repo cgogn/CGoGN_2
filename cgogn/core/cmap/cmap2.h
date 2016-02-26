@@ -101,6 +101,25 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = Inherit::check_embedding_integrity();
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		if (this->template is_embedded<Edge>())
+			result = result && this->template is_well_embedded<Edge>();
+
+		if (this->template is_embedded<Volume>())
+			result = result && this->template is_well_embedded<Volume>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -115,6 +134,11 @@ protected:
 	{
 		Inherit::init_dart(d);
 		(*phi2_)[d.index] = d;
+	}
+
+	inline bool check_integrity(Dart d) const {
+		return (Inherit::check_integrity(d) &&
+				phi2(phi2(d)) == d);
 	}
 
 	/**

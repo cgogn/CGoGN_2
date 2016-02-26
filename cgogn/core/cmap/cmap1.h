@@ -45,7 +45,7 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using Vertex	= Cell<Orbit::DART>;
+	using Vertex	= typename Inherit::Vertex;
 	using Face		= Cell<Orbit::PHI1>;
 
 	template <typename T>
@@ -92,6 +92,19 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = Inherit::check_embedding_integrity();
+
+		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -107,6 +120,11 @@ protected:
 		Inherit::init_dart(d);
 		(*phi1_)[d.index] = d;
 		(*phi_1_)[d.index] = d;
+	}
+
+	inline bool check_integrity(Dart d) const {
+		return (phi1(phi_1(d)) == d &&
+				phi_1(phi1(d)) == d);
 	}
 
 	/*!
