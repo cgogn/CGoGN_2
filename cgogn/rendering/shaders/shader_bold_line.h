@@ -56,7 +56,7 @@ class CGOGN_RENDERING_API ShaderBoldLine : public ShaderProgram
 
 public:
 
-	ShaderBoldLine();
+	ShaderBoldLine(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current color

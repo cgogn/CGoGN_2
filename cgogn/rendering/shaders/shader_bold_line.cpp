@@ -44,9 +44,13 @@ const char* ShaderBoldLine::vertex_shader_source_ =
 
 const char* ShaderBoldLine::geometry_shader_source_ =
 "#version 150\n"
+"layout (lines) in;\n"
+"layout (triangle_strip, max_vertices=6) out;\n"
+"out vec4 color_f;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 lineWidths;\n"
+"uniform vec4 lineColor;\n"
 "void main()\n"
 "{\n"
 "	vec4 A = model_view_matrix * gl_in[0].gl_Position;\n"
@@ -66,19 +70,26 @@ const char* ShaderBoldLine::geometry_shader_source_ =
 "		B = B/B.w;\n"
 "		vec2 U2 = normalize(vec2(lineWidths[1],lineWidths[0])*(B.xy - A.xy));\n"
 "		vec2 LWCorr =lineWidths * max(abs(U2.x),abs(U2.y));\n"
-"		vec3 U = vec3(LWCorr*U2,0.0);\n"
+"		vec3 U = vec3(0.5*LWCorr*U2,0.0);\n"
 "		vec3 V = vec3(LWCorr*vec2(U2[1], -U2[0]), 0.0);	\n"
-"		gl_Position = vec4(A.xyz-U, 1.0);\n"
-"		EmitVertex();\n"
-"		gl_Position = vec4(A.xyz+V, 1.0);\n"
-"		EmitVertex();\n"
+"		vec3 color3 = lineColor.rgb;\n"
+"		color_f = vec4(color3,0.0);\n"
 "		gl_Position = vec4(A.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
-"		gl_Position = vec4(B.xyz+V, 1.0);\n"
-"		EmitVertex();\n"
+"		color_f = vec4(color3,0.0);\n"
 "		gl_Position = vec4(B.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
+"		color_f = vec4(color3,1.0);\n"
+"		gl_Position = vec4(A.xyz-U, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color3,1.0);\n"
 "		gl_Position = vec4(B.xyz+U, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color3,0.0);\n"
+"		gl_Position = vec4(A.xyz+V, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color3,0.0);\n"
+"		gl_Position = vec4(B.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		EndPrimitive();\n"
 "	}\n"
@@ -87,13 +98,11 @@ const char* ShaderBoldLine::geometry_shader_source_ =
 
 const char* ShaderBoldLine::fragment_shader_source_ =
 "#version 150\n"
-"uniform vec4 color;\n"
-"out vec3 fragColor;\n"
+"in vec4 color_f;\n"
+"out vec4 fragColor;\n"
 "void main() {\n"
-"   fragColor = color;\n"
+"   fragColor = color_f;\n"
 "}\n";
-
-
 
 
 
@@ -111,8 +120,10 @@ const char* ShaderBoldLine::vertex_shader_source2_ =
 
 const char* ShaderBoldLine::geometry_shader_source2_ =
 "#version 150\n"
+"layout (lines) in;\n"
+"layout (triangle_strip, max_vertices=6) out;\n"
 "in vec3 color_v[];\n"
-"out vec3 color_f;\n"
+"out vec4 color_f;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 lineWidths;\n"
@@ -137,19 +148,23 @@ const char* ShaderBoldLine::geometry_shader_source2_ =
 "		vec2 LWCorr =lineWidths * max(abs(U2.x),abs(U2.y));\n"
 "		vec3 U = vec3(LWCorr*U2,0.0);\n"
 "		vec3 V = vec3(LWCorr*vec2(U2[1], -U2[0]), 0.0);	\n"
-"		color_f = vcolor[0];\n"
-"		gl_Position = vec4(A.xyz-U, 1.0);\n"
-"		EmitVertex();\n"
-"		gl_Position = vec4(A.xyz+V, 1.0);\n"
-"		EmitVertex();\n"
+"		color_f = vec4(color_v[0],0.0);\n"
 "		gl_Position = vec4(A.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vcolor[1];\n"
-"		gl_Position = vec4(B.xyz+V, 1.0);\n"
-"		EmitVertex();\n"
+"		color_f = vec4(color_v[1],0.0);\n"
 "		gl_Position = vec4(B.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
+"		color_f = vec4(color_v[0],1.0);\n"
+"		gl_Position = vec4(A.xyz-U, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color_v[1],1.0);\n"
 "		gl_Position = vec4(B.xyz+U, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color_v[0],0.0);\n"
+"		gl_Position = vec4(A.xyz+V, 1.0);\n"
+"		EmitVertex();\n"
+"		color_f = vec4(color_v[1],0.0);\n"
+"		gl_Position = vec4(B.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		EndPrimitive();\n"
 "	}\n"
@@ -158,37 +173,56 @@ const char* ShaderBoldLine::geometry_shader_source2_ =
 
 const char* ShaderBoldLine::fragment_shader_source2_ =
 "#version 150\n"
-"in vec3 color_f;\n"
-"out vec3 fragColor;\n"
+"in vec4 color_f;\n"
+"out vec4 fragColor;\n"
 "void main() {\n"
-"   fragColor = color_v;\n"
+"   fragColor = color_f;\n"
 "}\n";
 
 
 
-ShaderBoldLine::ShaderBoldLine()
+ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-	prg_.link();
+	if (color_per_vertex)
+	{
+		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
+		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source2_);
+		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
+		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+		prg_.link();
 
-	get_matrices_uniforms();
+		get_matrices_uniforms();
+		unif_width_ = prg_.uniformLocation("lineWidths");
+	}
+	else
+	{
+		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
+		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
+		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
+		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		prg_.link();
 
-	unif_color_ = prg_.uniformLocation("color");
-	unif_width_ = prg_.uniformLocation("lineWidths");
+		get_matrices_uniforms();
+		unif_color_ = prg_.uniformLocation("lineColor");
+		unif_width_ = prg_.uniformLocation("lineWidths");
+	}
 }
+
+
 
 void ShaderBoldLine::set_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderBoldLine::set_width(float w)
+void ShaderBoldLine::set_width(float wpix)
 {
-	prg_.setUniformValue(unif_width_, w);
+	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	int viewport[4];
+	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
+	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
+	prg_.setUniformValue(unif_width_, wd);
 }
 
 bool ShaderBoldLine::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
@@ -212,17 +246,13 @@ bool ShaderBoldLine::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 
 	if (vbo_color)
 	{
-		// normal vbo
+		// color vbo
 		vbo_color->bind();
 		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
 		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 	}
-	else
-	{
-		if (unif_color_ == -1)
-			std::cerr << "ShaderBoldLine no coloe attribute no color uniform"<< std::endl;
-	}
+
 	vaos_[i]->release();
 	prg_.release();
 
