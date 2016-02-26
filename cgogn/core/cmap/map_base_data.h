@@ -266,9 +266,10 @@ public:
 
 protected:
 
-	template <Orbit ORBIT>
+	template <class CellType>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
@@ -284,22 +285,12 @@ protected:
 	}
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
-	{
-		set_embedding<CellType::ORBIT>(d, emb);
-	}
-
-	template <Orbit ORBIT>
 	inline void copy_embedding(Dart dest, Dart src)
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		this->template set_embedding<ORBIT>(dest, get_embedding(Cell<ORBIT>(src)));
-	}
 
-	template <class CellType>
-	inline void copy_embedding(Dart dest, Dart src)
-	{
-		copy_embedding<CellType::ORBIT>(dest, src);
+		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
 	}
 
 	/*******************************************************************************

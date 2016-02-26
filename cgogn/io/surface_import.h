@@ -346,7 +346,7 @@ public:
 				for (unsigned int j = 0u; j < nbe; ++j)
 				{
 					const unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template set_embedding<Vertex::ORBIT>(d, vertex_index);
+					mbuild.template set_embedding<Vertex>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
