@@ -156,7 +156,8 @@ protected:
 
 	inline bool check_integrity(Dart d) const {
 		return (Inherit::check_integrity(d) &&
-				phi3(phi3(d)) == d);
+				phi3(phi3(d)) == d &&
+				phi3(this->phi1(phi3(this->phi1(d)))) == d);
 	}
 
 	/**
