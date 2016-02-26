@@ -353,9 +353,10 @@ protected:
 	template <Orbit ORBIT>
 	inline unsigned int new_orbit_embedding(Cell<ORBIT> c)
 	{
+		using CellType = Cell<ORBIT>;
 		const unsigned int emb = add_attribute_element<ORBIT>();
 		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d) {
-			this->template set_embedding<ORBIT>(d, emb);
+			this->template set_embedding<CellType>(d, emb);
 		});
 		return emb;
 	}
