@@ -106,13 +106,19 @@ public:
 	 */
 	inline bool check_embedding_integrity()
 	{
-		bool result = Inherit::check_embedding_integrity();
+		bool result = true;
+
+		if (this->template is_embedded<CDart>())
+			result = result && this->template is_well_embedded<CDart>();
 
 		if (this->template is_embedded<Vertex>())
 			result = result && this->template is_well_embedded<Vertex>();
 
 		if (this->template is_embedded<Edge>())
 			result = result && this->template is_well_embedded<Edge>();
+
+		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face>();
 
 		if (this->template is_embedded<Volume>())
 			result = result && this->template is_well_embedded<Volume>();

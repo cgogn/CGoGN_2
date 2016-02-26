@@ -50,13 +50,13 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using CDart		= typename Inherit::CDart;
+	using Vertex2	= typename Inherit::Vertex;
 	using Vertex	= Cell<Orbit::PHI21_PHI31>;
+	using Edge2		= typename Inherit::Edge;
 	using Edge		= Cell<Orbit::PHI2_PHI3>;
+	using Face2		= typename Inherit::Face;
 	using Face		= Cell<Orbit::PHI1_PHI3>;
 	using Volume	= typename Inherit::Volume;
-	using Vertex2	= typename Inherit::Vertex;
-	using Edge2		= typename Inherit::Edge;
-	using Face2		= typename Inherit::Face;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -109,16 +109,31 @@ public:
 	 */
 	inline bool check_embedding_integrity()
 	{
-		bool result = Inherit::check_embedding_integrity();
+		bool result = true;
+
+		if (this->template is_embedded<CDart>())
+			result = result && this->template is_well_embedded<CDart>();
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex2>();
 
 		if (this->template is_embedded<Vertex>())
 			result = result && this->template is_well_embedded<Vertex>();
 
 		if (this->template is_embedded<Edge>())
+			result = result && this->template is_well_embedded<Edge2>();
+
+		if (this->template is_embedded<Edge>())
 			result = result && this->template is_well_embedded<Edge>();
 
 		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face2>();
+
+		if (this->template is_embedded<Face>())
 			result = result && this->template is_well_embedded<Face>();
+
+		if (this->template is_embedded<Volume>())
+			result = result && this->template is_well_embedded<Volume>();
 
 		return result;
 	}

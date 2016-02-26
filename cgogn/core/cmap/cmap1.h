@@ -97,7 +97,10 @@ public:
 	 */
 	inline bool check_embedding_integrity()
 	{
-		bool result = Inherit::check_embedding_integrity();
+		bool result = true;
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
 
 		if (this->template is_embedded<Face>())
 			result = result && this->template is_well_embedded<Face>();
