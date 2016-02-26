@@ -61,41 +61,74 @@ inline std::uint64_t swap_endianness64(std::uint64_t x)
 			((x << 40) & 0x00FF000000000000) | ((x << 56) & 0xFF00000000000000);
 }
 
-template<typename UINT, bool COND>
-inline UINT swap_endianness_if(UINT x)
+inline float swap_endianness_float(float x)
 {
-	static_assert(std::is_same<UINT, std::uint16_t>::value ||
-				  std::is_same<UINT, std::uint32_t>::value ||
-				  std::is_same<UINT, std::uint64_t>::value, "This function is specialized for 16, 32 or 64 bits uints.");
+	union U32F32
+	{
+		std::uint32_t	as_u32;
+		float			as_f32;
+	} u;
+	u.as_f32 = x;
+	u.as_u32 = swap_endianness32(u.as_u32);
+	return u.as_f32;
+}
+
+inline double swap_endianness_double(double x)
+{
+	union U64F64
+	{
+		std::uint64_t	as_u64;
+		double			as_f64;
+	} u;
+	u.as_f64 = x;
+	u.as_u64 = swap_endianness64(u.as_u64);
+	return u.as_f64;
+}
+
+template<typename T, bool COND>
+inline T swap_endianness_if(T x)
+{
+	static_assert(std::is_same<T, std::uint16_t>::value ||
+				  std::is_same<T, std::uint32_t>::value ||
+				  std::is_same<T, std::uint64_t>::value ||
+				  std::is_same<T, float>::value ||
+				  std::is_same<T, double>::value, "This function is specialized for 16, 32 or 64 bits uints, floats and doubles.");
 
 	if (COND)
 	{
-		if (std::is_same<UINT, std::uint16_t>::value)
+		if (std::is_same<T, std::uint16_t>::value)
 			return swap_endianness16(x);
-		if (std::is_same<UINT, std::uint32_t>::value)
+		if (std::is_same<T, std::uint32_t>::value)
 			return swap_endianness32(x);
-		if (std::is_same<UINT, std::uint64_t>::value)
+		if (std::is_same<T, std::uint64_t>::value)
 			return swap_endianness64(x);
+		if (std::is_same<T, float>::value)
+			return swap_endianness_float(x);
+		if (std::is_same<T, double>::value)
+			return swap_endianness_double(x);
 	}
 	return x;
 }
 
 } // namespace internal
 
-
-template<typename UINT>
-inline UINT swap_endianness_system_big(UINT x)
+template<typename T>
+inline T swap_endianness(T x)
 {
-	return internal::swap_endianness_if<UINT, internal::cgogn_is_little_endian>(x);
+	return internal::swap_endianness_if<T, true>(x);
 }
 
-template<typename UINT>
-inline UINT swap_endianness_system_little(UINT x)
+template<typename T>
+inline T swap_endianness_system_big(T x)
 {
-	return internal::swap_endianness_if<UINT, internal::cgogn_is_big_endian>(x);
+	return internal::swap_endianness_if<T, internal::cgogn_is_little_endian>(x);
 }
 
-
+template<typename T>
+inline T swap_endianness_system_little(T x)
+{
+	return internal::swap_endianness_if<T, internal::cgogn_is_big_endian>(x);
+}
 
 } // namespace cgogn
 
