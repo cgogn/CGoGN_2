@@ -21,11 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap1.h>
-#include <core/cmap/map_traits.h>
+#include <core/cmap/cmap0.h>
 #include <core/cmap/sanity_check.h>
 
 namespace cgogn
@@ -47,14 +45,12 @@ protected:
 
 	CMap0Test()
 	{
-		std::srand(static_cast<unsigned int>(std::time(0)));
-
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
 
 	std::array<Dart, NB_MAX> tdarts_;
 
-	int randomVertices() {
+	int addVertices() {
 		for (int i = 0; i < NB_MAX; ++i)
 			tdarts_[i] = cmap_.add_vertex();
 
@@ -69,7 +65,7 @@ TEST_F(CMap0Test, testCMap0Constructor)
 
 TEST_F(CMap0Test, testAddVertex)
 {
-	int n = randomVertices();
+	int n = addVertices();
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
 	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
@@ -78,12 +74,12 @@ TEST_F(CMap0Test, testAddVertex)
 
 TEST_F(CMap0Test, testRemoveVertex)
 {
-	int n = randomVertices();
+	int n = addVertices();
 
 	int countVertex = n;
 	for (int i = 0; i < n; ++i) {
 		Vertex d = tdarts_[i];
-		if (std::rand() % 2 == 1) {
+		if (i%2 == 1) {
 			cmap_.remove_vertex(Vertex(d));
 			--countVertex;
 		}

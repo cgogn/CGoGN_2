@@ -24,7 +24,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
@@ -58,16 +57,17 @@ protected:
 	}
 
 	bool dartIntegrity(Dart d) {
-		return (phi1(phi_1(d)) == d && phi_1(phi1(d)) == d);
+		return (phi1(phi_1(d)) == d &&
+				phi_1(phi1(d)) == d);
 	}
 
 	bool mapIntegrity() {
 		bool result = true;
-		foreach_dart( [&] (Dart d) {
+		foreach_dart_until( [&] (Dart d) {
 			if (!dartIntegrity(d)) {
 				result = false;
-				return ;
 			}
+			return result;
 		});
 		return result;
 	}
@@ -106,6 +106,7 @@ TEST_F(CMap1TopoTest, testCMap1Constructor)
 TEST_F(CMap1TopoTest, testAddDart)
 {
 	int n = randomDarts();
+	(*phi1_)[tdarts_[n-1].index] = Dart(1024);
 
 	EXPECT_EQ(nb_darts(), n);
 	EXPECT_TRUE(mapIntegrity());

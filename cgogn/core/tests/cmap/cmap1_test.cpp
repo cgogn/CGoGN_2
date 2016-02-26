@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <gmock/gmock.h>
+#include <cstdlib>
+#include <ctime>
+
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
-#include <core/cmap/map_traits.h>
 #include <core/cmap/sanity_check.h>
 
 namespace cgogn
