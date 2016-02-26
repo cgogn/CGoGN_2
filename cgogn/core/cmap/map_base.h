@@ -388,7 +388,6 @@ public:
 	bool is_well_embedded(Cell<ORBIT> c) const
 	{
 		const ConcreteMap* cmap = to_concrete();
-		//unsigned int index = this->get_embedding(c);
 		bool result = true;
 
 		std::map<unsigned int, Dart> emb_set;
