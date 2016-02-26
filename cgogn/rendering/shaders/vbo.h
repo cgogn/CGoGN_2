@@ -194,7 +194,7 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
 
 	// check that convert param  is compatible with attr
-	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type InputConvert;
+	using InputConvert = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
 	// get chunk data pointers
@@ -204,9 +204,9 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	typedef std::array<float,2> Vec2f;
-	typedef std::array<float,3> Vec3f;
-	typedef std::array<float,4> Vec4f;
+	using Vec2f = std::array<float,2>;
+	using Vec3f = std::array<float,3>;
+	using Vec4f = std::array<float,4>;
 	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
@@ -223,7 +223,7 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
-	typedef typename function_traits<FUNC>::result_type OutputConvert;
+	using OutputConvert = typename function_traits<FUNC>::result_type;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
 	for (unsigned int i = 0; i < nb_chunks; ++i)
 	{
@@ -252,11 +252,11 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	static_assert(ATTR::orbit_value == ATTR2::orbit_value, "attributes must be on same orbit");
 
 	// check that convert param 1 is compatible with attr
-	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type InputConvert;
+	using InputConvert = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
 	// check that convert param 2 is compatible with attr2
-	typedef typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<1>::type>::type >::type InputConvert2;
+	using InputConvert2 = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<1>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR2) >::value, "wrong parameter 2");
 
 	// get chunk data pointers
@@ -270,9 +270,9 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	typedef std::array<float,2> Vec2f;
-	typedef std::array<float,3> Vec3f;
-	typedef std::array<float,4> Vec4f;
+	using Vec2f = std::array<float,2>;
+	using Vec3f = std::array<float,3>;
+	using Vec4f = std::array<float,4>;
 	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
@@ -291,7 +291,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 
 	// copy (after conversion)
 	// out type conversion
-	typedef typename function_traits<FUNC>::result_type OutputConvert;
+	using OutputConvert = typename function_traits<FUNC>::result_type;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
 	for (unsigned int i = 0; i < nb_chunks; ++i)
 	{
