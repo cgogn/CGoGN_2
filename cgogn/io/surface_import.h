@@ -49,6 +49,11 @@ namespace cgogn
 namespace io
 {
 
+/**
+ * @brief vtk_data_type_to_cgogn_name_of_type : convert the type names we can find in VTK files to the one we use in cgogn.
+ * @param vtk_type_str a typename extracted from a vtk file
+ * @return a typename string that can be match with some cgogn::name_of_type
+ */
 inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
 {
 	const std::string& data_type = to_lower(vtk_type_str);
@@ -77,22 +82,29 @@ inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_ty
 	return std::string();
 }
 
-
-template<typename T = double, typename U = T>
+/**
+ * @brief read_n_scalars, read N scalars of type BUFFER_T in an ifstream (binary or ascii mode, little or big endian)
+ * @param fp, an ifstream
+ * @param n, the number of scalars to read
+ * @param binary, true if the scalars are encoded in binary
+ * @param big_endian, true if the scalars are encoded in binary and big endian
+ * @return n scalars of type T (converted if necessary from type BUFFER_T) if successful, nullptr otherwith
+ */
+template<typename T = double, typename BUFFER_T = T>
 inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, std::size_t n, bool binary, bool big_endian)
 {
 	using VecT = std::vector<T>;
-	using VecU = std::vector<U>;
+	using VecBufferT = std::vector<BUFFER_T>;
 
-	std::cerr << "read_n_scalars called with T = " << name_of_type(T()) << " and U = " << name_of_type(U()) << std::endl;
+	std::cerr << "read_n_scalars called with T = " << name_of_type(T()) << " and U = " << name_of_type(BUFFER_T()) << std::endl;
 	std::unique_ptr<VecT> res = make_unique<VecT>();
 	res->reserve(n);
 
-	std::unique_ptr<VecU>  buffer = make_unique<VecU>(n);
+	std::unique_ptr<VecBufferT>  buffer = make_unique<VecBufferT>(n);
 
 	if (binary)
 	{
-		fp.read(reinterpret_cast<char*>(std::addressof(buffer->operator[](0))), n * sizeof(U));
+		fp.read(reinterpret_cast<char*>(std::addressof(buffer->operator[](0))), n * sizeof(BUFFER_T));
 
 		if (big_endian != internal::cgogn_is_little_endian)
 		{
@@ -118,7 +130,7 @@ inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, std::si
 			buffer->clear();
 	}
 
-	if (std::is_same<T,U>::value)
+	if (std::is_same<T,BUFFER_T>::value)
 		res.reset(reinterpret_cast<VecT*>(buffer.release()));
 	else
 	{
@@ -129,49 +141,84 @@ inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, std::si
 	return res;
 }
 
+/**
+ * @brief read_n_scalars, read n scalars of type given by the STRING type_name in the ifstream fp, and convert them to the template type T
+ * @param fp, the file we want to read
+ * @param type_name, the type_name (CAUTION : consistent with cgogn name_of_type method)
+ * @param n, number of scalars to read
+ * @param binary, true if the scalars are encoded in binary
+ * @param big_endian, ignored if !binary. True if the file we read chose to encod the scalars in big endian
+ * @return
+ */
 template<typename T = double>
 inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, const std::string& type_name, std::size_t n, bool binary, bool big_endian)
 {
 	using VecT = std::vector<T>;
-	std::unique_ptr<std::vector<T>> res;
-	std::cerr << "read_n_scalars called with type " << type_name << std::endl;
-	const std::string& type = vtk_data_type_to_cgogn_name_of_type(type_name);
 
-	if (type == name_of_type(float()))
-	{
-		std::unique_ptr<std::vector<T>> scalars(std::move(read_n_scalars<T,float>(fp,n,binary,big_endian)));
-		res.reset(reinterpret_cast<VecT*>(scalars.release()));
+	if (type_name == name_of_type(float()))
+		return std::move(read_n_scalars<T,float>(fp,n,binary,big_endian));
+	else {
+		if (type_name == name_of_type(double()))
+			return std::move(read_n_scalars<T,double>(fp,n,binary,big_endian));
+		else {
+			if (type_name == name_of_type(char()))
+				return std::move(read_n_scalars<T,char>(fp,n,binary,big_endian));
+			else
+			{
+				if (type_name == name_of_type(std::int8_t()))
+					return std::move(read_n_scalars<T,std::int8_t>(fp,n,binary,big_endian));
+				else
+				{
+					if (type_name == name_of_type(std::uint8_t()))
+						return std::move(read_n_scalars<T,std::uint8_t>(fp,n,binary,big_endian));
+					else
+					{
+						if (type_name == name_of_type(std::int16_t()))
+							return std::move(read_n_scalars<T,std::int16_t>(fp,n,binary,big_endian));
+						else
+						{
+							if (type_name == name_of_type(std::uint32_t()))
+								return std::move(read_n_scalars<T,std::uint32_t>(fp,n,binary,big_endian));
+							else
+							{
+								if (type_name == name_of_type(std::int32_t()))
+									return std::move(read_n_scalars<T,std::int32_t>(fp,n,binary,big_endian));
+								else
+								{
+									if (type_name == name_of_type(std::uint64_t()))
+										return std::move(read_n_scalars<T,std::uint64_t>(fp,n,binary,big_endian));
+									else
+									{
+										if (type_name == name_of_type(std::int64_t()))
+											return std::move(read_n_scalars<T,std::int64_t>(fp,n,binary,big_endian));
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	if (type == name_of_type(double()))
-	{
-		std::unique_ptr<std::vector<T>> scalars(std::move(read_n_scalars<T,double>(fp,n,binary,big_endian)));
-		res.reset(reinterpret_cast<VecT*>(scalars.release()));
-	}
-
-	if (type == name_of_type(std::uint32_t()))
-	{
-		std::unique_ptr<std::vector<T>> scalars(std::move(read_n_scalars<T, std::uint32_t>(fp,n,binary,big_endian)));
-		res.reset(reinterpret_cast<VecT*>(scalars.release()));
-	}
-
-	return res;
+	return std::unique_ptr<std::vector<T>>();
 }
 
-template<typename Vec_T>
-inline std::unique_ptr<std::vector<Vec_T>> read_n_vec(std::ifstream& fp, const std::string& type_name, std::size_t n, bool binary, bool big_endian)
-{
-	using Scalar = typename geometry::vector_traits<Vec_T>::Scalar;
-	const std::size_t size = geometry::vector_traits<Vec_T>::SIZE;
-	std::unique_ptr<std::vector<Scalar>> scalars(std::move(read_n_scalars(fp, type_name,n*size,binary,big_endian)));
-	std::unique_ptr<std::vector<Vec_T>> res = make_unique<std::vector<Vec_T>>();
-	res->reserve(n);
-	for (auto it = scalars->begin(), end = scalars->end() ; it != end;)
-	{
-		res->emplace_back(Scalar(*it++), Scalar(*it++), Scalar(*it++));
-	}
+//template<typename Vec_T>
+//inline std::unique_ptr<std::vector<Vec_T>> read_n_vec(std::ifstream& fp, const std::string& type_name, std::size_t n, bool binary, bool big_endian)
+//{
+//	using Scalar = typename geometry::vector_traits<Vec_T>::Scalar;
+//	const std::size_t size = geometry::vector_traits<Vec_T>::SIZE;
+//	std::unique_ptr<std::vector<Scalar>> scalars(std::move(read_n_scalars(fp, type_name,n*size,binary,big_endian)));
+//	std::unique_ptr<std::vector<Vec_T>> res = make_unique<std::vector<Vec_T>>();
+//	res->reserve(n);
+//	for (auto it = scalars->begin(), end = scalars->end() ; it != end;)
+//	{
+//		res->emplace_back(Scalar(*it), Scalar(*(it+ 1)), Scalar(*(it+2)));
+//		it+=3;
+//	}
 
-	return res;
-}
+//	return res;
+//}
 
 
 enum SurfaceFileType
@@ -504,9 +551,9 @@ protected:
 		char buffer1[12];
 		fp.read(buffer1,12);
 
-		nb_vertices_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1)));
-		nb_faces_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
-		nb_edges_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
+		nb_vertices_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1)));
+		nb_faces_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
+		nb_edges_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
 
 
 		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
@@ -533,7 +580,7 @@ protected:
 				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
 				for (unsigned int i=0; i< 3*BUFFER_SZ;++i)
 				{
-					*ptr = swap_endianness_system_big(*ptr);
+					*ptr = swap_endianness_native_big(*ptr);
 					++ptr;
 				}
 			}
@@ -564,7 +611,7 @@ protected:
 				ptr = buff_ind;
 				for (unsigned int i=0; i< BUFFER_SZ;++i)
 				{
-					*ptr = swap_endianness_system_big(*ptr);
+					*ptr = swap_endianness_native_big(*ptr);
 					++ptr;
 				}
 				ptr = buff_ind;
@@ -583,7 +630,7 @@ protected:
 					ptr = buff_ind;
 					for (unsigned int i=0; i< BUFFER_SZ;++i)
 					{
-						*ptr = swap_endianness_system_big(*ptr);
+						*ptr = swap_endianness_native_big(*ptr);
 						++ptr;
 					}
 					ptr = buff_ind;
@@ -831,11 +878,11 @@ protected:
 					type_str = to_lower(type_str);
 					std::cout << nb_vertices_ << " points" << " of type " << type_str << std::endl;
 					verticesID.reserve(nb_vertices_);
-					std::unique_ptr<std::vector<Scalar>> pos(std::move(read_n_scalars<Scalar>(fp, type_str, 3*nb_vertices_, !ascii_file, false /*don't deal with endianness yet*/)));
+					std::unique_ptr<std::vector<Scalar>> pos(std::move(read_n_scalars<Scalar>(fp, vtk_data_type_to_cgogn_name_of_type(type_str), 3*nb_vertices_, !ascii_file, false /*don't deal with endianness yet*/)));
 					cgogn_assert(pos);
 					for (std::size_t i = 0ul ; i < 3ul*nb_vertices_ ; i+=3ul)
 					{
-						VEC3 P(Scalar((*pos)[i]), Scalar((*pos)[i+1ul]), Scalar((*pos)[i+2ul]));
+						VEC3 P(Scalar(pos->operator[](i)), Scalar((*pos)[i+1ul]), Scalar((*pos)[i+2ul]));
 						std::cout << P[0] << " " << P[1] << " " << P[2] << std::endl;
 						unsigned int id = vertex_attributes_.template insert_lines<1>();
 						position->operator [](id) = P;
@@ -849,7 +896,7 @@ protected:
 					unsigned int size;
 					sstream >> this->nb_faces_ >> size;
 					std::cerr << "nb cells " << nb_faces_ << " and size " << size << std::endl;
-					cells = std::move(read_n_scalars<unsigned int>(fp, "unsigned_int", size, !ascii_file, false));
+					cells = std::move(read_n_scalars<unsigned int>(fp, name_of_type(std::uint32_t()), size, !ascii_file, false));
 					std::size_t i = 0ul;
 				}
 
@@ -859,7 +906,7 @@ protected:
 					unsigned int nbc;
 					sstream >> nbc;
 					std::cerr << "nb cells " << nbc << std::endl;
-					cell_types = std::move(read_n_scalars<unsigned int>(fp, "unsigned_int", nbc, !ascii_file, false));
+					cell_types = std::move(read_n_scalars<unsigned int>(fp, name_of_type(std::uint32_t()), nbc, !ascii_file, false));
 				}
 			}
 		}
