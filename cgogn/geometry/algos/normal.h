@@ -30,7 +30,7 @@
 #include <geometry/algos/area.h>
 #include <geometry/functions/basics.h>
 #include <geometry/functions/normal.h>
-
+#include <geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -53,7 +53,8 @@ inline VEC3 triangle_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename 
 template <typename VEC3, typename MAP>
 inline VEC3 newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
-	VEC3 n{0.,0.,0.};
+	using Scalar = typename cgogn::geometry::vector_traits<VEC3>::Scalar;
+	VEC3 n{Scalar(0), Scalar(0), Scalar(0)};
 	map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
 	{
 		const VEC3& p = position[v.dart];
