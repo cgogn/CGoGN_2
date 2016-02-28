@@ -36,7 +36,7 @@ namespace geometry
 template <typename VEC3_T>
 inline typename VEC3_T::Scalar triangle_area(const VEC3_T& p1, const VEC3_T& p2, const VEC3_T& p3)
 {
-	return (0.5 * ((p2-p1).cross(p3-p1)).norm());
+	return (typename VEC3_T::Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
 }
 
 } // namespace geometry

@@ -43,7 +43,7 @@ inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template Ve
 		result += attribute[v];
 		++count;
 	});
-	result /= count;
+	result /= T::Scalar(count);
 	return result;
 }
 
