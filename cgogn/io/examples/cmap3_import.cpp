@@ -12,12 +12,13 @@
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = std::array<double,3>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
 template <typename T>
 using FaceAttributeHandler = Map3::FaceAttributeHandler<T>;
+
 
 int main(int argc, char** argv)
 {
@@ -40,22 +41,22 @@ int main(int argc, char** argv)
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-		map.enable_topo_cache<Map3::VOLUME>();
-		map.enable_topo_cache<Map3::FACE>();
-		map.enable_topo_cache<Map3::VERTEX>();
-		map.enable_topo_cache<Map3::EDGE>();
+		map.enable_topo_cache<Map3::Volume::ORBIT>();
+		map.enable_topo_cache<Map3::Face::ORBIT>();
+		map.enable_topo_cache<Map3::Vertex::ORBIT>();
+		map.enable_topo_cache<Map3::Edge::ORBIT>();
 
 
 		unsigned int nbw = 0u;
-		map.foreach_cell<Map3::VOLUME>([&nbw] (Map3::Volume)
+		map.foreach_cell([&nbw] (Map3::Volume)
 		{
 			++nbw;
 		});
 
 		unsigned int nbf = 0u;
-		map.foreach_cell<Map3::FACE>([&] (Map3::Face f)
+		map.foreach_cell([&] (Map3::Face f)
 		{
 			++nbf;
 			Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
@@ -63,7 +64,7 @@ int main(int argc, char** argv)
 		});
 
 		unsigned int nbv = 0;
-		map.foreach_cell<Map3::VERTEX>([&] (Map3::Vertex v)
+		map.foreach_cell([&] (Map3::Vertex v)
 		{
 			++nbv;
 			unsigned int nb_incident = 0;
@@ -74,7 +75,7 @@ int main(int argc, char** argv)
 		});
 
 		unsigned int nbe = 0;
-		map.foreach_cell<Map3::EDGE>([&nbe] (Map3::Edge)
+		map.foreach_cell([&nbe] (Map3::Edge)
 		{
 			++nbe;
 		});

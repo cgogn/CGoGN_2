@@ -28,76 +28,94 @@
 namespace cgogn
 {
 
-TEST(DartTest, DefaultConstructor)
+class DartTest : public ::testing::Test
 {
-	Dart d;
-	EXPECT_EQ(std::numeric_limits<unsigned int>::max(), d.index);
+
+public:
+
+	DartTest() : d10a_(10u), d10b_(10u), d20a_(20u),
+		dMax_(std::numeric_limits<unsigned int>::max()) {}
+
+	// virtual void TearDown() {}
+
+	const Dart dNil_;
+	const Dart d10a_;
+	const Dart d10b_;
+	const Dart d20a_;
+	const Dart dMax_;
+};
+
+TEST_F(DartTest, DefaultConstructor)
+{
+	EXPECT_EQ(std::numeric_limits<unsigned int>::max(), dNil_.index);
 }
 
-TEST(DartTest, Constructor)
+TEST_F(DartTest, Constructor)
 {
-	Dart d(10u);
-	EXPECT_EQ(10u, d.index);
+	EXPECT_EQ(10u, d10a_.index);
+	EXPECT_EQ(dNil_.index, dMax_.index);
 }
 
-TEST(DartTest, OutOfLimitConstructor)
+TEST_F(DartTest, CopyConstructor)
 {
-	Dart d1(std::numeric_limits<unsigned int>::max());
-	Dart d2;
-	EXPECT_EQ(d1.index, d2.index);
+	Dart d1(d10a_);
+	Dart d2(dNil_);
+	EXPECT_EQ(d1.index, d10a_.index);
+	EXPECT_EQ(d2.index, dNil_.index);
 }
 
-TEST(DartTest, CopyConstructor)
+TEST_F(DartTest, IsNil)
 {
-	Dart d(20u);
-	Dart dcopy(d);
-	EXPECT_EQ(d.index, dcopy.index);
+	EXPECT_TRUE(dNil_.is_nil());
+	EXPECT_TRUE(dMax_.is_nil());
+	EXPECT_FALSE(d10a_.is_nil());
 }
 
-TEST(DartTest, IsNil)
+TEST_F(DartTest, Assignation)
 {
-	Dart d;
-	EXPECT_TRUE(d.is_nil());
+	Dart d1 = d10a_;
+	Dart d2 = dNil_;
+	EXPECT_EQ(d1.index, d10a_.index);
+	EXPECT_EQ(d2.index, dNil_.index);
 }
 
-TEST(DartTest, Assignation)
+TEST_F(DartTest, Equality)
 {
-	Dart d1(10u);
-	Dart d2;
-	d2 = d1;
-	EXPECT_EQ(d2.index, d1.index);
+	EXPECT_TRUE(d10a_ == d10a_);
+	EXPECT_TRUE(d10a_ == d10b_);
+	EXPECT_TRUE(dNil_ == dMax_);
+	EXPECT_FALSE(d10a_ == dNil_);
+	EXPECT_FALSE(d10a_ == d20a_);
 }
 
-TEST(DartTest, Equality)
+TEST_F(DartTest, Difference)
 {
-	Dart d1(10u);
-	Dart d2(10u);
-	EXPECT_EQ(d2.index, d1.index);
+	EXPECT_TRUE(d10a_ != d20a_);
+	EXPECT_TRUE(d10a_ != dNil_);
+	EXPECT_FALSE(d10a_ != d10a_);
+	EXPECT_FALSE(d10a_ != d10b_);
 }
 
-TEST(DartTest, Difference)
+TEST_F(DartTest, PrintingOut)
 {
-	Dart d1(10u);
-	Dart d2(100u);
-	EXPECT_EQ(10u, d1.index);
-	EXPECT_EQ(100u, d2.index);
-}
-
-TEST(DartTest, PrintingOut)
-{
-	Dart d(10u);
 	std::ostringstream s;
-	s << "d=" << d;
-	EXPECT_EQ(0, strcmp(s.str().c_str(), "d=10"));
+	s << d10a_;
+	EXPECT_STREQ(s.str().c_str(), "10");
+	std::ostringstream t;
+	t << dNil_;
+	EXPECT_STREQ(t.str().c_str(), "-1");
 }
 
-TEST(DartTest, ReadingIn)
+TEST_F(DartTest, ReadingIn)
 {
 	Dart d;
 	std::istringstream s("10");
 	s >> d;
-
-	EXPECT_EQ(10u, d.index);
+	EXPECT_TRUE(d == d10a_);
+	Dart e;
+	std::istringstream t("-1");
+	t >> e;
+	EXPECT_TRUE(e == dNil_);
 }
 
 } // namespace cgogn

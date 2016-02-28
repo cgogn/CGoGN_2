@@ -21,14 +21,45 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_IHCMAP2_CPP_
+#ifndef GEOMETRY_INCLUSION_H_
+#define GEOMETRY_INCLUSION_H_
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/normal.h>
 
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
+namespace geometry
+{
+
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	using Scalar = typename vector_traits<VEC3_T>::Scalar;
+	static const auto triple_positive = [] (const VEC3_T& U, const VEC3_T& V, const VEC3_T& W) -> bool
+	{
+		return U.dot(V.cross(W)) >= Scalar(0);
+	};
+
+	if (triple_positive(P-Ta, Tb-Ta, normal) ||
+		triple_positive(P-Tb, Tc-Tb, normal) ||
+		triple_positive(P-Tc, Ta-Tc, normal) )
+		return false;
+
+	return true;
+}
+
+template <typename VEC3_T>
+inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+{
+	return in_triangle(P, triangle_normal(Ta, Tb, Tc), Ta, Tb,Tc );
+}
+
+
+} // namespace geometry
 
 } // namespace cgogn
+
+#endif // GEOMETRY_INCLUSION_H_

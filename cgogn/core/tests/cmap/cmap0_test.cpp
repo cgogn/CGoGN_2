@@ -21,14 +21,73 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_IHCMAP2_CPP_
+#include <gtest/gtest.h>
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <core/cmap/cmap0.h>
+#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
+#define NB_MAX 1000
+
+class CMap0Test: public ::testing::Test
+{
+
+public:
+
+	using testCMap0 = CMap0<DefaultMapTraits>;
+	using Vertex = testCMap0::Vertex;
+
+protected:
+
+	testCMap0 cmap_;
+
+	CMap0Test()
+	{
+		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+	}
+
+	std::array<Dart, NB_MAX> tdarts_;
+
+	int addVertices() {
+		for (int i = 0; i < NB_MAX; ++i)
+			tdarts_[i] = cmap_.add_vertex();
+
+		return NB_MAX;
+	}
+};
+
+TEST_F(CMap0Test, testCMap0Constructor)
+{
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+}
+
+TEST_F(CMap0Test, testAddVertex)
+{
+	int n = addVertices();
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+}
+
+TEST_F(CMap0Test, testRemoveVertex)
+{
+	int n = addVertices();
+
+	int countVertex = n;
+	for (int i = 0; i < n; ++i) {
+		Vertex d = tdarts_[i];
+		if (i%2 == 1) {
+			cmap_.remove_vertex(Vertex(d));
+			--countVertex;
+		}
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_TRUE(is_well_embedded<Vertex::ORBIT>(cmap_));
+	EXPECT_TRUE(is_orbit_embedding_unique<Vertex::ORBIT>(cmap_));
+}
 
 } // namespace cgogn

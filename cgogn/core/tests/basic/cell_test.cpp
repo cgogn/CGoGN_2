@@ -28,15 +28,6 @@
 namespace cgogn
 {
 
-// TEST(CellTest, Equality)
-// {
-// 	Cell<VERTEX1> v1();
-// 	Cell<VERTEX1> v2();
-
-// 	v1 != v2;
-
-// 	// EXPECT_EQ(10u, d.index);
-// }
 
 const Dart dglobal(10u);
 const Dart dmax(std::numeric_limits<unsigned int>::max());

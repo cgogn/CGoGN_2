@@ -84,8 +84,8 @@ class ChunkArrayContainer
 {
 public:
 
-	typedef ChunkArrayContainer<CHUNKSIZE, T_REF> Self;
-	typedef T_REF ref_type;
+	using Self = ChunkArrayContainer<CHUNKSIZE, T_REF>;
+	using ref_type = T_REF;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <class T>

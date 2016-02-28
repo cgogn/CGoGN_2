@@ -39,9 +39,13 @@
 #include <core/basic/cell.h>
 #include <core/cmap/map_traits.h>
 
-
-#define CGOGN_CHECK_CONCRETE_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
+#define CGOGN_CHECK_DYNAMIC_TYPE cgogn_message_assert(typeid(*this).hash_code() == typeid(Self).hash_code(),\
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
+#ifndef _MSC_VER
+#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value,"The concrete map type has to be equal to Self")
+#else
+#define CGOGN_CHECK_CONCRETE_TYPE CGOGN_CHECK_DYNAMIC_TYPE
+#endif
 
 namespace cgogn
 {
@@ -53,7 +57,7 @@ class CGOGN_CORE_API MapGen
 {
 public:
 
-	typedef MapGen Self;
+	using Self = MapGen;
 
 protected:
 
@@ -90,8 +94,8 @@ class MapBaseData : public MapGen
 {
 public:
 
-	typedef MapGen Inherit;
-	typedef MapBaseData<MAP_TRAITS> Self;
+	using Inherit = MapGen;
+	using Self = MapBaseData<MAP_TRAITS>;
 
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const unsigned int NB_UNKNOWN_THREADS = 4u;
@@ -231,24 +235,30 @@ protected:
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
-public:
-
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
 
+public:
+
 	template <Orbit ORBIT>
-	inline bool is_orbit_embedded() const
+	inline bool is_embedded() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return embeddings_[ORBIT] != nullptr;
+	}
+
+	template <class CellType>
+	inline bool is_embedded() const
+	{
+		return is_embedded<CellType::ORBIT>();
 	}
 
 	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
@@ -256,21 +266,31 @@ public:
 
 protected:
 
-	template <Orbit ORBIT>
+	template <class CellType>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
 		const unsigned int old = (*embeddings_[ORBIT])[d.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
-		this->attributes_[ORBIT].ref_line(emb);			// ref the new emb
+		attributes_[ORBIT].ref_line(emb);			// ref the new emb
 		if (old != EMBNULL)
-			this->attributes_[ORBIT].unref_line(old);	// unref the old emb
+			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
-		(*this->embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
+		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
+	}
+
+	template <class CellType>
+	inline void copy_embedding(Dart dest, Dart src)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
 	}
 
 	/*******************************************************************************
