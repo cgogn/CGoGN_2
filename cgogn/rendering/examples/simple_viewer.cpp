@@ -167,7 +167,7 @@ void Viewer::draw()
 
 void Viewer::init()
 {
-	glClearColor(0.1,0.1,0.3,0.0);
+	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO;
 	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);

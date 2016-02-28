@@ -58,11 +58,16 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
+	inline Vec_T(Scalar a)  { data_[0] = a; }
+	inline Vec_T(Scalar a, Scalar b)  { data_[0] = a; data_[1] = b; }
+	inline Vec_T(Scalar a, Scalar b, Scalar c)  { data_[0] = a; data_[1] = b; data_[2] = c; }
+	inline Vec_T(Scalar a, Scalar b, Scalar c, Scalar d)  { data_[0] = a; data_[1] = b; data_[2] = c; data_[3] = d; }
+
 	inline Vec_T() : data_() {}
 
-	template <typename... Args>
-	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... })
-	{}
+	//template <typename... Args>
+	//inline Vec_T(Args... a) : data_({ { std::forward<Args>(a)... } })
+	//{}
 
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;

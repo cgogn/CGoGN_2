@@ -3,7 +3,8 @@ project(cgogn_core
 )
 
 set(HEADER_FILES
-	basic/dll.h
+	dll.h
+
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h

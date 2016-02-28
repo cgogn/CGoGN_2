@@ -123,9 +123,8 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 			// don't allow enqueueing after stopping the pool
 		if (stop_)
 		{
+			std::cerr << "enqueue on stopped ThreadPool" << std::endl;
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
-//			std::cerr << "enqueue on stopped ThreadPool" << std::endl;
-//			exit(1); 
 		}
 		// Push work back on the queue
 		tasks_.emplace([task](unsigned int i){ (*task)(i); });
