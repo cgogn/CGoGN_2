@@ -58,10 +58,29 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
-	inline Vec_T(Scalar a)  { data_[0] = a; }
-	inline Vec_T(Scalar a, Scalar b)  { data_[0] = a; data_[1] = b; }
-	inline Vec_T(Scalar a, Scalar b, Scalar c)  { data_[0] = a; data_[1] = b; data_[2] = c; }
-	inline Vec_T(Scalar a, Scalar b, Scalar c, Scalar d)  { data_[0] = a; data_[1] = b; data_[2] = c; data_[3] = d; }
+	inline Vec_T(Scalar a)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 1, "wrong contructor, too many data");
+		data_[0] = a;
+	}
+
+	inline Vec_T(Scalar a, Scalar b)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 2, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b;
+	}
+
+	inline Vec_T(Scalar a, Scalar b, Scalar c)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 3, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b; data_[2] = c;
+	}
+
+	inline Vec_T(Scalar a, Scalar b, Scalar c, Scalar d)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 4, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b; data_[2] = c; data_[3] = d;
+	}
 
 	inline Vec_T() : data_() {}
 
