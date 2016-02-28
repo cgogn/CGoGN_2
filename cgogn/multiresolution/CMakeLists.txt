@@ -17,8 +17,8 @@ set(HEADER_FILES
 	mrcmap/mr_base.h
 	mrcmap/mrcmap2.h
 
-	mra/mr_analysis.h
-	mra/lerp_triquad_mra.h
+#	mra/mr_analysis.h
+#	mra/lerp_triquad_mra.h
 )
 
 set(SOURCE_FILES
@@ -37,7 +37,6 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/multiresolution>
 )
@@ -56,4 +55,4 @@ install(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION lib
 )
 
-add_subdirectory(examples)
+#add_subdirectory(examples)

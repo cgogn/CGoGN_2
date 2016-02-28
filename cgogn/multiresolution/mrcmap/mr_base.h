@@ -35,7 +35,7 @@ template <typename MAP>
 class MRBase
 {
 public:
-	typedef MRBase<MAP> Self;
+	using Self = MRBase<MAP>;
 
 	template<typename T>
 	using ChunkArray =  typename MAP::template ChunkArray<T>;

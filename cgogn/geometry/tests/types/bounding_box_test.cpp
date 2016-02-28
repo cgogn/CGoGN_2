@@ -27,14 +27,14 @@
 #include <cmath>
 
 using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-using EigenVec3d = Eigen::Vector3d;
+//using EigenVec3d = Eigen::Vector3d;
 using BoundingBox_Array = cgogn::geometry::BoundingBox<StdArray>;
-using BoundingBox_Eigen = cgogn::geometry::BoundingBox<EigenVec3d>;
+//using BoundingBox_Eigen = cgogn::geometry::BoundingBox<EigenVec3d>;
 
 TEST(BoundingBox_TEST, NameOfType)
 {
 	EXPECT_EQ(cgogn::name_of_type(BoundingBox_Array()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<double,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(BoundingBox_Eigen()), "cgogn::geometry::BoundingBox<Eigen::Matrix<double,3,1,0,3,1>>");
+//	EXPECT_EQ(cgogn::name_of_type(BoundingBox_Eigen()), "cgogn::geometry::BoundingBox<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 
 TEST(BoundingBox_TEST, Basics)
@@ -55,17 +55,17 @@ TEST(BoundingBox_TEST, Basics)
 		EXPECT_EQ(bb.center(), StdArray({0.,0.,0.}));
 	}
 	{
-		BoundingBox_Eigen bb;
-		bb.add_point(EigenVec3d(0.5,0.4,0.3));
-		bb.add_point(EigenVec3d(-1,2,-3));
-		bb.add_point(EigenVec3d(1,-2,3));
+//		BoundingBox_Eigen bb;
+//		bb.add_point(EigenVec3d(0.5,0.4,0.3));
+//		bb.add_point(EigenVec3d(-1,2,-3));
+//		bb.add_point(EigenVec3d(1,-2,3));
 
-		EXPECT_EQ(bb.min(), EigenVec3d(-1,-2,-3));
-		EXPECT_EQ(bb.max(), EigenVec3d(1,2,3));
-		EXPECT_EQ(bb.max_size(), 6);
-		EXPECT_EQ(bb.min_size(), 2);
-		EXPECT_TRUE(cgogn::almost_equal_relative(bb.diag_size(), std::sqrt(2.0*2+4*4+6*6)));
-		EXPECT_EQ(bb.center(), EigenVec3d(0,0,0));
+//		EXPECT_EQ(bb.min(), EigenVec3d(-1,-2,-3));
+//		EXPECT_EQ(bb.max(), EigenVec3d(1,2,3));
+//		EXPECT_EQ(bb.max_size(), 6);
+//		EXPECT_EQ(bb.min_size(), 2);
+//		EXPECT_TRUE(cgogn::almost_equal_relative(bb.diag_size(), std::sqrt(2.0*2+4*4+6*6)));
+//		EXPECT_EQ(bb.center(), EigenVec3d(0,0,0));
 	}
 }
 
@@ -95,26 +95,26 @@ TEST(BoundingBox_TEST, testing)
 		EXPECT_FALSE(bb.ray_intersect(StdArray({-9.,-9.,-9.}), StdArray({1.,-1.,0.})));
 	}
 	{
-		BoundingBox_Eigen bb;
-		bb.add_point(EigenVec3d(0.5,0.4,0.3));
-		bb.add_point(EigenVec3d(-1,2,-3));
-		bb.add_point(EigenVec3d(1,-2,3));
+//		BoundingBox_Eigen bb;
+//		bb.add_point(EigenVec3d(0.5,0.4,0.3));
+//		bb.add_point(EigenVec3d(-1,2,-3));
+//		bb.add_point(EigenVec3d(1,-2,3));
 
-		EXPECT_TRUE(bb.contains(EigenVec3d(1,1,1)));
+//		EXPECT_TRUE(bb.contains(EigenVec3d(1,1,1)));
 
-		BoundingBox_Eigen bb2;
-		bb2.add_point(EigenVec3d(0,0,0));
-		bb2.add_point(EigenVec3d(4,5,2));
+//		BoundingBox_Eigen bb2;
+//		bb2.add_point(EigenVec3d(0,0,0));
+//		bb2.add_point(EigenVec3d(4,5,2));
 
-		EXPECT_TRUE(bb.intersects(bb2));
+//		EXPECT_TRUE(bb.intersects(bb2));
 
-		BoundingBox_Eigen bb3;
-		bb3.add_point(EigenVec3d(0,0,0));
-		bb3.add_point(EigenVec3d(1,1,1));
+//		BoundingBox_Eigen bb3;
+//		bb3.add_point(EigenVec3d(0,0,0));
+//		bb3.add_point(EigenVec3d(1,1,1));
 
-		EXPECT_TRUE(bb.contains(bb3));
+//		EXPECT_TRUE(bb.contains(bb3));
 
-		EXPECT_TRUE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,1,1)));
-		EXPECT_FALSE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,-1,0)));
+//		EXPECT_TRUE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,1,1)));
+//		EXPECT_FALSE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,-1,0)));
 	}
 }

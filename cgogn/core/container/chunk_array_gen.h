@@ -44,7 +44,7 @@ class ChunkArrayGen
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Self;
+	using Self = ChunkArrayGen<CHUNKSIZE>;
 
 	inline ChunkArrayGen()
 	{

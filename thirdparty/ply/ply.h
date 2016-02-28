@@ -40,16 +40,16 @@ chars for red, green and blue.
 
 -----------------------------------------------------------------------
 
-Copyright (c) 1998 Georgia Institute of Technology.  All rights reserved.   
-  
-Permission to use, copy, modify and distribute this software and its   
-documentation for any purpose is hereby granted without fee, provided   
-that the above copyright notice and this permission notice appear in   
-all copies of this software and that you do not sell the software.   
-  
-THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,   
-EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY   
-WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.   
+Copyright (c) 1998 Georgia Institute of Technology.  All rights reserved.
+
+Permission to use, copy, modify and distribute this software and its
+documentation for any purpose is hereby granted without fee, provided
+that the above copyright notice and this permission notice appear in
+all copies of this software and that you do not sell the software.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 
 */
 
@@ -91,50 +91,50 @@ extern "C" {
 
 typedef struct PlyProperty {    /* description of a property */
 
-  char *name;                   /* property name */
-  int external_type;            /* file's data type */
-  int internal_type;            /* program's data type */
-  int offset;                   /* offset bytes of prop in a struct */
+	char *name;                   /* property name */
+	int external_type;            /* file's data type */
+	int internal_type;            /* program's data type */
+	int offset;                   /* offset bytes of prop in a struct */
 
-  int is_list;                  /* 0 = scalar, 1 = list, 2 = char string */
-  int count_external;           /* file's count type */
-  int count_internal;           /* program's count type */
-  int count_offset;             /* offset byte for list count */
+	int is_list;                  /* 0 = scalar, 1 = list, 2 = char string */
+	int count_external;           /* file's count type */
+	int count_internal;           /* program's count type */
+	int count_offset;             /* offset byte for list count */
 
 } PlyProperty;
 
 typedef struct PlyElement {     /* description of an element */
-  char *name;                   /* element name */
-  int num;                      /* number of elements in this object */
-  int size;                     /* size of element (bytes) or -1 if variable */
-  int nprops;                   /* number of properties for this element */
-  PlyProperty **props;          /* list of properties in the file */
-  char *store_prop;             /* flags: property wanted by user? */
-  int other_offset;             /* offset to un-asked-for props, or -1 if none*/
-  int other_size;               /* size of other_props structure */
+	char *name;                   /* element name */
+	int num;                      /* number of elements in this object */
+	int size;                     /* size of element (bytes) or -1 if variable */
+	int nprops;                   /* number of properties for this element */
+	PlyProperty **props;          /* list of properties in the file */
+	char *store_prop;             /* flags: property wanted by user? */
+	int other_offset;             /* offset to un-asked-for props, or -1 if none*/
+	int other_size;               /* size of other_props structure */
 } PlyElement;
 
 typedef struct PlyOtherProp {   /* describes other properties in an element */
-  char *name;                   /* element name */
-  int size;                     /* size of other_props */
-  int nprops;                   /* number of properties in other_props */
-  PlyProperty **props;          /* list of properties in other_props */
+	char *name;                   /* element name */
+	int size;                     /* size of other_props */
+	int nprops;                   /* number of properties in other_props */
+	PlyProperty **props;          /* list of properties in other_props */
 } PlyOtherProp;
 
 typedef struct OtherData { /* for storing other_props for an other element */
-  void *other_props;
+	void *other_props;
 } OtherData;
 
 typedef struct OtherElem {     /* data for one "other" element */
-  char *elem_name;             /* names of other elements */
-  int elem_count;              /* count of instances of each element */
-  OtherData **other_data;      /* actual property data for the elements */
-  PlyOtherProp *other_props;   /* description of the property data */
+	char *elem_name;             /* names of other elements */
+	int elem_count;              /* count of instances of each element */
+	OtherData **other_data;      /* actual property data for the elements */
+	PlyOtherProp *other_props;   /* description of the property data */
 } OtherElem;
 
 typedef struct PlyOtherElems {  /* "other" elements, not interpreted by user */
-  int num_elems;                /* number of other elements */
-  OtherElem *other_list;        /* list of data for other elements */
+	int num_elems;                /* number of other elements */
+	OtherElem *other_list;        /* list of data for other elements */
 } PlyOtherElems;
 
 #define AVERAGE_RULE  1
@@ -145,35 +145,35 @@ typedef struct PlyOtherElems {  /* "other" elements, not interpreted by user */
 #define RANDOM_RULE   6
 
 typedef struct PlyPropRules {   /* rules for combining "other" properties */
-  PlyElement *elem;      /* element whose rules we are making */
-  int *rule_list;        /* types of rules (AVERAGE_PLY, MAJORITY_PLY, etc.) */
-  int nprops;            /* number of properties we're combining so far */
-  int max_props;         /* maximum number of properties we have room for now */
-  void **props;          /* list of properties we're combining */
-  float *weights;        /* list of weights of the properties */
+	PlyElement *elem;      /* element whose rules we are making */
+	int *rule_list;        /* types of rules (AVERAGE_PLY, MAJORITY_PLY, etc.) */
+	int nprops;            /* number of properties we're combining so far */
+	int max_props;         /* maximum number of properties we have room for now */
+	void **props;          /* list of properties we're combining */
+	float *weights;        /* list of weights of the properties */
 } PlyPropRules;
 
 typedef struct PlyRuleList {
-  char *name;                  /* name of the rule */
-  char *element;               /* name of element that rule applies to */
-  char *property;              /* name of property that rule applies to */
-  struct PlyRuleList *next;    /* pointer for linked list of rules */
+	char *name;                  /* name of the rule */
+	char *element;               /* name of element that rule applies to */
+	char *property;              /* name of property that rule applies to */
+	struct PlyRuleList *next;    /* pointer for linked list of rules */
 } PlyRuleList;
 
 typedef struct PlyFile {        /* description of PLY file */
-  FILE *fp;                     /* file pointer */
-  int file_type;                /* ascii or binary */
-  float version;                /* version number of file */
-  int num_elem_types;           /* number of element types of object */
-  PlyElement **elems;           /* list of elements */
-  int num_comments;             /* number of comments */
-  char **comments;              /* list of comments */
-  int num_obj_info;             /* number of items of object information */
-  char **obj_info;              /* list of object info items */
-  PlyElement *which_elem;       /* element we're currently reading or writing */
-  PlyOtherElems *other_elems;   /* "other" elements from a PLY file */
-  PlyPropRules *current_rules;  /* current propagation rules */
-  PlyRuleList *rule_list;       /* rule list from user */
+	FILE *fp;                     /* file pointer */
+	int file_type;                /* ascii or binary */
+	float version;                /* version number of file */
+	int num_elem_types;           /* number of element types of object */
+	PlyElement **elems;           /* list of elements */
+	int num_comments;             /* number of comments */
+	char **comments;              /* list of comments */
+	int num_obj_info;             /* number of items of object information */
+	char **obj_info;              /* list of object info items */
+	PlyElement *which_elem;       /* element we're currently reading or writing */
+	PlyOtherElems *other_elems;   /* "other" elements from a PLY file */
+	PlyPropRules *current_rules;  /* current propagation rules */
+	PlyRuleList *rule_list;       /* rule list from user */
 } PlyFile;
 
 /* memory allocation */

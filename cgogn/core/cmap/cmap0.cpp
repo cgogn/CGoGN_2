@@ -21,14 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_IHCMAP2_CPP_
+#define CGOGN_CORE_DLL_EXPORT
+#define CORE_MAP_MAP0_CPP_
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <core/cmap/cmap0.h>
 
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
+	template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
+	template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 
 } // namespace cgogn

@@ -21,14 +21,72 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_IHCMAP2_CPP_
+#include <gtest/gtest.h>
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <core/cmap/cmap0.h>
 
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
+#define NB_MAX 1000
+
+class CMap0TopoTest: public ::testing::Test
+{
+
+public:
+
+	using testCMap0 = CMap0<DefaultMapTraits>;
+	using Vertex = testCMap0::Vertex;
+
+protected:
+
+	testCMap0 cmap_;
+
+	CMap0TopoTest()
+	{
+	}
+
+	std::array<Dart, NB_MAX> tdarts_;
+
+	int addVertices() {
+		for (int i = 0; i < NB_MAX; ++i)
+			tdarts_[i] = cmap_.add_vertex();
+
+		return NB_MAX;
+	}
+};
+
+TEST_F(CMap0TopoTest, testCMap0Constructor)
+{
+	EXPECT_EQ(cmap_.nb_darts(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+}
+
+TEST_F(CMap0TopoTest, testAddVertex)
+{
+	int n = addVertices();
+
+	EXPECT_EQ(cmap_.nb_darts(), n);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+TEST_F(CMap0TopoTest, testRemoveVertex)
+{
+	int n = addVertices();
+
+	int countVertex = n;
+	for (int i = 0; i < n; ++i) {
+		Vertex d = tdarts_[i];
+		if (i%2 == 1) {
+			cmap_.remove_vertex(Vertex(d));
+			--countVertex;
+		}
+	}
+
+	EXPECT_EQ(cmap_.nb_darts(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
 
 } // namespace cgogn
