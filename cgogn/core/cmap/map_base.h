@@ -998,7 +998,7 @@ protected:
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
 		if ((end - it) < 16 * nb_threads_pool * PARALLEL_BUFFER_SIZE)
-			nbc = (end - it) / nb_threads_pool;
+			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
 
 		unsigned int local_end = it+nbc;
 

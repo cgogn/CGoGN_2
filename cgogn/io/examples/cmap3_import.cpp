@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 		{
 			++nbv;
 			unsigned int nb_incident = 0;
-			map.foreach_incident_face(v, [&] (Map3::Face f)
+			map.foreach_incident_face(v, [&] (Map3::Face /*f*/)
 			{
 				++nb_incident;
 			});

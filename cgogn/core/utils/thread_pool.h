@@ -71,7 +71,7 @@
 namespace cgogn
 {
 
-class CGOGN_UTILS_API ThreadPool {
+class CGOGN_CORE_API ThreadPool {
 public:
 	ThreadPool();
 	ThreadPool(const ThreadPool&) = delete;
@@ -121,8 +121,12 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 			// don't allow enqueueing after stopping the pool
-		if(stop_)
+		if (stop_)
+		{
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
+//			std::cerr << "enqueue on stopped ThreadPool" << std::endl;
+//			exit(1); 
+		}
 		// Push work back on the queue
 		tasks_.emplace([task](unsigned int i){ (*task)(i); });
 	}

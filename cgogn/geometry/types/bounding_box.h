@@ -151,7 +151,11 @@ public:
 		return center;
 	}
 
-	bool is_initialized() const;
+	bool is_initialized() const
+	{
+		return initialized_;
+
+	}
 
 	// reinitialize the bounding box
 	void reset()

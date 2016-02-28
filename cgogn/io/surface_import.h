@@ -86,7 +86,7 @@ public:
 	unsigned int nb_edges_;
 	unsigned int nb_faces_;
 
-	std::vector<unsigned short> faces_nb_edges_;
+	std::vector<unsigned int> faces_nb_edges_;
 	std::vector<unsigned int> faces_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
@@ -183,7 +183,7 @@ public:
 
 		for (unsigned int i = 0; i < this->nb_faces_; ++i)
 		{
-			unsigned short nbe = this->faces_nb_edges_[i];
+			unsigned int nbe = this->faces_nb_edges_[i];
 
 			vertices_buffer.clear();
 			unsigned int prev = std::numeric_limits<unsigned int>::max();
@@ -580,7 +580,7 @@ protected:
 		}
 
 		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-		ChunkArray<VEC3>* color;
+		ChunkArray<VEC3>* color = nullptr;
 		if (pid.has_colors())
 		{
 			 color = vertex_attributes_.template add_attribute<VEC3>("color");
