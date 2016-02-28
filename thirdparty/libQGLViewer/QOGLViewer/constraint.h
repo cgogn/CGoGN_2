@@ -329,8 +329,10 @@ public:
 	/*! Returns the associated Camera. Set using the CameraConstraint constructor. */
 	const Camera* camera() const { return camera_; };
 
+	CameraConstraint& operator=(const CameraConstraint&) = delete;
 private:
 	const Camera* const camera_;
+	
 };
 
 } // namespace qoglviewer
