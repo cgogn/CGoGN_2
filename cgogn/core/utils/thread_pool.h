@@ -71,7 +71,7 @@
 namespace cgogn
 {
 
-class CGOGN_UTILS_API ThreadPool {
+class CGOGN_CORE_API ThreadPool {
 public:
 	ThreadPool();
 	ThreadPool(const ThreadPool&) = delete;
