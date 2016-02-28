@@ -29,7 +29,7 @@
 #include <cmath>
 #include <string>
 
-#include <io/ply.h>
+#include <ply.h>
 #include <io/dll.h>
 
 namespace cgogn
@@ -44,10 +44,10 @@ public:
 
 	template <typename VEC>
 	void vertex_position(int i, VEC& P) { P[0] = vlist[i]->x; P[1] = vlist[i]->y; P[2] = vlist[i]->z;}
-	
+
 	template <typename VEC>
 	void vertex_normal(int i, VEC& N) { N[0] = vlist[i]->nx; N[1] = vlist[i]->ny; N[2] = vlist[i]->nz;}
-	
+
 	template <typename VEC>
 	void vertexColorUint8(int i, VEC& C) { C[0] = vlist[i]->red; C[1] = vlist[i]->green; C[2] = vlist[i]->blue;}
 
@@ -77,7 +77,7 @@ public:
 	int get_face_valence(int i) { return flist[i]->nverts;}
 
 	/**
-	* get a table (pointer) of int of vertex indices of 
+	* get a table (pointer) of int of vertex indices of
 	*/
 	int* get_face_indices(int i) { return flist[i]->verts;}
 
@@ -91,39 +91,39 @@ public:
 protected:
 
 	/* vertex and face definitions for a polygonal object */
-	
+
 	typedef struct VertexPly {
-	float x,y,z;
-	float r,g,b;
-	unsigned char red,green,blue;
-	float nx,ny,nz;
-	void *other_props;       /* other properties */
+		float x,y,z;
+		float r,g,b;
+		unsigned char red,green,blue;
+		float nx,ny,nz;
+		void *other_props;       /* other properties */
 	} VertexPly;
-	
+
 	typedef struct FacePly {
-	unsigned char nverts;    /* number of vertex indices in list */
-	int *verts;              /* vertex index list */
-	void *other_props;       /* other properties */
+		unsigned char nverts;    /* number of vertex indices in list */
+		int *verts;              /* vertex index list */
+		void *other_props;       /* other properties */
 	} FacePly;
-	
-	static char *elem_names[]; 
-	
+
+	static char *elem_names[];
+
 	static PlyProperty vert_props[];
-	
+
 	static PlyProperty face_props[];
-	
-	
+
+
 	/*** the PLY object ***/
-	
+
 	int nverts,nfaces;
 	VertexPly **vlist;
 	FacePly **flist;
-	
+
 	PlyOtherProp *vert_other,*face_other;
-	
+
 	int per_vertex_color_float32, per_vertex_color_uint8 ;
 	int has_normals_;
-	
+
 	char *old_locale;
 };
 

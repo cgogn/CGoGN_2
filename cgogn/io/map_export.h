@@ -30,11 +30,9 @@
 #include <iostream>
 #include <climits>
 
+#include <core/utils/endian.h>
 #include <geometry/algos/normal.h>
 #include <geometry/algos/ear_triangulation.h>
-
-
-
 
 namespace cgogn
 {
@@ -123,14 +121,6 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 template <typename VEC3, typename MAP>
 bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
 {
-
-	// local function for little/big endian conversion
-	auto changeEndianness = [](unsigned int x) -> unsigned int
-	{
-		return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
-	};
-
-
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
@@ -141,8 +131,8 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	fp << "OFF BINARY"<< std::endl;
 
 	unsigned int nb_cells[3];
-	nb_cells[0] = changeEndianness(map.template nb_cells<MAP::VERTEX>());
-	nb_cells[1] = changeEndianness(map.template nb_cells<MAP::FACE>());
+	nb_cells[0] = swap_endianness_system_big(map.template nb_cells<MAP::VERTEX>());
+	nb_cells[1] = swap_endianness_system_big(map.template nb_cells<MAP::FACE>());
 	nb_cells[2] = 0;
 
 	fp.write(reinterpret_cast<char*>(nb_cells),3*sizeof(unsigned int));
@@ -172,9 +162,9 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 				// VEC3 can be double !
 				float Pf[3]={float(P[0]),float(P[1]),float(P[2])};
 				unsigned int* ui_vec = reinterpret_cast<unsigned int*>(Pf);
-				ui_vec[0] = changeEndianness(ui_vec[0]);
-				ui_vec[1] = changeEndianness(ui_vec[1]);
-				ui_vec[2] = changeEndianness(ui_vec[2]);
+				ui_vec[0] = swap_endianness_system_big(ui_vec[0]);
+				ui_vec[1] = swap_endianness_system_big(ui_vec[1]);
+				ui_vec[2] = swap_endianness_system_big(ui_vec[2]);
 
 				buffer_pos.push_back(Pf[0]);
 				buffer_pos.push_back(Pf[1]);
@@ -212,9 +202,9 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 			++valence;
 		});
 
-		buffer_prims.push_back(changeEndianness(valence));
+		buffer_prims.push_back(swap_endianness_system_big(valence));
 		for(unsigned int i: prim)
-			buffer_prims.push_back(changeEndianness(i));
+			buffer_prims.push_back(swap_endianness_system_big(i));
 
 		if (buffer_prims.size() >= BUFFER_SZ)
 		{
@@ -614,14 +604,6 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 template <typename VEC3, typename MAP>
 bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
 {
-
-	// local function for little/big endian conversion
-	auto changeEndianness = [](unsigned int x) -> unsigned int
-	{
-		return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
-	};
-
-
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
@@ -630,12 +612,7 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	}
 
 	fp << "ply" << std::endl ;
-	union
-	{
-		uint32_t i ;
-		char c[4] ;
-	} bint = {0x01020304} ;
-	if (bint.c[0] == 1) // big endian
+	if (internal::cgogn_is_big_endian)
 		fp << "format binary_big_endian 1.0" << std::endl ;
 	else
 		fp << "format binary_little_endian 1.0" << std::endl ;
@@ -723,7 +700,6 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	}
 
 	map.remove_attribute(ids);
-	fp.close();
 	return true;
 }
 

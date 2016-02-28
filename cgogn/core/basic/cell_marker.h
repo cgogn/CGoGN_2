@@ -31,27 +31,13 @@
 namespace cgogn
 {
 
-//class CGOGN_CORE_API CellMarkerGen
-//{
-//public:
-//	typedef CellMarkerGen Self;
-//	CellMarkerGen()
-//	{}
-
-//	virtual ~CellMarkerGen();
-
-//	CellMarkerGen(const Self& dm) = delete;
-//	CellMarkerGen(Self&& dm) = delete;
-//	CellMarkerGen& operator=(Self&& dm) = delete;
-//	CellMarkerGen& operator=(const Self& dm) = delete;
-//};
-
 template <typename MAP, Orbit ORBIT>
-class CellMarker_T // : public CellMarkerGen
+class CellMarker_T
 {
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 public:
+
 	static const unsigned int CHUNKSIZE = MAP::CHUNKSIZE;
 	using Self = CellMarker_T<MAP, ORBIT>;
 	using Map = MAP;
@@ -65,14 +51,12 @@ protected:
 public:
 
 	CellMarker_T(Map& map) :
-//		Inherit(),
 		map_(map)
 	{
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
 	}
 
 	CellMarker_T(const MAP& map) :
-//		Inherit(),
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
@@ -113,9 +97,9 @@ class CellMarker : public CellMarker_T<MAP, ORBIT>
 {
 public:
 
-	typedef CellMarker_T<MAP, ORBIT> Inherit;
-	typedef CellMarker< MAP, ORBIT > Self;
-	typedef typename Inherit::Map Map;
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarker< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
 
 	CellMarker(Map& map) :
 		Inherit(map)
@@ -147,10 +131,9 @@ class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 {
 public:
 
-	typedef CellMarker_T<MAP, ORBIT> Inherit;
-	typedef CellMarkerStore< MAP, ORBIT > Self;
-
-	typedef typename Inherit::Map Map;
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarkerStore< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
 
 protected:
 

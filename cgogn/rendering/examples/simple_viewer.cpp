@@ -91,8 +91,8 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::VERTEX>("position");
-	vertex_normal_ = map_.add_attribute<Vec3, Map2::VERTEX>("normal");
+	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);

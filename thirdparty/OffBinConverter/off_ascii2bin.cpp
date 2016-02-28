@@ -1,11 +1,10 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
+#include <string>
 
-inline unsigned int changeEndian(unsigned int x)
-{
-	return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
-}
+#include <core/utils/endian.h>
 
 int main(int argc, char **argv)
 {
@@ -35,9 +34,9 @@ int main(int argc, char **argv)
 	ifs >> np;
 	ifs >> ne;
 
-	unsigned int nv_be = changeEndian(nv);
-	unsigned int np_be = changeEndian(np);
-	unsigned int ne_be = changeEndian(ne);
+	unsigned int nv_be = cgogn::swap_endianness_system_big(nv);
+	unsigned int np_be = cgogn::swap_endianness_system_big(np);
+	unsigned int ne_be = cgogn::swap_endianness_system_big(ne);
 
 
 	ofs << "OFF BINARY"<< std::endl;
@@ -55,12 +54,12 @@ int main(int argc, char **argv)
 	unsigned int* ptr = reinterpret_cast<unsigned int*>(vertices);
 	for (unsigned int i=0; i<3*nv;++i)
 	{
-		*ptr = changeEndian(*ptr);
+		*ptr = cgogn::swap_endianness_system_big(*ptr);
 		ptr++;
 	}
-		
 
-	ofs.write(reinterpret_cast<char*>(vertices),4*3*nv);	
+
+	ofs.write(reinterpret_cast<char*>(vertices),4*3*nv);
 
 	delete[] vertices;
 
@@ -83,11 +82,11 @@ int main(int argc, char **argv)
 	ptr = reinterpret_cast<unsigned int*>(&(prim[0]));
 	for (unsigned int i=0; i<prim.size();++i)
 	{
-		*ptr = changeEndian(*ptr);
+		*ptr = cgogn::swap_endianness_system_big(*ptr);
 		ptr++;
 	}
 
-	ofs.write(reinterpret_cast<char*>(&(prim[0])),4*prim.size());	
+	ofs.write(reinterpret_cast<char*>(&(prim[0])),4*prim.size());
 
 	ofs.close();
 	ifs.close();
