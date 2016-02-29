@@ -9,6 +9,7 @@ set(HEADER_FILES
 	map_export.h
 	import_ply_data.h
 	dll.h
+	c_locale.h
 )
 
 set(SOURCE_FILES

@@ -75,8 +75,6 @@ PlyImportData::PlyImportData():
 	per_vertex_color_uint8(0),
 	has_normals_(0)
 {
-	old_locale = setlocale(LC_NUMERIC, NULL);
-	setlocale(LC_NUMERIC, "C");
 }
 
 PlyImportData::~PlyImportData()
@@ -102,7 +100,7 @@ PlyImportData::~PlyImportData()
 // 	}
 
 // need to free *vert_other,*face_other ????
-	setlocale(LC_NUMERIC, old_locale);
+
 }
 
 

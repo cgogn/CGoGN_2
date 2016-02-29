@@ -33,6 +33,7 @@
 #include <core/utils/string.h>
 #include <io/import_ply_data.h>
 
+#include <io/c_locale.h>
 #include <io/dll.h>
 
 namespace cgogn
@@ -126,6 +127,9 @@ public:
 	template <typename VEC3>
 	bool import_file(const std::string& filename, SurfaceFileType type)
 	{
+		//ensure that locale are set to C for reading files
+		Scoped_C_Locale loc;
+
 		clear();
 
 		std::ifstream fp(filename.c_str(), std::ios::in);
