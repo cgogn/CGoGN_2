@@ -396,7 +396,7 @@ protected:
 
 				//endian
 				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
-				for (unsigned int i=0; i< 3*BUFFER_SZ;++i)
+				for (unsigned int k=0; k< 3*BUFFER_SZ;++k)
 				{
 					*ptr = swap_endianness_system_big(*ptr);
 					++ptr;
@@ -446,7 +446,7 @@ protected:
 				{
 					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
 					ptr = buff_ind;
-					for (unsigned int i=0; i< BUFFER_SZ;++i)
+					for (unsigned int k=0; i< BUFFER_SZ;++k)
 					{
 						*ptr = swap_endianness_system_big(*ptr);
 						++ptr;
