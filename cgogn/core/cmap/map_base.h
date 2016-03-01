@@ -430,6 +430,7 @@ public:
 		CellMarker<ORBIT> marker(*cmap);
 		bool result = true;
 
+		// Check that the indexation of cells is correct
 		cmap->foreach_cell_until_dart_marking([&] (CellType c)
 		{
 			// insure that two cells do not share the same index
@@ -446,7 +447,7 @@ public:
 				result = false;
 				return false;
 			}
-			// check all darts of the cell use the same index (and thus not equal to EMBNULL)
+			// check all darts of the cell use the same index (distinct to EMBNULL)
 			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
 			{
 				if (this->template get_embedding<ORBIT>(d) != idx)
@@ -455,8 +456,15 @@ public:
 			});
 
 			return result;
-
 		});
+		// check that all cells present in the attribute handler are used
+		if (result)
+			cmap->foreach_cell_until([&] (CellType c) {
+				if (!marker.is_marked(c)) {
+					result = false;
+					return false;
+				}
+			});
 		return result;
 	}
 
@@ -465,6 +473,7 @@ public:
 		ConcreteMap* cmap = to_concrete();
 		bool result = true;
 
+		// check the integrity of topological relations or the correct sewing of darts
 		foreach_dart_until( [&cmap,&result] (Dart d) {
 			if (!cmap->check_integrity(d)) result = false;
 			return result;
@@ -474,6 +483,7 @@ public:
 			return false;
 		}
 
+		// check the embedding indexation for the concrete map
 		result = cmap->check_embedding_integrity();
 		if (!result) {
 			std::cerr << "Integrity of the embeddings is broken" << std::endl;

@@ -21,9 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cstdlib>
-#include <ctime>
-
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
@@ -33,6 +30,9 @@ namespace cgogn
 
 #define NB_MAX 1000
 
+/*!
+ * \brief The CMap1TopoTest class implements tests
+ */
 class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 
@@ -44,7 +44,7 @@ public:
 protected:
 
 	/*!
-	 * \brief An array of randomly genrated darts on which the methods are tested.
+	 * \brief An array of randomly generated darts on which the methods are tested.
 	 */
 	std::array<Dart, NB_MAX> tdarts_;
 

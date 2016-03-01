@@ -40,19 +40,23 @@ class CMap1Test: public ::testing::Test
 public:
 
 	using testCMap1 = CMap1<DefaultMapTraits>;
+	using VertexAttributeHandler = testCMap1::VertexAttributeHandler<int>;
 	using Vertex = testCMap1::Vertex;
+	using FaceAttributeHandler = testCMap1::FaceAttributeHandler<int>;
 	using Face = testCMap1::Face;
 
 protected:
 
 	testCMap1 cmap_;
+	VertexAttributeHandler vertices_;
+	FaceAttributeHandler faces_;
 
 	CMap1Test()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int, Face::ORBIT>("faces");
+		vertices_ = cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		faces_ = cmap_.add_attribute<int, Face::ORBIT>("faces");
 	}
 
 	int randomFaces() {
