@@ -65,7 +65,7 @@ public:
 	void set_color(const QColor& rgb);
 
 	/**
-	 * @brief set the width of lines
+	 * @brief set the width of lines (call before each draw)
 	 * @param w width in pixel
 	 */
 	void set_width(float w);

@@ -39,8 +39,9 @@ ShaderColorPerVertex* Drawer::shader_cpv_= NULL;
 ShaderBoldLine* Drawer::shader_bl_= NULL;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
-	ogl33_(ogl33),
-	current_size_(1.0f)
+	current_size_(1.0f),
+	current_aa_(true),
+	ogl33_(ogl33)
 {
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
@@ -48,17 +49,17 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	if (shader_cpv_ == NULL)
 		shader_cpv_ = new ShaderColorPerVertex();
 
-	vao_ = shader_cpv_->add_vao();
-	shader_cpv_->set_vao(vao_,vbo_pos_,vbo_col_);
+	vao_cpv_ = shader_cpv_->add_vao();
+	shader_cpv_->set_vao(vao_cpv_,vbo_pos_,vbo_col_);
 
 	if (shader_bl_ == NULL)
-		shader_bl_ = new ShaderBoldLine(false);
+		shader_bl_ = new ShaderBoldLine(true);
 
-	vao2_ = shader_bl_->add_vao();
+	vao_bl_ = shader_bl_->add_vao();
 	shader_bl_->bind();
 	shader_bl_->set_color(QColor(255,255,0,255));
 	shader_bl_->release();
-	shader_bl_->set_vao(vao2_,vbo_pos_/*,vbo_col_*/);
+	shader_bl_->set_vao(vao_bl_,vbo_pos_,vbo_col_);
 }
 
 Drawer::~Drawer()
@@ -72,6 +73,7 @@ void Drawer::new_list()
 	data_col_.clear();
 	begins_point_.clear();
 	begins_line_.clear();
+	begins_bold_line_.clear();
 	begins_face_.clear();
 }
 
@@ -80,17 +82,25 @@ void Drawer::begin(GLenum mode)
 	switch (mode)
 	{
 	case GL_POINTS:
-		begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_));
+		begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
 		current_begin_ = &begins_point_;
 			break;
 	case GL_LINES:
 	case GL_LINE_STRIP:
 	case GL_LINE_LOOP:
-		begins_line_.push_back(PrimParam(data_pos_.size(), mode, current_size_));
-		current_begin_ = &begins_line_;
+		if (current_size_ > 1.0)
+		{
+			begins_bold_line_.push_back(PrimParam(data_pos_.size(), mode, current_size_,current_aa_));
+			current_begin_ = &begins_bold_line_;
+		}
+		else
+		{
+			begins_line_.push_back(PrimParam(data_pos_.size(), mode, 1.0,current_aa_));
+			current_begin_ = &begins_line_;
+		}
 		break;
 	default:
-		begins_face_.push_back(PrimParam(data_pos_.size(), mode, 1.0f));
+		begins_face_.push_back(PrimParam(data_pos_.size(), mode, 1.0f,false));
 		current_begin_ = &begins_face_;
 		break;
 	}
@@ -137,7 +147,6 @@ void Drawer::end_list()
 	std::memcpy(ptr,data_pos_[0].data(),nb_elts*12);
 	vbo_pos_->release_pointer();
 
-
 	vbo_col_->allocate(nb_elts,3);
 	ptr = vbo_col_->lock_pointer();
 	std::memcpy(ptr,data_col_[0].data(),nb_elts*12);
@@ -153,43 +162,56 @@ void Drawer::end_list()
 
 void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
-//	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
 	shader_cpv_->bind();
 	shader_cpv_->set_matrices(projection,modelview);
-	shader_cpv_->bind_vao(vao_);
+	shader_cpv_->bind_vao(vao_cpv_);
 	for (auto& pp : begins_point_)
 	{
 		ogl33_->glPointSize(pp.width);
 		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
+	for (auto& pp : begins_line_)
+	{
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+	}
 
 	for (auto& pp : begins_face_)
 	{
 		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 	}
 
-	shader_cpv_->release_vao(vao_);
+	shader_cpv_->release_vao(vao_cpv_);
 	shader_cpv_->release();
+
 
 
 	shader_bl_->bind();
 	shader_bl_->set_matrices(projection,modelview);
-	shader_bl_->bind_vao(vao2_);
+	shader_bl_->bind_vao(vao_bl_);
 
-	ogl33_->glEnable(GL_BLEND);
-	ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (auto& pp : begins_line_)
+
+	for (auto& pp : begins_bold_line_)
 	{
 		shader_bl_->set_width(pp.width);
 		shader_bl_->set_color(QColor(255,255,0));
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-	}
-	ogl33_->glDisable(GL_BLEND);
 
-	shader_bl_->release_vao(vao2_);
+		if (pp.aa)
+		{
+			ogl33_->glEnable(GL_BLEND);
+			ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+		if (pp.aa)
+			ogl33_->glDisable(GL_BLEND);
+
+	}
+
+
+	shader_bl_->release_vao(vao_bl_);
 	shader_bl_->release();
 
 

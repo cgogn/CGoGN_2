@@ -47,7 +47,8 @@ class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
 		GLenum mode;
 		float width;
 		unsigned int nb;
-		PrimParam(unsigned int b, GLenum m, float w): begin(b),mode(m),width(w),nb(0) {}
+		bool aa;
+		PrimParam(unsigned int b, GLenum m, float w, bool a): begin(b),mode(m),width(w),nb(0),aa(a){}
 	};
 
 	using Vec3f = std::array<float,3>;
@@ -55,14 +56,14 @@ class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
 protected:
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
-	unsigned int vao_;
-	unsigned int vao2_;
-
+	unsigned int vao_cpv_;
+	unsigned int vao_bl_;
 
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
 	std::vector<PrimParam> begins_point_;
 	std::vector<PrimParam> begins_line_;
+	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
 
 	std::vector<PrimParam>* current_begin_;
@@ -70,6 +71,8 @@ protected:
 	float current_size_;
 	static ShaderColorPerVertex* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
+
+	bool current_aa_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -146,6 +149,22 @@ public:
 	{
 		current_size_ = ps;
 	}
+
+	/**
+	 * usr as glLineWidth
+	 */
+	inline void lineWidth(float lw)
+	{
+		current_aa_ = false;
+		current_size_ = lw;
+	}
+
+	inline void lineWidthAA(float lw)
+	{
+		current_aa_ = true;
+		current_size_ = 2.0*lw;
+	}
+
 
 };
 
