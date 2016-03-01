@@ -67,7 +67,7 @@ public:
 	{
 		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
 		{
-			map_.template set_embedding<Vertex::ORBIT>(dit, emb);
+			map_.template set_embedding<Vertex>(dit, emb);
 		});
 	}
 

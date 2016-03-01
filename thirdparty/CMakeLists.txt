@@ -1,5 +1,5 @@
 if(CGOGN_PROVIDE_EIGEN)
-	add_subdirectory(eigen-3.2.7)
+	add_subdirectory(eigen-3.2.8)
 endif(CGOGN_PROVIDE_EIGEN)
 
 if(CGOGN_PROVIDE_TINYXML2)
@@ -18,4 +18,5 @@ if (CGOGN_BUILD_BENCHS)
 	add_subdirectory(google-benchmark)
 endif(CGOGN_BUILD_BENCHS)
 
+add_subdirectory(ply)
 add_subdirectory(OffBinConverter)

@@ -103,7 +103,7 @@ public:
 	 */
 	void add_chunk() override
 	{
-		table_data_.emplace_back(new T[CHUNKSIZE]());
+		table_data_.push_back(new T[CHUNKSIZE]());
 	}
 
 	/**
