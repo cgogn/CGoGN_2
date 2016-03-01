@@ -41,9 +41,13 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
 
+	static const char* vertex_shader_source2_;
+	static const char* fragment_shader_source2_;
+
 	enum
 	{
-		ATTRIB_POS = 0
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR
 	};
 
 	// uniform ids
@@ -53,7 +57,7 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 
 public:
 
-	ShaderFlat();
+	ShaderFlat(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -77,9 +81,11 @@ public:
 	 * @brief set a vao configuration
 	 * @param i id of vao (0,1,....)
 	 * @param vbo_pos pointer on position vbo (XYZ)
+	 * @param vbo_color pointer on color vbo (RGB)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos);
+	bool set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_col = NULL);
+
 };
 
 } // namespace rendering

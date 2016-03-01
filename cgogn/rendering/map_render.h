@@ -171,6 +171,54 @@ public:
 	}
 };
 
+
+
+/**
+ * @brief create embedding indices of vertices and faces for arch vertx of each face
+ * @param m
+ * @param position vertex positions use for ear triangulation)
+ * @param indices1 embedding indices of vertices
+ * @param indices2 embedding indices of faces
+ */
+template <typename VEC3, typename MAP>
+void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<unsigned int>& indices1, std::vector<unsigned int>& indices2)
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	indices1.reserve(m.nb_darts());
+	indices2.reserve(m.nb_darts());
+	indices1.clear();
+	indices2.clear();
+	std::vector<unsigned int> local_vert_indices;
+	local_vert_indices.reserve(256);
+
+	m.foreach_cell([&] (Face f)
+	{
+		unsigned int ef = m.get_embedding(Face(f.dart));
+		if (m.has_degree(f,3))
+		{
+			indices1.push_back(m.get_embedding(Vertex(f.dart)));
+			indices1.push_back(m.get_embedding(Vertex(m.phi1(f.dart))));
+			indices1.push_back(m.get_embedding(Vertex(m.phi1(m.phi1(f.dart)))));
+			indices2.push_back(ef);
+			indices2.push_back(ef);
+			indices2.push_back(ef);
+
+		}
+		else
+		{
+			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,local_vert_indices);
+			for (unsigned int i : local_vert_indices)
+			{
+				indices1.push_back(i);
+				indices2.push_back(ef);
+			}
+		}
+	});
+}
+
+
 } // namespace rendering
 
 } // namespace cgogn

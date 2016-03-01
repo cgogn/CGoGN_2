@@ -235,7 +235,7 @@ bool ShaderPhong::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_
 	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
-	// position vbo
+	// normal vbo
 	vbo_norm->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_NORM);
 	ogl->glVertexAttribPointer(ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
@@ -248,11 +248,6 @@ bool ShaderPhong::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_
 		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
 		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
-	}
-	else
-	{
-		if (unif_front_color_<0)
-			std::cerr << "ShaderPhong: no color attribute, no color uniform"<< std::endl;
 	}
 
 	vaos_[i]->release();

@@ -15,6 +15,8 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 add_executable(simple_viewer simple_viewer.cpp)
 target_link_libraries(simple_viewer cgogn_core cgogn_io cgogn_rendering QOGLViewer)
 
+add_executable(viewer_per_face viewer_per_face.cpp)
+target_link_libraries(viewer_per_face cgogn_core cgogn_io cgogn_rendering QOGLViewer)
 
 
 
