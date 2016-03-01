@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 1000
 
 class CMap0TopoTest: public ::testing::Test
 {
@@ -86,6 +86,9 @@ TEST_F(CMap0TopoTest, testRemoveVertex)
 			EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 		}
 	}
+
+	EXPECT_EQ(cmap_.nb_darts(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
