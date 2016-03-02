@@ -69,13 +69,14 @@ class QGLVIEWER_EXPORT Vec
 # define QGLVIEWER_UNION_NOT_SUPPORTED
 #endif
 
+# define QGLVIEWER_UNION_NOT_SUPPORTED
+
 public:
 	/*! The internal data representation is public. One can use v.x, v.y, v.z. See also operator[](). */
 #if defined (DOXYGEN) || defined (QGLVIEWER_UNION_NOT_SUPPORTED)
 	qreal x, y, z;
 #else
-	union
-	{
+	union 	{
 		struct { qreal x, y, z; };
 		qreal v_[3];
 	};

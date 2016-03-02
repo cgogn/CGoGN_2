@@ -629,7 +629,7 @@ protected:
 
 	virtual void paintGL();
 	virtual void preDraw();
-	virtual void preDrawStereo(bool leftBuffer=true);
+//	virtual void preDrawStereo(bool leftBuffer=true);
 
 	/*! The core method of the viewer, that draws the scene.
 
@@ -1087,6 +1087,8 @@ private:
 				return modifiers < mbp.modifiers;
 			return button < mbp.button;
 		}
+
+		MouseBindingPrivate& operator=(const MouseBindingPrivate&) = delete;
 	};
 
 	// W h e e l   b i n d i n g s
@@ -1104,6 +1106,8 @@ private:
 				return key < wbp.key;
 			return modifiers < wbp.modifiers;
 		}
+
+		WheelBindingPrivate& operator=(const WheelBindingPrivate&) = delete;
 	};
 
 	// C l i c k   b i n d i n g s
@@ -1130,6 +1134,8 @@ private:
 				return button < cbp.button;
 			return doubleClick != cbp.doubleClick;
 		}
+
+		ClickBindingPrivate& operator=(const ClickBindingPrivate&) = delete;
 	};
 #endif
 	static QString formatClickActionPrivate(ClickBindingPrivate cbp);
