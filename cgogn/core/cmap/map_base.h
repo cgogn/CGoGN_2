@@ -443,7 +443,8 @@ public:
 		{
 			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
 			{
-				if (marker[i] == 0) {
+				if (marker[i] == 0)
+				{
 					result = false;
 					break;
 				}
