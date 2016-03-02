@@ -230,8 +230,8 @@ public:
 	}
 
 
-	// return true if the segment belongs strictly to a bounding box
-	bool contains(const Vec& a, const Vec& b) const
+	// return true if the segment intersect the bounding box
+	bool intersects(const Vec& a, const Vec& b) const
 	{
 		cgogn_message_assert(initialized_, "Bounding box not initialized");
 
@@ -309,7 +309,7 @@ public:
 			}
 		}
 
-		return (coord - b).dot(a - b); // intersection in segment ?
+		return (coord - b).dot(a - b) > 0.0; // intersection in segment ?
 	}
 
 	// return true if the bounding box belongs strictly to a bounding box

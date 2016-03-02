@@ -93,9 +93,14 @@ TYPED_TEST(BoundingBox_TEST, testing)
 	EXPECT_TRUE(this->bb_.ray_intersect(TypeParam({ Scalar(-9), Scalar(-9), Scalar(-9) }), TypeParam({ Scalar(1), Scalar(1), Scalar(1) })));
 	EXPECT_FALSE(this->bb_.ray_intersect(TypeParam({ Scalar(-9), Scalar(-9), Scalar(-9) }), TypeParam({ Scalar(1), Scalar(-1), Scalar(0) })));
 
-	EXPECT_TRUE(bb3.contains(TypeParam({ Scalar(0.2), Scalar(0.2), Scalar(0.2) }), TypeParam({ Scalar(0.5), Scalar(0.5), Scalar(0.5) })));
-	EXPECT_FALSE(bb3.contains(TypeParam({ Scalar(-0.5), Scalar(-0.5), Scalar(-0.5) }), TypeParam({ Scalar(1.5), Scalar(0.5), Scalar(1.5) })));
-	EXPECT_FALSE(bb3.contains(TypeParam({ Scalar(0.2), Scalar(0.2), Scalar(-0.2) }), TypeParam({ Scalar(1.5), Scalar(0.5), Scalar(1.5) })));
+	EXPECT_TRUE(bb3.intersects(TypeParam({ Scalar(0.2), Scalar(0.2), Scalar(0.2) }), TypeParam({ Scalar(0.5), Scalar(0.5), Scalar(0.5) })));
+	EXPECT_TRUE(bb3.intersects(TypeParam({ Scalar(-1.0), Scalar(-1.0), Scalar(-1.0) }), TypeParam({ Scalar(2.0), Scalar(2.2), Scalar(2.5) })));
+	EXPECT_TRUE(bb3.intersects(TypeParam({ Scalar(0.5), Scalar(-0.2), Scalar(0.5) }), TypeParam({ Scalar(-0.2), Scalar(0.5), Scalar(0.5) })));
+
+
+	EXPECT_FALSE(bb3.intersects(TypeParam({ Scalar(3.0), Scalar(2.5), Scalar(1.5) }), TypeParam({ Scalar(1.5), Scalar(2.5), Scalar(3.5) })));
+	EXPECT_FALSE(bb3.intersects(TypeParam({ Scalar(0.5), Scalar(-0.6), Scalar(0.5) }), TypeParam({ Scalar(-0.6), Scalar(0.5), Scalar(0.5) })));
+
 	
 }
 
