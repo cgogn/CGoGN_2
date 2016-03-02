@@ -450,8 +450,7 @@ public:
 			// check all darts of the cell use the same index (distinct to EMBNULL)
 			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
 			{
-				if (this->template get_embedding<ORBIT>(d) != idx)
-					result = false;
+				if (this->template get_embedding<ORBIT>(d) != idx) result = false;
 				return result;
 			});
 
@@ -460,9 +459,7 @@ public:
 		// check that all cells present in the attribute handler are used
 		if (result)
 			cmap->foreach_cell_until([&] (CellType c) {
-				if (!marker.is_marked(c)) {
-					result = false;
-				}
+				if (!marker.is_marked(c)) result = false;
 				return result;
 		});
 		return result;

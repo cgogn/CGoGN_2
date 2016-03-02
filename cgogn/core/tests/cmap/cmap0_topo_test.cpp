@@ -32,7 +32,6 @@ namespace cgogn
 
 /*!
  * \brief The CMap0TopoTest class implements topological tests on CMap0
- * It derives from CMap0 to allow the test of protected methods
  */
 class CMap0TopoTest: public ::testing::Test
 {
@@ -78,7 +77,7 @@ TEST_F(CMap0TopoTest, testCMap0Constructor)
 }
 
 /*!
- * \brief Adding vertices add one dart per vertex
+ * \brief Adding vertices adds one dart per vertex
  * and the map integrity is preserved
  */
 TEST_F(CMap0TopoTest, testAddVertex)
@@ -103,7 +102,7 @@ TEST_F(CMap0TopoTest, testRemoveVertex)
 	for (int i = 0; i < n; ++i) {
 		Vertex d = tdarts_[i];
 		if (std::rand()%3 == 1) {
-			cmap_.remove_vertex(Vertex(d));
+			cmap_.remove_vertex(d);
 			--countVertices;
 			EXPECT_EQ(cmap_.nb_darts(), countVertices);
 			EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
