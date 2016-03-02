@@ -149,25 +149,23 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 	std::vector<void*> chunk_addr;
 	unsigned int byte_chunk_size;
 	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
-	unsigned int vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
+	const unsigned int vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
 
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+
+	const unsigned int vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value)
 	{
 		// copy
-		char* dst = reinterpret_cast<char*>(vbo.lock_pointer());
+		vbo.bind();
 		for (unsigned int i = 0; i < nb_chunks; ++i)
-		{
-			memcpy(dst, chunk_addr[i], byte_chunk_size);
-			dst += byte_chunk_size;
-		}
-		vbo.release_pointer();
+			vbo.copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
+		vbo.release();
 	}
 	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value)
 	{
 		// copy (after conversion to float)
-		char* dst = reinterpret_cast<char*>(vbo.lock_pointer());
 		float* float_buffer = new float[ATTR::CHUNKSIZE * vec_dim];
 		for (unsigned int i = 0; i < nb_chunks; ++i)
 		{
@@ -176,11 +174,10 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 			double* src = reinterpret_cast<double*>(chunk_addr[i]);
 			for (unsigned int j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
 				*fit++ = *src++;
-			// copy
-			memcpy(dst, float_buffer, ATTR::CHUNKSIZE * vec_dim * sizeof(float));
-			dst += ATTR::CHUNKSIZE * vec_dim * sizeof(float);
+			vbo.bind();
+			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float), ATTR::CHUNKSIZE * vec_dim * sizeof(float),float_buffer);
+			vbo.release();
 		}
-		vbo.release_pointer();
 		delete[] float_buffer;
 	}
 }

@@ -190,6 +190,8 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 	indices2.reserve(m.nb_darts());
 	indices1.clear();
 	indices2.clear();
+
+	//local vector for ear triangulation
 	std::vector<unsigned int> local_vert_indices;
 	local_vert_indices.reserve(256);
 
