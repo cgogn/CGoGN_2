@@ -21,65 +21,56 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
-#define GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#ifndef IO_IO_UTILS_H_
+#define IO_IO_UTILS_H_
 
 #include <type_traits>
-#include <core/utils/definitions.h>
+#include <sstream>
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
+#include <core/utils/endian.h>
+
+#include <geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
 
-namespace geometry
+namespace io
 {
 
-template <typename Vec_T>
-struct vector_traits
-{};
-
-// specialization 1 : cgogn::geometry::Vec_T with a fixed-size array
-template <typename Scalar_, std::size_t Size>
-struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
+namespace internal
 {
-	static const std::size_t SIZE = Size;
-	using Scalar = Scalar_;
-};
-
-// specialization 2 : Eigen::Vector
-template <typename Scalar_, int Rows, int Options>
-struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
-{
-	static const std::size_t SIZE = Rows;
-	using Scalar = Scalar_;
-};
-
-template<typename T, typename Enable = void>
-struct nb_components_traits
-{};
 
 template<typename T>
-struct nb_components_traits<T, typename std::enable_if< std::is_integral<T>::value || std::is_floating_point<T>::value >::type >
+inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, T>::type swap_endianness(const T& x)
 {
-	const static unsigned int value = 1u;
-};
+	return ::cgogn::swap_endianness(x);
+}
 
-template<typename Scalar, std::size_t size>
-struct nb_components_traits<geometry::Vec_T<std::array<Scalar,size>>>
+template<typename T>
+inline typename std::enable_if<(!std::is_arithmetic<T>::value) && !std::is_floating_point<T>::value, T>::type swap_endianness(T& x)
 {
-	const static unsigned int value = size;
-};
+	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
+		x[i] = ::cgogn::swap_endianness(x[i]);
+	return x;
+}
 
-template <typename Scalar_, int Rows, int Options>
-struct nb_components_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
+template<typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, std::istringstream&>::type parse(std::istringstream& iss, T& x)
 {
-	const static unsigned int value = Rows;
-};
+	iss >> x;
+	return iss;
+}
 
-} // namespace geometry
+template<typename T>
+inline typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, std::istringstream&>::type parse(std::istringstream& iss, T& x)
+{
+	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
+		iss >> x[i];
+	return iss;
+}
 
+} // namespace internal
+} // namespace io
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#endif // IO_IO_UTILS_H_

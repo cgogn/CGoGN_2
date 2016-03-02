@@ -52,5 +52,38 @@ enum VTK_CELL_TYPES
 	VTK_QUADRATIC_HEXAHEDRON = 25
 };
 
+/**
+ * @brief vtk_data_type_to_cgogn_name_of_type : convert the type names we can find in VTK files to the one we use in cgogn.
+ * @param vtk_type_str a typename extracted from a vtk file
+ * @return a typename string that can be match with some cgogn::name_of_type
+ */
+inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
+{
+	const std::string& data_type = to_lower(vtk_type_str);
+	if (data_type == "char" || data_type == "int8")
+		return name_of_type(std::int8_t());
+	if (data_type == "unsigned_char" || data_type == "uint8")
+		return name_of_type(std::uint8_t());
+	if (data_type == "short" || data_type == "int16")
+		return name_of_type(std::int16_t());
+	if (data_type == "unsigned_short" || data_type == "uint16")
+		return name_of_type(std::uint16_t());
+	if (data_type == "int" || data_type == "int32")
+		return name_of_type(std::int32_t());
+	if (data_type == "unsigned_int" || data_type == "uint32")
+		return name_of_type(std::uint32_t());
+	if (data_type == "long" || data_type == "int64")
+		return name_of_type(std::int64_t());
+	if (data_type == "unsigned_long" || data_type == "uint64")
+		return name_of_type(std::uint64_t());
+	if (data_type == "float"  || data_type == "float32")
+		return name_of_type(float());
+	if (data_type == "double" || data_type == "float64")
+		return name_of_type(double());
+
+	std::cerr << "vtk_data_type_to_cgogn_name_of_type : unknown vtk type : " << vtk_type_str << std::endl;
+	return std::string();
+}
+
 } // namespace cgogn
 #endif // IO_VTK_CELL_TYPES_H_

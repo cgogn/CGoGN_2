@@ -26,8 +26,6 @@
 
 #include <istream>
 #include <sstream>
-#include <memory>
-#include <cstdint>
 
 #include <core/utils/endian.h>
 #include <core/utils/name_types.h>
@@ -36,190 +34,17 @@
 #include <core/cmap/cmap2_builder.h>
 #include <core/utils/string.h>
 
-#include <geometry/types/geometry_traits.h>
-
 #include <io/import_ply_data.h>
 #include <io/vtk_cell_types.h>
 
 #include <io/dll.h>
+#include <io/data_io.h>
 
 namespace cgogn
 {
 
 namespace io
 {
-
-/**
- * @brief vtk_data_type_to_cgogn_name_of_type : convert the type names we can find in VTK files to the one we use in cgogn.
- * @param vtk_type_str a typename extracted from a vtk file
- * @return a typename string that can be match with some cgogn::name_of_type
- */
-inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
-{
-	const std::string& data_type = to_lower(vtk_type_str);
-	if (data_type == "char" || data_type == "int8")
-		return name_of_type(std::int8_t());
-	if (data_type == "unsigned_char" || data_type == "uint8")
-		return name_of_type(std::uint8_t());
-	if (data_type == "short" || data_type == "int16")
-		return name_of_type(std::int16_t());
-	if (data_type == "unsigned_short" || data_type == "uint16")
-		return name_of_type(std::uint16_t());
-	if (data_type == "int" || data_type == "int32")
-		return name_of_type(std::int32_t());
-	if (data_type == "unsigned_int" || data_type == "uint32")
-		return name_of_type(std::uint32_t());
-	if (data_type == "long" || data_type == "int64")
-		return name_of_type(std::int64_t());
-	if (data_type == "unsigned_long" || data_type == "uint64")
-		return name_of_type(std::uint64_t());
-	if (data_type == "float"  || data_type == "float32")
-		return name_of_type(float());
-	if (data_type == "double" || data_type == "float64")
-		return name_of_type(double());
-
-	std::cerr << "vtk_data_type_to_cgogn_name_of_type : unknown vtk type : " << vtk_type_str << std::endl;
-	return std::string();
-}
-
-/**
- * @brief read_n_scalars, read N scalars of type BUFFER_T in an ifstream (binary or ascii mode, little or big endian)
- * @param fp, an ifstream
- * @param n, the number of scalars to read
- * @param binary, true if the scalars are encoded in binary
- * @param big_endian, true if the scalars are encoded in binary and big endian
- * @return n scalars of type T (converted if necessary from type BUFFER_T) if successful, nullptr otherwith
- */
-template<typename T = double, typename BUFFER_T = T>
-inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, std::size_t n, bool binary, bool big_endian)
-{
-	using VecT = std::vector<T>;
-	using VecBufferT = std::vector<BUFFER_T>;
-
-	std::cerr << "read_n_scalars called with T = " << name_of_type(T()) << " and U = " << name_of_type(BUFFER_T()) << std::endl;
-	std::unique_ptr<VecT> res = make_unique<VecT>();
-	res->reserve(n);
-
-	std::unique_ptr<VecBufferT>  buffer = make_unique<VecBufferT>(n);
-
-	if (binary)
-	{
-		fp.read(reinterpret_cast<char*>(std::addressof(buffer->operator[](0))), n * sizeof(BUFFER_T));
-
-		if (big_endian != internal::cgogn_is_little_endian)
-		{
-			for (auto & x : *buffer)
-				x = swap_endianness(x);
-		}
-		if (fp.eof() || fp.bad())
-			buffer->clear();
-
-	} else {
-		std::string line;
-		line.reserve(256);
-		std::size_t i = 0ul;
-		for (; i < n && (!fp.eof()) && (!fp.bad()); )
-		{
-			std::getline(fp,line);
-			std::istringstream line_stream(line);
-			while (i < n && (line_stream >> buffer->operator[](i)))
-				++i;
-		}
-
-		if (i < n)
-			buffer->clear();
-	}
-
-	if (std::is_same<T,BUFFER_T>::value)
-		res.reset(reinterpret_cast<VecT*>(buffer.release()));
-	else
-	{
-		for (auto buffer_it = buffer->begin(), end = buffer->end(); buffer_it != end; ++buffer_it)
-			res->push_back(*buffer_it);
-	}
-
-	return res;
-}
-
-/**
- * @brief read_n_scalars, read n scalars of type given by the STRING type_name in the ifstream fp, and convert them to the template type T
- * @param fp, the file we want to read
- * @param type_name, the type_name (CAUTION : consistent with cgogn name_of_type method)
- * @param n, number of scalars to read
- * @param binary, true if the scalars are encoded in binary
- * @param big_endian, ignored if !binary. True if the file we read chose to encod the scalars in big endian
- * @return
- */
-template<typename T = double>
-inline std::unique_ptr<std::vector<T>> read_n_scalars(std::ifstream& fp, const std::string& type_name, std::size_t n, bool binary, bool big_endian)
-{
-	using VecT = std::vector<T>;
-
-	if (type_name == name_of_type(float()))
-		return std::move(read_n_scalars<T,float>(fp,n,binary,big_endian));
-	else {
-		if (type_name == name_of_type(double()))
-			return std::move(read_n_scalars<T,double>(fp,n,binary,big_endian));
-		else {
-			if (type_name == name_of_type(char()))
-				return std::move(read_n_scalars<T,char>(fp,n,binary,big_endian));
-			else
-			{
-				if (type_name == name_of_type(std::int8_t()))
-					return std::move(read_n_scalars<T,std::int8_t>(fp,n,binary,big_endian));
-				else
-				{
-					if (type_name == name_of_type(std::uint8_t()))
-						return std::move(read_n_scalars<T,std::uint8_t>(fp,n,binary,big_endian));
-					else
-					{
-						if (type_name == name_of_type(std::int16_t()))
-							return std::move(read_n_scalars<T,std::int16_t>(fp,n,binary,big_endian));
-						else
-						{
-							if (type_name == name_of_type(std::uint32_t()))
-								return std::move(read_n_scalars<T,std::uint32_t>(fp,n,binary,big_endian));
-							else
-							{
-								if (type_name == name_of_type(std::int32_t()))
-									return std::move(read_n_scalars<T,std::int32_t>(fp,n,binary,big_endian));
-								else
-								{
-									if (type_name == name_of_type(std::uint64_t()))
-										return std::move(read_n_scalars<T,std::uint64_t>(fp,n,binary,big_endian));
-									else
-									{
-										if (type_name == name_of_type(std::int64_t()))
-											return std::move(read_n_scalars<T,std::int64_t>(fp,n,binary,big_endian));
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return std::unique_ptr<std::vector<T>>();
-}
-
-//template<typename Vec_T>
-//inline std::unique_ptr<std::vector<Vec_T>> read_n_vec(std::ifstream& fp, const std::string& type_name, std::size_t n, bool binary, bool big_endian)
-//{
-//	using Scalar = typename geometry::vector_traits<Vec_T>::Scalar;
-//	const std::size_t size = geometry::vector_traits<Vec_T>::SIZE;
-//	std::unique_ptr<std::vector<Scalar>> scalars(std::move(read_n_scalars(fp, type_name,n*size,binary,big_endian)));
-//	std::unique_ptr<std::vector<Vec_T>> res = make_unique<std::vector<Vec_T>>();
-//	res->reserve(n);
-//	for (auto it = scalars->begin(), end = scalars->end() ; it != end;)
-//	{
-//		res->emplace_back(Scalar(*it), Scalar(*(it+ 1)), Scalar(*(it+2)));
-//		it+=3;
-//	}
-
-//	return res;
-//}
-
 
 enum SurfaceFileType
 {
@@ -252,6 +77,8 @@ public:
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Map = CMap2<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;
+	using Edge = typename Map::Edge;
+	using Face = typename Map::Face;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -273,6 +100,11 @@ public:
 	std::vector<unsigned int> faces_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
+	ChunkArrayContainer face_attributes_;
+
+	using DataIOGen = cgogn::io::DataIOGen<Map>;
+	template<typename T>
+	using DataIO = cgogn::io::DataIO<Map,T>;
 
 	SurfaceImport() :
 		nb_vertices_(0u)
@@ -298,6 +130,7 @@ public:
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();
+		face_attributes_.remove_attributes();
 	}
 
 	template <typename VEC3>
@@ -314,7 +147,7 @@ public:
 		std::ifstream fp(filename.c_str(), std::ios::in);
 		if (!fp.good())
 		{
-			std::cout << "Unable to open file " << filename << std::endl;
+			std::cerr << "Unable to open file " << filename << std::endl;
 			return false;
 		}
 
@@ -322,7 +155,7 @@ public:
 		switch (type)
 		{
 			case SurfaceFileType_UNKNOWN :
-				std::cout << "Unknown file type " << filename << std::endl;
+				std::cerr << "Unknown file type " << filename << std::endl;
 				result = false;
 				break;
 			case SurfaceFileType_OFF :
@@ -489,8 +322,8 @@ protected:
 		std::getline(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
-			std::cout << "Problem reading off file: not an off file" << std::endl;
-			std::cout << line << std::endl;
+			std::cerr << "Problem reading off file: not an off file" << std::endl;
+			std::cerr << line << std::endl;
 			return false;
 		}
 
@@ -775,7 +608,7 @@ protected:
 		nb_vertices_ = pid.nb_vertices();
 		nb_faces_ = pid.nb_faces();
 
-		
+
 		// read vertices position
 		std::vector<unsigned int> vertices_id;
 		vertices_id.reserve(nb_vertices_);
@@ -829,7 +662,7 @@ protected:
 
 		VTK_TYPE vtk_type(VTK_TYPE::UNKNOWN);
 
-		std::cerr << "Opening a vtk file" << std::endl;
+		std::cout << "Opening a legacy vtk file" << std::endl;
 		using Scalar = typename VEC3::Scalar;
 
 		std::string line;
@@ -858,12 +691,12 @@ protected:
 				vtk_type = VTK_TYPE::POLYDATA;
 		}
 
-		std::unique_ptr<std::vector<unsigned int>> cells;
-		std::unique_ptr<std::vector<unsigned int>> cell_types;
-		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-		std::vector<unsigned int> verticesID;
+		DataIO<unsigned int> cells;
+		DataIO<int> cell_types;
 
-		if (vtk_type == VTK_TYPE::UNSTRUCTURED_GRID)
+		ChunkArray<VEC3>* position_arr = vertex_attributes_.template add_attribute<VEC3>("position");
+
+		if (vtk_type == VTK_TYPE::UNSTRUCTURED_GRID || vtk_type == VTK_TYPE::POLYDATA)
 		{
 			while(!fp.eof())
 			{
@@ -871,64 +704,178 @@ protected:
 				word.clear();
 				std::istringstream sstream(line);
 				sstream >> word;
-				if (to_upper(word) == "POINTS")
+				word = to_upper(word);
+
+				if (word == "POINTS")
 				{
 					std::string type_str;
 					sstream >> this->nb_vertices_ >> type_str;
 					type_str = to_lower(type_str);
-					std::cout << nb_vertices_ << " points" << " of type " << type_str << std::endl;
-					verticesID.reserve(nb_vertices_);
-					std::unique_ptr<std::vector<Scalar>> pos(std::move(read_n_scalars<Scalar>(fp, vtk_data_type_to_cgogn_name_of_type(type_str), 3*nb_vertices_, !ascii_file, false /*don't deal with endianness yet*/)));
-					cgogn_assert(pos);
-					for (std::size_t i = 0ul ; i < 3ul*nb_vertices_ ; i+=3ul)
+					DataIO<VEC3> positions;
+					positions.read_n(fp, nb_vertices_, !ascii_file, false);
+					for (std::size_t i = 0ul ; i < nb_vertices_ ; ++i)
+						vertex_attributes_.template insert_lines<1>();
+					positions.to_chunk_array(position_arr);
+				} else {
+					if (word == "CELLS" || word == "POLYGONS" || word == "TRIANGLE_STRIPS")
 					{
-						VEC3 P(Scalar(pos->operator[](i)), Scalar((*pos)[i+1ul]), Scalar((*pos)[i+2ul]));
-						std::cout << P[0] << " " << P[1] << " " << P[2] << std::endl;
-						unsigned int id = vertex_attributes_.template insert_lines<1>();
-						position->operator [](id) = P;
-						verticesID.push_back(id);
+						unsigned int size;
+						sstream >> this->nb_faces_ >> size;
+						cells.read_n(fp, size, !ascii_file, false);
+
+						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types.get_data());
+						cgogn_assert(cell_types_vec != nullptr);
+						if (word == "POLYGONS")
+						{
+							cell_types_vec->reserve(nb_faces_);
+							for (unsigned i = 0u; i < nb_faces_ ;++i)
+							{
+								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_POLYGON);
+							}
+						} else if (word == "TRIANGLE_STRIPS")
+						{
+							cell_types_vec->reserve(nb_faces_);
+							for (unsigned i = 0u; i < nb_faces_ ;++i)
+							{
+								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_TRIANGLE_STRIP);
+							}
+						}
+
+					} else {
+						if (word == "CELL_TYPES")
+						{
+							unsigned int nbc;
+							sstream >> nbc;
+							cell_types.read_n(fp, nbc, !ascii_file, false);
+						} else {
+							if (word == "POINT_DATA" || word == "CELL_DATA")
+							{
+								const bool cell_data = (word == "CELL_DATA");
+								unsigned int nb_data;
+								sstream >> nb_data;
+
+								if (!cell_data)
+								{
+									cgogn_assert(this->nb_vertices_ == 0u || nb_data == this->nb_vertices_);
+								}
+								std::ifstream::pos_type previous_pos;
+								do {
+									previous_pos = fp.tellg();
+									std::getline(fp, line);
+									sstream.str(line);
+									sstream.clear();
+									word.clear();
+									sstream >> word;
+									word = to_upper(word);
+									if (word == "SCALARS" || word == "VECTOR" || word == "NORMALS")
+									{
+										const bool is_vector = !(word == "SCALARS");
+										std::string att_name;
+										std::string att_type;
+										unsigned int num_comp = is_vector? 3u : 1u;
+										sstream >> att_name >> att_type >> num_comp;
+										std::cout << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components)." << std::endl;
+
+										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
+										std::getline(fp,line);
+										sstream.str(line);
+										sstream.clear();
+										std::string lookup_table;
+										std::string lookup_table_name;
+										sstream >> lookup_table >> lookup_table_name;
+										if (to_upper(lookup_table) == "LOOKUP_TABLE")
+										{
+											std::cout << "VTK import : ignoring lookup table named \"" << lookup_table_name << "\"" << std::endl;
+										} else {
+											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
+										}
+
+										std::unique_ptr<DataIOGen> att(DataIOGen::newDataIO(att_type, num_comp));
+										att->read_n(fp, nb_data, !ascii_file, false);
+										if (cell_data)
+											att->to_chunk_array(att->add_attribute(face_attributes_, att_name));
+										else
+											att->to_chunk_array(att->add_attribute(vertex_attributes_, att_name));
+									} else {
+										if (word == "FIELD")
+										{
+											std::string field_name;
+											unsigned int num_arrays = 0u;
+											sstream >> field_name >> num_arrays;
+											for (unsigned int i = 0u ; i< num_arrays; ++i)
+											{
+												std::getline(fp,line);
+												sstream.str(line);
+												sstream.clear();
+												std::string		data_name;
+												unsigned int	nb_comp;
+												unsigned int	nb_data;
+												std::string		data_type;
+												sstream >> data_name >> nb_comp >> nb_data >> data_type;
+												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
+												std::unique_ptr<DataIOGen> att(DataIOGen::newDataIO(data_type, nb_comp));
+												att->read_n(fp, nb_data, !ascii_file, false);
+												if (cell_data)
+													att->to_chunk_array(att->add_attribute(face_attributes_, data_name));
+												else
+													att->to_chunk_array(att->add_attribute(vertex_attributes_, data_name));
+											}
+										} else
+											if (word == "LOOKUP_TABLE")
+											{
+												std::string table_name;
+												unsigned int nb_data = 0u;
+												sstream >> table_name >> nb_data;
+												std::cout << "ignoring the definition of the lookuptable named \"" << table_name << "\"" << std::endl;
+												if (ascii_file)
+												{
+													DataIO<Eigen::Vector4f> trash;
+													trash.read_n(fp, nb_data, false, false);
+												} else
+												{
+													DataIO<std::int32_t> trash;
+													trash.read_n(fp, nb_data, true, false);
+												}
+											}
+									}
+								} while (word != "POINT_DATA" && word != "CELL_DATA" && (!fp.eof()));
+								if (!fp.eof())
+								{
+									fp.seekg(previous_pos);
+									word.clear();
+								} else
+									break;
+							} else
+							{
+								if (!word.empty())
+									std::cerr << "VTK keyword \"" << word << "\" is not supported." << std::endl;
+							}
+						}
 					}
-				}
-
-				if (to_upper(word) == "CELLS")
-				{
-					std::cerr << line << std::endl;
-					unsigned int size;
-					sstream >> this->nb_faces_ >> size;
-					std::cerr << "nb cells " << nb_faces_ << " and size " << size << std::endl;
-					cells = std::move(read_n_scalars<unsigned int>(fp, name_of_type(std::uint32_t()), size, !ascii_file, false));
-					std::size_t i = 0ul;
-				}
-
-				if (to_upper(word) == "CELL_TYPES")
-				{
-					std::cerr << line << std::endl;
-					unsigned int nbc;
-					sstream >> nbc;
-					std::cerr << "nb cells " << nbc << std::endl;
-					cell_types = std::move(read_n_scalars<unsigned int>(fp, name_of_type(std::uint32_t()), nbc, !ascii_file, false));
 				}
 			}
 		}
 
-		auto cell_type_it = cell_types->begin();
-		for (auto cell_it  = cells->begin(), end = cells->end(); cell_it != end ; ++cell_type_it)
+		auto cells_it = static_cast<std::vector<unsigned int>*>(cells.get_data())->begin();
+		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types.get_data());
+		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end() ; )
 		{
-			const std::size_t nb_vert = *cell_it++;
+			const std::size_t nb_vert = *(cells_it++);
+			const int cell_type = *(cell_types_it++);
 
-			if ((*cell_type_it) != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
+			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 			{
 				faces_nb_edges_.push_back(nb_vert);
 				for (std::size_t i = 0ul ; i < nb_vert;++i)
 				{
-					faces_vertex_indices_.push_back(*cell_it++);
+					faces_vertex_indices_.push_back(*cells_it++);
 				}
 			} else {
 				std::vector<unsigned int> vertexIDS;
 				vertexIDS.reserve(nb_vert);
 				for (std::size_t i = 0ul ; i < nb_vert;++i)
 				{
-					vertexIDS.push_back(*cell_it++);
+					vertexIDS.push_back(*cells_it++);
 				}
 
 				for (unsigned int i = 0u ; i < nb_vert -2u; ++i)
