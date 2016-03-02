@@ -834,11 +834,11 @@ protected:
 												if (ascii_file)
 												{
 													DataIO<Eigen::Vector4f> trash;
-													trash.read_n(fp, nb_data, false, false);
+													trash.skip_n(fp, nb_data, false);
 												} else
 												{
 													DataIO<std::int32_t> trash;
-													trash.read_n(fp, nb_data, true, false);
+													trash.skip_n(fp, nb_data, true);
 												}
 											}
 									}

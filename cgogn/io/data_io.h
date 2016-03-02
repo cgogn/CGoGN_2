@@ -49,7 +49,9 @@ public:
 	using ChunkArrayContainer = typename MAP::template ChunkArrayContainer<unsigned int>;
 
 	virtual void read_n(std::ifstream& fp, std::size_t n, bool binary, bool big_endian) = 0;
+	virtual void skip_n(std::ifstream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
+	virtual void reset() = 0;
 
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const = 0;
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) = 0;
@@ -72,25 +74,29 @@ public:
 	using ChunkArray	= cgogn::ChunkArray<MAP::CHUNKSIZE, T>;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
-	inline DataIO()
+	DataIO()
 	{
 		data_ = make_unique<std::vector<T>>();
 	}
 
+	DataIO(const Self&) = delete;
+	DataIO& operator =(const Self&) = delete;
+	DataIO(Self&&) = default;
+
 	virtual void read_n(std::ifstream& fp, std::size_t n, bool binary, bool big_endian) override
 	{
-		data_ = make_unique<std::vector<T>>(n);
-
+		const std::size_t old_size = data_->size();
+		data_->resize(old_size + n);
 		if (binary)
 		{
-			fp.read(reinterpret_cast<char*>(std::addressof(data_->operator[](0))), n * sizeof(T));
+			fp.read(reinterpret_cast<char*>(std::addressof(data_->operator[](old_size))), n * sizeof(T));
 			if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
 			{
 				for (auto & x : *data_)
 					x = cgogn::io::internal::swap_endianness(x);
 			}
 			if (fp.eof() || fp.bad())
-				data_->clear();
+				this->reset();
 		} else {
 			std::string line;
 			line.reserve(256);
@@ -100,7 +106,7 @@ public:
 				bool no_error = true;
 				std::getline(fp,line);
 				std::istringstream line_stream(line);
-				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, data_->operator[](i)))))
+				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, data_->operator[](i+old_size)))))
 					++i;
 				if (!no_error && (!line_stream.eof()))
 					break;
@@ -108,9 +114,39 @@ public:
 			if (i < n)
 			{
 				std::cerr << "read_n : An eccor occured while reading the line \n\"" << line << "\"" <<  std::endl;
-				data_->clear();
+				this->reset();
 			}
 		}
+	}
+
+	virtual void skip_n(std::ifstream& fp, std::size_t n, bool binary) override
+	{
+		if (binary)
+		{
+			fp.ignore(n * sizeof(T));
+		} else {
+			std::string line;
+			line.reserve(256);
+			std::size_t i = 0ul;
+			for (; i < n && (!fp.eof()) && (!fp.bad()); )
+			{
+				bool no_error = true;
+				std::getline(fp,line);
+				std::istringstream line_stream(line);
+				while (i < n && (no_error = static_cast<bool>(line_stream.ignore(1, ' '))))
+					++i;
+				if (!no_error && (!line_stream.eof()))
+					break;
+			}
+			if (i < n)
+			{
+				std::cerr << "skip_n : An eccor occured while skipping the line \n\"" << line << "\"" <<  std::endl;
+			}
+		}
+	}
+	virtual void reset() override
+	{
+		data_ = make_unique<std::vector<T>>();
 	}
 
 	virtual ChunkArray* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) override
@@ -195,6 +231,7 @@ std::unique_ptr<DataIOGen<MAP>> DataIOGen<MAP>::newDataIO(const std::string type
 			}
 		}
 	}
+	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
 	return std::unique_ptr<DataIOGen<MAP>>();
 }
 
@@ -207,31 +244,38 @@ std::unique_ptr<DataIOGen<MAP>> DataIOGen<MAP>::newDataIO(const std::string type
 
 	if (type_name == name_of_type(std::int32_t()))
 	{
-		switch (nb_components) {
+		switch (nb_components)
+		{
 			case 2u: return make_unique<DataIO<MAP,Eigen::Vector2i>>(); break;
 			case 3u: return make_unique<DataIO<MAP,Eigen::Vector3i>>(); break;
 			case 4u: return make_unique<DataIO<MAP,Eigen::Vector4i>>(); break;
 			default:break;
 		}
-	}
-	if (type_name == name_of_type(float()))
-	{
-		switch (nb_components) {
-			case 2u: return make_unique<DataIO<MAP,Eigen::Vector2f>>(); break;
-			case 3u: return make_unique<DataIO<MAP,Eigen::Vector3f>>(); break;
-			case 4u: return make_unique<DataIO<MAP,Eigen::Vector4f>>(); break;
-			default:break;
+	} else {
+		if (type_name == name_of_type(float()))
+		{
+			switch (nb_components)
+			{
+				case 2u: return make_unique<DataIO<MAP,Eigen::Vector2f>>(); break;
+				case 3u: return make_unique<DataIO<MAP,Eigen::Vector3f>>(); break;
+				case 4u: return make_unique<DataIO<MAP,Eigen::Vector4f>>(); break;
+				default:break;
+			}
+		} else {
+			if (type_name == name_of_type(double()))
+			{
+				switch (nb_components)
+				{
+					case 2u: return make_unique<DataIO<MAP,Eigen::Vector2d>>(); break;
+					case 3u: return make_unique<DataIO<MAP,Eigen::Vector3d>>(); break;
+					case 4u: return make_unique<DataIO<MAP,Eigen::Vector4d>>(); break;
+					default:break;
+				}
+			}
 		}
 	}
-	if (type_name == name_of_type(double()))
-	{
-		switch (nb_components) {
-			case 2u: return make_unique<DataIO<MAP,Eigen::Vector2d>>(); break;
-			case 3u: return make_unique<DataIO<MAP,Eigen::Vector3d>>(); break;
-			case 4u: return make_unique<DataIO<MAP,Eigen::Vector4d>>(); break;
-			default:break;
-		}
-	}
+
+	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
 	return std::unique_ptr<DataIOGen<MAP>>();
 }
 
