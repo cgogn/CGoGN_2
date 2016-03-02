@@ -152,7 +152,8 @@ TEST_F(CMap1TopoTest, testRemoveDart)
 /*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of tdarts_.
- * The number of vertices is unchanged and the map integrity is preserved.
+ * The number of vertices is unchanged, the number of faces changes correctly
+ * and the map integrity is preserved.
  */
 TEST_F(CMap1TopoTest, testPhi1SewUnSew)
 {
@@ -330,7 +331,5 @@ TEST_F(CMap1TopoTest, testHasDegree)
 	EXPECT_FALSE(has_degree(f,9));
 	EXPECT_FALSE(has_degree(f,11));
 }
-
-// The traversal methods are tested through the nb_cells calls and wihtin other methods
 
 } // namespace cgogn
