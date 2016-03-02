@@ -1140,10 +1140,10 @@ protected:
 		unsigned int nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ((end - it) < 16 * nb_threads_pool * PARALLEL_BUFFER_SIZE)
+		if ( ((end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE ) && ((end - it) > nb_threads_pool))
 			nbc = (end - it) / nb_threads_pool;
 
-		unsigned int local_end = it + nbc;
+		unsigned int local_end = std::min(it+nbc, end);
 
 		unsigned int i = 0; // used buffered futures 0/1
 		unsigned int j = 0; // thread num
