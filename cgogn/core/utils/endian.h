@@ -27,7 +27,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <core/utils/definitions.h>
-#include <boost/endian/conversion.hpp>
+
 namespace cgogn
 {
 

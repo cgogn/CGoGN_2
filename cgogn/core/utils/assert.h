@@ -27,7 +27,7 @@
 #include <string>
 #include <tuple>
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
@@ -53,7 +53,7 @@ namespace cgogn
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
 	const std::string& expression,
 	const std::string& message,
 	const std::string& file_name,
@@ -71,7 +71,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
+CGOGN_CORE_API CGOGN_NORETURN void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,

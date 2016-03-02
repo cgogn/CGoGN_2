@@ -312,6 +312,7 @@ private:
 		void updateValuesFromPointer();
 		void flipOrientationIfNeeded(const Quaternion& prev);
 		void computeTangent(const KeyFrame* const prev, const KeyFrame* const next);
+		KeyFrame& operator=(const KeyFrame&) = delete;
 	private:
 		Vec p_, tgP_;
 		Quaternion q_, tgQ_;

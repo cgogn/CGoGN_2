@@ -12,6 +12,7 @@ set(HEADER_FILES
 	io_utils.h
 	data_io.h
 	dll.h
+	c_locale.h
 )
 
 set(SOURCE_FILES

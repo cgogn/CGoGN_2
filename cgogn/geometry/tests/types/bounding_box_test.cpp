@@ -40,9 +40,7 @@ protected :
 	cgogn::geometry::BoundingBox<Vec_T> bb_;
 };
 
-
 TYPED_TEST_CASE(BoundingBox_TEST, VecTypes );
-
 
 TEST(BoundingBox_TEST, NameOfType)
 {

@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#define CGOGN_CORE_DLL_EXPORT
 #include <core/utils/serialization.h>
 
 namespace cgogn
@@ -31,14 +31,14 @@ namespace serialization
 {
 
 template <>
-CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
+CGOGN_CORE_API bool known_size<std::string>(std::string const* /*src*/)
 {
 	return false;
 }
 
 // load string
 template <>
-CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+CGOGN_CORE_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
 {
 	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
@@ -58,7 +58,7 @@ CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest,
 
 //save string
 template <>
-CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
@@ -74,7 +74,7 @@ CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const*
 
 // compute data length of string
 template <>
-CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
+CGOGN_CORE_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 
