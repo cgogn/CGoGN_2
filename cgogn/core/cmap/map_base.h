@@ -385,32 +385,6 @@ public:
 		remove_attribute(counter);
 	}
 
-	template <Orbit ORBIT>
-	bool is_well_embedded(Cell<ORBIT> c) const
-	{
-		const ConcreteMap* cmap = to_concrete();
-		bool result = true;
-
-		std::map<unsigned int, Dart> emb_set;
-		cmap->foreach_dart_of_orbit(c, [&] (Dart d)
-		{
-			emb_set.insert(std::pair<unsigned int, Dart>(this->template get_embedding<ORBIT>(d), d));
-		});
-
-		if(emb_set.size() > 1)
-		{
-			std::cout << "Orbit is not well embedded: " << std::endl;
-
-			result = false;
-			std::map<unsigned int, Dart>::iterator it;
-			for (auto const& de : emb_set)
-				std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
-			std::cout << std::endl;
-		}
-
-		return result;
-	}
-
 	/**
 	 * \brief Tests if all \p ORBIT orbits are well embedded
 	 * \details An orbit is well embedded if all its darts

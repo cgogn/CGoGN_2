@@ -32,6 +32,7 @@ namespace cgogn
 
 /*!
  * \brief The CMap0TopoTest class implements topological tests on CMap0
+ * It contains a CMap0 with no attribute avoiding the indexation mecanism.
  */
 class CMap0TopoTest: public ::testing::Test
 {
@@ -45,25 +46,24 @@ protected:
 
 	testCMap0 cmap_;
 
+	/*!
+	 * \brief A vector of darts on which the methods are tested.
+	 */
+	std::vector<Dart> darts_;
+
 	CMap0TopoTest()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 	}
 
 	/*!
-	 * \brief An array of darts on which the methods are tested.
+	 * \brief Initialize the darts in darts_ with added vertices
+	 * \param n : the number of added darts or vertices
 	 */
-	std::array<Dart, NB_MAX> tdarts_;
-
-	/*!
-	 * \brief Initialize the darts in tdarts_
-	 * \return The number of added darts or vertices
-	 */
-	unsigned int addVertices() {
-		for (unsigned int i = 0; i < NB_MAX; ++i)
-			tdarts_[i] = cmap_.add_vertex();
-
-		return NB_MAX;
+	void addVertices(unsigned int n)
+	{
+		for (unsigned int i = 0; i < n; ++i)
+			darts_.push_back(cmap_.add_vertex());
 	}
 };
 
@@ -82,11 +82,14 @@ TEST_F(CMap0TopoTest, testCMap0Constructor)
  */
 TEST_F(CMap0TopoTest, testAddVertex)
 {
-	for (unsigned int i = 1; i< NB_MAX; ++i) {
-		cmap_.add_vertex();
-		EXPECT_EQ(cmap_.nb_darts(), i);
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), i);
-	}
+	addVertices(NB_MAX);
+	EXPECT_EQ(cmap_.nb_darts(), NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX);
+
+	cmap_.add_vertex();
+	EXPECT_EQ(cmap_.nb_darts(), NB_MAX+1);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX+1);
+
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -96,18 +99,25 @@ TEST_F(CMap0TopoTest, testAddVertex)
  */
 TEST_F(CMap0TopoTest, testRemoveVertex)
 {
-	int n = addVertices();
+	addVertices(NB_MAX);
+	int countVertices = NB_MAX;
 
-	int countVertices = n;
-	for (int i = 0; i < n; ++i) {
-		Vertex d = tdarts_[i];
-		if (std::rand()%3 == 1) {
+	cmap_.remove_vertex(darts_.back());
+	--countVertices;
+	EXPECT_EQ(cmap_.nb_darts(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+
+	darts_.pop_back();
+	for (Dart d: darts_)
+	{
+		if (std::rand()%3 == 1)
+		{
 			cmap_.remove_vertex(d);
 			--countVertices;
-			EXPECT_EQ(cmap_.nb_darts(), countVertices);
-			EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 		}
 	}
+	EXPECT_EQ(cmap_.nb_darts(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

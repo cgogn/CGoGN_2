@@ -34,7 +34,10 @@ namespace cgogn
 /*!
  * \brief The CMap0Test class implements tests on embedded CMap0
  * It contains a CMap0 to which a vertex attribute is added
- * to enforce the indexation mecanism
+ * to enforce the indexation mecanism in cell traversals.
+ * Note that pure topological operations have already been tested,
+ * thus only the indexation mecanism used for the embedding of cells
+ * is tested here.
  */
 class CMap0Test: public ::testing::Test
 {
@@ -51,69 +54,49 @@ protected:
 	VertexAttributeHandler vertices_;
 
 	/*!
+	 * \brief A vector of darts on which the methods are tested.
+	 */
+	std::vector<Dart> darts_;
+
+	/*!
 	 * \brief Add a vertex attribute to the testing configuration
 	 */
 	CMap0Test()
 	{
+		std::srand(static_cast<unsigned int>(std::time(0)));
 		vertices_ = cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
 
 	/*!
-	 * \brief An array of darts on which the methods are tested.
+	 * \brief Initialize the darts in darts_ with added vertices
+	 * \param n : the number of added darts or vertices
 	 */
-	std::array<Dart, NB_MAX> tdarts_;
-
-	/*!
-	 * \brief Initialize the darts in tdarts_
-	 * \return The number of added darts or vertices
-	 */
-	int addVertices() {
-		for (int i = 0; i < NB_MAX; ++i)
-			tdarts_[i] = cmap_.add_vertex();
-
-		return NB_MAX;
+	void addVertices(unsigned int n)
+	{
+		for (unsigned int i = 0; i < n; ++i)
+			darts_.push_back(cmap_.add_vertex());
 	}
 };
 
 /*!
- * \brief An empty CMap0 contains no vertex (the attribute is used)
- */
-TEST_F(CMap0Test, testCMap0Constructor)
-{
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
-}
-
-/*!
- * \brief Adding vertices add one cell in the vertex attribute
- * and the cell indexation is preserved
+ * \brief Adding vertices preserves the cell indexation
  */
 TEST_F(CMap0Test, testAddVertex)
 {
-	for (int i = 1; i< NB_MAX; ++i) {
-		Dart d = cmap_.add_vertex();
-		vertices_[d] = i;
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), i);
-	}
+	addVertices(NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 /*!
- * \brief Removing vertices remove one cell in the vertex attribute
- * and the cell indexation is preserved
+ * \brief Removing vertices preserves the cell indexation
  */
 TEST_F(CMap0Test, testRemoveVertex)
 {
-	int n = addVertices();
+	addVertices(NB_MAX);
 
-	int countVertices = n;
-	for (int i = 0; i < n; ++i) {
-		Vertex d = tdarts_[i];
-		if (std::rand()%3 == 1) {
-			cmap_.remove_vertex(Vertex(d));
-			--countVertices;
-			EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
-		}
-	}
+	for (Dart d: darts_)
+		if (std::rand()%3 == 1) cmap_.remove_vertex(Vertex(d));
+
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
