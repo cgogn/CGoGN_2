@@ -427,19 +427,27 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> marker(*cmap);
+		AttributeHandler<unsigned int, ORBIT> marker = add_attribute<unsigned int, ORBIT>("__tmp_marker");
 		bool result = true;
+
+		const Self* const_map = static_cast<const Self*>(this);
+		const typename Inherit::template ChunkArrayContainer<unsigned int>& container =
+				const_map->template get_attribute_container<ORBIT>();
+
+		// a marker is initialized to false for each "used" index of the container
+		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			marker[i] = 0;
 
 		// Check that the indexation of cells is correct
 		foreach_cell_until_dart_marking([&] (CellType c)
 		{
 			// insure that two cells do not share the same index
-			if (marker.is_marked(c))
+			if (marker[this->template get_embedding<ORBIT>(c.dart)] > 0)
 			{
 				result = false;
 				return false;
 			}
-			marker.mark(c);
+			marker[this->template get_embedding<ORBIT>(c.dart)] = 1;
 			// check used indices are valid
 			unsigned int idx = this->get_embedding(c);
 			if (idx == EMBNULL)
@@ -458,10 +466,15 @@ public:
 		});
 		// check that all cells present in the attribute handler are used
 		if (result)
-			cmap->foreach_cell_until([&] (CellType c) {
-				if (!marker.is_marked(c)) result = false;
-				return result;
-		});
+		{
+			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			{
+				if (marker[i] == 0) {
+					result = false;
+					break;
+				}
+			}
+		}
 		return result;
 	}
 
@@ -475,14 +488,16 @@ public:
 			if (!cmap->check_integrity(d)) result = false;
 			return result;
 		});
-		if (!result) {
+		if (!result)
+		{
 			std::cerr << "Integrity of the topology is broken" << std::endl;
 			return false;
 		}
 
 		// check the embedding indexation for the concrete map
 		result = cmap->check_embedding_integrity();
-		if (!result) {
+		if (!result)
+		{
 			std::cerr << "Integrity of the embeddings is broken" << std::endl;
 			return false;
 		}
