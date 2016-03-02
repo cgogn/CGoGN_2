@@ -21,11 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_BASICS_H_
-#define GEOMETRY_FUNCTIONS_BASICS_H_
+#ifndef GEOMETRY_ALGOS_FEATURE_H_
+#define GEOMETRY_ALGOS_FEATURE_H_
 
-#include <cmath>
-#include <algorithm>
+#include <geometry/functions/basics.h>
 
 namespace cgogn
 {
@@ -33,46 +32,23 @@ namespace cgogn
 namespace geometry
 {
 
-/**
- * @brief normalize_safe, normalize a non-zero vector
- * @param v
- */
-template<typename VEC3>
-inline void normalize_safe(VEC3& v)
+template <typename VEC3, typename MAP>
+void mark_feature_edges(
+	const MAP& map,
+	const typename MAP::template FaceAttributeHandler<VEC3>& normal,
+	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
 {
-	using Scalar = typename VEC3::Scalar;
+	feature_edge.unmark_all();
 
-	const Scalar norm2 = v.squaredNorm();
-	if (norm2 > Scalar(0))
-		v /= std::sqrt(norm2);
-}
-
-/**
- * @brief cosinus of the angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
-{
-	using Scalar = typename VEC::Scalar;
-
-	Scalar na2 = a.squaredNorm();
-	Scalar nb2 = b.squaredNorm();
-
-	Scalar res = (a * b) / std::sqrt(na2 * nb2);
-	return std::max(Scalar(-1), std::min(res, Scalar(1)));
-}
-
-/**
- * @brief angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar angle(const VEC& a, const VEC& b)
-{
-	return acos(cos_angle(a,b)) ;
+	map.foreach_cell([&] (typename MAP::Edge e)
+	{
+		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
+			feature_edge.mark(e);
+	});
 }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_BASICS_H_
+#endif // GEOMETRY_ALGOS_FEATURE_H_

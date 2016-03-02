@@ -21,58 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_BASICS_H_
-#define GEOMETRY_FUNCTIONS_BASICS_H_
-
-#include <cmath>
-#include <algorithm>
+#include <modeling/algos/pliant_remeshing.h>
 
 namespace cgogn
 {
 
-namespace geometry
+namespace modeling
 {
 
-/**
- * @brief normalize_safe, normalize a non-zero vector
- * @param v
- */
-template<typename VEC3>
-inline void normalize_safe(VEC3& v)
-{
-	using Scalar = typename VEC3::Scalar;
 
-	const Scalar norm2 = v.squaredNorm();
-	if (norm2 > Scalar(0))
-		v /= std::sqrt(norm2);
-}
 
-/**
- * @brief cosinus of the angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
-{
-	using Scalar = typename VEC::Scalar;
-
-	Scalar na2 = a.squaredNorm();
-	Scalar nb2 = b.squaredNorm();
-
-	Scalar res = (a * b) / std::sqrt(na2 * nb2);
-	return std::max(Scalar(-1), std::min(res, Scalar(1)));
-}
-
-/**
- * @brief angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar angle(const VEC& a, const VEC& b)
-{
-	return acos(cos_angle(a,b)) ;
-}
-
-} // namespace geometry
+} // namespace modeling
 
 } // namespace cgogn
-
-#endif // GEOMETRY_FUNCTIONS_BASICS_H_

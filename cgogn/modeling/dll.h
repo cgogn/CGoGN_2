@@ -21,58 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_BASICS_H_
-#define GEOMETRY_FUNCTIONS_BASICS_H_
-
-#include <cmath>
-#include <algorithm>
-
-namespace cgogn
-{
-
-namespace geometry
-{
+#ifndef MODELING_DLL_H_
+#define MODELING_DLL_H_
 
 /**
- * @brief normalize_safe, normalize a non-zero vector
- * @param v
- */
-template<typename VEC3>
-inline void normalize_safe(VEC3& v)
-{
-	using Scalar = typename VEC3::Scalar;
+* \brief Linkage declaration for CGOGN symbols.
+*/
+#ifdef WIN32
+#if defined CGOGN_MODELING_DLL_EXPORT
+#define CGOGN_MODELING_API __declspec(dllexport)
+#else
+#define CGOGN_MODELING_API __declspec(dllimport)
+#endif
+#else
+#define CGOGN_MODELING_API
+#endif
 
-	const Scalar norm2 = v.squaredNorm();
-	if (norm2 > Scalar(0))
-		v /= std::sqrt(norm2);
-}
-
-/**
- * @brief cosinus of the angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
-{
-	using Scalar = typename VEC::Scalar;
-
-	Scalar na2 = a.squaredNorm();
-	Scalar nb2 = b.squaredNorm();
-
-	Scalar res = (a * b) / std::sqrt(na2 * nb2);
-	return std::max(Scalar(-1), std::min(res, Scalar(1)));
-}
-
-/**
- * @brief angle formed by 2 vectors
- */
-template <typename VEC>
-typename VEC::Scalar angle(const VEC& a, const VEC& b)
-{
-	return acos(cos_angle(a,b)) ;
-}
-
-} // namespace geometry
-
-} // namespace cgogn
-
-#endif // GEOMETRY_FUNCTIONS_BASICS_H_
+#endif // MODELING_DLL_H_

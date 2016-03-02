@@ -5,10 +5,12 @@ project(cgogn_geometry
 set(HEADER_FILES
 	dll.h
 	algos/bounding_box.h
+	algos/feature.h
 	algos/area.h
 	algos/centroid.h
 	algos/normal.h
 	algos/ear_triangulation.h
+	functions/basics.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
