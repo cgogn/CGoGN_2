@@ -25,41 +25,40 @@
 #include <geometry/types/eigen.h>
 #include <geometry/types/vec.h>
 #include <geometry/functions/normal.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <gtest/gtest.h>
-#include <iostream>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-//using EigenVec3d = Eigen::Vector3d;
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
+using EigenVec3d = Eigen::Vector3d;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-TEST(Normal_TEST, TriangleNormal)
+template<typename Vec_T>
+class Normal_TEST : public testing::Test {};
+
+TYPED_TEST_CASE(Normal_TEST, VecTypes );
+
+
+TYPED_TEST(Normal_TEST, TriangleNormal)
 {
-	{
-		StdArray p0(1.,3.,-5.);
-		StdArray p1(7.,-4.,0.1);
-		StdArray p2(-15.,-2.,15.);
-		StdArray n = cgogn::geometry::triangle_normal(p0,p1,p2);
-		cgogn::almost_equal_relative(n.dot(p1-p0), 0.);
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-//		EXPECT_DOUBLE_EQ(n.dot(p1-p0), 0.); // is false !
-		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
-	}
-	{
-//		EigenVec3d p0(1,3,-5);
-//		EigenVec3d p1(7,-4,0.1);
-//		EigenVec3d p2(-15,-2,15);
-//		EigenVec3d n = cgogn::geometry::triangle_normal(p0,p1,p2);
-////		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
-//		EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), 0., 1e-8));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), 0.));
-//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), 0.));
-////		EXPECT_DOUBLE_EQ(n.dot(p1-p0),0); // is false !
-//		EXPECT_NEAR(n.dot(p1-p0), 0., 1e-8);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p0), 0.);
-//		EXPECT_DOUBLE_EQ(n.dot(p2-p1), 0.);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
+	TypeParam p0(Scalar(1), Scalar(3), Scalar(-5));
+	TypeParam p1(Scalar(7), Scalar(-4), Scalar(0.1f));
+	TypeParam p2(Scalar(-15), Scalar(-2), Scalar(15));;
+
+	TypeParam n = cgogn::geometry::triangle_normal(p0,p1,p2);
+
+	cgogn::almost_equal_relative(n.dot(p1-p0), Scalar(0));
+	//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !
+	EXPECT_TRUE(cgogn::almost_equal_absolute(n.dot(p1-p0), Scalar(0), tolerence));
+	EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p0), Scalar(0)));
+	EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p2-p1), Scalar(0)));
+	//		EXPECT_DOUBLE_EQ(n.dot(p1-p0), 0.); // is false !
+	EXPECT_NEAR(n.dot(p1-p0), Scalar(0), tolerence);
+	EXPECT_DOUBLE_EQ(n.dot(p2-p0), Scalar(0));
+	EXPECT_DOUBLE_EQ(n.dot(p2-p1), Scalar(0));
 }

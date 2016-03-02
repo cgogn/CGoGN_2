@@ -33,7 +33,7 @@
 #include <core/container/chunk_array_gen.h>
 #include <core/utils/serialization.h>
 #include <core/utils/assert.h>
-#include <core/basic/dll.h>
+#include <core/dll.h>
 
 
 namespace cgogn
@@ -103,7 +103,7 @@ public:
 	 */
 	void add_chunk() override
 	{
-		table_data_.emplace_back(new T[CHUNKSIZE]());
+		table_data_.push_back(new T[CHUNKSIZE]());
 	}
 
 	/**

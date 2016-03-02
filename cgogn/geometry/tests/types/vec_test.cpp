@@ -23,332 +23,227 @@
 
 #include <geometry/types/vec.h>
 #include <geometry/types/eigen.h>
+#include <geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
-//using EigenVec3d = Eigen::Vector3d;
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
+using EigenVec3d = Eigen::Vector3d;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
+
+template<typename Vec_T>
+class VEC_OP_TEST : public testing::Test
+{
+};
+
+TYPED_TEST_CASE(VEC_OP_TEST, VecTypes );
 
 TEST(VEC_OP_TEST, CGOGN_Typename)
 {
-	EXPECT_EQ(cgogn::name_of_type(StdArray()),"cgogn::geometry::Vec_T<std::array<double,3>>");
-//	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
+	EXPECT_EQ(cgogn::name_of_type(StdArrayf()),"cgogn::geometry::Vec_T<std::array<float,3>>");
+	EXPECT_EQ(cgogn::name_of_type(EigenVec3f()), "Eigen::Matrix<float,3,1,0,3,1>");
+	EXPECT_EQ(cgogn::name_of_type(StdArrayd()),"cgogn::geometry::Vec_T<std::array<double,3>>");
+	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
 }
 
-TEST(VEC_OP_TEST, Constructor)
+TYPED_TEST(VEC_OP_TEST, Constructor)
 {
-	StdArray vec1{0.,0.,0.};
-	EXPECT_EQ(vec1[0],0);
-	EXPECT_EQ(vec1[1],0);
-	EXPECT_EQ(vec1[2],0);
-//	EigenVec3d vec2 = {0.,0.,0.};
-//	EXPECT_EQ(vec2[0],0);
-//	EXPECT_EQ(vec2[1],0);
-//	EXPECT_EQ(vec2[2],0);
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const Scalar zero(0);
+	const TypeParam vec1{zero, zero, zero};
+	EXPECT_EQ(vec1[0],zero);
+	EXPECT_EQ(vec1[1],zero);
+	EXPECT_EQ(vec1[2],zero);
 }
 
-TEST(VEC_OP_TEST, CopyConstructor)
+TYPED_TEST(VEC_OP_TEST, CopyConstructor)
 {
-	StdArray vec1a = {1.,2., 3.};
-	StdArray vec1b(vec1a);
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const TypeParam vec1a = {Scalar(1), Scalar(2), Scalar(3)};
+	TypeParam vec1b(vec1a);
 	EXPECT_EQ(vec1a[0], vec1b[0]);
 	EXPECT_EQ(vec1a[1], vec1b[1]);
 	EXPECT_EQ(vec1a[2], vec1b[2]);
-//	EigenVec3d vec2a = {1.,2., 3.};
-//	EigenVec3d vec2b(vec2a);
-//	EXPECT_EQ(vec2a[0], vec2b[0]);
-//	EXPECT_EQ(vec2a[1], vec2b[1]);
-//	EXPECT_EQ(vec2a[2], vec2b[2]);
 }
 
-TEST(VEC_OP_TEST, AssignConstructor)
+TYPED_TEST(VEC_OP_TEST, AssignConstructor)
 {
-	StdArray vec1a = {1.,2., 3.};
-	StdArray vec1b;
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const TypeParam vec1a = {Scalar(1), Scalar(2), Scalar(3)};
+	TypeParam vec1b;
 	vec1b = vec1a;
 	EXPECT_EQ(vec1a[0], vec1b[0]);
 	EXPECT_EQ(vec1a[1], vec1b[1]);
 	EXPECT_EQ(vec1a[2], vec1b[2]);
-
-//	EigenVec3d vec2a = {1.,2., 3.};
-//	EigenVec3d vec2b;
-//	vec2b = vec2a;
-//	EXPECT_EQ(vec2a[0], vec2b[0]);
-//	EXPECT_EQ(vec2a[1], vec2b[1]);
-//	EXPECT_EQ(vec2a[2], vec2b[2]);
 }
 
-TEST(VEC_OP_TEST, UnaryMinus)
+TYPED_TEST(VEC_OP_TEST, UnaryMinus)
 {
-	StdArray vec1a = {1.,2., 3.};
-	StdArray vec1b = -vec1a;
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const TypeParam vec1a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam vec1b = -vec1a;
 	EXPECT_EQ(vec1a[0], -vec1b[0]);
 	EXPECT_EQ(vec1a[1], -vec1b[1]);
 	EXPECT_EQ(vec1a[2], -vec1b[2]);
-
-//	EigenVec3d vec2a = {1.,2., 3.};
-//	EigenVec3d vec2b = -vec2a;
-//	EXPECT_EQ(vec2a[0], -vec2b[0]);
-//	EXPECT_EQ(vec2a[1], -vec2b[1]);
-//	EXPECT_EQ(vec2a[2], -vec2b[2]);
 }
 
-TEST(VEC_OP_TEST, PlusAssign)
+TYPED_TEST(VEC_OP_TEST, PlusAssign)
 {
-	{
-		StdArray a = {1.,2., 3.};
-		StdArray b = {1.,2., 3.};
-		b += a;
-		EXPECT_EQ(b[0], 2);
-		EXPECT_EQ(b[1], 4);
-		EXPECT_EQ(b[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {1.,2., 3.};
-//		EigenVec3d b = {1.,2., 3.};
-//		b += a;
-//		EXPECT_EQ(b[0], 2);
-//		EXPECT_EQ(b[1], 4);
-//		EXPECT_EQ(b[2], 6);
-	}
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	TypeParam b = {Scalar(7), Scalar(5), Scalar(9)};
+	b += a;
+	EXPECT_EQ(b[0], 8);
+	EXPECT_EQ(b[1], 7);
+	EXPECT_EQ(b[2], 12);
 }
 
-TEST(VEC_OP_TEST, MinusAssign)
+TYPED_TEST(VEC_OP_TEST, MinusAssign)
 {
-	{
-		StdArray a = {-1.,-2., -3.};
-		StdArray b = {1.,2., 3.};
-		b -= a;
-		EXPECT_EQ(b[0], 2);
-		EXPECT_EQ(b[1], 4);
-		EXPECT_EQ(b[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {-1.,-2., -3.};
-//		EigenVec3d b = {1.,2., 3.};
-//		b -= a;
-//		EXPECT_EQ(b[0], 2);
-//		EXPECT_EQ(b[1], 4);
-//		EXPECT_EQ(b[2], 6);
-	}
+	const TypeParam a = {Scalar(-1), Scalar(-2), Scalar(-3)};
+	TypeParam b = {Scalar(7), Scalar(5), Scalar(9)};
+	b -= a;
+	EXPECT_EQ(b[0], 8);
+	EXPECT_EQ(b[1], 7);
+	EXPECT_EQ(b[2], 12);
 }
 
-TEST(VEC_OP_TEST, MultAssign)
+TYPED_TEST(VEC_OP_TEST, MultAssign)
 {
-	{
-		StdArray a = {1.,2., 3.};
-		a *= 2;
-		EXPECT_EQ(a[0], 2);
-		EXPECT_EQ(a[1], 4);
-		EXPECT_EQ(a[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {1.,2., 3.};
-//		a *= 2;
-//		EXPECT_EQ(a[0], 2);
-//		EXPECT_EQ(a[1], 4);
-//		EXPECT_EQ(a[2], 6);
-	}
+	TypeParam a = {Scalar(7), Scalar(5), Scalar(9)};
+	a *= 2;
+	EXPECT_EQ(a[0], 14);
+	EXPECT_EQ(a[1], 10);
+	EXPECT_EQ(a[2], 18);
 }
 
-TEST(VEC_OP_TEST, DivAssign)
+TYPED_TEST(VEC_OP_TEST, DivAssign)
 {
-	{
-		StdArray a{2.,4., 6.};
-		a /= 2;
-		EXPECT_EQ(a[0], 1);
-		EXPECT_EQ(a[1], 2);
-		EXPECT_EQ(a[2], 3);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a{2.,4., 6.};
-//		a /= 2;
-//		EXPECT_EQ(a[0], 1);
-//		EXPECT_EQ(a[1], 2);
-//		EXPECT_EQ(a[2], 3);
-	}
+	TypeParam a = {Scalar(2), Scalar(4), Scalar(6)};
+	a /= 2;
+	EXPECT_EQ(a[0], 1);
+	EXPECT_EQ(a[1], 2);
+	EXPECT_EQ(a[2], 3);
 }
 
-TEST(VEC_OP_TEST, Plus)
+TYPED_TEST(VEC_OP_TEST, Plus)
 {
-	{
-		StdArray a = {1.,2., 3.};
-		StdArray b = {1.,2., 3.};
-		StdArray c = a+b;
-		EXPECT_EQ(c[0], 2);
-		EXPECT_EQ(c[1], 4);
-		EXPECT_EQ(c[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {1.,2., 3.};
-//		EigenVec3d b = {1.,2., 3.};
-//		EigenVec3d c = a+b;
-//		EXPECT_EQ(c[0], 2);
-//		EXPECT_EQ(c[1], 4);
-//		EXPECT_EQ(c[2], 6);
-	}
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam b = {Scalar(7), Scalar(5), Scalar(9)};
+	const TypeParam c = a + b;
+	EXPECT_EQ(c[0], a[0] + b[0]);
+	EXPECT_EQ(c[1], a[1] + b[1]);
+	EXPECT_EQ(c[2], a[2] + b[2]);
 }
 
-TEST(VEC_OP_TEST, Minus)
+TYPED_TEST(VEC_OP_TEST, Minus)
 {
-	{
-		StdArray a = {1.,2., 3.};
-		StdArray b = {-1.,-2., -3.};
-		StdArray c = a-b;
-		EXPECT_EQ(c[0], 2);
-		EXPECT_EQ(c[1], 4);
-		EXPECT_EQ(c[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {1.,2., 3.};
-//		EigenVec3d b = {-1.,-2., -3.};
-//		EigenVec3d c = a-b;
-//		EXPECT_EQ(c[0], 2);
-//		EXPECT_EQ(c[1], 4);
-//		EXPECT_EQ(c[2], 6);
-	}
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam b = {Scalar(7), Scalar(5), Scalar(9)};
+	const TypeParam c = a - b;
+	EXPECT_EQ(c[0], a[0] - b[0]);
+	EXPECT_EQ(c[1], a[1] - b[1]);
+	EXPECT_EQ(c[2], a[2] - b[2]);
 }
 
-TEST(VEC_OP_TEST, MultScalar)
+TYPED_TEST(VEC_OP_TEST, MultScalar)
 {
-	{
-		StdArray a = {1.,2., 3.};
-		StdArray c = a*2;
-		StdArray d = 2*a;
-		EXPECT_EQ(c[0], 2);
-		EXPECT_EQ(c[1], 4);
-		EXPECT_EQ(c[2], 6);
-		EXPECT_EQ(d[0], 2);
-		EXPECT_EQ(d[1], 4);
-		EXPECT_EQ(d[2], 6);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {1.,2., 3.};
-//		EigenVec3d c = a*2;
-//		EigenVec3d d = 2*a;
-//		EXPECT_EQ(c[0], 2);
-//		EXPECT_EQ(c[1], 4);
-//		EXPECT_EQ(c[2], 6);
-//		EXPECT_EQ(d[0], 2);
-//		EXPECT_EQ(d[1], 4);
-//		EXPECT_EQ(d[2], 6);
-	}
+	TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam c = a*2;
+	const TypeParam d = 2*a;
+	EXPECT_EQ(c[0], 2 * a[0]);
+	EXPECT_EQ(c[1], 2 * a[1]);
+	EXPECT_EQ(c[2], 2 * a[2]);
+	EXPECT_EQ(d[0], 2 * a[0]);
+	EXPECT_EQ(d[1], 2 * a[1]);
+	EXPECT_EQ(d[2], 2 * a[2]);
 }
 
-TEST(VEC_OP_TEST, Norm2)
+TYPED_TEST(VEC_OP_TEST, Norm2)
 {
-	StdArray vec1a = {1.,2., 3.};
-	EXPECT_EQ(vec1a.squaredNorm(), 14.);
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-//	EigenVec3d vec2a = {1.,2., 3.};
-//	EXPECT_EQ(vec2a.squaredNorm(), 14.);
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	EXPECT_EQ(a.squaredNorm(), 14.);
 }
 
-TEST(VEC_OP_TEST, Norm)
+TYPED_TEST(VEC_OP_TEST, Norm)
 {
-	{
-	StdArray a = {3.,-4., 0.};
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const TypeParam a = {Scalar(3), Scalar(-4), Scalar(0)};
 	EXPECT_EQ(a.norm(), 5.);
-	}
-
-	{
-//	EigenVec3d a = {3.,-4., 0.};
-//	EXPECT_EQ(a.norm(), 5.);
-	}
 }
 
-TEST(VEC_OP_TEST, Normalize)
+TYPED_TEST(VEC_OP_TEST, Normalize)
 {
-	{
-	StdArray a = {3.,-4., 0.};
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	TypeParam a = {Scalar(3), Scalar(-4), Scalar(0)};
 	a.normalize();
-	EXPECT_DOUBLE_EQ(a[0], 3./5.);
-	EXPECT_DOUBLE_EQ(a[1], -4./5.);
-	EXPECT_DOUBLE_EQ(a[2], 0.);
-	EXPECT_DOUBLE_EQ(a.norm(), 1.);
-	}
-
-	{
-//	EigenVec3d a = {3.,-4., 0.};
-//	a.normalize();
-//	EXPECT_DOUBLE_EQ(a[0], 3./5.);
-//	EXPECT_DOUBLE_EQ(a[1], -4./5.);
-//	EXPECT_DOUBLE_EQ(a[2], 0.);
-//	EXPECT_DOUBLE_EQ(a.norm(), 1.);
-	}
+	EXPECT_DOUBLE_EQ(a[0], Scalar(3)/Scalar(5));
+	EXPECT_DOUBLE_EQ(a[1], Scalar(-4)/Scalar(5));
+	EXPECT_DOUBLE_EQ(a[2], Scalar(0));
+	EXPECT_DOUBLE_EQ(a.norm(), Scalar(1));
 }
 
-TEST(VEC_OP_TEST, DotProduct)
+TYPED_TEST(VEC_OP_TEST, DotProduct)
 {
-	{
-	StdArray a = {1.,-2., 3.};
-	StdArray b = {1.,-2., 3.};
-	EXPECT_EQ(a.dot(b), 14.);
-	EXPECT_EQ(b.dot(a), 14.);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-	StdArray a = {1.,2., -3.};
-	StdArray b = {1.,2., -3.};
-	EXPECT_EQ(a.dot(b), 14.);
-	EXPECT_EQ(b.dot(a), 14.);
-	}
+	TypeParam a = {Scalar(3), Scalar(-4), Scalar(10)};
+	TypeParam b = {Scalar(-1), Scalar(5), Scalar(2)};
+	EXPECT_EQ(a.dot(b), -3);
+	EXPECT_EQ(b.dot(a), -3);
 }
 
-TEST(VEC_OP_TEST, CrossProduct)
+TYPED_TEST(VEC_OP_TEST, CrossProduct)
 {
-	{
-	StdArray a = {1.,2., 3.};
-	StdArray b = {3.,2., 1.};
-	StdArray c = a.cross(b);
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam b = {Scalar(3), Scalar(2), Scalar(1)};
+	const TypeParam c = a.cross(b);
 	EXPECT_EQ(c[0], -4.);
 	EXPECT_EQ(c[1], 8.);
 	EXPECT_EQ(c[2], -4.);
-	}
-
-	{
-//	EigenVec3d a = {1.,2., 3.};
-//	EigenVec3d b = {3.,2., 1.};
-//	EigenVec3d c = a.cross(b);
-//	EXPECT_EQ(c[0], -4.);
-//	EXPECT_EQ(c[1], 8.);
-//	EXPECT_EQ(c[2], -4.);
-	}
 }
 
-TEST(VEC_OP_TEST, Equality)
+TYPED_TEST(VEC_OP_TEST, Equality)
 {
-	StdArray vec1a = {1.,2., 3.};
-	StdArray vec1b = {1.,2., 3.};
-	EXPECT_TRUE(vec1a == vec1b);
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-//	EigenVec3d vec2a = {1.,2., 3.};
-//	EigenVec3d vec2b = {1.,2., 3.};
-//	EXPECT_TRUE(vec2a == vec2b);
+	const TypeParam a = {Scalar(1), Scalar(2), Scalar(3)};
+	const TypeParam b= {Scalar(1), Scalar(2), Scalar(3)};
+	EXPECT_TRUE(a == b);
 }
 
-TEST(VEC_OP_TEST, DivScalar)
+TYPED_TEST(VEC_OP_TEST, DivScalar)
 {
-	{
-		StdArray a = {2. ,4., 6.};
-		StdArray c = a/2;
-		EXPECT_EQ(c[0], 1);
-		EXPECT_EQ(c[1], 2);
-		EXPECT_EQ(c[2], 3);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	{
-//		EigenVec3d a = {2. ,4., 6.};
-//		EigenVec3d c = a/2;
-//		EXPECT_EQ(c[0], 1);
-//		EXPECT_EQ(c[1], 2);
-//		EXPECT_EQ(c[2], 3);
-	}
+	const TypeParam a = {Scalar(2), Scalar(4), Scalar(6)};
+	const TypeParam c = a/2;
+	EXPECT_EQ(c[0], 1);
+	EXPECT_EQ(c[1], 2);
+	EXPECT_EQ(c[2], 3);
 }

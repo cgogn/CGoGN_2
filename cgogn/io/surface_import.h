@@ -33,6 +33,7 @@
 #include <core/utils/string.h>
 #include <io/import_ply_data.h>
 
+#include <io/c_locale.h>
 #include <io/dll.h>
 
 namespace cgogn
@@ -86,7 +87,7 @@ public:
 	unsigned int nb_edges_;
 	unsigned int nb_faces_;
 
-	std::vector<unsigned short> faces_nb_edges_;
+	std::vector<unsigned int> faces_nb_edges_;
 	std::vector<unsigned int> faces_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
@@ -126,6 +127,9 @@ public:
 	template <typename VEC3>
 	bool import_file(const std::string& filename, SurfaceFileType type)
 	{
+		//ensure that locale are set to C for reading files
+		Scoped_C_Locale loc;
+
 		clear();
 
 		std::ifstream fp(filename.c_str(), std::ios::in);
@@ -183,7 +187,7 @@ public:
 
 		for (unsigned int i = 0; i < this->nb_faces_; ++i)
 		{
-			unsigned short nbe = this->faces_nb_edges_[i];
+			unsigned int nbe = this->faces_nb_edges_[i];
 
 			vertices_buffer.clear();
 			unsigned int prev = std::numeric_limits<unsigned int>::max();
@@ -207,7 +211,7 @@ public:
 				for (unsigned int j = 0u; j < nbe; ++j)
 				{
 					const unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template set_embedding<Vertex::ORBIT>(d, vertex_index);
+					mbuild.template set_embedding<Vertex>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
@@ -392,7 +396,7 @@ protected:
 
 				//endian
 				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
-				for (unsigned int i=0; i< 3*BUFFER_SZ;++i)
+				for (unsigned int k=0; k< 3*BUFFER_SZ;++k)
 				{
 					*ptr = swap_endianness_system_big(*ptr);
 					++ptr;
@@ -442,7 +446,7 @@ protected:
 				{
 					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
 					ptr = buff_ind;
-					for (unsigned int i=0; i< BUFFER_SZ;++i)
+					for (unsigned int k=0; k< BUFFER_SZ;++k)
 					{
 						*ptr = swap_endianness_system_big(*ptr);
 						++ptr;
@@ -580,7 +584,7 @@ protected:
 		}
 
 		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-		ChunkArray<VEC3>* color;
+		ChunkArray<VEC3>* color = nullptr;
 		if (pid.has_colors())
 		{
 			 color = vertex_attributes_.template add_attribute<VEC3>("color");

@@ -11,8 +11,8 @@
 
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 
-//using Vec3 = Eigen::Vector3d;
-using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+using Vec3 = Eigen::Vector3d;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 		{
 			++nbv;
 			unsigned int nb_incident = 0;
-			map.foreach_incident_face(v, [&] (Map3::Face f)
+			map.foreach_incident_face(v, [&] (Map3::Face /*f*/)
 			{
 				++nb_incident;
 			});
