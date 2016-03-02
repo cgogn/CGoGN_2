@@ -404,7 +404,7 @@ public:
 			result = false;
 			std::map<unsigned int, Dart>::iterator it;
 			for (auto const& de : emb_set)
-			std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
+				std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -431,7 +431,7 @@ public:
 		bool result = true;
 
 		// Check that the indexation of cells is correct
-		cmap->foreach_cell_until_dart_marking([&] (CellType c)
+		foreach_cell_until_dart_marking([&] (CellType c)
 		{
 			// insure that two cells do not share the same index
 			if (marker.is_marked(c))
@@ -462,9 +462,9 @@ public:
 			cmap->foreach_cell_until([&] (CellType c) {
 				if (!marker.is_marked(c)) {
 					result = false;
-					return false;
 				}
-			});
+				return result;
+		});
 		return result;
 	}
 
