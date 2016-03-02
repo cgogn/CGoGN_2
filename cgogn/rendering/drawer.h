@@ -27,6 +27,7 @@
 #include <rendering/shaders/shader_color_per_vertex.h>
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/shader_bold_line.h>
+#include <rendering/shaders/shader_round_point.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
@@ -56,8 +57,6 @@ class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
 protected:
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
-	unsigned int vao_cpv_;
-	unsigned int vao_bl_;
 
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
@@ -68,10 +67,15 @@ protected:
 
 	std::vector<PrimParam>* current_begin_;
 
-	float current_size_;
 	static ShaderColorPerVertex* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
+	static ShaderRoundPoint* shader_rp_;
 
+	unsigned int vao_cpv_;
+	unsigned int vao_bl_;
+	unsigned int vao_rp_;
+
+	float current_size_;
 	bool current_aa_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
@@ -123,6 +127,17 @@ public:
 	 */
 	void color3f(float r, float g, float b);
 
+
+	inline void vertex3fv(const std::array<float,3>& xyz)
+	{
+		vertex3f(xyz[0],xyz[1],xyz[2]);
+	}
+
+	inline void color3fv(const std::array<float,3>& rgb)
+	{
+		color3f(rgb[0],rgb[1],rgb[2]);
+	}
+
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
@@ -135,8 +150,21 @@ public:
 		color3f(float(rgb[0]),float(rgb[1]),float(rgb[2]));
 	}
 
+	template <typename VEC3>
+	inline void vertex3fv(const VEC3& xyz)
+	{
+		vertex3f(float(xyz[0]),float(xyz[1]),float(xyz[2]));
+	}
+
+	template <typename VEC3>
+	inline void color3fv(const VEC3& rgb)
+	{
+		color3f(float(rgb[0]),float(rgb[1]),float(rgb[2]));
+	}
+
+
 	/**
-	 * use as a glCallList
+	 * use as a glCallList (draw the compiled drawing list)
 	 * @param projection projection matrix
 	 * @param modelview modelview matrix
 	 */

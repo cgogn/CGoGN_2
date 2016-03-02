@@ -37,6 +37,7 @@ namespace rendering
 
 ShaderColorPerVertex* Drawer::shader_cpv_= NULL;
 ShaderBoldLine* Drawer::shader_bl_= NULL;
+ShaderRoundPoint* Drawer::shader_rp_= NULL;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	current_size_(1.0f),
@@ -57,9 +58,18 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 
 	vao_bl_ = shader_bl_->add_vao();
 	shader_bl_->bind();
-	shader_bl_->set_color(QColor(255,255,0,255));
 	shader_bl_->release();
 	shader_bl_->set_vao(vao_bl_,vbo_pos_,vbo_col_);
+
+
+	if (shader_rp_ == NULL)
+		shader_rp_ = new ShaderRoundPoint(true);
+	vao_rp_ = shader_rp_->add_vao();
+	shader_rp_->bind();
+	shader_rp_->release();
+	shader_rp_->set_vao(vao_rp_,vbo_pos_,vbo_col_);
+
+
 }
 
 Drawer::~Drawer()
@@ -162,14 +172,31 @@ void Drawer::end_list()
 
 void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
+
+	shader_rp_->bind();
+	shader_rp_->set_matrices(projection,modelview);
+	shader_rp_->bind_vao(vao_bl_);
+
+	for (auto& pp : begins_point_)
+	{
+		shader_rp_->set_width(pp.width);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+	}
+	shader_rp_->release_vao(vao_bl_);
+	shader_rp_->release();
+
+
 	shader_cpv_->bind();
 	shader_cpv_->set_matrices(projection,modelview);
 	shader_cpv_->bind_vao(vao_cpv_);
-	for (auto& pp : begins_point_)
-	{
-		ogl33_->glPointSize(pp.width);
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-	}
+
+//	for (auto& pp : begins_point_)
+//	{
+//		ogl33_->glPointSize(pp.width);
+//		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//	}
+
+
 
 	for (auto& pp : begins_line_)
 	{
@@ -190,8 +217,6 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 	shader_bl_->set_matrices(projection,modelview);
 	shader_bl_->bind_vao(vao_bl_);
 
-
-
 	for (auto& pp : begins_bold_line_)
 	{
 		shader_bl_->set_width(pp.width);
@@ -209,7 +234,6 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 			ogl33_->glDisable(GL_BLEND);
 
 	}
-
 
 	shader_bl_->release_vao(vao_bl_);
 	shader_bl_->release();
