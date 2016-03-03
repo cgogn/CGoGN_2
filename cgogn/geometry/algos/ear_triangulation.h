@@ -380,6 +380,8 @@ public:
 			}
 		}
 	}
+
+	EarTriangulation& operator=(const EarTriangulation&) = delete;
 };
 
 /**

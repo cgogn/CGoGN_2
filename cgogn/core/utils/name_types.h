@@ -41,7 +41,7 @@
 #include <sstream>
 #endif // __GNUG__
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 
 namespace cgogn
@@ -93,7 +93,7 @@ inline std::string name_of_type_impl(const std::basic_string<T>&);
 template <typename T, std::size_t N>
 inline std::string name_of_type_impl(const std::array<T,N>&);
 
-CGOGN_UTILS_API std::string demangle(const std::string& str);
+CGOGN_CORE_API std::string demangle(const std::string& str);
 
 // definitions
 
