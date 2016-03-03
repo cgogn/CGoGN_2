@@ -265,9 +265,9 @@ protected:
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
-		if (size == 0) {
+		if (size == 0)
 			std::cerr << "Warning: attempt to create an empty face results in a single dart" << std::endl;
-		}
+
 		Dart d = this->add_dart();
 		for (unsigned int i = 1u; i < size; ++i)
 			split_vertex_topo(d);

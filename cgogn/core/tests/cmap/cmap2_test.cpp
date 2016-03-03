@@ -21,19 +21,24 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cstdlib>
-#include <ctime>
-
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap2.h>
-#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
 #define NB_MAX 1000
 
+/*!
+ * \brief The CMap2Test class implements tests on embedded CMap2
+ * It contains a CMap2 to which vertex, edge, face and volume attribute
+ * are added to enforce the indexation mecanism in cell traversals.
+ *
+ * Note that pure topological operations have already been tested,
+ * in CMap2TopoTest, thus only the indexation mecanism used for the
+ * embedding of cells is tested here.
+ */
 class CMap2Test: public ::testing::Test
 {
 
@@ -54,7 +59,9 @@ protected:
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int, Edge::ORBIT>("edges");
 		cmap_.add_attribute<int, Face::ORBIT>("faces");
+		cmap_.add_attribute<int, Volume::ORBIT>("volumes");
 	}
 
 	int randomFaces() {

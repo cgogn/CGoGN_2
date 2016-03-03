@@ -31,9 +31,13 @@ namespace cgogn
 #define NB_MAX 100
 
 /*!
-* \brief The CMap1TopoTest class implements topological tests on CMap1
-* It derives from CMap1 to allow the test of protected methods
-*/
+ * \brief The CMap1TopoTest class implements topological tests on CMap1
+ * It derives from CMap1 to allow the test of protected methods
+ *
+ * Note that these tests, check that the topological operators perform as wanted
+ * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * These last tests are implemented in another test suite.
+ */
 class CMap1TopoTest : public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 

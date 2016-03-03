@@ -21,9 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cstdlib>
-#include <ctime>
-
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap2.h>
@@ -33,6 +30,14 @@ namespace cgogn
 
 #define NB_MAX 1000
 
+/*!
+ * \brief The CMap2TopoTest class implements topological tests on CMap2
+ * It derives from CMap2 to allow the test of protected methods
+ *
+ * Note that these tests, check that the topological operators perform as wanted
+ * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * These last tests are implemented in another test suite.
+ */
 class CMap2TopoTest: public CMap2<DefaultMapTraits>, public ::testing::Test
 {
 

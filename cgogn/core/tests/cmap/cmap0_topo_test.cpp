@@ -33,6 +33,10 @@ namespace cgogn
 /*!
  * \brief The CMap0TopoTest class implements topological tests on CMap0
  * It contains a CMap0 with no attribute avoiding the indexation mecanism.
+ *
+ * Note that these tests, check that the topological operators perform as wanted
+ * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * These last tests are implemented in another test suite.
  */
 class CMap0TopoTest: public ::testing::Test
 {

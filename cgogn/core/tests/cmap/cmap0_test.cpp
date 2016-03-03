@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap0.h>
-#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
@@ -35,9 +34,10 @@ namespace cgogn
  * \brief The CMap0Test class implements tests on embedded CMap0
  * It contains a CMap0 to which a vertex attribute is added
  * to enforce the indexation mecanism in cell traversals.
+ *
  * Note that pure topological operations have already been tested,
- * thus only the indexation mecanism used for the embedding of cells
- * is tested here.
+ * in CMap0TopoTest, thus only the indexation mecanism used for the
+ * embedding of cells is tested here.
  */
 class CMap0Test: public ::testing::Test
 {

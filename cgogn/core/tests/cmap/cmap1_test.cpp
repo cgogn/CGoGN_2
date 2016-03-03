@@ -21,19 +21,24 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cstdlib>
-#include <ctime>
-
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
-#include <core/cmap/sanity_check.h>
 
 namespace cgogn
 {
 
 #define NB_MAX 1000
 
+/*!
+ * \brief The CMap1Test class implements tests on embedded CMap1
+ * It contains a CMap1 to which vertex and face attribute are added
+ * to enforce the indexation mecanism in cell traversals.
+ *
+ * Note that pure topological operations have already been tested,
+ * in CMap1TopoTest, thus only the indexation mecanism used for the
+ * embedding of cells is tested here.
+ */
 class CMap1Test: public ::testing::Test
 {
 
