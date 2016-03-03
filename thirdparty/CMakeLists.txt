@@ -19,4 +19,5 @@ if (CGOGN_BUILD_BENCHS)
 endif(CGOGN_BUILD_BENCHS)
 
 add_subdirectory(ply)
+add_subdirectory(base64)
 add_subdirectory(OffBinConverter)
