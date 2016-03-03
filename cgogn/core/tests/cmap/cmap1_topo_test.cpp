@@ -95,7 +95,7 @@ protected:
 /*!
  * \brief An empty CMap1 contains no dart, no vertex and no face.
  */
-TEST_F(CMap1TopoTest, testCMap1Constructor)
+TEST_F(CMap1TopoTest, Constructor)
 {
 	EXPECT_EQ(nb_darts(), 0u);
 	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0u);
@@ -103,63 +103,12 @@ TEST_F(CMap1TopoTest, testCMap1Constructor)
 }
 
 /*!
- * \brief Adding darts adds one vertex and one face per dart.
- * The test adds darts and check that the number of cells correctly
- * increases and that the map integrity is preserved.
- */
-TEST_F(CMap1TopoTest, testAddDart)
-{
-	add_dart();
-	EXPECT_EQ(nb_darts(), 1);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 1);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 1);
-
-	addVertices(NB_MAX);
-	EXPECT_EQ(nb_darts(), NB_MAX+1);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), NB_MAX+1);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX+1);
-
-	EXPECT_TRUE(check_map_integrity());
-}
-
-/*!
- * \brief Removing unsewn darts removes one vertex and on face per dart.
- * The test randomly removes 1/3 of the initial vertices.
- * The number of cells correctly decreases and the map integrity is preserved.
- */
-TEST_F(CMap1TopoTest, testRemoveDart)
-{
-	addVertices(NB_MAX);
-	int countVertices = NB_MAX;
-
-	remove_dart(darts_.back());
-	--countVertices;
-	EXPECT_EQ(nb_darts(), countVertices);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), countVertices);
-
-	darts_.pop_back();
-	for (Dart d: darts_)
-	{
-		if (std::rand()%3 == 1)
-		{
-			remove_dart(d);
-			--countVertices;
-		}
-	}
-	EXPECT_EQ(nb_darts(), countVertices);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), countVertices);
-	EXPECT_TRUE(check_map_integrity());
-}
-
-/*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
- * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of tdarts_.
+ * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The number of vertices is unchanged, the number of faces changes correctly
  * and the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, testPhi1SewUnSew)
+TEST_F(CMap1TopoTest, phi1_sew_unsew)
 {
 	addVertices(NB_MAX);
 	int countFaces = NB_MAX;
@@ -198,7 +147,7 @@ TEST_F(CMap1TopoTest, testPhi1SewUnSew)
  * The test adds some faces and check that the number of generated cells is correct
  * and that the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, testAddFace)
+TEST_F(CMap1TopoTest, add_face_topo)
 {
 	add_face_topo(1);
 	EXPECT_EQ(nb_darts(), 1);
@@ -218,11 +167,36 @@ TEST_F(CMap1TopoTest, testAddFace)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+/*! \brief Removing a face removes all its vertices.
+ * The test randomly removes 1/3 of the initial faces.
+ * The number of cells correctly decreases and the map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, remove_face)
+{
+	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int countFaces = NB_MAX;
+
+	for (Dart d: darts_)
+	{
+		if (std::rand()%3 == 1) {
+			unsigned int k = degree(Face(d));
+			remove_face(d);
+			countVertices -= k;
+			--countFaces;
+		}
+	}
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
+	EXPECT_TRUE(check_map_integrity());
+}
+
 /*! \brief Spliting a vertex increases the size of its face.
  * The test performs NB_MAX vertex spliting on vertices of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, testSplitVertex)
+TEST_F(CMap1TopoTest, split_vertex_topo)
 {
 	unsigned int countVertices = addFaces(NB_MAX);
 
@@ -232,16 +206,17 @@ TEST_F(CMap1TopoTest, testSplitVertex)
 		split_vertex_topo(d);
 		EXPECT_EQ(degree(Face(d)), k+1);
 	}
+	EXPECT_EQ(nb_darts(), countVertices+NB_MAX);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices+NB_MAX);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Removing a vertex decreases the size of its face and removes the face if its size is 1.
-* The test performs NB_MAX vertex spliting on vertices of randomly generated faces.
-* The number of generated cells is correct and the map integrity is preserved.
+/*! \brief Removing a vertex decreases the size of its face and removes its if its degree is 1.
+* The test performs NB_MAX vertex removing on vertices of randomly generated faces.
+* The number of removed cells is correct and the map integrity is preserved.
 */
-TEST_F(CMap1TopoTest, testRemoveVertex)
+TEST_F(CMap1TopoTest, remove_vertex)
 {
 	unsigned int countVertices = addFaces(NB_MAX);
 	unsigned int countFaces = NB_MAX;
@@ -262,28 +237,7 @@ TEST_F(CMap1TopoTest, testRemoveVertex)
 		}
 	}
 
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
-	EXPECT_TRUE(check_map_integrity());
-}
-
-/*! \brief Removing a face removes all its vertices.
- * The test randomly removes 1/3 of the initial faces.
- * The number of cells correctly decreases and the map integrity is preserved.
- */
-TEST_F(CMap1TopoTest, testRemoveFace)
-{
-	unsigned int countVertices = addFaces(NB_MAX);
-	unsigned int countFaces = NB_MAX;
-
-	for (Dart d: darts_)
-	{
-		unsigned int k = degree(Face(d));
-		remove_face(d);
-		countVertices -= k;
-		--countFaces;
-	}
-
+	EXPECT_EQ(nb_darts(), countVertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
 	EXPECT_TRUE(check_map_integrity());
@@ -293,7 +247,7 @@ TEST_F(CMap1TopoTest, testRemoveFace)
  * The test reverses randomly generated faces.
  * The number of faces and their degrees do not change and the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, testReverseFace)
+TEST_F(CMap1TopoTest, reverse_face_topo)
 {
 	unsigned int countVertices = addFaces(NB_MAX);
 
@@ -302,6 +256,7 @@ TEST_F(CMap1TopoTest, testReverseFace)
 		unsigned int k = degree(Face(d));
 
 		std::vector<Dart> face_darts;
+		face_darts.reserve(k);
 		foreach_dart_of_orbit(Face(d), [&] (Dart e) {
 			face_darts.push_back(e);
 		});
@@ -316,17 +271,25 @@ TEST_F(CMap1TopoTest, testReverseFace)
 		});
 		EXPECT_TRUE(face_darts.empty());
 	}
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testDegree)
+/*! \brief The degree of a face is correctly computed.
+ */
+TEST_F(CMap1TopoTest, degree)
 {
 	Face f = this->add_face_topo(10);
 
 	EXPECT_EQ(degree(f),10);
 }
 
-TEST_F(CMap1TopoTest, testHasDegree)
+/*! \brief The degree of a face is correctly tested.
+ */
+TEST_F(CMap1TopoTest, has_degree)
 {
 	Face f = this->add_face_topo(10);
 
@@ -335,5 +298,7 @@ TEST_F(CMap1TopoTest, testHasDegree)
 	EXPECT_FALSE(has_degree(f,9));
 	EXPECT_FALSE(has_degree(f,11));
 }
+
+#undef NB_MAX
 
 } // namespace cgogn

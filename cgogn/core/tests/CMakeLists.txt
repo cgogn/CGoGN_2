@@ -8,7 +8,7 @@ set(SOURCE_FILES
 
 	container/chunk_array_container_test.cpp
 
-#	cmap/cmap0_topo_test.cpp
+        cmap/cmap0_topo_test.cpp
 	cmap/cmap0_test.cpp
 	cmap/cmap1_topo_test.cpp
 	cmap/cmap1_test.cpp

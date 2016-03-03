@@ -74,7 +74,7 @@ protected:
 /*!
  * \brief An empty CMap0 contains no dart and no vertex
  */
-TEST_F(CMap0TopoTest, testCMap0Constructor)
+TEST_F(CMap0TopoTest, Constructor)
 {
 	EXPECT_EQ(cmap_.nb_darts(), 0u);
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
@@ -84,15 +84,15 @@ TEST_F(CMap0TopoTest, testCMap0Constructor)
  * \brief Adding vertices adds one dart per vertex
  * and the map integrity is preserved
  */
-TEST_F(CMap0TopoTest, testAddVertex)
+TEST_F(CMap0TopoTest, add_vertex)
 {
-	addVertices(NB_MAX);
-	EXPECT_EQ(cmap_.nb_darts(), NB_MAX);
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX);
-
 	cmap_.add_vertex();
-	EXPECT_EQ(cmap_.nb_darts(), NB_MAX+1);
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX+1);
+	EXPECT_EQ(cmap_.nb_darts(), 1u);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 1u);
+
+	addVertices(NB_MAX);
+	EXPECT_EQ(cmap_.nb_darts(), NB_MAX+1u);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX+1u);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -101,7 +101,7 @@ TEST_F(CMap0TopoTest, testAddVertex)
  * \brief Removing vertices remove one dart per vertex
  * and the map integrity is preserved
  */
-TEST_F(CMap0TopoTest, testRemoveVertex)
+TEST_F(CMap0TopoTest, remove_vertex)
 {
 	addVertices(NB_MAX);
 	int countVertices = NB_MAX;
@@ -124,5 +124,7 @@ TEST_F(CMap0TopoTest, testRemoveVertex)
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
+
+#undef NB_MAX
 
 } // namespace cgogn

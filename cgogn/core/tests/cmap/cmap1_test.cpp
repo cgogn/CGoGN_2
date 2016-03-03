@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 1000
+#define NB_MAX 100
 
 /*!
  * \brief The CMap1Test class implements tests on embedded CMap1
@@ -82,13 +82,10 @@ protected:
 	std::array<Dart, NB_MAX> tdarts_;
 };
 
-TEST_F(CMap1Test, testCMap1Constructor)
-{
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 0u);
-}
-
-TEST_F(CMap1Test, addFace)
+/*!
+ * \brief Adding vertices preserves the cell indexation
+ */
+TEST_F(CMap1Test, add_face)
 {
 	int n = randomFaces();
 
@@ -97,7 +94,26 @@ TEST_F(CMap1Test, addFace)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1Test, testSplitVertex)
+TEST_F(CMap1Test, remove_face)
+{
+	int n = randomFaces();
+
+	int countVertex = n;
+	int countFace = NB_MAX;
+	for (int i = 0; i < NB_MAX; ++i) {
+		Face d = tdarts_[i];
+		unsigned int k = cmap_.degree(d);
+		cmap_.remove_face(d);
+		countVertex -= k;
+		--countFace;
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+TEST_F(CMap1Test, split_vertex)
 {
 	int n = randomFaces();
 
@@ -112,7 +128,7 @@ TEST_F(CMap1Test, testSplitVertex)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1Test, testRemoveVertex)
+TEST_F(CMap1Test, remove_vertex)
 {
 	int n = randomFaces();
 
@@ -131,23 +147,6 @@ TEST_F(CMap1Test, testRemoveVertex)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1Test, testRemoveFace)
-{
-	int n = randomFaces();
-
-	int countVertex = n;
-	int countFace = NB_MAX;
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
-		unsigned int k = cmap_.degree(d);
-		cmap_.remove_face(d);
-		countVertex -= k;
-		--countFace;
-	}
-
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
-	EXPECT_TRUE(cmap_.check_map_integrity());
-}
+#undef NB_MAX
 
 } // namespace cgogn

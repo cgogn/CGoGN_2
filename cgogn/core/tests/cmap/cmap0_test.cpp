@@ -81,7 +81,7 @@ protected:
 /*!
  * \brief Adding vertices preserves the cell indexation
  */
-TEST_F(CMap0Test, testAddVertex)
+TEST_F(CMap0Test, add_vertex)
 {
 	addVertices(NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
@@ -90,7 +90,7 @@ TEST_F(CMap0Test, testAddVertex)
 /*!
  * \brief Removing vertices preserves the cell indexation
  */
-TEST_F(CMap0Test, testRemoveVertex)
+TEST_F(CMap0Test, remove_vertex)
 {
 	addVertices(NB_MAX);
 
@@ -99,5 +99,7 @@ TEST_F(CMap0Test, testRemoveVertex)
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
+
+#undef NB_MAX
 
 } // namespace cgogn

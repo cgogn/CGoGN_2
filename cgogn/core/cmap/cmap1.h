@@ -202,60 +202,6 @@ public:
 
 protected:
 
-	/**
-	 * \brief Split a vertex.
-	 * \param d : a dart of the vertex
-	 * \return A dart of inserted vertex
-	 * A new vertex is inserted after v in the PHI1 orbit.
-	 */
-	inline Dart split_vertex_topo(Dart d)
-	{
-		Dart e = this->add_dart();	// Create a new dart e
-		phi1_sew(d, e);				// Insert e between d and phi1(d)
-		return e;
-	}
-
-public:
-
-	/**
-	 * \brief Split a vertex.
-	 * \param d : a vertex
-	 * \return The inserted vertex
-	 * A new vertex is inserted after v in the PHI1 orbit.
-	 * If the map has Vertex or Face attributes, the inserted cells
-	 * are automatically embedded on new attribute elements.
-	 */
-	inline Vertex split_vertex(Vertex v)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		Vertex nv = split_vertex_topo(v);
-
-		if (this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(nv);
-
-		if (this->template is_embedded<Face>())
-			this->template copy_embedding<Face>(nv.dart, v.dart);
-
-		return nv;
-	}
-
-	/**
-	 * \brief Remove a vertex from its face and delete it.
-	 * @param v : a vertex
-	 * The vertex that preceeds v in the face is linked to the successor of v.
-	 */
-	inline void remove_vertex(Vertex v)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		Dart e = phi_1(v);
-		if (e != v.dart) phi1_unsew(e);
-		this->remove_dart(v.dart);
-	}
-
-protected:
-
 	/*!
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
@@ -308,6 +254,8 @@ public:
 	 */
 	inline void remove_face(Face f)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		Dart d = f.dart;
 		Dart it = phi1(d);
 		while(it != d)
@@ -318,6 +266,60 @@ public:
 		}
 
 		this->remove_dart(d);
+	}
+
+protected:
+
+	/**
+	 * \brief Split a vertex.
+	 * \param d : a dart of the vertex
+	 * \return A dart of inserted vertex
+	 * A new vertex is inserted after v in the PHI1 orbit.
+	 */
+	inline Dart split_vertex_topo(Dart d)
+	{
+		Dart e = this->add_dart();	// Create a new dart e
+		phi1_sew(d, e);				// Insert e between d and phi1(d)
+		return e;
+	}
+
+public:
+
+	/**
+	 * \brief Split a vertex.
+	 * \param d : a vertex
+	 * \return The inserted vertex
+	 * A new vertex is inserted after v in the PHI1 orbit.
+	 * If the map has Vertex or Face attributes, the inserted cells
+	 * are automatically embedded on new attribute elements.
+	 */
+	inline Vertex split_vertex(Vertex v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Vertex nv = split_vertex_topo(v);
+
+		if (this->template is_embedded<Vertex>())
+			this->new_orbit_embedding(nv);
+
+		if (this->template is_embedded<Face>())
+			this->template copy_embedding<Face>(nv.dart, v.dart);
+
+		return nv;
+	}
+
+	/**
+	 * \brief Remove a vertex from its face and delete it.
+	 * @param v : a vertex
+	 * The vertex that preceeds v in the face is linked to the successor of v.
+	 */
+	inline void remove_vertex(Vertex v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart e = phi_1(v);
+		if (e != v.dart) phi1_unsew(e);
+		this->remove_dart(v.dart);
 	}
 
 protected:
