@@ -26,6 +26,7 @@
 #include <rendering/shaders/shader_round_point.h>
 
 #include <QOpenGLFunctions>
+#include <QColor>
 #include <iostream>
 
 namespace cgogn
@@ -76,8 +77,10 @@ const char* ShaderRoundPoint::fragment_shader_source_ =
 "in vec2 local;\n"
 "out vec4 fragColor;\n"
 "void main() {\n"
-"   if (dot(local,local)>1.0) discard;\n"
-"   fragColor = color;\n"
+
+"	float r2 = dot(local,local);\n"
+"   if (r2 > 1.0) discard;\n"
+"   fragColor = vec4(color.rgb,(1.0-r2*r2));\n"
 "}\n";
 
 
@@ -128,10 +131,11 @@ const char* ShaderRoundPoint::fragment_shader_source2_ =
 "#version 150\n"
 "in vec2 local;\n"
 "in vec3 color_f;\n"
-"out vec3 fragColor;\n"
+"out vec4 fragColor;\n"
 "void main() {\n"
-"   if (dot(local,local)>1.0) discard;\n"
-"   fragColor = color_f;\n"
+"	float r2 = dot(local,local);\n"
+"   if (r2 > 1.0) discard;\n"
+"   fragColor = vec4(color_f,(1.0-r2*r2));\n"
 "}\n";
 
 
@@ -145,9 +149,7 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 		prg_.link();
-
 		get_matrices_uniforms();
-		unif_width_ = prg_.uniformLocation("pointSizes");
 	}
 	else
 	{
@@ -158,16 +160,20 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.link();
 
 		get_matrices_uniforms();
-		unif_color_ = prg_.uniformLocation("color");
-		unif_width_ = prg_.uniformLocation("pointSizes");
 	}
+	unif_color_ = prg_.uniformLocation("color");
+	unif_width_ = prg_.uniformLocation("pointSizes");
+
+	set_width(3.0f);
+	set_color(QColor(255,255,255));
 }
 
 
 
 void ShaderRoundPoint::set_color(const QColor& rgb)
 {
-	prg_.setUniformValue(unif_color_, rgb);
+	if (unif_color_)
+		prg_.setUniformValue(unif_color_, rgb);
 }
 
 void ShaderRoundPoint::set_width(float wpix)

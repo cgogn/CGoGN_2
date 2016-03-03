@@ -35,9 +35,9 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderColorPerVertex* Drawer::shader_cpv_= NULL;
-ShaderBoldLine* Drawer::shader_bl_= NULL;
-ShaderRoundPoint* Drawer::shader_rp_= NULL;
+std::unique_ptr<ShaderColorPerVertex> Drawer::shader_cpv_ = nullptr;
+std::unique_ptr<ShaderBoldLine> Drawer::shader_bl_ = nullptr;
+std::unique_ptr<ShaderRoundPoint> Drawer::shader_rp_ = nullptr;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	current_size_(1.0f),
@@ -47,14 +47,14 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
 
-	if (shader_cpv_ == NULL)
-		shader_cpv_ = new ShaderColorPerVertex();
+	if (!shader_cpv_)
+		shader_cpv_ = std::unique_ptr<ShaderColorPerVertex>(new ShaderColorPerVertex());
 
 	vao_cpv_ = shader_cpv_->add_vao();
 	shader_cpv_->set_vao(vao_cpv_,vbo_pos_,vbo_col_);
 
-	if (shader_bl_ == NULL)
-		shader_bl_ = new ShaderBoldLine(true);
+	if (!shader_bl_)
+		shader_bl_ = std::unique_ptr<ShaderBoldLine>(new ShaderBoldLine(true));
 
 	vao_bl_ = shader_bl_->add_vao();
 	shader_bl_->bind();
@@ -62,8 +62,9 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	shader_bl_->set_vao(vao_bl_,vbo_pos_,vbo_col_);
 
 
-	if (shader_rp_ == NULL)
-		shader_rp_ = new ShaderRoundPoint(true);
+	if (!shader_rp_)
+		shader_rp_ = std::unique_ptr<ShaderRoundPoint>(new ShaderRoundPoint(true));
+
 	vao_rp_ = shader_rp_->add_vao();
 	shader_rp_->bind();
 	shader_rp_->release();
@@ -92,9 +93,17 @@ void Drawer::begin(GLenum mode)
 	switch (mode)
 	{
 	case GL_POINTS:
-		begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
-		current_begin_ = &begins_point_;
-			break;
+		if (current_size_ > 2.0)
+		{
+			begins_round_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,current_aa_));
+			current_begin_ = &begins_round_point_;
+		}
+		else
+		{
+			begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
+			current_begin_ = &begins_point_;
+		}
+		break;
 	case GL_LINES:
 	case GL_LINE_STRIP:
 	case GL_LINE_LOOP:
@@ -173,30 +182,16 @@ void Drawer::end_list()
 void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
 
-	shader_rp_->bind();
-	shader_rp_->set_matrices(projection,modelview);
-	shader_rp_->bind_vao(vao_bl_);
-
-	for (auto& pp : begins_point_)
-	{
-		shader_rp_->set_width(pp.width);
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-	}
-	shader_rp_->release_vao(vao_bl_);
-	shader_rp_->release();
-
-
+	//classic rendering
 	shader_cpv_->bind();
 	shader_cpv_->set_matrices(projection,modelview);
 	shader_cpv_->bind_vao(vao_cpv_);
 
-//	for (auto& pp : begins_point_)
-//	{
-//		ogl33_->glPointSize(pp.width);
-//		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-//	}
-
-
+	for (auto& pp : begins_point_)
+	{
+		ogl33_->glPointSize(pp.width);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+	}
 
 	for (auto& pp : begins_line_)
 	{
@@ -212,6 +207,32 @@ void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 	shader_cpv_->release();
 
 
+	// round points
+
+	shader_rp_->bind();
+	shader_rp_->set_matrices(projection,modelview);
+	shader_rp_->bind_vao(vao_bl_);
+
+	for (auto& pp : begins_round_point_)
+	{
+		if (pp.aa)
+		{
+			ogl33_->glEnable(GL_BLEND);
+			ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+
+		shader_rp_->set_width(pp.width);
+		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+		if (pp.aa)
+			ogl33_->glDisable(GL_BLEND);
+
+	}
+	shader_rp_->release_vao(vao_bl_);
+	shader_rp_->release();
+
+
+	// bold lines
 
 	shader_bl_->bind();
 	shader_bl_->set_matrices(projection,modelview);

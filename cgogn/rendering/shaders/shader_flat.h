@@ -54,6 +54,7 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 	int unif_front_color_;
 	int unif_back_color_;
 	int unif_ambiant_color_;
+	int unif_light_position_;
 
 public:
 
@@ -76,6 +77,20 @@ public:
 	 * @param rgb
 	 */
 	void set_ambiant_color(const QColor& rgb);
+
+	/**
+	 * @brief set light position relative to screen
+	 * @param l light position
+	 */
+	void set_light_position(const QVector3D& l);
+
+
+	/**
+	 * @brief set light position relative to world
+	 * @param l light position
+	 * @param view_matrix
+	 */
+	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 
 	/**
 	 * @brief set a vao configuration

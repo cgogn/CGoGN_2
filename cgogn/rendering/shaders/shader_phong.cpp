@@ -156,13 +156,7 @@ ShaderPhong::ShaderPhong(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 		prg_.link();
-
 		get_matrices_uniforms();
-
-		unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-		unif_spec_color_ = prg_.uniformLocation("spec_color");
-		unif_spec_coef_ = prg_.uniformLocation("spec_coef");
-		unif_double_side_ = prg_.uniformLocation("double_side");
 	}
 	else
 	{
@@ -171,16 +165,37 @@ ShaderPhong::ShaderPhong(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
 		prg_.link();
-
 		get_matrices_uniforms();
-
-		unif_front_color_ = prg_.uniformLocation("front_color");
-		unif_back_color_ = prg_.uniformLocation("back_color");
-		unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-		unif_spec_color_ = prg_.uniformLocation("spec_color");
-		unif_spec_coef_ = prg_.uniformLocation("spec_coef");
-		unif_double_side_ = prg_.uniformLocation("double_side");
 	}
+	unif_front_color_ = prg_.uniformLocation("front_color");
+	unif_back_color_ = prg_.uniformLocation("back_color");
+	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
+	unif_spec_color_ = prg_.uniformLocation("spec_color");
+	unif_spec_coef_ = prg_.uniformLocation("spec_coef");
+	unif_double_side_ = prg_.uniformLocation("double_side");
+	unif_light_position_ = prg_.uniformLocation("lightPosition");
+
+	//default param
+	bind();
+	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
+	set_front_color(QColor(250,0,0));
+	set_back_color(QColor(0,250,5));
+	set_ambiant_color(QColor(5,5,5));
+	set_specular_color(QColor(100,100,100));
+	set_specular_coef(50.0f);
+	set_double_side(true);
+	release();
+}
+
+void ShaderPhong::set_light_position(const QVector3D& l)
+{
+		prg_.setUniformValue(unif_light_position_,l);
+}
+
+void ShaderPhong::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+{
+	QVector4D loc4 = view_matrix.map(QVector4D(l,1.0));
+	prg_.setUniformValue(unif_light_position_, QVector3D(loc4)/loc4.w());
 }
 
 

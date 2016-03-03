@@ -59,6 +59,7 @@ class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 	int unif_spec_color_;
 	int unif_spec_coef_;
 	int unif_double_side_;
+	int unif_light_position_;
 
 public:
 
@@ -100,6 +101,18 @@ public:
 	 */
 	void set_double_side(bool ts);
 
+	/**
+	 * @brief set_light_position
+	 * @param l
+	 */
+	void set_light_position(const QVector3D& l);
+
+	/**
+	 * @brief set light position relative to world
+	 * @param l light position
+	 * @param view_matrix
+	 */
+	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 
 	/**
 	 * @brief set a vao configuration

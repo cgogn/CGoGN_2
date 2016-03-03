@@ -191,9 +191,7 @@ ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 		prg_.link();
-
 		get_matrices_uniforms();
-		unif_width_ = prg_.uniformLocation("lineWidths");
 	}
 	else
 	{
@@ -202,18 +200,19 @@ ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.link();
-
 		get_matrices_uniforms();
-		unif_color_ = prg_.uniformLocation("lineColor");
-		unif_width_ = prg_.uniformLocation("lineWidths");
 	}
+	unif_color_ = prg_.uniformLocation("lineColor");
+	unif_width_ = prg_.uniformLocation("lineWidths");
+
 }
 
 
 
 void ShaderBoldLine::set_color(const QColor& rgb)
 {
-	prg_.setUniformValue(unif_color_, rgb);
+	if (unif_color_ >= 0)
+		prg_.setUniformValue(unif_color_, rgb);
 }
 
 void ShaderBoldLine::set_width(float wpix)

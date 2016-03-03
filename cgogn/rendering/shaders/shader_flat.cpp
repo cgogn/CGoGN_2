@@ -53,12 +53,12 @@ const char* ShaderFlat::fragment_shader_source_ =
 	"uniform vec4 front_color;\n"
 	"uniform vec4 back_color;\n"
 	"uniform vec4 ambiant_color;\n"
-	"vec3 light_pos = vec3(100,100,1000);\n"
+	"uniform vec3 lightPosition;\n"
 	"in vec3 pos;\n"
 	"void main() {\n"
 	"	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
-	"	vec3 L = normalize(light_pos-pos);\n"
-	"	float lambert = abs(dot(N,L));\n"
+	"	vec3 L = normalize(lightPosition-pos);\n"
+	"	float lambert = dot(N,L);\n"
 	"	if (gl_FrontFacing)\n"
 	"		fragColor = ambiant_color+lambert*front_color;\n"
 	"	else\n"
@@ -87,14 +87,17 @@ const char* ShaderFlat::fragment_shader_source2_ =
 	"uniform vec4 front_color;\n"
 	"uniform vec4 back_color;\n"
 	"uniform vec4 ambiant_color;\n"
-	"vec3 light_pos = vec3(100,100,1000);\n"
+	"uniform vec3 lightPosition;\n"
 	"in vec3 pos;\n"
 	"in vec3 col;\n"
 	"void main() {\n"
 	"	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
-	"	vec3 L = normalize(light_pos-pos);\n"
-	"	float lambert = abs(dot(N,L));\n"
-	"	fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
+	"	vec3 L = normalize(lightPosition-pos);\n"
+	"	float lambert = dot(N,L);\n"
+	"	if (gl_FrontFacing)\n"
+	"		fragColor = ambiant_color+vec4(lambert*col,1.0);;\n"
+	"	else\n"
+	"		fragColor = ambiant_color-vec4(lambert*col,1.0);;\n"
 	"}\n";
 
 
@@ -108,7 +111,6 @@ ShaderFlat::ShaderFlat(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_col", ATTRIB_COLOR);
 		prg_.link();
 		get_matrices_uniforms();
-		unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
 	}
 	else
 	{
@@ -117,22 +119,42 @@ ShaderFlat::ShaderFlat(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.link();
 		get_matrices_uniforms();
-		unif_front_color_ = prg_.uniformLocation("front_color");
-		unif_back_color_ = prg_.uniformLocation("back_color");
-		unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-
-
 	}
+	unif_front_color_ = prg_.uniformLocation("front_color");
+	unif_back_color_ = prg_.uniformLocation("back_color");
+	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
+	unif_light_position_ = prg_.uniformLocation("lightPosition");
+
+	//default param
+	bind();
+	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
+	set_front_color(QColor(250,0,0));
+	set_back_color(QColor(0,250,5));
+	set_ambiant_color(QColor(5,5,5));
+	release();
+}
+
+void ShaderFlat::set_light_position(const QVector3D& l)
+{
+	prg_.setUniformValue(unif_light_position_,l);
+}
+
+void ShaderFlat::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+{
+	QVector4D loc4 = view_matrix.map(QVector4D(l,1.0));
+	prg_.setUniformValue(unif_light_position_, QVector3D(loc4)/loc4.w());
 }
 
 void ShaderFlat::set_front_color(const QColor& rgb)
 {
-	prg_.setUniformValue(unif_front_color_,rgb);
+	if (unif_front_color_>=0)
+		prg_.setUniformValue(unif_front_color_,rgb);
 }
 
 void ShaderFlat::set_back_color(const QColor& rgb)
 {
-	prg_.setUniformValue(unif_back_color_,rgb);
+	if (unif_back_color_>=0)
+		prg_.setUniformValue(unif_back_color_,rgb);
 }
 
 void ShaderFlat::set_ambiant_color(const QColor& rgb)

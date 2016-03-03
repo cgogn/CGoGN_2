@@ -61,15 +61,18 @@ protected:
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
 	std::vector<PrimParam> begins_point_;
+
+	std::vector<PrimParam> begins_round_point_;
+
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
 
 	std::vector<PrimParam>* current_begin_;
 
-	static ShaderColorPerVertex* shader_cpv_;
-	static ShaderBoldLine* shader_bl_;
-	static ShaderRoundPoint* shader_rp_;
+	static std::unique_ptr<ShaderColorPerVertex> shader_cpv_;
+	static std::unique_ptr<ShaderBoldLine> shader_bl_;
+	static std::unique_ptr<ShaderRoundPoint> shader_rp_;
 
 	unsigned int vao_cpv_;
 	unsigned int vao_bl_;
@@ -175,6 +178,13 @@ public:
 	 */
 	inline void pointSize(float ps)
 	{
+		current_aa_ = false;
+		current_size_ = ps;
+	}
+
+	inline void pointSizeAA(float ps)
+	{
+		current_aa_ = true;
 		current_size_ = ps;
 	}
 

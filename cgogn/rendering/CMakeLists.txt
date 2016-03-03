@@ -17,6 +17,7 @@ set(HEADER_FILES
 	shaders/shader_phong.h
 	shaders/shader_bold_line.h
 	shaders/shader_round_point.h
+	shaders/shader_point_sprite.h
 	drawer.h
 	)
 
@@ -29,6 +30,7 @@ set(SOURCE_FILES
 	shaders/shader_phong.cpp
 	shaders/shader_bold_line.cpp
 	shaders/shader_round_point.cpp
+	shaders/shader_point_sprite.cpp
 	drawer.cpp
 	)
 
