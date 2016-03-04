@@ -398,18 +398,19 @@ protected:
 
 		std::vector<unsigned int> verticesID;
 		verticesID.reserve(nb_vertices_);
-		std::stringstream ss(array_node->GetText());
-		for (unsigned int i=0u; i< nb_vertices_; ++i)
-		{
-			VEC3 P;
-			ss >> P[0];
-			ss >> P[1];
-			ss >> P[2];
-			unsigned int id = vertex_attributes_.template insert_lines<1>();
-			position->operator [](id) = P;
-			verticesID.push_back(id);
+		{ // limit scope of ss
+			std::stringstream ss(array_node->GetText());
+			for (unsigned int i = 0u; i < nb_vertices_; ++i)
+			{
+				VEC3 P;
+				ss >> P[0];
+				ss >> P[1];
+				ss >> P[2];
+				unsigned int id = vertex_attributes_.template insert_lines<1>();
+				position->operator [](id) = P;
+				verticesID.push_back(id);
+			}
 		}
-
 		XMLElement* cell_node = piece_node->FirstChildElement("Cells");
 		cgogn_assert(cell_node != nullptr);
 		array_node = cell_node->FirstChildElement("DataArray");

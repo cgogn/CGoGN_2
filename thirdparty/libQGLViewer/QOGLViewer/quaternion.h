@@ -175,18 +175,18 @@ public:
 
 		\note For efficiency reasons, the resulting Quaternion is not normalized.
 		You may normalize() it after each application in case of numerical drift. */
-	Quaternion& operator*=(const Quaternion &q)
+	Quaternion& operator*=(const Quaternion &qa)
 	{
-		*this = (*this)*q;
+		*this = (*this)*qa;
 		return *this;
 	}
 
 	/*! Returns the image of \p v by the rotation \p q.
 
 		Same as q.rotate(v). See rotate() and inverseRotate(). */
-	friend Vec operator*(const Quaternion& q, const Vec& v)
+	friend Vec operator*(const Quaternion& qa, const Vec& v)
 	{
-		return q.rotate(v);
+		return qa.rotate(v);
 	}
 
 	Vec rotate(const Vec& v) const;

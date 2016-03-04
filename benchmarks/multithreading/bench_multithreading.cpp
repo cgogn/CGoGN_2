@@ -34,7 +34,7 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-Map2 map;
+Map2 bench_map;
 
 using Vertex = Map2::Vertex;
 const cgogn::Orbit VERTEX = Vertex::ORBIT;
@@ -57,7 +57,7 @@ static void BENCH_Dart_count_single_threaded(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		unsigned nb_darts = 0u;
-		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
+		bench_map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
 	}
 }
 
@@ -70,14 +70,14 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 		for (auto& n : nb_darts_per_thread)
 			n = 0u;
 		nb_darts_2 = 0u;
-		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
+		bench_map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
 		{
 			nb_darts_per_thread[thread_index]++;
 		});
 		for (unsigned int n : nb_darts_per_thread)
 			nb_darts_2 += n;
 
-		cgogn_assert(nb_darts_2 == map.nb_darts());
+		cgogn_assert(nb_darts_2 == bench_map.nb_darts());
 	}
 }
 
@@ -87,15 +87,15 @@ static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		FaceAttributeHandler<Vec3> face_normal = map.get_attribute<Vec3, FACE>("normal");
+		FaceAttributeHandler<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 		state.ResumeTiming();
 
-		map.template foreach_cell<STRATEGY>([&] (Face f)
+		bench_map.template foreach_cell<STRATEGY>([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
 		});
 	}
 }
@@ -106,22 +106,22 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		FaceAttributeHandler<Vec3> face_normal_mt = map.get_attribute<Vec3, FACE>("normal_mt");
+		FaceAttributeHandler<Vec3> face_normal_mt = bench_map.get_attribute<Vec3, FACE>("normal_mt");
 		cgogn_assert(face_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		map.template parallel_foreach_cell<STRATEGY>([&] (Face f,unsigned int)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f,unsigned int)
 		{
-			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(map, f, vertex_position);
+			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
 		});
 
 		{
 			state.PauseTiming();
 
-			FaceAttributeHandler<Vec3> face_normal = map.get_attribute<Vec3, FACE>("normal");
-			map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
+			FaceAttributeHandler<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
+			bench_map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
 			{
 				Vec3 error = face_normal[f] - face_normal_mt[f];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
@@ -145,15 +145,15 @@ static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttributeHandler<Vec3> vartices_normal = map.get_attribute<Vec3, VERTEX>("normal");
+		VertexAttributeHandler<Vec3> vartices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
 		cgogn_assert(vartices_normal.is_valid());
 		state.ResumeTiming();
 
-		map.template foreach_cell<STRATEGY>([&] (Vertex v)
+		bench_map.template foreach_cell<STRATEGY>([&] (Vertex v)
 		{
-			vartices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			vartices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -164,22 +164,22 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttributeHandler<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttributeHandler<Vec3> vertices_normal_mt = map.get_attribute<Vec3, VERTEX>("normal_mt");
+		VertexAttributeHandler<Vec3> vertices_normal_mt = bench_map.get_attribute<Vec3, VERTEX>("normal_mt");
 		cgogn_assert(vertices_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, unsigned int)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, unsigned int)
 		{
-			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(map, v, vertex_position);
+			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
 		});
 
 		{
 			state.PauseTiming();
 
-			VertexAttributeHandler<Vec3> vertices_normal = map.get_attribute<Vec3, VERTEX>("normal");
-			map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
+			VertexAttributeHandler<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
+			bench_map.template foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
 			{
 				Vec3 error = vertices_normal[v] - vertices_normal_mt[v];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
@@ -227,14 +227,14 @@ int main(int argc, char** argv)
 	else
 		surfaceMesh = std::string(argv[1]);
 
-	cgogn::io::import_surface<Vec3>(map, surfaceMesh);
+	cgogn::io::import_surface<Vec3>(bench_map, surfaceMesh);
 
-	map.add_attribute<Vec3, FACE>("normal");
-	map.add_attribute<Vec3, FACE>("normal_mt");
-	map.add_attribute<Vec3, VERTEX>("normal");
-	map.add_attribute<Vec3, VERTEX>("normal_mt");
-	map.enable_topo_cache<FACE>();
-	map.enable_topo_cache<VERTEX>();
+	bench_map.add_attribute<Vec3, FACE>("normal");
+	bench_map.add_attribute<Vec3, FACE>("normal_mt");
+	bench_map.add_attribute<Vec3, VERTEX>("normal");
+	bench_map.add_attribute<Vec3, VERTEX>("normal_mt");
+	bench_map.enable_topo_cache<FACE>();
+	bench_map.enable_topo_cache<VERTEX>();
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

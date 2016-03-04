@@ -226,6 +226,7 @@ TEST_F(CMap1TopoTest, testRemoveFace)
 TEST_F(CMap1TopoTest, testReverseFace)
 {
 	int n = randomFaces();
+	EXPECT_TRUE(n > 0); // avoid warning unused var n
 
 	for (int i = 0; i < NB_MAX; ++i) {
 		Face f = tdarts_[i];
