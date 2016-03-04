@@ -101,7 +101,7 @@ public:
 
 	inline bool import_file(const std::string& filename)
 	{
-//		this->clear();
+		this->clear();
 		Scoped_C_Locale loc;
 
 		{
