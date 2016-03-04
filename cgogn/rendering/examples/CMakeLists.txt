@@ -18,6 +18,9 @@ target_link_libraries(simple_viewer cgogn_core cgogn_io cgogn_rendering QOGLView
 add_executable(viewer_per_face viewer_per_face.cpp)
 target_link_libraries(viewer_per_face cgogn_core cgogn_io cgogn_rendering QOGLViewer)
 
+add_executable(viewer_topo viewer_topo.cpp)
+target_link_libraries(viewer_topo cgogn_core cgogn_io cgogn_rendering QOGLViewer)
+
 add_executable(drawing drawing.cpp)
 target_link_libraries(drawing cgogn_rendering QOGLViewer)
 
