@@ -32,7 +32,6 @@
 #include <rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
 
-//#include <geometry/types/vec.h>
 namespace cgogn
 {
 
@@ -40,7 +39,7 @@ namespace rendering
 {
 
 
-class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
+class CGOGN_RENDERING_API Drawer
 {
 	struct PrimParam
 	{
@@ -49,30 +48,30 @@ class CGOGN_RENDERING_API Drawer//: protected QOpenGLFunctions_3_3_Core
 		float width;
 		unsigned int nb;
 		bool aa;
-		PrimParam(unsigned int b, GLenum m, float w, bool a): begin(b),mode(m),width(w),nb(0),aa(a){}
+		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(static_cast<unsigned int>(b)), mode(m), width(w), nb(0), aa(a){}
 	};
 
 	using Vec3f = std::array<float,3>;
 
 protected:
+
+	static ShaderColorPerVertex* shader_cpv_;
+	static ShaderBoldLine* shader_bl_;
+	static ShaderRoundPoint* shader_rp_;
+	static int nb_instances_;
+
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
 
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
+
 	std::vector<PrimParam> begins_point_;
-
 	std::vector<PrimParam> begins_round_point_;
-
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
-
 	std::vector<PrimParam>* current_begin_;
-
-	static std::unique_ptr<ShaderColorPerVertex> shader_cpv_;
-	static std::unique_ptr<ShaderBoldLine> shader_bl_;
-	static std::unique_ptr<ShaderRoundPoint> shader_rp_;
 
 	unsigned int vao_cpv_;
 	unsigned int vao_bl_;

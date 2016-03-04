@@ -43,6 +43,7 @@
 #include <rendering/shaders/shader_bold_line.h>
 #include <rendering/shaders/shader_point_sprite.h>
 
+#include <rendering/shaders/shader_round_point.h>
 
 #include <geometry/algos/ear_triangulation.h>
 
@@ -71,6 +72,7 @@ public:
 	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surfaceMesh);
 	virtual ~Viewer();
+	virtual void closeEvent(QCloseEvent *e);
 
 private:
 	Map2 map_;
@@ -86,7 +88,7 @@ private:
 	cgogn::rendering::VBO* vbo_color_;
 	cgogn::rendering::VBO* vbo_sphere_sz_;
 
-	cgogn::rendering::ShaderSimpleColor* shader_vertex_;
+//	cgogn::rendering::ShaderSimpleColor* shader_vertex_;
 	cgogn::rendering::ShaderBoldLine* shader_edge_;
 	cgogn::rendering::ShaderFlat* shader_flat_;
 	cgogn::rendering::ShaderVectorPerVertex* shader_normal_;
@@ -127,13 +129,16 @@ void Viewer::import(const std::string& surfaceMesh)
 }
 
 Viewer::~Viewer()
+{}
+
+void Viewer::closeEvent(QCloseEvent *e)
 {
 	delete render_;
 	delete vbo_pos_;
 	delete vbo_norm_;
 	delete vbo_color_;
 	delete vbo_sphere_sz_;
-	delete shader_vertex_;
+//	delete shader_vertex_;
 	delete shader_flat_;
 	delete shader_normal_;
 	delete shader_phong_;
@@ -151,7 +156,7 @@ Viewer::Viewer() :
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
 	vbo_sphere_sz_(nullptr),
-	shader_vertex_(nullptr),
+//	shader_vertex_(nullptr),
 	shader_flat_(nullptr),
 	shader_normal_(nullptr),
 	shader_phong_(nullptr),
@@ -188,12 +193,12 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_B:
 			bb_rendering_ = !bb_rendering_;
 			break;
-		case Qt::Key_Escape:
-			exit(0);
-			break;
 		default:
 			break;
 	}
+	// enable QGLViewer keys
+	QOGLViewer::keyPressEvent(ev);
+	//update drawing
 	update();
 }
 
@@ -299,10 +304,6 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES, vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
-
-//	shader_vertex_ = new cgogn::rendering::ShaderSimpleColor;
-//	shader_vertex_->add_vao();
-//	shader_vertex_->set_vao(0, vbo_pos_);
 
 	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
 	shader_point_sprite_->add_vao();

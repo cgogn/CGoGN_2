@@ -75,7 +75,7 @@ public:
 	 * @param nb_vectors number of vectors
 	 * @param vector_dimension_ number of component of each vector
 	 */
-	inline void allocate(int nb_vectors, int vector_dimension)
+	inline void allocate(int nb_vectors, unsigned int vector_dimension)
 	{
 		buffer_.bind();
 		unsigned int total = nb_vectors * vector_dimension;
@@ -342,7 +342,7 @@ void generate_vbo(const ATTR& attr, const std::vector<unsigned int>& indices, VB
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(indices.size(), vec_dim);
+	vbo.allocate(static_cast<unsigned int>(indices.size()), vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;

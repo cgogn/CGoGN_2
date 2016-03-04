@@ -66,6 +66,7 @@ public:
 	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surfaceMesh);
 	virtual ~Viewer();
+	virtual void closeEvent(QCloseEvent *e);
 
 private:
 	Map2 map_;
@@ -78,7 +79,6 @@ private:
 	cgogn::rendering::VBO* vbo_norm_;
 	cgogn::rendering::VBO* vbo_color_;
 
-//	cgogn::rendering::ShaderSimpleColor* shader_color_;
 	cgogn::rendering::ShaderFlat* shader_flat_;
 	cgogn::rendering::ShaderPhong* shader_phong_;
 
@@ -109,10 +109,14 @@ void Viewer::import(const std::string& surfaceMesh)
 }
 
 Viewer::~Viewer()
+{}
+
+void Viewer::closeEvent(QCloseEvent *e)
 {
 	delete vbo_pos_;
 	delete vbo_norm_;
 	delete vbo_color_;
+	delete shader_flat_;
 	delete shader_phong_;
 }
 
@@ -122,7 +126,10 @@ Viewer::Viewer() :
 	face_normal_(),
 	bb_(),
 	vbo_pos_(nullptr),
+	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
+	shader_flat_(nullptr),
+	shader_phong_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false)
 {}
@@ -138,12 +145,12 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			flat_rendering_ = true;
 			phong_rendering_ = false;
 			break;
-		case Qt::Key_Escape:
-			exit(0);
-			break;
 		default:
 			break;
 	}
+	// enable QGLViewer keys
+	QOGLViewer::keyPressEvent(ev);
+	//update drawing
 	update();
 }
 
@@ -178,7 +185,7 @@ void Viewer::draw()
 
 void Viewer::init()
 {
-	glClearColor(0.1,0.1,0.3,0.0);
+	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);

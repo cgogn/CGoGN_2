@@ -43,7 +43,7 @@ public:
 
 	virtual void draw();
 	virtual void init();
-//	virtual void keyPressEvent(QKeyEvent *);
+	virtual void closeEvent(QCloseEvent *e);
 	virtual ~Drawing();
 
 private:
@@ -54,6 +54,9 @@ private:
 
 
 Drawing::~Drawing()
+{}
+
+void Drawing::closeEvent(QCloseEvent *e)
 {
 	delete drawer_;
 	delete drawer2_;
@@ -64,21 +67,6 @@ Drawing::Drawing() :
 	drawer2_(nullptr)
 {}
 
-//void Drawing::keyPressEvent(QKeyEvent *ev)
-//{
-//	switch (ev->key()) {
-//		case Qt::Key_P:
-//			phong_rendering_ = true;
-//			flat_rendering_ = false;
-//			break;
-//		case Qt::Key_Escape:
-//			exit(0);
-//			break;
-//		default:
-//			break;
-//	}
-//	update();
-//}
 
 void Drawing::draw()
 {
@@ -88,7 +76,7 @@ void Drawing::draw()
 	camera()->getModelViewMatrix(view);
 
 	drawer_->callList(proj,view);
-//	drawer2_->callList(proj,view);
+	drawer2_->callList(proj,view);
 }
 
 void Drawing::init()
@@ -132,29 +120,32 @@ void Drawing::init()
 		drawer_->vertex3fv({{2.5,1,0}});
 	drawer_->end();
 
-	drawer_->pointSizeAA(6.0);
+	drawer_->pointSizeAA(7.0);
 	drawer_->begin(GL_POINTS);
-	for (float a=0.0; a < 1.0; a+= 0.1)
+	for (float a=0.0f; a < 1.0f; a+= 0.1f)
 	{
-		Vec3 P(3.0+std::cos(6.28*a),-2.0+std::sin(6.28*a),0.0);
+		Vec3 P(4.0+std::cos(6.28*a),-2.0+std::sin(6.28*a),0.0);
 		Vec3 C(a,0.5,1.0-a);
 		drawer_->color3fv(C);
 		drawer_->vertex3fv(P);
 	}
 
 	drawer_->end();
-
-//	drawer_->pointSizeAA(7.0);
-//	drawer_->begin(GL_POINTS);
-//	drawer_->color3f(1.0,1.0,1.0);
-//	for (float z=-3.0; z < 3.0; z+= 0.2)
-//		for (float y=-3.0; y < 3.0; y+= 0.2)
-//			for (float x=-3.0; x < 3.0; x+= 0.2)
-//			{
-//				drawer_->vertex3f(x,y,z);
-//			}
-//	drawer_->end();
 	drawer_->end_list();
+
+	drawer2_ = new cgogn::rendering::Drawer(this);
+	drawer2_->new_list();
+	drawer2_->pointSizeAA(5.0);
+	drawer2_->begin(GL_POINTS);
+	drawer2_->color3f(1.0,1.0,1.0);
+	for (float z=-1.0; z < 1.0; z+= 0.1)
+		for (float y=-2.0; y < 0.0; y+= 0.1)
+			for (float x=0.0; x < 2.0; x+= 0.1)
+			{
+				drawer2_->vertex3f(x,y,z);
+			}
+	drawer2_->end();
+	drawer2_->end_list();
 
 }
 

@@ -35,36 +35,36 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderColorPerVertex> Drawer::shader_cpv_ = nullptr;
-std::unique_ptr<ShaderBoldLine> Drawer::shader_bl_ = nullptr;
-std::unique_ptr<ShaderRoundPoint> Drawer::shader_rp_ = nullptr;
+// static members init
+ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
+ShaderBoldLine* Drawer::shader_bl_ = nullptr;
+ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
+int Drawer::nb_instances_ = 0;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	current_size_(1.0f),
 	current_aa_(true),
 	ogl33_(ogl33)
 {
+	nb_instances_++;
+
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
-
 	if (!shader_cpv_)
-		shader_cpv_ = std::unique_ptr<ShaderColorPerVertex>(new ShaderColorPerVertex());
+		shader_cpv_ = new ShaderColorPerVertex();
 
 	vao_cpv_ = shader_cpv_->add_vao();
 	shader_cpv_->set_vao(vao_cpv_,vbo_pos_,vbo_col_);
 
 	if (!shader_bl_)
-		shader_bl_ = std::unique_ptr<ShaderBoldLine>(new ShaderBoldLine(true));
-
+		shader_bl_ = new ShaderBoldLine(true);
 	vao_bl_ = shader_bl_->add_vao();
 	shader_bl_->bind();
 	shader_bl_->release();
 	shader_bl_->set_vao(vao_bl_,vbo_pos_,vbo_col_);
 
-
 	if (!shader_rp_)
-		shader_rp_ = std::unique_ptr<ShaderRoundPoint>(new ShaderRoundPoint(true));
-
+		shader_rp_ = new ShaderRoundPoint(true);
 	vao_rp_ = shader_rp_->add_vao();
 	shader_rp_->bind();
 	shader_rp_->release();
@@ -75,7 +75,18 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 
 Drawer::~Drawer()
 {
+	delete vbo_pos_;
+	delete vbo_col_;
 
+	nb_instances_--;
+	if (nb_instances_ ==0)
+	{
+		// delete shaders when last drawer is deleted
+		// ensure context still enable when delete shaders
+		delete shader_rp_;
+		delete shader_bl_;
+		delete shader_cpv_;
+	}
 }
 
 void Drawer::new_list()
@@ -128,7 +139,7 @@ void Drawer::begin(GLenum mode)
 
 void Drawer::end()
 {
-	current_begin_->back().nb = data_pos_.size() - current_begin_->back().begin;
+	current_begin_->back().nb = static_cast<unsigned int>(data_pos_.size() - current_begin_->back().begin);
 }
 
 
@@ -156,7 +167,7 @@ void Drawer::color3f(float r, float g, float b)
 
 void Drawer::end_list()
 {
-	unsigned int nb_elts(data_pos_.size());
+	unsigned int nb_elts = static_cast<unsigned int>(data_pos_.size());
 
 	if (nb_elts == 0)
 		return;
