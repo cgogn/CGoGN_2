@@ -8,11 +8,14 @@ set(HEADER_FILES
 	map_import.h
 	map_export.h
 	import_ply_data.h
-	vtk_cell_types.h
 	io_utils.h
 	data_io.h
 	dll.h
 	c_locale.h
+	vtk_io.h
+	off_io.h
+	obj_io.h
+	ply_io.h
 )
 
 set(SOURCE_FILES

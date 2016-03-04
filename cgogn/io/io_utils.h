@@ -37,6 +37,34 @@ namespace cgogn
 namespace io
 {
 
+
+
+enum FileType
+{
+	FileType_UNKNOWN = 0,
+	FileType_OFF,
+	FileType_OBJ,
+	FileType_PLY,
+	FileType_VTK_LEGACY,
+	FileType_VTU
+};
+
+inline FileType get_file_type(const std::string& filename)
+{
+	const std::string& extension = to_lower(get_extension(filename));
+	if (extension == "off")
+		return FileType::FileType_OFF;
+	if (extension == "obj")
+		return FileType::FileType_OBJ;
+	if (extension == "ply")
+		return FileType::FileType_PLY;
+	if (extension == "vtk")
+		return FileType::FileType_VTK_LEGACY;
+	if (extension == "vtu")
+		return FileType::FileType_VTU;
+	return FileType::FileType_UNKNOWN;
+}
+
 namespace internal
 {
 
@@ -55,14 +83,14 @@ inline typename std::enable_if<(!std::is_arithmetic<T>::value) && !std::is_float
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, std::istringstream&>::type parse(std::istringstream& iss, T& x)
+inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
 	return iss;
 }
 
 template<typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, std::istringstream&>::type parse(std::istringstream& iss, T& x)
+inline typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
 		iss >> x[i];
