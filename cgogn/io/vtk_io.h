@@ -29,7 +29,7 @@
 
 #include <io/data_io.h>
 #include <io/surface_import.h>
-
+#include <io/volume_import.h>
 
 namespace cgogn
 {
@@ -78,13 +78,14 @@ public :
 	using DataIOGen = cgogn::io::DataIOGen<CHUNK_SIZE>;
 	template<typename T>
 	using DataIO = cgogn::io::DataIO<T, CHUNK_SIZE, PRIM_SIZE>;
+	using Scalar = typename VEC3::Scalar;
 
 	virtual ~VtkIO() {}
 
 protected :
-	DataIO<VEC3>			positions_;
-	DataIO<unsigned int>	cells_;
-	DataIO<int>				cell_types_;
+	std::unique_ptr<DataIOGen>	positions_;
+	DataIO<unsigned int>		cells_;
+	DataIO<int>					cell_types_;
 
 protected :
 	virtual void add_vertex_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) = 0;
@@ -95,7 +96,6 @@ protected :
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
 
 		std::cout << "Opening a legacy vtk file" << std::endl;
-		using Scalar = typename VEC3::Scalar;
 
 		std::string line;
 		std::string word;
@@ -141,8 +141,9 @@ protected :
 					std::string type_str;
 					sstream >> nb_vertices >> type_str;
 					type_str = to_lower(type_str);
-					positions_.read_n(fp, nb_vertices, !ascii_file, false);
-					this->add_vertex_attribute(positions_,"position");
+					positions_ = DataIOGen::template newDataIO<PRIM_SIZE>(type_str, 3);
+					positions_->read_n(fp, nb_vertices, !ascii_file, false);
+					this->add_vertex_attribute(*positions_,"position");
 				} else {
 					if (word == "CELLS" || word == "POLYGONS" || word == "TRIANGLE_STRIPS")
 					{
@@ -337,8 +338,8 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = this->positions_.get_vec()->size();
-		this->nb_faces_ = this->cell_types_.get_vec()->size();
+		this->nb_vertices_ = this->positions_->size();
+		this->nb_faces_ = this->cell_types_.size();
 
 		auto cells_it = static_cast<std::vector<unsigned int>*>(this->cells_.get_data())->begin();
 		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.get_data());
@@ -396,6 +397,260 @@ protected:
 	}
 };
 
+
+template<typename MAP_TRAITS, typename VEC3>
+class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeImport<MAP_TRAITS>
+{
+public:
+	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeImport<MAP_TRAITS>;
+	using DataIOGen = typename Inherit_Vtk::DataIOGen;
+	template<typename T>
+	using DataIO = typename Inherit_Vtk::template DataIO<T>;
+	using VTK_CELL_TYPES = typename Inherit_Vtk::VTK_CELL_TYPES;
+	template <typename T>
+	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
+
+	virtual ~VtkVolumeImport() override {}
+
+protected:
+	inline bool read_vtk_legacy_file(std::ifstream& fp)
+	{
+		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
+			return false;
+
+		this->nb_vertices_ = this->positions_->size();
+		this->nb_volumes_ = this->cell_types_.size();
+
+		const std::vector<int>* cell_types_vec	= this->cell_types_.get_vec();
+		const std::vector<unsigned int>* cells_vec	=this->cells_.get_vec();
+
+		std::vector<unsigned int> cells_buffer;
+		cells_buffer.reserve(cells_vec->size());
+
+		// in the legacy file , the first number of each line is the number of vertices. We need to remove it.
+		auto cells_it = cells_vec->begin();
+		for (std::vector<int>::const_iterator type_it = cell_types_vec->begin(), end = cell_types_vec->end(); type_it != end; ++type_it)
+		{
+			++cells_it;
+			unsigned int vol_nb_verts = 0u;
+			if (*type_it == VTK_CELL_TYPES::VTK_TETRA)
+				vol_nb_verts = 4u;
+			else {
+				if (*type_it == VTK_CELL_TYPES::VTK_HEXAHEDRON || *type_it == VTK_CELL_TYPES::VTK_VOXEL)
+					vol_nb_verts = 8u;
+				else {
+					if (*type_it == VTK_CELL_TYPES::VTK_WEDGE)
+						vol_nb_verts = 6u;
+					else {
+						if (*type_it == VTK_CELL_TYPES::VTK_PYRAMID)
+							vol_nb_verts = 5u;
+					}
+				}
+			}
+			for (unsigned int i = 0u ; i < vol_nb_verts;++i)
+			{
+				cells_buffer.push_back(*cells_it++);
+			}
+		}
+
+
+		add_vtk_volumes(cells_buffer,*cell_types_vec, *(this->vertex_attributes_.template get_attribute<VEC3>("position")));
+
+		return true;
+	}
+
+	virtual void add_vertex_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	{
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
+	}
+	virtual void add_cell_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	{
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->volume_attributes_, attribute_name));
+	}
+
+	virtual bool import_file_impl(const std::string& filename)
+	{
+		const FileType file_type = get_file_type(filename);
+		switch (file_type) {
+			case FileType::FileType_VTK_LEGACY:
+			{
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
+				return this->read_vtk_legacy_file(fp);
+			}
+			case FileType::FileType_VTU: return this->import_VTU(filename);
+			default:
+				std::cerr << "VtkVolumeImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				return false;
+		}
+	}
+
+	bool import_VTU(const std::string& filename)
+	{
+		using tinyxml2::XMLDocument;
+		using tinyxml2::XMLError;
+		using tinyxml2::XML_NO_ERROR;
+		using tinyxml2::XMLElement;
+
+		typename Inherit_Import::template ChunkArray<VEC3>* position =
+				this->vertex_attributes_.template add_attribute<VEC3>("position");
+		cgogn_assert(position != nullptr);
+
+		XMLDocument doc;
+		XMLError eResult = doc.LoadFile(filename.c_str());
+		if (eResult != XML_NO_ERROR)
+		{
+			std::cerr << "unable loading file " << filename << std::endl;
+			return false;
+		}
+
+		XMLElement* vtu_node = doc.RootElement();
+		cgogn_assert(vtu_node != nullptr);
+		XMLElement* grid_node = vtu_node->FirstChildElement("UnstructuredGrid");
+		cgogn_assert(grid_node != nullptr);
+		XMLElement* piece_node = grid_node->FirstChildElement("Piece");
+		cgogn_assert(piece_node != nullptr);
+
+		eResult = piece_node->QueryUnsignedAttribute("NumberOfPoints",&this->nb_vertices_);
+		if (eResult != XML_NO_ERROR)
+		{
+			std::cerr << "unreadable VTU file: " << filename << std::endl;
+			return false;
+		}
+		eResult = piece_node->QueryUnsignedAttribute("NumberOfCells",&this->nb_volumes_);
+		if (eResult != XML_NO_ERROR)
+		{
+			std::cerr << "unreadable VTU file: " << filename << std::endl;
+			return false;
+		}
+
+		std::cout << "reading file " << filename << std::endl;
+		std::cout << "Number of vertices : " << this->nb_vertices_ << std::endl;
+		std::cout << "Number of volumes : " << this->nb_volumes_ << std::endl;
+
+		XMLElement* points_node = piece_node->FirstChildElement("Points");
+		cgogn_assert(points_node != nullptr);
+		XMLElement* array_node = points_node->FirstChildElement("DataArray");
+		cgogn_assert(array_node != nullptr);
+
+		std::stringstream ss(array_node->GetText());
+		for (unsigned int i=0u; i< this->nb_vertices_; ++i)
+		{
+			VEC3 P;
+			ss >> P[0];
+			ss >> P[1];
+			ss >> P[2];
+			unsigned int id = this->vertex_attributes_.template insert_lines<1>();
+			position->operator [](id) = P;
+			cgogn_assert(id == i);
+		}
+
+		XMLElement* cell_node = piece_node->FirstChildElement("Cells");
+		cgogn_assert(cell_node != nullptr);
+		array_node = cell_node->FirstChildElement("DataArray");
+		cgogn_assert(array_node != nullptr);
+
+		std::vector<int> typeVols;
+		typeVols.reserve(this->nb_volumes_);
+		std::vector<unsigned int> offsets;
+		offsets.reserve(this->nb_volumes_);
+		std::vector<unsigned int> indices;
+		indices.reserve(this->nb_volumes_*4u);
+
+		while (array_node)
+		{
+			const std::string& propName = to_lower(std::string(array_node->Attribute("Name")));
+			if (propName.empty())
+			{
+				std::cerr << "Error reading VTU unreadable file: "<< filename << std::endl;
+				return false;
+			}
+
+			if (propName == "connectivity")
+			{
+				std::stringstream ss(array_node->GetText());
+				while (!ss.eof())
+				{
+					unsigned int ind;
+					ss >> ind;
+					indices.push_back(ind);
+				}
+			}
+			if (propName == "offsets")
+			{
+				std::stringstream ss(array_node->GetText());
+				for (unsigned int i=0u; i< this->nb_volumes_; ++i)
+				{
+					unsigned int o;
+					ss >> o;
+					offsets.push_back(o);
+				}
+			}
+			if (propName == "types")
+			{
+				bool unsupported = false;
+				std::stringstream ss(array_node->GetText());
+				for (unsigned int i=0u; i< this->nb_volumes_; ++i)
+				{
+					unsigned int t;
+					ss >> t;
+					if (!(t == 10u || t == 12u))
+					{
+						std::cerr << "error while parsing vtk file : volumes of type " << t << " are not supported" << std::endl;
+						unsupported = true;
+					}
+					typeVols.push_back(t);
+				}
+				if (unsupported)
+				{
+					std::cerr << "warning, some unsupported volume cell types"<< std::endl;
+				}
+
+			}
+			array_node = array_node->NextSiblingElement("DataArray");
+		}
+
+		add_vtk_volumes(indices, typeVols, *position);
+		return true;
+	}
+
+	inline void add_vtk_volumes(std::vector<unsigned int>& ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
+	{
+		unsigned int curr_offset = 0;
+		for (unsigned int i=0u; i< this->nb_volumes_; ++i)
+		{
+			if (type_vol[i]== VTK_CELL_TYPES::VTK_HEXAHEDRON || type_vol[i]== VTK_CELL_TYPES::VTK_VOXEL)
+			{
+				if (type_vol[i]== VTK_CELL_TYPES::VTK_VOXEL)
+				{
+					std::swap(ids[curr_offset+2],ids[curr_offset+3]);
+					std::swap(ids[curr_offset+6],ids[curr_offset+7]);
+				}
+				this->add_hexa(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5],ids[curr_offset+6],ids[curr_offset+7]);
+				curr_offset+=8u;
+			}else {
+				if (type_vol[i]== VTK_CELL_TYPES::VTK_TETRA)
+				{
+					this->add_tetra(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3]);
+					curr_offset+=4u;
+				} else {
+					if (type_vol[i]== VTK_CELL_TYPES::VTK_PYRAMID)
+					{
+						this->add_pyramid(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4]);
+						curr_offset+=5u;
+					} else {
+						if (type_vol[i]== VTK_CELL_TYPES::VTK_WEDGE)
+						{
+							this->add_triangular_prism(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5]);
+							curr_offset+=6u;
+						}
+					}
+				}
+			}
+		}
+	}
+};
 } // namespace io
 } // namespace cgogn
 

@@ -36,6 +36,7 @@
 
 #include <io/dll.h>
 #include <io/c_locale.h>
+#include <io/mesh_io_gen.h>
 
 namespace cgogn
 {
@@ -43,11 +44,13 @@ namespace cgogn
 namespace io
 {
 
+
 template <typename MAP_TRAITS>
-class SurfaceImport
+class SurfaceImport : public MeshImportGen
 {
 public:
 	using Self = SurfaceImport<MAP_TRAITS>;
+	using Inherit = MeshImportGen;
 	using Map = CMap2<MAP_TRAITS>;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
@@ -80,7 +83,7 @@ public:
 	  ,faces_vertex_indices_()
 	{}
 
-	virtual ~SurfaceImport()
+	virtual ~SurfaceImport() override
 	{}
 
 	SurfaceImport(const Self&) = delete;
@@ -88,7 +91,7 @@ public:
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
 
-	void clear()
+	virtual void clear() override
 	{
 		nb_vertices_ = 0;
 		nb_edges_ = 0;
@@ -97,24 +100,6 @@ public:
 		faces_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();
 		face_attributes_.remove_attributes();
-	}
-
-	inline bool import_file(const std::string& filename)
-	{
-		this->clear();
-		Scoped_C_Locale loc;
-
-		{
-			// test if file exist
-			std::ifstream fp(filename.c_str(), std::ios::in);
-			if (!fp.good())
-			{
-				std::cerr << "Unable to open file \"" << filename << "\"" << std::endl;
-				return false;
-			}
-		}
-
-		return this->import_file_impl(filename);
 	}
 
 	inline void create_map(Map& map)
@@ -221,9 +206,6 @@ public:
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
 	}
-
-protected:
-	virtual bool import_file_impl(const std::string& filename) = 0;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))

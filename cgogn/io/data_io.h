@@ -53,6 +53,7 @@ public:
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
 	virtual void reset() = 0;
+	virtual std::size_t size() const = 0;
 
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const = 0;
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
@@ -180,6 +181,11 @@ public:
 	virtual unsigned int nb_components() const override
 	{
 		return geometry::nb_components_traits<T>::value;
+	}
+
+	virtual std::size_t size() const override
+	{
+		return data_->size();
 	}
 
 private:
