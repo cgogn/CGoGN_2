@@ -105,8 +105,7 @@ TEST_F(CMap1TopoTest, Constructor)
 /*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of darts_.
- * The number of vertices is unchanged, the number of faces changes correctly
- * and the map integrity is preserved.
+ * The map integrity is preserved.
  */
 TEST_F(CMap1TopoTest, phi1_sew_unsew)
 {
@@ -119,26 +118,16 @@ TEST_F(CMap1TopoTest, phi1_sew_unsew)
 		Dart f = darts_[std::rand() % NB_MAX];
 		Dart nd = phi1(d);
 		Dart ne = phi1(e);
-		if (d != e) {
-			if (same_cell(Face(d),Face(e)))
-				++countFaces;
-			else
-				--countFaces;
-		}
 		phi1_sew(d, e);
 		EXPECT_TRUE(phi1(d) == ne);
 		EXPECT_TRUE(phi1(e) == nd);
 		Dart nf1 = phi1(f);
 		Dart nf2 = phi1(nf1);
 		phi1_unsew(f);
-		if (f != nf1) ++countFaces;
 		EXPECT_TRUE(phi1(nf1) == nf1);
 		EXPECT_TRUE(phi1(f) == nf2);
 	}
 
-	EXPECT_EQ(nb_darts(), NB_MAX);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), NB_MAX);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -204,10 +193,12 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 	{
 		unsigned int k = degree(Face(d));
 		split_vertex_topo(d);
+		++countVertices;
 		EXPECT_EQ(degree(Face(d)), k+1);
 	}
-	EXPECT_EQ(nb_darts(), countVertices+NB_MAX);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices+NB_MAX);
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 }

@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 1000
+#define NB_MAX 100
 
 /*!
  * \brief The CMap2Test class implements tests on embedded CMap2
@@ -100,5 +100,7 @@ TEST_F(CMap2Test, addFace)
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
+
+#undef NB_MAX
 
 } // namespace cgogn

@@ -45,105 +45,121 @@ class CMap1Test: public ::testing::Test
 public:
 
 	using testCMap1 = CMap1<DefaultMapTraits>;
-	using VertexAttributeHandler = testCMap1::VertexAttributeHandler<int>;
 	using Vertex = testCMap1::Vertex;
-	using FaceAttributeHandler = testCMap1::FaceAttributeHandler<int>;
 	using Face = testCMap1::Face;
 
 protected:
 
 	testCMap1 cmap_;
-	VertexAttributeHandler vertices_;
-	FaceAttributeHandler faces_;
+
+	/*!
+	 * \brief A vector of darts on which the methods are tested.
+	 */
+	std::vector<Dart> darts_;
 
 	CMap1Test()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
-		vertices_ = cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		faces_ = cmap_.add_attribute<int, Face::ORBIT>("faces");
+		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int, Face::ORBIT>("faces");
 	}
 
-	int randomFaces() {
-		int count = 0;
-		for (int i = 0; i < NB_MAX; ++i) {
-			int n = 1 + std::rand() % 100;
+	/*!
+	 * \brief Generate a random set of faces and put them in darts_
+	 * \return The total number of added darts or vertices.
+	 * The face size ranges from 1 to 10.
+	 * A random dart of each face is put in the darts_ array.
+	 */
+	unsigned int addFaces(unsigned int n)
+	{
+		unsigned int count = 0;
+		for (unsigned int i = 0; i < n; ++i)
+		{
+			unsigned int n = 1 + std::rand() % 10;
 			Dart d = cmap_.add_face(n);
 			count += n;
 
 			while (std::rand()%10 != 1)
 				d = cmap_.phi1(d);
 
-			tdarts_[i] = d;
+			darts_.push_back(d);
 		}
 		return count;
 	}
-
-	std::array<Dart, NB_MAX> tdarts_;
 };
 
 /*!
- * \brief Adding vertices preserves the cell indexation
+ * \brief Adding faces preserves the cell indexation
  */
 TEST_F(CMap1Test, add_face)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+/*!
+ * \brief Removing faces preserves the cell indexation
+ */
 TEST_F(CMap1Test, remove_face)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
+	int countFaces = NB_MAX;
 
-	int countVertex = n;
-	int countFace = NB_MAX;
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
-		unsigned int k = cmap_.degree(d);
-		cmap_.remove_face(d);
-		countVertex -= k;
-		--countFace;
+	for (Dart d: darts_)
+	{
+		if (std::rand()%3 == 1) {
+			unsigned int k = cmap_.degree(d);
+			cmap_.remove_face(d);
+			countVertices -= k;
+			--countFaces;
+		}
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFaces);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+/*!
+ * \brief Splitting vertices preserves the cell indexation
+ */
 TEST_F(CMap1Test, split_vertex)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
 
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
-		unsigned int k = cmap_.degree(Face(d));
-		cmap_.split_vertex(Vertex(d));
+	for (Dart d: darts_)
+	{
+		cmap_.split_vertex(d);
+		++countVertices;
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n+NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+/*!
+ * \brief Removing vertices preserves the cell indexation
+ */
 TEST_F(CMap1Test, remove_vertex)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int countFaces = NB_MAX;
 
-	int countVertex = n;
-	int countFace = NB_MAX;
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
-		unsigned int k = cmap_.degree(d);
+	for (Dart d: darts_)
+	{
+		unsigned int k = cmap_.degree(Face(d));
 		cmap_.remove_vertex(Vertex(d));
-		--countVertex;
-		if (k == 1u) --countFace;
+		--countVertices;
+		if (k == 1) --countFaces;
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFaces);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
