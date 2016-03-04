@@ -26,6 +26,7 @@
 
 #include <istream>
 
+#include <core/utils/endian.h>
 #include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
@@ -206,7 +207,7 @@ public:
 				for (unsigned int j = 0u; j < nbe; ++j)
 				{
 					const unsigned int vertex_index = vertices_buffer[j];
-					mbuild.template set_embedding<Vertex::ORBIT>(d, vertex_index);
+					mbuild.template set_embedding<Vertex>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
@@ -361,19 +362,12 @@ protected:
 	template <typename VEC3>
 	bool import_OFF_BIN(std::ifstream& fp)
 	{
-
-		// local function for little/big endian conversion
-		auto changeEndianness = [](unsigned int x) -> unsigned int
-		{
-			return (x>>24) | ((x<<8) & 0x00FF0000) | ((x>>8) & 0x0000FF00) |  (x<<24);
-		};
-
 		char buffer1[12];
 		fp.read(buffer1,12);
 
-		nb_vertices_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1)));
-		nb_faces_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1+4)));
-		nb_edges_= changeEndianness(*(reinterpret_cast<unsigned int*>(buffer1+8)));
+		nb_vertices_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1)));
+		nb_faces_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
+		nb_edges_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
 
 
 		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
@@ -400,7 +394,7 @@ protected:
 				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
 				for (unsigned int i=0; i< 3*BUFFER_SZ;++i)
 				{
-					*ptr = changeEndianness(*ptr);
+					*ptr = swap_endianness_system_big(*ptr);
 					++ptr;
 				}
 			}
@@ -431,7 +425,7 @@ protected:
 				ptr = buff_ind;
 				for (unsigned int i=0; i< BUFFER_SZ;++i)
 				{
-					*ptr = changeEndianness(*ptr);
+					*ptr = swap_endianness_system_big(*ptr);
 					++ptr;
 				}
 				ptr = buff_ind;
@@ -450,7 +444,7 @@ protected:
 					ptr = buff_ind;
 					for (unsigned int i=0; i< BUFFER_SZ;++i)
 					{
-						*ptr = changeEndianness(*ptr);
+						*ptr = swap_endianness_system_big(*ptr);
 						++ptr;
 					}
 					ptr = buff_ind;

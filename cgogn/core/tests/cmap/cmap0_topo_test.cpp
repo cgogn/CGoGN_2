@@ -21,85 +21,72 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_BUILDER_H_
-#define CORE_MAP_MAP2_BUILDER_H_
+#include <gtest/gtest.h>
 
-#include <core/cmap/cmap2.h>
+#include <core/cmap/cmap0.h>
 
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
-class CMap2Builder_T
+#define NB_MAX 1000
+
+class CMap0TopoTest: public ::testing::Test
 {
-public:
-
-	using Self = CMap2Builder_T<MAP_TRAITS>;
-	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
-
-	template <typename T>
-	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
-
-	inline CMap2Builder_T(CMap2& map) : map_(map)
-	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
 
 public:
 
-	template <Orbit ORBIT>
-	inline void create_embedding()
+	using testCMap0 = CMap0<DefaultMapTraits>;
+	using Vertex = testCMap0::Vertex;
+
+protected:
+
+	testCMap0 cmap_;
+
+	CMap0TopoTest()
 	{
-		map_.template create_embedding<ORBIT>();
 	}
 
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
-	{
-		map_.attributes_[ORBIT].swap(cac);
+	std::array<Dart, NB_MAX> tdarts_;
+
+	int addVertices() {
+		for (int i = 0; i < NB_MAX; ++i)
+			tdarts_[i] = cmap_.add_vertex();
+
+		return NB_MAX;
 	}
-
-	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
-	{
-		map_.template set_embedding<CellType>(d, emb);
-	}
-
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
-	}
-
-	inline Dart add_face_topo_parent(unsigned int nb_edges)
-	{
-		return map_.CMap2::Inherit::add_face_topo(nb_edges);
-	}
-
-	inline void close_map()
-	{
-		map_.close_map();
-	}
-
-private:
-
-	CMap2& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
+TEST_F(CMap0TopoTest, testCMap0Constructor)
+{
+	EXPECT_EQ(cmap_.nb_darts(), 0u);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
+}
+
+TEST_F(CMap0TopoTest, testAddVertex)
+{
+	int n = addVertices();
+
+	EXPECT_EQ(cmap_.nb_darts(), n);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+TEST_F(CMap0TopoTest, testRemoveVertex)
+{
+	int n = addVertices();
+
+	int countVertex = n;
+	for (int i = 0; i < n; ++i) {
+		Vertex d = tdarts_[i];
+		if (i%2 == 1) {
+			cmap_.remove_vertex(Vertex(d));
+			--countVertex;
+		}
+	}
+
+	EXPECT_EQ(cmap_.nb_darts(), countVertex);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertex);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
 
 } // namespace cgogn
-
-
-#endif // CORE_MAP_MAP2_BUILDER_H_
-

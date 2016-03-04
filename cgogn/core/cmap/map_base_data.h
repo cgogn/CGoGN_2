@@ -241,25 +241,24 @@ protected:
 
 public:
 
-//	template <Orbit ORBIT>
-//	inline bool is_orbit_embedded() const
-//	{
-//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-//		return embeddings_[ORBIT] != nullptr;
-//	}
-
-	template <class Cell>
+	template <Orbit ORBIT>
 	inline bool is_embedded() const
 	{
-		static_assert(Cell::ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return embeddings_[Cell::ORBIT] != nullptr;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[ORBIT] != nullptr;
+	}
+
+	template <class CellType>
+	inline bool is_embedded() const
+	{
+		return is_embedded<CellType::ORBIT>();
 	}
 
 	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
@@ -267,11 +266,12 @@ public:
 
 protected:
 
-	template <Orbit ORBIT>
+	template <class CellType>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
 		const unsigned int old = (*embeddings_[ORBIT])[d.index];
@@ -282,6 +282,15 @@ protected:
 			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
+	}
+
+	template <class CellType>
+	inline void copy_embedding(Dart dest, Dart src)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
 	}
 
 	/*******************************************************************************

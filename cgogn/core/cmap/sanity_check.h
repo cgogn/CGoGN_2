@@ -57,7 +57,7 @@ template <Orbit ORBIT, typename MAP>
 bool is_orbit_embedding_unique(MAP& map)
 {
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-	cgogn_message_assert(map.template is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
+	cgogn_message_assert(map.template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 	typename MAP::template AttributeHandler<unsigned int, ORBIT> counter = map.template add_attribute<unsigned int, ORBIT>("__tmp_counter");
 	for (unsigned int& i : counter) i = 0;
@@ -89,7 +89,7 @@ template <Orbit ORBIT, typename MAP>
 bool is_container_well_referenced(MAP& map)
 {
 	static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-	cgogn_message_assert(map.template is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
+	cgogn_message_assert(map.template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 	typename MAP::template AttributeHandler<unsigned int, ORBIT> counter = map.template add_attribute<unsigned int, ORBIT>("__tmp_counter");
 
