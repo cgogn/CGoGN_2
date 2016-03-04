@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#define CGOGN_CORE_DLL_EXPORT
 
 #include <core/utils/name_types.h>
 
@@ -42,7 +42,7 @@ namespace internal
  * @param str, a type name
  * @return the demangled type name is succeded, otherwise a copy of str
  */
-CGOGN_UTILS_API std::string demangle(const std::string& str)
+CGOGN_CORE_API std::string demangle(const std::string& str)
 {
 #ifndef __GNUG__
 	return str;

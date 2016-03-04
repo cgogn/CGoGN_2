@@ -26,7 +26,7 @@
 
 #include <core/container/chunk_array.h>
 #include <core/utils/assert.h>
-#include <core/basic/dll.h>
+#include <core/dll.h>
 
 namespace cgogn
 {

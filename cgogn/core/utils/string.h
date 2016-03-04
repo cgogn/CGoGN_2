@@ -36,7 +36,7 @@ inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
-		c = std::toupper(c);
+		c = Char_T(std::toupper(c));
 	return res;
 }
 
@@ -45,7 +45,7 @@ inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
-		c = std::tolower(c);
+		c = Char_T(std::tolower(c));
 	return res;
 }
 

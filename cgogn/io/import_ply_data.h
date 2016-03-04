@@ -123,8 +123,6 @@ protected:
 
 	int per_vertex_color_float32, per_vertex_color_uint8 ;
 	int has_normals_;
-
-	char *old_locale;
 };
 
 } // namespace io
