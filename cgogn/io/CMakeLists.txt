@@ -16,12 +16,14 @@ set(HEADER_FILES
 	off_io.h
 	obj_io.h
 	ply_io.h
+	mesh_io_gen.h
 )
 
 set(SOURCE_FILES
 	surface_import.cpp
 	volume_import.cpp
 	import_ply_data.cpp
+	mesh_io_gen.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
