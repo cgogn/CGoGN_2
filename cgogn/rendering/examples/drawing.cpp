@@ -56,7 +56,7 @@ private:
 Drawing::~Drawing()
 {}
 
-void Drawing::closeEvent(QCloseEvent *e)
+void Drawing::closeEvent(QCloseEvent*)
 {
 	delete drawer_;
 	delete drawer2_;
@@ -138,9 +138,9 @@ void Drawing::init()
 	drawer2_->pointSizeAA(5.0);
 	drawer2_->begin(GL_POINTS);
 	drawer2_->color3f(1.0,1.0,1.0);
-	for (float z=-1.0; z < 1.0; z+= 0.1)
-		for (float y=-2.0; y < 0.0; y+= 0.1)
-			for (float x=0.0; x < 2.0; x+= 0.1)
+	for (float z=-1.0f; z < 1.0f; z+= 0.1f)
+		for (float y=-2.0f; y < 0.0f; y+= 0.1f)
+			for (float x=0.0f; x < 2.0f; x+= 0.1f)
 			{
 				drawer2_->vertex3f(x,y,z);
 			}

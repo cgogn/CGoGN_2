@@ -111,7 +111,7 @@ void Viewer::import(const std::string& surfaceMesh)
 Viewer::~Viewer()
 {}
 
-void Viewer::closeEvent(QCloseEvent *e)
+void Viewer::closeEvent(QCloseEvent*)
 {
 	delete vbo_pos_;
 	delete vbo_norm_;
