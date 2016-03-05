@@ -35,10 +35,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_BASE64_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/io>
 )
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply)
+target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply base64)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/io

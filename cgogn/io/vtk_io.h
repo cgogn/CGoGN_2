@@ -75,21 +75,21 @@ public :
 	};
 
 	using Self = VtkIO<DEFAULT_CHUNK_SIZE, PRIM_SIZE, VEC3>;
-	using DataIOGen = cgogn::io::DataIOGen<CHUNK_SIZE>;
+	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
 	template<typename T>
-	using DataIO = cgogn::io::DataIO<T, CHUNK_SIZE, PRIM_SIZE>;
+	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
 	virtual ~VtkIO() {}
 
 protected :
-	std::unique_ptr<DataIOGen>	positions_;
-	DataIO<unsigned int>		cells_;
-	DataIO<int>					cell_types_;
+	std::unique_ptr<DataInputGen>	positions_;
+	DataInput<unsigned int>			cells_;
+	DataInput<int>					cell_types_;
 
 protected :
-	virtual void add_vertex_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) = 0;
-	virtual void add_cell_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) = 0;
+	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
+	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 
 	bool parse_vtk_legacy_file(std::ifstream& fp)
 	{
@@ -141,7 +141,7 @@ protected :
 					std::string type_str;
 					sstream >> nb_vertices >> type_str;
 					type_str = to_lower(type_str);
-					positions_ = DataIOGen::template newDataIO<PRIM_SIZE>(type_str, 3);
+					positions_ = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					positions_->read_n(fp, nb_vertices, !ascii_file, false);
 					this->add_vertex_attribute(*positions_,"position");
 				} else {
@@ -218,7 +218,7 @@ protected :
 											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
 										}
 
-										std::unique_ptr<DataIOGen> att(DataIOGen::template newDataIO<PRIM_SIZE>(att_type, num_comp));
+										std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp));
 										att->read_n(fp, nb_data, !ascii_file, false);
 										if (cell_data)
 											this->add_cell_attribute(*att, att_name);
@@ -244,7 +244,7 @@ protected :
 												std::string		data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
-												std::unique_ptr<DataIOGen> att(DataIOGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
+												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
 												att->read_n(fp, nb_data, !ascii_file, false);
 												if (cell_data)
 													this->add_cell_attribute(*att, data_name);
@@ -260,11 +260,11 @@ protected :
 												std::cout << "ignoring the definition of the lookuptable named \"" << table_name << "\"" << std::endl;
 												if (ascii_file)
 												{
-													DataIO<Eigen::Vector4f> trash;
+													DataInput<Eigen::Vector4f> trash;
 													trash.skip_n(fp, nb_data, false);
 												} else
 												{
-													DataIO<std::int32_t> trash;
+													DataInput<std::int32_t> trash;
 													trash.skip_n(fp, nb_data, true);
 												}
 											}
@@ -326,9 +326,9 @@ public:
 	using Self = VtkSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
 	using Inherit_Import = SurfaceImport<MAP_TRAITS>;
-	using DataIOGen = typename Inherit_Vtk::DataIOGen;
+	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template<typename T>
-	using DataIO = typename Inherit_Vtk::template DataIO<T>;
+	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 	using VTK_CELL_TYPES = typename Inherit_Vtk::VTK_CELL_TYPES;
 
 	virtual ~VtkSurfaceImport() override {}
@@ -379,11 +379,11 @@ protected:
 		return true;
 	}
 
-	virtual void add_vertex_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
 	}
-	virtual void add_cell_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
 	}
@@ -405,9 +405,9 @@ public:
 	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
 	using Inherit_Import = VolumeImport<MAP_TRAITS>;
-	using DataIOGen = typename Inherit_Vtk::DataIOGen;
+	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template<typename T>
-	using DataIO = typename Inherit_Vtk::template DataIO<T>;
+	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 	using VTK_CELL_TYPES = typename Inherit_Vtk::VTK_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -461,11 +461,11 @@ protected:
 		return true;
 	}
 
-	virtual void add_vertex_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
 	}
-	virtual void add_cell_attribute(const DataIOGen& attribute_data, const std::string& attribute_name) override
+	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->volume_attributes_, attribute_name));
 	}

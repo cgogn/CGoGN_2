@@ -43,7 +43,7 @@ namespace io
  * @brief The BaseDataIO class : used to read numerical values (scalar & vectors) in mesh files
  */
 template<unsigned int CHUNK_SIZE>
-class DataIOGen
+class DataInputGen
 {
 public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
@@ -52,6 +52,7 @@ public:
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
+	virtual const void* get_data() const = 0;
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
 
@@ -59,62 +60,93 @@ public:
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
 	virtual unsigned int nb_components() const = 0;
-	virtual ~DataIOGen() {}
+	virtual ~DataInputGen() {}
 
 	template<unsigned int PRIM_SIZE>
-	inline static std::unique_ptr<DataIOGen> newDataIO(const std::string type_name);
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
 	template<unsigned int PRIM_SIZE>
-	inline static std::unique_ptr<DataIOGen> newDataIO(const std::string type_name, unsigned int nb_components);
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, unsigned int nb_components);
+
+	// This versions converts the data to the type T (if T is different from the type that has been read in the file)
+	template<unsigned int PRIM_SIZE, typename T>
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
+	// This versions converts the data to the type T (if T is different from the type that has been read in the file)
+	template<unsigned int PRIM_SIZE, typename T>
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, unsigned int nb_components);
 };
 
 
-template<typename T, unsigned int CHUNK_SIZE, unsigned int PRIM_SIZE>
-class DataIO : public DataIOGen<CHUNK_SIZE>
+template<unsigned int CHUNK_SIZE, unsigned int PRIM_SIZE, typename BUFFER_T, typename T = BUFFER_T>
+class DataInput : public DataInputGen<CHUNK_SIZE>
 {
 public:
-	using Inherit		= DataIOGen<CHUNK_SIZE>;
-	using Self			= DataIO<T, CHUNK_SIZE, PRIM_SIZE>;
+	using Inherit		= DataInputGen<CHUNK_SIZE>;
+	using Self			= DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T ,T> ;
 	using ChunkArrayGen	= typename Inherit::ChunkArrayGen;
 	using ChunkArray	= cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
-	DataIO()
-	{
-		data_ = make_unique<std::vector<T>>();
-	}
+	DataInput()
+	{}
 
-	DataIO(const Self&) = delete;
-	DataIO& operator =(const Self&) = delete;
-	DataIO(Self&&) = default;
+	DataInput(const Self&) = delete;
+	DataInput& operator =(const Self&) = delete;
+	DataInput(Self&&) = default;
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) override
 	{
-		const std::size_t old_size = data_->size();
-		data_->resize(old_size + n);
+		const std::size_t old_size = data_.size();
+		data_.resize(old_size + n);
 		if (binary)
 		{
-			fp.read(reinterpret_cast<char*>(std::addressof(data_->operator[](old_size))), n * sizeof(T));
-			if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
-			{
-				for (auto it = data_->begin() + old_size, end = data_->end() ; it != end; ++it)
-					*it = cgogn::io::internal::swap_endianness(*it);
+			if (std::is_same<T, BUFFER_T>::value)
+			{ // if BUFFER_T = T we can directly store the data
+				fp.read(reinterpret_cast<char*>(&data_[old_size]), n * sizeof(T));
+				if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
+				{
+					for (auto it = data_.begin() + old_size, end = data_.end() ; it != end; ++it)
+						*it = cgogn::io::internal::swap_endianness(*it);
+				}
+				if (fp.eof() || fp.bad())
+					this->reset();
+			} else { // 2nd case : BUFFER_T and T are different.
+				std::vector<BUFFER_T> buffer(old_size+n);
+				fp.read(reinterpret_cast<char*>(std::addressof(buffer[old_size])), n * sizeof(BUFFER_T));
+				if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
+				{
+					for (auto it = buffer.begin() + old_size, end = buffer.end() ; it != end; ++it)
+						*it = cgogn::io::internal::swap_endianness(*it);
+				}
+				if (fp.eof() || fp.bad())
+					this->reset();
+				// copy
+				auto dest_it = data_.begin();
+				for (auto & x : buffer)
+				{
+					*dest_it++ = internal::convert<T>(x);
+				}
 			}
-			if (fp.eof() || fp.bad())
-				this->reset();
 		} else {
 			std::string line;
 			line.reserve(256);
 			std::size_t i = 0ul;
+			BUFFER_T buff;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
 				bool no_error = true;
 				std::getline(fp,line);
 				std::istringstream line_stream(line);
-				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, data_->operator[](i+old_size)))))
+				BUFFER_T buff;
+				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, buff))))
+				{
+					data_[i+old_size] = internal::convert<T>(buff);
 					++i;
+				}
+
 				if (!no_error && (!line_stream.eof()))
 					break;
 			}
+
 			if (i < n)
 			{
 				std::cerr << "read_n : An eccor occured while reading the line \n\"" << line << "\"" <<  std::endl;
@@ -127,7 +159,7 @@ public:
 	{
 		if (binary)
 		{
-			fp.ignore(n * sizeof(T));
+			fp.ignore(n * sizeof(BUFFER_T));
 		} else {
 			std::string line;
 			line.reserve(256);
@@ -150,12 +182,12 @@ public:
 	}
 	virtual void reset() override
 	{
-		data_ = make_unique<std::vector<T>>();
+		data_.clear();
 	}
 
 	virtual ChunkArray* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const override
 	{
-		for (unsigned i = cac.capacity(), end = data_->size(); i < end; i+=PRIM_SIZE)
+		for (unsigned i = cac.capacity(), end = data_.size(); i < end; i+=PRIM_SIZE)
 			cac.template insert_lines<PRIM_SIZE>();
 		return cac.template add_attribute<T>(att_name);
 	}
@@ -164,18 +196,23 @@ public:
 	{
 		ChunkArray* ca = dynamic_cast<ChunkArray *>(ca_gen);
 		unsigned int i = 0u;
-		for (auto& x : *data_)
+		for (auto& x : data_)
 			ca->operator[](i++) = x;
 	}
 
 	virtual void* get_data() override
 	{
-		return data_.get();
+		return &data_;
+	}
+
+	virtual const void* get_data() const override
+	{
+		return &data_;
 	}
 
 	inline std::vector<T> const * get_vec() const
 	{
-		return data_.get();
+		return &data_;
 	}
 
 	virtual unsigned int nb_components() const override
@@ -185,86 +222,74 @@ public:
 
 	virtual std::size_t size() const override
 	{
-		return data_->size();
+		return data_.size();
 	}
 
 private:
-	std::unique_ptr<std::vector<T>>	data_;
+	std::vector<T> data_;
 };
 
 template<unsigned int CHUNK_SIZE>
 template<unsigned int PRIM_SIZE>
-std::unique_ptr<DataIOGen<CHUNK_SIZE>> DataIOGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
-	if (type_name == name_of_type(float()))
-		return make_unique<DataIO<float, CHUNK_SIZE, PRIM_SIZE>>();
-	else {
-		if (type_name == name_of_type(double()))
-			return make_unique<DataIO<double, CHUNK_SIZE, PRIM_SIZE>>();
-		else {
-			if (type_name == name_of_type(char()))
-				return make_unique<DataIO<char, CHUNK_SIZE, PRIM_SIZE>>();
-			else
-			{
-				if (type_name == name_of_type(std::int8_t()))
-					return make_unique<DataIO<std::int8_t, CHUNK_SIZE, PRIM_SIZE>>();
-				else
-				{
-					if (type_name == name_of_type(std::uint8_t()))
-						return make_unique<DataIO<std::uint8_t, CHUNK_SIZE, PRIM_SIZE>>();
-					else
-					{
-						if (type_name == name_of_type(std::int16_t()))
-							return make_unique<DataIO<std::int16_t, CHUNK_SIZE, PRIM_SIZE>>();
-						else
-						{
-							if (type_name == name_of_type(std::uint16_t()))
-								return make_unique<DataIO<std::uint16_t, CHUNK_SIZE, PRIM_SIZE>>();
-							else
-							{
-								if (type_name == name_of_type(std::uint32_t()))
-									return make_unique<DataIO<std::uint32_t, CHUNK_SIZE, PRIM_SIZE>>();
-								else
-								{
-									if (type_name == name_of_type(std::int32_t()))
-										return make_unique<DataIO<std::int32_t, CHUNK_SIZE, PRIM_SIZE>>();
-									else
-									{
-										if (type_name == name_of_type(std::uint64_t()))
-											return make_unique<DataIO<std::uint64_t, CHUNK_SIZE, PRIM_SIZE>>();
-										else
-										{
-											if (type_name == name_of_type(std::int64_t()))
-												return make_unique<DataIO<std::int64_t, CHUNK_SIZE, PRIM_SIZE>>();
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+	const DataType type = get_data_type(type_name);
+	switch (type) {
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,double>>();
+		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char>>();
+		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t>>();
+		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t>>();
+		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int16_t>>();
+		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint16_t>>();
+		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int32_t>>();
+		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint32_t>>();
+		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t>>();
+		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t>>();
+		default:
+			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 	}
-	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
-	return std::unique_ptr<DataIOGen<CHUNK_SIZE>>();
+}
+
+template<unsigned int CHUNK_SIZE>
+template<unsigned int PRIM_SIZE, typename T>
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
+{
+	const DataType type = get_data_type(type_name);
+	switch (type) {
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float,T>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,double,T>>();
+		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char,T>>();
+		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t,T>>();
+		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t,T>>();
+		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int16_t,T>>();
+		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint16_t,T>>();
+		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int32_t,T>>();
+		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint32_t,T>>();
+		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t,T>>();
+		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t,T>>();
+		default:
+			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
+	}
 }
 
 template<unsigned int CHUNK_SIZE>
 template<unsigned int PRIM_SIZE>
-std::unique_ptr<DataIOGen<CHUNK_SIZE>> DataIOGen<CHUNK_SIZE>::newDataIO(const std::string type_name, unsigned int nb_components)
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, unsigned int nb_components)
 {
 	cgogn_assert(nb_components >=1u && nb_components <= 4u);
 	if (nb_components == 1u)
-		return DataIOGen<CHUNK_SIZE>::newDataIO<PRIM_SIZE>(type_name);
+		return DataInputGen<CHUNK_SIZE>::newDataIO<PRIM_SIZE>(type_name);
 
 	if (type_name == name_of_type(std::int32_t()))
 	{
 		switch (nb_components)
 		{
-			case 2u: return make_unique<DataIO<Eigen::Vector2i, CHUNK_SIZE, PRIM_SIZE>>(); break;
-			case 3u: return make_unique<DataIO<Eigen::Vector3i, CHUNK_SIZE, PRIM_SIZE>>(); break;
-			case 4u: return make_unique<DataIO<Eigen::Vector4i, CHUNK_SIZE, PRIM_SIZE>>(); break;
+			case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2i>>(); break;
+			case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3i>>(); break;
+			case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4i>>(); break;
 			default:break;
 		}
 	} else {
@@ -272,9 +297,9 @@ std::unique_ptr<DataIOGen<CHUNK_SIZE>> DataIOGen<CHUNK_SIZE>::newDataIO(const st
 		{
 			switch (nb_components)
 			{
-				case 2u: return make_unique<DataIO<Eigen::Vector2f, CHUNK_SIZE, PRIM_SIZE>>(); break;
-				case 3u: return make_unique<DataIO<Eigen::Vector3f, CHUNK_SIZE, PRIM_SIZE>>(); break;
-				case 4u: return make_unique<DataIO<Eigen::Vector4f, CHUNK_SIZE, PRIM_SIZE>>(); break;
+				case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2f>>(); break;
+				case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3f>>(); break;
+				case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4f>>(); break;
 				default:break;
 			}
 		} else {
@@ -282,9 +307,9 @@ std::unique_ptr<DataIOGen<CHUNK_SIZE>> DataIOGen<CHUNK_SIZE>::newDataIO(const st
 			{
 				switch (nb_components)
 				{
-					case 2u: return make_unique<DataIO<Eigen::Vector2d, CHUNK_SIZE, PRIM_SIZE>>(); break;
-					case 3u: return make_unique<DataIO<Eigen::Vector3d, CHUNK_SIZE, PRIM_SIZE>>(); break;
-					case 4u: return make_unique<DataIO<Eigen::Vector4d, CHUNK_SIZE, PRIM_SIZE>>(); break;
+					case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2d>>(); break;
+					case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3d>>(); break;
+					case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4d>>(); break;
 					default:break;
 				}
 			}
@@ -292,7 +317,52 @@ std::unique_ptr<DataIOGen<CHUNK_SIZE>> DataIOGen<CHUNK_SIZE>::newDataIO(const st
 	}
 
 	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
-	return std::unique_ptr<DataIOGen<CHUNK_SIZE>>();
+	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
+}
+
+template<unsigned int CHUNK_SIZE>
+template<unsigned int PRIM_SIZE, typename T>
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, unsigned int nb_components)
+{
+	cgogn_assert(nb_components >=1u && nb_components <= 4u);
+	if (nb_components == 1u)
+		return DataInputGen<CHUNK_SIZE>::newDataIO<PRIM_SIZE,T>(type_name);
+
+	if (type_name == name_of_type(std::int32_t()))
+	{
+		switch (nb_components)
+		{
+			case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2i,T>>(); break;
+			case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3i,T>>(); break;
+			case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4i,T>>(); break;
+			default:break;
+		}
+	} else {
+		if (type_name == name_of_type(float()))
+		{
+			switch (nb_components)
+			{
+				case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2f,T>>(); break;
+				case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3f,T>>(); break;
+				case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4f,T>>(); break;
+				default:break;
+			}
+		} else {
+			if (type_name == name_of_type(double()))
+			{
+				switch (nb_components)
+				{
+					case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2d,T>>(); break;
+					case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3d,T>>(); break;
+					case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4d,T>>(); break;
+					default:break;
+				}
+			}
+		}
+	}
+
+	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
+	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
 } // namespace io
