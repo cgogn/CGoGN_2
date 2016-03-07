@@ -206,16 +206,14 @@ TEST_F(CMap2TopoTest, add_face_topo)
 TEST_F(CMap2TopoTest, testCutEdge)
 {
 	makeSurface();
-	EXPECT_TRUE(check_map_integrity());
 
 	unsigned int countVertices = nb_cells<Vertex::ORBIT>();
 	unsigned int countEdges = nb_cells<Edge::ORBIT>();
 	unsigned int countFaces = nb_cells<Face::ORBIT>();
 	unsigned int countVolumes = nb_cells<Volume::ORBIT>();
 
-	for (unsigned int i = 0u; i < NB_MAX; ++i)
+	for (Dart d: darts_)
 	{
-		Dart d = darts_[i];
 		unsigned int k1 = degree(Face(d));
 		unsigned int k2 = degree(Face(phi2(d)));
 		cut_edge_topo(d);

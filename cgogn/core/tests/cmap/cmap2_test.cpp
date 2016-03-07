@@ -169,11 +169,14 @@ TEST_F(CMap2Test, add_face)
 }
 
 /*!
- * \brief Adding faces preserves the cell indexation
+ * \brief Cutting edges preserves the cell indexation
  */
 TEST_F(CMap2Test, cut_edge)
 {
 	makeSurface();
+
+	for (Dart d: darts_) cmap_.cut_edge(d);
+
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
