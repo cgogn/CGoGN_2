@@ -83,8 +83,8 @@ protected:
 			Dart d = add_face_topo(n);
 			count += n;
 
-			while (std::rand()%10 != 1)
-				d = phi1(d);
+			n = std::rand() % 10;
+			while (n-- > 0)	d = phi1(d);
 
 			darts_.push_back(d);
 		}

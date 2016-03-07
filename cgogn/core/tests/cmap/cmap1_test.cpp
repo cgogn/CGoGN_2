@@ -80,8 +80,8 @@ protected:
 			Dart d = cmap_.add_face(n);
 			count += n;
 
-			while (std::rand()%10 != 1)
-				d = cmap_.phi1(d);
+			n = std::rand() % 10;
+			while (n-- > 0)	d = cmap_.phi1(d);
 
 			darts_.push_back(d);
 		}

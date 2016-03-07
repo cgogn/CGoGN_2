@@ -43,6 +43,7 @@ class CMap2TopoTest: public CMap2<DefaultMapTraits>, public ::testing::Test
 
 public:
 
+	using Inherit = CMap2<DefaultMapTraits>;
 	using Vertex = CMap2TopoTest::Vertex;
 	using Edge   = CMap2TopoTest::Edge;
 	using Face   = CMap2TopoTest::Face;
@@ -78,8 +79,8 @@ protected:
 			Dart d = add_face_topo(n);
 			count += n;
 
-			while (std::rand()%10 != 1)
-				d = phi1(d);
+			n = std::rand() % 10;
+			while (n-- > 0)	d = phi1(d);
 
 			darts_.push_back(d);
 		}
@@ -91,16 +92,28 @@ protected:
 	 */
 	void makeSurface()
 	{
-		for (unsigned int i = 0; i < NB_MAX; ++i) {
-			Face f1 = darts_[std::rand() % NB_MAX];
-			while (std::rand()%10 != 1) f1 = phi1(f1.dart);
-			Face f2 = darts_[std::rand() % NB_MAX];
-			while (std::rand()%10 != 1) f2 = phi1(f2.dart);
+		unsigned int n = 0;
 
-			foreach_dart_of_orbit_until(f1, [&] (Dart d) {
+		// Generate NB_MAX random 1-faces (with no boundary)
+		for (unsigned int i = 0; i < NB_MAX; ++i)
+		{
+			n = 1 + std::rand() % 10;
+			Dart d = Inherit::Inherit::add_face_topo(n);
+			darts_.push_back(d);
+		}
+		// Sew some pairs off 1-egdes
+		for (unsigned int i = 0; i < 3*NB_MAX; ++i) {
+			Dart e1 = darts_[std::rand() % NB_MAX];
+			n = std::rand() % 10;
+			while (n-- > 0)	e1 = phi1(e1);
+			Dart e2 = darts_[std::rand() % NB_MAX];
+			n = std::rand() % 10;
+			while (n-- > 0)	e2 = phi1(e2);
+
+			foreach_dart_of_orbit_until(Face(e1), [&] (Dart d) {
 				if (phi2(d) == d) {
-					if (phi2(f2.dart) == f2.dart) {
-						// sewfaces
+					if (phi2(e2) == e2 && e2 != d) {
+						phi2_sew(e2, d);
 						return (std::rand()%3 == 1);
 					}
 					else
@@ -110,6 +123,7 @@ protected:
 					return false;
 			});
 		}
+		close_map();
 	}
 };
 
@@ -128,7 +142,7 @@ TEST_F(CMap2TopoTest, Constructor)
 /*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of darts_.
- * The map integrity is preserved.
+ * The map integrity is not preserved (this test creates fixed points for PHI2).
  */
 TEST_F(CMap2TopoTest, phi2_sew_unsew)
 {
@@ -150,8 +164,6 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
 		EXPECT_TRUE(phi2(d0) == e0);
 		EXPECT_TRUE(phi2(e0) == d0);
 	}
-
-	EXPECT_TRUE(check_map_integrity());
 }
 
 /*!
@@ -217,7 +229,8 @@ TEST_F(CMap2TopoTest, testCutFace)
 	for (int i = 0; i < NB_MAX; ++i) {
 		Dart d = darts_[i];
 		Dart e = d;
-		while (std::rand()%10 != 1) e = phi1(e);
+		unsigned int j = std::rand() % 10;
+		while (j-- > 0)	e = phi1(e);
 		if (e == d) e = phi1(e);
 
 		unsigned int k = degree(Face(d));
