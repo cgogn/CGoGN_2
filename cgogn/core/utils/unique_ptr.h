@@ -75,6 +75,16 @@ template <class T, class... Args>
 typename _Unique_if<T>::_Known_bound
 make_unique(Args&&...) = delete;
 
+
+template<typename TO, typename FROM>
+inline std::unique_ptr<TO> dynamic_cast_unique_ptr(std::unique_ptr<FROM>&& ptr)
+{
+	TO* const res = dynamic_cast<TO*>(ptr.get());
+	if (res != nullptr)
+		ptr.release();
+	return std::unique_ptr<TO>(res);
+}
+
 } // namespace cgogn
 
 #endif // CORE_UTILS_MAKE_UNIQUE_H

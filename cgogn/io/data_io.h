@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_array_container.h>
 
