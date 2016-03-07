@@ -114,19 +114,19 @@ public:
 		if (this->template is_embedded<CDart>())
 			result = result && this->template is_well_embedded<CDart>();
 
-		if (this->template is_embedded<Vertex>())
+		if (this->template is_embedded<Vertex2>())
 			result = result && this->template is_well_embedded<Vertex2>();
 
 		if (this->template is_embedded<Vertex>())
 			result = result && this->template is_well_embedded<Vertex>();
 
-		if (this->template is_embedded<Edge>())
+		if (this->template is_embedded<Edge2>())
 			result = result && this->template is_well_embedded<Edge2>();
 
 		if (this->template is_embedded<Edge>())
 			result = result && this->template is_well_embedded<Edge>();
 
-		if (this->template is_embedded<Face>())
+		if (this->template is_embedded<Face2>())
 			result = result && this->template is_well_embedded<Face2>();
 
 		if (this->template is_embedded<Face>())

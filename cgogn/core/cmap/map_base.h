@@ -385,32 +385,6 @@ public:
 		remove_attribute(counter);
 	}
 
-	template <Orbit ORBIT>
-	bool is_well_embedded(Cell<ORBIT> c) const
-	{
-		const ConcreteMap* cmap = to_concrete();
-		bool result = true;
-
-		std::map<unsigned int, Dart> emb_set;
-		cmap->foreach_dart_of_orbit(c, [&] (Dart d)
-		{
-			emb_set.insert(std::pair<unsigned int, Dart>(this->template get_embedding<ORBIT>(d), d));
-		});
-
-		if(emb_set.size() > 1)
-		{
-			std::cout << "Orbit is not well embedded: " << std::endl;
-
-			result = false;
-			std::map<unsigned int, Dart>::iterator it;
-			for (auto const& de : emb_set)
-			std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
-			std::cout << std::endl;
-		}
-
-		return result;
-	}
-
 	/**
 	 * \brief Tests if all \p ORBIT orbits are well embedded
 	 * \details An orbit is well embedded if all its darts
@@ -427,19 +401,27 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> marker(*cmap);
+		AttributeHandler<unsigned int, ORBIT> marker = add_attribute<unsigned int, ORBIT>("__tmp_marker");
 		bool result = true;
 
+		const Self* const_map = static_cast<const Self*>(this);
+		const typename Inherit::template ChunkArrayContainer<unsigned int>& container =
+				const_map->template get_attribute_container<ORBIT>();
+
+		// a marker is initialized to false for each "used" index of the container
+		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			marker[i] = 0;
+
 		// Check that the indexation of cells is correct
-		cmap->foreach_cell_until_dart_marking([&] (CellType c)
+		foreach_cell_until_dart_marking([&] (CellType c)
 		{
 			// insure that two cells do not share the same index
-			if (marker.is_marked(c))
+			if (marker[this->template get_embedding<ORBIT>(c.dart)] > 0)
 			{
 				result = false;
 				return false;
 			}
-			marker.mark(c);
+			marker[this->template get_embedding<ORBIT>(c.dart)] = 1;
 			// check used indices are valid
 			unsigned int idx = this->get_embedding(c);
 			if (idx == EMBNULL)
@@ -450,8 +432,7 @@ public:
 			// check all darts of the cell use the same index (distinct to EMBNULL)
 			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
 			{
-				if (this->template get_embedding<ORBIT>(d) != idx)
-					result = false;
+				if (this->template get_embedding<ORBIT>(d) != idx) result = false;
 				return result;
 			});
 
@@ -459,12 +440,16 @@ public:
 		});
 		// check that all cells present in the attribute handler are used
 		if (result)
-			cmap->foreach_cell_until([&] (CellType c) {
-				if (!marker.is_marked(c)) {
+		{
+			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			{
+				if (marker[i] == 0)
+				{
 					result = false;
-					return false;
+					break;
 				}
-			});
+			}
+		}
 		return result;
 	}
 
@@ -478,14 +463,16 @@ public:
 			if (!cmap->check_integrity(d)) result = false;
 			return result;
 		});
-		if (!result) {
+		if (!result)
+		{
 			std::cerr << "Integrity of the topology is broken" << std::endl;
 			return false;
 		}
 
 		// check the embedding indexation for the concrete map
 		result = cmap->check_embedding_integrity();
-		if (!result) {
+		if (!result)
+		{
 			std::cerr << "Integrity of the embeddings is broken" << std::endl;
 			return false;
 		}

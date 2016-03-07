@@ -28,12 +28,17 @@
 namespace cgogn
 {
 
-#define NB_MAX 1000
+#define NB_MAX 100
 
 /*!
- * \brief The CMap1TopoTest class implements tests
+ * \brief The CMap1TopoTest class implements topological tests on CMap1
+ * It derives from CMap1 to allow the test of protected methods
+ *
+ * Note that these tests, check that the topological operators perform as wanted
+ * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * These last tests are implemented in another test suite.
  */
-class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
+class CMap1TopoTest : public CMap1<DefaultMapTraits>, public ::testing::Test
 {
 
 public:
@@ -44,81 +49,73 @@ public:
 protected:
 
 	/*!
-	 * \brief An array of randomly generated darts on which the methods are tested.
+	 * \brief A vector of darts on which the methods are tested.
 	 */
-	std::array<Dart, NB_MAX> tdarts_;
+	std::vector<Dart> darts_;
 
-	/*!
-	 * \brief Generate a random set of faces.
-	*/
 	CMap1TopoTest()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 	}
 
-	int randomDarts() {
-		int n = 1 + std::rand() % (NB_MAX-1);
-		for (int i = 0; i < n; ++i)
-			tdarts_[i] = add_dart();
-
-		return n;
+	/*!
+	 * \brief Initialize the darts in darts_ with added vertices
+	 * \param n : the number of added darts or vertices
+	 */
+	void addVertices(unsigned int n)
+	{
+		for (unsigned int i = 0; i < n; ++i)
+			darts_.push_back(add_dart());
 	}
 
-	int randomFaces() {
-		int count = 0;
-		for (int i = 0; i < NB_MAX; ++i) {
-			int n = 1 + std::rand() % 100;
+	/*!
+	 * \brief Generate a random set of faces and put them in darts_
+	 * \return The total number of added darts or vertices.
+	 * The face size ranges from 1 to 10.
+	 * A random dart of each face is put in the darts_ array.
+	 */
+	unsigned int addFaces(unsigned int n)
+	{
+		unsigned int count = 0;
+		for (unsigned int i = 0; i < n; ++i)
+		{
+			unsigned int n = 1 + std::rand() % 10;
 			Dart d = add_face_topo(n);
 			count += n;
 
 			while (std::rand()%10 != 1)
 				d = phi1(d);
 
-			tdarts_[i] = d;
+			darts_.push_back(d);
 		}
 		return count;
 	}
 };
 
-TEST_F(CMap1TopoTest, testCMap1Constructor)
+/*!
+ * \brief An empty CMap1 contains no dart, no vertex and no face.
+ */
+TEST_F(CMap1TopoTest, Constructor)
 {
 	EXPECT_EQ(nb_darts(), 0u);
 	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0u);
 	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 0u);
 }
 
-TEST_F(CMap1TopoTest, testAddDart)
+/*!
+ * \brief Sewing and unsewing darts correctly changes the topological relations.
+ * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of darts_.
+ * The map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, phi1_sew_unsew)
 {
-	int n = randomDarts();
+	addVertices(NB_MAX);
+	int countFaces = NB_MAX;
 
-	EXPECT_EQ(nb_darts(), n);
-	EXPECT_TRUE(check_map_integrity());
-}
-
-TEST_F(CMap1TopoTest, testDeleteDart)
-{
-	int n = randomDarts();
-
-	int count = n;
-	for (int i = 0; i < n; ++i) {
-		if (std::rand() % 3 == 1) {
-			remove_dart(tdarts_[i]);
-			--count;
-		}
-	}
-
-	EXPECT_EQ(nb_darts(), count);
-	EXPECT_TRUE(check_map_integrity());
-}
-
-TEST_F(CMap1TopoTest, testPhi1SewUnSew)
-{
-	int n = randomDarts();
-
-	for (int i = 0; i < 1000; ++i) {
-		Dart d = tdarts_[std::rand() % n];
-		Dart e = tdarts_[std::rand() % n];
-		Dart f = tdarts_[std::rand() % n];
+	for (unsigned int i = 0; i < NB_MAX; ++i) {
+		Dart d = darts_[std::rand() % NB_MAX];
+		Dart e = darts_[std::rand() % NB_MAX];
+		Dart f = darts_[std::rand() % NB_MAX];
 		Dart nd = phi1(d);
 		Dart ne = phi1(e);
 		phi1_sew(d, e);
@@ -131,115 +128,159 @@ TEST_F(CMap1TopoTest, testPhi1SewUnSew)
 		EXPECT_TRUE(phi1(f) == nf2);
 	}
 
-	EXPECT_EQ(nb_darts(), n);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testAddFace)
+/*!
+ * \brief Adding a face of size n adds n darts, n vertices and 1 face.
+ * The test adds some faces and check that the number of generated cells is correct
+ * and that the map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, add_face_topo)
 {
-	int n = randomFaces();
+	add_face_topo(1);
+	EXPECT_EQ(nb_darts(), 1);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 1);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 1);
 
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	add_face_topo(10);
+	EXPECT_EQ(nb_darts(), 11);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2);
+
+	unsigned int countVertices = 11 + addFaces(NB_MAX);
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX+2);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testSplitVertex)
+/*! \brief Removing a face removes all its vertices.
+ * The test randomly removes 1/3 of the initial faces.
+ * The number of cells correctly decreases and the map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, remove_face)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int countFaces = NB_MAX;
 
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
+	for (Dart d: darts_)
+	{
+		if (std::rand()%3 == 1) {
+			unsigned int k = degree(Face(d));
+			remove_face(d);
+			countVertices -= k;
+			--countFaces;
+		}
+	}
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*! \brief Spliting a vertex increases the size of its face.
+ * The test performs NB_MAX vertex spliting on vertices of randomly generated faces.
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, split_vertex_topo)
+{
+	unsigned int countVertices = addFaces(NB_MAX);
+
+	for (Dart d: darts_)
+	{
 		unsigned int k = degree(Face(d));
 		split_vertex_topo(d);
+		++countVertices;
 		EXPECT_EQ(degree(Face(d)), k+1);
 	}
 
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n+NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testRemoveVertex)
+/*! \brief Removing a vertex decreases the size of its face and removes its if its degree is 1.
+* The test performs NB_MAX vertex removing on vertices of randomly generated faces.
+* The number of removed cells is correct and the map integrity is preserved.
+*/
+TEST_F(CMap1TopoTest, remove_vertex)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int countFaces = NB_MAX;
 
-	int countVertex = n;
-	int countFace = NB_MAX;
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
+	for (Dart d: darts_)
+	{
 		unsigned int k = degree(Face(d));
 		if (k > 1) {
 			Dart e = phi1(d);
 			remove_vertex(Vertex(d));
-			--countVertex;
+			--countVertices;
 			EXPECT_EQ(degree(Face(e)), k-1);
 		}
 		else {
 			remove_vertex(Vertex(d));
-			--countFace;
-			--countVertex;
+			--countFaces;
+			--countVertices;
 		}
 	}
 
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertex);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFace);
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), countFaces);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testRemoveFace)
+/*! \brief Reversing a face reverses the order of its vertices.
+ * The test reverses randomly generated faces.
+ * The number of faces and their degrees do not change and the map integrity is preserved.
+ */
+TEST_F(CMap1TopoTest, reverse_face_topo)
 {
-	int n = randomFaces();
+	unsigned int countVertices = addFaces(NB_MAX);
 
-	int countVertex = n;
-	int countFace = NB_MAX;
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face d = tdarts_[i];
+	for (Dart d: darts_)
+	{
 		unsigned int k = degree(Face(d));
-		remove_face(d);
-		countVertex -= k;
-		--countFace;
-	}
-
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertex);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFace);
-	EXPECT_TRUE(check_map_integrity());
-}
-
-TEST_F(CMap1TopoTest, testReverseFace)
-{
-	int n = randomFaces();
-
-	for (int i = 0; i < NB_MAX; ++i) {
-		Face f = tdarts_[i];
-		unsigned int k = degree(f);
 
 		std::vector<Dart> face_darts;
-		foreach_dart_of_orbit(f, [&] (Dart d) {
-			face_darts.push_back(d);
+		face_darts.reserve(k);
+		foreach_dart_of_orbit(Face(d), [&] (Dart e) {
+			face_darts.push_back(e);
 		});
 
-		reverse_face_topo(tdarts_[i]);
-		EXPECT_EQ(degree(Face(tdarts_[i])), k);
+		reverse_face_topo(d);
+		EXPECT_EQ(degree(Face(d)), k);
 
-		f = phi1(f);
-		foreach_dart_of_orbit(f, [&] (Dart d) {
-			EXPECT_TRUE(face_darts.back() == d);
+		d = phi1(d);
+		foreach_dart_of_orbit(Face(d), [&] (Dart e) {
+			EXPECT_TRUE(face_darts.back() == e);
 			face_darts.pop_back();
 		});
 		EXPECT_TRUE(face_darts.empty());
 	}
+
+	EXPECT_EQ(nb_darts(), countVertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testDegree)
+/*! \brief The degree of a face is correctly computed.
+ */
+TEST_F(CMap1TopoTest, degree)
 {
 	Face f = this->add_face_topo(10);
 
 	EXPECT_EQ(degree(f),10);
 }
 
-TEST_F(CMap1TopoTest, testHasDegree)
+/*! \brief The degree of a face is correctly tested.
+ */
+TEST_F(CMap1TopoTest, has_degree)
 {
 	Face f = this->add_face_topo(10);
 
@@ -249,6 +290,6 @@ TEST_F(CMap1TopoTest, testHasDegree)
 	EXPECT_FALSE(has_degree(f,11));
 }
 
-// The traversal methods are tested through the nb_cells calls and wihtin other methods
+#undef NB_MAX
 
 } // namespace cgogn
