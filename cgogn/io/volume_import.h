@@ -53,6 +53,7 @@ public:
 	using Inherit = MeshImportGen;
 	using Map = CMap3<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;
+	using Volume = typename Map::Volume;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -110,6 +111,7 @@ public:
 
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
+		mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int index = 0u;
@@ -247,8 +249,6 @@ public:
 			}  //end of hexa
 
 		}
-
-		std::cout << " elements created " << std::endl;
 
 		//reconstruct neighbourhood
 		unsigned int nbBoundaryFaces = 0;

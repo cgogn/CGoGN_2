@@ -117,6 +117,7 @@ public:
 
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
+		mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
 
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");

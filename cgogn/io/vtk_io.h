@@ -314,6 +314,12 @@ protected :
 		cgogn_assert(root_node != nullptr);
 		const bool little_endian = (to_lower(std::string(root_node->Attribute("byte_order"))) == "littleendian");
 
+		std::string header_type("unsigned int");
+		if (root_node->Attribute("header_type"))
+			header_type = vtk_data_type_to_cgogn_name_of_type(root_node->Attribute("header_type"));
+		const unsigned int header_size = (get_data_type(header_type) == DataType::UINT64)? 8u : 4u;
+
+
 		XMLElement* grid_node = root_node->FirstChildElement("UnstructuredGrid");
 		cgogn_assert(grid_node != nullptr);
 		XMLElement* piece_node = grid_node->FirstChildElement("Piece");
@@ -329,30 +335,44 @@ protected :
 
 		XMLElement* points_node = piece_node->FirstChildElement("Points");
 		cgogn_assert(points_node != nullptr);
-		XMLElement* vertices_array_node = points_node->FirstChildElement("DataArray");
-		cgogn_assert(vertices_array_node != nullptr);
-
-		while (vertices_array_node)
+		XMLElement*const position_data_array_node = points_node->FirstChildElement("DataArray");
+		cgogn_assert(position_data_array_node != nullptr);
+		XMLElement* point_data_node = piece_node->FirstChildElement("PointData");
+		XMLElement* point_data_array_node = point_data_node ? point_data_node->FirstChildElement("DataArray") : nullptr;
+		std::vector<XMLElement*> vertices_nodes = {position_data_array_node};
+		while (point_data_array_node)
 		{
-			const std::string& data_name = to_lower(std::string(vertices_array_node->Attribute("Name")));
-			const bool binary = (to_lower(std::string(vertices_array_node->Attribute("format", nullptr))) == "binary");
+			vertices_nodes.push_back(point_data_array_node);
+			point_data_array_node = point_data_array_node->NextSiblingElement("DataArray");
+		}
+
+		for (XMLElement* vertex_data : vertices_nodes)
+		{
+			std::string data_name("cgogn_unnamed_vertex_data");
+			if (vertex_data->Attribute("Name"))
+				data_name = to_lower(std::string(vertex_data->Attribute("Name")));
+			const bool binary = (to_lower(std::string(vertex_data->Attribute("format", nullptr))) == "binary");
 			unsigned int nb_comp = 1;
-			vertices_array_node->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
-			const std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(vertices_array_node->Attribute("type", nullptr)));
+			vertex_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+			const std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(vertex_data->Attribute("type", nullptr)));
 
 			if (data_name.empty())
 				std::cerr << "import_VTU : Skipping a vertex DataArray without \"Name\" attribute." << std::endl;
 			else {
-				std::string text(vertices_array_node->GetText());
+				std::string text(vertex_data->GetText());
 				if (binary)
 				{
 					std::vector<unsigned char> decode = base64_decode(text);
-					const unsigned int length = *reinterpret_cast<unsigned int*>(&decode[0]);
-					text = std::string(reinterpret_cast<char*>(&decode[8]), length);
+					unsigned int length = 0u;
+					if (header_size == 4u)
+						length = *reinterpret_cast<unsigned int*>(&decode[0]);
+					else
+						length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
+					text = std::string(reinterpret_cast<char*>(&decode[header_size]), length);
 				}
 
 				std::istringstream ss(text);
-				if (data_name == "points")
+				if (vertex_data == position_data_array_node)
 				{
 					cgogn_assert(nb_comp == 3);
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
@@ -366,37 +386,55 @@ protected :
 					this->add_vertex_attribute(*vertex_att, data_name);
 				}
 			}
-			vertices_array_node = vertices_array_node->NextSiblingElement("DataArray");
 		}
 
 
-		XMLElement* cell_node = piece_node->FirstChildElement("Cells");
+		XMLElement* const cell_node = piece_node->FirstChildElement("Cells");
 		cgogn_assert(cell_node != nullptr);
 		XMLElement* cells_array_node = cell_node->FirstChildElement("DataArray");
 		cgogn_assert(cells_array_node != nullptr);
+		std::vector<XMLElement*> cell_nodes;
+		while (cells_array_node)
+		{
+			cell_nodes.push_back(cells_array_node);
+			cells_array_node = cells_array_node->NextSiblingElement("DataArray");
+		}
+
+		XMLElement* const cell_data_node = piece_node->FirstChildElement("CellData");
+		cells_array_node = cell_data_node ? cell_data_node->FirstChildElement("DataArray") : nullptr;
+		while (cells_array_node)
+		{
+			cell_nodes.push_back(cells_array_node);
+			cells_array_node = cells_array_node->NextSiblingElement("DataArray");
+		}
+
 
 		{
 			std::string cell_connectivity;
 			bool cell_connectivity_is_bin = false;
 			std::string cell_connectivity_type;
 
-			while (cells_array_node)
+			for (XMLElement* cell_data : cell_nodes)
 			{
-				const std::string& data_name = to_lower(std::string(cells_array_node->Attribute("Name")));
-				const bool binary = (to_lower(std::string(cells_array_node->Attribute("format", nullptr))) == "binary");
+				const std::string& data_name = to_lower(std::string(cell_data->Attribute("Name")));
+				const bool binary = (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
 				unsigned int nb_comp = 1;
-				cells_array_node->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
-				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cells_array_node->Attribute("type", nullptr)));
+				cell_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cell_data->Attribute("type", nullptr)));
 
 				if (data_name.empty())
 					std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
 				else {
-					std::string text(cells_array_node->GetText());
+					std::string text(cell_data->GetText());
 					if (binary)
 					{
 						std::vector<unsigned char> decode = base64_decode(text);
-						const unsigned int length = *reinterpret_cast<unsigned int*>(&decode[0]);
-						text = std::string(reinterpret_cast<char*>(&decode[8]), length);
+						unsigned int length = 0u;
+						if (header_size == 4u)
+							length = *reinterpret_cast<unsigned int*>(&decode[0]);
+						else
+							length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
+						text = std::string(reinterpret_cast<char*>(&decode[header_size]), length);
 					}
 
 					std::istringstream ss(text);
@@ -421,6 +459,7 @@ protected :
 								this->cell_types_ = std::move(*dynamic_cast_unique_ptr<DataInput<int>>(types->simplify()));
 							}
 							else {
+								std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
 								auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
 								cell_att->read_n(ss, nb_cells,binary,true);
 								this->add_cell_attribute(*cell_att, data_name);
@@ -428,8 +467,8 @@ protected :
 						}
 					}
 				}
-				cells_array_node = cells_array_node->NextSiblingElement("DataArray");
 			}
+
 			{
 				std::istringstream ss(cell_connectivity);
 				const unsigned int last_offset = this->offsets_.get_vec()->back();
@@ -624,7 +663,9 @@ protected:
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<unsigned int>* cells_vec		= this->cells_.get_vec();
 
-		add_vtk_volumes(*cells_vec,*cell_types_vec, *(this->vertex_attributes_.template get_attribute<VEC3>("position")));
+		ChunkArray<VEC3>* pos = this->vertex_attributes_.template get_attribute<VEC3>("position");
+		cgogn_assert(pos != nullptr);
+		add_vtk_volumes(*cells_vec,*cell_types_vec, *pos);
 
 		return true;
 	}
