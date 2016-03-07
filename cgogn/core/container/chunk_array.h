@@ -33,7 +33,7 @@
 #include <core/container/chunk_array_gen.h>
 #include <core/utils/serialization.h>
 #include <core/utils/assert.h>
-#include <core/basic/dll.h>
+#include <core/dll.h>
 
 
 namespace cgogn

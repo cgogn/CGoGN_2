@@ -32,6 +32,7 @@
 
 #include <geometry/functions/orientation.h>
 
+#include <io/c_locale.h>
 #include <io/dll.h>
 
 #include <tinyxml2.h>
@@ -107,6 +108,8 @@ public:
 	template <typename VEC3>
 	bool import_file(const std::string& filename)
 	{
+		Scoped_C_Locale loc;
+
 		const std::string& extension = to_lower(get_extension(filename));
 		if (extension.empty())
 			return false;

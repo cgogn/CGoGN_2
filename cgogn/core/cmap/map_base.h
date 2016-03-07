@@ -1078,10 +1078,11 @@ protected:
 		unsigned int nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ((end - it) < 16 * nb_threads_pool * PARALLEL_BUFFER_SIZE)
-			nbc = (end - it) / nb_threads_pool;
+		if ( (static_cast<unsigned int>(end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+			  && (static_cast<unsigned int>(end - it) > nb_threads_pool))
+			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
 
-		unsigned int local_end = it+nbc;
+		unsigned int local_end = std::min(it+nbc,end);
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 
