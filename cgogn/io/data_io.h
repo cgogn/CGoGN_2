@@ -46,6 +46,7 @@ template<unsigned int CHUNK_SIZE>
 class DataInputGen
 {
 public:
+	using Self = DataInputGen<CHUNK_SIZE>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
@@ -55,6 +56,12 @@ public:
 	virtual const void* get_data() const = 0;
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
+	/**
+	 * @brief simplify, transform a DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T ,T> into a DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>
+	 * @return a DataInput with T = BUFFER_T
+	 * WARNING : after a call to simplify, the data is moved to the returned DataInputGen, leaving an empty vector.
+	 */
+	virtual std::unique_ptr<Self> simplify() = 0;
 
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const = 0;
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
@@ -89,9 +96,28 @@ public:
 	DataInput()
 	{}
 
-	DataInput(const Self&) = delete;
-	DataInput& operator =(const Self&) = delete;
-	DataInput(Self&&) = default;
+	inline DataInput(const Self& other) :
+		data_(other.data_)
+	{}
+
+	inline DataInput(Self&& other) :
+	data_(std::move(other.data_))
+	{}
+
+	inline DataInput& operator =(const Self& other)
+	{
+		if (&other != this)
+			data_ = other.data_;
+		return *this;
+	}
+
+		inline DataInput& operator =(Self&& other)
+	{
+		if (&other != this)
+			data_ = std::move(other.data_);
+		return *this;
+	}
+
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) override
 	{
@@ -136,13 +162,14 @@ public:
 				bool no_error = true;
 				std::getline(fp,line);
 				std::istringstream line_stream(line);
-				BUFFER_T buff;
+				// we need to avoid the specialization of istringstream operator>> for chars
+				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
+				type buff;
 				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, buff))))
 				{
 					data_[i+old_size] = internal::convert<T>(buff);
 					++i;
 				}
-
 				if (!no_error && (!line_stream.eof()))
 					break;
 			}
@@ -223,6 +250,15 @@ public:
 	virtual std::size_t size() const override
 	{
 		return data_.size();
+	}
+
+	virtual std::unique_ptr<Inherit> simplify() override
+	{
+		std::unique_ptr<DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>> res = make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>>();
+		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->get_data()));
+		res_vec = std::move(this->data_);
+		this->data_ = std::vector<T>();
+		return res;
 	}
 
 private:
