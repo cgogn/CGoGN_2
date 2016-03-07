@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap2.h>
+#include <core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
@@ -45,6 +45,8 @@ class CMap2Test: public ::testing::Test
 public:
 
 	using testCMap2 = CMap2<DefaultMapTraits>;
+	using MapBuilder = CMap2Builder_T<DefaultMapTraits>;
+	using CDart = testCMap2::CDart;
 	using Vertex = testCMap2::Vertex;
 	using Edge = testCMap2::Edge;
 	using Face = testCMap2::Face;
@@ -54,50 +56,124 @@ protected:
 
 	testCMap2 cmap_;
 
+	/*!
+	 * \brief A vector of darts on which the methods are tested.
+	 */
+	std::vector<Dart> darts_;
+
 	CMap2Test()
 	{
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
+		cmap_.add_attribute<int, CDart::ORBIT>("darts");
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 		cmap_.add_attribute<int, Edge::ORBIT>("edges");
 		cmap_.add_attribute<int, Face::ORBIT>("faces");
 		cmap_.add_attribute<int, Volume::ORBIT>("volumes");
 	}
 
-	int randomFaces() {
-		int count = 0;
-		for (int i = 0; i < NB_MAX; ++i) {
-			int n = 1 + std::rand() % 100;
+	/*!
+	 * \brief Generate a random set of faces and put them in darts_
+	 * \return The total number of added vertices.
+	 * The face size ranges from 1 to 10.
+	 * A random dart of each face is put in the darts_ array.
+	 */
+	unsigned int addFaces(unsigned int n)
+	{
+		unsigned int count = 0u;
+		for (unsigned int i = 0u; i < n; ++i)
+		{
+			unsigned int n = 1 + std::rand() % 10u;
 			Dart d = cmap_.add_face(n);
 			count += n;
 
-			n = std::rand() % 10;
-			while (n-- > 0)	d = cmap_.phi1(d);
+			n = std::rand() % 10u;
+			while (n-- > 0u) d = cmap_.phi1(d);
 
-			tdarts_[i] = d;
+			darts_.push_back(d);
 		}
 		return count;
 	}
 
-	std::array<Dart, NB_MAX> tdarts_;
+	/*!
+	 * \brief Generate a closed surface from the set of faces in darts_
+	 */
+	void makeSurface()
+	{
+		MapBuilder mbuild(cmap_);
+		unsigned int n = 0u;
+
+		// Generate NB_MAX random 1-faces (without boundary)
+		for (unsigned int i = 0; i < NB_MAX; ++i)
+		{
+			n = 1 + std::rand() % 10u;
+			Dart d = mbuild.add_face_topo_parent(n);
+			darts_.push_back(d);
+		}
+		// Sew some pairs off egdes
+		for (unsigned int i = 0; i < 3*NB_MAX; ++i) {
+			Dart e1 = darts_[std::rand() % NB_MAX];
+			n = std::rand()%10u;
+			while (n-- > 0u)	e1 = cmap_.phi1(e1);
+
+			Dart e2 = darts_[std::rand() % NB_MAX];
+			n = std::rand()%10u;
+			while (n-- > 0u)	e2 = cmap_.phi1(e2);
+
+			n = 1+std::rand()%3u;
+			while (n-- > 0u) {
+				if (cmap_.phi2(e1) == e1) {
+					if (cmap_.phi2(e2) == e2 && e2 != e1) {
+						mbuild.phi2_sew(e2, e1);
+						e1 = cmap_.phi1(e1);
+						e2 = cmap_.phi_1(e2);
+					}
+				}
+			}
+		}
+		// Close the map (remove remaining boundary)
+		cmap_.foreach_dart( [&] (Dart d) {
+			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
+		});
+		// Embed the map
+		cmap_.foreach_dart( [&] (Dart d) {
+			mbuild.new_orbit_embedding(CDart(d));
+		});
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Vertex v) {
+			mbuild.new_orbit_embedding(v);
+		});
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Edge e) {
+			mbuild.new_orbit_embedding(e);
+		});
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Face f) {
+			mbuild.new_orbit_embedding(f);
+		});
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Volume w) {
+			mbuild.new_orbit_embedding(w);
+		});
+	}
 };
 
-TEST_F(CMap2Test, testCMap2Constructor)
+/*!
+ * \brief Adding faces preserves the cell indexation
+ */
+TEST_F(CMap2Test, add_face)
 {
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 0u);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 0u);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 0u);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 0u);
-}
+	unsigned int countVertices = addFaces(NB_MAX);
 
-TEST_F(CMap2Test, addFace)
-{
-	int n = randomFaces();
-
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), n);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), countVertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2*NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
+ * \brief Adding faces preserves the cell indexation
+ */
+TEST_F(CMap2Test, cut_edge)
+{
+	makeSurface();
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

@@ -72,15 +72,15 @@ protected:
 	 */
 	unsigned int addFaces(unsigned int n)
 	{
-		unsigned int count = 0;
-		for (unsigned int i = 0; i < n; ++i)
+		unsigned int count = 0u;
+		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1 + std::rand() % 10;
+			unsigned int n = 1 + std::rand() % 10u;
 			Dart d = add_face_topo(n);
 			count += n;
 
-			n = std::rand() % 10;
-			while (n-- > 0)	d = phi1(d);
+			n = std::rand() % 10u;
+			while (n-- > 0u) d = phi1(d);
 
 			darts_.push_back(d);
 		}
@@ -92,38 +92,40 @@ protected:
 	 */
 	void makeSurface()
 	{
-		unsigned int n = 0;
+		unsigned int n = 0u;
 
-		// Generate NB_MAX random 1-faces (with no boundary)
-		for (unsigned int i = 0; i < NB_MAX; ++i)
+		// Generate NB_MAX random 1-faces (without boundary)
+		for (unsigned int i = 0u; i < NB_MAX; ++i)
 		{
 			n = 1 + std::rand() % 10;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs off 1-egdes
-		for (unsigned int i = 0; i < 3*NB_MAX; ++i) {
+		for (unsigned int i = 0u; i < 3*NB_MAX; ++i) {
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10;
-			while (n-- > 0)	e1 = phi1(e1);
-			Dart e2 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10;
-			while (n-- > 0)	e2 = phi1(e2);
+			n = std::rand() % 10u;
+			while (n-- > 0u)	e1 = phi1(e1);
 
-			foreach_dart_of_orbit_until(Face(e1), [&] (Dart d) {
-				if (phi2(d) == d) {
-					if (phi2(e2) == e2 && e2 != d) {
-						phi2_sew(e2, d);
-						return (std::rand()%3 == 1);
+			Dart e2 = darts_[std::rand() % NB_MAX];
+			n = std::rand() % 10u;
+			while (n-- > 0u)	e2 = phi1(e2);
+
+			n = 1+std::rand()%3u;
+			while (n-- > 0u) {
+				if (phi2(e1) == e1) {
+					if (phi2(e2) == e2 && e2 != e1) {
+						phi2_sew(e2, e1);
+						e1 = phi1(e1);
+						e2 = phi_1(e2);
 					}
-					else
-						return false;
 				}
-				else
-					return false;
-			});
+			}
 		}
-		close_map();
+		// Close the map (remove remaining boundary)
+		foreach_dart( [&] (Dart d) {
+			if (phi2(d) == d) close_hole_topo(d);
+		});
 	}
 };
 
@@ -150,7 +152,7 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
 	unsigned int countFaces = NB_MAX;
 	unsigned int countVolumes = NB_MAX;
 
-	for (int i = 0; i < NB_MAX; ++i) {
+	for (unsigned int i = 0u; i < NB_MAX; ++i) {
 		Dart d0 = darts_[std::rand() % NB_MAX];
 		Dart d2 = phi2(d0);
 		phi2_unsew(d0);
@@ -173,27 +175,27 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
  */
 TEST_F(CMap2TopoTest, add_face_topo)
 {
-	add_face_topo(1);
-	EXPECT_EQ(nb_darts(), 2);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 1);
-	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 1);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1);
+	add_face_topo(1u);
+	EXPECT_EQ(nb_darts(), 2u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 1u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 1u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
 
-	add_face_topo(10);
-	EXPECT_EQ(nb_darts(), 22);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11);
-	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 11);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2);
+	add_face_topo(10u);
+	EXPECT_EQ(nb_darts(), 22u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 11u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2u);
 
-	unsigned int countVertices = 11 + addFaces(NB_MAX);
+	unsigned int countVertices = 11u + addFaces(NB_MAX);
 
-	EXPECT_EQ(nb_darts(), 2*countVertices);
+	EXPECT_EQ(nb_darts(), 2u*countVertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), countVertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2*(NB_MAX+2));
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX+2);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u*(NB_MAX+2u));
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX+2u);
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -203,19 +205,35 @@ TEST_F(CMap2TopoTest, add_face_topo)
  */
 TEST_F(CMap2TopoTest, testCutEdge)
 {
-	int n = addFaces(NB_MAX);
+	makeSurface();
+	EXPECT_TRUE(check_map_integrity());
 
-	for (int i = 0; i < NB_MAX; ++i) {
+	unsigned int countVertices = nb_cells<Vertex::ORBIT>();
+	unsigned int countEdges = nb_cells<Edge::ORBIT>();
+	unsigned int countFaces = nb_cells<Face::ORBIT>();
+	unsigned int countVolumes = nb_cells<Volume::ORBIT>();
+
+	for (unsigned int i = 0u; i < NB_MAX; ++i)
+	{
 		Dart d = darts_[i];
-		unsigned int k = degree(Face(d));
+		unsigned int k1 = degree(Face(d));
+		unsigned int k2 = degree(Face(phi2(d)));
 		cut_edge_topo(d);
-		EXPECT_EQ(degree(Face(d)), k+1);
+		if (same_cell(Face(d),Face(phi2(d))))
+		{
+			EXPECT_EQ(degree(Face(d)), k1+2u);
+		}
+		else
+		{
+			EXPECT_EQ(degree(Face(d)), k1+1u);
+			EXPECT_EQ(degree(Face(phi2(d))), k2+1u);
+		}
 	}
 
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n+NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Edge::ORBIT>(), n+NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 2*NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Volume::ORBIT>(), NB_MAX);
+	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertices+NB_MAX);
+	EXPECT_EQ(this->template nb_cells<Edge::ORBIT>(), countEdges+NB_MAX);
+	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFaces);
+	EXPECT_EQ(this->template nb_cells<Volume::ORBIT>(), countVolumes);
 	EXPECT_TRUE(check_map_integrity());
 }
 
