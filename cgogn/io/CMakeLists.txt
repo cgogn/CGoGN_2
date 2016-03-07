@@ -24,6 +24,7 @@ set(SOURCE_FILES
 	volume_import.cpp
 	import_ply_data.cpp
 	mesh_io_gen.cpp
+	io_utils.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -35,11 +36,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_BASE64_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/io>
 )
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply base64)
+target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/io
