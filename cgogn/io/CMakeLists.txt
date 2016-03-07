@@ -2,6 +2,9 @@ project(cgogn_io
 	LANGUAGES CXX
 )
 
+find_package(ZLIB)
+add_definitions("-DZLIB_CONST")
+
 set(HEADER_FILES
 	surface_import.h
 	volume_import.h
@@ -36,10 +39,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include/cgogn/io>
 )
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply)
+target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply ${ZLIB_LIBRARIES})
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/io

@@ -32,13 +32,12 @@
 #include <io/surface_import.h>
 #include <io/volume_import.h>
 
+
 namespace cgogn
 {
 
 namespace io
 {
-
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::basic_string<char>& input);
 
 template<unsigned int CHUNK_SIZE, unsigned int PRIM_SIZE, typename VEC3>
 class VtkIO
@@ -94,6 +93,23 @@ protected :
 protected :
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
+
+	inline void read_binary_xml_data(std::string& data_str, bool is_compressed, DataType header_type)
+	{
+		if (!is_compressed)
+		{
+			std::vector<unsigned char> decode = base64_decode(data_str);
+			std::size_t length = 0ul;
+			if (header_type == DataType::UINT32)
+				length = *reinterpret_cast<unsigned int*>(&decode[0]);
+			else
+				length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
+			data_str = std::string(reinterpret_cast<char*>(&decode[header_type == DataType::UINT32 ? 4u : 8u]), length);
+		}
+		else {
+			zlib_decompress(data_str, header_type);
+		}
+	}
 
 	bool parse_vtk_legacy_file(std::ifstream& fp)
 	{
@@ -317,8 +333,9 @@ protected :
 		std::string header_type("unsigned int");
 		if (root_node->Attribute("header_type"))
 			header_type = vtk_data_type_to_cgogn_name_of_type(root_node->Attribute("header_type"));
-		const unsigned int header_size = (get_data_type(header_type) == DataType::UINT64)? 8u : 4u;
+//		const unsigned int header_size = (get_data_type(header_type) == DataType::UINT64)? 8u : 4u;
 
+		const bool compressed = (root_node->Attribute("compressor") && (std::string(root_node->Attribute("compressor")) == "vtkZLibDataCompressor"));
 
 		XMLElement* grid_node = root_node->FirstChildElement("UnstructuredGrid");
 		cgogn_assert(grid_node != nullptr);
@@ -362,13 +379,7 @@ protected :
 				std::string text(vertex_data->GetText());
 				if (binary)
 				{
-					std::vector<unsigned char> decode = base64_decode(text);
-					unsigned int length = 0u;
-					if (header_size == 4u)
-						length = *reinterpret_cast<unsigned int*>(&decode[0]);
-					else
-						length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
-					text = std::string(reinterpret_cast<char*>(&decode[header_size]), length);
+					this->read_binary_xml_data(text,compressed, get_data_type(header_type));
 				}
 
 				std::istringstream ss(text);
@@ -427,15 +438,7 @@ protected :
 				else {
 					std::string text(cell_data->GetText());
 					if (binary)
-					{
-						std::vector<unsigned char> decode = base64_decode(text);
-						unsigned int length = 0u;
-						if (header_size == 4u)
-							length = *reinterpret_cast<unsigned int*>(&decode[0]);
-						else
-							length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
-						text = std::string(reinterpret_cast<char*>(&decode[header_size]), length);
-					}
+						this->read_binary_xml_data(text,compressed, get_data_type(header_type));
 
 					std::istringstream ss(text);
 					if (data_name == "connectivity")

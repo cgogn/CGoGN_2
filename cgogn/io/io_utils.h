@@ -37,8 +37,6 @@ namespace cgogn
 namespace io
 {
 
-CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input);
-
 enum FileType
 {
 	FileType_UNKNOWN = 0,
@@ -48,8 +46,6 @@ enum FileType
 	FileType_VTK_LEGACY,
 	FileType_VTU
 };
-
-CGOGN_IO_API FileType get_file_type(const std::string& filename);
 
 enum DataType
 {
@@ -66,8 +62,11 @@ enum DataType
 	DOUBLE,
 	UNKNOWN
 };
-
+CGOGN_IO_API FileType get_file_type(const std::string& filename);
 CGOGN_IO_API DataType get_data_type(const std::string& type_name);
+CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input);
+CGOGN_IO_API void zlib_decompress(std::string& input, DataType header_type);
+
 
 namespace internal
 {
