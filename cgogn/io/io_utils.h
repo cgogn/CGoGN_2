@@ -28,8 +28,8 @@
 #include <sstream>
 
 #include <core/utils/endian.h>
-
 #include <geometry/types/geometry_traits.h>
+#include <io/dll.h>
 
 namespace cgogn
 {
@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-
+CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input);
 
 enum FileType
 {
@@ -49,21 +49,7 @@ enum FileType
 	FileType_VTU
 };
 
-inline FileType get_file_type(const std::string& filename)
-{
-	const std::string& extension = to_lower(get_extension(filename));
-	if (extension == "off")
-		return FileType::FileType_OFF;
-	if (extension == "obj")
-		return FileType::FileType_OBJ;
-	if (extension == "ply")
-		return FileType::FileType_PLY;
-	if (extension == "vtk")
-		return FileType::FileType_VTK_LEGACY;
-	if (extension == "vtu")
-		return FileType::FileType_VTU;
-	return FileType::FileType_UNKNOWN;
-}
+CGOGN_IO_API FileType get_file_type(const std::string& filename);
 
 enum DataType
 {
@@ -81,33 +67,7 @@ enum DataType
 	UNKNOWN
 };
 
-inline DataType get_data_type(const std::string& type_name)
-{
-	if (type_name == name_of_type(float()))
-		return DataType::FLOAT;
-	else if (type_name == name_of_type(double()))
-		return DataType::DOUBLE;
-	else if (type_name == name_of_type(char()))
-		return DataType::CHAR;
-	else if (type_name == name_of_type(std::int8_t()))
-		return DataType::INT8;
-	else if (type_name == name_of_type(std::uint8_t()))
-		return DataType::UINT8;
-	else if (type_name == name_of_type(std::int16_t()))
-		return DataType::INT16;
-	else if (type_name == name_of_type(std::uint16_t()))
-		return DataType::UINT16;
-	else if (type_name == name_of_type(std::int32_t()))
-		return DataType::INT32;
-	else if (type_name == name_of_type(std::uint32_t()))
-		return DataType::UINT32;
-	else if (type_name == name_of_type(std::int64_t()))
-		return DataType::INT64;
-	else if (type_name == name_of_type(std::uint64_t()))
-		return DataType::UINT64;
-
-	return DataType::UNKNOWN;
-}
+CGOGN_IO_API DataType get_data_type(const std::string& type_name);
 
 namespace internal
 {

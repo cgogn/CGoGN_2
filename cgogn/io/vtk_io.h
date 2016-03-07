@@ -27,6 +27,7 @@
 #include <istream>
 #include <sstream>
 
+#include <io/dll.h>
 #include <io/data_io.h>
 #include <io/surface_import.h>
 #include <io/volume_import.h>
@@ -36,6 +37,8 @@ namespace cgogn
 
 namespace io
 {
+
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::basic_string<char>& input);
 
 template<unsigned int CHUNK_SIZE, unsigned int PRIM_SIZE, typename VEC3>
 class VtkIO
@@ -83,9 +86,10 @@ public :
 	virtual ~VtkIO() {}
 
 protected :
-	std::unique_ptr<DataInputGen>	positions_;
-	DataInput<unsigned int>			cells_;
-	DataInput<int>					cell_types_;
+	DataInput<VEC3>				positions_;
+	DataInput<unsigned int>		cells_;
+	DataInput<int>				cell_types_;
+	DataInput<unsigned int>		offsets_;
 
 protected :
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
@@ -141,9 +145,10 @@ protected :
 					std::string type_str;
 					sstream >> nb_vertices >> type_str;
 					type_str = to_lower(type_str);
-					positions_ = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
-					positions_->read_n(fp, nb_vertices, !ascii_file, false);
-					this->add_vertex_attribute(*positions_,"position");
+					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
+					pos->read_n(fp, nb_vertices, !ascii_file, false);
+					this->add_vertex_attribute(*pos,"position");
+					this->positions_ = std::move(*dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify()));
 				} else {
 					if (word == "CELLS" || word == "POLYGONS" || word == "TRIANGLE_STRIPS")
 					{
@@ -289,6 +294,154 @@ protected :
 		return true;
 	}
 
+
+	bool parse_xml_vtu(const std::string& filename)
+	{
+		using tinyxml2::XMLDocument;
+		using tinyxml2::XMLError;
+		using tinyxml2::XML_NO_ERROR;
+		using tinyxml2::XMLElement;
+
+		XMLDocument doc;
+		XMLError eResult = doc.LoadFile(filename.c_str());
+		if (eResult != XML_NO_ERROR)
+		{
+			std::cerr << "Unable to load file \"" << filename << "\"." << std::endl;
+			return false;
+		}
+
+		XMLElement* root_node = doc.RootElement();
+		cgogn_assert(root_node != nullptr);
+		const bool little_endian = (to_lower(std::string(root_node->Attribute("byte_order"))) == "littleendian");
+
+		XMLElement* grid_node = root_node->FirstChildElement("UnstructuredGrid");
+		cgogn_assert(grid_node != nullptr);
+		XMLElement* piece_node = grid_node->FirstChildElement("Piece");
+		cgogn_assert(piece_node != nullptr);
+
+		unsigned int nb_vertices = 0u;
+		unsigned int nb_cells = 0u;
+
+		piece_node->QueryUnsignedAttribute("NumberOfPoints",&nb_vertices);
+		piece_node->QueryUnsignedAttribute("NumberOfCells",&nb_cells);
+		if (nb_vertices == 0u|| nb_cells == 0u)
+			return false;
+
+		XMLElement* points_node = piece_node->FirstChildElement("Points");
+		cgogn_assert(points_node != nullptr);
+		XMLElement* vertices_array_node = points_node->FirstChildElement("DataArray");
+		cgogn_assert(vertices_array_node != nullptr);
+
+		while (vertices_array_node)
+		{
+			const std::string& data_name = to_lower(std::string(vertices_array_node->Attribute("Name")));
+			const bool binary = (to_lower(std::string(vertices_array_node->Attribute("format", nullptr))) == "binary");
+			unsigned int nb_comp = 1;
+			vertices_array_node->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+			const std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(vertices_array_node->Attribute("type", nullptr)));
+
+			if (data_name.empty())
+				std::cerr << "import_VTU : Skipping a vertex DataArray without \"Name\" attribute." << std::endl;
+			else {
+				std::string text(vertices_array_node->GetText());
+				if (binary)
+				{
+					std::vector<unsigned char> decode = base64_decode(text);
+					const unsigned int length = *reinterpret_cast<unsigned int*>(&decode[0]);
+					text = std::string(reinterpret_cast<char*>(&decode[8]), length);
+				}
+
+				std::istringstream ss(text);
+				if (data_name == "points")
+				{
+					cgogn_assert(nb_comp == 3);
+					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
+					pos->read_n(ss, nb_vertices,binary,true);
+					this->add_vertex_attribute(*pos,"position");
+					this->positions_ = std::move(*dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify()));
+				}
+				else {
+					std::unique_ptr<DataInputGen> vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
+					vertex_att->read_n(ss, nb_vertices,binary,!little_endian);
+					this->add_vertex_attribute(*vertex_att, data_name);
+				}
+			}
+			vertices_array_node = vertices_array_node->NextSiblingElement("DataArray");
+		}
+
+
+		XMLElement* cell_node = piece_node->FirstChildElement("Cells");
+		cgogn_assert(cell_node != nullptr);
+		XMLElement* cells_array_node = cell_node->FirstChildElement("DataArray");
+		cgogn_assert(cells_array_node != nullptr);
+
+		{
+			std::string cell_connectivity;
+			bool cell_connectivity_is_bin = false;
+			std::string cell_connectivity_type;
+
+			while (cells_array_node)
+			{
+				const std::string& data_name = to_lower(std::string(cells_array_node->Attribute("Name")));
+				const bool binary = (to_lower(std::string(cells_array_node->Attribute("format", nullptr))) == "binary");
+				unsigned int nb_comp = 1;
+				cells_array_node->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cells_array_node->Attribute("type", nullptr)));
+
+				if (data_name.empty())
+					std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
+				else {
+					std::string text(cells_array_node->GetText());
+					if (binary)
+					{
+						std::vector<unsigned char> decode = base64_decode(text);
+						const unsigned int length = *reinterpret_cast<unsigned int*>(&decode[0]);
+						text = std::string(reinterpret_cast<char*>(&decode[8]), length);
+					}
+
+					std::istringstream ss(text);
+					if (data_name == "connectivity")
+					{
+						cell_connectivity_is_bin = binary;
+						cell_connectivity_type = std::move(type);
+						cell_connectivity = std::move(text);
+					}
+					else {
+						if (data_name == "offsets")
+						{
+							auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
+							offsets->read_n(ss, nb_cells,binary,true);
+							this->offsets_ = std::move(*dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify()));
+						}
+						else {
+							if (data_name == "types")
+							{
+								auto types = DataInputGen::template newDataIO<PRIM_SIZE, int>(type);
+								types->read_n(ss, nb_cells,binary,true);
+								this->cell_types_ = std::move(*dynamic_cast_unique_ptr<DataInput<int>>(types->simplify()));
+							}
+							else {
+								auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
+								cell_att->read_n(ss, nb_cells,binary,true);
+								this->add_cell_attribute(*cell_att, data_name);
+							}
+						}
+					}
+				}
+				cells_array_node = cells_array_node->NextSiblingElement("DataArray");
+			}
+			{
+				std::istringstream ss(cell_connectivity);
+				const unsigned int last_offset = this->offsets_.get_vec()->back();
+				auto cells = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(cell_connectivity_type);
+				cells->read_n(ss, last_offset,cell_connectivity_is_bin,true);
+				this->cells_ = std::move(*dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify()));
+			}
+		}
+		return true;
+	}
+
+
 	static inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
 	{
 		const std::string& data_type = to_lower(vtk_type_str);
@@ -338,7 +491,7 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = this->positions_->size();
+		this->nb_vertices_ = this->positions_.size();
 		this->nb_faces_ = this->cell_types_.size();
 
 		auto cells_it = static_cast<std::vector<unsigned int>*>(this->cells_.get_data())->begin();
@@ -420,12 +573,11 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = this->positions_->size();
+		this->nb_vertices_ = this->positions_.size();
 		this->nb_volumes_ = this->cell_types_.size();
 
-		const std::vector<int>* cell_types_vec	= this->cell_types_.get_vec();
-		const std::vector<unsigned int>* cells_vec	=this->cells_.get_vec();
-
+		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
+		const std::vector<unsigned int>* cells_vec		= this->cells_.get_vec();
 		std::vector<unsigned int> cells_buffer;
 		cells_buffer.reserve(cells_vec->size());
 
@@ -461,6 +613,22 @@ protected:
 		return true;
 	}
 
+	inline bool read_vtk_xml_file(const std::string& filename)
+	{
+		if (!Inherit_Vtk::parse_xml_vtu(filename))
+			return false;
+
+		this->nb_vertices_ = this->positions_.size();
+		this->nb_volumes_ = this->cell_types_.size();
+
+		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
+		const std::vector<unsigned int>* cells_vec		= this->cells_.get_vec();
+
+		add_vtk_volumes(*cells_vec,*cell_types_vec, *(this->vertex_attributes_.template get_attribute<VEC3>("position")));
+
+		return true;
+	}
+
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
@@ -479,143 +647,15 @@ protected:
 				std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
 				return this->read_vtk_legacy_file(fp);
 			}
-			case FileType::FileType_VTU: return this->import_VTU(filename);
+			case FileType::FileType_VTU: return this->read_vtk_xml_file(filename);
 			default:
 				std::cerr << "VtkVolumeImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
 				return false;
 		}
 	}
 
-	bool import_VTU(const std::string& filename)
-	{
-		using tinyxml2::XMLDocument;
-		using tinyxml2::XMLError;
-		using tinyxml2::XML_NO_ERROR;
-		using tinyxml2::XMLElement;
 
-		typename Inherit_Import::template ChunkArray<VEC3>* position =
-				this->vertex_attributes_.template add_attribute<VEC3>("position");
-		cgogn_assert(position != nullptr);
-
-		XMLDocument doc;
-		XMLError eResult = doc.LoadFile(filename.c_str());
-		if (eResult != XML_NO_ERROR)
-		{
-			std::cerr << "unable loading file " << filename << std::endl;
-			return false;
-		}
-
-		XMLElement* vtu_node = doc.RootElement();
-		cgogn_assert(vtu_node != nullptr);
-		XMLElement* grid_node = vtu_node->FirstChildElement("UnstructuredGrid");
-		cgogn_assert(grid_node != nullptr);
-		XMLElement* piece_node = grid_node->FirstChildElement("Piece");
-		cgogn_assert(piece_node != nullptr);
-
-		eResult = piece_node->QueryUnsignedAttribute("NumberOfPoints",&this->nb_vertices_);
-		if (eResult != XML_NO_ERROR)
-		{
-			std::cerr << "unreadable VTU file: " << filename << std::endl;
-			return false;
-		}
-		eResult = piece_node->QueryUnsignedAttribute("NumberOfCells",&this->nb_volumes_);
-		if (eResult != XML_NO_ERROR)
-		{
-			std::cerr << "unreadable VTU file: " << filename << std::endl;
-			return false;
-		}
-
-		std::cout << "reading file " << filename << std::endl;
-		std::cout << "Number of vertices : " << this->nb_vertices_ << std::endl;
-		std::cout << "Number of volumes : " << this->nb_volumes_ << std::endl;
-
-		XMLElement* points_node = piece_node->FirstChildElement("Points");
-		cgogn_assert(points_node != nullptr);
-		XMLElement* array_node = points_node->FirstChildElement("DataArray");
-		cgogn_assert(array_node != nullptr);
-
-		std::stringstream ss(array_node->GetText());
-		for (unsigned int i=0u; i< this->nb_vertices_; ++i)
-		{
-			VEC3 P;
-			ss >> P[0];
-			ss >> P[1];
-			ss >> P[2];
-			unsigned int id = this->vertex_attributes_.template insert_lines<1>();
-			position->operator [](id) = P;
-			cgogn_assert(id == i);
-		}
-
-		XMLElement* cell_node = piece_node->FirstChildElement("Cells");
-		cgogn_assert(cell_node != nullptr);
-		array_node = cell_node->FirstChildElement("DataArray");
-		cgogn_assert(array_node != nullptr);
-
-		std::vector<int> typeVols;
-		typeVols.reserve(this->nb_volumes_);
-		std::vector<unsigned int> offsets;
-		offsets.reserve(this->nb_volumes_);
-		std::vector<unsigned int> indices;
-		indices.reserve(this->nb_volumes_*4u);
-
-		while (array_node)
-		{
-			const std::string& propName = to_lower(std::string(array_node->Attribute("Name")));
-			if (propName.empty())
-			{
-				std::cerr << "Error reading VTU unreadable file: "<< filename << std::endl;
-				return false;
-			}
-
-			if (propName == "connectivity")
-			{
-				std::stringstream ss(array_node->GetText());
-				while (!ss.eof())
-				{
-					unsigned int ind;
-					ss >> ind;
-					indices.push_back(ind);
-				}
-			}
-			if (propName == "offsets")
-			{
-				std::stringstream ss(array_node->GetText());
-				for (unsigned int i=0u; i< this->nb_volumes_; ++i)
-				{
-					unsigned int o;
-					ss >> o;
-					offsets.push_back(o);
-				}
-			}
-			if (propName == "types")
-			{
-				bool unsupported = false;
-				std::stringstream ss(array_node->GetText());
-				for (unsigned int i=0u; i< this->nb_volumes_; ++i)
-				{
-					unsigned int t;
-					ss >> t;
-					if (!(t == 10u || t == 12u))
-					{
-						std::cerr << "error while parsing vtk file : volumes of type " << t << " are not supported" << std::endl;
-						unsupported = true;
-					}
-					typeVols.push_back(t);
-				}
-				if (unsupported)
-				{
-					std::cerr << "warning, some unsupported volume cell types"<< std::endl;
-				}
-
-			}
-			array_node = array_node->NextSiblingElement("DataArray");
-		}
-
-		add_vtk_volumes(indices, typeVols, *position);
-		return true;
-	}
-
-	inline void add_vtk_volumes(std::vector<unsigned int>& ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
+	inline void add_vtk_volumes(std::vector<unsigned int> ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
 	{
 		unsigned int curr_offset = 0;
 		for (unsigned int i=0u; i< this->nb_volumes_; ++i)
@@ -651,6 +691,7 @@ protected:
 		}
 	}
 };
+
 } // namespace io
 } // namespace cgogn
 
