@@ -61,6 +61,7 @@ protected:
 	*/
 	CMap2TopoTest()
 	{
+		darts_.reserve(NB_MAX);
 		std::srand(static_cast<unsigned int>(std::time(0)));
 	}
 
@@ -70,8 +71,9 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int addFaces(unsigned int n)
+	unsigned int add_faces(unsigned int n)
 	{
+		darts_.clear();
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
@@ -88,10 +90,11 @@ protected:
 	}
 
 	/*!
-	 * \brief Generate a closed surface from the set of faces in darts_
+	 * \brief Generate an open surface
 	 */
-	void makeSurface()
+	void add_open_surface()
 	{
+		darts_.clear();
 		unsigned int n = 0u;
 
 		// Generate NB_MAX random 1-faces (without boundary)
@@ -102,43 +105,50 @@ protected:
 			darts_.push_back(d);
 		}
 		// Sew some pairs off 1-egdes
-		for (unsigned int i = 0u; i < 3*NB_MAX; ++i) {
+		for (unsigned int i = 0u; i < 3*NB_MAX; ++i)
+		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
 			n = std::rand() % 10u;
-			while (n-- > 0u)	e1 = phi1(e1);
+			while (n-- > 0u) e1 = phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
 			n = std::rand() % 10u;
-			while (n-- > 0u)	e2 = phi1(e2);
+			while (n-- > 0u) e2 = phi1(e2);
 
 			n = 1+std::rand()%3u;
-			while (n-- > 0u) {
-				if (phi2(e1) == e1) {
-					if (phi2(e2) == e2 && e2 != e1) {
-						phi2_sew(e2, e1);
-						e1 = phi1(e1);
-						e2 = phi_1(e2);
-					}
-				}
+			while (n-- > 0u && phi2(e1) == e1 && phi2(e2) == e2 && e2 != e1)
+			{
+				phi2_sew(e2, e1);
+				e1 = phi1(e1);
+				e2 = phi_1(e2);
 			}
 		}
-		// Close the map (remove remaining boundary)
-		foreach_dart( [&] (Dart d) {
+	}
+
+	/*!
+	 * \brief Generate a closed surface
+	 */
+	void add_closed_surface() {
+		add_open_surface();
+		foreach_dart( [&] (Dart d)
+		{
 			if (phi2(d) == d) close_hole_topo(d);
 		});
 	}
 };
 
 /*!
- * \brief An empty CMap2 contains no dart and no cells.
+ * \brief The random generated maps used in the tests are sound.
  */
-TEST_F(CMap2TopoTest, Constructor)
+TEST_F(CMap2TopoTest, random_map_generators)
 {
 	EXPECT_EQ(nb_darts(), 0u);
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), 0u);
-	EXPECT_EQ(this->template nb_cells<Edge::ORBIT>(), 0u);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), 0u);
-	EXPECT_EQ(this->template nb_cells<Volume::ORBIT>(), 0u);
+
+	add_faces(NB_MAX);
+	EXPECT_TRUE(check_map_integrity());
+
+	add_closed_surface();
+	EXPECT_TRUE(check_map_integrity());
 }
 
 /*!
@@ -148,11 +158,12 @@ TEST_F(CMap2TopoTest, Constructor)
  */
 TEST_F(CMap2TopoTest, phi2_sew_unsew)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
-	unsigned int countFaces = NB_MAX;
-	unsigned int countVolumes = NB_MAX;
+	unsigned int count_vertices = add_faces(NB_MAX);
+	unsigned int count_faces = NB_MAX;
+	unsigned int count_volumes = NB_MAX;
 
-	for (unsigned int i = 0u; i < NB_MAX; ++i) {
+	for (unsigned int i = 0u; i < NB_MAX; ++i)
+	{
 		Dart d0 = darts_[std::rand() % NB_MAX];
 		Dart d2 = phi2(d0);
 		phi2_unsew(d0);
@@ -189,11 +200,11 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2u);
 
-	unsigned int countVertices = 11u + addFaces(NB_MAX);
+	unsigned int count_vertices = 11u + add_faces(NB_MAX);
 
-	EXPECT_EQ(nb_darts(), 2u*countVertices);
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(nb_cells<Edge::ORBIT>(), countVertices);
+	EXPECT_EQ(nb_darts(), 2u*count_vertices);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u*(NB_MAX+2u));
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX+2u);
 	EXPECT_TRUE(check_map_integrity());
@@ -203,14 +214,14 @@ TEST_F(CMap2TopoTest, add_face_topo)
  * The test performs NB_MAX edge cutting on edges of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
  */
-TEST_F(CMap2TopoTest, testCutEdge)
+TEST_F(CMap2TopoTest, cut_edge_topo)
 {
-	makeSurface();
+	add_closed_surface();
 
-	unsigned int countVertices = nb_cells<Vertex::ORBIT>();
-	unsigned int countEdges = nb_cells<Edge::ORBIT>();
-	unsigned int countFaces = nb_cells<Face::ORBIT>();
-	unsigned int countVolumes = nb_cells<Volume::ORBIT>();
+	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
+	unsigned int count_edges = nb_cells<Edge::ORBIT>();
+	unsigned int count_faces = nb_cells<Face::ORBIT>();
+	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
 	for (Dart d: darts_)
 	{
@@ -227,45 +238,72 @@ TEST_F(CMap2TopoTest, testCutEdge)
 			EXPECT_EQ(degree(Face(phi2(d))), k2+1u);
 		}
 	}
-
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), countVertices+NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Edge::ORBIT>(), countEdges+NB_MAX);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFaces);
-	EXPECT_EQ(this->template nb_cells<Volume::ORBIT>(), countVolumes);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices+NB_MAX);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges+NB_MAX);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap2TopoTest, testCutFace)
+/*! \brief Cutting a face add an edge and replace a face of degree K,
+ * with two subfaces whose degrees K1 and K2 verify K1+K2 = K+2.
+ * The test performs NB_MAX face cuts between vertices of a randomly generated surface.
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, cut_face_topo)
 {
-	int n = addFaces(NB_MAX);
+	add_closed_surface();
 
-	int countEdges = n;
-	int countFaces = 2*NB_MAX;
+	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
+	unsigned int count_edges = nb_cells<Edge::ORBIT>();
+	unsigned int count_faces = nb_cells<Face::ORBIT>();
+	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
-	for (int i = 0; i < NB_MAX; ++i) {
-		Dart d = darts_[i];
-		Dart e = d;
-		unsigned int j = std::rand() % 10;
-		while (j-- > 0)	e = phi1(e);
-		if (e == d) e = phi1(e);
-
+	for (Dart d: darts_)
+	{
 		unsigned int k = degree(Face(d));
-		if (k>1) {
+		if (k>1u)
+		{
+			Dart e = d; // find a second dart in the face of d (distinct from d)
+			unsigned int i = std::rand() % 10u;
+			while (i-- > 0u) e = phi1(e);
+			if (e == d) e = phi1(e);
+
 			cut_face_topo(d, e);
-			++countEdges;
-			++countFaces;
+			++count_edges;
+			++count_faces;
 			EXPECT_EQ(degree(Face(d))+degree(Face(e)), k+2);
 		}
 	}
-
-	EXPECT_EQ(this->template nb_cells<Vertex::ORBIT>(), n);
-	EXPECT_EQ(this->template nb_cells<Edge::ORBIT>(), countEdges);
-	EXPECT_EQ(this->template nb_cells<Face::ORBIT>(), countFaces);
-	EXPECT_EQ(this->template nb_cells<Volume::ORBIT>(), NB_MAX);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 	EXPECT_TRUE(check_map_integrity());
 }
 
-TEST_F(CMap2TopoTest, testFaceDegree)
+/*! \brief Closing a map add one face per holes.
+ * The test closes the holes of a randomly generated open surface.
+ * The number of generated cells is correct and the map integrity is preserved.
+ * And closing a map soundly complete the cell indexation
+ */
+TEST_F(CMap2TopoTest, close_map)
+{
+	add_open_surface();
+
+	// add attributes
+//	add_attribute<int, CDart::ORBIT>("darts");
+//	add_attribute<int, Vertex::ORBIT>("vertices");
+//	add_attribute<int, Edge::ORBIT>("edges");
+//	add_attribute<int, Face::ORBIT>("faces");
+//	add_attribute<int, Volume::ORBIT>("volumes");
+//	EXPECT_TRUE(check_map_integrity());
+
+	close_map();
+	EXPECT_TRUE(check_map_integrity());
+}
+
+TEST_F(CMap2TopoTest, degree)
 {
 	Face f = this->add_face_topo(10);
 

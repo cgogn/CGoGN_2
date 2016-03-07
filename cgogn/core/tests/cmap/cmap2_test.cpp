@@ -63,6 +63,7 @@ protected:
 
 	CMap2Test()
 	{
+		darts_.reserve(NB_MAX);
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
 		cmap_.add_attribute<int, CDart::ORBIT>("darts");
@@ -78,8 +79,9 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int addFaces(unsigned int n)
+	unsigned int add_faces(unsigned int n)
 	{
+		darts_.clear();
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
@@ -98,8 +100,9 @@ protected:
 	/*!
 	 * \brief Generate a closed surface from the set of faces in darts_
 	 */
-	void makeSurface()
+	void add_closed_surface()
 	{
+		darts_.clear();
 		MapBuilder mbuild(cmap_);
 		unsigned int n = 0u;
 
@@ -111,24 +114,22 @@ protected:
 			darts_.push_back(d);
 		}
 		// Sew some pairs off egdes
-		for (unsigned int i = 0; i < 3*NB_MAX; ++i) {
+		for (unsigned int i = 0u; i < 3u*NB_MAX; ++i)
+		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
 			n = std::rand()%10u;
-			while (n-- > 0u)	e1 = cmap_.phi1(e1);
+			while (n-- > 0u) e1 = cmap_.phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
 			n = std::rand()%10u;
-			while (n-- > 0u)	e2 = cmap_.phi1(e2);
+			while (n-- > 0u) e2 = cmap_.phi1(e2);
 
 			n = 1+std::rand()%3u;
-			while (n-- > 0u) {
-				if (cmap_.phi2(e1) == e1) {
-					if (cmap_.phi2(e2) == e2 && e2 != e1) {
-						mbuild.phi2_sew(e2, e1);
-						e1 = cmap_.phi1(e1);
-						e2 = cmap_.phi_1(e2);
-					}
-				}
+			while (n-- > 0u && cmap_.phi2(e1) == e1 && cmap_.phi2(e2) == e2 && e2 != e1)
+			{
+				mbuild.phi2_sew(e2, e1);
+				e1 = cmap_.phi1(e1);
+				e2 = cmap_.phi_1(e2);
 			}
 		}
 		// Close the map (remove remaining boundary)
@@ -139,30 +140,46 @@ protected:
 		cmap_.foreach_dart( [&] (Dart d) {
 			mbuild.new_orbit_embedding(CDart(d));
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Vertex v) {
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Vertex v)
+		{
 			mbuild.new_orbit_embedding(v);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Edge e) {
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Edge e)
+		{
 			mbuild.new_orbit_embedding(e);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Face f) {
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Face f)
+		{
 			mbuild.new_orbit_embedding(f);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Volume w) {
+		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Volume w)
+		{
 			mbuild.new_orbit_embedding(w);
 		});
 	}
 };
 
 /*!
+ * \brief The random generated maps used in the tests are sound.
+ */
+TEST_F(CMap2Test, random_map_generators)
+{
+	add_faces(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	add_closed_surface();
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
  * \brief Adding faces preserves the cell indexation
  */
 TEST_F(CMap2Test, add_face)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int count_vertices = add_faces(NB_MAX);
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2*NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
@@ -173,10 +190,32 @@ TEST_F(CMap2Test, add_face)
  */
 TEST_F(CMap2Test, cut_edge)
 {
-	makeSurface();
+	add_closed_surface();
 
 	for (Dart d: darts_) cmap_.cut_edge(d);
 
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
+ * \brief Cutting faces preserves the cell indexation
+ */
+TEST_F(CMap2Test, cut_face)
+{
+	add_closed_surface();
+
+	for (Dart d: darts_)
+	{
+		if (cmap_.degree(Face(d)) > 1u)
+		{
+			Dart e = d; // find a second dart in the face of d (distinct from d)
+			unsigned int i = std::rand() % 10u;
+			while (i-- > 0u) e = cmap_.phi1(e);
+			if (e == d) e = cmap_.phi1(e);
+
+			cmap_.cut_face(d, e);
+		}
+	}
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

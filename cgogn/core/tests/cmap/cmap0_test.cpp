@@ -63,6 +63,7 @@ protected:
 	 */
 	CMap0Test()
 	{
+		darts_.reserve(NB_MAX);
 		std::srand(static_cast<unsigned int>(std::time(0)));
 		vertices_ = cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
@@ -71,19 +72,29 @@ protected:
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
-	void addVertices(unsigned int n)
+	void add_vertices(unsigned int n)
 	{
+		darts_.clear();
 		for (unsigned int i = 0; i < n; ++i)
 			darts_.push_back(cmap_.add_vertex());
 	}
 };
 
 /*!
+ * \brief The random generated maps used in the tests are sound.
+ */
+TEST_F(CMap0Test, random_map_generators)
+{
+	add_vertices(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
  * \brief Adding vertices preserves the cell indexation
  */
 TEST_F(CMap0Test, add_vertex)
 {
-	addVertices(NB_MAX);
+	add_vertices(NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -92,7 +103,7 @@ TEST_F(CMap0Test, add_vertex)
  */
 TEST_F(CMap0Test, remove_vertex)
 {
-	addVertices(NB_MAX);
+	add_vertices(NB_MAX);
 
 	for (Dart d: darts_)
 		if (std::rand()%3 == 1) cmap_.remove_vertex(Vertex(d));

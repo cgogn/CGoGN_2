@@ -59,6 +59,7 @@ protected:
 
 	CMap1Test()
 	{
+		darts_.reserve(NB_MAX);
 		std::srand(static_cast<unsigned int>(std::time(0)));
 
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
@@ -71,8 +72,9 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int addFaces(unsigned int n)
+	unsigned int add_faces(unsigned int n)
 	{
+		darts_.clear();
 		unsigned int count = 0;
 		for (unsigned int i = 0; i < n; ++i)
 		{
@@ -90,13 +92,22 @@ protected:
 };
 
 /*!
+ * \brief The random generated maps used in the tests are sound.
+ */
+TEST_F(CMap1Test, random_map_generators)
+{
+	add_faces(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
  * \brief Adding faces preserves the cell indexation
  */
 TEST_F(CMap1Test, add_face)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int count_vertices = add_faces(NB_MAX);
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -106,21 +117,22 @@ TEST_F(CMap1Test, add_face)
  */
 TEST_F(CMap1Test, remove_face)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
-	int countFaces = NB_MAX;
+	unsigned int count_vertices = add_faces(NB_MAX);
+	int count_faces = NB_MAX;
 
 	for (Dart d: darts_)
 	{
-		if (std::rand()%3 == 1) {
+		if (std::rand()%3 == 1)
+		{
 			unsigned int k = cmap_.degree(d);
 			cmap_.remove_face(d);
-			countVertices -= k;
-			--countFaces;
+			count_vertices -= k;
+			--count_faces;
 		}
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFaces);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -129,15 +141,15 @@ TEST_F(CMap1Test, remove_face)
  */
 TEST_F(CMap1Test, split_vertex)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
+	unsigned int count_vertices = add_faces(NB_MAX);
 
 	for (Dart d: darts_)
 	{
 		cmap_.split_vertex(d);
-		++countVertices;
+		++count_vertices;
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -147,19 +159,19 @@ TEST_F(CMap1Test, split_vertex)
  */
 TEST_F(CMap1Test, remove_vertex)
 {
-	unsigned int countVertices = addFaces(NB_MAX);
-	unsigned int countFaces = NB_MAX;
+	unsigned int count_vertices = add_faces(NB_MAX);
+	unsigned int count_faces = NB_MAX;
 
 	for (Dart d: darts_)
 	{
 		unsigned int k = cmap_.degree(Face(d));
 		cmap_.remove_vertex(Vertex(d));
-		--countVertices;
-		if (k == 1) --countFaces;
+		--count_vertices;
+		if (k == 1) --count_faces;
 	}
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), countVertices);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), countFaces);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

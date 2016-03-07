@@ -450,6 +450,7 @@ public:
 				}
 			}
 		}
+		remove_attribute(marker);
 		return result;
 	}
 
