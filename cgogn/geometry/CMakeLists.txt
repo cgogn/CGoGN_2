@@ -9,10 +9,13 @@ set(HEADER_FILES
 	algos/centroid.h
 	algos/normal.h
 	algos/ear_triangulation.h
+	algos/picking.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
 	functions/inclusion.h
+	functions/intersection.h
+	functions/distance.h
 	types/bounding_box.h
 	types/eigen.h
 	types/geometry_traits.h

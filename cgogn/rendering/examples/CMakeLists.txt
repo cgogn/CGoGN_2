@@ -16,6 +16,8 @@ add_executable(simple_viewer simple_viewer.cpp)
 target_link_libraries(simple_viewer cgogn_core cgogn_io cgogn_rendering QOGLViewer)
 
 
+add_executable(picking_viewer picking_viewer.cpp)
+target_link_libraries(picking_viewer cgogn_core cgogn_io cgogn_rendering QOGLViewer)
 
 
 
