@@ -76,6 +76,12 @@ typename _Unique_if<T>::_Known_bound
 make_unique(Args&&...) = delete;
 
 
+/**
+ * @brief dynamic_cast_unique_ptr
+ * @param ptr, a unique_ptr that might loose the ownership.
+ * @return nullptr if the cast wasn't successfull, a valid unique_ptr<TO> otherwise
+ * Warning : if the cast is successfull, the unique_ptr "ptr" loses the ownership (ptr.release() is called), whereas if the cast fails ptr still has the ownership.
+ */
 template<typename TO, typename FROM>
 inline std::unique_ptr<TO> dynamic_cast_unique_ptr(std::unique_ptr<FROM>&& ptr)
 {
