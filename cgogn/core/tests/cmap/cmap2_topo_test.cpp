@@ -185,9 +185,9 @@ protected:
 		}
 		// Close de map
 		foreach_dart([&](Dart d)
-					 {
-						 if (phi2(d) == d) close_hole_topo(d);
-					 });
+		{
+			if (phi2(d) == d) close_hole_topo(d);
+		});
 	}
 };
 
