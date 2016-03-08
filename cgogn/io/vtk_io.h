@@ -107,7 +107,12 @@ protected :
 			data_str = std::string(reinterpret_cast<char*>(&decode[header_type == DataType::UINT32 ? 4u : 8u]), length);
 		}
 		else {
+#ifdef CGOGN_WITH_ZLIB
 			zlib_decompress(data_str, header_type);
+#else
+			std::cerr << "read_binary_xml_data : unable to decompress the data : Zlib was not found." << std::endl;
+			std::exit(EXIT_FAILURE);
+#endif
 		}
 	}
 

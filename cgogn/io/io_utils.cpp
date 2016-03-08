@@ -26,7 +26,9 @@
 #include <istream>
 #include <iostream>
 
+#ifdef CGOGN_WITH_ZLIB
 #include <zlib.h>
+#endif
 
 #include <core/utils/string.h>
 #include <io/io_utils.h>

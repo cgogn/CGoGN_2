@@ -3,7 +3,12 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
-add_definitions("-DZLIB_CONST")
+if (${ZLIB_FOUND})
+	add_definitions("-DZLIB_CONST")
+	add_definitions("-DCGOGN_WITH_ZLIB")
+endif()
+
+
 
 set(HEADER_FILES
 	surface_import.h
