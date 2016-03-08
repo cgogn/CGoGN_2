@@ -26,6 +26,7 @@
 
 #include <type_traits>
 #include <sstream>
+#include <streambuf>
 
 #include <core/utils/endian.h>
 #include <geometry/types/geometry_traits.h>
@@ -129,6 +130,123 @@ inline typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floatin
 }
 
 } // namespace internal
+
+
+/**
+ * @brief The CharArrayBuffer class
+ * A minimalist buffer that read directly from the string given at the construction instead of copying it.
+ * USE WITH CAUTION : the behaviour is undefined if a CharArrayBuffer's string is modified during its lifetime.
+ */
+class CGOGN_IO_API CharArrayBuffer : public std::streambuf
+{
+public:
+	using Inherit = std::streambuf;
+	using Self = CharArrayBuffer;
+	using char_type		= Inherit::char_type;
+	using traits_type	= Inherit::traits_type; // = char_traits<char_type>
+
+	inline CharArrayBuffer(const char* begin, const char*end) :
+		begin_(begin)
+	  ,end_(end)
+	  ,current_(begin)
+	{
+		cgogn_assert(begin < end);
+	}
+
+	inline explicit CharArrayBuffer(const char* str) :
+		begin_(str)
+	  ,end_(str + std::strlen(str))
+	  ,current_(str)
+	{}
+
+	virtual ~CharArrayBuffer();
+private:
+	virtual void imbue(const std::locale& __loc) override
+	{
+		std::cerr << "CharArrayBuffer::imbue method not implemented." << std::endl;
+		return Inherit::imbue(__loc);
+	}
+	virtual Inherit*setbuf(char_type*, std::streamsize) override
+	{
+		std::cerr << "CharArrayBuffer::setbuf does nothing." << std::endl;
+		return this;
+	}
+
+	virtual pos_type seekpos(pos_type, std::ios_base::openmode) override
+	{
+		std::cerr << "CharArrayBuffer::setbuf does nothing." << std::endl;
+		return pos_type(-1);
+	}
+	virtual int sync() override
+	{
+		std::cerr << "CharArrayBuffer::sync does nothing." << std::endl;
+		return Inherit::sync();
+	}
+	virtual std::streamsize showmanyc() override
+	{
+		return end_ - current_;
+	}
+	virtual std::streamsize xsgetn(char_type* __s, std::streamsize __n) override
+	{
+		return Inherit::xsgetn(__s, __n);
+	}
+	virtual int_type underflow() override
+	{
+		if (current_ == end_)
+			return traits_type::eof();
+		return traits_type::to_int_type(*current_);
+	}
+	virtual int_type uflow() override
+	{
+		if (current_ == end_)
+			return traits_type::eof();
+		return traits_type::to_int_type(*current_++);
+	}
+	virtual int_type pbackfail(int_type c) override
+	{
+		if (current_ == begin_ || (c != traits_type::eof() && c != current_[-1]))
+			return traits_type::eof();
+
+		return traits_type::to_int_type(*--current_);
+	}
+	virtual std::streamsize xsputn(const char_type* , std::streamsize ) override
+	{
+		std::cerr << "CharArrayBuffer::xsputn does nothing." << std::endl;
+		return std::streamsize(-1);
+	}
+	virtual int_type overflow(int_type c) override
+	{
+		return Inherit::overflow(c);
+	}
+
+private:
+	const char* begin_;
+	const char* end_;
+	const char* current_;
+};
+
+/**
+ * @brief The IMemoryStream class
+ * A custom istream using the CharArrayBuffer as buffer.
+ * USE WITH CAUTION : the behaviour is undefined if a IMemoryStream's string is modified during its lifetime.
+ */
+class CGOGN_IO_API IMemoryStream : public std::istream
+{
+public:
+	using Inherit = std::istream;
+	using Self = IMemoryStream;
+
+	inline IMemoryStream(const char* str) : Inherit(),
+	buffer_(str)
+	{
+		this->init(&buffer_);
+	}
+
+	virtual ~IMemoryStream() override;
+private:
+	CharArrayBuffer buffer_;
+};
+
 } // namespace io
 } // namespace cgogn
 

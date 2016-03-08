@@ -223,6 +223,10 @@ CGOGN_IO_API DataType get_data_type(const std::string& type_name)
 	return DataType::UNKNOWN;
 }
 
+CharArrayBuffer::~CharArrayBuffer() {}
+
+IMemoryStream::~IMemoryStream() {}
+
 } // namespace io
 
 } // namespace cgogn

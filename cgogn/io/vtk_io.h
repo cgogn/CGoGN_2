@@ -336,7 +336,6 @@ protected :
 		std::string header_type("unsigned int");
 		if (root_node->Attribute("header_type"))
 			header_type = vtk_data_type_to_cgogn_name_of_type(root_node->Attribute("header_type"));
-//		const unsigned int header_size = (get_data_type(header_type) == DataType::UINT64)? 8u : 4u;
 
 		const bool compressed = (root_node->Attribute("compressor") && (std::string(root_node->Attribute("compressor")) == "vtkZLibDataCompressor"));
 
@@ -379,14 +378,12 @@ protected :
 			if (data_name.empty())
 				std::cerr << "import_VTU : Skipping a vertex DataArray without \"Name\" attribute." << std::endl;
 			else {
-				std::string text(vertex_data->GetText());
+				std::string					ascii_data(vertex_data->GetText());
+				std::vector<unsigned char>	binary_data;
 				if (binary)
-				{
-					std::vector<unsigned char> data= this->read_binary_xml_data(text,compressed, get_data_type(header_type));
-					text = std::string(reinterpret_cast<char*>(&data[0]), data.size());
-				}
+					binary_data = this->read_binary_xml_data(ascii_data,compressed, get_data_type(header_type));
 
-				std::istringstream ss(text);
+				IMemoryStream ss(binary_data.empty()? ascii_data.c_str() : reinterpret_cast<char*>(&binary_data[0]));
 				if (vertex_data == position_data_array_node)
 				{
 					cgogn_assert(nb_comp == 3);
@@ -424,67 +421,60 @@ protected :
 		}
 
 
+		for (XMLElement*& cell_data : cell_nodes)
 		{
-			std::string cell_connectivity;
-			bool cell_connectivity_is_bin = false;
-			std::string cell_connectivity_type;
-
-			for (XMLElement* cell_data : cell_nodes)
+			if (to_lower(std::string(cell_data->Attribute("Name"))) == "connectivity" && (cell_data != cell_nodes.back()))
 			{
-				const std::string& data_name = to_lower(std::string(cell_data->Attribute("Name")));
-				const bool binary = (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
-				unsigned int nb_comp = 1;
-				cell_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
-				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cell_data->Attribute("type", nullptr)));
+				std::swap(cell_data, cell_nodes.back());
+			}
+		}
 
-				if (data_name.empty())
-					std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
+		for (XMLElement* cell_data : cell_nodes)
+		{
+			const std::string& data_name = to_lower(std::string(cell_data->Attribute("Name")));
+			const bool binary = (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
+			unsigned int nb_comp = 1;
+			cell_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+			std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cell_data->Attribute("type", nullptr)));
+
+			if (data_name.empty())
+				std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
+			else {
+				std::string					ascii_data(cell_data->GetText());
+				std::vector<unsigned char>	binary_data;
+				if (binary)
+					binary_data = this->read_binary_xml_data(ascii_data,compressed, get_data_type(header_type));
+
+				IMemoryStream mem_strem(binary_data.empty()? ascii_data.c_str() : reinterpret_cast<char*>(&binary_data[0]));
+				if (data_name == "connectivity")
+				{
+					const unsigned int last_offset = this->offsets_.get_vec()->back();
+					auto cells = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
+					cells->read_n(mem_strem, last_offset,binary,true);
+					this->cells_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify());
+				}
 				else {
-					std::string text(cell_data->GetText());
-					if (binary)
+					if (data_name == "offsets")
 					{
-						std::vector<unsigned char> data= this->read_binary_xml_data(text,compressed, get_data_type(header_type));
-						text = std::string(reinterpret_cast<char*>(&data[0]), data.size());
-					}
-
-					std::istringstream ss(text);
-					if (data_name == "connectivity")
-					{
-						cell_connectivity_is_bin = binary;
-						cell_connectivity_type = std::move(type);
-						cell_connectivity = std::move(text);
+						auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
+						offsets->read_n(mem_strem, nb_cells,binary,true);
+						this->offsets_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify());
 					}
 					else {
-						if (data_name == "offsets")
+						if (data_name == "types")
 						{
-							auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
-							offsets->read_n(ss, nb_cells,binary,true);
-							this->offsets_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify());
+							auto types = DataInputGen::template newDataIO<PRIM_SIZE, int>(type);
+							types->read_n(mem_strem, nb_cells,binary,true);
+							this->cell_types_ = *dynamic_cast_unique_ptr<DataInput<int>>(types->simplify());
 						}
 						else {
-							if (data_name == "types")
-							{
-								auto types = DataInputGen::template newDataIO<PRIM_SIZE, int>(type);
-								types->read_n(ss, nb_cells,binary,true);
-								this->cell_types_ = *dynamic_cast_unique_ptr<DataInput<int>>(types->simplify());
-							}
-							else {
-								std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
-								auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
-								cell_att->read_n(ss, nb_cells,binary,true);
-								this->add_cell_attribute(*cell_att, data_name);
-							}
+							std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
+							auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
+							cell_att->read_n(mem_strem, nb_cells,binary,true);
+							this->add_cell_attribute(*cell_att, data_name);
 						}
 					}
 				}
-			}
-
-			{
-				std::istringstream ss(cell_connectivity);
-				const unsigned int last_offset = this->offsets_.get_vec()->back();
-				auto cells = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(cell_connectivity_type);
-				cells->read_n(ss, last_offset,cell_connectivity_is_bin,true);
-				this->cells_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify());
 			}
 		}
 		return true;
