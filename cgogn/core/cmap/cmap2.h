@@ -142,7 +142,8 @@ protected:
 		(*phi2_)[d.index] = d;
 	}
 
-	inline bool check_integrity(Dart d) const {
+	inline bool check_integrity(Dart d) const
+	{
 		return (Inherit::check_integrity(d) &&
 				phi2(phi2(d)) == d &&
 				phi2(d) != d);

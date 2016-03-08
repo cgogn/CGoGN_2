@@ -154,7 +154,8 @@ protected:
 		(*phi3_)[d.index] = d;
 	}
 
-	inline bool check_integrity(Dart d) const {
+	inline bool check_integrity(Dart d) const
+	{
 		return (Inherit::check_integrity(d) &&
 				phi3(phi3(d)) == d &&
 				phi3(d) != d &&

@@ -100,7 +100,7 @@ protected:
 	/*!
 	 * \brief Generate a closed surface from the set of faces in darts_
 	 */
-	void add_closed_surface()
+	void add_closed_surfaces()
 	{
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
@@ -167,7 +167,7 @@ TEST_F(CMap2Test, random_map_generators)
 	add_faces(NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
-	add_closed_surface();
+	add_closed_surfaces();
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -190,7 +190,7 @@ TEST_F(CMap2Test, add_face)
  */
 TEST_F(CMap2Test, cut_edge)
 {
-	add_closed_surface();
+	add_closed_surfaces();
 
 	for (Dart d: darts_) cmap_.cut_edge(d);
 
@@ -202,7 +202,7 @@ TEST_F(CMap2Test, cut_edge)
  */
 TEST_F(CMap2Test, cut_face)
 {
-	add_closed_surface();
+	add_closed_surfaces();
 
 	for (Dart d: darts_)
 	{

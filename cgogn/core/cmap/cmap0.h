@@ -102,7 +102,8 @@ protected:
 	{
 	}
 
-	inline bool check_integrity(Dart /*d*/) const {
+	inline bool check_integrity(Dart /*d*/) const
+	{
 		return true;
 	}
 	/*******************************************************************************

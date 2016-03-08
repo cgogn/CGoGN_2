@@ -90,9 +90,9 @@ protected:
 	}
 
 	/*!
-	 * \brief Generate an open surface
+	 * \brief Generate a set of closed surfaces with arbitrary genius.
 	 */
-	void add_open_surface()
+	void add_closed_surfaces()
 	{
 		darts_.clear();
 		unsigned int n = 0u;
@@ -100,12 +100,12 @@ protected:
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (unsigned int i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1 + std::rand() % 10;
+			n = 1u + std::rand() % 10;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs off 1-egdes
-		for (unsigned int i = 0u; i < 3*NB_MAX; ++i)
+		for (unsigned int i = 0u; i < 3u*NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
 			n = std::rand() % 10u;
@@ -123,13 +123,7 @@ protected:
 				e2 = phi_1(e2);
 			}
 		}
-	}
-
-	/*!
-	 * \brief Generate a closed surface
-	 */
-	void add_closed_surface() {
-		add_open_surface();
+		// Close de map
 		foreach_dart( [&] (Dart d)
 		{
 			if (phi2(d) == d) close_hole_topo(d);
@@ -147,7 +141,7 @@ TEST_F(CMap2TopoTest, random_map_generators)
 	add_faces(NB_MAX);
 	EXPECT_TRUE(check_map_integrity());
 
-	add_closed_surface();
+	add_closed_surfaces();
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -216,7 +210,7 @@ TEST_F(CMap2TopoTest, add_face_topo)
  */
 TEST_F(CMap2TopoTest, cut_edge_topo)
 {
-	add_closed_surface();
+	add_closed_surfaces();
 
 	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
 	unsigned int count_edges = nb_cells<Edge::ORBIT>();
@@ -252,7 +246,7 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
  */
 TEST_F(CMap2TopoTest, cut_face_topo)
 {
-	add_closed_surface();
+	add_closed_surfaces();
 
 	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
 	unsigned int count_edges = nb_cells<Edge::ORBIT>();
@@ -289,15 +283,34 @@ TEST_F(CMap2TopoTest, cut_face_topo)
  */
 TEST_F(CMap2TopoTest, close_map)
 {
-	add_open_surface();
+	add_closed_surfaces();
 
-	// add attributes
-//	add_attribute<int, CDart::ORBIT>("darts");
-//	add_attribute<int, Vertex::ORBIT>("vertices");
-//	add_attribute<int, Edge::ORBIT>("edges");
-//	add_attribute<int, Face::ORBIT>("faces");
-//	add_attribute<int, Volume::ORBIT>("volumes");
-//	EXPECT_TRUE(check_map_integrity());
+	// add attributes to initialize the indexation
+	add_attribute<int, CDart::ORBIT>("darts");
+	add_attribute<int, Vertex::ORBIT>("vertices");
+	add_attribute<int, Edge::ORBIT>("edges");
+	add_attribute<int, Face::ORBIT>("faces");
+	add_attribute<int, Volume::ORBIT>("volumes");
+	EXPECT_TRUE(check_map_integrity());
+
+	// create some random holes
+	for (Dart d: darts_)
+	{
+		if (std::rand()%2 ==1) {
+			foreach_dart_of_orbit(Face(d), [&] (Dart e) {
+				phi2_unsew(e);
+			});
+			Dart e = d;
+			Dart it = phi1(e);
+			while (it != e) {
+				Dart next = phi1(it);
+				this->remove_dart(it);
+				it = next;
+			}
+			this->remove_dart(e);
+		}
+	}
+	// add code for partial holes => phi2_unsew some darts of a face without deleting the face
 
 	close_map();
 	EXPECT_TRUE(check_map_integrity());

@@ -419,6 +419,7 @@ public:
 			if (marker[this->template get_embedding<ORBIT>(c.dart)] > 0)
 			{
 				result = false;
+				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
 				return false;
 			}
 			marker[this->template get_embedding<ORBIT>(c.dart)] = 1;
@@ -427,12 +428,15 @@ public:
 			if (idx == EMBNULL)
 			{
 				result = false;
+				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
 				return false;
 			}
 			// check all darts of the cell use the same index (distinct to EMBNULL)
 			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
 			{
 				if (this->template get_embedding<ORBIT>(d) != idx) result = false;
+				if (!result)
+					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
 				return result;
 			});
 
@@ -446,6 +450,7 @@ public:
 				if (marker[i] == 0)
 				{
 					result = false;
+					std::cerr << "Some cells are not used in orbit " << orbit_name(ORBIT) << std::endl;
 					break;
 				}
 			}
