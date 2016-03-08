@@ -38,7 +38,7 @@ namespace cgogn
  * but do neither tests the containers (refs_, used_, etc.) or the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap2TopoTest: public CMap2<DefaultMapTraits>, public ::testing::Test
+class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
 {
 
 public:
@@ -94,7 +94,7 @@ protected:
 	{
 		bool result = false;
 
-		foreach_dart_of_orbit_until(Volume(d), [&result,&e] (Dart vit)
+		foreach_dart_of_orbit_until(Volume(d), [&](Dart vit)
 		{
 			if (vit == e) result = true;
 			return !result;
@@ -137,7 +137,7 @@ protected:
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1 + std::rand() % 10u;
+			unsigned int n = 1u + std::rand() % 10u;
 			Dart d = add_face_topo(n);
 			count += n;
 
@@ -155,7 +155,7 @@ protected:
 	void add_closed_surfaces()
 	{
 		darts_.clear();
-		unsigned int n = 0u;
+		unsigned int n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (unsigned int i = 0u; i < NB_MAX; ++i)
@@ -164,8 +164,8 @@ protected:
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off 1-egdes
-		for (unsigned int i = 0u; i < 3u*NB_MAX; ++i)
+		// Sew some pairs off 1-edges
+		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
 			n = std::rand() % 10u;
@@ -175,7 +175,7 @@ protected:
 			n = std::rand() % 10u;
 			while (n-- > 0u) e2 = phi1(e2);
 
-			n = 1+std::rand()%3u;
+			n = 1 + std::rand() % 3u;
 			while (n-- > 0u && phi2(e1) == e1 && phi2(e2) == e2 && e2 != e1)
 			{
 				phi2_sew(e2, e1);
@@ -184,10 +184,10 @@ protected:
 			}
 		}
 		// Close de map
-		foreach_dart( [&] (Dart d)
-		{
-			if (phi2(d) == d) close_hole_topo(d);
-		});
+		foreach_dart([&](Dart d)
+					 {
+						 if (phi2(d) == d) close_hole_topo(d);
+					 });
 	}
 };
 
@@ -207,14 +207,12 @@ TEST_F(CMap2TopoTest, random_map_generators)
 
 /*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
- * The test perfoms NB_MAX sewing and unsewing on randomly chosen dart of darts_.
+ * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is not preserved (this test creates fixed points for PHI2).
  */
 TEST_F(CMap2TopoTest, phi2_sew_unsew)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
-	unsigned int count_faces = NB_MAX;
-	unsigned int count_volumes = NB_MAX;
+	add_faces(NB_MAX);
 
 	for (unsigned int i = 0u; i < NB_MAX; ++i)
 	{
@@ -227,7 +225,7 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
 		while (e0 == d0) e0 = darts_[std::rand() % NB_MAX];
 		phi2_unsew(e0);
 
-		phi2_sew(d0,e0);
+		phi2_sew(d0, e0);
 		EXPECT_TRUE(phi2(d0) == e0);
 		EXPECT_TRUE(phi2(e0) == d0);
 	}
@@ -256,11 +254,11 @@ TEST_F(CMap2TopoTest, add_face_topo)
 
 	unsigned int count_vertices = 11u + add_faces(NB_MAX);
 
-	EXPECT_EQ(nb_darts(), 2u*count_vertices);
+	EXPECT_EQ(nb_darts(), 2u * count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_vertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u*(NB_MAX+2u));
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX+2u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u * (NB_MAX + 2u));
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX + 2u);
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -282,18 +280,18 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 		unsigned int k1 = degree(Face(d));
 		unsigned int k2 = degree(Face(phi2(d)));
 		cut_edge_topo(d);
-		if (same_cell(Face(d),Face(phi2(d))))
+		if (same_cell(Face(d), Face(phi2(d))))
 		{
-			EXPECT_EQ(degree(Face(d)), k1+2u);
+			EXPECT_EQ(degree(Face(d)), k1 + 2u);
 		}
 		else
 		{
-			EXPECT_EQ(degree(Face(d)), k1+1u);
-			EXPECT_EQ(degree(Face(phi2(d))), k2+1u);
+			EXPECT_EQ(degree(Face(d)), k1 + 1u);
+			EXPECT_EQ(degree(Face(phi2(d))), k2 + 1u);
 		}
 	}
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices+NB_MAX);
-	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges+NB_MAX);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices + NB_MAX);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges + NB_MAX);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 	EXPECT_TRUE(check_map_integrity());
@@ -316,7 +314,7 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	for (Dart d: darts_)
 	{
 		unsigned int k = degree(Face(d));
-		if (k>1u)
+		if (k > 1u)
 		{
 			Dart e = d; // find a second dart in the face of d (distinct from d)
 			unsigned int i = std::rand() % 10u;
@@ -326,7 +324,7 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 			cut_face_topo(d, e);
 			++count_edges;
 			++count_faces;
-			EXPECT_EQ(degree(Face(d))+degree(Face(e)), k+2);
+			EXPECT_EQ(degree(Face(d)) + degree(Face(e)), k + 2);
 		}
 	}
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
@@ -338,8 +336,7 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 
 /*! \brief Closing a map add one face per holes.
  * The test closes the holes of a randomly generated open surface.
- * The number of generated cells is correct and the map integrity is preserved.
- * And closing a map soundly complete the cell indexation
+ * The map integrity is preserved and the cell indexation is soundly completed
  */
 TEST_F(CMap2TopoTest, close_map)
 {
@@ -353,32 +350,33 @@ TEST_F(CMap2TopoTest, close_map)
 	add_attribute<int, Volume::ORBIT>("volumes");
 	EXPECT_TRUE(check_map_integrity());
 
-	// create some random holes (full removalor partial unsewing of faces)
+	// create some random holes (full removal or partial unsewing of faces)
 	for (Dart d: darts_)
 	{
-		if (std::rand()%2 ==1) {
-			unsigned int n = std::rand()%10;
+		if (std::rand() % 2 == 1)
+		{
+			unsigned int n = std::rand() % 10u;
 			unsigned int k = degree(Face(d));
 
-			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
+			foreach_dart_of_orbit_until(Face(d), [&](Dart e)
 			{
 				Dart e2 = phi2(e);
 				phi2_unsew(e);
 				// correct indexation of vertices
-				if (!same_open_vertex(e2, phi1(e)))	new_open_vertex_embedding(e2);
-				if (!same_open_vertex(e, phi1(e2)))	new_open_vertex_embedding(e);
+				if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
+				if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
 				// correct indexation of edges
 				new_orbit_embedding(Edge(e2));
 				// correct indexation of volumes
-				if (!same_volume(e2,e)) new_orbit_embedding(Volume(e));
+				if (!same_volume(e2, e)) new_orbit_embedding(Volume(e));
 				// interrupt the face unsewing after n steps
 				if (n-- <= 0) return false;
 				// control if a partial or full face unsewing has been done
 				--k;
 				return true;
 			});
-			// if the face is completely unsewed randomly removes it
-			if (k == 0 && std::rand()%2 == 1)
+			// if the face is completely unsewn randomly removes it
+			if (k == 0u && std::rand() % 2 == 1)
 			{
 				Dart e = d;
 				Dart it = phi1(e);
@@ -399,9 +397,9 @@ TEST_F(CMap2TopoTest, close_map)
 
 TEST_F(CMap2TopoTest, degree)
 {
-	Face f = this->add_face_topo(10);
+	Face f = this->add_face_topo(10u);
 
-	EXPECT_EQ(degree(f),10);
+	EXPECT_EQ(degree(f), 10u);
 }
 
 #undef NB_MAX

@@ -32,13 +32,13 @@ namespace cgogn
 
 /*!
  * \brief The CMap0TopoTest class implements topological tests on CMap0
- * It contains a CMap0 with no attribute avoiding the indexation mecanism.
+ * It contains a CMap0 with no attribute avoiding the indexation mechanism.
  *
  * Note that these tests, check that the topological operators perform as wanted
  * but do neither tests the containers (refs_, used_, etc.) or the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap0TopoTest: public ::testing::Test
+class CMap0TopoTest : public ::testing::Test
 {
 
 public:
@@ -95,8 +95,8 @@ TEST_F(CMap0TopoTest, add_vertex)
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 1u);
 
 	add_vertices(NB_MAX);
-	EXPECT_EQ(cmap_.nb_darts(), NB_MAX+1u);
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX+1u);
+	EXPECT_EQ(cmap_.nb_darts(), NB_MAX + 1u);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX + 1u);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -118,7 +118,7 @@ TEST_F(CMap0TopoTest, remove_vertex)
 	darts_.pop_back();
 	for (Dart d: darts_)
 	{
-		if (std::rand()%3 == 1)
+		if (std::rand() % 3 == 1)
 		{
 			cmap_.remove_vertex(d);
 			--count_vertices;

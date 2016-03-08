@@ -39,7 +39,7 @@ namespace cgogn
  * in CMap1TopoTest, thus only the indexation mecanism used for the
  * embedding of cells is tested here.
  */
-class CMap1Test: public ::testing::Test
+class CMap1Test : public ::testing::Test
 {
 
 public:
@@ -75,15 +75,15 @@ protected:
 	unsigned int add_faces(unsigned int n)
 	{
 		darts_.clear();
-		unsigned int count = 0;
-		for (unsigned int i = 0; i < n; ++i)
+		unsigned int count = 0u;
+		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1 + std::rand() % 10;
+			unsigned int n = 1u + std::rand() % 10;
 			Dart d = cmap_.add_face(n);
 			count += n;
 
-			n = std::rand() % 10;
-			while (n-- > 0)	d = cmap_.phi1(d);
+			n = std::rand() % 10u;
+			while (n-- > 0u) d = cmap_.phi1(d);
 
 			darts_.push_back(d);
 		}
@@ -122,7 +122,7 @@ TEST_F(CMap1Test, remove_face)
 
 	for (Dart d: darts_)
 	{
-		if (std::rand()%3 == 1)
+		if (std::rand() % 3 == 1)
 		{
 			unsigned int k = cmap_.degree(d);
 			cmap_.remove_face(d);
@@ -167,7 +167,7 @@ TEST_F(CMap1Test, remove_vertex)
 		unsigned int k = cmap_.degree(Face(d));
 		cmap_.remove_vertex(Vertex(d));
 		--count_vertices;
-		if (k == 1) --count_faces;
+		if (k == 1u) --count_faces;
 	}
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);

@@ -33,13 +33,13 @@ namespace cgogn
 /*!
  * \brief The CMap2Test class implements tests on embedded CMap2
  * It contains a CMap2 to which vertex, edge, face and volume attribute
- * are added to enforce the indexation mecanism in cell traversals.
+ * are added to enforce the indexation mechanism in cell traversals.
  *
  * Note that pure topological operations have already been tested,
- * in CMap2TopoTest, thus only the indexation mecanism used for the
+ * in CMap2TopoTest, thus only the indexation mechanism used for the
  * embedding of cells is tested here.
  */
-class CMap2Test: public ::testing::Test
+class CMap2Test : public ::testing::Test
 {
 
 public:
@@ -85,7 +85,7 @@ protected:
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1 + std::rand() % 10u;
+			unsigned int n = 1u + std::rand() % 10u;
 			Dart d = cmap_.add_face(n);
 			count += n;
 
@@ -104,27 +104,27 @@ protected:
 	{
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
-		unsigned int n = 0u;
+		unsigned int n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
-		for (unsigned int i = 0; i < NB_MAX; ++i)
+		for (unsigned int i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1 + std::rand() % 10u;
+			n = 1u + std::rand() % 10u;
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off egdes
-		for (unsigned int i = 0u; i < 3u*NB_MAX; ++i)
+		// Sew some pairs off edges
+		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand()%10u;
+			n = std::rand() % 10u;
 			while (n-- > 0u) e1 = cmap_.phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
-			n = std::rand()%10u;
+			n = std::rand() % 10u;
 			while (n-- > 0u) e2 = cmap_.phi1(e2);
 
-			n = 1+std::rand()%3u;
+			n = 1 + std::rand() % 3u;
 			while (n-- > 0u && cmap_.phi2(e1) == e1 && cmap_.phi2(e2) == e2 && e2 != e1)
 			{
 				mbuild.phi2_sew(e2, e1);
@@ -133,29 +133,31 @@ protected:
 			}
 		}
 		// Close the map (remove remaining boundary)
-		cmap_.foreach_dart( [&] (Dart d) {
-			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
-		});
+		cmap_.foreach_dart([&](Dart d)
+						   {
+							   if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
+						   });
 		// Embed the map
-		cmap_.foreach_dart( [&] (Dart d) {
-			mbuild.new_orbit_embedding(CDart(d));
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Vertex v)
-		{
-			mbuild.new_orbit_embedding(v);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Edge e)
-		{
-			mbuild.new_orbit_embedding(e);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Face f)
-		{
-			mbuild.new_orbit_embedding(f);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>( [&] (Volume w)
-		{
-			mbuild.new_orbit_embedding(w);
-		});
+		cmap_.foreach_dart([&](Dart d)
+						   {
+							   mbuild.new_orbit_embedding(CDart(d));
+						   });
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Vertex v)
+											   {
+												   mbuild.new_orbit_embedding(v);
+											   });
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Edge e)
+											   {
+												   mbuild.new_orbit_embedding(e);
+											   });
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Face f)
+											   {
+												   mbuild.new_orbit_embedding(f);
+											   });
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Volume w)
+											   {
+												   mbuild.new_orbit_embedding(w);
+											   });
 	}
 };
 
@@ -180,7 +182,7 @@ TEST_F(CMap2Test, add_face)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2*NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2 * NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
