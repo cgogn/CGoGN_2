@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
+#ifndef RENDERING_SHADERS_BOLDLINE_H_
+#define RENDERING_SHADERS_BOLDLINE_H_
 
-#include <rendering/shaders/shader_color_per_vertex.h>
-
-#include <QOpenGLFunctions>
-#include <iostream>
+#include <rendering/shaders/shader_program.h>
+#include <rendering/shaders/vbo.h>
+#include <rendering/dll.h>
 
 namespace cgogn
 {
@@ -34,69 +34,54 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderColorPerVertex::vertex_shader_source_ =
-"#version 150\n"
-"in vec3 vertex_pos;\n"
-"in vec3 vertex_color;\n"
-"uniform mat4 projection_matrix;\n"
-"uniform mat4 model_view_matrix;\n"
-"out vec3 color_v;\n"
-"void main() {\n"
-"   color_v = vertex_color;"
-"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-"}\n";
-
-const char* ShaderColorPerVertex::fragment_shader_source_ =
-"#version 150\n"
-"in vec3 color_v;\n"
-"out vec3 fragColor;\n"
-"void main() {\n"
-"   fragColor = color_v;\n"
-"}\n";
-
-
-ShaderColorPerVertex::ShaderColorPerVertex()
+class CGOGN_RENDERING_API ShaderBoldLine : public ShaderProgram
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-    prg_.link();
+	static const char* vertex_shader_source_;
+	static const char* geometry_shader_source_;
+	static const char* fragment_shader_source_;
 
-	get_matrices_uniforms();
-}
+	static const char* vertex_shader_source2_;
+	static const char* geometry_shader_source2_;
+	static const char* fragment_shader_source2_;
 
-bool ShaderColorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
-{
-	if (i >= vaos_.size())
-    {
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
-        return false;
-    }
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR
+	};
 
-    QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	// uniform ids
+	int unif_color_;
+	int unif_width_;
 
-	prg_.bind();
-    vaos_[i]->bind();
+public:
 
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
+	ShaderBoldLine(bool color_per_vertex = false);
 
-	// color vbo
-	vbo_color->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-	ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-    vbo_color->release();
+	/**
+	 * @brief set current color
+	 * @param rgb
+	 */
+	void set_color(const QColor& rgb);
 
-    vaos_[i]->release();
-	prg_.release();
+	/**
+	 * @brief set the width of lines (call before each draw)
+	 * @param w width in pixel
+	 */
+	void set_width(float w);
 
-	return true;
-}
+	/**
+	 * @brief set a vao configuration
+	 * @param i vao id (0,1,...)
+	 * @param vbo_pos pointer on position vbo (XYZ)
+	 * @param vbo_color pointer on color vbo
+	 * @return true if ok
+	 */
+	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL);
+};
 
 } // namespace rendering
 
 } // namespace cgogn
+
+#endif // RENDERING_SHADERS_BOLDLINE_H_
