@@ -150,7 +150,7 @@ protected:
 	}
 
 	/*!
-	 * \brief Generate a set of closed surfaces with arbitrary genius.
+	 * \brief Generate a set of closed surfaces with arbitrary genus.
 	 */
 	void add_closed_surfaces()
 	{
