@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_FLAT_H_
-#define RENDERING_SHADERS_FLAT_H_
+#ifndef RENDERING_SHADERS_PHONG_H_
+#define RENDERING_SHADERS_PHONG_H_
 
 #include <rendering/shaders/shader_program.h>
 #include <rendering/shaders/vbo.h>
@@ -36,17 +36,19 @@ namespace cgogn
 namespace rendering
 {
 
-class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
+class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
 
-	static const char* vertex_shader_source2_;
-	static const char* fragment_shader_source2_;
+	static const char* vertex_shader_source_2_;
+	static const char* fragment_shader_source_2_;
+
 
 	enum
 	{
 		ATTRIB_POS = 0,
+		ATTRIB_NORM,
 		ATTRIB_COLOR
 	};
 
@@ -54,11 +56,14 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 	int unif_front_color_;
 	int unif_back_color_;
 	int unif_ambiant_color_;
+	int unif_spec_color_;
+	int unif_spec_coef_;
+	int unif_double_side_;
 	int unif_light_position_;
 
 public:
 
-	ShaderFlat(bool color_per_vertex = false);
+	ShaderPhong(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -79,11 +84,28 @@ public:
 	void set_ambiant_color(const QColor& rgb);
 
 	/**
-	 * @brief set light position relative to screen
-	 * @param l light position
+	 * @brief set current specular color
+	 * @param rgb
+	 */
+	void set_specular_color(const QColor& rgb);
+
+	/**
+	 * @brief set current specular coefficient
+	 * @param rgb
+	 */
+	void set_specular_coef(float coef);
+
+	/**
+	 * @brief set double side option
+	 * @param ts
+	 */
+	void set_double_side(bool ts);
+
+	/**
+	 * @brief set_light_position
+	 * @param l
 	 */
 	void set_light_position(const QVector3D& l);
-
 
 	/**
 	 * @brief set light position relative to world
@@ -96,15 +118,15 @@ public:
 	 * @brief set a vao configuration
 	 * @param i id of vao (0,1,....)
 	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_color pointer on color vbo (RGB)
+	 * @param vbo_norm pointer on normal vbo (XYZ)
+	 * @param vbo_color pointer on normal vbo (RGB) only used when color per vertex rendering
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_col = NULL);
-
+	bool set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=NULL);
 };
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_FLAT_H_
+#endif // RENDERING_SHADERS_PHONG_H_

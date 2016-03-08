@@ -56,6 +56,24 @@ struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 	using Scalar = Scalar_;
 };
 
+// specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
+// specialization 3 : float
+template<>
+struct vector_traits<float>
+{
+	static const std::size_t SIZE = 1;
+	using Scalar = float;
+};
+
+// specialization 4 : double
+template<>
+struct vector_traits<double>
+{
+	static const std::size_t SIZE = 1;
+	using Scalar = double;
+};
+
+
 } // namespace geometry
 
 } // namespace cgogn

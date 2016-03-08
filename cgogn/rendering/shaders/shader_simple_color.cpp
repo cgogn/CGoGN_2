@@ -62,6 +62,9 @@ ShaderSimpleColor::ShaderSimpleColor()
 	get_matrices_uniforms();
 
 	unif_color_ = prg_.uniformLocation("color");
+
+	//default param
+	set_color(QColor(255,255,255));
 }
 
 void ShaderSimpleColor::set_color(const QColor& rgb)
