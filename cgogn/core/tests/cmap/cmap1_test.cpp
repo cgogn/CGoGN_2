@@ -98,6 +98,7 @@ TEST_F(CMap1Test, testSplitVertex)
 	for (int i = 0; i < NB_MAX; ++i) {
 		Face d = tdarts_[i];
 		unsigned int k = cmap_.degree(Face(d));
+		EXPECT_TRUE(k > 0); // avoid warning unused var k
 		cmap_.split_vertex(Vertex(d));
 	}
 
