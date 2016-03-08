@@ -353,7 +353,7 @@ void Viewer::init()
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
 	drawer_->new_list();
-	drawer_->line_width_AA(2.0);
+	drawer_->line_width_aa(2.0);
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,1.0,1.0);
 		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);

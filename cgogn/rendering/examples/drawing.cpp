@@ -102,7 +102,7 @@ void Drawing::init()
 		drawer_->vertex3f(0,1,0);
 	drawer_->end();
 //	drawer_->point_size(10.0);
-	drawer_->line_width_AA(3.0);
+	drawer_->line_width_aa(3.0);
 	drawer_->begin(GL_LINES);
 		drawer_->color3f(1.0,1.0,1.0);
 		drawer_->vertex3fv(Vec3(-1,-1,0));

@@ -86,7 +86,6 @@ public:
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
-	 * @param lineMode 0:simple thin Line / 1:line with possible width /2:3D Lines
 	 * @Warning need OpenGL context
 	 */
 	Drawer(QOpenGLFunctions_3_3_Core* ogl33);
@@ -196,7 +195,7 @@ public:
 		current_size_ = lw;
 	}
 
-	inline void line_width_AA(float lw)
+	inline void line_width_aa(float lw)
 	{
 		current_aa_ = true;
 		current_size_ = 2.0*lw;
