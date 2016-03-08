@@ -64,10 +64,10 @@ enum DataType
 };
 CGOGN_IO_API FileType get_file_type(const std::string& filename);
 CGOGN_IO_API DataType get_data_type(const std::string& type_name);
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input);
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input, std::size_t begin, std::size_t length);
 
 #ifdef CGOGN_WITH_ZLIB
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char*& input, DataType header_type);
+CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input, DataType header_type);
 #endif
 
 namespace internal

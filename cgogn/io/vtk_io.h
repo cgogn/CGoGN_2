@@ -94,21 +94,19 @@ protected :
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 
-	inline void read_binary_xml_data(std::string& data_str, bool is_compressed, DataType header_type)
+	inline std::vector<unsigned char> read_binary_xml_data(std::string& data_str, bool is_compressed, DataType header_type)
 	{
+		data_str.erase(std::remove_if(data_str.begin(), data_str.end(), [](char c) { return std::isspace(c); }), data_str.end());
 		if (!is_compressed)
 		{
-			std::vector<unsigned char> decode = base64_decode(data_str);
-			std::size_t length = 0ul;
-			if (header_type == DataType::UINT32)
-				length = *reinterpret_cast<unsigned int*>(&decode[0]);
-			else
-				length = *reinterpret_cast<std::uint64_t*>(&decode[0]);
-			data_str = std::string(reinterpret_cast<char*>(&decode[header_type == DataType::UINT32 ? 4u : 8u]), length);
+			std::vector<unsigned char> decode = base64_decode(data_str, 0, data_str.size());
+			decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
+			return decode;
 		}
 		else {
 #ifdef CGOGN_WITH_ZLIB
-			zlib_decompress(data_str, header_type);
+			return zlib_decompress(data_str, header_type);
+
 #else
 			std::cerr << "read_binary_xml_data : unable to decompress the data : Zlib was not found." << std::endl;
 			std::exit(EXIT_FAILURE);
@@ -169,7 +167,7 @@ protected :
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					pos->read_n(fp, nb_vertices, !ascii_file, false);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = std::move(*dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify()));
+					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
 				} else {
 					if (word == "CELLS" || word == "POLYGONS" || word == "TRIANGLE_STRIPS")
 					{
@@ -384,7 +382,8 @@ protected :
 				std::string text(vertex_data->GetText());
 				if (binary)
 				{
-					this->read_binary_xml_data(text,compressed, get_data_type(header_type));
+					std::vector<unsigned char> data= this->read_binary_xml_data(text,compressed, get_data_type(header_type));
+					text = std::string(reinterpret_cast<char*>(&data[0]), data.size());
 				}
 
 				std::istringstream ss(text);
@@ -394,7 +393,7 @@ protected :
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
 					pos->read_n(ss, nb_vertices,binary,true);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = std::move(*dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify()));
+					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
 				}
 				else {
 					std::unique_ptr<DataInputGen> vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
@@ -443,7 +442,10 @@ protected :
 				else {
 					std::string text(cell_data->GetText());
 					if (binary)
-						this->read_binary_xml_data(text,compressed, get_data_type(header_type));
+					{
+						std::vector<unsigned char> data= this->read_binary_xml_data(text,compressed, get_data_type(header_type));
+						text = std::string(reinterpret_cast<char*>(&data[0]), data.size());
+					}
 
 					std::istringstream ss(text);
 					if (data_name == "connectivity")
@@ -457,14 +459,14 @@ protected :
 						{
 							auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
 							offsets->read_n(ss, nb_cells,binary,true);
-							this->offsets_ = std::move(*dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify()));
+							this->offsets_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify());
 						}
 						else {
 							if (data_name == "types")
 							{
 								auto types = DataInputGen::template newDataIO<PRIM_SIZE, int>(type);
 								types->read_n(ss, nb_cells,binary,true);
-								this->cell_types_ = std::move(*dynamic_cast_unique_ptr<DataInput<int>>(types->simplify()));
+								this->cell_types_ = *dynamic_cast_unique_ptr<DataInput<int>>(types->simplify());
 							}
 							else {
 								std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
@@ -482,7 +484,7 @@ protected :
 				const unsigned int last_offset = this->offsets_.get_vec()->back();
 				auto cells = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(cell_connectivity_type);
 				cells->read_n(ss, last_offset,cell_connectivity_is_bin,true);
-				this->cells_ = std::move(*dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify()));
+				this->cells_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify());
 			}
 		}
 		return true;

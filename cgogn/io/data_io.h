@@ -111,13 +111,12 @@ public:
 		return *this;
 	}
 
-		inline DataInput& operator =(Self&& other)
+	inline DataInput& operator =(Self&& other)
 	{
 		if (&other != this)
 			data_ = std::move(other.data_);
 		return *this;
 	}
-
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) override
 	{

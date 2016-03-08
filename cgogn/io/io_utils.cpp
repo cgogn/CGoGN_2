@@ -39,11 +39,9 @@ namespace cgogn
 namespace io
 {
 
-CGOGN_IO_API void zlib_decompress(std::string& input, DataType header_type)
+#ifdef CGOGN_WITH_ZLIB
+CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input, DataType header_type)
 {
-	input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
-	input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
-	input.erase(std::remove(input.begin(), input.end(), '\t'), input.end());
 
 	std::uint64_t nb_blocks = UINT64_MAX;
 	std::uint64_t uncompressed_block_size = UINT64_MAX;
@@ -57,29 +55,26 @@ CGOGN_IO_API void zlib_decompress(std::string& input, DataType header_type)
 	{
 		word_size = 8u;
 		// we read the first 3 uint64
-		header = input.substr(0, 24);
-		header_data = base64_decode(header);
+		header_data = base64_decode(input, 0, 24);
 		nb_blocks = *reinterpret_cast<const std::uint64_t*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[8]);
 		last_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[16]);
 		compressed_size.resize(nb_blocks);
 	} else
 	{
-		header = input.substr(0, 12);
-		header_data = base64_decode(header);
+		header_data = base64_decode(header, 0, 12);
 		nb_blocks = *reinterpret_cast<const unsigned int*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const unsigned int*>(&header_data[4]);
 		last_block_size = *reinterpret_cast<const unsigned int*>(&header_data[8]);
 		compressed_size.resize(nb_blocks);
 	}
 
-	std::size_t header_end = 4ul *word_size;
-std:size_t length = nb_blocks* word_size *4ul;
+	std::size_t header_end = 4ul * word_size;
+	std::size_t length = nb_blocks * word_size *4ul;
 	while ((length % 12ul != 0ul))
 		++length;
 	length/=3ul;
-	header = input.substr(header_end, length);
-	header_data = base64_decode(header);
+	header_data = base64_decode(input, header_end, length);
 	if (header_type == DataType::UINT64)
 	{
 		for (unsigned int i = 0; i < nb_blocks; ++i)
@@ -90,11 +85,8 @@ std:size_t length = nb_blocks* word_size *4ul;
 			compressed_size[i] = *reinterpret_cast<const unsigned int*>(&header_data[4u*i]);
 	}
 
-	std::string data_str(input.substr(header_end +length, std::string::npos));
-
-	std::vector<unsigned char> data = base64_decode(data_str);
-	std::vector<unsigned char> res;
-	res.resize(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
+	std::vector<unsigned char> data = base64_decode(input, header_end +length, input.size() - header_end - length);
+	std::vector<unsigned char> res(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
 
 	// zlib init
 	int ret;
@@ -116,28 +108,34 @@ std:size_t length = nb_blocks* word_size *4ul;
 		in_data_it += compressed_size[i];
 		out_data_it+=uncompressed_block_size;
 	}
-	input = std::string(reinterpret_cast<char*>(&res[0]), res.size());
+	return res;
 }
+#endif
 
-CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input)
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input, std::size_t begin, std::size_t length)
 {
 	const static char padCharacter('=');
-	if (input.length() % 4) //Sanity check
-		throw std::runtime_error("Non-Valid base64!");
-	size_t padding = 0;
-	if (input.length())
+	if (length % 4ul) //Sanity check
 	{
-		if (input[input.length()-1] == padCharacter)
+		std::cerr << "base64_decode : Error : the given length (" << length << ") is not a multiple of 4. This is not valid." << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	size_t padding = 0;
+	if (length)
+	{
+		if (input[begin + length-1] == padCharacter)
 			padding++;
-		if (input[input.length()-2] == padCharacter)
+		if (input[begin + length-2] == padCharacter)
 			padding++;
 	}
 	//Setup a vector to hold the result
 	std::vector<unsigned char> decoded_chars;
-	decoded_chars.reserve(((input.length()/4)*3) - padding);
+	decoded_chars.reserve(((length/4ul)*3ul) - padding);
 	long int temp=0; //Holds decoded quanta
-	std::basic_string<char>::const_iterator cursor = input.begin();
-	while (cursor < input.end())
+	std::string::const_iterator cursor = input.begin() + begin;
+	const std::string::const_iterator end = input.begin() + begin +length;
+	while (cursor != end)
 	{
 		for (size_t quantumPosition = 0; quantumPosition < 4; quantumPosition++)
 		{
@@ -154,7 +152,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input)
 				temp |= 0x3F; //change to 0x5F for URL alphabet
 			else if  (*cursor == padCharacter) //pad
 			{
-				switch( input.end() - cursor )
+				switch( end - cursor )
 				{
 					case 1: //One pad character
 						decoded_chars.push_back((temp >> 16) & 0x000000FF);
@@ -164,10 +162,14 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(std::string& input)
 						decoded_chars.push_back((temp >> 10) & 0x000000FF);
 						return decoded_chars;
 					default:
-						throw std::runtime_error("Invalid Padding in Base 64!");
+						std::cerr << "base64_decode : Error : Invalid Padding." << std::endl;
+						std::exit(EXIT_FAILURE);
 				}
-			}  else
-				throw std::runtime_error("Non-Valid Character in Base 64!");
+			} else
+			{
+				std::cerr << "base64_decode : Error : Non-Valid Character." << std::endl;
+				std::exit(EXIT_FAILURE);
+			}
 			cursor++;
 		}
 		decoded_chars.push_back((temp >> 16) & 0x000000FF);
