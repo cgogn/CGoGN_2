@@ -48,6 +48,7 @@ public:
 	using Edge   = CMap2TopoTest::Edge;
 	using Face   = CMap2TopoTest::Face;
 	using Volume   = CMap2TopoTest::Volume;
+	using VertexMarker = CMap2TopoTest::CellMarker<Vertex::ORBIT>;
 
 protected:
 
@@ -63,6 +64,65 @@ protected:
 	{
 		darts_.reserve(NB_MAX);
 		std::srand(static_cast<unsigned int>(std::time(0)));
+	}
+
+	/*!
+	 * \brief Tests if the open vertex of d contains a specified dart e.
+	 * The method supposes that the given dart d is the first dart
+	 * of the open PHI21 orbit (i.e. phi2(d) == d)
+	 */
+	bool same_open_vertex(Dart d, Dart e)
+	{
+		cgogn_assert(phi2(d) == d);
+		Dart it = d;
+		Dart it1 = phi_1(it);
+
+		while (it != e && phi2(it1) != it1)
+		{
+			it = phi2(it1);
+			it1 = phi_1(it);
+		}
+		if (it == e) return true;
+		return false;
+	}
+
+	/*!
+	 * \brief Tests if the volume of d contains a specified dart e.
+	 * The method does not exploit the indexing information
+	 */
+	bool same_volume(Dart d, Dart e)
+	{
+		bool result = false;
+
+		foreach_dart_of_orbit_until(Volume(d), [&result,&e] (Dart vit)
+		{
+			if (vit == e) result = true;
+			return !result;
+		});
+
+		return result;
+	}
+
+	/*!
+	 * \brief Embed an open vertex d on a new attribute.
+	 * The method supposes that the given dart d is the first dart
+	 * of the open PHI21 orbit (i.e. phi2(d) == d)
+	 */
+	void new_open_vertex_embedding(Dart d)
+	{
+		cgogn_assert(phi2(d) == d);
+		const unsigned int emb = add_attribute_element<Vertex::ORBIT>();
+
+		Dart it = d;
+		Dart it1 = phi_1(it);
+
+		set_embedding<Vertex>(it, emb);
+		while (phi2(it1) != it1)
+		{
+			it = phi2(it1);
+			it1 = phi_1(it);
+			set_embedding<Vertex>(it, emb);
+		}
 	}
 
 	/*!
@@ -293,24 +353,45 @@ TEST_F(CMap2TopoTest, close_map)
 	add_attribute<int, Volume::ORBIT>("volumes");
 	EXPECT_TRUE(check_map_integrity());
 
-	// create some random holes
+	// create some random holes (full removalor partial unsewing of faces)
 	for (Dart d: darts_)
 	{
 		if (std::rand()%2 ==1) {
-			foreach_dart_of_orbit(Face(d), [&] (Dart e) {
+			unsigned int n = std::rand()%10;
+			unsigned int k = degree(Face(d));
+
+			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
+			{
+				Dart e2 = phi2(e);
 				phi2_unsew(e);
+				// correct indexation of vertices
+				if (!same_open_vertex(e2, phi1(e)))	new_open_vertex_embedding(e2);
+				if (!same_open_vertex(e, phi1(e2)))	new_open_vertex_embedding(e);
+				// correct indexation of edges
+				new_orbit_embedding(Edge(e2));
+				// correct indexation of volumes
+				if (!same_volume(e2,e)) new_orbit_embedding(Volume(e));
+				// interrupt the face unsewing after n steps
+				if (n-- <= 0) return false;
+				// control if a partial or full face unsewing has been done
+				--k;
+				return true;
 			});
-			Dart e = d;
-			Dart it = phi1(e);
-			while (it != e) {
-				Dart next = phi1(it);
-				this->remove_dart(it);
-				it = next;
+			// if the face is completely unsewed randomly removes it
+			if (k == 0 && std::rand()%2 == 1)
+			{
+				Dart e = d;
+				Dart it = phi1(e);
+				while (it != e)
+				{
+					Dart next = phi1(it);
+					this->remove_dart(it);
+					it = next;
+				}
+				this->remove_dart(e);
 			}
-			this->remove_dart(e);
 		}
 	}
-	// add code for partial holes => phi2_unsew some darts of a face without deleting the face
 
 	close_map();
 	EXPECT_TRUE(check_map_integrity());
