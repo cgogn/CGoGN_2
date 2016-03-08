@@ -75,8 +75,8 @@ void Drawing::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_->callList(proj,view);
-	drawer2_->callList(proj,view);
+	drawer_->call_list(proj,view);
+	drawer2_->call_list(proj,view);
 }
 
 void Drawing::init()
@@ -90,7 +90,7 @@ void Drawing::init()
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
 	drawer_->new_list();
-	drawer_->lineWidth(2.0);
+	drawer_->line_width(2.0);
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,0.0,0.0);
 		drawer_->vertex3f(0,0,0);
@@ -101,8 +101,8 @@ void Drawing::init()
 		drawer_->color3f(1.0,1.0,0.0);
 		drawer_->vertex3f(0,1,0);
 	drawer_->end();
-//	drawer_->pointSize(10.0);
-	drawer_->lineWidthAA(3.0);
+//	drawer_->point_size(10.0);
+	drawer_->line_width_AA(3.0);
 	drawer_->begin(GL_LINES);
 		drawer_->color3f(1.0,1.0,1.0);
 		drawer_->vertex3fv(Vec3(-1,-1,0));
@@ -120,7 +120,7 @@ void Drawing::init()
 		drawer_->vertex3fv({{2.5,1,0}});
 	drawer_->end();
 
-	drawer_->pointSizeAA(7.0);
+	drawer_->point_size_aa(7.0);
 	drawer_->begin(GL_POINTS);
 	for (float a=0.0f; a < 1.0f; a+= 0.1f)
 	{
@@ -135,7 +135,7 @@ void Drawing::init()
 
 	drawer2_ = new cgogn::rendering::Drawer(this);
 	drawer2_->new_list();
-	drawer2_->pointSizeAA(5.0);
+	drawer2_->point_size_aa(5.0);
 	drawer2_->begin(GL_POINTS);
 	drawer2_->color3f(1.0,1.0,1.0);
 	for (float z=-1.0f; z < 1.0f; z+= 0.1f)

@@ -138,7 +138,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	delete vbo_norm_;
 	delete vbo_color_;
 	delete vbo_sphere_sz_;
-//	delete shader_vertex_;
+	delete shader_edge_;
 	delete shader_flat_;
 	delete shader_normal_;
 	delete shader_phong_;
@@ -156,7 +156,7 @@ Viewer::Viewer() :
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
 	vbo_sphere_sz_(nullptr),
-//	shader_vertex_(nullptr),
+	shader_edge_(nullptr),
 	shader_flat_(nullptr),
 	shader_normal_(nullptr),
 	shader_phong_(nullptr),
@@ -271,7 +271,7 @@ void Viewer::draw()
 	}
 
 	if (bb_rendering_)
-		drawer_->callList(proj,view);
+		drawer_->call_list(proj,view);
 }
 
 void Viewer::init()
@@ -353,7 +353,7 @@ void Viewer::init()
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
 	drawer_->new_list();
-	drawer_->lineWidthAA(2.0);
+	drawer_->line_width_AA(2.0);
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,1.0,1.0);
 		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);

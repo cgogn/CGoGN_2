@@ -190,7 +190,7 @@ void Drawer::end_list()
 	data_col_.shrink_to_fit();
 }
 
-void Drawer::callList(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
 
 	//classic rendering

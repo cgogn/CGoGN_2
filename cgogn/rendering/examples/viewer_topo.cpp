@@ -159,7 +159,7 @@ void Viewer::draw()
 	}
 
 	if (topo_rendering_)
-		drawer_topo->callList(proj,view);
+		drawer_topo->call_list(proj,view);
 
 }
 

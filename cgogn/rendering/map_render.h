@@ -279,13 +279,13 @@ void create_drawer_topo2(MAP& m, const typename MAP::template VertexAttributeHan
 
 		//  TODO phi1
 
-		dr.pointSize(4.0);
+		dr.point_size(4.0);
 		dr.begin(GL_POINTS);
 		dr.color3f(1.0f,1.0f,1.0f);
 		for (unsigned int i=0; i<count; ++i)
 			dr.vertex3fv(local_vertices[i]);
 		dr.end();
-		dr.lineWidth(1.0);
+		dr.line_width(1.0);
 		dr.begin(GL_LINES);
 		for (unsigned int i=0; i<count; ++i)
 		{

@@ -170,18 +170,18 @@ public:
 	 * @param projection projection matrix
 	 * @param modelview modelview matrix
 	 */
-	void callList(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 
 	/**
 	 * usr as glPointSize
 	 */
-	inline void pointSize(float ps)
+	inline void point_size(float ps)
 	{
 		current_aa_ = false;
 		current_size_ = ps;
 	}
 
-	inline void pointSizeAA(float ps)
+	inline void point_size_aa(float ps)
 	{
 		current_aa_ = true;
 		current_size_ = ps;
@@ -190,13 +190,13 @@ public:
 	/**
 	 * usr as glLineWidth
 	 */
-	inline void lineWidth(float lw)
+	inline void line_width(float lw)
 	{
 		current_aa_ = false;
 		current_size_ = lw;
 	}
 
-	inline void lineWidthAA(float lw)
+	inline void line_width_AA(float lw)
 	{
 		current_aa_ = true;
 		current_size_ = 2.0*lw;
