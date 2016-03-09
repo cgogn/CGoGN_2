@@ -40,7 +40,7 @@ namespace io
 {
 
 #ifdef CGOGN_WITH_ZLIB
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input, DataType header_type)
+CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type)
 {
 
 	std::uint64_t nb_blocks = UINT64_MAX;
@@ -49,7 +49,6 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input
 	std::vector<unsigned int> compressed_size;
 
 	unsigned int word_size = 4u;
-	std::string header;
 	std::vector<unsigned char> header_data;
 	if (header_type == DataType::UINT64)
 	{
@@ -62,7 +61,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input
 		compressed_size.resize(nb_blocks);
 	} else
 	{
-		header_data = base64_decode(header, 0, 12);
+		header_data = base64_decode(input, 0, 12);
 		nb_blocks = *reinterpret_cast<const unsigned int*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const unsigned int*>(&header_data[4]);
 		last_block_size = *reinterpret_cast<const unsigned int*>(&header_data[8]);
@@ -85,7 +84,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input
 			compressed_size[i] = *reinterpret_cast<const unsigned int*>(&header_data[4u*i]);
 	}
 
-	std::vector<unsigned char> data = base64_decode(input, header_end +length, input.size() - header_end - length);
+	std::vector<unsigned char> data = base64_decode(input, header_end +length);
 	std::vector<unsigned char> res(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
 
 	// zlib init
@@ -112,10 +111,33 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input
 }
 #endif
 
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input, std::size_t begin, std::size_t length)
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length)
 {
 	const static char padCharacter('=');
-	if (length % 4ul) //Sanity check
+
+	// needed if begin = 0
+	while (std::isspace(*input))
+		++input;
+
+	for (std::size_t i = 0ul ; i < begin ;)
+	{
+		if (!std::isspace(*input))
+			++i;
+		++input;
+	}
+
+	const char* end = input;
+	std::size_t i = 0ul;
+	for ( ; i < length && (*end != '\0') ;)
+	{
+		if (!std::isspace(*end))
+			++i;
+		++end;
+	}
+	while (std::isspace(*(end-1)))
+		--end;
+
+	if (i % 4ul) //Sanity check
 	{
 		std::cerr << "base64_decode : Error : the given length (" << length << ") is not a multiple of 4. This is not valid." << std::endl;
 		std::exit(EXIT_FAILURE);
@@ -124,19 +146,22 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input, 
 	size_t padding = 0;
 	if (length)
 	{
-		if (input[begin + length-1] == padCharacter)
+		if (*(end-1) == padCharacter)
 			padding++;
-		if (input[begin + length-2] == padCharacter)
+		if (*(end-2) == padCharacter)
 			padding++;
 	}
 	//Setup a vector to hold the result
 	std::vector<unsigned char> decoded_chars;
-	decoded_chars.reserve(((length/4ul)*3ul) - padding);
+	decoded_chars.reserve(((i/4ul)*3ul) - padding);
 	long int temp=0; //Holds decoded quanta
-	std::string::const_iterator cursor = input.begin() + begin;
-	const std::string::const_iterator end = input.begin() + begin +length;
+	const char* cursor = input;
 	while (cursor != end)
 	{
+		cgogn_assert(!std::isspace(*cursor));
+		cgogn_assert(!std::isspace(*(cursor+1)));
+		cgogn_assert(!std::isspace(*(cursor+2)));
+		cgogn_assert(!std::isspace(*(cursor+3)));
 		for (size_t quantumPosition = 0; quantumPosition < 4; quantumPosition++)
 		{
 			temp <<= 6;

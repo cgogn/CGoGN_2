@@ -94,12 +94,11 @@ protected :
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 
-	inline std::vector<unsigned char> read_binary_xml_data(std::string& data_str, bool is_compressed, DataType header_type)
+	inline std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type)
 	{
-		data_str.erase(std::remove_if(data_str.begin(), data_str.end(), [](char c) { return std::isspace(c); }), data_str.end());
 		if (!is_compressed)
 		{
-			std::vector<unsigned char> decode = base64_decode(data_str, 0, data_str.size());
+			std::vector<unsigned char> decode = base64_decode(data_str, 0);
 			decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
 			return decode;
 		}
@@ -378,23 +377,27 @@ protected :
 			if (data_name.empty())
 				std::cerr << "import_VTU : Skipping a vertex DataArray without \"Name\" attribute." << std::endl;
 			else {
-				std::string					ascii_data(vertex_data->GetText());
+				const char*					ascii_data = vertex_data->GetText();
 				std::vector<unsigned char>	binary_data;
 				if (binary)
 					binary_data = this->read_binary_xml_data(ascii_data,compressed, get_data_type(header_type));
 
-				IMemoryStream ss(binary_data.empty()? ascii_data.c_str() : reinterpret_cast<char*>(&binary_data[0]));
+				IMemoryStream mem_stream;
+				if (binary)
+					mem_stream = IMemoryStream(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
+				else
+					mem_stream = IMemoryStream(ascii_data);
 				if (vertex_data == position_data_array_node)
 				{
 					cgogn_assert(nb_comp == 3);
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
-					pos->read_n(ss, nb_vertices,binary,true);
+					pos->read_n(mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*pos,"position");
 					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
 				}
 				else {
 					std::unique_ptr<DataInputGen> vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
-					vertex_att->read_n(ss, nb_vertices,binary,!little_endian);
+					vertex_att->read_n(mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*vertex_att, data_name);
 				}
 			}
@@ -440,37 +443,41 @@ protected :
 			if (data_name.empty())
 				std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
 			else {
-				std::string					ascii_data(cell_data->GetText());
+				const char*					ascii_data = cell_data->GetText();
 				std::vector<unsigned char>	binary_data;
 				if (binary)
 					binary_data = this->read_binary_xml_data(ascii_data,compressed, get_data_type(header_type));
 
-				IMemoryStream mem_strem(binary_data.empty()? ascii_data.c_str() : reinterpret_cast<char*>(&binary_data[0]));
+				IMemoryStream mem_stream;
+				if (binary)
+					mem_stream = IMemoryStream(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
+				else
+					mem_stream = IMemoryStream(ascii_data);
 				if (data_name == "connectivity")
 				{
 					const unsigned int last_offset = this->offsets_.get_vec()->back();
 					auto cells = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
-					cells->read_n(mem_strem, last_offset,binary,true);
+					cells->read_n(mem_stream, last_offset,binary,!little_endian);
 					this->cells_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(cells->simplify());
 				}
 				else {
 					if (data_name == "offsets")
 					{
 						auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, unsigned int>(type);
-						offsets->read_n(mem_strem, nb_cells,binary,true);
+						offsets->read_n(mem_stream, nb_cells,binary,!little_endian);
 						this->offsets_ = *dynamic_cast_unique_ptr<DataInput<unsigned int>>(offsets->simplify());
 					}
 					else {
 						if (data_name == "types")
 						{
 							auto types = DataInputGen::template newDataIO<PRIM_SIZE, int>(type);
-							types->read_n(mem_strem, nb_cells,binary,true);
+							types->read_n(mem_stream, nb_cells,binary,!little_endian);
 							this->cell_types_ = *dynamic_cast_unique_ptr<DataInput<int>>(types->simplify());
 						}
 						else {
 							std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
 							auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
-							cell_att->read_n(mem_strem, nb_cells,binary,true);
+							cell_att->read_n(mem_stream, nb_cells,binary,!little_endian);
 							this->add_cell_attribute(*cell_att, data_name);
 						}
 					}

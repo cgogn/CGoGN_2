@@ -65,10 +65,10 @@ enum DataType
 };
 CGOGN_IO_API FileType get_file_type(const std::string& filename);
 CGOGN_IO_API DataType get_data_type(const std::string& type_name);
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const std::string& input, std::size_t begin, std::size_t length);
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const std::string& input, DataType header_type);
+CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type);
 #endif
 
 namespace internal
@@ -145,19 +145,51 @@ public:
 	using char_type		= Inherit::char_type;
 	using traits_type	= Inherit::traits_type; // = char_traits<char_type>
 
-	inline CharArrayBuffer(const char* begin, const char*end) :
-		begin_(begin)
-	  ,end_(end)
-	  ,current_(begin)
-	{
-		cgogn_assert(begin < end);
-	}
+	inline CharArrayBuffer() : Inherit(),
+		begin_(nullptr)
+	  ,end_(nullptr)
+	  ,current_(nullptr)
+	{}
 
-	inline explicit CharArrayBuffer(const char* str) :
+	inline explicit CharArrayBuffer(const char* str) : Inherit(),
 		begin_(str)
 	  ,end_(str + std::strlen(str))
 	  ,current_(str)
 	{}
+
+	inline CharArrayBuffer(const char* begin, std::size_t size) :Inherit(),
+		begin_(begin)
+	  ,end_(begin+size)
+	  ,current_(begin)
+	{}
+
+	CharArrayBuffer(const Self&) = delete;
+	Self& operator=(const Self&) = delete;
+
+	inline CharArrayBuffer(Self&& other) : Inherit(std::forward<Self>(other))
+	{
+		begin_ = other.begin_;
+		end_ = other.end_;
+		current_ = other.current_;
+		other.begin_ = nullptr;
+		other.end_ = nullptr;
+		other.current_ = nullptr;
+	}
+
+	inline Self& operator=(Self&& other)
+	{
+		Inherit::operator =(std::forward<Self>(other));
+		if (&other != this)
+		{
+			begin_ = other.begin_;
+			end_ = other.end_;
+			current_ = other.current_;
+			other.begin_ = nullptr;
+			other.end_ = nullptr;
+			other.current_ = nullptr;
+		}
+		return *this;
+	}
 
 	virtual ~CharArrayBuffer();
 private:
@@ -236,10 +268,41 @@ public:
 	using Inherit = std::istream;
 	using Self = IMemoryStream;
 
+	inline IMemoryStream() : Inherit()
+	{
+		this->init(&buffer_);
+	}
+
 	inline IMemoryStream(const char* str) : Inherit(),
 	buffer_(str)
 	{
 		this->init(&buffer_);
+	}
+
+	inline IMemoryStream(const char* str, std::size_t size) : Inherit(),
+	buffer_(str,size)
+	{
+		this->init(&buffer_);
+	}
+
+	IMemoryStream(const Self&) = delete;
+	Self& operator=(const Self&) = delete;
+
+	inline IMemoryStream(Self&& other) : Inherit(std::forward<Self>(other))
+	{
+		this->buffer_ = std::move(other.buffer_);
+		this->init(&buffer_);
+	}
+
+	inline Self& operator=(Self&& other)
+	{
+		Inherit::operator =(std::forward<Self>(other));
+		if (&other != this)
+		{
+			this->buffer_ = std::move(other.buffer_);
+			this->init(&buffer_);
+		}
+		return *this;
 	}
 
 	virtual ~IMemoryStream() override;
