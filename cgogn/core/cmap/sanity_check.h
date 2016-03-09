@@ -28,25 +28,6 @@ namespace cgogn
 {
 
 /**
- * \brief Tests if all \p ORBIT orbits are well embedded
- * \details An orbit is well embedded if all its darts
- * have the same embedding (index)
- *
- * \tparam ORBIT [description]
- * \return [description]
- */
-template <Orbit ORBIT, typename MAP>
-bool is_well_embedded(const MAP& map)
-{
-	bool result = true;
-	map.foreach_cell([&] (Cell<ORBIT> c)
-	{
-		result = map.template is_well_embedded<ORBIT>(c);
-	});
-	return result;
-}
-
-/**
  * \brief Tests if each \p ORBIT orbit of the map has a unique index in the \p ORBIT attribute container
  * \details This is a injectivity test from the darts embedding to the attribute indices
  *
