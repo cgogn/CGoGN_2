@@ -24,6 +24,7 @@
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap2.h>
+#include <core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
@@ -44,6 +45,7 @@ class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
 public:
 
 	using Inherit = CMap2<DefaultMapTraits>;
+	using MapBuilder = CMap2Builder_T<DefaultMapTraits>;
 	using Vertex = CMap2TopoTest::Vertex;
 	using Edge   = CMap2TopoTest::Edge;
 	using Face   = CMap2TopoTest::Face;
@@ -184,9 +186,10 @@ protected:
 			}
 		}
 		// Close de map
+		MapBuilder mbuild(*this);
 		foreach_dart([&](Dart d)
 		{
-			if (phi2(d) == d) close_hole_topo(d);
+			if (phi2(d) == d) mbuild.close_hole_topo(d);
 		});
 	}
 };
@@ -391,7 +394,8 @@ TEST_F(CMap2TopoTest, close_map)
 		}
 	}
 
-	close_map();
+	MapBuilder mbuild(*this);
+	mbuild.close_map();
 	EXPECT_TRUE(check_map_integrity());
 }
 
