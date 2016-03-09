@@ -187,10 +187,7 @@ protected:
 		}
 		// Close de map
 		MapBuilder mbuild(*this);
-		foreach_dart([&](Dart d)
-		{
-			if (phi2(d) == d) mbuild.close_hole_topo(d);
-		});
+		mbuild.close_map();
 	}
 };
 
