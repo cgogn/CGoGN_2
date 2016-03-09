@@ -112,8 +112,13 @@ protected :
 #endif
 		}
 	}
-
-	bool parse_vtk_legacy_file(std::ifstream& fp)
+	/**
+	 * @brief parse_vtk_legacy_file
+	 * @param fp
+	 * @return
+	 * NOTE : by default binary data seems to be stored in big endian order.
+	 */
+	bool parse_vtk_legacy_file(std::ifstream& fp, bool big_endian = true)
 	{
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
 
@@ -164,7 +169,7 @@ protected :
 					sstream >> nb_vertices >> type_str;
 					type_str = to_lower(type_str);
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
-					pos->read_n(fp, nb_vertices, !ascii_file, false);
+					pos->read_n(fp, nb_vertices, !ascii_file, big_endian);
 					this->add_vertex_attribute(*pos,"position");
 					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
 				} else {
@@ -172,7 +177,7 @@ protected :
 					{
 						unsigned int size;
 						sstream >> nb_cells >> size;
-						cells_.read_n(fp, size, !ascii_file, false);
+						cells_.read_n(fp, size, !ascii_file, big_endian);
 
 						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.get_data());
 						cgogn_assert(cell_types_vec != nullptr);
@@ -197,7 +202,7 @@ protected :
 						{
 							unsigned int nbc;
 							sstream >> nbc;
-							cell_types_.read_n(fp, nbc, !ascii_file, false);
+							cell_types_.read_n(fp, nbc, !ascii_file, big_endian);
 						} else {
 							if (word == "POINT_DATA" || word == "CELL_DATA")
 							{
@@ -242,7 +247,7 @@ protected :
 										}
 
 										std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp));
-										att->read_n(fp, nb_data, !ascii_file, false);
+										att->read_n(fp, nb_data, !ascii_file, big_endian);
 										if (cell_data)
 											this->add_cell_attribute(*att, att_name);
 										else
@@ -268,7 +273,7 @@ protected :
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
-												att->read_n(fp, nb_data, !ascii_file, false);
+												att->read_n(fp, nb_data, !ascii_file, big_endian);
 												if (cell_data)
 													this->add_cell_attribute(*att, data_name);
 												else
@@ -532,11 +537,53 @@ public:
 
 	virtual ~VtkSurfaceImport() override {}
 protected:
+
+	inline bool read_xml_file(const std::string& filename)
+	{
+		if (!Inherit_Vtk::parse_xml_vtu(filename))
+			return false;
+		this->fill_surface_import();
+		return true;
+	}
+
 	inline bool read_vtk_legacy_file(std::ifstream& fp)
 	{
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
+		this->fill_surface_import();
+		return true;
+	}
 
+	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
+	{
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
+	}
+	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
+	{
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
+	}
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		const FileType file_type = get_file_type(filename);
+		switch (file_type)
+		{
+			case FileType::FileType_VTK_LEGACY:
+			{
+				std::ifstream fp(filename.c_str(), std::ios::in);
+				cgogn_assert(fp.good());
+				return this->read_vtk_legacy_file(fp);
+			}
+			case FileType::FileType_VTU:
+				return this->read_xml_file(filename);
+			default:
+				std::cerr << "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				return false;
+		}
+	}
+
+private:
+	inline void fill_surface_import()
+	{
 		this->nb_vertices_ = this->positions_.size();
 		this->nb_faces_ = this->cell_types_.size();
 
@@ -575,24 +622,6 @@ protected:
 				}
 			}
 		}
-		return true;
-	}
-
-	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
-	{
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
-	}
-	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
-	{
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
-	}
-	virtual bool import_file_impl(const std::string& filename)
-	{
-		std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
-		cgogn_assert(fp.good());
-		const FileType file_type = get_file_type(filename);
-		if (file_type == FileType::FileType_VTK_LEGACY)
-			return this->read_vtk_legacy_file(fp);
 	}
 };
 
@@ -686,7 +715,7 @@ protected:
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->volume_attributes_, attribute_name));
 	}
 
-	virtual bool import_file_impl(const std::string& filename)
+	virtual bool import_file_impl(const std::string& filename) override
 	{
 		const FileType file_type = get_file_type(filename);
 		switch (file_type) {

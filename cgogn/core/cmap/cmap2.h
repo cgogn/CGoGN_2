@@ -479,7 +479,7 @@ protected:
 			if (phi2(d) == d)
 			{
 				close_hole_topo(d);
-				const Face new_face = Face(phi2(d));
+				const Face new_face = phi2(d);
 
 				if (this->template is_embedded<CDart>())
 				{
