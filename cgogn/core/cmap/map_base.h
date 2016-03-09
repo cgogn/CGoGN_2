@@ -35,7 +35,7 @@
 #include <core/basic/cell_marker.h>
 
 #include <core/utils/thread_barrier.h>
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 
 namespace cgogn
 {

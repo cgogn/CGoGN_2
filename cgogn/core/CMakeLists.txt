@@ -32,7 +32,7 @@ set(HEADER_FILES
 	utils/buffers.h
 	utils/definitions.h
 	utils/endian.h
-	utils/make_unique.h
+	utils/unique_ptr.h
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
