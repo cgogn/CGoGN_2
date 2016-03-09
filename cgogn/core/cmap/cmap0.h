@@ -121,7 +121,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Vertex v = Vertex(this->add_dart());
+		const Vertex v(this->add_dart());
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
