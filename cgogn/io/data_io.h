@@ -256,7 +256,7 @@ public:
 		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->get_data()));
 		res_vec = std::move(this->data_);
 		this->data_ = std::vector<T>();
-		return res;
+		return std::unique_ptr<Inherit>(res.release());
 	}
 
 private:
