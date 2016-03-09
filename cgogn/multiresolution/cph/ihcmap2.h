@@ -249,18 +249,18 @@ public:
 	 */
 	Face add_face(unsigned int size)
 	{
-		Face f = this->add_face_topo(size);
+		Face f(this->add_face_topo(size));
 
 		if (this->template is_embedded<CDart>())
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->template new_orbit_embedding<Orbit::DART>(d);
+				this->new_orbit_embedding(CDart(d));
 			});
 
 		if (this->template is_embedded<Vertex>())
 			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->template new_orbit_embedding<Orbit::PHI21>(v);
+				this->new_orbit_embedding(Vertex(v));
 			});
 
 		if (this->template is_embedded<Edge>())

@@ -41,10 +41,11 @@ namespace geometry
 template <typename VEC3, typename MAP>
 inline VEC3 triangle_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
+	using Vertex = typename MAP::Vertex;
 	VEC3 n = triangle_normal<VEC3>(
-		position[f.dart],
-		position[map.phi1(f.dart)],
-		position[map.phi_1(f.dart)]
+		position[Vertex(f.dart)],
+		position[Vertex(map.phi1(f.dart))],
+		position[Vertex(map.phi_1(f.dart))]
 	);
 	normalize_safe(n);
 	return n;
@@ -53,12 +54,13 @@ inline VEC3 triangle_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename 
 template <typename VEC3, typename MAP>
 inline VEC3 newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
+	using Vertex = typename MAP::Vertex;
 	using Scalar = typename cgogn::geometry::vector_traits<VEC3>::Scalar;
 	VEC3 n{Scalar(0), Scalar(0), Scalar(0)};
 	map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
 	{
-		const VEC3& p = position[v.dart];
-		const VEC3& q = position[map.phi1(v.dart)];
+		const VEC3& p = position[Vertex(v.dart)];
+		const VEC3& q = position[Vertex(map.phi1(v.dart))];
 		n[0] += (p[1] - q[1]) * (p[2] + q[2]);
 		n[1] += (p[2] - q[2]) * (p[0] + q[0]);
 		n[2] += (p[0] - q[0]) * (p[1] + q[1]);
@@ -70,7 +72,7 @@ inline VEC3 newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MA
 template <typename VEC3, typename MAP>
 inline VEC3 face_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
-	if (map.degree(f) == 3)
+	if (map.has_degree(f, 3))
 		return triangle_normal<VEC3>(map, f, position);
 	else
 		return newell_normal<VEC3>(map, f, position);
@@ -79,15 +81,16 @@ inline VEC3 face_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP:
 template <typename VEC3, typename MAP>
 inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
+	using Vertex = typename MAP::Vertex;
 	using Scalar = typename VEC3::Scalar;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
-	const VEC3& p = position[v.dart];
+	const VEC3& p = position[Vertex(v.dart)];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
 		VEC3 facen = face_normal<VEC3>(map, f, position);
-		const VEC3& p1 = position[map.phi1(f.dart)];
-		const VEC3& p2 = position[map.phi_1(f.dart)];
+		const VEC3& p1 = position[Vertex(map.phi1(f.dart))];
+		const VEC3& p2 = position[Vertex(map.phi_1(f.dart))];
 		const Scalar l = (p1-p).squaredNorm() * (p2-p).squaredNorm();
 		if (l != Scalar(0))
 			facen *= convex_face_area<VEC3>(map, f, position) / l;
@@ -100,15 +103,16 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 template <typename VEC3, typename MAP>
 inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename MAP::template VertexAttributeHandler<VEC3>& position, const typename MAP::template AttributeHandler<VEC3, Orbit::PHI1>& fnormal)
 {
+	using Vertex = typename MAP::Vertex;
 	using Scalar = typename VEC3::Scalar;
 
 	VEC3 n{Scalar{0}, Scalar{0} ,Scalar{0}};
-	const VEC3& p = position[v.dart];
+	const VEC3& p = position[Vertex(v.dart)];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
 		VEC3 facen = fnormal[f];
-		const VEC3& p1 = position[map.phi1(f.dart)];
-		const VEC3& p2 = position[map.phi_1(f.dart)];
+		const VEC3& p1 = position[Vertex(map.phi1(f.dart))];
+		const VEC3& p2 = position[Vertex(map.phi_1(f.dart))];
 		const Scalar l = (p1-p).squaredNorm() * (p2-p).squaredNorm();
 		if (l != Scalar(0))
 			facen *= convex_face_area<VEC3>(map, f, position) / l;

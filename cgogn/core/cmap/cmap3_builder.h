@@ -191,7 +191,7 @@ public:
 			{
 				++nb;
 				close_hole_topo(d);
-				const Volume new_volume = map_.phi3(d);
+				const Volume new_volume(map_.phi3(d));
 
 				if (map_.template is_embedded<CDart>())
 				{
