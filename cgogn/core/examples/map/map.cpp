@@ -83,8 +83,7 @@ int test1(MAP& map)
 	std::vector<Dart>* vertdb = cgogn::get_dart_buffers()->get_buffer();
 	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
 
-
-	vert_b->push_back(d1);
+	vert_b->push_back(typename MAP::Vertex(d1));
 	vert_b->push_back(typename MAP::Vertex(d1));
 
 	cgogn::get_dart_buffers()->release_cell_buffer(vertdb);

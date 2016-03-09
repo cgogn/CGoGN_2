@@ -45,7 +45,8 @@ enum FileType
 	FileType_OBJ,
 	FileType_PLY,
 	FileType_VTK_LEGACY,
-	FileType_VTU
+	FileType_VTU,
+	FileType_VTP
 };
 
 enum DataType
@@ -165,31 +166,8 @@ public:
 
 	CharArrayBuffer(const Self&) = delete;
 	Self& operator=(const Self&) = delete;
-
-	inline CharArrayBuffer(Self&& other) : Inherit(std::forward<Self>(other))
-	{
-		begin_ = other.begin_;
-		end_ = other.end_;
-		current_ = other.current_;
-		other.begin_ = nullptr;
-		other.end_ = nullptr;
-		other.current_ = nullptr;
-	}
-
-	inline Self& operator=(Self&& other)
-	{
-		Inherit::operator =(std::forward<Self>(other));
-		if (&other != this)
-		{
-			begin_ = other.begin_;
-			end_ = other.end_;
-			current_ = other.current_;
-			other.begin_ = nullptr;
-			other.end_ = nullptr;
-			other.current_ = nullptr;
-		}
-		return *this;
-	}
+	CharArrayBuffer(Self&&) = delete;
+	Self& operator=(Self&&) = delete;
 
 	virtual ~CharArrayBuffer();
 private:
@@ -268,18 +246,18 @@ public:
 	using Inherit = std::istream;
 	using Self = IMemoryStream;
 
-	inline IMemoryStream() : Inherit()
+	inline IMemoryStream() : Inherit(nullptr)
 	{
 		this->init(&buffer_);
 	}
 
-	inline IMemoryStream(const char* str) : Inherit(),
+	inline IMemoryStream(const char* str) : Inherit(nullptr),
 	buffer_(str)
 	{
 		this->init(&buffer_);
 	}
 
-	inline IMemoryStream(const char* str, std::size_t size) : Inherit(),
+	inline IMemoryStream(const char* str, std::size_t size) : Inherit(nullptr),
 	buffer_(str,size)
 	{
 		this->init(&buffer_);
@@ -287,23 +265,8 @@ public:
 
 	IMemoryStream(const Self&) = delete;
 	Self& operator=(const Self&) = delete;
-
-	inline IMemoryStream(Self&& other) : Inherit(std::forward<Self>(other))
-	{
-		this->buffer_ = std::move(other.buffer_);
-		this->init(&buffer_);
-	}
-
-	inline Self& operator=(Self&& other)
-	{
-		Inherit::operator =(std::forward<Self>(other));
-		if (&other != this)
-		{
-			this->buffer_ = std::move(other.buffer_);
-			this->init(&buffer_);
-		}
-		return *this;
-	}
+	IMemoryStream(Self&&) = delete;
+	Self& operator=(Self&&) = delete;
 
 	virtual ~IMemoryStream() override;
 private:

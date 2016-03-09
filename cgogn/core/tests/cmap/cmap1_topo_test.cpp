@@ -175,8 +175,9 @@ TEST_F(CMap1TopoTest, remove_face)
 	{
 		if (std::rand() % 3 == 1)
 		{
-			unsigned int k = degree(Face(d));
-			remove_face(d);
+			Face f(d);
+			unsigned int k = degree(f);
+			remove_face(f);
 			count_vertices -= k;
 			--count_faces;
 		}
@@ -280,7 +281,7 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
  */
 TEST_F(CMap1TopoTest, degree)
 {
-	Face f = this->add_face_topo(10u);
+	Face f(this->add_face_topo(10u));
 
 	EXPECT_EQ(degree(f), 10u);
 }
@@ -289,7 +290,7 @@ TEST_F(CMap1TopoTest, degree)
  */
 TEST_F(CMap1TopoTest, has_degree)
 {
-	Face f = this->add_face_topo(10u);
+	Face f(this->add_face_topo(10u));
 
 	EXPECT_TRUE(has_degree(f, 10u));
 	EXPECT_FALSE(has_degree(f, 0u));

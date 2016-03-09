@@ -234,7 +234,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Face f = add_face_topo(size);
+		const Face f(add_face_topo(size));
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -437,97 +437,6 @@ public:
 			this->template copy_embedding<Volume>(ne, d.dart);
 		}
 	}
-
-protected:
-
-	inline void close_hole_topo(Dart d)
-	{
-		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
-
-		Dart first = this->add_dart();	// First edge of the face that will fill the hole
-		phi2_sew(d, first);				// phi2-link the new edge to the hole
-
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
-		do
-		{
-			do
-			{
-				d_phi1 = this->phi1(d_next);	// Search and put in d_next
-				d_next = phi2(d_phi1);			// the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
-
-			if (d_phi1 != d)
-			{
-				Dart next = this->split_vertex_topo(first);	// Add a new vertex into the built face
-				phi2_sew(d_next, next);						// and link the face to the hole
-			}
-		} while (d_phi1 != d);
-	}
-
-protected:
-
-	/**
-	 * @brief close_map closes the map so that there are no phi2 fix points
-	 */
-	void close_map()
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		std::vector<Dart> fix_point_darts;
-		this->foreach_dart([&] (Dart d)
-		{
-			if (phi2(d) == d)
-				fix_point_darts.push_back(d);
-		});
-
-		for (Dart d : fix_point_darts)
-		{
-			if (phi2(d) == d)
-			{
-				close_hole_topo(d);
-				const Face new_face = Face(phi2(d));
-
-				if (this->template is_embedded<CDart>())
-				{
-					foreach_dart_of_orbit(new_face, [this] (Dart it)
-					{
-						this->new_orbit_embedding(CDart(it));
-					});
-				}
-
-				if (this->template is_embedded<Vertex>())
-				{
-					foreach_dart_of_orbit(new_face, [this] (Dart it)
-					{
-						this->template copy_embedding<Vertex>(it, this->phi1(phi2(it)));
-					});
-				}
-
-				if (this->template is_embedded<Edge>())
-				{
-					foreach_dart_of_orbit(new_face, [this] (Dart it)
-					{
-						this->template copy_embedding<Edge>(it, phi2(it));
-					});
-				}
-
-				if (this->template is_embedded<Face>())
-					this->new_orbit_embedding(new_face);
-
-				if (this->template is_embedded<Volume>())
-				{
-					const unsigned int idx = this->get_embedding(Volume(d));
-					foreach_dart_of_orbit(new_face, [this, idx] (Dart it)
-					{
-						this->template set_embedding<Volume>(it, idx);
-					});
-				}
-			}
-		}
-	}
-
-public:
 
 	inline unsigned int degree(Face f) const
 	{

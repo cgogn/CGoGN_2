@@ -82,7 +82,8 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 	{
 		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_VTK_LEGACY:
-		case FileType::FileType_VTU: return make_unique<VtkSurfaceImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_VTU:
+		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP_TRAITS, VEC3>>();
 		default:

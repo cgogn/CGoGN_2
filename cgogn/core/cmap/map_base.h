@@ -415,36 +415,39 @@ public:
 			counter[i] = 0;
 
 		// Check that the indexation of cells is correct
-		foreach_cell_until_dart_marking([&] (CellType c)
-		{
-			unsigned int idx = this->get_embedding(c);
-			// check used indices are valid
-			if (idx == EMBNULL)
+		foreach_cell_until_dart_marking(
+			[&] (CellType c)
 			{
-				result = false;
-				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
-				return result;
-			}
-			// ensure that two cells do not share the same index
-			if (counter[idx] > 0)
-			{
-				result = false;
-				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
-				return result;
-			}
-			counter[idx] = 1;
-			// check all darts of the cell use the same index (distinct to EMBNULL)
-			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
-			{
-				if (this->get_embedding(CellType(d)) != idx)
+				unsigned int idx = this->get_embedding(c);
+				// check used indices are valid
+				if (idx == EMBNULL)
+				{
 					result = false;
-				if (!result)
-					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
-				return result;
-			});
+					std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
+					return result;
+				}
+				// ensure that two cells do not share the same index
+				if (counter[idx] > 0)
+				{
+					result = false;
+					std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
+					return result;
+				}
+				counter[idx] = 1;
+				// check all darts of the cell use the same index (distinct to EMBNULL)
+				cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+				{
+					if (this->get_embedding(CellType(d)) != idx)
+						result = false;
+					if (!result)
+						std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
+					return result;
+				});
 
-			return result;
-		});
+				return result;
+			},
+			[] (Dart) { return true; }
+		);
 		// check that all cells present in the attribute handler are used
 		if (result)
 		{
@@ -985,8 +988,9 @@ protected:
 		{
 			if (!dm.is_marked(*it))
 			{
-				dm.mark_orbit(CellType(*it));
-				f(*it);
+				CellType c(*it);
+				dm.mark_orbit(c);
+				f(c);
 			}
 		}
 	}
@@ -1028,8 +1032,9 @@ protected:
 			{
 				if (!dm.is_marked(*it))
 				{
-					dm.template mark_orbit<ORBIT>(*it);
-					cells.push_back(CellType(*it));
+					CellType c(*it);
+					dm.mark_orbit(c);
+					cells.push_back(c);
 					++k;
 				}
 				++it;
@@ -1044,10 +1049,10 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -1074,10 +1079,11 @@ protected:
 		CellMarker<ORBIT> cm(*to_concrete());
 		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
 		{
-			if (!cm.is_marked(*it))
+			CellType c(*it);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(*it);
-				f(*it);
+				cm.mark(c);
+				f(c);
 			}
 		}
 	}
@@ -1117,10 +1123,11 @@ protected:
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 			{
-				if (!cm.is_marked(*it))
+				CellType c(*it);
+				if (!cm.is_marked(c))
 				{
-					cm.mark(*it);
-					cells.push_back(*it);
+					cm.mark(c);
+					cells.push_back(c);
 					++k;
 				}
 				++it;
@@ -1138,7 +1145,7 @@ protected:
 				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -1148,13 +1155,12 @@ protected:
 		// clean all at end
 		for (auto& fu : futures[0u])
 			fu.wait();
-		for (auto &b : cells_buffers[0u])
+		for (auto& b : cells_buffers[0u])
 			dbuffs->release_cell_buffer(b);
 		for (auto& fu : futures[1u])
 			fu.wait();
-		for (auto &b : cells_buffers[1u])
+		for (auto& b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
-
 	}
 
 	template <typename FUNC, typename MASK>
@@ -1176,7 +1182,7 @@ protected:
 		// apply function over valid darts of the cache
 		while (it != end)
 		{
-			f(cache[it]);
+			f(CellType(cache[it]));
 			// next valid dart
 			do
 			{
@@ -1231,7 +1237,7 @@ protected:
 				unsigned int loc_it = it;
 				while (loc_it < local_end)
 				{
-					f(cache[loc_it], th_id);
+					f(CellType(cache[loc_it]), th_id);
 					do
 					{
 						attr.next(loc_it);
@@ -1269,8 +1275,9 @@ protected:
 		{
 			if (!dm.is_marked(*it))
 			{
-				dm.mark_orbit(CellType(*it));
-				if(!f(*it))
+				CellType c(*it);
+				dm.mark_orbit(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1285,10 +1292,11 @@ protected:
 		CellMarker<ORBIT> cm(*to_concrete());
 		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
 		{
-			if (!cm.is_marked(*it))
+			CellType c(*it);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(*it);
-				if (!f(*it))
+				cm.mark(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1315,7 +1323,7 @@ protected:
 		// apply function over valid darts of the cache
 		while (it != end)
 		{
-			if (!f(d))
+			if (!f(CellType(d)))
 				break;
 			// next valid dart
 			do

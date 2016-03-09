@@ -167,7 +167,7 @@ public:
 			{
 				unsigned int vertex_index = map.get_embedding(Vertex(d));
 
-				std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[Vertex(map.phi1(d))];
 				bool phi2_found = false;
 				bool first_OK = true;
 

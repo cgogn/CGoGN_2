@@ -120,12 +120,13 @@ TEST_F(CMap1Test, remove_face)
 	unsigned int count_vertices = add_faces(NB_MAX);
 	int count_faces = NB_MAX;
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)
 		{
-			unsigned int k = cmap_.degree(d);
-			cmap_.remove_face(d);
+			Face f(d);
+			unsigned int k = cmap_.degree(f);
+			cmap_.remove_face(f);
 			count_vertices -= k;
 			--count_faces;
 		}
@@ -143,9 +144,9 @@ TEST_F(CMap1Test, split_vertex)
 {
 	unsigned int count_vertices = add_faces(NB_MAX);
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
-		cmap_.split_vertex(d);
+		cmap_.split_vertex(Vertex(d));
 		++count_vertices;
 	}
 

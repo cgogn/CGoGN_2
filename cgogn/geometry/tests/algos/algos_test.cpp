@@ -67,8 +67,8 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
-	const Scalar area = cgogn::geometry::triangle_area<TypeParam>(this->map2_, CMap2::Face(t), vertex_position);
-	const Scalar cf_area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, CMap2::Face(t), vertex_position);
+	const Scalar area = cgogn::geometry::triangle_area<TypeParam>(this->map2_, Face(t), vertex_position);
+	const Scalar cf_area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(12.5f));
 	EXPECT_DOUBLE_EQ(cf_area, Scalar(12.5f));
 }
@@ -80,7 +80,7 @@ TYPED_TEST(Algos_TEST, QuadArea)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
-	const Scalar area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, CMap2::Face(q), vertex_position);
+	const Scalar area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(q), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(10));
 }
 
@@ -91,7 +91,7 @@ TYPED_TEST(Algos_TEST, TriangleCentroid)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
-	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, CMap2::Face(t), vertex_position);
+	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_DOUBLE_EQ(centroid[0], Scalar(5)/Scalar(3));
 	EXPECT_DOUBLE_EQ(centroid[1], Scalar(5)/Scalar(3));
 	EXPECT_DOUBLE_EQ(centroid[2], Scalar(0));
@@ -104,7 +104,7 @@ TYPED_TEST(Algos_TEST, QuadCentroid)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
-	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, CMap2::Face(q), vertex_position);
+	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(q), vertex_position);
 	EXPECT_DOUBLE_EQ(centroid[0], Scalar(2.5f));
 	EXPECT_DOUBLE_EQ(centroid[1], Scalar(1));
 	EXPECT_DOUBLE_EQ(centroid[2], Scalar(0));
@@ -117,8 +117,8 @@ TYPED_TEST(Algos_TEST, TriangleNormal)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
-	const TypeParam& n1 = cgogn::geometry::triangle_normal<TypeParam>(this->map2_, CMap2::Face(t), vertex_position);
-	const TypeParam& n2 = cgogn::geometry::face_normal<TypeParam>(this->map2_, CMap2::Face(t), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::triangle_normal<TypeParam>(this->map2_, Face(t), vertex_position);
+	const TypeParam& n2 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[0], n2[0]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[1], n2[1]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[2], n2[2]));
@@ -136,7 +136,7 @@ TYPED_TEST(Algos_TEST, QuadNormal)
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
-	const TypeParam& n1 = cgogn::geometry::face_normal<TypeParam>(this->map2_, CMap2::Face(q), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(q), vertex_position);
 	const TypeParam& cross = n1.cross(TypeParam(Scalar(0), Scalar(0), Scalar(1)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], Scalar(0)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], Scalar(0)));
@@ -171,11 +171,11 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 		const TypeParam& A = vertex_position[indices[i]];
 		const TypeParam& B = vertex_position[indices[i+1]];
 		const TypeParam& C = vertex_position[indices[i+2]];
-		area += cgogn::geometry::triangle_area(A,B,C);
+		area += cgogn::geometry::triangle_area(A, B, C);
 	}
 	EXPECT_DOUBLE_EQ(area, 75.0);
 
-	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_,f,vertex_position);
+	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_, f, vertex_position);
 	EXPECT_TRUE(this->map2_.template nb_cells<Face::ORBIT>() == 4);
 	EXPECT_TRUE(this->map2_.template nb_cells<Edge::ORBIT>() == 7);
 }
