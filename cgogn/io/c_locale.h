@@ -21,22 +21,27 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_DLL_H_
-#define CORE_UTILS_DLL_H_
+#ifndef IO_C_LOCALE_H_
+#define IO_C_LOCALE_H_
 
-/**
-* \brief Linkage declaration for CGOGN symbols.
-*/
-#ifdef WIN32
-#ifndef CGOGN_UTILS_API
-#if defined CGOGN_UTILS_DLL_EXPORT
-#define CGOGN_UTILS_API __declspec(dllexport)
-#else
-#define CGOGN_UTILS_API __declspec(dllimport)
-#endif
-#endif
-#else
-#define CGOGN_UTILS_API
-#endif
+class Scoped_C_Locale
+{
+	std::string current_locale_;
+public:
 
-#endif // CORE_UTILS_DLL_H_
+	/// set numeric locale to C after saving current locale
+	inline Scoped_C_Locale()
+	{
+		current_locale_ = std::string(setlocale(LC_NUMERIC, NULL));
+		setlocale(LC_NUMERIC, "C");
+	}
+
+	/// restore locale
+	inline ~Scoped_C_Locale()
+	{
+		setlocale(LC_NUMERIC, current_locale_.c_str());
+	}
+};
+
+
+#endif // IO_C_LOCALE_H_

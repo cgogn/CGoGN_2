@@ -71,11 +71,11 @@ inline UINT swap_endianness_if(UINT x)
 	if (COND)
 	{
 		if (std::is_same<UINT, std::uint16_t>::value)
-			return swap_endianness16(x);
+			return UINT(swap_endianness16(std::uint16_t(x)));
 		if (std::is_same<UINT, std::uint32_t>::value)
-			return swap_endianness32(x);
+			return UINT(swap_endianness32(std::uint32_t(x)));
 		if (std::is_same<UINT, std::uint64_t>::value)
-			return swap_endianness64(x);
+			return UINT(swap_endianness64(std::uint64_t(x)));
 	}
 	return x;
 }

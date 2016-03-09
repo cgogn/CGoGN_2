@@ -78,7 +78,7 @@ public:
 	{
 		vaos_.emplace_back(new QOpenGLVertexArrayObject);
 		vaos_.back()->create();
-		return vaos_.size() - 1;
+		return static_cast<unsigned int>(vaos_.size() - 1);
 	}
 
 	/**

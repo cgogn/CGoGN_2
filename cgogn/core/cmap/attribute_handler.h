@@ -115,6 +115,7 @@ public:
 	using MapData = typename Inherit::MapData;
 
 	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
+	static const Orbit orbit_value = ORBIT;
 
 	template <typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;

@@ -101,6 +101,31 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = true;
+
+		if (this->template is_embedded<CDart>())
+			result = result && this->template is_well_embedded<CDart>();
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		if (this->template is_embedded<Edge>())
+			result = result && this->template is_well_embedded<Edge>();
+
+		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face>();
+
+		if (this->template is_embedded<Volume>())
+			result = result && this->template is_well_embedded<Volume>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -115,6 +140,13 @@ protected:
 	{
 		Inherit::init_dart(d);
 		(*phi2_)[d.index] = d;
+	}
+
+	inline bool check_integrity(Dart d) const
+	{
+		return (Inherit::check_integrity(d) &&
+				phi2(phi2(d)) == d &&
+				phi2(d) != d);
 	}
 
 	/**
@@ -163,6 +195,83 @@ public:
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
+
+protected:
+
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face.
+	 */
+	Dart add_face_topo(unsigned int size)
+	{
+		Dart d = Inherit::add_face_topo(size);
+		Dart e = Inherit::add_face_topo(size);
+
+		Dart it = d;
+		do
+		{
+			phi2_sew(it, e);
+			it = this->phi1(it);
+			e = this->phi_1(e);
+		} while (it != d);
+
+		return d;
+	}
+
+public:
+
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of edges in the built face
+	 * \return The built face
+	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
+	 * the inserted cells are automatically embedded on new attribute elements.
+	 * More precisely :
+	 *  - a Face attribute is created, if needed, for the new face.
+	 */
+	Face add_face(unsigned int size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Face f = add_face_topo(size);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+				this->new_orbit_embedding(CDart(phi2(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex(d));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Edge(d));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->new_orbit_embedding(f);
+			this->new_orbit_embedding(Face(phi2(f.dart)));
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(Volume(f.dart));
+
+		return f;
+	}
 
 protected:
 
@@ -327,83 +436,6 @@ public:
 			this->template copy_embedding<Volume>(nd, d.dart);
 			this->template copy_embedding<Volume>(ne, d.dart);
 		}
-	}
-
-protected:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of darts in the built face
-	 * \return A dart of the built face.
-	 */
-	Dart add_face_topo(unsigned int size)
-	{
-		Dart d = Inherit::add_face_topo(size);
-		Dart e = Inherit::add_face_topo(size);
-
-		Dart it = d;
-		do
-		{
-			phi2_sew(it, e);
-			it = this->phi1(it);
-			e = this->phi_1(e);
-		} while (it != d);
-
-		return d;
-	}
-
-public:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of edges in the built face
-	 * \return The built face
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the inserted cells are automatically embedded on new attribute elements.
-	 * More precisely :
-	 *  - a Face attribute is created, if needed, for the new face.
-	 */
-	Face add_face(unsigned int size)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		const Face f = add_face_topo(size);
-
-		if (this->template is_embedded<CDart>())
-		{
-			foreach_dart_of_orbit(f, [this] (Dart d)
-			{
-				this->new_orbit_embedding(CDart(d));
-				this->new_orbit_embedding(CDart(phi2(d)));
-			});
-		}
-
-		if (this->template is_embedded<Vertex>())
-		{
-			foreach_dart_of_orbit(f, [this] (Dart d)
-			{
-				this->new_orbit_embedding(Vertex(d));
-			});
-		}
-
-		if (this->template is_embedded<Edge>())
-		{
-			foreach_dart_of_orbit(f, [this] (Dart d)
-			{
-				this->new_orbit_embedding(Edge(d));
-			});
-		}
-
-		if (this->template is_embedded<Face>())
-		{
-			this->new_orbit_embedding(f);
-			this->new_orbit_embedding(Face(phi2(f.dart)));
-		}
-
-		if (this->template is_embedded<Volume>())
-			this->new_orbit_embedding(Volume(f.dart));
-
-		return f;
 	}
 
 protected:

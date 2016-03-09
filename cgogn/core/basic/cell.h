@@ -66,8 +66,12 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
-		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
+//		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
+	cgogn_assert_not_reached("This orbit does not exist");
+#ifdef NDEBUG 
+	return "UNKNOWN";  // little trick to  avoid waning on VS
+#endif
 }
 
 /**

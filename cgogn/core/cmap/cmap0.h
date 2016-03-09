@@ -76,6 +76,19 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = true;
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -89,6 +102,10 @@ protected:
 	{
 	}
 
+	inline bool check_integrity(Dart /*d*/) const
+	{
+		return true;
+	}
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -127,8 +144,16 @@ public:
 	 *******************************************************************************/
 
 protected:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
+	{
+		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
+		f(c.dart);
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		f(c.dart);

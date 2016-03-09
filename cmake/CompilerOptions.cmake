@@ -33,7 +33,9 @@ endif(CGOGN_USE_TSAN)
 
 if (NOT MSVC)
 # This is the correcty way to activate threads. It should be prefered to "-lpthread"
-	add_flags(CMAKE_CXX_FLAGS "-pthread")
+	if (NOT(${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
+		add_flags(CMAKE_CXX_FLAGS "-pthread")
+	endif()
 
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)

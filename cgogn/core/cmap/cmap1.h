@@ -45,7 +45,7 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using Vertex	= Cell<Orbit::DART>;
+	using Vertex	= typename Inherit::Vertex;
 	using Face		= Cell<Orbit::PHI1>;
 
 	template <typename T>
@@ -92,6 +92,22 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = true;
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -107,6 +123,11 @@ protected:
 		Inherit::init_dart(d);
 		(*phi1_)[d.index] = d;
 		(*phi_1_)[d.index] = d;
+	}
+
+	inline bool check_integrity(Dart d) const {
+		return (phi1(phi_1(d)) == d &&
+				phi_1(phi1(d)) == d);
 	}
 
 	/*!
@@ -181,6 +202,74 @@ public:
 
 protected:
 
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face
+	 */
+	inline Dart add_face_topo(unsigned int size)
+	{
+		cgogn_message_assert(size > 0u, "Cannot create an empty face");
+
+		if (size == 0)
+			std::cerr << "Warning: attempt to create an empty face results in a single dart" << std::endl;
+
+		Dart d = this->add_dart();
+		for (unsigned int i = 1u; i < size; ++i)
+			split_vertex_topo(d);
+		return d;
+	}
+
+public:
+
+	/*!
+	 * \brief Add a face in the map.
+	 * \param size : the number of vertices in the built face
+	 * \return The built face. If the map has Vertex or Face attributes,
+	 * the new inserted cells are automatically embedded on new attribute elements.
+	 */
+	Face add_face(unsigned int size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Face f = add_face_topo(size);
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex(d));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+			this->new_orbit_embedding(f);
+
+		return f;
+	}
+
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
+	inline void remove_face(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d = f.dart;
+		Dart it = phi1(d);
+		while(it != d)
+		{
+			Dart next = phi1(it);
+			this->remove_dart(it);
+			it = next;
+		}
+
+		this->remove_dart(d);
+	}
+
+protected:
+
 	/**
 	 * \brief Split a vertex.
 	 * \param d : a dart of the vertex
@@ -231,70 +320,6 @@ public:
 		Dart e = phi_1(v);
 		if (e != v.dart) phi1_unsew(e);
 		this->remove_dart(v.dart);
-	}
-
-protected:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of darts in the built face
-	 * \return A dart of the built face
-	 */
-	inline Dart add_face_topo(unsigned int size)
-	{
-		cgogn_message_assert(size > 0u, "Cannot create an empty face");
-
-		Dart d = this->add_dart();
-		for (unsigned int i = 1u; i < size; ++i)
-			split_vertex_topo(d);
-
-		return d;
-	}
-
-public:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of vertices in the built face
-	 * \return The built face. If the map has Vertex or Face attributes,
-	 * the new inserted cells are automatically embedded on new attribute elements.
-	 */
-	Face add_face(unsigned int size)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		Face f = add_face_topo(size);
-
-		if (this->template is_embedded<Vertex>())
-		{
-			foreach_dart_of_orbit(f, [this] (Dart d)
-			{
-				this->new_orbit_embedding(Vertex(d));
-			});
-		}
-
-		if (this->template is_embedded<Face>())
-			this->new_orbit_embedding(f);
-
-		return f;
-	}
-
-	/*!
-	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
-	 */
-	inline void remove_face(Face f)
-	{
-		Dart d = f.dart;
-		Dart it = phi1(d);
-		while(it != d)
-		{
-			Dart next = phi1(it);
-			this->remove_dart(it);
-			it = next;
-		}
-
-		this->remove_dart(d);
 	}
 
 protected:

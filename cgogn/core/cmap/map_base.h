@@ -389,30 +389,104 @@ public:
 		remove_attribute(counter);
 	}
 
-	template <Orbit ORBIT>
-	bool is_well_embedded(Cell<ORBIT> c) const
+	/**
+	 * \brief Tests if all \p ORBIT orbits are well embedded
+	 * \details An orbit is well embedded if all its darts
+	 * have the same embedding (index)
+	 *
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <typename CellType>
+	bool is_well_embedded()
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
 		const ConcreteMap* cmap = to_concrete();
+		AttributeHandler<unsigned int, ORBIT> marker = add_attribute<unsigned int, ORBIT>("__tmp_marker");
 		bool result = true;
 
-		std::map<unsigned int, Dart> emb_set;
-		cmap->foreach_dart_of_orbit(c, [&] (Dart d)
+		const Self* const_map = static_cast<const Self*>(this);
+		const typename Inherit::template ChunkArrayContainer<unsigned int>& container =
+				const_map->template get_attribute_container<ORBIT>();
+
+		// a marker is initialized to false for each "used" index of the container
+		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			marker[i] = 0;
+
+		// Check that the indexation of cells is correct
+		foreach_cell_until_dart_marking([&] (CellType c)
 		{
-			emb_set.insert(std::pair<unsigned int, Dart>(this->template get_embedding<ORBIT>(d), d));
+			// insure that two cells do not share the same index
+			if (marker[this->template get_embedding<ORBIT>(c.dart)] > 0)
+			{
+				result = false;
+				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
+				return false;
+			}
+			marker[this->template get_embedding<ORBIT>(c.dart)] = 1;
+			// check used indices are valid
+			unsigned int idx = this->get_embedding(c);
+			if (idx == EMBNULL)
+			{
+				result = false;
+				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
+				return false;
+			}
+			// check all darts of the cell use the same index (distinct to EMBNULL)
+			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+			{
+				if (this->template get_embedding<ORBIT>(d) != idx) result = false;
+				if (!result)
+					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			});
+
+			return result;
 		});
-
-		if(emb_set.size() > 1)
+		// check that all cells present in the attribute handler are used
+		if (result)
 		{
-			std::cout << "Orbit is not well embedded: " << std::endl;
+			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			{
+				if (marker[i] == 0)
+				{
+					result = false;
+					std::cerr << "Some cells are not used in orbit " << orbit_name(ORBIT) << std::endl;
+					break;
+				}
+			}
+		}
+		remove_attribute(marker);
+		return result;
+	}
 
-			result = false;
-			std::map<unsigned int, Dart>::iterator it;
-			for (auto const& de : emb_set)
-				std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
-			std::cout << std::endl;
+	bool check_map_integrity()
+	{
+		ConcreteMap* cmap = to_concrete();
+		bool result = true;
+
+		// check the integrity of topological relations or the correct sewing of darts
+		foreach_dart_until( [&cmap,&result] (Dart d) {
+			if (!cmap->check_integrity(d)) result = false;
+			return result;
+		});
+		if (!result)
+		{
+			std::cerr << "Integrity of the topology is broken" << std::endl;
+			return false;
 		}
 
-		return result;
+		// check the embedding indexation for the concrete map
+		result = cmap->check_embedding_integrity();
+		if (!result)
+		{
+			std::cerr << "Integrity of the embeddings is broken" << std::endl;
+			return false;
+		}
+		return true;
 	}
 
 	/*******************************************************************************
@@ -1140,8 +1214,9 @@ protected:
 		unsigned int nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ( ((end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE ) && ((end - it) > nb_threads_pool))
-			nbc = (end - it) / nb_threads_pool;
+		if ( (static_cast<unsigned int>(end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+			  && (static_cast<unsigned int>(end - it) > nb_threads_pool))
+			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
 
 		unsigned int local_end = std::min(it+nbc, end);
 
