@@ -127,17 +127,18 @@ public:
 			if (std::is_same<T, BUFFER_T>::value)
 			{ // if BUFFER_T = T we can directly store the data
 				fp.read(reinterpret_cast<char*>(&data_[old_size]), n * sizeof(T));
-				if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
+				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
 					for (auto it = data_.begin() + old_size, end = data_.end() ; it != end; ++it)
 						*it = cgogn::io::internal::swap_endianness(*it);
 				}
+
 				if (fp.eof() || fp.bad())
 					this->reset();
 			} else { // 2nd case : BUFFER_T and T are different.
 				std::vector<BUFFER_T> buffer(old_size+n);
-				fp.read(reinterpret_cast<char*>(std::addressof(buffer[old_size])), n * sizeof(BUFFER_T));
-				if (big_endian != ::cgogn::internal::cgogn_is_little_endian)
+				fp.read(reinterpret_cast<char*>(&buffer[old_size]), n * sizeof(BUFFER_T));
+				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
 					for (auto it = buffer.begin() + old_size, end = buffer.end() ; it != end; ++it)
 						*it = cgogn::io::internal::swap_endianness(*it);
@@ -147,9 +148,7 @@ public:
 				// copy
 				auto dest_it = data_.begin();
 				for (auto & x : buffer)
-				{
 					*dest_it++ = internal::convert<T>(x);
-				}
 			}
 		} else {
 			std::string line;
