@@ -46,7 +46,7 @@ bool MeshImportGen::import_file(const std::string& filename)
 		std::ifstream fp(filename.c_str(), std::ios::in);
 		if (!fp.good())
 		{
-			std::cerr << "Unable to open file \"" << filename << "\"" << std::endl;
+			std::cerr << "MeshImportGen::import_file : Unable to open file \"" << filename << "\"" << std::endl;
 			return false;
 		}
 	}
