@@ -35,7 +35,7 @@
 #include <core/basic/cell_marker.h>
 
 #include <core/utils/thread_barrier.h>
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 
 namespace cgogn
 {
@@ -401,40 +401,39 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		AttributeHandler<unsigned int, ORBIT> marker = add_attribute<unsigned int, ORBIT>("__tmp_marker");
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_marker");
 		bool result = true;
 
-		const Self* const_map = static_cast<const Self*>(this);
-		const typename Inherit::template ChunkArrayContainer<unsigned int>& container =
-				const_map->template get_attribute_container<ORBIT>();
+		const typename Inherit::template ChunkArrayContainer<unsigned int>& container = this->attributes_[ORBIT];
 
 		// a marker is initialized to false for each "used" index of the container
 		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
-			marker[i] = 0;
+			counter[i] = 0;
 
 		// Check that the indexation of cells is correct
 		foreach_cell_until_dart_marking([&] (CellType c)
 		{
-			// insure that two cells do not share the same index
-			if (marker[this->template get_embedding<ORBIT>(c.dart)] > 0)
-			{
-				result = false;
-				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
-				return false;
-			}
-			marker[this->template get_embedding<ORBIT>(c.dart)] = 1;
-			// check used indices are valid
 			unsigned int idx = this->get_embedding(c);
+			// check used indices are valid
 			if (idx == EMBNULL)
 			{
 				result = false;
 				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
-				return false;
+				return result;
 			}
+			// ensure that two cells do not share the same index
+			if (counter[idx] > 0)
+			{
+				result = false;
+				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			}
+			counter[idx] = 1;
 			// check all darts of the cell use the same index (distinct to EMBNULL)
 			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
 			{
-				if (this->template get_embedding<ORBIT>(d) != idx) result = false;
+				if (this->get_embedding(CellType(d)) != idx)
+					result = false;
 				if (!result)
 					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
 				return result;
@@ -447,7 +446,7 @@ public:
 		{
 			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
 			{
-				if (marker[i] == 0)
+				if (counter[i] == 0)
 				{
 					result = false;
 					std::cerr << "Some cells are not used in orbit " << orbit_name(ORBIT) << std::endl;
@@ -455,7 +454,7 @@ public:
 				}
 			}
 		}
-		remove_attribute(marker);
+		remove_attribute(counter);
 		return result;
 	}
 
@@ -465,8 +464,10 @@ public:
 		bool result = true;
 
 		// check the integrity of topological relations or the correct sewing of darts
-		foreach_dart_until( [&cmap,&result] (Dart d) {
-			if (!cmap->check_integrity(d)) result = false;
+		foreach_dart_until([&cmap, &result] (Dart d)
+		{
+			if (!cmap->check_integrity(d))
+				result = false;
 			return result;
 		});
 		if (!result)

@@ -24,6 +24,12 @@
 #ifndef IO_C_LOCALE_H_
 #define IO_C_LOCALE_H_
 
+#include <string>
+#include <clocale>
+
+namespace cgogn
+{
+
 class Scoped_C_Locale
 {
 	std::string current_locale_;
@@ -32,16 +38,17 @@ public:
 	/// set numeric locale to C after saving current locale
 	inline Scoped_C_Locale()
 	{
-		current_locale_ = std::string(setlocale(LC_NUMERIC, NULL));
+		current_locale_ = std::string(std::setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "C");
 	}
 
 	/// restore locale
 	inline ~Scoped_C_Locale()
 	{
-		setlocale(LC_NUMERIC, current_locale_.c_str());
+		std::setlocale(LC_NUMERIC, current_locale_.c_str());
 	}
 };
 
+} // namespace cgogn
 
 #endif // IO_C_LOCALE_H_

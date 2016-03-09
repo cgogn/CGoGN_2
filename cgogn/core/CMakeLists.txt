@@ -20,7 +20,6 @@ set(HEADER_FILES
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
 	cmap/attribute_handler.h
-	cmap/sanity_check.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -32,7 +31,7 @@ set(HEADER_FILES
 	utils/buffers.h
 	utils/definitions.h
 	utils/endian.h
-	utils/make_unique.h
+	utils/unique_ptr.h
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h

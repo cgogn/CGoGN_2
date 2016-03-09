@@ -149,7 +149,7 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 	std::vector<void*> chunk_addr;
 	unsigned int byte_chunk_size;
 	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
-	const unsigned int vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
+	const unsigned int vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 

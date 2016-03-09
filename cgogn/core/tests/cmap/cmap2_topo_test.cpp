@@ -275,7 +275,7 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 	unsigned int count_faces = nb_cells<Face::ORBIT>();
 	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		unsigned int k1 = degree(Face(d));
 		unsigned int k2 = degree(Face(phi2(d)));
@@ -311,7 +311,7 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	unsigned int count_faces = nb_cells<Face::ORBIT>();
 	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		unsigned int k = degree(Face(d));
 		if (k > 1u)
@@ -351,14 +351,14 @@ TEST_F(CMap2TopoTest, close_map)
 	EXPECT_TRUE(check_map_integrity());
 
 	// create some random holes (full removal or partial unsewing of faces)
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		if (std::rand() % 2 == 1)
 		{
 			unsigned int n = std::rand() % 10u;
 			unsigned int k = degree(Face(d));
 
-			foreach_dart_of_orbit_until(Face(d), [&](Dart e)
+			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
 			{
 				Dart e2 = phi2(e);
 				phi2_unsew(e);
