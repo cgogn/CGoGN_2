@@ -133,28 +133,28 @@ protected:
 			}
 		}
 		// Close the map (remove remaining boundary)
-		cmap_.foreach_dart([&](Dart d)
+		cmap_.foreach_dart([&] (Dart d)
 		{
 			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
 		});
 		// Embed the map
-		cmap_.foreach_dart([&](Dart d)
+		cmap_.foreach_dart([&] (Dart d)
 		{
 			mbuild.new_orbit_embedding(CDart(d));
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Vertex v)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
 		{
 			mbuild.new_orbit_embedding(v);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Edge e)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
 		{
 			mbuild.new_orbit_embedding(e);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Face f)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
 		{
 			mbuild.new_orbit_embedding(f);
 		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&](Volume w)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
 		{
 			mbuild.new_orbit_embedding(w);
 		});
@@ -194,7 +194,7 @@ TEST_F(CMap2Test, cut_edge)
 {
 	add_closed_surfaces();
 
-	for (Dart d: darts_) cmap_.cut_edge(d);
+	for (Dart d : darts_) cmap_.cut_edge(d);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -206,7 +206,7 @@ TEST_F(CMap2Test, cut_face)
 {
 	add_closed_surfaces();
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		if (cmap_.degree(Face(d)) > 1u)
 		{

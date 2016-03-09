@@ -171,7 +171,7 @@ TEST_F(CMap1TopoTest, remove_face)
 	unsigned int count_vertices = add_faces(NB_MAX);
 	unsigned int count_faces = NB_MAX;
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)
 		{
@@ -195,7 +195,7 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 {
 	unsigned int count_vertices = add_faces(NB_MAX);
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		unsigned int k = degree(Face(d));
 		split_vertex_topo(d);
@@ -217,7 +217,7 @@ TEST_F(CMap1TopoTest, remove_vertex)
 	unsigned int count_vertices = add_faces(NB_MAX);
 	unsigned int count_faces = NB_MAX;
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		unsigned int k = degree(Face(d));
 		if (k > 1)
@@ -248,13 +248,13 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
 {
 	unsigned int count_vertices = add_faces(NB_MAX);
 
-	for (Dart d: darts_)
+	for (Dart d : darts_)
 	{
 		unsigned int k = degree(Face(d));
 
 		std::vector<Dart> face_darts;
 		face_darts.reserve(k);
-		foreach_dart_of_orbit(Face(d), [&](Dart e)
+		foreach_dart_of_orbit(Face(d), [&] (Dart e)
 		{
 			face_darts.push_back(e);
 		});
@@ -263,7 +263,7 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
 		EXPECT_EQ(degree(Face(d)), k);
 
 		d = phi1(d);
-		foreach_dart_of_orbit(Face(d), [&](Dart e)
+		foreach_dart_of_orbit(Face(d), [&] (Dart e)
 		{
 			EXPECT_TRUE(face_darts.back() == e);
 			face_darts.pop_back();

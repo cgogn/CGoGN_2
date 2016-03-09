@@ -315,9 +315,9 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex v = cut_edge_topo(e);
-		const Dart  nf = phi2(e);
-		const Dart   f = phi2(v);
+		const Dart v = cut_edge_topo(e.dart);
+		const Dart nf = phi2(e);
+		const Dart f = phi2(v);
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -326,27 +326,27 @@ public:
 		}
 
 		if (this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(v);
+			this->new_orbit_embedding(Vertex(v));
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->template copy_embedding<Edge>(nf, e);
+			this->template copy_embedding<Edge>(nf, e.dart);
 			this->new_orbit_embedding(Edge(v));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(v, e);
+			this->template copy_embedding<Face>(v, e.dart);
 			this->template copy_embedding<Face>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->template copy_embedding<Volume>(v, e);
-			this->template copy_embedding<Volume>(nf, e);
+			this->template copy_embedding<Volume>(v, e.dart);
+			this->template copy_embedding<Volume>(nf, e.dart);
 		}
 
-		return v;
+		return Vertex(v);
 	}
 
 protected:
@@ -479,7 +479,7 @@ protected:
 			if (phi2(d) == d)
 			{
 				close_hole_topo(d);
-				const Face new_face = phi2(d);
+				const Face new_face = Face(phi2(d));
 
 				if (this->template is_embedded<CDart>())
 				{
