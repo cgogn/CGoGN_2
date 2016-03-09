@@ -20,7 +20,6 @@ set(HEADER_FILES
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
 	cmap/attribute_handler.h
-	cmap/sanity_check.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
