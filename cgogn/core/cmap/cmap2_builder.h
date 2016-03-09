@@ -68,6 +68,12 @@ public:
 		map_.template set_embedding<CellType>(d, emb);
 	}
 
+	template <class CellType>
+	inline void new_orbit_embedding(CellType c)
+	{
+		map_.template new_orbit_embedding(c);
+	}
+
 	inline void phi2_sew(Dart d, Dart e)
 	{
 		return map_.phi2_sew(d,e);
@@ -81,6 +87,11 @@ public:
 	inline Dart add_face_topo_parent(unsigned int nb_edges)
 	{
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
+	}
+
+	inline void close_hole_topo(Dart d)
+	{
+		map_.close_hole_topo(d);
 	}
 
 	inline void close_map()

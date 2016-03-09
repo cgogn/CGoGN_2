@@ -50,13 +50,13 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using CDart		= typename Inherit::CDart;
+	using Vertex2	= typename Inherit::Vertex;
 	using Vertex	= Cell<Orbit::PHI21_PHI31>;
+	using Edge2		= typename Inherit::Edge;
 	using Edge		= Cell<Orbit::PHI2_PHI3>;
+	using Face2		= typename Inherit::Face;
 	using Face		= Cell<Orbit::PHI1_PHI3>;
 	using Volume	= typename Inherit::Volume;
-	using Vertex2	= typename Inherit::Vertex;
-	using Edge2		= typename Inherit::Edge;
-	using Face2		= typename Inherit::Face;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -104,6 +104,40 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = true;
+
+		if (this->template is_embedded<CDart>())
+			result = result && this->template is_well_embedded<CDart>();
+
+		if (this->template is_embedded<Vertex2>())
+			result = result && this->template is_well_embedded<Vertex2>();
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		if (this->template is_embedded<Edge2>())
+			result = result && this->template is_well_embedded<Edge2>();
+
+		if (this->template is_embedded<Edge>())
+			result = result && this->template is_well_embedded<Edge>();
+
+		if (this->template is_embedded<Face2>())
+			result = result && this->template is_well_embedded<Face2>();
+
+		if (this->template is_embedded<Face>())
+			result = result && this->template is_well_embedded<Face>();
+
+		if (this->template is_embedded<Volume>())
+			result = result && this->template is_well_embedded<Volume>();
+
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
@@ -118,6 +152,14 @@ protected:
 	{
 		Inherit::init_dart(d);
 		(*phi3_)[d.index] = d;
+	}
+
+	inline bool check_integrity(Dart d) const
+	{
+		return (Inherit::check_integrity(d) &&
+				phi3(phi3(d)) == d &&
+				phi3(d) != d &&
+				phi3(this->phi1(phi3(this->phi1(d)))) == d);
 	}
 
 	/**
