@@ -179,8 +179,8 @@ void Viewer::init()
 
 void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
-	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.01));
-	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.99));
+	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.0));
+	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),1.0));
 }
 
 
