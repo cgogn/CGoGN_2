@@ -27,6 +27,7 @@
 #include <qoglviewer.h>
 #include <vec.h>
 #include <QMouseEvent>
+#include <QVector3D>
 
 #include <core/cmap/cmap2.h>
 
@@ -70,7 +71,7 @@ public:
 
 
 private:
-	void rayClick(QMouseEvent* event, QVector3D& P, QVector3D& Q);
+	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
 
 	QRect viewport_;
@@ -176,20 +177,10 @@ void Viewer::init()
 }
 
 
-void Viewer::rayClick(QMouseEvent* event, QVector3D& P, QVector3D& Q)
+void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
-	int vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
-	QRect viewport = QRect(vp[0],vp[1],vp[2],vp[3]);
-
-	unsigned int x = event->x()*devicePixelRatio();
-	unsigned int y = (this->height()-event->y())*devicePixelRatio();
-
-	QVector3D wp(x,y,0.01);
-	P = wp.unproject(view_,proj_,viewport);
-	QVector3D wq(x,y,0.99);
-	Q = wq.unproject(view_,proj_,viewport);
-
+	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.01));
+	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.99));
 }
 
 
@@ -218,8 +209,8 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 {
 	if (event->modifiers() & Qt::ShiftModifier)
 	{
-		QVector3D P;
-		QVector3D Q;
+		qoglviewer::Vec P;
+		qoglviewer::Vec Q;
 		rayClick(event,P,Q);
 
 		Vec3 A(P[0],P[1],P[2]);
