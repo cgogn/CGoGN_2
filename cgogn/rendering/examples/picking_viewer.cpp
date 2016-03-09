@@ -25,6 +25,7 @@
 #include <QMatrix4x4>
 
 #include <qoglviewer.h>
+#include <vec.h>
 #include <QMouseEvent>
 
 #include <core/cmap/cmap2.h>
@@ -36,15 +37,15 @@
 #include <rendering/map_render.h>
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/vbo.h>
-
+#include <rendering/drawer.h>
 
 #include <geometry/algos/picking.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = Eigen::Vector3d;
+using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -60,7 +61,7 @@ public:
 	virtual void draw();
 	virtual void init();
 	virtual void mousePressEvent(QMouseEvent *e);
-	virtual void resizeGL(int w, int h);
+	virtual void keyPressEvent(QKeyEvent *);
 
 	void import(const std::string& surfaceMesh);
 
@@ -69,6 +70,9 @@ public:
 
 
 private:
+	void rayClick(QMouseEvent* event, QVector3D& P, QVector3D& Q);
+
+
 	QRect viewport_;
 	QMatrix4x4 proj_;
 	QMatrix4x4 view_;
@@ -84,6 +88,9 @@ private:
 
 	cgogn::rendering::ShaderFlat* shader2_;
 
+	cgogn::rendering::Drawer* drawer_;
+
+	int cell_picking;
 };
 
 
@@ -100,7 +107,7 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
-	setSceneRadius(bb_.diag_size());
+	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
@@ -119,13 +126,13 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	shader2_(nullptr)
+	shader2_(nullptr),
+	drawer_(nullptr),
+	cell_picking(0)
 {}
 
 void Viewer::draw()
 {
-//	QMatrix4x4 proj;
-//	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj_);
 	camera()->getModelViewMatrix(view_);
 
@@ -138,13 +145,18 @@ void Viewer::draw()
 	render_->draw(cgogn::rendering::TRIANGLES);
 	shader2_->release_vao(0);
 	shader2_->release();
+
+	glDisable(GL_POLYGON_OFFSET_FILL);
+
+	drawer_->call_list(proj_,view_);
+
 }
 
 void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO;
+	vbo_pos_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 	render_ = new cgogn::rendering::MapRender();
 
@@ -159,46 +171,151 @@ void Viewer::init()
 	shader2_->set_back_color(QColor(0,0,200));
 	shader2_->set_ambiant_color(QColor(5,5,5));
 	shader2_->release();
+
+	drawer_ = new cgogn::rendering::Drawer(this);
 }
+
+
+void Viewer::rayClick(QMouseEvent* event, QVector3D& P, QVector3D& Q)
+{
+	int vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	QRect viewport = QRect(vp[0],vp[1],vp[2],vp[3]);
+
+	unsigned int x = event->x()*devicePixelRatio();
+	unsigned int y = (this->height()-event->y())*devicePixelRatio();
+
+	QVector3D wp(x,y,0.01);
+	P = wp.unproject(view_,proj_,viewport);
+	QVector3D wq(x,y,0.99);
+	Q = wq.unproject(view_,proj_,viewport);
+
+}
+
+
+void Viewer::keyPressEvent(QKeyEvent *ev)
+{
+	switch (ev->key())
+	{
+		case Qt::Key_0:
+			cell_picking = 0;
+			break;
+		case Qt::Key_1:
+			cell_picking = 1;
+			break;
+		case Qt::Key_2:
+			cell_picking = 2;
+			break;
+		case Qt::Key_3:
+			cell_picking = 3;
+			break;
+	}
+	QOGLViewer::keyPressEvent(ev);
+}
+
 
 void Viewer::mousePressEvent(QMouseEvent* event)
 {
+	if (event->modifiers() & Qt::ShiftModifier)
+	{
+		QVector3D P;
+		QVector3D Q;
+		rayClick(event,P,Q);
 
-//	camera()->getProjectionMatrix(proj_);
-//	camera()->getModelViewMatrix(view_);
+		Vec3 A(P[0],P[1],P[2]);
+		Vec3 B(Q[0],Q[1],Q[2]);
 
-
-	unsigned int x = event->x()*devicePixelRatio();
-	unsigned int y = this->height() - event->y()*devicePixelRatio();
-	QVector3D wp(x,y,0);
-	QVector3D wq(x,y,0.99);
-	QVector3D P = wp.unproject(view_,proj_,viewport_);
-	QVector3D Q = wq.unproject(view_,proj_,viewport_);
-
-	Vec3 A(P[0],P[1],P[2]);
-	Vec3 B(Q[0],Q[1],Q[2]);
-
-
-
-//	std::cout<<A << std::endl<< "//////////////"<< std::endl<<B<<std::endl<<"//////////////"<< std::endl;
-
-	std::vector<Map2::Face> selected;
-	cgogn::geometry::picking_face<Vec3>(map_,vertex_position_,A,B,selected);
-
-	std::cout << selected.size()<< std::endl;
-
+		drawer_->new_list();
+		switch(cell_picking)
+		{
+			case 0:
+			{
+				std::vector<Map2::Vertex> selected;
+				cgogn::geometry::picking_vertex<Vec3>(map_,vertex_position_,A,B,selected);
+				std::cout<< "Selected vertices: "<< selected.size()<<std::endl;
+				if (!selected.empty())
+				{
+					drawer_->point_size_aa(4.0);
+					drawer_->begin(GL_POINTS);
+					// closest point in red
+					drawer_->color3f(1.0,0.0,0.0);
+					drawer_->vertex3fv(vertex_position_[selected[0]]);
+					// others in yellow
+					drawer_->color3f(1.0,1.0,0.0);
+					for(unsigned int i=1u;i<selected.size();++i)
+						drawer_->vertex3fv(vertex_position_[selected[i]]);
+					drawer_->end();
+				}
+			}
+			break;
+			case 1:
+			{
+				std::vector<Map2::Edge> selected;
+				cgogn::geometry::picking_edge<Vec3>(map_,vertex_position_,A,B,selected);
+				std::cout<< "Selected edges: "<< selected.size()<<std::endl;
+				if (!selected.empty())
+				{
+					drawer_->line_width(2.0);
+					drawer_->begin(GL_LINES);
+					// closest face in red
+					drawer_->color3f(1.0,0.0,0.0);
+					cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					// others in yellow
+					drawer_->color3f(1.0,1.0,0.0);
+					for(unsigned int i=1u;i<selected.size();++i)
+						cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+					drawer_->end();
+				}
+			}
+			break;
+			case 2:
+			{
+				std::vector<Map2::Face> selected;
+				cgogn::geometry::picking_face<Vec3>(map_,vertex_position_,A,B,selected);
+				std::cout<< "Selected faces: "<< selected.size()<<std::endl;
+				if (!selected.empty())
+				{
+					drawer_->line_width(2.0);
+					drawer_->begin(GL_LINES);
+					// closest face in red
+					drawer_->color3f(1.0,0.0,0.0);
+					cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					// others in yellow
+					drawer_->color3f(1.0,1.0,0.0);
+					for(unsigned int i=1u;i<selected.size();++i)
+						cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+					drawer_->end();
+				}
+			}
+			break;
+			case 3:
+			{
+				std::vector<Map2::Volume> selected;
+				cgogn::geometry::picking_volume<Vec3>(map_,vertex_position_,A,B,selected);
+				std::cout<< "Selected volumes: "<< selected.size()<<std::endl;
+				if (!selected.empty())
+				{
+					drawer_->line_width(2.0);
+					drawer_->begin(GL_LINES);
+					// closest face in red
+					drawer_->color3f(1.0,0.0,0.0);
+					cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					// others in yellow
+					drawer_->color3f(1.0,1.0,0.0);
+					for(unsigned int i=1u;i<selected.size();++i)
+						cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+					drawer_->end();
+				}
+			}
+			break;
+		}
+		drawer_->end_list();
+	}
 
 
 	QOGLViewer::mousePressEvent(event);
 }
 
-void Viewer::resizeGL(int w, int h)
-{
-	int vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
-	viewport_= QRect(vp[0],vp[1],vp[2],vp[3]);
-	std::cout << "viewport"<< std::endl;
-}
 
 int main(int argc, char** argv)
 {
@@ -220,6 +337,7 @@ int main(int argc, char** argv)
 	viewer.setWindowTitle("simpleViewer");
 	viewer.import(surfaceMesh);
 	viewer.show();
+	viewer.resize(800,600);
 
 	// Run main loop.
 	return application.exec();

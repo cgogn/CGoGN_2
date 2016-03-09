@@ -26,6 +26,8 @@
 
 #include <core/utils/precision.h>
 #include <core/basic/cell.h>
+#include <core/basic/dart_marker.h>
+
 
 #include <geometry/algos/area.h>
 #include <geometry/functions/basics.h>
@@ -33,67 +35,204 @@
 #include <geometry/functions/distance.h>
 #include <geometry/types/geometry_traits.h>
 
+#include <tuple>
+
 namespace cgogn
 {
 
 namespace geometry
 {
 
-//template <typename VEC3, typename MAP>
-//inline void picking_vertices(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename VEC3::Scalar dist, typename std::vector<typename MAP::Vertex> selected)
-//{
-//	VEC3 AB = B - A ;
-//	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
-//	AB.normalize();
-
-//	selected.clear();
-//	map.foreach_cell([&] (typename MAP::Vertex v)
-//	{
-//		if(squared_distance_normalized_line_point<VEC3>(A,AB,position[v])< dist*dist)
-//			selected.push_back(v);
-//	});
-//}
 
 template <typename VEC3, typename MAP>
-inline void picking_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Face> selected)
+inline void picking_internal_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>& selected )
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
+	using Scalar = typename VEC3::Scalar;
+
 	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
 	AB.normalize();
 
-	selected.clear();
-	std::vector<unsigned int> ear_indices;
-	ear_indices.reserve(256);
 
-	m.foreach_cell([&] (Face f)
+	// thread data
+	using Triplet = typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>;
+	std::vector<Triplet> selected_th(cgogn::get_nb_threads());
+	std::vector<std::vector<unsigned int>> ear_indices_th(cgogn::get_nb_threads());
+
+	m.parallel_foreach_cell([&] (Face f, unsigned int th)
 	{
+		VEC3 inter;
 		if (m.has_degree(f,3))
 		{
 			const VEC3& p1 = position[Vertex(f.dart)];
 			const VEC3& p2 = position[Vertex(m.phi1(f.dart))];
 			const VEC3& p3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
-			if (intersection_ray_triangle<VEC3>(A,AB,p1,p2,p3))
-				selected.push_back(f);
+			if (intersection_ray_triangle<VEC3>(A,AB,p1,p2,p3,&inter))
+				selected_th[th].push_back(std::make_tuple(f,inter,(inter-A).squaredNorm()));
 		}
 		else
 		{
+			std::vector<unsigned int>& ear_indices = ear_indices_th[th];
+			ear_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,ear_indices);
 			for(unsigned int i=0; i<ear_indices.size(); i+=3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
 				const VEC3& p2 = position[ear_indices[i+1]];
 				const VEC3& p3 = position[ear_indices[i+2]];
-				if (intersection_ray_triangle<VEC3>(A,AB,p1,p2,p3))
+				if (intersection_ray_triangle<VEC3>(A,AB,p1,p2,p3,&inter))
 				{
-					selected.push_back(f);
+					selected_th[th].push_back(std::make_tuple(f,inter,(inter-A).squaredNorm()));
 					i = ear_indices.size();
 				}
 			}
 		}
 	});
+
+	//merging thread result
+	for (unsigned int i=0;i<cgogn::get_nb_threads();++i)
+	{
+		for (auto x: selected_th[i])
+			selected.push_back(x);
+	}
+
+	//sorting function
+	auto dist_sort = [] (const std::tuple<Face, VEC3,Scalar>& f1, const std::tuple<Face, VEC3,Scalar>& f2) -> bool
+	{
+		return std::get<2>(f1) < std::get<2>(f2);
+	};
+
+	// sorting
+	std::sort(selected.begin(),selected.end(),dist_sort);
 }
+
+template <typename VEC3, typename MAP>
+bool picking_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Face>& selected)
+{
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
+	picking_internal_face<VEC3>(m,position,A,B,sel);
+
+	selected.clear();
+	for (auto fs: sel)
+		selected.push_back(std::get<0>(fs));
+
+	return !selected.empty();
+}
+
+
+template <typename VEC3, typename MAP>
+bool picking_vertex(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Vertex>& selected)
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+	using Scalar = typename VEC3::Scalar;
+
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
+	picking_internal_face<VEC3>(m,position,A,B,sel);
+
+	DartMarker<MAP> dm(m);
+	selected.clear();
+	for (auto fs: sel)
+	{
+		float min_d2 = std::numeric_limits<Scalar>::max();
+		Vertex closest_vertex;
+
+		Face f = std::get<0>(fs);
+		const VEC3& I = std::get<1>(fs);
+
+		m.foreach_incident_vertex( f, [&] (Vertex v)
+		{
+			Scalar d2 = (position[v] - I).squaredNorm();
+			if (d2 < min_d2)
+			{
+				min_d2 = d2;
+				closest_vertex = v;
+			}
+		});
+
+		if (!dm.is_marked(closest_vertex.dart))
+		{
+			dm.mark_orbit(closest_vertex);
+			selected.push_back(closest_vertex);
+		}
+	}
+
+	return !selected.empty();
+}
+
+
+template <typename VEC3, typename MAP>
+bool picking_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Edge>& selected)
+{
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+	using Scalar = typename VEC3::Scalar;
+
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
+	picking_internal_face<VEC3>(m,position,A,B,sel);
+
+	DartMarker<MAP> dm(m);
+	selected.clear();
+	for (auto fs: sel)
+	{
+		float min_d2 = std::numeric_limits<Scalar>::max();
+		Edge closest_edge;
+
+		Face f = std::get<0>(fs);
+		const VEC3& I = std::get<1>(fs);
+
+		m.foreach_incident_edge( f, [&] (Edge e)
+		{
+			const VEC3& p_e1 = position[Vertex(e.dart)];
+			const VEC3& p_e2 = position[Vertex(m.phi1(e.dart))];
+			Scalar d2 = squared_distance_line_point(p_e1,p_e2,I);
+			if (d2 < min_d2)
+			{
+				min_d2 = d2;
+				closest_edge = e;
+			}
+		});
+		if (!dm.is_marked(closest_edge.dart))
+		{
+			dm.mark_orbit(closest_edge);
+			selected.push_back(closest_edge);
+		}
+	}
+
+	return !selected.empty();
+}
+
+template <typename VEC3, typename MAP>
+bool picking_volume(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Volume>& selected)
+{
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+	using Volume = typename MAP::Volume;
+	using Scalar = typename VEC3::Scalar;
+
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
+	picking_internal_face<VEC3>(m,position,A,B,sel);
+
+	selected.clear();
+	DartMarker<MAP> dm(m);
+	for (auto fs: sel)
+	{
+		Face f = std::get<0>(fs);
+		Volume vo = Volume(f.dart);
+		if (!dm.is_marked(vo.dart))
+		{
+			dm.mark_orbit(vo);
+			selected.push_back(vo);
+		}
+	}
+	return !selected.empty();
+}
+
+
 
 
 } // namespace geometry

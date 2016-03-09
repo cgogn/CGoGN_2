@@ -45,9 +45,9 @@ TYPED_TEST_CASE(Intesection_TEST, VecTypes );
 TYPED_TEST(Intesection_TEST, IntersectionLineTriangle)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	TypeParam p0(Scalar(1), Scalar(1), Scalar(6.1));
-	TypeParam p1(Scalar(5), Scalar(1), Scalar(6.3));
-	TypeParam p2(Scalar(3), Scalar(5), Scalar(6.2));
+	TypeParam p0(Scalar(1), Scalar(1), Scalar(96.1));
+	TypeParam p1(Scalar(5), Scalar(1), Scalar(92.3));
+	TypeParam p2(Scalar(3), Scalar(5), Scalar(94.2));
 
 	TypeParam A0(Scalar(3), Scalar(3), Scalar(0));
 	TypeParam D0(Scalar(0.001), Scalar(0.001), Scalar(1.0));
@@ -57,11 +57,9 @@ TYPED_TEST(Intesection_TEST, IntersectionLineTriangle)
 	TypeParam A2(Scalar(5), Scalar(1), Scalar(0));
 	TypeParam A3(Scalar(9), Scalar(5), Scalar(0));
 
-	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A0,D0,p0,p1,p2) == cgogn::geometry::FACE_INTERSECTION);
-	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A1,D1,p0,p1,p2) == cgogn::geometry::EDGE_INTERSECTION);
-	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A2,D1,p0,p1,p2) == cgogn::geometry::VERTEX_INTERSECTION);
-	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A3,D0,p0,p1,p2) == cgogn::geometry::NO_INTERSECTION);
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A0,D0,p0,p1,p2));
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A1,D1,p0,p1,p2));
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A2,D1,p0,p1,p2));
+	EXPECT_FALSE(cgogn::geometry::intersection_ray_triangle(A3,D0,p0,p1,p2));
 
-
-//	EXPECT_DOUBLE_EQ(cgogn::geometry::intersection_ray_triangle(p0,p1,p2), Scalar(2));
 }

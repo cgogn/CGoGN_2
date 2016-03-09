@@ -31,16 +31,8 @@ namespace geometry
 {
 
 
-enum Intersection
-{
-	NO_INTERSECTION = 0,
-	VERTEX_INTERSECTION = 1,
-	EDGE_INTERSECTION = 2,
-	FACE_INTERSECTION = 3
-};
-
 template <typename VEC3_T>
-Intersection intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T& Ta, const VEC3_T& Tb, const VEC3_T& Tc, VEC3_T* inter=nullptr)
+bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T& Ta, const VEC3_T& Tb, const VEC3_T& Tc, VEC3_T* inter=nullptr)
 {
 	using Scalar = typename VEC3_T::Scalar;
 
@@ -77,7 +69,8 @@ Intersection intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const
 	else
 		++nz ;
 
-	if ((np != 0) && (nn != 0)) return NO_INTERSECTION ;
+	if ((np != 0) && (nn != 0))
+		return false ;
 
 	if (inter)
 	{
@@ -88,7 +81,8 @@ Intersection intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const
 		*inter = Ta * alpha + Tb * beta + Tc * gamma ;
 	}
 
-	return Intersection(FACE_INTERSECTION - nz) ;
+	return true ;
+
 }
 
 

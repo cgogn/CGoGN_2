@@ -302,6 +302,42 @@ void create_drawer_topo2(MAP& m, const typename MAP::template VertexAttributeHan
 }
 
 
+template <typename VEC3, typename MAP>
+void add_edge_to_drawer(MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+{
+	using Vertex = typename MAP::Vertex;
+	dr->vertex3fv(position[Vertex(e.dart)]);
+	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+}
+
+
+template <typename VEC3, typename MAP>
+void add_face_to_drawer(MAP& m, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+{
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	m.foreach_incident_edge(f, [&] (Edge e)
+	{
+		dr->vertex3fv(position[Vertex(e.dart)]);
+		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+	});
+}
+
+template <typename VEC3, typename MAP>
+void add_volume_to_drawer(MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+{
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	m.foreach_incident_edge(vo, [&] (Edge e)
+	{
+		dr->vertex3fv(position[Vertex(e.dart)]);
+		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+	});
+
+}
+
+
+
 
 } // namespace rendering
 
