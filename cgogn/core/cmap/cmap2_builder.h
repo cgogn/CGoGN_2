@@ -141,7 +141,7 @@ public:
 	 */
 	inline void close_hole(Dart d)
 	{
-		const Face f = close_hole_topo(d);
+		const Face f(close_hole_topo(d));
 
 		if (map_.template is_embedded<CDart>())
 		{

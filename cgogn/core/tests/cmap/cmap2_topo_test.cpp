@@ -398,7 +398,7 @@ TEST_F(CMap2TopoTest, close_map)
 
 TEST_F(CMap2TopoTest, degree)
 {
-	Face f = this->add_face_topo(10u);
+	Face f(this->add_face_topo(10u));
 
 	EXPECT_EQ(degree(f), 10u);
 }

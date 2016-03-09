@@ -864,8 +864,9 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.mark_orbit(CellType(d));
-				f(d);
+				CellType c(d);
+				dm.mark_orbit(c);
+				f(c);
 			}
 		}
 	}
@@ -906,8 +907,9 @@ protected:
 			{
 				if (!dm.is_marked(it))
 				{
-					dm.template mark_orbit<ORBIT>(it);
-					cells.push_back(Cell<ORBIT>(it));
+					CellType c(it);
+					dm.mark_orbit(c);
+					cells.push_back(c);
 					++k;
 				}
 				this->topology_.next(it.index);
@@ -916,16 +918,16 @@ protected:
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 			{
 				for (auto c : cells)
-					f(c,th_id);
+					f(c, th_id);
 			}));
 			// next thread
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -954,10 +956,11 @@ protected:
 			 d != end;
 			 this->topology_.next(d.index))
 		{
-			if (!cm.is_marked(d))
+			CellType c(d);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(d);
-				f(d);
+				cm.mark(c);
+				f(c);
 			}
 		}
 	}
@@ -996,10 +999,11 @@ protected:
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 			{
-				if (!cm.is_marked(it))
+				CellType c(it);
+				if (!cm.is_marked(c))
 				{
-					cm.mark(it);
-					cells.push_back(it);
+					cm.mark(c);
+					cells.push_back(c);
 					++k;
 				}
 				this->topology_.next(it.index);
@@ -1014,10 +1018,10 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -1027,13 +1031,12 @@ protected:
 		// clean all at end
 		for (auto& fu : futures[0u])
 			fu.wait();
-		for (auto &b : cells_buffers[0u])
+		for (auto& b : cells_buffers[0u])
 			dbuffs->release_cell_buffer(b);
 		for (auto& fu : futures[1u])
 			fu.wait();
-		for (auto &b : cells_buffers[1u])
+		for (auto& b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
-
 	}
 
 	template <typename FUNC>
@@ -1046,7 +1049,7 @@ protected:
 			 i != end;
 			 this->attributes_[ORBIT].next(i))
 		{
-			f((*this->global_topo_cache_[ORBIT])[i]);
+			f(CellType((*this->global_topo_cache_[ORBIT])[i]));
 		}
 	}
 
@@ -1076,7 +1079,7 @@ protected:
 			  && (static_cast<unsigned int>(end - it) > nb_threads_pool))
 			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
 
-		unsigned int local_end = std::min(it+nbc,end);
+		unsigned int local_end = std::min(it+nbc, end);
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 
@@ -1089,7 +1092,7 @@ protected:
 				unsigned int loc_it = it;
 				while (loc_it < local_end)
 				{
-					f(cache[loc_it],th_id);
+					f(CellType(cache[loc_it]), th_id);
 					attr.next(loc_it);
 				}
 			}));
@@ -1126,8 +1129,9 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.mark_orbit(CellType(d));
-				if(!f(d))
+				CellType c(d);
+				dm.mark_orbit(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1144,10 +1148,11 @@ protected:
 			 d != end;
 			 this->topology_.next(d.index))
 		{
-			if (!cm.is_marked(d))
+			CellType c(d);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(d);
-				if(!f(d))
+				cm.mark(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1163,7 +1168,7 @@ protected:
 			 i != end;
 			 this->attributes_[ORBIT].next(i))
 		{
-			if(!f((*this->global_topo_cache_[ORBIT])[i]))
+			if(!f(CellType((*this->global_topo_cache_[ORBIT])[i])))
 				break;
 		}
 	}
