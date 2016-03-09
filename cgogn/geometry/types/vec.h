@@ -245,6 +245,15 @@ public:
 		return data_;
 	}
 
+	inline friend std::ostream& operator<<(std::ostream& o, const Self& v)
+	{
+		o << "(";
+		for (auto& c : v.data_)
+			o << c << ",";
+		o << ")";
+		return o;
+	}
+
 private:
 
 	Container data_;
