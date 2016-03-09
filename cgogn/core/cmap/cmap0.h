@@ -98,11 +98,11 @@ protected:
 	/*!
 	* \brief Init an newly added dart.
 	*/
-	inline void init_dart(Dart /*d*/)
+	inline void init_dart(Dart)
 	{
 	}
 
-	inline bool check_integrity(Dart /*d*/) const
+	inline bool check_integrity(Dart) const
 	{
 		return true;
 	}

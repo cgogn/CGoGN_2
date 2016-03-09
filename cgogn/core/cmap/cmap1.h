@@ -125,7 +125,8 @@ protected:
 		(*phi_1_)[d.index] = d;
 	}
 
-	inline bool check_integrity(Dart d) const {
+	inline bool check_integrity(Dart d) const
+	{
 		return (phi1(phi_1(d)) == d &&
 				phi_1(phi1(d)) == d);
 	}
@@ -362,8 +363,6 @@ public:
 		it = phi1(it) ;
 		return (it == f.dart);
 	}
-
-protected:
 
 	/*******************************************************************************
 	 * Orbits traversal

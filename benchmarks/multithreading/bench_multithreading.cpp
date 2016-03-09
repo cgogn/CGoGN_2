@@ -25,7 +25,6 @@
 #include <vector>
 
 #include <core/cmap/cmap2.h>
-#include <core/cmap/sanity_check.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
 
