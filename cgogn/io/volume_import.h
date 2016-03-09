@@ -54,6 +54,8 @@ public:
 	using Map = CMap3<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;
 	using Volume = typename Map::Volume;
+	using Face = typename Map::Face;
+	using Face2 = typename Map::Face2;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -98,11 +100,8 @@ public:
 		volume_attributes_.remove_attributes();
 	}
 
-
 	bool create_map(Map& map)
 	{
-		using Face = typename Map::Face;
-
 		if (this->nb_vertices_ == 0u)
 			return false;
 
@@ -256,7 +255,7 @@ public:
 		{
 			if (m.is_marked(d))
 			{
-				std::vector<Dart>& vec = darts_per_vertex[map.phi1(d)];
+				std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi1(d))];
 
 				Dart good_dart;
 				for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
@@ -284,14 +283,14 @@ public:
 							f1_it = map.phi1(f1_it);
 							f2_it = map.phi_1(f2_it);
 						} while (f1_it != d);
-						m.template unmark_orbit<Orbit::PHI1_PHI3>(d);
+						m.unmark_orbit(Face(d));
 					}
 	//                else
 	//                    std::cout << "erreur : degD != degGD" << std::endl;
 				}
 				else
 				{
-					m.template unmark_orbit<Orbit::PHI1>(d);
+					m.unmark_orbit(Face2(d));
 					++nbBoundaryFaces;
 				}
 			}

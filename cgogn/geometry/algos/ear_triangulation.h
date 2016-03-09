@@ -243,17 +243,18 @@ public:
 		VertexPoly* prem = nullptr;
 		nb_verts_ = 0;
 		convex_ = true;
-		Vertex a = f.dart;
-		Vertex b = Vertex(map_.phi1(a));
-		Vertex c = Vertex(map_.phi1(b));
+
+		Dart a = f.dart;
+		Dart b = map_.phi1(a);
+		Dart c = map_.phi1(b);
 		do
 		{
-			const VEC3& P1 = position[a];
-			const VEC3& P2 = position[b];
-			const VEC3& P3 = position[c];
+			const VEC3& P1 = position[Vertex(a)];
+			const VEC3& P2 = position[Vertex(b)];
+			const VEC3& P3 = position[Vertex(c)];
 
 			Scalar val = compute_ear_angle(P1, P2, P3);
-			VertexPoly* vp = new VertexPoly(b, val, Scalar((P3-P1).squaredNorm()), vpp);
+			VertexPoly* vp = new VertexPoly(Vertex(b), val, Scalar((P3-P1).squaredNorm()), vpp);
 
 			if (vp->value_ > 5.0f)  // concav angle
 				convex_ = false;
@@ -265,7 +266,7 @@ public:
 			b = c;
 			c = map_.phi1(c);
 			nb_verts_++;
-		} while (a.dart != f.dart);
+		} while (a != f.dart);
 
 		VertexPoly::close(prem, vpp);
 

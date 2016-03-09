@@ -194,7 +194,8 @@ TEST_F(CMap2Test, cut_edge)
 {
 	add_closed_surfaces();
 
-	for (Dart d : darts_) cmap_.cut_edge(d);
+	for (Dart d : darts_)
+		cmap_.cut_edge(Edge(d));
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -215,7 +216,7 @@ TEST_F(CMap2Test, cut_face)
 			while (i-- > 0u) e = cmap_.phi1(e);
 			if (e == d) e = cmap_.phi1(e);
 
-			cmap_.cut_face(d, e);
+			cmap_.cut_face(Vertex(d), Vertex(e));
 		}
 	}
 	EXPECT_TRUE(cmap_.check_map_integrity());

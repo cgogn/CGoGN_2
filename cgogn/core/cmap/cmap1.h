@@ -233,7 +233,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Face f = add_face_topo(size);
+		const Face f(add_face_topo(size));
 
 		if (this->template is_embedded<Vertex>())
 		{
@@ -298,7 +298,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Vertex nv = split_vertex_topo(v);
+		const Vertex nv(split_vertex_topo(v));
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(nv);
@@ -351,7 +351,7 @@ public:
 		return this->nb_darts_of_orbit(f);
 	}
 
-	inline bool has_degree(Face f, unsigned int degree)
+	inline bool has_degree(Face f, unsigned int degree) const
 	{
 		Dart it = f.dart ;
 		for (unsigned int i=1;i<degree; ++i)

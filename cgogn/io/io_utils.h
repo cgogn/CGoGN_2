@@ -268,18 +268,18 @@ public:
 	using Inherit = std::istream;
 	using Self = IMemoryStream;
 
-	inline IMemoryStream() : Inherit()
+	inline IMemoryStream() : Inherit(nullptr)
 	{
 		this->init(&buffer_);
 	}
 
-	inline IMemoryStream(const char* str) : Inherit(),
+	inline IMemoryStream(const char* str) : Inherit(nullptr),
 	buffer_(str)
 	{
 		this->init(&buffer_);
 	}
 
-	inline IMemoryStream(const char* str, std::size_t size) : Inherit(),
+	inline IMemoryStream(const char* str, std::size_t size) : Inherit(nullptr),
 	buffer_(str,size)
 	{
 		this->init(&buffer_);

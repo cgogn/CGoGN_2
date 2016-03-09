@@ -234,7 +234,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Face f = add_face_topo(size);
+		const Face f(add_face_topo(size));
 
 		if (this->template is_embedded<CDart>())
 		{

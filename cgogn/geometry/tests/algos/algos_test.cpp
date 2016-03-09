@@ -65,8 +65,8 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleTriangle.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const Scalar area = cgogn::geometry::triangle_area<TypeParam>(this->map2_, *this->map2_.begin(), vertex_position);
-	const Scalar cf_area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, *this->map2_.begin(), vertex_position);
+	const Scalar area = cgogn::geometry::triangle_area<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
+	const Scalar cf_area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(12.5f));
 	EXPECT_DOUBLE_EQ(cf_area, Scalar(12.5f));
 }
@@ -76,7 +76,7 @@ TYPED_TEST(Algos_TEST, QuadArea)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleQuad.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const Scalar area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, *this->map2_.begin(), vertex_position);
+	const Scalar area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(10));
 }
 
@@ -85,7 +85,7 @@ TYPED_TEST(Algos_TEST, TriangleCentroid)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleTriangle.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, CMap2::Face(*this->map2_.begin()), vertex_position);
+	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	EXPECT_DOUBLE_EQ(centroid[0], Scalar(5)/Scalar(3));
 	EXPECT_DOUBLE_EQ(centroid[1], Scalar(5)/Scalar(3));
 	EXPECT_DOUBLE_EQ(centroid[2], Scalar(0));
@@ -96,7 +96,7 @@ TYPED_TEST(Algos_TEST, QuadCentroid)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleQuad.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, CMap2::Face(*this->map2_.begin()), vertex_position);
+	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	EXPECT_DOUBLE_EQ(centroid[0], Scalar(2.5f));
 	EXPECT_DOUBLE_EQ(centroid[1], Scalar(1));
 	EXPECT_DOUBLE_EQ(centroid[2], Scalar(0));
@@ -107,8 +107,8 @@ TYPED_TEST(Algos_TEST, TriangleNormal)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleTriangle.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const TypeParam& n1 = cgogn::geometry::triangle_normal<TypeParam>(this->map2_, CMap2::Face(*this->map2_.begin()), vertex_position);
-	const TypeParam& n2 = cgogn::geometry::face_normal<TypeParam>(this->map2_, CMap2::Face(*this->map2_.begin()), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::triangle_normal<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
+	const TypeParam& n2 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[0], n2[0]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[1], n2[1]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[2], n2[2]));
@@ -124,7 +124,7 @@ TYPED_TEST(Algos_TEST, QuadNormal)
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleQuad.obj"));
 	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
-	const TypeParam& n1 = cgogn::geometry::face_normal<TypeParam>(this->map2_, CMap2::Face(*this->map2_.begin()), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(*this->map2_.begin()), vertex_position);
 	const TypeParam& cross = n1.cross(TypeParam(Scalar(0), Scalar(0), Scalar(1)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], Scalar(0)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], Scalar(0)));
@@ -155,16 +155,16 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 	EXPECT_TRUE(indices.size() == 9);
 
 	Scalar area = 0;
-	for (size_t i=0; i<indices.size(); i+=3)
+	for (size_t i = 0; i < indices.size(); i += 3)
 	{
 		const TypeParam& A = vertex_position[indices[i]];
 		const TypeParam& B = vertex_position[indices[i+1]];
 		const TypeParam& C = vertex_position[indices[i+2]];
-		area += cgogn::geometry::triangle_area(A,B,C);
+		area += cgogn::geometry::triangle_area(A, B, C);
 	}
 	EXPECT_DOUBLE_EQ(area,75.0);
 
-	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_,f,vertex_position);
+	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_, f, vertex_position);
 	EXPECT_TRUE(this->map2_.template nb_cells<Face::ORBIT>()==4);
 	EXPECT_TRUE(this->map2_.template nb_cells<Edge::ORBIT>()==7);
 }
