@@ -25,16 +25,18 @@
 #define IO_SURFACE_IMPORT_H_
 
 #include <istream>
+#include <sstream>
 
 #include <core/utils/endian.h>
+#include <core/utils/name_types.h>
+#include <core/utils/string.h>
 #include <core/container/chunk_array_container.h>
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap2_builder.h>
-#include <core/utils/string.h>
-#include <io/import_ply_data.h>
 
-#include <io/c_locale.h>
 #include <io/dll.h>
+#include <io/c_locale.h>
+#include <io/mesh_io_gen.h>
 
 namespace cgogn
 {
@@ -42,47 +44,25 @@ namespace cgogn
 namespace io
 {
 
-enum SurfaceFileType
-{
-	SurfaceFileType_UNKNOWN = 0,
-	SurfaceFileType_OFF,
-	SurfaceFileType_OBJ,
-	SurfaceFileType_PLY
-};
-
-inline SurfaceFileType get_file_type(const std::string& filename)
-{
-	const std::string& extension = to_lower(get_extension(filename));
-	if (extension == "off")
-		return SurfaceFileType_OFF;
-	if (extension == "obj")
-		return SurfaceFileType_OBJ;
-	if (extension == "ply")
-		return SurfaceFileType_PLY;
-	return SurfaceFileType_UNKNOWN;
-}
 
 template <typename MAP_TRAITS>
-class SurfaceImport
+class SurfaceImport : public MeshImportGen
 {
 public:
-
 	using Self = SurfaceImport<MAP_TRAITS>;
+	using Inherit = MeshImportGen;
 	using Map = CMap2<MAP_TRAITS>;
-	using Vertex = typename Map::Vertex;
 
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
 	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
-
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
-	template <typename T>
 
-	using VertexAttributeHandler = typename Map::template VertexAttributeHandler<T>;
 
+protected:
 	unsigned int nb_vertices_;
 	unsigned int nb_edges_;
 	unsigned int nb_faces_;
@@ -91,16 +71,19 @@ public:
 	std::vector<unsigned int> faces_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
+	ChunkArrayContainer face_attributes_;
+
+public:
 
 	SurfaceImport() :
 		nb_vertices_(0u)
-		,nb_edges_(0u)
-		,nb_faces_(0u)
-		,faces_nb_edges_()
-		,faces_vertex_indices_()
+	  ,nb_edges_(0u)
+	  ,nb_faces_(0u)
+	  ,faces_nb_edges_()
+	  ,faces_vertex_indices_()
 	{}
 
-	~SurfaceImport()
+	virtual ~SurfaceImport() override
 	{}
 
 	SurfaceImport(const Self&) = delete;
@@ -108,7 +91,7 @@ public:
 	Self& operator=(const Self&) = delete;
 	Self& operator=(Self&&) = delete;
 
-	void clear()
+	virtual void clear() override
 	{
 		nb_vertices_ = 0;
 		nb_edges_ = 0;
@@ -116,57 +99,14 @@ public:
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();
+		face_attributes_.remove_attributes();
 	}
 
-	template <typename VEC3>
-	bool import_file(const std::string& filename)
+	inline void create_map(Map& map)
 	{
-		return import_file<VEC3>(filename, get_file_type(filename));
-	}
-
-	template <typename VEC3>
-	bool import_file(const std::string& filename, SurfaceFileType type)
-	{
-		//ensure that locale are set to C for reading files
-		Scoped_C_Locale loc;
-
-		clear();
-
-		std::ifstream fp(filename.c_str(), std::ios::in);
-		if (!fp.good())
-		{
-			std::cout << "Unable to open file " << filename << std::endl;
-			return false;
-		}
-
-		bool result = false;
-		switch (type)
-		{
-		case SurfaceFileType_UNKNOWN :
-			std::cout << "Unknown file type " << filename << std::endl;
-			result = false;
-			break;
-		case SurfaceFileType_OFF :
-			result = import_OFF<VEC3>(fp);
-			break;
-		case SurfaceFileType_OBJ :
-			result = import_OBJ<VEC3>(fp);
-			break;
-		case SurfaceFileType_PLY :
-			fp.close();
-			result = import_ply<VEC3>(filename);
-			break;
-
-		}
-
-		if (!result)
-			this->clear();
-
-		return result;
-	}
-
-	void create_map(Map& map)
-	{
+		using Vertex = typename Map::Vertex;
+		using Edge = typename Map::Edge;
+		using Face = typename Map::Face;
 		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
 
 		if (this->nb_vertices_ == 0u)
@@ -178,8 +118,8 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
-			map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		unsigned int faces_vertex_index = 0;
 		std::vector<unsigned int> vertices_buffer;
@@ -227,13 +167,13 @@ public:
 			{
 				unsigned int vertex_index = map.get_embedding(Vertex(d));
 
-				std::vector<Dart>& next_vertex_darts = darts_per_vertex[map.phi1(d)];
+				std::vector<Dart>& next_vertex_darts = darts_per_vertex[Vertex(map.phi1(d))];
 				bool phi2_found = false;
 				bool first_OK = true;
 
 				for (auto it = next_vertex_darts.begin();
-					it != next_vertex_darts.end() && !phi2_found;
-					++it)
+					 it != next_vertex_darts.end() && !phi2_found;
+					 ++it)
 				{
 					if (map.get_embedding(Vertex(map.phi1(*it))) == vertex_index)
 					{
@@ -263,379 +203,15 @@ public:
 		if (need_vertex_unicity_check)
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
+		if (this->face_attributes_.get_nb_attributes() > 0)
+		{
+			mbuild.template create_embedding<Face::ORBIT>();
+			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
+		}
+
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
 	}
-
-protected:
-
-	template <typename VEC3>
-	bool import_OFF(std::ifstream& fp)
-	{
-		using Scalar = typename VEC3::Scalar;
-
-		std::string line;
-		line.reserve(512);
-
-		// local function for reading double with comment ignoring
-		auto read_double = [&fp,&line]() -> double
-		{
-			fp >> line;
-			while (line[0]=='#')
-			{
-				fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-				fp >> line;
-			}
-			return std::stod(line);
-		};
-
-		// local function for reading int with comment ignoring
-		auto read_uint = [&fp,&line]() -> unsigned int
-		{
-			fp >> line;
-			while (line[0]=='#')
-			{
-				fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-				fp >> line;
-			}
-			return (unsigned int)(std::stoul(line));
-		};
-
-
-
-		// read OFF header
-		std::getline(fp, line);
-		if (line.rfind("OFF") == std::string::npos)
-		{
-			std::cout << "Problem reading off file: not an off file" << std::endl;
-			std::cout << line << std::endl;
-			return false;
-		}
-
-		// check if binary file
-		if (line.rfind("BINARY") != std::string::npos)
-		{
-			return import_OFF_BIN<VEC3>(fp);
-		}
-
-
-		// read number of vertices, edges, faces
-		nb_vertices_ = read_uint();
-		nb_faces_ = read_uint();
-		nb_edges_ = read_uint();
-
-		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-
-		// read vertices position
-		std::vector<unsigned int> vertices_id;
-		vertices_id.reserve(nb_vertices_);
-
-		for (unsigned int i = 0; i < nb_vertices_; ++i)
-		{
-
-			double x = read_double();
-			double y = read_double();
-			double z = read_double();
-
-			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
-
-			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
-			(*position)[vertex_id] = pos;
-
-			vertices_id.push_back(vertex_id);
-		}
-
-		// read faces (vertex indices)
-		faces_nb_edges_.reserve(nb_faces_);
-		faces_vertex_indices_.reserve(nb_vertices_ * 8);
-		for (unsigned int i = 0; i < nb_faces_; ++i)
-		{
-			unsigned int n = read_uint();
-			faces_nb_edges_.push_back(n);
-			for (unsigned int j = 0; j < n; ++j)
-			{
-				unsigned int index = read_uint();
-				faces_vertex_indices_.push_back(vertices_id[index]);
-			}
-
-		}
-
-		return true;
-	}
-
-	template <typename VEC3>
-	bool import_OFF_BIN(std::ifstream& fp)
-	{
-		char buffer1[12];
-		fp.read(buffer1,12);
-
-		nb_vertices_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1)));
-		nb_faces_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
-		nb_edges_= swap_endianness_system_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
-
-
-		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-
-
-		static const unsigned int BUFFER_SZ = 1024*1024;
-		float* buff_pos = new float[3*BUFFER_SZ];
-		std::vector<unsigned int> vertices_id;
-		vertices_id.reserve(nb_vertices_);
-
-		unsigned j = BUFFER_SZ;
-		for (unsigned int i = 0; i < nb_vertices_; ++i,++j)
-		{
-			if (j == BUFFER_SZ)
-			{
-				j = 0;
-				// read from file into buffer
-				if (i+BUFFER_SZ < nb_vertices_)
-					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*BUFFER_SZ);
-				else
-					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*(nb_vertices_-i));
-
-				//endian
-				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
-				for (unsigned int k=0; k< 3*BUFFER_SZ;++k)
-				{
-					*ptr = swap_endianness_system_big(*ptr);
-					++ptr;
-				}
-			}
-
-			VEC3 pos{buff_pos[3*j], buff_pos[3*j+1], buff_pos[3*j+2]};
-
-			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
-			(*position)[vertex_id] = pos;
-
-			vertices_id.push_back(vertex_id);
-		}
-
-		delete[] buff_pos;
-
-		// read faces (vertex indices)
-
-		unsigned int* buff_ind = new unsigned int[BUFFER_SZ];
-		faces_nb_edges_.reserve(nb_faces_);
-		faces_vertex_indices_.reserve(nb_vertices_ * 8);
-
-		unsigned int* ptr = buff_ind;
-		unsigned int nb_read = BUFFER_SZ;
-		for (unsigned int i = 0; i < nb_faces_; ++i)
-		{
-			if (nb_read == BUFFER_SZ)
-			{
-				fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
-				ptr = buff_ind;
-				for (unsigned int i=0; i< BUFFER_SZ;++i)
-				{
-					*ptr = swap_endianness_system_big(*ptr);
-					++ptr;
-				}
-				ptr = buff_ind;
-				nb_read =0;
-			}
-
-			unsigned int n = *ptr++;
-			nb_read++;
-
-			faces_nb_edges_.push_back(n);
-			for (unsigned int j = 0; j < n; ++j)
-			{
-				if (nb_read == BUFFER_SZ)
-				{
-					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
-					ptr = buff_ind;
-					for (unsigned int k=0; k< BUFFER_SZ;++k)
-					{
-						*ptr = swap_endianness_system_big(*ptr);
-						++ptr;
-					}
-					ptr = buff_ind;
-					nb_read=0;
-				}
-				unsigned int index = *ptr++;
-				nb_read++;
-				faces_vertex_indices_.push_back(vertices_id[index]);
-			}
-		}
-
-		delete[] buff_ind;
-
-		return true;
-	}
-
-
-	template <typename VEC3>
-	bool import_OBJ(std::ifstream& fp)
-	{
-		using Scalar = typename VEC3::Scalar;
-
-		ChunkArray<VEC3>* position =
-			vertex_attributes_.template add_attribute<VEC3>("position");
-
-		std::string line, tag;
-
-		do
-		{
-			fp >> tag;
-			std::getline(fp, line);
-		} while (tag != std::string("v"));
-
-		// lecture des sommets
-		std::vector<unsigned int> vertices_id;
-		vertices_id.reserve(102400);
-
-		unsigned int i = 0;
-		do
-		{
-			if (tag == std::string("v"))
-			{
-				std::stringstream oss(line);
-
-				double x, y, z;
-				oss >> x;
-				oss >> y;
-				oss >> z;
-
-				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
-
-				unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
-				(*position)[vertex_id] = pos;
-
-				vertices_id.push_back(vertex_id);
-				i++;
-			}
-
-			fp >> tag;
-			std::getline(fp, line);
-		} while (!fp.eof());
-
-		nb_vertices_ = static_cast<unsigned int>(vertices_id.size());
-
-		fp.clear();
-		fp.seekg(0, std::ios::beg);
-
-		do
-		{
-			fp >> tag;
-			std::getline(fp, line);
-		} while (tag != std::string("f"));
-
-		faces_nb_edges_.reserve(vertices_id.size() * 2);
-		faces_vertex_indices_.reserve(vertices_id.size() * 8);
-
-		std::vector<unsigned int> table;
-		table.reserve(64);
-		do
-		{
-			if (tag == std::string("f")) // lecture d'une face
-			{
-				std::stringstream oss(line);
-
-				table.clear();
-				while (!oss.eof())  // lecture de tous les indices
-				{
-					std::string str;
-					oss >> str;
-
-					unsigned int ind = 0;
-
-					while ((ind < str.length()) && (str[ind] != '/'))
-						ind++;
-
-					if (ind > 0)
-					{
-						unsigned int index;
-						std::stringstream iss(str.substr(0, ind));
-						iss >> index;
-						table.push_back(index);
-					}
-				}
-
-				unsigned int n = static_cast<unsigned int>(table.size());
-				faces_nb_edges_.push_back(static_cast<unsigned short>(n));
-				for (unsigned int j = 0; j < n; ++j)
-				{
-					unsigned int index = table[j] - 1; // indices start at 1
-					faces_vertex_indices_.push_back(vertices_id[index]);
-				}
-				nb_faces_++;
-			}
-			fp >> tag;
-			std::getline(fp, line);
-		} while (!fp.eof());
-
-		return true;
-	}
-
-
-
-	template <typename VEC3>
-	bool import_ply(const std::string& filename)
-	{
-
-		PlyImportData pid;
-
-		if (! pid.read_file(filename) )
-		{
-			std::cerr << "Unable to open file " << filename << std::endl;
-			return false;
-		}
-
-		ChunkArray<VEC3>* position = vertex_attributes_.template add_attribute<VEC3>("position");
-		ChunkArray<VEC3>* color = nullptr;
-		if (pid.has_colors())
-		{
-			 color = vertex_attributes_.template add_attribute<VEC3>("color");
-		}
-
-		nb_vertices_ = pid.nb_vertices();
-		nb_faces_ = pid.nb_faces();
-
-		
-		// read vertices position
-		std::vector<unsigned int> vertices_id;
-		vertices_id.reserve(nb_vertices_);
-
-		for (unsigned int i = 0; i < nb_vertices_; ++i)
-		{
-			VEC3 pos;
-			pid.vertex_position(i, pos);
-
-			unsigned int vertex_id = vertex_attributes_.template insert_lines<1>();
-			(*position)[vertex_id] = pos;
-
-			vertices_id.push_back(vertex_id);
-
-			if (pid.has_colors())
-			{
-				VEC3 rgb;
-				pid.vertex_color_float32(i, rgb);
-
-				(*color)[vertex_id] = pos;
-			}
-		}
-
-		// read faces (vertex indices)
-		faces_nb_edges_.reserve(nb_faces_);
-		faces_vertex_indices_.reserve(nb_vertices_ * 8);
-		for (unsigned int i = 0; i < nb_faces_; ++i)
-		{
-			unsigned int n = pid.get_face_valence(i);
-			faces_nb_edges_.push_back(n);
-			int* indices = pid.get_face_indices(i);
-			for (unsigned int j = 0; j < n; ++j)
-			{
-				unsigned int index = (unsigned int)(indices[j]);
-				faces_vertex_indices_.push_back(vertices_id[index]);
-			}
-		}
-
-		return true;
-	}
-
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_SURFACE_IMPORT_CPP_))

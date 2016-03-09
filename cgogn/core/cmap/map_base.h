@@ -35,7 +35,7 @@
 #include <core/basic/cell_marker.h>
 
 #include <core/utils/thread_barrier.h>
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 
 namespace cgogn
 {
@@ -385,30 +385,105 @@ public:
 		remove_attribute(counter);
 	}
 
-	template <Orbit ORBIT>
-	bool is_well_embedded(Cell<ORBIT> c) const
+	/**
+	 * \brief Tests if all \p ORBIT orbits are well embedded
+	 * \details An orbit is well embedded if all its darts
+	 * have the same embedding (index)
+	 *
+	 * \tparam ORBIT [description]
+	 * \return [description]
+	 */
+	template <typename CellType>
+	bool is_well_embedded()
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
 		const ConcreteMap* cmap = to_concrete();
+		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_marker");
 		bool result = true;
 
-		std::map<unsigned int, Dart> emb_set;
-		cmap->foreach_dart_of_orbit(c, [&] (Dart d)
+		const typename Inherit::template ChunkArrayContainer<unsigned int>& container = this->attributes_[ORBIT];
+
+		// a marker is initialized to false for each "used" index of the container
+		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			counter[i] = 0;
+
+		// Check that the indexation of cells is correct
+		foreach_cell_until_dart_marking([&] (CellType c)
 		{
-			emb_set.insert(std::pair<unsigned int, Dart>(this->template get_embedding<ORBIT>(d), d));
+			unsigned int idx = this->get_embedding(c);
+			// check used indices are valid
+			if (idx == EMBNULL)
+			{
+				result = false;
+				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			}
+			// ensure that two cells do not share the same index
+			if (counter[idx] > 0)
+			{
+				result = false;
+				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			}
+			counter[idx] = 1;
+			// check all darts of the cell use the same index (distinct to EMBNULL)
+			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+			{
+				if (this->get_embedding(CellType(d)) != idx)
+					result = false;
+				if (!result)
+					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			});
+
+			return result;
 		});
-
-		if(emb_set.size() > 1)
+		// check that all cells present in the attribute handler are used
+		if (result)
 		{
-			std::cout << "Orbit is not well embedded: " << std::endl;
+			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
+			{
+				if (counter[i] == 0)
+				{
+					result = false;
+					std::cerr << "Some cells are not used in orbit " << orbit_name(ORBIT) << std::endl;
+					break;
+				}
+			}
+		}
+		remove_attribute(counter);
+		return result;
+	}
 
-			result = false;
-			std::map<unsigned int, Dart>::iterator it;
-			for (auto const& de : emb_set)
-				std::cout << "\t dart #" << de.second << " has embed index #" << de.first << std::endl;
-			std::cout << std::endl;
+	bool check_map_integrity()
+	{
+		ConcreteMap* cmap = to_concrete();
+		bool result = true;
+
+		// check the integrity of topological relations or the correct sewing of darts
+		foreach_dart_until([&cmap, &result] (Dart d)
+		{
+			if (!cmap->check_integrity(d))
+				result = false;
+			return result;
+		});
+		if (!result)
+		{
+			std::cerr << "Integrity of the topology is broken" << std::endl;
+			return false;
 		}
 
-		return result;
+		// check the embedding indexation for the concrete map
+		result = cmap->check_embedding_integrity();
+		if (!result)
+		{
+			std::cerr << "Integrity of the embeddings is broken" << std::endl;
+			return false;
+		}
+		return true;
 	}
 
 	/*******************************************************************************
@@ -789,8 +864,9 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.mark_orbit(CellType(d));
-				f(d);
+				CellType c(d);
+				dm.mark_orbit(c);
+				f(c);
 			}
 		}
 	}
@@ -831,8 +907,9 @@ protected:
 			{
 				if (!dm.is_marked(it))
 				{
-					dm.template mark_orbit<ORBIT>(it);
-					cells.push_back(Cell<ORBIT>(it));
+					CellType c(it);
+					dm.mark_orbit(c);
+					cells.push_back(c);
 					++k;
 				}
 				this->topology_.next(it.index);
@@ -841,16 +918,16 @@ protected:
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
 			{
 				for (auto c : cells)
-					f(c,th_id);
+					f(c, th_id);
 			}));
 			// next thread
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -879,10 +956,11 @@ protected:
 			 d != end;
 			 this->topology_.next(d.index))
 		{
-			if (!cm.is_marked(d))
+			CellType c(d);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(d);
-				f(d);
+				cm.mark(c);
+				f(c);
 			}
 		}
 	}
@@ -921,10 +999,11 @@ protected:
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
 			{
-				if (!cm.is_marked(it))
+				CellType c(it);
+				if (!cm.is_marked(c))
 				{
-					cm.mark(it);
-					cells.push_back(it);
+					cm.mark(c);
+					cells.push_back(c);
 					++k;
 				}
 				this->topology_.next(it.index);
@@ -939,10 +1018,10 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const unsigned int id = (i+1u)%2u;
+				const unsigned int id = (i+1u) % 2u;
 				for (auto& fu : futures[id])
 					fu.wait();
-				for (auto &b : cells_buffers[id])
+				for (auto& b : cells_buffers[id])
 					dbuffs->release_cell_buffer(b);
 				futures[id].clear();
 				cells_buffers[id].clear();
@@ -952,13 +1031,12 @@ protected:
 		// clean all at end
 		for (auto& fu : futures[0u])
 			fu.wait();
-		for (auto &b : cells_buffers[0u])
+		for (auto& b : cells_buffers[0u])
 			dbuffs->release_cell_buffer(b);
 		for (auto& fu : futures[1u])
 			fu.wait();
-		for (auto &b : cells_buffers[1u])
+		for (auto& b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
-
 	}
 
 	template <typename FUNC>
@@ -971,7 +1049,7 @@ protected:
 			 i != end;
 			 this->attributes_[ORBIT].next(i))
 		{
-			f((*this->global_topo_cache_[ORBIT])[i]);
+			f(CellType((*this->global_topo_cache_[ORBIT])[i]));
 		}
 	}
 
@@ -1001,7 +1079,7 @@ protected:
 			  && (static_cast<unsigned int>(end - it) > nb_threads_pool))
 			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
 
-		unsigned int local_end = std::min(it+nbc,end);
+		unsigned int local_end = std::min(it+nbc, end);
 
 		const auto& cache = *(this->global_topo_cache_[ORBIT]);
 
@@ -1014,7 +1092,7 @@ protected:
 				unsigned int loc_it = it;
 				while (loc_it < local_end)
 				{
-					f(cache[loc_it],th_id);
+					f(CellType(cache[loc_it]), th_id);
 					attr.next(loc_it);
 				}
 			}));
@@ -1051,8 +1129,9 @@ protected:
 		{
 			if (!dm.is_marked(d))
 			{
-				dm.mark_orbit(CellType(d));
-				if(!f(d))
+				CellType c(d);
+				dm.mark_orbit(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1069,10 +1148,11 @@ protected:
 			 d != end;
 			 this->topology_.next(d.index))
 		{
-			if (!cm.is_marked(d))
+			CellType c(d);
+			if (!cm.is_marked(c))
 			{
-				cm.mark(d);
-				if(!f(d))
+				cm.mark(c);
+				if(!f(c))
 					break;
 			}
 		}
@@ -1088,7 +1168,7 @@ protected:
 			 i != end;
 			 this->attributes_[ORBIT].next(i))
 		{
-			if(!f((*this->global_topo_cache_[ORBIT])[i]))
+			if(!f(CellType((*this->global_topo_cache_[ORBIT])[i])))
 				break;
 		}
 	}

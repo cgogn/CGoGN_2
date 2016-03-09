@@ -48,7 +48,6 @@ int main(int argc, char** argv)
 		map.enable_topo_cache<Map3::Vertex::ORBIT>();
 		map.enable_topo_cache<Map3::Edge::ORBIT>();
 
-
 		unsigned int nbw = 0u;
 		map.foreach_cell([&nbw] (Map3::Volume)
 		{
@@ -59,8 +58,8 @@ int main(int argc, char** argv)
 		map.foreach_cell([&] (Map3::Face f)
 		{
 			++nbf;
-			Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-			Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
+			Vec3 v1 = vertex_position[Map3::Vertex(map.phi1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
+			Vec3 v2 = vertex_position[Map3::Vertex(map.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
 		});
 
 		unsigned int nbv = 0;

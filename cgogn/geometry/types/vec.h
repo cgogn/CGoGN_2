@@ -91,6 +91,11 @@ public:
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
 
+	inline const Scalar* data() const
+	{
+		return data_.data();
+	}
+
 	inline Scalar& operator[](std::size_t i)
 	{
 		return data_[i];
@@ -243,6 +248,15 @@ public:
 	const Container& to_container() const
 	{
 		return data_;
+	}
+
+	inline friend std::ostream& operator<<(std::ostream& o, const Self& v)
+	{
+		o << "(";
+		for (auto& c : v.data_)
+			o << c << ",";
+		o << ")";
+		return o;
 	}
 
 private:

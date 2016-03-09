@@ -36,16 +36,18 @@ namespace geometry
 template <typename VEC3_T, typename MAP>
 inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
+	using Vertex = typename MAP::Vertex;
 	return triangle_area<VEC3_T>(
-		position[f.dart],
-		position[map.phi1(f.dart)],
-		position[map.phi_1(f.dart)]
+		position[Vertex(f.dart)],
+		position[Vertex(map.phi1(f.dart))],
+		position[Vertex(map.phi_1(f.dart))]
 	);
 }
 
 template <typename VEC3_T, typename MAP>
 inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
+	using Vertex = typename MAP::Vertex;
 	if(map.degree(f) == 3)
 		return triangle_area<VEC3_T>(map, f, position);
 	else
@@ -54,7 +56,7 @@ inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Fa
 		VEC3_T center = centroid<VEC3_T>(map, f, position);
 		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
 		{
-			area += triangle_area<VEC3_T>(center, position[e.dart], position[map.phi1(e.dart)]);
+			area += triangle_area<VEC3_T>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
 		});
 		return area;
 	}

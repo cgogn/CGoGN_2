@@ -187,8 +187,8 @@ public:
 	{
 		cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 
-		if(Inherit_CMAP::phi3(d) == d);
-		return d;
+		if(Inherit_CMAP::phi3(d) == d)
+			return d;
 
 		return Inherit_CMAP::phi3(Inherit_CMAP::phi_1(phi1(d)));
 	}
