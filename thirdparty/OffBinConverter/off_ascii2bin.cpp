@@ -34,9 +34,9 @@ int main(int argc, char **argv)
 	ifs >> np;
 	ifs >> ne;
 
-	unsigned int nv_be = cgogn::swap_endianness_system_big(nv);
-	unsigned int np_be = cgogn::swap_endianness_system_big(np);
-	unsigned int ne_be = cgogn::swap_endianness_system_big(ne);
+	unsigned int nv_be = cgogn::swap_endianness_native_big(nv);
+	unsigned int np_be = cgogn::swap_endianness_native_big(np);
+	unsigned int ne_be = cgogn::swap_endianness_native_big(ne);
 
 
 	ofs << "OFF BINARY"<< std::endl;
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	unsigned int* ptr = reinterpret_cast<unsigned int*>(vertices);
 	for (unsigned int i=0; i<3*nv;++i)
 	{
-		*ptr = cgogn::swap_endianness_system_big(*ptr);
+		*ptr = cgogn::swap_endianness_native_big(*ptr);
 		ptr++;
 	}
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	ptr = reinterpret_cast<unsigned int*>(&(prim[0]));
 	for (unsigned int i=0; i<prim.size();++i)
 	{
-		*ptr = cgogn::swap_endianness_system_big(*ptr);
+		*ptr = cgogn::swap_endianness_native_big(*ptr);
 		ptr++;
 	}
 

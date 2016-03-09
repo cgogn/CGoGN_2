@@ -1532,7 +1532,7 @@
         </DataArray>
       </Cells>
       <CellData Scalars="scalars">
-        <DataArray type="Int32" Name="subdomain index" Format="ascii">
+        <DataArray type="Int32" Name="subdomain index" format="ascii">
           1
           1
           1
