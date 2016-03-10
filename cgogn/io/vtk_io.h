@@ -268,7 +268,7 @@ protected :
 												sstream.clear();
 												std::string		data_name;
 												unsigned int	nb_comp;
-												unsigned int	nb_data;
+												//unsigned int	nb_data; already declared
 												std::string		data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
@@ -283,7 +283,7 @@ protected :
 											if (word == "LOOKUP_TABLE")
 											{
 												std::string table_name;
-												unsigned int nb_data = 0u;
+												/*unsigned int*/ nb_data = 0u;
 												sstream >> table_name >> nb_data;
 												std::cout << "ignoring the definition of the lookuptable named \"" << table_name << "\"" << std::endl;
 												if (ascii_file)
