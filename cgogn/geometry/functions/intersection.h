@@ -46,24 +46,32 @@ bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T&
 
 	unsigned int np = 0 ;
 	unsigned int nn = 0 ;
+	unsigned int nz = 0 ;
 
-	if (x >Scalar(0))
+	if (x > Scalar(0))
 		++np ;
-	else
+	else if (x < Scalar(0))
 		++nn ;
+	else
+		++nz;
 
-	if (y >Scalar(0))
+	if (y > Scalar(0))
 		++np ;
-	else
+	else if (y < Scalar(0))
 		++nn ;
+	else
+		++nz;
 
-	if (z >Scalar(0))
+
+	if (z > Scalar(0))
 		++np ;
-	else
+	else if (z < Scalar(0))
 		++nn ;
+	else
+		++nz;
 
 	// line intersect the triangle
-	if ((np != 0) && (nn != 0))
+	if (((np != 0) && (nn != 0)) || (nz == 3))
 		return false ;
 
 	Scalar sum = x + y + z ;

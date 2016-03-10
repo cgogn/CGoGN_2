@@ -77,7 +77,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 			std::vector<unsigned int>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,ear_indices);
-			for(unsigned int i=0; i<ear_indices.size(); i+=3)
+			for(std::size_t i=0; i<ear_indices.size(); i+=3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
 				const VEC3& p2 = position[ear_indices[i+1]];
@@ -136,7 +136,7 @@ bool picking_vertex(MAP& m, const typename MAP::template VertexAttributeHandler<
 	selected.clear();
 	for (auto fs: sel)
 	{
-		float min_d2 = std::numeric_limits<Scalar>::max();
+		Scalar min_d2 = std::numeric_limits<Scalar>::max();
 		Vertex closest_vertex;
 
 		Face f = std::get<0>(fs);
@@ -178,7 +178,7 @@ bool picking_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VE
 	selected.clear();
 	for (auto fs: sel)
 	{
-		float min_d2 = std::numeric_limits<Scalar>::max();
+		Scalar min_d2 = std::numeric_limits<Scalar>::max();
 		Edge closest_edge;
 
 		Face f = std::get<0>(fs);
