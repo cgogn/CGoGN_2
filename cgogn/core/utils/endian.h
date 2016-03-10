@@ -117,40 +117,86 @@ inline double swap_endianness_double(double x)
 	return u.as_f64;
 }
 
-template<typename T, bool COND>
-inline T swap_endianness_if(T x)
-{
-	static_assert(	std::is_same<T, char>::value ||
-					std::is_same<T, std::uint8_t>::value ||
-					std::is_same<T, std::uint16_t>::value ||
-					std::is_same<T, std::uint32_t>::value ||
-					std::is_same<T, std::uint64_t>::value ||
-					std::is_same<T, std::int8_t>::value ||
-					std::is_same<T, std::int16_t>::value ||
-					std::is_same<T, std::int32_t>::value ||
-					std::is_same<T, std::int64_t>::value ||
-					std::is_same<T, float>::value ||
-					std::is_same<T, double>::value, "This function is specialized for 8,16, 32 or 64 bits (u))ints, floats and doubles.");
 
+template< bool COND>
+inline char swap_endianness_if(char x)
+{
+	return x;
+}
+
+template< bool COND>
+inline std::uint8_t swap_endianness_if(std::uint8_t x)
+{
+	return x;
+}
+
+template< bool COND>
+inline std::uint16_t swap_endianness_if(std::uint16_t x)
+{
 	if (COND)
-	{
-		if (std::is_same<T, std::uint16_t>::value)
-			return swap_endianness16u(x);
-		if (std::is_same<T, std::uint32_t>::value)
-			return swap_endianness32u(x);
-		if (std::is_same<T, std::uint64_t>::value)
-			return swap_endianness64u(x);
-		if (std::is_same<T, std::int16_t>::value)
-			return swap_endianness16(x);
-		if (std::is_same<T, std::int32_t>::value)
-			return swap_endianness32(x);
-		if (std::is_same<T, std::int64_t>::value)
-			return swap_endianness64(x);
-		if (std::is_same<T, float>::value)
-			return swap_endianness_float(x);
-		if (std::is_same<T, double>::value)
-			return swap_endianness_double(x);
-	}
+		return swap_endianness16u(x);
+	return x;
+}
+
+template< bool COND>
+inline std::uint32_t swap_endianness_if(std::uint32_t x)
+{
+	if (COND)
+		return swap_endianness32u(x);
+	return x;
+}
+
+template< bool COND>
+inline std::uint64_t swap_endianness_if(std::uint64_t x)
+{
+	if (COND)
+		return swap_endianness64u(x);
+	return x;
+}
+
+template< bool COND>
+inline std::int8_t swap_endianness_if(std::int8_t x)
+{
+	return x;
+}
+
+template< bool COND>
+inline std::int16_t swap_endianness_if(std::int16_t x)
+{
+	if (COND)
+		return swap_endianness16(x);
+	return x;
+}
+
+template< bool COND>
+inline std::int32_t swap_endianness_if(std::int32_t x)
+{
+	if (COND)
+		return swap_endianness32(x);
+	return x;
+}
+
+template< bool COND>
+inline std::int64_t swap_endianness_if(std::int64_t x)
+{
+	if (COND)
+		return swap_endianness64(x);
+	return x;
+}
+
+template< bool COND>
+inline float swap_endianness_if(float x)
+{
+	if (COND)
+		return swap_endianness_float(x);
+	return x;
+}
+
+template< bool COND>
+inline double swap_endianness_if(double x)
+{
+	if (COND)
+		return swap_endianness_double(x);
 	return x;
 }
 
@@ -159,19 +205,19 @@ inline T swap_endianness_if(T x)
 template<typename T>
 inline T swap_endianness(T x)
 {
-	return internal::swap_endianness_if<T, true>(x);
+	return internal::swap_endianness_if<true>(x);
 }
 
 template<typename T>
 inline T swap_endianness_native_big(T x)
 {
-	return internal::swap_endianness_if<T, internal::cgogn_is_little_endian>(x);
+	return internal::swap_endianness_if<internal::cgogn_is_little_endian>(x);
 }
 
 template<typename T>
 inline T swap_endianness_native_little(T x)
 {
-	return internal::swap_endianness_if<T, internal::cgogn_is_big_endian>(x);
+	return internal::swap_endianness_if<internal::cgogn_is_big_endian>(x);
 }
 
 } // namespace cgogn
