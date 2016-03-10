@@ -362,9 +362,10 @@ public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
-					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
-					  "Orbit not supported in a CMap2");
+		//static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
+		//			  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+		//			  "Orbit not supported in a CMap2");
+		// PAS POSSIBLE SOUS VS2013!
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
