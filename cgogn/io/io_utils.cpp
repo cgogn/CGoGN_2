@@ -54,14 +54,14 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	{
 		word_size = 8u;
 		// we read the first 3 uint64
-		header_data = base64_decode(input, 0, 24);
+		header_data = base64_decode(input, 0, 32);
 		nb_blocks = *reinterpret_cast<const std::uint64_t*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[8]);
 		last_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[16]);
 		compressed_size.resize(nb_blocks);
 	} else
 	{
-		header_data = base64_decode(input, 0, 12);
+		header_data = base64_decode(input, 0, 24);
 		nb_blocks = *reinterpret_cast<const unsigned int*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const unsigned int*>(&header_data[4]);
 		last_block_size = *reinterpret_cast<const unsigned int*>(&header_data[8]);
@@ -217,6 +217,8 @@ CGOGN_IO_API FileType get_file_type(const std::string& filename)
 		return FileType::FileType_VTK_LEGACY;
 	if (extension == "vtu")
 		return FileType::FileType_VTU;
+	if (extension == "vtp")
+		return FileType::FileType_VTP;
 	return FileType::FileType_UNKNOWN;
 }
 
