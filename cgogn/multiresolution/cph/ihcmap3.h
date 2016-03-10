@@ -99,6 +99,7 @@ public:
 		virtual void enable() {}
 		virtual void disable() {}
 		virtual ~ContainerCPHBrowser() {}
+		ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
 	};
 
 protected:
