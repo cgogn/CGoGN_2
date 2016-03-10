@@ -349,7 +349,7 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_pyramid(ChunkArray<VEC3>const& pos,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4)
+	void add_pyramid(ChunkArray<VEC3>const& /*pos*/,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4)
 	{
 		this->volumes_nb_vertices_.push_back(5u);
 		this->volumes_vertex_indices_.push_back(p0);
@@ -360,7 +360,7 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_triangular_prism(ChunkArray<VEC3>const& pos,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5)
+	void add_triangular_prism(ChunkArray<VEC3>const& /*pos*/,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5)
 	{
 		this->volumes_nb_vertices_.push_back(6u);
 		this->volumes_vertex_indices_.push_back(p0);
