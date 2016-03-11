@@ -33,9 +33,9 @@ int main(int argc, char** argv)
 	VertexAttributeHandler<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("helicoid");
 	g.embed_into_helicoid<Vec3>(vertex_helicoid, 10.0f, 5.0f, 15.0f, 3.0f, 1);
 
-	// cgogn::io::export_off<Vec3, Map2>(map, vertex_grid, "grid.off");
-	// cgogn::io::export_off<Vec3, Map2>(map, vertex_twisted_strip, "twisted_strip.off");
-	// cgogn::io::export_off<Vec3, Map2>(map, vertex_helicoid, "helicoid.off");
+	cgogn::io::export_off<Vec3, Map2>(map, vertex_grid, "grid.off");
+	cgogn::io::export_off<Vec3, Map2>(map, vertex_twisted_strip, "twisted_strip.off");
+	cgogn::io::export_off<Vec3, Map2>(map, vertex_helicoid, "helicoid.off");
 
 	return 0;
 }

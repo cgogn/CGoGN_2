@@ -24,6 +24,8 @@
 #include <core/cmap/cmap2_builder.h>
 #include <tiling/tiling.h>
 
+#include <cmath>
+
 #ifndef TILING_TRIANGULAR_H_
 #define TILING_TRIANGULAR_H_
 
@@ -71,9 +73,10 @@ public:
 	    {
 	        for(unsigned int j = 0; j <= this->nx_; ++j)
 			{
-				attribute[this->vertex_table_[i * (this->nx_ + 1) + j]] = 
+				typename MAP::Vertex v(this->vertex_table_[i * (this->nx_ + 1) + j]);
+				attribute[v] = 
 					T(dx * static_cast<float>(j) + dx * 0.5f * static_cast<float>(i), 
-						dy * static_cast<float>(i) * sqrtf(3.0f) / 2.0f, 
+						dy * static_cast<float>(i) * std::sqrt(3.0f) / 2.0f, 
 						z);
 	        }
 	    }	
@@ -103,7 +106,9 @@ public:
 				T pos(r * cos(alpha * static_cast<float>(i)), 
 					r * sin(alpha * static_cast<float>(i)), 
 					rw * sin(beta * static_cast<float>(i)));
-				attribute[this->vertex_table_[i * (this->nx_ + 1) + j]] = pos;
+
+				typename MAP::Vertex v(this->vertex_table_[i * (this->nx_ + 1) + j]);
+				attribute[v] = pos;
 			}
 		}
 	}
@@ -140,8 +145,8 @@ public:
 				y = orient * r * cos(alpha * static_cast<float>(j));
 
 				T pos(x, y, j * hS);
-				Dart d = this->vertex_table_[i * (this->nx_ + 1) + j];
-				attribute[d] = pos;
+				typename MAP::Vertex v(this->vertex_table_[i * (this->nx_ + 1) + j]);
+				attribute[v] = pos;
 			}
 		}
 	}
@@ -224,10 +229,10 @@ protected:
 	        }
 	    }
 
-	    // if(close)
-	        // this->map_.close_hole(this->vertex_table_[0]) ;
+	    if(close)
+	        mbuild.close_hole(this->vertex_table_[0]) ;
 
-		this->dart_ = this->vertex_table_[0];	
+		this->dart_ = this->vertex_table_[0];
     }
     //@}
 };
