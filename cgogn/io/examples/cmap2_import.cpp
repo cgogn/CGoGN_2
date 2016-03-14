@@ -4,10 +4,8 @@
 #include <vector>
 
 #include <core/cmap/cmap2.h>
-#include <core/cmap/sanity_check.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
-
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -18,8 +16,8 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 
 using Map2 = cgogn::CMap2<MyMapTraits>;
 
-//using Vec3 = Eigen::Vector3d;
-using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+using Vec3 = Eigen::Vector3d;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -69,16 +67,16 @@ int main(int argc, char** argv)
 		map.enable_topo_cache<Map2::Vertex::ORBIT>();
 		map.enable_topo_cache<Map2::Edge::ORBIT>();
 
+		std::cout << "Map integrity : " << std::boolalpha << map.check_map_integrity() << std::endl;
 
-		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
-		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
+//		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
+//		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
-		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
+//		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
+//		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
 
-		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
-		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
-
+//		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
+//		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
 
 		unsigned int nb_faces = 0;
 		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });

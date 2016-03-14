@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 #include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 

@@ -9,6 +9,8 @@ project(CGoGN
 	LANGUAGES CXX C
 )
 
+enable_testing()
+
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")

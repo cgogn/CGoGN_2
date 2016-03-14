@@ -27,7 +27,7 @@
 #include <string>
 #include <tuple>
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
@@ -53,7 +53,7 @@ namespace cgogn
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
 	const std::string& expression,
 	const std::string& message,
 	const std::string& file_name,
@@ -71,7 +71,7 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
+CGOGN_CORE_API CGOGN_NORETURN void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,
@@ -87,12 +87,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_assert(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that a condition is met and take a specific message.
@@ -102,12 +102,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_message_assert(x, msg)									\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, msg, __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Sets a non reachable point in the program
@@ -115,9 +115,9 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] msg the specific information message
  */
 #define _internal_cgogn_assert_not_reached(msg)								\
-{																	\
+do {																	\
 	cgogn::should_not_have_reached(msg, __FILE__, __func__, __LINE__);\
-}
+} while (false)
 
 /**
  * \brief Verifies that the required contract condition is met.
@@ -127,12 +127,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_require(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that the ensured contract condition is met.
@@ -142,12 +142,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_ensure(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that the invariant contract condition is met.
@@ -157,12 +157,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_invariant(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \def cgogn_assert(x)

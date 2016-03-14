@@ -42,13 +42,13 @@ TEST(NameTypesTest, NumTypes)
 	EXPECT_EQ(cgogn::name_of_type(unsigned_char()), "unsigned char");
 	EXPECT_EQ(cgogn::name_of_type(wchar_t()), "wchar_t");
 
-#ifndef _MSC_VER
-	EXPECT_EQ(cgogn::name_of_type(char16_t()), "char16_t");
-	EXPECT_EQ(cgogn::name_of_type(char32_t()), "char32_t");
-#else
+#if _MSC_VER == 1800 // VS2013
 	EXPECT_EQ(cgogn::name_of_type(char16_t()), "unsigned short");
 	EXPECT_EQ(cgogn::name_of_type(char32_t()), "unsigned int");
-#endif // _MSC_VER
+#else
+	EXPECT_EQ(cgogn::name_of_type(char16_t()), "char16_t");
+	EXPECT_EQ(cgogn::name_of_type(char32_t()), "char32_t");
+#endif // VS2013
 
 	EXPECT_EQ(cgogn::name_of_type(short()), "short");
 	EXPECT_EQ(cgogn::name_of_type(unsigned_short()), "unsigned short");

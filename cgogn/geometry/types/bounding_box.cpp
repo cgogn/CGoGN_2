@@ -32,8 +32,8 @@ namespace cgogn
 namespace geometry
 {
 
-//template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3d>;
-//template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3d>;
+template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3f>;
 template class CGOGN_GEOMETRY_API BoundingBox<Vec_T<std::array<double,3>>>;
 template class CGOGN_GEOMETRY_API BoundingBox<Vec_T<std::array<float,3>>>;
 

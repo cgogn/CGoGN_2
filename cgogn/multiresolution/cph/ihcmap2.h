@@ -50,6 +50,7 @@ public:
 	virtual void enable() {}
 	virtual void disable() {}
 	virtual ~ContainerCPHBrowser() {}
+	ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
 };
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
@@ -249,28 +250,34 @@ public:
 	 */
 	Face add_face(unsigned int size)
 	{
-		Face f = this->add_face_topo(size);
+		Face f(this->add_face_topo(size));
 
 		if (this->template is_embedded<CDart>())
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
-				this->template new_orbit_embedding<Orbit::DART>(d);
+				this->new_orbit_embedding(CDart(d));
 			});
 
 		if (this->template is_embedded<Vertex>())
 			foreach_dart_of_orbit(f, [this] (Dart v)
 			{
-				this->template new_orbit_embedding<Orbit::PHI21>(v);
+				this->new_orbit_embedding(Vertex(v));
 			});
 
 		if (this->template is_embedded<Edge>())
+		{
 			cgogn_assert_not_reached("Not implemented");
-
+		}
+		
 		if (this->template is_embedded<Face>())
+		{
 			cgogn_assert_not_reached("Not implemented");
+		}
 
 		if (this->template is_embedded<Volume>())
+		{
 			cgogn_assert_not_reached("Not implemented");
+		}
 
 		return f;
 	}
