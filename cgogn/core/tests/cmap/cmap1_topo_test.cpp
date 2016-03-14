@@ -82,12 +82,12 @@ protected:
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1u + std::rand() % 10u;
-			Dart d = add_face_topo(n);
-			count += n;
+			unsigned int m = 1u + std::rand() % 10u;
+			Dart d = add_face_topo(m);
+			count += m;
 
-			n = std::rand() % 10u;
-			while (n-- > 0u) d = phi1(d);
+			m = std::rand() % 10u;
+			while (m-- > 0u) d = phi1(d);
 
 			darts_.push_back(d);
 		}
@@ -182,6 +182,7 @@ TEST_F(CMap1TopoTest, remove_face)
 			--count_faces;
 		}
 	}
+
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);

@@ -76,7 +76,7 @@ public:
 	template <class CellType>
 	inline void new_orbit_embedding(CellType c)
 	{
-		map_.template new_orbit_embedding(c);
+		map_.new_orbit_embedding(c);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)

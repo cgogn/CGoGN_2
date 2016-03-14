@@ -268,7 +268,7 @@ protected :
 												sstream.clear();
 												std::string		data_name;
 												unsigned int	nb_comp;
-												unsigned int	nb_data;
+												//unsigned int	nb_data; already declared
 												std::string		data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
@@ -283,7 +283,7 @@ protected :
 											if (word == "LOOKUP_TABLE")
 											{
 												std::string table_name;
-												unsigned int nb_data = 0u;
+												/*unsigned int*/ nb_data = 0u;
 												sstream >> table_name >> nb_data;
 												std::cout << "ignoring the definition of the lookuptable named \"" << table_name << "\"" << std::endl;
 												if (ascii_file)
@@ -635,8 +635,8 @@ protected:
 			return false;
 		this->fill_surface_import();
 
-		this->nb_vertices_ = this->positions_.size();
-		this->nb_faces_ = this->offsets_.size();
+		this->nb_vertices_ = static_cast<unsigned int>(this->positions_.size());
+		this->nb_faces_ = static_cast<unsigned int>(this->offsets_.size());
 
 		auto cells_it = this->cells_.get_vec()->begin();
 		unsigned int last_offset = 0u;
@@ -685,8 +685,8 @@ protected:
 private:
 	inline void fill_surface_import()
 	{
-		this->nb_vertices_ = this->positions_.size();
-		this->nb_faces_ = this->cell_types_.size();
+		this->nb_vertices_ = static_cast<unsigned int>(this->positions_.size());
+		this->nb_faces_ = static_cast<unsigned int>(this->cell_types_.size());
 
 		auto cells_it = static_cast<std::vector<unsigned int>*>(this->cells_.get_data())->begin();
 		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.get_data());
@@ -697,7 +697,7 @@ private:
 
 			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 			{
-				this->faces_nb_edges_.push_back(nb_vert);
+				this->faces_nb_edges_.push_back(static_cast<unsigned int>(nb_vert));
 				for (std::size_t i = 0ul ; i < nb_vert;++i)
 				{
 					this->faces_vertex_indices_.push_back(*cells_it++);
@@ -749,8 +749,8 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = this->positions_.size();
-		this->nb_volumes_ = this->cell_types_.size();
+		this->nb_vertices_ = static_cast<unsigned int>(this->positions_.size());
+		this->nb_volumes_ = static_cast<unsigned int>(this->cell_types_.size());
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<unsigned int>* cells_vec		= this->cells_.get_vec();
@@ -794,8 +794,8 @@ protected:
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 
-		this->nb_vertices_ = this->positions_.size();
-		this->nb_volumes_ = this->cell_types_.size();
+		this->nb_vertices_ = static_cast<unsigned int>(this->positions_.size());
+		this->nb_volumes_ = static_cast<unsigned int>(this->cell_types_.size());
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<unsigned int>* cells_vec		= this->cells_.get_vec();
