@@ -296,7 +296,6 @@ protected:
 		return dres;
 	}
 
-
 public:
 
 	inline unsigned int degree(Face f) const

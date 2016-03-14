@@ -438,8 +438,6 @@ public:
 		}
 	}
 
-public:
-
 	inline unsigned int degree(Face f) const
 	{
 		return Inherit::degree(f);
