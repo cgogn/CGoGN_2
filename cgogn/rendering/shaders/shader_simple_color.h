@@ -64,7 +64,7 @@ public:
 	 * @param vbo_pos pointer on position vbo (XYZ)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos);
+	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
 };
 
 } // namespace rendering

@@ -77,7 +77,7 @@ public:
 	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL);
+	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL, unsigned int stride=0, unsigned first=0);
 };
 
 } // namespace rendering

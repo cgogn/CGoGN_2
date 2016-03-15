@@ -72,7 +72,7 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 	prg_.setUniformValue(unif_color_, rgb);
 }
 
-bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos)
+bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{
@@ -88,7 +88,7 @@ bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos)
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE,stride*vbo_pos->vector_dimension()*4, reinterpret_cast<void*>(first*vbo_pos->vector_dimension()*4));
 	vbo_pos->release();
 
     vaos_[i]->release();

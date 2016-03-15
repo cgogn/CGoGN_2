@@ -76,7 +76,7 @@ public:
 	 */
 	inline unsigned int add_vao()
 	{
-		vaos_.emplace_back(new QOpenGLVertexArrayObject);
+		vaos_.push_back(new QOpenGLVertexArrayObject);
 		vaos_.back()->create();
 		return static_cast<unsigned int>(vaos_.size() - 1);
 	}
@@ -88,7 +88,7 @@ public:
 	void alloc_vao(unsigned int nb)
 	{
 		while (vaos_.size() < nb)
-			vaos_.emplace_back(new QOpenGLVertexArrayObject);
+			vaos_.push_back(new QOpenGLVertexArrayObject);
 	}
 
 	/**

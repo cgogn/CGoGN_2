@@ -32,6 +32,8 @@
 #include <geometry/algos/ear_triangulation.h>
 #include <rendering/drawer.h>
 
+#include <rendering/shaders/vbo.h>
+
 namespace cgogn
 {
 
@@ -336,6 +338,183 @@ void add_volume_to_drawer(MAP& m, typename MAP::Volume vo, const typename MAP::t
 
 }
 
+template <typename VEC3, typename MAP>
+class Topo2Render
+{
+	VBO& vbo_topo_;
+
+};
+
+template <typename VEC3, typename MAP>
+void create_topo2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, VBO& vbo_topo)
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+	using Scalar = typename VEC3::Scalar;
+
+	const Scalar expl1 = 0.95;
+	const Scalar expl2 = 0.85;
+
+	const Scalar opp_expl1 = 1.0 -expl1;
+	const Scalar opp_expl2 = 1.0 - expl2;
+
+	std::vector<std::array<float,3>> out_pos;
+	out_pos.reserve(1024*1024);
+
+	std::vector<std::array<float,3>> out_pos2;
+	out_pos2.reserve(1024*1024);
+
+
+	std::vector<VEC3> local_vertices;
+	local_vertices.reserve(256);
+
+	m.foreach_cell([&] (Face f)
+	{
+		local_vertices.clear();
+		VEC3 center;
+		center.setZero();
+		unsigned int count = 0u;
+		m.foreach_incident_vertex(f, [&] (Vertex v)
+		{
+			local_vertices.push_back(position[v]);
+			center += position[v];
+			count++;
+		});
+		center /= Scalar(count);
+
+		// phi2 mid-edge: N -> 2N-1
+		for (unsigned int i=0; i<count; ++i)
+			local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
+
+		// dart round point: 0 -> N-1
+		for (unsigned int i=0; i<count; ++i)
+			local_vertices[i] = local_vertices[i] * expl2 + center * (opp_expl2);
+
+		//dart other extremety: 2N -> 3N-1
+		for (unsigned int i=0; i<count; ++i)
+			local_vertices.push_back(local_vertices[i]*(opp_expl1) + local_vertices[(i+1)%count]*expl1);
+
+		//phi2 mid-dart: 3N -> 4N-1
+		for (unsigned int i=0; i<count; ++i)
+			local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
+
+		for (unsigned int i=0; i<count; ++i)
+		{
+			const VEC3& P1 = local_vertices[i];
+			out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+			const VEC3& P2 = local_vertices[2*count+i];
+			out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+			const VEC3& P3 = local_vertices[count+i];
+			out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+			const VEC3& P4 = local_vertices[3*count+i];
+			out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+		}
+	});
+
+	std::size_t nbvec = out_pos.size();
+	vbo_topo.allocate(nbvec*2,3);
+	vbo_topo.bind();
+	vbo_topo.copy_data(0, nbvec*12, out_pos[0].data());
+	vbo_topo.copy_data(nbvec*12, nbvec*12, out_pos2[0].data());
+	vbo_topo.bind();
+
+}
+
+//template <typename VEC3, typename MAP>
+//void create_topo2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, VBO& vbo_topo)
+//{
+//	using Vertex = typename MAP::Vertex;
+//	using Face = typename MAP::Face;
+//	using Scalar = typename VEC3::Scalar;
+
+//	const Scalar expl1 = 0.95;
+//	const Scalar expl2 = 0.85;
+
+//	const Scalar opp_expl1 = 1.0 -expl1;
+//	const Scalar opp_expl2 = 1.0 - expl2;
+
+//	using BufferVBO = std::vector<std::array<float,3>>;
+
+//	std::vector<BufferVBO> out_pos;
+//	out_pos.resize(cgogn::get_nb_threads()-1);
+//	for(auto& b: out_pos)
+//		b.reserve(1024*1024);
+
+//	std::vector<BufferVBO> out_pos2;
+//	out_pos2.resize(cgogn::get_nb_threads()-1);
+//	for(auto& b: out_pos2)
+//		b.reserve(1024*1024);
+
+
+//	std::vector<std::vector<VEC3>> thr_local_vertices;
+//	thr_local_vertices.resize(cgogn::get_nb_threads()-1);
+//	for(auto& b: thr_local_vertices)
+//		b.reserve(256);
+
+//	m.parallel_foreach_cell([&] (Face f, unsigned int thr)
+//	{
+//		std::vector<VEC3>& local_vertices = thr_local_vertices[thr];
+//		local_vertices.clear();
+//		VEC3 center;
+//		center.setZero();
+//		unsigned int count = 0u;
+//		m.foreach_incident_vertex(f, [&] (Vertex v)
+//		{
+//			local_vertices.push_back(position[v]);
+//			center += position[v];
+//			count++;
+//		});
+//		center /= Scalar(count);
+
+//		// phi2 mid-edge: N -> 2N-1
+//		for (unsigned int i=0; i<count; ++i)
+//			local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
+
+//		// dart round point: 0 -> N-1
+//		for (unsigned int i=0; i<count; ++i)
+//			local_vertices[i] = local_vertices[i] * expl2 + center * (opp_expl2);
+
+//		//dart other extremety: 2N -> 3N-1
+//		for (unsigned int i=0; i<count; ++i)
+//			local_vertices.push_back(local_vertices[i]*(opp_expl1) + local_vertices[(i+1)%count]*expl1);
+
+//		//phi2 mid-dart: 3N -> 4N-1
+//		for (unsigned int i=0; i<count; ++i)
+//			local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
+
+//		for (unsigned int i=0; i<count; ++i)
+//		{
+//			const VEC3& P1 = local_vertices[i];
+//			out_pos[thr].push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+//			const VEC3& P2 = local_vertices[2*count+i];
+//			out_pos[thr].push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+//			const VEC3& P3 = local_vertices[count+i];
+//			out_pos2[thr].push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+//			const VEC3& P4 = local_vertices[3*count+i];
+//			out_pos2[thr].push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+//		}
+//	});
+
+//	std::size_t nbvec = 0;
+//	for(auto& b: out_pos)
+//		nbvec += b.size();
+
+//	vbo_topo.allocate(nbvec*2,3);
+//	vbo_topo.bind();
+//	unsigned int beg=0;
+//	for(auto& b: out_pos)
+//	{
+//		vbo_topo.copy_data(beg, b.size()*12, b[0].data());
+//		beg += b.size()*12;
+//	}
+//	for(auto& b: out_pos2)
+//	{
+//		vbo_topo.copy_data(beg, b.size()*12, b[0].data());
+//		beg += b.size()*12;
+//	}
+//	vbo_topo.bind();
+
+//}
 
 
 

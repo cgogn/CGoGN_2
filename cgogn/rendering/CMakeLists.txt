@@ -19,6 +19,7 @@ set(HEADER_FILES
 	shaders/shader_round_point.h
 	shaders/shader_point_sprite.h
 	drawer.h
+	topo_render.h
 	)
 
 set(SOURCE_FILES
@@ -32,6 +33,7 @@ set(SOURCE_FILES
 	shaders/shader_round_point.cpp
 	shaders/shader_point_sprite.cpp
 	drawer.cpp
+	topo_render.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

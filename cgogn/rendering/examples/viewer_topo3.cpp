@@ -27,7 +27,7 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/cmap/cmap2.h>
+#include <core/cmap/cmap3.h>
 
 #include <io/map_import.h>
 #include <geometry/algos/bounding_box.h>
@@ -43,12 +43,12 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
 
 
 class Viewer : public QOGLViewer
@@ -62,12 +62,12 @@ public:
 	virtual void init();
 
 	virtual void keyPressEvent(QKeyEvent *);
-	void import(const std::string& surfaceMesh);
+	void import(const std::string& volumeMesh);
 	virtual ~Viewer();
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
-	Map2 map_;
+	Map3 map_;
 	VertexAttributeHandler<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
@@ -89,11 +89,11 @@ private:
 //
 
 
-void Viewer::import(const std::string& surfaceMesh)
+void Viewer::import(const std::string& volumeMesh)
 {
-	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
+	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	vertex_position_ = map_.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
@@ -181,7 +181,7 @@ void Viewer::init()
 
 
 	render_ = new cgogn::rendering::MapRender();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+//	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
 	shader_flat_ = new cgogn::rendering::ShaderFlat;
 	shader_flat_->add_vao();
@@ -193,20 +193,24 @@ void Viewer::init()
 	shader_flat_->release();
 
 	topo_render = new cgogn::rendering::TopoRender(this);
-	topo_render->update_map2<Vec3>(map_,vertex_position_);
+//	topo_render->update_map3<Vec3>(map_,vertex_position_);
+
+	cgogn::Cell<cgogn::Orbit::PHI1> f(*(map_.begin()));
+	Vec3 normal = cgogn::geometry::face_normal<Vec3>(map_,f, vertex_position_);
+
 }
 
 int main(int argc, char** argv)
 {
-	std::string surfaceMesh;
+	std::string volumeMesh;
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("liverHexa.vtu");
+		std::cout << "Using default mesh : " << volumeMesh << std::endl;
 	}
 	else
-		surfaceMesh = std::string(argv[1]);
+		volumeMesh = std::string(argv[1]);
 
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
@@ -214,7 +218,7 @@ int main(int argc, char** argv)
 	// Instantiate the viewer.
 	Viewer viewer;
 	viewer.setWindowTitle("simpleViewer");
-	viewer.import(surfaceMesh);
+	viewer.import(volumeMesh);
 	viewer.show();
 
 	// Run main loop.

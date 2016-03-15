@@ -304,6 +304,16 @@ public:
 		return Inherit::degree(Face2(f.dart));
 	}
 
+	inline bool has_degree(Face f, unsigned int degree) const
+	{
+		return Inherit::has_degree(Face2(f.dart), degree);
+	}
+
+	inline bool has_degree(Face2 f, unsigned int degree) const
+	{
+		return Inherit::has_degree(f, degree);
+	}
+
 protected:
 
 	/*******************************************************************************
@@ -553,6 +563,7 @@ public:
 		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { func(Vertex(v)); });
 	}
 
+
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
@@ -572,21 +583,33 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		Inherit::foreach_incident_vertex(v, func);
+//		Inherit::foreach_incident_vertex(v, func);
+		Inherit::foreach_incident_vertex(v, [&func] (Vertex2 ve)
+		{
+			func(Vertex(ve.dart));
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		Inherit::foreach_incident_edge(v, func);
+//		Inherit::foreach_incident_edge(v, func);
+		Inherit::foreach_incident_face(v, [&func] (Edge2 e)
+		{
+			func(Edge(e.dart));
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		Inherit::foreach_incident_face(v, func);
+//		Inherit::foreach_incident_face(v, func);
+		Inherit::foreach_incident_face(v, [&func] (Face2 f)
+		{
+			func(Face(f.dart));
+		});
 	}
 
 	/*******************************************************************************
