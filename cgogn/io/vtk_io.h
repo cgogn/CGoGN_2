@@ -845,12 +845,12 @@ protected:
 					std::swap(ids[curr_offset+2],ids[curr_offset+3]);
 					std::swap(ids[curr_offset+6],ids[curr_offset+7]);
 				}
-				this->add_hexa(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5],ids[curr_offset+6],ids[curr_offset+7]);
+				this->add_hexa(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5],ids[curr_offset+6],ids[curr_offset+7], true);
 				curr_offset+=8u;
 			}else {
 				if (type_vol[i]== VTK_CELL_TYPES::VTK_TETRA)
 				{
-					this->add_tetra(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3]);
+					this->add_tetra(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3], true);
 					curr_offset+=4u;
 				} else {
 					if (type_vol[i]== VTK_CELL_TYPES::VTK_PYRAMID)
