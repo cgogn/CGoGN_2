@@ -154,19 +154,20 @@ public:
 			std::string line;
 			line.reserve(256);
 			std::size_t i = 0ul;
-			BUFFER_T buff;
+//			BUFFER_T buff;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				bool no_error = true;
 				std::getline(fp,line);
 				std::istringstream line_stream(line);
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
 				type buff;
-				while (i < n && (no_error = static_cast<bool>(internal::parse(line_stream, buff))))
+				bool no_error = static_cast<bool>(internal::parse(line_stream, buff));
+				while (i < n && no_error)
 				{
 					data_[i+old_size] = internal::convert<T>(buff);
 					++i;
+					no_error = static_cast<bool>(internal::parse(line_stream, buff));
 				}
 				if (!no_error && (!line_stream.eof()))
 					break;
@@ -191,11 +192,14 @@ public:
 			std::size_t i = 0ul;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				bool no_error = true;
 				std::getline(fp,line);
 				std::istringstream line_stream(line);
-				while (i < n && (no_error = static_cast<bool>(line_stream.ignore(1, ' '))))
+				bool no_error = static_cast<bool>(line_stream.ignore(1, ' '));
+				while (i < n && no_error)
+				{
 					++i;
+					no_error = static_cast<bool>(line_stream.ignore(1, ' '));
+				}
 				if (!no_error && (!line_stream.eof()))
 					break;
 			}
@@ -212,7 +216,7 @@ public:
 
 	virtual ChunkArray* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const override
 	{
-		for (unsigned i = cac.capacity(), end = data_.size(); i < end; i+=PRIM_SIZE)
+		for (std::size_t i = cac.capacity(), end = data_.size(); i < end; i+=PRIM_SIZE)
 			cac.template insert_lines<PRIM_SIZE>();
 		return cac.template add_attribute<T>(att_name);
 	}

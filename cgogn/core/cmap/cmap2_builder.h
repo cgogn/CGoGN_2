@@ -76,7 +76,7 @@ public:
 	template <class CellType>
 	inline void new_orbit_embedding(CellType c)
 	{
-		map_.template new_orbit_embedding(c);
+		map_.new_orbit_embedding(c);
 	}
 
 	inline void phi2_sew(Dart d, Dart e)
@@ -192,12 +192,19 @@ public:
 	 */
 	inline void close_map()
 	{
-		for (Dart d : map_)
+		std::vector<Dart> fix_point_darts;
+		map_.foreach_dart(
+			[&] (Dart d)
+			{
+				if (map_.phi2(d) == d)
+					fix_point_darts.push_back(d);
+			},
+			[] (Dart) { return true; }
+		);
+		for (Dart d : fix_point_darts)
 		{
 			if (map_.phi2(d) == d)
-			{
 				close_hole(d);
-			}
 		}
 	}
 

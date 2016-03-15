@@ -78,12 +78,12 @@ protected:
 		unsigned int count = 0u;
 		for (unsigned int i = 0u; i < n; ++i)
 		{
-			unsigned int n = 1u + std::rand() % 10;
-			Dart d = cmap_.add_face(n);
-			count += n;
+			unsigned int m = 1u + std::rand() % 10;
+			Dart d = cmap_.add_face(m);
+			count += m;
 
-			n = std::rand() % 10u;
-			while (n-- > 0u) d = cmap_.phi1(d);
+			m = std::rand() % 10u;
+			while (m-- > 0u) d = cmap_.phi1(d);
 
 			darts_.push_back(d);
 		}

@@ -99,6 +99,7 @@ public:
 		virtual void enable() {}
 		virtual void disable() {}
 		virtual ~ContainerCPHBrowser() {}
+		ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
 	};
 
 protected:
@@ -361,9 +362,12 @@ public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
-					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
-					  "Orbit not supported in a CMap2");
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
+			ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
+			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+			"Orbit not supported in a IHCMap3");
+
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;

@@ -50,6 +50,7 @@ public:
 	virtual void enable() {}
 	virtual void disable() {}
 	virtual ~ContainerCPHBrowser() {}
+	ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
 };
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
@@ -264,13 +265,19 @@ public:
 			});
 
 		if (this->template is_embedded<Edge>())
+		{
 			cgogn_assert_not_reached("Not implemented");
-
+		}
+		
 		if (this->template is_embedded<Face>())
+		{
 			cgogn_assert_not_reached("Not implemented");
+		}
 
 		if (this->template is_embedded<Volume>())
+		{
 			cgogn_assert_not_reached("Not implemented");
+		}
 
 		return f;
 	}
