@@ -181,22 +181,20 @@ void Viewer::init()
 
 
 	render_ = new cgogn::rendering::MapRender();
-//	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
 	shader_flat_ = new cgogn::rendering::ShaderFlat;
 	shader_flat_->add_vao();
 	shader_flat_->set_vao(0, vbo_pos_);
 	shader_flat_->bind();
 	shader_flat_->set_front_color(QColor(0,150,0));
-	shader_flat_->set_back_color(QColor(0,0,150));
+	shader_flat_->set_back_color(QColor(0,150,0));
 	shader_flat_->set_ambiant_color(QColor(5,5,5));
 	shader_flat_->release();
 
 	topo_render = new cgogn::rendering::TopoRender(this);
-//	topo_render->update_map3<Vec3>(map_,vertex_position_);
+	topo_render->update_map3<Vec3>(map_,vertex_position_);
 
-	cgogn::Cell<cgogn::Orbit::PHI1> f(*(map_.begin()));
-	Vec3 normal = cgogn::geometry::face_normal<Vec3>(map_,f, vertex_position_);
 
 }
 
@@ -206,7 +204,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("liverHexa.vtu");
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("nine_hexas.vtu");
 		std::cout << "Using default mesh : " << volumeMesh << std::endl;
 	}
 	else

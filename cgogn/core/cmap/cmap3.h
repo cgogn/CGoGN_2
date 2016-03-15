@@ -611,6 +611,44 @@ public:
 		});
 	}
 
+
+	// redeclare CMap2 hidden functions
+	template <typename FUNC>
+	inline void foreach_incident_edge(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_edge(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_face(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_vertex(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_face(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_vertex(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_edge(f,func);
+	}
+
 	/*******************************************************************************
 	 * Adjacence traversal
 	 *******************************************************************************/
@@ -829,7 +867,46 @@ public:
 			});
 		});
 	}
+
+	//redeclare CMap2 hidden functions
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_vertex_through_edge(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_vertex_through_face(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_edge_through_vertex(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_edge_through_face(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_vertex(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_face_through_vertex(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_edge(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_face_through_vertex(f,func);
+	}
 };
+
+
 
 template <typename MAP_TRAITS>
 struct CMap3Type

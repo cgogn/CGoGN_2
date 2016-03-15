@@ -52,9 +52,11 @@ protected:
 	static ShaderRoundPoint* shader_rp_;
 	static int nb_instances_;
 
-	VBO* vbo_topo_;
+	VBO* vbo_darts_;
+	VBO* vbo_relations_;
 
 	unsigned int vao_bl_;
+	unsigned int vao_bl2_;
 	unsigned int vao_rp_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
@@ -154,12 +156,18 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		}
 	});
 
+
 	std::size_t nbvec = out_pos.size();
-	vbo_topo_->allocate(nbvec*2,3);
-	vbo_topo_->bind();
-	vbo_topo_->copy_data(0, nbvec*12, out_pos[0].data());
-	vbo_topo_->copy_data(nbvec*12, nbvec*12, out_pos2[0].data());
-	vbo_topo_->bind();
+	vbo_darts_->allocate(nbvec,3);
+	vbo_darts_->bind();
+	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
+	vbo_darts_->release();
+
+	vbo_relations_->allocate(nbvec,3);
+	vbo_relations_->bind();
+	vbo_relations_->copy_data(0, nbvec*12, out_pos2[0].data());
+	vbo_relations_->release();
+
 
 }
 
@@ -181,6 +189,9 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 
 	std::vector<std::array<float,3>> out_pos2;
 	out_pos2.reserve(1024*1024);
+
+	std::vector<std::array<float,3>> out_pos3;
+	out_pos3.reserve(1024*1024);
 
 
 	std::vector<VEC3> local_vertices;
@@ -225,28 +236,38 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 
 			for (unsigned int i=0; i<count; ++i)
 			{
-				const VEC3 P1 = local_vertices[i] * shrink_v_ + center_vol * (opp_shrink_v);
+				VEC3 P1 = (local_vertices[i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-				const VEC3 P2 = local_vertices[3*count+i] * shrink_v_ + center_vol * (opp_shrink_v);
+				VEC3 P2 = (local_vertices[3*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
-				const VEC3 P3 = local_vertices[count+i] * shrink_v_ + center_vol * (opp_shrink_v);
+
+				const VEC3 P3 = (local_vertices[count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
-				const VEC3 P4 = local_vertices[4*count+i] * shrink_v_ + center_vol * (opp_shrink_v);
+				const VEC3 P4 = (local_vertices[4*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
 				const VEC3& P5 = local_vertices[2*count+i];
-				out_pos2.push_back({float(P5[0]),float(P5[1]),float(P5[2])});
-				out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+				out_pos3.push_back({float(P5[0]),float(P5[1]),float(P5[2])});
+				out_pos3.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+
 			}
 		});
 
 	});
 
 	std::size_t nbvec = out_pos.size();
-	vbo_topo_->allocate(nbvec*3,3);
-	vbo_topo_->bind();
-	vbo_topo_->copy_data(0, nbvec*12, out_pos[0].data());
-	vbo_topo_->copy_data(nbvec*12, nbvec*24, out_pos2[0].data());
-	vbo_topo_->bind();
+	vbo_darts_->allocate(nbvec,3);
+	vbo_darts_->bind();
+	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
+	vbo_darts_->release();
+
+	vbo_relations_->allocate(2*nbvec,3);
+	vbo_relations_->bind();
+	vbo_relations_->copy_data(0, nbvec*12, out_pos2[0].data());
+	vbo_relations_->copy_data(nbvec*12, nbvec*12, out_pos3[0].data());
+
+	vbo_relations_->release();
+
+
 }
 
 } // namespace rendering
