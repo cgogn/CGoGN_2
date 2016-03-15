@@ -219,7 +219,7 @@ CGOGN_IO_API FileType get_file_type(const std::string& filename)
 		return FileType::FileType_VTU;
 	if (extension == "vtp")
 		return FileType::FileType_VTP;
-	if (extension == "meshb")
+	if (extension == "meshb" || extension == "mesh" )
 		return FileType::FileType_MESHB;
 
 	return FileType::FileType_UNKNOWN;

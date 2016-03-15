@@ -86,8 +86,11 @@ protected:
 		for (int i = 0 ; i < number_of_vertices; ++i)
 		{
 			unsigned int idx = this->vertex_attributes_.template insert_lines<1>();
-			VEC3& v = position->operator [](idx);
+			std::array<float, 3> v;
 			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
+			position->operator [](idx)[0] = v[0];
+			position->operator [](idx)[1] = v[1];
+			position->operator [](idx)[2] = v[2];
 		}
 
 		if (number_of_tetras > 0)
@@ -96,12 +99,13 @@ protected:
 			std::array<int, 4> ids;
 			for (int i = 0 ; i < number_of_tetras; ++i)
 			{
-				this->volumes_nb_vertices_.push_back(4);
 				(void) GmfGetLin(mesh_index, GmfTetrahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
-				for (int x : ids)
-					this->volumes_vertex_indices_.push_back(static_cast<unsigned int>(x));
+				for (auto& id : ids)
+					--id;
+				this->add_tetra(*position, ids[0],ids[1], ids[2], ids[3], true);
 			}
 		}
+
 
 		if (number_of_hexas > 0)
 		{
@@ -109,12 +113,13 @@ protected:
 			std::array<int, 8> ids;
 			for (int i = 0 ; i < number_of_hexas; ++i)
 			{
-				this->volumes_nb_vertices_.push_back(8);
 				(void) GmfGetLin(mesh_index, GmfHexahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ids[6], &ids[7], &ref);
-				for (int x : ids)
-					this->volumes_vertex_indices_.push_back(static_cast<unsigned int>(x));
+				for (auto& id : ids)
+					--id;
+				this->add_hexa(*position, ids[0],ids[1], ids[5], ids[4], ids[3],ids[2], ids[6], ids[7], false);
 			}
 		}
+
 
 		if (number_of_prisms > 0)
 		{
@@ -122,10 +127,10 @@ protected:
 			std::array<int, 6> ids;
 			for (int i = 0 ; i < number_of_prisms; ++i)
 			{
-				this->volumes_nb_vertices_.push_back(6);
 				(void) GmfGetLin(mesh_index, GmfPrisms, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ref);
-				for (int x : ids)
-					this->volumes_vertex_indices_.push_back(static_cast<unsigned int>(x));
+				for (auto& id : ids)
+					--id;
+				this->add_triangular_prism(*position, ids[0],ids[1], ids[2], ids[3], ids[4],ids[5]);
 			}
 		}
 
@@ -135,12 +140,14 @@ protected:
 			std::array<int, 5> ids;
 			for (int i = 0 ; i < number_of_pyramids; ++i)
 			{
-				this->volumes_nb_vertices_.push_back(5);
 				(void) GmfGetLin(mesh_index, GmfPyramids, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ref);
-				for (int x : ids)
-					this->volumes_vertex_indices_.push_back(static_cast<unsigned int>(x));
+				for (auto& id : ids)
+					--id;
+				this->add_pyramid(*position, ids[0],ids[1], ids[2], ids[3], ids[4]);
 			}
 		}
+
+
 
 		GmfCloseMesh(mesh_index);
 		return true;
