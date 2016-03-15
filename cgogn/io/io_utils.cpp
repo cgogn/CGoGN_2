@@ -77,11 +77,11 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	if (header_type == DataType::UINT64)
 	{
 		for (unsigned int i = 0; i < nb_blocks; ++i)
-			compressed_size[i] = *reinterpret_cast<const std::size_t*>(&header_data[8u*i]);
+			compressed_size[i] = static_cast<unsigned int>(*reinterpret_cast<const std::size_t*>(&header_data[8u * i]));
 	} else
 	{
 		for (unsigned int i = 0; i < nb_blocks; ++i)
-			compressed_size[i] = *reinterpret_cast<const unsigned int*>(&header_data[4u*i]);
+			compressed_size[i] = static_cast<unsigned int>(*reinterpret_cast<const unsigned int*>(&header_data[4u * i]));
 	}
 
 	std::vector<unsigned char> data = base64_decode(input, header_end +length);
@@ -100,12 +100,12 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 		ret = inflateInit(&zstream);
 		zstream.avail_in = compressed_size[i];
 		zstream.next_in = &data[in_data_it];
-		zstream.avail_out = (i == nb_blocks -1u) ? last_block_size : uncompressed_block_size;
+		zstream.avail_out = static_cast<unsigned int>( (i == nb_blocks - 1u) ? last_block_size : uncompressed_block_size );
 		zstream.next_out = &res[out_data_it];
 		ret = inflate(&zstream, Z_NO_FLUSH);
 		ret = inflateEnd(&zstream);
 		in_data_it += compressed_size[i];
-		out_data_it+=uncompressed_block_size;
+		out_data_it += static_cast<unsigned int>(uncompressed_block_size);
 	}
 	return res;
 }

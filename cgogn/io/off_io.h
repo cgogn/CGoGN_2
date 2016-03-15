@@ -128,33 +128,35 @@ protected:
 		std::vector<unsigned int> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
-		unsigned j = BUFFER_SZ;
-		for (unsigned int i = 0; i < this->nb_vertices_; ++i,++j)
-		{
-			if (j == BUFFER_SZ)
+		{ // limit j scope
+			unsigned j = BUFFER_SZ;
+			for (unsigned int i = 0; i < this->nb_vertices_; ++i, ++j)
 			{
-				j = 0;
-				// read from file into buffer
-				if (i+BUFFER_SZ < this->nb_vertices_)
-					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*BUFFER_SZ);
-				else
-					fp.read(reinterpret_cast<char*>(buff_pos),3*sizeof(float)*(this->nb_vertices_-i));
-
-				//endian
-				unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
-				for (unsigned int k=0; k< 3*BUFFER_SZ;++k)
+				if (j == BUFFER_SZ)
 				{
-					*ptr = swap_endianness_native_big(*ptr);
-					++ptr;
+					j = 0;
+					// read from file into buffer
+					if (i + BUFFER_SZ < this->nb_vertices_)
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*BUFFER_SZ);
+					else
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*(this->nb_vertices_ - i));
+
+					//endian
+					unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
+					for (unsigned int k = 0; k < 3 * BUFFER_SZ; ++k)
+					{
+						*ptr = swap_endianness_native_big(*ptr);
+						++ptr;
+					}
 				}
+
+				VEC3 pos{ buff_pos[3 * j], buff_pos[3 * j + 1], buff_pos[3 * j + 2] };
+
+				unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
+				(*position)[vertex_id] = pos;
+
+				vertices_id.push_back(vertex_id);
 			}
-
-			VEC3 pos{buff_pos[3*j], buff_pos[3*j+1], buff_pos[3*j+2]};
-
-			unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
-			(*position)[vertex_id] = pos;
-
-			vertices_id.push_back(vertex_id);
 		}
 
 		delete[] buff_pos;
@@ -173,7 +175,7 @@ protected:
 			{
 				fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
 				ptr = buff_ind;
-				for (unsigned int i=0; i< BUFFER_SZ;++i)
+				for (unsigned int k=0; k< BUFFER_SZ;++k)
 				{
 					*ptr = swap_endianness_native_big(*ptr);
 					++ptr;

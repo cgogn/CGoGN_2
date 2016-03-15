@@ -56,7 +56,7 @@ public:
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
-	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
@@ -161,7 +161,7 @@ public:
 		bool need_vertex_unicity_check = false;
 		unsigned int nb_boundary_edges = 0;
 
-		for (Dart d : map)
+		map.foreach_dart([&] (Dart d)
 		{
 			if (map.phi2(d) == d)
 			{
@@ -195,7 +195,7 @@ public:
 				if (!first_OK)
 					need_vertex_unicity_check = true;
 			}
-		}
+		});
 
 		if (nb_boundary_edges > 0)
 			mbuild.close_map();

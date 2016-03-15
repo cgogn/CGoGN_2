@@ -60,7 +60,7 @@ public:
 	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
-	using ChunkArray = ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
 
 	template <typename T, Orbit ORBIT>
@@ -263,7 +263,7 @@ public:
 
 		//reconstruct neighbourhood
 		unsigned int nbBoundaryFaces = 0u;
-		for (Dart d : map)
+		map.foreach_dart([&] (Dart d)
 		{
 			if (m.is_marked(d))
 			{
@@ -393,7 +393,8 @@ public:
 					++nbBoundaryFaces;
 				}
 			}
-		}
+		});
+
 
 		if (nbBoundaryFaces > 0)
 		{
