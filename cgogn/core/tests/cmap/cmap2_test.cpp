@@ -133,31 +133,49 @@ protected:
 			}
 		}
 		// Close the map (remove remaining boundary)
-		cmap_.foreach_dart([&] (Dart d)
-		{
-			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
-		});
+		cmap_.foreach_dart(
+			[&] (Dart d)
+			{
+				if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
+			},
+			[this] (Dart d) { return true; }
+		);
 		// Embed the map
-		cmap_.foreach_dart([&] (Dart d)
-		{
-			mbuild.new_orbit_embedding(CDart(d));
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
-		{
-			mbuild.new_orbit_embedding(v);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
-		{
-			mbuild.new_orbit_embedding(e);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
-		{
-			mbuild.new_orbit_embedding(f);
-		});
-		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
-		{
-			mbuild.new_orbit_embedding(w);
-		});
+		cmap_.foreach_dart(
+			[&] (Dart d)
+			{
+				mbuild.new_orbit_embedding(CDart(d));
+			},
+			[this] (Dart d) { return true; }
+		);
+		cmap_.foreach_cell<FORCE_DART_MARKING>(
+			[&] (Vertex v)
+			{
+				mbuild.new_orbit_embedding(v);
+			},
+			[this] (Dart d) { return true; }
+		);
+		cmap_.foreach_cell<FORCE_DART_MARKING>(
+			[&] (Edge e)
+			{
+				mbuild.new_orbit_embedding(e);
+			},
+			[this] (Dart d) { return true; }
+		);
+		cmap_.foreach_cell<FORCE_DART_MARKING>(
+			[&] (Face f)
+			{
+				mbuild.new_orbit_embedding(f);
+			},
+			[this] (Dart d) { return true; }
+		);
+		cmap_.foreach_cell<FORCE_DART_MARKING>(
+			[&] (Volume w)
+			{
+				mbuild.new_orbit_embedding(w);
+			},
+			[this] (Dart d) { return true; }
+		);
 	}
 };
 

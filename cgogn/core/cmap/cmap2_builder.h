@@ -89,6 +89,11 @@ public:
 		map_.phi2_unsew(d);
 	}
 
+	inline void set_boundary(Dart d, bool b)
+	{
+		map_.set_boundary(d, b);
+	}
+
 	inline Dart add_face_topo_parent(unsigned int nb_edges)
 	{
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
@@ -106,6 +111,7 @@ public:
 		cgogn_message_assert(map_.phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
 		Dart first = map_.add_dart();	// First edge of the face that will fill the hole
+		set_boundary(first,true);
 		map_.phi2_sew(d, first);		// 2-sew the new edge to the hole
 
 		Dart d_next = d;				// Turn around the hole
@@ -121,6 +127,7 @@ public:
 			if (d_phi1 != d)
 			{
 				Dart next = map_.split_vertex_topo(first);	// Add a vertex into the built face
+				set_boundary(next,true);
 				phi2_sew(d_next, next);						// and 2-sew the face to the hole
 			}
 		} while (d_phi1 != d);

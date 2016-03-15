@@ -349,6 +349,8 @@ protected:
 			[this] (Cell<ORBIT> c) { new_orbit_embedding(c); },
 			[] (Dart) { return true; }
 		);
+
+		cgogn_assert(check_map_integrity());
 	}
 
 	template <Orbit ORBIT>
@@ -473,8 +475,7 @@ public:
 		// check the integrity of topological relations or the correct sewing of darts
 		foreach_dart_until([&cmap, &result] (Dart d)
 		{
-			if (!cmap->check_integrity(d))
-				result = false;
+			result = cmap->check_integrity(d);
 			return result;
 		});
 		if (!result)
@@ -625,16 +626,20 @@ protected:
 		const Self& map_;
 		const MASK& mask_;
 		Dart dart_;
+		Dart end_;
 
 		inline const_iterator(const Self& map, Dart d, const MASK& mask) :
 			map_(map),
 			dart_(d),
 			mask_(mask)
-		{}
+		{
+			end_ = Dart(map_.topology_.end());
+		}
 
 		inline const_iterator(const const_iterator& it) :
 			map_(it.map_),
 			dart_(it.dart_),
+			end_(it.end_),
 			mask_(it.mask_)
 		{}
 
@@ -642,17 +647,18 @@ protected:
 		{
 			map_ = it.map_;
 			dart_ = it.dart_;
+			end_ = it.end_;
 			mask_ = it.mask_;
 			return *this;
 		}
 
 		inline const_iterator& operator++()
 		{
-			const Dart end = Dart(map_.topology_.end());
+			cgogn_assert(dart_.index < end_.index);
 			do
 			{
 				map_.topology_.next(dart_.index);
-			} while (dart_ != end && !mask_(dart_));
+			} while (dart_ != end_ && !mask_(dart_));
 			return *this;
 		}
 
@@ -664,12 +670,14 @@ protected:
 		inline bool operator!=(const const_iterator& it) const
 		{
 			cgogn_assert(&map_ == &(it.map_));
+			cgogn_assert(end_ == it.end_);
 			return dart_ != it.dart_;
 		}
 
 		inline bool operator==(const const_iterator& it) const
 		{
 			cgogn_assert(&map_ == &(it.map_));
+			cgogn_assert(end_ == it.end_);
 			return dart_ == it.dart_;
 		}
 	};
@@ -678,7 +686,8 @@ protected:
 	inline const_iterator<MASK> begin(const MASK& mask) const
 	{
 		Dart d = Dart(this->topology_.begin());
-		const Dart end = Dart(this->topology_.end());
+		Dart end = Dart(this->topology_.end());
+
 		while (d != end && !mask(d))
 			this->topology_.next(d.index);
 		return const_iterator<MASK>(*this, d, mask);
