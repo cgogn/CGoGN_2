@@ -38,6 +38,70 @@
 
 #include <tinyxml2.h>
 
+/*******************************************************************************
+* CGoGN convention for ordering the indices for volume cells in the VolumeImport class (prior to the map creation)
+*
+*-->Tetras: any order. The orientation is checked when calling add_tetra.
+*           3
+*         ,/|`\
+*       ,/  |  `\
+*     ,/    '.   `\
+*   ,/       |     `\
+* ,/         |       `\
+*2-----------'.--------1
+* `\.         |      ,/
+*    `\.      |    ,/
+*       `\.   '. ,/
+*          `\. |/
+*             `0
+*
+*-->Pyramids: First the indices of the quad face, then the top. The orientation is checked when calling add_pyramid.
+*               4
+*             ,/|\
+*           ,/ .'|\
+*         ,/   | | \
+*       ,/    .' | `.
+*     ,/      |  '.  \
+*   ,/       .'   |   \
+* ,/         |    |    \
+*0----------.'----3    `.
+* `\        |      `\    \
+*   `\     .'        `\ - \
+*     `\   |           `\  \
+*       `\.'            `\`
+*          1----------------2
+*
+*-->Prisms: First the indices of one of the triangular face then the indices of the opposite face (same order). The orientation is checked when calling add_prism.
+*       3
+*     ,/|`\
+*   ,/  |  `\
+* ,/    |    `\
+*4------+------5
+*|      |      |
+*|      |      |
+*|      |      |
+*|      |      |
+*|      |      |
+*|      0      |
+*|    ,/ `\    |
+*|  ,/     `\  |
+*|,/         `\|
+*1-------------2
+*
+*-->Hexas: First the indices of one face then the indices of the opposite face (same order). The orientation is checked when calling add_hexa.
+*7----------6
+*|\         |\
+*| \        | \
+*|  \       |  \
+*|   3------+---2
+*|   |      |-- |
+*4---+------5   |
+* \  |       \  |
+*  \ |        \ |
+*   \|         \|
+*    0----------1
+*******************************************************************************/
+
 namespace cgogn
 {
 
