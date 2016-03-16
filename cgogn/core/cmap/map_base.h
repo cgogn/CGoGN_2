@@ -642,7 +642,7 @@ protected:
 
 		do {
 			this->topology_.next(d.index);
-		} while (d != end && !mask(d))
+		} while (d != end && !mask(d));
 	}
 
 	inline Dart end() const
