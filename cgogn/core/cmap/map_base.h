@@ -651,18 +651,30 @@ protected:
 	}
 
 	/*!
-	 * \Brief Methods to iterate over all darts.
-	 * All darts are traversed (lying on the boundary or not).
+	 * \Brief Specialized methods to iterate over all darts.
+	 * All darts are traversed without any MASK filtering.
 	 */
-	inline Dart begin() const
+	inline Dart begin(const bool&) const
 	{
-		return Dart(this->topology_.begin());
+		Dart d = Dart(this->topology_.begin());
+
+		return d;
 	}
 
-	inline void next(Dart& d) const
+	inline void next(Dart& d, const bool&) const
 	{
 		this->topology_.next(d.index);
 	}
+
+//	inline Dart begin() const
+//	{
+//		return Dart(this->topology_.begin());
+//	}
+
+//	inline void next(Dart& d) const
+//	{
+//		this->topology_.next(d.index);
+//	}
 
 public:
 
@@ -683,25 +695,31 @@ public:
 		foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
+	template <typename FUNC>
+	inline void foreach_dart_nomask(const FUNC& f) const
+	{
+		foreach_dart(f, true);
+	}
+
 	template <typename FUNC, typename MASK>
 	inline void foreach_dart(const FUNC& f, const MASK& mask) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+//		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
+//		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
 		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 			f(it);
 	}
 
-	template <typename FUNC>
-	inline void foreach_dart_nomask(const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+//	template <typename FUNC>
+//	inline void foreach_dart_nomask(const FUNC& f) const
+//	{
+//		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (Dart it = begin(), last = end(); it != last; next(it))
-			f(it);
-	}
+//		for (Dart it = begin(), last = end(); it != last; next(it))
+//			f(it);
+//	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
