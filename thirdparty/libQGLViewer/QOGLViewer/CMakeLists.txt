@@ -1,4 +1,4 @@
-set(QOGLViewer_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
+set(CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
 
 
 PROJECT(QOGLViewer)
@@ -39,15 +39,17 @@ set(SOURCE_FILES
 	vec.cpp
 	)
 
-if(WIN32)
-    ADD_DEFINITIONS(-DCREATE_QGLVIEWER_DLL -DNOMINMAX)
-else()
-	ADD_DEFINITIONS(-fPIC)
-endif() 
-
 
 add_library(QOGLViewer SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(QOGLViewer  ${OPENGL_LIBRARY} Qt5::Widgets)
+
+if(WIN32)
+    ADD_DEFINITIONS(-DCREATE_QGLVIEWER_DLL -DNOMINMAX /W3)
+else()
+	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+	ADD_DEFINITIONS(-fPIC)
+endif() 
+
 
 
 

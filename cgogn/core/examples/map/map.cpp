@@ -56,13 +56,16 @@ void fonc_non_const(typename MAP::template VertexAttributeHandler<float>& ah)
 template <typename MAP>
 int test1(MAP& map)
 {
-	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, MAP::VERTEX>("floats");
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
 
-	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, MAP::FACE>("floats");
+	// add an attribute on vertex of map with
+	typename MAP::template VertexAttributeHandler<float> ah = map.template add_attribute<float, Vertex::ORBIT>("floats");
+
+	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, MAP::VERTEX>("floats");
+	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
@@ -80,40 +83,37 @@ int test1(MAP& map)
 	std::vector<Dart>* vertdb = cgogn::get_dart_buffers()->get_buffer();
 	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
 
-
-	vert_b->push_back(d1);
+	vert_b->push_back(typename MAP::Vertex(d1));
 	vert_b->push_back(typename MAP::Vertex(d1));
 
 	cgogn::get_dart_buffers()->release_cell_buffer(vertdb);
 //	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
 
 	DartMarker<MAP> dm(map);
-	CellMarker<MAP, MAP::VERTEX> cm(map);
+	CellMarker<MAP, MAP::Vertex::ORBIT> cm(map);
 
 	dm.mark(d1);
 
 	std::cout << "Darts :" << std::endl;
-	for (Dart dit : map)
-	{
-		std::cout << dit << std::endl;
-	}
+	map.foreach_dart([] (Dart d) { std::cout << d << std::endl; });
 	std::cout << "End Darts" << std::endl;
 
 	std::cout << "Vertices :" << std::endl;
-	map.template foreach_cell<MAP::VERTEX>([&] (typename MAP::Vertex v)
+	map.foreach_cell([&] (Vertex v)
 	{
 		std::cout << v << std::endl;
 		ah[v] = 2.0f;
 	});
 	std::cout << "End Vertices" << std::endl;
 
-	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
-	{
-		ah[v] = 4.0f;
-	});
+	// the method foreach_adjacent_vertex_through_edge is not well defined for a MAP1
+//	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
+//	{
+//		ah[v] = 4.0f;
+//	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::VERTEX);
+//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::Vertex);
 //	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
 //	for (unsigned int i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();
@@ -138,7 +138,7 @@ int main()
 	Map1 map1;
 	Map2 map2;
 //	Map3 map3;
-	test1(map1);
+//	test1(map1);
 	test1(map2);
 //	test1(map3);
 

@@ -209,8 +209,8 @@ int test3()
 int test4()
 {
 	std::cout << "=============== TEST 4 ===============" << std::endl;
-	typedef std::vector< std::vector< double > > vecvecdouble;
-	typedef std::vector< std::list< double > > veclistdouble;
+	using vecvecdouble = std::vector< std::vector< double > >;
+	using veclistdouble = std::vector< std::list< double > >;
 	ChunkArrayContainer<unsigned int> container;
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
@@ -225,7 +225,7 @@ int test4()
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3).set_value(i, static_cast<bool>(i%2));
+		(*att3).set_value(i, static_cast<bool>(i%2 != 0));
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
 	}

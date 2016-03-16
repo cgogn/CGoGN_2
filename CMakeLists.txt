@@ -9,12 +9,15 @@ project(CGoGN
 	LANGUAGES CXX C
 )
 
+enable_testing()
+
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-
+#### CGoGN PATH
+set(CGOGN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 #### Here are located the FindPackages that we need
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
@@ -27,7 +30,7 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
+set(CGOGN_SOURCE_DIR ${CGOGN_PATH}/cgogn)
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
@@ -36,7 +39,7 @@ if(${CGOGN_EXTERNAL_TEMPLATES})
 endif()
 
 #### ThirdParty options
-set(CGOGN_THIRDPARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
+set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
 option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." ON)
@@ -106,6 +109,18 @@ if(CGOGN_BUILD_TESTS)
 		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 	endif()
 endif(CGOGN_BUILD_TESTS)
+
+#### Endianness detection
+include (TestBigEndian)
+test_big_endian(CGOGN_TEST_BIG_ENDIAN)
+add_definitions("-DCGOGN_LITTLE_ENDIAN=1234")
+add_definitions("-DCGOGN_BIG_ENDIAN=4321")
+if(${CGOGN_TEST_BIG_ENDIAN})
+	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_BIG_ENDIAN")
+else()
+	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
+endif()
+
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 add_subdirectory(${CGOGN_SOURCE_DIR})

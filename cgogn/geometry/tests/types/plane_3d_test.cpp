@@ -22,58 +22,51 @@
 *******************************************************************************/
 
 #include <geometry/types/plane_3d.h>
-#include <gtest/gtest.h>
-#include <iostream>
+#include <geometry/types/geometry_traits.h>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
+#include <gtest/gtest.h>
+
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
-using Plane3D_Array = cgogn::geometry::Plane3D<StdArray>;
-using Plane3D_Eigen = cgogn::geometry::Plane3D<EigenVec3d>;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
+
+
+template<typename Vec_T>
+class Plane3D_TEST : public testing::Test {};
+
+TYPED_TEST_CASE(Plane3D_TEST, VecTypes );
 
 TEST(Plane3D_TEST, NameOfType)
 {
-	EXPECT_EQ(cgogn::name_of_type(Plane3D_Array(StdArray(),0.)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<double,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(Plane3D_Eigen(EigenVec3d(),0.)), "cgogn::geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<StdArrayf>(StdArrayf(),0)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<float,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<EigenVec3f>(EigenVec3f(),0)), "cgogn::geometry::Plane3D<Eigen::Matrix<float,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<StdArrayd>(StdArrayd(),0)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<double,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<EigenVec3d>(EigenVec3d(),0)), "cgogn::geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 
-TEST(Plane3D_TEST, Project)
+TYPED_TEST(Plane3D_TEST, Project)
 {
-	{
-		Plane3D_Array plane(StdArray{4.,0.,0.}, StdArray{0.,0.,0.});
-		StdArray p{5.,8.,12.};
-		plane.project(p);
-		EXPECT_EQ(p[0], 0.);
-		EXPECT_EQ(p[1], 8.);
-		EXPECT_EQ(p[2], 12.);
-	}
-	{
-		Plane3D_Eigen plane(EigenVec3d{4,0,0}, EigenVec3d{0,0,0});
-		EigenVec3d p{5,8,12};
-		plane.project(p);
-		EXPECT_EQ(p[0], 0.);
-		EXPECT_EQ(p[1], 8.);
-		EXPECT_EQ(p[2], 12.);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	cgogn::geometry::Plane3D<TypeParam> plane(TypeParam{Scalar(4), Scalar(0), Scalar(0)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
+	TypeParam p{Scalar(5), Scalar(8), Scalar(12)};
+	plane.project(p);
+	EXPECT_EQ(p[0], Scalar(0));
+	EXPECT_EQ(p[1], Scalar(8));
+	EXPECT_EQ(p[2], Scalar(12));
 }
 
-TEST(Plane3D_TEST, Orient)
+TYPED_TEST(Plane3D_TEST, Orient)
 {
-	{
-		Plane3D_Array plane(StdArray{0.,0.,15.}, StdArray{0.,0.,0.});
-		StdArray p1{546854.,864.,12.};
-		StdArray p2{-5.,886486.,-12.};
-		StdArray p3{44552.,7.,0.};
-		EXPECT_EQ(plane.orient(p1), cgogn::geometry::Orientation3D::OVER);
-		EXPECT_EQ(plane.orient(p2), cgogn::geometry::Orientation3D::UNDER);
-		EXPECT_EQ(plane.orient(p3), cgogn::geometry::Orientation3D::ON);
-	}
-	{
-		Plane3D_Eigen plane(EigenVec3d{0,0,15}, EigenVec3d{0,0,0});
-		EigenVec3d p1{546854,864,12};
-		EigenVec3d p2{-5,886486,-12};
-		EigenVec3d p3{44552,7,0};
-		EXPECT_EQ(plane.orient(p1), cgogn::geometry::Orientation3D::OVER);
-		EXPECT_EQ(plane.orient(p2), cgogn::geometry::Orientation3D::UNDER);
-		EXPECT_EQ(plane.orient(p3), cgogn::geometry::Orientation3D::ON);
-	}
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+
+	cgogn::geometry::Plane3D<TypeParam> plane(TypeParam{Scalar(0), Scalar(0), Scalar(15)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
+	TypeParam p1{Scalar(546854), Scalar(864), Scalar(12)};
+	TypeParam p2{Scalar(-5), Scalar(886486), Scalar(-12)};
+	TypeParam p3{Scalar(44552), Scalar(7), Scalar(0)};
+	EXPECT_EQ(plane.orient(p1), cgogn::geometry::Orientation3D::OVER);
+	EXPECT_EQ(plane.orient(p2), cgogn::geometry::Orientation3D::UNDER);
+	EXPECT_EQ(plane.orient(p3), cgogn::geometry::Orientation3D::ON);
 }

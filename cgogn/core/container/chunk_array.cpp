@@ -24,7 +24,7 @@
 #define CGOGN_CORE_DLL_EXPORT
 #define CORE_CONTAINER_CHUNK_ARRAY_CPP_
 
-#include <core/basic/dll.h>
+#include <core/dll.h>
 #include <core/container/chunk_array.h>
 
 namespace cgogn

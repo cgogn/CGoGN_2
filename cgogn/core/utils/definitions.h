@@ -37,7 +37,8 @@
 /*
  * Thread local storage. In VS <1900 it works only with POD types.
 */
-#if defined(_MSC_VER) && _MSC_VER < 1900
+//#if defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(_MSC_VER)
 #define CGOGN_TLS __declspec( thread )
 #else
 #define CGOGN_TLS __thread
@@ -129,10 +130,9 @@
 
 #ifdef _MSC_VER
 	// no warning with VS 2013 and \W4
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 #endif
-
 
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)

@@ -36,14 +36,12 @@
 
 #ifdef __GNUG__
 #include <cstdlib>
-#include <memory>
-#include <cxxabi.h>
 #include <limits>
 #include <iostream>
 #include <sstream>
 #endif // __GNUG__
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 
 namespace cgogn
@@ -95,6 +93,8 @@ inline std::string name_of_type_impl(const std::basic_string<T>&);
 template <typename T, std::size_t N>
 inline std::string name_of_type_impl(const std::array<T,N>&);
 
+CGOGN_CORE_API std::string demangle(const std::string& str);
+
 // definitions
 
 template <typename T>
@@ -113,7 +113,6 @@ template <typename T, std::size_t N>
 inline std::string name_of_type_impl(const std::array<T,N>&)
 { return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(N) + std::string(">"); }
 
-
 template <class T>
 inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == true, std::string>::type
 {
@@ -123,15 +122,8 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 template <typename T>
 inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type
 {
-	std::string type_name = typeid(T).name();
+	std::string type_name = demangle(std::string(typeid(T).name()));
 #ifdef __GNUG__
-	int status = std::numeric_limits<int>::max();
-	std::unique_ptr<char, void(*)(void*)> res{ abi::__cxa_demangle(type_name.c_str(), NULL, NULL, &status), std::free };
-	if (status == 0)
-		type_name = std::string(res.get());
-	else
-		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
-
 	// integer postfixes
 	{
 		std::regex regex("([0-9]+)(ul|l)", std::regex_constants::ECMAScript | std::regex_constants::icase);

@@ -24,15 +24,6 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
-#include <core/utils/name_types.h>
-#include <core/utils/assert.h>
-#include <core/utils/assert.h>
-#include <core/utils/make_unique.h>
-#include <core/basic/dll.h>
-#include <core/container/chunk_array.h>
-#include <core/container/chunk_stack.h>
-#include <core/container/chunk_array_factory.h>
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -40,6 +31,14 @@
 #include <string>
 #include <memory>
 #include <climits>
+
+#include <core/dll.h>
+#include <core/utils/assert.h>
+#include <core/utils/name_types.h>
+#include <core/utils/unique_ptr.h>
+#include <core/container/chunk_array.h>
+#include <core/container/chunk_stack.h>
+#include <core/container/chunk_array_factory.h>
 
 namespace cgogn
 {
@@ -84,8 +83,8 @@ class ChunkArrayContainer
 {
 public:
 
-	typedef ChunkArrayContainer<CHUNKSIZE, T_REF> Self;
-	typedef T_REF ref_type;
+	using Self = ChunkArrayContainer<CHUNKSIZE, T_REF>;
+	using ref_type = T_REF;
 
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <class T>
@@ -819,6 +818,8 @@ public:
 	bool unref_line(unsigned int index)
 	{
 		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+		cgogn_message_assert(refs_[index] > 1u, "Container: unref line with nb_ref == 1");
+
 		refs_[index]--;
 		if (refs_[index] == 1u)
 		{

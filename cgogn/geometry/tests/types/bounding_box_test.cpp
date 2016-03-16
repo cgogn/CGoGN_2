@@ -21,100 +21,73 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <geometry/types/bounding_box.h>
-#include <gtest/gtest.h>
-#include <iostream>
 #include <cmath>
+#include <geometry/types/bounding_box.h>
+#include <geometry/types/geometry_traits.h>
 
-using StdArray = cgogn::geometry::Vec_T<std::array<double,3>>;
+#include <gtest/gtest.h>
+
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
-using BoundingBox_Array = cgogn::geometry::BoundingBox<StdArray>;
-using BoundingBox_Eigen = cgogn::geometry::BoundingBox<EigenVec3d>;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
+
+template<typename Vec_T>
+class BoundingBox_TEST : public testing::Test
+{
+protected :
+	cgogn::geometry::BoundingBox<Vec_T> bb_;
+};
+
+TYPED_TEST_CASE(BoundingBox_TEST, VecTypes );
 
 TEST(BoundingBox_TEST, NameOfType)
 {
-	EXPECT_EQ(cgogn::name_of_type(BoundingBox_Array()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<double,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(BoundingBox_Eigen()), "cgogn::geometry::BoundingBox<Eigen::Matrix<double,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayf>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<float,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<EigenVec3f>()), "cgogn::geometry::BoundingBox<Eigen::Matrix<float,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayd>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<double,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<EigenVec3d>()), "cgogn::geometry::BoundingBox<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 
-TEST(BoundingBox_TEST, Basics)
+TYPED_TEST(BoundingBox_TEST, Basics)
 {
-	{
-		BoundingBox_Array bb;
-		bb.add_point(StdArray({0.5,0.4,0.3}));
-		bb.add_point(StdArray({-1.,-2.,-3.}));
-		bb.add_point(StdArray({1.,2.,3.}));
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-		EXPECT_EQ(bb.min(), StdArray({-1.,-2.,-3.}));
-		EXPECT_EQ(bb.max(), StdArray({1.,2.,3.}));
-		EXPECT_EQ(bb.max_size(), 6);
-		EXPECT_EQ(bb.min_size(), 2);
-		EXPECT_TRUE(cgogn::almost_equal_relative(bb.diag_size(), std::sqrt(2.0*2+4*4+6*6)));
+	this->bb_.add_point(TypeParam({Scalar(0.5f), Scalar(0.4f), Scalar(0.3f)}));
+	this->bb_.add_point(TypeParam({Scalar(-1), Scalar(-2), Scalar(-3)}));
+	this->bb_.add_point(TypeParam({Scalar(1), Scalar(2), Scalar(3)}));
 
-		std::cout << bb.center()[0] << "," << bb.center()[1] << "," << bb.center()[2] << std::endl;
-		EXPECT_EQ(bb.center(), StdArray({0.,0.,0.}));
-	}
-	{
-		BoundingBox_Eigen bb;
-		bb.add_point(EigenVec3d(0.5,0.4,0.3));
-		bb.add_point(EigenVec3d(-1,2,-3));
-		bb.add_point(EigenVec3d(1,-2,3));
-
-		EXPECT_EQ(bb.min(), EigenVec3d(-1,-2,-3));
-		EXPECT_EQ(bb.max(), EigenVec3d(1,2,3));
-		EXPECT_EQ(bb.max_size(), 6);
-		EXPECT_EQ(bb.min_size(), 2);
-		EXPECT_TRUE(cgogn::almost_equal_relative(bb.diag_size(), std::sqrt(2.0*2+4*4+6*6)));
-		EXPECT_EQ(bb.center(), EigenVec3d(0,0,0));
-	}
+	EXPECT_EQ(this->bb_.min(), TypeParam({Scalar(-1), Scalar(-2), Scalar(-3)}));
+	EXPECT_EQ(this->bb_.max(), TypeParam({Scalar(1), Scalar(2), Scalar(3)}));
+	EXPECT_EQ(this->bb_.max_size(), Scalar(6));
+	EXPECT_EQ(this->bb_.min_size(), Scalar(2));
+	EXPECT_TRUE(cgogn::almost_equal_relative(this->bb_.diag_size(), std::sqrt(Scalar(2*2+4*4+6*6))));
+	EXPECT_EQ(this->bb_.center(), TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
 }
 
-TEST(BoundingBox_TEST, testing)
+TYPED_TEST(BoundingBox_TEST, testing)
 {
-	{
-		BoundingBox_Array bb;
-		bb.add_point(StdArray({0.5,0.4,0.3}));
-		bb.add_point(StdArray({-1.,-2.,-3.}));
-		bb.add_point(StdArray({1.,2.,3.}));
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-		EXPECT_TRUE(bb.contains(StdArray({1.,1.,1.})));
+	this->bb_.add_point(TypeParam({Scalar(0.5f), Scalar(0.4f), Scalar(0.3f)}));
+	this->bb_.add_point(TypeParam({Scalar(-1), Scalar(-2), Scalar(-3)}));
+	this->bb_.add_point(TypeParam({Scalar(1), Scalar(2), Scalar(3)}));
 
-		BoundingBox_Array bb2;
-		bb2.add_point(StdArray({0.,0.,0.}));
-		bb2.add_point(StdArray({4.,5.,2.}));
+	EXPECT_TRUE(this->bb_.contains(TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
 
-		EXPECT_TRUE(bb.intersects(bb2));
+	cgogn::geometry::BoundingBox<TypeParam> bb2;
+	bb2.add_point(TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
+	bb2.add_point(TypeParam({Scalar(4), Scalar(5), Scalar(2)}));
 
-		BoundingBox_Array bb3;
-		bb3.add_point(StdArray({0.,0.,0.}));
-		bb3.add_point(StdArray({1.,1.,1.}));
+	EXPECT_TRUE(this->bb_.intersects(bb2));
 
-		EXPECT_TRUE(bb.contains(bb3));
+	cgogn::geometry::BoundingBox<TypeParam> bb3;
+	bb3.add_point(TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
+	bb3.add_point(TypeParam({Scalar(1), Scalar(1), Scalar(1)}));
 
-		EXPECT_TRUE(bb.ray_intersect(StdArray({-9.,-9.,-9.}), StdArray({1.,1.,1.})));
-		EXPECT_FALSE(bb.ray_intersect(StdArray({-9.,-9.,-9.}), StdArray({1.,-1.,0.})));
-	}
-	{
-		BoundingBox_Eigen bb;
-		bb.add_point(EigenVec3d(0.5,0.4,0.3));
-		bb.add_point(EigenVec3d(-1,2,-3));
-		bb.add_point(EigenVec3d(1,-2,3));
+	EXPECT_TRUE(this->bb_.contains(bb3));
 
-		EXPECT_TRUE(bb.contains(EigenVec3d(1,1,1)));
-
-		BoundingBox_Eigen bb2;
-		bb2.add_point(EigenVec3d(0,0,0));
-		bb2.add_point(EigenVec3d(4,5,2));
-
-		EXPECT_TRUE(bb.intersects(bb2));
-
-		BoundingBox_Eigen bb3;
-		bb3.add_point(EigenVec3d(0,0,0));
-		bb3.add_point(EigenVec3d(1,1,1));
-
-		EXPECT_TRUE(bb.contains(bb3));
-
-		EXPECT_TRUE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,1,1)));
-		EXPECT_FALSE(bb.ray_intersect(EigenVec3d(-9,-9,-9), EigenVec3d(1,-1,0)));
-	}
+	EXPECT_TRUE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
+	EXPECT_FALSE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(-1), Scalar(0)})));
 }

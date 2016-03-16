@@ -5,7 +5,6 @@ project(cgogn_rendering
 find_package(Qt5Widgets)
 #find_package(Qt5OpenGL)
 
-
 set(HEADER_FILES
 	dll.h
 	map_render.h
@@ -15,6 +14,11 @@ set(HEADER_FILES
 	shaders/shader_color_per_vertex.h
 	shaders/shader_flat.h
 	shaders/shader_vector_per_vertex.h
+	shaders/shader_phong.h
+	shaders/shader_bold_line.h
+	shaders/shader_round_point.h
+	shaders/shader_point_sprite.h
+	drawer.h
 	)
 
 set(SOURCE_FILES
@@ -23,7 +27,11 @@ set(SOURCE_FILES
 	shaders/shader_color_per_vertex.cpp
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
-
+	shaders/shader_phong.cpp
+	shaders/shader_bold_line.cpp
+	shaders/shader_round_point.cpp
+	shaders/shader_point_sprite.cpp
+	drawer.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -31,10 +39,9 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${QOGLViewer_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<BUILD_INTERFACE:${TinyXml2_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/rendering>
 	)
 

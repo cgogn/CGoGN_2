@@ -24,19 +24,29 @@
 #ifndef CORE_CMAP_MAP_BASE_DATA_H_
 #define CORE_CMAP_MAP_BASE_DATA_H_
 
-#include <core/utils/definitions.h>
-#include <core/utils/thread.h>
-#include <core/utils/thread_pool.h>
-#include <core/container/chunk_array_container.h>
-#include <core/basic/cell.h>
-#include <core/cmap/map_traits.h>
-
 #include <thread>
 #include <mutex>
 #include <algorithm>
 #include <type_traits>
 #include <sstream>
 #include <iterator>
+
+#include <core/utils/definitions.h>
+#include <core/utils/thread.h>
+#include <core/utils/thread_pool.h>
+#include <core/utils/name_types.h>
+#include <core/container/chunk_array_container.h>
+#include <core/basic/cell.h>
+#include <core/cmap/map_traits.h>
+
+#define CGOGN_CHECK_DYNAMIC_TYPE cgogn_message_assert( (std::is_same<typename MapType::TYPE, Self>::value),\
+	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
+
+#ifndef _MSC_VER
+#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value,"The concrete map type has to be equal to Self")
+#else
+#define CGOGN_CHECK_CONCRETE_TYPE CGOGN_CHECK_DYNAMIC_TYPE
+#endif
 
 namespace cgogn
 {
@@ -48,7 +58,7 @@ class CGOGN_CORE_API MapGen
 {
 public:
 
-	typedef MapGen Self;
+	using Self = MapGen;
 
 protected:
 
@@ -85,12 +95,13 @@ class MapBaseData : public MapGen
 {
 public:
 
-	typedef MapGen Inherit;
-	typedef MapBaseData<MAP_TRAITS> Self;
+	using Inherit = MapGen;
+	using Self = MapBaseData<MAP_TRAITS>;
 
 	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const unsigned int NB_UNKNOWN_THREADS = 4u;
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
+	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
@@ -100,7 +111,7 @@ public:
 
 protected:
 
-	/// topology & embedding indices
+	// topology & embedding indices
 	ChunkArrayContainer<unsigned char> topology_;
 
 	/// per orbit attributes
@@ -109,9 +120,8 @@ protected:
 	/// embedding indices shortcuts
 	std::array<ChunkArray<unsigned int>*, NB_ORBITS> embeddings_;
 
-	/// boundary markers shortcuts
-	std::array<ChunkArray<bool>*, 2> boundary_markers_;
-	// TODO: ?? store in a std::vector ?
+	/// boundary marker shortcut
+	ChunkArray<bool>* boundary_marker_;
 
 	/// vector of available mark attributes per thread on the topology container
 	std::vector<std::vector<ChunkArray<bool>*>> mark_attributes_topology_;
@@ -155,8 +165,11 @@ public:
 		for (unsigned int i = 0; i < MAX_NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
 
+		boundary_marker_ = topology_.add_marker_attribute();
+
 		thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
 		thread_ids_.resize(NB_UNKNOWN_THREADS);
+
 		this->add_thread(std::this_thread::get_id());
 		const auto& pool_threads_ids = cgogn::get_thread_pool()->get_threads_ids();
 		for (const std::thread::id& ids : pool_threads_ids)
@@ -201,7 +214,7 @@ protected:
 	*/
 	inline ChunkArray<bool>* get_topology_mark_attribute()
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
@@ -222,59 +235,69 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
 	{
-		unsigned int thread = this->get_current_thread_index();
+		std::size_t thread = this->get_current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
-
-public:
 
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
 
+public:
+
 	template <Orbit ORBIT>
-	inline bool is_orbit_embedded() const
+	inline bool is_embedded() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return embeddings_[ORBIT] != nullptr;
+	}
+
+	template <class CellType>
+	inline bool is_embedded() const
+	{
+		return is_embedded<CellType::ORBIT>();
 	}
 
 	template <Orbit ORBIT>
 	inline unsigned int get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
 protected:
 
-	template <Orbit ORBIT>
-	inline void init_embedding(Dart d, unsigned int emb)
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-
-		this->attributes_[ORBIT].ref_line(emb); // ref the new emb
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
-	}
-
-	template <Orbit ORBIT>
+	template <class CellType>
 	inline void set_embedding(Dart d, unsigned int emb)
 	{
+		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(is_orbit_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
-		unsigned int old = get_embedding<ORBIT>(d);
+		const unsigned int old = (*embeddings_[ORBIT])[d.index];
 
-		if (old == emb)	return;
+		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
+		attributes_[ORBIT].ref_line(emb);			// ref the new emb
+		if (old != EMBNULL)
+			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
-		this->attributes_[ORBIT].unref_line(old); // unref the old emb
-		this->attributes_[ORBIT].ref_line(emb);   // ref the new emb
-
-		(*this->embeddings_[ORBIT])[d.index] = emb; // affect the embedding to the dart
+		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
 	}
+
+	template <class CellType>
+	inline void copy_embedding(Dart dest, Dart src)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
+	}
+
+protected:
 
 	/*******************************************************************************
 	 * Thread management
@@ -288,11 +311,11 @@ protected:
 		std::cerr << "Data can be lost. Please use add_thread and remove_thread interface." << std::endl;
 		thread_ids_[index] = th_id;
 		const unsigned old_index = index;
-		index  = (index+1u)% NB_UNKNOWN_THREADS;
+		index = (index+1u) % NB_UNKNOWN_THREADS;
 		return old_index;
 	}
 
-	inline unsigned int get_unknown_thread_index(std::thread::id thread_id) const
+	inline std::size_t get_unknown_thread_index(std::thread::id thread_id) const
 	{
 		auto end = thread_ids_.begin();
 		std::advance(end, NB_UNKNOWN_THREADS);
@@ -303,16 +326,16 @@ protected:
 		return add_unknown_thread();
 	}
 
-	inline unsigned int get_current_thread_index() const
+	inline std::size_t get_current_thread_index() const
 	{
 		// avoid the unknown threads stored at the beginning of the vector
-		auto real_begin =thread_ids_.begin();
+		auto real_begin = thread_ids_.begin();
 		std::advance(real_begin, NB_UNKNOWN_THREADS);
 
 		const auto end = thread_ids_.end();
 		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
 		if (it_lower_bound != end)
-			return std::distance(thread_ids_.begin(),it_lower_bound);
+			return std::distance(thread_ids_.begin(), it_lower_bound);
 
 		return get_unknown_thread_index(std::this_thread::get_id());
 	}
@@ -320,12 +343,12 @@ protected:
 	inline void remove_thread(std::thread::id thread_id) const
 	{
 		// avoid the unknown threads stored at the beginning of the vector
-		auto real_begin =thread_ids_.begin();
+		auto real_begin = thread_ids_.begin();
 		std::advance(real_begin, NB_UNKNOWN_THREADS);
 
-		cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id),"Unable to find the thread.");
-		auto it = std::lower_bound(real_begin, thread_ids_.end(),thread_id);
-		cgogn_message_assert((*it)  == thread_id,"Unable to find the thread.");
+		cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id), "Unable to find the thread.");
+		auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
+		cgogn_message_assert(*it == thread_id, "Unable to find the thread.");
 		thread_ids_.erase(it);
 	}
 
@@ -335,12 +358,9 @@ protected:
 		auto real_begin =thread_ids_.begin();
 		std::advance(real_begin, NB_UNKNOWN_THREADS);
 
-		auto it = std::lower_bound(real_begin, thread_ids_.end(),thread_id);
-		if ((it == thread_ids_.end()) || (*it  != thread_id))
-		{
-			thread_ids_.insert(it,thread_id);
-		}
-
+		auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
+		if (it == thread_ids_.end() || *it != thread_id)
+			thread_ids_.insert(it, thread_id);
 	}
 };
 
