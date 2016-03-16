@@ -618,6 +618,11 @@ public:
 
 protected:
 
+	/*!
+	 * \Brief Iterator that use MASK to filter the traversed darts
+	 * MASK is an functor that determine if a dart should be traversed or skipped.
+	 * It returns true when a dart is to be traversed and false to make the iterator skip it.
+	 */
 	template <typename MASK>
 	class const_iterator
 	{
@@ -699,6 +704,76 @@ protected:
 		return const_iterator<MASK>(*this, Dart(this->topology_.end()), mask);
 	}
 
+	/*!
+	 * \Brief Specialized Iterator do not filter the traversed darts
+	 * All dart are traversed by by iterator.
+	 */
+	class const_iterator_nomask
+	{
+	public:
+
+		const Self& map_;
+		Dart dart_;
+		Dart end_;
+
+		inline const_iterator_nomask(const Self& map, Dart d) :
+			map_(map),
+			dart_(d)
+		{
+			end_ = Dart(map_.topology_.end());
+		}
+
+		inline const_iterator_nomask(const const_iterator_nomask& it) :
+			map_(it.map_),
+			dart_(it.dart_),
+			end_(it.end_)
+		{}
+
+		inline const_iterator_nomask& operator=(const const_iterator_nomask& it)
+		{
+			map_ = it.map_;
+			dart_ = it.dart_;
+			end_ = it.end_;
+			return *this;
+		}
+
+		inline const_iterator_nomask& operator++()
+		{
+			cgogn_assert(dart_.index < end_.index);
+			map_.topology_.next(dart_.index);
+			return *this;
+		}
+
+		inline const Dart& operator*() const
+		{
+			return dart_;
+		}
+
+		inline bool operator!=(const const_iterator_nomask& it) const
+		{
+			cgogn_assert(&map_ == &(it.map_));
+			cgogn_assert(end_ == it.end_);
+			return dart_ != it.dart_;
+		}
+
+		inline bool operator==(const const_iterator_nomask& it) const
+		{
+			cgogn_assert(&map_ == &(it.map_));
+			cgogn_assert(end_ == it.end_);
+			return dart_ == it.dart_;
+		}
+	};
+
+	inline const_iterator_nomask begin() const
+	{
+		return const_iterator_nomask(*this, Dart(this->topology_.begin()));
+	}
+
+	inline const_iterator_nomask end() const
+	{
+		return const_iterator_nomask(*this, Dart(this->topology_.end()));
+	}
+
 public:
 
 	/**
@@ -726,6 +801,15 @@ public:
 		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
 		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+			f(*it);
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_nomask(const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+
+		for (const_iterator_nomask it = this->begin(), end = this->end(); it != end; ++it)
 			f(*it);
 	}
 
@@ -812,6 +896,75 @@ public:
 		}
 	}
 
+	template <typename FUNC>
+	inline void parallel_foreach_dart_nomask(const FUNC& f) const
+	{
+		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
+		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
+
+		using Future = std::future<typename std::result_of<FUNC(Dart, unsigned int)>::type>;
+		using VecDarts = std::vector<Dart>;
+
+		ThreadPool* thread_pool = cgogn::get_thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
+
+		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		dart_buffers[0].reserve(nb_threads_pool);
+		dart_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
+		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+
+		const_iterator_nomask it = this->begin();
+		const const_iterator_nomask end = this->end();
+
+		while (it != end)
+		{
+			for (unsigned int i = 0u; i < 2u; ++i)
+			{
+				for (unsigned int j = 0u; j < nb_threads_pool && it != end; ++j)
+				{
+					dart_buffers[i].push_back(dbuffs->get_buffer());
+					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+					std::vector<Dart>& darts = *dart_buffers[i].back();
+					darts.reserve(PARALLEL_BUFFER_SIZE);
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
+					{
+						darts.push_back(*it);
+						++it;
+					}
+
+					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
+					{
+						for (auto d : darts)
+							f(d, th_id);
+					}));
+				}
+
+				const unsigned int id = (i+1u) % 2u;
+
+				for (auto& fu : futures[id])
+					fu.wait();
+				for (auto& b : dart_buffers[id])
+					dbuffs->release_cell_buffer(b);
+
+				futures[id].clear();
+				dart_buffers[id].clear();
+
+				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+				if (it == end && i == 1u)
+				{
+					for (auto& fu : futures[1u])
+						fu.wait();
+					for (auto &b : dart_buffers[1u])
+						dbuffs->release_buffer(b);
+				}
+			}
+		}
+	}
+
 	/**
 	 * \brief apply a function on each dart of the map and stops when the function returns false
 	 * @tparam FUNC type of the callable
@@ -844,6 +997,19 @@ public:
 		}
 	}
 
+	template <typename FUNC>
+	inline void foreach_dart_until_nomask(const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
+		for (const_iterator_nomask it = this->begin(), end = this->end(); it != end; ++it)
+		{
+			if (!f(*it))
+				break;
+		}
+	}
+
 	/**
 	 * \brief apply a function on each orbit of the map
 	 * @tparam FUNC type of the callable
@@ -853,6 +1019,12 @@ public:
 	inline void foreach_cell(const FUNC& f) const
 	{
 		foreach_cell<STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell_nomask(const FUNC& f) const
+	{
+		foreach_cell<STRATEGY>(f, [this] (Dart) { return true; });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>

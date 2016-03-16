@@ -200,14 +200,11 @@ public:
 	inline void close_map()
 	{
 		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart(
-			[&] (Dart d)
+		map_.foreach_dart_nomask( [&] (Dart d)
 			{
 				if (map_.phi2(d) == d)
 					fix_point_darts.push_back(d);
-			},
-			[] (Dart) { return true; }
-		);
+			});
 		for (Dart d : fix_point_darts)
 		{
 			if (map_.phi2(d) == d)

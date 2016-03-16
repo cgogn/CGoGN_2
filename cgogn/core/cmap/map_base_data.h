@@ -263,8 +263,8 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-//		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
-		if ((*embeddings_[ORBIT])[c.dart.index] == EMBNULL) std::cerr << "EMBNULL pour " << orbit_name(ORBIT) << std::endl;
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
+
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
