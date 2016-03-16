@@ -594,7 +594,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 //		Inherit::foreach_incident_edge(v, func);
-		Inherit::foreach_incident_face(v, [&func] (Edge2 e)
+		Inherit::foreach_incident_edge(v, [&func] (Edge2 e)
 		{
 			func(Edge(e.dart));
 		});

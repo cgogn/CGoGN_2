@@ -35,9 +35,10 @@
 #include <rendering/map_render.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/shaders/shader_flat.h>
-#include <rendering/drawer.h>
+//#include <rendering/drawer.h>
+//#include <rendering/shaders/shader_simple_color.h>
 
-#include <rendering/shaders/shader_simple_color.h>
+#include <rendering/volume_render.h>
 
 #include <rendering/topo_render.h>
 
@@ -77,9 +78,13 @@ private:
 	cgogn::rendering::ShaderFlat* shader_flat_;
 
 	cgogn::rendering::TopoRender* topo_render;
+	cgogn::rendering::VolumeRender* volume_render;
 
-	bool flat_rendering_;
+	bool vol_rendering_;
+	bool edge_rendering_;
 	bool topo_rendering_;
+
+	float expl_;
 
 };
 
@@ -122,18 +127,36 @@ Viewer::Viewer() :
 	vbo_pos_(nullptr),
 	shader_flat_(nullptr),
 	topo_render(nullptr),
-	flat_rendering_(true),
-	topo_rendering_(true)
+	vol_rendering_(true),
+	edge_rendering_(true),
+	topo_rendering_(true),
+	expl_(0.7)
 {}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key()) {
-		case Qt::Key_F:
-			flat_rendering_ = !flat_rendering_;
+		case Qt::Key_V:
+			vol_rendering_ = !vol_rendering_;
 			break;
+		case Qt::Key_E:
+			edge_rendering_ = !edge_rendering_;
+			break;
+
 		case Qt::Key_T:
 			topo_rendering_ = !topo_rendering_;
+			break;
+		case Qt::Key_Plus:
+			expl_ += 0.05;
+			volume_render->set_explode_volume(expl_);
+			topo_render->set_explode_volume(expl_);
+			topo_render->update_map3<Vec3>(map_,vertex_position_);
+			break;
+		case Qt::Key_Minus:
+			expl_ -= 0.05;
+			volume_render->set_explode_volume(expl_);
+			topo_render->set_explode_volume(expl_);
+			topo_render->update_map3<Vec3>(map_,vertex_position_);
 			break;
 		default:
 			break;
@@ -151,18 +174,26 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	if (flat_rendering_)
+	if (vol_rendering_)
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		shader_flat_->bind();
-		shader_flat_->set_matrices(proj,view);
-		shader_flat_->bind_vao(0);
-		render_->draw(cgogn::rendering::TRIANGLES);
-		shader_flat_->release_vao(0);
-		shader_flat_->release();
+
+//		shader_flat_->bind();
+//		shader_flat_->set_matrices(proj,view);
+//		shader_flat_->bind_vao(0);
+//		render_->draw(cgogn::rendering::TRIANGLES);
+//		shader_flat_->release_vao(0);
+//		shader_flat_->release();
+
+		volume_render->draw_faces(proj,view);
+
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
+
+	if (edge_rendering_)
+		volume_render->draw_edges(proj,view);
+
 
 	if (topo_rendering_)
 	{
@@ -195,7 +226,9 @@ void Viewer::init()
 	topo_render = new cgogn::rendering::TopoRender(this);
 	topo_render->update_map3<Vec3>(map_,vertex_position_);
 
-
+	volume_render = new cgogn::rendering::VolumeRender(this);
+	volume_render->update_face<Vec3>(map_,vertex_position_);
+	volume_render->update_edge<Vec3>(map_,vertex_position_);
 }
 
 int main(int argc, char** argv)

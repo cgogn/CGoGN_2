@@ -83,6 +83,10 @@ public:
 	 */
 	~TopoRender();
 
+	inline void set_explode_volume(float x) { shrink_v_ = x; }
+	inline void set_explode_face(float x) { shrink_f_ = x; }
+	inline void set_explode_edge(float x) { shrink_e_ = x; }
+
 	template <typename VEC3, typename MAP>
 	void update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
 

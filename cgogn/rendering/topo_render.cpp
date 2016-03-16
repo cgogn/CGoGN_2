@@ -48,7 +48,7 @@ TopoRender::TopoRender(QOpenGLFunctions_3_3_Core* ogl33):
 	phi3_color_(255,255,0),
 	shrink_v_(0.6f),
 	shrink_f_(0.85f),
-	shrink_e_(0.9f)
+	shrink_e_(0.95f)
 {
 	nb_instances_++;
 
