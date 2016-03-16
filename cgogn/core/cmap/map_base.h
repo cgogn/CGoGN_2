@@ -640,9 +640,9 @@ protected:
 	{
 		Dart end = Dart(this->topology_.end());
 
-		this->topology_.next(d.index);
-		while (d != end && !mask(d))
+		do {
 			this->topology_.next(d.index);
+		} while (d != end && !mask(d))
 	}
 
 	inline Dart end() const
