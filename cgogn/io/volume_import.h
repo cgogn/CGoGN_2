@@ -412,9 +412,9 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_hexa(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7, bool reoriente)
+	void add_hexa(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7, bool check_orientation)
 	{
-		if (reoriente)
+		if (check_orientation)
 			this->reoriente_hexa(pos, p0, p1, p2, p3, p4, p5, p6, p7);
 		this->volumes_nb_vertices_.push_back(8u);
 		this->volumes_vertex_indices_.push_back(p0);
@@ -439,9 +439,9 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_tetra(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, bool reoriente)
+	void add_tetra(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, bool check_orientation)
 	{
-		if (reoriente)
+		if (check_orientation)
 			this->reoriente_tetra(pos,p0,p1,p2,p3);
 		this->volumes_nb_vertices_.push_back(4u);
 		this->volumes_vertex_indices_.push_back(p0);
@@ -451,9 +451,18 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_pyramid(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4)
+	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3)
+	{
+		if (geometry::test_orientation_3D(pos[p0], pos[p1],pos[p2],pos[p3]) == geometry::Orientation3D::OVER)
+			std::swap(p1, p2);
+	}
+
+	template<typename VEC3>
+	void add_pyramid(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, bool check_orientation)
 	{
 		this->volumes_nb_vertices_.push_back(5u);
+		if (check_orientation)
+			this->reoriente_pyramid(pos,p0,p1,p2,p3,p4);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
 		this->volumes_vertex_indices_.push_back(p2);
@@ -462,8 +471,17 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_triangular_prism(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5)
+	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4)
 	{
+		if (geometry::test_orientation_3D(pos[p4], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
+			std::swap(p1, p3);
+	}
+
+	template<typename VEC3>
+	void add_triangular_prism(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, bool check_orientation)
+	{
+		if (check_orientation)
+			this->reoriente_triangular_prism(pos,p0,p1,p2,p3,p4,p5);
 		this->volumes_nb_vertices_.push_back(6u);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -474,11 +492,15 @@ public:
 	}
 
 	template<typename VEC3>
-	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3)
+	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5)
 	{
-		if (geometry::test_orientation_3D(pos[p0], pos[p1],pos[p2],pos[p3]) == geometry::Orientation3D::OVER)
-			std::swap(p1, p2);
+		if (geometry::test_orientation_3D(pos[p3], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
+		{
+			std::swap(p1,p2);
+			std::swap(p4,p5);
+		}
 	}
+
 
 };
 

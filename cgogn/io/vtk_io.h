@@ -855,12 +855,12 @@ protected:
 				} else {
 					if (type_vol[i]== VTK_CELL_TYPES::VTK_PYRAMID)
 					{
-						this->add_pyramid(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4]);
+						this->add_pyramid(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],true);
 						curr_offset+=5u;
 					} else {
 						if (type_vol[i]== VTK_CELL_TYPES::VTK_WEDGE)
 						{
-							this->add_triangular_prism(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5]);
+							this->add_triangular_prism(pos, ids[curr_offset+0],ids[curr_offset+1],ids[curr_offset+2],ids[curr_offset+3],ids[curr_offset+4],ids[curr_offset+5],true);
 							curr_offset+=6u;
 						}
 					}

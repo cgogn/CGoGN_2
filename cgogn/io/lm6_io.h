@@ -102,7 +102,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfTetrahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_tetra(*position, ids[0],ids[1], ids[2], ids[3], true);
+				this->add_tetra(*position, ids[0],ids[1], ids[2], ids[3], false);
 			}
 		}
 
@@ -130,7 +130,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfPrisms, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_triangular_prism(*position, ids[0],ids[1], ids[2], ids[3], ids[4],ids[5]);
+				this->add_triangular_prism(*position, ids[0],ids[1], ids[2], ids[3], ids[4],ids[5], false);
 			}
 		}
 
@@ -143,11 +143,9 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfPyramids, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_pyramid(*position, ids[0],ids[1], ids[2], ids[3], ids[4]);
+				this->add_pyramid(*position, ids[0],ids[1], ids[2], ids[3], ids[4], false);
 			}
 		}
-
-
 
 		GmfCloseMesh(mesh_index);
 		return true;
