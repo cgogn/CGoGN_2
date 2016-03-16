@@ -71,12 +71,12 @@
 *       `\.'            `\`
 *          1----------------2
 *
-*-->Prisms: First the indices of one of the triangular face then the indices of the opposite face (same order). The orientation is checked when calling add_prism.
+*-->Triangular prisms: First the indices of one of the triangular face then the indices of the opposite face (same order). The orientation is checked when calling add_triangular_prism.
 *       3
 *     ,/|`\
 *   ,/  |  `\
 * ,/    |    `\
-*4------+------5
+*5------+------4
 *|      |      |
 *|      |      |
 *|      |      |
@@ -86,7 +86,7 @@
 *|    ,/ `\    |
 *|  ,/     `\  |
 *|,/         `\|
-*1-------------2
+*2-------------1
 *
 *-->Hexas: First the indices of one face then the indices of the opposite face (same order). The orientation is checked when calling add_hexa.
 *7----------6
