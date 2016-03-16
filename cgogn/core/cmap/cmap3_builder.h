@@ -185,7 +185,7 @@ public:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart_nomask( [&] (Dart d)
+		map_.template foreach_dart<CMap3::Mask::NOMASK>( [&] (Dart d)
 			{
 				if (map_.phi3(d) == d)
 					fix_point_darts.push_back(d);

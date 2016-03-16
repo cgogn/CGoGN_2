@@ -133,28 +133,28 @@ protected:
 			}
 		}
 		// Close the map (remove remaining boundary)
-		cmap_.foreach_dart_nomask( [&] (Dart d)
+		cmap_.template foreach_dart<testCMap2::Mask::NOMASK>( [&] (Dart d)
 		{
 			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
 		});
 		// Embed the map
-		cmap_.foreach_dart_nomask( [&] (Dart d)
+		cmap_.template foreach_cell<testCMap2::Mask::NOMASK>( [&] (CDart d)
 		{
-			mbuild.new_orbit_embedding(CDart(d));
+			mbuild.new_orbit_embedding(d);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>( [&] (Vertex v)
+		cmap_.template foreach_cell<testCMap2::Mask::NOMASK, FORCE_DART_MARKING>( [&] (Vertex v)
 		{
 			mbuild.new_orbit_embedding(v);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>( [&] (Edge e)
+		cmap_.template foreach_cell<testCMap2::Mask::NOMASK, FORCE_DART_MARKING>( [&] (Edge e)
 		{
 			mbuild.new_orbit_embedding(e);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>( [&] (Face f)
+		cmap_.template foreach_cell<testCMap2::Mask::NOMASK, FORCE_DART_MARKING>( [&] (Face f)
 		{
 			mbuild.new_orbit_embedding(f);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>( [&] (Volume w)
+		cmap_.template foreach_cell<testCMap2::Mask::NOMASK, FORCE_DART_MARKING>( [&] (Volume w)
 		{
 			mbuild.new_orbit_embedding(w);
 		});

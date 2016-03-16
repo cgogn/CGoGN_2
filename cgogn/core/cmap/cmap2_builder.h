@@ -200,7 +200,7 @@ public:
 	inline void close_map()
 	{
 		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart_nomask( [&] (Dart d)
+		map_.template foreach_dart<CMap2::Mask::NOMASK>( [&] (Dart d)
 			{
 				if (map_.phi2(d) == d)
 					fix_point_darts.push_back(d);
