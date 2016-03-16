@@ -21,12 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
+#ifndef PROGRAM_OPTIONS_H
+#define PROGRAM_OPTIONS_H
 
-#include <istream>
-#include <iostream>
+#include <string>
+#include <map>
 
-#include <io/mesh_io_gen.h>
+#include <boost/program_options.hpp>
+
 
 namespace cgogn
 {
@@ -34,27 +36,50 @@ namespace cgogn
 namespace io
 {
 
-MeshImportGen::~MeshImportGen() {}
+class ProgramOptions {
+private:
+	bool optionsHandler();
+public:
+	explicit ProgramOptions(int argc, char **argv);
+	ProgramOptions() = delete;
+	ProgramOptions(const ProgramOptions & ) = delete;
+	ProgramOptions(ProgramOptions && ) = delete;
+	ProgramOptions& operator=(const ProgramOptions & ) = delete;
+	ProgramOptions& operator=(ProgramOptions && ) = delete;
+	~ProgramOptions();
 
-bool MeshImportGen::import_file(const std::string& filename)
-{
-	this->clear();
-	Scoped_C_Locale loc;
+	std::string input_file_;
 
-	if (!filename.empty())
-	{
-		// test if file exist
-		std::ifstream fp(filename.c_str(), std::ios::in);
-		if (!fp.good())
-		{
-			std::cerr << "MeshImportGen::import_file : Unable to open file \"" << filename << "\"" << std::endl;
-			return false;
-		}
-	}
+	double facet_angle_;
+	double facet_size_;
+	double facet_distance_;
+	double cell_radius_;
+	double cell_size_;
 
-	return this->import_file_impl(filename);
-}
+	bool lloyd_;
+	double lloyd_freeze_bound_;
+	double lloyd_convergence_;
+	std::size_t lloyd_max_iterations_;
+	bool lloyd_freeze_;
+
+	bool odt_;
+	double odt_freeze_bound_ ;
+	double odt_convergence_;
+	std::size_t odt_max_iterations_;
+	bool odt_freeze_;
+
+	bool perturb_;
+	double perturb_sliver_bound_;
+
+	bool exude_;
+	double exude_sliver_bound_;
+
+private:
+	boost::program_options::options_description desc_;
+	boost::program_options::variables_map variable_map_;
+};
 
 } // namespace io
-
 } // namespace cgogn
+
+#endif // PROGRAM_OPTIONS_H

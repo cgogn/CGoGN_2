@@ -63,4 +63,5 @@ install(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION lib
 )
 
+add_subdirectory(mesh_generation)
 add_subdirectory(examples)
