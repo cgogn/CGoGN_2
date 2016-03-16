@@ -619,159 +619,49 @@ public:
 protected:
 
 	/*!
-	 * \Brief Iterator that use MASK to filter the traversed darts
-	 * MASK is an functor that determine if a dart should be traversed or skipped.
-	 * It returns true when a dart is to be traversed and false to make the iterator skip it.
+	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts
+	 * A MASK is an functor that determine if a dart should be traversed or skipped.
+	 * It return false when a dart should be skipped, true in other cases.
 	 */
 	template <typename MASK>
-	class const_iterator
-	{
-	public:
-
-		const Self& map_;
-		const MASK& mask_;
-		Dart dart_;
-		Dart end_;
-
-		inline const_iterator(const Self& map, Dart d, const MASK& mask) :
-			map_(map),
-			dart_(d),
-			mask_(mask)
-		{
-			end_ = Dart(map_.topology_.end());
-		}
-
-		inline const_iterator(const const_iterator& it) :
-			map_(it.map_),
-			dart_(it.dart_),
-			end_(it.end_),
-			mask_(it.mask_)
-		{}
-
-		inline const_iterator& operator=(const const_iterator& it)
-		{
-			map_ = it.map_;
-			dart_ = it.dart_;
-			end_ = it.end_;
-			mask_ = it.mask_;
-			return *this;
-		}
-
-		inline const_iterator& operator++()
-		{
-			cgogn_assert(dart_.index < end_.index);
-			do
-			{
-				map_.topology_.next(dart_.index);
-			} while (dart_ != end_ && !mask_(dart_));
-			return *this;
-		}
-
-		inline const Dart& operator*() const
-		{
-			return dart_;
-		}
-
-		inline bool operator!=(const const_iterator& it) const
-		{
-			cgogn_assert(&map_ == &(it.map_));
-			cgogn_assert(end_ == it.end_);
-			return dart_ != it.dart_;
-		}
-
-		inline bool operator==(const const_iterator& it) const
-		{
-			cgogn_assert(&map_ == &(it.map_));
-			cgogn_assert(end_ == it.end_);
-			return dart_ == it.dart_;
-		}
-	};
-
-	template <typename MASK>
-	inline const_iterator<MASK> begin(const MASK& mask) const
+	inline Dart begin(const MASK& mask) const
 	{
 		Dart d = Dart(this->topology_.begin());
 		Dart end = Dart(this->topology_.end());
 
 		while (d != end && !mask(d))
 			this->topology_.next(d.index);
-		return const_iterator<MASK>(*this, d, mask);
+
+		return d;
 	}
 
 	template <typename MASK>
-	inline const_iterator<MASK> end(const MASK& mask) const
+	inline void next(Dart& d, const MASK& mask) const
 	{
-		return const_iterator<MASK>(*this, Dart(this->topology_.end()), mask);
+		Dart end = Dart(this->topology_.end());
+
+		this->topology_.next(d.index);
+		while (d != end && !mask(d))
+			this->topology_.next(d.index);
+	}
+
+	inline Dart end() const
+	{
+		return Dart(this->topology_.end());
 	}
 
 	/*!
-	 * \Brief Specialized Iterator do not filter the traversed darts
-	 * All dart are traversed by by iterator.
+	 * \Brief Methods to iterate over all darts.
+	 * All darts are traversed (lying on the boundary or not).
 	 */
-	class const_iterator_nomask
+	inline Dart begin() const
 	{
-	public:
-
-		const Self& map_;
-		Dart dart_;
-		Dart end_;
-
-		inline const_iterator_nomask(const Self& map, Dart d) :
-			map_(map),
-			dart_(d)
-		{
-			end_ = Dart(map_.topology_.end());
-		}
-
-		inline const_iterator_nomask(const const_iterator_nomask& it) :
-			map_(it.map_),
-			dart_(it.dart_),
-			end_(it.end_)
-		{}
-
-		inline const_iterator_nomask& operator=(const const_iterator_nomask& it)
-		{
-			map_ = it.map_;
-			dart_ = it.dart_;
-			end_ = it.end_;
-			return *this;
-		}
-
-		inline const_iterator_nomask& operator++()
-		{
-			cgogn_assert(dart_.index < end_.index);
-			map_.topology_.next(dart_.index);
-			return *this;
-		}
-
-		inline const Dart& operator*() const
-		{
-			return dart_;
-		}
-
-		inline bool operator!=(const const_iterator_nomask& it) const
-		{
-			cgogn_assert(&map_ == &(it.map_));
-			cgogn_assert(end_ == it.end_);
-			return dart_ != it.dart_;
-		}
-
-		inline bool operator==(const const_iterator_nomask& it) const
-		{
-			cgogn_assert(&map_ == &(it.map_));
-			cgogn_assert(end_ == it.end_);
-			return dart_ == it.dart_;
-		}
-	};
-
-	inline const_iterator_nomask begin() const
-	{
-		return const_iterator_nomask(*this, Dart(this->topology_.begin()));
+		return Dart(this->topology_.begin());
 	}
 
-	inline const_iterator_nomask end() const
+	inline void next(Dart& d) const
 	{
-		return const_iterator_nomask(*this, Dart(this->topology_.end()));
+		this->topology_.next(d.index);
 	}
 
 public:
@@ -800,8 +690,8 @@ public:
 		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
-			f(*it);
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+			f(it);
 	}
 
 	template <typename FUNC>
@@ -809,8 +699,8 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (const_iterator_nomask it = this->begin(), end = this->end(); it != end; ++it)
-			f(*it);
+		for (Dart it = begin(), last = end(); it != last; next(it))
+			f(it);
 	}
 
 	template <typename FUNC>
@@ -848,23 +738,23 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		const_iterator<MASK> it = this->begin(mask);
-		const const_iterator<MASK> end = this->end(mask);
+		Dart it = begin(mask);
+		Dart last = end();
 
-		while (it != end)
+		while (it != last)
 		{
 			for (unsigned int i = 0u; i < 2u; ++i)
 			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != end; ++j)
+				for (unsigned int j = 0u; j < nb_threads_pool && it != last; ++j)
 				{
 					dart_buffers[i].push_back(dbuffs->get_buffer());
 					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
 					std::vector<Dart>& darts = *dart_buffers[i].back();
 					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; ++k)
 					{
-						darts.push_back(*it);
-						++it;
+						darts.push_back(it);
+						next(it, mask);
 					}
 
 					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
@@ -885,7 +775,7 @@ public:
 				dart_buffers[id].clear();
 
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == end && i == 1u)
+				if (it == last && i == 1u)
 				{
 					for (auto& fu : futures[1u])
 						fu.wait();
@@ -917,23 +807,23 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		const_iterator_nomask it = this->begin();
-		const const_iterator_nomask end = this->end();
+		Dart it = begin();
+		Dart last = end();
 
-		while (it != end)
+		while (it != last)
 		{
 			for (unsigned int i = 0u; i < 2u; ++i)
 			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != end; ++j)
+				for (unsigned int j = 0u; j < nb_threads_pool && it != last; ++j)
 				{
 					dart_buffers[i].push_back(dbuffs->get_buffer());
 					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
 					std::vector<Dart>& darts = *dart_buffers[i].back();
 					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; ++k)
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; ++k)
 					{
-						darts.push_back(*it);
-						++it;
+						darts.push_back(it);
+						next(it);
 					}
 
 					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
@@ -954,7 +844,7 @@ public:
 				dart_buffers[id].clear();
 
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == end && i == 1u)
+				if (it == last && i == 1u)
 				{
 					for (auto& fu : futures[1u])
 						fu.wait();
@@ -990,9 +880,9 @@ public:
 		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 		{
-			if (!f(*it))
+			if (!f(it))
 				break;
 		}
 	}
@@ -1003,9 +893,9 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
-		for (const_iterator_nomask it = this->begin(), end = this->end(); it != end; ++it)
+		for (Dart it = begin(), last = end(); it != last; next(it))
 		{
-			if (!f(*it))
+			if (!f(it))
 				break;
 		}
 	}
@@ -1165,11 +1055,11 @@ protected:
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 		{
-			if (!dm.is_marked(*it))
+			if (!dm.is_marked(it))
 			{
-				CellType c(*it);
+				CellType c(it);
 				dm.mark_orbit(c);
 				f(c);
 			}
@@ -1198,27 +1088,27 @@ protected:
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		DartMarker dm(*to_concrete());
-		const_iterator<MASK> it = this->begin(mask);
-		const const_iterator<MASK> end = this->end(mask);
+		Dart it = begin(mask);
+		Dart last = end();
 
 		unsigned int i = 0u; // buffer id (0/1)
 		unsigned int j = 0u; // thread id (0..nb_threads_pool)
-		while (it != end)
+		while (it != last)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; )
 			{
-				if (!dm.is_marked(*it))
+				if (!dm.is_marked(it))
 				{
-					CellType c(*it);
+					CellType c(it);
 					dm.mark_orbit(c);
 					cells.push_back(c);
 					++k;
 				}
-				++it;
+				next(it, mask);
 			}
 			//launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
@@ -1258,9 +1148,9 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 		{
-			CellType c(*it);
+			CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
@@ -1291,27 +1181,27 @@ protected:
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		const_iterator<MASK> it = this->begin(mask);
-		const const_iterator<MASK> end = this->end(mask);
+		Dart it = begin(mask);
+		Dart last = end();
 
 		unsigned int i = 0u; // buffer id (0/1)
 		unsigned int j = 0u; // thread id (0..nb_threads_pool)
-		while (it != end)
+		while (it != last)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != end; )
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; )
 			{
-				CellType c(*it);
+				CellType c(it);
 				if (!cm.is_marked(c))
 				{
 					cm.mark(c);
 					cells.push_back(c);
 					++k;
 				}
-				++it;
+				next(it, mask);
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (unsigned int th_id)
@@ -1452,11 +1342,11 @@ protected:
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 		{
-			if (!dm.is_marked(*it))
+			if (!dm.is_marked(it))
 			{
-				CellType c(*it);
+				CellType c(it);
 				dm.mark_orbit(c);
 				if(!f(c))
 					break;
@@ -1471,9 +1361,9 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (const_iterator<MASK> it = this->begin(mask), end = this->end(mask); it != end; ++it)
+		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 		{
-			CellType c(*it);
+			CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
