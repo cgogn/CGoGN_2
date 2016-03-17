@@ -631,7 +631,6 @@ public:
 				return !this->is_boundary(d);
 				break;
 			default:
-				cgogn_assert_not_reached("Undefined MASK");
 				break;
 		}
 	}
