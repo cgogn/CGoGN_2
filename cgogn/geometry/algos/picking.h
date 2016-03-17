@@ -132,7 +132,7 @@ bool picking_vertex(MAP& m, const typename MAP::template VertexAttributeHandler<
 	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
 	picking_internal_face<VEC3>(m,position,A,B,sel);
 
-	DartMarker<MAP> dm(m);
+	DartMarkerStore<MAP> dm(m);
 	selected.clear();
 	for (auto fs: sel)
 	{
@@ -174,7 +174,7 @@ bool picking_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VE
 	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
 	picking_internal_face<VEC3>(m,position,A,B,sel);
 
-	DartMarker<MAP> dm(m);
+	DartMarkerStore<MAP> dm(m);
 	selected.clear();
 	for (auto fs: sel)
 	{

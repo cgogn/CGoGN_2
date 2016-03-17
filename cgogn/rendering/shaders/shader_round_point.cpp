@@ -200,7 +200,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, uns
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, reinterpret_cast<void*>(first*vbo_pos->vector_dimension()*4));
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 	vbo_pos->release();
 
 	if (vbo_color)
@@ -208,7 +208,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, uns
 		// color vbo
 		vbo_color->bind();
 		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, reinterpret_cast<void*>(first*vbo_pos->vector_dimension()*4));
+		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 		vbo_color->release();
 	}
 

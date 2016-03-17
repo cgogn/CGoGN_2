@@ -36,6 +36,13 @@ namespace cgogn
 namespace rendering
 {
 
+//convenient conversion function
+inline void* void_ptr(unsigned int x)
+{
+	return reinterpret_cast<void*>(std::uint64_t(x));
+}
+
+
 class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
 {
 protected:
