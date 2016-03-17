@@ -12,4 +12,4 @@ add_library(tet SHARED tetgen.cxx predicates.cxx)
 #Set properties on a target.
 #We use this here to set -DTETLIBRARY for when compiling the
 #library
-set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
+#set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)

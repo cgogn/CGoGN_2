@@ -60,13 +60,10 @@ int main(int argc, char** argv)
 	Map3 map3;
 	{
 		tetgenio tetgen_output;
-		char *arg = new char[tetgen_arg.length() + 1];
-		strcpy(arg, tetgen_arg.c_str());
-		tetrahedralize(arg, tetgen_input.get(), &tetgen_output) ;
+		tetrahedralize(tetgen_arg.c_str(), tetgen_input.get(), &tetgen_output) ;
 		cgogn::io::TetgenVolumeImport<MapTraits, Vec3> tetgen_import(&tetgen_output);
 		tetgen_import.import_file("");
 		tetgen_import.create_map(map3);
-		delete[] arg;
 	}
 
 

@@ -16,7 +16,9 @@
 
 #ifndef tetgenH
 #define tetgenH
+
 #define TETLIBRARY
+
 // To compile TetGen as a library instead of an executable program, define
 //   the TETLIBRARY symbol.
 
@@ -680,8 +682,8 @@ public:
   void usage();
 
   // Command line parse routine.
-  bool parse_commandline(int argc, char **argv);
-  bool parse_commandline(char *switches) {
+  bool parse_commandline(int argc, const char **argv);
+  bool parse_commandline(const char *switches) {
 	return parse_commandline(0, &switches);
   }
 
@@ -2234,7 +2236,7 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
 					tetgenio *addin = NULL, tetgenio *bgmin = NULL);
 
 #ifdef TETLIBRARY
-void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
+void tetrahedralize(const char *switches, tetgenio *in, tetgenio *out,
 					tetgenio *addin = NULL, tetgenio *bgmin = NULL);
 #endif // #ifdef TETLIBRARY
 
