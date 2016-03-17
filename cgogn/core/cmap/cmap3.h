@@ -594,7 +594,7 @@ public:
 	inline void foreach_incident_volume(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		func(Volume(f));
+		func(Volume(f.dart));
 		func(Volume(phi3(f.dart)));
 	}
 
@@ -665,6 +665,25 @@ public:
 	{
 		Inherit::foreach_incident_edge(f,func);
 	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(v,func);
+	}
+
 
 	/*******************************************************************************
 	 * Adjacence traversal

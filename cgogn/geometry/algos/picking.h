@@ -44,8 +44,8 @@ namespace geometry
 {
 
 
-template <typename VEC3, typename CELL_FACE, typename MAP>
-inline void picking_internal_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<std::tuple<CELL_FACE, VEC3, typename VEC3::Scalar>>& selected )
+template <typename VEC3, typename MAP>
+inline void picking_internal_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>& selected )
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -57,11 +57,11 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 
 
 	// thread data
-	using Triplet = typename std::vector<std::tuple<CELL_FACE, VEC3, typename VEC3::Scalar>>;
+	using Triplet = typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>>;
 	std::vector<Triplet> selected_th(cgogn::get_nb_threads());
 	std::vector<std::vector<unsigned int>> ear_indices_th(cgogn::get_nb_threads());
 
-	m.parallel_foreach_cell([&] (CELL_FACE f, unsigned int th)
+	m.parallel_foreach_cell([&] (Face f, unsigned int th)
 	{
 		VEC3 inter;
 		if (m.has_degree(f,3))
@@ -76,7 +76,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 		{
 			std::vector<unsigned int>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
-			cgogn::geometry::compute_ear_triangulation<VEC3>(m,Face(f.dart),position,ear_indices);
+			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,ear_indices);
 			for(std::size_t i=0; i<ear_indices.size(); i+=3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
@@ -99,7 +99,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 	}
 
 	//sorting function
-	auto dist_sort = [] (const std::tuple<CELL_FACE, VEC3,Scalar>& f1, const std::tuple<CELL_FACE, VEC3,Scalar>& f2) -> bool
+	auto dist_sort = [] (const std::tuple<Face, VEC3,Scalar>& f1, const std::tuple<Face, VEC3,Scalar>& f2) -> bool
 	{
 		return std::get<2>(f1) < std::get<2>(f2);
 	};
@@ -112,7 +112,7 @@ template <typename VEC3, typename MAP>
 bool picking_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Face>& selected)
 {
 	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
-	picking_internal_face<VEC3,typename MAP::Face>(m,position,A,B,sel);
+	picking_internal_face<VEC3>(m,position,A,B,sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -133,7 +133,7 @@ bool picking_vertices(MAP& m, const typename MAP::template VertexAttributeHandle
 	using Scalar = typename VEC3::Scalar;
 
 	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
-	picking_internal_face<VEC3,Face>(m,position,A,B,sel);
+	picking_internal_face<VEC3>(m,position,A,B,sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -175,7 +175,7 @@ bool picking_edges(MAP& m, const typename MAP::template VertexAttributeHandler<V
 	using Scalar = typename VEC3::Scalar;
 
 	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
-	picking_internal_face<VEC3,Face>(m,position,A,B,sel);
+	picking_internal_face<VEC3>(m,position,A,B,sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -213,23 +213,26 @@ bool picking_volumes(MAP& m, const typename MAP::template VertexAttributeHandler
 {
 	//here used Face2 for selecting the 2 volumes incident to selected faces
 
-	using Face2 = Cell<Orbit::PHI1>;
+	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
 
-	typename std::vector<std::tuple<Face2, VEC3, typename VEC3::Scalar>> sel;
-	picking_internal_face<VEC3,Face2>(m,position,A,B,sel);
+	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
+	picking_internal_face<VEC3>(m,position,A,B,sel);
 
 	selected.clear();
 	DartMarker<MAP> dm(m);
 	for (auto fs: sel)
 	{
-		Face2 f = std::get<0>(fs);
-		Volume vo = Volume(f.dart);
-		if (!dm.is_marked(vo.dart))
+		Face f = std::get<0>(fs);
+		m.foreach_incident_volume(f, [&] (Volume vo)
 		{
-			dm.mark_orbit(vo);
-			selected.push_back(vo);
-		}
+			if ((!dm.is_marked(vo.dart)) && (!m.is_boundary(vo.dart)))
+			{
+				dm.mark_orbit(vo);
+				selected.push_back(vo);
+			}
+
+		});
 	}
 	return !selected.empty();
 }
