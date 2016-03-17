@@ -34,8 +34,8 @@ int main(int argc, char **argv)
 {
 	int i, j, NmbTyp, SolSiz, TypTab[ GmfMaxTyp ], InpIdx, OutIdx, FilVer=0, InpVer, OutVer=1, dim;
 	long NmbLin;
-	float f;
-	double d;
+//	float f;
+//	double d;
 	char *InpNam, *OutNam, *VerNam;
 
 	switch(argc)
