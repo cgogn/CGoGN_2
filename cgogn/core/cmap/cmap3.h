@@ -264,11 +264,11 @@ protected:
 
 		// creation of quads around circunference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.emplace_back(this->Inherit::Inherit::add_face_topo(4u));
+			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
 		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.emplace_back(this->phi1(this->phi1(m_tableVertDarts[i])));
+			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
 
 		// sewing the quads
 		for (unsigned int i = 0u; i < n-1u; ++i)
@@ -295,6 +295,26 @@ protected:
 		// return a dart from the base
 		return dres;
 	}
+
+	/**
+	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
+	 * @return a dart of the quad
+	 */
+	Dart add_stamp_volume_topo()
+	{
+		const Dart d_quad = Inherit::Inherit::add_face_topo(4u);
+		const Dart d_tri1 = Inherit::Inherit::add_face_topo(3u);
+		const Dart d_tri2 = Inherit::Inherit::add_face_topo(3u);
+
+		this->phi2_sew(d_tri1, d_tri2);
+		this->phi2_sew(d_quad, this->phi1(d_tri1));
+		this->phi2_sew(this->phi1(d_quad), this->phi_1(d_tri2));
+		this->phi2_sew(this->phi1(this->phi1(d_quad)), this->phi1(d_tri2));
+		this->phi2_sew(this->phi_1(d_quad), this->phi_1(d_tri1));
+
+		return d_quad;
+	}
+
 
 public:
 
