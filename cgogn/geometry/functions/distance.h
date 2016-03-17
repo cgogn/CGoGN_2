@@ -43,8 +43,9 @@ namespace geometry
 template <typename VEC3_T>
 inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3_T& A, const VEC3_T& AB_norm, const VEC3_T& P)
 {
-	VEC3_T V = A - P ;
-	VEC3_T W = V.cross(AB_norm) ;
+	// here use const & ? Strange Schmitt optimization proposition ;)
+	const VEC3_T& V = A - P ;
+	const VEC3_T& W = V.cross(AB_norm) ;
 	return W.squaredNorm() ;
 }
 
