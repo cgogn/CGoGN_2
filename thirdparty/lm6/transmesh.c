@@ -111,27 +111,27 @@ int main(int argc, char **argv)
 
 		if(strcmp("i", GmfKwdFmt[i][2]))
 		{
-			if(NmbLin = GmfStatKwd(InpIdx, i))
+			if((NmbLin = GmfStatKwd(InpIdx, i)))
 				GmfSetKwd(OutIdx, i);
 			else
 				continue;
 		}
-		else if(strcmp("sr", GmfKwdFmt[i][3]))
+		else if((strcmp("sr", GmfKwdFmt[i][3])))
 		{
-			if(NmbLin = GmfStatKwd(InpIdx, i))
+			if((NmbLin = GmfStatKwd(InpIdx, i)))
 				GmfSetKwd(OutIdx, i, NmbLin);
 			else
 				continue;
 		}
 		else
 		{
-			if(NmbLin = GmfStatKwd(InpIdx, i, &NmbTyp, &SolSiz, TypTab))
+			if((NmbLin = GmfStatKwd(InpIdx, i, &NmbTyp, &SolSiz, TypTab)))
 				GmfSetKwd(OutIdx, i,  NmbLin, NmbTyp, TypTab);
 			else
 				continue;
 		}
 
-		printf("Parsing %s : %d item\n", GmfKwdFmt[i][0], NmbLin);
+		printf("Parsing %s : %ld item\n", GmfKwdFmt[i][0], NmbLin);
 
 		for(j=1;j<=NmbLin;j++)
 			GmfCpyLin(InpIdx, OutIdx, i);
