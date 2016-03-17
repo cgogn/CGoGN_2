@@ -602,7 +602,6 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-//		Inherit::foreach_incident_vertex(v, func);
 		Inherit::foreach_incident_vertex(v, [&func] (Vertex2 ve)
 		{
 			func(Vertex(ve.dart));
@@ -613,7 +612,6 @@ public:
 	inline void foreach_incident_edge(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-//		Inherit::foreach_incident_edge(v, func);
 		Inherit::foreach_incident_edge(v, [&func] (Edge2 e)
 		{
 			func(Edge(e.dart));
@@ -624,7 +622,6 @@ public:
 	inline void foreach_incident_face(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-//		Inherit::foreach_incident_face(v, func);
 		Inherit::foreach_incident_face(v, [&func] (Face2 f)
 		{
 			func(Face(f.dart));
@@ -925,8 +922,6 @@ public:
 		Inherit::foreach_adjacent_face_through_vertex(f,func);
 	}
 };
-
-
 
 template <typename MAP_TRAITS>
 struct CMap3Type
