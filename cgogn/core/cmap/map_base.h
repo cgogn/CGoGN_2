@@ -626,23 +626,39 @@ protected:
 	template <typename MASK>
 	inline Dart begin(const MASK& mask) const
 	{
-		Dart d = Dart(this->topology_.begin());
-		Dart end = Dart(this->topology_.end());
+		if (check_func_return_void(MASK)) {
+			return Dart(this->topology_.begin());
+		}
+		else {
+			static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+			static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 
-		while (d != end && !mask(d))
-			this->topology_.next(d.index);
+			Dart d = Dart(this->topology_.begin());
+			Dart end = Dart(this->topology_.end());
 
-		return d;
+			while (d != end && !mask(d))
+				this->topology_.next(d.index);
+
+			return d;
+		}
 	}
 
 	template <typename MASK>
 	inline void next(Dart& d, const MASK& mask) const
 	{
-		Dart end = Dart(this->topology_.end());
-
-		do {
+		if (check_func_return_void(MASK)) {
 			this->topology_.next(d.index);
-		} while (d != end && !mask(d));
+		}
+		else {
+			static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+			static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
+
+			Dart end = Dart(this->topology_.end());
+
+			do {
+				this->topology_.next(d.index);
+			} while (d != end && !mask(d));
+		}
 	}
 
 	inline Dart end() const
@@ -654,17 +670,21 @@ protected:
 	 * \Brief Specialized methods to iterate over all darts.
 	 * All darts are traversed without any MASK filtering.
 	 */
-	inline Dart begin(const bool&) const
-	{
-		Dart d = Dart(this->topology_.begin());
+//	std::function<bool()> nomask = [] () { return true; };
 
-		return d;
-	}
+//	template <>
+//	inline Dart begin(const std::function<bool()>& mask) const
+//	{
+//		Dart d = Dart(this->topology_.begin());
 
-	inline void next(Dart& d, const bool&) const
-	{
-		this->topology_.next(d.index);
-	}
+//		return d;
+//	}
+
+//	template<>
+//	inline void next(Dart& d, const std::function<bool()>&) const
+//	{
+//		this->topology_.next(d.index);
+//	}
 
 //	inline Dart begin() const
 //	{
@@ -684,6 +704,18 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
+	inline void foreach_dart_nomask(const FUNC& f) const
+	{
+//		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+
+//		for (Dart it = begin(), last = end(); it != last; next(it))
+//			f(it);
+
+		foreach_dart(f, [] (Dart) { return true; } );
+//		foreach_dart(f, [] (Dart) -> void {} );
+	}
+
+	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
 		foreach_dart(f, [this] (Dart d) { return !this->is_boundary(d); });
@@ -695,31 +727,14 @@ public:
 		foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
-	template <typename FUNC>
-	inline void foreach_dart_nomask(const FUNC& f) const
-	{
-		foreach_dart(f, true);
-	}
-
 	template <typename FUNC, typename MASK>
 	inline void foreach_dart(const FUNC& f, const MASK& mask) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-//		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-//		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
 		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
 			f(it);
 	}
-
-//	template <typename FUNC>
-//	inline void foreach_dart_nomask(const FUNC& f) const
-//	{
-//		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-
-//		for (Dart it = begin(), last = end(); it != last; next(it))
-//			f(it);
-//	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
@@ -731,6 +746,12 @@ public:
 	inline void parallel_foreach_boundary_dart(const FUNC& f) const
 	{
 		parallel_foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
+	}
+
+	template <typename FUNC>
+	inline void parallel_foreach_dart_nomask(const FUNC& f) const
+	{
+		parallel_foreach_dart(f, [] (Dart) { return true;} );
 	}
 
 	template <typename FUNC, typename MASK>
@@ -773,75 +794,6 @@ public:
 					{
 						darts.push_back(it);
 						next(it, mask);
-					}
-
-					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
-					{
-						for (auto d : darts)
-							f(d, th_id);
-					}));
-				}
-
-				const unsigned int id = (i+1u) % 2u;
-
-				for (auto& fu : futures[id])
-					fu.wait();
-				for (auto& b : dart_buffers[id])
-					dbuffs->release_cell_buffer(b);
-
-				futures[id].clear();
-				dart_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == last && i == 1u)
-				{
-					for (auto& fu : futures[1u])
-						fu.wait();
-					for (auto &b : dart_buffers[1u])
-						dbuffs->release_buffer(b);
-				}
-			}
-		}
-	}
-
-	template <typename FUNC>
-	inline void parallel_foreach_dart_nomask(const FUNC& f) const
-	{
-		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
-		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
-
-		using Future = std::future<typename std::result_of<FUNC(Dart, unsigned int)>::type>;
-		using VecDarts = std::vector<Dart>;
-
-		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
-
-		std::array<std::vector<VecDarts*>, 2> dart_buffers;
-		std::array<std::vector<Future>, 2> futures;
-		dart_buffers[0].reserve(nb_threads_pool);
-		dart_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
-
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
-
-		Dart it = begin();
-		Dart last = end();
-
-		while (it != last)
-		{
-			for (unsigned int i = 0u; i < 2u; ++i)
-			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != last; ++j)
-				{
-					dart_buffers[i].push_back(dbuffs->get_buffer());
-					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-					std::vector<Dart>& darts = *dart_buffers[i].back();
-					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; ++k)
-					{
-						darts.push_back(it);
-						next(it);
 					}
 
 					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
