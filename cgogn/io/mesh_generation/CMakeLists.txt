@@ -7,23 +7,33 @@ project(cgogn_io_mesh_generation
 )
 
 set(HEADER_FILES
-	c3t3_io.h
+	tetgen_io.h
 )
 
 set(SOURCE_FILES
-	c3t3_io.cpp
+	tetgen_io.cpp
 )
 
 if (CGAL_FOUND)
-	add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-
-	target_include_directories(${PROJECT_NAME} PUBLIC
-		$<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-		$<INSTALL_INTERFACE:include/cgogn/io/mesh_generation>
+	set(	HEADER_FILES
+		${HEADER_FILES}
+		c3t3_io.h
 	)
-	target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_io)
+
+	set(	SOURCE_FILES
+		${SOURCE_FILES}
+		c3t3_io.cpp
+	)
 endif()
 
-if (CGOGN_WITH_CGAL_EXAMPLES)
-	add_subdirectory(examples)
-endif()
+
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TETGEN_INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:include/cgogn/io/mesh_generation>
+)
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_io tet)
+
+
+add_subdirectory(examples)

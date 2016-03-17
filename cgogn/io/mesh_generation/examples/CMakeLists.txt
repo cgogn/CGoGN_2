@@ -14,13 +14,19 @@ set(SOURCE_FILES
 	program_options.cpp
 )
 
-find_package(MPFR REQUIRED)
-find_package(GMP REQUIRED)
-find_package(Boost QUIET REQUIRED COMPONENTS thread program_options)
+if (CGOGN_WITH_CGAL_EXAMPLES)
+	find_package(MPFR REQUIRED)
+	find_package(GMP REQUIRED)
+	find_package(Boost QUIET REQUIRED COMPONENTS thread program_options)
 
-set(CGOGN_TEST_PREFIX "test_")
-set(CGOGN_TEST_IMAGES_PATH "${CMAKE_SOURCE_DIR}/data/images/")
-add_definitions("-DCGOGN_TEST_IMAGES_PATH=${CGOGN_TEST_IMAGES_PATH}")
+	set(CGOGN_TEST_PREFIX "test_")
+	set(CGOGN_TEST_IMAGES_PATH "${CMAKE_SOURCE_DIR}/data/images/")
+	add_definitions("-DCGOGN_TEST_IMAGES_PATH=${CGOGN_TEST_IMAGES_PATH}")
+	add_executable(map3_from_image ${HEADER_FILES} ${SOURCE_FILES})
+	target_link_libraries(map3_from_image cgogn_core cgogn_io_mesh_generation ${Boost_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES} CGAL CGAL_ImageIO)
 
-add_executable(map3_from_image ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(map3_from_image cgogn_core cgogn_io_mesh_generation ${Boost_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES} CGAL CGAL_ImageIO)
+
+endif()
+
+add_executable(map3_from_surface map3_from_surface.cpp)
+target_link_libraries(map3_from_surface cgogn_core cgogn_io cgogn_io_mesh_generation tet CGAL gmp)
