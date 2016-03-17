@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef PROGRAM_OPTIONS_H
-#define PROGRAM_OPTIONS_H
+#ifndef IO_PROGRAM_OPTIONS_H
+#define IO_PROGRAM_OPTIONS_H
 
 #include <string>
 #include <map>
@@ -82,4 +82,4 @@ private:
 } // namespace io
 } // namespace cgogn
 
-#endif // PROGRAM_OPTIONS_H
+#endif // IO_PROGRAM_OPTIONS_H

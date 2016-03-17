@@ -25,7 +25,7 @@
 #include <ctime>
 
 #include <core/cmap/cmap3.h>
-#include <io/mesh_generation/map3_from_image.h>
+#include "map3_from_image.h"
 #include "program_options.h"
 
 #define DEFAULT_IMAGE_PATH CGOGN_STR(CGOGN_TEST_IMAGES_PATH)
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 	std::string image_path;
 	if (argc < 2)
 	{
-		image_path = std::string(DEFAULT_IMAGE_PATH) + std::string("liver.inr");
+		image_path = std::string(DEFAULT_IMAGE_PATH) + std::string("liver.inr.gz");
 		std::cout << "Using default image : " << image_path << std::endl;
 	}
 	else

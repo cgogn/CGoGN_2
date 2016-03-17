@@ -1,5 +1,5 @@
-#ifndef MAP3_GEN_H
-#define MAP3_GEN_H
+#ifndef IO_MAP3_FROM_IMAGE_H
+#define IO_MAP3_FROM_IMAGE_H
 
 #include <core/cmap/cmap3.h>
 #include <core/utils/string.h>
@@ -47,4 +47,4 @@ inline void create_map3_from_image(CMap3<MAP_TRAITS>& map3, const std::string& i
 
 } // namespace io
 } // namespace cgogn
-#endif // MAP3_GEN_H
+#endif // IO_MAP3_FROM_IMAGE_H
