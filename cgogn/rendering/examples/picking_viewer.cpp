@@ -222,7 +222,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 0:
 			{
 				std::vector<Map2::Vertex> selected;
-				cgogn::geometry::picking_vertex<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking_vertices<Vec3>(map_,vertex_position_,A,B,selected);
 				std::cout<< "Selected vertices: "<< selected.size()<<std::endl;
 				if (!selected.empty())
 				{
@@ -242,7 +242,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 1:
 			{
 				std::vector<Map2::Edge> selected;
-				cgogn::geometry::picking_edge<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking_edges<Vec3>(map_,vertex_position_,A,B,selected);
 				std::cout<< "Selected edges: "<< selected.size()<<std::endl;
 				if (!selected.empty())
 				{
@@ -262,7 +262,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 2:
 			{
 				std::vector<Map2::Face> selected;
-				cgogn::geometry::picking_face<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking_faces<Vec3>(map_,vertex_position_,A,B,selected);
 				std::cout<< "Selected faces: "<< selected.size()<<std::endl;
 				if (!selected.empty())
 				{
@@ -282,7 +282,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 3:
 			{
 				std::vector<Map2::Volume> selected;
-				cgogn::geometry::picking_volume<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking_volumes<Vec3>(map_,vertex_position_,A,B,selected);
 				std::cout<< "Selected volumes: "<< selected.size()<<std::endl;
 				if (!selected.empty())
 				{
