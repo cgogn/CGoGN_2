@@ -135,7 +135,7 @@ Viewer::Viewer() :
 	vol_rendering_(true),
 	edge_rendering_(true),
 	topo_rendering_(true),
-	expl_(0.7f)
+	expl_(0.8f)
 {}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
@@ -252,9 +252,11 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 
 	topo_render_ = new cgogn::rendering::TopoRender(this);
+	topo_render_->set_explode_volume(expl_);
 	topo_render_->update_map3<Vec3>(map_,vertex_position_);
 
 	volume_render_ = new cgogn::rendering::VolumeRender(this);
+	volume_render_->set_explode_volume(expl_);
 	volume_render_->update_face<Vec3>(map_,vertex_position_);
 	volume_render_->update_edge<Vec3>(map_,vertex_position_);
 

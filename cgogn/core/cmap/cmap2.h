@@ -694,6 +694,27 @@ public:
 		});
 	}
 
+	template <typename FUNC>
+	inline void foreach_incident_volume(Face f, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(f.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Edge e, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(e.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(v.dart));
+	}
+
 	/*******************************************************************************
 	 * Adjacence traversal
 	 *******************************************************************************/
