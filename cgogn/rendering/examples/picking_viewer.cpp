@@ -300,6 +300,12 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			}
 			break;
 		}
+		drawer_->line_width(4.0);
+		drawer_->begin(GL_LINES);
+		drawer_->color3f(1.0, 0.0, 1.0);
+		drawer_->vertex3fv(A);
+		drawer_->vertex3fv(B);
+		drawer_->end();
 		drawer_->end_list();
 	}
 

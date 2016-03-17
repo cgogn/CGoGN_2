@@ -161,7 +161,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 	});
 
 
-	std::size_t nbvec = out_pos.size();
+	unsigned int nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
@@ -258,7 +258,7 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 
 	});
 
-	std::size_t nbvec = out_pos.size();
+	unsigned int nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
