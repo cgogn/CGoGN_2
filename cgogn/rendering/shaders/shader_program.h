@@ -29,6 +29,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <cassert>
 
+
 #include <rendering/dll.h>
 
 namespace cgogn
@@ -39,7 +40,7 @@ namespace rendering
 //convenient conversion function
 inline void* void_ptr(unsigned int x)
 {
-	return reinterpret_cast<void*>(std::uint64_t(x));
+	return reinterpret_cast<void*>(uint64_t(x));
 }
 
 
