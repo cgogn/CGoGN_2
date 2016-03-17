@@ -86,6 +86,13 @@
 #endif
 #endif
 
+// macro for the function name
+#if defined(_MSC_VER)
+#define CGOGN_FUNC __FUNCTION__
+#else
+#define CGOGN_FUNC __func__
+#endif
+
 /**
  * \def CGOGN_DEBUG
  * \brief This macro is set when compiling in debug mode
