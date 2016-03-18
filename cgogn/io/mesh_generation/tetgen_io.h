@@ -353,9 +353,6 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	using TetgenReal = REAL;
 	std::unique_ptr<tetgenio> output = make_unique<tetgenio>();
 
-	// memory initialization
-	output->initialize();
-
 	// 0-based indexing
 	output->firstnumber = 0;
 
@@ -371,41 +368,34 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 		output->pointlist[i++] = vec[0];
 		output->pointlist[i++] = vec[1];
 		output->pointlist[i++] = vec[2];
-	}, [](Dart) {return true;});
-
-
-	tetgenio::facet* f ;
-	tetgenio::polygon* p ;
+	});
 
 	output->numberoffacets = map.template nb_cells<Face::ORBIT>();
 	output->facetlist = new tetgenio::facet[output->numberoffacets] ;
 
-
 	//for each facet
 	i = 0u;
-	map.foreach_cell([&f,&output,&p,&i,&map](Face face)
+	map.template foreach_cell([&output,&i,&map](Face face)
 	{
-		f = &(output->facetlist[i]);
+		tetgenio::facet* f = &(output->facetlist[i]);
+		tetgenio::init(f);
 		f->numberofpolygons = 1;
 		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-		p = f->polygonlist;
+		tetgenio::polygon* p = f->polygonlist;
+		tetgenio::init(p);
 		p->numberofvertices = map.degree(face);
 		p->vertexlist = new int[p->numberofvertices];
 
 		unsigned int j = 0u;
-		Dart dit = face;
-		do
+		map.foreach_incident_vertex(face, [&p,&map,&j](Vertex v)
 		{
-			p->vertexlist[j] = map.get_embedding(Vertex(dit));
-			dit = map.phi1(dit);
-			++j;
-		}while(dit != face.dart);
+			p->vertexlist[j++] = map.get_embedding(v);
+		});
 
 		f->numberofholes = 0;
 		f->holelist = nullptr;
 		++i;
-	}, [](Dart) {return true;});
-
+	});
 
 	return output;
 }
