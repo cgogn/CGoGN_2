@@ -48,7 +48,7 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-auto nomask = [](){ return true; };
+auto nomask = [](Dart){ return true; };
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class MapBase : public MapBaseData<MAP_TRAITS>
@@ -628,9 +628,6 @@ protected:
 	template <typename MASK>
 	inline Dart begin(const MASK& mask) const
 	{
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-
 		Dart d = Dart(this->topology_.begin());
 		Dart end = Dart(this->topology_.end());
 
@@ -643,9 +640,6 @@ protected:
 	template <typename MASK>
 	inline void next(Dart& d, const MASK& mask) const
 	{
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-
 		Dart end = Dart(this->topology_.end());
 
 		do {
@@ -656,12 +650,6 @@ protected:
 	inline Dart end() const
 	{
 		return Dart(this->topology_.end());
-	}
-
-	template <typename MASK>
-	inline bool is_masked(Dart d, const MASK& mask) const
-	{
-		return mask(d);
 	}
 
 	/*!
@@ -676,11 +664,6 @@ protected:
 	inline void next(Dart& d, const decltype( nomask )&) const
 	{
 		this->topology_.next(d.index);
-	}
-
-	inline bool is_masked(Dart d, const decltype( nomask )&) const
-	{
-		return true;
 	}
 
 public:
@@ -712,6 +695,8 @@ public:
 	inline void foreach_dart(const FUNC& f, const MASK& mask) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 
 		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 			f(it);
@@ -1202,7 +1187,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it < last && !is_masked(cache[it], mask))
+		while (it < last && !mask(cache[it]))
 		{
 			attr.next(it);
 		}
@@ -1214,7 +1199,7 @@ protected:
 			do
 			{
 				attr.next(it);
-			} while (it < last && !is_masked(cache[it], mask));
+			} while (it < last && !mask(cache[it]));
 		}
 	}
 
@@ -1240,7 +1225,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it < last && !is_masked(cache[it], mask))
+		while (it < last && !mask(cache[it]))
 		{
 			attr.next(it);
 		}
@@ -1268,7 +1253,7 @@ protected:
 					do
 					{
 						attr.next(loc_it);
-					} while (loc_it != local_end && !is_masked(cache[loc_it], mask));
+					} while (loc_it != local_end && !mask(cache[loc_it]));
 				}
 			}));
 			it = local_end;
