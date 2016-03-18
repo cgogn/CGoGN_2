@@ -634,7 +634,7 @@ protected:
 		Dart d = Dart(this->topology_.begin());
 		Dart end = Dart(this->topology_.end());
 
-		while (d != end && !mask(d))
+		while (d.index < end.index && !mask(d))
 			this->topology_.next(d.index);
 
 		return d;
@@ -650,7 +650,7 @@ protected:
 
 		do {
 			this->topology_.next(d.index);
-		} while (d != end && !mask(d));
+		} while (d.index < end.index && !mask(d));
 	}
 
 	inline Dart end() const
@@ -713,7 +713,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 			f(it);
 	}
 
@@ -761,17 +761,17 @@ public:
 		Dart it = begin(mask);
 		Dart last = end();
 
-		while (it != last)
+		while (it.index < last.index)
 		{
 			for (unsigned int i = 0u; i < 2u; ++i)
 			{
-				for (unsigned int j = 0u; j < nb_threads_pool && it != last; ++j)
+				for (unsigned int j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
 				{
 					dart_buffers[i].push_back(dbuffs->get_buffer());
 					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
 					std::vector<Dart>& darts = *dart_buffers[i].back();
 					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; ++k)
+					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 					{
 						darts.push_back(it);
 						next(it, mask);
@@ -795,7 +795,7 @@ public:
 				dart_buffers[id].clear();
 
 				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it == last && i == 1u)
+				if (it.index >= last.index && i == 1u)
 				{
 					for (auto& fu : futures[1u])
 						fu.wait();
@@ -837,7 +837,7 @@ public:
 		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 		{
 			if (!f(it))
 				break;
@@ -1011,7 +1011,7 @@ protected:
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 		{
 			if (!dm.is_marked(it))
 			{
@@ -1049,13 +1049,13 @@ protected:
 
 		unsigned int i = 0u; // buffer id (0/1)
 		unsigned int j = 0u; // thread id (0..nb_threads_pool)
-		while (it != last)
+		while (it.index < last.index)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; )
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; )
 			{
 				if (!dm.is_marked(it))
 				{
@@ -1104,7 +1104,7 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))
@@ -1142,13 +1142,13 @@ protected:
 
 		unsigned int i = 0u; // buffer id (0/1)
 		unsigned int j = 0u; // thread id (0..nb_threads_pool)
-		while (it != last)
+		while (it.index < last.index)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it != last; )
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; )
 			{
 				CellType c(it);
 				if (!cm.is_marked(c))
@@ -1200,21 +1200,21 @@ protected:
 		const auto& attr = this->attributes_[ORBIT];
 
 		unsigned int it = attr.begin();
-		const unsigned int end = attr.end();
+		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it != end && !is_masked(cache[it], mask))
+		while (it < last && !is_masked(cache[it], mask))
 		{
 			attr.next(it);
 		}
 		// apply function over valid darts of the cache
-		while (it != end)
+		while (it < last)
 		{
 			f(CellType(cache[it]));
 			// next valid dart
 			do
 			{
 				attr.next(it);
-			} while (it != end && !is_masked(cache[it], mask));
+			} while (it < last && !is_masked(cache[it], mask));
 		}
 	}
 
@@ -1238,9 +1238,9 @@ protected:
 		const auto& attr = this->attributes_[ORBIT];
 
 		unsigned int it = attr.begin();
-		const unsigned int end = attr.end();
+		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it != end && !is_masked(cache[it], mask))
+		while (it < last && !is_masked(cache[it], mask))
 		{
 			attr.next(it);
 		}
@@ -1248,16 +1248,16 @@ protected:
 		unsigned int nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ( (static_cast<unsigned int>(end - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
-			  && (static_cast<unsigned int>(end - it) > nb_threads_pool))
-			nbc = static_cast<unsigned int>((end - it) / nb_threads_pool);
+		if ( (static_cast<unsigned int>(last - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+			  && (static_cast<unsigned int>(last - it) > nb_threads_pool))
+			nbc = static_cast<unsigned int>((last - it) / nb_threads_pool);
 
-		unsigned int local_end = std::min(it+nbc, end);
+		unsigned int local_end = std::min(it+nbc, last);
 
 		unsigned int i = 0; // used buffered futures 0/1
 		unsigned int j = 0; // thread num
 
-		while (it != end)
+		while (it < last)
 		{
 			futures[i].push_back(thread_pool->enqueue([&cache, &attr, &mask, it, local_end, &f] (unsigned int th_id)
 			{
@@ -1272,7 +1272,7 @@ protected:
 				}
 			}));
 			it = local_end;
-			local_end = std::min(local_end + nbc, end);
+			local_end = std::min(local_end + nbc, last);
 
 			if (++j == nb_threads_pool) // change thread
 			{	// again from 0 & change buffer
@@ -1298,7 +1298,7 @@ protected:
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
 		DartMarker dm(*to_concrete());
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 		{
 			if (!dm.is_marked(it))
 			{
@@ -1317,7 +1317,7 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
+		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))
@@ -1339,16 +1339,16 @@ protected:
 		const auto& attr = this->attributes_[ORBIT];
 
 		unsigned int it = attr.begin();
-		const unsigned int end = attr.end();
+		const unsigned int last = attr.end();
 		Dart d = cache[it];
 		// find first valid dart in the topo cache
-		while (it != end && !mask.valid(d))
+		while (it < last && !mask.valid(d))
 		{
 			attr.next(it);
 			d = cache[it];
 		}
 		// apply function over valid darts of the cache
-		while (it != end)
+		while (it < last)
 		{
 			if (!f(CellType(d)))
 				break;
@@ -1357,7 +1357,7 @@ protected:
 			{
 				attr.next(it);
 				d = cache[it];
-			} while (it != end && !mask.valid(d));
+			} while (it < last && !mask.valid(d));
 		}
 	}
 };
