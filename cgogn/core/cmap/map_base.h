@@ -603,6 +603,7 @@ public:
 	{
 		unsigned int result = 0;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
 	}
 
 	/**
