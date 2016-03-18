@@ -43,14 +43,14 @@ int main(int argc, char** argv)
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
 		unsigned int nb_darts = 0;
-		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
+		map.foreach_dart_nomask([&nb_darts] (cgogn::Dart) { nb_darts++; });
 		std::cout << "nb darts -> " << nb_darts << std::endl;
 
 		unsigned int nb_darts_2 = 0;
 		std::vector<unsigned int> nb_darts_per_thread(cgogn::NB_THREADS - 1);
 		for (unsigned int& n : nb_darts_per_thread)
 			n = 0;
-		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
+		map.parallel_foreach_dart_nomask([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
 		{
 			nb_darts_per_thread[thread_index]++;
 		});

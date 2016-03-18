@@ -142,11 +142,19 @@ protected:
 		(*phi2_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI2 should be an involution without fixed poit and
+	 * the boundary marker is identical for all darts of a face.
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi2(phi2(d)) == d &&
-				phi2(d) != d);
+				phi2(d) != d &&
+				( this->is_boundary(d) == this->is_boundary(this->phi1(d)) ));
 	}
 
 	/**
@@ -202,6 +210,8 @@ protected:
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face.
+	 * Two 1-face are built. The first one is the returned face,
+	 * the second is a boundary face that closes the map.
 	 */
 	Dart add_face_topo(unsigned int size)
 	{
@@ -211,6 +221,7 @@ protected:
 		Dart it = d;
 		do
 		{
+			this->set_boundary(e,true);
 			phi2_sew(it, e);
 			it = this->phi1(it);
 			e = this->phi_1(e);
@@ -293,6 +304,9 @@ protected:
 		phi2_sew(d, ne);						// Sew the new 1D-edges
 		phi2_sew(e, nd);						// To build the new 2D-edges
 
+		this->set_boundary(nd,this->is_boundary(d));
+		this->set_boundary(ne,this->is_boundary(e));
+
 		return nd;
 	}
 
@@ -356,13 +370,13 @@ protected:
 		Dart e = this->phi_1(this->phi2(d));
 		cgogn_message_assert(d == this->phi_1(this->phi2(e)),
 							 "merge_adjacent_edge: the degree of the vertex of d should be 2");
-// TODO
+		// TODO
 	}
 
 	void merge_adjacent_faces_topo(Dart d)
 	{
 		Dart e = this->phi2(d);
-// TODO
+		// TODO
 	}
 
 protected:
@@ -385,6 +399,9 @@ protected:
 		Dart ne = Inherit::split_vertex_topo(ee);	// cut the edge before e (insert a new dart before e)
 		this->phi1_sew(dd, ee);						// subdivide phi1 cycle at the inserted darts
 		phi2_sew(nd, ne);							// build the new 2D-edge from the inserted darts
+
+		this->set_boundary(nd,this->is_boundary(dd));
+		this->set_boundary(ne,this->is_boundary(ee));
 	}
 
 public:
@@ -605,7 +622,7 @@ public:
 	 * Incidence traversal
 	 *******************************************************************************/
 
-	public:
+public:
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
