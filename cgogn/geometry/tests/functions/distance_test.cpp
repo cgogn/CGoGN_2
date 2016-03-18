@@ -21,54 +21,45 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SIMPLECOLOR_H_
-#define RENDERING_SHADERS_SIMPLECOLOR_H_
+#include <core/utils/precision.h>
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/distance.h>
 
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <gtest/gtest.h>
 
-class QColor;
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
+using EigenVec3d = Eigen::Vector3d;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-namespace cgogn
+template<typename Vec_T>
+class Distance_TEST : public testing::Test
+{};
+
+TYPED_TEST_CASE(Distance_TEST, VecTypes );
+
+
+TYPED_TEST(Distance_TEST, PointLineDistance)
 {
-namespace rendering
-{
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+	TypeParam A(Scalar(-4), Scalar(-4), Scalar(-4));
+	TypeParam B(Scalar(3), Scalar(3), Scalar(3));
 
-class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
+	TypeParam P0(Scalar(1), Scalar(1), Scalar(1));
+	TypeParam P1(Scalar(20), Scalar(20), Scalar(20));
+	TypeParam P2(Scalar(1), Scalar(1), Scalar(0));
 
-	enum
-	{
-		ATTRIB_POS = 0
-	};
+	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_point(A,B,P0), Scalar(0));
+	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_point(A,B,P1), Scalar(0));
 
-	// uniform ids
-	int unif_color_;
+//	EXPECT_TRUE(cgogn::almost_equal_relative(cgogn::geometry::squared_distance_line_point(A,B,P2), Scalar(2.0/3.0)));
 
-public:
+	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
+EXPECT_NEAR(cgogn::geometry::squared_distance_line_point(A,B,P2), Scalar(2.0/3.0), tolerence);
 
-	ShaderSimpleColor();
 
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
-	void set_color(const QColor& rgb);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
-};
-
-} // namespace rendering
-
-} // namespace cgogn
-
-#endif // RENDERING_SHADERS_SIMPLECOLOR_H_
+}

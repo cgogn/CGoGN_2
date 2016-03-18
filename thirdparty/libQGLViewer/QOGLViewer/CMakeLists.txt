@@ -48,7 +48,12 @@ if(WIN32)
 else()
 	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
 	ADD_DEFINITIONS(-fPIC)
-endif() 
+endif()
+
+# for glu warning on mac
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_flags(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
+endif()
 
 
 

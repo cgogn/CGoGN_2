@@ -21,9 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_ROUND_POINT_H_
-#define RENDERING_SHADERS_ROUND_POINT_H_
+#ifndef RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
+#define RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 
+#include <QVector3D>
+#include <QVector4D>
 #include <rendering/shaders/shader_program.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/dll.h>
@@ -34,54 +36,44 @@ namespace cgogn
 namespace rendering
 {
 
-class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
+class CGOGN_RENDERING_API ShaderExplodeVolumesLine : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
 
-	static const char* vertex_shader_source2_;
-	static const char* geometry_shader_source2_;
-	static const char* fragment_shader_source2_;
-
 	enum
 	{
 		ATTRIB_POS = 0,
-		ATTRIB_COLOR
 	};
 
 	// uniform ids
+	int unif_expl_v_;
+	int unif_plane_clip_;
 	int unif_color_;
-	int unif_width_;
+
 
 public:
 
-	ShaderRoundPoint(bool color_per_vertex = false);
+	ShaderExplodeVolumesLine();
 
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
+	void set_explode_volume(float x);
+
+	void set_plane_clip(const QVector4D& plane);
+
 	void set_color(const QColor& rgb);
-
-	/**
-	 * @brief set the width of lines (call before each draw)
-	 * @param w width in pixel
-	 */
-	void set_width(float w);
 
 	/**
 	 * @brief set a vao configuration
 	 * @param i vao id (0,1,...)
 	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL, unsigned int stride=0, unsigned first=0);
+	bool set_vao(unsigned int i, VBO* vbo_pos);
 };
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_ROUND_POINT_H_
+#endif // RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_

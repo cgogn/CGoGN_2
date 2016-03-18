@@ -242,14 +242,14 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_EQ(nb_darts(), 2u);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 1u);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 1u);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 1u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
 
 	add_face_topo(10u);
 	EXPECT_EQ(nb_darts(), 22u);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11u);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 11u);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2u);
 
 	unsigned int count_vertices = 11u + add_faces(NB_MAX);
@@ -257,7 +257,7 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_EQ(nb_darts(), 2u * count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_vertices);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u * (NB_MAX + 2u));
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX + 2u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX + 2u);
 	EXPECT_TRUE(check_map_integrity());
 }
@@ -313,18 +313,26 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 
 	for (Dart d : darts_)
 	{
-		unsigned int k = degree(Face(d));
+		Dart dd = d;
+		if (std::rand() % 2 == 1) dd = phi2(d);
+
+		bool boundary_face = is_boundary(dd);
+
+		unsigned int k = degree(Face(dd));
 		if (k > 1u)
 		{
-			Dart e = d; // find a second dart in the face of d (distinct from d)
+			Dart e = dd; // find a second dart in the face of d (distinct from d)
 			unsigned int i = std::rand() % 10u;
 			while (i-- > 0u) e = phi1(e);
-			if (e == d) e = phi1(e);
+			if (e == dd) e = phi1(e);
 
-			cut_face_topo(d, e);
-			++count_edges;
-			++count_faces;
-			EXPECT_EQ(degree(Face(d)) + degree(Face(e)), k + 2);
+			cut_face_topo(dd, e);
+
+			if (!boundary_face) {
+				++count_edges;
+				++count_faces;
+			}
+			EXPECT_EQ(degree(Face(dd)) + degree(Face(e)), k + 2);
 		}
 	}
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);

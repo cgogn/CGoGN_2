@@ -139,7 +139,7 @@ public:
 	 *  - a Face attribute is created, if needed, for the face that fill the hole.
 	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 */
-	inline void close_hole(Dart d)
+	inline Face close_hole(Dart d)
 	{
 		const Face f(close_hole_topo(d));
 
@@ -178,6 +178,8 @@ public:
 				map_.template set_embedding<Volume>(it, idx);
 			});
 		}
+
+		return f;
 	}
 
 	/*!
@@ -192,20 +194,25 @@ public:
 	 */
 	inline void close_map()
 	{
-		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart(
-			[&] (Dart d)
+		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		map_.foreach_dart_nomask( [&] (Dart d)
 			{
 				if (map_.phi2(d) == d)
-					fix_point_darts.push_back(d);
-			},
-			[] (Dart) { return true; }
-		);
-		for (Dart d : fix_point_darts)
+					fix_point_darts->push_back(d);
+			});
+
+		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi2(d) == d)
-				close_hole(d);
+			{
+				Face f = close_hole(d);
+				map_.foreach_dart_of_orbit(f, [&] (Dart e)
+				{
+					map_.set_boundary(e, true);
+				});
+			}
 		}
+		get_dart_buffers()->release_buffer(fix_point_darts);
 	}
 
 private:
