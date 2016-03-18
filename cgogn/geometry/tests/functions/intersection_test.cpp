@@ -21,54 +21,45 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SIMPLECOLOR_H_
-#define RENDERING_SHADERS_SIMPLECOLOR_H_
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/intersection.h>
 
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <gtest/gtest.h>
 
-class QColor;
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using EigenVec3f = Eigen::Vector3f;
+using EigenVec3d = Eigen::Vector3d;
+using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-namespace cgogn
+template<typename Vec_T>
+class Intesection_TEST : public testing::Test
 {
-namespace rendering
-{
-
-class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-
-	enum
-	{
-		ATTRIB_POS = 0
-	};
-
-	// uniform ids
-	int unif_color_;
-
-public:
-
-	ShaderSimpleColor();
-
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
-	void set_color(const QColor& rgb);
-
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
 };
 
-} // namespace rendering
 
-} // namespace cgogn
+TYPED_TEST_CASE(Intesection_TEST, VecTypes );
 
-#endif // RENDERING_SHADERS_SIMPLECOLOR_H_
+TYPED_TEST(Intesection_TEST, IntersectionLineTriangle)
+{
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+	TypeParam p0(Scalar(1), Scalar(1), Scalar(96.1));
+	TypeParam p1(Scalar(5), Scalar(1), Scalar(92.3));
+	TypeParam p2(Scalar(3), Scalar(5), Scalar(94.2));
+
+	TypeParam A0(Scalar(3), Scalar(3), Scalar(0));
+	TypeParam D0(Scalar(0.001), Scalar(0.001), Scalar(1.0));
+
+	TypeParam A1(Scalar(3), Scalar(1), Scalar(0));
+	TypeParam D1(Scalar(0), Scalar(0), Scalar(1.0));
+	TypeParam A2(Scalar(5), Scalar(1), Scalar(0));
+	TypeParam A3(Scalar(9), Scalar(5), Scalar(0));
+
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A0,D0,p0,p1,p2));
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A1,D1,p0,p1,p2));
+	EXPECT_TRUE(cgogn::geometry::intersection_ray_triangle(A2,D1,p0,p1,p2));
+	EXPECT_FALSE(cgogn::geometry::intersection_ray_triangle(A3,D0,p0,p1,p2));
+
+}

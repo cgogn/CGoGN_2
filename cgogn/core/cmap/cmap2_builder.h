@@ -201,10 +201,17 @@ public:
 			},
 			[] (Dart) { return true; }
 		);
+
 		for (Dart d : fix_point_darts)
 		{
 			if (map_.phi2(d) == d)
+			{
 				close_hole(d);
+				map_.foreach_dart_of_orbit(Face(map_.phi2(d)), [&] (Dart db)
+				{
+					map_.set_boundary(db,true);
+				});
+			}
 		}
 	}
 

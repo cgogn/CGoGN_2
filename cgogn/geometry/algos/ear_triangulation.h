@@ -223,7 +223,7 @@ public:
 	 * @param f the face to tringulate
 	 * @param position attribute of position to use
 	 */
-	EarTriangulation(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position):
+	EarTriangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position):
 		map_(map),
 		positions_(position),
 		ears_(cmp_VP)
@@ -236,7 +236,7 @@ public:
 		}
 
 		// compute normals for orientation
-		normalPoly_  = geometry::face_normal<VEC3>(map_,f,position);
+		normalPoly_  = geometry::face_normal<VEC3>(map_,Cell<Orbit::PHI1>(f.dart),position);
 
 		// first pass create polygon in chained list with angle computation
 		VertexPoly* vpp = nullptr;
@@ -393,7 +393,7 @@ public:
  * @param table_indices table of indices (vertex embedding) to fill (append)
  */
 template <typename VEC3, typename MAP>
-static void compute_ear_triangulation(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<unsigned int>& table_indices)
+static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<unsigned int>& table_indices)
 {
 	EarTriangulation<VEC3,MAP> tri(map, f, position);
 	tri.compute_indices(table_indices);
@@ -406,7 +406,7 @@ static void compute_ear_triangulation(MAP& map, Cell<Orbit::PHI1> f, const typen
  * @param position
  */
 template <typename VEC3, typename MAP>
-static void apply_ear_triangulation(MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+static void apply_ear_triangulation(MAP& map,typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
 	EarTriangulation<VEC3,MAP> tri(map, f, position);
 	tri.triangulate();
