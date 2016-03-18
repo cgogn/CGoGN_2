@@ -28,6 +28,8 @@
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/shader_bold_line.h>
 #include <rendering/shaders/shader_round_point.h>
+#include <rendering/shaders/shader_point_sprite.h>
+
 #include <rendering/shaders/vbo.h>
 #include <rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
@@ -58,6 +60,7 @@ protected:
 	static ShaderColorPerVertex* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
+	static ShaderPointSprite* shader_ps_;
 	static int nb_instances_;
 
 	VBO* vbo_pos_;
@@ -68,6 +71,8 @@ protected:
 
 	std::vector<PrimParam> begins_point_;
 	std::vector<PrimParam> begins_round_point_;
+	std::vector<PrimParam> begins_balls_;
+
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
@@ -76,9 +81,11 @@ protected:
 	unsigned int vao_cpv_;
 	unsigned int vao_bl_;
 	unsigned int vao_rp_;
+	unsigned int vao_ps_;
 
 	float current_size_;
 	bool current_aa_;
+	bool current_ball_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -178,13 +185,23 @@ public:
 	{
 		current_aa_ = false;
 		current_size_ = ps;
+		current_ball_ = false;
 	}
 
 	inline void point_size_aa(float ps)
 	{
 		current_aa_ = true;
 		current_size_ = ps;
+		current_ball_ = false;
 	}
+
+	inline void ball_size(float ps)
+	{
+		current_ball_ = true;
+		current_aa_ = false;
+		current_size_ = ps;
+	}
+
 
 	/**
 	 * usr as glLineWidth
