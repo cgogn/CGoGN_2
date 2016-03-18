@@ -1,0 +1,142 @@
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
+
+#define CGOGN_RENDERING_DLL_EXPORT
+
+#include <rendering/shaders/shader_explode_volumes_line.h>
+#include <QColor>
+#include <QOpenGLFunctions>
+#include <iostream>
+
+namespace cgogn
+{
+
+namespace rendering
+{
+
+const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
+"#version 150\n"
+"in vec3 vertex_pos;\n"
+"void main() {\n"
+"   gl_Position = vec4(vertex_pos,1.0);\n"
+"}\n";
+
+const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
+"#version 150\n"
+"layout (triangles) in;\n"
+"layout (line_strip, max_vertices=2) out;\n"
+"uniform mat4 projection_matrix;\n"
+"uniform mat4 model_view_matrix;\n"
+"uniform float explode_vol;\n"
+"uniform vec4 plane_clip;\n"
+"void main()\n"
+"{\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		for (int i=1; i<=2; i++)\n"
+"		{\n"
+"			vec4 Q = explode_vol *  gl_in[i].gl_Position  + (1.0-explode_vol) * gl_in[0].gl_Position;\n"
+"			gl_Position = projection_matrix * model_view_matrix *  Q;\n"
+"			EmitVertex();\n"
+"		}\n"
+"		EndPrimitive();\n"
+"	}\n"
+"}\n";
+
+
+const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
+"#version 150\n"
+"uniform vec4 color;\n"
+"out vec4 fragColor;\n"
+"void main() {\n"
+"   fragColor = color;\n"
+"}\n";
+
+
+ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
+{
+	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
+	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
+	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
+	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	prg_.link();
+	get_matrices_uniforms();
+	unif_expl_v_ = prg_.uniformLocation("explode_vol");
+	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_color_ = prg_.uniformLocation("color");
+
+	//default param
+	bind();
+	set_explode_volume(0.8f);
+	set_color(QColor(255,255,255));
+	set_plane_clip(QVector4D(0,0,0,0));
+	release();
+}
+
+void ShaderExplodeVolumesLine::set_color(const QColor& rgb)
+{
+	if (unif_color_>=0)
+		prg_.setUniformValue(unif_color_,rgb);
+}
+
+
+void ShaderExplodeVolumesLine::set_explode_volume(float x)
+{
+		prg_.setUniformValue(unif_expl_v_, x);
+}
+
+void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
+{
+
+	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+bool ShaderExplodeVolumesLine::set_vao(unsigned int i, VBO* vbo_pos)
+{
+	if (i >= vaos_.size())
+	{
+		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		return false;
+	}
+
+	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+
+	prg_.bind();
+	vaos_[i]->bind();
+
+	// position vbo
+	vbo_pos->bind();
+	ogl->glEnableVertexAttribArray(ATTRIB_POS);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	vbo_pos->release();
+
+	vaos_[i]->release();
+	prg_.release();
+
+	return true;
+}
+
+} // namespace rendering
+
+} // namespace cgogn

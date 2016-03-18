@@ -115,6 +115,16 @@ public:
 		return map_.add_pyramid_topo(nb_edges);
 	}
 
+	inline Dart add_stamp_volume_topo()
+	{
+		return map_.add_stamp_volume_topo();
+	}
+
+	template <class CellType>
+	inline void set_embedding(Dart d, unsigned int emb)
+	{
+		map_.template set_embedding<CellType>(d, emb);
+	}
 
 	inline void close_hole_topo(Dart d)
 	{
@@ -197,6 +207,10 @@ public:
 			{
 				++nb;
 				close_hole_topo(d);
+				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
+				{
+					map_.set_boundary(db,true);
+				});
 				const Volume new_volume(map_.phi3(d));
 
 				if (map_.template is_embedded<CDart>())

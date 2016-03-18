@@ -18,7 +18,11 @@ set(HEADER_FILES
 	shaders/shader_bold_line.h
 	shaders/shader_round_point.h
 	shaders/shader_point_sprite.h
+	shaders/shader_explode_volumes.h
+	shaders/shader_explode_volumes_line.h
 	drawer.h
+	topo_render.h
+	volume_render.h
 	)
 
 set(SOURCE_FILES
@@ -31,7 +35,11 @@ set(SOURCE_FILES
 	shaders/shader_bold_line.cpp
 	shaders/shader_round_point.cpp
 	shaders/shader_point_sprite.cpp
+	shaders/shader_explode_volumes.cpp
+	shaders/shader_explode_volumes_line.cpp
 	drawer.cpp
+	topo_render.cpp
+	volume_render.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

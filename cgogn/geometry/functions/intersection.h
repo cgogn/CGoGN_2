@@ -21,54 +21,81 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SIMPLECOLOR_H_
-#define RENDERING_SHADERS_SIMPLECOLOR_H_
-
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
-
-class QColor;
+#ifndef GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#define GEOMETRY_FUNCTIONS_INTERSECTION_H_
 
 namespace cgogn
 {
-namespace rendering
+
+namespace geometry
 {
 
-class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
+
+template <typename VEC3_T>
+bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T& Ta, const VEC3_T& Tb, const VEC3_T& Tc, VEC3_T* inter=nullptr)
 {
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
+	using Scalar = typename VEC3_T::Scalar;
 
-	enum
-	{
-		ATTRIB_POS = 0
-	};
+	VEC3_T u = Ta - P ;
+	VEC3_T v = Tb - P ;
+	VEC3_T w = Tc - P ;
 
-	// uniform ids
-	int unif_color_;
+	Scalar x = Dir.dot(u.cross(v));//tripleProduct(Dir, u, v) ;
+	Scalar y = Dir.dot(v.cross(w));//tripleProduct(Dir, v, w) ;
+	Scalar z = Dir.dot(w.cross(u));//tripleProduct(Dir, w, u) ;
 
-public:
+	unsigned int np = 0 ;
+	unsigned int nn = 0 ;
+	unsigned int nz = 0 ;
 
-	ShaderSimpleColor();
+	if (x > Scalar(0))
+		++np ;
+	else if (x < Scalar(0))
+		++nn ;
+	else
+		++nz;
 
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
-	void set_color(const QColor& rgb);
+	if (y > Scalar(0))
+		++np ;
+	else if (y < Scalar(0))
+		++nn ;
+	else
+		++nz;
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
-};
 
-} // namespace rendering
+	if (z > Scalar(0))
+		++np ;
+	else if (z < Scalar(0))
+		++nn ;
+	else
+		++nz;
+
+	// line intersect the triangle
+	if (((np != 0) && (nn != 0)) || (nz == 3))
+		return false ;
+
+	Scalar sum = x + y + z ;
+	Scalar alpha = y / sum ;
+	Scalar beta = z / sum ;
+	Scalar gamma =Scalar(1) - alpha - beta ;
+	VEC3_T I = Ta * alpha + Tb * beta + Tc * gamma ;
+
+	//  it's a ray not a line !
+	if (Dir.dot(I-P)<0.0)
+		return false;
+
+	if (inter)
+		*inter = I;
+
+
+	return true ;
+
+}
+
+
+
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_SIMPLECOLOR_H_
+#endif // GEOMETRY_FUNCTIONS_INTERSECTION_H_

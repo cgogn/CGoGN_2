@@ -253,8 +253,9 @@ public:
 	inline friend std::ostream& operator<<(std::ostream& o, const Self& v)
 	{
 		o << "(";
-		for (auto& c : v.data_)
-			o << c << ",";
+		for (std::size_t i = 0ul ; i < std::tuple_size<Container>::value -1ul; ++i )
+			o << v.data_[i] << ",";
+		o << v.data_[std::tuple_size<Container>::value -1ul];
 		o << ")";
 		return o;
 	}

@@ -21,54 +21,57 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SIMPLECOLOR_H_
-#define RENDERING_SHADERS_SIMPLECOLOR_H_
+#ifndef GEOMETRY_FUNCTIONS_DISTANCE_H_
+#define GEOMETRY_FUNCTIONS_DISTANCE_H_
 
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
-
-class QColor;
+#include <core/utils/assert.h>
 
 namespace cgogn
 {
-namespace rendering
+
+namespace geometry
 {
 
-class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
+
+/**
+ * @brief squared distance line point (optimized version for testing many points with the same line
+ * @param A one point of line
+ * @param AB normalized vector or line
+ * @param P point o compute distance to line
+ * @return distance
+ */
+template <typename VEC3_T>
+inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3_T& A, const VEC3_T& AB_norm, const VEC3_T& P)
 {
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
+	// here use const & ? Strange Schmitt optimization proposition ;)
+	const VEC3_T& V = A - P ;
+	const VEC3_T& W = V.cross(AB_norm) ;
+	return W.squaredNorm() ;
+}
 
-	enum
-	{
-		ATTRIB_POS = 0
-	};
+/**
+ * @brief squared distance line point
+ * @param A one point of line
+ * @param B second point of line
+ * @param P point o compute distance to line
+ * @return distance
+ */
+template <typename VEC3_T>
+inline typename VEC3_T::Scalar squared_distance_line_point(const VEC3_T& A, const VEC3_T& B, const VEC3_T& P)
+{
+	VEC3_T AB = B - A ;
+	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
+	AB.normalize();
+	return squared_distance_normalized_line_point(A, AB, P) ;
+}
 
-	// uniform ids
-	int unif_color_;
 
-public:
 
-	ShaderSimpleColor();
 
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
-	void set_color(const QColor& rgb);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
-};
 
-} // namespace rendering
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_SIMPLECOLOR_H_
+#endif // GEOMETRY_FUNCTIONS_DISTANCE_H_
