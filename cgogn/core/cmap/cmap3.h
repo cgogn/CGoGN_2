@@ -58,6 +58,8 @@ public:
 	using Face		= Cell<Orbit::PHI1_PHI3>;
 	using Volume	= typename Inherit::Volume;
 
+	using Boundary  = Volume;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
