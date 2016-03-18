@@ -115,6 +115,16 @@ public:
 		return map_.add_pyramid_topo(nb_edges);
 	}
 
+	inline Dart add_stamp_volume_topo()
+	{
+		return map_.add_stamp_volume_topo();
+	}
+
+	template <class CellType>
+	inline void set_embedding(Dart d, unsigned int emb)
+	{
+		map_.template set_embedding<CellType>(d, emb);
+	}
 
 	inline void close_hole_topo(Dart d)
 	{
@@ -181,25 +191,24 @@ public:
 	 * Add volumes to the map that close every existing hole.
 	 * @return the number of closed holes
 	 */
-	inline unsigned int close_map()
+	inline void close_map()
 	{
 		// Search the map for topological holes (fix points of phi3)
-		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart(
-			[&] (Dart d)
+		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		map_.foreach_dart_nomask( [&] (Dart d)
 			{
 				if (map_.phi3(d) == d)
-					fix_point_darts.push_back(d);
-			},
-			[] (Dart) { return true; }
-		);
-		unsigned int nb = 0u;
-		for (Dart d : fix_point_darts)
+					fix_point_darts->push_back(d);
+			});
+		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi3(d) == d)
 			{
-				++nb;
 				close_hole_topo(d);
+				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
+				{
+					map_.set_boundary(db,true);
+				});
 				const Volume new_volume(map_.phi3(d));
 
 				if (map_.template is_embedded<CDart>())
@@ -264,7 +273,7 @@ public:
 				}
 			}
 		}
-		return nb;
+		get_dart_buffers()->release_buffer(fix_point_darts);
 	}
 
 private:

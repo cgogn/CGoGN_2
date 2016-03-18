@@ -64,8 +64,8 @@ CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
 /**
  * Prints an unreachable location failure.
  * This function is called when execution reaches a point that
- * should not be reached. It prints an error message and 
- * terminates the program. 
+ * should not be reached. It prints an error message and
+ * terminates the program.
  * \param[in] message string information message to print out.
  * \param[in] file_name file where the assertion failed.
  * \param[in] function_name function where the assertion failed.

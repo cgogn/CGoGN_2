@@ -23,10 +23,9 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_round_point.h>
-
-#include <QOpenGLFunctions>
+#include <rendering/shaders/shader_explode_volumes.h>
 #include <QColor>
+#include <QOpenGLFunctions>
 #include <iostream>
 
 namespace cgogn
@@ -35,58 +34,57 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderRoundPoint::vertex_shader_source_ =
+const char* ShaderExplodeVolumes::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "void main() {\n"
-"   gl_Position =  vec4(vertex_pos,1.0);\n"
+"   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
-
-const char* ShaderRoundPoint::geometry_shader_source_ =
+const char* ShaderExplodeVolumes::geometry_shader_source_ =
 "#version 150\n"
-"layout (points) in;\n"
-"layout (triangle_strip, max_vertices=4) out;\n"
+"layout (lines_adjacency) in;\n"
+"layout (triangle_strip, max_vertices=3) out;\n"
+"out vec3 color_f;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
-"uniform vec2 pointSizes;\n"
-"out vec2 local;\n"
+"uniform mat3 normal_matrix;\n"
+"uniform float explode_vol;\n"
+"uniform vec3 light_position;\n"
+"uniform vec4 color;\n"
+"uniform vec4 plane_clip;\n"
 "void main()\n"
 "{\n"
-"	vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
-"	A = A/A.w;\n"
-"	local = vec2(-1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(-1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	EndPrimitive();\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		vec3 v1 = gl_in[2].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
+"		vec3 v2 = gl_in[3].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
+"		vec3 N  = normalize(normal_matrix*cross(v1,v2));\n"
+"		vec4 face_center =  model_view_matrix * gl_in[1].gl_Position;\n"
+"		vec3 L =  normalize (light_position - face_center.xyz);\n"
+"		float lambertTerm = abs(dot(N,L));\n"
+"		for (int i=1; i<=3; i++)\n"
+"		{\n"
+"			vec4 Q = explode_vol *  gl_in[i].gl_Position  + (1.0-explode_vol) * gl_in[0].gl_Position;\n"
+"			gl_Position = projection_matrix * model_view_matrix *  Q;\n"
+"			color_f = color.rgb * lambertTerm;\n"
+"			EmitVertex();\n"
+"		}\n"
+"		EndPrimitive();\n"
+"	}\n"
 "}\n";
 
 
-const char* ShaderRoundPoint::fragment_shader_source_ =
+const char* ShaderExplodeVolumes::fragment_shader_source_ =
 "#version 150\n"
-"uniform vec4 color;\n"
-"in vec2 local;\n"
-"out vec4 fragColor;\n"
+"in vec3 color_f;\n"
+"out vec3 fragColor;\n"
 "void main() {\n"
-
-"	float r2 = dot(local,local);\n"
-"   if (r2 > 1.0) discard;\n"
-"   fragColor = vec4(color.rgb,(1.0-r2*r2));\n"
+"   fragColor = color_f;\n"
 "}\n";
 
-
-
-
-const char* ShaderRoundPoint::vertex_shader_source2_ =
+const char* ShaderExplodeVolumes::vertex_shader_source2_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
@@ -96,50 +94,51 @@ const char* ShaderRoundPoint::vertex_shader_source2_ =
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
-
-const char* ShaderRoundPoint::geometry_shader_source2_ =
+const char* ShaderExplodeVolumes::geometry_shader_source2_ =
 "#version 150\n"
-"layout (points) in;\n"
-"layout (triangle_strip, max_vertices=4) out;\n"
+"layout (lines_adjacency) in;\n"
+"layout (triangle_strip, max_vertices=3) out;\n"
+"in vec3 color_v[];\n"
+"out vec3 color_f;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
-"uniform vec2 pointSizes;\n"
-"in vec3 color_v[];\n"
-"out vec2 local;\n"
-"out vec3 color_f;\n"
+"uniform mat3 normal_matrix;\n"
+"uniform float explode_vol;\n"
+"uniform vec3 light_position;\n"
+"uniform vec4 plane_clip;\n"
 "void main()\n"
 "{\n"
-"	vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
-"	A = A/A.w;\n"
-"	color_f = color_v[0];\n"
-"	local = vec2(-1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(-1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	EndPrimitive();\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		vec3 v1 = gl_in[2].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
+"		vec3 v2 = gl_in[3].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
+"		vec3 N  = normalize(normal_matrix*cross(v1,v2));\n"
+"		vec4 face_center =  model_view_matrix * gl_in[1].gl_Position;\n"
+"		vec3 L =  normalize (light_position - face_center.xyz);\n"
+"		float lambertTerm = abs(dot(N,L));\n"
+"		for (int i=1; i<=3; i++)\n"
+"		{\n"
+"			vec4 Q = explode_vol *  gl_in[i].gl_Position  + (1.0-explode_vol) * gl_in[0].gl_Position;\n"
+"			gl_Position = projection_matrix * model_view_matrix *  Q;\n"
+"			color_f = color_v[i]*lambertTerm;\n"
+"			EmitVertex();\n"
+"		}\n"
+"		EndPrimitive();\n"
+"	}\n"
 "}\n";
 
-const char* ShaderRoundPoint::fragment_shader_source2_ =
+
+const char* ShaderExplodeVolumes::fragment_shader_source2_ =
 "#version 150\n"
-"in vec2 local;\n"
 "in vec3 color_f;\n"
-"out vec4 fragColor;\n"
+"out vec3 fragColor;\n"
 "void main() {\n"
-"	float r2 = dot(local,local);\n"
-"   if (r2 > 1.0) discard;\n"
-"   fragColor = vec4(color_f,(1.0-r2*r2));\n"
+"   fragColor = color_f;\n"
 "}\n";
 
 
-ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
+ShaderExplodeVolumes::ShaderExplodeVolumes(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
@@ -148,7 +147,6 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-		prg_.link();
 	}
 	else
 	{
@@ -156,35 +154,47 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.link();
 	}
-
+	prg_.link();
 	get_matrices_uniforms();
+	unif_expl_v_ = prg_.uniformLocation("explode_vol");
+	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_light_position_ = prg_.uniformLocation("light_position");
 	unif_color_ = prg_.uniformLocation("color");
-	unif_width_ = prg_.uniformLocation("pointSizes");
 
-	set_width(3.0f);
-	set_color(QColor(255,255,255));
+	//default param
+	bind();
+	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
+	set_explode_volume(0.8f);
+	set_color(QColor(255,0,0));
+	set_plane_clip(QVector4D(0,0,0,0));
+	release();
 }
 
-
-
-void ShaderRoundPoint::set_color(const QColor& rgb)
+void ShaderExplodeVolumes::set_color(const QColor& rgb)
 {
 	if (unif_color_>=0)
-		prg_.setUniformValue(unif_color_, rgb);
+		prg_.setUniformValue(unif_color_,rgb);
 }
 
-void ShaderRoundPoint::set_width(float wpix)
+void ShaderExplodeVolumes::set_light_position(const QVector3D& l)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-	int viewport[4];
-	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
-	prg_.setUniformValue(unif_width_, wd);
+		prg_.setUniformValue(unif_light_position_,l);
 }
 
-bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, unsigned int stride, unsigned first)
+
+void ShaderExplodeVolumes::set_explode_volume(float x)
+{
+		prg_.setUniformValue(unif_expl_v_, x);
+}
+
+void ShaderExplodeVolumes::set_plane_clip(const QVector4D& plane)
+{
+
+	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+bool ShaderExplodeVolumes::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
 	{
@@ -200,7 +210,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, uns
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	if (vbo_color)
@@ -208,7 +218,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, uns
 		// color vbo
 		vbo_color->bind();
 		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
+		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 	}
 

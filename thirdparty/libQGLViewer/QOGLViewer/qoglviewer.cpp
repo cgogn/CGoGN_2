@@ -1972,17 +1972,17 @@ void QOGLViewer::handleKeyboardAction(KeyboardAction id)
 {
 	switch (id)
 	{
-//		case DRAW_AXIS :		toggleAxisIsDrawn(); break;
-//		case DRAW_GRID :		toggleGridIsDrawn(); break;
-//		case DISPLAY_FPS :		toggleFPSIsDisplayed(); break;
-//		case ENABLE_TEXT :		toggleTextIsEnabled(); break;
+		case DRAW_AXIS :		/*toggleAxisIsDrawn();*/ break;
+		case DRAW_GRID :		/*toggleGridIsDrawn();*/ break;
+		case DISPLAY_FPS :		/*toggleFPSIsDisplayed();*/ break;
+		case ENABLE_TEXT :		/*toggleTextIsEnabled();*/ break;
 		case EXIT_VIEWER :		qApp->closeAllWindows(); break;
 		case SAVE_SCREENSHOT :	saveSnapshot(false, false); break;
 		case FULL_SCREEN :		toggleFullScreen(); break;
 		case STEREO :			toggleStereoDisplay(); break;
 		case ANIMATION :		toggleAnimation(); break;
 		case HELP :				help(); break;
-//		case EDIT_CAMERA :		toggleCameraIsEdited(); break;
+		case EDIT_CAMERA :		/*toggleCameraIsEdited();*/ break;
 		case SNAPSHOT_TO_CLIPBOARD :	snapshotToClipboard(); break;
 		case CAMERA_MODE :
 			toggleCameraMode();

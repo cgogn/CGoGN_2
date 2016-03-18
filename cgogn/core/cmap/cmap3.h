@@ -264,11 +264,11 @@ protected:
 
 		// creation of quads around circunference and storing vertices
 		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.emplace_back(this->Inherit::Inherit::add_face_topo(4u));
+			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
 		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.emplace_back(this->phi1(this->phi1(m_tableVertDarts[i])));
+			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
 
 		// sewing the quads
 		for (unsigned int i = 0u; i < n-1u; ++i)
@@ -296,11 +296,41 @@ protected:
 		return dres;
 	}
 
+	/**
+	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
+	 * @return a dart of the quad
+	 */
+	Dart add_stamp_volume_topo()
+	{
+		const Dart d_quad = Inherit::Inherit::add_face_topo(4u);
+		const Dart d_tri1 = Inherit::Inherit::add_face_topo(3u);
+		const Dart d_tri2 = Inherit::Inherit::add_face_topo(3u);
+
+		this->phi2_sew(d_tri1, d_tri2);
+		this->phi2_sew(d_quad, this->phi1(d_tri1));
+		this->phi2_sew(this->phi1(d_quad), this->phi_1(d_tri2));
+		this->phi2_sew(this->phi1(this->phi1(d_quad)), this->phi1(d_tri2));
+		this->phi2_sew(this->phi_1(d_quad), this->phi_1(d_tri1));
+
+		return d_quad;
+	}
+
+
 public:
 
 	inline unsigned int degree(Face f) const
 	{
 		return Inherit::degree(Face2(f.dart));
+	}
+
+	inline bool has_degree(Face f, unsigned int degree) const
+	{
+		return Inherit::has_degree(Face2(f.dart), degree);
+	}
+
+	inline bool has_degree(Face2 f, unsigned int degree) const
+	{
+		return Inherit::has_degree(f, degree);
 	}
 
 protected:
@@ -552,6 +582,7 @@ public:
 		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { func(Vertex(v)); });
 	}
 
+
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
@@ -563,7 +594,7 @@ public:
 	inline void foreach_incident_volume(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		func(Volume(f));
+		func(Volume(f.dart));
 		func(Volume(phi3(f.dart)));
 	}
 
@@ -571,22 +602,88 @@ public:
 	inline void foreach_incident_vertex(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		Inherit::foreach_incident_vertex(v, func);
+		Inherit::foreach_incident_vertex(v, [&func] (Vertex2 ve)
+		{
+			func(Vertex(ve.dart));
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
-		Inherit::foreach_incident_edge(v, func);
+		Inherit::foreach_incident_edge(v, [&func] (Edge2 e)
+		{
+			func(Edge(e.dart));
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		Inherit::foreach_incident_face(v, func);
+		Inherit::foreach_incident_face(v, [&func] (Face2 f)
+		{
+			func(Face(f.dart));
+		});
 	}
+
+
+	// redeclare CMap2 hidden functions
+	template <typename FUNC>
+	inline void foreach_incident_edge(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_edge(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_face(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_vertex(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_face(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_vertex(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_edge(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_edge(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_incident_volume(v,func);
+	}
+
 
 	/*******************************************************************************
 	 * Adjacence traversal
@@ -805,6 +902,43 @@ public:
 				}
 			});
 		});
+	}
+
+	//redeclare CMap2 hidden functions
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_vertex_through_edge(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_vertex_through_face(v,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_edge_through_vertex(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_edge_through_face(e,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_vertex(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_face_through_vertex(f,func);
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_edge(Face2 f, const FUNC& func) const
+	{
+		Inherit::foreach_adjacent_face_through_vertex(f,func);
 	}
 };
 
