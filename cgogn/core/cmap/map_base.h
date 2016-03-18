@@ -48,6 +48,8 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
+auto nomask = [](){ return true; };
+
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class MapBase : public MapBaseData<MAP_TRAITS>
 {
@@ -619,46 +621,36 @@ public:
 protected:
 
 	/*!
-	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts
-	 * A MASK is an functor that determine if a dart should be traversed or skipped.
-	 * It return false when a dart should be skipped, true in other cases.
+	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts.
+	 * A MASK is a callable that determine if a dart should be traversed or skipped.
+	 * It returns false when a dart should be skipped, true in other cases.
 	 */
 	template <typename MASK>
 	inline Dart begin(const MASK& mask) const
 	{
-		if (check_func_return_void(MASK)) {
-			return Dart(this->topology_.begin());
-		}
-		else {
-			static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
-			static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
+		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 
-			Dart d = Dart(this->topology_.begin());
-			Dart end = Dart(this->topology_.end());
+		Dart d = Dart(this->topology_.begin());
+		Dart end = Dart(this->topology_.end());
 
-			while (d != end && !mask(d))
-				this->topology_.next(d.index);
+		while (d != end && !mask(d))
+			this->topology_.next(d.index);
 
-			return d;
-		}
+		return d;
 	}
 
 	template <typename MASK>
 	inline void next(Dart& d, const MASK& mask) const
 	{
-		if (check_func_return_void(MASK)) {
+		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
+		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
+
+		Dart end = Dart(this->topology_.end());
+
+		do {
 			this->topology_.next(d.index);
-		}
-		else {
-			static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
-			static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-
-			Dart end = Dart(this->topology_.end());
-
-			do {
-				this->topology_.next(d.index);
-			} while (d != end && !mask(d));
-		}
+		} while (d != end && !mask(d));
 	}
 
 	inline Dart end() const
@@ -666,35 +658,30 @@ protected:
 		return Dart(this->topology_.end());
 	}
 
+	template <typename MASK>
+	inline bool is_masked(Dart d, const MASK& mask) const
+	{
+		return mask(d);
+	}
+
 	/*!
-	 * \Brief Specialized methods to iterate over all darts.
+	 * \Brief Specialized methods for the nomask lambda to iterate over all darts.
 	 * All darts are traversed without any MASK filtering.
 	 */
-//	std::function<bool()> nomask = [] () { return true; };
+	inline Dart begin(const decltype( nomask )&) const
+	{
+		return Dart(this->topology_.begin());
+	}
 
-//	template <>
-//	inline Dart begin(const std::function<bool()>& mask) const
-//	{
-//		Dart d = Dart(this->topology_.begin());
+	inline void next(Dart& d, const decltype( nomask )&) const
+	{
+		this->topology_.next(d.index);
+	}
 
-//		return d;
-//	}
-
-//	template<>
-//	inline void next(Dart& d, const std::function<bool()>&) const
-//	{
-//		this->topology_.next(d.index);
-//	}
-
-//	inline Dart begin() const
-//	{
-//		return Dart(this->topology_.begin());
-//	}
-
-//	inline void next(Dart& d) const
-//	{
-//		this->topology_.next(d.index);
-//	}
+	inline bool is_masked(Dart d, const decltype( nomask )&) const
+	{
+		return true;
+	}
 
 public:
 
@@ -703,18 +690,6 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-	template <typename FUNC>
-	inline void foreach_dart_nomask(const FUNC& f) const
-	{
-//		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-
-//		for (Dart it = begin(), last = end(); it != last; next(it))
-//			f(it);
-
-		foreach_dart(f, [] (Dart) { return true; } );
-//		foreach_dart(f, [] (Dart) -> void {} );
-	}
-
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
@@ -725,6 +700,12 @@ public:
 	inline void foreach_boundary_dart(const FUNC& f) const
 	{
 		foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
+	}
+
+	template <typename FUNC>
+	inline void foreach_dart_nomask(const FUNC& f) const
+	{
+		foreach_dart(f, nomask );
 	}
 
 	template <typename FUNC, typename MASK>
@@ -751,7 +732,7 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart_nomask(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, [] (Dart) { return true;} );
+		parallel_foreach_dart(f, nomask );
 	}
 
 	template <typename FUNC, typename MASK>
@@ -842,6 +823,12 @@ public:
 		foreach_dart_until(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
+	template <typename FUNC>
+	inline void foreach_dart_until_nomask(const FUNC& f) const
+	{
+		foreach_dart_until(f, nomask);
+	}
+
 	template <typename FUNC, typename MASK>
 	inline void foreach_dart_until(const FUNC& f, const MASK& mask) const
 	{
@@ -851,19 +838,6 @@ public:
 		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
 		for (Dart it = begin(mask), last = end(); it != last; next(it, mask))
-		{
-			if (!f(it))
-				break;
-		}
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_until_nomask(const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
-
-		for (Dart it = begin(), last = end(); it != last; next(it))
 		{
 			if (!f(it))
 				break;
@@ -882,15 +856,15 @@ public:
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_nomask(const FUNC& f) const
-	{
-		foreach_cell<STRATEGY>(f, [this] (Dart) { return true; });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_boundary_cell(const FUNC& f) const
 	{
 		foreach_cell<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell_nomask(const FUNC& f) const
+	{
+		foreach_cell<STRATEGY>(f, [](Dart) { return true; });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -934,6 +908,12 @@ public:
 	inline void parallel_foreach_boundary_cell(const FUNC& f) const
 	{
 		parallel_foreach_cell<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void parallel_foreach_cell_nomask(const FUNC& f) const
+	{
+		parallel_foreach_cell<STRATEGY>(f, nomask);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -983,6 +963,12 @@ public:
 	inline void foreach_boundary_cell_until(const FUNC& f) const
 	{
 		foreach_cell_until<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell_until_nomask(const FUNC& f) const
+	{
+		foreach_cell_until<STRATEGY>(f, nomask);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -1216,7 +1202,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int end = attr.end();
 		// find first valid dart in the topo cache
-		while (it != end && !mask(cache[it]))
+		while (it != end && !is_masked(cache[it], mask))
 		{
 			attr.next(it);
 		}
@@ -1228,7 +1214,7 @@ protected:
 			do
 			{
 				attr.next(it);
-			} while (it != end && !mask(cache[it]));
+			} while (it != end && !is_masked(cache[it], mask));
 		}
 	}
 
@@ -1254,7 +1240,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int end = attr.end();
 		// find first valid dart in the topo cache
-		while (it != end && !mask(cache[it]))
+		while (it != end && !is_masked(cache[it], mask))
 		{
 			attr.next(it);
 		}
@@ -1282,7 +1268,7 @@ protected:
 					do
 					{
 						attr.next(loc_it);
-					} while (loc_it != local_end && !mask(cache[loc_it]));
+					} while (loc_it != local_end && !is_masked(cache[loc_it], mask));
 				}
 			}));
 			it = local_end;

@@ -235,7 +235,6 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 
 #define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type , T>::value
 #define check_func_ith_parameter_type(F, i, T) std::is_same<typename function_traits<F>::template arg<i>::type , T>::value
-#define check_func_return_void(F) std::is_void<typename function_traits<F>::result_type>::value
 #define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type , T>::value
 
 #define inside_type(ATTR) typename std::remove_cv< typename std::remove_reference<decltype(ATTR()[0ul])>::type >::type
