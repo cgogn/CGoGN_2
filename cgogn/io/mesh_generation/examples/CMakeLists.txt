@@ -18,15 +18,10 @@ set(SOURCE_FILES
 	program_options.cpp
 )
 
-
 if (CGOGN_WITH_CGAL_EXAMPLES)
-	find_package(Boost QUIET REQUIRED COMPONENTS program_options)
-
-
+	find_package(Boost REQUIRED COMPONENTS program_options)
 	add_executable(map3_from_image ${HEADER_FILES} ${SOURCE_FILES})
-	target_link_libraries(map3_from_image cgogn_core cgogn_io_mesh_generation )
-
-
+	target_link_libraries(map3_from_image cgogn_core cgogn_io_mesh_generation ${Boost_LIBRARIES})
 endif()
 
 add_executable(map3_from_surface map3_from_surface.cpp)
