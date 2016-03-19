@@ -58,7 +58,11 @@ if (${CGOGN_USE_PARALLEL_GLIBCXX})
 	set(CGOGN_USE_OPENMP "ON")
 endif()
 option(CGOGN_USE_QT "use Qt (5.4 min) for interface & rendering" ON)
-
+option(CGOGN_WITH_CGAL_EXAMPLES "Build the examples using cgal for mesh generation." OFF)
+if ((NOT MSVC) AND CGOGN_WITH_CGAL_EXAMPLES)
+	set(CGOGN_USE_GLIBCXX_DEBUG OFF)
+	set(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC OFF)
+endif()
 
 #### Continuous integration options
 option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)
@@ -136,10 +140,10 @@ endif(${CGOGN_BUILD_BENCHS})
 ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
 
 # --- CPPCheck ---
-GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR} 
-                   ENABLE_IDS all 
-                   INCLUDES ${CGOGN_SOURCE_DIR}
-                   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
-                   SYSTEM_INCLUDE_WARNING_SUPPRESSION 
-                   INLINE_SUPPRESSION
-                   HTML_REPORT)
+GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR}
+		   ENABLE_IDS all
+		   INCLUDES ${CGOGN_SOURCE_DIR}
+		   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
+		   SYSTEM_INCLUDE_WARNING_SUPPRESSION
+		   INLINE_SUPPRESSION
+		   HTML_REPORT)

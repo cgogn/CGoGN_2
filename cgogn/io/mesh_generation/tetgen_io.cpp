@@ -22,11 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
+#define IO_TETGEN_IO_CPP
 
-#include <istream>
-#include <iostream>
-
-#include <io/mesh_io_gen.h>
+#include <io/mesh_generation/tetgen_io.h>
 
 namespace cgogn
 {
@@ -34,27 +32,7 @@ namespace cgogn
 namespace io
 {
 
-MeshImportGen::~MeshImportGen() {}
-
-bool MeshImportGen::import_file(const std::string& filename)
-{
-	this->clear();
-	Scoped_C_Locale loc;
-
-	if (!filename.empty())
-	{
-		// test if file exist
-		std::ifstream fp(filename.c_str(), std::ios::in);
-		if (!fp.good())
-		{
-			std::cerr << "MeshImportGen::import_file : Unable to open file \"" << filename << "\"" << std::endl;
-			return false;
-		}
-	}
-
-	return this->import_file_impl(filename);
-}
+template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 
 } // namespace io
-
 } // namespace cgogn

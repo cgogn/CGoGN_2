@@ -3,7 +3,7 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
-if (${ZLIB_FOUND})
+if (ZLIB_FOUND)
 	add_definitions("-DZLIB_CONST")
 	add_definitions("-DCGOGN_WITH_ZLIB")
 endif()
@@ -63,4 +63,5 @@ install(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION lib
 )
 
+add_subdirectory(mesh_generation)
 add_subdirectory(examples)

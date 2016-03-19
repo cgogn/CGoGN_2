@@ -463,6 +463,7 @@ public:
 		if (nbBoundaryFaces > 0)
 		{
 			mbuild.close_map();
+			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
 		}
 
 		if (this->volume_attributes_.get_nb_attributes() > 0)
