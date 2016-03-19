@@ -259,12 +259,26 @@ ShaderPointSprite::ShaderPointSprite(bool color_per_vertex, bool size_per_vertex
 		gs += std::string("#define WITH_COLOR 1\n");
 		fs += std::string("#define WITH_COLOR 1\n");
 	}
+	else
+	{
+		vs += std::string("#define WITH_COLOR 0\n");
+		gs += std::string("#define WITH_COLOR 0\n");
+		fs += std::string("#define WITH_COLOR 0\n");
+	}
+
 	if (size_per_vertex)
 	{
 		vs += std::string("#define WITH_SIZE 1\n");
 		gs += std::string("#define WITH_SIZE 1\n");
 		fs += std::string("#define WITH_SIZE 1\n");
 	}
+	else
+	{
+		vs += std::string("#define WITH_SIZE 0\n");
+		gs += std::string("#define WITH_SIZE 0\n");
+		fs += std::string("#define WITH_SIZE 0\n");
+	}
+
 	vs += std::string(vertex_shader_source2_);
 	gs += std::string(geometry_shader_source2_);
 	fs += std::string(fragment_shader_source2_);

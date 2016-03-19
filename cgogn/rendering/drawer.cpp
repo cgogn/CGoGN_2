@@ -39,11 +39,13 @@ namespace rendering
 ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
 ShaderBoldLine* Drawer::shader_bl_ = nullptr;
 ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
+ShaderPointSprite* Drawer::shader_ps_ = nullptr;
 int Drawer::nb_instances_ = 0;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	current_size_(1.0f),
 	current_aa_(true),
+	current_ball_(true),
 	ogl33_(ogl33)
 {
 	nb_instances_++;
@@ -70,6 +72,13 @@ Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	shader_rp_->release();
 	shader_rp_->set_vao(vao_rp_,vbo_pos_,vbo_col_);
 
+	if (!shader_ps_)
+		shader_ps_ = new ShaderPointSprite(true);
+	vao_ps_ = shader_ps_->add_vao();
+	shader_ps_->bind();
+	shader_ps_->release();
+	shader_ps_->set_vao(vao_ps_,vbo_pos_,vbo_col_);
+
 
 }
 
@@ -79,10 +88,11 @@ Drawer::~Drawer()
 	delete vbo_col_;
 
 	nb_instances_--;
-	if (nb_instances_ ==0)
+	if (nb_instances_ == 0)
 	{
 		// delete shaders when last drawer is deleted
 		// ensure context still enable when delete shaders
+		delete shader_ps_;
 		delete shader_rp_;
 		delete shader_bl_;
 		delete shader_cpv_;
@@ -94,6 +104,8 @@ void Drawer::new_list()
 	data_pos_.clear();
 	data_col_.clear();
 	begins_point_.clear();
+	begins_round_point_.clear();
+	begins_balls_.clear();
 	begins_line_.clear();
 	begins_bold_line_.clear();
 	begins_face_.clear();
@@ -104,7 +116,12 @@ void Drawer::begin(GLenum mode)
 	switch (mode)
 	{
 	case GL_POINTS:
-		if (current_size_ > 2.0)
+		if (current_ball_)
+		{
+			begins_balls_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
+			current_begin_ = &begins_balls_;
+		}
+		else if (current_size_ > 2.0)
 		{
 			begins_round_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,current_aa_));
 			current_begin_ = &begins_round_point_;
@@ -194,82 +211,102 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 {
 
 	//classic rendering
-	shader_cpv_->bind();
-	shader_cpv_->set_matrices(projection,modelview);
-	shader_cpv_->bind_vao(vao_cpv_);
-
-	for (auto& pp : begins_point_)
+	if (!begins_point_.empty() && !begins_line_.empty() && !begins_face_.empty())
 	{
-		ogl33_->glPointSize(pp.width);
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		shader_cpv_->bind();
+		shader_cpv_->set_matrices(projection,modelview);
+		shader_cpv_->bind_vao(vao_cpv_);
+
+		for (auto& pp : begins_point_)
+		{
+			ogl33_->glPointSize(pp.width);
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		}
+
+		for (auto& pp : begins_line_)
+		{
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		}
+
+		for (auto& pp : begins_face_)
+		{
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		}
+
+		shader_cpv_->release_vao(vao_cpv_);
+		shader_cpv_->release();
 	}
 
-	for (auto& pp : begins_line_)
+	// balls
+	if (!begins_balls_.empty())
 	{
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		shader_ps_->bind();
+		shader_ps_->set_matrices(projection,modelview);
+		shader_ps_->bind_vao(vao_ps_);
+
+		for (auto& pp : begins_balls_)
+		{
+			shader_ps_->set_size(pp.width);
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		}
+		shader_ps_->release_vao(vao_ps_);
+		shader_ps_->release();
 	}
-
-	for (auto& pp : begins_face_)
-	{
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-	}
-
-	shader_cpv_->release_vao(vao_cpv_);
-	shader_cpv_->release();
-
 
 	// round points
-
-	shader_rp_->bind();
-	shader_rp_->set_matrices(projection,modelview);
-	shader_rp_->bind_vao(vao_bl_);
-
-	for (auto& pp : begins_round_point_)
+	if (!begins_round_point_.empty())
 	{
-		if (pp.aa)
+		shader_rp_->bind();
+		shader_rp_->set_matrices(projection,modelview);
+		shader_rp_->bind_vao(vao_rp_);
+
+		for (auto& pp : begins_round_point_)
 		{
-			ogl33_->glEnable(GL_BLEND);
-			ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			if (pp.aa)
+			{
+				ogl33_->glEnable(GL_BLEND);
+				ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			}
+
+			shader_rp_->set_width(pp.width);
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+			if (pp.aa)
+				ogl33_->glDisable(GL_BLEND);
+
 		}
-
-		shader_rp_->set_width(pp.width);
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-
-		if (pp.aa)
-			ogl33_->glDisable(GL_BLEND);
-
+		shader_rp_->release_vao(vao_rp_);
+		shader_rp_->release();
 	}
-	shader_rp_->release_vao(vao_bl_);
-	shader_rp_->release();
-
 
 	// bold lines
-
-	shader_bl_->bind();
-	shader_bl_->set_matrices(projection,modelview);
-	shader_bl_->bind_vao(vao_bl_);
-
-	for (auto& pp : begins_bold_line_)
+	if (!begins_bold_line_.empty())
 	{
-		shader_bl_->set_width(pp.width);
-		shader_bl_->set_color(QColor(255,255,0));
+		shader_bl_->bind();
+		shader_bl_->set_matrices(projection,modelview);
+		shader_bl_->bind_vao(vao_bl_);
 
-		if (pp.aa)
+		for (auto& pp : begins_bold_line_)
 		{
-			ogl33_->glEnable(GL_BLEND);
-			ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			shader_bl_->set_width(pp.width);
+			shader_bl_->set_color(QColor(255,255,0));
+
+			if (pp.aa)
+			{
+				ogl33_->glEnable(GL_BLEND);
+				ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			}
+
+			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+			if (pp.aa)
+				ogl33_->glDisable(GL_BLEND);
+
 		}
 
-		ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
-
-		if (pp.aa)
-			ogl33_->glDisable(GL_BLEND);
-
+		shader_bl_->release_vao(vao_bl_);
+		shader_bl_->release();
 	}
-
-	shader_bl_->release_vao(vao_bl_);
-	shader_bl_->release();
-
 
 }
 
