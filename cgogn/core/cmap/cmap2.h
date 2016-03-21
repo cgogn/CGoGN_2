@@ -473,7 +473,10 @@ public:
 
 	inline unsigned int degree(Edge e) const
 	{
-		return 2;
+		if (this->is_boundary(e.dart) || this->is_boundary(phi2(e.dart)))
+			return 1;
+		else
+			return 2;
 	}
 
 	inline unsigned int codegree(Face f) const

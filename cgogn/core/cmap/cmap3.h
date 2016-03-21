@@ -374,12 +374,17 @@ public:
 
 	inline unsigned int degree(Face f) const
 	{
-		return 2;
+		if (this->is_boundary(f.dart) || this->is_boundary(phi3(f.dart)))
+			return 1;
+		else
+			return 2;
 	}
 
 	inline unsigned int codegree(Volume v) const
 	{
-		return Inherit::codegree(v);
+		unsigned int result = 0;
+		foreach_incident_face(v, [&result] (Face) { ++result; });
+		return result;
 	}
 
 	inline bool has_codegree(Face2 f, unsigned int codegree) const
