@@ -958,6 +958,7 @@ void QOGLViewer::performClickAction(ClickAction ca, const QMouseEvent* const e)
 			update();
 			break;
 		case RAP_FROM_PIXEL :
+			makeCurrent();
 			if (! camera()->setPivotPointFromPixel(e->pos()))
 				camera()->setPivotPoint(sceneCenter());
 			setVisualHintsMask(1);

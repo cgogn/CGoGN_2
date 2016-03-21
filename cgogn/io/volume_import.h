@@ -354,8 +354,8 @@ public:
 
 				if (!good_dart.is_nil()) //not a boundary faces
 				{
-					const unsigned int degD = map.degree(Face(d));
-					const unsigned int degGD = map.degree(Face(good_dart));
+					const unsigned int degD = map.codegree(Face(d));
+					const unsigned int degGD = map.codegree(Face(good_dart));
 
 					if(degD == degGD) // normal case : the two opposite faces have the same degree
 					{
@@ -462,8 +462,8 @@ public:
 
 		if (nbBoundaryFaces > 0)
 		{
-			unsigned int nbH = mbuild.close_map();
-			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s) and " << nbH << " hole(s)." << std::endl;
+			mbuild.close_map();
+			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
 		}
 
 		if (this->volume_attributes_.get_nb_attributes() > 0)

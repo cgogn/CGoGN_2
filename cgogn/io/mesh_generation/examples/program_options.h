@@ -21,49 +21,65 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_AREA_H_
-#define GEOMETRY_ALGOS_AREA_H_
+#ifndef IO_PROGRAM_OPTIONS_H
+#define IO_PROGRAM_OPTIONS_H
 
-#include <geometry/functions/area.h>
-#include <geometry/algos/centroid.h>
+#include <string>
+#include <map>
+
+#include <boost/program_options.hpp>
+
 
 namespace cgogn
 {
 
-namespace geometry
+namespace io
 {
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	return triangle_area<VEC3_T>(
-		position[Vertex(f.dart)],
-		position[Vertex(map.phi1(f.dart))],
-		position[Vertex(map.phi_1(f.dart))]
-	);
-}
+class ProgramOptions {
+private:
+	bool optionsHandler();
+public:
+	explicit ProgramOptions(int argc, char **argv);
+	ProgramOptions() = delete;
+	ProgramOptions(const ProgramOptions & ) = delete;
+	ProgramOptions(ProgramOptions && ) = delete;
+	ProgramOptions& operator=(const ProgramOptions & ) = delete;
+	ProgramOptions& operator=(ProgramOptions && ) = delete;
+	~ProgramOptions();
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	if (map.codegree(f) == 3)
-		return triangle_area<VEC3_T>(map, f, position);
-	else
-	{
-		typename VEC3_T::Scalar area{0};
-		VEC3_T center = centroid<VEC3_T>(map, f, position);
-		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
-		{
-			area += triangle_area<VEC3_T>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
-		});
-		return area;
-	}
-}
+	std::string input_file_;
 
-} // namespace geometry
+	double facet_angle_;
+	double facet_size_;
+	double facet_distance_;
+	double cell_radius_;
+	double cell_size_;
 
+	bool lloyd_;
+	double lloyd_freeze_bound_;
+	double lloyd_convergence_;
+	std::size_t lloyd_max_iterations_;
+	bool lloyd_freeze_;
+
+	bool odt_;
+	double odt_freeze_bound_ ;
+	double odt_convergence_;
+	std::size_t odt_max_iterations_;
+	bool odt_freeze_;
+
+	bool perturb_;
+	double perturb_sliver_bound_;
+
+	bool exude_;
+	double exude_sliver_bound_;
+
+private:
+	boost::program_options::options_description desc_;
+	boost::program_options::variables_map variable_map_;
+};
+
+} // namespace io
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_AREA_H_
+#endif // IO_PROGRAM_OPTIONS_H

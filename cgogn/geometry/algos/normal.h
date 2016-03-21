@@ -72,7 +72,7 @@ inline VEC3 newell_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MA
 template <typename VEC3, typename MAP>
 inline VEC3 face_normal(const MAP& map, Cell<Orbit::PHI1> f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
-	if (map.has_degree(f, 3))
+	if (map.has_codegree(f, 3))
 		return triangle_normal<VEC3>(map, f, position);
 	else
 		return newell_normal<VEC3>(map, f, position);

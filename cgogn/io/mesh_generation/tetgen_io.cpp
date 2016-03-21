@@ -21,49 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_AREA_H_
-#define GEOMETRY_ALGOS_AREA_H_
+#define CGOGN_IO_DLL_EXPORT
+#define IO_TETGEN_IO_CPP
 
-#include <geometry/functions/area.h>
-#include <geometry/algos/centroid.h>
+#include <io/mesh_generation/tetgen_io.h>
 
 namespace cgogn
 {
 
-namespace geometry
+namespace io
 {
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	return triangle_area<VEC3_T>(
-		position[Vertex(f.dart)],
-		position[Vertex(map.phi1(f.dart))],
-		position[Vertex(map.phi_1(f.dart))]
-	);
-}
+template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	if (map.codegree(f) == 3)
-		return triangle_area<VEC3_T>(map, f, position);
-	else
-	{
-		typename VEC3_T::Scalar area{0};
-		VEC3_T center = centroid<VEC3_T>(map, f, position);
-		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
-		{
-			area += triangle_area<VEC3_T>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
-		});
-		return area;
-	}
-}
-
-} // namespace geometry
-
+} // namespace io
 } // namespace cgogn
-
-#endif // GEOMETRY_ALGOS_AREA_H_

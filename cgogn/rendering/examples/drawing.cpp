@@ -105,10 +105,10 @@ void Drawing::init()
 	drawer_->line_width_aa(3.0);
 	drawer_->begin(GL_LINES);
 		drawer_->color3f(1.0,1.0,1.0);
-		drawer_->vertex3fv(Vec3(-1,-1,0));
-		drawer_->vertex3fv(Vec3(-1.2,-2,0));
-		drawer_->vertex3fv(Vec3(-2,-2,0));
-		drawer_->vertex3fv(Vec3(-2.2,1,0));
+		drawer_->vertex3fv(Vec3(-1,1,0));
+		drawer_->vertex3fv(Vec3(-1.2,0,0));
+		drawer_->vertex3fv(Vec3(-2,0,0));
+		drawer_->vertex3fv(Vec3(-2.2,3,0));
 	drawer_->end();
 
 	drawer_->begin(GL_TRIANGLES);
@@ -129,6 +129,17 @@ void Drawing::init()
 		drawer_->color3fv(C);
 		drawer_->vertex3fv(P);
 	}
+	drawer_->end();
+
+	drawer_->ball_size(0.1f);
+	drawer_->begin(GL_POINTS);
+	for (float a=0.05f; a < 1.0f; a+= 0.1f)
+	{
+		Vec3 P(4.0+std::cos(6.28*a)*1.2,-2.0+ std::sin(6.28*a)*1.2, std::sin(6.28*a)*0.2 );
+		Vec3 C(a,0.5,1.0-a);
+		drawer_->color3fv(C);
+		drawer_->vertex3fv(P);
+	}
 
 	drawer_->end();
 	drawer_->end_list();
@@ -145,6 +156,18 @@ void Drawing::init()
 				drawer2_->vertex3f(x,y,z);
 			}
 	drawer2_->end();
+
+	drawer2_->ball_size(0.03);
+	drawer2_->begin(GL_POINTS);
+	drawer2_->color3f(1.0,1.0,1.0);
+	for (float z=-1.0f; z < 1.0f; z+= 0.2f)
+		for (float y=-2.0f; y < 0.0f; y+= 0.2f)
+			for (float x=-3.0f; x < -1.0f; x+= 0.2f)
+			{
+				drawer2_->vertex3f(x,y,z);
+			}
+	drawer2_->end();
+
 	drawer2_->end_list();
 
 }

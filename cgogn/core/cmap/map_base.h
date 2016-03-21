@@ -48,7 +48,7 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-auto nomask = [](Dart){ return true; };
+auto nomask = [] (Dart) { return true; };
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class MapBase : public MapBaseData<MAP_TRAITS>
@@ -314,8 +314,7 @@ protected:
 	inline void release_mark_attribute(ChunkArray<bool>* ca)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(this->template is_embedded<ORBIT>(),
-							 "Invalid parameter: orbit not embedded");
+		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
 	}
@@ -341,16 +340,10 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart(
-			[this, ca] (Dart d) { (*ca)[d.index] = EMBNULL; },
-			[] (Dart) { return true; }
-		);
+		foreach_dart_nomask([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
 
 		// initialize the indices of the existing orbits
-		foreach_cell<FORCE_DART_MARKING>(
-			[this] (Cell<ORBIT> c) { new_orbit_embedding(c); },
-			[] (Dart) { return true; }
-		);
+		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
 		cgogn_assert(check_map_integrity());
 	}
@@ -360,7 +353,8 @@ protected:
 	{
 		using CellType = Cell<ORBIT>;
 		const unsigned int emb = add_attribute_element<ORBIT>();
-		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d) {
+		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d)
+		{
 			this->template set_embedding<CellType>(d, emb);
 		});
 		return emb;
@@ -380,15 +374,12 @@ public:
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_counter");
 		for (unsigned int& i : counter) i = 0;
 
-		foreach_cell<FORCE_DART_MARKING>(
-			[this, &counter] (Cell<ORBIT> c)
-			{
-				if (counter[c] > 0)
-					this->new_orbit_embedding(c);
-				counter[c]++;
-			},
-			[] (Dart) { return true; }
-		);
+		foreach_cell_nomask<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
+		{
+			if (counter[c] > 0)
+				this->new_orbit_embedding(c);
+			counter[c]++;
+		});
 
 		remove_attribute(counter);
 	}
@@ -419,7 +410,7 @@ public:
 			counter[i] = 0;
 
 		// Check that the indexation of cells is correct
-		foreach_cell_until_dart_marking(
+		foreach_cell_until_nomask<FORCE_DART_MARKING>(
 			[&] (CellType c)
 			{
 				unsigned int idx = this->get_embedding(c);
@@ -449,8 +440,7 @@ public:
 				});
 
 				return result;
-			},
-			[] (Dart) { return true; }
+			}
 		);
 		// check that all cells present in the attribute handler are used
 		if (result)
@@ -523,9 +513,8 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
-		foreach_cell<FORCE_CELL_MARKING>(
-			[this] (Cell<ORBIT> c) { (*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart; },
-			[] (Dart) { return true; }
+		foreach_cell_nomask<FORCE_CELL_MARKING>(
+			[this] (Cell<ORBIT> c) { (*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart; }
 		);
 	}
 
@@ -583,14 +572,37 @@ public:
 	template <Orbit ORBIT>
 	unsigned int nb_cells() const
 	{
+		unsigned int result = 0;
+		foreach_cell([&result] (Cell<ORBIT>) { ++result; });
+		return result;
+	}
+
+	unsigned int nb_boundary_cells() const
+	{
+		unsigned int result = 0;
+		foreach_boundary_cell([&result] (typename ConcreteMap::Boundary) { ++result; });
+		return result;
+	}
+
+	template <Orbit ORBIT>
+	unsigned int nb_cells_nomask() const
+	{
 		if (this->template is_embedded<ORBIT>())
 			return this->attributes_[ORBIT].size();
 		else
 		{
 			unsigned int result = 0;
-			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
+			foreach_cell_nomask([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
+	}
+
+	template <Orbit ORBIT, typename MASK>
+	unsigned int nb_cells(const MASK& mask) const
+	{
+		unsigned int result = 0;
+		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
 	}
 
 	/**
@@ -631,7 +643,7 @@ protected:
 		Dart d = Dart(this->topology_.begin());
 		Dart end = Dart(this->topology_.end());
 
-		while (d.index < end.index && !mask(d))
+		while (d != end && !mask(d))
 			this->topology_.next(d.index);
 
 		return d;
@@ -644,7 +656,7 @@ protected:
 
 		do {
 			this->topology_.next(d.index);
-		} while (d.index < end.index && !mask(d));
+		} while (d != end && !mask(d));
 	}
 
 	inline Dart end() const
@@ -656,12 +668,12 @@ protected:
 	 * \Brief Specialized methods for the nomask lambda to iterate over all darts.
 	 * All darts are traversed without any MASK filtering.
 	 */
-	inline Dart begin(const decltype( nomask )&) const
+	inline Dart begin(const decltype(nomask)&) const
 	{
 		return Dart(this->topology_.begin());
 	}
 
-	inline void next(Dart& d, const decltype( nomask )&) const
+	inline void next(Dart& d, const decltype(nomask)&) const
 	{
 		this->topology_.next(d.index);
 	}
@@ -688,7 +700,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_nomask(const FUNC& f) const
 	{
-		foreach_dart(f, nomask );
+		foreach_dart(f, nomask);
 	}
 
 	template <typename FUNC, typename MASK>
@@ -717,7 +729,7 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart_nomask(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, nomask );
+		parallel_foreach_dart(f, nomask);
 	}
 
 	template <typename FUNC, typename MASK>
@@ -843,13 +855,16 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_boundary_cell(const FUNC& f) const
 	{
+		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		static_assert(std::is_same<CellType, typename ConcreteMap::Boundary>::value, "Bad boundary orbit");
+
 		foreach_cell<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_nomask(const FUNC& f) const
 	{
-		foreach_cell<STRATEGY>(f, [](Dart) { return true; });
+		foreach_cell<STRATEGY>(f, nomask);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -1187,7 +1202,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it < last && !mask(cache[it]))
+		while (it != last && !mask(cache[it]))
 		{
 			attr.next(it);
 		}
@@ -1225,7 +1240,7 @@ protected:
 		unsigned int it = attr.begin();
 		const unsigned int last = attr.end();
 		// find first valid dart in the topo cache
-		while (it < last && !mask(cache[it]))
+		while (it != last && !mask(cache[it]))
 		{
 			attr.next(it);
 		}
@@ -1327,7 +1342,7 @@ protected:
 		const unsigned int last = attr.end();
 		Dart d = cache[it];
 		// find first valid dart in the topo cache
-		while (it < last && !mask.valid(d))
+		while (it != last && !mask(d))
 		{
 			attr.next(it);
 			d = cache[it];
@@ -1342,7 +1357,7 @@ protected:
 			{
 				attr.next(it);
 				d = cache[it];
-			} while (it < last && !mask.valid(d));
+			} while (it < last && !mask(d));
 		}
 	}
 };

@@ -41,6 +41,7 @@ bool MeshImportGen::import_file(const std::string& filename)
 	this->clear();
 	Scoped_C_Locale loc;
 
+	if (!filename.empty())
 	{
 		// test if file exist
 		std::ifstream fp(filename.c_str(), std::ios::in);
