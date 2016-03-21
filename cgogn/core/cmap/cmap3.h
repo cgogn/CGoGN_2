@@ -1009,14 +1009,14 @@ public:
 	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
+		foreach_dart_of_orbit(v, [this, &func] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_orbit(Face2(vd), [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_orbit(Face2(vd), [&func, vd, vd1] (Dart fd)
 			{
 				// skip Vertex2 v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
-					f(Vertex2(fd));
+					func(Vertex2(fd));
 			});
 		});
 	}
@@ -1031,13 +1031,13 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [this, &func] (Dart ed)
 		{
-			this->foreach_dart_of_orbit(Face2(ed), [&f, ed] (Dart fd)
+			this->foreach_dart_of_orbit(Face2(ed), [&func, ed] (Dart fd)
 			{
 				// skip Edge2 e itself
 				if (fd != ed)
-					f(Edge2(fd));
+					func(Edge2(fd));
 			});
 		});
 	}
