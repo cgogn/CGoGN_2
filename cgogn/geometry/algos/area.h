@@ -48,7 +48,7 @@ template <typename VEC3_T, typename MAP>
 inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
 {
 	using Vertex = typename MAP::Vertex;
-	if(map.degree(f) == 3)
+	if (map.codegree(f) == 3)
 		return triangle_area<VEC3_T>(map, f, position);
 	else
 	{

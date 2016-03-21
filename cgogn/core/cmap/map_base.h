@@ -340,10 +340,10 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart_nomask([this, ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
+		foreach_dart_nomask([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
 
 		// initialize the indices of the existing orbits
-		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { new_orbit_embedding(c); });
+		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
 		cgogn_assert(check_map_integrity());
 	}
@@ -353,7 +353,8 @@ protected:
 	{
 		using CellType = Cell<ORBIT>;
 		const unsigned int emb = add_attribute_element<ORBIT>();
-		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d) {
+		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d)
+		{
 			this->template set_embedding<CellType>(d, emb);
 		});
 		return emb;
@@ -373,14 +374,12 @@ public:
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_counter");
 		for (unsigned int& i : counter) i = 0;
 
-		foreach_cell_nomask<FORCE_DART_MARKING>(
-			[this, &counter] (Cell<ORBIT> c)
-			{
-				if (counter[c] > 0)
-					this->new_orbit_embedding(c);
-				counter[c]++;
-			}
-		);
+		foreach_cell_nomask<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
+		{
+			if (counter[c] > 0)
+				this->new_orbit_embedding(c);
+			counter[c]++;
+		});
 
 		remove_attribute(counter);
 	}

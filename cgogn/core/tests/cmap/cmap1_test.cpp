@@ -125,7 +125,7 @@ TEST_F(CMap1Test, remove_face)
 		if (std::rand() % 3 == 1)
 		{
 			Face f(d);
-			unsigned int k = cmap_.degree(f);
+			unsigned int k = cmap_.codegree(f);
 			cmap_.remove_face(f);
 			count_vertices -= k;
 			--count_faces;
@@ -165,7 +165,7 @@ TEST_F(CMap1Test, remove_vertex)
 
 	for (Dart d: darts_)
 	{
-		unsigned int k = cmap_.degree(Face(d));
+		unsigned int k = cmap_.codegree(Face(d));
 		cmap_.remove_vertex(Vertex(d));
 		--count_vertices;
 		if (k == 1u) --count_faces;
