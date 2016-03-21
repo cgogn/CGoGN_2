@@ -383,7 +383,7 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
 		tetgenio::polygon* p = f->polygonlist;
 		tetgenio::init(p);
-		p->numberofvertices = map.degree(face);
+		p->numberofvertices = map.codegree(face);
 		p->vertexlist = new int[p->numberofvertices];
 
 		uint32 j = 0u;

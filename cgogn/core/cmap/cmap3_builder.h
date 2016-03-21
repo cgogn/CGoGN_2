@@ -147,7 +147,7 @@ public:
 			Dart it = visitedFaces[i];
 			Dart f = it;
 
-			const Dart b = map_.CMap3::Inherit::Inherit::add_face_topo(map_.degree(Face(f)));
+			const Dart b = map_.CMap3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
 			boundary_marker.mark_orbit(Face2(b));
 			++count;
 

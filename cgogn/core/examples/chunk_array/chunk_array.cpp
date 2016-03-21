@@ -19,7 +19,7 @@ int test4();
 
 int test1()
 {
-	std::cout << "=============== TEST 1 ===============" << std::endl;
+	std::cout << "############### TEST 1 ###############" << std::endl;
 
 	ChunkArrayContainer<uint32> container;
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
@@ -84,7 +84,7 @@ int test1()
 
 int test2()
 {
-	std::cout << "=============== TEST 2 ===============" << std::endl;
+	std::cout << "############### TEST 2 ###############" << std::endl;
 
 	ChunkArrayContainer<unsigned char> container;
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
@@ -155,7 +155,7 @@ int test2()
 
 int test3()
 {
-	std::cout << "=============== TEST 3 ===============" << std::endl;
+	std::cout << "############### TEST 3 ###############" << std::endl;
 
 	ChunkArrayContainer<bool> container;
 	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
@@ -211,7 +211,7 @@ int test3()
 
 int test4()
 {
-	std::cout << "=============== TEST 4 ===============" << std::endl;
+	std::cout << "############### TEST 4 ###############" << std::endl;
 	using vecvecdouble = std::vector< std::vector< double > >;
 	using veclistdouble = std::vector< std::list< double > >;
 	ChunkArrayContainer<uint32> container;

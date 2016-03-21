@@ -107,7 +107,7 @@ public:
 		//		table_indices.reserve(m.get_nb_darts()/3);
 		m.foreach_cell([&] (Face f)
 		{
-			if (m.has_degree(f,3))
+			if (m.has_codegree(f, 3))
 			{
 				table_indices.push_back(m.get_embedding(Vertex(f.dart)));
 				table_indices.push_back(m.get_embedding(Vertex(m.phi1(f.dart))));
@@ -115,7 +115,7 @@ public:
 			}
 			else
 			{
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,table_indices);
+				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, table_indices);
 			}
 		});
 	}
@@ -200,8 +200,9 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 
 	m.foreach_cell([&] (Face f)
 	{
+
 		uint32 ef = m.get_embedding(Face(f.dart));
-		if (m.has_degree(f,3))
+		if (m.has_codegree(f, 3))
 		{
 			indices1.push_back(m.get_embedding(Vertex(f.dart)));
 			indices1.push_back(m.get_embedding(Vertex(m.phi1(f.dart))));

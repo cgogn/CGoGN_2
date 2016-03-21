@@ -344,17 +344,28 @@ protected:
 		phi1_sew(e, d);				// Sew the last edge
 	}
 
+	/*******************************************************************************
+	 * Connectivity information
+	 *******************************************************************************/
+
 public:
 
-	inline uint32 degree(Face f) const
+
+	inline uint32 degree(Vertex v) const
+	{
+		return 2;
+	}
+
+	inline uint32 codegree(Face f) const
 	{
 		return this->nb_darts_of_orbit(f);
 	}
 
-	inline bool has_degree(Face f, uint32 degree) const
+
+	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		Dart it = f.dart ;
-		for (uint32 i=1;i<degree; ++i)
+		for (uint32 i = 1; i < codegree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)

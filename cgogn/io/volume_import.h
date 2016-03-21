@@ -354,8 +354,8 @@ public:
 
 				if (!good_dart.is_nil()) //not a boundary faces
 				{
-					const uint32 degD = map.degree(Face(d));
-					const uint32 degGD = map.degree(Face(good_dart));
+					const uint32 degD = map.codegree(Face(d));
+					const uint32 degGD = map.codegree(Face(good_dart));
 
 					if(degD == degGD) // normal case : the two opposite faces have the same degree
 					{

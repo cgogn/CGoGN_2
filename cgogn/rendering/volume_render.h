@@ -128,10 +128,10 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 CV = geometry::centroid<VEC3>(m,v,position);
+		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
-			if (m.has_degree(f,3))
+			if (m.has_codegree(f, 3))
 			{
 				const VEC3& P1 = position[Vertex(f.dart)];
 				const VEC3& P2 = position[Vertex(m.phi1(f.dart))];
@@ -145,7 +145,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 			{
 				ear_indices.clear();
 				cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,ear_indices);
-				for(std::size_t i=0; i<ear_indices.size(); i+=3)
+				for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 				{
 					const VEC3& P1 = position[ear_indices[i]];
 					const VEC3& P2 = position[ear_indices[i+1]];

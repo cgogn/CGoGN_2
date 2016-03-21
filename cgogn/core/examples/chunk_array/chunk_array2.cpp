@@ -23,7 +23,7 @@ int test_load(bool with_register);
 
 int test_save()
 {
-	std::cout << "=============== TEST SAVE ===============" << std::endl;
+	std::cout << "############### TEST SAVE ###############" << std::endl;
 
 	ChunkArrayContainer container;
 
@@ -113,7 +113,7 @@ int test_save()
 
 int test_load(bool with_register)
 {
-	std::cout << "=============== TEST LOAD ===============" << std::endl;
+	std::cout << "############### TEST LOAD ###############" << std::endl;
 	ChunkArrayContainer cont2;
 
 	if (with_register)
