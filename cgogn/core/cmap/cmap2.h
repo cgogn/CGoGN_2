@@ -493,11 +493,6 @@ public:
 		return result;
 	}
 
-	inline unsigned int degree(Volume v) const
-	{
-		return 1;
-	}
-
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
@@ -670,7 +665,18 @@ public:
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [&func] (Dart d) { func(Face(d)); });
+		foreach_dart_of_orbit(v, [this, &func] (Dart d)
+		{
+			if (!this->is_boundary(d))
+				func(Face(d));
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(v.dart));
 	}
 
 	template <typename FUNC>
@@ -684,7 +690,18 @@ public:
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func] (Dart d) { func(Face(d)); });
+		foreach_dart_of_orbit(e, [this, &func] (Dart d)
+		{
+			if (!this->is_boundary(d))
+				func(Face(d));
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(Edge e, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(e.dart));
 	}
 
 	template <typename FUNC>
@@ -702,7 +719,14 @@ public:
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_vertex(Volume w, const FUNC& f) const
+	inline void foreach_incident_volume(Face f, const FUNC& func) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		func(Volume(f.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
@@ -711,13 +735,13 @@ public:
 			if (!marker.is_marked(d))
 			{
 				marker.mark_orbit(Vertex(d));
-				f(Vertex(d));
+				func(Vertex(d));
 			}
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_edge(Volume w, const FUNC& f) const
+	inline void foreach_incident_edge(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
@@ -726,45 +750,24 @@ public:
 			if (!marker.is_marked(d))
 			{
 				marker.mark_orbit(Edge(d));
-				f(Edge(d));
+				func(Edge(d));
 			}
 		});
 	}
 
 	template <typename FUNC>
-	inline void foreach_incident_face(Volume w, const FUNC& f) const
+	inline void foreach_incident_face(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
-			if (!marker.is_marked(d))
+			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
 				marker.mark_orbit(Face(d));
-				f(Face(d));
+				func(Face(d));
 			}
 		});
-	}
-
-	template <typename FUNC>
-	inline void foreach_incident_volume(Face f, const FUNC& func) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		func(Volume(f.dart));
-	}
-
-	template <typename FUNC>
-	inline void foreach_incident_volume(Edge e, const FUNC& func) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		func(Volume(e.dart));
-	}
-
-	template <typename FUNC>
-	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		func(Volume(v.dart));
 	}
 
 	/*******************************************************************************
@@ -784,13 +787,16 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
-			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
+			if (!this->is_boundary(vd))
 			{
-				// skip Vertex v itself and its first successor around current face
-				if (fd != vd && fd != vd1)
-					f(Vertex(fd));
-			});
+				Dart vd1 = this->phi1(vd);
+				this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
+				{
+					// skip Vertex v itself and its first successor around current face
+					if (fd != vd && fd != vd1)
+						f(Vertex(fd));
+				});
+			}
 		});
 	}
 
@@ -815,12 +821,15 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
+			if (!this->is_boundary(ed))
 			{
-				// skip Edge e itself
-				if (fd != ed)
-					f(Edge(fd));
-			});
+				this->foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
+				{
+					// skip Edge e itself
+					if (fd != ed)
+						f(Edge(fd));
+				});
+			}
 		});
 	}
 
@@ -831,10 +840,10 @@ public:
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
-			this->foreach_dart_of_orbit(Vertex(fd), [&func, fd, fd1] (Dart vd)
+			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
-				if (vd != fd && vd != fd1)
+				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
 					func(Face(vd));
 			});
 		});
@@ -844,7 +853,12 @@ public:
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [this, &func] (Dart d) { func(Face(this->phi2(d))); });
+		foreach_dart_of_orbit(f, [this, &func] (Dart d)
+		{
+			const Dart d2 = this->phi2(d);
+			if (!this->is_boundary(d2))
+				func(Face(d2));
+		});
 	}
 };
 
