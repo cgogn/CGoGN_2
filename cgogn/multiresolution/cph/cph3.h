@@ -42,12 +42,12 @@ public:
 	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
 
 protected:
-	ChunkArray<unsigned int>* face_id_;
+	ChunkArray<uint32>* face_id_;
 
 public:
 	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		face_id_ = topology.template add_attribute<unsigned int>("faceId");
+		face_id_ = topology.template add_attribute<uint32>("faceId");
 	}
 
 	~CPH3() override
@@ -63,22 +63,22 @@ public:
 	 *             FACE ID MANAGEMENT                  *
 	 ***************************************************/
 
-	inline unsigned int get_face_id(Dart d) const
+	inline uint32 get_face_id(Dart d) const
 	{
 		return (*face_id_)[d.index] ;
 	}
 
-	inline void set_face_id(Dart d, unsigned int i)
+	inline void set_face_id(Dart d, uint32 i)
 	{
 		(*face_id_)[d.index] = i ;
 	}
 
-	inline unsigned int get_tri_refinement_face_id(Dart /*d*/, Dart /*e*/) const
+	inline uint32 get_tri_refinement_face_id(Dart /*d*/, Dart /*e*/) const
 	{
 		return 0u;
 	}
 
-	inline unsigned int get_quad_refinement_face_id(Dart /*d*/) const
+	inline uint32 get_quad_refinement_face_id(Dart /*d*/) const
 	{
 		return 0u;
 	}

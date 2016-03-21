@@ -68,7 +68,7 @@ public:
 	}
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
+	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
 	}
@@ -89,7 +89,7 @@ public:
 		map_.phi2_unsew(d);
 	}
 
-	inline Dart add_face_topo_parent(unsigned int nb_edges)
+	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
 	}
@@ -172,7 +172,7 @@ public:
 
 		if (map_.template is_embedded<Volume>())
 		{
-			const unsigned int idx = map_.get_embedding(Volume(d));
+			const uint32 idx = map_.get_embedding(Volume(d));
 			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
 			{
 				map_.template set_embedding<Volume>(it, idx);

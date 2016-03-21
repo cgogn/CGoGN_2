@@ -31,7 +31,7 @@ TEST(NameTypesTest, NumTypes)
 	using signed_char = signed char;
 	using unsigned_char = unsigned char;
 	using unsigned_short = unsigned short;
-	using uint = unsigned int;
+	using uint = cgogn::uint32;
 	using ulint = unsigned long;
 	using llint = long long;
 	using ullint = unsigned long long;
@@ -44,7 +44,7 @@ TEST(NameTypesTest, NumTypes)
 
 #if _MSC_VER == 1800 // VS2013
 	EXPECT_EQ(cgogn::name_of_type(char16_t()), "unsigned short");
-	EXPECT_EQ(cgogn::name_of_type(char32_t()), "unsigned int");
+	EXPECT_EQ(cgogn::name_of_type(char32_t()), "uint32");
 #else
 	EXPECT_EQ(cgogn::name_of_type(char16_t()), "char16_t");
 	EXPECT_EQ(cgogn::name_of_type(char32_t()), "char32_t");
@@ -54,7 +54,7 @@ TEST(NameTypesTest, NumTypes)
 	EXPECT_EQ(cgogn::name_of_type(unsigned_short()), "unsigned short");
 	EXPECT_EQ(cgogn::name_of_type(int()), "int");
 
-	EXPECT_EQ(cgogn::name_of_type(uint()), "unsigned int");
+	EXPECT_EQ(cgogn::name_of_type(uint()), "uint32");
 	EXPECT_EQ(cgogn::name_of_type(long()), "long");
 	EXPECT_EQ(cgogn::name_of_type(ulint()), "unsigned long");
 	EXPECT_EQ(cgogn::name_of_type(llint()), "long long");

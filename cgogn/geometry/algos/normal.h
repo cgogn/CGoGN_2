@@ -125,7 +125,7 @@ inline VEC3 vertex_normal(const MAP& map, Cell<Orbit::PHI21> v, const typename M
 template <typename VEC3, typename MAP>
 inline void compute_normal_faces(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, typename MAP::template AttributeHandler<VEC3, Orbit::PHI1>& normal)
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f, unsigned int)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f, uint32)
 	{
 		normal[f] = face_normal<VEC3>(map, f, position);
 	});
@@ -134,7 +134,7 @@ inline void compute_normal_faces(MAP& map, const typename MAP::template VertexAt
 template <typename VEC3, typename MAP>
 inline void compute_normal_vertices(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, typename MAP::template AttributeHandler<VEC3, Orbit::PHI21>& normal)
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, unsigned int)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
 	{
 		normal[v] = vertex_normal<VEC3>(map, v, position);
 	});
@@ -143,7 +143,7 @@ inline void compute_normal_vertices(MAP& map, const typename MAP::template Verte
 template <typename VEC3, typename MAP>
 inline void compute_normal_vertices(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const typename MAP::template AttributeHandler<VEC3, Orbit::PHI1>& fnormal, typename MAP::template AttributeHandler<VEC3, Orbit::PHI21>& normal)
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, unsigned int)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
 	{
 		normal[v] = vertex_normal<VEC3>(map, v, position, fnormal);
 	});

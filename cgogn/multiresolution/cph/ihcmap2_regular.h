@@ -72,7 +72,7 @@ public:
 
 	inline void add_triangular_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
@@ -82,7 +82,7 @@ public:
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
+			uint32 eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
@@ -100,7 +100,7 @@ public:
 			// insert a new edge
 			//			Inherit::cut_face(dd, e) ;
 
-			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			uint32 id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
@@ -124,7 +124,7 @@ public:
 
 	inline void add_quadrangular_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
@@ -134,7 +134,7 @@ public:
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
+			uint32 eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
@@ -155,7 +155,7 @@ public:
 			Dart ne2 = Inherit::phi2(ne) ;
 			//			Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+			uint32 id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id) ;
 			Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 
@@ -183,7 +183,7 @@ public:
 
 	inline void add_mixed_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
@@ -193,7 +193,7 @@ public:
 			Dart dd = Inherit::phi2(e);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
+			uint32 eid = Inherit::get_edge_id(e);
 			Inherit::set_edge_id(Inherit::phi1(e), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
@@ -206,9 +206,9 @@ public:
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
 
-			unsigned int cur = Inherit::get_current_level();
+			uint32 cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur - 1);
-			unsigned int degree = Inherit::face_degree(old) ;
+			uint32 degree = Inherit::face_degree(old) ;
 			Inherit::set_current_level(cur);
 
 			if(degree == 3)
@@ -218,7 +218,7 @@ public:
 				// insert a new edge
 				//				Inherit::cut_face(dd, e) ;
 
-				unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+				uint32 id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
@@ -246,7 +246,7 @@ public:
 				Dart ne2 = Inherit::phi2(ne) ;
 				//				Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-				unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+				uint32 id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 				Inherit::set_edge_id(ne, id) ;
 				Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 

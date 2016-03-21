@@ -58,10 +58,10 @@ protected:
 		} while (tag != std::string("v"));
 
 		// lecture des sommets
-		std::vector<unsigned int> vertices_id;
+		std::vector<uint32> vertices_id;
 		vertices_id.reserve(102400);
 
-		unsigned int i = 0;
+		uint32 i = 0;
 		do
 		{
 			if (tag == std::string("v"))
@@ -75,7 +75,7 @@ protected:
 
 				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-				unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
+				uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
 
 				vertices_id.push_back(vertex_id);
@@ -86,7 +86,7 @@ protected:
 			std::getline(fp, line);
 		} while (!fp.eof());
 
-		this->nb_vertices_ = static_cast<unsigned int>(vertices_id.size());
+		this->nb_vertices_ = static_cast<uint32>(vertices_id.size());
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
@@ -100,7 +100,7 @@ protected:
 		this->faces_nb_edges_.reserve(vertices_id.size() * 2);
 		this->faces_vertex_indices_.reserve(vertices_id.size() * 8);
 
-		std::vector<unsigned int> table;
+		std::vector<uint32> table;
 		table.reserve(64);
 		do
 		{
@@ -114,25 +114,25 @@ protected:
 					std::string str;
 					oss >> str;
 
-					unsigned int ind = 0;
+					uint32 ind = 0;
 
 					while ((ind < str.length()) && (str[ind] != '/'))
 						ind++;
 
 					if (ind > 0)
 					{
-						unsigned int index;
+						uint32 index;
 						std::stringstream iss(str.substr(0, ind));
 						iss >> index;
 						table.push_back(index);
 					}
 				}
 
-				unsigned int n = static_cast<unsigned int>(table.size());
+				uint32 n = static_cast<uint32>(table.size());
 				this->faces_nb_edges_.push_back(static_cast<unsigned short>(n));
-				for (unsigned int j = 0; j < n; ++j)
+				for (uint32 j = 0; j < n; ++j)
 				{
-					unsigned int index = table[j] - 1; // indices start at 1
+					uint32 index = table[j] - 1; // indices start at 1
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
 				}
 				this->nb_faces_++;

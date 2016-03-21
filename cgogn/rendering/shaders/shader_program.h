@@ -28,6 +28,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions_3_3_Core>
 #include <cassert>
+#include <core/utils/definitions.h>
 
 
 #include <rendering/dll.h>
@@ -38,7 +39,7 @@ namespace rendering
 {
 
 //convenient conversion function
-inline void* void_ptr(unsigned int x)
+inline void* void_ptr(uint32 x)
 {
 	return reinterpret_cast<void*>(uint64_t(x));
 }
@@ -52,9 +53,9 @@ protected:
 
 	std::vector<QOpenGLVertexArrayObject*> vaos_;
 
-	int unif_mv_matrix_;
-	int unif_projection_matrix_;
-	int unif_normal_matrix_;
+	GLint unif_mv_matrix_;
+	GLint unif_projection_matrix_;
+	GLint unif_normal_matrix_;
 
 public:
 
@@ -82,18 +83,18 @@ public:
 	 * @brief add a vao (vbo configuration)
 	 * @return the id of vao
 	 */
-	inline unsigned int add_vao()
+	inline uint32 add_vao()
 	{
 		vaos_.push_back(new QOpenGLVertexArrayObject);
 		vaos_.back()->create();
-		return static_cast<unsigned int>(vaos_.size() - 1);
+		return static_cast<uint32>(vaos_.size() - 1);
 	}
 
 	/**
 	 * @brief allocate new vaos until total nb is reached
 	 * @param nb number of vaos to reach
 	 */
-	void alloc_vao(unsigned int nb)
+	void alloc_vao(uint32 nb)
 	{
 		while (vaos_.size() < nb)
 			vaos_.push_back(new QOpenGLVertexArrayObject);
@@ -103,16 +104,16 @@ public:
 	 * @brief number of allocated vaos
 	 * @return the number of allocated vaos
 	 */
-	inline unsigned int nb_vaos()
+	inline uint32 nb_vaos()
 	{
-		return (unsigned int)(vaos_.size());
+		return (uint32)(vaos_.size());
 	}
 
 	/**
 	 * @brief bind a vao
 	 * @param i vao id (0,1,...)
 	 */
-	inline void bind_vao(unsigned int i)
+	inline void bind_vao(uint32 i)
 	{
 //		assert(i < vaos_.size());
 //		if (!vaos_[i]->isCreated())
@@ -124,7 +125,7 @@ public:
 	 * @brief release the vao
 	 * @param i id
 	 */
-	inline void release_vao(unsigned int i)
+	inline void release_vao(uint32 i)
 	{
 //		assert(i < vaos_.size());
 		vaos_[i]->release();

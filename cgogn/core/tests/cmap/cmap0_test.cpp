@@ -63,7 +63,7 @@ protected:
 	CMap0Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(static_cast<uint32>(std::time(0)));
 		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
 	}
 
@@ -71,10 +71,10 @@ protected:
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
-	void add_vertices(unsigned int n)
+	void add_vertices(uint32 n)
 	{
 		darts_.clear();
-		for (unsigned int i = 0; i < n; ++i)
+		for (uint32 i = 0; i < n; ++i)
 			darts_.push_back(cmap_.add_vertex());
 	}
 };

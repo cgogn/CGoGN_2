@@ -53,22 +53,22 @@ public:
 	using Inherit = MeshImportGen;
 	using Map = CMap2<MAP_TRAITS>;
 
-	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
 
 
 protected:
-	unsigned int nb_vertices_;
-	unsigned int nb_edges_;
-	unsigned int nb_faces_;
+	uint32 nb_vertices_;
+	uint32 nb_edges_;
+	uint32 nb_faces_;
 
-	std::vector<unsigned int> faces_nb_edges_;
-	std::vector<unsigned int> faces_vertex_indices_;
+	std::vector<uint32> faces_nb_edges_;
+	std::vector<uint32> faces_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer face_attributes_;
@@ -121,20 +121,20 @@ public:
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
 				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
-		unsigned int faces_vertex_index = 0;
-		std::vector<unsigned int> vertices_buffer;
+		uint32 faces_vertex_index = 0;
+		std::vector<uint32> vertices_buffer;
 		vertices_buffer.reserve(16);
 
-		for (unsigned int i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0; i < this->nb_faces_; ++i)
 		{
-			unsigned int nbe = this->faces_nb_edges_[i];
+			uint32 nbe = this->faces_nb_edges_[i];
 
 			vertices_buffer.clear();
-			unsigned int prev = std::numeric_limits<unsigned int>::max();
+			uint32 prev = std::numeric_limits<uint32>::max();
 
-			for (unsigned int j = 0; j < nbe; ++j)
+			for (uint32 j = 0; j < nbe; ++j)
 			{
-				unsigned int idx = this->faces_vertex_indices_[faces_vertex_index++];
+				uint32 idx = this->faces_vertex_indices_[faces_vertex_index++];
 				if (idx != prev)
 				{
 					prev = idx;
@@ -148,9 +148,9 @@ public:
 			if (nbe > 2)
 			{
 				Dart d = mbuild.add_face_topo_parent(nbe);
-				for (unsigned int j = 0u; j < nbe; ++j)
+				for (uint32 j = 0u; j < nbe; ++j)
 				{
-					const unsigned int vertex_index = vertices_buffer[j];
+					const uint32 vertex_index = vertices_buffer[j];
 					mbuild.template set_embedding<Vertex>(d, vertex_index);
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
@@ -159,13 +159,13 @@ public:
 		}
 
 		bool need_vertex_unicity_check = false;
-		unsigned int nb_boundary_edges = 0;
+		uint32 nb_boundary_edges = 0;
 
 		map.foreach_dart([&] (Dart d)
 		{
 			if (map.phi2(d) == d)
 			{
-				unsigned int vertex_index = map.get_embedding(Vertex(d));
+				uint32 vertex_index = map.get_embedding(Vertex(d));
 
 				std::vector<Dart>& next_vertex_darts = darts_per_vertex[Vertex(map.phi1(d))];
 				bool phi2_found = false;

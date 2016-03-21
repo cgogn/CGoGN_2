@@ -41,6 +41,7 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+using namespace cgogn::numerics;
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
@@ -197,7 +198,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_);
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
-			for (unsigned int i = 1u; i<selected.size(); ++i)
+			for (uint32 i = 1u; i<selected.size(); ++i)
 				cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_);
 			drawer_->end();
 		}

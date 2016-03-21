@@ -215,7 +215,7 @@ protected:
 	 * Two 1-face are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
-	Dart add_face_topo(unsigned int size)
+	Dart add_face_topo(uint32 size)
 	{
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
@@ -243,7 +243,7 @@ public:
 	 * More precisely :
 	 *  - a Face attribute is created, if needed, for the new face.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -457,12 +457,12 @@ public:
 		}
 	}
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face f) const
 	{
 		return Inherit::degree(f);
 	}
 
-	inline unsigned int degree(Vertex v) const
+	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
@@ -498,7 +498,7 @@ public:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet
@@ -570,7 +570,7 @@ public:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet

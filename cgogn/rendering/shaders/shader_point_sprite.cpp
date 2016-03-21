@@ -354,7 +354,7 @@ void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatr
 
 
 
-bool ShaderPointSprite::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
+bool ShaderPointSprite::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
 {
 	if (i >= vaos_.size())
 	{

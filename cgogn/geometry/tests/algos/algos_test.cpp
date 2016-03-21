@@ -37,6 +37,8 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+using namespace cgogn::numerics;
+
 using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
 using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
 using EigenVec3f = Eigen::Vector3f;
@@ -161,7 +163,7 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 	d = this->map2_.phi1(d);
 	vertex_position[Vertex(d)] = TypeParam(Scalar(0), Scalar(10), Scalar(0));
 
-	std::vector<unsigned int> indices;
+	std::vector<uint32> indices;
 	cgogn::geometry::compute_ear_triangulation<TypeParam>(this->map2_, f, vertex_position, indices);
 	EXPECT_TRUE(indices.size() == 9);
 

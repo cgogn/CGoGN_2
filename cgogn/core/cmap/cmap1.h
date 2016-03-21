@@ -208,7 +208,7 @@ protected:
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Dart add_face_topo(unsigned int size)
+	inline Dart add_face_topo(uint32 size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
@@ -216,7 +216,7 @@ protected:
 			std::cerr << "Warning: attempt to create an empty face results in a single dart" << std::endl;
 
 		Dart d = this->add_dart();
-		for (unsigned int i = 1u; i < size; ++i)
+		for (uint32 i = 1u; i < size; ++i)
 			split_vertex_topo(d);
 		return d;
 	}
@@ -229,7 +229,7 @@ public:
 	 * \return The built face. If the map has Vertex or Face attributes,
 	 * the new inserted cells are automatically embedded on new attribute elements.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -346,15 +346,15 @@ protected:
 
 public:
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face f) const
 	{
 		return this->nb_darts_of_orbit(f);
 	}
 
-	inline bool has_degree(Face f, unsigned int degree) const
+	inline bool has_degree(Face f, uint32 degree) const
 	{
 		Dart it = f.dart ;
-		for (unsigned int i=1;i<degree; ++i)
+		for (uint32 i=1;i<degree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)

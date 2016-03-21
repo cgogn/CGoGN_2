@@ -40,7 +40,7 @@ ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
 ShaderBoldLine* Drawer::shader_bl_ = nullptr;
 ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
 ShaderPointSprite* Drawer::shader_ps_ = nullptr;
-int Drawer::nb_instances_ = 0;
+int32 Drawer::nb_instances_ = 0;
 
 Drawer::Drawer(QOpenGLFunctions_3_3_Core* ogl33):
 	current_size_(1.0f),
@@ -156,7 +156,7 @@ void Drawer::begin(GLenum mode)
 
 void Drawer::end()
 {
-	current_begin_->back().nb = static_cast<unsigned int>(data_pos_.size() - current_begin_->back().begin);
+	current_begin_->back().nb = static_cast<uint32>(data_pos_.size() - current_begin_->back().begin);
 }
 
 
@@ -184,7 +184,7 @@ void Drawer::color3f(float r, float g, float b)
 
 void Drawer::end_list()
 {
-	unsigned int nb_elts = static_cast<unsigned int>(data_pos_.size());
+	uint32 nb_elts = static_cast<uint32>(data_pos_.size());
 
 	if (nb_elts == 0)
 		return;

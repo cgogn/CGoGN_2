@@ -65,7 +65,7 @@ protected:
 	CMap2TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(static_cast<uint32>(std::time(0)));
 	}
 
 	/*!
@@ -113,7 +113,7 @@ protected:
 	void new_open_vertex_embedding(Dart d)
 	{
 		cgogn_assert(phi2(d) == d);
-		const unsigned int emb = add_attribute_element<Vertex::ORBIT>();
+		const uint32 emb = add_attribute_element<Vertex::ORBIT>();
 
 		Dart it = d;
 		Dart it1 = phi_1(it);
@@ -133,13 +133,13 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int add_faces(unsigned int n)
+	uint32 add_faces(uint32 n)
 	{
 		darts_.clear();
-		unsigned int count = 0u;
-		for (unsigned int i = 0u; i < n; ++i)
+		uint32 count = 0u;
+		for (uint32 i = 0u; i < n; ++i)
 		{
-			unsigned int m = 1u + std::rand() % 10u;
+			uint32 m = 1u + std::rand() % 10u;
 			Dart d = add_face_topo(m);
 			count += m;
 
@@ -157,17 +157,17 @@ protected:
 	void add_closed_surfaces()
 	{
 		darts_.clear();
-		unsigned int n;
+		uint32 n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
-		for (unsigned int i = 0u; i < NB_MAX; ++i)
+		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
 			n = 1u + std::rand() % 10;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs off 1-edges
-		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
+		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
 			n = std::rand() % 10u;
@@ -214,7 +214,7 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
 {
 	add_faces(NB_MAX);
 
-	for (unsigned int i = 0u; i < NB_MAX; ++i)
+	for (uint32 i = 0u; i < NB_MAX; ++i)
 	{
 		Dart d0 = darts_[std::rand() % NB_MAX];
 		Dart d2 = phi2(d0);
@@ -252,7 +252,7 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2u);
 
-	unsigned int count_vertices = 11u + add_faces(NB_MAX);
+	uint32 count_vertices = 11u + add_faces(NB_MAX);
 
 	EXPECT_EQ(nb_darts(), 2u * count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
@@ -270,15 +270,15 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 {
 	add_closed_surfaces();
 
-	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
-	unsigned int count_edges = nb_cells<Edge::ORBIT>();
-	unsigned int count_faces = nb_cells<Face::ORBIT>();
-	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
 
 	for (Dart d : darts_)
 	{
-		unsigned int k1 = degree(Face(d));
-		unsigned int k2 = degree(Face(phi2(d)));
+		uint32 k1 = degree(Face(d));
+		uint32 k2 = degree(Face(phi2(d)));
 		cut_edge_topo(d);
 		if (same_cell(Face(d), Face(phi2(d))))
 		{
@@ -306,10 +306,10 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 {
 	add_closed_surfaces();
 
-	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
-	unsigned int count_edges = nb_cells<Edge::ORBIT>();
-	unsigned int count_faces = nb_cells<Face::ORBIT>();
-	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
 
 	for (Dart d : darts_)
 	{
@@ -318,11 +318,11 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 
 		bool boundary_face = is_boundary(dd);
 
-		unsigned int k = degree(Face(dd));
+		uint32 k = degree(Face(dd));
 		if (k > 1u)
 		{
 			Dart e = dd; // find a second dart in the face of d (distinct from d)
-			unsigned int i = std::rand() % 10u;
+			uint32 i = std::rand() % 10u;
 			while (i-- > 0u) e = phi1(e);
 			if (e == dd) e = phi1(e);
 
@@ -363,8 +363,8 @@ TEST_F(CMap2TopoTest, close_map)
 	{
 		if (std::rand() % 2 == 1)
 		{
-			unsigned int n = std::rand() % 10u;
-			unsigned int k = degree(Face(d));
+			uint32 n = std::rand() % 10u;
+			uint32 k = degree(Face(d));
 
 			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
 			{

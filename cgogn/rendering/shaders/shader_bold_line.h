@@ -51,8 +51,8 @@ class CGOGN_RENDERING_API ShaderBoldLine : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_color_;
-	int unif_width_;
+	GLint unif_color_;
+	GLint unif_width_;
 
 public:
 
@@ -77,7 +77,7 @@ public:
 	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL);
 };
 
 } // namespace rendering

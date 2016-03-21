@@ -36,7 +36,7 @@ public:
 	}
 };
 
-const unsigned int NB_LINES = 20000000;
+const uint32 NB_LINES = 20000000;
 
 int test1()
 {
@@ -47,26 +47,26 @@ int test1()
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
-	for (unsigned int i = 0; i < NB_LINES; ++i)
+	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}
 
-	for (unsigned int j = 0; j < 100; ++j)
+	for (uint32 j = 0; j < 100; ++j)
 	{
-		for (unsigned int i = 0; i < NB_LINES/10; ++i)
+		for (uint32 i = 0; i < NB_LINES/10; ++i)
 		{
 			container.remove_lines<1>(j%2+1+i*10);
 			container.remove_lines<1>(j%2+3+i*10);
 			container.remove_lines<1>(j%2+8+i*10);
 		}
 
-		for (unsigned int i = 0; i < 3*NB_LINES/10; ++i)
+		for (uint32 i = 0; i < 3*NB_LINES/10; ++i)
 			container.insert_lines<1>();
 	}
 
@@ -83,26 +83,26 @@ int test2()
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
-	for (unsigned int i = 0; i < NB_LINES; ++i)
+	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}
 
-	for (unsigned int j = 0; j < 100; ++j)
+	for (uint32 j = 0; j < 100; ++j)
 	{
-		for (unsigned int i = 0; i < NB_LINES/10; ++i)
+		for (uint32 i = 0; i < NB_LINES/10; ++i)
 		{
 			container.remove_lines<1>(j%2+1+i*10);
 			container.remove_lines<1>(j%2+3+i*10);
 			container.remove_lines<1>(j%2+8+i*10);
 		}
 
-		for (unsigned int i = 0; i < 3*NB_LINES/10; ++i)
+		for (uint32 i = 0; i < 3*NB_LINES/10; ++i)
 			container.insert_lines<1>();
 	}
 
@@ -117,17 +117,17 @@ int test3()
 	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
-	for (unsigned int i = 0; i < NB_LINES; ++i)
+	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		att1->set_value(i, true);
 	}
 
-	for (unsigned int j = 0; j < 100; ++j)
+	for (uint32 j = 0; j < 100; ++j)
 	{
-		for (unsigned int i = 0; i < NB_LINES/2; ++i)
+		for (uint32 i = 0; i < NB_LINES/2; ++i)
 		{
 			att1->set_false(i);
 			att1->set_false(NB_LINES-1-i);
@@ -145,17 +145,17 @@ int test4()
 	ChunkArrayContainer<BLK_SZ,  bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
 
-	for (unsigned int i = 0; i < NB_LINES; ++i)
+	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		att1->set_value(i, true);
 	}
 
-	for (unsigned int j = 0; j < 100; ++j)
+	for (uint32 j = 0; j < 100; ++j)
 	{
-		for (unsigned int i = 0; i < NB_LINES/2; ++i)
+		for (uint32 i = 0; i < NB_LINES/2; ++i)
 		{
 			att1->set_false_byte(i);
 			att1->set_false_byte(NB_LINES-1-i);
@@ -170,22 +170,22 @@ int test5()
 {
 	std::cout << "= TEST 5 = Traversal" << std::endl;
 
-	ChunkArrayContainer<BLK_SZ, unsigned int> container;
-	ChunkArray<BLK_SZ,unsigned int>* att1 = container.add_attribute<unsigned int>("uints");
+	ChunkArrayContainer<BLK_SZ, uint32> container;
+	ChunkArray<BLK_SZ,uint32>* att1 = container.add_attribute<uint32>("uints");
 
-	for (unsigned int i = 0; i < NB_LINES; ++i)
+	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 		att1->operator[](i) = i;
 
-	for(unsigned int i = container.begin(); i < container.end(); i += 9)
+	for(uint32 i = container.begin(); i < container.end(); i += 9)
 		container.remove_lines<1>(i);
 
 	int  total = 0;
-	for (unsigned int j = 0; j < 50; ++j)
+	for (uint32 j = 0; j < 50; ++j)
 	{
-		for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+		for(uint32 i = container.begin(); i != container.end(); container.next(i))
 		{
 			if (att1->operator[](i) % i != 0)
 				total += att1->operator[](i);

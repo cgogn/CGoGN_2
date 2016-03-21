@@ -42,13 +42,13 @@ namespace io
 /**
  * @brief The BaseDataIO class : used to read numerical values (scalar & vectors) in mesh files
  */
-template<unsigned int CHUNK_SIZE>
+template<uint32 CHUNK_SIZE>
 class DataInputGen
 {
 public:
 	using Self = DataInputGen<CHUNK_SIZE>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
@@ -66,24 +66,24 @@ public:
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const = 0;
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
-	virtual unsigned int nb_components() const = 0;
+	virtual uint32 nb_components() const = 0;
 	virtual ~DataInputGen() {}
 
-	template<unsigned int PRIM_SIZE>
+	template<uint32 PRIM_SIZE>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
-	template<unsigned int PRIM_SIZE>
-	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, unsigned int nb_components);
+	template<uint32 PRIM_SIZE>
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, uint32 nb_components);
 
 	// This versions converts the data to the type T (if T is different from the type that has been read in the file)
-	template<unsigned int PRIM_SIZE, typename T>
+	template<uint32 PRIM_SIZE, typename T>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
 	// This versions converts the data to the type T (if T is different from the type that has been read in the file)
-	template<unsigned int PRIM_SIZE, typename T>
-	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, unsigned int nb_components);
+	template<uint32 PRIM_SIZE, typename T>
+	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, uint32 nb_components);
 };
 
 
-template<unsigned int CHUNK_SIZE, unsigned int PRIM_SIZE, typename BUFFER_T, typename T = BUFFER_T>
+template<uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename BUFFER_T, typename T = BUFFER_T>
 class DataInput : public DataInputGen<CHUNK_SIZE>
 {
 public:
@@ -224,7 +224,7 @@ public:
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const override
 	{
 		ChunkArray* ca = dynamic_cast<ChunkArray *>(ca_gen);
-		unsigned int i = 0u;
+		uint32 i = 0u;
 		for (auto& x : data_)
 			ca->operator[](i++) = x;
 	}
@@ -244,7 +244,7 @@ public:
 		return &data_;
 	}
 
-	virtual unsigned int nb_components() const override
+	virtual uint32 nb_components() const override
 	{
 		return geometry::nb_components_traits<T>::value;
 	}
@@ -267,8 +267,8 @@ private:
 	std::vector<T> data_;
 };
 
-template<unsigned int CHUNK_SIZE>
-template<unsigned int PRIM_SIZE>
+template<uint32 CHUNK_SIZE>
+template<uint32 PRIM_SIZE>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
 	const DataType type = get_data_type(type_name);
@@ -290,8 +290,8 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	}
 }
 
-template<unsigned int CHUNK_SIZE>
-template<unsigned int PRIM_SIZE, typename T>
+template<uint32 CHUNK_SIZE>
+template<uint32 PRIM_SIZE, typename T>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
 	const DataType type = get_data_type(type_name);
@@ -313,9 +313,9 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	}
 }
 
-template<unsigned int CHUNK_SIZE>
-template<unsigned int PRIM_SIZE>
-std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, unsigned int nb_components)
+template<uint32 CHUNK_SIZE>
+template<uint32 PRIM_SIZE>
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, uint32 nb_components)
 {
 	cgogn_assert(nb_components >=1u && nb_components <= 4u);
 	if (nb_components == 1u)
@@ -358,9 +358,9 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
-template<unsigned int CHUNK_SIZE>
-template<unsigned int PRIM_SIZE, typename T>
-std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, unsigned int nb_components)
+template<uint32 CHUNK_SIZE>
+template<uint32 PRIM_SIZE, typename T>
+std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name, uint32 nb_components)
 {
 	cgogn_assert(nb_components >=1u && nb_components <= 4u);
 	if (nb_components == 1u)

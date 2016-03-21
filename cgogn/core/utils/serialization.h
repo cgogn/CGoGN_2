@@ -136,8 +136,8 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		unsigned int vecSize;
-		istream.read(reinterpret_cast<char*>(&vecSize), sizeof(unsigned int));
+		uint32 vecSize;
+		istream.read(reinterpret_cast<char*>(&vecSize), sizeof(uint32));
 		dest[i].resize(vecSize);
 		load(istream, &(dest[i][0]), vecSize);
 	}
@@ -152,8 +152,8 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].size());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = static_cast<uint32>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		save(ostream, &(src[i][0]), size);
 	}
 }
@@ -167,7 +167,7 @@ std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 	std::size_t total = 0u;
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int);// for size
+		total += sizeof(uint32);// for size
 		total += data_length(&(src[i][0]), src[i].size());
 	}
 	return total;
@@ -183,8 +183,8 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		unsigned int listSize;
-		istream.read(reinterpret_cast<char*>(&listSize), sizeof(unsigned int));
+		uint32 listSize;
+		istream.read(reinterpret_cast<char*>(&listSize), sizeof(uint32));
 		std::vector<U> temp;
 		temp.resize(listSize);
 		load(istream, &(temp[0]), listSize);
@@ -202,8 +202,8 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].size());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = static_cast<uint32>(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		for (const auto& elem : src[i])
 			save(ostream, &elem, 1);
 	}
@@ -218,7 +218,7 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 	std::size_t total = 0u;
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int); // for size
+		total += sizeof(uint32); // for size
 		for (const auto& elem : src[i])
 			total += data_length(&elem, 1);
 	}

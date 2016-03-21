@@ -36,7 +36,7 @@
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
@@ -82,7 +82,7 @@ public:
 		register_CA<signed char>();
 		register_CA<unsigned char>();
 		register_CA<unsigned short>();
-		register_CA<unsigned int>();
+		register_CA<uint32>();
 		register_CA<unsigned long>();
 		register_CA<unsigned long long>();
 		register_CA<float>();
@@ -121,7 +121,7 @@ public:
 	}
 };
 
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 typename ChunkArrayFactory<CHUNKSIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_ = nullptr;
 
 

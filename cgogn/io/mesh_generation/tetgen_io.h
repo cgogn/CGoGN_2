@@ -51,7 +51,7 @@
 //	surface.pointlist = new REAL[surface.numberofpoints * 3];
 
 //	//for each vertex
-//	unsigned int i = 0;
+//	uint32 i = 0;
 //	TraversorV tv(map2);
 //	for(Dart it = tv.begin() ; it != tv.end() ; it = tv.next())
 //	{
@@ -78,7 +78,7 @@
 //		p->numberofvertices = map2.faceDegree(it);
 //		p->vertexlist = new int[p->numberofvertices] ;
 
-//		unsigned int j = 0;
+//		uint32 j = 0;
 //		Dart dit = it;
 //		do
 //		{
@@ -153,14 +153,14 @@
 
 //	//create vertices
 //	double* p = volume_->pointlist ;
-//	std::vector<unsigned int> verticesID;
+//	std::vector<uint32> verticesID;
 //	verticesID.reserve(volume_->numberofpoints);
 //	AttributeContainer& container = map3.template getAttributeContainer<VERTEX>() ;
 
-//	for(unsigned int i = 0; i < volume_->numberofpoints; i++)
+//	for(uint32 i = 0; i < volume_->numberofpoints; i++)
 //	{
 //		typename PFP::VEC3 pos(p[0], p[1], p[2]);
-//		unsigned int id = container.insertLine();
+//		uint32 id = container.insertLine();
 
 //		position3[id] = pos;
 //		verticesID.push_back(id);
@@ -170,11 +170,11 @@
 
 //	//create tetrahedrons
 //	int* t = volume_->tetrahedronlist ;
-//	for(unsigned int i = 0; i < volume_->numberoftetrahedra; i++)
+//	for(uint32 i = 0; i < volume_->numberoftetrahedra; i++)
 //	{
 //		Dart d = Algo::Surface::Modelisation::createTetrahedron<PFP>(map3, false);
 
-//		for(unsigned int j = 0; j < 3; j++)
+//		for(uint32 j = 0; j < 3; j++)
 //		{
 //			FunctorSetEmb<typename PFP::MAP, VERTEX> fsetemb(map, verticesID[t[j] - volume_->firstnumber]);
 //			map.template foreach_dart_of_orbit<PFP::MAP::VERTEX_OF_PARENT>(d, fsetemb);
@@ -198,7 +198,7 @@
 
 //	//create adjacency
 //	int* pn = volume_->neighborlist ;
-//	for(unsigned int i = 0; i < volume_->numberoftetrahedra; i++)
+//	for(uint32 i = 0; i < volume_->numberoftetrahedra; i++)
 //	{
 //		for(int j=0; j<4; j++)
 //		{
@@ -314,11 +314,11 @@ protected:
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
 
 		//create vertices
-		std::vector<unsigned int> vertices_indices;
+		std::vector<uint32> vertices_indices;
 		double* p = volume_->pointlist ;
 		vertices_indices.reserve(this->nb_vertices_);
 
-		for(unsigned int i = 0u; i < this->nb_vertices_; ++i)
+		for(uint32 i = 0u; i < this->nb_vertices_; ++i)
 		{
 			const unsigned id = this->vertex_attributes_.template insert_lines<1>();
 			position->operator [](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
@@ -328,10 +328,10 @@ protected:
 
 		//create tetrahedrons
 		int* t = volume_->tetrahedronlist ;
-		for(unsigned int i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
 		{
 			this->volumes_nb_vertices_.push_back(4u);
-			for(unsigned int j = 0u; j < 3u; j++)
+			for(uint32 j = 0u; j < 3u; j++)
 				this->volumes_vertex_indices_.push_back(vertices_indices[t[j] - volume_->firstnumber]);
 
 			t += 4 ;
@@ -361,7 +361,7 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	output->pointlist = new TetgenReal[output->numberofpoints * 3];
 
 	//for each vertex
-	unsigned int i = 0u;
+	uint32 i = 0u;
 	map.foreach_cell([&output,&i,&pos](Vertex v)
 	{
 		const VEC3& vec = pos[v];
@@ -386,7 +386,7 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 		p->numberofvertices = map.degree(face);
 		p->vertexlist = new int[p->numberofvertices];
 
-		unsigned int j = 0u;
+		uint32 j = 0u;
 		map.foreach_incident_vertex(face, [&p,&map,&j](Vertex v)
 		{
 			p->vertexlist[j++] = map.get_embedding(v);
