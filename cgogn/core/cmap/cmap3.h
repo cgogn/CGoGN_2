@@ -58,6 +58,8 @@ public:
 	using Face		= Cell<Orbit::PHI1_PHI3>;
 	using Volume	= typename Inherit::Volume;
 
+	using Boundary  = Volume;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -351,12 +353,14 @@ protected:
 			const Dart curr_dart = marked_darts->operator [](i);
 			f(curr_dart);
 
-			const Dart d21 = this->phi1(this->phi2(curr_dart)); // turn in volume
-			const Dart d31 = this->phi1(this->phi3(curr_dart)); // change volume
-			if(!marker.is_marked(d21))
-				marker.mark(d21);
-			if(!marker.is_marked(d31))
-				marker.mark(d31);
+			const Dart d_1 = this->phi_1(curr_dart);
+			const Dart d2_1 = this->phi2(d_1); // turn in volume
+			const Dart d3_1 = phi3(d_1); // change volume
+
+			if(!marker.is_marked(d2_1))
+				marker.mark(d2_1);
+			if(!marker.is_marked(d3_1))
+				marker.mark(d3_1);
 		}
 	}
 

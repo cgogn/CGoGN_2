@@ -182,7 +182,9 @@ TEST_F(CMap2Test, add_face)
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2 * NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells_nomask<Face::ORBIT>(), 2 * NB_MAX);
+	EXPECT_EQ(cmap_.nb_boundary_cells(), NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
