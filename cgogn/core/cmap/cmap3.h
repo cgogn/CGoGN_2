@@ -492,16 +492,18 @@ protected:
 		marker.mark(d);
 		for(unsigned int i = 0; i < marked_darts->size(); ++i)
 		{
-			if (!f((*marked_darts)[i]))
+			const Dart curr_dart = marked_darts->operator [](i);
+			if (!f(curr_dart))
 				break;
 
-			Dart d2 = this->phi2((*marked_darts)[i]);
-			Dart d21 = this->phi1(d2); // turn in volume
-			Dart d23 = phi3(d2); // change volume
-			if(!marker.is_marked(d21))
-				marker.mark(d21);
-			if(!marker.is_marked(d23))
-				marker.mark(d23);
+			const Dart d_1 = this->phi_1(curr_dart);
+			const Dart d2_1 = this->phi2(d_1); // turn in volume
+			const Dart d3_1 = phi3(d_1); // change volume
+
+			if(!marker.is_marked(d2_1))
+				marker.mark(d2_1);
+			if(!marker.is_marked(d3_1))
+				marker.mark(d3_1);
 		}
 	}
 
