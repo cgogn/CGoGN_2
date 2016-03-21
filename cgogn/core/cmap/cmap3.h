@@ -317,22 +317,84 @@ protected:
 		return d_quad;
 	}
 
+	/*******************************************************************************
+	 * Connectivity information
+	 *******************************************************************************/
 
 public:
 
+	inline unsigned int degree(Vertex2 v) const
+	{
+		return Inherit::degree(v);
+	}
+
+	inline unsigned int degree(Vertex v) const
+	{
+		unsigned int result = 0;
+		foreach_incident_edge(v, [&result] (Edge) { ++result; });
+		return result;
+	}
+
+	inline unsigned int codegree(Edge2 e) const
+	{
+		return Inherit::codegree(e);
+	}
+
+	inline unsigned int degree(Edge2 e) const
+	{
+		return Inherit::degree(e);
+	}
+
+	inline unsigned int codegree(Edge e) const
+	{
+		return 2;
+	}
+
+	inline unsigned int degree(Edge e) const
+	{
+		unsigned int result = 0;
+		foreach_incident_face(e, [&result] (Face) { ++result; });
+		return result;
+	}
+
+	inline unsigned int codegree(Face2 f) const
+	{
+		return Inherit::codegree(f);
+	}
+
+	inline unsigned int degree(Face2 f) const
+	{
+		return Inherit::degree(f);
+	}
+
+	inline unsigned int codegree(Face f) const
+	{
+		return codegree(Face2(f.dart));
+	}
+
 	inline unsigned int degree(Face f) const
 	{
-		return Inherit::degree(Face2(f.dart));
+		return 2;
 	}
 
-	inline bool has_degree(Face f, unsigned int degree) const
+	inline unsigned int codegree(Volume v) const
 	{
-		return Inherit::has_degree(Face2(f.dart), degree);
+		return Inherit::codegree(v);
 	}
 
-	inline bool has_degree(Face2 f, unsigned int degree) const
+	inline unsigned int degree(Volume v) const
 	{
-		return Inherit::has_degree(f, degree);
+		return 2;
+	}
+
+	inline bool has_codegree(Face2 f, unsigned int codegree) const
+	{
+		return Inherit::has_codegree(f, codegree);
+	}
+
+	inline bool has_codegree(Face f, unsigned int codegree) const
+	{
+		return Inherit::has_codegree(Face2(f.dart), codegree);
 	}
 
 protected:

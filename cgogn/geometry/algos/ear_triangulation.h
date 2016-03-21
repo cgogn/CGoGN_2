@@ -228,7 +228,7 @@ public:
 		positions_(position),
 		ears_(cmp_VP)
 	{
-		if (map_.has_degree(f,3))
+		if (map_.has_codegree(f, 3))
 		{
 			face_ = f;
 			nb_verts_ = 3;

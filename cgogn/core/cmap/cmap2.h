@@ -457,19 +457,52 @@ public:
 		}
 	}
 
-	inline unsigned int degree(Face f) const
-	{
-		return Inherit::degree(f);
-	}
+	/*******************************************************************************
+	 * Connectivity information
+	 *******************************************************************************/
 
 	inline unsigned int degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
+	inline unsigned int codegree(Edge e) const
+	{
+		return 2;
+	}
+
+	inline unsigned int degree(Edge e) const
+	{
+		return 2;
+	}
+
+	inline unsigned int codegree(Face f) const
+	{
+		return Inherit::codegree(f);
+	}
+
+	inline unsigned int degree(Face f) const
+	{
+		return 1;
+	}
+
+	inline unsigned int codegree(Volume v) const
+	{
+		unsigned int result = 0;
+		foreach_incident_face(v, [&result] (Face) { ++result; });
+		return result;
+	}
+
+	inline unsigned int degree(Volume v) const
+	{
+		return 1;
+	}
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const

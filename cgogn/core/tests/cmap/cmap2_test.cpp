@@ -211,7 +211,7 @@ TEST_F(CMap2Test, cut_face)
 
 	for (Dart d : darts_)
 	{
-		if (cmap_.degree(Face(d)) > 1u)
+		if (cmap_.codegree(Face(d)) > 1u)
 		{
 			Dart e = d; // find a second dart in the face of d (distinct from d)
 			unsigned int i = std::rand() % 10u;
