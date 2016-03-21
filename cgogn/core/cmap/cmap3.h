@@ -713,7 +713,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex2 v, const FUNC& func) const
 	{
-		Inherit::foreach_incident_edge(v,func);
+		Inherit::foreach_incident_edge(v, func);
 	}
 
 	template <typename FUNC>
@@ -729,13 +729,13 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Vertex2 v, const FUNC& func) const
 	{
-		Inherit::foreach_incident_volume(v,func);
+		Inherit::foreach_incident_volume(v, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge2 e, const FUNC& func) const
 	{
-		Inherit::foreach_incident_vertex(e,func);
+		Inherit::foreach_incident_vertex(e, func);
 	}
 
 	template <typename FUNC>
@@ -751,25 +751,25 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge2 e, const FUNC& func) const
 	{
-		Inherit::foreach_incident_volume(e,func);
+		Inherit::foreach_incident_volume(e, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face2 f, const FUNC& func) const
 	{
-		Inherit::foreach_incident_vertex(f,func);
+		Inherit::foreach_incident_vertex(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face2 f, const FUNC& func) const
 	{
-		Inherit::foreach_incident_edge(f,func);
+		Inherit::foreach_incident_edge(f, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Face2 f, const FUNC& func) const
 	{
-		Inherit::foreach_incident_volume(f,func);
+		Inherit::foreach_incident_volume(f, func);
 	}
 
 	/*******************************************************************************
@@ -1002,37 +1002,71 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex2 v, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_vertex_through_edge(v,func);
+		Inherit::foreach_adjacent_vertex_through_edge(v, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_vertex_through_face(v,func);
+		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
+		{
+			Dart vd1 = this->phi1(vd);
+			this->foreach_dart_of_orbit(Face2(vd), [&f, vd, vd1] (Dart fd)
+			{
+				// skip Vertex2 v itself and its first successor around current face
+				if (fd != vd && fd != vd1)
+					f(Vertex2(fd));
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge2 e, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_edge_through_vertex(e,func);
+		Inherit::foreach_adjacent_edge_through_vertex(e, func);
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_edge_through_face(e,func);
+		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
+		{
+			this->foreach_dart_of_orbit(Face2(ed), [&f, ed] (Dart fd)
+			{
+				// skip Edge2 e itself
+				if (fd != ed)
+					f(Edge2(fd));
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face2 f, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_face_through_vertex(f,func);
+		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
+		{
+			Dart fd1 = this->phi2(this->phi_1(fd));
+			this->foreach_dart_of_orbit(Vertex2(fd), [this, &func, fd, fd1] (Dart vd)
+			{
+				// skip Face2 f itself and its first successor around current vertex
+				if (vd != fd && vd != fd1)
+					func(Face2(vd));
+			});
+		});
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face2 f, const FUNC& func) const
 	{
-		Inherit::foreach_adjacent_face_through_vertex(f,func);
+		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		foreach_dart_of_orbit(f, [this, &func] (Dart d)
+		{
+			const Dart d2 = this->phi2(d);
+				func(Face2(d2));
+		});
 	}
 };
 
