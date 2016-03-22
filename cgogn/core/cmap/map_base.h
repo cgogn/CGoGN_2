@@ -658,7 +658,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it.index < last.index; this->topology_.next(it.index))
+		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
 			f(it);
 	}
 
@@ -686,7 +686,7 @@ public:
 		Dart it = Dart(this->topology_.begin());
 		Dart last = Dart(this->topology_.end());
 
-		while (it.index < last.index)
+		while (it != last)
 		{
 			for (unsigned int i = 0u; i < 2u; ++i)
 			{
@@ -743,7 +743,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it.index < last.index; this->topology_.next(it.index))
+		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
 		{
 			if (!f(it))
 				break;
