@@ -48,6 +48,8 @@ public:
 	using Vertex	= typename Inherit::Vertex;
 	using Face		= Cell<Orbit::PHI1>;
 
+	using Boundary = Vertex;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -351,7 +353,7 @@ protected:
 public:
 
 
-	inline uint32 degree(Vertex v) const
+	inline uint32 degree(Vertex ) const
 	{
 		return 2;
 	}

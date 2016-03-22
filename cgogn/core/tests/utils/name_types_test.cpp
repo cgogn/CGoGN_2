@@ -51,8 +51,17 @@ TEST(NameTypesTest, NumTypes)
 	EXPECT_EQ(cgogn::name_of_type(int32()), "int");
 
 	EXPECT_EQ(cgogn::name_of_type(uint32()), "unsigned int");
+
+// TODO A TIRER AU CLAIR !!
+#ifdef _MSC_VER
+	EXPECT_EQ(cgogn::name_of_type(int64()), "long long");
+	EXPECT_EQ(cgogn::name_of_type(uint64()), "unsigned long long");
+#else
 	EXPECT_EQ(cgogn::name_of_type(int64()), "long");
 	EXPECT_EQ(cgogn::name_of_type(uint64()), "unsigned long");
+#endif
+
+
 	EXPECT_EQ(cgogn::name_of_type(llint()), "long long");
 	EXPECT_EQ(cgogn::name_of_type(ullint()), "unsigned long long");
 

@@ -46,6 +46,7 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
+	using Boundary = Vertex;  // just for compilation
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

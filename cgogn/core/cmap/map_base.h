@@ -48,7 +48,8 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-auto nomask = [] (Dart) { return true; };
+//auto nomask = [] (Dart) { return true; };
+#define MASK_NOMASK [] (Dart) { return true; }
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class MapBase : public MapBaseData<MAP_TRAITS>
@@ -669,12 +670,12 @@ protected:
 	 * \Brief Specialized methods for the nomask lambda to iterate over all darts.
 	 * All darts are traversed without any MASK filtering.
 	 */
-	inline Dart begin(const decltype(nomask)&) const
+	inline Dart begin() const
 	{
 		return Dart(this->topology_.begin());
 	}
 
-	inline void next(Dart& d, const decltype(nomask)&) const
+	inline void next(Dart& d) const
 	{
 		this->topology_.next(d.index);
 	}
@@ -701,7 +702,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_nomask(const FUNC& f) const
 	{
-		foreach_dart(f, nomask);
+		foreach_dart(f, MASK_NOMASK);
 	}
 
 	template <typename FUNC, typename MASK>
@@ -730,7 +731,7 @@ public:
 	template <typename FUNC>
 	inline void parallel_foreach_dart_nomask(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, nomask);
+		parallel_foreach_dart(f, MASK_NOMASK);
 	}
 
 	template <typename FUNC, typename MASK>
@@ -824,7 +825,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart_until_nomask(const FUNC& f) const
 	{
-		foreach_dart_until(f, nomask);
+		foreach_dart_until(f, MASK_NOMASK);
 	}
 
 	template <typename FUNC, typename MASK>
@@ -865,7 +866,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_nomask(const FUNC& f) const
 	{
-		foreach_cell<STRATEGY>(f, nomask);
+		foreach_cell<STRATEGY>(f, MASK_NOMASK);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -914,7 +915,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell_nomask(const FUNC& f) const
 	{
-		parallel_foreach_cell<STRATEGY>(f, nomask);
+		parallel_foreach_cell<STRATEGY>(f, MASK_NOMASK);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -969,7 +970,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until_nomask(const FUNC& f) const
 	{
-		foreach_cell_until<STRATEGY>(f, nomask);
+		foreach_cell_until<STRATEGY>(f, MASK_NOMASK);
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>

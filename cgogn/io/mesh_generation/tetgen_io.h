@@ -375,7 +375,7 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 
 	//for each facet
 	i = 0u;
-	map.template foreach_cell([&output,&i,&map](Face face)
+	map.foreach_cell([&output,&i,&map](Face face)
 	{
 		tetgenio::facet* f = &(output->facetlist[i]);
 		tetgenio::init(f);

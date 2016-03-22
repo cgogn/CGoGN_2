@@ -693,9 +693,8 @@ public:
 		for (uint32 * const ptr : table_data_)
 		{
 //#pragma omp for
-//			for (int32 j = 0; j < int32(CHUNKSIZE/32); ++j)
-//				ptr[j] = 0u;
-			std::fill_n(ptr,CHUNKSIZE/32,0u);
+			for (int32 j = 0; j < int32(CHUNKSIZE/32); ++j)
+				ptr[j] = 0u;
 		}
 	}
 

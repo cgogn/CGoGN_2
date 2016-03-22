@@ -345,7 +345,7 @@ public:
 		return Inherit::degree(e);
 	}
 
-	inline uint32 codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}

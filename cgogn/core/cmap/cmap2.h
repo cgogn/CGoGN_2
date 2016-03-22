@@ -466,7 +466,7 @@ public:
 		return this->nb_darts_of_orbit(v);
 	}
 
-	inline uint32 codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}
@@ -484,7 +484,7 @@ public:
 		return Inherit::codegree(f);
 	}
 
-	inline uint32 degree(Face f) const
+	inline uint32 degree(Face) const
 	{
 		return 1;
 	}
