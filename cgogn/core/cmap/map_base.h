@@ -618,6 +618,7 @@ protected:
 	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts.
 	 * A MASK is a callable that determines if a dart should be traversed or skipped.
 	 * It returns false when a dart should be skipped, true in other cases.
+	 * These functions also skip boundary darts.
 	 */
 	template <typename MASK>
 	inline Dart begin(const MASK& mask) const
@@ -649,7 +650,7 @@ protected:
 public:
 
 	/**
-	 * \brief apply a function on each dart of the map
+	 * \brief apply a function on each dart of the map (including boundary darts)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
@@ -732,11 +733,10 @@ public:
 	}
 
 	/**
-	 * \brief apply a function on each dart of the map and stops when the function returns false
+	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
-
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f) const
 	{
@@ -751,7 +751,8 @@ public:
 	}
 
 	/**
-	 * \brief apply a function on each orbit of the map
+	 * \brief apply a function on each cell of the map (boundary cells excluded)
+	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
@@ -831,7 +832,8 @@ public:
 	}
 
 	/**
-	 * \brief apply a function on each orbit of the map and stops when the function returns false
+	 * \brief apply a function on each cell of the map (boundary cells excluded) and stops when the function returns false
+	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
