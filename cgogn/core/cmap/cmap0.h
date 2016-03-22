@@ -34,7 +34,7 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -46,6 +46,7 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
+	using Boundary = Vertex;  // just for compilation
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

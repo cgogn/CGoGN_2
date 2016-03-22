@@ -53,10 +53,10 @@ class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_expl_v_;
-	int unif_light_position_;
-	int unif_plane_clip_;
-	int unif_color_;
+	GLint unif_expl_v_;
+	GLint unif_light_position_;
+	GLint unif_plane_clip_;
+	GLint unif_color_;
 
 
 public:
@@ -78,7 +78,7 @@ public:
 	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color = nullptr);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color = nullptr);
 };
 
 } // namespace rendering

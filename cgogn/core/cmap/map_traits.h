@@ -32,7 +32,7 @@ namespace cgogn
 
 struct DefaultMapTraits
 {
-	static const unsigned int CHUNK_SIZE = DEFAULT_CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = DEFAULT_CHUNK_SIZE;
 };
 
 } // namespace cgogn

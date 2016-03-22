@@ -68,15 +68,15 @@ protected:
 
 
 		// read vertices position
-		std::vector<unsigned int> vertices_id;
+		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
-		for (unsigned int i = 0; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0; i < this->nb_vertices_; ++i)
 		{
 			VEC3 pos;
 			pid.vertex_position(i, pos);
 
-			unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
+			uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
 
 			vertices_id.push_back(vertex_id);
@@ -93,14 +93,14 @@ protected:
 		// read faces (vertex indices)
 		this->faces_nb_edges_.reserve(this->nb_faces_);
 		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
-		for (unsigned int i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0; i < this->nb_faces_; ++i)
 		{
-			unsigned int n = pid.get_face_valence(i);
+			uint32 n = pid.get_face_valence(i);
 			this->faces_nb_edges_.push_back(n);
 			int* indices = pid.get_face_indices(i);
-			for (unsigned int j = 0; j < n; ++j)
+			for (uint32 j = 0; j < n; ++j)
 			{
-				unsigned int index = (unsigned int)(indices[j]);
+				uint32 index = (uint32)(indices[j]);
 				this->faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 		}

@@ -49,7 +49,7 @@ class EarTriangulation
 	public:
 		using VPMS = std::multiset<VertexPoly*, bool(*)(VertexPoly*,VertexPoly*)>;
 
-		int id;
+		int32 id;
 		Vertex vert_;
 		Scalar value_;
 		Scalar length_;
@@ -99,7 +99,7 @@ class EarTriangulation
 	bool convex_;
 
 	/// number off vertices
-	unsigned int nb_verts_;
+	uint32 nb_verts_;
 
 	/// initial face
 	Face face_;
@@ -274,7 +274,7 @@ public:
 		{
 			// second pass with no test of intersections with polygons
 			vpp = prem;
-			for (unsigned int i = 0; i < nb_verts_; ++i)
+			for (uint32 i = 0; i < nb_verts_; ++i)
 			{
 				vpp->ear_ = ears_.insert(vpp);
 				vpp = vpp->next_;
@@ -284,7 +284,7 @@ public:
 		{
 			// second pass test intersections with polygons
 			vpp = prem;
-			for (unsigned int i = 0; i < nb_verts_; ++i)
+			for (uint32 i = 0; i < nb_verts_; ++i)
 			{
 				if (vpp->value_ < 5.0f)
 					compute_ear_intersection(vpp);
@@ -298,7 +298,7 @@ public:
 	 * @brief compute table of vertices indices (embeddings) of triangulation
 	 * @param table_indices
 	 */
-	void  compute_indices(std::vector<unsigned int>& table_indices)
+	void  compute_indices(std::vector<uint32>& table_indices)
 	{
 		table_indices.reserve((nb_verts_-2)*3);
 
@@ -393,7 +393,7 @@ public:
  * @param table_indices table of indices (vertex embedding) to fill (append)
  */
 template <typename VEC3, typename MAP>
-static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<unsigned int>& table_indices)
+static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<uint32>& table_indices)
 {
 	EarTriangulation<VEC3,MAP> tri(map, f, position);
 	tri.compute_indices(table_indices);

@@ -52,14 +52,14 @@ ThreadPool::~ThreadPool()
 ThreadPool::ThreadPool()
 	: stop_(false)
 {
-	for(unsigned int i = 0u; i< cgogn::get_nb_threads() -1u;++i)
+	for(uint32 i = 0u; i< cgogn::get_nb_threads() -1u;++i)
 		workers_.emplace_back(
 					[this,i]
 		{
 			cgogn::thread_start();
 			for(;;)
 			{
-				std::function<void(unsigned int)> task;
+				std::function<void(uint32)> task;
 
 				{
 					std::unique_lock<std::mutex> lock(this->queue_mutex_);

@@ -46,7 +46,7 @@ class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_color_;
+	GLint unif_color_;
 
 public:
 
@@ -64,7 +64,7 @@ public:
 	 * @param vbo_pos pointer on position vbo (XYZ)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride=0, unsigned first=0);
+	bool set_vao(uint32 i, VBO* vbo_pos, uint32 stride=0, unsigned first=0);
 };
 
 } // namespace rendering

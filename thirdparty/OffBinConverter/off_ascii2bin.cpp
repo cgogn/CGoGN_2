@@ -5,6 +5,8 @@
 #include <string>
 
 #include <core/utils/endian.h>
+#include <core/utils/definitions.h>
+using namespace cgogn::numerics;
 
 int main(int argc, char **argv)
 {
@@ -18,9 +20,9 @@ int main(int argc, char **argv)
 	std::ofstream ofs(argv[2],std::ios::out|std::ofstream::binary);
 
 	std::string str;
-	unsigned int nv;
-	unsigned int np;
-	unsigned int ne;
+	uint32 nv;
+	uint32 np;
+	uint32 ne;
 
 	ifs >> str;
 
@@ -34,9 +36,9 @@ int main(int argc, char **argv)
 	ifs >> np;
 	ifs >> ne;
 
-	unsigned int nv_be = cgogn::swap_endianness_native_big(nv);
-	unsigned int np_be = cgogn::swap_endianness_native_big(np);
-	unsigned int ne_be = cgogn::swap_endianness_native_big(ne);
+	uint32 nv_be = cgogn::swap_endianness_native_big(nv);
+	uint32 np_be = cgogn::swap_endianness_native_big(np);
+	uint32 ne_be = cgogn::swap_endianness_native_big(ne);
 
 
 	ofs << "OFF BINARY"<< std::endl;
@@ -46,13 +48,13 @@ int main(int argc, char **argv)
 
 	float* vertices = new float[3*nv];
 
-	for (unsigned int i=0; i<nv; ++i)
+	for (uint32 i=0; i<nv; ++i)
 	{
 		ifs >> vertices[3*i]  >> vertices[3*i+1] >> vertices[3*i+2];
 	}
 
-	unsigned int* ptr = reinterpret_cast<unsigned int*>(vertices);
-	for (unsigned int i=0; i<3*nv;++i)
+	uint32* ptr = reinterpret_cast<uint32*>(vertices);
+	for (uint32 i=0; i<3*nv;++i)
 	{
 		*ptr = cgogn::swap_endianness_native_big(*ptr);
 		ptr++;
@@ -63,24 +65,24 @@ int main(int argc, char **argv)
 
 	delete[] vertices;
 
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(8*1024*1024);
 
-	for (unsigned int i=0; i<np; ++i)
+	for (uint32 i=0; i<np; ++i)
 	{
-		unsigned int nb;
+		uint32 nb;
 		ifs >> nb;
 		prim.push_back(nb);
-		for (unsigned int j=0; j<nb; ++j)
+		for (uint32 j=0; j<nb; ++j)
 		{
-			unsigned int ind;
+			uint32 ind;
 			ifs >> ind;
 			prim.push_back(ind);
 		}
 	}
 
-	ptr = reinterpret_cast<unsigned int*>(&(prim[0]));
-	for (unsigned int i=0; i<prim.size();++i)
+	ptr = reinterpret_cast<uint32*>(&(prim[0]));
+	for (uint32 i=0; i<prim.size();++i)
 	{
 		*ptr = cgogn::swap_endianness_native_big(*ptr);
 		ptr++;

@@ -38,7 +38,7 @@ class CellMarker_T
 
 public:
 
-	static const unsigned int CHUNKSIZE = MAP::CHUNKSIZE;
+	static const uint32 CHUNKSIZE = MAP::CHUNKSIZE;
 	using Self = CellMarker_T<MAP, ORBIT>;
 	using Map = MAP;
 	using ChunkArrayBool = ChunkArray<CHUNKSIZE, bool>;
@@ -137,7 +137,7 @@ public:
 
 protected:
 
-	std::vector<unsigned int>* marked_cells_;
+	std::vector<uint32>* marked_cells_;
 
 public:
 
@@ -168,12 +168,12 @@ public:
 	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
-		for (unsigned int i : *(this->marked_cells_))
+		for (uint32 i : *(this->marked_cells_))
 			this->mark_attribute_->set_false(i);
 		marked_cells_->clear();
 	}
 
-	inline const std::vector<unsigned int>* get_marked_cells() const
+	inline const std::vector<uint32>* get_marked_cells() const
 	{
 		return marked_cells_;
 	}

@@ -37,7 +37,7 @@ class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -215,7 +215,7 @@ protected:
 	 * Two 1-face are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
-	Dart add_face_topo(unsigned int size)
+	Dart add_face_topo(uint32 size)
 	{
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
@@ -243,7 +243,7 @@ public:
 	 * More precisely :
 	 *  - a Face attribute is created, if needed, for the new face.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -461,17 +461,17 @@ public:
 	 * Connectivity information
 	 *******************************************************************************/
 
-	inline unsigned int degree(Vertex v) const
+	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
-	inline unsigned int codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}
 
-	inline unsigned int degree(Edge e) const
+	inline uint32 degree(Edge e) const
 	{
 		if (this->is_boundary(e.dart) || this->is_boundary(phi2(e.dart)))
 			return 1;
@@ -479,19 +479,19 @@ public:
 			return 2;
 	}
 
-	inline unsigned int codegree(Face f) const
+	inline uint32 codegree(Face f) const
 	{
 		return Inherit::codegree(f);
 	}
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face) const
 	{
 		return 1;
 	}
 
-	inline unsigned int codegree(Volume v) const
+	inline uint32 codegree(Volume v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
 		return result;
 	}
@@ -529,7 +529,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet
@@ -601,7 +601,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet

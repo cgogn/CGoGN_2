@@ -184,7 +184,7 @@ void ShaderRoundPoint::set_width(float wpix)
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, unsigned int stride, unsigned first)
+bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{

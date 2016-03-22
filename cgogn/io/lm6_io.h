@@ -85,7 +85,7 @@ protected:
 		GmfGotoKwd(mesh_index, GmfVertices);
 		for (int i = 0 ; i < number_of_vertices; ++i)
 		{
-			unsigned int idx = this->vertex_attributes_.template insert_lines<1>();
+			uint32 idx = this->vertex_attributes_.template insert_lines<1>();
 			std::array<float, 3> v;
 			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
 			position->operator [](idx)[0] = v[0];

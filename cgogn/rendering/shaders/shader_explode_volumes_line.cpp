@@ -112,7 +112,7 @@ void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
-bool ShaderExplodeVolumesLine::set_vao(unsigned int i, VBO* vbo_pos)
+bool ShaderExplodeVolumesLine::set_vao(uint32 i, VBO* vbo_pos)
 {
 	if (i >= vaos_.size())
 	{

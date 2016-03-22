@@ -40,13 +40,13 @@ class VBO
 {
 protected:
 
-	unsigned int nb_vectors_;
-	unsigned int vector_dimension_;
+	uint32 nb_vectors_;
+	uint32 vector_dimension_;
 	QOpenGLBuffer buffer_;
 
 public:
 
-	inline VBO(unsigned int vec_dim) :
+	inline VBO(uint32 vec_dim) :
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{
@@ -75,10 +75,10 @@ public:
 	 * @param nb_vectors number of vectors
 	 * @param vector_dimension_ number of component of each vector
 	 */
-	inline void allocate(int nb_vectors, unsigned int vector_dimension)
+	inline void allocate(uint32 nb_vectors, uint32 vector_dimension)
 	{
 		buffer_.bind();
-		unsigned int total = nb_vectors * vector_dimension;
+		uint32 total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
 			buffer_.allocate(total * sizeof(float));
 		nb_vectors_ = nb_vectors;
@@ -114,7 +114,7 @@ public:
 	 * @param nb number of bytes to copy
 	 * @param src source pointer
 	 */
-	inline void copy_data(unsigned int offset, unsigned int nb, void* src)
+	inline void copy_data(uint32 offset, uint32 nb, void* src)
 	{
 		buffer_.write(offset, src, nb);
 	}
@@ -122,12 +122,12 @@ public:
 	/**
 	 * @brief dimension of vectors stored in buffer
 	 */
-	inline int vector_dimension() const
+	inline uint32 vector_dimension() const
 	{
 		return vector_dimension_;
 	}
 
-	unsigned int size() const
+	uint32 size() const
 	{
 		return nb_vectors_;
 	}
@@ -147,19 +147,19 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 
 	std::vector<void*> chunk_addr;
-	unsigned int byte_chunk_size;
-	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
-	const unsigned int vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
+	uint32 byte_chunk_size;
+	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
-	const unsigned int vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float);
+	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value)
 	{
 		// copy
 		vbo.bind();
-		for (unsigned int i = 0; i < nb_chunks; ++i)
+		for (uint32 i = 0; i < nb_chunks; ++i)
 			vbo.copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
 		vbo.release();
 	}
@@ -167,12 +167,12 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 	{
 		// copy (after conversion to float)
 		float* float_buffer = new float[ATTR::CHUNKSIZE * vec_dim];
-		for (unsigned int i = 0; i < nb_chunks; ++i)
+		for (uint32 i = 0; i < nb_chunks; ++i)
 		{
 			// transform double into float
 			float* fit = float_buffer;
 			double* src = reinterpret_cast<double*>(chunk_addr[i]);
-			for (unsigned int j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
+			for (uint32 j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo.bind();
 			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float), ATTR::CHUNKSIZE * vec_dim * sizeof(float),float_buffer);
@@ -202,8 +202,8 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 	std::vector<void*> chunk_addr;
-	unsigned int byte_chunk_size;
-	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	uint32 byte_chunk_size;
+	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	using Vec2f = std::array<float,2>;
@@ -212,7 +212,7 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
-	unsigned int vec_dim = 0;
+	uint32 vec_dim = 0;
 	if (check_func_return_type(FUNC,float) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
@@ -227,10 +227,10 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
-	for (unsigned int i = 0; i < nb_chunks; ++i)
+	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
-		for (unsigned int j = 0; j < ATTR::CHUNKSIZE; ++j)
+		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
 	vbo.release_pointer();
@@ -264,8 +264,8 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 	std::vector<void*> chunk_addr;
-	unsigned int byte_chunk_size;
-	unsigned int nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	uint32 byte_chunk_size;
+	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 
 	const typename ATTR::TChunkArray* ca2 = attr2.get_data();
 	std::vector<void*> chunk_addr2;
@@ -278,7 +278,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
-	unsigned int vec_dim = 0;
+	uint32 vec_dim = 0;
 	if (check_func_return_type(FUNC,float) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
@@ -295,11 +295,11 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	// out type conversion
 	using OutputConvert = typename function_traits<FUNC>::result_type;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
-	for (unsigned int i = 0; i < nb_chunks; ++i)
+	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
 		InputConvert2* typed_chunk2 = static_cast<InputConvert2*>(chunk_addr2[i]);
-		for (unsigned int j = 0; j < ATTR::CHUNKSIZE; ++j)
+		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}
 	vbo.release_pointer();
@@ -315,7 +315,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
  * @param convert conversion lambda  -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename FUNC>
-void generate_vbo(const ATTR& attr, const std::vector<unsigned int>& indices, VBO& vbo, const FUNC& convert)
+void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
@@ -331,7 +331,7 @@ void generate_vbo(const ATTR& attr, const std::vector<unsigned int>& indices, VB
 	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
-	unsigned int vec_dim = 0;
+	uint32 vec_dim = 0;
 	if (check_func_return_type(FUNC,float) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
@@ -342,13 +342,13 @@ void generate_vbo(const ATTR& attr, const std::vector<unsigned int>& indices, VB
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(static_cast<unsigned int>(indices.size()), vec_dim);
+	vbo.allocate(uint32(indices.size()), vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
 
-	for (unsigned int i: indices)
+	for (uint32 i: indices)
 		 *dst++ = convert(attr[i]);
 
 	vbo.release_pointer();

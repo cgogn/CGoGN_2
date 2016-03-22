@@ -42,6 +42,10 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+
+//USING_CGOGN_NUMERICS;
+using namespace cgogn::numerics;
+
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
@@ -193,9 +197,9 @@ void Viewer::init()
 	vbo_color_ = new cgogn::rendering::VBO(3);
 
 	// indices of vertices emb (f1_v1,f1_v2,f1_v3, f2_v1,f2_v2,f2_v3, f3_v1...)
-	std::vector<unsigned int> ind_v;
+	std::vector<uint32> ind_v;
 	// indices of faces emb (f1,f1,f1, f2,f2,f2, f3,f3,f3...)
-	std::vector<unsigned int> ind_f;
+	std::vector<uint32> ind_f;
 
 	// create indices ( need to be done only after topo modifications
 	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);

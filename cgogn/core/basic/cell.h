@@ -38,7 +38,7 @@
 namespace cgogn
 {
 
-enum Orbit: unsigned int
+enum Orbit: uint32
 {
 	DART = 0,
 	PHI1,
@@ -52,7 +52,7 @@ enum Orbit: unsigned int
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
-static const unsigned int EMBNULL = UINT_MAX;
+static const uint32 EMBNULL = UINT_MAX;
 
 inline std::string orbit_name(Orbit orbit)
 {
