@@ -48,8 +48,6 @@ enum TraversalStrategy
 	FORCE_TOPO_CACHE
 };
 
-auto nomask = [] (Dart) { return true; };
-
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class MapBase : public MapBaseData<MAP_TRAITS>
 {
@@ -340,7 +338,7 @@ protected:
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart_nomask([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
+		foreach_dart([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
 
 		// initialize the indices of the existing orbits
 		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
@@ -410,38 +408,36 @@ public:
 			counter[i] = 0;
 
 		// Check that the indexation of cells is correct
-		foreach_cell_until_nomask<FORCE_DART_MARKING>(
-			[&] (CellType c)
+		foreach_cell_until_nomask<FORCE_DART_MARKING>([&] (CellType c)
+		{
+			unsigned int idx = this->get_embedding(c);
+			// check used indices are valid
+			if (idx == EMBNULL)
 			{
-				unsigned int idx = this->get_embedding(c);
-				// check used indices are valid
-				if (idx == EMBNULL)
-				{
-					result = false;
-					std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
-				}
-				// ensure that two cells do not share the same index
-				if (counter[idx] > 0)
-				{
-					result = false;
-					std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
-				}
-				counter[idx] = 1;
-				// check all darts of the cell use the same index (distinct to EMBNULL)
-				cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
-				{
-					if (this->get_embedding(CellType(d)) != idx)
-						result = false;
-					if (!result)
-						std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
-				});
-
+				result = false;
+				std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
 				return result;
 			}
-		);
+			// ensure that two cells do not share the same index
+			if (counter[idx] > 0)
+			{
+				result = false;
+				std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			}
+			counter[idx] = 1;
+			// check all darts of the cell use the same index (distinct to EMBNULL)
+			cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+			{
+				if (this->get_embedding(CellType(d)) != idx)
+					result = false;
+				if (!result)
+					std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
+				return result;
+			});
+
+			return result;
+		});
 		// check that all cells present in the attribute handler are used
 		if (result)
 		{
@@ -513,9 +509,10 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
-		foreach_cell_nomask<FORCE_CELL_MARKING>(
-			[this] (Cell<ORBIT> c) { (*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart; }
-		);
+		foreach_cell_nomask<FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
+		{
+			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
+		});
 	}
 
 	template <Orbit ORBIT>
@@ -634,7 +631,7 @@ protected:
 
 	/*!
 	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts.
-	 * A MASK is a callable that determine if a dart should be traversed or skipped.
+	 * A MASK is a callable that determines if a dart should be traversed or skipped.
 	 * It returns false when a dart should be skipped, true in other cases.
 	 */
 	template <typename MASK>
@@ -665,15 +662,14 @@ protected:
 	}
 
 	/*!
-	 * \Brief Specialized methods for the nomask lambda to iterate over all darts.
-	 * All darts are traversed without any MASK filtering.
+	 * All darts are traversed without any filtering.
 	 */
-	inline Dart begin(const decltype(nomask)&) const
+	inline Dart begin() const
 	{
 		return Dart(this->topology_.begin());
 	}
 
-	inline void next(Dart& d, const decltype(nomask)&) const
+	inline void next(Dart& d) const
 	{
 		this->topology_.next(d.index);
 	}
@@ -688,57 +684,17 @@ public:
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
-		foreach_dart(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void foreach_boundary_dart(const FUNC& f) const
-	{
-		foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_nomask(const FUNC& f) const
-	{
-		foreach_dart(f, nomask);
-	}
-
-	template <typename FUNC, typename MASK>
-	inline void foreach_dart(const FUNC& f, const MASK& mask) const
-	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
 
-		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
+		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
 			f(it);
 	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
-		parallel_foreach_dart(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void parallel_foreach_boundary_dart(const FUNC& f) const
-	{
-		parallel_foreach_dart(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void parallel_foreach_dart_nomask(const FUNC& f) const
-	{
-		parallel_foreach_dart(f, nomask);
-	}
-
-	template <typename FUNC, typename MASK>
-	inline void parallel_foreach_dart(const FUNC& f, const MASK& mask) const
-	{
 		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
 		static_assert(check_func_ith_parameter_type(FUNC, 1, unsigned int), "Wrong function second parameter type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
 		using Future = std::future<typename std::result_of<FUNC(Dart, unsigned int)>::type>;
 		using VecDarts = std::vector<Dart>;
@@ -755,7 +711,7 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		Dart it = begin(mask);
+		Dart it = begin();
 		Dart last = end();
 
 		while (it.index < last.index)
@@ -771,7 +727,7 @@ public:
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 					{
 						darts.push_back(it);
-						next(it, mask);
+						next(it);
 					}
 
 					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
@@ -808,33 +764,14 @@ public:
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
+
 	template <typename FUNC>
 	inline void foreach_dart_until(const FUNC& f) const
 	{
-		foreach_dart_until(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void foreach_boundary_dart_until(const FUNC& f) const
-	{
-		foreach_dart_until(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_until_nomask(const FUNC& f) const
-	{
-		foreach_dart_until(f, nomask);
-	}
-
-	template <typename FUNC, typename MASK>
-	inline void foreach_dart_until(const FUNC& f, const MASK& mask) const
-	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
-		static_assert(check_func_parameter_type(MASK, Dart), "Wrong mask parameter type");
-		static_assert(check_func_return_type(MASK, bool), "Wrong mask return type");
 
-		for (Dart it = begin(mask), last = end(); it.index < last.index; next(it, mask))
+		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
 		{
 			if (!f(it))
 				break;
@@ -864,7 +801,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_nomask(const FUNC& f) const
 	{
-		foreach_cell<STRATEGY>(f, nomask);
+		foreach_cell<STRATEGY>(f, [] (Dart) { return true; });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -913,7 +850,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell_nomask(const FUNC& f) const
 	{
-		parallel_foreach_cell<STRATEGY>(f, nomask);
+		parallel_foreach_cell<STRATEGY>(f, [] (Dart) { return true; });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>
@@ -968,7 +905,7 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until_nomask(const FUNC& f) const
 	{
-		foreach_cell_until<STRATEGY>(f, nomask);
+		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename MASK>

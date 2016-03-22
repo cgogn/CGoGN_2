@@ -195,11 +195,11 @@ public:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
-		map_.foreach_dart_nomask( [&] (Dart d)
-			{
-				if (map_.phi3(d) == d)
-					fix_point_darts->push_back(d);
-			});
+		map_.foreach_dart( [&] (Dart d)
+		{
+			if (map_.phi3(d) == d)
+				fix_point_darts->push_back(d);
+		});
 		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi3(d) == d)
