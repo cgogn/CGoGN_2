@@ -1031,7 +1031,7 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func, this] (Dart ed)
+		foreach_dart_of_orbit(e, [this, &func] (Dart ed)
 		{
 			this->foreach_dart_of_orbit(Face2(ed), [&func, ed] (Dart fd)
 			{
