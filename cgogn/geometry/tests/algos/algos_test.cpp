@@ -177,7 +177,6 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 
 	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_, f, vertex_position);
 	EXPECT_TRUE(this->map2_.template nb_cells<Face::ORBIT>() == 3);
-	EXPECT_TRUE(this->map2_.template nb_cells_nomask<Face::ORBIT>() == 4);
-	EXPECT_TRUE(this->map2_.nb_boundary_cells() == 1);
+//	EXPECT_TRUE(this->map2_.nb_boundary_cells() == 1);
 	EXPECT_TRUE(this->map2_.template nb_cells<Edge::ORBIT>() == 7);
 }

@@ -341,7 +341,7 @@ protected:
 		foreach_dart([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
 
 		// initialize the indices of the existing orbits
-		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
+		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
 		cgogn_assert(check_map_integrity());
 	}
@@ -372,7 +372,7 @@ public:
 		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_counter");
 		for (unsigned int& i : counter) i = 0;
 
-		foreach_cell_nomask<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
+		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
 		{
 			if (counter[c] > 0)
 				this->new_orbit_embedding(c);
@@ -408,7 +408,7 @@ public:
 			counter[i] = 0;
 
 		// Check that the indexation of cells is correct
-		foreach_cell_until_nomask<FORCE_DART_MARKING>([&] (CellType c)
+		foreach_cell_until<FORCE_DART_MARKING>([&] (CellType c)
 		{
 			unsigned int idx = this->get_embedding(c);
 			// check used indices are valid
@@ -509,7 +509,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_topo_cache_enabled<ORBIT>(), "Trying to update a disabled global topo cache");
 
-		foreach_cell_nomask<FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
+		foreach_cell<FORCE_CELL_MARKING>([this] (Cell<ORBIT> c)
 		{
 			(*this->global_topo_cache_[ORBIT])[this->get_embedding(c)] = c.dart;
 		});
@@ -569,27 +569,12 @@ public:
 	template <Orbit ORBIT>
 	unsigned int nb_cells() const
 	{
-		unsigned int result = 0;
-		foreach_cell([&result] (Cell<ORBIT>) { ++result; });
-		return result;
-	}
-
-	unsigned int nb_boundary_cells() const
-	{
-		unsigned int result = 0;
-		foreach_boundary_cell([&result] (typename ConcreteMap::Boundary) { ++result; });
-		return result;
-	}
-
-	template <Orbit ORBIT>
-	unsigned int nb_cells_nomask() const
-	{
 		if (this->template is_embedded<ORBIT>())
 			return this->attributes_[ORBIT].size();
 		else
 		{
 			unsigned int result = 0;
-			foreach_cell_nomask([&result] (Cell<ORBIT>) { ++result; });
+			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
 	}
@@ -640,7 +625,7 @@ protected:
 		Dart d = Dart(this->topology_.begin());
 		Dart end = Dart(this->topology_.end());
 
-		while (d != end && !mask(d))
+		while (d != end && (is_boundary(d) || !mask(d)))
 			this->topology_.next(d.index);
 
 		return d;
@@ -653,25 +638,12 @@ protected:
 
 		do {
 			this->topology_.next(d.index);
-		} while (d != end && !mask(d));
+		} while (d != end && (is_boundary(d) || !mask(d)));
 	}
 
 	inline Dart end() const
 	{
 		return Dart(this->topology_.end());
-	}
-
-	/*!
-	 * All darts are traversed without any filtering.
-	 */
-	inline Dart begin() const
-	{
-		return Dart(this->topology_.begin());
-	}
-
-	inline void next(Dart& d) const
-	{
-		this->topology_.next(d.index);
 	}
 
 public:
@@ -686,7 +658,7 @@ public:
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it.index < last.index; this->topology_.next(it.index))
 			f(it);
 	}
 
@@ -711,8 +683,8 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		Dart it = begin();
-		Dart last = end();
+		Dart it = Dart(this->topology_.begin());
+		Dart last = Dart(this->topology_.end());
 
 		while (it.index < last.index)
 		{
@@ -727,7 +699,7 @@ public:
 					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 					{
 						darts.push_back(it);
-						next(it);
+						this->topology_.next(it.index);
 					}
 
 					futures[i].push_back(thread_pool->enqueue([&darts, &f] (unsigned int th_id)
@@ -771,7 +743,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it.index < last.index; this->topology_.next(it.index))
 		{
 			if (!f(it))
 				break;
@@ -785,21 +757,6 @@ public:
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell(const FUNC& f) const
-	{
-		foreach_cell<STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_boundary_cell(const FUNC& f) const
-	{
-		using CellType = typename function_traits<FUNC>::template arg<0>::type;
-		static_assert(std::is_same<CellType, typename ConcreteMap::Boundary>::value, "Bad boundary orbit");
-
-		foreach_cell<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_nomask(const FUNC& f) const
 	{
 		foreach_cell<STRATEGY>(f, [] (Dart) { return true; });
 	}
@@ -837,18 +794,6 @@ public:
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
-	{
-		parallel_foreach_cell<STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void parallel_foreach_boundary_cell(const FUNC& f) const
-	{
-		parallel_foreach_cell<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void parallel_foreach_cell_nomask(const FUNC& f) const
 	{
 		parallel_foreach_cell<STRATEGY>(f, [] (Dart) { return true; });
 	}
@@ -892,18 +837,6 @@ public:
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until(const FUNC& f) const
-	{
-		foreach_cell_until<STRATEGY>(f, [this] (Dart d) { return !this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_boundary_cell_until(const FUNC& f) const
-	{
-		foreach_cell_until<STRATEGY>(f, [this] (Dart d) { return this->is_boundary(d); });
-	}
-
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_until_nomask(const FUNC& f) const
 	{
 		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
 	}
