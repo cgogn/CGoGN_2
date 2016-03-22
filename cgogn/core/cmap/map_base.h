@@ -400,17 +400,13 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		AttributeHandler<unsigned int, ORBIT> counter = add_attribute<unsigned int, ORBIT>("__tmp_marker");
+		AttributeHandler<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const typename Inherit::template ChunkArrayContainer<unsigned int>& container = this->attributes_[ORBIT];
 
-		// a marker is initialized to false for each "used" index of the container
-		for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
-			counter[i] = 0;
-
 		// Check that the indexation of cells is correct
-		foreach_cell_until_nomask<FORCE_DART_MARKING>(
+		foreach_cell<FORCE_DART_MARKING>(
 			[&] (CellType c)
 			{
 				unsigned int idx = this->get_embedding(c);
@@ -418,40 +414,35 @@ public:
 				if (idx == EMBNULL)
 				{
 					result = false;
-					std::cerr << "EMBNULL found in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
+					std::cerr << "EMBNULL found for dart "<< c << " in orbit " << orbit_name(ORBIT) << std::endl;
+					return;
 				}
-				// ensure that two cells do not share the same index
-				if (counter[idx] > 0)
-				{
-					result = false;
-					std::cerr << "Two cells with same index in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
-				}
-				counter[idx] = 1;
+				counter[idx].push_back(c);
 				// check all darts of the cell use the same index (distinct to EMBNULL)
-				cmap->foreach_dart_of_orbit_until(c, [&] (Dart d)
+				cmap->foreach_dart_of_orbit(c, [&] (Dart d)
 				{
-					if (this->get_embedding(CellType(d)) != idx)
-						result = false;
-					if (!result)
-						std::cerr << "Different indices in orbit " << orbit_name(ORBIT) << std::endl;
-					return result;
+					const unsigned int emb_d = this->get_embedding(CellType(d));
+					if (emb_d != idx)
+						std::cerr << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT) << std::endl;
 				});
-
-				return result;
 			}
 		);
 		// check that all cells present in the attribute handler are used
-		if (result)
 		{
 			for (unsigned int i = container.begin(), end = container.end(); i != end; container.next(i))
 			{
-				if (counter[i] == 0)
+				if (counter[i].empty())
 				{
-					result = false;
-					std::cerr << "Some cells are not used in orbit " << orbit_name(ORBIT) << std::endl;
-					break;
+					result =false;
+					std::cerr << "Cell #" << i << " is not used in orbit " << orbit_name(ORBIT) << std::endl;
+				} else
+				{
+					const std::size_t size = counter[i].size();
+					if (size >= 2ul)
+					{
+						result =false;
+						std::cerr << size << " cells with same index \"" << i << "\" in orbit " << orbit_name(ORBIT) << std::endl;
+					}
 				}
 			}
 		}
