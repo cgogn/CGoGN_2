@@ -5,10 +5,12 @@
 #include <array>
 
 
-const unsigned int SIZE = 32u;
+using namespace cgogn::numerics;
+
+const uint32 SIZE = 32u;
 template <class T>
 using ChunkArray = cgogn::ChunkArray<SIZE, T>;
-using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, unsigned int>;
+using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, uint32>;
 using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
 
 using DoubleVecList = std::list< std::vector< double > >;
@@ -21,7 +23,7 @@ int test_load(bool with_register);
 
 int test_save()
 {
-	std::cout << "=============== TEST SAVE ===============" << std::endl;
+	std::cout << "############### TEST SAVE ###############" << std::endl;
 
 	ChunkArrayContainer container;
 
@@ -31,10 +33,10 @@ int test_save()
 	ChunkArray<StringListVec>* att3 = container.add_attribute<StringListVec>("VecListString");
 	ChunkArray<StringArray>* att_string_array = container.add_attribute<StringArray>("StringArray");
 
-	for (unsigned int i = 0u; i < 10u; ++i)
+	for (uint32 i = 0u; i < 10u; ++i)
 		container.insert_lines<1>();
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 0.1f*float(i);
 		(*att4)[i] = std::string(3,char('Z'-i));
@@ -59,7 +61,7 @@ int test_save()
 	container.remove_lines<1>(5);
 
 
-	for(unsigned int i = container.begin(); i != container.end(); container.next(i))
+	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		if (att1)
 			std::cout << "FLOAT=" << (*att1)[i] << "/";
@@ -111,7 +113,7 @@ int test_save()
 
 int test_load(bool with_register)
 {
-	std::cout << "=============== TEST LOAD ===============" << std::endl;
+	std::cout << "############### TEST LOAD ###############" << std::endl;
 	ChunkArrayContainer cont2;
 
 	if (with_register)
@@ -131,7 +133,7 @@ int test_load(bool with_register)
 	ChunkArray<StringListVec>* att3 = cont2.get_attribute<StringListVec>("VecListString");
 	ChunkArray<StringArray>* att_string_array = cont2.get_attribute<StringArray>("StringArray");
 
-	for(unsigned int i = cont2.begin(); i != cont2.end(); cont2.next(i))
+	for(uint32 i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
 		if (att1)
 			std::cout << "FLOAT=" << (*att1)[i] << "/";

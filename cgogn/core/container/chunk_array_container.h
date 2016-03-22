@@ -33,6 +33,7 @@
 #include <climits>
 
 #include <core/dll.h>
+#include <core/utils/definitions.h>
 #include <core/utils/assert.h>
 #include <core/utils/name_types.h>
 #include <core/utils/unique_ptr.h>
@@ -47,10 +48,10 @@ class CGOGN_CORE_API ContainerBrowser
 {
 public:
 
-	virtual unsigned int begin() const = 0;
-	virtual unsigned int end() const = 0;
-	virtual void next(unsigned int &it) const = 0;
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const = 0;
+	virtual uint32 begin() const = 0;
+	virtual uint32 end() const = 0;
+	virtual void next(uint32 &it) const = 0;
+	virtual void next_primitive(uint32 &it, uint32 primSz) const = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
 	virtual ~ContainerBrowser();
@@ -64,10 +65,10 @@ class ContainerStandardBrowser : public ContainerBrowser
 public:
 
 	ContainerStandardBrowser(const CONTAINER* cac) : cac_(cac) {}
-	virtual unsigned int begin() const { return cac_->real_begin(); }
-	virtual unsigned int end() const { return cac_->real_end(); }
-	virtual void next(unsigned int &it)  const { cac_->real_next(it); }
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_->real_next_primitive(it,primSz); }
+	virtual uint32 begin() const { return cac_->real_begin(); }
+	virtual uint32 end() const { return cac_->real_end(); }
+	virtual void next(uint32 &it)  const { cac_->real_next(it); }
+	virtual void next_primitive(uint32 &it, uint32 primSz) const { cac_->real_next_primitive(it,primSz); }
 	virtual void enable() {}
 	virtual void disable() {}
 	virtual ~ContainerStandardBrowser() {}
@@ -78,7 +79,7 @@ public:
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNKSIZE chunk size for ChunkArray
  */
-template <unsigned int CHUNKSIZE, typename T_REF>
+template <uint32 CHUNKSIZE, typename T_REF>
 class ChunkArrayContainer
 {
 public:
@@ -95,7 +96,7 @@ public:
 	/**
 	* constante d'attribut inconnu
 	*/
-	static const unsigned int UNKNOWN = UINT_MAX;
+	static const uint32 UNKNOWN = UINT_MAX;
 
 protected:
 
@@ -121,17 +122,17 @@ protected:
 	/**
 	 * stack of holes
 	 */
-	ChunkStack<unsigned int> holes_stack_;
+	ChunkStack<uint32> holes_stack_;
 
 	/**
 	* size (number of elts) of the container
 	*/
-	unsigned int nb_used_lines_;
+	uint32 nb_used_lines_;
 
 	/**
 	* size of the container with holes (also index of next inserted line if no holes)
 	*/
-	unsigned int nb_max_lines_;
+	uint32 nb_max_lines_;
 
 	/**
 	 * Browser that allow special traversals
@@ -149,9 +150,9 @@ protected:
 	 * @param attribName name of ChunkArray
 	 * @return the index in table
 	 */
-	unsigned int get_array_index(const std::string& attribute_name) const
+	uint32 get_array_index(const std::string& attribute_name) const
 	{
-		for (unsigned int i = 0u; i != names_.size(); ++i)
+		for (uint32 i = 0u; i != names_.size(); ++i)
 		{
 			if (names_[i] == attribute_name)
 				return i;
@@ -165,9 +166,9 @@ protected:
 	 * @param ptr of ChunkArray
 	 * @return the index in table
 	 */
-	unsigned int get_array_index(const ChunkArrayGen* ptr) const
+	uint32 get_array_index(const ChunkArrayGen* ptr) const
 	{
-		for (unsigned int i = 0u; i != table_arrays_.size(); ++i)
+		for (uint32 i = 0u; i != table_arrays_.size(); ++i)
 		{
 			if (table_arrays_[i] == ptr)
 				return i;
@@ -179,7 +180,7 @@ protected:
 	 * @brief remove an attribute by its index
 	 * @param index index of attribute to remove
 	 */
-	void remove_attribute(unsigned int index)
+	void remove_attribute(uint32 index)
 	{
 		// store ptr for using it before delete
 		ChunkArrayGen* ptr_to_del = table_arrays_[index];
@@ -242,7 +243,7 @@ public:
 	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
 	{
 		// first check if attribute already exist
-		unsigned int index = get_array_index(attribute_name);
+		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
 			std::cerr << "attribute " << attribute_name << " not found." << std::endl;
@@ -264,7 +265,7 @@ public:
 		cgogn_assert(attribute_name.size() != 0);
 
 		// first check if attribute already exist
-		unsigned int index = get_array_index(attribute_name);
+		uint32 index = get_array_index(attribute_name);
 		if (index != UNKNOWN)
 		{
 			std::cerr << "attribute " << attribute_name << " already exists.." << std::endl;
@@ -294,7 +295,7 @@ public:
 	 */
 	bool remove_attribute(const std::string& attribute_name)
 	{
-		unsigned int index = get_array_index(attribute_name);
+		uint32 index = get_array_index(attribute_name);
 
 		if (index == UNKNOWN)
 		{
@@ -314,7 +315,7 @@ public:
 	 */
 	bool remove_attribute(const ChunkArrayGen* ptr)
 	{
-		unsigned int index = get_array_index(ptr);
+		uint32 index = get_array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
@@ -346,7 +347,7 @@ public:
 	 */
 	void remove_marker_attribute(const ChunkArray<bool>* ptr)
 	{
-		unsigned int index = 0u;
+		uint32 index = 0u;
 		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
 			++index;
 
@@ -376,7 +377,7 @@ public:
 	template <typename T>
 	ChunkArray<T>* get_data_array(const std::string& attribute_name)
 	{
-		unsigned int index = get_array_index(attribute_name);
+		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 			return nullptr;
 
@@ -394,7 +395,7 @@ public:
 	*/
 	ChunkArrayGen* get_virtual_data_array(const std::string& attribute_name)
 	{
-		unsigned int index = get_array_index(attribute_name);
+		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 			return nullptr;
 
@@ -405,7 +406,7 @@ public:
 	 * @brief size (number of used lines)
 	 * @return the number of lines
 	 */
-	unsigned int size() const
+	uint32 size() const
 	{
 		return nb_used_lines_;
 	}
@@ -414,7 +415,7 @@ public:
 	 * @brief capacity (number of reserved lines)
 	 * @return number of reserved lines
 	 */
-	unsigned int capacity() const
+	uint32 capacity() const
 	{
 		return refs_.capacity();
 	}
@@ -441,7 +442,7 @@ public:
 	 * @brief begin
 	 * @return the index of the first used line of the container
 	 */
-	inline unsigned int begin() const
+	inline uint32 begin() const
 	{
 		return current_browser_->begin();
 	}
@@ -450,7 +451,7 @@ public:
 	 * @brief end
 	 * @return the index after the last used line of the container
 	 */
-	inline unsigned int end() const
+	inline uint32 end() const
 	{
 		return current_browser_->end();
 	}
@@ -459,7 +460,7 @@ public:
 	 * @brief next it <- next used index in the container
 	 * @param it index to "increment"
 	 */
-	inline void next(unsigned int& it) const
+	inline void next(uint32& it) const
 	{
 		current_browser_->next(it);
 	}
@@ -468,7 +469,7 @@ public:
 	 * @brief next primitive: it <- next primitive used index in the container (eq to PRIMSIZE next)
 	 * @param it index to "increment"
 	 */
-	inline void next_primitive(unsigned int& it, unsigned int prim_size) const
+	inline void next_primitive(uint32& it, uint32 prim_size) const
 	{
 		current_browser_->next_primitive(it, prim_size);
 	}
@@ -477,9 +478,9 @@ public:
 	 * @brief begin of container without browser
 	 * @return the real index of the first used line of the container
 	 */
-	inline unsigned int real_begin() const
+	inline uint32 real_begin() const
 	{
-		unsigned int it = 0u;
+		uint32 it = 0u;
 		while ((it < nb_max_lines_) && (!used(it)))
 			++it;
 		return it;
@@ -489,7 +490,7 @@ public:
 	 * @brief end of container without browser
 	 * @return the real index after the last used line of the container
 	 */
-	inline unsigned int real_end() const
+	inline uint32 real_end() const
 	{
 		return nb_max_lines_;
 	}
@@ -498,7 +499,7 @@ public:
 	 * @brief next without browser
 	 * @param it
 	 */
-	inline void real_next(unsigned int& it) const
+	inline void real_next(uint32& it) const
 	{
 		do
 		{
@@ -510,7 +511,7 @@ public:
 	 * @brief next primitive without browser
 	 * @param it
 	 */
-	inline void real_next_primitive(unsigned int &it, unsigned int prim_size) const
+	inline void real_next_primitive(uint32 &it, uint32 prim_size) const
 	{
 		do
 		{
@@ -522,9 +523,9 @@ public:
 	 * @brief reverse begin of container without browser
 	 * @return the real index of the first used line of the container in reverse order
 	 */
-	unsigned int real_rbegin() const
+	uint32 real_rbegin() const
 	{
-		unsigned int it = nb_max_lines_- 1u;
+		uint32 it = nb_max_lines_- 1u;
 		while ((it != 0xffffffff) && (!used(it)))
 			--it;
 		return it;
@@ -534,7 +535,7 @@ public:
 	 * @brief reverse end of container without browser
 	 * @return the real index before the last used line of the container in reverse order
 	 */
-	unsigned int real_rend() const
+	uint32 real_rend() const
 	{
 		return 0xffffffff; // -1
 	}
@@ -543,7 +544,7 @@ public:
 	 * @brief reverse next without browser
 	 * @param it
 	 */
-	void real_rnext(unsigned int &it) const
+	void real_rnext(uint32 &it) const
 	{
 		do
 		{
@@ -632,20 +633,20 @@ public:
 	 * @brief container compacting
 	 * @param map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
-	template <unsigned int PRIMSIZE>
-	void compact(std::vector<unsigned int>& map_old_new)
+	template <uint32 PRIMSIZE>
+	void compact(std::vector<uint32>& map_old_new)
 	{
 		map_old_new.clear();
 		map_old_new.resize(real_end(), 0xffffffff);
 
-		unsigned int up = real_rbegin();
-		unsigned int down = 0u;
+		uint32 up = real_rbegin();
+		uint32 down = 0u;
 
 		while (down < up)
 		{
 			if (!used(down))
 			{
-				for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+				for(uint32 i = 0u; i < PRIMSIZE; ++i)
 				{
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
@@ -661,7 +662,7 @@ public:
 		nb_max_lines_ = nb_used_lines_;
 
 		// free unused memory blocks
-		unsigned int new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
 
 		for (auto arr : table_arrays_)
 			arr->set_nb_chunks(new_nb_blocks);
@@ -684,7 +685,7 @@ public:
 	* @param index index to test
 	* @return true if the index is used, false otherwise
 	*/
-	bool used(unsigned int index) const
+	bool used(uint32 index) const
 	{
 		return refs_[index] != 0;
 	}
@@ -693,12 +694,12 @@ public:
 	* @brief insert a group of PRIMSIZE consecutive lines in the container
 	* @return index of the first line of group
 	*/
-	template <unsigned int PRIMSIZE>
-	unsigned int insert_lines()
+	template <uint32 PRIMSIZE>
+	uint32 insert_lines()
 	{
 		static_assert(PRIMSIZE < CHUNKSIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNKSIZE");
 
-		unsigned int index;
+		uint32 index;
 
 		if (holes_stack_.empty()) // no holes -> insert at the end
 		{
@@ -732,7 +733,7 @@ public:
 		}
 
 		// mark lines as used
-		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIMSIZE; ++i)
 			refs_.set_value(index + i, 1u); // do not use [] in case of refs_ is bool
 
 		nb_used_lines_ += PRIMSIZE;
@@ -744,17 +745,17 @@ public:
 	* @brief remove a group of PRIMSIZE lines in the container
 	* @param index index of one line of group to remove
 	*/
-	template <unsigned int PRIMSIZE>
-	void remove_lines(unsigned int index)
+	template <uint32 PRIMSIZE>
+	void remove_lines(uint32 index)
 	{
-		unsigned int begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
+		uint32 begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
 
 		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 
 		holes_stack_.push(begin_prim_idx);
 
 		// mark lines as unused
-		for(unsigned int i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIMSIZE; ++i)
 			refs_.set_value(begin_prim_idx++, 0u); // do not use [] in case of refs_ is bool
 
 		nb_used_lines_ -= PRIMSIZE;
@@ -764,7 +765,7 @@ public:
 	 * @brief initialize a line of the container (an element of each attribute)
 	 * @param index line index
 	 */
-	void init_line(unsigned int index)
+	void init_line(uint32 index)
 	{
 		cgogn_message_assert(used(index), "init_line only with allocated lines");
 
@@ -776,7 +777,7 @@ public:
 	 * @brief initialize the markers of a line of the container
 	 * @param index line index
 	 */
-	void init_markers_of_line(unsigned int index)
+	void init_markers_of_line(uint32 index)
 	{
 		cgogn_message_assert(used(index), "init_markers_of_line only with allocated lines");
 
@@ -789,7 +790,7 @@ public:
 	 * @param dstIndex destination
 	 * @param srcIndex source
 	 */
-	void copy_line(unsigned int dst, unsigned int src)
+	void copy_line(uint32 dst, uint32 src)
 	{
 		for (auto ptr : table_arrays_)
 			ptr->copy_element(dst, src);
@@ -804,7 +805,7 @@ public:
 	* @brief increment the reference counter of the given line (only for PRIMSIZE==1)
 	* @param index index of the line
 	*/
-	void ref_line(unsigned int index)
+	void ref_line(uint32 index)
 	{
 		// static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
 		refs_[index]++;
@@ -815,7 +816,7 @@ public:
 	* @param index index of the line
 	* @return true if the line was removed
 	*/
-	bool unref_line(unsigned int index)
+	bool unref_line(uint32 index)
 	{
 		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
 		cgogn_message_assert(refs_[index] > 1u, "Container: unref line with nb_ref == 1");
@@ -836,7 +837,7 @@ public:
 	* @param index index of the line
 	* @return number of references of the line
 	*/
-	T_REF get_nb_refs(unsigned int index) const
+	T_REF get_nb_refs(uint32 index) const
 	{
 		// static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];
@@ -847,22 +848,22 @@ public:
 		cgogn_assert(fs.good());
 
 		// save info (size+used_lines+max_lines+sizeof names)
-		std::vector<unsigned int> buffer;
+		std::vector<uint32> buffer;
 		buffer.reserve(1024);
-		buffer.push_back(static_cast<unsigned int>(table_arrays_.size()));
+		buffer.push_back(uint32(table_arrays_.size()));
 		buffer.push_back(nb_used_lines_);
 		buffer.push_back(nb_max_lines_);
 
-		for(unsigned int i = 0u; i < table_arrays_.size(); ++i)
+		for(uint32 i = 0u; i < table_arrays_.size(); ++i)
 		{
-			buffer.push_back(static_cast<unsigned int>(names_[i].size()+1));
-			buffer.push_back(static_cast<unsigned int>(type_names_[i].size()+1));
+			buffer.push_back(uint32(names_[i].size()+1));
+			buffer.push_back(uint32(type_names_[i].size()+1));
 		}
 
-		fs.write(reinterpret_cast<const char*>(&(buffer[0])), std::streamsize(buffer.size()*sizeof(unsigned int)));
+		fs.write(reinterpret_cast<const char*>(&(buffer[0])), std::streamsize(buffer.size()*sizeof(uint32)));
 
 		// save names
-		for(unsigned int i = 0; i < table_arrays_.size(); ++i)
+		for(uint32 i = 0; i < table_arrays_.size(); ++i)
 		{
 			const char* s1 = names_[i].c_str();
 			const char* s2 = type_names_[i].c_str();
@@ -871,7 +872,7 @@ public:
 		}
 
 		// save chunk arrays
-		for(unsigned int i = 0u; i < table_arrays_.size(); ++i)
+		for(uint32 i = 0u; i < table_arrays_.size(); ++i)
 		{
 			table_arrays_[i]->save(fs, nb_max_lines_);
 		}
@@ -891,21 +892,21 @@ public:
 		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
 
 		// read info
-		unsigned int buff1[4];
-		fs.read(reinterpret_cast<char*>(buff1), 3u*sizeof(unsigned int));
+		uint32 buff1[4];
+		fs.read(reinterpret_cast<char*>(buff1), 3u*sizeof(uint32));
 
 		nb_used_lines_ = buff1[1];
 		nb_max_lines_ = buff1[2];
 
-		std::vector<unsigned int> buff2(2u*buff1[0]);
-		fs.read(reinterpret_cast<char*>(&(buff2[0])), std::streamsize(2u*buff1[0]*sizeof(unsigned int)));
+		std::vector<uint32> buff2(2u*buff1[0]);
+		fs.read(reinterpret_cast<char*>(&(buff2[0])), std::streamsize(2u*buff1[0]*sizeof(uint32)));
 
 		names_.resize(buff1[0]);
 		type_names_.resize(buff1[0]);
 
 		// read name
 		char buff3[256];
-		for(unsigned int i = 0u; i < buff1[0]; ++i)
+		for(uint32 i = 0u; i < buff1[0]; ++i)
 		{
 			fs.read(buff3, std::streamsize(buff2[2u*i]*sizeof(char)));
 			names_[i] = std::string(buff3);
@@ -917,7 +918,7 @@ public:
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
-		for (unsigned int i = 0u; i < names_.size();)
+		for (uint32 i = 0u; i < names_.size();)
 		{
 			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
 			if (cag)
@@ -943,7 +944,7 @@ public:
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 

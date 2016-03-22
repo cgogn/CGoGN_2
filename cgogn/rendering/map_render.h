@@ -54,13 +54,13 @@ protected:
 
 	QOpenGLBuffer* indices_buffers_[SIZE_BUFFER];
 	bool indices_buffers_uptodate_[SIZE_BUFFER];
-	unsigned int nb_indices_[SIZE_BUFFER];
+	uint32 nb_indices_[SIZE_BUFFER];
 
 public:
 
 	inline MapRender()
 	{
-		for (unsigned int i = 0u; i < SIZE_BUFFER; ++i)
+		for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
 		{
 			indices_buffers_[i] = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 			indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -69,14 +69,14 @@ public:
 
 	inline ~MapRender()
 	{
-		for (unsigned int i = 0u; i < SIZE_BUFFER; ++i)
+		for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
 			delete indices_buffers_[i];
 	}
 
 	inline bool is_primitive_uptodate(DrawingType prim)  { return indices_buffers_uptodate_[prim]; }
 
 	template <typename MAP>
-	void init_points(MAP& m, std::vector<unsigned int>& table_indices)
+	void init_points(MAP& m, std::vector<uint32>& table_indices)
 	{
 		//		table_indices.reserve(m.get_nb_darts()/6);
 		m.foreach_cell([&] (typename MAP::Vertex v)
@@ -86,7 +86,7 @@ public:
 	}
 
 	template <typename MAP>
-	void init_lines(MAP& m, std::vector<unsigned int>& table_indices)
+	void init_lines(MAP& m, std::vector<uint32>& table_indices)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Edge = typename MAP::Edge;
@@ -99,7 +99,7 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	void init_triangles(MAP& m, std::vector<unsigned int>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+	void init_triangles(MAP& m, std::vector<uint32>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
@@ -123,7 +123,7 @@ public:
 	template <typename VEC3, typename MAP>
 	void init_primitives(MAP& m, DrawingType prim, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
-		std::vector<unsigned int> table_indices;
+		std::vector<uint32> table_indices;
 
 		switch (prim)
 		{
@@ -144,9 +144,9 @@ public:
 			indices_buffers_[prim]->create();
 
 		indices_buffers_uptodate_[prim] = true;
-		nb_indices_[prim] = static_cast<unsigned int>(table_indices.size());
+		nb_indices_[prim] = uint32(table_indices.size());
 		indices_buffers_[prim]->bind();
-		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(unsigned int));
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
 		indices_buffers_[prim]->release();
 	}
 
@@ -184,7 +184,7 @@ public:
  * @param indices2 embedding indices of faces
  */
 template <typename VEC3, typename MAP>
-void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<unsigned int>& indices1, std::vector<unsigned int>& indices2)
+void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<uint32>& indices1, std::vector<uint32>& indices2)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -195,12 +195,13 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 	indices2.clear();
 
 	//local vector for ear triangulation
-	std::vector<unsigned int> local_vert_indices;
+	std::vector<uint32> local_vert_indices;
 	local_vert_indices.reserve(256);
 
 	m.foreach_cell([&] (Face f)
 	{
-		unsigned int ef = m.get_embedding(Face(f.dart));
+
+		uint32 ef = m.get_embedding(Face(f.dart));
 		if (m.has_codegree(f, 3))
 		{
 			indices1.push_back(m.get_embedding(Vertex(f.dart)));
@@ -214,7 +215,7 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 		else
 		{
 			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,local_vert_indices);
-			for (unsigned int i : local_vert_indices)
+			for (uint32 i : local_vert_indices)
 			{
 				indices1.push_back(i);
 				indices2.push_back(ef);

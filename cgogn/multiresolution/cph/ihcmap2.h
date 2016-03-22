@@ -38,15 +38,15 @@ class ContainerCPHBrowser : public ContainerBrowser
 
 public:
 	ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
-	virtual unsigned int begin() const { return cac_.real_begin(); }
-	virtual unsigned int end() const { return cac_.real_end(); }
-	virtual void next(unsigned int &it)  const
+	virtual uint32 begin() const { return cac_.real_begin(); }
+	virtual uint32 end() const { return cac_.real_end(); }
+	virtual void next(uint32 &it)  const
 	{
 		cac_.real_next(it);
 		if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
 			it = cac_.real_end();
 	}
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
+	virtual void next_primitive(uint32 &it, uint32 primSz) const { cac_.real_next_primitive(it,primSz); }
 	virtual void enable() {}
 	virtual void disable() {}
 	virtual ~ContainerCPHBrowser() {}
@@ -58,7 +58,7 @@ class IHCMap2_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>, public CPH2<MAP_TRAITS>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -104,7 +104,7 @@ public:
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
-	ChunkArray<unsigned int>* next_level_cell[NB_ORBITS];
+	ChunkArray<uint32>* next_level_cell[NB_ORBITS];
 
 protected:
 
@@ -163,7 +163,7 @@ public:
 							 "Access to a dart introduced after current level") ;
 
 		bool finished = false ;
-		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
+		uint32 edge_id = Inherit_CPH::get_edge_id(d) ;
 		Dart it = d ;
 		do
 		{
@@ -185,7 +185,7 @@ public:
 
 		bool finished = false ;
 		Dart it = Inherit_CMAP::phi_1(d) ;
-		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
+		uint32 edge_id = Inherit_CPH::get_edge_id(d) ;
 		do
 		{
 			if(Inherit_CPH::get_dart_level(it) <= Inherit_CPH::get_current_level())
@@ -219,19 +219,19 @@ public:
 	 *******************************************************************************/
 
 //	template <Orbit ORBIT>
-//	inline unsigned int get_embedding_cph(Cell<ORBIT> c) const
+//	inline uint32 get_embedding_cph(Cell<ORBIT> c) const
 //	{
 //		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 //		cgogn_message_assert(Inherit::is_embedded<Cell<ORBIT>>(), "Invalid parameter: orbit not embedded");
 
-//		unsigned int nb_steps = Inherit::get_current_level() - Inherit::get_dart_level(c.dart);
-//		unsigned int index = Inherit::get_embedding(c);
+//		uint32 nb_steps = Inherit::get_current_level() - Inherit::get_dart_level(c.dart);
+//		uint32 index = Inherit::get_embedding(c);
 
-//		unsigned int step = 0;
+//		uint32 step = 0;
 //		while(step < nb_steps)
 //		{
 //			step++;
-//			unsigned int next = next_level_cell_[ORBIT]->operator[](index);
+//			uint32 next = next_level_cell_[ORBIT]->operator[](index);
 //			//index = next;
 //			if(next != EMBNULL) index = next;
 //			else break;
@@ -248,7 +248,7 @@ public:
 	 * the inserted darts are automatically embedded on new attribute elements.
 	 * Actually a FACE attribute is created, if needed, for the new face.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		Face f(this->add_face_topo(size));
 
@@ -282,9 +282,9 @@ public:
 		return f;
 	}
 
-	inline unsigned int face_degree(Dart d)
+	inline uint32 face_degree(Dart d)
 	{
-		unsigned int count = 0 ;
+		uint32 count = 0 ;
 		Dart it = d ;
 		do
 		{
@@ -329,7 +329,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i] ;
 			if (!marker.is_marked(e))	// Face has not been visited yet

@@ -37,7 +37,7 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -218,7 +218,7 @@ protected:
 	 * @param n, the number of edges of the base
 	 * @return a dart from the base
 	 */
-	inline Dart add_pyramid_topo(unsigned int n)
+	inline Dart add_pyramid_topo(uint32 n)
 	{
 		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
 
@@ -226,11 +226,11 @@ protected:
 		m_tableVertDarts.reserve(n);
 
 		// creation of triangles around circumference and storing vertices
-		for (unsigned int i = 0u; i < n; ++i)
+		for (uint32 i = 0u; i < n; ++i)
 			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
 
 		// sewing the triangles
-		for (unsigned int i = 0u; i < n-1u; ++i)
+		for (uint32 i = 0u; i < n-1u; ++i)
 		{
 			const Dart d = this->phi_1(m_tableVertDarts[i]);
 			const Dart e = this->phi1(m_tableVertDarts[i+1]);
@@ -243,7 +243,7 @@ protected:
 		// sewing the bottom face
 		Dart base = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = base;
-		for(unsigned int i = 0u; i < n; ++i)
+		for(uint32 i = 0u; i < n; ++i)
 		{
 			this->phi2_sew(m_tableVertDarts[i], base);
 			base = this->phi1(base);
@@ -258,22 +258,22 @@ protected:
 	 * @param n, the number of edges of the base
 	 * @return a dart from the base
 	 */
-	Dart add_prism_topo(unsigned int n)
+	Dart add_prism_topo(uint32 n)
 	{
 		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
 		std::vector<Dart> m_tableVertDarts;
 		m_tableVertDarts.reserve(n*2u);
 
 		// creation of quads around circunference and storing vertices
-		for (unsigned int i = 0u; i < n; ++i)
+		for (uint32 i = 0u; i < n; ++i)
 			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
 
 		// storing a dart from the vertex pointed by phi1(phi1(d))
-		for (unsigned int i = 0u; i < n; ++i)
+		for (uint32 i = 0u; i < n; ++i)
 			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
 
 		// sewing the quads
-		for (unsigned int i = 0u; i < n-1u; ++i)
+		for (uint32 i = 0u; i < n-1u; ++i)
 		{
 			const Dart d = this->phi_1(m_tableVertDarts[i]);
 			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
@@ -286,7 +286,7 @@ protected:
 		Dart top = this->Inherit::Inherit::add_face_topo(n);
 		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
 		const Dart dres = top;
-		for(unsigned int i = 0u; i < n; ++i)
+		for(uint32 i = 0u; i < n; ++i)
 		{
 			this->phi2_sew(m_tableVertDarts[i], top);
 			this->phi2_sew(m_tableVertDarts[n+i], bottom);
@@ -323,56 +323,56 @@ protected:
 
 public:
 
-	inline unsigned int degree(Vertex2 v) const
+	inline uint32 degree(Vertex2 v) const
 	{
 		return Inherit::degree(v);
 	}
 
-	inline unsigned int degree(Vertex v) const
+	inline uint32 degree(Vertex v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_edge(v, [&result] (Edge) { ++result; });
 		return result;
 	}
 
-	inline unsigned int codegree(Edge2 e) const
+	inline uint32 codegree(Edge2 e) const
 	{
 		return Inherit::codegree(e);
 	}
 
-	inline unsigned int degree(Edge2 e) const
+	inline uint32 degree(Edge2 e) const
 	{
 		return Inherit::degree(e);
 	}
 
-	inline unsigned int codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}
 
-	inline unsigned int degree(Edge e) const
+	inline uint32 degree(Edge e) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(e, [&result] (Face) { ++result; });
 		return result;
 	}
 
-	inline unsigned int codegree(Face2 f) const
+	inline uint32 codegree(Face2 f) const
 	{
 		return Inherit::codegree(f);
 	}
 
-	inline unsigned int degree(Face2 f) const
+	inline uint32 degree(Face2 f) const
 	{
 		return Inherit::degree(f);
 	}
 
-	inline unsigned int codegree(Face f) const
+	inline uint32 codegree(Face f) const
 	{
 		return codegree(Face2(f.dart));
 	}
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face f) const
 	{
 		if (this->is_boundary(f.dart) || this->is_boundary(phi3(f.dart)))
 			return 1;
@@ -380,19 +380,19 @@ public:
 			return 2;
 	}
 
-	inline unsigned int codegree(Volume v) const
+	inline uint32 codegree(Volume v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
 		return result;
 	}
 
-	inline bool has_codegree(Face2 f, unsigned int codegree) const
+	inline bool has_codegree(Face2 f, uint32 codegree) const
 	{
 		return Inherit::has_codegree(f, codegree);
 	}
 
-	inline bool has_codegree(Face f, unsigned int codegree) const
+	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		return Inherit::has_codegree(Face2(f.dart), codegree);
 	}
@@ -410,7 +410,7 @@ protected:
 		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
-		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			const Dart curr_dart = marked_darts->operator [](i);
 			f(curr_dart);
@@ -490,7 +490,7 @@ protected:
 		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
-		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			const Dart curr_dart = marked_darts->operator [](i);
 			if (!f(curr_dart))

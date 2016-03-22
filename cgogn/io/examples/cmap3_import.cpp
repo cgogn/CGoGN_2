@@ -7,6 +7,7 @@
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
+using namespace cgogn::numerics;
 
 
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
 
 	Map3 map;
 
-	for (unsigned int k = 0; k < 2; ++k)
+	for (uint32 k = 0; k < 2; ++k)
 	{
 		cgogn::io::import_volume<Vec3>(map, volumeMesh);
 
@@ -48,13 +49,13 @@ int main(int argc, char** argv)
 		map.enable_topo_cache<Map3::Vertex::ORBIT>();
 		map.enable_topo_cache<Map3::Edge::ORBIT>();
 
-		unsigned int nbw = 0u;
+		uint32 nbw = 0u;
 		map.foreach_cell([&nbw] (Map3::Volume)
 		{
 			++nbw;
 		});
 
-		unsigned int nbf = 0u;
+		uint32 nbf = 0u;
 		map.foreach_cell([&] (Map3::Face f)
 		{
 			++nbf;
@@ -62,18 +63,18 @@ int main(int argc, char** argv)
 			Vec3 v2 = vertex_position[Map3::Vertex(map.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
 		});
 
-		unsigned int nbv = 0;
+		uint32 nbv = 0;
 		map.foreach_cell([&] (Map3::Vertex v)
 		{
 			++nbv;
-			unsigned int nb_incident = 0;
+			uint32 nb_incident = 0;
 			map.foreach_incident_face(v, [&] (Map3::Face /*f*/)
 			{
 				++nb_incident;
 			});
 		});
 
-		unsigned int nbe = 0;
+		uint32 nbe = 0;
 		map.foreach_cell([&nbe] (Map3::Edge)
 		{
 			++nbe;

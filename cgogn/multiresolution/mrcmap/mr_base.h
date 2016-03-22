@@ -50,23 +50,23 @@ protected:
 	 * pointers to attributs that stores next level
 	 * correspondance indices for each dart
 	 */
-	std::deque<ChunkArray<unsigned int>*> next_level_indices_;
+	std::deque<ChunkArray<uint32>*> next_level_indices_;
 
 	/**
 	 * pointers to attributs that stores previous level
 	 * correspondance indices for each dart
 	 */
-	std::deque<ChunkArray<unsigned int>*> previous_level_indices_;
+	std::deque<ChunkArray<uint32>*> previous_level_indices_;
 
 	/**
 	 * stack for current level temporary storage
 	 */
-	std::stack<unsigned int, std::vector<unsigned int>> levels_stack_ ;
+	std::stack<uint32, std::vector<uint32>> levels_stack_ ;
 
 	/**
 	 * current level in multiresolution map
 	 */
-	unsigned int current_level_;
+	uint32 current_level_;
 
 	//TODO le niveau courant doit etre par thread
 	//appele sur la carte et non plus un champs de
@@ -112,17 +112,17 @@ public:
 	//1 thread par niveau = 1 thread par carte
 	//n thread par niveau = n thread par carte
 
-	inline unsigned int get_maximum_level() const
+	inline uint32 get_maximum_level() const
 	{
-		return static_cast<unsigned int>(maps_.size());
+		return uint32(maps_.size());
 	}
 
-	inline unsigned int get_current_level() const
+	inline uint32 get_current_level() const
 	{
 		return current_level_;
 	}
 
-	inline void set_current_level(unsigned int l)
+	inline void set_current_level(uint32 l)
 	{
 		current_level_ = l;
 	}
@@ -140,7 +140,7 @@ public:
 	}
 
 	//TODO
-	inline unsigned int get_dart_level(Dart d)
+	inline uint32 get_dart_level(Dart d)
 	{
 		return 0;
 	}

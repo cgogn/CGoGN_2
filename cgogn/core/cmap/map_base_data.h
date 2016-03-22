@@ -98,8 +98,8 @@ public:
 	using Inherit = MapGen;
 	using Self = MapBaseData<MAP_TRAITS>;
 
-	static const unsigned int CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
-	static const unsigned int NB_UNKNOWN_THREADS = 4u;
+	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 NB_UNKNOWN_THREADS = 4u;
 	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
 	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
 
@@ -115,10 +115,10 @@ protected:
 	ChunkArrayContainer<unsigned char> topology_;
 
 	/// per orbit attributes
-	std::array<ChunkArrayContainer<unsigned int>, NB_ORBITS> attributes_;
+	std::array<ChunkArrayContainer<uint32>, NB_ORBITS> attributes_;
 
 	/// embedding indices shortcuts
-	std::array<ChunkArray<unsigned int>*, NB_ORBITS> embeddings_;
+	std::array<ChunkArray<uint32>*, NB_ORBITS> embeddings_;
 
 	/// boundary marker shortcut
 	ChunkArray<bool>* boundary_marker_;
@@ -148,21 +148,21 @@ public:
 			ChunkArrayFactory<CHUNKSIZE>::reset();
 			init_CA_factory = false;
 		}
-		for (unsigned int i = 0; i < NB_ORBITS; ++i)
+		for (uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
 			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
 
 			embeddings_[i] = nullptr;
 			global_topo_cache_[i] = nullptr;
-			for (unsigned int j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
+			for (uint32 j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
 				mark_attributes_[i][j].reserve(8);
 		}
 
 		mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
 		mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
 
-		for (unsigned int i = 0; i < MAX_NB_THREADS; ++i)
+		for (uint32 i = 0; i < MAX_NB_THREADS; ++i)
 			mark_attributes_topology_[i].reserve(8);
 
 		boundary_marker_ = topology_.add_marker_attribute();
@@ -189,7 +189,7 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<unsigned int>& get_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& get_attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -198,7 +198,7 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline ChunkArrayContainer<unsigned int>& get_attribute_container()
+	inline ChunkArrayContainer<uint32>& get_attribute_container()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -259,7 +259,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline unsigned int get_embedding(Cell<ORBIT> c) const
+	inline uint32 get_embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
@@ -271,14 +271,14 @@ public:
 protected:
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
+	inline void set_embedding(Dart d, uint32 emb)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
 
-		const unsigned int old = (*embeddings_[ORBIT])[d.index];
+		const uint32 old = (*embeddings_[ORBIT])[d.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
 		attributes_[ORBIT].ref_line(emb);			// ref the new emb
@@ -303,9 +303,9 @@ protected:
 	 * Thread management
 	 *******************************************************************************/
 
-	inline unsigned int add_unknown_thread() const
+	inline uint32 add_unknown_thread() const
 	{
-		static unsigned int index = 0u;
+		static uint32 index = 0u;
 		const std::thread::id& th_id = std::this_thread::get_id();
 		std::cerr << "WARNING: registration of an unknown thread (id :" << th_id << ") in the map." << std::endl;
 		std::cerr << "Data can be lost. Please use add_thread and remove_thread interface." << std::endl;

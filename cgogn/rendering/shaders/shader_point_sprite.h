@@ -52,10 +52,10 @@ class CGOGN_RENDERING_API ShaderPointSprite : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_color_;
-	int unif_size_;
-	int unif_ambiant_;
-	int unif_light_pos_;
+	GLint unif_color_;
+	GLint unif_size_;
+	GLint unif_ambiant_;
+	GLint unif_light_pos_;
 
 public:
 
@@ -102,7 +102,7 @@ public:
 	 * @param vbo_size pointer on size (diameters of spheres) vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL, VBO* vbo_size=NULL);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL, VBO* vbo_size=NULL);
 };
 
 } // namespace rendering

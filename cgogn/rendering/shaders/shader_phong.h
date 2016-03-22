@@ -53,13 +53,13 @@ class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_front_color_;
-	int unif_back_color_;
-	int unif_ambiant_color_;
-	int unif_spec_color_;
-	int unif_spec_coef_;
-	int unif_double_side_;
-	int unif_light_position_;
+	GLint unif_front_color_;
+	GLint unif_back_color_;
+	GLint unif_ambiant_color_;
+	GLint unif_spec_color_;
+	GLint unif_spec_coef_;
+	GLint unif_double_side_;
+	GLint unif_light_position_;
 
 public:
 
@@ -122,7 +122,7 @@ public:
 	 * @param vbo_color pointer on normal vbo (RGB) only used when color per vertex rendering
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=NULL);
+	bool set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=NULL);
 };
 
 } // namespace rendering

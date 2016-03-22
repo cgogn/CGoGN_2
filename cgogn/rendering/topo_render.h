@@ -50,14 +50,14 @@ protected:
 	static ShaderSimpleColor* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
-	static int nb_instances_;
+	static int32 nb_instances_;
 
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
 
-	unsigned int vao_bl_;
-	unsigned int vao_bl2_;
-	unsigned int vao_rp_;
+	uint32 vao_bl_;
+	uint32 vao_bl2_;
+	uint32 vao_rp_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -122,7 +122,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		local_vertices.clear();
 		VEC3 center;
 		center.setZero();
-		unsigned int count = 0u;
+		uint32 count = 0u;
 		m.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			local_vertices.push_back(position[v]);
@@ -132,22 +132,22 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		center /= Scalar(count);
 
 		// phi2 mid-edge: N -> 2N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
 
 		// dart round point: 0 -> N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices[i] = local_vertices[i] * Scalar(shrink_f_) + center * (opp_shrink_f);
 
 		//dart other extremety: 2N -> 3N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back(local_vertices[i]*(opp_shrink_e) + local_vertices[(i+1)%count]*Scalar(shrink_e_));
 
 		//phi2 mid-dart: 3N -> 4N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
 
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 		{
 			const VEC3& P1 = local_vertices[i];
 			out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
@@ -161,7 +161,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 	});
 
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
@@ -209,7 +209,7 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 			local_vertices.clear();
 			VEC3 center;
 			center.setZero();
-			unsigned int count = 0u;
+			uint32 count = 0u;
 			m.foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				local_vertices.push_back(position[v]);
@@ -219,26 +219,26 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 			center /= Scalar(count);
 
 			// phi2 mid-edge: N -> 2N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
 
 			//phi3: 2N -> 3N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back(local_vertices[count+i]* shrink_f_ + center * (opp_shrink_f));
 
 			// dart round point: 0 -> N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices[i] = local_vertices[i] * shrink_f_ + center * (opp_shrink_f);
 
 			//dart other extremety: 3N -> 4N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back(local_vertices[i]*(opp_shrink_e) + local_vertices[(i+1)%count]*shrink_e_);
 
 			//phi2/3 mid-dart: 4N -> 5N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
 
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 			{
 				VEC3 P1 = (local_vertices[i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
@@ -258,7 +258,7 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 
 	});
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());

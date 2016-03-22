@@ -45,12 +45,12 @@ class CGOGN_RENDERING_API Drawer
 {
 	struct PrimParam
 	{
-		unsigned int begin;
+		uint32 begin;
 		GLenum mode;
 		float width;
-		unsigned int nb;
+		uint32 nb;
 		bool aa;
-		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(static_cast<unsigned int>(b)), mode(m), width(w), nb(0), aa(a){}
+		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
 	};
 
 	using Vec3f = std::array<float,3>;
@@ -61,7 +61,7 @@ protected:
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
 	static ShaderPointSprite* shader_ps_;
-	static int nb_instances_;
+	static int32 nb_instances_;
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
@@ -78,10 +78,10 @@ protected:
 	std::vector<PrimParam> begins_face_;
 	std::vector<PrimParam>* current_begin_;
 
-	unsigned int vao_cpv_;
-	unsigned int vao_bl_;
-	unsigned int vao_rp_;
-	unsigned int vao_ps_;
+	uint32 vao_cpv_;
+	uint32 vao_bl_;
+	uint32 vao_rp_;
+	uint32 vao_ps_;
 
 	float current_size_;
 	bool current_aa_;
