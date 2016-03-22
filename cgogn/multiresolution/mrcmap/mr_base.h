@@ -114,7 +114,7 @@ public:
 
 	inline uint32 get_maximum_level() const
 	{
-		return static_cast<uint32>(maps_.size());
+		return uint32(maps_.size());
 	}
 
 	inline uint32 get_current_level() const

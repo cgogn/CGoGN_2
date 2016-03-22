@@ -7,7 +7,7 @@
 #include <core/basic/cell_marker.h>
 
 using namespace cgogn;
-
+using namespace cgogn::numerics;
 
 using Map1 = CMap1<DefaultMapTraits>;
 using Map2 = CMap2<DefaultMapTraits>;
@@ -65,7 +65,7 @@ int test1(MAP& map)
 	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttributeHandler<int32> ahf2 = map.template get_attribute_force_type<int32,float, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;

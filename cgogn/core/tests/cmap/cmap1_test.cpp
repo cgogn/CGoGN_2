@@ -60,10 +60,10 @@ protected:
 	CMap1Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	}
 
 	/*!
@@ -118,7 +118,7 @@ TEST_F(CMap1Test, add_face)
 TEST_F(CMap1Test, remove_face)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
-	int count_faces = NB_MAX;
+	int32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{

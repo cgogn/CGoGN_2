@@ -1249,9 +1249,9 @@ protected:
 		uint32 nbc = PARALLEL_BUFFER_SIZE;
 
 		// do block of PARALLEL_BUFFER_SIZE only if nb cells is huge else just divide
-		if ( (static_cast<uint32>(last - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
-			  && (static_cast<uint32>(last - it) > nb_threads_pool))
-			nbc = static_cast<uint32>((last - it) / nb_threads_pool);
+		if ( (uint32(last - it) < 16*nb_threads_pool*PARALLEL_BUFFER_SIZE )
+			  && (uint32(last - it) > nb_threads_pool))
+			nbc = uint32((last - it) / nb_threads_pool);
 
 		uint32 local_end = std::min(it+nbc, last);
 

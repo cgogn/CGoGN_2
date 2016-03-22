@@ -86,7 +86,7 @@ protected:
 			std::getline(fp, line);
 		} while (!fp.eof());
 
-		this->nb_vertices_ = static_cast<uint32>(vertices_id.size());
+		this->nb_vertices_ = uint32(vertices_id.size());
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
@@ -128,7 +128,7 @@ protected:
 					}
 				}
 
-				uint32 n = static_cast<uint32>(table.size());
+				uint32 n = uint32(table.size());
 				this->faces_nb_edges_.push_back(static_cast<unsigned short>(n));
 				for (uint32 j = 0; j < n; ++j)
 				{

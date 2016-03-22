@@ -87,7 +87,7 @@ public:
 	{
 		vaos_.push_back(new QOpenGLVertexArrayObject);
 		vaos_.back()->create();
-		return static_cast<uint32>(vaos_.size() - 1);
+		return uint32(vaos_.size() - 1);
 	}
 
 	/**

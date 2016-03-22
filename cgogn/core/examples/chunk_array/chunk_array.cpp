@@ -22,7 +22,7 @@ int test1()
 	std::cout << "############### TEST 1 ###############" << std::endl;
 
 	ChunkArrayContainer<uint32> container;
-	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
 
 	for (uint32 i = 0; i < 41; ++i)
@@ -30,7 +30,7 @@ int test1()
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 	}
 
@@ -87,13 +87,13 @@ int test2()
 	std::cout << "############### TEST 2 ###############" << std::endl;
 
 	ChunkArrayContainer<unsigned char> container;
-	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
 
-	for (int i = 0; i < 13; ++i)
+	for (uint32 i = 0; i < 13; ++i)
 		container.insert_lines<3>();
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
@@ -158,22 +158,22 @@ int test3()
 	std::cout << "############### TEST 3 ###############" << std::endl;
 
 	ChunkArrayContainer<bool> container;
-	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
-	ChunkArray<std::vector<int> >* att2 = container.add_attribute<std::vector<int> >("V_entier");
-	ChunkArray<std::list<int> >* att3 = container.add_attribute<std::list<int> >("L_entier");
+	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
+	ChunkArray<std::vector<int32> >* att2 = container.add_attribute<std::vector<int32> >("V_entier");
+	ChunkArray<std::list<int32> >* att3 = container.add_attribute<std::list<int32> >("L_entier");
 
 	for (uint32 i = 0; i < 13; ++i)
 		container.insert_lines<3>();
 
-	std::vector<int> vect = (*att2)[0];
+	std::vector<int32> vect = (*att2)[0];
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 		for (uint32 j = 0; j < i; ++j)
-			(*att2)[i].push_back(int(j));
+			(*att2)[i].push_back(int32(j));
 		for (uint32 j = 0; j < i/2; ++j)
-			(*att3)[i].push_front(int(j));
+			(*att3)[i].push_front(int32(j));
 	}
 
 	container.remove_lines<3>(3);
@@ -215,7 +215,7 @@ int test4()
 	using vecvecdouble = std::vector< std::vector< double > >;
 	using veclistdouble = std::vector< std::list< double > >;
 	ChunkArrayContainer<uint32> container;
-	ChunkArray<int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
 	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<bool>* att3 = container.add_attribute<bool>("bools");
 	ChunkArray<vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
@@ -226,7 +226,7 @@ int test4()
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3).set_value(i, static_cast<bool>(i%2 != 0));
 		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
@@ -245,7 +245,7 @@ int test4()
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<int>* load_att1 = cont2.get_attribute<int>("entier");
+	ChunkArray<int32>* load_att1 = cont2.get_attribute<int32>("entier");
 	ChunkArray<float>* load_att2 = cont2.get_attribute<float>("reel");
 	ChunkArray<bool>* load_att3 = cont2.get_attribute<bool>("bools");
 	ChunkArray<vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");

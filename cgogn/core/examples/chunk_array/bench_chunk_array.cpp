@@ -43,7 +43,7 @@ int test1()
 	std::cout << "= TEST 1 = ref unsigned char" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
@@ -52,7 +52,7 @@ int test1()
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}
@@ -79,7 +79,7 @@ int test2()
 	std::cout << "= TEST 2 = ref bool" << std::endl;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
-	ChunkArray<BLK_SZ,int>* att1 = container.add_attribute<int>("entier");
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
 	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
@@ -88,7 +88,7 @@ int test2()
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 1+int(i);
+		(*att1)[i] = 1+int32(i);
 		(*att2)[i] = 3.0f + 0.1f*float(i);
 		(*att3)[i] = Vec3f(float(i), float(i), float(i));
 	}
@@ -182,7 +182,7 @@ int test5()
 	for(uint32 i = container.begin(); i < container.end(); i += 9)
 		container.remove_lines<1>(i);
 
-	int  total = 0;
+	int32  total = 0;
 	for (uint32 j = 0; j < 50; ++j)
 	{
 		for(uint32 i = container.begin(); i != container.end(); container.next(i))

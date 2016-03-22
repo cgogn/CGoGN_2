@@ -49,7 +49,7 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
 };
 
 // specialization 2 : Eigen::Vector
-template <typename Scalar_, int Rows, int Options>
+template <typename Scalar_, int32 Rows, int32 Options>
 struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
 	static const std::size_t SIZE = Rows;
@@ -89,7 +89,7 @@ struct nb_components_traits<geometry::Vec_T<std::array<Scalar,size>>>
 	const static uint32 value = size;
 };
 
-template <typename Scalar_, int Rows, int Options>
+template <typename Scalar_, int32 Rows, int32 Options>
 struct nb_components_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
 	const static uint32 value = Rows;

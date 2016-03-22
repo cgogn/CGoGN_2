@@ -342,7 +342,7 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(static_cast<uint32>(indices.size()), vec_dim);
+	vbo.allocate(uint32(indices.size()), vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;

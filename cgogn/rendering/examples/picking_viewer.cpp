@@ -93,7 +93,7 @@ private:
 
 	cgogn::rendering::Drawer* drawer_;
 
-	int cell_picking;
+	int32 cell_picking;
 };
 
 

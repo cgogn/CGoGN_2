@@ -64,13 +64,13 @@ protected:
 	CMap2Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int, Face::ORBIT>("faces");
-		cmap_.add_attribute<int, Volume::ORBIT>("volumes");
+		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 	}
 
 	/*!

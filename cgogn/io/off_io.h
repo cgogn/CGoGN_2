@@ -232,7 +232,7 @@ private:
 			fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			fp >> line;
 		}
-		return static_cast<uint32>((std::stoul(line)));
+		return uint32((std::stoul(line)));
 	}
 };
 

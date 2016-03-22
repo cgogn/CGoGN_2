@@ -56,7 +56,7 @@ protected:
 	CMap1TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 	}
 
 	/*!

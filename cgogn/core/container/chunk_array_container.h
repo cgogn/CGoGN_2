@@ -850,14 +850,14 @@ public:
 		// save info (size+used_lines+max_lines+sizeof names)
 		std::vector<uint32> buffer;
 		buffer.reserve(1024);
-		buffer.push_back(static_cast<uint32>(table_arrays_.size()));
+		buffer.push_back(uint32(table_arrays_.size()));
 		buffer.push_back(nb_used_lines_);
 		buffer.push_back(nb_max_lines_);
 
 		for(uint32 i = 0u; i < table_arrays_.size(); ++i)
 		{
-			buffer.push_back(static_cast<uint32>(names_[i].size()+1));
-			buffer.push_back(static_cast<uint32>(type_names_[i].size()+1));
+			buffer.push_back(uint32(names_[i].size()+1));
+			buffer.push_back(uint32(type_names_[i].size()+1));
 		}
 
 		fs.write(reinterpret_cast<const char*>(&(buffer[0])), std::streamsize(buffer.size()*sizeof(uint32)));

@@ -65,7 +65,7 @@ CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* 
 
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		const uint32 size = static_cast<uint32>(src[i].length());
+		const uint32 size = uint32(src[i].length());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		const char* str = src[i].c_str();
 		ostream.write(str, size);

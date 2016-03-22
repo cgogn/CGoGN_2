@@ -65,7 +65,7 @@ protected:
 	CMap2TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 	}
 
 	/*!
@@ -351,11 +351,11 @@ TEST_F(CMap2TopoTest, close_map)
 	add_closed_surfaces();
 
 	// add attributes to initialize the indexation
-	add_attribute<int, CDart::ORBIT>("darts");
-	add_attribute<int, Vertex::ORBIT>("vertices");
-	add_attribute<int, Edge::ORBIT>("edges");
-	add_attribute<int, Face::ORBIT>("faces");
-	add_attribute<int, Volume::ORBIT>("volumes");
+	add_attribute<int32, CDart::ORBIT>("darts");
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Edge::ORBIT>("edges");
+	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Volume::ORBIT>("volumes");
 	EXPECT_TRUE(check_map_integrity());
 
 	// create some random holes (full removal or partial unsewing of faces)

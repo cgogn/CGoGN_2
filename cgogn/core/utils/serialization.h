@@ -152,7 +152,7 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const uint32 size = static_cast<uint32>(src[i].size());
+		const uint32 size = uint32(src[i].size());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		save(ostream, &(src[i][0]), size);
 	}
@@ -202,7 +202,7 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const uint32 size = static_cast<uint32>(src[i].size());
+		const uint32 size = uint32(src[i].size());
 		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		for (const auto& elem : src[i])
 			save(ostream, &elem, 1);

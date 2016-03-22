@@ -58,7 +58,7 @@ protected:
 	CMap0TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 	}
 
 	/*!
@@ -108,7 +108,7 @@ TEST_F(CMap0TopoTest, add_vertex)
 TEST_F(CMap0TopoTest, remove_vertex)
 {
 	add_vertices(NB_MAX);
-	int count_vertices = NB_MAX;
+	int32 count_vertices = NB_MAX;
 
 	cmap_.remove_vertex(Vertex(darts_.back()));
 	--count_vertices;

@@ -45,7 +45,7 @@ class CMap0Test : public ::testing::Test
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
-	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int>;
+	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int32>;
 	using Vertex = testCMap0::Vertex;
 
 protected:
@@ -63,8 +63,8 @@ protected:
 	CMap0Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<uint32>(std::time(0)));
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		std::srand(uint32(std::time(0)));
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
 	}
 
 	/*!

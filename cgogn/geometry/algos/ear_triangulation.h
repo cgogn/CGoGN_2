@@ -49,7 +49,7 @@ class EarTriangulation
 	public:
 		using VPMS = std::multiset<VertexPoly*, bool(*)(VertexPoly*,VertexPoly*)>;
 
-		int id;
+		int32 id;
 		Vertex vert_;
 		Scalar value_;
 		Scalar length_;

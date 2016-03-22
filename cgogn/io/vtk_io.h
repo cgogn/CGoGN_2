@@ -635,8 +635,8 @@ protected:
 			return false;
 		this->fill_surface_import();
 
-		this->nb_vertices_ = static_cast<uint32>(this->positions_.size());
-		this->nb_faces_ = static_cast<uint32>(this->offsets_.size());
+		this->nb_vertices_ = uint32(this->positions_.size());
+		this->nb_faces_ = uint32(this->offsets_.size());
 
 		auto cells_it = this->cells_.get_vec()->begin();
 		uint32 last_offset = 0u;
@@ -685,8 +685,8 @@ protected:
 private:
 	inline void fill_surface_import()
 	{
-		this->nb_vertices_ = static_cast<uint32>(this->positions_.size());
-		this->nb_faces_ = static_cast<uint32>(this->cell_types_.size());
+		this->nb_vertices_ = uint32(this->positions_.size());
+		this->nb_faces_ = uint32(this->cell_types_.size());
 
 		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.get_data())->begin();
 		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.get_data());
@@ -697,7 +697,7 @@ private:
 
 			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 			{
-				this->faces_nb_edges_.push_back(static_cast<uint32>(nb_vert));
+				this->faces_nb_edges_.push_back(uint32(nb_vert));
 				for (std::size_t i = 0ul ; i < nb_vert;++i)
 				{
 					this->faces_vertex_indices_.push_back(*cells_it++);
@@ -749,8 +749,8 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = static_cast<uint32>(this->positions_.size());
-		this->nb_volumes_ = static_cast<uint32>(this->cell_types_.size());
+		this->nb_vertices_ = uint32(this->positions_.size());
+		this->nb_volumes_ = uint32(this->cell_types_.size());
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<uint32>* cells_vec		= this->cells_.get_vec();
@@ -794,8 +794,8 @@ protected:
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 
-		this->nb_vertices_ = static_cast<uint32>(this->positions_.size());
-		this->nb_volumes_ = static_cast<uint32>(this->cell_types_.size());
+		this->nb_vertices_ = uint32(this->positions_.size());
+		this->nb_volumes_ = uint32(this->cell_types_.size());
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<uint32>* cells_vec		= this->cells_.get_vec();

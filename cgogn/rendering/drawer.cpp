@@ -156,7 +156,7 @@ void Drawer::begin(GLenum mode)
 
 void Drawer::end()
 {
-	current_begin_->back().nb = static_cast<uint32>(data_pos_.size() - current_begin_->back().begin);
+	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
 
 
@@ -184,7 +184,7 @@ void Drawer::color3f(float r, float g, float b)
 
 void Drawer::end_list()
 {
-	uint32 nb_elts = static_cast<uint32>(data_pos_.size());
+	uint32 nb_elts = uint32(data_pos_.size());
 
 	if (nb_elts == 0)
 		return;

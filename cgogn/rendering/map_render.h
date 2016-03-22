@@ -144,7 +144,7 @@ public:
 			indices_buffers_[prim]->create();
 
 		indices_buffers_uptodate_[prim] = true;
-		nb_indices_[prim] = static_cast<uint32>(table_indices.size());
+		nb_indices_[prim] = uint32(table_indices.size());
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
 		indices_buffers_[prim]->release();

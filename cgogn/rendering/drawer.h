@@ -50,7 +50,7 @@ class CGOGN_RENDERING_API Drawer
 		float width;
 		uint32 nb;
 		bool aa;
-		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(static_cast<uint32>(b)), mode(m), width(w), nb(0), aa(a){}
+		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
 	};
 
 	using Vec3f = std::array<float,3>;

@@ -131,7 +131,7 @@ public:
 	 */
 	uint32 get_nb_chunks() const override
 	{
-		return static_cast<uint32>(table_data_.size());
+		return uint32(table_data_.size());
 	}
 
 	/**
@@ -140,7 +140,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return static_cast<uint32>(table_data_.size())*CHUNKSIZE;
+		return uint32(table_data_.size())*CHUNKSIZE;
 	}
 
 	/**
@@ -169,7 +169,7 @@ public:
 		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return static_cast<uint32>(addr.size());
+		return uint32(addr.size());
 	}
 
 	/**
@@ -475,7 +475,7 @@ public:
 	 */
 	uint32 get_nb_chunks() const override
 	{
-		return static_cast<uint32>(table_data_.size());
+		return uint32(table_data_.size());
 	}
 
 	/**
@@ -484,7 +484,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return static_cast<uint32>(table_data_.size())*CHUNKSIZE/32u;
+		return uint32(table_data_.size())*CHUNKSIZE/32u;
 	}
 
 	/**
@@ -513,7 +513,7 @@ public:
 		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return static_cast<uint32>(addr.size());
+		return uint32(addr.size());
 	}
 
 	/**
@@ -692,9 +692,10 @@ public:
 	{
 		for (uint32 * const ptr : table_data_)
 		{
-#pragma omp for
-			for (int j = 0; j < int(CHUNKSIZE/32); ++j)
-				ptr[j] = 0u;
+//#pragma omp for
+//			for (int32 j = 0; j < int32(CHUNKSIZE/32); ++j)
+//				ptr[j] = 0u;
+			std::fill_n(ptr,CHUNKSIZE/32,0u);
 		}
 	}
 
