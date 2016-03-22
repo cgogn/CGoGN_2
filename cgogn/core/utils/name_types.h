@@ -137,9 +137,9 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 #ifdef _MSC_VER
 	// fix MSVC displaying "__int64" instead of long long
 	if (std::is_same<T, long long>::value)
-		return "long long";
+		return "long";
 	if (std::is_same<T, unsigned long long>::value)
-		return "unsigned long long";
+		return "unsigned long";
 
 	// removing all "class " and "struct" from type_name
 	{
