@@ -345,7 +345,7 @@ protected:
 		// initialize the indices of the existing orbits
 		foreach_cell_nomask<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
-		cgogn_assert(check_map_integrity());
+		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
 	template <Orbit ORBIT>
