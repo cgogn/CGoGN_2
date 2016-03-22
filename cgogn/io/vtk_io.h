@@ -335,7 +335,7 @@ protected :
 
 		XMLElement* root_node = doc.RootElement();
 		cgogn_assert(root_node != nullptr);
-		const bool little_endian = (to_lower(std::string(root_node->Attribute("byte_order"))) == "littleendian");
+		const bool little_endian = (!root_node->Attribute("byte_order")) ||(to_lower(std::string(root_node->Attribute("byte_order"))) == "littleendian");
 
 		std::string header_type("unsigned int");
 		if (root_node->Attribute("header_type"))
@@ -383,7 +383,7 @@ protected :
 			std::string data_name("cgogn_unnamed_vertex_data");
 			if (vertex_data->Attribute("Name"))
 				data_name = to_lower(std::string(vertex_data->Attribute("Name")));
-			const bool binary = (to_lower(std::string(vertex_data->Attribute("format", nullptr))) == "binary");
+			const bool binary =  vertex_data->Attribute("format", nullptr) && (to_lower(std::string(vertex_data->Attribute("format", nullptr))) == "binary");
 			unsigned int nb_comp = 1;
 			vertex_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
 			const std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(vertex_data->Attribute("type", nullptr)));
@@ -450,7 +450,7 @@ protected :
 			for (XMLElement* cell_data : cell_nodes)
 			{
 				const std::string& data_name = to_lower(std::string(cell_data->Attribute("Name")));
-				const bool binary = (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
+				const bool binary = cell_data->Attribute("format", nullptr) && (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
 				unsigned int nb_comp = 1;
 				cell_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
 				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cell_data->Attribute("type", nullptr)));
