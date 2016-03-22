@@ -30,29 +30,6 @@
 namespace cgogn
 {
 
-template <typename CONTAINER, typename MAP>
-class ContainerCPHBrowser : public ContainerBrowser
-{
-	const CONTAINER& cac_;
-	const MAP* map_;
-
-public:
-	ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
-	virtual unsigned int begin() const { return cac_.real_begin(); }
-	virtual unsigned int end() const { return cac_.real_end(); }
-	virtual void next(unsigned int &it)  const
-	{
-		cac_.real_next(it);
-		if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
-			it = cac_.real_end();
-	}
-	virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
-	virtual void enable() {}
-	virtual void disable() {}
-	virtual ~ContainerCPHBrowser() {}
-	ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
-};
-
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class IHCMap2_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>, public CPH2<MAP_TRAITS>
 {
@@ -69,12 +46,6 @@ public:
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
-
-//	static const Orbit DART   = Inherit_CMAP::DART;
-//	static const Orbit VERTEX = Inherit_CMAP::VERTEX;
-//	static const Orbit EDGE   = Inherit_CMAP::EDGE;
-//	static const Orbit FACE   = Inherit_CMAP::FACE;
-//	static const Orbit VOLUME = Inherit_CMAP::VOLUME;
 
 	using CDart		= typename Inherit_CMAP::CDart;
 	using Vertex	= typename Inherit_CMAP::Vertex;
@@ -108,14 +79,10 @@ public:
 
 protected:
 
-	ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
+
 
 	inline void init()
-	{
-		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(
-					this->topology_, this);
-		this->topology_.set_current_browser(cph_browser);
-	}
+	{}
 
 public:
 

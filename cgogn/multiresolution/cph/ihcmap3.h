@@ -79,37 +79,11 @@ public:
 
 	ChunkArray<unsigned int>* next_level_cell[NB_ORBITS];
 
-	template <typename CONTAINER, typename MAP>
-	class ContainerCPHBrowser : public ContainerBrowser
-	{
-		const CONTAINER& cac_;
-		const MAP* map_;
-
-	public:
-		ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
-		virtual unsigned int begin() const { return cac_.real_begin(); }
-		virtual unsigned int end() const { return cac_.real_end(); }
-		virtual void next(unsigned int &it)  const
-		{
-			cac_.real_next(it);
-			if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
-				it = cac_.real_end();
-		}
-		virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
-		virtual void enable() {}
-		virtual void disable() {}
-		virtual ~ContainerCPHBrowser() {}
-		ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
-	};
 
 protected:
-	ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
 
 	inline void init()
-	{
-		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
-		this->topology_.set_current_browser(cph_browser);
-	}
+	{}
 
 public:
 	IHCMap3_T() : Inherit_CMAP(), Inherit_CPH(this->topology_)
