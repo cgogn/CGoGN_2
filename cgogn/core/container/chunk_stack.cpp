@@ -29,6 +29,6 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, unsigned int>;
+template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
 
 } // namespace cgogn

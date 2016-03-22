@@ -90,16 +90,16 @@ public:
 //		cgogn_message_assert(m->vertexInsertionLevel(d) <= m->m_curLevel,
 //							 "Access to the embedding of a vertex inserted after current level") ;
 
-//		unsigned int orbit = this->getOrbit() ;
-//		unsigned int nbSteps = m->m_curLevel - m->vertexInsertionLevel(d) ;
-//		unsigned int index = m->getEmbedding<ORBIT>(d) ;
+//		uint32 orbit = this->getOrbit() ;
+//		uint32 nbSteps = m->m_curLevel - m->vertexInsertionLevel(d) ;
+//		uint32 index = m->getEmbedding<ORBIT>(d) ;
 
 //		AttributeContainer& cont = m->getAttributeContainer<ORBIT>() ;
-//		unsigned int step = 0 ;
+//		uint32 step = 0 ;
 //		while(step < nbSteps)
 //		{
 //			step++ ;
-//			unsigned int nextIdx = m->m_nextLevelCell[orbit]->operator[](index) ;
+//			uint32 nextIdx = m->m_nextLevelCell[orbit]->operator[](index) ;
 //			if (nextIdx == EMBNULL)
 //			{
 //				nextIdx = m->newCell<ORBIT>() ;
@@ -120,27 +120,27 @@ public:
 //		cgogn_message_assert(m->vertexInsertionLevel(d) <= m->m_curLevel,
 //							 "Access to the embedding of a vertex inserted after current level") ;
 
-//		unsigned int orbit = this->getOrbit() ;
-//		unsigned int nbSteps = m->m_curLevel - m->vertexInsertionLevel(d) ;
-//		unsigned int index = m->getEmbedding<ORBIT>(d) ;
+//		uint32 orbit = this->getOrbit() ;
+//		uint32 nbSteps = m->m_curLevel - m->vertexInsertionLevel(d) ;
+//		uint32 index = m->getEmbedding<ORBIT>(d) ;
 
-//		unsigned int step = 0 ;
+//		uint32 step = 0 ;
 //		while(step < nbSteps)
 //		{
 //			step++ ;
-//			unsigned int next = m->m_nextLevelCell[orbit]->operator[](index) ;
+//			uint32 next = m->m_nextLevelCell[orbit]->operator[](index) ;
 //			if(next != EMBNULL) index = next ;
 //			else break ;
 //		}
 //		return this->m_attrib->operator[](index);
 	}
 
-	T& operator[](unsigned int a)
+	T& operator[](uint32 a)
 	{
 		return AttributeHandler<T, ORBIT>::operator[](a) ;
 	}
 
-	const T& operator[](unsigned int a) const
+	const T& operator[](uint32 a) const
 	{
 		return AttributeHandler<T, ORBIT>::operator[](a) ;
 	}

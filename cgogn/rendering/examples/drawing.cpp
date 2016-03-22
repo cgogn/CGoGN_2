@@ -157,7 +157,7 @@ void Drawing::init()
 			}
 	drawer2_->end();
 
-	drawer2_->ball_size(0.03);
+	drawer2_->ball_size(0.03f);
 	drawer2_->begin(GL_POINTS);
 	drawer2_->color3f(1.0,1.0,1.0);
 	for (float z=-1.0f; z < 1.0f; z+= 0.2f)

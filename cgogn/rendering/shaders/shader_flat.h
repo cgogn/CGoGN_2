@@ -51,10 +51,10 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_front_color_;
-	int unif_back_color_;
-	int unif_ambiant_color_;
-	int unif_light_position_;
+	GLint unif_front_color_;
+	GLint unif_back_color_;
+	GLint unif_ambiant_color_;
+	GLint unif_light_position_;
 
 public:
 
@@ -99,7 +99,7 @@ public:
 	 * @param vbo_color pointer on color vbo (RGB)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_col = NULL);
+	bool set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_col = NULL);
 
 };
 

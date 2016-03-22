@@ -60,10 +60,10 @@ protected:
 	CMap1Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	}
 
 	/*!
@@ -72,13 +72,13 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int add_faces(unsigned int n)
+	uint32 add_faces(uint32 n)
 	{
 		darts_.clear();
-		unsigned int count = 0u;
-		for (unsigned int i = 0u; i < n; ++i)
+		uint32 count = 0u;
+		for (uint32 i = 0u; i < n; ++i)
 		{
-			unsigned int m = 1u + std::rand() % 10;
+			uint32 m = 1u + std::rand() % 10;
 			Dart d = cmap_.add_face(m);
 			count += m;
 
@@ -105,7 +105,7 @@ TEST_F(CMap1Test, random_map_generators)
  */
 TEST_F(CMap1Test, add_face)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
+	uint32 count_vertices = add_faces(NB_MAX);
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
@@ -117,15 +117,15 @@ TEST_F(CMap1Test, add_face)
  */
 TEST_F(CMap1Test, remove_face)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
-	int count_faces = NB_MAX;
+	uint32 count_vertices = add_faces(NB_MAX);
+	int32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)
 		{
 			Face f(d);
-			unsigned int k = cmap_.codegree(f);
+			uint32 k = cmap_.codegree(f);
 			cmap_.remove_face(f);
 			count_vertices -= k;
 			--count_faces;
@@ -142,7 +142,7 @@ TEST_F(CMap1Test, remove_face)
  */
 TEST_F(CMap1Test, split_vertex)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
+	uint32 count_vertices = add_faces(NB_MAX);
 
 	for (Dart d : darts_)
 	{
@@ -160,12 +160,12 @@ TEST_F(CMap1Test, split_vertex)
  */
 TEST_F(CMap1Test, remove_vertex)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
-	unsigned int count_faces = NB_MAX;
+	uint32 count_vertices = add_faces(NB_MAX);
+	uint32 count_faces = NB_MAX;
 
 	for (Dart d: darts_)
 	{
-		unsigned int k = cmap_.codegree(Face(d));
+		uint32 k = cmap_.codegree(Face(d));
 		cmap_.remove_vertex(Vertex(d));
 		--count_vertices;
 		if (k == 1u) --count_faces;

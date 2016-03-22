@@ -7,7 +7,7 @@
 #include <core/basic/cell_marker.h>
 
 using namespace cgogn;
-
+using namespace cgogn::numerics;
 
 using Map1 = CMap1<DefaultMapTraits>;
 using Map2 = CMap2<DefaultMapTraits>;
@@ -65,12 +65,12 @@ int test1(MAP& map)
 	typename MAP::template FaceAttributeHandler<float> ahf = map.template add_attribute<float, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int> ahf2 = map.template get_attribute_force_type<int,float, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttributeHandler<int32> ahf2 = map.template get_attribute_force_type<int32,float, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
 
-	std::vector<unsigned int>* uib = cgogn::get_uint_buffers()->get_buffer();
+	std::vector<uint32>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
 	cgogn::get_uint_buffers()->release_buffer(uib);
 
@@ -113,9 +113,9 @@ int test1(MAP& map)
 //	});
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
-//	typename MAP::template ChunkArrayContainer<unsigned int>& container = map.get_attribute_container(MAP::Vertex);
+//	typename MAP::template ChunkArrayContainer<uint32>& container = map.get_attribute_container(MAP::Vertex);
 //	typename MAP::template ChunkArray<float>* att = container.template get_attribute<float>("floats");
-//	for (unsigned int i = 0; i < 10; ++i)
+//	for (uint32 i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();
 	for (auto& v : ah)
 		v = 3.0f;

@@ -56,7 +56,7 @@ public:
 	 * @param vbo_col pointer on color vbo (RGB)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_col);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_col);
 };
 
 } // namespace rendering

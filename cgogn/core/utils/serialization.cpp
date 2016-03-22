@@ -46,12 +46,12 @@ CGOGN_CORE_API void load<std::string>(std::istream& istream, std::string* dest, 
 	char buffer[2048];
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		unsigned int size;
-		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		uint32 size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(uint32));
 		cgogn_assert(size < 2048);
 		istream.read((buffer), size);
 		dest[i].resize(size);
-		for (unsigned int j=0; j<size; ++j)
+		for (uint32 j=0; j<size; ++j)
 			dest[i][j] = buffer[j];
 	}
 }
@@ -65,8 +65,8 @@ CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* 
 
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].length());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = uint32(src[i].length());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		const char* str = src[i].c_str();
 		ostream.write(str, size);
 	}
@@ -81,7 +81,7 @@ CGOGN_CORE_API std::size_t data_length<std::string>(std::string const* src, std:
 	std::size_t total = 0;
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int); // for size
+		total += sizeof(uint32); // for size
 		total += src[i].length();
 	}
 	return total;

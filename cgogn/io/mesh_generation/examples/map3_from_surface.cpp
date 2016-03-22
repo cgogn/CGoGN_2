@@ -28,6 +28,9 @@
 #include <io/mesh_generation/tetgen_io.h>
 #include <io/map_import.h>
 
+using namespace cgogn::numerics;
+
+
 using MapTraits = cgogn::DefaultMapTraits;
 using Map3 = cgogn::CMap3<MapTraits>;
 using Map2 = cgogn::CMap2<MapTraits>;
@@ -77,13 +80,13 @@ int main(int argc, char** argv)
 	map3.enable_topo_cache<Map3::Vertex::ORBIT>();
 	map3.enable_topo_cache<Map3::Edge::ORBIT>();
 
-	unsigned int nbw = 0u;
+	uint32 nbw = 0u;
 	map3.foreach_cell([&nbw] (Map3::Volume)
 	{
 		++nbw;
 	});
 
-	unsigned int nbf = 0u;
+	uint32 nbf = 0u;
 	map3.foreach_cell([&] (Map3::Face f)
 	{
 		++nbf;
@@ -91,18 +94,18 @@ int main(int argc, char** argv)
 		Vec3 v2 = vertex_position[Map3::Vertex(map3.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
 	});
 
-	unsigned int nbv = 0;
+	uint32 nbv = 0;
 	map3.foreach_cell([&] (Map3::Vertex v)
 	{
 		++nbv;
-		unsigned int nb_incident = 0;
+		uint32 nb_incident = 0;
 		map3.foreach_incident_face(v, [&] (Map3::Face /*f*/)
 		{
 			++nb_incident;
 		});
 	});
 
-	unsigned int nbe = 0;
+	uint32 nbe = 0;
 	map3.foreach_cell([&nbe] (Map3::Edge)
 	{
 		++nbe;

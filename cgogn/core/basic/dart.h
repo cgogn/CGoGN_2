@@ -27,6 +27,7 @@
 #include <climits>
 #include <string>
 #include <iostream>
+#include <core/utils/definitions.h>
 
 /**
  * \file cgogn/core/basic/dart.h
@@ -40,13 +41,13 @@ namespace cgogn
  */
 struct Dart
 {
-	// MSVC doesn't support  std::numeric_limits<unsigned int>::max() when declaring static const variables
-	static const unsigned int INVALID_INDEX = UINT_MAX;
+	// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+	static const uint32 INVALID_INDEX = UINT_MAX;
 
 	/**
 	 * \brief the value of a dart.
 	 */
-	unsigned int index;
+	uint32 index;
 
 	/**
 	 * \brief Creates a new nil Dart
@@ -64,7 +65,7 @@ struct Dart
 	 *
 	 * \param[in] v the value of the new dart
 	 */
-	inline explicit Dart(unsigned int v) : index(v)
+	inline explicit Dart(uint32 v) : index(v)
 	{}
 
 	/**

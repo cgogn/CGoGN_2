@@ -72,7 +72,7 @@ public:
 		map_.attributes_[ORBIT].swap(cac);
 	}
 
-	inline void init_parent_vertex_embedding(Dart d, unsigned int emb)
+	inline void init_parent_vertex_embedding(Dart d, uint32 emb)
 	{
 		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
 		{
@@ -100,17 +100,17 @@ public:
 		return map_.phi3_unsew(d);
 	}
 
-	inline Dart add_face_topo(unsigned int nb_edges)
+	inline Dart add_face_topo(uint32 nb_edges)
 	{
 		return map_.add_face_topo(nb_edges);
 	}
 
-	inline Dart add_prism_topo(unsigned int nb_edges)
+	inline Dart add_prism_topo(uint32 nb_edges)
 	{
 		return map_.add_prism_topo(nb_edges);
 	}
 
-	inline Dart add_pyramid_topo(unsigned int nb_edges)
+	inline Dart add_pyramid_topo(uint32 nb_edges)
 	{
 		return map_.add_pyramid_topo(nb_edges);
 	}
@@ -121,7 +121,7 @@ public:
 	}
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
+	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
 	}
@@ -139,10 +139,10 @@ public:
 		visitedFaces.push_back(d);		// Start with the face of d
 		dmarker.mark_orbit(Face2(d));
 
-		unsigned int count = 0u;
+		uint32 count = 0u;
 
 		// For every face added to the list
-		for(unsigned int i = 0u; i < visitedFaces.size(); ++i)
+		for(uint32 i = 0u; i < visitedFaces.size(); ++i)
 		{
 			Dart it = visitedFaces[i];
 			Dart f = it;

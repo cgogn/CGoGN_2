@@ -44,9 +44,9 @@ bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T&
 	Scalar y = Dir.dot(v.cross(w));//tripleProduct(Dir, v, w) ;
 	Scalar z = Dir.dot(w.cross(u));//tripleProduct(Dir, w, u) ;
 
-	unsigned int np = 0 ;
-	unsigned int nn = 0 ;
-	unsigned int nz = 0 ;
+	uint32 np = 0 ;
+	uint32 nn = 0 ;
+	uint32 nz = 0 ;
 
 	if (x > Scalar(0))
 		++np ;

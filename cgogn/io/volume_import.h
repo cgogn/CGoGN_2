@@ -121,11 +121,11 @@ public:
 	using Face = typename Map::Face;
 	using Face2 = typename Map::Face2;
 
-	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
@@ -134,11 +134,11 @@ public:
 	virtual ~VolumeImport() override {}
 
 protected:
-	unsigned int nb_vertices_;
-	unsigned int nb_volumes_;
+	uint32 nb_vertices_;
+	uint32 nb_volumes_;
 
-	std::vector<unsigned int> volumes_nb_vertices_;
-	std::vector<unsigned int> volumes_vertex_indices_;
+	std::vector<uint32> volumes_nb_vertices_;
+	std::vector<uint32> volumes_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer volume_attributes_;
@@ -177,24 +177,24 @@ public:
 
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
-		unsigned int index = 0u;
+		uint32 index = 0u;
 		// buffer for tempo faces (used to remove degenerated edges)
-		std::vector<unsigned int> edgesBuffer;
+		std::vector<uint32> edgesBuffer;
 		edgesBuffer.reserve(16u);
 
 		typename Map::DartMarkerStore m(map);
 
 		//for each volume of table
-		for(unsigned int i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
 		{
 			// store volume in buffer, removing degenated faces
-			const unsigned int nbv = this->volumes_nb_vertices_[i];
+			const uint32 nbv = this->volumes_nb_vertices_[i];
 
 			edgesBuffer.clear();
-			unsigned int prec = std::numeric_limits<unsigned int>::max();
-			for (unsigned int j = 0u; j < nbv; ++j)
+			uint32 prec = std::numeric_limits<uint32>::max();
+			for (uint32 j = 0u; j < nbv; ++j)
 			{
-				unsigned int em = this->volumes_vertex_indices_[index++];
+				uint32 em = this->volumes_vertex_indices_[index++];
 				if (em != prec)
 				{
 					prec = em;
@@ -268,7 +268,7 @@ public:
 				std::size_t buffer_id = 0ul;
 				for (Dart dv : vertices_of_prism)
 				{
-					const unsigned int emb = edgesBuffer[buffer_id++];
+					const uint32 emb = edgesBuffer[buffer_id++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
@@ -326,7 +326,7 @@ public:
 
 
 		//reconstruct neighbourhood
-		unsigned int nbBoundaryFaces = 0u;
+		uint32 nbBoundaryFaces = 0u;
 		map.foreach_dart([&] (Dart d)
 		{
 			if (m.is_marked(d))
@@ -354,8 +354,8 @@ public:
 
 				if (!good_dart.is_nil()) //not a boundary faces
 				{
-					const unsigned int degD = map.codegree(Face(d));
-					const unsigned int degGD = map.codegree(Face(good_dart));
+					const uint32 degD = map.codegree(Face(d));
+					const uint32 degGD = map.codegree(Face(good_dart));
 
 					if(degD == degGD) // normal case : the two opposite faces have the same degree
 					{
@@ -476,7 +476,7 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_hexa(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, unsigned int p6, unsigned int p7, bool check_orientation)
+	void add_hexa(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_hexa(pos, p0, p1, p2, p3, p4, p5, p6, p7);
@@ -491,7 +491,7 @@ public:
 		this->volumes_vertex_indices_.push_back(p7);
 	}
 	template<typename VEC3>
-	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5, unsigned int& p6, unsigned int& p7)
+	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
 		{
@@ -503,7 +503,7 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_tetra(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, bool check_orientation)
+	void add_tetra(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_tetra(pos,p0,p1,p2,p3);
@@ -515,14 +515,14 @@ public:
 	}
 
 	template<typename VEC3>
-	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3)
+	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
 		if (geometry::test_orientation_3D(pos[p0], pos[p1],pos[p2],pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
 	template<typename VEC3>
-	void add_pyramid(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, bool check_orientation)
+	void add_pyramid(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
 	{
 		this->volumes_nb_vertices_.push_back(5u);
 		if (check_orientation)
@@ -535,14 +535,14 @@ public:
 	}
 
 	template<typename VEC3>
-	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4)
+	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
 	template<typename VEC3>
-	void add_triangular_prism(ChunkArray<VEC3>const& pos,unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4, unsigned int p5, bool check_orientation)
+	void add_triangular_prism(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_triangular_prism(pos,p0,p1,p2,p3,p4,p5);
@@ -556,7 +556,7 @@ public:
 	}
 
 	template<typename VEC3>
-	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5)
+	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
 		if (geometry::test_orientation_3D(pos[p3], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
 		{

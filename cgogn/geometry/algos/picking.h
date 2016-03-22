@@ -56,9 +56,9 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 	// thread data
 	using Triplet = typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>>;
 	std::vector<Triplet> selected_th(cgogn::get_nb_threads());
-	std::vector<std::vector<unsigned int>> ear_indices_th(cgogn::get_nb_threads());
+	std::vector<std::vector<uint32>> ear_indices_th(cgogn::get_nb_threads());
 
-	m.parallel_foreach_cell([&] (Face f, unsigned int th)
+	m.parallel_foreach_cell([&] (Face f, uint32 th)
 	{
 		VEC3 inter;
 		if (m.has_codegree(f, 3))
@@ -71,7 +71,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 		}
 		else
 		{
-			std::vector<unsigned int>& ear_indices = ear_indices_th[th];
+			std::vector<uint32>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, ear_indices);
 			for(std::size_t i = 0; i < ear_indices.size(); i += 3)
@@ -89,7 +89,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 	});
 
 	//merging thread result
-	for (unsigned int i = 0; i < cgogn::get_nb_threads(); ++i)
+	for (uint32 i = 0; i < cgogn::get_nb_threads(); ++i)
 	{
 		for (auto x : selected_th[i])
 			selected.push_back(x);

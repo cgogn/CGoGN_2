@@ -53,12 +53,12 @@ protected:
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
-	unsigned int vao1_;
+	uint32 vao1_;
 	QColor face_color_;
 
 
 	VBO* vbo_pos2_;
-	unsigned int vao2_;
+	uint32 vao2_;
 	QColor edge_color_;
 
 
@@ -123,7 +123,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 	std::vector<std::array<float,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<unsigned int> ear_indices;
+	std::vector<uint32> ear_indices;
 	ear_indices.reserve(256);
 
 	m.foreach_cell([&] (Volume v)
@@ -159,7 +159,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 		});
 	});
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_pos_->allocate(nbvec,3);
 	vbo_pos_->bind();
 	vbo_pos_->copy_data(0, nbvec*12, out_pos[0].data());
@@ -184,7 +184,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 	std::vector<std::array<float,3>> out_color;
 	out_color.reserve(1024*1024);
 
-	std::vector<unsigned int> ear_indices;
+	std::vector<uint32> ear_indices;
 	ear_indices.reserve(256);
 
 	m.foreach_cell([&] (Volume v)
@@ -266,7 +266,7 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 	std::vector<std::array<float,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<unsigned int> ear_indices;
+	std::vector<uint32> ear_indices;
 	ear_indices.reserve(256);
 
 	m.foreach_cell([&] (Volume v)
@@ -282,7 +282,7 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 		});
 	});
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_pos2_->allocate(nbvec,3);
 	vbo_pos2_->bind();
 	vbo_pos2_->copy_data(0, nbvec*12, out_pos[0].data());

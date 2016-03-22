@@ -37,7 +37,7 @@ class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -215,7 +215,7 @@ protected:
 	 * Two 1-face are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
-	Dart add_face_topo(unsigned int size)
+	Dart add_face_topo(uint32 size)
 	{
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
@@ -223,7 +223,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			this->set_boundary(e,true);
+			this->set_boundary(e, true);
 			phi2_sew(it, e);
 			it = this->phi1(it);
 			e = this->phi_1(e);
@@ -243,7 +243,7 @@ public:
 	 * More precisely :
 	 *  - a Face attribute is created, if needed, for the new face.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -254,7 +254,7 @@ public:
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
-				this->new_orbit_embedding(CDart(phi2(d)));
+//				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 		}
 
@@ -277,7 +277,7 @@ public:
 		if (this->template is_embedded<Face>())
 		{
 			this->new_orbit_embedding(f);
-			this->new_orbit_embedding(Face(phi2(f.dart)));
+//			this->new_orbit_embedding(Face(phi2(f.dart)));
 		}
 
 		if (this->template is_embedded<Volume>())
@@ -306,8 +306,8 @@ protected:
 		phi2_sew(d, ne);						// Sew the new 1D-edges
 		phi2_sew(e, nd);						// To build the new 2D-edges
 
-		this->set_boundary(nd,this->is_boundary(d));
-		this->set_boundary(ne,this->is_boundary(e));
+		this->set_boundary(nd, this->is_boundary(d));
+		this->set_boundary(ne, this->is_boundary(e));
 
 		return nd;
 	}
@@ -337,8 +337,10 @@ public:
 
 		if (this->template is_embedded<CDart>())
 		{
-			this->new_orbit_embedding(CDart(v));
-			this->new_orbit_embedding(CDart(nf));
+			if (!this->is_boundary(v))
+				this->new_orbit_embedding(CDart(v));
+			if (!this->is_boundary(nf))
+				this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -352,8 +354,10 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(v, e.dart);
-			this->template copy_embedding<Face>(nf, f);
+			if (!this->is_boundary(e.dart))
+				this->template copy_embedding<Face>(v, e.dart);
+			if (!this->is_boundary(f))
+				this->template copy_embedding<Face>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
@@ -392,8 +396,8 @@ protected:
 	 */
 	inline void cut_face_topo(Dart d, Dart e)
 	{
-		cgogn_message_assert(d != e, "cut_face: d and e should be distinct");
-		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face: d and e should belong to the same face");
+		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face_topo: d and e should belong to the same face");
 
 		Dart dd = this->phi_1(d);
 		Dart ee = this->phi_1(e);
@@ -402,8 +406,8 @@ protected:
 		this->phi1_sew(dd, ee);						// subdivide phi1 cycle at the inserted darts
 		phi2_sew(nd, ne);							// build the new 2D-edge from the inserted darts
 
-		this->set_boundary(nd,this->is_boundary(dd));
-		this->set_boundary(ne,this->is_boundary(ee));
+		this->set_boundary(nd, this->is_boundary(dd));
+		this->set_boundary(ne, this->is_boundary(ee));
 	}
 
 public:
@@ -425,7 +429,9 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		cut_face_topo(d,e);
+		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
+
+		cut_face_topo(d, e);
 		Dart nd = this->phi_1(d);
 		Dart ne = this->phi_1(e);
 
@@ -461,17 +467,17 @@ public:
 	 * Connectivity information
 	 *******************************************************************************/
 
-	inline unsigned int degree(Vertex v) const
+	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
-	inline unsigned int codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}
 
-	inline unsigned int degree(Edge e) const
+	inline uint32 degree(Edge e) const
 	{
 		if (this->is_boundary(e.dart) || this->is_boundary(phi2(e.dart)))
 			return 1;
@@ -479,19 +485,19 @@ public:
 			return 2;
 	}
 
-	inline unsigned int codegree(Face f) const
+	inline uint32 codegree(Face f) const
 	{
 		return Inherit::codegree(f);
 	}
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face) const
 	{
 		return 1;
 	}
 
-	inline unsigned int codegree(Volume v) const
+	inline uint32 codegree(Volume v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
 		return result;
 	}
@@ -529,7 +535,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet
@@ -601,7 +607,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet

@@ -49,7 +49,7 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
 };
 
 // specialization 2 : Eigen::Vector
-template <typename Scalar_, int Rows, int Options>
+template <typename Scalar_, int32 Rows, int32 Options>
 struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
 	static const std::size_t SIZE = Rows;
@@ -80,19 +80,19 @@ struct nb_components_traits
 template<typename T>
 struct nb_components_traits<T, typename std::enable_if< std::is_integral<T>::value || std::is_floating_point<T>::value >::type >
 {
-	const static unsigned int value = 1u;
+	const static uint32 value = 1u;
 };
 
 template<typename Scalar, std::size_t size>
 struct nb_components_traits<geometry::Vec_T<std::array<Scalar,size>>>
 {
-	const static unsigned int value = size;
+	const static uint32 value = size;
 };
 
-template <typename Scalar_, int Rows, int Options>
+template <typename Scalar_, int32 Rows, int32 Options>
 struct nb_components_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 {
-	const static unsigned int value = Rows;
+	const static uint32 value = Rows;
 };
 
 } // namespace geometry

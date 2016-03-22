@@ -66,7 +66,7 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	get_matrices_uniforms();
 }
 
-bool ShaderColorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
+bool ShaderColorPerVertex::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
     {

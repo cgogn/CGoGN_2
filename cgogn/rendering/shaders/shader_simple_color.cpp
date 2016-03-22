@@ -73,7 +73,7 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 }
 
 
-bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos, unsigned int stride, unsigned first)
+bool ShaderSimpleColor::set_vao(uint32 i, VBO* vbo_pos, uint32 stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{
