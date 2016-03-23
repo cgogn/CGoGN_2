@@ -35,13 +35,12 @@ namespace cgogn
  * \brief The CMap2TopoTest class implements topological tests on CMap2
  * It derives from CMap2 to allow the test of protected methods
  *
- * Note that these tests, check that the topological operators perform as wanted
- * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * Note that these tests check that the topological operators perform as wanted
+ * but do neither test the containers (refs_, used_, etc.) nor the iterators.
  * These last tests are implemented in another test suite.
  */
 class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
 {
-
 public:
 
 	using Inherit = CMap2<DefaultMapTraits>;
@@ -96,7 +95,7 @@ protected:
 	{
 		bool result = false;
 
-		foreach_dart_of_orbit_until(Volume(d), [&](Dart vit)
+		foreach_dart_of_orbit_until(Volume(d), [&] (Dart vit)
 		{
 			if (vit == e) result = true;
 			return !result;
@@ -157,20 +156,19 @@ protected:
 	void add_closed_surfaces()
 	{
 		darts_.clear();
-		uint32 n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10;
+			uint32 n = 1u + std::rand() % 10u;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off 1-edges
+		// Sew some pairs of 1-edges
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
+			uint32 n = std::rand() % 10u;
 			while (n-- > 0u) e1 = phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
@@ -185,7 +183,7 @@ protected:
 				e2 = phi_1(e2);
 			}
 		}
-		// Close de map
+		// Close the map
 		MapBuilder mbuild(*this);
 		mbuild.close_map();
 	}

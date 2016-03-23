@@ -104,12 +104,11 @@ protected:
 	{
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
-		uint32 n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10u;
+			uint32 n = 1u + std::rand() % 10u;
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
@@ -117,7 +116,7 @@ protected:
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
+			uint32 n = std::rand() % 10u;
 			while (n-- > 0u) e1 = cmap_.phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
@@ -140,7 +139,8 @@ protected:
 		// Embed the map
 		cmap_.foreach_dart([&] (Dart d)
 		{
-			mbuild.new_orbit_embedding(CDart(d));
+			if (!cmap_.is_boundary(d))
+				mbuild.new_orbit_embedding(CDart(d));
 		});
 		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
 		{
