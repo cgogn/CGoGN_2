@@ -30,34 +30,28 @@ using namespace cgogn::numerics;
 
 TEST(NameTypesTest, NumTypes)
 {
-	using llint = long long;
-	using ullint = unsigned long long;
-
 	EXPECT_EQ(cgogn::name_of_type(bool()), "bool");
 	EXPECT_EQ(cgogn::name_of_type(char()), "char");
-	EXPECT_EQ(cgogn::name_of_type(int8()), "signed char");
-	EXPECT_EQ(cgogn::name_of_type(uint8()), "unsigned char");
+	EXPECT_EQ(cgogn::name_of_type(int8()), "int8");
+	EXPECT_EQ(cgogn::name_of_type(uint8()), "uint8");
 	EXPECT_EQ(cgogn::name_of_type(wchar_t()), "wchar_t");
 
 #if _MSC_VER == 1800 // VS2013
-	EXPECT_EQ(cgogn::name_of_type(char16_t()), "unsigned short");
-	EXPECT_EQ(cgogn::name_of_type(char32_t()), "unsigned int");
+	EXPECT_EQ(cgogn::name_of_type(char16_t()), "uint16");
+	EXPECT_EQ(cgogn::name_of_type(char32_t()), "uint32");
 #else
 	EXPECT_EQ(cgogn::name_of_type(char16_t()), "char16_t");
 	EXPECT_EQ(cgogn::name_of_type(char32_t()), "char32_t");
 #endif // VS2013
 
-	EXPECT_EQ(cgogn::name_of_type(int16()), "short");
-	EXPECT_EQ(cgogn::name_of_type(uint16()), "unsigned short");
-	EXPECT_EQ(cgogn::name_of_type(int32()), "int");
+	EXPECT_EQ(cgogn::name_of_type(int16()), "int16");
+	EXPECT_EQ(cgogn::name_of_type(uint16()), "uint16");
 
-	EXPECT_EQ(cgogn::name_of_type(uint32()), "unsigned int");
+	EXPECT_EQ(cgogn::name_of_type(int32()), "int32");
+	EXPECT_EQ(cgogn::name_of_type(uint32()), "uint32");
 
-	EXPECT_EQ(cgogn::name_of_type(int64()), "long");
-	EXPECT_EQ(cgogn::name_of_type(uint64()), "unsigned long");
-
-	EXPECT_EQ(cgogn::name_of_type(llint()), "long");
-	EXPECT_EQ(cgogn::name_of_type(ullint()), "unsigned long");
+	EXPECT_EQ(cgogn::name_of_type(int64()), "int64");
+	EXPECT_EQ(cgogn::name_of_type(uint64()), "uint64");
 
 	EXPECT_EQ(cgogn::name_of_type(float()), "float");
 	EXPECT_EQ(cgogn::name_of_type(double()), "double");
