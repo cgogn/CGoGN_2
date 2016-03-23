@@ -466,6 +466,9 @@ public:
 			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
 		}
 
+		if (this->nb_vertices_ != map.template nb_cells<Vertex::ORBIT>())
+			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
+
 		if (this->volume_attributes_.get_nb_attributes() > 0)
 		{
 			mbuild.template create_embedding<Volume::ORBIT>();
