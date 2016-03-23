@@ -3,12 +3,6 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
-if (ZLIB_FOUND)
-	add_definitions("-DZLIB_CONST")
-	add_definitions("-DCGOGN_WITH_ZLIB")
-endif()
-
-
 
 set(HEADER_FILES
 	surface_import.h
@@ -48,6 +42,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include/cgogn/io>
 )
+
+if (${ZLIB_FOUND})
+	target_compile_definitions(${PROJECT_NAME} PUBLIC -DZLIB_CONST)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC -DCGOGN_WITH_ZLIB)
+endif()
 
 target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply lm6 ${ZLIB_LIBRARIES})
 
