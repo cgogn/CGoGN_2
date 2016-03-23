@@ -195,7 +195,7 @@ public:
 	{
 		// Search the map for topological holes (fix points of phi3)
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
-		map_.foreach_dart( [&] (Dart d)
+		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi3(d) == d)
 				fix_point_darts->push_back(d);
@@ -209,45 +209,46 @@ public:
 				{
 					map_.set_boundary(db,true);
 				});
+
 				const Volume new_volume(map_.phi3(d));
 
-				if (map_.template is_embedded<CDart>())
-				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart d)
-					{
-						map_.new_orbit_embedding(CDart(d));
-					});
-				}
+//				if (map_.template is_embedded<CDart>())
+//				{
+//					map_.foreach_dart_of_orbit(new_volume, [this] (Dart d)
+//					{
+//						map_.new_orbit_embedding(CDart(d));
+//					});
+//				}
 
-				if (map_.template is_embedded<Vertex2>())
-				{
-					map_.CMap3::Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
-					{
-						map_.new_orbit_embedding(v);
-					});
-				}
+//				if (map_.template is_embedded<Vertex2>())
+//				{
+//					map_.CMap3::Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
+//					{
+//						map_.new_orbit_embedding(v);
+//					});
+//				}
 
-				if (map_.template is_embedded<Edge2>())
-				{
-					map_.CMap3::Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
-					{
-						map_.new_orbit_embedding(e);
-					});
-				}
+//				if (map_.template is_embedded<Edge2>())
+//				{
+//					map_.CMap3::Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
+//					{
+//						map_.new_orbit_embedding(e);
+//					});
+//				}
 
-				if (map_.template is_embedded<Face2>())
-				{
-					map_.CMap3::Inherit::foreach_incident_face(new_volume, [this] (Face2 f)
-					{
-						map_.new_orbit_embedding(f);
-					});
-				}
+//				if (map_.template is_embedded<Face2>())
+//				{
+//					map_.CMap3::Inherit::foreach_incident_face(new_volume, [this] (Face2 f)
+//					{
+//						map_.new_orbit_embedding(f);
+//					});
+//				}
 
 				if (map_.template is_embedded<Vertex>())
 				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
 					{
-						map_.template copy_embedding<Vertex>(wd, map_.phi1(map_.phi3(wd)));
+						map_.template copy_embedding<Vertex>(it, map_.phi1(map_.phi3(it)));
 					});
 				}
 
@@ -267,10 +268,10 @@ public:
 					});
 				}
 
-				if (map_.template is_embedded<Volume>())
-				{
-					map_.new_orbit_embedding(new_volume);
-				}
+//				if (map_.template is_embedded<Volume>())
+//				{
+//					map_.new_orbit_embedding(new_volume);
+//				}
 			}
 		}
 		get_dart_buffers()->release_buffer(fix_point_darts);
