@@ -26,7 +26,6 @@ inline void create_map3_from_image(CMap3<MAP_TRAITS>& map3, const std::string& i
 	using Criteria		= VolumeMeshFromImageCGALTraits::Criteria;
 	using C3T3			= VolumeMeshFromImageCGALTraits::C3T3;
 
-	cgogn_assert(get_extension(image_path) == "inr");
 	Image inrimage;
 	inrimage.read(image_path.c_str());
 

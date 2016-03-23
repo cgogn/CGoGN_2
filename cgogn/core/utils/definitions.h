@@ -29,6 +29,7 @@
 
 namespace cgogn
 {
+
 namespace numerics
 {
 
@@ -42,20 +43,10 @@ using  uint16 = std::uint16_t;
 using  uint32 = std::uint32_t;
 using  uint64 = std::uint64_t;
 
-using float32 = float;
-using float64 = double;
-
 }
+
 using namespace numerics;
 }
-
-
-//#define USING_CGOGN_NUMERICS using cgogn::int8; using cgogn::uint8; \
-//	using cgogn::int16; using cgogn::uint16;\
-//	using cgogn::int32; using cgogn::uint32;\
-//	using cgogn::int64; using cgogn::uint64;\
-//	using cgogn::float32; using cgogn::float64;
-
 
 /**
  * \brief No execpt declaration for CGOGN symbols.
