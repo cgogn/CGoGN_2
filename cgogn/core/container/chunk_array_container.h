@@ -537,7 +537,7 @@ public:
 				{
 					unsigned rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
-					copy_line(rdown, up);
+					copy_line(rdown, up,true,true);
 					rnext(up);
 				}
 				down += PRIMSIZE;
@@ -676,16 +676,21 @@ public:
 	 * @brief copy the content of line src in line dst (with refs & markers)
 	 * @param dstIndex destination
 	 * @param srcIndex source
+	 * @param copy_markers, to specify if the marker should be copied.
+	 * @param copy_refs, to specify if the refs should be copied.
 	 */
-	void copy_line(uint32 dst, uint32 src)
+	void copy_line(uint32 dst, uint32 src, bool copy_markers, bool copy_refs)
 	{
 		for (auto ptr : table_arrays_)
 			ptr->copy_element(dst, src);
 
-		for (auto ptr : table_marker_arrays_)
-			ptr->copy_element(dst, src);
-
-		refs_[dst] = refs_[src];
+		if (copy_markers)
+		{
+			for (auto ptr : table_marker_arrays_)
+				ptr->copy_element(dst, src);
+		}
+		if (copy_refs)
+			refs_[dst] = refs_[src];
 	}
 
 	/**
