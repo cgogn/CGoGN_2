@@ -57,5 +57,45 @@ CGOGN_CORE_API std::string demangle(const std::string& str)
 #endif // __GNUG__
 }
 
+CGOGN_CORE_API std::string name_of_type_impl(const int8&)
+{
+	return "int8";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint8&)
+{
+	return "uint8";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int16&)
+{
+	return "int16";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint16&)
+{
+	return "uint16";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int32&)
+{
+	return "int32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint32&)
+{
+	return "uint32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int64&)
+{
+	return "int64";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint64&)
+{
+	return "uint64";
+}
+
 } // namespace internal
 } // namespace cgogn
