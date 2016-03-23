@@ -201,6 +201,11 @@ public:
 					edgesBuffer.push_back(em);
 				}
 			}
+			// update nbv if duplicated vertices have been skipped
+			if (nbv != static_cast<uint32>(vertices_buffer.size())) {
+				std::cerr << "Warning - Import Volume: degenerated volume detected" << std::endl;
+				nbv = static_cast<uint32>(vertices_buffer.size());
+			}
 
 			if(nbv == 4u) //tetrahedral case
 			{

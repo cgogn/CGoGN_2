@@ -197,11 +197,15 @@ public:
 			}
 		});
 
-		if (nb_boundary_edges > 0)
+		if (nb_boundary_edges > 0) {
 			mbuild.close_map();
+			std::cerr << "Warning - Import Surface: " << nb_boundary_edges << " hole(s) have been closed" << std::endl
+		}
 
-		if (need_vertex_unicity_check)
+		if (need_vertex_unicity_check) {
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
+			std::cerr << "Warning - Import Surface: non manyfold vertices detected and corrected" << std::endl;
+		}
 
 		if (this->face_attributes_.get_nb_attributes() > 0)
 		{

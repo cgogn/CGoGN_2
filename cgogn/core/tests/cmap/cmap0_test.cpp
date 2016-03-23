@@ -94,6 +94,7 @@ TEST_F(CMap0Test, random_map_generators)
 TEST_F(CMap0Test, add_vertex)
 {
 	add_vertices(NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -104,9 +105,15 @@ TEST_F(CMap0Test, remove_vertex)
 {
 	add_vertices(NB_MAX);
 
+	uint32 count_vertices = NB_MAX;
 	for (Dart d: darts_)
-		if (std::rand() % 3 == 1) cmap_.remove_vertex(Vertex(d));
+		if (std::rand() % 3 == 1)
+		{
+			cmap_.remove_vertex(Vertex(d));
+			--count_vertices;
+		}
 
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
