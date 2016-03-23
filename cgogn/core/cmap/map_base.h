@@ -376,7 +376,12 @@ public:
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
 		{
 			if (counter[c] > 0)
-				this->new_orbit_embedding(c);
+			{
+				const uint32 old_emb = this->get_embedding(c);
+				const uint32 new_emb = this->new_orbit_embedding(c);
+				this->template get_attribute_container<ORBIT>().copy_line(new_emb, old_emb,false,false);
+			}
+
 			counter[c]++;
 		});
 
