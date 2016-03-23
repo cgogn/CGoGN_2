@@ -379,6 +379,7 @@ public:
 			{
 				const uint32 old_emb = this->get_embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
+				std::cerr << "Warning : " << CGOGN_FUNC << ": duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT) << std::endl;
 				this->template get_attribute_container<ORBIT>().copy_line(new_emb, old_emb,false,false);
 			}
 
