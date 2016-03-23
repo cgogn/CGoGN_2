@@ -45,21 +45,20 @@ int main(int argc, char** argv)
 		cgogn::io::import_surface<Vec3>(map, surfaceMesh);
 
 		uint32 nb_darts = 0;
-		map.foreach_dart_nomask([&nb_darts] (cgogn::Dart) { nb_darts++; });
+		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
 		std::cout << "nb darts -> " << nb_darts << std::endl;
 
 		uint32 nb_darts_2 = 0;
 		std::vector<uint32> nb_darts_per_thread(cgogn::NB_THREADS - 1);
 		for (uint32& n : nb_darts_per_thread)
 			n = 0;
-		map.parallel_foreach_dart_nomask([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
+		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
 		{
 			nb_darts_per_thread[thread_index]++;
 		});
 		for (uint32 n : nb_darts_per_thread)
 			nb_darts_2 += n;
 		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
-
 
 		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
@@ -96,10 +95,8 @@ int main(int argc, char** argv)
 			nb_faces_2 += n;
 		std::cout << "nb faces // -> " << nb_faces_2 << std::endl;
 
-
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
-
 
 		for	(uint32 i = 0; i < 10; ++i)
 		{

@@ -112,6 +112,8 @@ void Viewer::import(const std::string& volumeMesh)
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
+
+	map_.check_map_integrity();
 }
 
 Viewer::~Viewer()
