@@ -59,18 +59,18 @@ struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
 // specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
 // specialization 3 : float
 template<>
-struct vector_traits<float>
+struct vector_traits<float32>
 {
 	static const std::size_t SIZE = 1;
-	using Scalar = float;
+	using Scalar = float32;
 };
 
 // specialization 4 : double
 template<>
-struct vector_traits<double>
+struct vector_traits<float64>
 {
 	static const std::size_t SIZE = 1;
-	using Scalar = double;
+	using Scalar = float64;
 };
 
 template<typename T, typename Enable = void>

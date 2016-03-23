@@ -13,7 +13,7 @@ using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, uint32>;
 using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
 
-using DoubleVecList = std::list< std::vector< double > >;
+using DoubleVecList = std::list< std::vector< float64 > >;
 using StringListVec = std::vector< std::list < std::string > >;
 using StringArray = std::array< std::string, 2>;
 
@@ -27,7 +27,7 @@ int test_save()
 
 	ChunkArrayContainer container;
 
-	ChunkArray<float>* att1 = container.add_attribute<float>("float");
+	ChunkArray<float32>* att1 = container.add_attribute<float32>("float32");
 	ChunkArray<std::string>* att4 = container.add_attribute<std::string>("std::string");
 	ChunkArray<DoubleVecList>* att2 = container.add_attribute<DoubleVecList>("ListVecDouble");
 	ChunkArray<StringListVec>* att3 = container.add_attribute<StringListVec>("VecListString");
@@ -38,10 +38,10 @@ int test_save()
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
-		(*att1)[i] = 0.1f*float(i);
+		(*att1)[i] = 0.1f*float32(i);
 		(*att4)[i] = std::string(3,char('Z'-i));
 
-		(*att2)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
+		(*att2)[i] = {{3.0 + 0.1*float64(i),15.0 + 0.1*float64(i)}, {103.0 + 0.1*float64(i), 203.0 + 0.1*float64(i), 303.0 + 0.1*float64(i)}};
 
 		(*att3)[i] = {{"riri","riri"},{"fifi","fifi"},{"loulou","loulou"}};
 
@@ -127,7 +127,7 @@ int test_load(bool with_register)
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<float>* att1 = cont2.get_attribute<float>("float");
+	ChunkArray<float32>* att1 = cont2.get_attribute<float32>("float32");
 	ChunkArray<std::string>* att4 = cont2.get_attribute<std::string>("std::string");
 	ChunkArray<DoubleVecList>* att2 = cont2.get_attribute<DoubleVecList>("ListVecDouble");
 	ChunkArray<StringListVec>* att3 = cont2.get_attribute<StringListVec>("VecListString");

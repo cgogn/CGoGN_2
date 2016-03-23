@@ -511,9 +511,9 @@ public:
 	 * @brief fragmentation of container (size/index of last lines): 100% = no holes
 	 * @return 1 is full filled - 0 is lots of holes
 	 */
-	float fragmentation() const
+	float32 fragmentation() const
 	{
-		return float(size()) / float(end());
+		return float32(size()) / float32(end());
 	}
 
 	/**

@@ -101,7 +101,7 @@ void ShaderExplodeVolumesLine::set_color(const QColor& rgb)
 }
 
 
-void ShaderExplodeVolumesLine::set_explode_volume(float x)
+void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
 {
 		prg_.setUniformValue(unif_expl_v_, x);
 }

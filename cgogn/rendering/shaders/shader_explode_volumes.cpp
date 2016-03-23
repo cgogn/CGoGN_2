@@ -183,7 +183,7 @@ void ShaderExplodeVolumes::set_light_position(const QVector3D& l)
 }
 
 
-void ShaderExplodeVolumes::set_explode_volume(float x)
+void ShaderExplodeVolumes::set_explode_volume(float32 x)
 {
 		prg_.setUniformValue(unif_expl_v_, x);
 }
