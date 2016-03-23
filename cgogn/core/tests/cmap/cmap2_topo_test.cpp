@@ -354,6 +354,7 @@ TEST_F(CMap2TopoTest, close_map)
 	add_attribute<int32, Edge::ORBIT>("edges");
 	add_attribute<int32, Face::ORBIT>("faces");
 	add_attribute<int32, Volume::ORBIT>("volumes");
+
 	EXPECT_TRUE(check_map_integrity());
 
 	// create some random holes (full removal or partial unsewing of faces)
@@ -367,18 +368,21 @@ TEST_F(CMap2TopoTest, close_map)
 			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
 			{
 				Dart e2 = phi2(e);
-				phi2_unsew(e);
-				// correct indexation of vertices
-				if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
-				if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
-				// correct indexation of edges
-				new_orbit_embedding(Edge(e2));
-				// correct indexation of volumes
-				if (!same_volume(e2, e)) new_orbit_embedding(Volume(e));
-				// interrupt the face unsewing after n steps
-				if (n-- <= 0) return false;
-				// control if a partial or full face unsewing has been done
-				--k;
+				if (!this->is_boundary(e) && !this->is_boundary(e2))
+				{
+					phi2_unsew(e);
+					// correct indexation of vertices
+					if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
+					if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
+					// correct indexation of edges
+					new_orbit_embedding(Edge(e2));
+					// correct indexation of volumes
+					if (!same_volume(e2, e)) new_orbit_embedding(Volume(e));
+					// interrupt the face unsewing after n steps
+					if (n-- <= 0) return false;
+					// control if a partial or full face unsewing has been done
+					--k;
+				}
 				return true;
 			});
 			// if the face is completely unsewn randomly removes it
