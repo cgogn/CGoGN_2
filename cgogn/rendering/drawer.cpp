@@ -160,7 +160,7 @@ void Drawer::end()
 }
 
 
-void Drawer::vertex3f(float x, float y, float z)
+void Drawer::vertex3f(float32 x, float32 y, float32 z)
 {
 	if (data_pos_.size() == data_col_.size())
 	{
@@ -173,7 +173,7 @@ void Drawer::vertex3f(float x, float y, float z)
 }
 
 
-void Drawer::color3f(float r, float g, float b)
+void Drawer::color3f(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
 		data_col_.push_back(Vec3f{r,g,b});
@@ -190,7 +190,7 @@ void Drawer::end_list()
 		return;
 
 	vbo_pos_->allocate(nb_elts,3);
-	float* ptr = vbo_pos_->lock_pointer();
+	float32* ptr = vbo_pos_->lock_pointer();
 	std::memcpy(ptr,data_pos_[0].data(),nb_elts*12);
 	vbo_pos_->release_pointer();
 

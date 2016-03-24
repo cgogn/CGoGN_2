@@ -57,7 +57,7 @@ public:
 
 	ShaderExplodeVolumesLine();
 
-	void set_explode_volume(float x);
+	void set_explode_volume(float32 x);
 
 	void set_plane_clip(const QVector4D& plane);
 

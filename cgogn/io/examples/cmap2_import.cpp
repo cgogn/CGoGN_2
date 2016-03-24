@@ -19,7 +19,7 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 using Map2 = cgogn::CMap2<MyMapTraits>;
 
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 		}
 
 		end = std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::chrono::duration<float64> elapsed_seconds = end - start;
 		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 	}
 

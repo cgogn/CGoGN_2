@@ -154,7 +154,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 	static const uint32 BUFFER_SZ = 1024*1024;
 
-	std::vector<float> buffer_pos;
+	std::vector<float32> buffer_pos;
 	buffer_pos.reserve(BUFFER_SZ+3);
 
 	map.template foreach_cell([&] (Face f)
@@ -166,7 +166,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 				ids[v] = count++;
 				VEC3 P = position[v];
 				// VEC3 can be double !
-				float Pf[3]={float(P[0]),float(P[1]),float(P[2])};
+				float32 Pf[3]={float32(P[0]),float32(P[1]),float32(P[2])};
 				uint32* ui_vec = reinterpret_cast<uint32*>(Pf);
 				ui_vec[0] = swap_endianness_native_big(ui_vec[0]);
 				ui_vec[1] = swap_endianness_native_big(ui_vec[1]);
@@ -178,7 +178,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 				if (buffer_pos.size() >= BUFFER_SZ)
 				{
-					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float));
+					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
 					buffer_pos.clear();
 				}
 			}
@@ -186,7 +186,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	});
 	if (!buffer_pos.empty())
 	{
-		fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float));
+		fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
 		buffer_pos.clear();
 		buffer_pos.shrink_to_fit();
 	}
@@ -465,7 +465,7 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	fp.write(reinterpret_cast<char*>(header),21*sizeof(uint32));
 
 	// buffer
-	std::array<float,(3*4+1)> buffer_floats; // +1 for #@! ushort at end of each triangle
+	std::array<float32,(3*4+1)> buffer_floats; // +1 for #@! ushort at end of each triangle
 	buffer_floats[12] = 0.0f;
 
 	// local function for writing a triangle
@@ -474,14 +474,14 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 		VEC3 N = geometry::triangle_normal(A,B,C);
 		uint32 i=0;
 		for (uint32 j=0; j<3; ++j)
-			buffer_floats[i++]= float(N[j]);
+			buffer_floats[i++]= float32(N[j]);
 		for (uint32 j=0; j<3; ++j)
-			buffer_floats[i++]= float(A[j]);
+			buffer_floats[i++]= float32(A[j]);
 		for (uint32 j=0; j<3; ++j)
-			buffer_floats[i++]= float(B[j]);
+			buffer_floats[i++]= float32(B[j]);
 		for (uint32 j=0; j<3; ++j)
-			buffer_floats[i++]= float(C[j]);
-		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float)+2); // +2 for #@! ushort at end of each triangle
+			buffer_floats[i++]= float32(C[j]);
+		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float32)+2); // +2 for #@! ushort at end of each triangle
 	};
 
 	// indices for ear triangulation
@@ -543,8 +543,8 @@ template <> inline std::string nameOfTypePly(const int&) { return "int"; }
 template <> inline std::string nameOfTypePly(const uint32&) { return "uint"; }
 template <> inline std::string nameOfTypePly(const unsigned char&) { return "uint8"; }
 template <> inline std::string nameOfTypePly(const unsigned short int&) { return "uint16"; }
-template <> inline std::string nameOfTypePly(const float&) { return "float"; }
-template <> inline std::string nameOfTypePly(const double&) { return "float64"; }
+template <> inline std::string nameOfTypePly(const float32&) { return "float32"; }
+template <> inline std::string nameOfTypePly(const float64&) { return "float64"; }
 
 template <typename VEC3, typename MAP>
 bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)

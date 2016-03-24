@@ -588,9 +588,9 @@ protected :
 		if (data_type == "unsigned_long" || data_type == "uint64")
 			return name_of_type(std::uint64_t());
 		if (data_type == "float"  || data_type == "float32")
-			return name_of_type(float());
+			return name_of_type(float32());
 		if (data_type == "double" || data_type == "float64")
-			return name_of_type(double());
+			return name_of_type(float64());
 
 		std::cerr << "vtk_data_type_to_cgogn_name_of_type : unknown vtk type : " << vtk_type_str << std::endl;
 		return std::string();

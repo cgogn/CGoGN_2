@@ -80,7 +80,7 @@ public:
 		buffer_.bind();
 		uint32 total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
-			buffer_.allocate(total * sizeof(float));
+			buffer_.allocate(total * sizeof(float32));
 		nb_vectors_ = nb_vectors;
 		if (vector_dimension != vector_dimension_)
 		{
@@ -94,10 +94,10 @@ public:
 	 * @brief get and lock pointer on buffer memory
 	 * @return  the pointer
 	 */
-	inline float* lock_pointer()
+	inline float32* lock_pointer()
 	{
 		buffer_.bind();
-		return reinterpret_cast<float*>(buffer_.map(QOpenGLBuffer::ReadWrite));
+		return reinterpret_cast<float32*>(buffer_.map(QOpenGLBuffer::ReadWrite));
 	}
 
 	/**
@@ -142,7 +142,7 @@ public:
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO& vbo)
 {
-	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
+	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 
@@ -153,9 +153,9 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 
 	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
-	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float);
+	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float32);
 
-	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float>::value)
+	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
 	{
 		// copy
 		vbo.bind();
@@ -163,19 +163,19 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 			vbo.copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
 		vbo.release();
 	}
-	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value)
+	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
-		float* float_buffer = new float[ATTR::CHUNKSIZE * vec_dim];
+		float32* float_buffer = new float32[ATTR::CHUNKSIZE * vec_dim];
 		for (uint32 i = 0; i < nb_chunks; ++i)
 		{
 			// transform double into float
-			float* fit = float_buffer;
-			double* src = reinterpret_cast<double*>(chunk_addr[i]);
+			float32* fit = float_buffer;
+			float64* src = reinterpret_cast<float64*>(chunk_addr[i]);
 			for (uint32 j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo.bind();
-			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float), ATTR::CHUNKSIZE * vec_dim * sizeof(float),float_buffer);
+			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
 			vbo.release();
 		}
 		delete[] float_buffer;
@@ -206,14 +206,14 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	using Vec2f = std::array<float,2>;
-	using Vec3f = std::array<float,3>;
-	using Vec4f = std::array<float,4>;
-	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
+	using Vec2f = std::array<float32,2>;
+	using Vec3f = std::array<float32,3>;
+	using Vec4f = std::array<float32,4>;
+	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
 	uint32 vec_dim = 0;
-	if (check_func_return_type(FUNC,float) )
+	if (check_func_return_type(FUNC,float32) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
 		vec_dim = 2;
@@ -272,14 +272,14 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	using Vec2f = std::array<float,2>;
-	using Vec3f = std::array<float,3>;
-	using Vec4f = std::array<float,4>;
-	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
+	using Vec2f = std::array<float32,2>;
+	using Vec3f = std::array<float32,3>;
+	using Vec4f = std::array<float32,4>;
+	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
 	uint32 vec_dim = 0;
-	if (check_func_return_type(FUNC,float) )
+	if (check_func_return_type(FUNC,float32) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
 		vec_dim = 2;
@@ -325,14 +325,14 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	using Vec2f = std::array<float,2>;
-	using Vec3f = std::array<float,3>;
-	using Vec4f = std::array<float,4>;
-	static_assert(check_func_return_type(FUNC,float) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
+	using Vec2f = std::array<float32,2>;
+	using Vec3f = std::array<float32,3>;
+	using Vec4f = std::array<float32,4>;
+	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
 
 	// set vec dimension
 	uint32 vec_dim = 0;
-	if (check_func_return_type(FUNC,float) )
+	if (check_func_return_type(FUNC,float32) )
 		vec_dim = 1;
 	else if (check_func_return_type(FUNC,Vec2f) )
 		vec_dim = 2;

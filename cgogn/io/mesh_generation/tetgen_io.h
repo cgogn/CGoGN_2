@@ -152,7 +152,7 @@
 //	//
 
 //	//create vertices
-//	double* p = volume_->pointlist ;
+//	float64* p = volume_->pointlist ;
 //	std::vector<uint32> verticesID;
 //	verticesID.reserve(volume_->numberofpoints);
 //	AttributeContainer& container = map3.template getAttributeContainer<VERTEX>() ;
@@ -315,7 +315,7 @@ protected:
 
 		//create vertices
 		std::vector<uint32> vertices_indices;
-		double* p = volume_->pointlist ;
+		float64* p = volume_->pointlist ;
 		vertices_indices.reserve(this->nb_vertices_);
 
 		for(uint32 i = 0u; i < this->nb_vertices_; ++i)

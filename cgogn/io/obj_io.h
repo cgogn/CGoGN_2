@@ -68,7 +68,7 @@ protected:
 			{
 				std::stringstream oss(line);
 
-				double x, y, z;
+				float64 x, y, z;
 				oss >> x;
 				oss >> y;
 				oss >> z;

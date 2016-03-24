@@ -47,7 +47,7 @@ const cgogn::Orbit FACE = Face::ORBIT;
 const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
-using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
