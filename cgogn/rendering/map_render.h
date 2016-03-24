@@ -57,9 +57,10 @@ protected:
 	uint32 nb_indices_[SIZE_BUFFER];
 
 public:
+	using Self = MapRender;
 
 	MapRender();
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 	~MapRender();
 
 	inline bool is_primitive_uptodate(DrawingType prim)  { return indices_buffers_uptodate_[prim]; }

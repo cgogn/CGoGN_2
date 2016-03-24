@@ -44,7 +44,7 @@ class LM6VolumeImport : public VolumeImport<MAP_TRAITS>
 	// MeshImportGen interface
 public:
 	inline LM6VolumeImport() {}
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
 	virtual void clear() override
 	{
 		Inherit::clear();

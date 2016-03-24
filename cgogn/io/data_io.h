@@ -51,6 +51,10 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
+	inline DataInputGen() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DataInputGen);
+	virtual ~DataInputGen() {}
+
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
@@ -68,7 +72,7 @@ public:
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
 	virtual uint32 nb_components() const = 0;
-	virtual ~DataInputGen() {}
+
 
 	template<uint32 PRIM_SIZE>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);

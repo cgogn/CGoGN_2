@@ -45,7 +45,10 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline OffSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(OffSurfaceImport);
 	virtual ~OffSurfaceImport() override {}
+
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{

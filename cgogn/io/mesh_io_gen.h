@@ -25,6 +25,9 @@
 #define IO_MESH_IO_GEN_H_
 
 #include <fstream>
+
+#include <core/utils/definitions.h>
+
 #include <io/dll.h>
 #include <io/c_locale.h>
 
@@ -37,11 +40,10 @@ namespace io
 class CGOGN_IO_API MeshImportGen
 {
 public:
-	MeshImportGen() = default;
-	MeshImportGen(const MeshImportGen&) = delete;
-	MeshImportGen(MeshImportGen&&) = delete;
-	MeshImportGen& operator=(const MeshImportGen&) = delete;
-	MeshImportGen& operator=(MeshImportGen&&) = delete;
+	using Self = MeshImportGen;
+	inline MeshImportGen() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshImportGen);
+
 
 	bool import_file(const std::string& filename);
 	virtual ~MeshImportGen();

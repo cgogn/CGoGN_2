@@ -90,14 +90,9 @@ public:
 	{
 		init();
 	}
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap3_T);
 	~IHCMap3_T() override
 	{}
-
-	IHCMap3_T(Self const&) = delete;
-	IHCMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 public:
 	/*******************************************************************************

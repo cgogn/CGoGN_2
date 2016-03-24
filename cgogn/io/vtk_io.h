@@ -82,6 +82,8 @@ public :
 	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
+	inline VtkIO() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkIO);
 	virtual ~VtkIO() {}
 
 protected :
@@ -743,6 +745,8 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
+	inline VtkVolumeImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkVolumeImport);
 	virtual ~VtkVolumeImport() override {}
 
 protected:

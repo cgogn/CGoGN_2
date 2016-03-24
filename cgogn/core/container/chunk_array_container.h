@@ -168,10 +168,7 @@ public:
 		nb_max_lines_(0u)
 	{}
 
-	ChunkArrayContainer(Self const& ) = delete;
-	ChunkArrayContainer(Self&& ) = delete;
-	ChunkArrayContainer& operator=(Self const& ) = delete;
-	ChunkArrayContainer& operator=(Self&& ) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayContainer);
 
 	/**
 	 * @brief ChunkArrayContainer destructor

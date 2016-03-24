@@ -79,13 +79,10 @@ public:
 		Inherit()
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBase);
+
 	~MapBase()
 	{}
-
-	MapBase(Self const&) = delete;
-	MapBase(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/**
 	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified

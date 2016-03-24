@@ -150,10 +150,7 @@ public:
 	  ,volumes_vertex_indices_()
 	{}
 
-	VolumeImport(const Self&) = delete;
-	VolumeImport(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeImport);
 
 	virtual void clear() override
 	{

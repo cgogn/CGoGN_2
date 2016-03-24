@@ -28,6 +28,8 @@
 #include <stack>
 #include <vector>
 
+#include <core/utils/definitions.h>
+
 namespace cgogn
 {
 
@@ -74,16 +76,9 @@ protected:
 
 public:
 
-	MRBase()
-	{}
-
-	~MRBase()
-	{}
-
-	MRBase(Self const&) = delete;
-	MRBase(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	inline MRBase() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MRBase);
+	inline ~MRBase() {}
 
 	inline void add_level_back()
 	{

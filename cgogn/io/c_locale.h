@@ -27,13 +27,17 @@
 #include <string>
 #include <clocale>
 
+#include <core/utils/definitions.h>
+
 namespace cgogn
 {
 
 class Scoped_C_Locale
 {
-	std::string current_locale_;
+
 public:
+	using Self = Scoped_C_Locale;
+
 
 	/// set numeric locale to C after saving current locale
 	inline Scoped_C_Locale()
@@ -41,12 +45,15 @@ public:
 		current_locale_ = std::string(std::setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "C");
 	}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Scoped_C_Locale);
 
 	/// restore locale
 	inline ~Scoped_C_Locale()
 	{
 		std::setlocale(LC_NUMERIC, current_locale_.c_str());
 	}
+	private:
+		std::string current_locale_;
 };
 
 } // namespace cgogn

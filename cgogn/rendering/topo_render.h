@@ -71,13 +71,13 @@ protected:
 	float32 shrink_e_;
 
 public:
-
+	using Self = TopoRender;
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
 	TopoRender(QOpenGLFunctions_3_3_Core* ogl33);
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoRender);
 	/**
 	 * release buffers and shader
 	 */

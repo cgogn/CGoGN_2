@@ -166,10 +166,7 @@ public:
 	  ,current_(begin)
 	{}
 
-	CharArrayBuffer(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	CharArrayBuffer(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
 
 	virtual ~CharArrayBuffer();
 private:
@@ -265,10 +262,7 @@ public:
 		this->init(&buffer_);
 	}
 
-	IMemoryStream(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	IMemoryStream(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IMemoryStream);
 
 	virtual ~IMemoryStream() override;
 private:

@@ -69,13 +69,10 @@ public:
 	CMap0_T() : Inherit()
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap0_T);
+
 	~CMap0_T() override
 	{}
-
-	CMap0_T(Self const&) = delete;
-	CMap0_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*!
 	 * \brief Check the integrity of embedding information

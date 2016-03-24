@@ -46,6 +46,8 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline PlySurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PlySurfaceImport);
 	virtual ~PlySurfaceImport() override {}
 
 protected:

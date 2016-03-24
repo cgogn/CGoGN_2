@@ -45,6 +45,8 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline ObjSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjSurfaceImport);
 	virtual ~ObjSurfaceImport() override {}
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
@@ -133,7 +135,7 @@ protected:
 				}
 
 				uint32 n = uint32(table.size());
-				this->faces_nb_edges_.push_back(static_cast<unsigned short>(n));
+				this->faces_nb_edges_.push_back(n);
 				for (uint32 j = 0; j < n; ++j)
 				{
 					uint32 index = table[j] - 1; // indices start at 1
