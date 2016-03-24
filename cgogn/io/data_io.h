@@ -30,6 +30,7 @@
 #include <core/utils/unique_ptr.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_array_container.h>
+#include <core/cmap/map_traits.h>
 
 #include <io/io_utils.h>
 
@@ -402,6 +403,10 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

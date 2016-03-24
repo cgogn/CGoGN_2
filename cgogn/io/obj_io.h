@@ -24,6 +24,10 @@
 #ifndef IO_OBJ_IO_H_
 #define IO_OBJ_IO_H_
 
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <io/surface_import.h>
 
 namespace cgogn
@@ -144,6 +148,13 @@ protected:
 		return true;
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OBJ_IO_CPP_))
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OBJ_IO_H_))
 
 } // namespace io
 } // namespace cgogn

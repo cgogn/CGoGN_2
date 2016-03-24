@@ -48,7 +48,7 @@ enum DrawingType
 	SIZE_BUFFER
 };
 
-class MapRender
+class CGOGN_RENDERING_API MapRender
 {
 protected:
 
@@ -58,25 +58,14 @@ protected:
 
 public:
 
-	inline MapRender()
-	{
-		for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
-		{
-			indices_buffers_[i] = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
-			indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
-		}
-	}
+	MapRender();
 
-	inline ~MapRender()
-	{
-		for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
-			delete indices_buffers_[i];
-	}
+	~MapRender();
 
 	inline bool is_primitive_uptodate(DrawingType prim)  { return indices_buffers_uptodate_[prim]; }
 
 	template <typename MAP>
-	void init_points(MAP& m, std::vector<uint32>& table_indices)
+	inline void init_points(MAP& m, std::vector<uint32>& table_indices)
 	{
 		//		table_indices.reserve(m.get_nb_darts()/6);
 		m.foreach_cell([&] (typename MAP::Vertex v)
@@ -86,7 +75,7 @@ public:
 	}
 
 	template <typename MAP>
-	void init_lines(MAP& m, std::vector<uint32>& table_indices)
+	inline void init_lines(MAP& m, std::vector<uint32>& table_indices)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Edge = typename MAP::Edge;
@@ -99,7 +88,7 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	void init_triangles(MAP& m, std::vector<uint32>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+	inline void init_triangles(MAP& m, std::vector<uint32>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
@@ -121,7 +110,7 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	void init_primitives(MAP& m, DrawingType prim, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+	inline void init_primitives(MAP& m, DrawingType prim, const typename MAP::template VertexAttributeHandler<VEC3>& position)
 	{
 		std::vector<uint32> table_indices;
 
@@ -150,28 +139,7 @@ public:
 		indices_buffers_[prim]->release();
 	}
 
-	inline void draw(DrawingType prim)
-	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-		indices_buffers_[prim]->bind();
-		switch (prim)
-		{
-			case POINTS:
-				ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
-				break;
-			case LINES:
-				ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
-				break;
-			case TRIANGLES:
-				ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
-				break;
-			default:
-				break;
-		}
-
-		indices_buffers_[prim]->release();
-	}
+	void draw(DrawingType prim);
 };
 
 
