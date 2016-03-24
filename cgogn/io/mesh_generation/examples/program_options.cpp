@@ -78,6 +78,8 @@ bool ProgramOptions::optionsHandler()
 		exit(0);
 	}
 
+	std::cout << "Input image: \"" << input_file_ << "\"." <<std::endl;
+
 	if (variable_map_.count("fa")) {
 		std::cout << "Facet angle set to : "
 			 << variable_map_["fa"].as<double>()
