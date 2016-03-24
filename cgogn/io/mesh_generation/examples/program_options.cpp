@@ -23,7 +23,9 @@
 
 #include "program_options.h"
 #include <iostream>
+#include <core/utils/definitions.h>
 
+#define DEFAULT_IMAGE_PATH CGOGN_STR(CGOGN_TEST_IMAGES_PATH)
 
 namespace cgogn
 {
@@ -37,7 +39,7 @@ ProgramOptions::ProgramOptions(int argc, char **argv)
 {
 	desc_.add_options()
 			("help,h","Produce this help message.")
-			("input,i", po::value< std::string >(&input_file_), "The input file : a .vtk StructuredPoints file, or a *.inr.gz file.")
+			("input,i", po::value< std::string >(&input_file_)->default_value(std::string(DEFAULT_IMAGE_PATH)+ std::string("liver.inr.gz")), "The input file : a .vtk StructuredPoints file, or a *.inr.gz file.")
 			("fa", po::value<double>(&facet_angle_)->default_value(30.0), "Facet angle, a lower bound for the angles (in degrees) of the surface mesh facets.")
 			("fs", po::value<double>(&facet_size_)->default_value(15.0), "Facet size, a scalar field (resp. a constant) describing a space varying (resp. a uniform) upper-bound or for the radii of the surface Delaunay balls.")
 			("fd", po::value<double>(&facet_distance_)->default_value(10.0), "Facet distance, scalar field (resp. a constant) describing a space varying (resp. a uniform) upper bound for the same distance.")
