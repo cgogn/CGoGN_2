@@ -47,7 +47,8 @@ enum FileType
 	FileType_VTK_LEGACY,
 	FileType_VTU,
 	FileType_VTP,
-	FileType_MESHB
+	FileType_MESHB,
+	FileType_MSH
 };
 
 enum DataType

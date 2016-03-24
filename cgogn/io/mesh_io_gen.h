@@ -49,6 +49,21 @@ public:
 
 protected:
 	virtual bool import_file_impl(const std::string& filename) = 0;
+
+	/**
+	 * @brief skip_empty_lines
+	 * @param a valid data_stream
+	 * @return the first non-empty encountered line
+	 */
+	inline static std::string skip_empty_lines(std::istream& data_stream)
+	{
+		std::string line;
+		line.reserve(1024ul);
+		while(data_stream.good() && line.empty())
+			std::getline(data_stream,line);
+
+		return line;
+	}
 };
 
 } // namespace io

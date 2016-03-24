@@ -20,6 +20,7 @@ set(HEADER_FILES
 	ply_io.h
 	lm6_io.h
 	mesh_io_gen.h
+	msh_io.h
 )
 
 set(SOURCE_FILES
