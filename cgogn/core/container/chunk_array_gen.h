@@ -25,7 +25,7 @@
 #define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
 #include <core/utils/serialization.h>
-#include <core/basic/dll.h>
+#include <core/dll.h>
 
 #include <vector>
 #include <iostream>
@@ -34,17 +34,17 @@
 namespace cgogn
 {
 
-static const unsigned int DEFAULT_CHUNK_SIZE = 4096;
+static const uint32 DEFAULT_CHUNK_SIZE = 4096;
 
 /**
  * @brief Virtual version of ChunkArray
  */
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 class ChunkArrayGen
 {
 public:
 
-	typedef ChunkArrayGen<CHUNKSIZE> Self;
+	using Self = ChunkArrayGen<CHUNKSIZE>;
 
 	inline ChunkArrayGen()
 	{
@@ -105,19 +105,19 @@ public:
 	 * @brief set number of chunks
 	 * @param nbc number of chunks
 	 */
-	virtual void set_nb_chunks(unsigned int nbb) = 0;
+	virtual void set_nb_chunks(uint32 nbb) = 0;
 
 	/**
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	virtual unsigned int get_nb_chunks() const = 0;
+	virtual uint32 get_nb_chunks() const = 0;
 
 	/**
 	 * @brief get the capacity of the array
 	 * @return number of allocated lines
 	 */
-	virtual unsigned int capacity() const = 0;
+	virtual uint32 capacity() const = 0;
 
 	/**
 	 * @brief clear the array
@@ -130,34 +130,34 @@ public:
 	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual unsigned int get_chunks_pointers(std::vector<void*>& addr, unsigned int& byte_block_size) const = 0;
+	virtual uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())
 	 * @param id index of the element
 	 */
-	virtual void init_element(unsigned int id) = 0;
+	virtual void init_element(uint32 id) = 0;
 
 	/**
 	 * @brief copy an element to another one
 	 * @param dst destination element index
 	 * @param src source element index
 	 */
-	virtual void copy_element(unsigned int dst, unsigned int src) = 0;
+	virtual void copy_element(uint32 dst, uint32 src) = 0;
 
 	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
 	 */
-	virtual void swap_elements(unsigned int idx1, unsigned int idx2) = 0;
+	virtual void swap_elements(uint32 idx1, uint32 idx2) = 0;
 
 	/**
 	 * @brief save
 	 * @param fs file stream
 	 * @param nb_lines number of line to save
 	 */
-	virtual void save(std::ostream& fs, unsigned int nb_lines) const = 0;
+	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
 
 	/**
 	 * @brief load
@@ -174,7 +174,7 @@ public:
 	{
 		std::size_t chunk_bytes;
 		serialization::load(fs, &chunk_bytes, 1);
-		unsigned int nb_lines;
+		uint32 nb_lines;
 		serialization::load(fs, &nb_lines, 1);
 		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}

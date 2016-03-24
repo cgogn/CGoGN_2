@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <core/cmap/cmap1.h>
@@ -29,78 +28,154 @@
 namespace cgogn
 {
 
+#define NB_MAX 100
 
-// class CMap1TopoMock : public CMap1<DefaultMapTraits> {
-// public:
-//     MOCK_METHOD0( add_dart, Dart() );
-//     MOCK_METHOD1( cut_edge_topo, Dart(Dart d) );
-//     MOCK_METHOD1( add_face_topo, Dart(unsigned int nb_edges) );
-// };
-
-class CMap1TopoTest: public CMap1<DefaultMapTraits>, public ::testing::Test
+/*!
+ * \brief The CMap1Test class implements tests on embedded CMap1
+ * It contains a CMap1 to which vertex and face attribute are added
+ * to enforce the indexation mecanism in cell traversals.
+ *
+ * Note that pure topological operations have already been tested,
+ * in CMap1TopoTest, thus only the indexation mecanism used for the
+ * embedding of cells is tested here.
+ */
+class CMap1Test : public ::testing::Test
 {
 
-	using CMap1 = cgogn::CMap1<DefaultMapTraits>;
-
 public:
-	CMap1 cmap_;
-	Dart d_;
+
+	using testCMap1 = CMap1<DefaultMapTraits>;
+	using Vertex = testCMap1::Vertex;
+	using Face = testCMap1::Face;
 
 protected:
 
-	CMap1TopoTest()
-	{}
+	testCMap1 cmap_;
 
-	void SetUp()
+	/*!
+	 * \brief A vector of darts on which the methods are tested.
+	 */
+	std::vector<Dart> darts_;
+
+	CMap1Test()
 	{
-		d_ = this->add_face_topo(10);
+		darts_.reserve(NB_MAX);
+		std::srand(uint32(std::time(0)));
+
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	}
 
-	void TearDown()
-	{}
+	/*!
+	 * \brief Generate a random set of faces and put them in darts_
+	 * \return The total number of added darts or vertices.
+	 * The face size ranges from 1 to 10.
+	 * A random dart of each face is put in the darts_ array.
+	 */
+	uint32 add_faces(uint32 n)
+	{
+		darts_.clear();
+		uint32 count = 0u;
+		for (uint32 i = 0u; i < n; ++i)
+		{
+			uint32 m = 1u + std::rand() % 10;
+			Dart d = cmap_.add_face(m);
+			count += m;
+
+			m = std::rand() % 10u;
+			while (m-- > 0u) d = cmap_.phi1(d);
+
+			darts_.push_back(d);
+		}
+		return count;
+	}
 };
 
-TEST_F(CMap1TopoTest, testFaceDegree)
+/*!
+ * \brief The random generated maps used in the tests are sound.
+ */
+TEST_F(CMap1Test, random_map_generators)
 {
-	EXPECT_EQ(10, this->degree(d_));
+	add_faces(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testCutEdge)
+/*!
+ * \brief Adding faces preserves the cell indexation
+ */
+TEST_F(CMap1Test, add_face)
 {
-	Dart d1 = this->phi1(d_);
-	Dart e = this->cut_edge_topo(d_);
+	uint32 count_vertices = add_faces(NB_MAX);
 
-	EXPECT_EQ(d1.index, this->phi1(e).index);
-	EXPECT_EQ(d_.index, this->phi_1(e).index);
-	EXPECT_EQ(11, this->degree(d_));
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testUncutEdge)
+/*!
+ * \brief Removing faces preserves the cell indexation
+ */
+TEST_F(CMap1Test, remove_face)
 {
-	Dart e = this->phi1(d_);
-	Dart d1 = this->phi1(e);
-	this->uncut_edge_topo(e);
+	uint32 count_vertices = add_faces(NB_MAX);
+	int32 count_faces = NB_MAX;
 
-	EXPECT_EQ(d1.index, this->phi1(d_).index);
-	EXPECT_EQ(10, this->degree(d_));
+	for (Dart d : darts_)
+	{
+		if (std::rand() % 3 == 1)
+		{
+			Face f(d);
+			uint32 k = cmap_.codegree(f);
+			cmap_.remove_face(f);
+			count_vertices -= k;
+			--count_faces;
+		}
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-TEST_F(CMap1TopoTest, testSplitFace)
+/*!
+ * \brief Splitting vertices preserves the cell indexation
+ */
+TEST_F(CMap1Test, split_vertex)
 {
-	Dart e = this->phi1(d_);
-	Dart d1 = this->phi1(e);
-	this->uncut_edge_topo(e);
+	uint32 count_vertices = add_faces(NB_MAX);
 
-	EXPECT_EQ(d1.index, this->phi1(d_).index);
-	EXPECT_EQ(10, this->degree(d_));
+	for (Dart d : darts_)
+	{
+		cmap_.split_vertex(Vertex(d));
+		++count_vertices;
+	}
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-// TEST_F(CMap1TopoTest, testDeleteFace)
-// {
-// 	this->delete_face_topo(d_);
-//  	EXPECT_EQ(0, this->degree(d_));
-// }
+/*!
+ * \brief Removing vertices preserves the cell indexation
+ */
+TEST_F(CMap1Test, remove_vertex)
+{
+	uint32 count_vertices = add_faces(NB_MAX);
+	uint32 count_faces = NB_MAX;
 
+	for (Dart d: darts_)
+	{
+		uint32 k = cmap_.codegree(Face(d));
+		cmap_.remove_vertex(Vertex(d));
+		--count_vertices;
+		if (k == 1u) --count_faces;
+	}
 
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+#undef NB_MAX
 
 } // namespace cgogn

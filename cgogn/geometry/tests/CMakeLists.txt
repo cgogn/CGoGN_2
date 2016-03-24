@@ -9,6 +9,8 @@ set(SOURCE_FILES
 
 	functions/area_test.cpp
 	functions/normal_test.cpp
+	functions/distance_test.cpp
+	functions/intersection_test.cpp
 
 	algos/algos_test.cpp
 

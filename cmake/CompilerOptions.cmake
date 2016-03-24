@@ -32,13 +32,15 @@ if(CGOGN_USE_TSAN)
 endif(CGOGN_USE_TSAN)
 
 if (NOT MSVC)
-	find_package(Threads REQUIRED)
-	add_flags(CMAKE_CXX_FLAGS ${CMAKE_THREAD_LIBS_INIT})
+# This is the correcty way to activate threads. It should be prefered to "-lpthread"
+	if (NOT(${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
+		add_flags(CMAKE_CXX_FLAGS "-pthread")
+	endif()
 
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)
 
-	if(NOT (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
+	if(NOT (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
 		set(FULL_WARNINGS
 			${NORMAL_WARNINGS}
 			-pedantic
@@ -81,13 +83,31 @@ if (NOT MSVC)
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 
-	if (${CGOGN_USE_PARALLEL_GLIBCXX})
-		add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_PARALLEL")
+
+
+	if(${CGOGN_USE_CXX11_ABI})
+		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
 	else()
-		# _GLIBCXX_ASSERTIONS and _GLIBCXX_PARALLEL are not compatible on some systems.
-		add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_ASSERTIONS")
+		remove_definitions("-D_GLIBCXX_USE_CXX11_ABI")
 	endif()
+
 	remove_definitions("-D_GLIBCXX_USE_DEPRECATED")
+
+	# see https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_macros.html
+	if (${CGOGN_USE_GLIBCXX_DEBUG})
+		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_DEBUG")
+		if(${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
+			add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_DEBUG_PEDANTIC")
+		endif(${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
+	endif(${CGOGN_USE_GLIBCXX_DEBUG})
+
+	if(${CGOGN_USE_PARALLEL_GLIBCXX})
+		if(${CGOGN_USE_GLIBCXX_DEBUG})
+			message(WARNING "Can't use at the same time the libc++ debug and parallel modes.")
+		else (${CGOGN_USE_GLIBCXX_DEBUG})
+			add_flags(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_PARALLEL")
+		endif(${CGOGN_USE_GLIBCXX_DEBUG})
+	endif(${CGOGN_USE_PARALLEL_GLIBCXX})
 
 	# Enable SSE3 instruction set
 	add_flags(CMAKE_CXX_FLAGS "-msse3")
@@ -109,6 +129,6 @@ else() # MSVC
 	# C4505 - unreferenced local function has been removed (impossible to deactive selectively)
 	# C4910 - __declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
 	# C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910 /wd4251")
-
+	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910 /wd4251 /bigobj")
+	
 endif()

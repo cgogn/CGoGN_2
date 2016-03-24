@@ -9,12 +9,15 @@ project(CGoGN
 	LANGUAGES CXX C
 )
 
+enable_testing()
+
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-
+#### CGoGN PATH
+set(CGOGN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 #### Here are located the FindPackages that we need
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
@@ -27,7 +30,7 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cgogn)
+set(CGOGN_SOURCE_DIR ${CGOGN_PATH}/cgogn)
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
@@ -36,17 +39,30 @@ if(${CGOGN_EXTERNAL_TEMPLATES})
 endif()
 
 #### ThirdParty options
-set(CGOGN_THIRDPARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty)
-option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN" ON)
-option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN" ON)
-option(CGOGN_BUILD_TESTS "build cgogn unit tests using google test framework" ON)
-option(CGOGN_USE_OPENMP "activate openMP directives" OFF)
-option(CGOGN_USE_PARALLEL_GLIBCXX "highly experimental : compiles using the parallel mode" OFF)
+set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
+option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
+option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
+option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." ON)
+option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." ON)
+option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
+if (NOT MSVC)
+	option(CGOGN_USE_GLIBCXX_DEBUG "Use the debug version of STL (useful for bounds checking)." OFF)
+	option(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC "Use an extremely picky debug version of STL." OFF)
+	option(CGOGN_USE_PARALLEL_GLIBCXX "Highly experimental : compiles using the parallel mode." OFF)
+	if (${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
+		set(CGOGN_USE_GLIBCXX_DEBUG "ON")
+	endif(${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
+	option(CGOGN_USE_CXX11_ABI "use the CXX11 ABI." ON)
+endif(NOT MSVC)
 if (${CGOGN_USE_PARALLEL_GLIBCXX})
 	set(CGOGN_USE_OPENMP "ON")
 endif()
 option(CGOGN_USE_QT "use Qt (5.4 min) for interface & rendering" ON)
-
+option(CGOGN_WITH_CGAL_EXAMPLES "Build the examples using cgal for mesh generation." OFF)
+if ((NOT MSVC) AND CGOGN_WITH_CGAL_EXAMPLES)
+	set(CGOGN_USE_GLIBCXX_DEBUG OFF)
+	set(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC OFF)
+endif()
 
 #### Continuous integration options
 option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)
@@ -80,8 +96,15 @@ deduce_build_type()
 
 if(${CGOGN_USE_OPENMP})
 	find_package(OpenMP)
-	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	if(${OPENMP_FOUND})
+		add_flags(CMAKE_C_FLAGS ${OpenMP_C_FLAGS})
+		add_flags(CMAKE_CXX_FLAGS  ${OpenMP_CXX_FLAGS})
+	else()
+		if ((${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") AND (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.7")))
+			add_flags(CMAKE_C_FLAGS "-fopenmp")
+			add_flags(CMAKE_CXX_FLAGS  "-fopenmp")
+		endif()
+	endif()
 endif()
 
 if(CGOGN_BUILD_TESTS)
@@ -91,9 +114,24 @@ if(CGOGN_BUILD_TESTS)
 	endif()
 endif(CGOGN_BUILD_TESTS)
 
+#### Endianness detection
+include (TestBigEndian)
+test_big_endian(CGOGN_TEST_BIG_ENDIAN)
+add_definitions("-DCGOGN_LITTLE_ENDIAN=1234")
+add_definitions("-DCGOGN_BIG_ENDIAN=4321")
+if(${CGOGN_TEST_BIG_ENDIAN})
+	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_BIG_ENDIAN")
+else()
+	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
+endif()
+
+
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 add_subdirectory(${CGOGN_SOURCE_DIR})
 
+if(${CGOGN_BUILD_BENCHS})
+	add_subdirectory(benchmarks)
+endif(${CGOGN_BUILD_BENCHS})
 
 
 ##  TODO a mettre dans un fichier cmake particulier
@@ -102,10 +140,10 @@ add_subdirectory(${CGOGN_SOURCE_DIR})
 ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
 
 # --- CPPCheck ---
-GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR} 
-                   ENABLE_IDS all 
-                   INCLUDES ${CGOGN_SOURCE_DIR}
-                   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
-                   SYSTEM_INCLUDE_WARNING_SUPPRESSION 
-                   INLINE_SUPPRESSION
-                   HTML_REPORT)
+GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR}
+		   ENABLE_IDS all
+		   INCLUDES ${CGOGN_SOURCE_DIR}
+		   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
+		   SYSTEM_INCLUDE_WARNING_SUPPRESSION
+		   INLINE_SUPPRESSION
+		   HTML_REPORT)

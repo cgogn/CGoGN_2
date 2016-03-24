@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#define CGOGN_CORE_DLL_EXPORT
 #include <core/utils/serialization.h>
 
 namespace cgogn
@@ -31,14 +31,14 @@ namespace serialization
 {
 
 template <>
-CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/)
+CGOGN_CORE_API bool known_size<std::string>(std::string const* /*src*/)
 {
 	return false;
 }
 
 // load string
 template <>
-CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
+CGOGN_CORE_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity)
 {
 	cgogn_assert(istream.good());
 	cgogn_assert(dest != nullptr);
@@ -46,27 +46,27 @@ CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest,
 	char buffer[2048];
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		unsigned int size;
-		istream.read(reinterpret_cast<char*>(&size), sizeof(unsigned int));
+		uint32 size;
+		istream.read(reinterpret_cast<char*>(&size), sizeof(uint32));
 		cgogn_assert(size < 2048);
 		istream.read((buffer), size);
 		dest[i].resize(size);
-		for (unsigned int j=0; j<size; ++j)
+		for (uint32 j=0; j<size; ++j)
 			dest[i][j] = buffer[j];
 	}
 }
 
 //save string
 template <>
-CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
+CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(ostream.good());
 	cgogn_assert(src != nullptr);
 
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].length());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = uint32(src[i].length());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		const char* str = src[i].c_str();
 		ostream.write(str, size);
 	}
@@ -74,14 +74,14 @@ CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const*
 
 // compute data length of string
 template <>
-CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
+CGOGN_CORE_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 
 	std::size_t total = 0;
 	for (std::size_t i = 0; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int); // for size
+		total += sizeof(uint32); // for size
 		total += src[i].length();
 	}
 	return total;

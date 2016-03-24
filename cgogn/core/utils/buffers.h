@@ -37,9 +37,9 @@ namespace cgogn
 template <typename T>
 class Buffers
 {
-	typedef T value_type;
-	static const unsigned int DEFAULT_SIZE = 128u;
-	static const unsigned int SHRINK_SIZE  = 1024u;
+	using value_type = T;
+	static const uint32 DEFAULT_SIZE = 128u;
+	static const uint32 SHRINK_SIZE  = 1024u;
 
 protected:
 
@@ -84,9 +84,9 @@ public:
 template <>
 class Buffers<Dart>
 {
-	typedef Dart value_type;
-	static const unsigned int DEFAULT_SIZE = 128u;
-	static const unsigned int SHRINK_SIZE  = 1024u;
+	using value_type = Dart;
+	static const uint32 DEFAULT_SIZE = 128u;
+	static const uint32 SHRINK_SIZE  = 1024u;
 
 protected:
 

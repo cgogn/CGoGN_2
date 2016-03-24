@@ -354,16 +354,6 @@ void QOGLViewer::postDraw()
 	/// REMOVED
 }
 
-/*! Called before draw() (instead of preDraw()) when viewer displaysInStereo().
-
-Same as preDraw() except that the glDrawBuffer() is set to \c GL_BACK_LEFT or \c GL_BACK_RIGHT
-depending on \p leftBuffer, and it uses qoglviewer::Camera::loadProjectionMatrixStereo() and
-qoglviewer::Camera::loadModelViewMatrixStereo() instead. */
-void QOGLViewer::preDrawStereo(bool leftBuffer)
-{
-	/// REMOVED
-}
-
 /*! Draws a simplified version of the scene to guarantee interactive camera displacements.
 
 This method is called instead of draw() when the qoglviewer::Camera::frame() is
@@ -697,7 +687,7 @@ near clipping plane and 1.0 being just beyond the far clipping plane). This inte
 values that can be read from the z-buffer. Note that if you use the convenient \c glVertex2i() to
 provide coordinates, the implicit 0.0 z coordinate will make your drawings appear \e on \e top of
 the rest of the scene. */
-void QOGLViewer::startScreenCoordinatesSystem(bool upward) const
+void QOGLViewer::startScreenCoordinatesSystem(bool /*upward*/) const
 {
 /// REMOVED
 }
@@ -786,7 +776,7 @@ example</a>) to implement your selection mechanism.
 
 This method is called when you use the QOGLViewer::SELECT mouse binding(s) (default is Shift + left
 button). Use setMouseBinding() to change this. */
-void QOGLViewer::select(const QMouseEvent* event)
+void QOGLViewer::select(const QMouseEvent* /*event*/)
 {
 /// REMOVED
 }
@@ -841,7 +831,7 @@ perform an analytical intersection.
 
 \attention \c GL_SELECT mode seems to report wrong results when used in conjunction with backface
 culling. If you encounter problems try to \c glDisable(GL_CULL_FACE). */
-void QOGLViewer::select(const QPoint& point)
+void QOGLViewer::select(const QPoint& /*point*/)
 {
 /// REMOVED
 }
@@ -857,7 +847,7 @@ using qoglviewer::Camera::loadModelViewMatrix(). See the gluPickMatrix() documen
 You should not need to redefine this method (if you use the \c GL_SELECT mode to perform your
 selection), since this code is fairly classical and can be tuned. You are more likely to overload
 endSelection() if you want to use a more complex select buffer structure. */
-void QOGLViewer::beginSelection(const QPoint& point)
+void QOGLViewer::beginSelection(const QPoint& /*point*/)
 {
 /// REMOVED
 }
@@ -968,6 +958,7 @@ void QOGLViewer::performClickAction(ClickAction ca, const QMouseEvent* const e)
 			update();
 			break;
 		case RAP_FROM_PIXEL :
+			makeCurrent();
 			if (! camera()->setPivotPointFromPixel(e->pos()))
 				camera()->setPivotPoint(sceneCenter());
 			setVisualHintsMask(1);
@@ -1959,7 +1950,7 @@ void QOGLViewer::keyPressEvent(QKeyEvent *e)
 					camera()->addKeyFrameToPath(index);
 					if (nullBefore)
 						connect(camera()->keyFrameInterpolator(index), SIGNAL(interpolated()), SLOT(update()));
-					int nbKF = camera()->keyFrameInterpolator(index)->numberOfKeyFrames();
+//					int nbKF = camera()->keyFrameInterpolator(index)->numberOfKeyFrames();
 //					if (nbKF > 1)
 //						displayMessage(tr("Path %1, position %2 added", "Feedback message").arg(index).arg(nbKF));
 //					else
@@ -1982,17 +1973,17 @@ void QOGLViewer::handleKeyboardAction(KeyboardAction id)
 {
 	switch (id)
 	{
-//		case DRAW_AXIS :		toggleAxisIsDrawn(); break;
-//		case DRAW_GRID :		toggleGridIsDrawn(); break;
-//		case DISPLAY_FPS :		toggleFPSIsDisplayed(); break;
-//		case ENABLE_TEXT :		toggleTextIsEnabled(); break;
+		case DRAW_AXIS :		/*toggleAxisIsDrawn();*/ break;
+		case DRAW_GRID :		/*toggleGridIsDrawn();*/ break;
+		case DISPLAY_FPS :		/*toggleFPSIsDisplayed();*/ break;
+		case ENABLE_TEXT :		/*toggleTextIsEnabled();*/ break;
 		case EXIT_VIEWER :		qApp->closeAllWindows(); break;
 		case SAVE_SCREENSHOT :	saveSnapshot(false, false); break;
 		case FULL_SCREEN :		toggleFullScreen(); break;
 		case STEREO :			toggleStereoDisplay(); break;
 		case ANIMATION :		toggleAnimation(); break;
 		case HELP :				help(); break;
-//		case EDIT_CAMERA :		toggleCameraIsEdited(); break;
+		case EDIT_CAMERA :		/*toggleCameraIsEdited();*/ break;
 		case SNAPSHOT_TO_CLIPBOARD :	snapshotToClipboard(); break;
 		case CAMERA_MODE :
 			toggleCameraMode();
@@ -2740,7 +2731,7 @@ unsigned int QOGLViewer::wheelButtonState(MouseHandler handler, MouseAction acti
 		if ( (it.value().handler == handler) && (it.value().action == action) && (it.value().withConstraint == withConstraint) )
 			return it.key().key + it.key().modifiers;
 
-	return -1;
+	return 0xffffffff;
 }
 
 /*! This method is deprecated since version 2.5.0

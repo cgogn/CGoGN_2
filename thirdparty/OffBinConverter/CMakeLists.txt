@@ -1,0 +1,5 @@
+include_directories(${CGOGN_SOURCE_DIR})
+add_executable(off_ascii2bin off_ascii2bin.cpp)
+if(NOT MSVC)
+	target_compile_options(off_ascii2bin PUBLIC "-std=c++11")
+endif()

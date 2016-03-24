@@ -25,7 +25,6 @@
 #define CORE_CMAP_CMAP0_H_
 
 #include <core/cmap/map_base.h>
-#include <core/basic/dart.h>
 
 namespace cgogn
 {
@@ -35,19 +34,19 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
-	typedef MAP_TRAITS MapTraits;
-	typedef MAP_TYPE MapType;
-	typedef MapBase<MAP_TRAITS, MAP_TYPE> Inherit;
-	typedef CMap0_T<MAP_TRAITS, MAP_TYPE> Self;
+	using MapTraits = MAP_TRAITS;
+	using MapType = MAP_TYPE;
+	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap0_T<MAP_TRAITS, MAP_TYPE>;
 
-	friend typename Self::Inherit;
+	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
 
-	static const Orbit VERTEX = Orbit::DART;
-
-	typedef Cell<Self::VERTEX> Vertex;
+	using Vertex = Cell<Orbit::DART>;
+	using Boundary = Vertex;  // just for compilation
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -57,7 +56,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -78,76 +77,107 @@ public:
 	Self& operator=(Self const&) = delete;
 	Self& operator=(Self &&) = delete;
 
-protected:
-	inline Dart add_dart()
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
 	{
-		unsigned int di = this->add_topology_element();
-		Dart d(di);
-		return d;
+		bool result = true;
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		return result;
 	}
 
-public:
-	Vertex add_vertex()
-	{
-		Dart d = this->to_concrete()->add_dart();
-		Vertex v(d);
+	/*******************************************************************************
+	 * Low-level topological operations
+	 *******************************************************************************/
 
-		if (this->template is_orbit_embedded<Orbit::DART>())
-			init_orbit_embedding<Orbit::DART>(d, this->template add_attribute_element<Orbit::DART>());
+protected:
+
+	/*!
+	* \brief Init an newly added dart.
+	*/
+	inline void init_dart(Dart)
+	{
+	}
+
+	inline bool check_integrity(Dart) const
+	{
+		return true;
+	}
+	/*******************************************************************************
+	 * High-level embedded and topological operations
+	 *******************************************************************************/
+
+public:
+
+	/*!
+	 * \brief Add an embedded vertex (or dart) in the map.
+	 * \return The added dart. If the map has DART attributes,
+	 * the inserted darts are automatically embedded on new attribute elements.
+	 */
+	inline Vertex add_vertex()
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Vertex v(this->add_dart());
+
+		if (this->template is_embedded<Vertex>())
+			this->new_orbit_embedding(v);
 
 		return v;
 	}
 
-protected:
+	/*!
+	 * \brief Remove a vertex (or dart) from the map.
+	 */
+	inline void remove_vertex(Vertex v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		this->remove_dart(v.dart);
+	}
 
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
 
+protected:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		switch(ORBIT)
-		{
-			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1:
-			case Orbit::PHI2:
-			case Orbit::PHI1_PHI2:
-			case Orbit::PHI1_PHI3:
-			case Orbit::PHI2_PHI3:
-			case Orbit::PHI21:
-			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
-		}
+		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
+		f(c.dart);
 	}
 
-protected:
-
-	/*******************************************************************************
-	 * Embedding management
-	 *******************************************************************************/
-
-	template <Orbit ORBIT>
-	inline void init_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template init_embedding<ORBIT>(d, emb); });
-	}
-
-	template <Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, unsigned int emb)
-	{
-		foreach_dart_of_orbit(c, [this, emb] (Dart d) { this->template set_embedding<ORBIT>(d, emb); });
+		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
+		f(c.dart);
 	}
 };
 
 template <typename MAP_TRAITS>
 struct CMap0Type
 {
-	typedef CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>> TYPE;
+	using TYPE = CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>
 using CMap0 = CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>>;
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
+extern template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
 
 } // namespace cgogn
 

@@ -24,7 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/utils/make_unique.h>
+#include <core/utils/unique_ptr.h>
 #include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
 
@@ -36,18 +36,18 @@
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
 	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
-	typedef std::unique_ptr< ChunkArrayGen<CHUNKSIZE> > ChunkArrayGenPtr;
-	typedef std::map<std::string, ChunkArrayGenPtr> NamePtrMap;
+	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNKSIZE> >;
+	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
+	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
-	static NamePtrMap map_CA_;
-	static bool known_types_initialized_;
+	static UniqueNamePtrMap map_CA_;
 
 	/**
 	 * @brief register a type
@@ -57,33 +57,46 @@ public:
 	template <typename T>
 	static void register_CA()
 	{
+		// could be moved in register_known_types (dangerous) ??
+		if (!map_CA_)
+			reset();
+
 		std::string&& keyType(name_of_type(T()));
-		if(map_CA_.find(keyType) == map_CA_.end())
-			map_CA_[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
+		if(map_CA_->find(keyType) == map_CA_->end())
+			(*map_CA_)[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
 	}
 
 	static void register_known_types()
 	{
+		static bool known_types_initialized_ = false;
+
 		if (known_types_initialized_)
 			return;
 
 		register_CA<bool>();
 		register_CA<char>();
-		register_CA<short>();
-		register_CA<int>();
-		register_CA<long>();
-		register_CA<long long>();
-		register_CA<signed char>();
-		register_CA<unsigned char>();
-		register_CA<unsigned short>();
-		register_CA<unsigned int>();
-		register_CA<unsigned long>();
-		register_CA<unsigned long long>();
-		register_CA<float>();
-		register_CA<double>();
+		register_CA<int8>();
+		register_CA<int16>();
+		register_CA<int32>();
+		register_CA<int64>();
+		register_CA<uint8>();
+		register_CA<uint16>();
+		register_CA<uint32>();
+		register_CA<uint64>();
+//		register_CA<short>();
+//		register_CA<int>();
+//		register_CA<long>();
+//		register_CA<long long>();
+//		register_CA<signed char>();
+//		register_CA<unsigned char>();
+//		register_CA<unsigned short>();
+//		register_CA<unsigned long>();
+//		register_CA<unsigned long long>();
+		register_CA<float32>();
+		register_CA<float64>();
 		register_CA<std::string>();
-		register_CA<std::array<double,3>>();
-		register_CA<std::array<float,3>>();
+		register_CA<std::array<float32,3>>();
+		register_CA<std::array<float64,3>>();
 		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
@@ -97,9 +110,9 @@ public:
 	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& keyType)
 	{
 		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
-		typename NamePtrMap::const_iterator it = map_CA_.find(keyType);
+		typename NamePtrMap::const_iterator it = map_CA_->find(keyType);
 
-		if(it != map_CA_.end())
+		if(it != map_CA_->end())
 		{
 			tmp = (it->second)->clone();
 		}
@@ -111,15 +124,12 @@ public:
 
 	static void reset()
 	{
-		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = NamePtrMap();
+		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = make_unique<NamePtrMap>();
 	}
 };
 
-template <unsigned int CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_= typename ChunkArrayFactory<CHUNKSIZE>::NamePtrMap();
-
-template <unsigned int CHUNKSIZE>
-bool ChunkArrayFactory<CHUNKSIZE>::known_types_initialized_= false;
+template <uint32 CHUNKSIZE>
+typename ChunkArrayFactory<CHUNKSIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_ = nullptr;
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))

@@ -24,6 +24,33 @@
 #ifndef CORE_UTILS_DEFINITIONS_H_
 #define CORE_UTILS_DEFINITIONS_H_
 
+
+#include <cstdint>
+
+namespace cgogn
+{
+
+namespace numerics
+{
+
+using  int8 = std::int8_t;
+using  int16 = std::int16_t;
+using  int32 = std::int32_t;
+using  int64 = std::int64_t;
+
+using  uint8 = std::uint8_t;
+using  uint16 = std::uint16_t;
+using  uint32 = std::uint32_t;
+using  uint64 = std::uint64_t;
+
+using float32 = float;
+using float64 = double;
+
+}
+
+using namespace numerics;
+}
+
 /**
  * \brief No execpt declaration for CGOGN symbols.
  * For a given type T, std::vector<T> will only use move constructor of T if it's marked noexcept. Same for std::swap.
@@ -37,7 +64,8 @@
 /*
  * Thread local storage. In VS <1900 it works only with POD types.
 */
-#if defined(_MSC_VER) && _MSC_VER < 1900
+//#if defined(_MSC_VER) && _MSC_VER < 1900
+#if defined(_MSC_VER)
 #define CGOGN_TLS __declspec( thread )
 #else
 #define CGOGN_TLS __thread
@@ -54,6 +82,26 @@
 #define CGOGN_CONSTEXPR constexpr
 #endif
 
+/*
+ * The macro CGOGN_STRONG_INLINE is useful to force inline functions in situations where MSVC needs forceinline
+ *  but gcc or clang are still doing fine.
+*/
+#if (defined _MSC_VER) || (defined __INTEL_COMPILER)
+#define CGOGN_STRONG_INLINE __forceinline
+#else
+#define CGOGN_STRONG_INLINE inline
+#endif
+
+/*
+ * The macro CGOGN_ALWAYS_INLINE is more powerfull than CGOGN_STRONG_INLINE when using clang or gcc.
+ * WARNING : use with caution, it can badly impact the compilation time.
+*/
+#if (defined _MSC_VER) || (defined __INTEL_COMPILER)
+#define CGOGN_ALWAYS_INLINE CGOGN_STRONG_INLINE
+#else
+#define CGOGN_ALWAYS_INLINE __attribute__((always_inline)) inline
+#endif
+
 /**
  * \brief No return declaration for CGOGN symbols.
  */
@@ -63,6 +111,13 @@
 #else
 #define CGOGN_NORETURN [[noreturn]]
 #endif
+#endif
+
+// macro for the function name
+#if defined(_MSC_VER)
+#define CGOGN_FUNC __FUNCTION__
+#else
+#define CGOGN_FUNC __func__
 #endif
 
 /**
@@ -109,10 +164,9 @@
 
 #ifdef _MSC_VER
 	// no warning with VS 2013 and \W4
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON 
-	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF 
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
+	#define CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 #endif
-
 
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)

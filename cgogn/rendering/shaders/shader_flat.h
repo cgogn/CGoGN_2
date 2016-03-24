@@ -41,19 +41,24 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
 
+	static const char* vertex_shader_source2_;
+	static const char* fragment_shader_source2_;
+
 	enum
 	{
-		ATTRIB_POS = 0
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR
 	};
 
 	// uniform ids
-	int unif_front_color_;
-	int unif_back_color_;
-	int unif_ambiant_color_;
+	GLint unif_front_color_;
+	GLint unif_back_color_;
+	GLint unif_ambiant_color_;
+	GLint unif_light_position_;
 
 public:
 
-	ShaderFlat();
+	ShaderFlat(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -74,12 +79,28 @@ public:
 	void set_ambiant_color(const QColor& rgb);
 
 	/**
+	 * @brief set light position relative to screen
+	 * @param l light position
+	 */
+	void set_light_position(const QVector3D& l);
+
+
+	/**
+	 * @brief set light position relative to world
+	 * @param l light position
+	 * @param view_matrix
+	 */
+	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+
+	/**
 	 * @brief set a vao configuration
 	 * @param i id of vao (0,1,....)
 	 * @param vbo_pos pointer on position vbo (XYZ)
+	 * @param vbo_color pointer on color vbo (RGB)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos);
+	bool set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_col = NULL);
+
 };
 
 } // namespace rendering
