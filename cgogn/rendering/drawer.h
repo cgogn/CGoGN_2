@@ -47,13 +47,13 @@ class CGOGN_RENDERING_API Drawer
 	{
 		uint32 begin;
 		GLenum mode;
-		float width;
+		float32 width;
 		uint32 nb;
 		bool aa;
-		PrimParam(std::size_t b, GLenum m, float w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
+		PrimParam(std::size_t b, GLenum m, float32 w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
 	};
 
-	using Vec3f = std::array<float,3>;
+	using Vec3f = std::array<float32,3>;
 
 protected:
 
@@ -83,7 +83,7 @@ protected:
 	uint32 vao_rp_;
 	uint32 vao_ps_;
 
-	float current_size_;
+	float32 current_size_;
 	bool current_aa_;
 	bool current_ball_;
 
@@ -128,20 +128,20 @@ public:
 	/**
 	 * use as glVertex3f
 	 */
-	void vertex3f(float x, float y, float z);
+	void vertex3f(float32 x, float32 y, float32 z);
 
 	/**
 	 * use as glColor3f
 	 */
-	void color3f(float r, float g, float b);
+	void color3f(float32 r, float32 g, float32 b);
 
 
-	inline void vertex3fv(const std::array<float,3>& xyz)
+	inline void vertex3fv(const std::array<float32,3>& xyz)
 	{
 		vertex3f(xyz[0],xyz[1],xyz[2]);
 	}
 
-	inline void color3fv(const std::array<float,3>& rgb)
+	inline void color3fv(const std::array<float32,3>& rgb)
 	{
 		color3f(rgb[0],rgb[1],rgb[2]);
 	}
@@ -149,25 +149,25 @@ public:
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		vertex3f(float(xyz[0]),float(xyz[1]),float(xyz[2]));
+		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		color3f(float(rgb[0]),float(rgb[1]),float(rgb[2]));
+		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
 	}
 
 	template <typename VEC3>
 	inline void vertex3fv(const VEC3& xyz)
 	{
-		vertex3f(float(xyz[0]),float(xyz[1]),float(xyz[2]));
+		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
 	}
 
 	template <typename VEC3>
 	inline void color3fv(const VEC3& rgb)
 	{
-		color3f(float(rgb[0]),float(rgb[1]),float(rgb[2]));
+		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
 	}
 
 
@@ -181,21 +181,21 @@ public:
 	/**
 	 * usr as glPointSize
 	 */
-	inline void point_size(float ps)
+	inline void point_size(float32 ps)
 	{
 		current_aa_ = false;
 		current_size_ = ps;
 		current_ball_ = false;
 	}
 
-	inline void point_size_aa(float ps)
+	inline void point_size_aa(float32 ps)
 	{
 		current_aa_ = true;
 		current_size_ = ps;
 		current_ball_ = false;
 	}
 
-	inline void ball_size(float ps)
+	inline void ball_size(float32 ps)
 	{
 		current_ball_ = true;
 		current_aa_ = false;
@@ -206,13 +206,13 @@ public:
 	/**
 	 * usr as glLineWidth
 	 */
-	inline void line_width(float lw)
+	inline void line_width(float32 lw)
 	{
 		current_aa_ = false;
 		current_size_ = lw;
 	}
 
-	inline void line_width_aa(float lw)
+	inline void line_width_aa(float32 lw)
 	{
 		current_aa_ = true;
 		current_size_ = 2.0*lw;

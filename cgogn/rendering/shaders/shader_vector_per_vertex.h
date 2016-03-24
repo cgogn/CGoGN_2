@@ -64,7 +64,7 @@ public:
 	 * @brief set length of normal
 	 * @param l length
 	 */
-	void set_length(float l);
+	void set_length(float32 l);
 
 	/**
 	 * @brief set a vao configuration

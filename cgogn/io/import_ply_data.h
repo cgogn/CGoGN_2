@@ -94,10 +94,10 @@ protected:
 	/* vertex and face definitions for a polygonal object */
 
 	typedef struct VertexPly {
-		float x,y,z;
-		float r,g,b;
+		float32 x,y,z;
+		float32 r,g,b;
 		unsigned char red,green,blue;
-		float nx,ny,nz;
+		float32 nx,ny,nz;
 		void *other_props;       /* other properties */
 	} VertexPly;
 

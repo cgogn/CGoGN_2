@@ -43,7 +43,7 @@ namespace rendering
 
 class CGOGN_RENDERING_API TopoRender
 {
-	using Vec3f = std::array<float,3>;
+	using Vec3f = std::array<float32,3>;
 
 protected:
 
@@ -66,9 +66,9 @@ protected:
 	QColor phi2_color_;
 	QColor phi3_color_;
 
-	float shrink_v_;
-	float shrink_f_;
-	float shrink_e_;
+	float32 shrink_v_;
+	float32 shrink_f_;
+	float32 shrink_e_;
 
 public:
 
@@ -83,9 +83,9 @@ public:
 	 */
 	~TopoRender();
 
-	inline void set_explode_volume(float x) { shrink_v_ = x; }
-	inline void set_explode_face(float x) { shrink_f_ = x; }
-	inline void set_explode_edge(float x) { shrink_e_ = x; }
+	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
+	inline void set_explode_face(float32 x) { shrink_f_ = x; }
+	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
 	template <typename VEC3, typename MAP>
 	void update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
@@ -107,10 +107,10 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 	Scalar opp_shrink_e = 1.0 -shrink_e_;
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos2;
+	std::vector<std::array<float32,3>> out_pos2;
 	out_pos2.reserve(1024*1024);
 
 
@@ -150,13 +150,13 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		for (uint32 i=0; i<count; ++i)
 		{
 			const VEC3& P1 = local_vertices[i];
-			out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+			out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
 			const VEC3& P2 = local_vertices[2*count+i];
-			out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+			out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
 			const VEC3& P3 = local_vertices[count+i];
-			out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+			out_pos2.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 			const VEC3& P4 = local_vertices[3*count+i];
-			out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+			out_pos2.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 		}
 	});
 
@@ -188,13 +188,13 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 	Scalar opp_shrink_v = 1.0 - shrink_v_;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos2;
+	std::vector<std::array<float32,3>> out_pos2;
 	out_pos2.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos3;
+	std::vector<std::array<float32,3>> out_pos3;
 	out_pos3.reserve(1024*1024);
 
 
@@ -241,17 +241,17 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 			for (uint32 i=0; i<count; ++i)
 			{
 				VEC3 P1 = (local_vertices[i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+				out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
 				VEC3 P2 = (local_vertices[3*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+				out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
 
 				const VEC3 P3 = (local_vertices[count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+				out_pos2.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 				const VEC3 P4 = (local_vertices[4*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+				out_pos2.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 				const VEC3& P5 = local_vertices[2*count+i];
-				out_pos3.push_back({float(P5[0]),float(P5[1]),float(P5[2])});
-				out_pos3.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+				out_pos3.push_back({float32(P5[0]),float32(P5[1]),float32(P5[2])});
+				out_pos3.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 
 			}
 		});

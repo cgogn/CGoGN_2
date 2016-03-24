@@ -93,24 +93,24 @@ inline std::int64_t swap_endianness64(std::int64_t x)
 									(step16 & 0xFF00FF00FF00FF00ULL) >> 8);
 }
 
-inline float swap_endianness_float(float x)
+inline float32 swap_endianness_float(float32 x)
 {
 	union U32F32
 	{
 		std::uint32_t	as_u32;
-		float			as_f32;
+		float32			as_f32;
 	} u;
 	u.as_f32 = x;
 	u.as_u32 = swap_endianness32u(u.as_u32);
 	return u.as_f32;
 }
 
-inline double swap_endianness_double(double x)
+inline float64 swap_endianness_double(float64 x)
 {
 	union U64F64
 	{
 		std::uint64_t	as_u64;
-		double			as_f64;
+		float64			as_f64;
 	} u;
 	u.as_f64 = x;
 	u.as_u64 = swap_endianness64u(u.as_u64);
@@ -185,7 +185,7 @@ inline std::int64_t swap_endianness_if(std::int64_t x)
 }
 
 template< bool COND>
-inline float swap_endianness_if(float x)
+inline float32 swap_endianness_if(float32 x)
 {
 	if (COND)
 		return swap_endianness_float(x);
@@ -193,7 +193,7 @@ inline float swap_endianness_if(float x)
 }
 
 template< bool COND>
-inline double swap_endianness_if(double x)
+inline float64 swap_endianness_if(float64 x)
 {
 	if (COND)
 		return swap_endianness_double(x);

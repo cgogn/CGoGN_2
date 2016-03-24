@@ -68,7 +68,7 @@ public:
 	 * @brief set the width of lines (call before each draw)
 	 * @param w width in pixel
 	 */
-	void set_width(float w);
+	void set_width(float32 w);
 
 	/**
 	 * @brief set a vao configuration

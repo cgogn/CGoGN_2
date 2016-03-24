@@ -80,9 +80,9 @@ protected:
 		for (uint32 i = 0; i < this->nb_vertices_; ++i)
 		{
 
-			double x = this->read_double(fp,line);
-			double y = this->read_double(fp,line);
-			double z = this->read_double(fp,line);
+			float64 x = this->read_double(fp,line);
+			float64 y = this->read_double(fp,line);
+			float64 z = this->read_double(fp,line);
 
 			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
@@ -124,7 +124,7 @@ protected:
 
 
 		static const uint32 BUFFER_SZ = 1024*1024;
-		float* buff_pos = new float[3*BUFFER_SZ];
+		float32* buff_pos = new float32[3*BUFFER_SZ];
 		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
@@ -137,9 +137,9 @@ protected:
 					j = 0;
 					// read from file into buffer
 					if (i + BUFFER_SZ < this->nb_vertices_)
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*BUFFER_SZ);
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*BUFFER_SZ);
 					else
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*(this->nb_vertices_ - i));
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*(this->nb_vertices_ - i));
 
 					//endian
 					uint32* ptr = reinterpret_cast<uint32*>(buff_pos);
@@ -213,7 +213,7 @@ protected:
 		return true;
 	}
 private:
-	static inline double read_double(std::istream& fp, std::string& line)
+	static inline float64 read_double(std::istream& fp, std::string& line)
 	{
 		fp >> line;
 		while (line[0]=='#')

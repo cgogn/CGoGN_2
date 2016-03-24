@@ -86,7 +86,7 @@ protected:
 		for (int i = 0 ; i < number_of_vertices; ++i)
 		{
 			uint32 idx = this->vertex_attributes_.template insert_lines<1>();
-			std::array<float, 3> v;
+			std::array<float32, 3> v;
 			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
 			position->operator [](idx)[0] = v[0];
 			position->operator [](idx)[1] = v[1];

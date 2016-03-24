@@ -94,7 +94,7 @@ void ShaderVectorPerVertex::set_color(const QColor& rgb)
 	prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderVectorPerVertex::set_length(float l)
+void ShaderVectorPerVertex::set_length(float32 l)
 {
 	prg_.setUniformValue(unif_length_, l);
 }

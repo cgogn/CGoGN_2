@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 	std::cout << "nb volumes -> " << nbw << std::endl;
 
 	end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::chrono::duration<float64> elapsed_seconds = end - start;
 	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
 

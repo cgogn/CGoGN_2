@@ -63,7 +63,7 @@ public:
 
 	ShaderExplodeVolumes(bool color_per_vertex = false);
 
-	void set_explode_volume(float x);
+	void set_explode_volume(float32 x);
 
 	void set_light_position(const QVector3D& l);
 

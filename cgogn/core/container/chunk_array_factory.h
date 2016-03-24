@@ -92,11 +92,11 @@ public:
 //		register_CA<unsigned short>();
 //		register_CA<unsigned long>();
 //		register_CA<unsigned long long>();
-		register_CA<float>();
-		register_CA<double>();
+		register_CA<float32>();
+		register_CA<float64>();
 		register_CA<std::string>();
-		register_CA<std::array<double,3>>();
-		register_CA<std::array<float,3>>();
+		register_CA<std::array<float32,3>>();
+		register_CA<std::array<float64,3>>();
 		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
