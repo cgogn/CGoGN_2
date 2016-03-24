@@ -230,6 +230,7 @@ protected :
 										std::string att_type;
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
+										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
 										std::cout << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components)." << std::endl;
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
@@ -269,8 +270,9 @@ protected :
 												std::string		data_name;
 												uint32	nb_comp;
 												//uint32	nb_data; already declared
-												std::string		data_type;
+												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
+												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
 												att->read_n(fp, nb_data, !ascii_file, big_endian);
