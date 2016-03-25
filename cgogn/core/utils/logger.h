@@ -68,6 +68,7 @@ private:
 	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo) const;
 
 	std::vector<std::unique_ptr<LoggerOutput>>	outputs_;
+	mutable std::mutex							process_mutex_;
 };
 
 
