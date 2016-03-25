@@ -38,20 +38,28 @@ namespace logger
 void NullOutput::process_entry(const LogEntry&)
 {}
 
+ConsoleOutput::ConsoleOutput() : LoggerOutput()
+  ,display_file_(false)
+{}
+
 void ConsoleOutput::process_entry(const LogEntry& e)
 {
-        std::lock_guard<std::mutex> guard(process_mutex_);
-        if (e)
-        {
-                std::ostream& o = (e.get_level() <= LogLevel::LogLevel_DEPRECATED) ? std::cout : std::cerr;
-                o << "[" << internal::loglevel_to_string(e.get_level()) << "]: ";
-                o << "\"" << e.get_message_str() << '\"';
-                if (display_file_ && !e.get_fileinfo().empty())
-                {
-                        o << "    (" << e.get_fileinfo() << ")";
-                }
-                o << '.' << std::endl;
-        }
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	if (e)
+	{
+		std::ostream& o = (e.get_level() <= LogLevel::LogLevel_DEPRECATED) ? std::cout : std::cerr;
+		o << "[" << internal::loglevel_to_string(e.get_level()) << "]: ";
+		if (!e.get_sender().empty())
+		{
+			o  << e.get_sender() << ": ";
+		}
+		o << "\"" << e.get_message_str() << '\"';
+		if (display_file_ && !e.get_fileinfo().empty())
+		{
+			o << "    (" << e.get_fileinfo() << ")";
+		}
+		o << '.' << std::endl;
+	}
 }
 
 } // namespace logger
