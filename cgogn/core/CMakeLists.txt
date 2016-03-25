@@ -39,6 +39,7 @@ set(HEADER_FILES
 	utils/thread_barrier.h
 	utils/string.h
 	utils/precision.h
+	utils/logger.h
 )
 
 set(SOURCE_FILES
@@ -64,6 +65,7 @@ set(SOURCE_FILES
 	utils/thread.cpp
 	utils/thread_pool.cpp
 	utils/serialization.cpp
+	utils/logger.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
