@@ -65,12 +65,8 @@ public:
 
 		ConsoleOutput();
 		CGOGN_NOT_COPYABLE_NOR_MOVABLE(ConsoleOutput);
-		inline void set_display_file(bool display) { display_file_ = display;}
 
 		virtual void process_entry(const LogEntry&) override;
-private:
-		std::mutex	process_mutex_;
-		bool		display_file_;
 };
 
 } // namespace logger

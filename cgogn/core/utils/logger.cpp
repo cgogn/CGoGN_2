@@ -33,25 +33,6 @@ namespace cgogn
 namespace logger
 {
 
-namespace internal
-{
-
-CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
-{
-	switch (lvl) {
-		case LogLevel::LogLevel_INFO: return "INFO   ";
-		case LogLevel::LogLevel_DEBUG: return "DEBUG     ";
-		case LogLevel::LogLevel_DEPRECATED: return "DEPRECATED";
-		case LogLevel::LogLevel_WARNING: return "WARNING   ";
-		case LogLevel::LogLevel_ERROR: return "ERROR     ";
-		default:
-			return "UNKNOWN_LOG_LEVEL";
-	}
-}
-
-} // namespace internal
-
-
 Logger& Logger::get_logger()
 {
 	static Logger logger_instance;
@@ -60,6 +41,7 @@ Logger& Logger::get_logger()
 
 void Logger::process(const LogEntry& entry) const
 {
+	std::lock_guard<std::mutex> guard(process_mutex_);
 	for (auto& o : outputs_)
 		o->process_entry(entry);
 }
