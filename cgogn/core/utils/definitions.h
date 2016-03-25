@@ -174,7 +174,7 @@ using namespace numerics;
 #define CGOGN_NOT_COPYABLE_NOR_MOVABLE(CLASSNAME) \
 	CLASSNAME(const Self&) = delete;\
 	CLASSNAME(Self&&) = delete;\
-	Self& operator=(const Self&) = delete;\
-	Self& operator=(Self&&) = delete
+	CLASSNAME& operator=(const CLASSNAME&) = delete;\
+	CLASSNAME& operator=(CLASSNAME&&) = delete
 
 #endif // CORE_UTILS_DEFINITIONS_H_
