@@ -172,8 +172,8 @@ using namespace numerics;
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)
 
 #define CGOGN_NOT_COPYABLE_NOR_MOVABLE(CLASSNAME) \
-	CLASSNAME(const Self&) = delete;\
-	CLASSNAME(Self&&) = delete;\
+	CLASSNAME(const CLASSNAME&) = delete;\
+	CLASSNAME(CLASSNAME&&) = delete;\
 	CLASSNAME& operator=(const CLASSNAME&) = delete;\
 	CLASSNAME& operator=(CLASSNAME&&) = delete
 
