@@ -34,6 +34,7 @@
 #include <core/basic/dart_marker.h>
 #include <core/basic/cell_marker.h>
 
+#include <core/utils/logger.h>
 #include <core/utils/thread_barrier.h>
 #include <core/utils/unique_ptr.h>
 
@@ -376,7 +377,7 @@ public:
 			{
 				const uint32 old_emb = this->get_embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
-				std::cerr << "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT) << std::endl;
+				cgogn_log_warning("enforce_unique_orbit_embedding")<< "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT);
 				this->template get_attribute_container<ORBIT>().copy_line(new_emb, old_emb,false,false);
 			}
 
@@ -415,7 +416,7 @@ public:
 			if (idx == EMBNULL)
 			{
 				result = false;
-				std::cerr << "EMBNULL found for dart "<< c << " in orbit " << orbit_name(ORBIT) << std::endl;
+				cgogn_log_error("is_well_embedded")<< "EMBNULL found for dart "<< c << " in orbit " << orbit_name(ORBIT);
 				return;
 			}
 			counter[idx].push_back(c);
@@ -424,7 +425,7 @@ public:
 			{
 				const uint32 emb_d = this->get_embedding(CellType(d));
 				if (emb_d != idx)
-					std::cerr << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT) << std::endl;
+					cgogn_log_error("is_well_embedded") << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT);
 			});
 		});
 		// check that all cells present in the attribute handler are used
@@ -433,14 +434,14 @@ public:
 			if (counter[i].empty())
 			{
 				result =false;
-				std::cerr << "Cell #" << i << " is not used in orbit " << orbit_name(ORBIT) << std::endl;
+				cgogn_log_error("is_well_embedded") << "Cell #" << i << " is not used in orbit " << orbit_name(ORBIT);
 			} else
 			{
 				const std::size_t size = counter[i].size();
 				if (size >= 2ul)
 				{
 					result =false;
-					std::cerr << size << " cells with same index \"" << i << "\" in orbit " << orbit_name(ORBIT) << std::endl;
+					cgogn_log_error("is_well_embedded") << size << " cells with same index \"" << i << "\" in orbit " << orbit_name(ORBIT);
 				}
 			}
 		}
@@ -462,7 +463,7 @@ public:
 		});
 		if (!result)
 		{
-			std::cerr << "Integrity of the topology is broken" << std::endl;
+			cgogn_log_error("check_map_integrity") << "Integrity of the topology is broken";
 			return false;
 		}
 
@@ -470,7 +471,7 @@ public:
 		result = cmap->check_embedding_integrity();
 		if (!result)
 		{
-			std::cerr << "Integrity of the embeddings is broken" << std::endl;
+			cgogn_log_error("check_map_integrity") << "Integrity of the embeddings is broken";
 			return false;
 		}
 		return true;
