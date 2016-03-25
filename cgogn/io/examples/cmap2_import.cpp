@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
@@ -31,9 +32,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("cmap2_import") << "USAGE: " << argv[0] << " [filename]";
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("cmap2_import")  << "Using default mesh : " << surfaceMesh;
 	}
 	else
 		surfaceMesh = std::string(argv[1]);
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
 //		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
 
 		uint32 nb_faces = 0;
-		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });
+		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++;});
 		std::cout << "nb faces -> " << nb_faces << std::endl;
 
 		uint32 nb_faces_2 = 0;

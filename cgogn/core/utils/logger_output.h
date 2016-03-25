@@ -63,7 +63,7 @@ public:
 		using Self = ConsoleOutput;
 		using LogLevel = internal::LogLevel;
 
-		inline ConsoleOutput() : LoggerOutput(), display_file_(true) {}
+		ConsoleOutput();
 		CGOGN_NOT_COPYABLE_NOR_MOVABLE(ConsoleOutput);
 		inline void set_display_file(bool display) { display_file_ = display;}
 
