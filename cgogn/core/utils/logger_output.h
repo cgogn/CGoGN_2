@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOGGER_CPP_
+#ifndef CORE_UTILS_LOGGER_OUTPUT_H_
+#define CORE_UTILS_LOGGER_OUTPUT_H_
 
-#include <iostream>
-#include <core/utils/logger.h>
+#include <mutex>
+#include <core/utils/log_entry.h>
 
 namespace cgogn
 {
@@ -33,74 +33,47 @@ namespace cgogn
 namespace logger
 {
 
-namespace internal
+class CGOGN_CORE_API LoggerOutput
 {
+public:
+		using Self = LoggerOutput;
 
-CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
+		inline LoggerOutput() {}
+		CGOGN_NOT_COPYABLE_NOR_MOVABLE(LoggerOutput);
+		virtual ~LoggerOutput() {}
+
+		virtual void process_entry(const LogEntry& entry) = 0;
+};
+
+class CGOGN_CORE_API NullOutput final : public  LoggerOutput
 {
-	switch (lvl) {
-		case LogLevel::LogLevel_INFO: return "INFO   ";
-		case LogLevel::LogLevel_DEBUG: return "DEBUG     ";
-		case LogLevel::LogLevel_DEPRECATED: return "DEPRECATED";
-		case LogLevel::LogLevel_WARNING: return "WARNING   ";
-		case LogLevel::LogLevel_ERROR: return "ERROR     ";
-		default:
-			return "UNKNOWN_LOG_LEVEL";
-	}
-}
+public:
+		using Self = NullOutput;
 
-} // namespace internal
+		inline NullOutput() {}
+		CGOGN_NOT_COPYABLE_NOR_MOVABLE(NullOutput);
+
+		virtual void process_entry(const LogEntry&) override;
+};
 
 
-Logger& Logger::get_logger()
+class CGOGN_CORE_API ConsoleOutput final : public  LoggerOutput
 {
-	static Logger logger_instance;
-	return logger_instance;
-}
+public:
+		using Self = ConsoleOutput;
+		using LogLevel = internal::LogLevel;
 
-void Logger::process(const LogEntry& entry) const
-{
-	for (auto& o : outputs_)
-		o->process_entry(entry);
-}
+		inline ConsoleOutput() : LoggerOutput(), display_file_(true) {}
+		CGOGN_NOT_COPYABLE_NOR_MOVABLE(ConsoleOutput);
+		inline void set_display_file(bool display) { display_file_ = display;}
 
-LogStream Logger::info(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_INFO, sender, fileinfo);
-}
-
-LogStream Logger::debug(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_DEBUG, sender, fileinfo);
-}
-
-LogStream Logger::deprecated(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_DEPRECATED, sender, fileinfo);
-}
-
-LogStream Logger::warning(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_WARNING, sender, fileinfo);
-}
-
-LogStream Logger::error(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_ERROR, sender, fileinfo);
-}
-
-Logger::Logger()
-{
-	outputs_.push_back(make_unique<ConsoleOutput>());
-}
-
-LogStream Logger::log(LogLevel lvl, const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return LogStream(lvl, sender, fileinfo);
-}
-
-
+		virtual void process_entry(const LogEntry&) override;
+private:
+		std::mutex	process_mutex_;
+		bool		display_file_;
+};
 
 } // namespace logger
 } // namespace cgogn
 
+#endif // CORE_UTILS_LOGGER_OUTPUT_H_

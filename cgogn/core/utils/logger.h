@@ -24,174 +24,50 @@
 #ifndef CORE_UTILS_LOGGER_H_
 #define CORE_UTILS_LOGGER_H_
 
-#include <string>
 #include <ostream>
-#include <limits>
-#include <sstream>
 #include <memory>
 #include <vector>
 
-#include <core/dll.h>
-#include <core/utils/definitions.h>
+#include <core/utils/log_entry.h>
+#include <core/utils/logger_output.h>
+#include <core/utils/log_stream.h>
 #include <core/utils/unique_ptr.h>
 
 #define CGOGN_FILE_INFO ::cgogn::logger::internal::FileInfo(__FILE__, __LINE__)
+#define cgogn_log_info(emitter) ::cgogn::logger::Logger::get_logger().info(emitter,CGOGN_FILE_INFO)
+#define cgogn_log_debug(emitter) ::cgogn::logger::Logger::get_logger().debug(emitter,CGOGN_FILE_INFO)
+#define cgogn_log_deprecated(emitter) ::cgogn::logger::Logger::get_logger().deprecated(emitter,CGOGN_FILE_INFO)
+#define cgogn_log_warning(emitter) ::cgogn::logger::Logger::get_logger().warning(emitter,CGOGN_FILE_INFO)
+#define cgogn_log_error(emitter) ::cgogn::logger::Logger::get_logger().error(emitter,CGOGN_FILE_INFO)
 
 namespace cgogn
 {
 
 namespace logger
 {
-namespace internal
-{
-
-class CGOGN_CORE_API FileInfo
-{
-	public:
-	FileInfo(const char *f, uint32 l);
-	FileInfo();
-	FileInfo(const FileInfo& other);
-	FileInfo(FileInfo&& other);
-	FileInfo& operator=(const FileInfo& other);
-	FileInfo& operator=(FileInfo&& other);
-
-	friend std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo);
-private:
-	std::string filename_;
-	uint32 line_;
-};
-
-} // namespace internal
-
-
-enum LogLevel
-{
-	LogLevel_INFO = 0,
-	LogLevel_DEBUG = 1,
-	LogLevel_DEPRECATED = 2,
-	LogLevel_WARNING = 3,
-	LogLevel_ERROR = 4
-};
-
-class CGOGN_CORE_API LogEntry final
-{
-public:
-	using Self = LogEntry;
-	using FileInfo = internal::FileInfo;
-
-	inline LogEntry() {}
-
-	LogEntry(const LogEntry& other);
-	LogEntry(LogEntry&& other);
-	Self& operator=(const Self& other);
-	inline Self& operator=(Self&& other);
-	explicit LogEntry(LogLevel level, const std::string& sender = "", const FileInfo& fileinfo = FileInfo());
-
-	inline const std::string& get_sender() const
-	{
-		return sender_;
-	}
-
-	inline const internal::FileInfo& get_fileinfo() const
-	{
-		return fileinfo_;
-	}
-
-	inline std::stringstream& get_message()
-	{
-		return message_;
-	}
-
-	inline LogLevel get_level() const
-	{
-		return level_;
-	}
-
-	template<class T>
-	LogEntry& operator<<(const T &x)
-	{
-		get_message() << x;
-		return *this;
-	}
-
-	// false iff the message is empty
-	inline operator bool() const
-	{
-		auto* buff = const_cast<Self&>(*this).get_message().rdbuf();
-		const auto curr_pos = buff->pubseekoff(0, std::ios_base::cur);
-		const auto end = buff->pubseekoff(0, std::ios_base::end);
-		buff->pubseekpos(curr_pos, const_cast<Self&>(*this).get_message().out);
-		return end > 0;
-	}
-
-	private:
-	std::string			sender_;
-	internal::FileInfo	fileinfo_;
-	std::stringstream	message_;
-	LogLevel			level_;
-};
-
-class CGOGN_CORE_API LoggerOutput
-{
-public:
-	using Self = LoggerOutput;
-	inline LoggerOutput() {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LoggerOutput);
-	virtual ~LoggerOutput() {}
-
-	virtual void process_entry(LogEntry& entry) = 0;
-};
-
-class CGOGN_CORE_API NullOutput : public LoggerOutput
-{
-public:
-	using Self = NullOutput;
-
-	inline NullOutput() {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(NullOutput);
-
-	virtual void process_entry(LogEntry&) override;
-};
-
-class CGOGN_CORE_API LogStream final
-{
-public:
-	using FileInfo = internal::FileInfo;
-	explicit LogStream(LogLevel level, const std::string& sender = "", const FileInfo& fileinfo = FileInfo());
-
-	LogStream(LogStream&& ls);
-
-	template<class T>
-	LogStream& operator<<(const T &x)
-	{
-		log_entry_ << x;
-		return *this;
-	}
-
-	~LogStream();
-
-private:
-	LogEntry log_entry_;
-};
 
 class CGOGN_CORE_API Logger final
 {
 public:
 	using Self = Logger;
 	using FileInfo = internal::FileInfo;
+	using LogLevel = internal::LogLevel;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Logger);
 
 	static Logger& get_logger();
-	void process(LogEntry& entry);
+	void process(const LogEntry& entry) const;
 
-
-	LogStream info(const std::string& sender = "", FileInfo fileinfo = FileInfo());
+	LogStream info(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
+	LogStream debug(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
+	LogStream deprecated(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
+	LogStream warning(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
+	LogStream error(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
 private:
 	Logger();
-	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo);
+	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo) const;
 
-	std::vector<std::unique_ptr<LoggerOutput>>	outputs;
+	std::vector<std::unique_ptr<LoggerOutput>>	outputs_;
 };
 
 

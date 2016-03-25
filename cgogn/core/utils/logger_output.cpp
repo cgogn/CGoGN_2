@@ -22,10 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOGGER_CPP_
+#define CORE_UTILS_LOGGER_OUTPUT_CPP_
 
 #include <iostream>
-#include <core/utils/logger.h>
+#include <limits>
+
+#include <core/utils/logger_output.h>
 
 namespace cgogn
 {
@@ -33,74 +35,24 @@ namespace cgogn
 namespace logger
 {
 
-namespace internal
-{
+void NullOutput::process_entry(const LogEntry&)
+{}
 
-CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
+void ConsoleOutput::process_entry(const LogEntry& e)
 {
-	switch (lvl) {
-		case LogLevel::LogLevel_INFO: return "INFO   ";
-		case LogLevel::LogLevel_DEBUG: return "DEBUG     ";
-		case LogLevel::LogLevel_DEPRECATED: return "DEPRECATED";
-		case LogLevel::LogLevel_WARNING: return "WARNING   ";
-		case LogLevel::LogLevel_ERROR: return "ERROR     ";
-		default:
-			return "UNKNOWN_LOG_LEVEL";
-	}
+        std::lock_guard<std::mutex> guard(process_mutex_);
+        if (e)
+        {
+                std::ostream& o = (e.get_level() <= LogLevel::LogLevel_DEPRECATED) ? std::cout : std::cerr;
+                o << "[" << internal::loglevel_to_string(e.get_level()) << "]: ";
+                o << "\"" << e.get_message_str() << '\"';
+                if (display_file_ && !e.get_fileinfo().empty())
+                {
+                        o << "    (" << e.get_fileinfo() << ")";
+                }
+                o << '.' << std::endl;
+        }
 }
-
-} // namespace internal
-
-
-Logger& Logger::get_logger()
-{
-	static Logger logger_instance;
-	return logger_instance;
-}
-
-void Logger::process(const LogEntry& entry) const
-{
-	for (auto& o : outputs_)
-		o->process_entry(entry);
-}
-
-LogStream Logger::info(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_INFO, sender, fileinfo);
-}
-
-LogStream Logger::debug(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_DEBUG, sender, fileinfo);
-}
-
-LogStream Logger::deprecated(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_DEPRECATED, sender, fileinfo);
-}
-
-LogStream Logger::warning(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_WARNING, sender, fileinfo);
-}
-
-LogStream Logger::error(const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return log(LogLevel::LogLevel_ERROR, sender, fileinfo);
-}
-
-Logger::Logger()
-{
-	outputs_.push_back(make_unique<ConsoleOutput>());
-}
-
-LogStream Logger::log(LogLevel lvl, const std::string& sender, Logger::FileInfo fileinfo) const
-{
-	return LogStream(lvl, sender, fileinfo);
-}
-
-
 
 } // namespace logger
 } // namespace cgogn
-
