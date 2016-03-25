@@ -251,7 +251,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
 	}
 	else

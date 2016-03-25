@@ -82,6 +82,8 @@ public :
 	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
+	inline VtkIO() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkIO);
 	virtual ~VtkIO() {}
 
 protected :
@@ -230,6 +232,7 @@ protected :
 										std::string att_type;
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
+										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
 										std::cout << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components)." << std::endl;
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
@@ -269,8 +272,9 @@ protected :
 												std::string		data_name;
 												uint32	nb_comp;
 												//uint32	nb_data; already declared
-												std::string		data_type;
+												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
+												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
 												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
 												att->read_n(fp, nb_data, !ascii_file, big_endian);
@@ -741,6 +745,8 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
+	inline VtkVolumeImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkVolumeImport);
 	virtual ~VtkVolumeImport() override {}
 
 protected:
@@ -869,6 +875,18 @@ protected:
 		}
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_VTK_IO_CPP_))
+extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_VTK_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

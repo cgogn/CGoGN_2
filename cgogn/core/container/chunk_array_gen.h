@@ -46,15 +46,8 @@ public:
 
 	using Self = ChunkArrayGen<CHUNKSIZE>;
 
-	inline ChunkArrayGen()
-	{
-
-	}
-
-	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
-	ChunkArrayGen(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
-	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>const& ) = delete;
-	ChunkArrayGen& operator=(ChunkArrayGen<CHUNKSIZE>&& ) = delete;
+	inline ChunkArrayGen() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayGen);
 
 protected:
 

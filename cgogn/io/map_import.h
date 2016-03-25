@@ -37,6 +37,7 @@
 #include <io/obj_io.h>
 #include <io/ply_io.h>
 #include <io/lm6_io.h>
+#include <io/msh_io.h>
 
 namespace cgogn
 {
@@ -102,6 +103,7 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:	return make_unique<VtkVolumeImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_MESHB:	return make_unique<LM6VolumeImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_MSH:	return make_unique<MshVolumeImport<MAP_TRAITS, VEC3>>();
 		default:
 			std::cerr << "VolumeImport does not handle files with extension \"" << get_extension(filename) << "\"." << std::endl;
 			return std::unique_ptr<VolumeImport<MAP_TRAITS>> ();

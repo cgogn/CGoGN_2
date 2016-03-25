@@ -69,13 +69,8 @@ protected:
 public:
 
 	MapGen();
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapGen);
 	virtual ~MapGen();
-
-	MapGen(MapGen const&) = delete;
-	MapGen(MapGen &&) = delete;
-	MapGen& operator=(MapGen const&) = delete;
-	MapGen& operator=(MapGen &&) = delete;
 
 	static inline bool is_alive(MapGen* map)
 	{
@@ -176,13 +171,9 @@ public:
 			this->add_thread(ids);
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
 	~MapBaseData() override
 	{}
-
-	MapBaseData(Self const&) = delete;
-	MapBaseData(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Containers management

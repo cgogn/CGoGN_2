@@ -89,13 +89,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2_T);
+
 	~IHCMap2_T() override
 	{}
-
-	IHCMap2_T(Self const&) = delete;
-	IHCMap2_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Low-level topological operations

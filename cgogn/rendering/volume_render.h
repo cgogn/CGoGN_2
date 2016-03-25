@@ -74,7 +74,8 @@ protected:
 	void init_edge();
 
 public:
-
+	using Self = VolumeRender;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRender);
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context

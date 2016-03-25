@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("liverHexa.vtu");
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("medit/hex_dominant.mesh");
 		std::cout << "Using default mesh : " << volumeMesh << std::endl;
 	}
 	else

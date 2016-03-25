@@ -95,13 +95,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2_T);
+
 	~CMap2_T() override
 	{}
-
-	CMap2_T(Self const&) = delete;
-	CMap2_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*!
 	 * \brief Check the integrity of embedding information

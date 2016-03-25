@@ -68,10 +68,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
-	ChunkArray(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArray);
 
 	~ChunkArray() override
 	{

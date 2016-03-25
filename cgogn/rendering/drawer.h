@@ -90,7 +90,7 @@ protected:
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
 public:
-
+	using Self = Drawer;
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
@@ -101,7 +101,7 @@ public:
 	 * release buffers and shader
 	 */
 	~Drawer();
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
 
 	/**
 	 * init the data structure

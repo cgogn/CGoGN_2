@@ -40,6 +40,7 @@ set(SOURCE_FILES
 	drawer.cpp
 	topo_render.cpp
 	volume_render.cpp
+	map_render.cpp
 	)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
