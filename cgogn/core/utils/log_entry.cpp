@@ -29,6 +29,8 @@
 
 #include <core/utils/log_entry.h>
 
+#include <termcolor.hpp>
+
 namespace cgogn
 {
 
@@ -37,6 +39,40 @@ namespace logger
 
 namespace internal
 {
+
+CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
+{
+	switch (lvl) {
+		case LogLevel::LogLevel_INFO: return "INFO";
+		case LogLevel::LogLevel_DEBUG: return "DEBUG";
+		case LogLevel::LogLevel_DEPRECATED: return "DEPRECATED";
+		case LogLevel::LogLevel_WARNING: return "WARNING";
+		case LogLevel::LogLevel_ERROR: return "ERROR";
+		default:
+			return "UNKNOWN_LOG_LEVEL";
+	}
+}
+
+std::ostream& add_color(std::ostream& o, LogLevel lvl)
+{
+	o << termcolor::on_grey;
+	switch (lvl) {
+		case LogLevel::LogLevel_INFO:
+			o << termcolor::green; break;
+		case LogLevel::LogLevel_DEBUG:
+			o << termcolor::blue; break;
+		case LogLevel::LogLevel_DEPRECATED:
+			o << termcolor::cyan; break;
+		case LogLevel::LogLevel_WARNING:
+			o << termcolor::yellow; break;
+		case LogLevel::LogLevel_ERROR:
+			o << termcolor::red; break;
+		default:
+			o << termcolor::reset;
+	}
+	return o;
+}
+
 
 FileInfo::FileInfo(const char* f, uint32 l):
  filename_(f)
@@ -89,6 +125,8 @@ std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo)
 				o << ":" << fileinfo.line_;
 		return o;
 }
+
+
 
 
 } // namespace internal

@@ -29,6 +29,8 @@
 
 #include <core/utils/logger_output.h>
 
+#include <termcolor.hpp>
+
 namespace cgogn
 {
 
@@ -39,24 +41,24 @@ void NullOutput::process_entry(const LogEntry&)
 {}
 
 ConsoleOutput::ConsoleOutput() : LoggerOutput()
-  ,display_file_(false)
 {}
 
 void ConsoleOutput::process_entry(const LogEntry& e)
 {
-	std::lock_guard<std::mutex> guard(process_mutex_);
 	if (e)
 	{
 		std::ostream& o = (e.get_level() <= LogLevel::LogLevel_DEPRECATED) ? std::cout : std::cerr;
-		o << "[" << internal::loglevel_to_string(e.get_level()) << "]: ";
+		internal::add_color(o,e.get_level()) << termcolor::bold;
+		o << "[" << internal::loglevel_to_string(e.get_level()) << "]" << termcolor::reset;
 		if (!e.get_sender().empty())
 		{
-			o  << e.get_sender() << ": ";
+			o << '(' << termcolor::magenta << e.get_sender() << termcolor::reset << ')';
 		}
-		o << "\"" << e.get_message_str() << '\"';
-		if (display_file_ && !e.get_fileinfo().empty())
+		o << ": " << e.get_message_str();
+		if (e.get_level() >= LogLevel::LogLevel_DEBUG && !e.get_fileinfo().empty())
 		{
-			o << "    (" << e.get_fileinfo() << ")";
+			o << " (file " << termcolor::magenta;
+			o << e.get_fileinfo() << termcolor::reset << ')';
 		}
 		o << '.' << std::endl;
 	}
