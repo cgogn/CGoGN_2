@@ -66,6 +66,7 @@ enum LogLevel
 };
 
 CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl);
+CGOGN_CORE_API std::ostream& add_color(std::ostream& o, LogLevel lvl);
 
 } // namespace internal
 
