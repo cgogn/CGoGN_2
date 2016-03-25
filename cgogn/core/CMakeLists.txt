@@ -40,6 +40,9 @@ set(HEADER_FILES
 	utils/string.h
 	utils/precision.h
 	utils/logger.h
+        utils/log_entry.h
+        utils/logger_output.h
+        utils/log_stream.h
 )
 
 set(SOURCE_FILES
@@ -66,6 +69,9 @@ set(SOURCE_FILES
 	utils/thread_pool.cpp
 	utils/serialization.cpp
 	utils/logger.cpp
+        utils/log_entry.cpp
+        utils/logger_output.cpp
+        utils/log_stream.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
