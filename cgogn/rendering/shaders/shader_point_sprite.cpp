@@ -335,7 +335,7 @@ void ShaderPointSprite::set_ambiant(const QColor& rgb)
 		prg_.setUniformValue(unif_ambiant_, rgb);
 }
 
-void ShaderPointSprite::set_size(float w)
+void ShaderPointSprite::set_size(float32 w)
 {
 //	if (unif_size_>=0)
 		prg_.setUniformValue(unif_size_, w);

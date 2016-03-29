@@ -92,7 +92,7 @@ public:
 	 * @brief set the size of sphere (call before each draw)
 	 * @param w size ofs phere
 	 */
-	void set_size(float w);
+	void set_size(float32 w);
 
 	/**
 	 * @brief set a vao configuration

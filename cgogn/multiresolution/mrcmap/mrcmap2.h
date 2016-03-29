@@ -50,16 +50,10 @@ public:
 
 public:
 
-	MRCMap2_T()
-	{}
+	inline MRCMap2_T() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MRCMap2_T);
+	inline ~MRCMap2_T() {}
 
-	~MRCMap2_T()
-	{}
-
-	MRCMap2_T(Self const&) = delete;
-	MRCMap2_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 
 protected:

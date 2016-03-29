@@ -103,7 +103,7 @@ TEST_F(DartTest, PrintingOut)
 	EXPECT_STREQ(s.str().c_str(), "10");
 	std::ostringstream t;
 	t << dNil_;
-	EXPECT_STREQ(t.str().c_str(), "-1");
+	EXPECT_STREQ(t.str().c_str(), "4294967295");
 }
 
 TEST_F(DartTest, ReadingIn)
@@ -113,7 +113,7 @@ TEST_F(DartTest, ReadingIn)
 	s >> d;
 	EXPECT_TRUE(d == d10a_);
 	Dart e;
-	std::istringstream t("-1");
+	std::istringstream t("4294967295");
 	t >> e;
 	EXPECT_TRUE(e == dNil_);
 }

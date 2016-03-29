@@ -48,16 +48,9 @@ public:
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Adaptive_T() : Inherit()
-	{}
-
-	~IHCMap2Adaptive_T() override
-	{}
-
-	IHCMap2Adaptive_T(const Self&) = delete;
-	IHCMap2Adaptive_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	IHCMap2Adaptive_T() : Inherit() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Adaptive_T);
+	~IHCMap2Adaptive_T() override {}
 
 	/*******************************************************************************
 	 * Low-level topological operations

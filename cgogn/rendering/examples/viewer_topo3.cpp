@@ -44,7 +44,7 @@
 using namespace cgogn::numerics;
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
@@ -85,7 +85,7 @@ private:
 	bool edge_rendering_;
 	bool topo_rendering_;
 
-	float expl_;
+	float32 expl_;
 
 };
 
@@ -112,6 +112,8 @@ void Viewer::import(const std::string& volumeMesh)
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
+
+	map_.check_map_integrity();
 }
 
 Viewer::~Viewer()
@@ -270,7 +272,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("nine_hexas.vtu");
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
 		std::cout << "Using default mesh : " << volumeMesh << std::endl;
 	}
 	else

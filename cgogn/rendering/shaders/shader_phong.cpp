@@ -221,7 +221,7 @@ void ShaderPhong::set_specular_color(const QColor& rgb)
 	prg_.setUniformValue(unif_spec_color_,rgb);
 }
 
-void ShaderPhong::set_specular_coef(float coef)
+void ShaderPhong::set_specular_coef(float32 coef)
 {
 	prg_.setUniformValue(unif_spec_coef_,coef);
 }

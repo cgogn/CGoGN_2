@@ -221,15 +221,17 @@ CGOGN_IO_API FileType get_file_type(const std::string& filename)
 		return FileType::FileType_VTP;
 	if (extension == "meshb" || extension == "mesh" )
 		return FileType::FileType_MESHB;
+	if (extension == "msh")
+		return FileType::FileType_MSH;
 
 	return FileType::FileType_UNKNOWN;
 }
 
 CGOGN_IO_API DataType get_data_type(const std::string& type_name)
 {
-	if (type_name == name_of_type(float()))
+	if (type_name == name_of_type(float32()))
 		return DataType::FLOAT;
-	else if (type_name == name_of_type(double()))
+	else if (type_name == name_of_type(float64()))
 		return DataType::DOUBLE;
 	else if (type_name == name_of_type(char()))
 		return DataType::CHAR;

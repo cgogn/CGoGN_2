@@ -16,7 +16,14 @@ namespace io
 {
 
 template <typename VEC3, class MAP_TRAITS>
-inline void create_map3_from_image(CMap3<MAP_TRAITS>& map3, const std::string& image_path, const VolumeMeshFromImageCGALTraits::Criteria& criteria = VolumeMeshFromImageCGALTraits::Criteria())
+inline void create_map3_from_image(CMap3<MAP_TRAITS>& map3,
+								   const std::string& image_path,
+								   const VolumeMeshFromImageCGALTraits::Criteria& criteria = VolumeMeshFromImageCGALTraits::Criteria(),
+								   const CGAL::parameters::internal::Odt_options& odt= CGAL::parameters::odt(),
+								   const CGAL::parameters::internal::Lloyd_options& lloyd= CGAL::parameters::lloyd(),
+								   const CGAL::parameters::internal::Perturb_options& perturb= CGAL::parameters::perturb(),
+								   const CGAL::parameters::internal::Exude_options& exude= CGAL::parameters::exude()
+		)
 {
 
 	using Image			= VolumeMeshFromImageCGALTraits::Image;
@@ -34,10 +41,10 @@ inline void create_map3_from_image(CMap3<MAP_TRAITS>& map3, const std::string& i
 	C3T3 complex = CGAL::make_mesh_3<C3T3>(domain,
 									 criteria,
 									 CGAL::parameters::no_features(),
-									 CGAL::parameters::no_odt(),
-									 CGAL::parameters::no_lloyd(),
-									 CGAL::parameters::no_perturb(),
-									 CGAL::parameters::no_exude()
+									 odt,
+									 lloyd,
+									 perturb,
+									 exude
 									);
 	C3T3VolumeImport<C3T3, MAP_TRAITS, VEC3> volume_import(complex);
 	volume_import.import_file("");

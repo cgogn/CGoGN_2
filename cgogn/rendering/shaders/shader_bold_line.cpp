@@ -215,12 +215,12 @@ void ShaderBoldLine::set_color(const QColor& rgb)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderBoldLine::set_width(float wpix)
+void ShaderBoldLine::set_width(float32 wpix)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 	GLint viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
+	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 

@@ -35,13 +35,12 @@ namespace cgogn
  * \brief The CMap2TopoTest class implements topological tests on CMap2
  * It derives from CMap2 to allow the test of protected methods
  *
- * Note that these tests, check that the topological operators perform as wanted
- * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * Note that these tests check that the topological operators perform as wanted
+ * but do neither test the containers (refs_, used_, etc.) nor the iterators.
  * These last tests are implemented in another test suite.
  */
 class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
 {
-
 public:
 
 	using Inherit = CMap2<DefaultMapTraits>;
@@ -96,7 +95,7 @@ protected:
 	{
 		bool result = false;
 
-		foreach_dart_of_orbit_until(Volume(d), [&](Dart vit)
+		foreach_dart_of_orbit_until(Volume(d), [&] (Dart vit)
 		{
 			if (vit == e) result = true;
 			return !result;
@@ -157,20 +156,19 @@ protected:
 	void add_closed_surfaces()
 	{
 		darts_.clear();
-		uint32 n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10;
+			uint32 n = 1u + std::rand() % 10u;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off 1-edges
+		// Sew some pairs of 1-edges
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
+			uint32 n = std::rand() % 10u;
 			while (n-- > 0u) e1 = phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
@@ -185,7 +183,7 @@ protected:
 				e2 = phi_1(e2);
 			}
 		}
-		// Close de map
+		// Close the map
 		MapBuilder mbuild(*this);
 		mbuild.close_map();
 	}
@@ -356,6 +354,7 @@ TEST_F(CMap2TopoTest, close_map)
 	add_attribute<int32, Edge::ORBIT>("edges");
 	add_attribute<int32, Face::ORBIT>("faces");
 	add_attribute<int32, Volume::ORBIT>("volumes");
+
 	EXPECT_TRUE(check_map_integrity());
 
 	// create some random holes (full removal or partial unsewing of faces)
@@ -369,18 +368,21 @@ TEST_F(CMap2TopoTest, close_map)
 			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
 			{
 				Dart e2 = phi2(e);
-				phi2_unsew(e);
-				// correct indexation of vertices
-				if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
-				if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
-				// correct indexation of edges
-				new_orbit_embedding(Edge(e2));
-				// correct indexation of volumes
-				if (!same_volume(e2, e)) new_orbit_embedding(Volume(e));
-				// interrupt the face unsewing after n steps
-				if (n-- <= 0) return false;
-				// control if a partial or full face unsewing has been done
-				--k;
+				if (!this->is_boundary(e) && !this->is_boundary(e2))
+				{
+					phi2_unsew(e);
+					// correct indexation of vertices
+					if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
+					if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
+					// correct indexation of edges
+					new_orbit_embedding(Edge(e2));
+					// correct indexation of volumes
+					if (!same_volume(e2, e)) new_orbit_embedding(Volume(e));
+					// interrupt the face unsewing after n steps
+					if (n-- <= 0) return false;
+					// control if a partial or full face unsewing has been done
+					--k;
+				}
 				return true;
 			});
 			// if the face is completely unsewn randomly removes it

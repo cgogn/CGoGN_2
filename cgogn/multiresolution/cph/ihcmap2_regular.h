@@ -44,14 +44,9 @@ public:
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Regular_T() : Inherit()
-	{}
-
-	IHCMap2Regular_T(const Self&) = delete;
-	IHCMap2Regular_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~IHCMap2Regular_T() = default;
+	inline IHCMap2Regular_T() : Inherit() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Regular_T);
+	inline ~IHCMap2Regular_T() {}
 
 	/*******************************************************************************
 	 * Low-level topological operations

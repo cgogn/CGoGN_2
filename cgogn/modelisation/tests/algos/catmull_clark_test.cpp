@@ -53,15 +53,34 @@ class Algos_TEST : public testing::Test
 {
 protected :
 	CMap2 map2_;
+
+	void add_polygone(uint32 n)
+	{
+		using Scalar = typename cgogn::geometry::vector_traits<Vec_T>::Scalar;
+
+		VertexAttributeHandler<Vec_T> vertex_position = this->map2_.template get_attribute<Vec_T, CMap2::Vertex::ORBIT>("position");
+
+		Scalar alpha = 0;
+		Face f = map2_.add_face(n);
+		map2_.foreach_incident_vertex(f, [&] (Vertex v)
+		{
+			vertex_position[v] = Vec_T(std::cos(alpha),std::sin(alpha),Scalar(0));
+			alpha += Scalar(2*M_PI/n);
+		});
+	}
+
 };
+
 
 TYPED_TEST_CASE(Algos_TEST, VecTypes);
 
 TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleTriangle.obj"));
-	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+
+	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+
+	this->add_polygone(3);
 
 	cgogn::modelisation::catmull_clark<TypeParam>(this->map2_,vertex_position);
 	cgogn::modelisation::catmull_clark<TypeParam>(this->map2_,vertex_position);
@@ -78,8 +97,10 @@ TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 TYPED_TEST(Algos_TEST, QuadCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	cgogn::io::import_surface<TypeParam>(this->map2_, std::string(DEFAULT_MESH_PATH) + std::string("singleQuad.obj"));
-	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+
+	VertexAttributeHandler<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+
+	this->add_polygone(4);
 
 	cgogn::modelisation::catmull_clark<TypeParam>(this->map2_,vertex_position);
 	cgogn::modelisation::catmull_clark<TypeParam>(this->map2_,vertex_position);

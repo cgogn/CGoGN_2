@@ -50,14 +50,8 @@ public:
 		face_id_ = topology.template add_attribute<uint32>("faceId");
 	}
 
-	~CPH3() override
-	{
-	}
-
-	CPH3(Self const&) = delete;
-	CPH3(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH3);
+	~CPH3() override {}
 
 	/***************************************************
 	 *             FACE ID MANAGEMENT                  *

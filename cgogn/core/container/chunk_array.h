@@ -68,10 +68,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
-	ChunkArray(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(ChunkArray<CHUNKSIZE, T>&& ca) = delete;
-	ChunkArray<CHUNKSIZE, T>& operator=(const ChunkArray<CHUNKSIZE, T>& ca) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArray);
 
 	~ChunkArray() override
 	{
@@ -712,8 +709,8 @@ public:
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
-extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float, 3>>;
-extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<double, 3>>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float32, 3>>;
+extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float64, 3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn

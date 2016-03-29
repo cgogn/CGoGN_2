@@ -43,6 +43,9 @@ using  uint16 = std::uint16_t;
 using  uint32 = std::uint32_t;
 using  uint64 = std::uint64_t;
 
+using float32 = float;
+using float64 = double;
+
 }
 
 using namespace numerics;
@@ -167,5 +170,11 @@ using namespace numerics;
 
 #define CGOGN_QUOTE(name) #name
 #define CGOGN_STR(macro) CGOGN_QUOTE(macro)
+
+#define CGOGN_NOT_COPYABLE_NOR_MOVABLE(CLASSNAME) \
+	CLASSNAME(const CLASSNAME&) = delete;\
+	CLASSNAME(CLASSNAME&&) = delete;\
+	CLASSNAME& operator=(const CLASSNAME&) = delete;\
+	CLASSNAME& operator=(CLASSNAME&&) = delete
 
 #endif // CORE_UTILS_DEFINITIONS_H_

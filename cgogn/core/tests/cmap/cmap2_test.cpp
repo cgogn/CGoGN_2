@@ -104,12 +104,11 @@ protected:
 	{
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
-		uint32 n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10u;
+			uint32 n = 1u + std::rand() % 10u;
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
@@ -117,7 +116,7 @@ protected:
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
+			uint32 n = std::rand() % 10u;
 			while (n-- > 0u) e1 = cmap_.phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
@@ -133,28 +132,29 @@ protected:
 			}
 		}
 		// Close the map (remove remaining boundary)
-		cmap_.foreach_dart_nomask([&] (Dart d)
+		cmap_.foreach_dart([&] (Dart d)
 		{
 			if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
 		});
 		// Embed the map
-		cmap_.foreach_dart_nomask([&] (Dart d)
+		cmap_.foreach_dart([&] (Dart d)
 		{
-			mbuild.new_orbit_embedding(CDart(d));
+			if (!cmap_.is_boundary(d))
+				mbuild.new_orbit_embedding(CDart(d));
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>([&] (Vertex v)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
 		{
 			mbuild.new_orbit_embedding(v);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>([&] (Edge e)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
 		{
 			mbuild.new_orbit_embedding(e);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>([&] (Face f)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
 		{
 			mbuild.new_orbit_embedding(f);
 		});
-		cmap_.foreach_cell_nomask<FORCE_DART_MARKING>([&] (Volume w)
+		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
 		{
 			mbuild.new_orbit_embedding(w);
 		});
@@ -183,8 +183,7 @@ TEST_F(CMap2Test, add_face)
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
-	EXPECT_EQ(cmap_.nb_cells_nomask<Face::ORBIT>(), 2 * NB_MAX);
-	EXPECT_EQ(cmap_.nb_boundary_cells(), NB_MAX);
+//	EXPECT_EQ(cmap_.nb_boundary_cells(), NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
