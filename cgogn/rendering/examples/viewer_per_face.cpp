@@ -42,9 +42,13 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+
+//USING_CGOGN_NUMERICS;
+using namespace cgogn::numerics;
+
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -193,29 +197,29 @@ void Viewer::init()
 	vbo_color_ = new cgogn::rendering::VBO(3);
 
 	// indices of vertices emb (f1_v1,f1_v2,f1_v3, f2_v1,f2_v2,f2_v3, f3_v1...)
-	std::vector<unsigned int> ind_v;
+	std::vector<uint32> ind_v;
 	// indices of faces emb (f1,f1,f1, f2,f2,f2, f3,f3,f3...)
-	std::vector<unsigned int> ind_f;
+	std::vector<uint32> ind_f;
 
 	// create indices ( need to be done only after topo modifications
 	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
-	cgogn::rendering::generate_vbo(vertex_position_, ind_v, *vbo_pos_, [] (const Vec3& v) -> std::array<float,3>
+	cgogn::rendering::generate_vbo(vertex_position_, ind_v, *vbo_pos_, [] (const Vec3& v) -> std::array<float32,3>
 	{
-		return {float(v[0]), float(v[1]), float(v[2])};
+		return {float32(v[0]), float32(v[1]), float32(v[2])};
 	});
 
 	// generate VBO: normals
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_norm_, [] (const Vec3& n) -> std::array<float,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_norm_, [] (const Vec3& n) -> std::array<float32,3>
 	{
-		return {float(n[0]), float(n[1]), float(n[2])};
+		return {float32(n[0]), float32(n[1]), float32(n[2])};
 	});
 
 	// generate VBO: colors (here abs of normals)
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_color_, [] (const Vec3& n) -> std::array<float32,3>
 	{
-		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+		return {float32(std::abs(n[0])), float32(std::abs(n[1])), float32(std::abs(n[2]))};
 	});
 
 
@@ -247,7 +251,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
 	}
 	else

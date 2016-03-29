@@ -20,3 +20,5 @@ endif(CGOGN_BUILD_BENCHS)
 
 add_subdirectory(ply)
 add_subdirectory(OffBinConverter)
+add_subdirectory(lm6)
+add_subdirectory(tetgen)

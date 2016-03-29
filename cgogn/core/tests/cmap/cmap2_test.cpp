@@ -64,13 +64,13 @@ protected:
 	CMap2Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int, Face::ORBIT>("faces");
-		cmap_.add_attribute<int, Volume::ORBIT>("volumes");
+		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 	}
 
 	/*!
@@ -79,13 +79,13 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int add_faces(unsigned int n)
+	uint32 add_faces(uint32 n)
 	{
 		darts_.clear();
-		unsigned int count = 0u;
-		for (unsigned int i = 0u; i < n; ++i)
+		uint32 count = 0u;
+		for (uint32 i = 0u; i < n; ++i)
 		{
-			unsigned int m = 1u + std::rand() % 10u;
+			uint32 m = 1u + std::rand() % 10u;
 			Dart d = cmap_.add_face(m);
 			count += m;
 
@@ -104,20 +104,19 @@ protected:
 	{
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
-		unsigned int n;
 
 		// Generate NB_MAX random 1-faces (without boundary)
-		for (unsigned int i = 0u; i < NB_MAX; ++i)
+		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10u;
+			uint32 n = 1u + std::rand() % 10u;
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs off edges
-		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
+		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
+			uint32 n = std::rand() % 10u;
 			while (n-- > 0u) e1 = cmap_.phi1(e1);
 
 			Dart e2 = darts_[std::rand() % NB_MAX];
@@ -140,7 +139,8 @@ protected:
 		// Embed the map
 		cmap_.foreach_dart([&] (Dart d)
 		{
-			mbuild.new_orbit_embedding(CDart(d));
+			if (!cmap_.is_boundary(d))
+				mbuild.new_orbit_embedding(CDart(d));
 		});
 		cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
 		{
@@ -178,11 +178,12 @@ TEST_F(CMap2Test, random_map_generators)
  */
 TEST_F(CMap2Test, add_face)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
+	uint32 count_vertices = add_faces(NB_MAX);
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2 * NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
+//	EXPECT_EQ(cmap_.nb_boundary_cells(), NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
@@ -209,10 +210,10 @@ TEST_F(CMap2Test, cut_face)
 
 	for (Dart d : darts_)
 	{
-		if (cmap_.degree(Face(d)) > 1u)
+		if (cmap_.codegree(Face(d)) > 1u)
 		{
 			Dart e = d; // find a second dart in the face of d (distinct from d)
-			unsigned int i = std::rand() % 10u;
+			uint32 i = std::rand() % 10u;
 			while (i-- > 0u) e = cmap_.phi1(e);
 			if (e == d) e = cmap_.phi1(e);
 

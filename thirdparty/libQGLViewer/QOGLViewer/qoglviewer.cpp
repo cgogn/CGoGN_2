@@ -958,6 +958,7 @@ void QOGLViewer::performClickAction(ClickAction ca, const QMouseEvent* const e)
 			update();
 			break;
 		case RAP_FROM_PIXEL :
+			makeCurrent();
 			if (! camera()->setPivotPointFromPixel(e->pos()))
 				camera()->setPivotPoint(sceneCenter());
 			setVisualHintsMask(1);
@@ -1972,17 +1973,17 @@ void QOGLViewer::handleKeyboardAction(KeyboardAction id)
 {
 	switch (id)
 	{
-//		case DRAW_AXIS :		toggleAxisIsDrawn(); break;
-//		case DRAW_GRID :		toggleGridIsDrawn(); break;
-//		case DISPLAY_FPS :		toggleFPSIsDisplayed(); break;
-//		case ENABLE_TEXT :		toggleTextIsEnabled(); break;
+		case DRAW_AXIS :		/*toggleAxisIsDrawn();*/ break;
+		case DRAW_GRID :		/*toggleGridIsDrawn();*/ break;
+		case DISPLAY_FPS :		/*toggleFPSIsDisplayed();*/ break;
+		case ENABLE_TEXT :		/*toggleTextIsEnabled();*/ break;
 		case EXIT_VIEWER :		qApp->closeAllWindows(); break;
 		case SAVE_SCREENSHOT :	saveSnapshot(false, false); break;
 		case FULL_SCREEN :		toggleFullScreen(); break;
 		case STEREO :			toggleStereoDisplay(); break;
 		case ANIMATION :		toggleAnimation(); break;
 		case HELP :				help(); break;
-//		case EDIT_CAMERA :		toggleCameraIsEdited(); break;
+		case EDIT_CAMERA :		/*toggleCameraIsEdited();*/ break;
 		case SNAPSHOT_TO_CLIPBOARD :	snapshotToClipboard(); break;
 		case CAMERA_MODE :
 			toggleCameraMode();

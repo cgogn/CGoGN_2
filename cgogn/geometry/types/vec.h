@@ -253,8 +253,9 @@ public:
 	inline friend std::ostream& operator<<(std::ostream& o, const Self& v)
 	{
 		o << "(";
-		for (auto& c : v.data_)
-			o << c << ",";
+		for (std::size_t i = 0ul ; i < std::tuple_size<Container>::value -1ul; ++i )
+			o << v.data_[i] << ",";
+		o << v.data_[std::tuple_size<Container>::value -1ul];
 		o << ")";
 		return o;
 	}
@@ -265,8 +266,8 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 
 } // namespace geometry

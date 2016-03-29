@@ -49,8 +49,8 @@ public:
 
 protected:
 
-	unsigned int current_level_;
-	unsigned int maximum_level_;
+	uint32 current_level_;
+	uint32 maximum_level_;
 
 	/*!
 	 * \brief Store the current number of darts per resolution level.
@@ -58,20 +58,22 @@ protected:
 	 * becomes empty (contains no more dart) and that the maximum_level
 	 * of the hierarchy should be decremented.
 	 */
-	std::vector<unsigned int> nb_darts_per_level_;
+	std::vector<uint32> nb_darts_per_level_;
 
-	ChunkArray<unsigned int>* dart_level_;
+	ChunkArray<uint32>* dart_level_;
 
 public:
 
-	CPHBase(ChunkArrayContainer<unsigned char>& topology):
+	inline CPHBase(ChunkArrayContainer<unsigned char>& topology):
 		current_level_(0u),
 		maximum_level_(0u)
 	{
 		nb_darts_per_level_.reserve(32u);
 		nb_darts_per_level_.push_back(0);
-		dart_level_ = topology.template add_attribute<unsigned int>("dartLevel") ;
+		dart_level_ = topology.template add_attribute<uint32>("dartLevel") ;
 	}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPHBase);
 
 	virtual ~CPHBase()
 	{
@@ -79,41 +81,36 @@ public:
 		// topo_->remove_attribute(dart_level_);
 	}
 
-	CPHBase(Self const&) = delete;
-	CPHBase(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
-
 	/***************************************************
 	 *              LEVELS MANAGEMENT                  *
 	 ***************************************************/
 
-	inline unsigned int get_current_level() const
+	inline uint32 get_current_level() const
 	{
 		return current_level_ ;
 	}
 
-	inline void set_current_level(unsigned int l)
+	inline void set_current_level(uint32 l)
 	{
 		current_level_ = l ;
 	}
 
-	inline unsigned int get_maximum_level() const
+	inline uint32 get_maximum_level() const
 	{
 		return maximum_level_ ;
 	}
 
-	inline void set_maximum_level(unsigned int l)
+	inline void set_maximum_level(uint32 l)
 	{
 		maximum_level_ = l;
 	}
 
-	inline unsigned int get_dart_level(Dart d) const
+	inline uint32 get_dart_level(Dart d) const
 	{
 		return (*dart_level_)[d.index] ;
 	}
 
-	inline void set_dart_level(Dart d, unsigned int l)
+	inline void set_dart_level(Dart d, uint32 l)
 	{
 		(*dart_level_)[d.index] = l ;
 	}

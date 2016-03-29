@@ -94,12 +94,12 @@ void ShaderVectorPerVertex::set_color(const QColor& rgb)
 	prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderVectorPerVertex::set_length(float l)
+void ShaderVectorPerVertex::set_length(float32 l)
 {
 	prg_.setUniformValue(unif_length_, l);
 }
 
-bool ShaderVectorPerVertex::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_normal)
+bool ShaderVectorPerVertex::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_normal)
 {
 	if (i >= vaos_.size())
 	{

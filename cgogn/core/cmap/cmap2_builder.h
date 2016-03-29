@@ -47,11 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
 
@@ -68,7 +64,7 @@ public:
 	}
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
+	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
 	}
@@ -89,7 +85,7 @@ public:
 		map_.phi2_unsew(d);
 	}
 
-	inline Dart add_face_topo_parent(unsigned int nb_edges)
+	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
 	}
@@ -139,17 +135,17 @@ public:
 	 *  - a Face attribute is created, if needed, for the face that fill the hole.
 	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 */
-	inline void close_hole(Dart d)
+	inline Face close_hole(Dart d)
 	{
 		const Face f(close_hole_topo(d));
 
-		if (map_.template is_embedded<CDart>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.new_orbit_embedding(CDart(it));
-			});
-		}
+//		if (map_.template is_embedded<CDart>())
+//		{
+//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+//			{
+//				map_.new_orbit_embedding(CDart(it));
+//			});
+//		}
 
 		if (map_.template is_embedded<Vertex>())
 		{
@@ -167,17 +163,19 @@ public:
 			});
 		}
 
-		if (map_.template is_embedded<Face>())
-			map_.new_orbit_embedding(f);
+//		if (map_.template is_embedded<Face>())
+//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
-			const unsigned int idx = map_.get_embedding(Volume(d));
+			const uint32 idx = map_.get_embedding(Volume(d));
 			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
 			{
 				map_.template set_embedding<Volume>(it, idx);
 			});
 		}
+
+		return f;
 	}
 
 	/*!
@@ -192,20 +190,24 @@ public:
 	 */
 	inline void close_map()
 	{
-		std::vector<Dart> fix_point_darts;
-		map_.foreach_dart(
-			[&] (Dart d)
-			{
-				if (map_.phi2(d) == d)
-					fix_point_darts.push_back(d);
-			},
-			[] (Dart) { return true; }
-		);
-		for (Dart d : fix_point_darts)
+		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi2(d) == d)
-				close_hole(d);
+				fix_point_darts->push_back(d);
+		});
+		for (Dart d : (*fix_point_darts))
+		{
+			if (map_.phi2(d) == d)
+			{
+				Face f = close_hole(d);
+				map_.foreach_dart_of_orbit(f, [&] (Dart e)
+				{
+					map_.set_boundary(e, true);
+				});
+			}
 		}
+		get_dart_buffers()->release_buffer(fix_point_darts);
 	}
 
 private:

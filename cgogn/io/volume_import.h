@@ -38,6 +38,70 @@
 
 #include <tinyxml2.h>
 
+/*******************************************************************************
+* CGoGN convention for ordering the indices for volume cells in the VolumeImport class (prior to the map creation)
+*
+*-->Tetras: any order. The orientation is checked when calling add_tetra.
+*           3
+*         ,/|`\
+*       ,/  |  `\
+*     ,/    '.   `\
+*   ,/       |     `\
+* ,/         |       `\
+*2-----------'.--------1
+* `\.         |      ,/
+*    `\.      |    ,/
+*       `\.   '. ,/
+*          `\. |/
+*             `0
+*
+*-->Pyramids: First the indices of the quad face, then the top. The orientation is checked when calling add_pyramid.
+*               4
+*             ,/|\
+*           ,/ .'|\
+*         ,/   | | \
+*       ,/    .' | `.
+*     ,/      |  '.  \
+*   ,/       .'   |   \
+* ,/         |    |    \
+*0----------.'----3    `.
+* `\        |      `\    \
+*   `\     .'        `\ - \
+*     `\   |           `\  \
+*       `\.'            `\`
+*          1----------------2
+*
+*-->Triangular prisms: First the indices of one of the triangular face then the indices of the opposite face (same order). The orientation is checked when calling add_triangular_prism.
+*       3
+*     ,/|`\
+*   ,/  |  `\
+* ,/    |    `\
+*5------+------4
+*|      |      |
+*|      |      |
+*|      |      |
+*|      |      |
+*|      |      |
+*|      0      |
+*|    ,/ `\    |
+*|  ,/     `\  |
+*|,/         `\|
+*2-------------1
+*
+*-->Hexas: First the indices of one face then the indices of the opposite face (same order). The orientation is checked when calling add_hexa.
+*7----------6
+*|\         |\
+*| \        | \
+*|  \       |  \
+*|   3------+---2
+*|   |      |-- |
+*4---+------5   |
+* \  |       \  |
+*  \ |        \ |
+*   \|         \|
+*    0----------1
+*******************************************************************************/
+
 namespace cgogn
 {
 
@@ -57,11 +121,11 @@ public:
 	using Face = typename Map::Face;
 	using Face2 = typename Map::Face2;
 
-	static const unsigned int CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, unsigned int>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
 	template <typename T, Orbit ORBIT>
 	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
@@ -70,11 +134,11 @@ public:
 	virtual ~VolumeImport() override {}
 
 protected:
-	unsigned int nb_vertices_;
-	unsigned int nb_volumes_;
+	uint32 nb_vertices_;
+	uint32 nb_volumes_;
 
-	std::vector<unsigned int> volumes_nb_vertices_;
-	std::vector<unsigned int> volumes_vertex_indices_;
+	std::vector<uint32> volumes_nb_vertices_;
+	std::vector<uint32> volumes_vertex_indices_;
 
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer volume_attributes_;
@@ -86,10 +150,7 @@ public:
 	  ,volumes_vertex_indices_()
 	{}
 
-	VolumeImport(const Self&) = delete;
-	VolumeImport(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeImport);
 
 	virtual void clear() override
 	{
@@ -113,24 +174,24 @@ public:
 
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
-		unsigned int index = 0u;
+		uint32 index = 0u;
 		// buffer for tempo faces (used to remove degenerated edges)
-		std::vector<unsigned int> edgesBuffer;
+		std::vector<uint32> edgesBuffer;
 		edgesBuffer.reserve(16u);
 
 		typename Map::DartMarkerStore m(map);
 
 		//for each volume of table
-		for(unsigned int i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
 		{
 			// store volume in buffer, removing degenated faces
-			const unsigned int nbv = this->volumes_nb_vertices_[i];
+			const uint32 nbv = this->volumes_nb_vertices_[i];
 
 			edgesBuffer.clear();
-			unsigned int prec = std::numeric_limits<unsigned int>::max();
-			for (unsigned int j = 0u; j < nbv; ++j)
+			uint32 prec = std::numeric_limits<uint32>::max();
+			for (uint32 j = 0u; j < nbv; ++j)
 			{
-				unsigned int em = this->volumes_vertex_indices_[index++];
+				uint32 em = this->volumes_vertex_indices_[index++];
 				if (em != prec)
 				{
 					prec = em;
@@ -204,7 +265,7 @@ public:
 				std::size_t buffer_id = 0ul;
 				for (Dart dv : vertices_of_prism)
 				{
-					const unsigned int emb = edgesBuffer[buffer_id++];
+					const uint32 emb = edgesBuffer[buffer_id++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
@@ -249,44 +310,143 @@ public:
 
 		}
 
+		// utilitary function
+		auto sew_volumes = [&mbuild,&map,&m](Dart w1, Dart w2)
+		{
+			const Dart w1_begin = w1;
+			do {
+				mbuild.phi3_sew(w1, w2);
+				w1 = map.phi1(w1);
+				w2 = map.phi_1(w2);
+			} while (w1_begin != w1);
+		};
+
+
 		//reconstruct neighbourhood
-		unsigned int nbBoundaryFaces = 0;
+		uint32 nbBoundaryFaces = 0u;
 		map.foreach_dart([&] (Dart d)
 		{
 			if (m.is_marked(d))
 			{
-				std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi1(d))];
-
 				Dart good_dart;
-				for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
+
+				// 1st step : for every dart of the face we try to find a valid phi3 candidate. If we can't it's a boundary face.
 				{
-					if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d)) &&
-							map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d)))))
+					Dart d_it = d;
+					do
 					{
-						good_dart = *it;
-					}
+						const std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi1(d_it))];
+						for(auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
+						{
+							if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d_it)) &&
+									map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d_it)))))
+							{
+								good_dart = *it;
+							}
+						}
+						d_it = map.phi1(d_it);
+					} while (good_dart.is_nil() && (d_it != d));
+					d = map.phi_1(d_it);
 				}
 
-				if (!good_dart.is_nil())
+				if (!good_dart.is_nil()) //not a boundary faces
 				{
-					const unsigned int degD = map.degree(Face(d));
-					const unsigned int degGD = map.degree(Face(good_dart));
+					const uint32 degD = map.codegree(Face(d));
+					const uint32 degGD = map.codegree(Face(good_dart));
 
-					//std::cout << "degD = " << degD << " et degGD = " << degGD << std::endl;
-					if(degD == degGD)
+					if(degD == degGD) // normal case : the two opposite faces have the same degree
 					{
-//						map.sew_volumes(d, good_dart, false);
-						Dart f1_it = d;
-						Dart f2_it = good_dart;
-						do {
-							mbuild.phi3_sew(f1_it, f2_it);
-							f1_it = map.phi1(f1_it);
-							f2_it = map.phi_1(f2_it);
-						} while (f1_it != d);
+						sew_volumes(d, good_dart);
 						m.unmark_orbit(Face(d));
 					}
-	//                else
-	//                    std::cout << "erreur : degD != degGD" << std::endl;
+					else
+					{
+						// there is one face of degree 4 and one face of degree 3.
+						if(degD > degGD) // face of d is quad
+						{
+							const Dart another_d = map.phi1(map.phi1(d));
+							const std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi_1(d))];
+
+							Dart another_good_dart;
+							for(auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
+							{
+								if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_d)) &&
+										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(another_d)))))
+								{
+									another_good_dart = *it ;
+								}
+							}
+
+							// we add a stamp volume between the faces
+							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							{
+								Dart q1_it = d;
+								Dart q2_it = map.phi_1(d_quad);
+								do {
+									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									q1_it = map.phi1(q1_it);
+									q2_it = map.phi_1(q2_it);
+								} while (q1_it != d);
+							}
+
+							sew_volumes(d, map.phi1(map.phi1(d_quad)));
+							m.unmark_orbit(Face(d));
+
+							sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
+							m.unmark_orbit(Face(good_dart));
+
+							if(!another_good_dart.is_nil())
+							{
+								sew_volumes(another_good_dart, map.phi2(d_quad));
+								m.unmark_orbit(Face(another_good_dart));
+							} else
+							{
+								m.unmark_orbit(Face2(map.phi2(d_quad)));
+								++nbBoundaryFaces;
+							}
+						}
+						else { // // face of d is tri
+							const Dart another_dart = map.phi_1(d);
+							std::vector<Dart>& vec = darts_per_vertex[Vertex(d)];
+
+							Dart another_good_dart;
+							for(auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
+							{
+								if(map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_dart)) &&
+										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(good_dart)))))
+								{
+									another_good_dart = *it ;
+								}
+							}
+
+							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							{
+								Dart q1_it = good_dart;
+								Dart q2_it = d_quad;
+								do {
+									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									q1_it = map.phi1(q1_it);
+									q2_it = map.phi_1(q2_it);
+								} while (q1_it != good_dart);
+							}
+
+							sew_volumes(d_quad, map.phi_1(good_dart));
+							m.unmark_orbit(Face(good_dart));
+
+
+							sew_volumes(d, map.phi2(map.phi_1(d_quad)));
+							m.unmark_orbit(Face(d));
+
+							if (!another_good_dart.is_nil())
+							{
+								sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
+								m.unmark_orbit(Face(another_good_dart));
+							} else {
+								m.unmark_orbit(Face2(map.phi1(map.phi2(map.phi1(d_quad)))));
+								++nbBoundaryFaces;
+							}
+						}
+					}
 				}
 				else
 				{
@@ -296,11 +456,18 @@ public:
 			}
 		});
 
+
 		if (nbBoundaryFaces > 0)
 		{
-			unsigned int nbH = mbuild.close_map();
-			std::cout << "Map closed (" << nbBoundaryFaces << " boundary faces / " << nbH << " holes)" << std::endl;
+			mbuild.close_map();
+			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
 		}
+
+		unsigned int nb_vert_dart_marking = 0u;
+		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex v){++nb_vert_dart_marking;});
+
+		if (this->nb_vertices_ != nb_vert_dart_marking)
+			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		if (this->volume_attributes_.get_nb_attributes() > 0)
 		{
@@ -312,9 +479,10 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_hexa(ChunkArray<VEC3>const& pos,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5, unsigned int& p6, unsigned int& p7)
+	void add_hexa(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
-		this->reoriente_hexa(pos, p0, p1, p2, p3, p4, p5, p6, p7);
+		if (check_orientation)
+			this->reoriente_hexa(pos, p0, p1, p2, p3, p4, p5, p6, p7);
 		this->volumes_nb_vertices_.push_back(8u);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -326,7 +494,7 @@ public:
 		this->volumes_vertex_indices_.push_back(p7);
 	}
 	template<typename VEC3>
-	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5, unsigned int& p6, unsigned int& p7)
+	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
 		{
@@ -338,9 +506,10 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_tetra(ChunkArray<VEC3>const& pos,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3)
+	void add_tetra(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
 	{
-		this->reoriente_tetra(pos,p0,p1,p2,p3);
+		if (check_orientation)
+			this->reoriente_tetra(pos,p0,p1,p2,p3);
 		this->volumes_nb_vertices_.push_back(4u);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -349,9 +518,18 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_pyramid(ChunkArray<VEC3>const& /*pos*/,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4)
+	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
+	{
+		if (geometry::test_orientation_3D(pos[p0], pos[p1],pos[p2],pos[p3]) == geometry::Orientation3D::OVER)
+			std::swap(p1, p2);
+	}
+
+	template<typename VEC3>
+	void add_pyramid(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
 	{
 		this->volumes_nb_vertices_.push_back(5u);
+		if (check_orientation)
+			this->reoriente_pyramid(pos,p0,p1,p2,p3,p4);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
 		this->volumes_vertex_indices_.push_back(p2);
@@ -360,8 +538,17 @@ public:
 	}
 
 	template<typename VEC3>
-	void add_triangular_prism(ChunkArray<VEC3>const& /*pos*/,unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3, unsigned int& p4, unsigned int& p5)
+	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
+		if (geometry::test_orientation_3D(pos[p4], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
+			std::swap(p1, p3);
+	}
+
+	template<typename VEC3>
+	void add_triangular_prism(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
+	{
+		if (check_orientation)
+			this->reoriente_triangular_prism(pos,p0,p1,p2,p3,p4,p5);
 		this->volumes_nb_vertices_.push_back(6u);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -372,11 +559,15 @@ public:
 	}
 
 	template<typename VEC3>
-	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, unsigned int& p0, unsigned int& p1, unsigned int& p2, unsigned int& p3)
+	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
-		if (geometry::test_orientation_3D(pos[p0], pos[p1],pos[p2],pos[p3]) == geometry::Orientation3D::OVER)
-			std::swap(p1, p2);
+		if (geometry::test_orientation_3D(pos[p3], pos[p0],pos[p1],pos[p2]) == geometry::Orientation3D::OVER)
+		{
+			std::swap(p1,p2);
+			std::swap(p4,p5);
+		}
 	}
+
 
 };
 

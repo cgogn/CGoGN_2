@@ -34,7 +34,7 @@ class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE ;
@@ -47,6 +47,8 @@ public:
 
 	using Vertex	= typename Inherit::Vertex;
 	using Face		= Cell<Orbit::PHI1>;
+
+	using Boundary = Vertex;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -84,13 +86,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap1_T);
+
 	~CMap1_T() override
 	{}
-
-	CMap1_T(Self const&) = delete;
-	CMap1_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*!
 	 * \brief Check the integrity of embedding information
@@ -208,7 +207,7 @@ protected:
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Dart add_face_topo(unsigned int size)
+	inline Dart add_face_topo(uint32 size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
@@ -216,7 +215,7 @@ protected:
 			std::cerr << "Warning: attempt to create an empty face results in a single dart" << std::endl;
 
 		Dart d = this->add_dart();
-		for (unsigned int i = 1u; i < size; ++i)
+		for (uint32 i = 1u; i < size; ++i)
 			split_vertex_topo(d);
 		return d;
 	}
@@ -229,7 +228,7 @@ public:
 	 * \return The built face. If the map has Vertex or Face attributes,
 	 * the new inserted cells are automatically embedded on new attribute elements.
 	 */
-	Face add_face(unsigned int size)
+	Face add_face(uint32 size)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
@@ -344,17 +343,28 @@ protected:
 		phi1_sew(e, d);				// Sew the last edge
 	}
 
+	/*******************************************************************************
+	 * Connectivity information
+	 *******************************************************************************/
+
 public:
 
-	inline unsigned int degree(Face f) const
+
+	inline uint32 degree(Vertex ) const
+	{
+		return 2;
+	}
+
+	inline uint32 codegree(Face f) const
 	{
 		return this->nb_darts_of_orbit(f);
 	}
 
-	inline bool has_degree(Face f, unsigned int degree) const
+
+	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		Dart it = f.dart ;
-		for (unsigned int i=1;i<degree; ++i)
+		for (uint32 i = 1; i < codegree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)

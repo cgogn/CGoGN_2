@@ -81,7 +81,7 @@ PlyImportData::~PlyImportData()
 {
 // 	if (vlist!= NULL)
 // 	{
-// 		for (int i=0; i<nverts; ++i)
+// 		for (int32 i=0; i<nverts; ++i)
 // 		{
 // 			if (vlist[i]!=NULL)
 // 				free(vlist[i]);
@@ -91,7 +91,7 @@ PlyImportData::~PlyImportData()
 //
 // 	if (flist!= NULL)
 // 	{
-// 		for (int i=0; i<nfaces; ++i)
+// 		for (int32 i=0; i<nfaces; ++i)
 // 		{
 // 			if (flist[i]!=NULL)
 // 				free(flist[i]);
@@ -137,9 +137,9 @@ bool PlyImportData::read_file(const std::string& filename)
 	if (in_ply==NULL)
 		return false;
 
-	for (int i = 0; i < in_ply->num_elem_types; i++)
+	for (int32 i = 0; i < in_ply->num_elem_types; i++)
 	{
-		int elem_count;
+		int32 elem_count;
 		/* prepare to read the i'th list of elements */
 		char *elem_name = setup_element_read_ply (in_ply, i, &elem_count);
 
@@ -155,7 +155,7 @@ bool PlyImportData::read_file(const std::string& filename)
 			setup_property_ply (in_ply, &vert_props[1]);
 			setup_property_ply (in_ply, &vert_props[2]);
 
-			for (int j = 0; j < in_ply->elems[i]->nprops; j++)
+			for (int32 j = 0; j < in_ply->elems[i]->nprops; j++)
 			{
 				PlyProperty *prop;
 				prop = in_ply->elems[i]->props[j];
@@ -201,7 +201,7 @@ bool PlyImportData::read_file(const std::string& filename)
 				offsetof(VertexPly,other_props));
 
 			/* grab all the vertex elements */
-			for (int j = 0; j < elem_count; j++) {
+			for (int32 j = 0; j < elem_count; j++) {
 				vlist[j] = (VertexPly *) malloc (sizeof (VertexPly));
 				vlist[j]->r = 1;
 				vlist[j]->g = 1;
@@ -222,7 +222,7 @@ bool PlyImportData::read_file(const std::string& filename)
 				offsetof(FacePly,other_props));
 
 			/* grab all the face elements */
-			for (int j = 0; j < elem_count; j++) {
+			for (int32 j = 0; j < elem_count; j++) {
 				flist[j] = (FacePly *) malloc (sizeof (FacePly));
 				get_element_ply (in_ply, (void *) flist[j]);
 			}

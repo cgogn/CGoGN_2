@@ -24,6 +24,10 @@
 #ifndef IO_OFF_IO_H_
 #define IO_OFF_IO_H_
 
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <io/surface_import.h>
 
 namespace cgogn
@@ -41,7 +45,10 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline OffSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(OffSurfaceImport);
 	virtual ~OffSurfaceImport() override {}
+
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
@@ -74,19 +81,19 @@ protected:
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
 
 		// read vertices position
-		std::vector<unsigned int> vertices_id;
+		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
-		for (unsigned int i = 0; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0; i < this->nb_vertices_; ++i)
 		{
 
-			double x = this->read_double(fp,line);
-			double y = this->read_double(fp,line);
-			double z = this->read_double(fp,line);
+			float64 x = this->read_double(fp,line);
+			float64 y = this->read_double(fp,line);
+			float64 z = this->read_double(fp,line);
 
 			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-			unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
+			uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
 			(*position)[vertex_id] = pos;
 
 			vertices_id.push_back(vertex_id);
@@ -95,13 +102,13 @@ protected:
 		// read faces (vertex indices)
 		this->faces_nb_edges_.reserve(this->nb_faces_);
 		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
-		for (unsigned int i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0; i < this->nb_faces_; ++i)
 		{
-			unsigned int n = this->read_uint(fp,line);
+			uint32 n = this->read_uint(fp,line);
 			this->faces_nb_edges_.push_back(n);
-			for (unsigned int j = 0; j < n; ++j)
+			for (uint32 j = 0; j < n; ++j)
 			{
-				unsigned int index = this->read_uint(fp,line);
+				uint32 index = this->read_uint(fp,line);
 				this->faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 
@@ -115,35 +122,35 @@ protected:
 		char buffer1[12];
 		fp.read(buffer1,12);
 
-		this->nb_vertices_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1)));
-		this->nb_faces_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1+4)));
-		this->nb_edges_= swap_endianness_native_big(*(reinterpret_cast<unsigned int*>(buffer1+8)));
+		this->nb_vertices_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
+		this->nb_faces_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
+		this->nb_edges_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+8)));
 
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
 
 
-		static const unsigned int BUFFER_SZ = 1024*1024;
-		float* buff_pos = new float[3*BUFFER_SZ];
-		std::vector<unsigned int> vertices_id;
+		static const uint32 BUFFER_SZ = 1024*1024;
+		float32* buff_pos = new float32[3*BUFFER_SZ];
+		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
 		{ // limit j scope
 			unsigned j = BUFFER_SZ;
-			for (unsigned int i = 0; i < this->nb_vertices_; ++i, ++j)
+			for (uint32 i = 0; i < this->nb_vertices_; ++i, ++j)
 			{
 				if (j == BUFFER_SZ)
 				{
 					j = 0;
 					// read from file into buffer
 					if (i + BUFFER_SZ < this->nb_vertices_)
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*BUFFER_SZ);
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*BUFFER_SZ);
 					else
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*(this->nb_vertices_ - i));
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*(this->nb_vertices_ - i));
 
 					//endian
-					unsigned int* ptr = reinterpret_cast<unsigned int*>(buff_pos);
-					for (unsigned int k = 0; k < 3 * BUFFER_SZ; ++k)
+					uint32* ptr = reinterpret_cast<uint32*>(buff_pos);
+					for (uint32 k = 0; k < 3 * BUFFER_SZ; ++k)
 					{
 						*ptr = swap_endianness_native_big(*ptr);
 						++ptr;
@@ -152,7 +159,7 @@ protected:
 
 				VEC3 pos{ buff_pos[3 * j], buff_pos[3 * j + 1], buff_pos[3 * j + 2] };
 
-				unsigned int vertex_id = this->vertex_attributes_.template insert_lines<1>();
+				uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
 
 				vertices_id.push_back(vertex_id);
@@ -163,19 +170,19 @@ protected:
 
 		// read faces (vertex indices)
 
-		unsigned int* buff_ind = new unsigned int[BUFFER_SZ];
+		uint32* buff_ind = new uint32[BUFFER_SZ];
 		this->faces_nb_edges_.reserve(this->nb_faces_);
 		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
 
-		unsigned int* ptr = buff_ind;
-		unsigned int nb_read = BUFFER_SZ;
-		for (unsigned int i = 0; i < this->nb_faces_; ++i)
+		uint32* ptr = buff_ind;
+		uint32 nb_read = BUFFER_SZ;
+		for (uint32 i = 0; i < this->nb_faces_; ++i)
 		{
 			if (nb_read == BUFFER_SZ)
 			{
-				fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
+				fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(uint32));
 				ptr = buff_ind;
-				for (unsigned int k=0; k< BUFFER_SZ;++k)
+				for (uint32 k=0; k< BUFFER_SZ;++k)
 				{
 					*ptr = swap_endianness_native_big(*ptr);
 					++ptr;
@@ -184,17 +191,17 @@ protected:
 				nb_read =0;
 			}
 
-			unsigned int n = *ptr++;
+			uint32 n = *ptr++;
 			nb_read++;
 
 			this->faces_nb_edges_.push_back(n);
-			for (unsigned int j = 0; j < n; ++j)
+			for (uint32 j = 0; j < n; ++j)
 			{
 				if (nb_read == BUFFER_SZ)
 				{
-					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(unsigned int));
+					fp.read(reinterpret_cast<char*>(buff_ind),BUFFER_SZ*sizeof(uint32));
 					ptr = buff_ind;
-					for (unsigned int k=0; k< BUFFER_SZ;++k)
+					for (uint32 k=0; k< BUFFER_SZ;++k)
 					{
 						*ptr = swap_endianness_native_big(*ptr);
 						++ptr;
@@ -202,7 +209,7 @@ protected:
 					ptr = buff_ind;
 					nb_read=0;
 				}
-				unsigned int index = *ptr++;
+				uint32 index = *ptr++;
 				nb_read++;
 				this->faces_vertex_indices_.push_back(vertices_id[index]);
 			}
@@ -213,7 +220,7 @@ protected:
 		return true;
 	}
 private:
-	static inline double read_double(std::istream& fp, std::string& line)
+	static inline float64 read_double(std::istream& fp, std::string& line)
 	{
 		fp >> line;
 		while (line[0]=='#')
@@ -224,7 +231,7 @@ private:
 		return std::stod(line);
 	}
 
-	static inline unsigned int read_uint(std::istream& fp, std::string& line)
+	static inline uint32 read_uint(std::istream& fp, std::string& line)
 	{
 		fp >> line;
 		while (line[0]=='#')
@@ -232,9 +239,16 @@ private:
 			fp.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			fp >> line;
 		}
-		return static_cast<unsigned int>((std::stoul(line)));
+		return uint32((std::stoul(line)));
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

@@ -32,6 +32,9 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+using namespace cgogn::numerics;
+
+
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 Map2 bench_map;
 
@@ -41,10 +44,10 @@ const cgogn::Orbit VERTEX = Vertex::ORBIT;
 using Face = Map2::Face;
 const cgogn::Orbit FACE = Face::ORBIT;
 
-const unsigned int ITERATIONS = 1u;
+const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
-using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -64,16 +67,16 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 {
 	while (state.KeepRunning())
 	{
-		unsigned int nb_darts_2 = 0u;
-		std::vector<unsigned int> nb_darts_per_thread(cgogn::get_nb_threads()+2);
+		uint32 nb_darts_2 = 0u;
+		std::vector<uint32> nb_darts_per_thread(cgogn::get_nb_threads()+2);
 		for (auto& n : nb_darts_per_thread)
 			n = 0u;
 		nb_darts_2 = 0u;
-		bench_map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, unsigned int thread_index)
+		bench_map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
 		{
 			nb_darts_per_thread[thread_index]++;
 		});
-		for (unsigned int n : nb_darts_per_thread)
+		for (uint32 n : nb_darts_per_thread)
 			nb_darts_2 += n;
 
 		cgogn_assert(nb_darts_2 == bench_map.nb_darts());
@@ -111,7 +114,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(face_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f,unsigned int)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f,uint32)
 		{
 			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
 		});
@@ -169,7 +172,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(vertices_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, unsigned int)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, uint32)
 		{
 			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
 		});
@@ -220,7 +223,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
 	}
 	else

@@ -37,11 +37,15 @@
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/drawer.h>
 
+#include <rendering/shaders/shader_simple_color.h>
+
+#include <rendering/topo_render.h>
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -67,10 +71,12 @@ private:
 	VertexAttributeHandler<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
+
 	cgogn::rendering::MapRender* render_;
 	cgogn::rendering::VBO* vbo_pos_;
 	cgogn::rendering::ShaderFlat* shader_flat_;
-	cgogn::rendering::Drawer* drawer_topo;
+
+	cgogn::rendering::TopoRender* topo_render;
 
 	bool flat_rendering_;
 	bool topo_rendering_;
@@ -105,7 +111,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	delete render_;
 	delete vbo_pos_;
 	delete shader_flat_;
-	delete drawer_topo;
+	delete topo_render;
 }
 
 Viewer::Viewer() :
@@ -115,7 +121,7 @@ Viewer::Viewer() :
 	render_(nullptr),
 	vbo_pos_(nullptr),
 	shader_flat_(nullptr),
-	drawer_topo(nullptr),
+	topo_render(nullptr),
 	flat_rendering_(true),
 	topo_rendering_(true)
 {}
@@ -159,7 +165,9 @@ void Viewer::draw()
 	}
 
 	if (topo_rendering_)
-		drawer_topo->call_list(proj,view);
+	{
+		topo_render->draw(proj,view);
+	}
 
 }
 
@@ -169,6 +177,7 @@ void Viewer::init()
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+
 
 
 	render_ = new cgogn::rendering::MapRender();
@@ -183,8 +192,8 @@ void Viewer::init()
 	shader_flat_->set_ambiant_color(QColor(5,5,5));
 	shader_flat_->release();
 
-	drawer_topo =  new cgogn::rendering::Drawer(this);
-	cgogn::rendering::create_drawer_topo2<Vec3>(map_,vertex_position_,*drawer_topo);
+	topo_render = new cgogn::rendering::TopoRender(this);
+	topo_render->update_map2<Vec3>(map_,vertex_position_);
 }
 
 int main(int argc, char** argv)
@@ -193,7 +202,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
 		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
 	}
 	else

@@ -27,17 +27,18 @@
 
 namespace cgogn
 {
-
+uint32_t toto;
+std::uint32_t tutu;
 
 const Dart dglobal(10u);
-const Dart dmax(std::numeric_limits<unsigned int>::max());
+const Dart dmax(std::numeric_limits<uint32>::max());
 
 
 TEST(CellTest, DefaultConstructor)
 {
 	Cell<Orbit::DART> c;
 	Dart d = c;
-	EXPECT_EQ(std::numeric_limits<unsigned int>::max(), d.index);
+	EXPECT_EQ(std::numeric_limits<uint32>::max(), d.index);
 }
 
 TEST(CellTest, Constructor)

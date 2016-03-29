@@ -77,53 +77,22 @@ public:
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
-	ChunkArray<unsigned int>* next_level_cell[NB_ORBITS];
+	ChunkArray<uint32>* next_level_cell[NB_ORBITS];
 
-	template <typename CONTAINER, typename MAP>
-	class ContainerCPHBrowser : public ContainerBrowser
-	{
-		const CONTAINER& cac_;
-		const MAP* map_;
-
-	public:
-		ContainerCPHBrowser(const CONTAINER& cac, const MAP* map) : cac_(cac), map_(map) {}
-		virtual unsigned int begin() const { return cac_.real_begin(); }
-		virtual unsigned int end() const { return cac_.real_end(); }
-		virtual void next(unsigned int &it)  const
-		{
-			cac_.real_next(it);
-			if(map_->get_dart_level(Dart(it)) > map_->get_current_level())
-				it = cac_.real_end();
-		}
-		virtual void next_primitive(unsigned int &it, unsigned int primSz) const { cac_.real_next_primitive(it,primSz); }
-		virtual void enable() {}
-		virtual void disable() {}
-		virtual ~ContainerCPHBrowser() {}
-		ContainerCPHBrowser& operator=(const ContainerCPHBrowser&) = delete;
-	};
 
 protected:
-	ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>* cph_browser;
 
 	inline void init()
-	{
-		cph_browser = new ContainerCPHBrowser<ChunkArrayContainer<unsigned char>, Self>(this->topology_, this);
-		this->topology_.set_current_browser(cph_browser);
-	}
+	{}
 
 public:
 	IHCMap3_T() : Inherit_CMAP(), Inherit_CPH(this->topology_)
 	{
 		init();
 	}
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap3_T);
 	~IHCMap3_T() override
 	{}
-
-	IHCMap3_T(Self const&) = delete;
-	IHCMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 public:
 	/*******************************************************************************
@@ -135,7 +104,7 @@ public:
 		cgogn_message_assert(Inherit_CPH::get_dart_level(d) <= Inherit_CPH::get_current_level(), "Access to a dart introduced after current level") ;
 
 		bool finished = false ;
-		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
+		uint32 edge_id = Inherit_CPH::get_edge_id(d) ;
 		Dart it = d ;
 		do
 		{
@@ -157,7 +126,7 @@ public:
 
 		bool finished = false ;
 		Dart it = Inherit_CMAP::phi_1(d) ;
-		unsigned int edge_id = Inherit_CPH::get_edge_id(d) ;
+		uint32 edge_id = Inherit_CPH::get_edge_id(d) ;
 		do
 		{
 			if(Inherit_CPH::get_dart_level(it) <= Inherit_CPH::get_current_level())
@@ -218,7 +187,7 @@ protected:
 
 	inline Dart phi2bis(Dart d) const
 	{
-		unsigned int face_id = Inherit_CPH::get_face_id(d);
+		uint32 face_id = Inherit_CPH::get_face_id(d);
 		Dart it = d;
 
 		it = Inherit_CMAP::phi2(it);
@@ -281,7 +250,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(unsigned int i = 0; i < visited_faces->size(); ++i)
+		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			if (!marker.is_marked((*visited_faces)[i]))	// Face has not been visited yet
 			{
@@ -310,7 +279,7 @@ protected:
 		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
-		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			f((*marked_darts)[i]);
 

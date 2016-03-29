@@ -36,17 +36,19 @@
 namespace cgogn
 {
 
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNKSIZE >= 1u,"ChunkSize must be at least 1");
 	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
+	using Self = ChunkArrayFactory<CHUNKSIZE>;
 	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNKSIZE> >;
 	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
 	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayFactory);
 	static UniqueNamePtrMap map_CA_;
 
 	/**
@@ -75,21 +77,19 @@ public:
 
 		register_CA<bool>();
 		register_CA<char>();
-		register_CA<short>();
-		register_CA<int>();
-		register_CA<long>();
-		register_CA<long long>();
-		register_CA<signed char>();
-		register_CA<unsigned char>();
-		register_CA<unsigned short>();
-		register_CA<unsigned int>();
-		register_CA<unsigned long>();
-		register_CA<unsigned long long>();
-		register_CA<float>();
-		register_CA<double>();
+		register_CA<int8>();
+		register_CA<int16>();
+		register_CA<int32>();
+		register_CA<int64>();
+		register_CA<uint8>();
+		register_CA<uint16>();
+		register_CA<uint32>();
+		register_CA<uint64>();
+		register_CA<float32>();
+		register_CA<float64>();
 		register_CA<std::string>();
-		register_CA<std::array<double,3>>();
-		register_CA<std::array<float,3>>();
+		register_CA<std::array<float32,3>>();
+		register_CA<std::array<float64,3>>();
 		// NOT TODO : add Eigen.
 
 		known_types_initialized_ = true;
@@ -119,9 +119,11 @@ public:
 	{
 		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = make_unique<NamePtrMap>();
 	}
+	private:
+	inline ChunkArrayFactory() {}
 };
 
-template <unsigned int CHUNKSIZE>
+template <uint32 CHUNKSIZE>
 typename ChunkArrayFactory<CHUNKSIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_ = nullptr;
 
 

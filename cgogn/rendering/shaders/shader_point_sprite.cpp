@@ -259,12 +259,26 @@ ShaderPointSprite::ShaderPointSprite(bool color_per_vertex, bool size_per_vertex
 		gs += std::string("#define WITH_COLOR 1\n");
 		fs += std::string("#define WITH_COLOR 1\n");
 	}
+	else
+	{
+		vs += std::string("#define WITH_COLOR 0\n");
+		gs += std::string("#define WITH_COLOR 0\n");
+		fs += std::string("#define WITH_COLOR 0\n");
+	}
+
 	if (size_per_vertex)
 	{
 		vs += std::string("#define WITH_SIZE 1\n");
 		gs += std::string("#define WITH_SIZE 1\n");
 		fs += std::string("#define WITH_SIZE 1\n");
 	}
+	else
+	{
+		vs += std::string("#define WITH_SIZE 0\n");
+		gs += std::string("#define WITH_SIZE 0\n");
+		fs += std::string("#define WITH_SIZE 0\n");
+	}
+
 	vs += std::string(vertex_shader_source2_);
 	gs += std::string(geometry_shader_source2_);
 	fs += std::string(fragment_shader_source2_);
@@ -321,7 +335,7 @@ void ShaderPointSprite::set_ambiant(const QColor& rgb)
 		prg_.setUniformValue(unif_ambiant_, rgb);
 }
 
-void ShaderPointSprite::set_size(float w)
+void ShaderPointSprite::set_size(float32 w)
 {
 //	if (unif_size_>=0)
 		prg_.setUniformValue(unif_size_, w);
@@ -340,7 +354,7 @@ void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatr
 
 
 
-bool ShaderPointSprite::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
+bool ShaderPointSprite::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
 {
 	if (i >= vaos_.size())
 	{

@@ -56,17 +56,17 @@ protected:
 	CMap1TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 	}
 
 	/*!
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
-	void add_vertices(unsigned int n)
+	void add_vertices(uint32 n)
 	{
 		darts_.clear();
-		for (unsigned int i = 0u; i < n; ++i)
+		for (uint32 i = 0u; i < n; ++i)
 			darts_.push_back(add_dart());
 	}
 
@@ -76,13 +76,13 @@ protected:
 	 * The face size ranges from 1 to 10.
 	 * A random dart of each face is put in the darts_ array.
 	 */
-	unsigned int add_faces(unsigned int n)
+	uint32 add_faces(uint32 n)
 	{
 		darts_.clear();
-		unsigned int count = 0u;
-		for (unsigned int i = 0u; i < n; ++i)
+		uint32 count = 0u;
+		for (uint32 i = 0u; i < n; ++i)
 		{
-			unsigned int m = 1u + std::rand() % 10u;
+			uint32 m = 1u + std::rand() % 10u;
 			Dart d = add_face_topo(m);
 			count += m;
 
@@ -118,7 +118,7 @@ TEST_F(CMap1TopoTest, phi1_sew_unsew)
 {
 	add_vertices(NB_MAX);
 
-	for (unsigned int i = 0u; i < NB_MAX; ++i)
+	for (uint32 i = 0u; i < NB_MAX; ++i)
 	{
 		Dart d = darts_[std::rand() % NB_MAX];
 		Dart e = darts_[std::rand() % NB_MAX];
@@ -154,7 +154,7 @@ TEST_F(CMap1TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11u);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
 
-	unsigned int count_vertices = 11u + add_faces(NB_MAX);
+	uint32 count_vertices = 11u + add_faces(NB_MAX);
 
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
@@ -168,15 +168,15 @@ TEST_F(CMap1TopoTest, add_face_topo)
  */
 TEST_F(CMap1TopoTest, remove_face)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
-	unsigned int count_faces = NB_MAX;
+	uint32 count_vertices = add_faces(NB_MAX);
+	uint32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)
 		{
 			Face f(d);
-			unsigned int k = degree(f);
+			uint32 k = codegree(f);
 			remove_face(f);
 			count_vertices -= k;
 			--count_faces;
@@ -195,14 +195,14 @@ TEST_F(CMap1TopoTest, remove_face)
  */
 TEST_F(CMap1TopoTest, split_vertex_topo)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
+	uint32 count_vertices = add_faces(NB_MAX);
 
 	for (Dart d : darts_)
 	{
-		unsigned int k = degree(Face(d));
+		uint32 k = codegree(Face(d));
 		split_vertex_topo(d);
 		++count_vertices;
-		EXPECT_EQ(degree(Face(d)), k + 1);
+		EXPECT_EQ(codegree(Face(d)), k + 1);
 	}
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
@@ -216,18 +216,18 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 */
 TEST_F(CMap1TopoTest, remove_vertex)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
-	unsigned int count_faces = NB_MAX;
+	uint32 count_vertices = add_faces(NB_MAX);
+	uint32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{
-		unsigned int k = degree(Face(d));
+		uint32 k = codegree(Face(d));
 		if (k > 1)
 		{
 			Dart e = phi1(d);
 			remove_vertex(Vertex(d));
 			--count_vertices;
-			EXPECT_EQ(degree(Face(e)), k - 1);
+			EXPECT_EQ(codegree(Face(e)), k - 1);
 		}
 		else
 		{
@@ -244,15 +244,15 @@ TEST_F(CMap1TopoTest, remove_vertex)
 
 /*! \brief Reversing a face reverses the order of its vertices.
  * The test reverses randomly generated faces.
- * The number of faces and their degrees do not change and the map integrity is preserved.
+ * The number of faces and their codegree do not change and the map integrity is preserved.
  */
 TEST_F(CMap1TopoTest, reverse_face_topo)
 {
-	unsigned int count_vertices = add_faces(NB_MAX);
+	uint32 count_vertices = add_faces(NB_MAX);
 
 	for (Dart d : darts_)
 	{
-		unsigned int k = degree(Face(d));
+		uint32 k = codegree(Face(d));
 
 		std::vector<Dart> face_darts;
 		face_darts.reserve(k);
@@ -262,7 +262,7 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
 		});
 
 		reverse_face_topo(d);
-		EXPECT_EQ(degree(Face(d)), k);
+		EXPECT_EQ(codegree(Face(d)), k);
 
 		d = phi1(d);
 		foreach_dart_of_orbit(Face(d), [&] (Dart e)
@@ -278,25 +278,25 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief The degree of a face is correctly computed.
+/*! \brief The codegree of a face is correctly computed.
  */
-TEST_F(CMap1TopoTest, degree)
+TEST_F(CMap1TopoTest, codegree)
 {
 	Face f(this->add_face_topo(10u));
 
-	EXPECT_EQ(degree(f), 10u);
+	EXPECT_EQ(codegree(f), 10u);
 }
 
-/*! \brief The degree of a face is correctly tested.
+/*! \brief The codegree of a face is correctly tested.
  */
-TEST_F(CMap1TopoTest, has_degree)
+TEST_F(CMap1TopoTest, has_codegree)
 {
 	Face f(this->add_face_topo(10u));
 
-	EXPECT_TRUE(has_degree(f, 10u));
-	EXPECT_FALSE(has_degree(f, 0u));
-	EXPECT_FALSE(has_degree(f, 9u));
-	EXPECT_FALSE(has_degree(f, 11u));
+	EXPECT_TRUE(has_codegree(f, 10u));
+	EXPECT_FALSE(has_codegree(f, 0u));
+	EXPECT_FALSE(has_codegree(f, 9u));
+	EXPECT_FALSE(has_codegree(f, 11u));
 }
 
 #undef NB_MAX

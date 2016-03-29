@@ -149,7 +149,6 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 		prg_.link();
-		get_matrices_uniforms();
 	}
 	else
 	{
@@ -158,9 +157,9 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.link();
-
-		get_matrices_uniforms();
 	}
+
+	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("color");
 	unif_width_ = prg_.uniformLocation("pointSizes");
 
@@ -172,20 +171,20 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 
 void ShaderRoundPoint::set_color(const QColor& rgb)
 {
-	if (unif_color_)
+	if (unif_color_>=0)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderRoundPoint::set_width(float wpix)
+void ShaderRoundPoint::set_width(float32 wpix)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
+	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
+bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{
@@ -201,7 +200,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 	vbo_pos->release();
 
 	if (vbo_color)
@@ -209,7 +208,7 @@ bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
 		// color vbo
 		vbo_color->bind();
 		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 		vbo_color->release();
 	}
 

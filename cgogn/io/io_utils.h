@@ -46,7 +46,9 @@ enum FileType
 	FileType_PLY,
 	FileType_VTK_LEGACY,
 	FileType_VTU,
-	FileType_VTP
+	FileType_VTP,
+	FileType_MESHB,
+	FileType_MSH
 };
 
 enum DataType
@@ -77,7 +79,7 @@ namespace internal
 
 // #1 return default value when U and T don't have the same nb of components.
 template<typename U, typename T>
-inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<unsigned int, geometry::nb_components_traits<T>::value>, std::integral_constant<unsigned int, geometry::nb_components_traits<U>::value>>::value,U>::type
+inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value,U>::type
 {
 	std::cerr << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\"." << std::endl;
 	return U();
@@ -92,10 +94,10 @@ inline auto convert(const T&x) -> typename std::enable_if<(std::is_arithmetic<T>
 
 // #3 copy component by component if both type have the same number of components (>1)
 template<typename U, typename T>
-inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value && std::is_same< std::integral_constant<unsigned int, geometry::nb_components_traits<T>::value>, std::integral_constant<unsigned int, geometry::nb_components_traits<U>::value>>::value, U>::type
+inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
 {
 	U res;
-	for(unsigned int i = 0u; i < geometry::nb_components_traits<T>::value ; ++i)
+	for(uint32 i = 0u; i < geometry::nb_components_traits<T>::value ; ++i)
 		res[i] = typename geometry::vector_traits<U>::Scalar(x[i]);
 	return res;
 }
@@ -164,10 +166,7 @@ public:
 	  ,current_(begin)
 	{}
 
-	CharArrayBuffer(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	CharArrayBuffer(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
 
 	virtual ~CharArrayBuffer();
 private:
@@ -263,10 +262,7 @@ public:
 		this->init(&buffer_);
 	}
 
-	IMemoryStream(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	IMemoryStream(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IMemoryStream);
 
 	virtual ~IMemoryStream() override;
 private:

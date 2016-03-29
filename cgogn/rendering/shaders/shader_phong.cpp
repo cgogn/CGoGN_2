@@ -221,7 +221,7 @@ void ShaderPhong::set_specular_color(const QColor& rgb)
 	prg_.setUniformValue(unif_spec_color_,rgb);
 }
 
-void ShaderPhong::set_specular_coef(float coef)
+void ShaderPhong::set_specular_coef(float32 coef)
 {
 	prg_.setUniformValue(unif_spec_coef_,coef);
 }
@@ -231,7 +231,7 @@ void ShaderPhong::set_double_side(bool ts)
 	prg_.setUniformValue(unif_double_side_,ts);
 }
 
-bool ShaderPhong::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
+bool ShaderPhong::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
 	{
