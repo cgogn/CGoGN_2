@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELISATION_ALGOS_AREA_H_
-#define MODELISATION_ALGOS_AREA_H_
+#ifndef MODELING_ALGOS_H_
+#define MODELING_ALGOS_H_
 
 //#include <geometry/functions/area.h>
 #include <geometry/algos/centroid.h>
@@ -32,7 +32,7 @@
 namespace cgogn
 {
 
-namespace modelisation
+namespace modeling
 {
 
 template < typename MAP>
@@ -170,4 +170,4 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 
 } // namespace cgogn
 
-#endif // MODELISATION_ALGOS_AREA_H_
+#endif // MODELING_ALGOS_H_

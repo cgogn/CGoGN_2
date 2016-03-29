@@ -21,20 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELISATION_DLL_H_
-#define MODELISATION_DLL_H_
+#ifndef MODELING_DLL_H_
+#define MODELING_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
 */
 #ifdef WIN32
-#if defined CGOGN_MODELISATION_DLL_EXPORT
-#define CGOGN_MODELISATION_API __declspec(dllexport)
+#if defined CGOGN_MODELING_DLL_EXPORT
+#define CGOGN_MODELING_API __declspec(dllexport)
 #else
-#define CGOGN_MODELISATION_API __declspec(dllimport)
+#define CGOGN_MODELING_API __declspec(dllimport)
 #endif
 #else
-#define CGOGN_MODELISATION_API
+#define CGOGN_MODELING_API
 #endif
 
-#endif // MODELISATION_DLL_H_
+#endif // MODELING_DLL_H_

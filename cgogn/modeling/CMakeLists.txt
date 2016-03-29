@@ -1,4 +1,4 @@
-project(cgogn_modelisation
+project(cgogn_modeling
 	LANGUAGES CXX
 )
 
@@ -7,12 +7,12 @@ set(HEADER_FILES
 	algos/catmull_clark.h
 )
 
- add_custom_target(cgogn_modelisation SOURCES ${HEADER_FILES})
+ add_custom_target(cgogn_modeling SOURCES ${HEADER_FILES})
 #add_library(HEADER_ONLY_TARGET ${PROJECT_NAME} ${HEADER_FILES})
 #set_target_properties(HEADER_ONLY_TARGET PROPERTIES LINKER_LANGUAGE CXX)
 
 install(DIRECTORY .
-	DESTINATION include/cgogn/modelisation
+	DESTINATION include/cgogn/modeling
 	FILES_MATCHING PATTERN "*.h"
 )
 
