@@ -575,13 +575,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}

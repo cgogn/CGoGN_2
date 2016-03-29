@@ -119,7 +119,7 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 		{
 			Vertex f1(map.template phi<11>(e.dart));
 			Vertex f2(map.phi_1(e2));
-			Vertex m(map.template phi1(e.dart));
+			Vertex m(map.phi1(e.dart));
 			position[m] = (Scalar(2)*position[m]+position[f1]+position[f2])/Scalar(4);
 		}
 	}

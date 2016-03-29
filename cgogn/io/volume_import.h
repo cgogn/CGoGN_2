@@ -464,7 +464,7 @@ public:
 		}
 
 		unsigned int nb_vert_dart_marking = 0u;
-		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex v){++nb_vert_dart_marking;});
+		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex){++nb_vert_dart_marking;});
 
 		if (this->nb_vertices_ != nb_vert_dart_marking)
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
