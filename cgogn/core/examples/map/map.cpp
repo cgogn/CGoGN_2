@@ -75,7 +75,7 @@ int test1(MAP& map)
 	cgogn::get_uint_buffers()->release_buffer(uib);
 
 
-	Dart d1 = map.add_face(3);
+	Dart d1 = map.add_face(3).dart;
 
 	// get cell buffer typed
 //	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();

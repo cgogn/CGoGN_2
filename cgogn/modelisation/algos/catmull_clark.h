@@ -87,18 +87,23 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 
 	for(Edge e: initial_edges)
 	{
-		Vertex v1 = Vertex(e.dart);
-		Vertex v2 = Vertex(map.phi1(e.dart));
+//		Vertex v1(e.dart);
+//		Vertex v2(map.phi1(e.dart));
+//		Vertex middle = map.cut_edge(e);
+//		position[middle] = (position[v1] + position[v2] )/Scalar(2);
+
+		std::pair<Vertex,Vertex> ve = map.vertices(e);
 		Vertex middle = map.cut_edge(e);
-		position[middle] = (position[v1] + position[v2] )/Scalar(2);
+		position[middle] = (position[ve.first] + position[ve.second] )/Scalar(2);
+
 	}
 
 
 	map.foreach_cell([&] (Face f)
 	{
 		Face ff = f;
-		if (!initial_edge_marker.is_marked(f))
-			ff = Face(map.phi1(f));
+		if (!initial_edge_marker.is_marked(f.dart))
+			ff = Face(map.phi1(f.dart));
 
 		initial_edge_marker.unmark_orbit(ff);
 
@@ -112,9 +117,9 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 		Dart e2 = map.phi2(e.dart);
 		if (!map.is_boundary(e.dart) && !map.is_boundary(e2))
 		{
-			Vertex f1 = Vertex(map.template phi<11>(e));
-			Vertex f2 = Vertex(map.phi_1(e2));
-			Vertex m = Vertex(map.template phi1(e));
+			Vertex f1(map.template phi<11>(e.dart));
+			Vertex f2(map.phi_1(e2));
+			Vertex m(map.template phi1(e.dart));
 			position[m] = (Scalar(2)*position[m]+position[f1]+position[f2])/Scalar(4);
 		}
 	}
@@ -133,20 +138,20 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 		map.foreach_incident_edge(v, [&] (Edge e)
 		{
 			nb_e++;
-			sum_edge += position[Vertex(map.phi1(e))];
-			if (!map.is_boundary(e))
+			sum_edge += position[Vertex(map.phi1(e.dart))];
+			if (!map.is_boundary(e.dart))
 			{
 				nb_f++;
-				sum_face += position[Vertex(map.template phi<11>(e))];
+				sum_face += position[Vertex(map.template phi<11>(e.dart))];
 			}
 			else
-				bound = e;
+				bound = e.dart;
 		});
 
 		if (nb_f > nb_e) // boundary case
 		{
-			Vertex e1 = Vertex(map.phi2(bound));
-			Vertex e2 = Vertex(map.phi_1(bound));
+			Vertex e1(map.phi2(bound));
+			Vertex e2(map.phi_1(bound));
 			position[v] = Scalar(3.0/8.0)*position[v] + Scalar(1.0/4.0)*(position[e1]+position[e2]);
 		}
 		else

@@ -29,6 +29,25 @@
 namespace cgogn
 {
 
+namespace internal
+{
+template<uint64 N>
+struct check_multi_phi
+{
+	static const bool value_cmap1 = (N<10)?(N%10>0) && (N%10<=1):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap1;
+	static const bool value_cmap2 = (N<10)?(N%10>0) && (N%10<=2):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap2;
+	static const bool value_cmap3 = (N<10)?(N%10>0) && (N%10<=3):(N%10>0) && (N%10<=3) && check_multi_phi<N/10>::value_cmap3;
+
+};
+template<>
+struct check_multi_phi<0>
+{
+	static const bool value_cmap1 = true;
+	static const bool value_cmap2 = true;
+	static const bool value_cmap3 = true;
+};
+}
+
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
@@ -199,6 +218,29 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
+
+
+	/**
+	 * \brief phi composition
+	 * @param d
+	 * @return applied composition of phi in order of declaration
+	 */
+	template <uint64 N>
+	inline Dart phi(Dart d) const
+	{
+		static_assert(internal::check_multi_phi<N>::value_cmap1, "composition on phi1 only");
+
+		if (N >=10)
+			return this->phi1(phi<N/10>(d));
+
+		if (N == 1)
+			return this->phi1(d);
+
+		return d;
+	}
+
+
+
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -300,7 +342,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex nv(split_vertex_topo(v));
+		const Vertex nv(split_vertex_topo(v.dart));
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(nv);
@@ -320,7 +362,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Dart e = phi_1(v);
+		Dart e = phi_1(v.dart);
 		if (e != v.dart) phi1_unsew(e);
 		this->remove_dart(v.dart);
 	}
@@ -403,7 +445,7 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
@@ -460,6 +502,7 @@ public:
 		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
 };
+
 
 template <typename MAP_TRAITS>
 struct CMap1Type

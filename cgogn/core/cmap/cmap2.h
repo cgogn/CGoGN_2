@@ -29,21 +29,6 @@
 namespace cgogn
 {
 
-template<int N>
-struct check_multi_phi
-{
-	static const bool value_cmap2 = (N<10)?(N%10>0) && (N%10<=2):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap2;
-	static const bool value_cmap3 = (N<10)?(N%10>0) && (N%10<=3):(N%10>0) && (N%10<=3) && check_multi_phi<N/10>::value_cmap3;
-
-};
-template<>
-struct check_multi_phi<0>
-{
-	static const bool value_cmap2 = true;
-	static const bool value_cmap3 = true;
-};
-
-
 // forward declaration of CMap2Builder_T
 template <typename MAP_TRAITS> class CMap2Builder_T;
 
@@ -221,21 +206,12 @@ public:
 	/**
 	 * \brief phi composition
 	 * @param d
-	 * @return phi2(d)
+	 * @return applied composition of phi in order of declaration
 	 */
-	template <int N>
+	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(check_multi_phi<N>::value_cmap2, "composition on phi1/phi2/only");
-		if (N < 10)
-		{
-			switch(N)
-			{
-				case 1 : return this->phi1(d) ;
-				case 2 : return this->phi2(d) ;
-				default : return d ;
-			}
-		}
+		static_assert(internal::check_multi_phi<N>::value_cmap2, "composition on phi1/phi2/only");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
@@ -374,7 +350,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		const Dart v = cut_edge_topo(e.dart);
-		const Dart nf = phi2(e);
+		const Dart nf = phi2(e.dart);
 		const Dart f = phi2(v);
 
 		if (this->template is_embedded<CDart>())
@@ -467,9 +443,9 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		cut_face_topo(d,e);
-		Dart nd = this->phi_1(d);
-		Dart ne = this->phi_1(e);
+		cut_face_topo(d.dart,e.dart);
+		Dart nd = this->phi_1(d.dart);
+		Dart ne = this->phi_1(e.dart);
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -604,10 +580,10 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
-			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_PHI21(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
+			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -682,10 +658,10 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
-			case Orbit::PHI2: foreach_dart_of_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c, f); break;
-			case Orbit::PHI21: foreach_dart_of_PHI21_until(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
+			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -905,6 +881,12 @@ public:
 				func(Face(d2));
 		});
 	}
+
+	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	{
+		return std::pair<Vertex,Vertex>(Vertex(e.dart),Vertex(this->phi1(e.dart)));
+	}
+
 };
 
 template <typename MAP_TRAITS>

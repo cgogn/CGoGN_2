@@ -79,18 +79,18 @@ public:
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			uint32 eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
@@ -131,18 +131,18 @@ public:
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			uint32 eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
@@ -190,18 +190,18 @@ public:
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			uint32 eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
