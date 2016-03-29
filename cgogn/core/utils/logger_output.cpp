@@ -64,5 +64,27 @@ void ConsoleOutput::process_entry(const LogEntry& e)
 	}
 }
 
+FileOutput::FileOutput(const std::string& filename) : LoggerOutput()
+  ,filename_(filename)
+{
+	out_.open(filename, std::ios_base::out | std::ios_base::trunc);
+}
+
+void FileOutput::process_entry(const LogEntry& e)
+{
+	if (out_.good())
+	{
+		out_ << "[" << internal::loglevel_to_string(e.get_level()) << "]";
+		if (!e.get_sender().empty())
+		{
+			out_ << '(' << e.get_sender() << ')';
+		}
+		out_ << ": " << e.get_message_str();
+		if (!e.get_fileinfo().empty())
+			out_ << " (file " << e.get_fileinfo() << ')';
+		out_ << '.' << std::endl;
+	}
+}
+
 } // namespace logger
 } // namespace cgogn

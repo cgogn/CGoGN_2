@@ -25,6 +25,8 @@
 #define CORE_UTILS_LOGGER_OUTPUT_H_
 
 #include <mutex>
+#include <fstream>
+
 #include <core/utils/log_entry.h>
 
 namespace cgogn
@@ -36,37 +38,58 @@ namespace logger
 class CGOGN_CORE_API LoggerOutput
 {
 public:
-		using Self = LoggerOutput;
+	using Self = LoggerOutput;
 
-		inline LoggerOutput() {}
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(LoggerOutput);
-		virtual ~LoggerOutput() {}
+	inline LoggerOutput() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LoggerOutput);
+	virtual ~LoggerOutput() {}
 
-		virtual void process_entry(const LogEntry& entry) = 0;
+	virtual void process_entry(const LogEntry& entry) = 0;
 };
 
 class CGOGN_CORE_API NullOutput final : public  LoggerOutput
 {
 public:
-		using Self = NullOutput;
+	using Self = NullOutput;
 
-		inline NullOutput() {}
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(NullOutput);
+	inline NullOutput() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(NullOutput);
 
-		virtual void process_entry(const LogEntry&) override;
+	virtual void process_entry(const LogEntry&) override;
 };
 
 
 class CGOGN_CORE_API ConsoleOutput final : public  LoggerOutput
 {
 public:
-		using Self = ConsoleOutput;
-		using LogLevel = internal::LogLevel;
+	using Self = ConsoleOutput;
+	using LogLevel = internal::LogLevel;
 
-		ConsoleOutput();
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(ConsoleOutput);
+	ConsoleOutput();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ConsoleOutput);
 
-		virtual void process_entry(const LogEntry&) override;
+	virtual void process_entry(const LogEntry&) override;
+};
+
+class CGOGN_CORE_API FileOutput final : public  LoggerOutput
+{
+public:
+	using Self = FileOutput;
+	using LogLevel = internal::LogLevel;
+
+	FileOutput(const std::string& filename);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FileOutput);
+
+	virtual void process_entry(const LogEntry&) override;
+
+	inline const std::string& get_filename() const
+	{
+		return filename_;
+	}
+
+private:
+	std::ofstream	out_;
+	std::string		filename_;
 };
 
 } // namespace logger

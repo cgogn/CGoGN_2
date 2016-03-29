@@ -33,7 +33,7 @@ namespace cgogn
 namespace logger
 {
 
-Logger& Logger::get_logger()
+const Logger& Logger::get_logger()
 {
 	static Logger logger_instance;
 	return logger_instance;
@@ -42,7 +42,9 @@ Logger& Logger::get_logger()
 void Logger::process(const LogEntry& entry) const
 {
 	std::lock_guard<std::mutex> guard(process_mutex_);
-	for (auto& o : outputs_)
+	if (console_out_)
+		console_out_->process_entry(entry);
+	for (auto& o : file_out_)
 		o->process_entry(entry);
 }
 
@@ -71,9 +73,59 @@ LogStream Logger::error(const std::string& sender, Logger::FileInfo fileinfo) co
 	return log(LogLevel::LogLevel_ERROR, sender, fileinfo);
 }
 
+void Logger::add_console_output()
+{
+	bool already_added = true;
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	if (!console_out_)
+	{
+		already_added = false;
+		console_out_ = make_unique<ConsoleOutput>();
+	}
+	if (already_added)
+		std::cerr << "Logger::add_console_output: The console output is already activated." << std::endl;
+}
+
+void Logger::remove_console_output()
+{
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	console_out_.reset();
+}
+
+void Logger::add_file_output(const std::string& filename)
+{
+	bool already_added = false;
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	for (auto& fileout : file_out_)
+		if (fileout->get_filename() == filename)
+			already_added = true;
+	if (!already_added)
+		file_out_.push_back(make_unique<FileOutput>(filename));
+	else
+		std::cerr << "Logger::add_file_output: The file \"" << filename <<  "\" is already used by the logger." << std::endl;
+}
+
+void Logger::remove_file_output(const std::string& filename)
+{
+	bool found = false;
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	for (auto it = file_out_.begin(), end = file_out_.end(); it != end ; ++it)
+	{
+		if ((*it)->get_filename() == filename)
+		{
+			found = true;
+			file_out_.erase(it);
+			break;
+		}
+	}
+	if (!found)
+		std::cerr << "Logger::remove_file_output: The file \"" << filename <<  "\" was not used by the logger." << std::endl;
+}
+
 Logger::Logger()
 {
-	outputs_.push_back(make_unique<ConsoleOutput>());
+	add_console_output();
+	add_file_output("cgogn.log");
 }
 
 LogStream Logger::log(LogLevel lvl, const std::string& sender, Logger::FileInfo fileinfo) const

@@ -460,7 +460,7 @@ public:
 		if (nbBoundaryFaces > 0)
 		{
 			mbuild.close_map();
-			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
+			cgogn_log_info("create_map") << "Map closed with " << nbBoundaryFaces << " boundary face(s).";
 		}
 
 		unsigned int nb_vert_dart_marking = 0u;

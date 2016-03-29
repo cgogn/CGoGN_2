@@ -30,6 +30,7 @@
 #include <zlib.h>
 #endif
 
+#include <core/utils/logger.h>
 #include <core/utils/string.h>
 #include <io/io_utils.h>
 
@@ -139,7 +140,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 
 	if (i % 4ul) //Sanity check
 	{
-		std::cerr << "base64_decode : Error : the given length (" << length << ") is not a multiple of 4. This is not valid." << std::endl;
+		cgogn_log_error("base64_decode") << "The given length (" << length << ") is not a multiple of 4. This is not valid.";
 		std::exit(EXIT_FAILURE);
 	}
 
@@ -187,12 +188,12 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 						decoded_chars.push_back((temp >> 10) & 0x000000FF);
 						return decoded_chars;
 					default:
-						std::cerr << "base64_decode : Error : Invalid Padding." << std::endl;
+						cgogn_log_error("base64_decode") << "Invalid Padding.";
 						std::exit(EXIT_FAILURE);
 				}
 			} else
 			{
-				std::cerr << "base64_decode : Error : Non-Valid Character." << std::endl;
+				cgogn_log_error("base64_decode") << "Non-Valid Character.";
 				std::exit(EXIT_FAILURE);
 			}
 			cursor++;

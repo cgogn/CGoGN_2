@@ -36,16 +36,16 @@ namespace logger
 {
 
 LogStream::LogStream(LogLevel level, const std::string& sender, const LogStream::FileInfo& fileinfo) :
-        log_entry_(level, sender, fileinfo)
+	log_entry_(level, sender, fileinfo)
 {}
 
 LogStream::LogStream(LogStream&& ls)
-        : log_entry_( std::move(ls.log_entry_))
+	: log_entry_( std::move(ls.log_entry_))
 {}
 
 LogStream::~LogStream()
 {
-        Logger::get_logger().process(log_entry_);
+	Logger::get_logger().process(log_entry_);
 }
 
 

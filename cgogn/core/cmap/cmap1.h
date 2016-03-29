@@ -212,7 +212,7 @@ protected:
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
 		if (size == 0)
-			std::cerr << "Warning: attempt to create an empty face results in a single dart" << std::endl;
+			cgogn_log_warning("add_face_topo") << "Attempt to create an empty face results in a single dart.";
 
 		Dart d = this->add_dart();
 		for (uint32 i = 1u; i < size; ++i)

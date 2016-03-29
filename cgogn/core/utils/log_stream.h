@@ -38,23 +38,23 @@ namespace logger
 class CGOGN_CORE_API LogStream final
 {
 public:
-        using FileInfo = internal::FileInfo;
-        using LogLevel = internal::LogLevel;
+	using FileInfo = internal::FileInfo;
+	using LogLevel = internal::LogLevel;
 
-        explicit LogStream(LogLevel level, const std::string& sender, const FileInfo& fileinfo);
-        LogStream(LogStream&& ls);
+	explicit LogStream(LogLevel level, const std::string& sender, const FileInfo& fileinfo);
+	LogStream(LogStream&& ls);
 
-        template<class T>
-        LogStream& operator<<(const T &x)
-        {
-                log_entry_ << x;
-                return *this;
-        }
+	template<class T>
+	LogStream& operator<<(const T &x)
+	{
+		log_entry_ << x;
+		return *this;
+	}
 
-        ~LogStream();
+	~LogStream();
 
 private:
-        LogEntry log_entry_;
+	LogEntry log_entry_;
 };
 
 } // namespace logger

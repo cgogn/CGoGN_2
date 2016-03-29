@@ -55,19 +55,25 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Logger);
 
-	static Logger& get_logger();
+	static const Logger& get_logger();
 	void process(const LogEntry& entry) const;
 
-	LogStream info(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
-	LogStream debug(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
-	LogStream deprecated(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
-	LogStream warning(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
-	LogStream error(const std::string& sender = "", FileInfo fileinfo = FileInfo()) const;
+	LogStream info(const std::string& sender, FileInfo fileinfo) const;
+	LogStream debug(const std::string& sender, FileInfo fileinfo) const;
+	LogStream deprecated(const std::string& sender, FileInfo fileinfo) const;
+	LogStream warning(const std::string& sender, FileInfo fileinfo) const;
+	LogStream error(const std::string& sender, FileInfo fileinfo) const;
+
+	void add_console_output();
+	void remove_console_output();
+	void add_file_output(const std::string& filename);
+	void remove_file_output(const std::string& filename);
 private:
 	Logger();
 	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo) const;
 
-	std::vector<std::unique_ptr<LoggerOutput>>	outputs_;
+	std::unique_ptr<ConsoleOutput>				console_out_;
+	std::vector<std::unique_ptr<FileOutput>>	file_out_;
 	mutable std::mutex							process_mutex_;
 };
 

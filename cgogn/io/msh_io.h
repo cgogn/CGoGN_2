@@ -25,6 +25,8 @@
 #define IO_MSH_IO_H_
 
 #include <map>
+
+#include <core/utils/logger.h>
 #include <io/dll.h>
 #include <io/data_io.h>
 #include <io/volume_import.h>
@@ -210,7 +212,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PYRAMID:
 					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_legacy_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					break;
 			}
 		}
@@ -280,7 +282,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
 				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					number_of_nodes = 0u;
 					break;
 			}
@@ -305,7 +307,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PYRAMID:
 					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					break;
 			}
 		}
@@ -389,7 +391,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
 				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_binary_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					number_of_nodes = 0u;
 					break;
 			}
@@ -422,7 +424,7 @@ protected:
 					case MSH_CELL_TYPES::MSH_PYRAMID:
 						this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 					default:
-						std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+						cgogn_log_warning("cgogn_log_warning") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 						break;
 				}
 			}

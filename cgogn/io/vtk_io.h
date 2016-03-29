@@ -605,7 +605,7 @@ protected :
 		if (data_type == "double" || data_type == "float64")
 			return name_of_type(float64());
 
-		std::cerr << "vtk_data_type_to_cgogn_name_of_type : unknown vtk type : " << vtk_type_str << std::endl;
+		cgogn_log_error("vtk_data_type_to_cgogn_name_of_type") << "Unknown vtk type \"" << vtk_type_str << "\".";
 		return std::string();
 	}
 };
@@ -690,7 +690,7 @@ protected:
 			case FileType::FileType_VTP:
 				return this->read_vtp_file(filename);
 			default:
-				std::cerr << "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				cgogn_log_warning("VtkSurfaceImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\".";
 				return false;
 		}
 	}
@@ -842,7 +842,7 @@ protected:
 			}
 			case FileType::FileType_VTU: return this->read_vtk_xml_file(filename);
 			default:
-				std::cerr << "VtkVolumeImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				cgogn_log_warning("VtkVolumeImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\".";
 				return false;
 		}
 	}

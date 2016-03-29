@@ -85,7 +85,7 @@ public:
 		if (vector_dimension != vector_dimension_)
 		{
 			vector_dimension_ = vector_dimension;
-			std::cout << " Warning, changing the VBO vector_dimension"<< std::endl;
+			cgogn_log_warning("VBO::allocate") << "Changing the VBO vector_dimension.";
 		}
 		buffer_.release();
 	}

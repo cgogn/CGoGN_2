@@ -65,6 +65,7 @@
 #include <future>
 #include <functional>
 
+#include <core/utils/logger.h>
 #include <core/utils/assert.h>
 #include <core/utils/thread.h>
 
@@ -123,7 +124,7 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 			// don't allow enqueueing after stopping the pool
 		if (stop_)
 		{
-			std::cerr << "enqueue on stopped ThreadPool" << std::endl;
+			cgogn_log_error("ThreadPool::enqueue") << "Enqueue on stopped ThreadPool.";
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 		}
 		// Push work back on the queue

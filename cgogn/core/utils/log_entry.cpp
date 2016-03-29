@@ -75,55 +75,55 @@ std::ostream& add_color(std::ostream& o, LogLevel lvl)
 
 
 FileInfo::FileInfo(const char* f, uint32 l):
- filename_(f)
-,line_(l) {}
+	filename_(f)
+  ,line_(l) {}
 
 FileInfo::FileInfo():
-filename_("unspecified file")
-,line_(std::numeric_limits<uint32>::max())
+	filename_("unspecified file")
+  ,line_(std::numeric_limits<uint32>::max())
 {}
 
 FileInfo::FileInfo(const FileInfo& other):
-filename_(other.filename_)
-,line_(other.line_)
+	filename_(other.filename_)
+  ,line_(other.line_)
 {}
 
 FileInfo::FileInfo(FileInfo&& other):
-filename_(std::move(other.filename_))
-,line_(other.line_)
+	filename_(std::move(other.filename_))
+  ,line_(other.line_)
 {}
 
 FileInfo& FileInfo::operator=(const FileInfo& other)
 {
-		if (this != &other)
-		{
-				filename_ = other.filename_;
-				line_ = other.line_;
-		}
-		return *this;
+	if (this != &other)
+	{
+		filename_ = other.filename_;
+		line_ = other.line_;
+	}
+	return *this;
 }
 
 FileInfo& FileInfo::operator=(FileInfo&& other)
 {
-		if (this != &other)
-		{
-				filename_ = std::move(other.filename_);
-				line_ = other.line_;
-		}
-		return *this;
+	if (this != &other)
+	{
+		filename_ = std::move(other.filename_);
+		line_ = other.line_;
+	}
+	return *this;
 }
 
 bool FileInfo::empty() const
 {
-		return filename_.empty();
+	return filename_.empty();
 }
 
 std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo)
 {
-		o << fileinfo.filename_;
-		if (fileinfo.line_ != std::numeric_limits<uint32>::max())
-				o << ":" << fileinfo.line_;
-		return o;
+	o << fileinfo.filename_;
+	if (fileinfo.line_ != std::numeric_limits<uint32>::max())
+		o << ":" << fileinfo.line_;
+	return o;
 }
 
 
@@ -133,14 +133,14 @@ std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo)
 
 
 LogEntry::LogEntry(const LogEntry& other) :
-		sender_(other.sender_)
+	sender_(other.sender_)
   ,fileinfo_(other.fileinfo_)
   ,message_(other.message_.str())
   ,level_(other.level_)
 {}
 
 LogEntry::LogEntry(LogEntry&& other) :
-		sender_(std::move(other.sender_))
+	sender_(std::move(other.sender_))
   ,fileinfo_(std::move(other.fileinfo_))
   ,message_(std::move(other.message_))
   ,level_(other.level_)
@@ -148,32 +148,32 @@ LogEntry::LogEntry(LogEntry&& other) :
 
 LogEntry& LogEntry::operator=(const LogEntry& other)
 {
-		if (this != &other)
-		{
-				sender_ = other.sender_;
-				fileinfo_ = other.fileinfo_;
-				message_ = std::stringstream(other.message_.str());
-				level_ = other.level_;
-		}
-		return *this;
+	if (this != &other)
+	{
+		sender_ = other.sender_;
+		fileinfo_ = other.fileinfo_;
+		message_ = std::stringstream(other.message_.str());
+		level_ = other.level_;
+	}
+	return *this;
 }
 
 LogEntry::LogEntry(LogLevel level, const std::string& sender, const LogEntry::FileInfo& fileinfo) :
-		level_(level)
+	level_(level)
   ,sender_(sender)
   ,fileinfo_(fileinfo)
 {}
 
 LogEntry& LogEntry::operator=(LogEntry&& other)
 {
-		if (this != &other)
-		{
-				sender_ = std::move(other.sender_);
-				fileinfo_ = std::move(other.fileinfo_);
-				message_ = std::move(other.message_);
-				level_ = other.level_;
-		}
-		return *this;
+	if (this != &other)
+	{
+		sender_ = std::move(other.sender_);
+		fileinfo_ = std::move(other.fileinfo_);
+		message_ = std::move(other.message_);
+		level_ = other.level_;
+	}
+	return *this;
 }
 
 } // namespace logger

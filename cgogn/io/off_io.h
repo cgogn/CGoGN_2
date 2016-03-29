@@ -61,8 +61,7 @@ protected:
 		std::getline(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
-			std::cerr << "Problem reading off file: not an off file" << std::endl;
-			std::cerr << line << std::endl;
+			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
 			return false;
 		}
 

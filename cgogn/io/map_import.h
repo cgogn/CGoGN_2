@@ -27,6 +27,7 @@
 #include <string>
 #include <memory>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap2.h>
 #include <core/cmap/cmap3.h>
 
@@ -64,16 +65,22 @@ template <typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
 	auto si = newSurfaceImport<MAP_TRAITS, VEC3>(filename);
-	si->import_file(filename);
-	si->create_map(cmap2);
+	if (si)
+	{
+		if (si->import_file(filename))
+			si->create_map(cmap2);
+	}
 }
 
 template <typename VEC3, class MAP_TRAITS>
 inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename)
 {
 	auto si = newVolumeImport<MAP_TRAITS, VEC3>(filename);
-	si->import_file(filename);
-	si->create_map(cmap3);
+	if (si)
+	{
+		if (si->import_file(filename))
+			si->create_map(cmap3);
+	}
 }
 
 template <typename MAP_TRAITS, typename VEC3>
@@ -89,7 +96,7 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP_TRAITS, VEC3>>();
 		default:
-			std::cerr << "SurfaceImport does not handle files with extension \"" << get_extension(filename) << "\"." << std::endl;
+			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << get_extension(filename) << "\".";
 			return std::unique_ptr<SurfaceImport<MAP_TRAITS>> ();
 	}
 }
@@ -105,7 +112,7 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 		case FileType::FileType_MESHB:	return make_unique<LM6VolumeImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_MSH:	return make_unique<MshVolumeImport<MAP_TRAITS, VEC3>>();
 		default:
-			std::cerr << "VolumeImport does not handle files with extension \"" << get_extension(filename) << "\"." << std::endl;
+			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << get_extension(filename) << "\".";
 			return std::unique_ptr<VolumeImport<MAP_TRAITS>> ();
 	}
 }

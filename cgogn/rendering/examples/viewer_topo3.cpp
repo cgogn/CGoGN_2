@@ -27,6 +27,7 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap3.h>
 #include <io/map_import.h>
 #include <geometry/algos/bounding_box.h>
@@ -105,6 +106,11 @@ void Viewer::import(const std::string& volumeMesh)
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
 	vertex_position_ = map_.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+	if (!vertex_position_.is_valid())
+	{
+		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
