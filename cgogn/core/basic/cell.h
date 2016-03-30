@@ -76,10 +76,6 @@ inline std::string orbit_name(Orbit orbit)
 
 /**
  * \brief Cellular typing
- *
- * \details warning to automatic conversion
- * cell -> Dart (or const Dart&) ok
- * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
 template <Orbit ORBIT_VAL>

@@ -50,15 +50,12 @@ class CellCache : public MaskCell<CellType>
 
 public:
 
-	CellCache(MAP& m) : map_(m)
-	{
-		map_.foreach_cell([&] (CellType c) { cells_.push_back(c); });
-		current_ = cells_.begin();
-	}
+	CellCache(MAP& m) : map_(m) { update(); }
 
 	CellType begin() const
 	{
 		current_ = cells_.begin();
+		if (end()) return CellType();
 		return *current_;
 	}
 
@@ -68,15 +65,58 @@ public:
 		return *current_;
 	}
 
-	bool end() const
-	{
-		return current_ == cells_.end();
-	}
+	bool end() const { return current_ == cells_.end(); }
 
 	void update()
 	{
 		cells_.clear();
 		map_.foreach_cell([&] (CellType c) { cells_.push_back(c); });
+		current_ = cells_.begin();
+	}
+};
+
+template <typename MAP>
+class BoundaryCache : public MaskCell<typename MAP::Boundary>
+{
+	using CellType = typename MAP::Boundary;
+
+	MAP& map_;
+	mutable typename std::vector<CellType>::const_iterator current_;
+	std::vector<CellType> cells_;
+
+public:
+
+	BoundaryCache(MAP& m) : map_(m) { update(); }
+
+	CellType begin() const
+	{
+		current_ = cells_.begin();
+		if (end()) return CellType();
+		return *current_;
+	}
+
+	CellType next() const
+	{
+		++current_;
+		return *current_;
+	}
+
+	bool end() const { return current_ == cells_.end(); }
+
+	void update()
+	{
+		cells_.clear();
+		typename MAP::DartMarker dm(map_);
+		map_.foreach_dart([&] (Dart d)
+		{
+			if (!dm.is_marked(d))
+			{
+				CellType c(d);
+				dm.mark_orbit(c);
+				if (map_.is_boundary(d))
+					cells_.push_back(c);
+			}
+		});
 		current_ = cells_.begin();
 	}
 };

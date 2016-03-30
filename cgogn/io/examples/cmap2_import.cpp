@@ -72,6 +72,11 @@ int main(int argc, char** argv)
 		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, vmask);
 		std::cout << "nb vertices -> " << nb_vertices << std::endl;
 
+		uint32 nb_boundary_faces = 0;
+		cgogn::BoundaryCache<Map2> bmask(map);
+		map.foreach_cell([&nb_boundary_faces] (Map2::Boundary) { nb_boundary_faces++; }, bmask);
+		std::cout << "nb boundary faces -> " << nb_boundary_faces << std::endl;
+
 
 		uint32 nb_faces = 0;
 		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });
