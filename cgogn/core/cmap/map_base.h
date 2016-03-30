@@ -794,7 +794,7 @@ public:
 			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
 	inline void foreach_cell(const FUNC& f, const MASK& mask) const
 	{
-		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		using CellType = func_parameter_type(FUNC);
 
 		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
 			f(it);
