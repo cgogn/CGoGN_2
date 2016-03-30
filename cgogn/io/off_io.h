@@ -24,6 +24,10 @@
 #ifndef IO_OFF_IO_H_
 #define IO_OFF_IO_H_
 
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <io/surface_import.h>
 
 namespace cgogn
@@ -41,7 +45,10 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline OffSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(OffSurfaceImport);
 	virtual ~OffSurfaceImport() override {}
+
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
@@ -80,9 +87,9 @@ protected:
 		for (uint32 i = 0; i < this->nb_vertices_; ++i)
 		{
 
-			double x = this->read_double(fp,line);
-			double y = this->read_double(fp,line);
-			double z = this->read_double(fp,line);
+			float64 x = this->read_double(fp,line);
+			float64 y = this->read_double(fp,line);
+			float64 z = this->read_double(fp,line);
 
 			VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
@@ -124,7 +131,7 @@ protected:
 
 
 		static const uint32 BUFFER_SZ = 1024*1024;
-		float* buff_pos = new float[3*BUFFER_SZ];
+		float32* buff_pos = new float32[3*BUFFER_SZ];
 		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
@@ -137,9 +144,9 @@ protected:
 					j = 0;
 					// read from file into buffer
 					if (i + BUFFER_SZ < this->nb_vertices_)
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*BUFFER_SZ);
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*BUFFER_SZ);
 					else
-						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float)*(this->nb_vertices_ - i));
+						fp.read(reinterpret_cast<char*>(buff_pos), 3 * sizeof(float32)*(this->nb_vertices_ - i));
 
 					//endian
 					uint32* ptr = reinterpret_cast<uint32*>(buff_pos);
@@ -213,7 +220,7 @@ protected:
 		return true;
 	}
 private:
-	static inline double read_double(std::istream& fp, std::string& line)
+	static inline float64 read_double(std::istream& fp, std::string& line)
 	{
 		fp >> line;
 		while (line[0]=='#')
@@ -235,6 +242,13 @@ private:
 		return uint32((std::stoul(line)));
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

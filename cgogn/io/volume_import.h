@@ -150,10 +150,7 @@ public:
 	  ,volumes_vertex_indices_()
 	{}
 
-	VolumeImport(const Self&) = delete;
-	VolumeImport(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeImport);
 
 	virtual void clear() override
 	{
@@ -470,6 +467,12 @@ public:
 			mbuild.close_map();
 			std::cout << CGOGN_FUNC << ": Map closed with " << nbBoundaryFaces << " boundary face(s)." << std::endl;
 		}
+
+		unsigned int nb_vert_dart_marking = 0u;
+		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex v){++nb_vert_dart_marking;});
+
+		if (this->nb_vertices_ != nb_vert_dart_marking)
+			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		if (this->volume_attributes_.get_nb_attributes() > 0)
 		{

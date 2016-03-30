@@ -23,7 +23,7 @@ int test1()
 
 	ChunkArrayContainer<uint32> container;
 	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<float32>* att2 = container.add_attribute<float32>("reel");
 
 	for (uint32 i = 0; i < 41; ++i)
 		container.insert_lines<1>();
@@ -31,7 +31,7 @@ int test1()
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int32(i);
-		(*att2)[i] = 3.0f + 0.1f*float(i);
+		(*att2)[i] = 3.0f + 0.1f*float32(i);
 	}
 
 	container.remove_lines<1>(3);
@@ -212,11 +212,11 @@ int test3()
 int test4()
 {
 	std::cout << "############### TEST 4 ###############" << std::endl;
-	using vecvecdouble = std::vector< std::vector< double > >;
-	using veclistdouble = std::vector< std::list< double > >;
+	using vecvecdouble = std::vector< std::vector< float64 > >;
+	using veclistdouble = std::vector< std::list< float64 > >;
 	ChunkArrayContainer<uint32> container;
 	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<float32>* att2 = container.add_attribute<float32>("reel");
 	ChunkArray<bool>* att3 = container.add_attribute<bool>("bools");
 	ChunkArray<vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
 	ChunkArray<veclistdouble>* att5 = container.add_attribute<veclistdouble>("veclistdouble");
@@ -227,10 +227,10 @@ int test4()
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int32(i);
-		(*att2)[i] = 3.0f + 0.1f*float(i);
+		(*att2)[i] = 3.0f + 0.1f*float32(i);
 		(*att3).set_value(i, static_cast<bool>(i%2 != 0));
-		(*att4)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
-		(*att5)[i] = {{3.0 + 0.1*double(i),15.0 + 0.1*double(i)}, {103.0 + 0.1*double(i), 203.0 + 0.1*double(i), 303.0 + 0.1*double(i)}};
+		(*att4)[i] = {{3.0 + 0.1*float64(i),15.0 + 0.1*float64(i)}, {103.0 + 0.1*float64(i), 203.0 + 0.1*float64(i), 303.0 + 0.1*float64(i)}};
+		(*att5)[i] = {{3.0 + 0.1*float64(i),15.0 + 0.1*float64(i)}, {103.0 + 0.1*float64(i), 203.0 + 0.1*float64(i), 303.0 + 0.1*float64(i)}};
 	}
 
 	container.remove_lines<3>(3);
@@ -246,7 +246,7 @@ int test4()
 	ifi.close();
 
 	ChunkArray<int32>* load_att1 = cont2.get_attribute<int32>("entier");
-	ChunkArray<float>* load_att2 = cont2.get_attribute<float>("reel");
+	ChunkArray<float32>* load_att2 = cont2.get_attribute<float32>("reel");
 	ChunkArray<bool>* load_att3 = cont2.get_attribute<bool>("bools");
 	ChunkArray<vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");
 	ChunkArray<veclistdouble>* load_att5 = cont2.get_attribute<veclistdouble>("veclistdouble");

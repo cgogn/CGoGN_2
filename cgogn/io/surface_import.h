@@ -75,7 +75,7 @@ protected:
 
 public:
 
-	SurfaceImport() :
+	inline SurfaceImport() :
 		nb_vertices_(0u)
 	  ,nb_edges_(0u)
 	  ,nb_faces_(0u)
@@ -83,13 +83,11 @@ public:
 	  ,faces_vertex_indices_()
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
+
 	virtual ~SurfaceImport() override
 	{}
 
-	SurfaceImport(const Self&) = delete;
-	SurfaceImport(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
 
 	virtual void clear() override
 	{

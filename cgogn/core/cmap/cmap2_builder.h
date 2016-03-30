@@ -47,11 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
 
@@ -143,13 +139,13 @@ public:
 	{
 		const Face f(close_hole_topo(d));
 
-		if (map_.template is_embedded<CDart>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.new_orbit_embedding(CDart(it));
-			});
-		}
+//		if (map_.template is_embedded<CDart>())
+//		{
+//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+//			{
+//				map_.new_orbit_embedding(CDart(it));
+//			});
+//		}
 
 		if (map_.template is_embedded<Vertex>())
 		{
@@ -167,8 +163,8 @@ public:
 			});
 		}
 
-		if (map_.template is_embedded<Face>())
-			map_.new_orbit_embedding(f);
+//		if (map_.template is_embedded<Face>())
+//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
@@ -195,12 +191,11 @@ public:
 	inline void close_map()
 	{
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
-		map_.foreach_dart_nomask( [&] (Dart d)
-			{
-				if (map_.phi2(d) == d)
-					fix_point_darts->push_back(d);
-			});
-
+		map_.foreach_dart([&] (Dart d)
+		{
+			if (map_.phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
 		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi2(d) == d)

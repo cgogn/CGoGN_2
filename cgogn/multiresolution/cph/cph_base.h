@@ -64,7 +64,7 @@ protected:
 
 public:
 
-	CPHBase(ChunkArrayContainer<unsigned char>& topology):
+	inline CPHBase(ChunkArrayContainer<unsigned char>& topology):
 		current_level_(0u),
 		maximum_level_(0u)
 	{
@@ -73,16 +73,13 @@ public:
 		dart_level_ = topology.template add_attribute<uint32>("dartLevel") ;
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPHBase);
+
 	virtual ~CPHBase()
 	{
 		// TODO : check the way the destructors free memory in the class hierarchy
 		// topo_->remove_attribute(dart_level_);
 	}
-
-	CPHBase(Self const&) = delete;
-	CPHBase(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/***************************************************
 	 *              LEVELS MANAGEMENT                  *

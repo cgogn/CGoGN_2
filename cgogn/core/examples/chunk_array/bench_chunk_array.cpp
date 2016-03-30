@@ -16,14 +16,14 @@ int test5();
  */
 class Vec3f
 {
-	float data_[3];
+	float32 data_[3];
 
 public:
 
 	Vec3f()
 	{}
 
-	Vec3f(float x,float y, float z)
+	Vec3f(float32 x,float32 y, float32 z)
 	{
 		data_[0] = x;
 		data_[1] = y;
@@ -44,7 +44,7 @@ int test1()
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
 	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_attribute<float32>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
@@ -53,8 +53,8 @@ int test1()
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int32(i);
-		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3)[i] = Vec3f(float(i), float(i), float(i));
+		(*att2)[i] = 3.0f + 0.1f*float32(i);
+		(*att3)[i] = Vec3f(float32(i), float32(i), float32(i));
 	}
 
 	for (uint32 j = 0; j < 100; ++j)
@@ -80,7 +80,7 @@ int test2()
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<BLK_SZ,float>* att2 = container.add_attribute<float>("reel");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_attribute<float32>("reel");
 	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
@@ -89,8 +89,8 @@ int test2()
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
 		(*att1)[i] = 1+int32(i);
-		(*att2)[i] = 3.0f + 0.1f*float(i);
-		(*att3)[i] = Vec3f(float(i), float(i), float(i));
+		(*att2)[i] = 3.0f + 0.1f*float32(i);
+		(*att3)[i] = Vec3f(float32(i), float32(i), float32(i));
 	}
 
 	for (uint32 j = 0; j < 100; ++j)

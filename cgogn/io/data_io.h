@@ -30,6 +30,7 @@
 #include <core/utils/unique_ptr.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_array_container.h>
+#include <core/cmap/map_traits.h>
 
 #include <io/io_utils.h>
 
@@ -50,6 +51,10 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
+	inline DataInputGen() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DataInputGen);
+	virtual ~DataInputGen() {}
+
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
@@ -67,7 +72,7 @@ public:
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
 	virtual uint32 nb_components() const = 0;
-	virtual ~DataInputGen() {}
+
 
 	template<uint32 PRIM_SIZE>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
@@ -273,8 +278,8 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 {
 	const DataType type = get_data_type(type_name);
 	switch (type) {
-		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float>>();
-		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,double>>();
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float32>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float64>>();
 		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char>>();
 		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t>>();
 		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t>>();
@@ -296,8 +301,8 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 {
 	const DataType type = get_data_type(type_name);
 	switch (type) {
-		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float,T>>();
-		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,double,T>>();
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float32,T>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float64,T>>();
 		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char,T>>();
 		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t,T>>();
 		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t,T>>();
@@ -331,7 +336,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 			default:break;
 		}
 	} else {
-		if (type_name == name_of_type(float()))
+		if (type_name == name_of_type(float32()))
 		{
 			switch (nb_components)
 			{
@@ -341,7 +346,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 				default:break;
 			}
 		} else {
-			if (type_name == name_of_type(double()))
+			if (type_name == name_of_type(float64()))
 			{
 				switch (nb_components)
 				{
@@ -376,7 +381,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 			default:break;
 		}
 	} else {
-		if (type_name == name_of_type(float()))
+		if (type_name == name_of_type(float32()))
 		{
 			switch (nb_components)
 			{
@@ -386,7 +391,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 				default:break;
 			}
 		} else {
-			if (type_name == name_of_type(double()))
+			if (type_name == name_of_type(float64()))
 			{
 				switch (nb_components)
 				{
@@ -402,6 +407,10 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

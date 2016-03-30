@@ -24,6 +24,10 @@
 #ifndef IO_OBJ_IO_H_
 #define IO_OBJ_IO_H_
 
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <io/surface_import.h>
 
 namespace cgogn
@@ -41,6 +45,8 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline ObjSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjSurfaceImport);
 	virtual ~ObjSurfaceImport() override {}
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
@@ -68,7 +74,7 @@ protected:
 			{
 				std::stringstream oss(line);
 
-				double x, y, z;
+				float64 x, y, z;
 				oss >> x;
 				oss >> y;
 				oss >> z;
@@ -129,7 +135,7 @@ protected:
 				}
 
 				uint32 n = uint32(table.size());
-				this->faces_nb_edges_.push_back(static_cast<unsigned short>(n));
+				this->faces_nb_edges_.push_back(n);
 				for (uint32 j = 0; j < n; ++j)
 				{
 					uint32 index = table[j] - 1; // indices start at 1
@@ -144,6 +150,13 @@ protected:
 		return true;
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OBJ_IO_CPP_))
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OBJ_IO_H_))
 
 } // namespace io
 } // namespace cgogn

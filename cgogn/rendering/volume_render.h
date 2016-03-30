@@ -43,7 +43,7 @@ namespace rendering
 
 class CGOGN_RENDERING_API VolumeRender
 {
-	using Vec3f = std::array<float,3>;
+	using Vec3f = std::array<float32,3>;
 
 protected:
 
@@ -64,8 +64,8 @@ protected:
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
-	float shrink_v_;
-	float shrink_f_;
+	float32 shrink_v_;
+	float32 shrink_f_;
 
 	void init_with_color();
 
@@ -74,7 +74,8 @@ protected:
 	void init_edge();
 
 public:
-
+	using Self = VolumeRender;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRender);
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
@@ -86,9 +87,9 @@ public:
 	 */
 	~VolumeRender();
 
-	inline void set_explode_face(float x) { shrink_f_ = x; }
+	inline void set_explode_face(float32 x) { shrink_f_ = x; }
 
-	inline void set_explode_volume(float x) { shrink_v_ = x; }
+	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
 
 	inline void set_face_color(const QColor& rgb) { face_color_= rgb; }
 
@@ -120,7 +121,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 	using Volume = typename MAP::Volume;
 	using Scalar = typename VEC3::Scalar;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
 	std::vector<uint32> ear_indices;
@@ -136,10 +137,10 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 				const VEC3& P1 = position[Vertex(f.dart)];
 				const VEC3& P2 = position[Vertex(m.phi1(f.dart))];
 				const VEC3& P3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
-				out_pos.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-				out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
-				out_pos.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+				out_pos.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+				out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
+				out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
+				out_pos.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 			}
 			else
 			{
@@ -150,10 +151,10 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 					const VEC3& P1 = position[ear_indices[i]];
 					const VEC3& P2 = position[ear_indices[i+1]];
 					const VEC3& P3 = position[ear_indices[i+2]];
-					out_pos.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-					out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-					out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
-					out_pos.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+					out_pos.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+					out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
+					out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
+					out_pos.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 				}
 			}
 		});
@@ -178,10 +179,10 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 	using Volume = typename MAP::Volume;
 	using Scalar = typename VEC3::Scalar;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_color;
+	std::vector<std::array<float32,3>> out_color;
 	out_color.reserve(1024*1024);
 
 	std::vector<uint32> ear_indices;
@@ -203,14 +204,14 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 				d = m.phi1(d);
 				const VEC3& P3 = position[Vertex(d)];
 				const VEC3& C3 = color[Vertex(d)];
-				out_pos.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-				out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
-				out_pos.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
-				out_color.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-				out_color.push_back({float(C1[0]),float(C1[1]),float(C1[2])});
-				out_color.push_back({float(C2[0]),float(C2[1]),float(C2[2])});
-				out_color.push_back({float(C3[0]),float(C3[1]),float(C3[2])});
+				out_pos.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+				out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
+				out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
+				out_pos.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
+				out_color.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+				out_color.push_back({float32(C1[0]),float32(C1[1]),float32(C1[2])});
+				out_color.push_back({float32(C2[0]),float32(C2[1]),float32(C2[2])});
+				out_color.push_back({float32(C3[0]),float32(C3[1]),float32(C3[2])});
 			}
 			else
 			{
@@ -225,14 +226,14 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 					const VEC3& C2 = color[ear_indices[i+1]];
 					const VEC3& P3 = position[ear_indices[i+2]];
 					const VEC3& C3 = color[ear_indices[i+2]];
-					out_pos.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-					out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-					out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
-					out_pos.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
-					out_color.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-					out_color.push_back({float(C1[0]),float(C1[1]),float(C1[2])});
-					out_color.push_back({float(C2[0]),float(C2[1]),float(C2[2])});
-					out_color.push_back({float(C3[0]),float(C3[1]),float(C3[2])});
+					out_pos.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+					out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
+					out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
+					out_pos.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
+					out_color.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+					out_color.push_back({float32(C1[0]),float32(C1[1]),float32(C1[2])});
+					out_color.push_back({float32(C2[0]),float32(C2[1]),float32(C2[2])});
+					out_color.push_back({float32(C3[0]),float32(C3[1]),float32(C3[2])});
 				}
 			}
 		});
@@ -263,7 +264,7 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 	using Volume = typename MAP::Volume;
 	using Scalar = typename VEC3::Scalar;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
 	std::vector<uint32> ear_indices;
@@ -276,9 +277,9 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 		{
 			const VEC3& P1 = position[Vertex(e.dart)];
 			const VEC3& P2 = position[Vertex(m.phi1(e.dart))];
-			out_pos.push_back({float(CV[0]),float(CV[1]),float(CV[2])});
-			out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
-			out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+			out_pos.push_back({float32(CV[0]),float32(CV[1]),float32(CV[2])});
+			out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
+			out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
 		});
 	});
 

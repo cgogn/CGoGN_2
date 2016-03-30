@@ -42,7 +42,7 @@ namespace io
 class CGOGN_IO_API PlyImportData
 {
 public:
-
+	using Self = PlyImportData;
 	template <typename VEC>
 	void vertex_position(int32 i, VEC& P) { P[0] = vlist[i]->x; P[1] = vlist[i]->y; P[2] = vlist[i]->z;}
 
@@ -83,7 +83,7 @@ public:
 	int32* get_face_indices(int32 i) { return flist[i]->verts;}
 
 	PlyImportData();
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PlyImportData);
 	~PlyImportData();
 
 	bool read_file(const std::string& filename);
@@ -94,10 +94,10 @@ protected:
 	/* vertex and face definitions for a polygonal object */
 
 	typedef struct VertexPly {
-		float x,y,z;
-		float r,g,b;
+		float32 x,y,z;
+		float32 r,g,b;
 		unsigned char red,green,blue;
-		float nx,ny,nz;
+		float32 nx,ny,nz;
 		void *other_props;       /* other properties */
 	} VertexPly;
 

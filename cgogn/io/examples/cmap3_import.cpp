@@ -13,7 +13,7 @@ using namespace cgogn::numerics;
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("liverHexa.vtu");
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("medit/hex_dominant.mesh");
 		std::cout << "Using default mesh : " << volumeMesh << std::endl;
 	}
 	else
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 		std::cout << "nb volumes -> " << nbw << std::endl;
 
 		end = std::chrono::system_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::chrono::duration<float64> elapsed_seconds = end - start;
 		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
 	}

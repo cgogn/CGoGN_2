@@ -95,13 +95,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2_T);
+
 	~CMap2_T() override
 	{}
-
-	CMap2_T(Self const&) = delete;
-	CMap2_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*!
 	 * \brief Check the integrity of embedding information
@@ -223,7 +220,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			this->set_boundary(e,true);
+			this->set_boundary(e, true);
 			phi2_sew(it, e);
 			it = this->phi1(it);
 			e = this->phi_1(e);
@@ -254,7 +251,7 @@ public:
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
-				this->new_orbit_embedding(CDart(phi2(d)));
+//				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 		}
 
@@ -277,7 +274,7 @@ public:
 		if (this->template is_embedded<Face>())
 		{
 			this->new_orbit_embedding(f);
-			this->new_orbit_embedding(Face(phi2(f.dart)));
+//			this->new_orbit_embedding(Face(phi2(f.dart)));
 		}
 
 		if (this->template is_embedded<Volume>())
@@ -306,8 +303,8 @@ protected:
 		phi2_sew(d, ne);						// Sew the new 1D-edges
 		phi2_sew(e, nd);						// To build the new 2D-edges
 
-		this->set_boundary(nd,this->is_boundary(d));
-		this->set_boundary(ne,this->is_boundary(e));
+		this->set_boundary(nd, this->is_boundary(d));
+		this->set_boundary(ne, this->is_boundary(e));
 
 		return nd;
 	}
@@ -337,8 +334,10 @@ public:
 
 		if (this->template is_embedded<CDart>())
 		{
-			this->new_orbit_embedding(CDart(v));
-			this->new_orbit_embedding(CDart(nf));
+			if (!this->is_boundary(v))
+				this->new_orbit_embedding(CDart(v));
+			if (!this->is_boundary(nf))
+				this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -352,8 +351,10 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(v, e.dart);
-			this->template copy_embedding<Face>(nf, f);
+			if (!this->is_boundary(e.dart))
+				this->template copy_embedding<Face>(v, e.dart);
+			if (!this->is_boundary(f))
+				this->template copy_embedding<Face>(nf, f);
 		}
 
 		if (this->template is_embedded<Volume>())
@@ -392,8 +393,8 @@ protected:
 	 */
 	inline void cut_face_topo(Dart d, Dart e)
 	{
-		cgogn_message_assert(d != e, "cut_face: d and e should be distinct");
-		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face: d and e should belong to the same face");
+		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face_topo: d and e should belong to the same face");
 
 		Dart dd = this->phi_1(d);
 		Dart ee = this->phi_1(e);
@@ -402,8 +403,8 @@ protected:
 		this->phi1_sew(dd, ee);						// subdivide phi1 cycle at the inserted darts
 		phi2_sew(nd, ne);							// build the new 2D-edge from the inserted darts
 
-		this->set_boundary(nd,this->is_boundary(dd));
-		this->set_boundary(ne,this->is_boundary(ee));
+		this->set_boundary(nd, this->is_boundary(dd));
+		this->set_boundary(ne, this->is_boundary(ee));
 	}
 
 public:
@@ -425,7 +426,9 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		cut_face_topo(d,e);
+		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
+
+		cut_face_topo(d, e);
 		Dart nd = this->phi_1(d);
 		Dart ne = this->phi_1(e);
 

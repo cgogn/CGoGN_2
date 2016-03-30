@@ -93,7 +93,7 @@ public:
 	 * @brief set current specular coefficient
 	 * @param rgb
 	 */
-	void set_specular_coef(float coef);
+	void set_specular_coef(float32 coef);
 
 	/**
 	 * @brief set double side option
