@@ -337,14 +337,14 @@ protected:
 		{
 			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
 			auto& v = position->operator [](new_index);
-
+			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
-			v[0] = *reinterpret_cast<float64*>(&(*it));
+			v[0] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[1] = *reinterpret_cast<float64*>(&(*it));
+			v[1] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[2] = *reinterpret_cast<float64*>(&(*it));
+			v[2] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
 			if (this->need_endianness_swap())
 			{
@@ -393,13 +393,14 @@ protected:
 					number_of_nodes = 0u;
 					break;
 			}
-			std::vector<char> buff;
+			//std::vector<char> buff;
+			buff.clear();
 			const uint32 elem_size = 4u + nb_tags*4u + 4u*number_of_nodes;
 			buff.resize(nb_elements*elem_size);
 			data_stream.read(&buff[0], buff.size());
 
 			std::vector<uint32> node_ids(number_of_nodes);
-			for (uint32 j = 0u; j < nb_elements;++j)
+			for (int32 j = 0u; j < nb_elements;++j)
 			{
 				const char* const ids = &buff[j* elem_size + 4u + nb_tags*4u];
 				for (uint32 k = 0 ; k < number_of_nodes; ++k)

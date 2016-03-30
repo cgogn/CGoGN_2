@@ -69,7 +69,7 @@ protected:
 	{
 		darts_.clear();
 		for (uint32 i = 0; i < n; ++i)
-			darts_.push_back(cmap_.add_vertex());
+			darts_.push_back(cmap_.add_vertex().dart);
 	}
 };
 

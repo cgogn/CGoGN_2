@@ -23,83 +23,72 @@
 
 #include <gtest/gtest.h>
 
-#include <core/basic/cell.h>
+#include <core/cmap/cmap3.h>
+#include <core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
-uint32_t toto;
-std::uint32_t tutu;
 
-const Dart dglobal(10u);
-const Dart dmax(std::numeric_limits<uint32>::max());
-
-
-TEST(CellTest, DefaultConstructor)
+/*!
+ * \brief The CMap3TopoTest class implements topological tests on CMap3
+ * It derives from CMap3 to allow the test of protected methods
+ *
+ * Note that these tests, check that the topological operators perform as wanted
+ * but do neither tests the containers (refs_, used_, etc.) or the iterators.
+ * These last tests are implemented in another test suite.
+ */
+class CMap3TopoTest : public CMap3<DefaultMapTraits>, public ::testing::Test
 {
-	Cell<Orbit::DART> c;
-	Dart d = c.dart;
-	EXPECT_EQ(std::numeric_limits<uint32>::max(), d.index);
+
+public:
+
+	using Inherit = CMap3<DefaultMapTraits>;
+	using MapBuilder = CMap3Builder_T<DefaultMapTraits>;
+	using Vertex = CMap3TopoTest::Vertex;
+	using Edge   = CMap3TopoTest::Edge;
+	using Face   = CMap3TopoTest::Face;
+	using Volume   = CMap3TopoTest::Volume;
+	using VertexMarker = CMap3TopoTest::CellMarker<Vertex::ORBIT>;
+
+protected:
+
+
+};
+
+/*!
+ * \brief Test pyramid creation.
+ */
+TEST_F(CMap3TopoTest, pyramid_test)
+{
+	Dart d1 = this->add_pyramid_topo(4);
+	CMap3TopoTest::MapBuilder mbuild(*this);
+	mbuild.close_map();
+
+	EXPECT_TRUE(check_map_integrity());
+	EXPECT_EQ(nb_darts(), 32u);
+
+	Dart d2 = this->phi<32121213>(d1);
+	EXPECT_EQ(d1,d2);
 }
 
-TEST(CellTest, Constructor)
+
+/*!
+ * \brief Test pyramid creation.
+ */
+TEST_F(CMap3TopoTest, prism_test)
 {
-	Cell<Orbit::DART> c(dglobal);
-	Dart d = c.dart;
-	EXPECT_EQ(10u, d.index);
+	Dart d1 = this->add_prism_topo(3);
+	CMap3TopoTest::MapBuilder mbuild(*this);
+	mbuild.close_map();
+
+	EXPECT_TRUE(check_map_integrity());
+	EXPECT_EQ(nb_darts(), 36u);
+
+	d1 = this->phi<321>(d1);
+	Dart d2 = this->phi<112112112>(d1);
+	EXPECT_EQ(d1,d2);
 }
 
-TEST(CellTest, OutOfLimitConstructor)
-{
-	Cell<Orbit::DART> c1(dmax);
-	Dart d1 = c1.dart;
-	Cell<Orbit::DART> c2;
-	Dart d2 = c2.dart;
-	EXPECT_EQ(d1.index, d2.index);
-}
 
-TEST(CellTest, CopyConstructor)
-{
-	Cell<Orbit::DART> c(dglobal);
-	Dart d = c.dart;
-	Cell<Orbit::DART> ccopy(c);
-	Dart dcopy = ccopy.dart;
-	EXPECT_EQ(d.index, dcopy.index);
-}
-
-TEST(CellTest, IsValid)
-{
-	Cell<Orbit::DART> c(dglobal);
-	EXPECT_TRUE(c.is_valid());
-}
-
-TEST(CellTest, Assignation)
-{
-	Cell<Orbit::DART> c1(dglobal);
-	Cell<Orbit::DART> c2;
-	c2 = c1;
-
-	Dart d2 = c2.dart;
-
-	EXPECT_EQ(d2.index, dglobal.index);
-}
-
-TEST(CellTest, PrintingOut)
-{
-	Cell<Orbit::DART> c(dglobal);
-	std::ostringstream s;
-	s << "c=" << c;
-	EXPECT_EQ(0, strcmp(s.str().c_str(), "c=10"));
-}
-
-TEST(CellTest, ReadingIn)
-{
-	Cell<Orbit::DART> c;
-	std::istringstream s("10");
-	s >> c;
-
-	Dart d = c.dart;
-
-	EXPECT_EQ(10u, d.index);
-}
 
 } // namespace cgogn
