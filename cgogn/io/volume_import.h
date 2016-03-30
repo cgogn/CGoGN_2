@@ -175,10 +175,6 @@ public:
 		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 index = 0u;
-		// buffer for tempo faces (used to remove degenerated edges)
-		std::vector<uint32> edgesBuffer;
-		edgesBuffer.reserve(16u);
-
 		typename Map::DartMarkerStore m(map);
 
 		//for each volume of table
@@ -186,18 +182,6 @@ public:
 		{
 			// store volume in buffer, removing degenated faces
 			const uint32 nbv = this->volumes_nb_vertices_[i];
-
-			edgesBuffer.clear();
-			uint32 prec = std::numeric_limits<uint32>::max();
-			for (uint32 j = 0u; j < nbv; ++j)
-			{
-				uint32 em = this->volumes_vertex_indices_[index++];
-				if (em != prec)
-				{
-					prec = em;
-					edgesBuffer.push_back(em);
-				}
-			}
 
 			if(nbv == 4u) //tetrahedral case
 			{
@@ -209,10 +193,9 @@ public:
 									   map.phi_1(map.phi2(map.phi_1(d)))
 									  };
 
-				std::size_t buffer_id = 0ul;
 				for (const Dart dv : vertices_of_tetra)
 				{
-					const unsigned emb = edgesBuffer[buffer_id++];
+					const unsigned emb = this->volumes_vertex_indices_[index++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
@@ -238,7 +221,7 @@ public:
 				std::size_t buffer_id = 0ul;
 				for (Dart dv : vertices_of_pyramid)
 				{
-					const unsigned emb = edgesBuffer[buffer_id++];
+					const unsigned emb = this->volumes_vertex_indices_[index++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
@@ -265,7 +248,7 @@ public:
 				std::size_t buffer_id = 0ul;
 				for (Dart dv : vertices_of_prism)
 				{
-					const uint32 emb = edgesBuffer[buffer_id++];
+					const unsigned emb = this->volumes_vertex_indices_[index++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
@@ -295,7 +278,7 @@ public:
 				std::size_t buffer_id = 0ul;
 				for (Dart dv : vertices_of_hexa)
 				{
-					const unsigned emb = edgesBuffer[buffer_id++];
+					const unsigned emb = this->volumes_vertex_indices_[index++];
 					mbuild.init_parent_vertex_embedding(dv,emb);
 
 					Dart dd = dv;
