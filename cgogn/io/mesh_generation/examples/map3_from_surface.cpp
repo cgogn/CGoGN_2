@@ -25,7 +25,7 @@
 #include <ctime>
 
 #include <core/cmap/cmap3.h>
-#include <io/mesh_generation/tetgen_io.h>
+#include <io/mesh_generation/tetgen_structure_io.h>
 #include <io/map_import.h>
 
 using namespace cgogn::numerics;
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	{
 		tetgenio tetgen_output;
 		tetrahedralize(tetgen_arg.c_str(), tetgen_input.get(), &tetgen_output) ;
-		cgogn::io::TetgenVolumeImport<MapTraits, Vec3> tetgen_import(&tetgen_output);
+		cgogn::io::TetgenStructureVolumeImport<MapTraits, Vec3> tetgen_import(&tetgen_output);
 		tetgen_import.import_file("");
 		tetgen_import.create_map(map3);
 	}
