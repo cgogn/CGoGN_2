@@ -41,6 +41,7 @@
 #include <io/msh_io.h>
 #include <io/tetgen_io.h>
 #include <io/nastran_io.h>
+#include <io/tet_io.h>
 
 namespace cgogn
 {
@@ -115,6 +116,7 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP_TRAITS, VEC3>>();
 		default:
 			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << get_extension(filename) << "\".";
 			return std::unique_ptr<VolumeImport<MAP_TRAITS>> ();

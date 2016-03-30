@@ -60,7 +60,7 @@ protected:
 
 		this->nb_vertices_ = volume_->numberofpoints;
 		this->nb_volumes_ = volume_->numberoftetrahedra;
-		this->volumes_nb_vertices_.reserve(this->nb_volumes_);
+		this->volumes_types.reserve(this->nb_volumes_);
 		this->volumes_vertex_indices_.reserve(4u*this->nb_volumes_);
 
 		if (this->nb_vertices_ == 0u || this->nb_volumes_ == 0u)
@@ -88,10 +88,10 @@ protected:
 		int* t = volume_->tetrahedronlist ;
 		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
 		{
-			this->volumes_nb_vertices_.push_back(4u);
-			for(uint32 j = 0u; j < 3u; j++)
-				this->volumes_vertex_indices_.push_back(vertices_indices[t[j] - volume_->firstnumber]);
-
+			std::array<uint32,4> ids;
+			for(uint32 j = 0u; j < 4u; j++)
+				ids[j] = uint32(vertices_indices[t[j] - volume_->firstnumber]);
+			this->add_tetra(*position, ids[0], ids[1], ids[2], ids[3], true);
 			t += 4 ;
 		}
 

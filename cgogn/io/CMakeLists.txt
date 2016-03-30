@@ -23,6 +23,7 @@ set(HEADER_FILES
 	msh_io.h
 	tetgen_io.h
 	nastran_io.h
+	tet_io.h
 )
 
 set(SOURCE_FILES
@@ -40,6 +41,7 @@ set(SOURCE_FILES
 	ply_io.cpp
 	tetgen_io.cpp
 	nastran_io.cpp
+	tet_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

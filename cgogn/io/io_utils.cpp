@@ -228,6 +228,8 @@ CGOGN_IO_API FileType get_file_type(const std::string& filename)
 		return FileType::FileType_TETGEN;
 	if (extension == "nas" || extension == "bdf")
 		return FileType::FileType_NASTRAN;
+	if (extension == "tet")
+		return FileType::FileType_AIMATSHAPE;
 
 	return FileType::FileType_UNKNOWN;
 }

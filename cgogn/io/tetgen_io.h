@@ -93,7 +93,7 @@ protected:
 
 			std::istringstream iss(line);
 			iss >> this->nb_volumes_;
-			this->volumes_nb_vertices_.reserve(this->nb_volumes_);
+			this->volumes_types.reserve(this->nb_volumes_);
 			this->volumes_vertex_indices_.reserve(this->nb_volumes_);
 		}
 
