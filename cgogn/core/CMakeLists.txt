@@ -39,6 +39,7 @@ set(HEADER_FILES
 	utils/thread_barrier.h
 	utils/string.h
 	utils/precision.h
+	utils/masks.h
 )
 
 set(SOURCE_FILES

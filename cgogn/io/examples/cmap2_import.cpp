@@ -64,20 +64,14 @@ int main(int argc, char** argv)
 		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
-		map.enable_topo_cache<Map2::Face::ORBIT>();
-		map.enable_topo_cache<Map2::Vertex::ORBIT>();
-		map.enable_topo_cache<Map2::Edge::ORBIT>();
-
 		std::cout << "Map integrity : " << std::boolalpha << map.check_map_integrity() << std::endl;
 
-//		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
 
-//		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
+		uint32 nb_vertices = 0;
+		cgogn::CellCache<Map2::Vertex, Map2> vmask(map);
+		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, vmask);
+		std::cout << "nb vertices -> " << nb_vertices << std::endl;
 
-//		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
 
 		uint32 nb_faces = 0;
 		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });

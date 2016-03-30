@@ -131,9 +131,6 @@ protected:
 	/// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
 	mutable std::vector<std::thread::id> thread_ids_;
 
-	/// global topo cache shortcuts
-	std::array<ChunkArray<Dart>*, NB_ORBITS> global_topo_cache_;
-
 public:
 
 	MapBaseData() : Inherit()
@@ -149,7 +146,6 @@ public:
 			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
 
 			embeddings_[i] = nullptr;
-			global_topo_cache_[i] = nullptr;
 			for (uint32 j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
 				mark_attributes_[i][j].reserve(8);
 		}
@@ -172,6 +168,7 @@ public:
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
+
 	~MapBaseData() override
 	{}
 

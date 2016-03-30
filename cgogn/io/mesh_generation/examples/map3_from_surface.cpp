@@ -75,10 +75,10 @@ int main(int argc, char** argv)
 
 	Map3::VertexAttributeHandler<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-	map3.enable_topo_cache<Map3::Volume::ORBIT>();
-	map3.enable_topo_cache<Map3::Face::ORBIT>();
-	map3.enable_topo_cache<Map3::Vertex::ORBIT>();
-	map3.enable_topo_cache<Map3::Edge::ORBIT>();
+//	map3.enable_topo_cache<Map3::Volume::ORBIT>();
+//	map3.enable_topo_cache<Map3::Face::ORBIT>();
+//	map3.enable_topo_cache<Map3::Vertex::ORBIT>();
+//	map3.enable_topo_cache<Map3::Edge::ORBIT>();
 
 	uint32 nbw = 0u;
 	map3.foreach_cell([&nbw] (Map3::Volume)
