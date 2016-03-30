@@ -226,6 +226,8 @@ CGOGN_IO_API FileType get_file_type(const std::string& filename)
 		return FileType::FileType_MSH;
 	if (extension == "node" || extension == "ele")
 		return FileType::FileType_TETGEN;
+	if (extension == "nas" || extension == "bdf")
+		return FileType::FileType_NASTRAN;
 
 	return FileType::FileType_UNKNOWN;
 }

@@ -50,7 +50,8 @@ enum FileType
 	FileType_VTP,
 	FileType_MESHB,
 	FileType_MSH,
-	FileType_TETGEN
+	FileType_TETGEN,
+	FileType_NASTRAN
 };
 
 enum DataType
