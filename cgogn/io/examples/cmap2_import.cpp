@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
@@ -31,9 +32,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("cmap2_import") << "USAGE: " << argv[0] << " [filename]";
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("cmap2_import") << "Using default mesh : " << surfaceMesh;
 	}
 	else
 		surfaceMesh = std::string(argv[1]);
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
 
 		uint32 nb_darts = 0;
 		map.foreach_dart([&nb_darts] (cgogn::Dart) { nb_darts++; });
-		std::cout << "nb darts -> " << nb_darts << std::endl;
+		cgogn_log_info("cmap2_import") << "nb darts -> " << nb_darts;
 
 		uint32 nb_darts_2 = 0;
 		std::vector<uint32> nb_darts_per_thread(cgogn::NB_THREADS - 1);
@@ -58,14 +59,13 @@ int main(int argc, char** argv)
 		});
 		for (uint32 n : nb_darts_per_thread)
 			nb_darts_2 += n;
-		std::cout << "nb darts // -> " << nb_darts_2 << std::endl;
+		cgogn_log_info("cmap2_import")<< "nb darts // -> " << nb_darts_2;
 
 		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
-		std::cout << "Map integrity : " << std::boolalpha << map.check_map_integrity() << std::endl;
-
+		cgogn_log_info("cmap2_import")  << "Map integrity : " << std::boolalpha << map.check_map_integrity();
 
 		uint32 nb_vertices = 0;
 		cgogn::CellCache<Map2::Vertex, Map2> vmask(map);
@@ -77,10 +77,9 @@ int main(int argc, char** argv)
 		map.foreach_cell([&nb_boundary_faces] (Map2::Boundary) { nb_boundary_faces++; }, bmask);
 		std::cout << "nb boundary faces -> " << nb_boundary_faces << std::endl;
 
-
 		uint32 nb_faces = 0;
-		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++; });
-		std::cout << "nb faces -> " << nb_faces << std::endl;
+		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++;});
+		cgogn_log_info("cmap2_import") << "nb faces -> " << nb_faces;
 
 		uint32 nb_faces_2 = 0;
 		std::vector<uint32> nb_faces_per_thread(cgogn::NB_THREADS - 1);
@@ -92,7 +91,7 @@ int main(int argc, char** argv)
 		});
 		for (uint32 n : nb_faces_per_thread)
 			nb_faces_2 += n;
-		std::cout << "nb faces // -> " << nb_faces_2 << std::endl;
+		cgogn_log_info("cmap2_import") << "nb faces // -> " << nb_faces_2;
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
@@ -133,7 +132,7 @@ int main(int argc, char** argv)
 
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float64> elapsed_seconds = end - start;
-		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		cgogn_log_info("cmap2_import") << "elapsed time: " << elapsed_seconds.count() << "s";
 	}
 
 	return 0;

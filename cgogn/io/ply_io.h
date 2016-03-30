@@ -58,7 +58,7 @@ protected:
 
 		if (! pid.read_file(filename) )
 		{
-			std::cerr << "Unable to open file " << filename << std::endl;
+			cgogn_log_error("PlySurfaceImport::import_file_impl") << "Unable to open the file \"" << filename << "\".";
 			return false;
 		}
 

@@ -271,7 +271,7 @@ protected:
 	inline Face add_face_update_emb(Face f)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Regular_T::add_face_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Regular_T::add_face_update_emb") << "Method is not implemented yet.";
 		return f;
 	}
 };

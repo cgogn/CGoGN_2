@@ -21,6 +21,9 @@ set(HEADER_FILES
 	lm6_io.h
 	mesh_io_gen.h
 	msh_io.h
+	tetgen_io.h
+	nastran_io.h
+	tet_io.h
 )
 
 set(SOURCE_FILES
@@ -36,6 +39,9 @@ set(SOURCE_FILES
 	obj_io.cpp
 	off_io.cpp
 	ply_io.cpp
+	tetgen_io.cpp
+	nastran_io.cpp
+	tet_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

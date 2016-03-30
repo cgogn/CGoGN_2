@@ -9,11 +9,11 @@ project(cgogn_io_mesh_generation
 set(LIBRARIES "")
 
 set(HEADER_FILES
-	tetgen_io.h
+	tetgen_structure_io.h
 )
 
 set(SOURCE_FILES
-	tetgen_io.cpp
+	tetgen_structure_io.cpp
 )
 
 if (CGOGN_WITH_CGAL_EXAMPLES)

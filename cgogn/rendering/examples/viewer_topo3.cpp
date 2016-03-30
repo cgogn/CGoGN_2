@@ -27,6 +27,7 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap3.h>
 #include <io/map_import.h>
 #include <geometry/algos/bounding_box.h>
@@ -105,6 +106,11 @@ void Viewer::import(const std::string& volumeMesh)
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
 	vertex_position_ = map_.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+	if (!vertex_position_.is_valid())
+	{
+		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
@@ -190,7 +196,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 		std::vector<Map3::Volume> selected;
 		cgogn::geometry::picking_volumes<Vec3>(map_, vertex_position_, A, B, selected);
-		std::cout << "Selected volumes: " << selected.size() << std::endl;
+		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{
 			drawer_->line_width(2.0);
@@ -271,9 +277,9 @@ int main(int argc, char** argv)
 	std::string volumeMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
 		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
-		std::cout << "Using default mesh : " << volumeMesh << std::endl;
+		cgogn_log_debug("viewer_topo3") << "Using default mesh \"" << volumeMesh << "\".";
 	}
 	else
 		volumeMesh = std::string(argv[1]);

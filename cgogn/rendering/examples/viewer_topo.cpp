@@ -97,6 +97,11 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 
+	if (!vertex_position_.is_valid())
+	{
+		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -209,9 +214,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("viewer_topo")<< "USAGE: " << argv[0] << " [filename]";
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surfaceMesh << "\".";
 	}
 	else
 		surfaceMesh = std::string(argv[1]);

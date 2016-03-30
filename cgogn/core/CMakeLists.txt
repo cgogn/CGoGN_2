@@ -40,6 +40,10 @@ set(HEADER_FILES
 	utils/string.h
 	utils/precision.h
 	utils/masks.h
+	utils/logger.h
+	utils/log_entry.h
+	utils/logger_output.h
+	utils/log_stream.h
 )
 
 set(SOURCE_FILES
@@ -65,6 +69,10 @@ set(SOURCE_FILES
 	utils/thread.cpp
 	utils/thread_pool.cpp
 	utils/serialization.cpp
+	utils/logger.cpp
+	utils/log_entry.cpp
+	utils/logger_output.cpp
+	utils/log_stream.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -81,6 +89,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/core>
 )
 
