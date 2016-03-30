@@ -32,6 +32,7 @@
 #include <memory>
 #include <climits>
 
+#include <core/utils/logger.h>
 #include <core/dll.h>
 #include <core/utils/definitions.h>
 #include <core/utils/assert.h>
@@ -195,7 +196,7 @@ public:
 		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
-			std::cerr << "attribute " << attribute_name << " not found." << std::endl;
+			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
 			return nullptr;
 		}
 
@@ -217,7 +218,7 @@ public:
 		uint32 index = get_array_index(attribute_name);
 		if (index != UNKNOWN)
 		{
-			std::cerr << "attribute " << attribute_name << " already exists.." << std::endl;
+			cgogn_log_warning("add_attribute") << "Attribute \"" << attribute_name << "\" already exists.";
 			return nullptr;
 		}
 
@@ -248,7 +249,7 @@ public:
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "removeAttribute by name: attribute not found (" << attribute_name << ")" << std::endl;
+			cgogn_log_warning("remove_attribute_by_name") << "Attribute \""<< attribute_name << "\" not found.";
 			return false;
 		}
 
@@ -268,7 +269,7 @@ public:
 
 		if (index == UNKNOWN)
 		{
-			std::cerr << "remove_attribute by ptr: attribute not found" << std::endl;
+			cgogn_log_warning("remove_attribute_by_ptr") << "Attribute not found.";
 			return false;
 		}
 
@@ -300,7 +301,7 @@ public:
 		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
 			++index;
 
-		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found");
+		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found.");
 
 		if (index != table_marker_arrays_.size() - std::size_t(1u))
 			table_marker_arrays_[index] = table_marker_arrays_.back();
@@ -332,7 +333,7 @@ public:
 
 		ChunkArray<T>* atm = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 
-		cgogn_message_assert(atm != nullptr, "get_data_array : wrong type");
+		cgogn_message_assert(atm != nullptr, "get_data_array : wrong type.");
 
 		return atm;
 	}
@@ -818,7 +819,7 @@ public:
 			}
 			else
 			{
-				std::cerr << "ChunkArrayContainer: could not load attribute" << names_[i] << " of type "<< type_names_[i] << std::endl;
+				cgogn_log_warning("ChunkArrayContainer::load") << "Could not load attribute \"" << names_[i] << "\" of type \""<< type_names_[i] << "\".";
 				type_names_.erase(type_names_.begin()+i);
 				names_.erase(names_.begin()+i);
 				ChunkArrayGen::skip(fs);

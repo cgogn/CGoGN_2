@@ -298,8 +298,7 @@ protected:
 	{
 		static uint32 index = 0u;
 		const std::thread::id& th_id = std::this_thread::get_id();
-		std::cerr << "WARNING: registration of an unknown thread (id :" << th_id << ") in the map." << std::endl;
-		std::cerr << "Data can be lost. Please use add_thread and remove_thread interface." << std::endl;
+		cgogn_log_warning("add_unknown_thread") << "Registration of an unknown thread (id :" << th_id << ") in the map. Data can be lost. Please use add_thread and remove_thread interface.";
 		thread_ids_[index] = th_id;
 		const unsigned old_index = index;
 		index = (index+1u) % NB_UNKNOWN_THREADS;

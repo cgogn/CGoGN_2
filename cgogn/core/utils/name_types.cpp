@@ -23,6 +23,7 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
+#include <core/utils/logger.h>
 #include <core/utils/name_types.h>
 
 #ifdef __GNUG__
@@ -52,7 +53,7 @@ CGOGN_CORE_API std::string demangle(const std::string& str)
 	if (status == 0)
 		return std::string(res.get());
 	else
-		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
+		cgogn_log_warning("demangle") << "__cxa_demangle exited with error code " << status << ".";
 	return str;
 #endif // __GNUG__
 }

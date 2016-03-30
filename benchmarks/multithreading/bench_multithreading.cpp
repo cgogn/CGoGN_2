@@ -24,6 +24,7 @@
 #include <chrono>
 #include <vector>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
 #include <geometry/algos/normal.h>
@@ -128,7 +129,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 				Vec3 error = face_normal[f] - face_normal_mt[f];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
 				{
-					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of normals" << std::endl;
+					cgogn_log_warning("bench_multithreading") << "There was an error during computation of normals.";
 //					std::cerr << "face_normal " << face_normal[f] << std::endl;
 //					std::cerr << "face_normal_mt " << face_normal_mt[f] << std::endl;
 				}
@@ -186,7 +187,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 				Vec3 error = vertices_normal[v] - vertices_normal_mt[v];
 				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
 				{
-					std::cerr << __FILE__ << ":" << __LINE__ << " : there was an error during computation of vertices normals" << std::endl;
+					cgogn_log_warning("bench_multithreading") << "There was an error during computation of vertices normals.";
 //					std::cerr << "vertices_normal " << vertices_normal[v] << std::endl;
 //					std::cerr << "vertices_normal_mt " << vertices_normal_mt[v] << std::endl;
 				}
@@ -222,9 +223,9 @@ int main(int argc, char** argv)
 
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("bench_multithreading") << "USAGE: " << argv[0] << " [filename]";
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("bench_multithreading") << "Using default mesh : \"" << surfaceMesh << "\".";
 	}
 	else
 		surfaceMesh = std::string(argv[1]);

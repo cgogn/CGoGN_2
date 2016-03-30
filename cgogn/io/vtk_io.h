@@ -27,6 +27,8 @@
 #include <istream>
 #include <sstream>
 
+#include <core/utils/logger.h>
+
 #include <io/dll.h>
 #include <io/data_io.h>
 #include <io/surface_import.h>
@@ -107,9 +109,8 @@ protected :
 		else {
 #ifdef CGOGN_WITH_ZLIB
 			return zlib_decompress(data_str, header_type);
-
 #else
-			std::cerr << "read_binary_xml_data : unable to decompress the data : Zlib was not found." << std::endl;
+			cgogn_log_error("read_binary_xml_data") <<  "read_binary_xml_data : unable to decompress the data : Zlib was not found.";
 			std::exit(EXIT_FAILURE);
 #endif
 		}
@@ -124,7 +125,7 @@ protected :
 	{
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
 
-		std::cout << "Opening a legacy vtk file" << std::endl;
+		cgogn_log_info("parse_vtk_legacy_file") << "Opening a legacy vtk file";
 
 		std::string line;
 		std::string word;
@@ -133,16 +134,24 @@ protected :
 
 		// printing the 2 first lines
 		std::getline(fp, line);
-		std::cout << line << std::endl;
+//		cgogn_log_info("vtk_io") << line;
 		std::getline(fp, line);
-		std::cout << line << std::endl;
+//		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
 		bool ascii_file = to_upper(word) == "ASCII";
-		cgogn_assert(ascii_file || to_upper(word) == "BINARY");
+		if (!(ascii_file || to_upper(word) == "BINARY"))
+		{
+			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
+			return false;
+		}
 
 		fp >> word;
-		cgogn_assert(to_upper(word) == "DATASET");
+		if (to_upper(word) != "DATASET")
+		{
+			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
+			return false;
+		}
 		fp >> word;
 		const std::string& dataset = to_upper(word);
 		if (dataset == "UNSTRUCTURED_GRID")
@@ -233,7 +242,7 @@ protected :
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
 										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
-										std::cout << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components)." << std::endl;
+										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
 										std::getline(fp,line);
@@ -244,7 +253,7 @@ protected :
 										sstream >> lookup_table >> lookup_table_name;
 										if (to_upper(lookup_table) == "LOOKUP_TABLE")
 										{
-											std::cout << "VTK import : ignoring lookup table named \"" << lookup_table_name << "\"" << std::endl;
+											cgogn_log_debug("parse_vtk_legacy_file") << "Ignoring lookup table named \"" << lookup_table_name << "\".";
 										} else {
 											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
 										}
@@ -275,7 +284,7 @@ protected :
 												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
-												std::cout << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components)." << std::endl;
+												cgogn_log_info("parse_vtk_legacy_file") << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components).";
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
 												att->read_n(fp, nb_data, !ascii_file, big_endian);
 												if (cell_data)
@@ -289,7 +298,7 @@ protected :
 												std::string table_name;
 												/*uint32*/ nb_data = 0u;
 												sstream >> table_name >> nb_data;
-												std::cout << "ignoring the definition of the lookuptable named \"" << table_name << "\"" << std::endl;
+												cgogn_log_debug("parse_vtk_legacy_file") << "Ignoring the definition of the lookuptable named \"" << table_name << "\".";
 												if (ascii_file)
 												{
 													DataInput<Eigen::Vector4f> trash;
@@ -311,7 +320,7 @@ protected :
 							} else
 							{
 								if (!word.empty())
-									std::cerr << "VTK keyword \"" << word << "\" is not supported." << std::endl;
+									cgogn_log_warning("parse_vtk_legacy_file") << "VTK keyword \"" << word << "\" is not supported.";
 							}
 						}
 					}
@@ -333,7 +342,7 @@ protected :
 		XMLError eResult = doc.LoadFile(filename.c_str());
 		if (eResult != XML_NO_ERROR)
 		{
-			std::cerr << "Unable to load file \"" << filename << "\"." << std::endl;
+			cgogn_log_warning("parse_xml_vtu")<< "Unable to load file \"" << filename << "\".";
 			return false;
 		}
 
@@ -393,7 +402,7 @@ protected :
 			const std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(vertex_data->Attribute("type", nullptr)));
 
 			if (data_name.empty())
-				std::cerr << "import_VTU : Skipping a vertex DataArray without \"Name\" attribute." << std::endl;
+				cgogn_log_debug("parse_xml_vtu") << "Skipping a vertex DataArray without \"Name\" attribute.";
 			else {
 				const char*					ascii_data = vertex_data->GetText();
 				std::vector<unsigned char>	binary_data;
@@ -460,7 +469,7 @@ protected :
 				std::string type = vtk_data_type_to_cgogn_name_of_type(std::string(cell_data->Attribute("type", nullptr)));
 
 				if (data_name.empty())
-					std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
+					cgogn_log_debug("parse_xml_vtu") << "Skipping a cell DataArray without \"Name\" attribute.";
 				else {
 					const char*					ascii_data = cell_data->GetText();
 					std::vector<unsigned char>	binary_data;
@@ -494,7 +503,7 @@ protected :
 								this->cell_types_ = *dynamic_cast_unique_ptr<DataInput<int>>(types->simplify());
 							}
 							else {
-								std::cout << "Reading cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
+								cgogn_log_info("parse_xml_vtu") << "Reading cell attribute \"" <<  data_name << "\" of type " << type << ".";
 								auto cell_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
 								cell_att->read_n(*mem_stream, nb_cells,binary,!little_endian);
 								this->add_cell_attribute(*cell_att, data_name);
@@ -536,7 +545,7 @@ protected :
 					type = vtk_data_type_to_cgogn_name_of_type(std::string(poly_data_array->Attribute("type", nullptr)));
 
 				if (data_name.empty())
-					std::cerr << "import_VTU : Skipping a cell DataArray without \"Name\" attribute." << std::endl;
+					cgogn_log_debug("parse_xml_vtu")<< "Skipping a cell DataArray without \"Name\" attribute.";
 				else {
 					const char*					ascii_data = poly_data_array->GetText();
 					std::vector<unsigned char>	binary_data;
@@ -563,7 +572,7 @@ protected :
 							this->offsets_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(offsets->simplify());
 						}
 						else
-							std::cout << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << "." << std::endl;
+							cgogn_log_debug("parse_xml_vtu") << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << ".";
 					}
 				}
 			}
@@ -596,7 +605,7 @@ protected :
 		if (data_type == "double" || data_type == "float64")
 			return name_of_type(float64());
 
-		std::cerr << "vtk_data_type_to_cgogn_name_of_type : unknown vtk type : " << vtk_type_str << std::endl;
+		cgogn_log_error("vtk_data_type_to_cgogn_name_of_type") << "Unknown vtk type \"" << vtk_type_str << "\".";
 		return std::string();
 	}
 };
@@ -681,7 +690,7 @@ protected:
 			case FileType::FileType_VTP:
 				return this->read_vtp_file(filename);
 			default:
-				std::cerr << "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				cgogn_log_warning("VtkSurfaceImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\".";
 				return false;
 		}
 	}
@@ -833,7 +842,7 @@ protected:
 			}
 			case FileType::FileType_VTU: return this->read_vtk_xml_file(filename);
 			default:
-				std::cerr << "VtkVolumeImport does not handle the files of type \"" << get_extension(filename) << "\"." << std::endl;
+				cgogn_log_warning("VtkVolumeImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << get_extension(filename) << "\".";
 				return false;
 		}
 	}

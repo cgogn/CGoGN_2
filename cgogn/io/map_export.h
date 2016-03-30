@@ -30,6 +30,7 @@
 #include <iostream>
 #include <climits>
 
+#include <core/utils/logger.h>
 #include <core/utils/endian.h>
 #include <geometry/algos/normal.h>
 #include <geometry/algos/ear_triangulation.h>
@@ -59,7 +60,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_off") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -130,7 +131,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_off_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -248,7 +249,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_obj") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -312,7 +313,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_obj") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -379,7 +380,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_stl_ascii") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -455,7 +456,7 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_stl_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -552,7 +553,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_ply") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -623,7 +624,7 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_ply_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 

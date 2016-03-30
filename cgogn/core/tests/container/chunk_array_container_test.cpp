@@ -43,7 +43,6 @@ protected:
 
 	void testAddAttribute()
 	{
-		std::cout << "test" << std::endl;
 		// avec un grand nombre de type
 	}
 };
