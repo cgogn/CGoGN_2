@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	std::string tetgen_arg;
 	if (argc < 3)
 	{
-		std::cout << "argc < 3" << std::endl;
+		cgogn_log_info("map3_from_surface") << "USAGE: " << argv[0] << " [surface_mesh_path] [tetgen_args]";
 		std::exit(EXIT_FAILURE);
 	}
 	else
@@ -111,14 +111,14 @@ int main(int argc, char** argv)
 		++nbe;
 	});
 
-	std::cout << "nb vertices -> " << nbv << std::endl;
-	std::cout << "nb edges -> " << nbe << std::endl;
-	std::cout << "nb faces -> " << nbf << std::endl;
-	std::cout << "nb volumes -> " << nbw << std::endl;
+	cgogn_log_info("map3_from_surface") << "nb vertices -> " << nbv;
+	cgogn_log_info("map3_from_surface") << "nb edges -> " << nbe;
+	cgogn_log_info("map3_from_surface") << "nb faces -> " << nbf;
+	cgogn_log_info("map3_from_surface") << "nb volumes -> " << nbw;
 
 	end = std::chrono::system_clock::now();
 	std::chrono::duration<float64> elapsed_seconds = end - start;
-	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+	cgogn_log_info("map3_from_surface") << "elapsed time: " << elapsed_seconds.count() << "s";
 
 
 	return 0;

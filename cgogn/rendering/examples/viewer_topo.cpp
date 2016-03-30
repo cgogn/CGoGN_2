@@ -206,9 +206,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("viewer_topo")<< "USAGE: " << argv[0] << " [filename]";
 		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surfaceMesh << "\".";
 	}
 	else
 		surfaceMesh = std::string(argv[1]);

@@ -71,14 +71,13 @@ int main(int argc, char** argv)
 
 		cgogn_log_info("cmap2_import")  << "Map integrity : " << std::boolalpha << map.check_map_integrity();
 
-//		std::cout << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map) << std::endl;
+//		cgogn_log_info("cmap2_import") << "Vertex orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Vertex::ORBIT>(map);
+//		cgogn_log_info("cmap2_import") << "Face orbits are well embedded ? -> " << std::boolalpha << cgogn::is_well_embedded<Map2::Face::ORBIT>(map);
+//		cgogn_log_info("cmap2_import") << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map);
+//		cgogn_log_info("cmap2_import") << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map);
 
-//		std::cout << "Vertex orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face orbit is uniquely embedded ? -> " << std::boolalpha << cgogn::is_orbit_embedding_unique<Map2::Face::ORBIT>(map) << std::endl;
-
-//		std::cout << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map) << std::endl;
-//		std::cout << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map) << std::endl;
+//		cgogn_log_info("cmap2_import") << "Vertex container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Vertex::ORBIT>(map);
+//		cgogn_log_info("cmap2_import") << "Face container is well referenced ? -> " << std::boolalpha << cgogn::is_container_well_referenced<Map2::Face::ORBIT>(map);
 
 		uint32 nb_faces = 0;
 		map.foreach_cell([&nb_faces] (Map2::Face) { nb_faces++;});

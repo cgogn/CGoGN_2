@@ -196,7 +196,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 		std::vector<Map3::Volume> selected;
 		cgogn::geometry::picking_volumes<Vec3>(map_, vertex_position_, A, B, selected);
-		std::cout << "Selected volumes: " << selected.size() << std::endl;
+		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{
 			drawer_->line_width(2.0);
@@ -277,9 +277,9 @@ int main(int argc, char** argv)
 	std::string volumeMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
 		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
-		std::cout << "Using default mesh : " << volumeMesh << std::endl;
+		cgogn_log_debug("viewer_topo3") << "Using default mesh \"" << volumeMesh << "\".";
 	}
 	else
 		volumeMesh = std::string(argv[1]);

@@ -134,9 +134,9 @@ protected :
 
 		// printing the 2 first lines
 		std::getline(fp, line);
-//		std::cout << line << std::endl;
+//		cgogn_log_info("vtk_io") << line;
 		std::getline(fp, line);
-//		std::cout << line << std::endl;
+//		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
 		bool ascii_file = to_upper(word) == "ASCII";
