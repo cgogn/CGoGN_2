@@ -93,7 +93,7 @@ public:
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
 	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that close the hole
+	 * \return a vertex of the face that closes the hole
 	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
 	 * A face is inserted on the boundary that begin at dart d.
 	 */
