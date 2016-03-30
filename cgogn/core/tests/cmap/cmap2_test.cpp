@@ -86,7 +86,7 @@ protected:
 		for (uint32 i = 0u; i < n; ++i)
 		{
 			uint32 m = 1u + std::rand() % 10u;
-			Dart d = cmap_.add_face(m);
+			Dart d = cmap_.add_face(m).dart;
 			count += m;
 
 			m = std::rand() % 10u;
