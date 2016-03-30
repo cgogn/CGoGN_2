@@ -28,6 +28,7 @@
 #include <limits>
 
 #include <core/utils/log_entry.h>
+#include <core/utils/unique_ptr.h>
 
 #include <termcolor.hpp>
 
@@ -126,42 +127,20 @@ std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo)
 	return o;
 }
 
-
-
-
 } // namespace internal
 
 
-LogEntry::LogEntry(const LogEntry& other) :
-	sender_(other.sender_)
-  ,fileinfo_(other.fileinfo_)
-  ,message_(other.message_.str())
-  ,level_(other.level_)
-{}
+LogEntry::LogEntry()
+{
+	message_ = make_unique<std::stringstream>();
+}
+
 
 LogEntry::LogEntry(LogEntry&& other) :
 	sender_(std::move(other.sender_))
   ,fileinfo_(std::move(other.fileinfo_))
   ,message_(std::move(other.message_))
   ,level_(other.level_)
-{}
-
-LogEntry& LogEntry::operator=(const LogEntry& other)
-{
-	if (this != &other)
-	{
-		sender_ = other.sender_;
-		fileinfo_ = other.fileinfo_;
-		message_ = std::stringstream(other.message_.str());
-		level_ = other.level_;
-	}
-	return *this;
-}
-
-LogEntry::LogEntry(LogLevel level, const std::string& sender, const LogEntry::FileInfo& fileinfo) :
-	level_(level)
-  ,sender_(sender)
-  ,fileinfo_(fileinfo)
 {}
 
 LogEntry& LogEntry::operator=(LogEntry&& other)
@@ -174,6 +153,15 @@ LogEntry& LogEntry::operator=(LogEntry&& other)
 		level_ = other.level_;
 	}
 	return *this;
+}
+
+
+LogEntry::LogEntry(LogLevel level, const std::string& sender, const LogEntry::FileInfo& fileinfo) :
+	level_(level)
+  ,sender_(sender)
+  ,fileinfo_(fileinfo)
+{
+	message_ = make_unique<std::stringstream>();
 }
 
 } // namespace logger

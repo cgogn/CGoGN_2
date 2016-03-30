@@ -26,6 +26,7 @@
 
 #include <string>
 #include <sstream>
+#include <memory>
 
 #include <core/dll.h>
 #include <core/utils/definitions.h>
@@ -78,13 +79,12 @@ public:
 	using FileInfo = internal::FileInfo;
 	using LogLevel = internal::LogLevel;
 
-	inline LogEntry() {}
-
-	LogEntry(const LogEntry& other);
-	LogEntry(LogEntry&& other);
-	Self& operator=(const Self& other);
-	inline Self& operator=(Self&& other);
+	LogEntry();
 	explicit LogEntry(LogLevel level, const std::string&sender, const FileInfo& fileinfo);
+	LogEntry(LogEntry&& other);
+	LogEntry& operator=(LogEntry&& other);
+	LogEntry(const LogEntry&) = delete;
+	LogEntry& operator=(const LogEntry&) = delete;
 
 	inline const std::string& get_sender() const
 	{
@@ -98,7 +98,7 @@ public:
 
 	inline const std::string get_message_str() const
 	{
-		return message_.str();
+		return message_->str();
 	}
 
 	inline LogLevel get_level() const
@@ -109,14 +109,14 @@ public:
 	template<class T>
 	LogEntry& operator<<(const T &x)
 	{
-		message_ << x;
+		(*message_) << x;
 		return *this;
 	}
 
 	// false iff the message is empty
 	inline operator bool() const
 	{
-		auto* buff = message_.rdbuf();
+		auto* buff = message_->rdbuf();
 		const auto curr_pos = buff->pubseekoff(0, std::ios_base::cur);
 		const auto end = buff->pubseekoff(0, std::ios_base::end);
 		buff->pubseekpos(curr_pos, std::ios_base::out);
@@ -124,10 +124,10 @@ public:
 	}
 
 private:
-	std::string			sender_;
-	internal::FileInfo	fileinfo_;
-	std::stringstream	message_;
-	LogLevel			level_;
+	std::string							sender_;
+	internal::FileInfo					fileinfo_;
+	std::unique_ptr<std::stringstream>	message_;
+	LogLevel							level_;
 };
 
 } // namespace logger
