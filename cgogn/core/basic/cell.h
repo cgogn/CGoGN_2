@@ -119,11 +119,6 @@ public:
 	//TODO
 	// Cell(Cell<ORBIT>&& ) = delete;
 
-	/**
-	 * \brief Cast operator.
-	 * \return the dart 
-	 */
-	inline operator Dart() const { return dart; }
 
 	/**
 	 * \brief Tests the validity of the cell.

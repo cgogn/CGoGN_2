@@ -413,6 +413,19 @@ TEST_F(CMap2TopoTest, degree)
 	EXPECT_EQ(codegree(f), 10u);
 }
 
+
+/*! \brief The multi_phi are correctly applied
+ */
+TEST_F(CMap2TopoTest, multi_phi)
+{
+	Face f(this->add_face_topo(10u));
+
+	EXPECT_EQ(f.dart, this->phi<22>(f.dart));
+	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
+	EXPECT_EQ(f.dart, this->phi<211111111112>(f.dart));
+	EXPECT_EQ(f.dart, this->phi<11122111221111>(f.dart));
+}
+
 #undef NB_MAX
 
 } // namespace cgogn

@@ -21,85 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <gtest/gtest.h>
+#include <iostream>
 
-#include <core/basic/cell.h>
+#include "gtest/gtest.h"
 
-namespace cgogn
+int main(int argc, char **argv)
 {
-uint32_t toto;
-std::uint32_t tutu;
+	testing::InitGoogleTest(&argc, argv);
 
-const Dart dglobal(10u);
-const Dart dmax(std::numeric_limits<uint32>::max());
+	// Set LC_CTYPE according to the environnement variable.
+	setlocale(LC_CTYPE, "");
 
-
-TEST(CellTest, DefaultConstructor)
-{
-	Cell<Orbit::DART> c;
-	Dart d = c.dart;
-	EXPECT_EQ(std::numeric_limits<uint32>::max(), d.index);
+	return RUN_ALL_TESTS();
 }
-
-TEST(CellTest, Constructor)
-{
-	Cell<Orbit::DART> c(dglobal);
-	Dart d = c.dart;
-	EXPECT_EQ(10u, d.index);
-}
-
-TEST(CellTest, OutOfLimitConstructor)
-{
-	Cell<Orbit::DART> c1(dmax);
-	Dart d1 = c1.dart;
-	Cell<Orbit::DART> c2;
-	Dart d2 = c2.dart;
-	EXPECT_EQ(d1.index, d2.index);
-}
-
-TEST(CellTest, CopyConstructor)
-{
-	Cell<Orbit::DART> c(dglobal);
-	Dart d = c.dart;
-	Cell<Orbit::DART> ccopy(c);
-	Dart dcopy = ccopy.dart;
-	EXPECT_EQ(d.index, dcopy.index);
-}
-
-TEST(CellTest, IsValid)
-{
-	Cell<Orbit::DART> c(dglobal);
-	EXPECT_TRUE(c.is_valid());
-}
-
-TEST(CellTest, Assignation)
-{
-	Cell<Orbit::DART> c1(dglobal);
-	Cell<Orbit::DART> c2;
-	c2 = c1;
-
-	Dart d2 = c2.dart;
-
-	EXPECT_EQ(d2.index, dglobal.index);
-}
-
-TEST(CellTest, PrintingOut)
-{
-	Cell<Orbit::DART> c(dglobal);
-	std::ostringstream s;
-	s << "c=" << c;
-	EXPECT_EQ(0, strcmp(s.str().c_str(), "c=10"));
-}
-
-TEST(CellTest, ReadingIn)
-{
-	Cell<Orbit::DART> c;
-	std::istringstream s("10");
-	s >> c;
-
-	Dart d = c.dart;
-
-	EXPECT_EQ(10u, d.index);
-}
-
-} // namespace cgogn
