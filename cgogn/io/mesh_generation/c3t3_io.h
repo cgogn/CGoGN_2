@@ -83,7 +83,7 @@ protected:
 		const unsigned int num_vertices = triangulation.number_of_vertices();
 		const unsigned int num_cells = cpx_.number_of_cells_in_complex();
 
-		this->volumes_nb_vertices_.reserve(num_cells);
+		this->volumes_types.reserve(num_cells);
 		this->volumes_vertex_indices_.reserve(4u*num_cells);
 		this->nb_vertices_ = num_vertices;
 		this->nb_volumes_ = num_cells;

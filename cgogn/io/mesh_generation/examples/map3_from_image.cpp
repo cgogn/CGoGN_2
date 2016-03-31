@@ -89,24 +89,25 @@ int main(int argc, char** argv)
 
 	VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-	map.enable_topo_cache<Map3::Volume::ORBIT>();
-	map.enable_topo_cache<Map3::Face::ORBIT>();
-	map.enable_topo_cache<Map3::Vertex::ORBIT>();
-	map.enable_topo_cache<Map3::Edge::ORBIT>();
+
+	cgogn::CellCache<Map3::Vertex, Map3> vertices_cache(map);
+	cgogn::CellCache<Map3::Edge, Map3> edges_cache(map);
+	cgogn::CellCache<Map3::Face, Map3> faces_cache(map);
+	cgogn::CellCache<Map3::Volume, Map3> volumes_cache(map);
 
 	unsigned int nbw = 0u;
 	map.foreach_cell([&nbw] (Map3::Volume)
 	{
 		++nbw;
-	});
+	}, volumes_cache);
 
 	unsigned int nbf = 0u;
 	map.foreach_cell([&] (Map3::Face f)
 	{
 		++nbf;
-		Vec3 v1 = vertex_position[Map3::Vertex(map.phi1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
-		Vec3 v2 = vertex_position[Map3::Vertex(map.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
-	});
+//		Vec3 v1 = vertex_position[Map3::Vertex(map.phi1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
+//		Vec3 v2 = vertex_position[Map3::Vertex(map.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
+	}, faces_cache);
 
 	unsigned int nbv = 0;
 	map.foreach_cell([&] (Map3::Vertex v)
@@ -117,22 +118,22 @@ int main(int argc, char** argv)
 		{
 			++nb_incident;
 		});
-	});
+	}, vertices_cache);
 
 	unsigned int nbe = 0;
 	map.foreach_cell([&nbe] (Map3::Edge)
 	{
 		++nbe;
-	});
+	}, edges_cache);
 
-	std::cout << "nb vertices -> " << nbv << std::endl;
-	std::cout << "nb edges -> " << nbe << std::endl;
-	std::cout << "nb faces -> " << nbf << std::endl;
-	std::cout << "nb volumes -> " << nbw << std::endl;
+	cgogn_log_info("map3_from_image") << "nb vertices -> " << nbv;
+	cgogn_log_info("map3_from_image") << "nb edges -> " << nbe;
+	cgogn_log_info("map3_from_image") << "nb faces -> " << nbf;
+	cgogn_log_info("map3_from_image") << "nb volumes -> " << nbw;
 
 	end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end - start;
-	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+	cgogn_log_info("map3_from_image") << "elapsed time: " << elapsed_seconds.count() << "s";
 
 
 	return 0;
