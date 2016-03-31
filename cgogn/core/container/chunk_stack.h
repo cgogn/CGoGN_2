@@ -26,7 +26,7 @@
 
 #include <core/container/chunk_array.h>
 #include <core/utils/assert.h>
-#include <core/basic/dll.h>
+#include <core/dll.h>
 
 namespace cgogn
 {
@@ -36,7 +36,7 @@ namespace cgogn
  * @tparam CHUNKSIZE chunk size of array
  * @tparam T type stored in heap
  */
-template <unsigned int CHUNKSIZE, typename T>
+template <uint32 CHUNKSIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNKSIZE, T>
 {
 public:
@@ -46,27 +46,24 @@ public:
 
 protected:
 
-	unsigned int stack_size_;
+	uint32 stack_size_;
 
 public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
-	ChunkStack():
+	inline ChunkStack():
 		Inherit(),
 		stack_size_(0u)
 	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkStack);
 
 	/**
 	 * @brief ChunkStack destructor
 	 */
 	inline ~ChunkStack() override
 	{}
-
-	inline ChunkStack(const Self& cs) = delete;
-	inline ChunkStack(Self&& cs) = delete;
-	inline ChunkStack& operator=(const Self& cs) = delete;
-	inline ChunkStack& operator=(Self&& cs) = delete;
 
 	/**
 	 * @brief push a value on top of heap
@@ -75,8 +72,8 @@ public:
 	void push(const T& val)
 	{
 		stack_size_++;
-		unsigned int offset = stack_size_ % CHUNKSIZE;
-		unsigned int blkId  = stack_size_ / CHUNKSIZE;
+		uint32 offset = stack_size_ % CHUNKSIZE;
+		uint32 blkId  = stack_size_ / CHUNKSIZE;
 
 		if (blkId >= this->table_data_.size())
 			this->add_chunk();
@@ -96,7 +93,7 @@ public:
 	/**
 	 * @return number of elements in the heap
 	 */
-	unsigned int size() const
+	uint32 size() const
 	{
 		return stack_size_;
 	}
@@ -116,8 +113,8 @@ public:
 	 */
 	inline T head() const
 	{
-		const unsigned int offset = stack_size_ % CHUNKSIZE;
-		const unsigned int blkId  = stack_size_ / CHUNKSIZE;
+		const uint32 offset = stack_size_ % CHUNKSIZE;
+		const uint32 blkId  = stack_size_ / CHUNKSIZE;
 
 		return this->table_data_[blkId][offset];
 	}
@@ -127,7 +124,7 @@ public:
 	 */
 	void compact()
 	{
-		const unsigned int keep = (stack_size_+CHUNKSIZE-1u) / CHUNKSIZE;
+		const uint32 keep = (stack_size_+CHUNKSIZE-1u) / CHUNKSIZE;
 		while (this->table_data_.size() > keep)
 		{
 			delete[] this->table_data_.back();
@@ -152,7 +149,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, unsigned int>;
+extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn

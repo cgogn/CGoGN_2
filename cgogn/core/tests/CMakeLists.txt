@@ -5,9 +5,17 @@ project(cgogn_core_test
 set(SOURCE_FILES
 	basic/dart_test.cpp
 	basic/cell_test.cpp
+
 	container/chunk_array_container_test.cpp
+
+	cmap/cmap0_topo_test.cpp
+	cmap/cmap0_test.cpp
 	cmap/cmap1_topo_test.cpp
 	cmap/cmap1_test.cpp
+	cmap/cmap2_topo_test.cpp
+	cmap/cmap2_test.cpp
+	cmap/cmap3_topo_test.cpp
+
 	utils/name_types_test.cpp
 
 	main.cpp

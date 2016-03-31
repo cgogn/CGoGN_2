@@ -27,7 +27,7 @@
 #include <string>
 #include <tuple>
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
@@ -53,7 +53,7 @@ namespace cgogn
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
+CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
 	const std::string& expression,
 	const std::string& message,
 	const std::string& file_name,
@@ -64,14 +64,14 @@ CGOGN_UTILS_API CGOGN_NORETURN void assertion_failed(
 /**
  * Prints an unreachable location failure.
  * This function is called when execution reaches a point that
- * should not be reached. It prints an error message and 
- * terminates the program. 
+ * should not be reached. It prints an error message and
+ * terminates the program.
  * \param[in] message string information message to print out.
  * \param[in] file_name file where the assertion failed.
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
+CGOGN_CORE_API CGOGN_NORETURN void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,
@@ -87,12 +87,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_assert(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that a condition is met and take a specific message.
@@ -102,12 +102,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_message_assert(x, msg)									\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, msg, __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Sets a non reachable point in the program
@@ -115,9 +115,9 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \param[in] msg the specific information message
  */
 #define _internal_cgogn_assert_not_reached(msg)								\
-{																	\
+do {																	\
 	cgogn::should_not_have_reached(msg, __FILE__, __func__, __LINE__);\
-}
+} while (false)
 
 /**
  * \brief Verifies that the required contract condition is met.
@@ -127,12 +127,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_require(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that the ensured contract condition is met.
@@ -142,12 +142,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_ensure(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \brief Verifies that the invariant contract condition is met.
@@ -157,12 +157,12 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
  * \see assertion_failed()
  */
 #define _internal_cgogn_invariant(x) 												\
-{ 																		\
+do { 																		\
 	if(!(x)) 															\
 	{			 														\
 		cgogn::assertion_failed(#x, "", __FILE__, __func__, __LINE__);	\
 	} 																	\
-}
+} while (false)
 
 /**
  * \def cgogn_assert(x)
@@ -209,8 +209,9 @@ CGOGN_UTILS_API CGOGN_NORETURN void should_not_have_reached(
 #endif
 
 
-// no comment :-)
-
+/**
+ * Traits class to inspect function characteristics (return type, arity, parameters types)
+ */
 template <typename T>
 struct function_traits : public function_traits<decltype(&T::operator())>
 {};
@@ -219,7 +220,7 @@ template <typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const>
 // we specialize for pointers to member function
 {
-	enum { arity = sizeof...(Args) };
+	static const size_t arity = sizeof...(Args);
 	// arity is the number of arguments.
 
 	using result_type = ReturnType;
@@ -233,10 +234,13 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 	};
 };
 
-#define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type , T>::value
-#define check_func_ith_parameter_type(F, i, T) std::is_same<typename function_traits<F>::template arg<i>::type , T>::value
-#define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type , T>::value
+#define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type, T>::value
+#define check_func_ith_parameter_type(F, i, T) std::is_same<typename function_traits<F>::template arg<i>::type, T>::value
+#define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type, T>::value
 
-#define inside_type(ATTR) typename std::remove_cv< typename std::remove_reference<decltype(ATTR()[0ul])>::type >::type
+#define func_parameter_type(F) typename function_traits<F>::template arg<0>::type
+#define func_ith_parameter_type(F, i) typename function_traits<F>::template arg<i>::type
+
+#define inside_type(ATTR) typename std::remove_cv<typename std::remove_reference<decltype(ATTR()[0ul])>::type>::type
 
 #endif // CORE_UTILS_ASSERT_H_

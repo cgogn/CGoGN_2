@@ -58,14 +58,43 @@ public:
 	using Self = Vec_T<Container>;
 	using Scalar = typename std::remove_cv< typename std::remove_reference<decltype(Container()[0ul])>::type >::type;
 
+	inline Vec_T(Scalar a)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 1, "wrong contructor, too many data");
+		data_[0] = a;
+	}
+
+	inline Vec_T(Scalar a, Scalar b)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 2, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b;
+	}
+
+	inline Vec_T(Scalar a, Scalar b, Scalar c)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 3, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b; data_[2] = c;
+	}
+
+	inline Vec_T(Scalar a, Scalar b, Scalar c, Scalar d)
+	{
+		cgogn_message_assert(std::tuple_size<Container>::value >= 4, "wrong contructor, too many data");
+		data_[0] = a; data_[1] = b; data_[2] = c; data_[3] = d;
+	}
+
 	inline Vec_T() : data_() {}
 
-	template <typename... Args>
-	inline Vec_T(Args... a) : data_({ std::forward<Args>(a)... })
-	{}
+	//template <typename... Args>
+	//inline Vec_T(Args... a) : data_({ { std::forward<Args>(a)... } })
+	//{}
 
 	Vec_T(const Self&v) = default;
 	Self& operator=(const Self& v) = default;
+
+	inline const Scalar* data() const
+	{
+		return data_.data();
+	}
 
 	inline Scalar& operator[](std::size_t i)
 	{
@@ -221,14 +250,24 @@ public:
 		return data_;
 	}
 
+	inline friend std::ostream& operator<<(std::ostream& o, const Self& v)
+	{
+		o << "(";
+		for (std::size_t i = 0ul ; i < std::tuple_size<Container>::value -1ul; ++i )
+			o << v.data_[i] << ",";
+		o << v.data_[std::tuple_size<Container>::value -1ul];
+		o << ")";
+		return o;
+	}
+
 private:
 
 	Container data_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<double,3>>;
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
+extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
 
 } // namespace geometry

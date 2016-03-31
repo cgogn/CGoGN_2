@@ -30,7 +30,7 @@
 #include <array>
 
 #include <core/utils/assert.h>
-#include <core/utils/dll.h>
+#include <core/dll.h>
 
 namespace cgogn
 {
@@ -66,7 +66,7 @@ bool known_size(T const* /*src*/)
 }
 
 template <>
-CGOGN_UTILS_API bool known_size<std::string>(std::string const* /*src*/);
+CGOGN_CORE_API bool known_size<std::string>(std::string const* /*src*/);
 
 template <typename U>
 bool known_size(std::vector<U> const* /*src*/)
@@ -118,13 +118,13 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity);
 
 
 template <>
-CGOGN_UTILS_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
+CGOGN_CORE_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
 
 template <>
-CGOGN_UTILS_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
+CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
 
 template <>
-CGOGN_UTILS_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
+CGOGN_CORE_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
 
 
 // loading n vectors
@@ -136,8 +136,8 @@ void load(std::istream& istream, std::vector<U>* dest, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		unsigned int vecSize;
-		istream.read(reinterpret_cast<char*>(&vecSize), sizeof(unsigned int));
+		uint32 vecSize;
+		istream.read(reinterpret_cast<char*>(&vecSize), sizeof(uint32));
 		dest[i].resize(vecSize);
 		load(istream, &(dest[i][0]), vecSize);
 	}
@@ -152,8 +152,8 @@ void save(std::ostream& ostream, std::vector<U> const* src, std::size_t quantity
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].size());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = uint32(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		save(ostream, &(src[i][0]), size);
 	}
 }
@@ -167,7 +167,7 @@ std::size_t data_length(std::vector<U> const * src, std::size_t quantity)
 	std::size_t total = 0u;
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int);// for size
+		total += sizeof(uint32);// for size
 		total += data_length(&(src[i][0]), src[i].size());
 	}
 	return total;
@@ -183,8 +183,8 @@ void load(std::istream& istream, std::list<U>* dest, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		unsigned int listSize;
-		istream.read(reinterpret_cast<char*>(&listSize), sizeof(unsigned int));
+		uint32 listSize;
+		istream.read(reinterpret_cast<char*>(&listSize), sizeof(uint32));
 		std::vector<U> temp;
 		temp.resize(listSize);
 		load(istream, &(temp[0]), listSize);
@@ -202,8 +202,8 @@ void save(std::ostream& ostream, std::list<U> const* src, std::size_t quantity)
 
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		const unsigned int size = static_cast<unsigned int>(src[i].size());
-		ostream.write(reinterpret_cast<const char *>(&size), sizeof(unsigned int));
+		const uint32 size = uint32(src[i].size());
+		ostream.write(reinterpret_cast<const char *>(&size), sizeof(uint32));
 		for (const auto& elem : src[i])
 			save(ostream, &elem, 1);
 	}
@@ -218,7 +218,7 @@ std::size_t data_length(std::list<U> const* src, std::size_t quantity)
 	std::size_t total = 0u;
 	for (std::size_t i = 0u; i < quantity; ++i)
 	{
-		total += sizeof(unsigned int); // for size
+		total += sizeof(uint32); // for size
 		for (const auto& elem : src[i])
 			total += data_length(&elem, 1);
 	}

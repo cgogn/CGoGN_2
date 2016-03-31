@@ -1,4 +1,4 @@
-set(PLY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Ply include directory")
+set(CGOGN_THIRDPARTY_PLY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Ply include directory")
 
 project(ply
 	LANGUAGES C
@@ -12,5 +12,5 @@ set(SOURCE_FILES
 	ply.c
 	)
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")

@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#include <core/utils/dll.h>
+#include <core/dll.h>
 #include <core/utils/definitions.h>
 #include <core/utils/thread_barrier.h>
 
@@ -45,35 +45,35 @@ class Buffers;
 /**
  * \brief The maximum nunmber of threads created by the API.
  */
-const unsigned int MAX_NB_THREADS = 8u;
-CGOGN_UTILS_API extern unsigned int NB_THREADS;
+const uint32 MAX_NB_THREADS = 8u;
+CGOGN_CORE_API extern uint32 NB_THREADS;
 
-CGOGN_UTILS_API ThreadPool* get_thread_pool();
+CGOGN_CORE_API ThreadPool* get_thread_pool();
 
-inline unsigned int get_nb_threads()
+inline uint32 get_nb_threads()
 {
-	unsigned int c = std::thread::hardware_concurrency();
+	uint32 c = std::thread::hardware_concurrency();
 	return c < MAX_NB_THREADS ? c : MAX_NB_THREADS;
 }
 
-const unsigned int PARALLEL_BUFFER_SIZE = 1024u;
+const uint32 PARALLEL_BUFFER_SIZE = 1024u;
 
-/// buffers of pre-allocated vectors of dart or unsigned int
+/// buffers of pre-allocated vectors of dart or uint32
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<unsigned int>* uint_buffers_thread;
+extern CGOGN_TLS Buffers<uint32>* uint_buffers_thread;
 
 /**
  * @brief function to call at begin of each thread which use a map
  */
-CGOGN_UTILS_API void thread_start();
+CGOGN_CORE_API void thread_start();
 
 /**
  * @brief function to call at end of each thread which use a map
  */
-CGOGN_UTILS_API void thread_stop();
+CGOGN_CORE_API void thread_stop();
 
-CGOGN_UTILS_API Buffers<Dart>*         get_dart_buffers();
-CGOGN_UTILS_API Buffers<unsigned int>* get_uint_buffers();
+CGOGN_CORE_API Buffers<Dart>*         get_dart_buffers();
+CGOGN_CORE_API Buffers<uint32>* get_uint_buffers();
 
 template <typename ELEM, typename FUNC>
 class ThreadFunction
@@ -85,7 +85,7 @@ private:
 	Barrier& sync1_;
 	Barrier& sync2_;
 	bool& finished_;
-	unsigned int thread_order_;
+	uint32 thread_order_;
 
 public:
 
@@ -95,7 +95,7 @@ public:
 		Barrier& sync1,
 		Barrier& sync2,
 		bool& finished,
-		unsigned int thread_order
+		uint32 thread_order
 	) :
 		f_(f),
 		elements_(elements),

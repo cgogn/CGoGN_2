@@ -3,7 +3,8 @@ project(cgogn_core
 )
 
 set(HEADER_FILES
-	basic/dll.h
+	dll.h
+
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
@@ -19,7 +20,6 @@ set(HEADER_FILES
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
 	cmap/attribute_handler.h
-	cmap/sanity_check.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -30,9 +30,8 @@ set(HEADER_FILES
 	utils/assert.h
 	utils/buffers.h
 	utils/definitions.h
-	utils/dll.h
 	utils/endian.h
-	utils/make_unique.h
+	utils/unique_ptr.h
 	utils/name_types.h
 	utils/serialization.h
 	utils/thread.h
@@ -40,6 +39,11 @@ set(HEADER_FILES
 	utils/thread_barrier.h
 	utils/string.h
 	utils/precision.h
+	utils/masks.h
+	utils/logger.h
+	utils/log_entry.h
+	utils/logger_output.h
+	utils/log_stream.h
 )
 
 set(SOURCE_FILES
@@ -65,6 +69,10 @@ set(SOURCE_FILES
 	utils/thread.cpp
 	utils/thread_pool.cpp
 	utils/serialization.cpp
+	utils/logger.cpp
+	utils/log_entry.cpp
+	utils/logger_output.cpp
+	utils/log_stream.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -80,8 +88,8 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/core>
 )
 

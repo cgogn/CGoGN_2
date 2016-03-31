@@ -21,8 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_UTILS_DLL_EXPORT
+#define CGOGN_CORE_DLL_EXPORT
 
+#include <core/utils/logger.h>
 #include <core/utils/name_types.h>
 
 #ifdef __GNUG__
@@ -42,7 +43,7 @@ namespace internal
  * @param str, a type name
  * @return the demangled type name is succeded, otherwise a copy of str
  */
-CGOGN_UTILS_API std::string demangle(const std::string& str)
+CGOGN_CORE_API std::string demangle(const std::string& str)
 {
 #ifndef __GNUG__
 	return str;
@@ -52,9 +53,49 @@ CGOGN_UTILS_API std::string demangle(const std::string& str)
 	if (status == 0)
 		return std::string(res.get());
 	else
-		std::cerr << "__cxa_demangle exited with error code " << status << std::endl;
+		cgogn_log_warning("demangle") << "__cxa_demangle exited with error code " << status << ".";
 	return str;
 #endif // __GNUG__
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int8&)
+{
+	return "int8";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint8&)
+{
+	return "uint8";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int16&)
+{
+	return "int16";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint16&)
+{
+	return "uint16";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int32&)
+{
+	return "int32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint32&)
+{
+	return "uint32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const int64&)
+{
+	return "int64";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint64&)
+{
+	return "uint64";
 }
 
 } // namespace internal

@@ -65,13 +65,14 @@
 #include <future>
 #include <functional>
 
+#include <core/utils/logger.h>
 #include <core/utils/assert.h>
 #include <core/utils/thread.h>
 
 namespace cgogn
 {
 
-class CGOGN_UTILS_API ThreadPool {
+class CGOGN_CORE_API ThreadPool {
 public:
 	ThreadPool();
 	ThreadPool(const ThreadPool&) = delete;
@@ -81,7 +82,7 @@ public:
 
 	template<class F, class... Args>
 	auto enqueue(const F& f, Args&&... args)
-	-> std::future<typename std::result_of<F(unsigned int, Args...)>::type>;
+	-> std::future<typename std::result_of<F(uint32, Args...)>::type>;
 
 	std::vector<std::thread::id> get_threads_ids() const;
 	virtual ~ThreadPool();
@@ -95,7 +96,7 @@ private:
 	// need to keep track of threads so we can join them
 	std::vector< std::thread > workers_;
 	// the task queue
-	std::queue< std::function<void(unsigned int)> > tasks_;
+	std::queue< std::function<void(uint32)> > tasks_;
 
 	// synchronization
 	std::mutex queue_mutex_;
@@ -107,11 +108,11 @@ private:
 // add new work item to the pool
 template<class F, class... Args>
 auto ThreadPool::enqueue(const F& f, Args&&... args)
--> std::future<typename std::result_of<F(unsigned int, Args...)>::type>
+-> std::future<typename std::result_of<F(uint32, Args...)>::type>
 {
-	using return_type = typename std::result_of<F(unsigned int, Args...)>::type;
+	using return_type = typename std::result_of<F(uint32, Args...)>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(unsigned int)> >([f,&args...](unsigned int i)
+	auto task = std::make_shared< std::packaged_task<return_type(uint32)> >([f,&args...](uint32 i)
 	{
 		std::bind(std::cref(f),i, std::forward<Args>(args)...)();
 	}
@@ -121,10 +122,13 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 			// don't allow enqueueing after stopping the pool
-		if(stop_)
+		if (stop_)
+		{
+			cgogn_log_error("ThreadPool::enqueue") << "Enqueue on stopped ThreadPool.";
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
+		}
 		// Push work back on the queue
-		tasks_.emplace([task](unsigned int i){ (*task)(i); });
+		tasks_.emplace([task](uint32 i){ (*task)(i); });
 	}
 	// Notify a thread that there is new work to perform
 	condition_.notify_one();

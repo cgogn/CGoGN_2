@@ -114,7 +114,8 @@ public:
 	using Self = AttributeHandlerOrbit<DATA_TRAITS, ORBIT>;
 	using MapData = typename Inherit::MapData;
 
-	static const unsigned int CHUNKSIZE = MapData::CHUNKSIZE;
+	static const uint32 CHUNKSIZE = MapData::CHUNKSIZE;
+	static const Orbit orbit_value = ORBIT;
 
 	template <typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
@@ -123,7 +124,7 @@ public:
 
 protected:
 
-	ChunkArrayContainer<unsigned int>* chunk_array_cont_;
+	ChunkArrayContainer<uint32>* chunk_array_cont_;
 
 public:
 
@@ -381,7 +382,7 @@ public:
 	 * @param i
 	 * @return
 	 */
-	inline T& operator[](unsigned int i)
+	inline T& operator[](uint32 i)
 	{
 		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](i);
@@ -392,7 +393,7 @@ public:
 	 * @param i
 	 * @return
 	 */
-	inline const T& operator[](unsigned int i) const
+	inline const T& operator[](uint32 i) const
 	{
 		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
 		return chunk_array_->operator[](i);
@@ -403,9 +404,9 @@ public:
 	{
 	public:
 		const AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
-		unsigned int index_;
+		uint32 index_;
 
-		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -455,9 +456,9 @@ public:
 	{
 	public:
 		AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
-		unsigned int index_;
+		uint32 index_;
 
-		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, unsigned int i) :
+		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}

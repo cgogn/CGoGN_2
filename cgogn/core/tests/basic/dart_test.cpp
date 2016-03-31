@@ -34,7 +34,7 @@ class DartTest : public ::testing::Test
 public:
 
 	DartTest() : d10a_(10u), d10b_(10u), d20a_(20u),
-		dMax_(std::numeric_limits<unsigned int>::max()) {}
+		dMax_(std::numeric_limits<uint32>::max()) {}
 
 	// virtual void TearDown() {}
 
@@ -47,7 +47,7 @@ public:
 
 TEST_F(DartTest, DefaultConstructor)
 {
-	EXPECT_EQ(std::numeric_limits<unsigned int>::max(), dNil_.index);
+	EXPECT_EQ(std::numeric_limits<uint32>::max(), dNil_.index);
 }
 
 TEST_F(DartTest, Constructor)
@@ -103,7 +103,7 @@ TEST_F(DartTest, PrintingOut)
 	EXPECT_STREQ(s.str().c_str(), "10");
 	std::ostringstream t;
 	t << dNil_;
-	EXPECT_STREQ(t.str().c_str(), "-1");
+	EXPECT_STREQ(t.str().c_str(), "4294967295");
 }
 
 TEST_F(DartTest, ReadingIn)
@@ -113,7 +113,7 @@ TEST_F(DartTest, ReadingIn)
 	s >> d;
 	EXPECT_TRUE(d == d10a_);
 	Dart e;
-	std::istringstream t("-1");
+	std::istringstream t("4294967295");
 	t >> e;
 	EXPECT_TRUE(e == dNil_);
 }

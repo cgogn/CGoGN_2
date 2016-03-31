@@ -34,7 +34,7 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -46,6 +46,7 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
+	using Boundary = Vertex;  // just for compilation
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -68,13 +69,23 @@ public:
 	CMap0_T() : Inherit()
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap0_T);
+
 	~CMap0_T() override
 	{}
 
-	CMap0_T(Self const&) = delete;
-	CMap0_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	/*!
+	 * \brief Check the integrity of embedding information
+	 */
+	inline bool check_embedding_integrity()
+	{
+		bool result = true;
+
+		if (this->template is_embedded<Vertex>())
+			result = result && this->template is_well_embedded<Vertex>();
+
+		return result;
+	}
 
 	/*******************************************************************************
 	 * Low-level topological operations
@@ -85,10 +96,14 @@ protected:
 	/*!
 	* \brief Init an newly added dart.
 	*/
-	inline void init_dart(Dart /*d*/)
+	inline void init_dart(Dart)
 	{
 	}
 
+	inline bool check_integrity(Dart) const
+	{
+		return true;
+	}
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -104,7 +119,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Vertex v = this->add_dart();
+		const Vertex v(this->add_dart());
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
@@ -127,8 +142,16 @@ public:
 	 *******************************************************************************/
 
 protected:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
+	{
+		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
+		f(c.dart);
+	}
+
+	template <Orbit ORBIT, typename FUNC>
+	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		f(c.dart);

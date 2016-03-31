@@ -62,6 +62,9 @@ ShaderSimpleColor::ShaderSimpleColor()
 	get_matrices_uniforms();
 
 	unif_color_ = prg_.uniformLocation("color");
+
+	//default param
+	set_color(QColor(255,255,255));
 }
 
 void ShaderSimpleColor::set_color(const QColor& rgb)
@@ -69,11 +72,12 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 	prg_.setUniformValue(unif_color_, rgb);
 }
 
-bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos)
+
+bool ShaderSimpleColor::set_vao(uint32 i, VBO* vbo_pos, uint32 stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 
@@ -85,7 +89,9 @@ bool ShaderSimpleColor::set_vao(unsigned int i, VBO* vbo_pos)
 	// position vbo
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+
+	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension() * 4,
+		void_ptr(first*vbo_pos->vector_dimension() * 4));
 	vbo_pos->release();
 
     vaos_[i]->release();

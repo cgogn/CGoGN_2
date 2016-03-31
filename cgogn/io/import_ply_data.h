@@ -30,6 +30,7 @@
 #include <string>
 
 #include <ply.h>
+#include <core/utils/definitions.h>
 #include <io/dll.h>
 
 namespace cgogn
@@ -41,23 +42,23 @@ namespace io
 class CGOGN_IO_API PlyImportData
 {
 public:
+	using Self = PlyImportData;
+	template <typename VEC>
+	void vertex_position(int32 i, VEC& P) { P[0] = vlist[i]->x; P[1] = vlist[i]->y; P[2] = vlist[i]->z;}
 
 	template <typename VEC>
-	void vertex_position(int i, VEC& P) { P[0] = vlist[i]->x; P[1] = vlist[i]->y; P[2] = vlist[i]->z;}
+	void vertex_normal(int32 i, VEC& N) { N[0] = vlist[i]->nx; N[1] = vlist[i]->ny; N[2] = vlist[i]->nz;}
 
 	template <typename VEC>
-	void vertex_normal(int i, VEC& N) { N[0] = vlist[i]->nx; N[1] = vlist[i]->ny; N[2] = vlist[i]->nz;}
+	void vertexColorUint8(int32 i, VEC& C) { C[0] = vlist[i]->red; C[1] = vlist[i]->green; C[2] = vlist[i]->blue;}
 
 	template <typename VEC>
-	void vertexColorUint8(int i, VEC& C) { C[0] = vlist[i]->red; C[1] = vlist[i]->green; C[2] = vlist[i]->blue;}
-
-	template <typename VEC>
-	void vertex_color_float32(int i, VEC& C) { C[0] = vlist[i]->r; C[1] = vlist[i]->g; C[2] = vlist[i]->b;}
+	void vertex_color_float32(int32 i, VEC& C) { C[0] = vlist[i]->r; C[1] = vlist[i]->g; C[2] = vlist[i]->b;}
 
 
-	inline int nb_vertices() { return nverts;}
+	inline int32 nb_vertices() { return nverts;}
 
-	inline int nb_faces() { return nfaces;}
+	inline int32 nb_faces() { return nfaces;}
 
 	/**
 	* each vertex has a normal vector
@@ -74,15 +75,15 @@ public:
 	/**
 	* get the number of edges of a face
 	*/
-	int get_face_valence(int i) { return flist[i]->nverts;}
+	int32 get_face_valence(int32 i) { return flist[i]->nverts;}
 
 	/**
-	* get a table (pointer) of int of vertex indices of
+	* get a table (pointer) of int32 of vertex indices of
 	*/
-	int* get_face_indices(int i) { return flist[i]->verts;}
+	int32* get_face_indices(int32 i) { return flist[i]->verts;}
 
 	PlyImportData();
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PlyImportData);
 	~PlyImportData();
 
 	bool read_file(const std::string& filename);
@@ -93,16 +94,16 @@ protected:
 	/* vertex and face definitions for a polygonal object */
 
 	typedef struct VertexPly {
-		float x,y,z;
-		float r,g,b;
+		float32 x,y,z;
+		float32 r,g,b;
 		unsigned char red,green,blue;
-		float nx,ny,nz;
+		float32 nx,ny,nz;
 		void *other_props;       /* other properties */
 	} VertexPly;
 
 	typedef struct FacePly {
 		unsigned char nverts;    /* number of vertex indices in list */
-		int *verts;              /* vertex index list */
+		int32 *verts;              /* vertex index list */
 		void *other_props;       /* other properties */
 	} FacePly;
 
@@ -115,16 +116,14 @@ protected:
 
 	/*** the PLY object ***/
 
-	int nverts,nfaces;
+	int32 nverts,nfaces;
 	VertexPly **vlist;
 	FacePly **flist;
 
 	PlyOtherProp *vert_other,*face_other;
 
-	int per_vertex_color_float32, per_vertex_color_uint8 ;
-	int has_normals_;
-
-	char *old_locale;
+	int32 per_vertex_color_float32, per_vertex_color_uint8 ;
+	int32 has_normals_;
 };
 
 } // namespace io
