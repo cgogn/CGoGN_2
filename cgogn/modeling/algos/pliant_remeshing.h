@@ -24,7 +24,9 @@
 #ifndef MODELING_ALGOS_PLIANT_REMESHING_H_
 #define MODELING_ALGOS_PLIANT_REMESHING_H_
 
-#include "geometry/functions/basics.h"
+#include <geometry/functions/basics.h>
+#include <core/cmap/cmap2.h>
+#include <core/utils/masks.h>
 
 namespace cgogn
 {
@@ -32,14 +34,30 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3, typename MAP>
+template <typename VEC3, typename MAP_TRAITS>
 void pliant_remeshing(
-	MAP& map,
-	const typename MAP::template VertexAttributeHandler<VEC3>& position,
-	const typename MAP::template VertexAttributeHandler<VEC3>& normal
+	CMap2<MAP_TRAITS>& map,
+	const typename CMap2<MAP_TRAITS>::template VertexAttributeHandler<VEC3>& position
 )
 {
+	using Scalar = typename VEC3::Scalar;
+	using Map = CMap2<MAP_TRAITS>;
+	using Vertex = typename Map::Vertex;
+	using Edge = typename Map::Edge;
 
+	Scalar mean_edge_length = 0;
+
+	CellCache<Edge, Map> edges(map);
+
+	map.foreach_cell([&] (Edge e)
+	{
+		std::pair<Vertex,Vertex> v = map.vertices(e);
+		VEC3 edge = position[v.first] - position[v.second];
+		mean_edge_length += edge.norm();
+	}, edges);
+	mean_edge_length /= edges.size();
+
+	cgogn_log_info("pliant_remeshing") << "mean edge length -> " << mean_edge_length;
 }
 
 } // namespace modeling

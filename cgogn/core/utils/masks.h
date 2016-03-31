@@ -76,6 +76,8 @@ public:
 
 	bool end() const { return current_ == cells_.end(); }
 
+	uint32 size() const { return cells_.size(); }
+
 	void update()
 	{
 		cells_.clear();

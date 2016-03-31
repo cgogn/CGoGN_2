@@ -1,7 +1,7 @@
 
 #include <core/cmap/cmap2.h>
 #include <io/map_import.h>
-#include <geometry/algos/normal.h>
+#include <modeling/algos/pliant_remeshing.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -12,10 +12,23 @@ using Vec3 = Eigen::Vector3d;
 
 template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
-template <typename T>
-using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
 
 int main(int argc, char** argv)
 {
+	std::string surface_mesh;
+	if (argc < 2)
+	{
+		cgogn_log_info("cmap2_import") << "USAGE: " << argv[0] << " [filename]";
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		cgogn_log_info("cmap2_import") << "Using default mesh : " << surface_mesh;
+	}
+	else
+		surface_mesh = std::string(argv[1]);
 
+	Map2 map;
+
+	cgogn::io::import_surface<Vec3>(map, surface_mesh);
+
+	VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	cgogn::modeling::pliant_remeshing<Vec3>(map, vertex_position);
 }
