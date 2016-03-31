@@ -136,33 +136,23 @@ protected:
 	void add_closed_surfaces()
 	{
 		darts_.clear();
-		unsigned int n;
 
-		// Generate NB_MAX random 1-faces (without boundary)
+		// Generate NB_MAX random 2-surfaces (without boundary
 		for (unsigned int i = 0u; i < NB_MAX; ++i)
 		{
-			n = 1u + std::rand() % 10;
-			Dart d = Inherit::Inherit::add_face_topo(n);
-			darts_.push_back(d);
-		}
-		// Sew some pairs of 1-edges
-		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
-		{
-			Dart e1 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
-			while (n-- > 0u) e1 = phi1(e1);
-
-			Dart e2 = darts_[std::rand() % NB_MAX];
-			n = std::rand() % 10u;
-			while (n-- > 0u) e2 = phi1(e2);
-
-			n = 1 + std::rand() % 3u;
-			while (n-- > 0u && phi2(e1) == e1 && phi2(e2) == e2 && e2 != e1)
-			{
-				phi2_sew(e2, e1);
-				e1 = phi1(e1);
-				e2 = phi_1(e2);
+			uint32 n = 1u + std::rand() % 10;
+			uint32 p = std::rand() % 2;
+			switch (p) {
+				case 0:
+					darts_.push_back(Inherit::add_pyramid_topo(n));
+					break;
+				case 1:
+					darts_.push_back(Inherit::add_prism_topo(n));
+					break;
+				default:
+					break;
 			}
+
 		}
 		// Close de map
 		MapBuilder mbuild(*this);
@@ -190,7 +180,6 @@ TEST_F(CMap3TopoTest, add_attribute)
 
 	add_attribute<int32, CDart::ORBIT>("darts");
 	EXPECT_TRUE(check_map_integrity());
-	EXPECT_EQ(nb_darts(), 32u);
 
 	add_attribute<int32, Vertex2::ORBIT>("vertices2");
 	EXPECT_TRUE(check_map_integrity());
@@ -238,52 +227,6 @@ TEST_F(CMap3TopoTest, phi3_sew_unsew)
 		EXPECT_TRUE(phi3(d0) == e0);
 		EXPECT_TRUE(phi3(e0) == d0);
 	}
-}
-
-/*!
- * \brief Adding a pyramid whose base has n sides build a surface with
- * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
- * The test adds some pyramides and check that the number of generated cells is correct.
- * The map integrity is not preserved (this test creates fixed points for PHI3).
- */
-TEST_F(CMap3TopoTest, add_pyramid_topo)
-{
-	add_pyramid_topo(3u);
-	EXPECT_EQ(nb_darts(), 12u);
-	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 4u);
-	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 6u);
-	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 4u);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
-
-	add_pyramid_topo(10u);
-	EXPECT_EQ(nb_darts(), 40u+12u);
-	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 11+4u);
-	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 20u+6u);
-	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 11u+4u);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
-}
-
-/*!
- * \brief Adding a prism whose base has n sides build a surface with
- * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
- * The test adds some prims and check that the number of generated cells is correct.
- * The map integrity is not preserved (this test creates fixed points for PHI3).
- */
-TEST_F(CMap3TopoTest, add_prism_topo)
-{
-	add_prism_topo(3u);
-	EXPECT_EQ(nb_darts(), 18u);
-	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 6u);
-	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 9u);
-	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 5u);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
-
-	add_prism_topo(10u);
-	EXPECT_EQ(nb_darts(), 60u+18u);
-	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 20u+6u);
-	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 30u+9u);
-	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 12u+5u);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
 }
 
 /*! \brief Cutting an edge increases the size of both incident faces and add a vertex of degree 2.

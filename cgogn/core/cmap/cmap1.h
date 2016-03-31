@@ -143,10 +143,27 @@ protected:
 		(*phi_1_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI1 and PHI_1 are inverse relations.
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (phi1(phi_1(d)) == d &&
 				phi_1(phi1(d)) == d);
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * No boundary dart is accepted.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return !this->is_boundary(d);
 	}
 
 	/*!

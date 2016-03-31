@@ -197,7 +197,7 @@ public:
 
 		if (nb_boundary_edges > 0) {
 			mbuild.close_map();
-			std::cerr << "Warning - Import Surface: " << nb_boundary_edges << " hole(s) have been closed" << std::endl
+			std::cerr << "Warning - Import Surface: " << nb_boundary_edges << " hole(s) have been closed" << std::endl;
 		}
 
 		if (need_vertex_unicity_check) {

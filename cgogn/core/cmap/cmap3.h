@@ -153,12 +153,32 @@ protected:
 		(*phi3_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI3_PHI1 should be an involution without fixed point and
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi3(phi3(d)) == d &&
 				phi3(d) != d &&
-				phi3(this->phi1(phi3(this->phi1(d)))) == d);
+				phi3(this->phi1(phi3(this->phi1(d)))) == d &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * The boundary is a 2-manyfold: the boundary marker is the same
+	 * for all darts of a face and for two adjacent faces.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return (( this->is_boundary(d) == this->is_boundary(this->phi1(d))  ) &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
 	}
 
 	/**
@@ -228,105 +248,6 @@ public:
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
-protected:
-
-	/**
-	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	inline Dart add_pyramid_topo(uint32 size)
-	{
-		cgogn_message_assert( size > 0u ,"The pyramid cannot be empty");
-
-		Dart first = this->Inherit::Inherit::add_face_topo(3u);
-		Dart current = first;
-		Dart next = first;
-
-		for (uint32 i = 1u; i < size; ++i) {
-			next = this->Inherit::Inherit::add_face_topo(3u);
-			this->phi2_sew(this->phi_1(current),this->phi1(next));
-			current = next;
-		}
-		this->phi2_sew(this->phi_1(current),this->phi1(first));
-
-		return this->close_hole_topo(first);
-
-//		std::vector<Dart> m_tableVertDarts;
-//		m_tableVertDarts.reserve(size);
-
-//		// creation of triangles around circumference and storing vertices
-//		for (uint32 i = 0u; i < size; ++i)
-//			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
-
-//		// sewing the triangles
-//		for (uint32 i = 0u; i < size-1u; ++i)
-//		{
-//			const Dart d = this->phi_1(m_tableVertDarts[i]);
-//			const Dart e = this->phi1(m_tableVertDarts[i+1]);
-//			this->phi2_sew(d,e);
-//		}
-
-//		// sewing the last with the first
-//		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[size-1u]));
-
-//		// sewing the bottom face
-//		Dart base = this->Inherit::Inherit::add_face_topo(size);
-//		const Dart dres = base;
-//		for(uint32 i = 0u; i < size; ++i)
-//		{
-//			this->phi2_sew(m_tableVertDarts[i], base);
-//			base = this->phi1(base);
-//		}
-
-//		// return a dart from the base
-//		return dres;
-	}
-
-	/**
-	 * @brief create_prism_topo : create a prism whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	Dart add_prism_topo(uint32 size)
-	{
-		cgogn_message_assert( size > 0u ,"The prims cannot be empty");
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(size*2u);
-
-		// creation of quads around circunference and storing vertices
-		for (uint32 i = 0u; i < size; ++i)
-			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
-
-		// storing a dart from the vertex pointed by phi1(phi1(d))
-		for (uint32 i = 0u; i < size; ++i)
-			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-
-		// sewing the quads
-		for (uint32 i = 0u; i < size-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
-			this->phi2_sew(d,e);
-		}
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[size-1u]));
-
-		// sewing the top & bottom faces
-		Dart top = this->Inherit::Inherit::add_face_topo(size);
-		Dart bottom = this->Inherit::Inherit::add_face_topo(size);
-		const Dart dres = top;
-		for(uint32 i = 0u; i < size; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], top);
-			this->phi2_sew(m_tableVertDarts[size+i], bottom);
-			top = this->phi1(top);
-			bottom = this->phi_1(bottom);
-		}
-
-		// return a dart from the base
-		return dres;
-	}
 
 	/**
 	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad

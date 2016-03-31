@@ -145,15 +145,26 @@ protected:
 	 * @brief Check the integrity of a dart
 	 * @param d the dart to check
 	 * @return true if the integrity constraints are locally statisfied
-	 * PHI2 should be an involution without fixed poit and
-	 * the boundary marker is identical for all darts of a face.
+	 * PHI2 should be an involution without fixed point
 	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi2(phi2(d)) == d &&
-				phi2(d) != d &&
-				( this->is_boundary(d) == this->is_boundary(this->phi1(d)) ));
+				phi2(d) != d);
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * The boundary is a 1-manyfold: the boundary marker is the same
+	 * for all darts of a face and two boundary faces cannot be adjacent.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return (( this->is_boundary(d) == this->is_boundary(this->phi1(d))  ) &&
+				( !this->is_boundary(d) || !this->is_boundary(this->phi2(d)) ));
 	}
 
 	/**
@@ -223,7 +234,7 @@ public:
 
 protected:
 
-	/*!
+	/**
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face.
@@ -235,21 +246,19 @@ protected:
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
 
-		Dart it = d;
-		do
+		foreach_dart_of_orbit(Face(d), [&] (Dart it)
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
-			it = this->phi1(it);
 			e = this->phi_1(e);
-		} while (it != d);
+		});
 
 		return d;
 	}
 
 public:
 
-	/*!
+	/**
 	 * \brief Add a face in the map.
 	 * \param size : the number of edges in the built face
 	 * \return The built face
@@ -299,6 +308,82 @@ public:
 			this->new_orbit_embedding(Volume(f.dart));
 
 		return f;
+	}
+
+protected:
+
+	/**
+	 * \brief Add a pyramid whose base has n sides.
+	 * \param size : the number of darts in the base face
+	 * \return A dart of the base face
+	 * The base is a face with n vertices and edges.
+	 * Each edge is adjacent to a triangular face.
+	 * These triangles are pairwise sewn to build the top of the pyramid.
+	 */
+	inline Dart add_pyramid_topo(uint32 size)
+	{
+		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
+
+		Dart first = this->Inherit::add_face_topo(3u);
+		Dart current = first;
+		Dart next = first;
+
+		for (uint32 i = 1u; i < size; ++i) {
+			next = this->Inherit::add_face_topo(3u);
+			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			current = next;
+		}
+		this->phi2_sew(this->phi_1(current),this->phi1(first));
+
+		return this->close_hole_topo(first);
+	}
+
+	/**
+	 * \brief Add a prism with n sides.
+	 * \param size : the number of sides of the prism
+	 * \return A dart of the base face
+	 * The base and the top are faces with n vertices and edges.
+	 * A set of n pairewise linked quads are built.
+	 * These quads are sewn to the base and top faces.
+	 */
+	Dart add_prism_topo(uint32 size)
+	{
+		cgogn_message_assert(size > 0u, "The prism cannot be empty");
+		std::vector<Dart> m_tableVertDarts;
+		m_tableVertDarts.reserve(size*2u);
+
+		// creation of quads around circunference and storing vertices
+		for (uint32 i = 0u; i < size; ++i)
+			m_tableVertDarts.push_back(this->Inherit::add_face_topo(4u));
+
+		// storing a dart from the vertex pointed by phi1(phi1(d))
+		for (uint32 i = 0u; i < size; ++i)
+			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
+
+		// sewing the quads
+		for (uint32 i = 0u; i < size-1u; ++i)
+		{
+			const Dart d = this->phi_1(m_tableVertDarts[i]);
+			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
+			this->phi2_sew(d,e);
+		}
+		// sewing the last with the first
+		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[size-1u]));
+
+		// sewing the top & bottom faces
+		Dart top = this->Inherit::add_face_topo(size);
+		Dart bottom = this->Inherit::add_face_topo(size);
+		const Dart dres = top;
+		for(uint32 i = 0u; i < size; ++i)
+		{
+			this->phi2_sew(m_tableVertDarts[i], top);
+			this->phi2_sew(m_tableVertDarts[size+i], bottom);
+			top = this->phi1(top);
+			bottom = this->phi_1(bottom);
+		}
+
+		// return a dart from the base
+		return dres;
 	}
 
 protected:

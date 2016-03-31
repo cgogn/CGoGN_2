@@ -332,9 +332,13 @@ TEST_F(CMap1TopoTest, has_codegree)
  */
 TEST_F(CMap1TopoTest, multi_phi)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
 
-	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
+	EXPECT_EQ(f1.dart, this->phi<1>(f1.dart));
+
+	Face f2(this->add_face_topo(10u));
+
+	EXPECT_EQ(f2.dart, this->phi<1111111111>(f2.dart));
 }
 
 

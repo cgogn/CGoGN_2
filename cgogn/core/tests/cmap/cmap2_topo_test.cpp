@@ -286,6 +286,52 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+/*!
+ * \brief Adding a pyramid whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * The test adds some pyramides and check that the number of generated cells is correct.
+ * The map integrity is not preserved (this test creates fixed points for PHI3).
+ */
+TEST_F(CMap2TopoTest, add_pyramid_topo)
+{
+	add_pyramid_topo(3u);
+	EXPECT_EQ(nb_darts(), 12u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	add_pyramid_topo(10u);
+	EXPECT_EQ(nb_darts(), 40u+12u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11+4u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 11u+4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
+}
+
+/*!
+ * \brief Adding a prism whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * The test adds some prims and check that the number of generated cells is correct.
+ * The map integrity is not preserved (this test creates fixed points for PHI3).
+ */
+TEST_F(CMap2TopoTest, add_prism_topo)
+{
+	add_prism_topo(3u);
+	EXPECT_EQ(nb_darts(), 18u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 9u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	add_prism_topo(10u);
+	EXPECT_EQ(nb_darts(), 60u+18u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 30u+9u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 12u+5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
+}
+
 /*! \brief Cutting an edge increases the size of both incident faces and add a vertex of degree 2.
  * The test performs NB_MAX edge cutting on edges of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
@@ -338,9 +384,6 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	for (Dart d : darts_)
 	{
 		Dart dd = d;
-		if (std::rand() % 2 == 1) dd = phi2(d);
-
-		bool boundary_face = is_boundary(dd);
 
 		uint32 k = codegree(Face(dd));
 		if (k > 1u)
@@ -351,11 +394,9 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 			if (e == dd) e = phi1(e);
 
 			cut_face_topo(dd, e);
+			++count_edges;
+			++count_faces;
 
-			if (!boundary_face) {
-				++count_edges;
-				++count_faces;
-			}
 			EXPECT_EQ(codegree(Face(dd)) + codegree(Face(e)), k + 2);
 		}
 	}

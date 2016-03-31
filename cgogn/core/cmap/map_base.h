@@ -468,6 +468,18 @@ public:
 			return false;
 		}
 
+		// check the integrity of the boundary topology
+		foreach_dart_until([&cmap, &result] (Dart d)
+		{
+			result = cmap->check_boundary_integrity(d);
+			return result;
+		});
+		if (!result)
+		{
+			cgogn_log_error("check_map_integrity") << "Integrity of the boundary is broken";
+			return false;
+		}
+
 		// check the embedding indexation for the concrete map
 		result = cmap->check_embedding_integrity();
 		if (!result)
