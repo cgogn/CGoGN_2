@@ -48,16 +48,9 @@ public:
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Adaptive_T() : Inherit()
-	{}
-
-	~IHCMap2Adaptive_T() override
-	{}
-
-	IHCMap2Adaptive_T(const Self&) = delete;
-	IHCMap2Adaptive_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	IHCMap2Adaptive_T() : Inherit() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Adaptive_T);
+	~IHCMap2Adaptive_T() override {}
 
 	/*******************************************************************************
 	 * Low-level topological operations
@@ -343,14 +336,14 @@ protected:
 	inline Vertex cut_edge_update_emb(Dart /*e*/, Dart /*e2*/, Dart /*nd*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_edge_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_edge_update_emb") << "Method is not implemented yet.";
 		return Vertex();
 	}
 
 	inline void cut_face_update_emb(Dart /*e*/, Dart /*e2*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_face_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_face_update_emb") << "Method is not implemented yet.";
 	}
 
 	/***************************************************

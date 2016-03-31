@@ -59,6 +59,12 @@ public:
 	using Inherit = VolumeImport<MAP_TRAITS>;
 	using Self = C3T3VolumeImport<C3T3, MAP_TRAITS,VEC3>;
 
+	inline C3T3VolumeImport(const C3T3& cpx) : Inherit(),
+		cpx_(cpx)
+	{}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(C3T3VolumeImport);
+
+
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -66,15 +72,6 @@ public:
 	using Triangulation				= typename C3T3::Triangulation;
 	using Vertex_handle				= typename Triangulation::Vertex_handle;
 
-	C3T3VolumeImport() = delete;
-	C3T3VolumeImport(const Self&) = delete;
-	C3T3VolumeImport(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-
-	inline C3T3VolumeImport(const C3T3& cpx) : Inherit(),
-		cpx_(cpx)
-	{}
 
 protected:
 	virtual bool import_file_impl(const std::string& /*filename*/) override
@@ -117,6 +114,9 @@ private:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_C3T3_IO_CPP_))
 extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_C3T3_IO_CPP_))
 
 } // namespace io

@@ -29,12 +29,12 @@ void fonc_const(const typename MAP::template VertexAttributeHandler<float32>& ah
 {
 	for (const float32& f : ah)
 	{
-		std::cout << f << std::endl;
+		cgogn_log_info("example_map") << f;
 	}
 
 	// equivalent to
 	for (typename MAP::template VertexAttributeHandler<float32>::const_iterator it = ah.begin(); it != ah.end(); ++it)
-		std::cout << *it << std::endl;
+		cgogn_log_info("example_map") << *it;
 }
 
 template <typename MAP>
@@ -43,7 +43,7 @@ void fonc_non_const(typename MAP::template VertexAttributeHandler<float32>& ah)
 	for (float32& f : ah)
 	{
 		f *= 2.0f;
-		std::cout << f << std::endl;
+		cgogn_log_info("example_map") << f;
 	}
 
 	// equivalent to
@@ -68,14 +68,14 @@ int test1(MAP& map)
 	typename MAP::template VertexAttributeHandler<int32> ahf2 = map.template get_attribute_force_type<int32,float32, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
-	std::cout << "ahf valid : " << std::boolalpha << ahf.is_valid() << std::endl;
+	cgogn_log_info("example_map") << "ahf valid : " << std::boolalpha << ahf.is_valid();
 
 	std::vector<uint32>* uib = cgogn::get_uint_buffers()->get_buffer();
 	uib->push_back(3);
 	cgogn::get_uint_buffers()->release_buffer(uib);
 
 
-	Dart d1 = map.add_face(3);
+	Dart d1 = map.add_face(3).dart;
 
 	// get cell buffer typed
 //	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();
@@ -94,17 +94,17 @@ int test1(MAP& map)
 
 	dm.mark(d1);
 
-	std::cout << "Darts :" << std::endl;
-	map.foreach_dart([] (Dart d) { std::cout << d << std::endl; });
-	std::cout << "End Darts" << std::endl;
+	cgogn_log_info("example_map") << "Darts :";
+	map.foreach_dart([] (Dart d) { cgogn_log_info("example_map") << d; });
+	cgogn_log_info("example_map")<< "End Darts";
 
-	std::cout << "Vertices :" << std::endl;
+	cgogn_log_info("example_map") << "Vertices :";
 	map.foreach_cell([&] (Vertex v)
 	{
-		std::cout << v << std::endl;
+		cgogn_log_info("example_map") << v;
 		ah[v] = 2.0f;
 	});
-	std::cout << "End Vertices" << std::endl;
+	cgogn_log_info("example_map") << "End Vertices";
 
 	// the method foreach_adjacent_vertex_through_edge is not well defined for a MAP1
 //	map.foreach_adjacent_vertex_through_edge(d1, [&] (typename MAP::Vertex v)
@@ -121,14 +121,14 @@ int test1(MAP& map)
 		v = 3.0f;
 
 	// access with index
-	std::cout << ah[0] << std::endl;
+	cgogn_log_info("example_map") << ah[0];
 
 	fonc_non_const<MAP>(ah);
 	fonc_const<MAP>(ah);
 
 	//	// traverse container with for range
 	//	for (float32 f:ah)
-	//		std::cout << f << std::endl;
+	//		cgogn_log_info("example_map") << f;
 
 	return 0;
 }

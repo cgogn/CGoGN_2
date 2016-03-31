@@ -52,21 +52,18 @@ public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
-	ChunkStack():
+	inline ChunkStack():
 		Inherit(),
 		stack_size_(0u)
 	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkStack);
 
 	/**
 	 * @brief ChunkStack destructor
 	 */
 	inline ~ChunkStack() override
 	{}
-
-	inline ChunkStack(const Self& cs) = delete;
-	inline ChunkStack(Self&& cs) = delete;
-	inline ChunkStack& operator=(const Self& cs) = delete;
-	inline ChunkStack& operator=(Self&& cs) = delete;
 
 	/**
 	 * @brief push a value on top of heap

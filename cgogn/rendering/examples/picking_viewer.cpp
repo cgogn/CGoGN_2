@@ -225,7 +225,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			{
 				std::vector<Map2::Vertex> selected;
 				cgogn::geometry::picking_vertices<Vec3>(map_,vertex_position_,A,B,selected);
-				std::cout<< "Selected vertices: "<< selected.size()<<std::endl;
+				cgogn_log_info("picking_viewer") << "Selected vertices: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->point_size_aa(4.0);
@@ -245,7 +245,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			{
 				std::vector<Map2::Edge> selected;
 				cgogn::geometry::picking_edges<Vec3>(map_,vertex_position_,A,B,selected);
-				std::cout<< "Selected edges: "<< selected.size()<<std::endl;
+				cgogn_log_info("picking_viewer") << "Selected edges: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
@@ -265,7 +265,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			{
 				std::vector<Map2::Face> selected;
 				cgogn::geometry::picking_faces<Vec3>(map_,vertex_position_,A,B,selected);
-				std::cout<< "Selected faces: "<< selected.size()<<std::endl;
+				cgogn_log_info("picking_viewer") << "Selected faces: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
@@ -285,7 +285,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			{
 				std::vector<Map2::Volume> selected;
 				cgogn::geometry::picking_volumes<Vec3>(map_,vertex_position_,A,B,selected);
-				std::cout<< "Selected volumes: "<< selected.size()<<std::endl;
+				cgogn_log_info("picking_viewer") << "Selected volumes: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
@@ -321,9 +321,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("picking_viewer") << "USAGE: " << argv[0] << " [filename]";
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		cgogn_log_info("picking_viewer") << "Using default mesh \"" << surfaceMesh << "\".";
 	}
 	else
 		surfaceMesh = std::string(argv[1]);

@@ -24,6 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
+#include <core/utils/logger.h>
 #include <core/utils/unique_ptr.h>
 #include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
@@ -43,10 +44,12 @@ class ChunkArrayFactory
 	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)),"CHUNKSIZE must be a power of 2");
 
 public:
+	using Self = ChunkArrayFactory<CHUNKSIZE>;
 	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNKSIZE> >;
 	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
 	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayFactory);
 	static UniqueNamePtrMap map_CA_;
 
 	/**
@@ -83,15 +86,6 @@ public:
 		register_CA<uint16>();
 		register_CA<uint32>();
 		register_CA<uint64>();
-//		register_CA<short>();
-//		register_CA<int>();
-//		register_CA<long>();
-//		register_CA<long long>();
-//		register_CA<signed char>();
-//		register_CA<unsigned char>();
-//		register_CA<unsigned short>();
-//		register_CA<unsigned long>();
-//		register_CA<unsigned long long>();
 		register_CA<float32>();
 		register_CA<float64>();
 		register_CA<std::string>();
@@ -117,7 +111,7 @@ public:
 			tmp = (it->second)->clone();
 		}
 		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
+			cgogn_log_warning("ChunkArrayFactory::create") << "Type \"" << keyType << "\" is not registred in ChunkArrayFactory.";
 
 		return tmp;
 	}
@@ -126,6 +120,8 @@ public:
 	{
 		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = make_unique<NamePtrMap>();
 	}
+	private:
+	inline ChunkArrayFactory() {}
 };
 
 template <uint32 CHUNKSIZE>

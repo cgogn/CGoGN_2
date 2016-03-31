@@ -89,13 +89,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2_T);
+
 	~IHCMap2_T() override
 	{}
-
-	IHCMap2_T(Self const&) = delete;
-	IHCMap2_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*******************************************************************************
 	 * Low-level topological operations
@@ -327,10 +324,10 @@ public:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1(c, f); break;
-			case Orbit::PHI2: foreach_dart_of_PHI2(c, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21(c, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;

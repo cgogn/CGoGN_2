@@ -299,6 +299,16 @@ TEST_F(CMap1TopoTest, has_codegree)
 	EXPECT_FALSE(has_codegree(f, 11u));
 }
 
+/*! \brief The multi_phi are correctly applied
+ */
+TEST_F(CMap1TopoTest, multi_phi)
+{
+	Face f(this->add_face_topo(10u));
+
+	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
+}
+
+
 #undef NB_MAX
 
 } // namespace cgogn

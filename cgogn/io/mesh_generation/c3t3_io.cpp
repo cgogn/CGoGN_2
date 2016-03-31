@@ -33,6 +33,9 @@ namespace io
 {
 
 template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 } // namespace io
 } // namespace cgogn

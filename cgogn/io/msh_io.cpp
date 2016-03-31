@@ -22,17 +22,24 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TETGEN_IO_CPP
+#define IO_MSH_IO_CPP_
 
-#include <io/mesh_generation/tetgen_io.h>
+#include <io/msh_io.h>
 
 namespace cgogn
 {
-
 namespace io
 {
 
-template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 } // namespace io
 } // namespace cgogn

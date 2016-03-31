@@ -52,11 +52,11 @@ public:
 
 	inline CMap3Builder_T(CMap3& map) : map_(map)
 	{}
-	CMap3Builder_T(const Self&) = delete;
-	CMap3Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap3Builder_T() = default;
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Builder_T);
+
+	inline ~CMap3Builder_T()
+	{}
 
 public:
 

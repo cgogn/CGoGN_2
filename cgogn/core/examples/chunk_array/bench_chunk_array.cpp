@@ -40,7 +40,7 @@ const uint32 NB_LINES = 20000000;
 
 int test1()
 {
-	std::cout << "= TEST 1 = ref unsigned char" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "= TEST 1 = ref unsigned char" ;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
 	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
@@ -70,13 +70,13 @@ int test1()
 			container.insert_lines<1>();
 	}
 
-	std::cout << "---> OK" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "---> OK" ;
 	return 0;
 }
 
 int test2()
 {
-	std::cout << "= TEST 2 = ref bool" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "= TEST 2 = ref bool" ;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
@@ -106,13 +106,13 @@ int test2()
 			container.insert_lines<1>();
 	}
 
-	std::cout << "---> OK" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "---> OK" ;
 	return 0;
 }
 
 int test3()
 {
-	std::cout << "= TEST 3 = random bool cleaning" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "= TEST 3 = random bool cleaning" ;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
@@ -134,13 +134,13 @@ int test3()
 		}
 	}
 
-	std::cout << "---> OK" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "---> OK" ;
 	return 0;
 }
 
 int test4()
 {
-	std::cout << "= TEST 4 = random bool cleaning with set_false_byte" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "= TEST 4 = random bool cleaning with set_false_byte" ;
 
 	ChunkArrayContainer<BLK_SZ,  bool> container;
 	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
@@ -162,13 +162,13 @@ int test4()
 		}
 	}
 
-	std::cout << "---> OK" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "---> OK" ;
 	return 0;
 }
 
 int test5()
 {
-	std::cout << "= TEST 5 = Traversal" << std::endl;
+	cgogn_log_info("bench_chunk_array") << "= TEST 5 = Traversal" ;
 
 	ChunkArrayContainer<BLK_SZ, uint32> container;
 	ChunkArray<BLK_SZ,uint32>* att1 = container.add_attribute<uint32>("uints");
@@ -193,7 +193,7 @@ int test5()
 		total = - total;
 	}
 
-	std::cout << "---> OK " << total << std::endl;
+	cgogn_log_info("bench_chunk_array") << "---> OK " << total ;
 	return 0;
 }
 
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 {
 	if (argc == 1)
 	{
-		std::cout << " PARAMETER: 1/2 for uint/bool refs; 3/4 for random clear bool; 5 for traversal";
+		cgogn_log_info("bench_chunk_array") << " PARAMETER: 1/2 for uint/bool refs; 3/4 for random clear bool; 5 for traversal";
 		return 1;
 	}
 

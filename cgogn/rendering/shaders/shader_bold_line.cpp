@@ -23,10 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
+#include <core/utils/logger.h>
 #include <rendering/shaders/shader_bold_line.h>
 
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
@@ -228,7 +230,7 @@ bool ShaderBoldLine::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

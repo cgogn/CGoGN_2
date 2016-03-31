@@ -20,6 +20,10 @@ set(HEADER_FILES
 	ply_io.h
 	lm6_io.h
 	mesh_io_gen.h
+	msh_io.h
+	tetgen_io.h
+	nastran_io.h
+	tet_io.h
 )
 
 set(SOURCE_FILES
@@ -28,6 +32,16 @@ set(SOURCE_FILES
 	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
+	vtk_io.cpp
+	lm6_io.cpp
+	data_io.cpp
+	msh_io.cpp
+	obj_io.cpp
+	off_io.cpp
+	ply_io.cpp
+	tetgen_io.cpp
+	nastran_io.cpp
+	tet_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

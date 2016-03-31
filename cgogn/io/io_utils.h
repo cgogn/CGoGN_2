@@ -28,6 +28,7 @@
 #include <sstream>
 #include <streambuf>
 
+#include <core/utils/logger.h>
 #include <core/utils/endian.h>
 #include <geometry/types/geometry_traits.h>
 #include <io/dll.h>
@@ -47,7 +48,11 @@ enum FileType
 	FileType_VTK_LEGACY,
 	FileType_VTU,
 	FileType_VTP,
-	FileType_MESHB
+	FileType_MESHB,
+	FileType_MSH,
+	FileType_TETGEN,
+	FileType_NASTRAN,
+	FileType_AIMATSHAPE
 };
 
 enum DataType
@@ -80,7 +85,7 @@ namespace internal
 template<typename U, typename T>
 inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value,U>::type
 {
-	std::cerr << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\"." << std::endl;
+	cgogn_log_warning("convert") << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\".";
 	return U();
 }
 
@@ -165,32 +170,29 @@ public:
 	  ,current_(begin)
 	{}
 
-	CharArrayBuffer(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	CharArrayBuffer(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
 
 	virtual ~CharArrayBuffer();
 private:
 	virtual void imbue(const std::locale& __loc) override
 	{
-		std::cerr << "CharArrayBuffer::imbue method not implemented." << std::endl;
+		cgogn_log_error("CharArrayBuffer::imbue") << "CharArrayBuffer::imbue method not implemented.";
 		return Inherit::imbue(__loc);
 	}
 	virtual Inherit*setbuf(char_type*, std::streamsize) override
 	{
-		std::cerr << "CharArrayBuffer::setbuf does nothing." << std::endl;
+		cgogn_log_error("CharArrayBuffer::setbuf") << "CharArrayBuffer::setbuf does nothing.";
 		return this;
 	}
 
 	virtual pos_type seekpos(pos_type, std::ios_base::openmode) override
 	{
-		std::cerr << "CharArrayBuffer::setbuf does nothing." << std::endl;
+		cgogn_log_error("CharArrayBuffer::seekpos") << "CharArrayBuffer::setbuf does nothing.";
 		return pos_type(-1);
 	}
 	virtual int sync() override
 	{
-		std::cerr << "CharArrayBuffer::sync does nothing." << std::endl;
+		cgogn_log_error("CharArrayBuffer::sync") << "CharArrayBuffer::sync does nothing.";
 		return Inherit::sync();
 	}
 	virtual std::streamsize showmanyc() override
@@ -222,7 +224,7 @@ private:
 	}
 	virtual std::streamsize xsputn(const char_type* , std::streamsize ) override
 	{
-		std::cerr << "CharArrayBuffer::xsputn does nothing." << std::endl;
+		cgogn_log_error("CharArrayBuffer::xsputn") << "CharArrayBuffer::xsputn does nothing.";
 		return std::streamsize(-1);
 	}
 	virtual int_type overflow(int_type c) override
@@ -264,10 +266,7 @@ public:
 		this->init(&buffer_);
 	}
 
-	IMemoryStream(const Self&) = delete;
-	Self& operator=(const Self&) = delete;
-	IMemoryStream(Self&&) = delete;
-	Self& operator=(Self&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IMemoryStream);
 
 	virtual ~IMemoryStream() override;
 private:

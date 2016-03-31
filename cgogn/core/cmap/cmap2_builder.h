@@ -47,11 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
 

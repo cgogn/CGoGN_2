@@ -24,6 +24,10 @@
 #ifndef IO_OFF_IO_H_
 #define IO_OFF_IO_H_
 
+#include <geometry/types/eigen.h>
+#include <geometry/types/vec.h>
+#include <geometry/types/geometry_traits.h>
+
 #include <io/surface_import.h>
 
 namespace cgogn
@@ -41,7 +45,10 @@ public:
 	template<typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline OffSurfaceImport() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(OffSurfaceImport);
 	virtual ~OffSurfaceImport() override {}
+
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
@@ -54,8 +61,7 @@ protected:
 		std::getline(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
-			std::cerr << "Problem reading off file: not an off file" << std::endl;
-			std::cerr << line << std::endl;
+			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
 			return false;
 		}
 
@@ -235,6 +241,13 @@ private:
 		return uint32((std::stoul(line)));
 	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

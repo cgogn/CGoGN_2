@@ -54,14 +54,8 @@ public:
 		edge_id_ = topology.template add_attribute<uint32>("edgeId");
 	}
 
-	~CPH2() override
-	{
-	}
-
-	CPH2(Self const&) = delete;
-	CPH2(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH2);
+	~CPH2() override {}
 
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *

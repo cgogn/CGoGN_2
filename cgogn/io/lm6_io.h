@@ -44,7 +44,7 @@ class LM6VolumeImport : public VolumeImport<MAP_TRAITS>
 	// MeshImportGen interface
 public:
 	inline LM6VolumeImport() {}
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
 	virtual void clear() override
 	{
 		Inherit::clear();
@@ -70,7 +70,7 @@ protected:
 
 		this->nb_vertices_ = number_of_vertices;
 		this->nb_volumes_ = number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids;
-		this->volumes_nb_vertices_.reserve(this->nb_volumes_);
+		this->volumes_types.reserve(this->nb_volumes_);
 
 		if (number_of_vertices == 0 || this->nb_volumes_ == 0u)
 		{
@@ -152,6 +152,12 @@ protected:
 	}
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_LM6_IO_CPP_))
+extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_LM6_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

@@ -27,9 +27,11 @@
 #include <memory>
 #include <string>
 
+#include <core/utils/logger.h>
 #include <core/utils/unique_ptr.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_array_container.h>
+#include <core/cmap/map_traits.h>
 
 #include <io/io_utils.h>
 
@@ -50,6 +52,10 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
+	inline DataInputGen() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DataInputGen);
+	virtual ~DataInputGen() {}
+
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
 	virtual void* get_data() = 0;
@@ -67,7 +73,7 @@ public:
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
 	virtual uint32 nb_components() const = 0;
-	virtual ~DataInputGen() {}
+
 
 	template<uint32 PRIM_SIZE>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
@@ -175,7 +181,7 @@ public:
 
 			if (i < n)
 			{
-				std::cerr << "read_n : An eccor occured while reading the line \n\"" << line << "\"" <<  std::endl;
+				cgogn_log_warning("DataInput::read_n") << "An eccor occured while reading the line \n\"" << line << "\".";
 				this->reset();
 			}
 		}
@@ -205,7 +211,7 @@ public:
 			}
 			if (i < n)
 			{
-				std::cerr << "skip_n : An eccor occured while skipping the line \n\"" << line << "\"" <<  std::endl;
+				cgogn_log_warning("DataInput::skip_n") << "An eccor occured while skipping the line \n\"" << line << "\".";
 			}
 		}
 	}
@@ -285,7 +291,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t>>();
 		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t>>();
 		default:
-			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 	}
 }
@@ -308,7 +314,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t,T>>();
 		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t,T>>();
 		default:
-			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 	}
 }
@@ -354,7 +360,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		}
 	}
 
-	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
+	cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components.";
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
@@ -399,9 +405,13 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		}
 	}
 
-	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
+	cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components.";
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
