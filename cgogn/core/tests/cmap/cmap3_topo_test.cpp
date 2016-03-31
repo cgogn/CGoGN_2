@@ -190,6 +190,7 @@ TEST_F(CMap3TopoTest, add_attribute)
 
 	add_attribute<int32, CDart::ORBIT>("darts");
 	EXPECT_TRUE(check_map_integrity());
+	EXPECT_EQ(nb_darts(), 32u);
 
 	add_attribute<int32, Vertex2::ORBIT>("vertices2");
 	EXPECT_TRUE(check_map_integrity());

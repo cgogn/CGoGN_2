@@ -204,6 +204,26 @@ public:
 		return (*phi3_)[d.index];
 	}
 
+
+
+	/**
+	 * \brief phi composition
+	 * @param d
+	 * @return applied composition of phi in order of declaration
+	 */
+	template <uint64 N>
+	inline Dart phi(Dart d) const
+	{
+		static_assert(internal::check_multi_phi<N>::value_cmap3, "composition on phi1/phi2/phi3 only");
+		switch(N%10)
+		{
+			case 1 : return this->phi1(phi<N/10>(d)) ;
+			case 2 : return this->phi2(phi<N/10>(d)) ;
+			case 3 : return this->phi3(phi<N/10>(d)) ;
+			default : return d ;
+		}
+	}
+
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -482,13 +502,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2(c, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21(c, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c.dart, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -568,13 +588,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -643,14 +663,14 @@ public:
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_PHI23(e, [&func] (Dart d) { func(Face(d)); });
+		foreach_dart_of_PHI23(e.dart, [&func] (Dart d) { func(Face(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		foreach_dart_of_PHI23(e, [this, &func] (Dart d)
+		foreach_dart_of_PHI23(e.dart, [this, &func] (Dart d)
 		{
 			if (!this->is_boundary(d))
 				func(Volume(d));
@@ -1077,6 +1097,16 @@ public:
 			const Dart d2 = this->phi2(d);
 				func(Face2(d2));
 		});
+	}
+
+	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	{
+		return std::pair<Vertex,Vertex>(Vertex(e.dart),Vertex(this->phi1(e.dart)));
+	}
+
+	inline std::array<Vertex,2> verts(Edge e)
+	{
+		return {{ Vertex(e.dart),Vertex(this->phi1(e.dart)) }};
 	}
 };
 

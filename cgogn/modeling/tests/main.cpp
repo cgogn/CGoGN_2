@@ -21,21 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
-#define IO_TETGEN_IO_CPP
+#include <iostream>
 
-#include <io/mesh_generation/tetgen_io.h>
+#include "gtest/gtest.h"
 
-namespace cgogn
+int main(int argc, char **argv)
 {
+	testing::InitGoogleTest(&argc, argv);
 
-namespace io
-{
+	// Set LC_CTYPE according to the environnement variable.
+	setlocale(LC_CTYPE, "");
 
-template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-
-} // namespace io
-} // namespace cgogn
+	return RUN_ALL_TESTS();
+}
