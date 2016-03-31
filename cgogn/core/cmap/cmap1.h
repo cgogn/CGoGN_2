@@ -352,7 +352,7 @@ public:
 
 	inline uint32 degree(Vertex ) const
 	{
-		return 2;
+		return 1;
 	}
 
 	inline uint32 codegree(Face f) const
@@ -363,8 +363,9 @@ public:
 
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
+		if (codegree < 1u) return false;
 		Dart it = f.dart ;
-		for (uint32 i = 1; i < codegree; ++i)
+		for (uint32 i = 1u; i < codegree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)

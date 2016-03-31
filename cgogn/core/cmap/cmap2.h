@@ -460,18 +460,59 @@ public:
 		}
 	}
 
+protected:
+
+	/*!
+	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
+	 * \param d : a vertex of the hole
+	 * \return a vertex of the face that closes the hole
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * A face is inserted on the boundary that begin at dart d.
+	 */
+	inline Dart close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+		Dart first = this->add_dart();	// First edge of the face that will fill the hole
+		phi2_sew(d, first);				// 2-sew the new edge to the hole
+
+		Dart d_next = d;				// Turn around the hole
+		Dart d_phi1;					// to complete the face
+		do
+		{
+			do
+			{
+				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_next = phi2(d_phi1); // the next dart of the hole
+			} while (d_next != d_phi1 && d_phi1 != d);
+
+			if (d_phi1 != d)
+			{
+				Dart next = this->split_vertex_topo(first);	// Add a vertex into the built face
+				phi2_sew(d_next, next);						// and 2-sew the face to the hole
+			}
+		} while (d_phi1 != d);
+
+		return first;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
+
+public:
 
 	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
-	inline uint32 codegree(Edge) const
+	inline uint32 codegree(Edge e) const
 	{
-		return 2;
+		if (this->phi1(e.dart) == e.dart)
+			return 1;
+		else
+			return 2;
 	}
 
 	inline uint32 degree(Edge e) const

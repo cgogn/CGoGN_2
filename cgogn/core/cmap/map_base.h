@@ -150,6 +150,12 @@ protected:
 	 * Container elements management
 	 *******************************************************************************/
 
+	/**
+	 * \brief Adds a topological element of PRIM_SIZE to the topology container
+	 * \return the index of the added element
+	 * Adding a topological element consists in adding PRIM_SIZE lines
+	 * to the topological container starting from index
+	 */
 	inline uint32 add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
@@ -163,13 +169,10 @@ protected:
 	}
 
 	/**
-	 * \brief Removes a topological element of PRIM_SIZE
-	 * from the topology container
-	 * \details Removing a topological element consists in
-	 * removing PRIM_SIZE lines of the topological container starting
-	 * from index
-	 *
-	 * \param int [description]
+	 * \brief Removes a topological element of PRIM_SIZE from the topology container
+	 * \param index the index of the element to remove
+	 * Removing a topological element consists in removing PRIM_SIZE lines
+	 * of the topological container starting from index
 	 */
 	inline void remove_topology_element(uint32 index)
 	{
@@ -255,15 +258,16 @@ public:
 	}
 
 	/**
-	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
+	* \brief search an attribute for a given orbit and change its type (if size is compatible).
 	* @param attribute_name attribute name
 	* @return an AttributeHandler
+	* The first template argument is the wanted type, the second is the real type.
 	*/
 	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
 	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
+		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible cast between attributes");
 
 		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
 		return AttributeHandler<T_ASK, ORBIT>(this, ca);
@@ -325,7 +329,7 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
+		cgogn_message_assert(!this->template is_embedded<ORBIT>(), "Orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -339,8 +343,6 @@ protected:
 
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
-
-		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
 	template <Orbit ORBIT>

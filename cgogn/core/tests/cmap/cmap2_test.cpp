@@ -112,7 +112,7 @@ protected:
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off edges
+		// Sew some pairs of edges
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];

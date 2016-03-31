@@ -131,30 +131,6 @@ protected:
 	}
 
 	/*!
-	 * \brief Generate a random set of faces and put them in darts_
-	 * \return The total number of added vertices.
-	 * The face size ranges from 1 to 10.
-	 * A random dart of each face is put in the darts_ array.
-	 */
-	unsigned int add_faces(unsigned int n)
-	{
-		darts_.clear();
-		unsigned int count = 0u;
-		for (unsigned int i = 0u; i < n; ++i)
-		{
-			unsigned int m = 1u + std::rand() % 10u;
-			Dart d = add_face_topo(m);
-			count += m;
-
-			m = std::rand() % 10u;
-			while (m-- > 0u) d = phi1(d);
-
-			darts_.push_back(d);
-		}
-		return count;
-	}
-
-	/*!
 	 * \brief Generate a set of closed surfaces with arbitrary genus.
 	 */
 	void add_closed_surfaces()
@@ -169,7 +145,7 @@ protected:
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off 1-edges
+		// Sew some pairs of 1-edges
 		for (unsigned int i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
@@ -200,11 +176,40 @@ protected:
 TEST_F(CMap3TopoTest, random_map_generators)
 {
 	EXPECT_EQ(nb_darts(), 0u);
+	add_closed_surfaces();
+	EXPECT_TRUE(check_map_integrity());
+}
 
-//	add_faces(NB_MAX);
-//	EXPECT_TRUE(check_map_integrity());
+/*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap3TopoTest, add_attribute)
+{
+	add_closed_surfaces();
 
-//	add_closed_surfaces();
+	add_attribute<int32, CDart::ORBIT>("darts");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Vertex2::ORBIT>("vertices2");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Edge2::ORBIT>("edges2");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Edge::ORBIT>("edges");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face2::ORBIT>("faces2");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face::ORBIT>("faces");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Volume::ORBIT>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -215,7 +220,7 @@ TEST_F(CMap3TopoTest, random_map_generators)
  */
 TEST_F(CMap3TopoTest, phi3_sew_unsew)
 {
-	add_faces(NB_MAX);
+	add_closed_surfaces();
 
 	for (unsigned int i = 0u; i < NB_MAX; ++i)
 	{
@@ -235,7 +240,8 @@ TEST_F(CMap3TopoTest, phi3_sew_unsew)
 }
 
 /*!
- * \brief Adding a pyramid whose base has n sides build a surface with 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * \brief Adding a pyramid whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
  * The test adds some pyramides and check that the number of generated cells is correct.
  * The map integrity is not preserved (this test creates fixed points for PHI3).
  */
@@ -249,11 +255,34 @@ TEST_F(CMap3TopoTest, add_pyramid_topo)
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
 
 	add_pyramid_topo(10u);
-	EXPECT_EQ(nb_darts(), 52u);
-	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 15u);
-	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 26u);
-	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 15u);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 2u);
+	EXPECT_EQ(nb_darts(), 40u+12u);
+	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 11+4u);
+	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 11u+4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
+}
+
+/*!
+ * \brief Adding a prism whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * The test adds some prims and check that the number of generated cells is correct.
+ * The map integrity is not preserved (this test creates fixed points for PHI3).
+ */
+TEST_F(CMap3TopoTest, add_prism_topo)
+{
+	add_prism_topo(3u);
+	EXPECT_EQ(nb_darts(), 18u);
+	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 9u);
+	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	add_prism_topo(10u);
+	EXPECT_EQ(nb_darts(), 60u+18u);
+	EXPECT_EQ(nb_cells<Vertex2::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Edge2::ORBIT>(), 30u+9u);
+	EXPECT_EQ(nb_cells<Face2::ORBIT>(), 12u+5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
 }
 
 /*! \brief Cutting an edge increases the size of both incident faces and add a vertex of degree 2.

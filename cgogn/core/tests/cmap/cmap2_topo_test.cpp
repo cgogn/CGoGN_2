@@ -45,6 +45,7 @@ public:
 
 	using Inherit = CMap2<DefaultMapTraits>;
 	using MapBuilder = CMap2Builder_T<DefaultMapTraits>;
+	using CDart = CMap2TopoTest::CDart;
 	using Vertex = CMap2TopoTest::Vertex;
 	using Edge   = CMap2TopoTest::Edge;
 	using Face   = CMap2TopoTest::Face;
@@ -200,6 +201,31 @@ TEST_F(CMap2TopoTest, random_map_generators)
 	EXPECT_TRUE(check_map_integrity());
 
 	add_closed_surfaces();
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap2TopoTest, add_attribute)
+{
+	add_faces(NB_MAX);
+	add_closed_surfaces();
+
+	add_attribute<int32, CDart::ORBIT>("darts");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Edge::ORBIT>("edges");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face::ORBIT>("faces");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Volume::ORBIT>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -408,9 +434,20 @@ TEST_F(CMap2TopoTest, close_map)
 
 TEST_F(CMap2TopoTest, degree)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
+	EXPECT_EQ(codegree(Edge(f1.dart)), 1u);
+	EXPECT_EQ(degree(Edge(f1.dart)), 1u);
+	EXPECT_EQ(degree(f1), 1u);
 
-	EXPECT_EQ(codegree(f), 10u);
+	Face f2(this->add_face_topo(10u));
+	EXPECT_EQ(codegree(Edge(f2.dart)), 2u);
+	EXPECT_EQ(degree(Edge(f2.dart)), 1u);
+
+	phi2_unsew(f1.dart);
+	phi2_unsew(f2.dart);
+	phi2_sew(f1.dart, f2.dart);
+	EXPECT_EQ(degree(Edge(f1.dart)), 2u);
+	EXPECT_EQ(degree(Edge(f2.dart)), 2u);
 }
 
 #undef NB_MAX

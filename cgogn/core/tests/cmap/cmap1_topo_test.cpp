@@ -110,6 +110,22 @@ TEST_F(CMap1TopoTest, random_map_generators)
 }
 
 /*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap1TopoTest, add_attribute)
+{
+	add_vertices(NB_MAX);
+	add_faces(NB_MAX);
+
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face::ORBIT>("faces");
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is preserved.
@@ -291,12 +307,25 @@ TEST_F(CMap1TopoTest, codegree)
  */
 TEST_F(CMap1TopoTest, has_codegree)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
 
-	EXPECT_TRUE(has_codegree(f, 10u));
-	EXPECT_FALSE(has_codegree(f, 0u));
-	EXPECT_FALSE(has_codegree(f, 9u));
-	EXPECT_FALSE(has_codegree(f, 11u));
+	EXPECT_TRUE(has_codegree(f1, 1u));
+	EXPECT_FALSE(has_codegree(f1, 0u));
+	EXPECT_FALSE(has_codegree(f1, 2u));
+
+	Face f2(this->add_face_topo(2u));
+
+	EXPECT_TRUE(has_codegree(f2, 2u));
+	EXPECT_FALSE(has_codegree(f2, 0u));
+	EXPECT_FALSE(has_codegree(f2, 1u));
+	EXPECT_FALSE(has_codegree(f2, 3u));
+
+	Face f3(this->add_face_topo(10u));
+
+	EXPECT_TRUE(has_codegree(f3, 10u));
+	EXPECT_FALSE(has_codegree(f3, 0u));
+	EXPECT_FALSE(has_codegree(f3, 9u));
+	EXPECT_FALSE(has_codegree(f3, 11u));
 }
 
 #undef NB_MAX
