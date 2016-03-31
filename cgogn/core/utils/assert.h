@@ -209,8 +209,9 @@ do { 																		\
 #endif
 
 
-// no comment :-)
-
+/**
+ * Traits class to inspect function characteristics (return type, arity, parameters types)
+ */
 template <typename T>
 struct function_traits : public function_traits<decltype(&T::operator())>
 {};
@@ -219,7 +220,7 @@ template <typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const>
 // we specialize for pointers to member function
 {
-	enum { arity = sizeof...(Args) };
+	static const size_t arity = sizeof...(Args);
 	// arity is the number of arguments.
 
 	using result_type = ReturnType;

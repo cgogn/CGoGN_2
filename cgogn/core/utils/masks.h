@@ -24,6 +24,7 @@
 #ifndef CORE_UTILS_MASKS_H_
 #define CORE_UTILS_MASKS_H_
 
+#include <core/utils/definitions.h>
 #include <vector>
 
 namespace cgogn
@@ -33,8 +34,11 @@ template <typename CellType>
 class MaskCell
 {
 public:
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MaskCell);
+	inline MaskCell() {}
 	virtual ~MaskCell() {}
-	virtual void operator() (int) const final {}
+	virtual void operator() (CellType) const final {}
 
 	virtual CellType begin() const = 0;
 	virtual CellType next() const = 0;
@@ -50,7 +54,12 @@ class CellCache : public MaskCell<CellType>
 
 public:
 
-	CellCache(MAP& m) : map_(m) { update(); }
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
+	CellCache(MAP& m) : map_(m)
+	{
+		cells_.reserve(4096u);
+		update();
+	}
 
 	CellType begin() const
 	{
@@ -86,7 +95,12 @@ class BoundaryCache : public MaskCell<typename MAP::Boundary>
 
 public:
 
-	BoundaryCache(MAP& m) : map_(m) { update(); }
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(BoundaryCache);
+	BoundaryCache(MAP& m) : map_(m)
+	{
+		cells_.reserve(4096u);
+		update();
+	}
 
 	CellType begin() const
 	{
