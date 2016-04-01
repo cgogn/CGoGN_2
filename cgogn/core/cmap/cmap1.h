@@ -290,15 +290,10 @@ public:
 		return f;
 	}
 
-	/*!
-	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
-	 */
-	inline void remove_face(Face f)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
+protected:
 
-		Dart d = f.dart;
+	inline void remove_face_topo(Dart d)
+	{
 		Dart it = phi1(d);
 		while(it != d)
 		{
@@ -308,6 +303,19 @@ public:
 		}
 
 		this->remove_dart(d);
+	}
+
+public:
+
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
+	inline void remove_face(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		remove_face_topo(f.dart);
 	}
 
 protected:
@@ -350,18 +358,32 @@ public:
 		return nv;
 	}
 
+protected:
+
+	/**
+	 * \brief Remove a vertex from its face and delete it.
+	 * @param d : a dart of the vertex
+	 * The vertex that preceeds the vertex of d in the face is linked
+	 * to the successor of the vertex of d.
+	 */
+	inline void remove_vertex_topo(Dart d)
+	{
+		Dart e = phi_1(d);
+		if (e != d) phi1_unsew(e);
+		this->remove_dart(d);
+	}
+
+public:
+
 	/**
 	 * \brief Remove a vertex from its face and delete it.
 	 * @param v : a vertex
-	 * The vertex that preceeds v in the face is linked to the successor of v.
 	 */
 	inline void remove_vertex(Vertex v)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Dart e = phi_1(v.dart);
-		if (e != v.dart) phi1_unsew(e);
-		this->remove_dart(v.dart);
+		remove_vertex_topo(v.dart);
 	}
 
 protected:
@@ -391,8 +413,7 @@ protected:
 
 public:
 
-
-	inline uint32 degree(Vertex ) const
+	inline uint32 degree(Vertex) const
 	{
 		return 2;
 	}
@@ -500,7 +521,6 @@ public:
 	}
 };
 
-
 template <typename MAP_TRAITS>
 struct CMap1Type
 {
@@ -520,8 +540,6 @@ extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<D
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
-
-
 
 } // namespace cgogn
 
