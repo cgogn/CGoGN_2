@@ -59,6 +59,8 @@ inline std::string name_of_type(const T& t);
 namespace internal
 {
 
+CGOGN_CORE_API std::string demangle(const std::string& str);
+
 template <class>
 struct sfinae_true : std::true_type{};
 
@@ -93,7 +95,22 @@ inline std::string name_of_type_impl(const std::basic_string<T>&);
 template <typename T, std::size_t N>
 inline std::string name_of_type_impl(const std::array<T,N>&);
 
-CGOGN_CORE_API std::string demangle(const std::string& str);
+CGOGN_CORE_API std::string name_of_type_impl(const int8&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint8&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const int16&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint16&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const int32&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint32&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const int64&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const uint64&);
+
 
 // definitions
 
@@ -135,12 +152,6 @@ inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_
 
 #else // __GNUG__
 #ifdef _MSC_VER
-	// fix MSVC displaying "__int64" instead of long long
-	if (std::is_same<T, long long>::value)
-		return "long long";
-	if (std::is_same<T, unsigned long long>::value)
-		return "unsigned long long";
-
 	// removing all "class " and "struct" from type_name
 	{
 		std::regex regex_class("class ", std::regex_constants::ECMAScript);
@@ -186,6 +197,8 @@ inline std::string name_of_type(const T& t)
 {
 	return internal::name_of_type_impl(t);
 }
+
+
 
 } // namespace cgogn
 

@@ -39,7 +39,7 @@ namespace rendering
 ShaderSimpleColor* TopoRender::shader_cpv_ = nullptr;
 ShaderBoldLine* TopoRender::shader_bl_ = nullptr;
 ShaderRoundPoint* TopoRender::shader_rp_ = nullptr;
-int TopoRender::nb_instances_ = 0;
+int32 TopoRender::nb_instances_ = 0;
 
 TopoRender::TopoRender(QOpenGLFunctions_3_3_Core* ogl33):
 	ogl33_(ogl33),
@@ -87,7 +87,7 @@ TopoRender::~TopoRender()
 
 void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending)
 {
-	unsigned int lw = 2.0;
+	uint32 lw = 2.0;
 	if(with_blending)
 	{
 		ogl33_->glEnable(GL_BLEND);

@@ -48,16 +48,16 @@ class CGOGN_RENDERING_API ShaderExplodeVolumesLine : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_expl_v_;
-	int unif_plane_clip_;
-	int unif_color_;
+	GLint unif_expl_v_;
+	GLint unif_plane_clip_;
+	GLint unif_color_;
 
 
 public:
 
 	ShaderExplodeVolumesLine();
 
-	void set_explode_volume(float x);
+	void set_explode_volume(float32 x);
 
 	void set_plane_clip(const QVector4D& plane);
 
@@ -69,7 +69,7 @@ public:
 	 * @param vbo_pos pointer on position vbo (XYZ)
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos);
+	bool set_vao(uint32 i, VBO* vbo_pos);
 };
 
 } // namespace rendering

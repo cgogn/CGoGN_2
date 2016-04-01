@@ -183,7 +183,7 @@ void ShaderExplodeVolumes::set_light_position(const QVector3D& l)
 }
 
 
-void ShaderExplodeVolumes::set_explode_volume(float x)
+void ShaderExplodeVolumes::set_explode_volume(float32 x)
 {
 		prg_.setUniformValue(unif_expl_v_, x);
 }
@@ -194,11 +194,11 @@ void ShaderExplodeVolumes::set_plane_clip(const QVector4D& plane)
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
-bool ShaderExplodeVolumes::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
+bool ShaderExplodeVolumes::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

@@ -38,7 +38,7 @@
 namespace cgogn
 {
 
-enum Orbit: unsigned int
+enum Orbit: uint32
 {
 	DART = 0,
 	PHI1,
@@ -52,7 +52,7 @@ enum Orbit: unsigned int
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
 
-static const unsigned int EMBNULL = UINT_MAX;
+static const uint32 EMBNULL = UINT_MAX;
 
 inline std::string orbit_name(Orbit orbit)
 {
@@ -76,10 +76,6 @@ inline std::string orbit_name(Orbit orbit)
 
 /**
  * \brief Cellular typing
- *
- * \details warning to automatic conversion
- * cell -> Dart (or const Dart&) ok
- * Dart -> Cell (or const Cell&) ok
  * \tparam ORBIT The type of the orbit used to create the Cell
  */
 template <Orbit ORBIT_VAL>
@@ -119,11 +115,6 @@ public:
 	//TODO
 	// Cell(Cell<ORBIT>&& ) = delete;
 
-	/**
-	 * \brief Cast operator.
-	 * \return the dart 
-	 */
-	inline operator Dart() const { return dart; }
 
 	/**
 	 * \brief Tests the validity of the cell.

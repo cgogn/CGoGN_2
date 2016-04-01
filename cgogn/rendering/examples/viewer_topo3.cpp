@@ -27,6 +27,7 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
+#include <core/utils/logger.h>
 #include <core/cmap/cmap3.h>
 #include <io/map_import.h>
 #include <geometry/algos/bounding_box.h>
@@ -41,9 +42,10 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+using namespace cgogn::numerics;
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
@@ -84,7 +86,7 @@ private:
 	bool edge_rendering_;
 	bool topo_rendering_;
 
-	float expl_;
+	float32 expl_;
 
 };
 
@@ -104,6 +106,11 @@ void Viewer::import(const std::string& volumeMesh)
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
 	vertex_position_ = map_.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+	if (!vertex_position_.is_valid())
+	{
+		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
@@ -111,6 +118,8 @@ void Viewer::import(const std::string& volumeMesh)
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
+
+	map_.check_map_integrity();
 }
 
 Viewer::~Viewer()
@@ -187,7 +196,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 		std::vector<Map3::Volume> selected;
 		cgogn::geometry::picking_volumes<Vec3>(map_, vertex_position_, A, B, selected);
-		std::cout << "Selected volumes: " << selected.size() << std::endl;
+		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{
 			drawer_->line_width(2.0);
@@ -197,7 +206,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_);
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
-			for (unsigned int i = 1u; i<selected.size(); ++i)
+			for (uint32 i = 1u; i<selected.size(); ++i)
 				cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_);
 			drawer_->end();
 		}
@@ -268,9 +277,9 @@ int main(int argc, char** argv)
 	std::string volumeMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("nine_hexas.vtu");
-		std::cout << "Using default mesh : " << volumeMesh << std::endl;
+		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
+		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
+		cgogn_log_debug("viewer_topo3") << "Using default mesh \"" << volumeMesh << "\".";
 	}
 	else
 		volumeMesh = std::string(argv[1]);

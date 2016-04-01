@@ -51,8 +51,8 @@ class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_color_;
-	int unif_width_;
+	GLint unif_color_;
+	GLint unif_width_;
 
 public:
 
@@ -68,7 +68,7 @@ public:
 	 * @brief set the width of lines (call before each draw)
 	 * @param w width in pixel
 	 */
-	void set_width(float w);
+	void set_width(float32 w);
 
 	/**
 	 * @brief set a vao configuration
@@ -77,7 +77,7 @@ public:
 	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_color=NULL, unsigned int stride=0, unsigned first=0);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL, uint32 stride=0, unsigned first=0);
 };
 
 } // namespace rendering

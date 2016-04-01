@@ -27,6 +27,7 @@
 #include <climits>
 #include <string>
 #include <iostream>
+#include <core/utils/definitions.h>
 
 /**
  * \file cgogn/core/basic/dart.h
@@ -40,13 +41,13 @@ namespace cgogn
  */
 struct Dart
 {
-	// MSVC doesn't support  std::numeric_limits<unsigned int>::max() when declaring static const variables
-	static const unsigned int INVALID_INDEX = UINT_MAX;
+	// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+	static const uint32 INVALID_INDEX = UINT_MAX;
 
 	/**
 	 * \brief the value of a dart.
 	 */
-	unsigned int index;
+	uint32 index;
 
 	/**
 	 * \brief Creates a new nil Dart
@@ -64,7 +65,7 @@ struct Dart
 	 *
 	 * \param[in] v the value of the new dart
 	 */
-	inline explicit Dart(unsigned int v) : index(v)
+	inline explicit Dart(uint32 v) : index(v)
 	{}
 
 	/**
@@ -109,20 +110,17 @@ struct Dart
 	inline bool operator!=(Dart rhs) const { return index != rhs.index; }
 
 // To remove
-	// operator < is needed if we want to use std::set<Dart>
+// operator < is needed if we want to use std::set<Dart>
 //	inline bool operator<(Dart rhs) const { return index < rhs.index; }
-//	/**
-//	 * \brief Prints a dart to a stream.
-//	 * \param[out] out the stream to print on
-//	 * \param[in] rhs the dart to print
-//	 */
 
-	// -1 should be less system dependent
-	inline friend std::ostream& operator<<(std::ostream &out, const Dart& rhs) {
-		if (rhs.is_nil())
-			return out << -1;
-		else
-			return out << rhs.index;
+	/**
+	 * \brief Prints a dart to a stream.
+	 * \param[out] out the stream to print on
+	 * \param[in] rhs the dart to print
+	 */
+	inline friend std::ostream& operator<<(std::ostream &out, const Dart& rhs)
+	{
+		return out << rhs.index;
 	}
 
 	/**
@@ -130,8 +128,10 @@ struct Dart
 	 * \param[in] in the stream to read from
 	 * \param[out] rhs the dart read
 	 */
-	inline friend std::istream& operator>>(std::istream &in, Dart& rhs) {
-		in >> rhs.index; return in;
+	inline friend std::istream& operator>>(std::istream &in, Dart& rhs)
+	{
+		in >> rhs.index;
+		return in;
 	}
 };
 

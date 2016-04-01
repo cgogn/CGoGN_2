@@ -30,6 +30,7 @@
 #include <iostream>
 #include <climits>
 
+#include <core/utils/logger.h>
 #include <core/utils/endian.h>
 #include <geometry/algos/normal.h>
 #include <geometry/algos/ear_triangulation.h>
@@ -59,7 +60,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_off") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -72,9 +73,9 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
-	unsigned int count = 0;
+	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -89,11 +90,11 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	});
 
 	// second pass to save primitives
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
-		unsigned int valence = 0;
+		uint32 valence = 0;
 		prim.clear();
 
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -102,7 +103,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 			++valence;
 		});
 		fp << valence;
-		for(unsigned int i: prim)
+		for(uint32 i: prim)
 			fp << " " << i;
 		fp << std::endl;
 
@@ -130,31 +131,31 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_off_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
 	fp << "OFF BINARY"<< std::endl;
 
-	unsigned int nb_cells[3];
+	uint32 nb_cells[3];
 	nb_cells[0] = swap_endianness_native_big(map.template nb_cells<Vertex::ORBIT>());
 	nb_cells[1] = swap_endianness_native_big(map.template nb_cells<Vertex::ORBIT>());
 	nb_cells[2] = 0;
 
-	fp.write(reinterpret_cast<char*>(nb_cells),3*sizeof(unsigned int));
+	fp.write(reinterpret_cast<char*>(nb_cells),3*sizeof(uint32));
 
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 
 	ids.set_all_container_values(UINT_MAX);
 
-	unsigned int count = 0;
+	uint32 count = 0;
 
-	static const unsigned int BUFFER_SZ = 1024*1024;
+	static const uint32 BUFFER_SZ = 1024*1024;
 
-	std::vector<float> buffer_pos;
+	std::vector<float32> buffer_pos;
 	buffer_pos.reserve(BUFFER_SZ+3);
 
 	map.template foreach_cell([&] (Face f)
@@ -166,8 +167,8 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 				ids[v] = count++;
 				VEC3 P = position[v];
 				// VEC3 can be double !
-				float Pf[3]={float(P[0]),float(P[1]),float(P[2])};
-				unsigned int* ui_vec = reinterpret_cast<unsigned int*>(Pf);
+				float32 Pf[3]={float32(P[0]),float32(P[1]),float32(P[2])};
+				uint32* ui_vec = reinterpret_cast<uint32*>(Pf);
 				ui_vec[0] = swap_endianness_native_big(ui_vec[0]);
 				ui_vec[1] = swap_endianness_native_big(ui_vec[1]);
 				ui_vec[2] = swap_endianness_native_big(ui_vec[2]);
@@ -178,7 +179,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 
 				if (buffer_pos.size() >= BUFFER_SZ)
 				{
-					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float));
+					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
 					buffer_pos.clear();
 				}
 			}
@@ -186,20 +187,20 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	});
 	if (!buffer_pos.empty())
 	{
-		fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float));
+		fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
 		buffer_pos.clear();
 		buffer_pos.shrink_to_fit();
 	}
 
 	// second pass to save primitives
-	std::vector<unsigned int> buffer_prims;
+	std::vector<uint32> buffer_prims;
 	buffer_prims.reserve(BUFFER_SZ+128);// + 128 to avoid re-allocations
 
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
-		unsigned int valence = 0;
+		uint32 valence = 0;
 		prim.clear();
 
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -209,18 +210,18 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 		});
 
 		buffer_prims.push_back(swap_endianness_native_big(valence));
-		for(unsigned int i: prim)
+		for(uint32 i: prim)
 			buffer_prims.push_back(swap_endianness_native_big(i));
 
 		if (buffer_prims.size() >= BUFFER_SZ)
 		{
-			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(unsigned int));
+			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(uint32));
 			buffer_prims.clear();
 		}
 	});
 	if (!buffer_prims.empty())
 	{
-		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(unsigned int));
+		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(uint32));
 		buffer_prims.clear();
 		buffer_prims.shrink_to_fit();
 	}
@@ -248,7 +249,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_obj") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -259,9 +260,9 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two passes of traversal to avoid huge buffer (with same performance);
 	fp << std::endl << "# vertices" << std::endl;
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
-	unsigned int count = 1;
+	uint32 count = 1;
 	map.template foreach_cell([&] (Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -277,7 +278,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 	fp << std::endl << "# faces" << std::endl;
 	// second pass to save primitives
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
@@ -312,7 +313,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_obj") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -322,10 +323,10 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	fp << std::endl << "# vertices" << std::endl;
 	// two passes of traversal to avoid huge buffer (with same performance);
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
-	unsigned int count = 1;
-	std::vector<unsigned int> indices;
+	uint32 count = 1;
+	std::vector<uint32> indices;
 	indices.reserve(map.template nb_cells<Vertex::ORBIT>());
 	map.template foreach_cell([&] (Face f)
 	{
@@ -343,7 +344,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 	fp << std::endl << "# normals" << std::endl;
 	// save normals
-	for (unsigned int i: indices)
+	for (uint32 i: indices)
 	{
 		const VEC3& N = normal[i];
 		fp <<"vn " << N[0] << " " << N[1] << " " << N[2] << std::endl;
@@ -351,7 +352,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 	fp << std::endl << "# faces" << std::endl;
 	// second pass to save primitives
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
@@ -379,7 +380,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_stl_ascii") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -388,7 +389,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 
 	fp << "solid" << filename << std::endl;
 
-	std::vector<unsigned int> table_indices;
+	std::vector<uint32> table_indices;
 	table_indices.reserve(256);
 
 	map.template foreach_cell([&] (Face f)
@@ -410,7 +411,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 		{
 			table_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
-			for(unsigned int i=0; i<table_indices.size(); i+=3)
+			for(uint32 i=0; i<table_indices.size(); i+=3)
 			{
 				const VEC3& A = position[table_indices[i]];
 				const VEC3& B = position[table_indices[i+1]];
@@ -455,40 +456,40 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_stl_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
 	// header + nb triangles
-	unsigned int header[21];
+	uint32 header[21];
 	header[20] = map.template nb_cells<Face::ORBIT>();
-	fp.write(reinterpret_cast<char*>(header),21*sizeof(unsigned int));
+	fp.write(reinterpret_cast<char*>(header),21*sizeof(uint32));
 
 	// buffer
-	std::array<float,(3*4+1)> buffer_floats; // +1 for #@! ushort at end of each triangle
+	std::array<float32,(3*4+1)> buffer_floats; // +1 for #@! ushort at end of each triangle
 	buffer_floats[12] = 0.0f;
 
 	// local function for writing a triangle
 	auto write_tri = [&] (const VEC3& A, const VEC3& B, const VEC3& C)
 	{
 		VEC3 N = geometry::triangle_normal(A,B,C);
-		unsigned int i=0;
-		for (unsigned int j=0; j<3; ++j)
-			buffer_floats[i++]= float(N[j]);
-		for (unsigned int j=0; j<3; ++j)
-			buffer_floats[i++]= float(A[j]);
-		for (unsigned int j=0; j<3; ++j)
-			buffer_floats[i++]= float(B[j]);
-		for (unsigned int j=0; j<3; ++j)
-			buffer_floats[i++]= float(C[j]);
-		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float)+2); // +2 for #@! ushort at end of each triangle
+		uint32 i=0;
+		for (uint32 j=0; j<3; ++j)
+			buffer_floats[i++]= float32(N[j]);
+		for (uint32 j=0; j<3; ++j)
+			buffer_floats[i++]= float32(A[j]);
+		for (uint32 j=0; j<3; ++j)
+			buffer_floats[i++]= float32(B[j]);
+		for (uint32 j=0; j<3; ++j)
+			buffer_floats[i++]= float32(C[j]);
+		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float32)+2); // +2 for #@! ushort at end of each triangle
 	};
 
 	// indices for ear triangulation
-	std::vector<unsigned int> table_indices;
+	std::vector<uint32> table_indices;
 	table_indices.reserve(768);
 
-	unsigned int nb_tri = 0;
+	uint32 nb_tri = 0;
 
 	// write face cutted in triangle if necessary
 	map.template foreach_cell([&] (Face f)
@@ -508,7 +509,7 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 		{
 			table_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
-			for(unsigned int i=0; i<table_indices.size(); i+=3)
+			for(uint32 i=0; i<table_indices.size(); i+=3)
 			{
 				const VEC3& A = position[table_indices[i]];
 				const VEC3& B = position[table_indices[i+1]];
@@ -523,7 +524,7 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	if (nb_tri != header[20])
 	{
 		fp.seekp(80);
-		fp.write(reinterpret_cast<char*>(&nb_tri),sizeof(unsigned int));
+		fp.write(reinterpret_cast<char*>(&nb_tri),sizeof(uint32));
 	}
 
 	fp.close();
@@ -540,11 +541,11 @@ std::string nameOfTypePly(const T& v)
 template <> inline std::string nameOfTypePly(const char&) { return "int8"; }
 template <> inline std::string nameOfTypePly(const short int&) { return "int16"; }
 template <> inline std::string nameOfTypePly(const int&) { return "int"; }
-template <> inline std::string nameOfTypePly(const unsigned int&) { return "uint"; }
+template <> inline std::string nameOfTypePly(const uint32&) { return "uint"; }
 template <> inline std::string nameOfTypePly(const unsigned char&) { return "uint8"; }
 template <> inline std::string nameOfTypePly(const unsigned short int&) { return "uint16"; }
-template <> inline std::string nameOfTypePly(const float&) { return "float"; }
-template <> inline std::string nameOfTypePly(const double&) { return "float64"; }
+template <> inline std::string nameOfTypePly(const float32&) { return "float32"; }
+template <> inline std::string nameOfTypePly(const float64&) { return "float64"; }
 
 template <typename VEC3, typename MAP>
 bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
@@ -552,7 +553,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_ply") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -575,9 +576,9 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
-	unsigned int count = 0;
+	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -592,11 +593,11 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	});
 
 	// second pass to save primitives
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
-		unsigned int valence = 0;
+		uint32 valence = 0;
 		prim.clear();
 
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -605,7 +606,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 			++valence;
 		});
 		fp << valence;
-		for(unsigned int i: prim)
+		for(uint32 i: prim)
 			fp << " " << i;
 		fp << std::endl;
 
@@ -623,7 +624,7 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
-		std::cout << "Unable to open file " << filename << std::endl;
+		cgogn_log_warning("export_ply_bin") << "Unable to open file \"" << filename << "\".";
 		return false;
 	}
 
@@ -646,13 +647,13 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<unsigned int>  ids = map.template add_attribute<unsigned int, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 
 	ids.set_all_container_values(UINT_MAX);
 
-	unsigned int count = 0;
+	uint32 count = 0;
 
-	static const unsigned int BUFFER_SZ = 1024*1024;
+	static const uint32 BUFFER_SZ = 1024*1024;
 
 	std::vector<VEC3> buffer_pos;
 	buffer_pos.reserve(BUFFER_SZ);
@@ -682,14 +683,14 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	}
 
 	// second pass to save primitives
-	std::vector<unsigned int> buffer_prims;
+	std::vector<uint32> buffer_prims;
 	buffer_prims.reserve(BUFFER_SZ+128);// + 128 to avoid re-allocations
 
-	std::vector<unsigned int> prim;
+	std::vector<uint32> prim;
 	prim.reserve(20);
 	map.template foreach_cell([&] (Face f)
 	{
-		unsigned int valence = 0;
+		uint32 valence = 0;
 		prim.clear();
 
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -699,18 +700,18 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 		});
 
 		buffer_prims.push_back(valence);
-		for(unsigned int i: prim)
+		for(uint32 i: prim)
 			buffer_prims.push_back(i);
 
 		if (buffer_prims.size() >= BUFFER_SZ)
 		{
-			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(unsigned int));
+			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
 			buffer_prims.clear();
 		}
 	});
 	if (!buffer_prims.empty())
 	{
-		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(unsigned int));
+		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
 		buffer_prims.clear();
 		buffer_prims.shrink_to_fit();
 	}

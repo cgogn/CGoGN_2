@@ -3,12 +3,6 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
-if (ZLIB_FOUND)
-	add_definitions("-DZLIB_CONST")
-	add_definitions("-DCGOGN_WITH_ZLIB")
-endif()
-
-
 
 set(HEADER_FILES
 	surface_import.h
@@ -26,6 +20,10 @@ set(HEADER_FILES
 	ply_io.h
 	lm6_io.h
 	mesh_io_gen.h
+	msh_io.h
+	tetgen_io.h
+	nastran_io.h
+	tet_io.h
 )
 
 set(SOURCE_FILES
@@ -34,6 +32,16 @@ set(SOURCE_FILES
 	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
+	vtk_io.cpp
+	lm6_io.cpp
+	data_io.cpp
+	msh_io.cpp
+	obj_io.cpp
+	off_io.cpp
+	ply_io.cpp
+	tetgen_io.cpp
+	nastran_io.cpp
+	tet_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -48,6 +56,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include/cgogn/io>
 )
+
+if (${ZLIB_FOUND})
+	target_compile_definitions(${PROJECT_NAME} PUBLIC -DZLIB_CONST)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC -DCGOGN_WITH_ZLIB)
+endif()
 
 target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply lm6 ${ZLIB_LIBRARIES})
 

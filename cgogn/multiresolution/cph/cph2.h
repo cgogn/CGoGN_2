@@ -45,44 +45,38 @@ public:
 
 protected:
 
-	ChunkArray<unsigned int>* edge_id_;
+	ChunkArray<uint32>* edge_id_;
 
 public:
 
 	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		edge_id_ = topology.template add_attribute<unsigned int>("edgeId");
+		edge_id_ = topology.template add_attribute<uint32>("edgeId");
 	}
 
-	~CPH2() override
-	{
-	}
-
-	CPH2(Self const&) = delete;
-	CPH2(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH2);
+	~CPH2() override {}
 
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *
 	 ***************************************************/
 
-	inline unsigned int get_edge_id(Dart d) const
+	inline uint32 get_edge_id(Dart d) const
 	{
 		return (*edge_id_)[d.index] ;
 	}
 
-	inline void set_edge_id(Dart d, unsigned int i)
+	inline void set_edge_id(Dart d, uint32 i)
 	{
 		(*edge_id_)[d.index] = i ;
 	}
 
-	inline unsigned int get_tri_refinement_edge_id(Dart d, Dart e) const
+	inline uint32 get_tri_refinement_edge_id(Dart d, Dart e) const
 	{
-		unsigned int d_id = get_edge_id(d);
-		unsigned int e_id = get_edge_id(e);
+		uint32 d_id = get_edge_id(d);
+		uint32 e_id = get_edge_id(e);
 
-		unsigned int id = d_id + e_id;
+		uint32 id = d_id + e_id;
 
 		if(id == 0u)
 			return 1u;
@@ -99,9 +93,9 @@ public:
 		return 0u;
 	}
 
-	inline unsigned int get_quad_refinement_edge_id(Dart d) const
+	inline uint32 get_quad_refinement_edge_id(Dart d) const
 	{
-		unsigned int e_id = get_edge_id(d);
+		uint32 e_id = get_edge_id(d);
 
 		if(e_id == 0u)
 			return 1u;

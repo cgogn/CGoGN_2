@@ -47,8 +47,8 @@ class CGOGN_RENDERING_API ShaderVectorPerVertex : public ShaderProgram
 	};
 
 	// uniform ids
-	int unif_color_;
-	int unif_length_;
+	GLint unif_color_;
+	GLint unif_length_;
 
 public:
 
@@ -64,7 +64,7 @@ public:
 	 * @brief set length of normal
 	 * @param l length
 	 */
-	void set_length(float l);
+	void set_length(float32 l);
 
 	/**
 	 * @brief set a vao configuration
@@ -73,7 +73,7 @@ public:
 	 * @param vbo_norm pointer on normal vbo
 	 * @return true if ok
 	 */
-	bool set_vao(unsigned int i, VBO* vbo_pos,  VBO* vbo_norm);
+	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_norm);
 };
 
 } // namespace rendering

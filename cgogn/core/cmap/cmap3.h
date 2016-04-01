@@ -37,7 +37,7 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int PRIM_SIZE = 1;
+	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -98,13 +98,10 @@ public:
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3_T);
+
 	~CMap3_T() override
 	{}
-
-	CMap3_T(Self const&) = delete;
-	CMap3_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	/*!
 	 * \brief Check the integrity of embedding information
@@ -156,12 +153,32 @@ protected:
 		(*phi3_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI3_PHI1 should be an involution without fixed point and
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi3(phi3(d)) == d &&
 				phi3(d) != d &&
-				phi3(this->phi1(phi3(this->phi1(d)))) == d);
+				phi3(this->phi1(phi3(this->phi1(d)))) == d &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * The boundary is a 2-manyfold: the boundary marker is the same
+	 * for all darts of a face and for two adjacent faces.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return (( this->is_boundary(d) == this->is_boundary(this->phi1(d))  ) &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
 	}
 
 	/**
@@ -207,96 +224,30 @@ public:
 		return (*phi3_)[d.index];
 	}
 
+
+
+	/**
+	 * \brief phi composition
+	 * @param d
+	 * @return applied composition of phi in order of declaration
+	 */
+	template <uint64 N>
+	inline Dart phi(Dart d) const
+	{
+		static_assert(internal::check_multi_phi<N>::value_cmap3, "composition on phi1/phi2/phi3 only");
+		switch(N%10)
+		{
+			case 1 : return this->phi1(phi<N/10>(d)) ;
+			case 2 : return this->phi2(phi<N/10>(d)) ;
+			case 3 : return this->phi3(phi<N/10>(d)) ;
+			default : return d ;
+		}
+	}
+
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
-protected:
-
-	/**
-	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	inline Dart add_pyramid_topo(unsigned int n)
-	{
-		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
-
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(n);
-
-		// creation of triangles around circumference and storing vertices
-		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
-
-		// sewing the triangles
-		for (unsigned int i = 0u; i < n-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1]);
-			this->phi2_sew(d,e);
-		}
-
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
-
-		// sewing the bottom face
-		Dart base = this->Inherit::Inherit::add_face_topo(n);
-		const Dart dres = base;
-		for(unsigned int i = 0u; i < n; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], base);
-			base = this->phi1(base);
-		}
-
-		// return a dart from the base
-		return dres;
-	}
-
-	/**
-	 * @brief create_prism_topo : create a prism whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	Dart add_prism_topo(unsigned int n)
-	{
-		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(n*2u);
-
-		// creation of quads around circunference and storing vertices
-		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
-
-		// storing a dart from the vertex pointed by phi1(phi1(d))
-		for (unsigned int i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-
-		// sewing the quads
-		for (unsigned int i = 0u; i < n-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
-			this->phi2_sew(d,e);
-		}
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
-
-		// sewing the top & bottom faces
-		Dart top = this->Inherit::Inherit::add_face_topo(n);
-		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
-		const Dart dres = top;
-		for(unsigned int i = 0u; i < n; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], top);
-			this->phi2_sew(m_tableVertDarts[n+i], bottom);
-			top = this->phi1(top);
-			bottom = this->phi_1(bottom);
-		}
-
-		// return a dart from the base
-		return dres;
-	}
 
 	/**
 	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
@@ -323,56 +274,56 @@ protected:
 
 public:
 
-	inline unsigned int degree(Vertex2 v) const
+	inline uint32 degree(Vertex2 v) const
 	{
 		return Inherit::degree(v);
 	}
 
-	inline unsigned int degree(Vertex v) const
+	inline uint32 degree(Vertex v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_edge(v, [&result] (Edge) { ++result; });
 		return result;
 	}
 
-	inline unsigned int codegree(Edge2 e) const
+	inline uint32 codegree(Edge2 e) const
 	{
 		return Inherit::codegree(e);
 	}
 
-	inline unsigned int degree(Edge2 e) const
+	inline uint32 degree(Edge2 e) const
 	{
 		return Inherit::degree(e);
 	}
 
-	inline unsigned int codegree(Edge e) const
+	inline uint32 codegree(Edge) const
 	{
 		return 2;
 	}
 
-	inline unsigned int degree(Edge e) const
+	inline uint32 degree(Edge e) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(e, [&result] (Face) { ++result; });
 		return result;
 	}
 
-	inline unsigned int codegree(Face2 f) const
+	inline uint32 codegree(Face2 f) const
 	{
 		return Inherit::codegree(f);
 	}
 
-	inline unsigned int degree(Face2 f) const
+	inline uint32 degree(Face2 f) const
 	{
 		return Inherit::degree(f);
 	}
 
-	inline unsigned int codegree(Face f) const
+	inline uint32 codegree(Face f) const
 	{
 		return codegree(Face2(f.dart));
 	}
 
-	inline unsigned int degree(Face f) const
+	inline uint32 degree(Face f) const
 	{
 		if (this->is_boundary(f.dart) || this->is_boundary(phi3(f.dart)))
 			return 1;
@@ -380,19 +331,19 @@ public:
 			return 2;
 	}
 
-	inline unsigned int codegree(Volume v) const
+	inline uint32 codegree(Volume v) const
 	{
-		unsigned int result = 0;
+		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
 		return result;
 	}
 
-	inline bool has_codegree(Face2 f, unsigned int codegree) const
+	inline bool has_codegree(Face2 f, uint32 codegree) const
 	{
 		return Inherit::has_codegree(f, codegree);
 	}
 
-	inline bool has_codegree(Face f, unsigned int codegree) const
+	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		return Inherit::has_codegree(Face2(f.dart), codegree);
 	}
@@ -410,7 +361,7 @@ protected:
 		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
-		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			const Dart curr_dart = marked_darts->operator [](i);
 			f(curr_dart);
@@ -472,13 +423,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1(c, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2(c, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21(c, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2(c.dart, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3(c.dart, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -490,7 +441,7 @@ protected:
 		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
 
 		marker.mark(d);
-		for(unsigned int i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			const Dart curr_dart = marked_darts->operator [](i);
 			if (!f(curr_dart))
@@ -558,13 +509,13 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c, f); break;
-			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c, f); break;
-			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c, f); break;
-			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c, f); break;
-			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c, f); break;
-			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c, f); break;
+			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI2: this->foreach_dart_of_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: this->foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
+			case Orbit::PHI1_PHI3: foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
+			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
+			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -633,14 +584,14 @@ public:
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		foreach_dart_of_PHI23(e, [&func] (Dart d) { func(Face(d)); });
+		foreach_dart_of_PHI23(e.dart, [&func] (Dart d) { func(Face(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
-		foreach_dart_of_PHI23(e, [this, &func] (Dart d)
+		foreach_dart_of_PHI23(e.dart, [this, &func] (Dart d)
 		{
 			if (!this->is_boundary(d))
 				func(Volume(d));
@@ -1009,14 +960,14 @@ public:
 	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
+		foreach_dart_of_orbit(v, [this, &func] (Dart vd)
 		{
 			Dart vd1 = this->phi1(vd);
-			this->foreach_dart_of_orbit(Face2(vd), [&f, vd, vd1] (Dart fd)
+			this->foreach_dart_of_orbit(Face2(vd), [&func, vd, vd1] (Dart fd)
 			{
 				// skip Vertex2 v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
-					f(Vertex2(fd));
+					func(Vertex2(fd));
 			});
 		});
 	}
@@ -1031,13 +982,13 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [this, &func] (Dart ed)
 		{
-			this->foreach_dart_of_orbit(Face2(ed), [&f, ed] (Dart fd)
+			this->foreach_dart_of_orbit(Face2(ed), [&func, ed] (Dart fd)
 			{
 				// skip Edge2 e itself
 				if (fd != ed)
-					f(Edge2(fd));
+					func(Edge2(fd));
 			});
 		});
 	}
@@ -1067,6 +1018,16 @@ public:
 			const Dart d2 = this->phi2(d);
 				func(Face2(d2));
 		});
+	}
+
+	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	{
+		return std::pair<Vertex,Vertex>(Vertex(e.dart),Vertex(this->phi1(e.dart)));
+	}
+
+	inline std::array<Vertex,2> verts(Edge e)
+	{
+		return {{ Vertex(e.dart),Vertex(this->phi1(e.dart)) }};
 	}
 };
 

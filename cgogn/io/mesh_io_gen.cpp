@@ -26,6 +26,7 @@
 #include <istream>
 #include <iostream>
 
+#include <core/utils/logger.h>
 #include <io/mesh_io_gen.h>
 
 namespace cgogn
@@ -47,7 +48,7 @@ bool MeshImportGen::import_file(const std::string& filename)
 		std::ifstream fp(filename.c_str(), std::ios::in);
 		if (!fp.good())
 		{
-			std::cerr << "MeshImportGen::import_file : Unable to open file \"" << filename << "\"" << std::endl;
+			cgogn_log_warning("MeshImportGen::import_file") << "Unable to open file \"" << filename << "\"";
 			return false;
 		}
 	}

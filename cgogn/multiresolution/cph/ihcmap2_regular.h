@@ -44,14 +44,9 @@ public:
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Regular_T() : Inherit()
-	{}
-
-	IHCMap2Regular_T(const Self&) = delete;
-	IHCMap2Regular_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~IHCMap2Regular_T() = default;
+	inline IHCMap2Regular_T() : Inherit() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Regular_T);
+	inline ~IHCMap2Regular_T() {}
 
 	/*******************************************************************************
 	 * Low-level topological operations
@@ -72,25 +67,25 @@ public:
 
 	inline void add_triangular_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
@@ -100,7 +95,7 @@ public:
 			// insert a new edge
 			//			Inherit::cut_face(dd, e) ;
 
-			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			uint32 id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
 			Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
@@ -124,25 +119,25 @@ public:
 
 	inline void add_quadrangular_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
@@ -155,7 +150,7 @@ public:
 			Dart ne2 = Inherit::phi2(ne) ;
 			//			Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+			uint32 id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id) ;
 			Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 
@@ -183,32 +178,32 @@ public:
 
 	inline void add_mixed_level()
 	{
-		unsigned int cur = Inherit::get_current_level() ;
+		uint32 cur = Inherit::get_current_level() ;
 
 		Inherit::set_current_level(Inherit::get_maximum_level() + 1) ;
 
 		//cut edges
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Edge e)
 		{
-			Dart dd = Inherit::phi2(e);
+			Dart dd = Inherit::phi2(e.dart);
 			//			Inherit::cut_edge(e);
 
-			unsigned int eid = Inherit::get_edge_id(e);
-			Inherit::set_edge_id(Inherit::phi1(e), eid);
+			uint32 eid = Inherit::get_edge_id(e.dart);
+			Inherit::set_edge_id(Inherit::phi1(e.dart), eid);
 			Inherit::set_edge_id(Inherit::phi1(dd), eid);
 		});
 
 		//cut faces
 		Inherit::template foreach_cell<TraversalStrategy::FORCE_DART_MARKING>([&] (typename Inherit::Face d)
 		{
-			Dart old = d ;
+			Dart old = d.dart ;
 
 			if(Inherit::get_dart_level(old) == Inherit::get_maximum_level())
 				old = Inherit::phi1(old) ;
 
-			unsigned int cur = Inherit::get_current_level();
+			uint32 cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur - 1);
-			unsigned int degree = Inherit::face_degree(old) ;
+			uint32 degree = Inherit::face_degree(old) ;
 			Inherit::set_current_level(cur);
 
 			if(degree == 3)
@@ -218,7 +213,7 @@ public:
 				// insert a new edge
 				//				Inherit::cut_face(dd, e) ;
 
-				unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+				uint32 id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 				Inherit::set_edge_id(Inherit::phi_1(dd), id) ;		// set the edge id of the inserted
 				Inherit::set_edge_id(Inherit::phi_1(e), id) ;		// edge to the next available id
 
@@ -246,7 +241,7 @@ public:
 				Dart ne2 = Inherit::phi2(ne) ;
 				//				Inherit::cut_edge(ne) ;				// cut the new edge to insert the central vertex
 
-				unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+				uint32 id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 				Inherit::set_edge_id(ne, id) ;
 				Inherit::set_edge_id(Inherit::phi2(ne), id) ;			// set the edge id of the inserted
 
@@ -276,7 +271,7 @@ protected:
 	inline Face add_face_update_emb(Face f)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Regular_T::add_face_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Regular_T::add_face_update_emb") << "Method is not implemented yet.";
 		return f;
 	}
 };

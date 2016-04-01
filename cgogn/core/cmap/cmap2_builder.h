@@ -47,11 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
-	CMap2Builder_T(const Self&) = delete;
-	CMap2Builder_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
-	inline ~CMap2Builder_T() = default;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
 
@@ -68,7 +64,7 @@ public:
 	}
 
 	template <class CellType>
-	inline void set_embedding(Dart d, unsigned int emb)
+	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
 	}
@@ -89,43 +85,14 @@ public:
 		map_.phi2_unsew(d);
 	}
 
-	inline Dart add_face_topo_parent(unsigned int nb_edges)
+	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
 	}
 
-	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
-	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that closes the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
-	 */
 	inline Dart close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(map_.phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
-
-		Dart first = map_.add_dart();	// First edge of the face that will fill the hole
-		map_.phi2_sew(d, first);		// 2-sew the new edge to the hole
-
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
-		do
-		{
-			do
-			{
-				d_phi1 = map_.phi1(d_next); // Search and put in d_next
-				d_next = map_.phi2(d_phi1); // the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
-
-			if (d_phi1 != d)
-			{
-				Dart next = map_.split_vertex_topo(first);	// Add a vertex into the built face
-				phi2_sew(d_next, next);						// and 2-sew the face to the hole
-			}
-		} while (d_phi1 != d);
-
-		return first;
+		return map_.close_hole_topo(d);
 	}
 
 	/*!
@@ -141,15 +108,15 @@ public:
 	 */
 	inline Face close_hole(Dart d)
 	{
-		const Face f(close_hole_topo(d));
+		const Face f(map_.close_hole_topo(d));
 
-		if (map_.template is_embedded<CDart>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.new_orbit_embedding(CDart(it));
-			});
-		}
+//		if (map_.template is_embedded<CDart>())
+//		{
+//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+//			{
+//				map_.new_orbit_embedding(CDart(it));
+//			});
+//		}
 
 		if (map_.template is_embedded<Vertex>())
 		{
@@ -167,12 +134,12 @@ public:
 			});
 		}
 
-		if (map_.template is_embedded<Face>())
-			map_.new_orbit_embedding(f);
+//		if (map_.template is_embedded<Face>())
+//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
-			const unsigned int idx = map_.get_embedding(Volume(d));
+			const uint32 idx = map_.get_embedding(Volume(d));
 			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
 			{
 				map_.template set_embedding<Volume>(it, idx);
@@ -195,12 +162,11 @@ public:
 	inline void close_map()
 	{
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
-		map_.foreach_dart_nomask( [&] (Dart d)
-			{
-				if (map_.phi2(d) == d)
-					fix_point_darts->push_back(d);
-			});
-
+		map_.foreach_dart([&] (Dart d)
+		{
+			if (map_.phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
 		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi2(d) == d)

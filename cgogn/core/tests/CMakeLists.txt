@@ -14,7 +14,7 @@ set(SOURCE_FILES
 	cmap/cmap1_test.cpp
 	cmap/cmap2_topo_test.cpp
 	cmap/cmap2_test.cpp
-        cmap/cmap3_topo_test.cpp
+	cmap/cmap3_topo_test.cpp
 
 	utils/name_types_test.cpp
 

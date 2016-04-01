@@ -175,20 +175,20 @@ void ShaderRoundPoint::set_color(const QColor& rgb)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderRoundPoint::set_width(float wpix)
+void ShaderRoundPoint::set_width(float32 wpix)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
+	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-bool ShaderRoundPoint::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, unsigned int stride, unsigned first)
+bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

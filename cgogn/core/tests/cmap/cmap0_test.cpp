@@ -45,7 +45,7 @@ class CMap0Test : public ::testing::Test
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
-	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int>;
+	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int32>;
 	using Vertex = testCMap0::Vertex;
 
 protected:
@@ -63,19 +63,19 @@ protected:
 	CMap0Test()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
-		cmap_.add_attribute<int, Vertex::ORBIT>("vertices");
+		std::srand(uint32(std::time(0)));
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
 	}
 
 	/*!
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
-	void add_vertices(unsigned int n)
+	void add_vertices(uint32 n)
 	{
 		darts_.clear();
-		for (unsigned int i = 0; i < n; ++i)
-			darts_.push_back(cmap_.add_vertex());
+		for (uint32 i = 0; i < n; ++i)
+			darts_.push_back(cmap_.add_vertex().dart);
 	}
 };
 
@@ -94,6 +94,7 @@ TEST_F(CMap0Test, random_map_generators)
 TEST_F(CMap0Test, add_vertex)
 {
 	add_vertices(NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -104,9 +105,15 @@ TEST_F(CMap0Test, remove_vertex)
 {
 	add_vertices(NB_MAX);
 
+	uint32 count_vertices = NB_MAX;
 	for (Dart d: darts_)
-		if (std::rand() % 3 == 1) cmap_.remove_vertex(Vertex(d));
+		if (std::rand() % 3 == 1)
+		{
+			cmap_.remove_vertex(Vertex(d));
+			--count_vertices;
+		}
 
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

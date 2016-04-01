@@ -58,29 +58,40 @@ protected:
 	CMap0TopoTest()
 	{
 		darts_.reserve(NB_MAX);
-		std::srand(static_cast<unsigned int>(std::time(0)));
+		std::srand(uint32(std::time(0)));
 	}
 
 	/*!
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
-	void add_vertices(unsigned int n)
+	void add_vertices(uint32 n)
 	{
 		darts_.clear();
-		for (unsigned int i = 0; i < n; ++i)
-			darts_.push_back(cmap_.add_vertex());
+		for (uint32 i = 0; i < n; ++i)
+			darts_.push_back(cmap_.add_vertex().dart);
 	}
 };
 
 /*!
  * \brief The random generated maps used in the tests are sound.
  */
-TEST_F(CMap0TopoTest, Constructor)
+TEST_F(CMap0TopoTest, random_map_generators)
 {
 	EXPECT_EQ(cmap_.nb_darts(), 0u);
 
 	add_vertices(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap0TopoTest, add_attribute)
+{
+	add_vertices(NB_MAX);
+	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -108,7 +119,7 @@ TEST_F(CMap0TopoTest, add_vertex)
 TEST_F(CMap0TopoTest, remove_vertex)
 {
 	add_vertices(NB_MAX);
-	int count_vertices = NB_MAX;
+	int32 count_vertices = NB_MAX;
 
 	cmap_.remove_vertex(Vertex(darts_.back()));
 	--count_vertices;

@@ -41,11 +41,13 @@
 
 #include <rendering/topo_render.h>
 
+#include <modeling/algos/catmull_clark.h>
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
@@ -95,6 +97,11 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 
+	if (!vertex_position_.is_valid())
+	{
+		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -135,6 +142,12 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_T:
 			topo_rendering_ = !topo_rendering_;
 			break;
+
+		case Qt::Key_C:
+			cgogn::modeling::catmull_clark<Vec3>(map_,vertex_position_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+			topo_render->update_map2<Vec3>(map_,vertex_position_);
 		default:
 			break;
 	}
@@ -201,9 +214,9 @@ int main(int argc, char** argv)
 	std::string surfaceMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("aneurysm3D_1.off");
-		std::cout << "Using default mesh : " << surfaceMesh << std::endl;
+		cgogn_log_info("viewer_topo")<< "USAGE: " << argv[0] << " [filename]";
+		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surfaceMesh << "\".";
 	}
 	else
 		surfaceMesh = std::string(argv[1]);

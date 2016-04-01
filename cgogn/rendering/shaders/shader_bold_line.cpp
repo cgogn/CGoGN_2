@@ -23,10 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
+#include <core/utils/logger.h>
 #include <rendering/shaders/shader_bold_line.h>
 
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
@@ -215,20 +217,20 @@ void ShaderBoldLine::set_color(const QColor& rgb)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderBoldLine::set_width(float wpix)
+void ShaderBoldLine::set_width(float32 wpix)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-	int viewport[4];
+	GLint viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float(viewport[2]), wpix / float(viewport[3]));
+	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-bool ShaderBoldLine::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color)
+bool ShaderBoldLine::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

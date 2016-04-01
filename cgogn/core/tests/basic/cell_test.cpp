@@ -27,41 +27,42 @@
 
 namespace cgogn
 {
-
+uint32_t toto;
+std::uint32_t tutu;
 
 const Dart dglobal(10u);
-const Dart dmax(std::numeric_limits<unsigned int>::max());
+const Dart dmax(std::numeric_limits<uint32>::max());
 
 
 TEST(CellTest, DefaultConstructor)
 {
 	Cell<Orbit::DART> c;
-	Dart d = c;
-	EXPECT_EQ(std::numeric_limits<unsigned int>::max(), d.index);
+	Dart d = c.dart;
+	EXPECT_EQ(std::numeric_limits<uint32>::max(), d.index);
 }
 
 TEST(CellTest, Constructor)
 {
 	Cell<Orbit::DART> c(dglobal);
-	Dart d = c;
+	Dart d = c.dart;
 	EXPECT_EQ(10u, d.index);
 }
 
 TEST(CellTest, OutOfLimitConstructor)
 {
 	Cell<Orbit::DART> c1(dmax);
-	Dart d1 = c1;
+	Dart d1 = c1.dart;
 	Cell<Orbit::DART> c2;
-	Dart d2 = c2;
+	Dart d2 = c2.dart;
 	EXPECT_EQ(d1.index, d2.index);
 }
 
 TEST(CellTest, CopyConstructor)
 {
 	Cell<Orbit::DART> c(dglobal);
-	Dart d = c;
+	Dart d = c.dart;
 	Cell<Orbit::DART> ccopy(c);
-	Dart dcopy = ccopy;
+	Dart dcopy = ccopy.dart;
 	EXPECT_EQ(d.index, dcopy.index);
 }
 
@@ -77,7 +78,7 @@ TEST(CellTest, Assignation)
 	Cell<Orbit::DART> c2;
 	c2 = c1;
 
-	Dart d2 = c2;
+	Dart d2 = c2.dart;
 
 	EXPECT_EQ(d2.index, dglobal.index);
 }
@@ -96,7 +97,7 @@ TEST(CellTest, ReadingIn)
 	std::istringstream s("10");
 	s >> c;
 
-	Dart d = c;
+	Dart d = c.dart;
 
 	EXPECT_EQ(10u, d.index);
 }

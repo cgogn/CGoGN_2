@@ -43,21 +43,21 @@ namespace rendering
 
 class CGOGN_RENDERING_API TopoRender
 {
-	using Vec3f = std::array<float,3>;
+	using Vec3f = std::array<float32,3>;
 
 protected:
 
 	static ShaderSimpleColor* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
-	static int nb_instances_;
+	static int32 nb_instances_;
 
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
 
-	unsigned int vao_bl_;
-	unsigned int vao_bl2_;
-	unsigned int vao_rp_;
+	uint32 vao_bl_;
+	uint32 vao_bl2_;
+	uint32 vao_rp_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -66,26 +66,26 @@ protected:
 	QColor phi2_color_;
 	QColor phi3_color_;
 
-	float shrink_v_;
-	float shrink_f_;
-	float shrink_e_;
+	float32 shrink_v_;
+	float32 shrink_f_;
+	float32 shrink_e_;
 
 public:
-
+	using Self = TopoRender;
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
 	TopoRender(QOpenGLFunctions_3_3_Core* ogl33);
-
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoRender);
 	/**
 	 * release buffers and shader
 	 */
 	~TopoRender();
 
-	inline void set_explode_volume(float x) { shrink_v_ = x; }
-	inline void set_explode_face(float x) { shrink_f_ = x; }
-	inline void set_explode_edge(float x) { shrink_e_ = x; }
+	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
+	inline void set_explode_face(float32 x) { shrink_f_ = x; }
+	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
 	template <typename VEC3, typename MAP>
 	void update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
@@ -107,10 +107,10 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 	Scalar opp_shrink_e = 1.0 -shrink_e_;
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos2;
+	std::vector<std::array<float32,3>> out_pos2;
 	out_pos2.reserve(1024*1024);
 
 
@@ -122,7 +122,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		local_vertices.clear();
 		VEC3 center;
 		center.setZero();
-		unsigned int count = 0u;
+		uint32 count = 0u;
 		m.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			local_vertices.push_back(position[v]);
@@ -132,36 +132,36 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 		center /= Scalar(count);
 
 		// phi2 mid-edge: N -> 2N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
 
 		// dart round point: 0 -> N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices[i] = local_vertices[i] * Scalar(shrink_f_) + center * (opp_shrink_f);
 
 		//dart other extremety: 2N -> 3N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back(local_vertices[i]*(opp_shrink_e) + local_vertices[(i+1)%count]*Scalar(shrink_e_));
 
 		//phi2 mid-dart: 3N -> 4N-1
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 			local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
 
-		for (unsigned int i=0; i<count; ++i)
+		for (uint32 i=0; i<count; ++i)
 		{
 			const VEC3& P1 = local_vertices[i];
-			out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+			out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
 			const VEC3& P2 = local_vertices[2*count+i];
-			out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+			out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
 			const VEC3& P3 = local_vertices[count+i];
-			out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+			out_pos2.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 			const VEC3& P4 = local_vertices[3*count+i];
-			out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+			out_pos2.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 		}
 	});
 
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());
@@ -188,13 +188,13 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 	Scalar opp_shrink_v = 1.0 - shrink_v_;
 
-	std::vector<std::array<float,3>> out_pos;
+	std::vector<std::array<float32,3>> out_pos;
 	out_pos.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos2;
+	std::vector<std::array<float32,3>> out_pos2;
 	out_pos2.reserve(1024*1024);
 
-	std::vector<std::array<float,3>> out_pos3;
+	std::vector<std::array<float32,3>> out_pos3;
 	out_pos3.reserve(1024*1024);
 
 
@@ -209,7 +209,7 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 			local_vertices.clear();
 			VEC3 center;
 			center.setZero();
-			unsigned int count = 0u;
+			uint32 count = 0u;
 			m.foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				local_vertices.push_back(position[v]);
@@ -219,46 +219,46 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 			center /= Scalar(count);
 
 			// phi2 mid-edge: N -> 2N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back((local_vertices[i]+local_vertices[(i+1)%count])/Scalar(2.0));
 
 			//phi3: 2N -> 3N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back(local_vertices[count+i]* shrink_f_ + center * (opp_shrink_f));
 
 			// dart round point: 0 -> N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices[i] = local_vertices[i] * shrink_f_ + center * (opp_shrink_f);
 
 			//dart other extremety: 3N -> 4N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back(local_vertices[i]*(opp_shrink_e) + local_vertices[(i+1)%count]*shrink_e_);
 
 			//phi2/3 mid-dart: 4N -> 5N-1
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 				local_vertices.push_back((local_vertices[i]+local_vertices[(2*count+i+1)%count])/Scalar(2.0));
 
-			for (unsigned int i=0; i<count; ++i)
+			for (uint32 i=0; i<count; ++i)
 			{
 				VEC3 P1 = (local_vertices[i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float(P1[0]),float(P1[1]),float(P1[2])});
+				out_pos.push_back({float32(P1[0]),float32(P1[1]),float32(P1[2])});
 				VEC3 P2 = (local_vertices[3*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float(P2[0]),float(P2[1]),float(P2[2])});
+				out_pos.push_back({float32(P2[0]),float32(P2[1]),float32(P2[2])});
 
 				const VEC3 P3 = (local_vertices[count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos2.push_back({float(P3[0]),float(P3[1]),float(P3[2])});
+				out_pos2.push_back({float32(P3[0]),float32(P3[1]),float32(P3[2])});
 				const VEC3 P4 = (local_vertices[4*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos2.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+				out_pos2.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 				const VEC3& P5 = local_vertices[2*count+i];
-				out_pos3.push_back({float(P5[0]),float(P5[1]),float(P5[2])});
-				out_pos3.push_back({float(P4[0]),float(P4[1]),float(P4[2])});
+				out_pos3.push_back({float32(P5[0]),float32(P5[1]),float32(P5[2])});
+				out_pos3.push_back({float32(P4[0]),float32(P4[1]),float32(P4[2])});
 
 			}
 		});
 
 	});
 
-	unsigned int nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(out_pos.size());
 	vbo_darts_->allocate(nbvec,3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec*12, out_pos[0].data());

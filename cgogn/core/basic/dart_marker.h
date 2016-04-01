@@ -53,16 +53,13 @@ public:
 		mark_attribute_ = map_.get_topology_mark_attribute();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarker_T);
+
 	virtual ~DartMarker_T()
 	{
 		if (MapGen::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
-
-	DartMarker_T(const Self& dm) = delete;
-	DartMarker_T(Self&& dm) = delete;
-	Self& operator=(const Self& dm) = delete;
-	Self& operator=(Self&& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -116,15 +113,12 @@ public:
 		Inherit(map)
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarker);
+
 	~DartMarker() override
 	{
 		unmark_all();
 	}
-
-	DartMarker(const Self& dm) = delete;
-	DartMarker(Self&& dm) = delete;
-	Self& operator=(Self&& dm) = delete;
-	Self& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -154,16 +148,13 @@ public:
 		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarkerStore);
+
 	~DartMarkerStore() override
 	{
 		unmark_all();
 		cgogn::get_dart_buffers()->release_buffer(marked_darts_);
 	}
-
-	DartMarkerStore(const Self& dm) = delete;
-	DartMarkerStore(Self&& dm) = delete;
-	Self& operator=(Self&& dm) = delete;
-	Self& operator=(const Self& dm) = delete;
 
 	inline void mark(Dart d)
 	{
@@ -210,13 +201,10 @@ public:
 		Inherit(map)
 	{}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarkerNoUnmark);
+
 	~DartMarkerNoUnmark() override
 	{}
-
-	DartMarkerNoUnmark(const Self& dm) = delete;
-	DartMarkerNoUnmark(Self&& dm) = delete;
-	Self& operator=(Self&& dm) = delete;
-	Self& operator=(const Self& dm) = delete;
 };
 
 } // namespace cgogn

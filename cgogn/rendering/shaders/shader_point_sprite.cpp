@@ -335,7 +335,7 @@ void ShaderPointSprite::set_ambiant(const QColor& rgb)
 		prg_.setUniformValue(unif_ambiant_, rgb);
 }
 
-void ShaderPointSprite::set_size(float w)
+void ShaderPointSprite::set_size(float32 w)
 {
 //	if (unif_size_>=0)
 		prg_.setUniformValue(unif_size_, w);
@@ -354,11 +354,11 @@ void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatr
 
 
 
-bool ShaderPointSprite::set_vao(unsigned int i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
+bool ShaderPointSprite::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

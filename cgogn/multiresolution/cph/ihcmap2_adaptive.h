@@ -48,16 +48,9 @@ public:
 	using Face = typename Inherit::Face;
 	using Volume = typename Inherit::Volume;
 
-	IHCMap2Adaptive_T() : Inherit()
-	{}
-
-	~IHCMap2Adaptive_T() override
-	{}
-
-	IHCMap2Adaptive_T(const Self&) = delete;
-	IHCMap2Adaptive_T(Self&&) = delete;
-	Self& operator=(const Self&) = delete;
-	Self& operator=(Self&&) = delete;
+	IHCMap2Adaptive_T() : Inherit() {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Adaptive_T);
+	~IHCMap2Adaptive_T() override {}
 
 	/*******************************************************************************
 	 * Low-level topological operations
@@ -86,7 +79,7 @@ public:
 	 * its darts. As phi1(d) and phi2(d) are from the same level we can
 	 * optimize by checking phi1(d) instead of phi2(d)
 	 */
-	unsigned int edge_level(Dart d)
+	uint32 edge_level(Dart d)
 	{
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
@@ -100,7 +93,7 @@ public:
 	 * face with all neighboring faces are regularly subdivided
 	 * but not the face itself
 	 */
-	unsigned int face_level(Dart d)
+	uint32 face_level(Dart d)
 	{
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
@@ -110,12 +103,12 @@ public:
 
 		Dart it = d;
 		Dart old = it;
-		unsigned int l_old = Inherit::get_dart_level(old);
-		unsigned int fLevel = edge_level(it);
+		uint32 l_old = Inherit::get_dart_level(old);
+		uint32 fLevel = edge_level(it);
 		do
 		{
 			it = Inherit::phi1(it);
-			unsigned int dl = Inherit::get_dart_level(it);
+			uint32 dl = Inherit::get_dart_level(it);
 
 			// compute the oldest dart of the face in the same time
 			if(dl < l_old)
@@ -123,16 +116,16 @@ public:
 				old = it;
 				l_old = dl;
 			}
-			unsigned int l = edge_level(it);
+			uint32 l = edge_level(it);
 			fLevel = l < fLevel ? l : fLevel;
 		} while(it != d);
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Inherit::set_current_level(fLevel);
 
-		unsigned int nbSubd = 0;
+		uint32 nbSubd = 0;
 		it = old;
-		unsigned int eId = Inherit::get_edge_id(old);
+		uint32 eId = Inherit::get_edge_id(old);
 		do
 		{
 			++nbSubd;
@@ -158,9 +151,9 @@ public:
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Dart p = d;
-		unsigned int pLevel = Inherit::get_dart_level(p);
+		uint32 pLevel = Inherit::get_dart_level(p);
 		while(pLevel > 0)
 		{
 			p = face_oldest_dart(p);
@@ -181,10 +174,10 @@ public:
 
 		Dart it = d ;
 		Dart oldest = it ;
-		unsigned int l_old = Inherit::get_dart_level(oldest);
+		uint32 l_old = Inherit::get_dart_level(oldest);
 		do
 		{
-			unsigned int l = Inherit::get_dart_level(it);
+			uint32 l = Inherit::get_dart_level(it);
 			if(l == 0)
 				return it;
 
@@ -214,7 +207,7 @@ public:
 			return false ;
 
 		Dart d1 = Inherit::phi1(d);
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Inherit::set_current_level(cur + 1);
 		Dart d1_l = Inherit::phi1(d);
 		Inherit::set_current_level(cur);
@@ -242,7 +235,7 @@ public:
 		{
 			subd = true ;
 			Dart d2 = Inherit::phi2(d) ;
-			unsigned int cur = Inherit::get_current_level();
+			uint32 cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
 			if(this->degree(typename Inherit::Vertex(Inherit::phi1(d))) == 2)
 			{
@@ -265,13 +258,13 @@ public:
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
 
-		unsigned int fLevel = face_level(d) ;
+		uint32 fLevel = face_level(d) ;
 		if(fLevel <= Inherit::get_current_level())
 			return false ;
 
 		bool subd = false ;
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Inherit::set_current_level(cur + 1);
 		if(Inherit::get_dart_level(Inherit::phi1(d)) == Inherit::get_current_level()
 				&& Inherit::get_edge_id(Inherit::phi1(d)) != Inherit::get_edge_id(d))
@@ -294,23 +287,23 @@ public:
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "Access to a dart introduced after current level");
 
-		unsigned int fLevel = face_level(d);
+		uint32 fLevel = face_level(d);
 		if(fLevel < Inherit::get_current_level())
 			return false;
 
-		unsigned int degree = 0 ;
+		uint32 degree = 0 ;
 		bool subd = false ;
 		bool subdOnce = true ;
 		Dart fit = d ;
 		do
 		{
-			unsigned int cur = Inherit::get_current_level();
+			uint32 cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
 			if(Inherit::get_dart_level(Inherit::phi1(fit)) == Inherit::get_current_level()
 					&& Inherit::get_edge_id(Inherit::phi1(fit)) != Inherit::get_edge_id(fit))
 			{
 				subd = true ;
-				unsigned int cur2 = Inherit::get_current_level();
+				uint32 cur2 = Inherit::get_current_level();
 				Inherit::set_current_level(cur2 + 1);
 				if(Inherit::get_dart_level(Inherit::phi1(fit)) == Inherit::get_current_level()
 						&& Inherit::get_edge_id(this->phi1(fit)) != Inherit::get_edge_id(fit))
@@ -324,10 +317,10 @@ public:
 
 		if(degree == 3 && subd)
 		{
-			unsigned int cur = Inherit::get_current_level();
+			uint32 cur = Inherit::get_current_level();
 			Inherit::set_current_level(cur + 1);
 			Dart cf = Inherit::phi2(Inherit::phi1(d)) ;
-			unsigned int cur2 = Inherit::get_current_level();
+			uint32 cur2 = Inherit::get_current_level();
 			Inherit::set_current_level(cur2 + 1);
 			if(Inherit::get_dart_level(Inherit::phi1(cf)) == Inherit::get_current_level()
 					&& Inherit::get_edge_id(Inherit::phi1(cf)) != Inherit::get_edge_id(cf))
@@ -343,14 +336,14 @@ protected:
 	inline Vertex cut_edge_update_emb(Dart /*e*/, Dart /*e2*/, Dart /*nd*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_edge_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_edge_update_emb") << "Method is not implemented yet.";
 		return Vertex();
 	}
 
 	inline void cut_face_update_emb(Dart /*e*/, Dart /*e2*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_face_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_face_update_emb") << "Method is not implemented yet.";
 	}
 
 	/***************************************************
@@ -366,9 +359,9 @@ protected:
 							 "subdivideEdge : called with a dart inserted after current level") ;
 		cgogn_message_assert(!edge_is_subdivided(d), "Trying to subdivide an already subdivided edge");
 
-		unsigned int eLevel = edge_level(d);
+		uint32 eLevel = edge_level(d);
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Inherit::set_current_level(eLevel);
 
 		Dart dd = Inherit::phi2(d);
@@ -376,7 +369,7 @@ protected:
 		Inherit::set_current_level(eLevel + 1);
 
 		this->cut_edge_topo(d);
-		unsigned int eId = Inherit::get_edge_id(d);
+		uint32 eId = Inherit::get_edge_id(d);
 		Inherit::set_edge_id(Inherit::phi1(d), eId);
 		Inherit::set_edge_id(Inherit::phi1(dd), eId);
 
@@ -403,10 +396,10 @@ protected:
 		cgogn_message_assert(edge_can_be_coarsened(d), "Trying to coarsen an edge that can not be coarsened");
 
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		//	Dart e = Inherit::phi2(d);
 		Inherit::set_current_level(cur + 1);
-		//	unsigned int dl = Inherit::get_dart_level(e);
+		//	uint32 dl = Inherit::get_dart_level(e);
 		//	Inherit::set_dart_level(Inherit::phi1(e), dl);
 		//	Inherit::collapseEdge(e);
 		this->merge_adjacent_edges_topo(d);
@@ -417,19 +410,19 @@ public:
 	/**
 	 * subdivide the face of d to the next level
 	 */
-	unsigned int subdivide_face(Dart d, bool triQuad = true, bool OneLevelDifference = true)
+	uint32 subdivide_face(Dart d, bool triQuad = true, bool OneLevelDifference = true)
 	{
 		cgogn_message_assert(Inherit::get_dart_level(d) <= Inherit::get_current_level(),
 							 "coarsenEdge : called with a dart inserted after current level");
 		cgogn_message_assert(!face_is_subdivided(d), "Trying to coarsen an edge that can not be coarsened");
 
-		unsigned int fLevel = face_level(d);
+		uint32 fLevel = face_level(d);
 		Dart old = face_oldest_dart(d);
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 		Inherit::set_current_level(fLevel);		// go to the level of the face to subdivide its edges
 
-		unsigned int degree = 0;
+		uint32 degree = 0;
 		Dart it = old;
 		do
 		{
@@ -458,7 +451,7 @@ public:
 			e = Inherit::phi1(e);
 			this->cut_face_topo(dd,e);
 
-			unsigned int id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
+			uint32 id = Inherit::get_tri_refinement_edge_id(Inherit::phi_1(Inherit::phi_1(dd)), Inherit::phi1(Inherit::phi_1(dd)));
 			Inherit::set_edge_id(Inherit::phi_1(dd), id);		// set the edge id of the inserted
 			Inherit::set_edge_id(Inherit::phi_1(e), id);		// edge to the next available id
 
@@ -491,7 +484,7 @@ public:
 			Dart ne2 = Inherit::phi2(ne);
 			this->cut_edge_topo(ne); // cut the new edge to insert the central vertex
 
-			unsigned int id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
+			uint32 id = Inherit::get_quad_refinement_edge_id(Inherit::phi1(Inherit::phi2(ne)));
 			Inherit::set_edge_id(ne, id);
 			Inherit::set_edge_id(Inherit::phi2(ne), id);			// set the edge id of the inserted
 
@@ -534,9 +527,9 @@ public:
 							 "coarsenEdge : called with a dart inserted after current level");
 		cgogn_message_assert(face_is_subdivided_once(d), "Trying to coarsen an edge that can not be coarsened");
 
-		unsigned int cur = Inherit::get_current_level();
+		uint32 cur = Inherit::get_current_level();
 
-		unsigned int degree = 0;
+		uint32 degree = 0;
 		Dart fit = d;
 		do
 		{
