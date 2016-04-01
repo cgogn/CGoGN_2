@@ -163,7 +163,7 @@ protected:
 	 */
 	inline bool check_boundary_integrity(Dart d) const
 	{
-		return (( this->is_boundary(d) == this->is_boundary(this->phi1(d))  ) &&
+		return ((  this->is_boundary(d) ==  this->is_boundary(this->phi1(d)) ) &&
 				( !this->is_boundary(d) || !this->is_boundary(this->phi2(d)) ));
 	}
 
@@ -278,7 +278,6 @@ public:
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
-//				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 		}
 
@@ -299,10 +298,7 @@ public:
 		}
 
 		if (this->template is_embedded<Face>())
-		{
 			this->new_orbit_embedding(f);
-//			this->new_orbit_embedding(Face(phi2(f.dart)));
-		}
 
 		if (this->template is_embedded<Volume>())
 			this->new_orbit_embedding(Volume(f.dart));

@@ -47,6 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
