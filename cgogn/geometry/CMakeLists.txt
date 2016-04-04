@@ -10,6 +10,7 @@ set(HEADER_FILES
 	algos/normal.h
 	algos/ear_triangulation.h
 	algos/picking.h
+	algos/filtering.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h

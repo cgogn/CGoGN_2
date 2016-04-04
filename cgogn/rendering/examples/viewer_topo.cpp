@@ -42,6 +42,7 @@
 #include <rendering/topo_render.h>
 
 #include <modeling/algos/catmull_clark.h>
+#include <geometry/algos/filtering.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -145,6 +146,11 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 		case Qt::Key_C:
 			cgogn::modeling::catmull_clark<Vec3>(map_,vertex_position_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+			topo_render->update_map2<Vec3>(map_,vertex_position_);
+		case Qt::Key_A:
+			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_,vertex_position_);
