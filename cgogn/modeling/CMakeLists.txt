@@ -5,6 +5,7 @@ project(cgogn_modeling
 set(HEADER_FILES
 	dll.h
 	algos/catmull_clark.h
+	algos/loop.h
 )
 
  add_custom_target(cgogn_modeling SOURCES ${HEADER_FILES})
