@@ -34,6 +34,7 @@
 #include <core/utils/serialization.h>
 #include <core/utils/assert.h>
 #include <core/dll.h>
+#include<core/utils/logger.h>
 
 
 namespace cgogn
@@ -80,14 +81,20 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	Inherit* clone() const override
 	{
 		return new Self();
 	}
 
-	void swap(Self& ca)
+	bool swap(Inherit* cag) override
 	{
-		table_data_.swap(ca.table_data_);
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+		}
+
+		table_data_.swap(ca->table_data_);
 	}
 
 	bool is_boolean_array() const override
@@ -431,6 +438,17 @@ public:
 	ChunkArrayGen<CHUNKSIZE>* clone() const override
 	{
 		return new Self();
+	}
+
+	bool swap(Inherit* cag) override
+	{
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+		}
+
+		table_data_.swap(ca->table_data_);
 	}
 
 	bool is_boolean_array() const override

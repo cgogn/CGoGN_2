@@ -95,6 +95,11 @@ public:
 	virtual ~AttributeHandlerGen()
 	{}
 
+	inline bool is_linked_to(MapData* m) const
+	{
+		return m == map_;
+	}
+
 	virtual bool is_valid() const = 0;
 
 	virtual Orbit get_orbit() const = 0;
