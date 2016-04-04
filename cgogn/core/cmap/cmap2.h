@@ -386,6 +386,11 @@ public:
 
 protected:
 
+	/**
+	 * @brief Flip an edge
+	 * @param d : a dart of the edge to flip
+	 * @return true if the edge has been flipped, false otherwise
+	 */
 	inline bool flip_edge_topo(Dart d)
 	{
 		Dart e = phi2(d);
@@ -406,6 +411,12 @@ protected:
 
 public:
 
+	/**
+	 * @brief Flip an edge
+	 * @param e : the edge to flip
+	 * The two endpoints of the given edge are moved to the next vertices
+	 * of their two adjacent faces
+	 */
 	inline void flip_edge(Edge e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
@@ -431,6 +442,11 @@ public:
 
 protected:
 
+	/**
+	 * @brief Collapse an edge
+	 * @param d : a dart of the edge to collapse
+	 * @return a dart of the resulting vertex
+	 */
 	inline Dart collapse_edge_topo(Dart d)
 	{
 		Dart res = phi2(this->phi_1(d));
@@ -446,6 +462,11 @@ protected:
 
 public:
 
+	/**
+	 * @brief Collapse an edge
+	 * @param e : the edge to collapse
+	 * @return the resulting vertex
+	 */
 	inline Vertex collapse_edge(Edge e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;

@@ -58,8 +58,8 @@ void pliant_remeshing(
 	}, edges);
 	mean_edge_length /= edges.size();
 
-	Scalar min_edge_length= Scalar(3) / Scalar(4) * mean_edge_length;
-	Scalar max_edge_length = Scalar(4) / Scalar(3) * mean_edge_length;
+	Scalar min_edge_length= Scalar(0.75) * mean_edge_length;
+	Scalar max_edge_length = Scalar(1.25) * mean_edge_length;
 
 	// cut long edges (and adjacent faces)
 	map.foreach_cell([&] (Edge e)
