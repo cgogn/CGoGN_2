@@ -452,8 +452,6 @@ protected:
 		Dart res = phi2(this->phi_1(d));
 
 		Dart e = phi2(d);
-		phi2_unsew(d);
-
 		this->remove_vertex_topo(d);
 		this->remove_vertex_topo(e);
 
