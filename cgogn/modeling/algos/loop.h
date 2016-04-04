@@ -21,10 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_ALGOS_CATMULL_CLARK_H_
-#define MODELING_ALGOS_CATMULL_CLARK_H_
+#ifndef MODELING_ALGOS_LOOP_H_
+#define MODELING_ALGOS_LOOP_H_
 
-#include <geometry/algos/centroid.h>
 #include<vector>
 #include<core/basic/dart_marker.h>
 
@@ -34,39 +33,16 @@ namespace cgogn
 namespace modeling
 {
 
-template < typename MAP>
-typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
-{
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-
-	Dart d1 = map.phi1(f.dart);
-	Dart d2 = map.phi1(map.phi1(d1));
-
-	map.cut_face(Vertex(d1),Vertex(d2));
-
-	map.cut_edge(Edge(map.phi_1(d1)));
-
-	Dart x = map.phi2(map.phi_1(d1)) ;
-	Dart dd = map.template phi<1111>(x) ;
-	while(dd != x)
-	{
-		Dart next = map.template phi<11>(dd) ;
-		map.cut_face(Vertex(dd), Vertex(map.phi1(x))) ;
-		dd = next ;
-	}
-
-	return Vertex(map.phi2(x));	// Return a dart of the central vertex
-}
 
 template <typename VEC3, typename MAP>
-void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>& position)
+void loop(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 	using Scalar = typename VEC3::Scalar;
 
+	typename MAP::template VertexAttributeHandler<VEC3> position2 = map.template add_attribute<VEC3,Vertex::ORBIT>("position_tempo_loop");
 
 	std::vector<Edge> initial_edges;
 	std::vector<Vertex> initial_vertices;
@@ -84,83 +60,80 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 		initial_vertices.push_back(v);
 	});
 
+	// cut edges
 	for(Edge e: initial_edges)
 	{
 		std::pair<Vertex,Vertex> ve = map.vertices(e);
-		Vertex middle = map.cut_edge(e);
-		position[middle] = (position[ve.first] + position[ve.second] )/Scalar(2);
+		map.cut_edge(e);
 	}
 
-
-	map.foreach_cell([&] (Face f)
-	{
-		Face ff = f;
-		if (!initial_edge_marker.is_marked(f.dart))
-			ff = Face(map.phi1(f.dart));
-
-		initial_edge_marker.unmark_orbit(ff);
-
-		VEC3 center = geometry::centroid<VEC3>(map,ff,position);
-		Vertex vc = quadranguleFace(map,ff);
-		position[vc] = center;
-	});
-
+	// compute position of new edge points
 	for(Edge e: initial_edges)
 	{
-		Dart e2 = map.phi2(e.dart);
-		if (!map.is_boundary(e.dart) && !map.is_boundary(e2))
-		{
-			Vertex f1(map.template phi<11>(e.dart));
-			Vertex f2(map.phi_1(e2));
-			Vertex m(map.phi1(e.dart));
-			position[m] = (Scalar(2)*position[m]+position[f1]+position[f2])/Scalar(4);
-		}
+		Vertex v1(e.dart);
+		Vertex v2(map.template phi<12>(e.dart));
+		Vertex nve(map.phi1(e.dart));
+		Vertex vr(map.template phi<2111>(e.dart));
+		Vertex vl(map.phi_1(map.phi_1(e.dart)));
+
+		position2[nve] = Scalar(3.0/8.0)*(position[v1]+position[v2]) + Scalar(1.0/8.0)*(position[vr] + position[vl]);
 	}
 
+	// compute new position of old vertices
 	for(Vertex v: initial_vertices)
 	{
-		VEC3 sum_face; // Sum_F
-		sum_face.setZero();
 		VEC3 sum_edge;// Sum_E
 		sum_edge.setZero();
 
-
-		int nb_f = 0;
 		int nb_e = 0;
 		Dart bound;
 		map.foreach_incident_edge(v, [&] (Edge e)
 		{
 			nb_e++;
-			sum_edge += position[Vertex(map.phi1(e.dart))];
-			if (!map.is_boundary(e.dart))
-			{
-				nb_f++;
-				sum_face += position[Vertex(map.template phi<11>(e.dart))];
-			}
-			else
+			sum_edge += position[Vertex(map.template phi<12>(e.dart))];
+			if (map.is_boundary(e.dart))
 				bound = e.dart;
 		});
 
-		if (nb_f > nb_e) // boundary case
+		if (!bound.is_nil()) // boundary case
 		{
 			Vertex e1(map.phi2(bound));
 			Vertex e2(map.phi_1(bound));
-			position[v] = Scalar(3.0/8.0)*position[v] + Scalar(1.0/4.0)*(position[e1]+position[e2]);
+			position2[v] = Scalar(3.0/4.0)*position[v] + Scalar(1.0/8.0)*(position[e1]+position[e2]);
 		}
 		else
 		{
-			VEC3 delta = position[v]*Scalar(-3*nb_f);
-			delta += sum_face + Scalar(2)*sum_edge;
-			delta /= Scalar(nb_f*nb_f);
-			position[v] += delta;
+			float64 beta = 3.0/16.0;
+			if (nb_e>3)
+				beta = 3.0/(8.0*nb_e);
+			position2[v] = Scalar(beta)*sum_edge + Scalar(1.0-beta*nb_e)*position[v];
 		}
 	}
 
-}
+	// add edges inside faces
+	map.foreach_cell([&] (Face f)
+	{
+		Dart d0 = f.dart;
+		if (initial_edge_marker.is_marked(d0))
+			d0 = map.phi1(d0);
 
+		Dart d1 = map.template phi<11>(d0);
+		map.cut_face(Vertex(d0),Vertex(d1));
+
+		Dart d2 = map.template phi<11>(d1);
+		map.cut_face(Vertex(d1),Vertex(d2));
+
+		Dart d3 = map.template phi<11>(d2);
+		map.cut_face(Vertex(d2),Vertex(d3));
+	});
+
+	map.swap_attributes(position,position2);
+	map.remove_attribute(position2);
+
+}
 
 } // namespace modeling
 
 } // namespace cgogn
 
-#endif // MODELING_ALGOS_CATMULL_CLARK_H_
+#endif // MODELING_ALGOS_LOOP_H_

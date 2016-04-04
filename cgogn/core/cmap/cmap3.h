@@ -214,7 +214,7 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(internal::check_multi_phi<N>::value_cmap3, "composition on phi1/phi2/phi3 only");
+		static_assert((N%10)<=3,"composition on phi1/phi2/only");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
