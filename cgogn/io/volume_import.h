@@ -515,7 +515,8 @@ public:
 protected:
 	virtual void clear() override
 	{
-		nb_vertices_ = 0;
+		set_nb_vertices(0u);
+		set_nb_volumes(0u);
 		volumes_types.clear();
 		volumes_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();
