@@ -131,9 +131,6 @@ protected:
 	/// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
 	mutable std::vector<std::thread::id> thread_ids_;
 
-	/// global topo cache shortcuts
-	std::array<ChunkArray<Dart>*, NB_ORBITS> global_topo_cache_;
-
 public:
 
 	MapBaseData() : Inherit()
@@ -149,7 +146,6 @@ public:
 			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
 
 			embeddings_[i] = nullptr;
-			global_topo_cache_[i] = nullptr;
 			for (uint32 j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
 				mark_attributes_[i][j].reserve(8);
 		}
@@ -172,6 +168,7 @@ public:
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
+
 	~MapBaseData() override
 	{}
 
@@ -298,8 +295,7 @@ protected:
 	{
 		static uint32 index = 0u;
 		const std::thread::id& th_id = std::this_thread::get_id();
-		std::cerr << "WARNING: registration of an unknown thread (id :" << th_id << ") in the map." << std::endl;
-		std::cerr << "Data can be lost. Please use add_thread and remove_thread interface." << std::endl;
+		cgogn_log_warning("add_unknown_thread") << "Registration of an unknown thread (id :" << th_id << ") in the map. Data can be lost. Please use add_thread and remove_thread interface.";
 		thread_ids_[index] = th_id;
 		const unsigned old_index = index;
 		index = (index+1u) % NB_UNKNOWN_THREADS;

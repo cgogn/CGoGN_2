@@ -26,9 +26,9 @@ int main(int argc, char** argv)
 	std::string volumeMesh;
 	if (argc < 2)
 	{
-		std::cout << "USAGE: " << argv[0] << " [filename]" << std::endl;
+		cgogn_log_info("cmap3_import") << "USAGE: " << argv[0] << " [filename]";
 		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("medit/hex_dominant.mesh");
-		std::cout << "Using default mesh : " << volumeMesh << std::endl;
+		cgogn_log_info("cmap3_import") << "Using default mesh \"" << volumeMesh << "\".";
 	}
 	else
 		volumeMesh = std::string(argv[1]);
@@ -44,10 +44,10 @@ int main(int argc, char** argv)
 
 		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-		map.enable_topo_cache<Map3::Volume::ORBIT>();
-		map.enable_topo_cache<Map3::Face::ORBIT>();
-		map.enable_topo_cache<Map3::Vertex::ORBIT>();
-		map.enable_topo_cache<Map3::Edge::ORBIT>();
+//		map.enable_topo_cache<Map3::Volume::ORBIT>();
+//		map.enable_topo_cache<Map3::Face::ORBIT>();
+//		map.enable_topo_cache<Map3::Vertex::ORBIT>();
+//		map.enable_topo_cache<Map3::Edge::ORBIT>();
 
 		uint32 nbw = 0u;
 		map.foreach_cell([&nbw] (Map3::Volume)
@@ -80,14 +80,14 @@ int main(int argc, char** argv)
 			++nbe;
 		});
 
-		std::cout << "nb vertices -> " << nbv << std::endl;
-		std::cout << "nb edges -> " << nbe << std::endl;
-		std::cout << "nb faces -> " << nbf << std::endl;
-		std::cout << "nb volumes -> " << nbw << std::endl;
+		cgogn_log_info("cmap3_import") << "nb vertices -> " << nbv;
+		cgogn_log_info("cmap3_import") << "nb edges -> " << nbe;
+		cgogn_log_info("cmap3_import") << "nb faces -> " << nbf;
+		cgogn_log_info("cmap3_import") << "nb volumes -> " << nbw;
 
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float64> elapsed_seconds = end - start;
-		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		cgogn_log_info("cmap3_import") << "elapsed time: " << elapsed_seconds.count() << "s";
 
 	}
 

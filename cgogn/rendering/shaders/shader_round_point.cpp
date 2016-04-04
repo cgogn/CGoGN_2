@@ -188,7 +188,7 @@ bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 st
 {
 	if (i >= vaos_.size())
 	{
-		std::cerr << "VAO number " << i << " does not exist" << std::endl;
+		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
 		return false;
 	}
 

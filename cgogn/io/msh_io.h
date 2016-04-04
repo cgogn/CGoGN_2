@@ -25,6 +25,8 @@
 #define IO_MSH_IO_H_
 
 #include <map>
+
+#include <core/utils/logger.h>
 #include <io/dll.h>
 #include <io/data_io.h>
 #include <io/volume_import.h>
@@ -210,7 +212,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PYRAMID:
 					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_legacy_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					break;
 			}
 		}
@@ -280,7 +282,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
 				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					number_of_nodes = 0u;
 					break;
 			}
@@ -305,7 +307,7 @@ protected:
 				case MSH_CELL_TYPES::MSH_PYRAMID:
 					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					break;
 			}
 		}
@@ -337,14 +339,14 @@ protected:
 		{
 			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
 			auto& v = position->operator [](new_index);
-
+			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
-			v[0] = *reinterpret_cast<float64*>(&(*it));
+			v[0] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[1] = *reinterpret_cast<float64*>(&(*it));
+			v[1] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[2] = *reinterpret_cast<float64*>(&(*it));
+			v[2] = Scalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
 			if (this->need_endianness_swap())
 			{
@@ -389,17 +391,18 @@ protected:
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
 				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
 				default:
-					std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+					cgogn_log_warning("import_binary_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 					number_of_nodes = 0u;
 					break;
 			}
-			std::vector<char> buff;
+			//std::vector<char> buff;
+			buff.clear();
 			const uint32 elem_size = 4u + nb_tags*4u + 4u*number_of_nodes;
 			buff.resize(nb_elements*elem_size);
 			data_stream.read(&buff[0], buff.size());
 
 			std::vector<uint32> node_ids(number_of_nodes);
-			for (uint32 j = 0u; j < nb_elements;++j)
+			for (int32 j = 0u; j < nb_elements;++j)
 			{
 				const char* const ids = &buff[j* elem_size + 4u + nb_tags*4u];
 				for (uint32 k = 0 ; k < number_of_nodes; ++k)
@@ -422,7 +425,7 @@ protected:
 					case MSH_CELL_TYPES::MSH_PYRAMID:
 						this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
 					default:
-						std::cerr << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring." << std::endl;
+						cgogn_log_warning("cgogn_log_warning") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 						break;
 				}
 			}

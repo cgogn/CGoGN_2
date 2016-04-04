@@ -70,7 +70,7 @@ protected:
 
 		this->nb_vertices_ = number_of_vertices;
 		this->nb_volumes_ = number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids;
-		this->volumes_nb_vertices_.reserve(this->nb_volumes_);
+		this->volumes_types.reserve(this->nb_volumes_);
 
 		if (number_of_vertices == 0 || this->nb_volumes_ == 0u)
 		{

@@ -24,6 +24,7 @@
 #ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 #define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
+#include <core/utils/logger.h>
 #include <core/utils/unique_ptr.h>
 #include <core/utils/name_types.h>
 #include <core/container/chunk_array.h>
@@ -110,7 +111,7 @@ public:
 			tmp = (it->second)->clone();
 		}
 		else
-			std::cerr << "type " << keyType << " not registred in ChunkArrayFactory" << std::endl;
+			cgogn_log_warning("ChunkArrayFactory::create") << "Type \"" << keyType << "\" is not registred in ChunkArrayFactory.";
 
 		return tmp;
 	}

@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <modeling/algos/pliant_remeshing.h>
+#include <iostream>
 
-namespace cgogn
+#include "gtest/gtest.h"
+
+int main(int argc, char **argv)
 {
+	testing::InitGoogleTest(&argc, argv);
 
-namespace modeling
-{
+	// Set LC_CTYPE according to the environnement variable.
+	setlocale(LC_CTYPE, "");
 
-
-
-} // namespace modeling
-
-} // namespace cgogn
+	return RUN_ALL_TESTS();
+}

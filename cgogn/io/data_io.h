@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 
+#include <core/utils/logger.h>
 #include <core/utils/unique_ptr.h>
 #include <core/container/chunk_array.h>
 #include <core/container/chunk_array_container.h>
@@ -180,7 +181,7 @@ public:
 
 			if (i < n)
 			{
-				std::cerr << "read_n : An eccor occured while reading the line \n\"" << line << "\"" <<  std::endl;
+				cgogn_log_warning("DataInput::read_n") << "An eccor occured while reading the line \n\"" << line << "\".";
 				this->reset();
 			}
 		}
@@ -210,7 +211,7 @@ public:
 			}
 			if (i < n)
 			{
-				std::cerr << "skip_n : An eccor occured while skipping the line \n\"" << line << "\"" <<  std::endl;
+				cgogn_log_warning("DataInput::skip_n") << "An eccor occured while skipping the line \n\"" << line << "\".";
 			}
 		}
 	}
@@ -290,7 +291,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t>>();
 		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t>>();
 		default:
-			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 	}
 }
@@ -313,7 +314,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t,T>>();
 		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t,T>>();
 		default:
-			std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\"." << std::endl;
+			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 	}
 }
@@ -359,7 +360,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		}
 	}
 
-	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
+	cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components.";
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
@@ -404,7 +405,7 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 		}
 	}
 
-	std::cerr << "DataIOGen::newDataIO : couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components." << std::endl;
+	cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\" with " << nb_components << " components.";
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 

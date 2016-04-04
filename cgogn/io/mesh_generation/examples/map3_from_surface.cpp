@@ -25,7 +25,7 @@
 #include <ctime>
 
 #include <core/cmap/cmap3.h>
-#include <io/mesh_generation/tetgen_io.h>
+#include <io/mesh_generation/tetgen_structure_io.h>
 #include <io/map_import.h>
 
 using namespace cgogn::numerics;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	std::string tetgen_arg;
 	if (argc < 3)
 	{
-		std::cout << "argc < 3" << std::endl;
+		cgogn_log_info("map3_from_surface") << "USAGE: " << argv[0] << " [surface_mesh_path] [tetgen_args]";
 		std::exit(EXIT_FAILURE);
 	}
 	else
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	{
 		tetgenio tetgen_output;
 		tetrahedralize(tetgen_arg.c_str(), tetgen_input.get(), &tetgen_output) ;
-		cgogn::io::TetgenVolumeImport<MapTraits, Vec3> tetgen_import(&tetgen_output);
+		cgogn::io::TetgenStructureVolumeImport<MapTraits, Vec3> tetgen_import(&tetgen_output);
 		tetgen_import.import_file("");
 		tetgen_import.create_map(map3);
 	}
@@ -75,10 +75,10 @@ int main(int argc, char** argv)
 
 	Map3::VertexAttributeHandler<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
-	map3.enable_topo_cache<Map3::Volume::ORBIT>();
-	map3.enable_topo_cache<Map3::Face::ORBIT>();
-	map3.enable_topo_cache<Map3::Vertex::ORBIT>();
-	map3.enable_topo_cache<Map3::Edge::ORBIT>();
+//	map3.enable_topo_cache<Map3::Volume::ORBIT>();
+//	map3.enable_topo_cache<Map3::Face::ORBIT>();
+//	map3.enable_topo_cache<Map3::Vertex::ORBIT>();
+//	map3.enable_topo_cache<Map3::Edge::ORBIT>();
 
 	uint32 nbw = 0u;
 	map3.foreach_cell([&nbw] (Map3::Volume)
@@ -111,14 +111,14 @@ int main(int argc, char** argv)
 		++nbe;
 	});
 
-	std::cout << "nb vertices -> " << nbv << std::endl;
-	std::cout << "nb edges -> " << nbe << std::endl;
-	std::cout << "nb faces -> " << nbf << std::endl;
-	std::cout << "nb volumes -> " << nbw << std::endl;
+	cgogn_log_info("map3_from_surface") << "nb vertices -> " << nbv;
+	cgogn_log_info("map3_from_surface") << "nb edges -> " << nbe;
+	cgogn_log_info("map3_from_surface") << "nb faces -> " << nbf;
+	cgogn_log_info("map3_from_surface") << "nb volumes -> " << nbw;
 
 	end = std::chrono::system_clock::now();
 	std::chrono::duration<float64> elapsed_seconds = end - start;
-	std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+	cgogn_log_info("map3_from_surface") << "elapsed time: " << elapsed_seconds.count() << "s";
 
 
 	return 0;

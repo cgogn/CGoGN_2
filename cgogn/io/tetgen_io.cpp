@@ -22,13 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TETGEN_IO_CPP
+#define IO_TETGEN_IO_CPP_
 
-#include <io/mesh_generation/tetgen_io.h>
+#include <io/tetgen_io.h>
 
 namespace cgogn
 {
-
 namespace io
 {
 

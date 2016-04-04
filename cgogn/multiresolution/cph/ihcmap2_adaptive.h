@@ -336,14 +336,14 @@ protected:
 	inline Vertex cut_edge_update_emb(Dart /*e*/, Dart /*e2*/, Dart /*nd*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_edge_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_edge_update_emb") << "Method is not implemented yet.";
 		return Vertex();
 	}
 
 	inline void cut_face_update_emb(Dart /*e*/, Dart /*e2*/)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		std::cerr << "IHCMap2Adaptive_T::cut_face_update_emb method is not implemented yet." << std::endl;
+		cgogn_log_error("IHCMap2Adaptive_T::cut_face_update_emb") << "Method is not implemented yet.";
 	}
 
 	/***************************************************
