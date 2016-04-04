@@ -47,7 +47,7 @@ class TetVolumeImport : public VolumeImport<MAP_TRAITS>
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -57,27 +57,29 @@ protected:
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		iss >> this->nb_vertices_;
+		uint32 nbv = 0u;
+		iss >> nbv;
+		this->set_nb_vertices(nbv);
 		}
 
 		// reading number of tetrahedra
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		iss >> this->nb_volumes_;
-		this->volumes_types.reserve(this->nb_volumes_);
-		this->volumes_vertex_indices_.reserve(4u*this->nb_volumes_);
+		uint32 nbw = 0u;
+		iss >> nbw;
+		this->set_nb_volumes(nbw);
 		}
 
 		//reading vertices
-		for(uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
 			do
 			{
 				std::getline(fp, line);
 			} while (line.empty());
 
-			const uint32 new_id = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_id = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_id);
 			std::istringstream iss(line);
 			iss >> v[0];
@@ -88,7 +90,7 @@ protected:
 
 
 		// reading volumes
-		for (uint32 i = 0u; i < this->nb_volumes_ ; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			do
 			{
@@ -107,7 +109,7 @@ protected:
 				iss >> connector >> connector;
 				if (connector == 'C')
 				{
-					--this->nb_volumes_;
+					this->set_nb_volumes(this->get_nb_volumes() -1u);
 					std::array<uint32,4> ids;
 					iss >> ids[0] >> ids[1] >> ids[2] >> ids[3];
 					this->add_connector(ids[0], ids[1], ids[2], ids[3]);

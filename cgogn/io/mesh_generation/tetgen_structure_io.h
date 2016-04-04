@@ -58,27 +58,24 @@ protected:
 	virtual bool import_file_impl(const std::string& /*filename*/) override
 	{
 
-		this->nb_vertices_ = volume_->numberofpoints;
-		this->nb_volumes_ = volume_->numberoftetrahedra;
-		this->volumes_types.reserve(this->nb_volumes_);
-		this->volumes_vertex_indices_.reserve(4u*this->nb_volumes_);
+		this->set_nb_vertices(volume_->numberofpoints);
+		this->set_nb_volumes(volume_->numberoftetrahedra);
 
-		if (this->nb_vertices_ == 0u || this->nb_volumes_ == 0u)
+		if (this->get_nb_vertices() == 0u || this->get_nb_volumes()== 0u)
 		{
+			cgogn_log_warning("TetgenStructureVolumeImport") << "Error while importing data.";
 			this->clear();
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
-
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		//create vertices
 		std::vector<uint32> vertices_indices;
 		float64* p = volume_->pointlist ;
-		vertices_indices.reserve(this->nb_vertices_);
 
-		for(uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
-			const unsigned id = this->vertex_attributes_.template insert_lines<1>();
+			const unsigned id = this->insert_line_vertex_container();
 			position->operator [](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
 			vertices_indices.push_back(id);
 			p += 3 ;
@@ -86,7 +83,7 @@ protected:
 
 		//create tetrahedrons
 		int* t = volume_->tetrahedronlist ;
-		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::array<uint32,4> ids;
 			for(uint32 j = 0u; j < 4u; j++)
