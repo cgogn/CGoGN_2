@@ -25,6 +25,7 @@
 #define GEOMETRY_ALGOS_FILTERING_H_
 
 #include <geometry/types/geometry_traits.h>
+#include <core/utils/masks.h>
 
 namespace cgogn
 {
@@ -98,6 +99,54 @@ void filter_bilateral(
 
 		position_out[v] = position_in[v] + ((sum / normalizer) * n);
 	});
+}
+
+template <typename VEC3, typename MAP>
+void filter_taubin(
+	const MAP& map,
+	typename MAP::template VertexAttributeHandler<VEC3>& position,
+	typename MAP::template VertexAttributeHandler<VEC3>& position_tmp)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+
+	const Scalar lambda = 0.6307;
+	const Scalar mu = 0.6732;
+
+	CellCache<Vertex, MAP> vertices(map);
+
+	map.foreach_cell([&] (Vertex v)
+	{
+		VEC3 avg;
+		set_zero(avg);
+		uint32 count = 0;
+		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
+		{
+			avg += position[av];
+			++count;
+		});
+		avg /= Scalar(count);
+		const VEC3& p = position[v];
+		position_tmp[v] = p + ((avg - p) * lambda);
+	}
+	,vertices);
+
+	map.foreach_cell([&] (Vertex v)
+	{
+		VEC3 avg;
+		set_zero(avg);
+		uint32 count = 0;
+		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
+		{
+			avg += position_tmp[av];
+			++count;
+		});
+		avg /= Scalar(count);
+		const VEC3& p = position_tmp[v];
+		position[v] = p + ((avg - p) * mu);
+	}
+	,vertices);
 }
 
 } // namespace geometry

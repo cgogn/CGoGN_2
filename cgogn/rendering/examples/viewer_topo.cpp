@@ -179,6 +179,12 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
+		case Qt::Key_N:
+			cgogn::geometry::filter_taubin<Vec3>(map_, vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			topo_render->update_map2<Vec3>(map_, vertex_position_);
+			break;
 		default:
 			break;
 	}
