@@ -30,20 +30,18 @@
 #include <core/cmap/cmap2.h>
 
 #include <io/map_import.h>
+
 #include <geometry/algos/bounding_box.h>
 
+#include <rendering/drawer.h>
 #include <rendering/map_render.h>
+#include <rendering/topo_render.h>
 #include <rendering/shaders/vbo.h>
 #include <rendering/shaders/shader_flat.h>
-#include <rendering/drawer.h>
-
 #include <rendering/shaders/shader_simple_color.h>
-
-#include <rendering/topo_render.h>
 
 #include <modeling/algos/catmull_clark.h>
 #include <modeling/algos/loop.h>
-
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -58,6 +56,7 @@ using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 class Viewer : public QOGLViewer
 {
 public:
+
 	Viewer();
 	Viewer(const Viewer&) = delete;
 	Viewer& operator=(const Viewer&) = delete;
@@ -66,11 +65,12 @@ public:
 	virtual void init();
 
 	virtual void keyPressEvent(QKeyEvent *);
-	void import(const std::string& surfaceMesh);
+	void import(const std::string& surface_mesh);
 	virtual ~Viewer();
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
+
 	Map2 map_;
 	VertexAttributeHandler<Vec3> vertex_position_;
 
@@ -84,7 +84,6 @@ private:
 
 	bool flat_rendering_;
 	bool topo_rendering_;
-
 };
 
 
@@ -93,19 +92,18 @@ private:
 //
 
 
-void Viewer::import(const std::string& surfaceMesh)
+void Viewer::import(const std::string& surface_mesh)
 {
-	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
+	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
-
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
+	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
@@ -144,20 +142,18 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_T:
 			topo_rendering_ = !topo_rendering_;
 			break;
-
 		case Qt::Key_C:
-			cgogn::modeling::catmull_clark<Vec3>(map_,vertex_position_);
+			cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
-			topo_render->update_map2<Vec3>(map_,vertex_position_);
+			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_L:
-			cgogn::modeling::loop<Vec3>(map_,vertex_position_);
+			cgogn::modeling::loop<Vec3>(map_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
-			topo_render->update_map2<Vec3>(map_,vertex_position_);
+			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
-
 		default:
 			break;
 	}
@@ -191,7 +187,6 @@ void Viewer::draw()
 	{
 		topo_render->draw(proj,view);
 	}
-
 }
 
 void Viewer::init()
@@ -200,8 +195,6 @@ void Viewer::init()
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
-
-
 
 	render_ = new cgogn::rendering::MapRender();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
@@ -221,15 +214,15 @@ void Viewer::init()
 
 int main(int argc, char** argv)
 {
-	std::string surfaceMesh;
+	std::string surface_mesh;
 	if (argc < 2)
 	{
 		cgogn_log_info("viewer_topo")<< "USAGE: " << argv[0] << " [filename]";
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surfaceMesh << "\".";
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surface_mesh << "\".";
 	}
 	else
-		surfaceMesh = std::string(argv[1]);
+		surface_mesh = std::string(argv[1]);
 
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
@@ -237,7 +230,7 @@ int main(int argc, char** argv)
 	// Instantiate the viewer.
 	Viewer viewer;
 	viewer.setWindowTitle("simpleViewer");
-	viewer.import(surfaceMesh);
+	viewer.import(surface_mesh);
 	viewer.show();
 
 	// Run main loop.

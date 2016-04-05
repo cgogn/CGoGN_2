@@ -36,12 +36,12 @@ template<typename ATTR>
 void compute_bounding_box(const ATTR& attr, BoundingBox<inside_type(ATTR)>& bb)
 {
 	bb.reset();
-	for(const auto& p:attr)
+	for(const auto& p : attr)
 		bb.add_point(p);
 }
 
-
 } // namespace geometry
+
 } // namespace cgogn
 
 #endif // GEOMETRY_ALGO_BOUNDING_BOX_H_
