@@ -76,6 +76,7 @@ private:
 	Map2 map_;
 	VertexAttributeHandler<Vec3> vertex_position_;
 	VertexAttributeHandler<Vec3> vertex_position2_;
+	VertexAttributeHandler<Vec3> vertex_normal_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
@@ -107,6 +108,9 @@ void Viewer::import(const std::string& surface_mesh)
 	}
 
 	vertex_position2_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("position2");
+
+	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -149,12 +153,14 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_C:
 			cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_L:
 			cgogn::modeling::loop<Vec3>(map_, vertex_position_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
@@ -162,6 +168,14 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_A:
 			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			topo_render->update_map2<Vec3>(map_, vertex_position_);
+			break;
+		case Qt::Key_B:
+			cgogn::geometry::filter_bilateral<Vec3>(map_, vertex_position_, vertex_position2_, vertex_normal_);
+			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;

@@ -54,6 +54,52 @@ void filter_average(
 	});
 }
 
+template <typename VEC3, typename MAP>
+void filter_bilateral(
+	const MAP& map,
+	const typename MAP::template VertexAttributeHandler<VEC3>& position_in,
+	typename MAP::template VertexAttributeHandler<VEC3>& position_out,
+	const typename MAP::template VertexAttributeHandler<VEC3>& normal)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+
+	Scalar length_sum = 0;
+	Scalar angle_sum = 0;
+	uint32 nb_edges = 0;
+
+	map.foreach_cell([&] (Edge e)
+	{
+		std::pair<Vertex, Vertex> v = map.vertices(e);
+		VEC3 edge = position_in[v.first] - position_in[v.second];
+		length_sum += edge.norm();
+		angle_sum += angle(normal[v.first], normal[v.second]);
+		++nb_edges;
+	});
+
+	Scalar sigmaC = 1.0 * (length_sum / Scalar(nb_edges));
+	Scalar sigmaS = 2.5 * (angle_sum / Scalar(nb_edges));
+
+	map.foreach_cell([&] (Vertex v)
+	{
+		const VEC3& n = normal[v];
+
+		Scalar sum = 0, normalizer = 0;
+		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
+		{
+			VEC3 edge = position_in[av] - position_in[v];
+			Scalar t = edge.norm();
+			Scalar h = n.dot(edge);
+			Scalar wcs = std::exp((-1.0 * (t * t) / (2.0 * sigmaC * sigmaC)) + (-1.0 * (h * h) / (2.0 * sigmaS * sigmaS)));
+			sum += wcs * h;
+			normalizer += wcs;
+		});
+
+		position_out[v] = position_in[v] + ((sum / normalizer) * n);
+	});
+}
+
 } // namespace geometry
 
 } // namespace cgogn
