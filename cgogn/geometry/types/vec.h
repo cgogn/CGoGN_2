@@ -195,7 +195,6 @@ public:
 		return v / r;
 	}
 
-
 	inline const Scalar dot(const Self& v) const
 	{
 		Scalar r{0};

@@ -31,23 +31,21 @@
 
 #include <io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
-#include <geometry/algos/normal.h>
-
 #include <rendering/map_render.h>
+#include <rendering/drawer.h>
+#include <rendering/shaders/vbo.h>
 #include <rendering/shaders/shader_simple_color.h>
 #include <rendering/shaders/shader_flat.h>
 #include <rendering/shaders/shader_phong.h>
 #include <rendering/shaders/shader_vector_per_vertex.h>
-#include <rendering/shaders/vbo.h>
 #include <rendering/shaders/shader_bold_line.h>
 #include <rendering/shaders/shader_point_sprite.h>
-
 #include <rendering/shaders/shader_round_point.h>
 
 #include <geometry/algos/ear_triangulation.h>
-
-#include <rendering/drawer.h>
+#include <geometry/algos/bounding_box.h>
+#include <geometry/algos/normal.h>
+#include <geometry/algos/filtering.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -79,6 +77,7 @@ private:
 
 	Map2 map_;
 	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttributeHandler<Vec3> vertex_position2_;
 	VertexAttributeHandler<Vec3> vertex_normal_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
@@ -123,6 +122,8 @@ void Viewer::import(const std::string& surface_mesh)
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
+
+	vertex_position2_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("position2");
 
 	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
@@ -196,8 +197,28 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_V:
 			vertices_rendering_ = !vertices_rendering_;
 			break;
+//		case Qt::Key_B:
+//			bb_rendering_ = !bb_rendering_;
+//			break;
+		case Qt::Key_A:
+			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
+			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			break;
 		case Qt::Key_B:
-			bb_rendering_ = !bb_rendering_;
+			cgogn::geometry::filter_bilateral<Vec3>(map_, vertex_position_, vertex_position2_, vertex_normal_);
+			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			break;
+		case Qt::Key_T:
+			cgogn::geometry::filter_taubin<Vec3>(map_, vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
 			break;
 		default:
 			break;
@@ -247,7 +268,6 @@ void Viewer::draw()
 		render_->draw(cgogn::rendering::POINTS);
 		shader_point_sprite_->release_vao(0);
 		shader_point_sprite_->release();
-
 	}
 
 	if (edge_rendering_)

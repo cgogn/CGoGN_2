@@ -48,14 +48,14 @@ public:
 template <typename CellType, typename MAP>
 class CellCache : public MaskCell<CellType>
 {
-	MAP& map_;
+	const MAP& map_;
 	mutable typename std::vector<CellType>::const_iterator current_;
 	std::vector<CellType> cells_;
 
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
-	CellCache(MAP& m) : map_(m)
+	CellCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
 		update();
@@ -91,14 +91,14 @@ class BoundaryCache : public MaskCell<typename MAP::Boundary>
 {
 	using CellType = typename MAP::Boundary;
 
-	MAP& map_;
+	const MAP& map_;
 	mutable typename std::vector<CellType>::const_iterator current_;
 	std::vector<CellType> cells_;
 
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(BoundaryCache);
-	BoundaryCache(MAP& m) : map_(m)
+	BoundaryCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
 		update();

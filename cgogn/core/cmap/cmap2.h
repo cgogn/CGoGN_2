@@ -980,7 +980,7 @@ public:
 		});
 	}
 
-	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	inline std::pair<Vertex,Vertex> vertices(Edge e) const
 	{
 		return std::pair<Vertex,Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
