@@ -115,33 +115,37 @@ public:
 	BoundaryCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
-		update<BoundaryCellType>();
+		update();
 	}
 
-	template <typename CellType>
-	auto begin() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, BoundaryCellType>::type
+	template <typename CellType = BoundaryCellType>
+	CellType begin() const
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		current_ = cells_.begin();
-		if (end<BoundaryCellType>()) return BoundaryCellType();
+		if (end()) return CellType();
 		return *current_;
 	}
 
-	template <typename CellType>
-	auto next() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, BoundaryCellType>::type
+	template <typename CellType = BoundaryCellType>
+	CellType next() const
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		++current_;
 		return *current_;
 	}
 
-	template <typename CellType>
-	auto end() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, bool>::type
+	template <typename CellType = BoundaryCellType>
+	bool end() const
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		return current_ == cells_.end();
 	}
 
-	template <typename CellType>
-	auto update() -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, void>::type
+	template <typename CellType = BoundaryCellType>
+	void update()
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		cells_.clear();
 		typename MAP::DartMarker dm(map_);
 		map_.foreach_dart([&] (Dart d)
