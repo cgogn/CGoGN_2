@@ -143,9 +143,13 @@ public:
 
 	bool swap(ChunkArrayGen<CHUNKSIZE>* cag) override
 	{
-		Inherit::swap(cag);
-		Self* cs = dynamic_cast<Self*>(cag);
-		std::swap(stack_size_, cs->stack_size_);
+		if (Inherit::swap(cag))
+		{
+			Self* cs = dynamic_cast<Self*>(cag);
+			std::swap(stack_size_, cs->stack_size_);
+			return true;
+		}
+		return false;
 	}
 };
 

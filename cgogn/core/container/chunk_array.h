@@ -92,9 +92,11 @@ public:
 		if (!ca)
 		{
 			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
 		}
 
 		table_data_.swap(ca->table_data_);
+		return true;
 	}
 
 	bool is_boolean_array() const override
@@ -446,9 +448,11 @@ public:
 		if (!ca)
 		{
 			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
 		}
 
 		table_data_.swap(ca->table_data_);
+		return true;
 	}
 
 	bool is_boolean_array() const override
