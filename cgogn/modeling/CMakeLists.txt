@@ -6,6 +6,7 @@ set(HEADER_FILES
 	dll.h
 	algos/catmull_clark.h
 	algos/pliant_remeshing.h
+	algos/loop.h
 )
 
 add_custom_target(cgogn_modeling SOURCES ${HEADER_FILES})

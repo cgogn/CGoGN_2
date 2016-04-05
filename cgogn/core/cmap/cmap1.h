@@ -29,25 +29,6 @@
 namespace cgogn
 {
 
-namespace internal
-{
-template<uint64 N>
-struct check_multi_phi
-{
-	static const bool value_cmap1 = (N<10)?(N%10>0) && (N%10<=1):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap1;
-	static const bool value_cmap2 = (N<10)?(N%10>0) && (N%10<=2):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap2;
-	static const bool value_cmap3 = (N<10)?(N%10>0) && (N%10<=3):(N%10>0) && (N%10<=3) && check_multi_phi<N/10>::value_cmap3;
-
-};
-template<>
-struct check_multi_phi<0>
-{
-	static const bool value_cmap1 = true;
-	static const bool value_cmap2 = true;
-	static const bool value_cmap3 = true;
-};
-}
-
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
@@ -225,8 +206,7 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(internal::check_multi_phi<N>::value_cmap1, "composition on phi1 only");
-
+		static_assert((N%10)<=1,"composition on phi1/phi2/only");
 		if (N >=10)
 			return this->phi1(phi<N/10>(d));
 

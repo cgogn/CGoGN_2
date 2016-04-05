@@ -141,10 +141,11 @@ public:
 		Inherit::clear();
 	}
 
-	void swap(Self &cs)
+	bool swap(ChunkArrayGen<CHUNKSIZE>* cag) override
 	{
-		Inherit::swap(cs);
-		std::swap(stack_size_, cs.stack_size_);
+		Inherit::swap(cag);
+		Self* cs = dynamic_cast<Self*>(cag);
+		std::swap(stack_size_, cs->stack_size_);
 	}
 };
 

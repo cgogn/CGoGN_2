@@ -87,6 +87,8 @@ public:
 	 */
 	virtual Self* clone() const = 0;
 
+	virtual bool swap(Self*) = 0;
+
 	virtual bool is_boolean_array() const = 0;
 
 	/**

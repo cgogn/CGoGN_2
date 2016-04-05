@@ -42,6 +42,7 @@
 #include <rendering/topo_render.h>
 
 #include <modeling/algos/catmull_clark.h>
+#include <modeling/algos/loop.h>
 #include <modeling/algos/pliant_remeshing.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -148,11 +149,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_,vertex_position_);
+			break;
+		case Qt::Key_L:
+			cgogn::modeling::loop<Vec3>(map_,vertex_position_);
+			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+			topo_render->update_map2<Vec3>(map_,vertex_position_);
+			break;
 		case Qt::Key_R:
 			cgogn::modeling::pliant_remeshing<Vec3>(map_,vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_,vertex_position_);
+			break;
 		default:
 			break;
 	}

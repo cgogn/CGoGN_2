@@ -278,6 +278,31 @@ public:
 		return true;
 	}
 
+
+	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	{
+		uint32 index1 = get_array_index(ptr1);
+		uint32 index2 = get_array_index(ptr2);
+
+		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
+		{
+			cgogn_log_warning("swap_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (index1 == index2)
+		{
+			cgogn_log_warning("swap_data_attributes") << "Attribute same attribute.";
+			return false;
+		}
+
+		table_arrays_[index1]->swap(table_arrays_[index2]);
+
+		return true;
+	}
+
+
+
 	/**
 	 * @brief add a Marker attribute
 	 * @return pointer on created ChunkArray
@@ -499,8 +524,8 @@ public:
 		names_.swap(container.names_);
 		type_names_.swap(container.type_names_);
 		table_marker_arrays_.swap(container.table_marker_arrays_);
-		refs_.swap(container.refs_);
-		holes_stack_.swap(container.holes_stack_);
+		refs_.swap(&(container.refs_));
+		holes_stack_.swap(&(container.holes_stack_));
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
 	}
