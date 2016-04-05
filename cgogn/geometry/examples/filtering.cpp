@@ -206,6 +206,10 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
 			break;
 		case Qt::Key_B:
 			cgogn::geometry::filter_bilateral<Vec3>(map_, vertex_position_, vertex_position2_, vertex_normal_);
@@ -213,12 +217,20 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
 			break;
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin<Vec3>(map_, vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
 			break;
 		default:
 			break;
@@ -330,7 +342,7 @@ void Viewer::init()
 
 	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
 	shader_point_sprite_->add_vao();
-	shader_point_sprite_->set_vao(0, vbo_pos_,vbo_color_,vbo_sphere_sz_);
+	shader_point_sprite_->set_vao(0, vbo_pos_, vbo_color_, vbo_sphere_sz_);
 	shader_point_sprite_->bind();
 	shader_point_sprite_->set_size(bb_.diag_size()/1000.0);
 	shader_point_sprite_->set_color(QColor(255,0,0));
