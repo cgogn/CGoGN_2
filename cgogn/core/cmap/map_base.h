@@ -807,18 +807,18 @@ public:
 	 */
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void foreach_cell(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
 			f(it);
 	}
 
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = func_parameter_type(FUNC);
@@ -838,21 +838,21 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellType it = mask.begin();
+		CellType it = mask.template begin<CellType>();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		while (!mask.end())
+		while (!mask.template end<CellType>())
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.end(); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.template end<CellType>(); ++k)
 			{
 				CellType c(it);
 				cells.push_back(c);
-				it = mask.next();
+				it = mask.template next<CellType>();
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -940,12 +940,12 @@ public:
 	 */
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void foreach_cell_until(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
 			if (!f(it))
 				break;
 	}

@@ -30,7 +30,6 @@
 namespace cgogn
 {
 
-template <typename CellType>
 class MaskCell
 {
 public:
@@ -38,62 +37,77 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MaskCell);
 	inline MaskCell() {}
 	virtual ~MaskCell() {}
-	virtual void operator() (CellType) const final {}
+	virtual void operator() (uint32) const final {}
 
-	virtual CellType begin() const = 0;
-	virtual CellType next() const = 0;
-	virtual bool end() const = 0;
+//	virtual CellType begin() const = 0;
+//	virtual CellType next() const = 0;
+//	virtual bool end() const = 0;
 };
 
-template <typename CellType, typename MAP>
-class CellCache : public MaskCell<CellType>
+template <typename MAP>
+class CellCache : public MaskCell
 {
 	const MAP& map_;
-	mutable typename std::vector<CellType>::const_iterator current_;
-	std::vector<CellType> cells_;
+	mutable std::array<typename std::vector<Dart>::const_iterator, NB_ORBITS> current_;
+	std::array<std::vector<Dart>, NB_ORBITS> cells_;
 
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
 	CellCache(const MAP& m) : map_(m)
-	{
-		cells_.reserve(4096u);
-		update();
-	}
+	{}
 
+	template <typename CellType>
 	CellType begin() const
 	{
-		current_ = cells_.begin();
-		if (end()) return CellType();
-		return *current_;
+		static const Orbit ORBIT = CellType::ORBIT;
+		current_[ORBIT] = cells_[ORBIT].begin();
+		if (end<CellType>()) return CellType();
+		return CellType(*current_[ORBIT]);
 	}
 
+	template <typename CellType>
 	CellType next() const
 	{
-		++current_;
-		return *current_;
+		static const Orbit ORBIT = CellType::ORBIT;
+		++current_[ORBIT];
+		return CellType(*current_[ORBIT]);
 	}
 
-	bool end() const { return current_ == cells_.end(); }
+	template <typename CellType>
+	bool end() const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		return current_[ORBIT] == cells_[ORBIT].end();
+	}
 
-	uint32 size() const { return cells_.size(); }
+	template <typename CellType>
+	uint32 size() const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		return cells_[ORBIT].size();
+	}
 
+	template <typename CellType>
+//	auto update() -> typename std::enable_if<std::is_same<CellType, Vertex>::value, void>::type
 	void update()
 	{
-		cells_.clear();
-		map_.foreach_cell([&] (CellType c) { cells_.push_back(c); });
-		current_ = cells_.begin();
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].clear();
+		cells_[ORBIT].reserve(4096u);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); });
+		current_[ORBIT] = cells_[ORBIT].begin();
 	}
 };
 
 template <typename MAP>
-class BoundaryCache : public MaskCell<typename MAP::Boundary>
+class BoundaryCache : public MaskCell
 {
-	using CellType = typename MAP::Boundary;
+	using BoundaryCellType = typename MAP::Boundary;
 
 	const MAP& map_;
-	mutable typename std::vector<CellType>::const_iterator current_;
-	std::vector<CellType> cells_;
+	mutable typename std::vector<BoundaryCellType>::const_iterator current_;
+	std::vector<BoundaryCellType> cells_;
 
 public:
 
@@ -101,25 +115,32 @@ public:
 	BoundaryCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
-		update();
+		update<BoundaryCellType>();
 	}
 
-	CellType begin() const
+	template <typename CellType>
+	auto begin() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, BoundaryCellType>::type
 	{
 		current_ = cells_.begin();
-		if (end()) return CellType();
+		if (end<BoundaryCellType>()) return BoundaryCellType();
 		return *current_;
 	}
 
-	CellType next() const
+	template <typename CellType>
+	auto next() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, BoundaryCellType>::type
 	{
 		++current_;
 		return *current_;
 	}
 
-	bool end() const { return current_ == cells_.end(); }
+	template <typename CellType>
+	auto end() const -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, bool>::type
+	{
+		return current_ == cells_.end();
+	}
 
-	void update()
+	template <typename CellType>
+	auto update() -> typename std::enable_if<std::is_same<CellType, BoundaryCellType>::value, void>::type
 	{
 		cells_.clear();
 		typename MAP::DartMarker dm(map_);
@@ -127,7 +148,7 @@ public:
 		{
 			if (!dm.is_marked(d))
 			{
-				CellType c(d);
+				BoundaryCellType c(d);
 				dm.mark_orbit(c);
 				if (map_.is_boundary(d))
 					cells_.push_back(c);

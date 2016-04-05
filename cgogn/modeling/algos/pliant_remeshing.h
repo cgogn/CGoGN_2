@@ -47,7 +47,8 @@ void pliant_remeshing(
 
 	Scalar mean_edge_length = 0;
 
-	CellCache<Edge, Map> edges(map);
+	CellCache<Map> cache(map);
+	cache.template update<Edge>();
 
 	// compute mean edge length
 	map.foreach_cell([&] (Edge e)
@@ -55,9 +56,10 @@ void pliant_remeshing(
 		std::pair<Vertex,Vertex> v = map.vertices(e);
 		VEC3 edge = position[v.first] - position[v.second];
 		mean_edge_length += edge.norm();
-	}, edges);
-	mean_edge_length /= edges.size();
+	},
+	cache);
 
+	mean_edge_length /= cache.template size<Edge>();
 	Scalar min_edge_length= Scalar(0.75) * mean_edge_length;
 	Scalar max_edge_length = Scalar(1.25) * mean_edge_length;
 
@@ -75,7 +77,8 @@ void pliant_remeshing(
 			if(!map.is_boundary(e2))
 				map.cut_face(Vertex(map.phi1(e2)), Vertex(map.phi_1(e2)));
 		}
-	}, edges);
+	},
+	cache);
 
 	// collapse short edges
 	map.foreach_cell([&] (Edge e)

@@ -114,7 +114,8 @@ void filter_taubin(
 	const Scalar lambda = 0.6307;
 	const Scalar mu = 0.6732;
 
-	CellCache<Vertex, MAP> vertices(map);
+	CellCache<MAP> cache(map);
+	cache.template update<Vertex>();
 
 	map.foreach_cell([&] (Vertex v)
 	{
@@ -130,7 +131,7 @@ void filter_taubin(
 		const VEC3& p = position[v];
 		position_tmp[v] = p + ((avg - p) * lambda);
 	}
-	,vertices);
+	, cache);
 
 	map.foreach_cell([&] (Vertex v)
 	{
@@ -146,7 +147,7 @@ void filter_taubin(
 		const VEC3& p = position_tmp[v];
 		position[v] = p + ((avg - p) * mu);
 	}
-	,vertices);
+	, cache);
 }
 
 } // namespace geometry
