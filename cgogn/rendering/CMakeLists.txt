@@ -1,6 +1,6 @@
 project(cgogn_rendering
 	LANGUAGES CXX
-	)
+)
 
 find_package(Qt5Widgets)
 #find_package(Qt5OpenGL)
@@ -23,7 +23,7 @@ set(HEADER_FILES
 	drawer.h
 	topo_render.h
 	volume_render.h
-	)
+)
 
 set(SOURCE_FILES
 	shaders/shader_program.cpp
@@ -41,7 +41,7 @@ set(SOURCE_FILES
 	topo_render.cpp
 	volume_render.cpp
 	map_render.cpp
-	)
+)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -52,27 +52,24 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/rendering>
-	)
-
+)
 
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Widgets)
 
 install(DIRECTORY .
 	DESTINATION include/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
-	)
+)
 
 install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
-	)
+)
 
 add_subdirectory(examples)
 
 #if(CGOGN_BUILD_TESTS)
 #	add_subdirectory(tests)
 #endif()
-
-

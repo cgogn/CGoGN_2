@@ -2,6 +2,9 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
+find_package(Qt5Widgets)
+#find_package(Qt5OpenGL)
+
 set(HEADER_FILES
 	dll.h
 	algos/bounding_box.h
@@ -57,6 +60,8 @@ install(TARGETS ${PROJECT_NAME}
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
+
+add_subdirectory(examples)
 
 if(CGOGN_BUILD_TESTS)
 	add_subdirectory(tests)
