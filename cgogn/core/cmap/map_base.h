@@ -162,6 +162,23 @@ protected:
 		return idx;
 	}
 
+	template<Orbit ORBIT>
+	inline void compact_orbit_container()
+	{
+		if (!this->template is_embedded<ORBIT>())
+			return;
+
+		auto& cac = this->template get_attribute_container<ORBIT>();
+		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
+		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
+		{
+			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
+			const uint32 new_idx = map_old_new[old_idx];
+			if (new_idx != UINT32_MAX)
+				old_idx = new_idx;
+		});
+	}
+
 	/**
 	 * \brief Removes a topological element of PRIM_SIZE
 	 * from the topology container
