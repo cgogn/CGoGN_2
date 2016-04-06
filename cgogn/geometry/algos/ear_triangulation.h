@@ -86,7 +86,7 @@ class EarTriangulation
 	MAP& map_;
 
 	/// ref on position attribute
-	const typename MAP::template VertexAttributeHandler<VEC3>& positions_;
+	const typename MAP::template VertexAttribute<VEC3>& positions_;
 
 	/// map of ears
 	VPMS ears_;
@@ -213,7 +213,7 @@ public:
 	 * @param f the face to tringulate
 	 * @param position attribute of position to use
 	 */
-	EarTriangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position) :
+	EarTriangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position) :
 		map_(map),
 		positions_(position),
 		ears_(cmp_VP)
@@ -383,7 +383,7 @@ public:
  * @param table_indices table of indices (vertex embedding) to fill (append)
  */
 template <typename VEC3, typename MAP>
-static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<uint32>& table_indices)
+static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, std::vector<uint32>& table_indices)
 {
 	EarTriangulation<VEC3, MAP> tri(map, f, position);
 	tri.compute_indices(table_indices);
@@ -396,7 +396,7 @@ static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const type
  * @param position
  */
 template <typename VEC3, typename MAP>
-static void apply_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+static void apply_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	EarTriangulation<VEC3, MAP> tri(map, f, position);
 	tri.triangulate();
@@ -409,7 +409,7 @@ static void apply_ear_triangulation(MAP& map, typename MAP::Face f, const typena
  * @param position
  */
 template <typename VEC3, typename MAP>
-static void apply_ear_triangulations(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+static void apply_ear_triangulations(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	map.template foreach_cell([&] (typename MAP::Face f)
 	{

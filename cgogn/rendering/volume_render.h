@@ -96,14 +96,14 @@ public:
 	inline void set_edge_color(const QColor& rgb) { edge_color_= rgb; }
 
 	template <typename VEC3, typename MAP>
-	void update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	template <typename VEC3, typename MAP>
-	void update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position,
-				const typename MAP::template VertexAttributeHandler<VEC3>& color);
+	void update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position,
+				const typename MAP::template VertexAttribute<VEC3>& color);
 
 	template <typename VEC3, typename MAP>
-	void update_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_edge(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 
@@ -112,7 +112,7 @@ public:
 
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	init_without_color();
 
@@ -169,8 +169,8 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 }
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position,
-						  const typename MAP::template VertexAttributeHandler<VEC3>& color)
+void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position,
+						  const typename MAP::template VertexAttribute<VEC3>& color)
 {
 	init_with_color();
 
@@ -255,7 +255,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	init_edge();
 

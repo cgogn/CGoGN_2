@@ -56,7 +56,7 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -78,8 +78,8 @@ public:
 private:
 
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
-	VertexAttributeHandler<Vec3> vertex_normal_;
+	VertexAttribute<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_normal_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

@@ -51,7 +51,7 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -81,7 +81,7 @@ private:
 	QMatrix4x4 view_;
 
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

@@ -59,7 +59,7 @@ public:
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
 
 protected:
@@ -116,7 +116,7 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+		typename Map::template VertexAttribute<std::vector<Dart>> darts_per_vertex =
 				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;

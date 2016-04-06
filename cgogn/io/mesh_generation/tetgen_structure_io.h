@@ -102,7 +102,7 @@ private:
 };
 
 template <typename VEC3, typename MAP_TRAITS>
-std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename CMap2<MAP_TRAITS>::template VertexAttributeHandler<VEC3>& pos)
+std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename CMap2<MAP_TRAITS>::template VertexAttribute<VEC3>& pos)
 {
 	using Map = CMap2<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;

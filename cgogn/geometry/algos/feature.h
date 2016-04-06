@@ -35,7 +35,7 @@ namespace geometry
 template <typename VEC3, typename MAP>
 void mark_feature_edges(
 	const MAP& map,
-	const typename MAP::template FaceAttributeHandler<VEC3>& normal,
+	const typename MAP::template FaceAttribute<VEC3>& normal,
 	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
 {
 	feature_edge.unmark_all();

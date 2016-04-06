@@ -88,17 +88,17 @@ public:
 	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
 	template <typename VEC3, typename MAP>
-	void update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	template <typename VEC3, typename MAP>
-	void update_map3(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 
 	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending=true);
 };
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -177,7 +177,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;

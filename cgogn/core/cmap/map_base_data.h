@@ -78,9 +78,9 @@ public:
 	}
 };
 
-// forward declaration of class AttributeHandlerOrbit
+// forward declaration of class AttributeOrbit
 template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeHandlerOrbit;
+class AttributeOrbit;
 
 /**
  * @brief The MapBaseData class
@@ -95,8 +95,8 @@ public:
 
 	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
-	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
+	template <typename DT, Orbit ORBIT> friend class AttributeOrbit;
+	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;

@@ -60,7 +60,7 @@ typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
 }
 
 template <typename VEC3, typename MAP>
-void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>& position)
+void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
