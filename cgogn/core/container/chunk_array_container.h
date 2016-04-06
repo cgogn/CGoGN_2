@@ -519,35 +519,37 @@ public:
 	 * @param map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
 	template <uint32 PRIMSIZE>
-	void compact(std::vector<uint32>& map_old_new)
+	std::vector<uint32> compact()
 	{
-		map_old_new.clear();
-		map_old_new.resize(end(), 0xffffffff);
+//		map_old_new.clear();
+		if (this->holes_stack_.empty())
+			return std::vector<uint32>();
 
 		uint32 up = rbegin();
-		uint32 down = 0u;
+		uint32 down = std::numeric_limits<uint32>::max();
+		std::vector<uint32> map_old_new;
+		map_old_new.resize(up, std::numeric_limits<uint32>::max());
 
-		while (down < up)
+		do
 		{
-			if (!used(down))
+			down = holes_stack_.head();
+			for(uint32 i = 0u; i < PRIMSIZE; ++i)
 			{
-				for(uint32 i = 0u; i < PRIMSIZE; ++i)
-				{
-					unsigned rdown = down + PRIMSIZE-1u - i;
-					map_old_new[up] = rdown;
-					copy_line(rdown, up,true,true);
-					rnext(up);
-				}
-				down += PRIMSIZE;
+				const uint32 rdown = down + PRIMSIZE-1u - i;
+				map_old_new[up] = rdown;
+				copy_line(rdown, up,true,true);
+				rnext(up);
 			}
-			else
-				down++;
-		}
-
-		nb_max_lines_ = nb_used_lines_;
+			holes_stack_.pop();
+		} while (!holes_stack_.empty());
 
 		// free unused memory blocks
-		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
+		nb_max_lines_ = nb_used_lines_;
+		const uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+
+		if (old_nb_blocks == new_nb_blocks)
+			return map_old_new;
 
 		for (auto arr : table_arrays_)
 			arr->set_nb_chunks(new_nb_blocks);
@@ -557,8 +559,7 @@ public:
 
 		refs_.set_nb_chunks(new_nb_blocks);
 
-		// clear holes
-		holes_stack_.clear();
+		return map_old_new;
 	}
 
 	/**************************************
