@@ -113,13 +113,15 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 		FaceAttributeHandler<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 
-		cgogn::CellCache<Face, Map2> cache(bench_map);
+		cgogn::CellCache<Map2> cache(bench_map);
+		cache.template update<Face>();
 		state.ResumeTiming();
 
 		bench_map.foreach_cell([&] (Face f)
 		{
 			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
-		}, cache);
+		},
+		cache);
 	}
 }
 
@@ -171,13 +173,15 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 		FaceAttributeHandler<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 
-		cgogn::CellCache<Face, Map2> cache(bench_map);
+		cgogn::CellCache<Map2> cache(bench_map);
+		cache.template update<Face>();
 		state.ResumeTiming();
 
 		bench_map.parallel_foreach_cell([&] (Face f, uint32)
 		{
 			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
-		}, cache);
+		},
+		cache);
 	}
 }
 
@@ -211,13 +215,15 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 		VertexAttributeHandler<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
 		cgogn_assert(vertices_normal.is_valid());
 
-		cgogn::CellCache<Vertex, Map2> cache(bench_map);
+		cgogn::CellCache<Map2> cache(bench_map);
+		cache.template update<Vertex>();
 		state.ResumeTiming();
 
 		bench_map.foreach_cell([&] (Vertex v)
 		{
 			vertices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
-		}, cache);
+		},
+		cache);
 	}
 }
 
@@ -268,13 +274,15 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		VertexAttributeHandler<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
 		cgogn_assert(vertices_normal.is_valid());
 
-		cgogn::CellCache<Vertex, Map2> cache(bench_map);
+		cgogn::CellCache<Map2> cache(bench_map);
+		cache.template update<Vertex>();
 		state.ResumeTiming();
 
 		bench_map.parallel_foreach_cell([&] (Vertex v, uint32)
 		{
 			vertices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
-		}, cache);
+		},
+		cache);
 	}
 }
 

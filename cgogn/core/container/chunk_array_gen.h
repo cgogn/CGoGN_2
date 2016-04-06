@@ -82,7 +82,7 @@ public:
 	}
 
 	/**
-	 * @brief create a ChunkArray object without knowning type
+	 * @brief create a ChunkArray object without knowing type
 	 * @return generic pointer
 	 */
 	virtual Self* clone() const = 0;

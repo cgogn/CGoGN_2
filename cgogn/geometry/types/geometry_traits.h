@@ -97,10 +97,10 @@ struct nb_components_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 
 
 template <typename T, typename std::enable_if<(nb_components_traits<T>::value > 1)>::type* = nullptr>
-void set_zero(T t) { t.setZero(); }
+void set_zero(T& t) { t.setZero(); }
 
 template <typename T, typename std::enable_if<(nb_components_traits<T>::value == 1)>::type* = nullptr>
-void set_zero(T t) { t = 0; }
+void set_zero(T& t) { t = 0; }
 
 } // namespace geometry
 

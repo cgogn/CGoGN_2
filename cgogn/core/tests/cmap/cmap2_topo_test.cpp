@@ -257,6 +257,7 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX + 2u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX + 2u);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -288,10 +289,12 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 			EXPECT_EQ(codegree(Face(phi2(d))), k2 + 1u);
 		}
 	}
+
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices + NB_MAX);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges + NB_MAX);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -333,10 +336,12 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 			EXPECT_EQ(codegree(Face(dd)) + codegree(Face(e)), k + 2);
 		}
 	}
+
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -403,6 +408,7 @@ TEST_F(CMap2TopoTest, close_map)
 
 	MapBuilder mbuild(*this);
 	mbuild.close_map();
+
 	EXPECT_TRUE(check_map_integrity());
 }
 

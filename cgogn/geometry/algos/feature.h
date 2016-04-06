@@ -21,11 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_CENTROID_H_
-#define GEOMETRY_ALGOS_CENTROID_H_
+#ifndef GEOMETRY_ALGOS_FEATURE_H_
+#define GEOMETRY_ALGOS_FEATURE_H_
 
-#include <core/basic/cell.h>
-#include <geometry/types/geometry_traits.h>
+#include <geometry/functions/basics.h>
 
 namespace cgogn
 {
@@ -33,23 +32,23 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename T, Orbit ORBIT, typename MAP>
-inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
+template <typename VEC3, typename MAP>
+void mark_feature_edges(
+	const MAP& map,
+	const typename MAP::template FaceAttributeHandler<VEC3>& normal,
+	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
 {
-	T result;
-	set_zero(result);
-	uint32 count = 0;
-	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
+	feature_edge.unmark_all();
+
+	map.foreach_cell([&] (typename MAP::Edge e)
 	{
-		result += attribute[v];
-		++count;
+		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
+			feature_edge.mark(e);
 	});
-	result /= typename T::Scalar(count);
-	return result;
 }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_CENTROID_H_
+#endif // GEOMETRY_ALGOS_FEATURE_H_

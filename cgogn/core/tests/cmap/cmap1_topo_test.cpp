@@ -155,10 +155,10 @@ TEST_F(CMap1TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
 
 	uint32 count_vertices = 11u + add_faces(NB_MAX);
-
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX + 2u);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -166,7 +166,7 @@ TEST_F(CMap1TopoTest, add_face_topo)
  * The test randomly removes 1/3 of the initial faces.
  * The number of cells correctly decreases and the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, remove_face)
+TEST_F(CMap1TopoTest, remove_face_topo)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
 	uint32 count_faces = NB_MAX;
@@ -177,7 +177,7 @@ TEST_F(CMap1TopoTest, remove_face)
 		{
 			Face f(d);
 			uint32 k = codegree(f);
-			remove_face(f);
+			remove_face_topo(d);
 			count_vertices -= k;
 			--count_faces;
 		}
@@ -186,6 +186,7 @@ TEST_F(CMap1TopoTest, remove_face)
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -204,9 +205,11 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 		++count_vertices;
 		EXPECT_EQ(codegree(Face(d)), k + 1);
 	}
+
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -214,7 +217,7 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 * The test performs NB_MAX vertex removing on vertices of randomly generated faces.
 * The number of removed cells is correct and the map integrity is preserved.
 */
-TEST_F(CMap1TopoTest, remove_vertex)
+TEST_F(CMap1TopoTest, remove_vertex_topo)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
 	uint32 count_faces = NB_MAX;
@@ -225,20 +228,22 @@ TEST_F(CMap1TopoTest, remove_vertex)
 		if (k > 1)
 		{
 			Dart e = phi1(d);
-			remove_vertex(Vertex(d));
+			remove_vertex_topo(d);
 			--count_vertices;
 			EXPECT_EQ(codegree(Face(e)), k - 1);
 		}
 		else
 		{
-			remove_vertex(Vertex(d));
+			remove_vertex_topo(d);
 			--count_faces;
 			--count_vertices;
 		}
 	}
+
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -307,7 +312,6 @@ TEST_F(CMap1TopoTest, multi_phi)
 
 	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
 }
-
 
 #undef NB_MAX
 

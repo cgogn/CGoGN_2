@@ -50,10 +50,13 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Vertex = typename Map2::Vertex;
+using Edge = typename Map2::Edge;
+
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
 
 
@@ -67,6 +70,7 @@ public:
 
 	virtual void draw();
 	virtual void init();
+	void update_bb();
 
 	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surface_mesh);
@@ -79,6 +83,8 @@ private:
 	VertexAttributeHandler<Vec3> vertex_position_;
 	VertexAttributeHandler<Vec3> vertex_position2_;
 	VertexAttributeHandler<Vec3> vertex_normal_;
+
+	cgogn::CellCache<Map2> cell_cache_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
@@ -128,6 +134,9 @@ void Viewer::import(const std::string& surface_mesh)
 	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
+	cell_cache_.update<Vertex>();
+	cell_cache_.update<Edge>();
+
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
@@ -157,6 +166,7 @@ Viewer::Viewer() :
 	map_(),
 	vertex_position_(),
 	vertex_normal_(),
+	cell_cache_(map_),
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
@@ -201,24 +211,42 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			bb_rendering_ = !bb_rendering_;
 //			break;
 		case Qt::Key_A:
-			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
+			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_,vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		case Qt::Key_B:
-			cgogn::geometry::filter_bilateral<Vec3>(map_, vertex_position_, vertex_position2_, vertex_normal_);
+			cgogn::geometry::filter_bilateral<Vec3>(map_, cell_cache_,vertex_position_, vertex_position2_, vertex_normal_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		case Qt::Key_T:
-			cgogn::geometry::filter_taubin<Vec3>(map_, vertex_position_, vertex_position2_);
+			cgogn::geometry::filter_taubin<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
 			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		default:
 			break;
@@ -330,7 +358,7 @@ void Viewer::init()
 
 	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
 	shader_point_sprite_->add_vao();
-	shader_point_sprite_->set_vao(0, vbo_pos_,vbo_color_,vbo_sphere_sz_);
+	shader_point_sprite_->set_vao(0, vbo_pos_, vbo_color_, vbo_sphere_sz_);
 	shader_point_sprite_->bind();
 	shader_point_sprite_->set_size(bb_.diag_size()/1000.0);
 	shader_point_sprite_->set_color(QColor(255,0,0));
@@ -372,6 +400,13 @@ void Viewer::init()
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
+	update_bb();
+}
+
+void Viewer::update_bb()
+{
+	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);
 	drawer_->begin(GL_LINE_LOOP);
