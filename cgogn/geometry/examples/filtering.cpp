@@ -67,6 +67,7 @@ public:
 
 	virtual void draw();
 	virtual void init();
+	void update_bb();
 
 	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surface_mesh);
@@ -210,6 +211,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		case Qt::Key_B:
 			cgogn::geometry::filter_bilateral<Vec3>(map_, vertex_position_, vertex_position2_, vertex_normal_);
@@ -221,6 +224,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin<Vec3>(map_, vertex_position_, vertex_position2_);
@@ -231,6 +236,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
 			break;
 		default:
 			break;
@@ -384,6 +391,13 @@ void Viewer::init()
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
+	update_bb();
+}
+
+void Viewer::update_bb()
+{
+	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);
 	drawer_->begin(GL_LINE_LOOP);
