@@ -25,6 +25,7 @@
 #define GEOMETRY_ALGOS_CENTROID_H_
 
 #include <core/basic/cell.h>
+#include <geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -36,7 +37,7 @@ template <typename T, Orbit ORBIT, typename MAP>
 inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
 {
 	T result;
-	result.setZero();
+	set_zero(result);
 	uint32 count = 0;
 	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
 	{

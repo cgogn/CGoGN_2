@@ -33,9 +33,10 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename T, typename MAP>
+template <typename T, typename MAP, typename MASK>
 void filter_average(
 	const MAP& map,
+	const MASK& mask,
 	const typename MAP::template VertexAttributeHandler<T>& attribute_in,
 	typename MAP::template VertexAttributeHandler<T>& attribute_out)
 {
@@ -52,12 +53,14 @@ void filter_average(
 			++count;
 		});
 		attribute_out[v] = sum / typename vector_traits<T>::Scalar(count);
-	});
+	},
+	mask);
 }
 
-template <typename VEC3, typename MAP>
+template <typename VEC3, typename MAP, typename MASK>
 void filter_bilateral(
 	const MAP& map,
+	const MASK& mask,
 	const typename MAP::template VertexAttributeHandler<VEC3>& position_in,
 	typename MAP::template VertexAttributeHandler<VEC3>& position_out,
 	const typename MAP::template VertexAttributeHandler<VEC3>& normal)
@@ -77,7 +80,8 @@ void filter_bilateral(
 		length_sum += edge.norm();
 		angle_sum += angle(normal[v.first], normal[v.second]);
 		++nb_edges;
-	});
+	},
+	mask);
 
 	Scalar sigmaC = 1.0 * (length_sum / Scalar(nb_edges));
 	Scalar sigmaS = 2.5 * (angle_sum / Scalar(nb_edges));
@@ -98,12 +102,14 @@ void filter_bilateral(
 		});
 
 		position_out[v] = position_in[v] + ((sum / normalizer) * n);
-	});
+	},
+	mask);
 }
 
-template <typename VEC3, typename MAP>
+template <typename VEC3, typename MAP, typename MASK>
 void filter_taubin(
 	const MAP& map,
+	const MASK& mask,
 	typename MAP::template VertexAttributeHandler<VEC3>& position,
 	typename MAP::template VertexAttributeHandler<VEC3>& position_tmp)
 {
@@ -113,9 +119,6 @@ void filter_taubin(
 
 	const Scalar lambda = 0.6307;
 	const Scalar mu = 0.6732;
-
-	CellCache<MAP> cache(map);
-	cache.template update<Vertex>();
 
 	map.foreach_cell([&] (Vertex v)
 	{
@@ -130,8 +133,8 @@ void filter_taubin(
 		avg /= Scalar(count);
 		const VEC3& p = position[v];
 		position_tmp[v] = p + ((avg - p) * lambda);
-	}
-	, cache);
+	},
+	mask);
 
 	map.foreach_cell([&] (Vertex v)
 	{
@@ -146,8 +149,8 @@ void filter_taubin(
 		avg /= Scalar(count);
 		const VEC3& p = position_tmp[v];
 		position[v] = p + ((avg - p) * mu);
-	}
-	, cache);
+	},
+	mask);
 }
 
 } // namespace geometry
