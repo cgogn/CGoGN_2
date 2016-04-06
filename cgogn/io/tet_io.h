@@ -106,7 +106,7 @@ protected:
 
 				iss.clear();
 				char connector;
-				iss >> connector >> connector;
+				iss >> connector >> connector; // the line should be like this: # C id0 id1 id2 id3
 				if (connector == 'C')
 				{
 					this->set_nb_volumes(this->get_nb_volumes() -1u);
