@@ -31,16 +31,16 @@ namespace cgogn
 {
 
 /**
- * \brief AttributeHandler class
+ * \brief Attribute class
  * @TPARAM T the data type of the attribute to handlde
  */
 template<typename MAP, typename DATA_TRAITS, typename T, Orbit ORBIT>
-class AttributeHandlerCPH : public AttributeHandler<DATA_TRAITS, T, ORBIT>
+class AttributeCPH : public Attribute<DATA_TRAITS, T, ORBIT>
 {
 public:
 
-	using Inherit = AttributeHandler<DATA_TRAITS, T, ORBIT>;
-	using Self = AttributeHandlerCPH<MAP, DATA_TRAITS, T, ORBIT>;
+	using Inherit = Attribute<DATA_TRAITS, T, ORBIT>;
+	using Self = AttributeCPH<MAP, DATA_TRAITS, T, ORBIT>;
 
 	using value_type = T;
 
@@ -48,19 +48,19 @@ public:
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
 
 
-	AttributeHandlerCPH() : 
+	AttributeCPH() : 
 		Inherit()
 	{}
 
-	AttributeHandlerCPH(MapData* const m, TChunkArray* const ca) :
+	AttributeCPH(MapData* const m, TChunkArray* const ca) :
 		Inherit(m,ca)
 	{}
 
-	AttributeHandlerCPH(const Self& att) :
+	AttributeCPH(const Self& att) :
 		Inherit(att)
 	{}
 
-	AttributeHandlerCPH(Self&& att) CGOGN_NOEXCEPT :
+	AttributeCPH(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(att)
 	{}
 
@@ -76,7 +76,7 @@ public:
 
 	T& operator[](Cell<ORBIT> c)
 	{
-		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return this->chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 //		switch(ORBIT)
@@ -137,12 +137,12 @@ public:
 
 	T& operator[](uint32 a)
 	{
-		return AttributeHandler<T, ORBIT>::operator[](a) ;
+		return Attribute<T, ORBIT>::operator[](a) ;
 	}
 
 	const T& operator[](uint32 a) const
 	{
-		return AttributeHandler<T, ORBIT>::operator[](a) ;
+		return Attribute<T, ORBIT>::operator[](a) ;
 	}
 };
 

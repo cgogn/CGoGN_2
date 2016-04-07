@@ -43,7 +43,7 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-inline void picking_internal_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>& selected )
+inline void picking_internal_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>& selected )
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -106,7 +106,7 @@ inline void picking_internal_face(MAP& m, const typename MAP::template VertexAtt
 }
 
 template <typename VEC3, typename MAP>
-bool picking_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Face>& selected)
+bool picking_faces(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Face>& selected)
 {
 	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
@@ -122,7 +122,7 @@ bool picking_faces(MAP& m, const typename MAP::template VertexAttributeHandler<V
 }
 
 template <typename VEC3, typename MAP>
-bool picking_vertices(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Vertex>& selected)
+bool picking_vertices(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Vertex>& selected)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -162,7 +162,7 @@ bool picking_vertices(MAP& m, const typename MAP::template VertexAttributeHandle
 }
 
 template <typename VEC3, typename MAP>
-bool picking_edges(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Edge>& selected)
+bool picking_edges(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Edge>& selected)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -204,7 +204,7 @@ bool picking_edges(MAP& m, const typename MAP::template VertexAttributeHandler<V
 }
 
 template <typename VEC3, typename MAP>
-bool picking_volumes(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Volume>& selected)
+bool picking_volumes(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const VEC3& A, const VEC3& B, typename std::vector<typename MAP::Volume>& selected)
 {
 	//here used Face2 for selecting the 2 volumes incident to selected faces
 

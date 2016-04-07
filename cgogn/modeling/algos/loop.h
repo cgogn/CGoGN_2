@@ -35,14 +35,14 @@ namespace modeling
 
 
 template <typename VEC3, typename MAP>
-void loop(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>& position)
+void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 	using Scalar = typename VEC3::Scalar;
 
-	typename MAP::template VertexAttributeHandler<VEC3> position2 = map.template add_attribute<VEC3,Vertex::ORBIT>("position_tempo_loop");
+	typename MAP::template VertexAttribute<VEC3> position2 = map.template add_attribute<VEC3,Vertex::ORBIT>("position_tempo_loop");
 
 	std::vector<Edge> initial_edges;
 	std::vector<Vertex> initial_vertices;

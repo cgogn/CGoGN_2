@@ -64,9 +64,9 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
+	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
@@ -216,14 +216,14 @@ public:
 	 * @return a handler to the created attribute
 	 */
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
+	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
@@ -232,7 +232,7 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, Orbit ORBIT>
-	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
+	inline bool remove_attribute(Attribute<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
@@ -243,35 +243,35 @@ public:
 	/**
 	* \brief search an attribute for a given orbit
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
+	* @return an Attribute
 	*/
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
+	* @return an Attribute
 	*/
 	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
-	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	inline Attribute<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
 
 		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
-		return AttributeHandler<T_ASK, ORBIT>(this, ca);
+		return Attribute<T_ASK, ORBIT>(this, ca);
 	}
 
 
 	template <typename T, Orbit ORBIT>
-	inline void swap_attributes(AttributeHandler<T, ORBIT>& ah1, AttributeHandler<T, ORBIT>& ah2)
+	inline void swap_attributes(Attribute<T, ORBIT>& ah1, Attribute<T, ORBIT>& ah2)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
@@ -382,7 +382,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		AttributeHandler<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
+		Attribute<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
 		for (uint32& i : counter) i = 0;
 
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
@@ -417,7 +417,7 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		AttributeHandler<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
+		Attribute<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const typename Inherit::template ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];

@@ -48,7 +48,7 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
+using VertexAttribute = Map3::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -71,7 +71,7 @@ private:
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
 	Map3 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

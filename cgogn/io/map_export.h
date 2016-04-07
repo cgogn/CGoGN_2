@@ -52,7 +52,7 @@ namespace io
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -73,7 +73,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
@@ -123,7 +123,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttributeHandler<VE
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -147,7 +147,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 
 	ids.set_all_container_values(UINT_MAX);
 
@@ -241,7 +241,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttributeHandle
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -260,7 +260,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two passes of traversal to avoid huge buffer (with same performance);
 	fp << std::endl << "# vertices" << std::endl;
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 1;
 	map.template foreach_cell([&] (Face f)
@@ -305,7 +305,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position,  const typename MAP::template VertexAttributeHandler<VEC3>& normal, const std::string& filename)
+bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -323,7 +323,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	fp << std::endl << "# vertices" << std::endl;
 	// two passes of traversal to avoid huge buffer (with same performance);
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 1;
 	std::vector<uint32> indices;
@@ -372,7 +372,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 
 template <typename VEC3, typename MAP>
-bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -437,7 +437,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttributeHand
 
 
 template <typename VEC3, typename MAP>
-bool export_stl_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_stl_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 
 	//UINT8[80] – Header
@@ -548,7 +548,7 @@ template <> inline std::string nameOfTypePly(const float32&) { return "float32";
 template <> inline std::string nameOfTypePly(const float64&) { return "float64"; }
 
 template <typename VEC3, typename MAP>
-bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
@@ -576,7 +576,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
@@ -619,7 +619,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttributeHandler<VE
 
 
 template <typename VEC3, typename MAP>
-bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandler<VEC3>& position, const std::string& filename)
+bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
@@ -647,7 +647,7 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttributeHandle
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttributeHandler<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 
 	ids.set_all_container_values(UINT_MAX);
 

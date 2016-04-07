@@ -37,8 +37,8 @@ template <typename T, typename MAP, typename MASK>
 void filter_average(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttributeHandler<T>& attribute_in,
-	typename MAP::template VertexAttributeHandler<T>& attribute_out)
+	const typename MAP::template VertexAttribute<T>& attribute_in,
+	typename MAP::template VertexAttribute<T>& attribute_out)
 {
 	using Vertex = typename MAP::Vertex;
 
@@ -61,9 +61,9 @@ template <typename VEC3, typename MAP, typename MASK>
 void filter_bilateral(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttributeHandler<VEC3>& position_in,
-	typename MAP::template VertexAttributeHandler<VEC3>& position_out,
-	const typename MAP::template VertexAttributeHandler<VEC3>& normal)
+	const typename MAP::template VertexAttribute<VEC3>& position_in,
+	typename MAP::template VertexAttribute<VEC3>& position_out,
+	const typename MAP::template VertexAttribute<VEC3>& normal)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
@@ -110,8 +110,8 @@ template <typename VEC3, typename MAP, typename MASK>
 void filter_taubin(
 	const MAP& map,
 	const MASK& mask,
-	typename MAP::template VertexAttributeHandler<VEC3>& position,
-	typename MAP::template VertexAttributeHandler<VEC3>& position_tmp)
+	typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template VertexAttribute<VEC3>& position_tmp)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;

@@ -37,7 +37,7 @@ namespace modeling
 template <typename VEC3, typename MAP_TRAITS>
 void pliant_remeshing(
 	CMap2<MAP_TRAITS>& map,
-	typename CMap2<MAP_TRAITS>::template VertexAttributeHandler<VEC3>& position
+	typename CMap2<MAP_TRAITS>::template VertexAttribute<VEC3>& position
 )
 {
 	using Scalar = typename VEC3::Scalar;
