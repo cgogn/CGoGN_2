@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_FEATURE_H_
-#define GEOMETRY_ALGOS_FEATURE_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_FEATURE_H_
+#define CGOGN_GEOMETRY_ALGOS_FEATURE_H_
 
-#include <geometry/functions/basics.h>
+#include <cgogn/geometry/functions/basics.h>
 
 namespace cgogn
 {
@@ -51,4 +51,4 @@ void mark_feature_edges(
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_FEATURE_H_
+#endif // CGOGN_GEOMETRY_ALGOS_FEATURE_H_

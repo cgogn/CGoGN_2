@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_MAKE_UNIQUE_H
-#define CORE_UTILS_MAKE_UNIQUE_H
+#ifndef CGOGN_CORE_UTILS_MAKE_UNIQUE_H
+#define CGOGN_CORE_UTILS_MAKE_UNIQUE_H
 
 #include <cstddef>
 #include <memory>
@@ -93,4 +93,4 @@ inline std::unique_ptr<TO> dynamic_cast_unique_ptr(std::unique_ptr<FROM>&& ptr)
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_MAKE_UNIQUE_H
+#endif // CGOGN_CORE_UTILS_MAKE_UNIQUE_H

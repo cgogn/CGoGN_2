@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
 
-#include <core/utils/logger.h>
-#include <core/utils/unique_ptr.h>
-#include <core/utils/name_types.h>
-#include <core/container/chunk_array.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/container/chunk_array.h>
 
 #include <iostream>
 #include <map>
@@ -134,4 +134,4 @@ extern template class CGOGN_CORE_API ChunkArrayFactory<DEFAULT_CHUNK_SIZE>;
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_H_

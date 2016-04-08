@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 
-#include <core/utils/endian.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/definitions.h>
+
 using namespace cgogn::numerics;
 
 int main(int argc, char **argv)

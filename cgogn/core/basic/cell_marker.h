@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_CELL_MARKER_H_
-#define CORE_BASIC_CELL_MARKER_H_
+#ifndef CGOGN_CORE_BASIC_CELL_MARKER_H_
+#define CGOGN_CORE_BASIC_CELL_MARKER_H_
 
-#include <core/container/chunk_array.h>
-#include <core/cmap/map_base_data.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/cmap/map_base_data.h>
 #include <type_traits>
 
 namespace cgogn
@@ -181,4 +181,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_CELL_MARKER_H_
+#endif // CGOGN_CORE_BASIC_CELL_MARKER_H_

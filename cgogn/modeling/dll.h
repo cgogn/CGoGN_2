@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_DLL_H_
-#define MODELING_DLL_H_
+#ifndef CGOGN_MODELING_DLL_H_
+#define CGOGN_MODELING_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -37,4 +37,4 @@
 #define CGOGN_MODELING_API
 #endif
 
-#endif // MODELING_DLL_H_
+#endif // CGOGN_MODELING_DLL_H_

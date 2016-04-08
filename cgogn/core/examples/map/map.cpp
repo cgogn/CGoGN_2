@@ -1,10 +1,10 @@
 
-#include <core/cmap/cmap1.h>
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap1.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap3.h>
 
-#include <core/basic/dart_marker.h>
-#include <core/basic/cell_marker.h>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/basic/cell_marker.h>
 
 using namespace cgogn;
 using namespace cgogn::numerics;

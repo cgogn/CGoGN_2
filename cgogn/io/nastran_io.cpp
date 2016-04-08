@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_NASTRAN_IO_CPP_
+#define CGOGN_IO_NASTRAN_IO_CPP_
 
-#include <io/nastran_io.h>
+#include <cgogn/io/nastran_io.h>
 
 namespace cgogn
 {

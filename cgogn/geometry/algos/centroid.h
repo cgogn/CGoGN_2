@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_CENTROID_H_
-#define GEOMETRY_ALGOS_CENTROID_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_CENTROID_H_
+#define CGOGN_GEOMETRY_ALGOS_CENTROID_H_
 
-#include <core/basic/cell.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -52,4 +52,4 @@ inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template Ve
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_CENTROID_H_
+#endif // CGOGN_GEOMETRY_ALGOS_CENTROID_H_

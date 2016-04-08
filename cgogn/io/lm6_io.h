@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_LM6_IO_H_
-#define IO_LM6_IO_H_
+#ifndef CGOGN_IO_LM6_IO_H_
+#define CGOGN_IO_LM6_IO_H_
 
 #include <libmesh6.h>
-#include <io/volume_import.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {
@@ -163,4 +163,4 @@ extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::V
 } // namespace cgogn
 
 
-#endif // IO_LM6_IO_H_
+#endif // CGOGN_IO_LM6_IO_H_

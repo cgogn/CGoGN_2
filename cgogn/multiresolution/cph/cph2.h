@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH2_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#define CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_
 
-#include <multiresolution/cph/cph_base.h>
+#include <cgogn/multiresolution/cph/cph_base.h>
 
 namespace cgogn
 {
@@ -111,4 +111,4 @@ extern template class CGOGN_MULTIRESOLUTION_API CPH2<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_CPH2_BASE_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_

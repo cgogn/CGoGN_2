@@ -24,9 +24,9 @@
 #include <chrono>
 #include <ctime>
 
-#include <core/cmap/cmap3.h>
-#include <io/mesh_generation/tetgen_structure_io.h>
-#include <io/map_import.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/mesh_generation/tetgen_structure_io.h>
+#include <cgogn/io/map_import.h>
 
 using namespace cgogn::numerics;
 

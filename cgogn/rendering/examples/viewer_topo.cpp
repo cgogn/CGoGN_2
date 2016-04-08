@@ -27,22 +27,22 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/bounding_box.h>
 
-#include <rendering/drawer.h>
-#include <rendering/map_render.h>
-#include <rendering/topo_render.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/drawer.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/topo_render.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_simple_color.h>
 
-#include <modeling/algos/catmull_clark.h>
-#include <modeling/algos/loop.h>
-#include <modeling/algos/pliant_remeshing.h>
+#include <cgogn/modeling/algos/catmull_clark.h>
+#include <cgogn/modeling/algos/loop.h>
+#include <cgogn/modeling/algos/pliant_remeshing.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

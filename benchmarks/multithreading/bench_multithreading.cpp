@@ -24,10 +24,10 @@
 #include <chrono>
 #include <vector>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap2.h>
-#include <io/map_import.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/geometry/algos/normal.h>
 
 #include <benchmark/benchmark.h>
 

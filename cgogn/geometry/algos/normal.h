@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_NORMAL_H_
-#define GEOMETRY_ALGOS_NORMAL_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_NORMAL_H_
+#define CGOGN_GEOMETRY_ALGOS_NORMAL_H_
 
-#include <core/utils/precision.h>
-#include <core/basic/cell.h>
+#include <cgogn/core/utils/precision.h>
+#include <cgogn/core/basic/cell.h>
 
-#include <geometry/algos/area.h>
-#include <geometry/functions/basics.h>
-#include <geometry/functions/normal.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/algos/area.h>
+#include <cgogn/geometry/functions/basics.h>
+#include <cgogn/geometry/functions/normal.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -153,4 +153,4 @@ inline void compute_normal_vertices(const MAP& map, const typename MAP::template
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_NORMAL_H_
+#endif // CGOGN_GEOMETRY_ALGOS_NORMAL_H_

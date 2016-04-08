@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_AREA_H_
-#define GEOMETRY_ALGOS_AREA_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_AREA_H_
+#define CGOGN_GEOMETRY_ALGOS_AREA_H_
 
-#include <geometry/functions/area.h>
-#include <geometry/algos/centroid.h>
+#include <cgogn/geometry/functions/area.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -66,4 +66,4 @@ inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Fa
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_AREA_H_
+#endif // CGOGN_GEOMETRY_ALGOS_AREA_H_

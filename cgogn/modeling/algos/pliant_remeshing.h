@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_ALGOS_PLIANT_REMESHING_H_
-#define MODELING_ALGOS_PLIANT_REMESHING_H_
+#ifndef CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
+#define CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
 
-#include <geometry/functions/basics.h>
-#include <core/cmap/cmap2.h>
-#include <core/utils/masks.h>
+#include <cgogn/geometry/functions/basics.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/utils/masks.h>
 
 namespace cgogn
 {
@@ -141,4 +141,4 @@ void pliant_remeshing(
 
 } // namespace cgogn
 
-#endif // MODELING_ALGOS_PLIANT_REMESHING_H_
+#endif // CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_

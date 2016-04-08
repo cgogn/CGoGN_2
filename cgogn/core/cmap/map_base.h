@@ -21,23 +21,23 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_MAP_BASE_H_
-#define CORE_CMAP_MAP_BASE_H_
+#ifndef CGOGN_CORE_CMAP_MAP_BASE_H_
+#define CGOGN_CORE_CMAP_MAP_BASE_H_
 
 #include <vector>
 #include <memory>
 
-#include <core/cmap/map_base_data.h>
-#include <core/cmap/attribute_handler.h>
+#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/cmap/attribute_handler.h>
 
-#include <core/basic/cell.h>
-#include <core/basic/dart_marker.h>
-#include <core/basic/cell_marker.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/basic/cell_marker.h>
 
-#include <core/utils/masks.h>
-#include <core/utils/logger.h>
-#include <core/utils/thread_barrier.h>
-#include <core/utils/unique_ptr.h>
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/thread_barrier.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 namespace cgogn
 {
@@ -1186,4 +1186,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_MAP_BASE_H_
+#endif // CGOGN_CORE_CMAP_MAP_BASE_H_

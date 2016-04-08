@@ -23,8 +23,8 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/utils/logger.h>
-#include <core/utils/name_types.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/name_types.h>
 
 #ifdef __GNUG__
 #include <memory>

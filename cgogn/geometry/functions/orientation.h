@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ORIENTATION_H_
-#define GEOMETRY_ORIENTATION_H_
+#ifndef CGOGN_GEOMETRY_ORIENTATION_H_
+#define CGOGN_GEOMETRY_ORIENTATION_H_
 
-#include <geometry/types/plane_3d.h>
+#include <cgogn/geometry/types/plane_3d.h>
 
 namespace cgogn
 {
@@ -65,4 +65,4 @@ Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ORIENTATION_H_
+#endif // CGOGN_GEOMETRY_ORIENTATION_H_

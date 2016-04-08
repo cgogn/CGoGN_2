@@ -2,8 +2,8 @@
 #include <chrono>
 #include <ctime>
 
-#include <core/cmap/cmap3.h>
-#include <io/map_import.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/map_import.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)

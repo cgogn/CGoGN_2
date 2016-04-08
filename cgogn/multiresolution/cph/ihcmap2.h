@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP2_H_
-#define MULTIRESOLUTION_CPH_IHCMAP2_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_
 
-#include <core/cmap/cmap2.h>
-#include <multiresolution/cph/cph2.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/multiresolution/cph/cph2.h>
 
 namespace cgogn
 {
@@ -351,4 +351,4 @@ extern template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCM
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP2_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_

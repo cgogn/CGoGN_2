@@ -21,27 +21,27 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_IMPORT_H_
-#define IO_MAP_IMPORT_H_
+#ifndef CGOGN_IO_MAP_IMPORT_H_
+#define CGOGN_IO_MAP_IMPORT_H_
 
 #include <string>
 #include <memory>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap3.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap3.h>
 
-#include <io/surface_import.h>
-#include <io/volume_import.h>
-#include <io/vtk_io.h>
-#include <io/off_io.h>
-#include <io/obj_io.h>
-#include <io/ply_io.h>
-#include <io/lm6_io.h>
-#include <io/msh_io.h>
-#include <io/tetgen_io.h>
-#include <io/nastran_io.h>
-#include <io/tet_io.h>
+#include <cgogn/io/surface_import.h>
+#include <cgogn/io/volume_import.h>
+#include <cgogn/io/vtk_io.h>
+#include <cgogn/io/off_io.h>
+#include <cgogn/io/obj_io.h>
+#include <cgogn/io/ply_io.h>
+#include <cgogn/io/lm6_io.h>
+#include <cgogn/io/msh_io.h>
+#include <cgogn/io/tetgen_io.h>
+#include <cgogn/io/nastran_io.h>
+#include <cgogn/io/tet_io.h>
 
 namespace cgogn
 {
@@ -126,4 +126,4 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 
 } // namespace cgogn
 
-#endif // IO_MAP_IMPORT_H_
+#endif // CGOGN_IO_MAP_IMPORT_H_

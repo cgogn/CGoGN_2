@@ -22,13 +22,13 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOG_ENTRY_CPP_
+#define CGOGN_CORE_UTILS_LOG_ENTRY_CPP_
 
 #include <iostream>
 #include <limits>
 
-#include <core/utils/log_entry.h>
-#include <core/utils/unique_ptr.h>
+#include <cgogn/core/utils/log_entry.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 #include <termcolor.hpp>
 

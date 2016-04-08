@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_CELL_H_
-#define CORE_BASIC_CELL_H_
+#ifndef CGOGN_CORE_BASIC_CELL_H_
+#define CGOGN_CORE_BASIC_CELL_H_
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
-#include <core/utils/assert.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/definitions.h>
 
 #include <climits>
 
@@ -154,4 +154,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_CELL_H_
+#endif // CGOGN_CORE_BASIC_CELL_H_

@@ -21,14 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/cmap/cmap2.h>
+#include <iostream>
 
-#include <modeling/algos/catmull_clark.h>
-
-#include <io/map_import.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/modeling/algos/catmull_clark.h>
 
 #include <gtest/gtest.h>
-#include <iostream>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

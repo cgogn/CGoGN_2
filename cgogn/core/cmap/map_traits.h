@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP_TRAITS_H_
-#define CORE_MAP_MAP_TRAITS_H_
+#ifndef CGOGN_CORE_MAP_MAP_TRAITS_H_
+#define CGOGN_CORE_MAP_MAP_TRAITS_H_
 
 #include <array>
-#include <core/container/chunk_array_gen.h>
+#include <cgogn/core/container/chunk_array_gen.h>
 
 namespace cgogn
 {
@@ -37,4 +37,4 @@ struct DefaultMapTraits
 
 } // namespace cgogn
 
-#endif // CORE_MAP_MAP_TRAITS_H_
+#endif // CGOGN_CORE_MAP_MAP_TRAITS_H_

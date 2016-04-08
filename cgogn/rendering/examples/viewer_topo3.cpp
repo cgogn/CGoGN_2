@@ -27,16 +27,16 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap3.h>
-#include <io/map_import.h>
-#include <geometry/algos/bounding_box.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/map_render.h>
-#include <rendering/drawer.h>
-#include <rendering/volume_render.h>
-#include <rendering/topo_render.h>
-#include <geometry/algos/picking.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/drawer.h>
+#include <cgogn/rendering/volume_render.h>
+#include <cgogn/rendering/topo_render.h>
+#include <cgogn/geometry/algos/picking.h>
 
 
 

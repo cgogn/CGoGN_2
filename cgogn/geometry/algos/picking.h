@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_PICKING_H_
-#define GEOMETRY_ALGOS_PICKING_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_PICKING_H_
+#define CGOGN_GEOMETRY_ALGOS_PICKING_H_
 
-#include <core/utils/precision.h>
-#include <core/basic/cell.h>
-#include <core/basic/dart_marker.h>
+#include <cgogn/core/utils/precision.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/basic/dart_marker.h>
 
-#include <geometry/algos/area.h>
-#include <geometry/functions/basics.h>
-#include <geometry/functions/intersection.h>
-#include <geometry/functions/distance.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/algos/area.h>
+#include <cgogn/geometry/functions/basics.h>
+#include <cgogn/geometry/functions/intersection.h>
+#include <cgogn/geometry/functions/distance.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <tuple>
 
@@ -236,4 +236,4 @@ bool picking_volumes(MAP& m, const typename MAP::template VertexAttribute<VEC3>&
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_PICKING_H_
+#endif // CGOGN_GEOMETRY_ALGOS_PICKING_H_

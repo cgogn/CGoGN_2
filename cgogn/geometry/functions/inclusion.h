@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_INCLUSION_H_
-#define GEOMETRY_INCLUSION_H_
+#ifndef CGOGN_GEOMETRY_INCLUSION_H_
+#define CGOGN_GEOMETRY_INCLUSION_H_
 
-#include <geometry/types/geometry_traits.h>
-#include <geometry/functions/normal.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/normal.h>
 
 namespace cgogn
 {
@@ -62,4 +62,4 @@ inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, co
 
 } // namespace cgogn
 
-#endif // GEOMETRY_INCLUSION_H_
+#endif // CGOGN_GEOMETRY_INCLUSION_H_

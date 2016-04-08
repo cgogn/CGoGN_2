@@ -22,17 +22,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_MAP_RENDER_H_
-#define RENDERING_MAP_RENDER_H_
+#ifndef CGOGN_RENDERING_MAP_RENDER_H_
+#define CGOGN_RENDERING_MAP_RENDER_H_
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 
-#include <core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
-#include <geometry/algos/ear_triangulation.h>
-#include <rendering/drawer.h>
+#include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
+#include <cgogn/geometry/algos/ear_triangulation.h>
+#include <cgogn/rendering/drawer.h>
 
-#include <rendering/shaders/vbo.h>
+#include <cgogn/rendering/shaders/vbo.h>
 
 namespace cgogn
 {
@@ -233,4 +233,4 @@ void add_volume_to_drawer(MAP& m, typename MAP::Volume vo, const typename MAP::t
 
 } // namespace cgogn
 
-#endif // RENDERING_MAP_RENDER_H_
+#endif // CGOGN_RENDERING_MAP_RENDER_H_

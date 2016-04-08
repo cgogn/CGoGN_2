@@ -21,19 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MAP_EXPORT_H_
-#define IO_MAP_EXPORT_H_
+#ifndef CGOGN_IO_MAP_EXPORT_H_
+#define CGOGN_IO_MAP_EXPORT_H_
 
 #include <string>
 #include <fstream>
-#include <iomanip>
+#include <cgogn/iomanip>
 #include <iostream>
 #include <climits>
 
-#include <core/utils/logger.h>
-#include <core/utils/endian.h>
-#include <geometry/algos/normal.h>
-#include <geometry/algos/ear_triangulation.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/geometry/algos/normal.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
 namespace cgogn
 {
@@ -727,4 +727,4 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 
 } // namespace cgogn
 
-#endif // IO_MAP_IMPORT_H_
+#endif // CGOGN_IO_MAP_IMPORT_H_

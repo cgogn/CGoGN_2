@@ -1,7 +1,7 @@
 
-#include <core/cmap/cmap2.h>
-#include <io/map_import.h>
-#include <modeling/algos/pliant_remeshing.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/modeling/algos/pliant_remeshing.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

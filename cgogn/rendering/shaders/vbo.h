@@ -22,13 +22,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_VBO_H_
-#define RENDERING_SHADERS_VBO_H_
+#ifndef CGOGN_RENDERING_SHADERS_VBO_H_
+#define CGOGN_RENDERING_SHADERS_VBO_H_
 
 #include <QOpenGLBuffer>
 
-#include <core/cmap/attribute_handler.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/core/cmap/attribute_handler.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -363,4 +363,4 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_VBO_H_
+#endif // CGOGN_RENDERING_SHADERS_VBO_H_

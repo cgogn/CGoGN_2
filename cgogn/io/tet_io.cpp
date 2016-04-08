@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TET_IO_CPP_
+#define CGOGN_IO_TET_IO_CPP_
 
-#include <io/tet_io.h>
+#include <cgogn/io/tet_io.h>
 
 namespace cgogn
 {

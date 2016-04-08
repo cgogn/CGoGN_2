@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_ALGOS_CATMULL_CLARK_H_
-#define MODELING_ALGOS_CATMULL_CLARK_H_
+#ifndef CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_
+#define CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_
 
-#include <geometry/algos/centroid.h>
-#include<vector>
-#include<core/basic/dart_marker.h>
+#include <vector>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -155,12 +155,10 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 			position[v] += delta;
 		}
 	}
-
 }
-
 
 } // namespace modeling
 
 } // namespace cgogn
 
-#endif // MODELING_ALGOS_CATMULL_CLARK_H_
+#endif // CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_

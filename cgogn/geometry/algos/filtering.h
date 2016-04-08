@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_FILTERING_H_
-#define GEOMETRY_ALGOS_FILTERING_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_FILTERING_H_
+#define CGOGN_GEOMETRY_ALGOS_FILTERING_H_
 
-#include <geometry/types/geometry_traits.h>
-#include <core/utils/masks.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/core/utils/masks.h>
 
 namespace cgogn
 {
@@ -157,4 +157,4 @@ void filter_taubin(
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_FILTERING_H_
+#endif // CGOGN_GEOMETRY_ALGOS_FILTERING_H_

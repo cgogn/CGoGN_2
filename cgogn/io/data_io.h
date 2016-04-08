@@ -21,19 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_DATA_IO_H_
-#define IO_DATA_IO_H_
+#ifndef CGOGN_IO_DATA_IO_H_
+#define CGOGN_IO_DATA_IO_H_
 
 #include <memory>
 #include <string>
 
-#include <core/utils/logger.h>
-#include <core/utils/unique_ptr.h>
-#include <core/container/chunk_array.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/map_traits.h>
 
-#include <io/io_utils.h>
+#include <cgogn/io/io_utils.h>
 
 namespace cgogn
 {
@@ -416,4 +416,4 @@ extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_DATA_IO_H_
+#endif // CGOGN_IO_DATA_IO_H_

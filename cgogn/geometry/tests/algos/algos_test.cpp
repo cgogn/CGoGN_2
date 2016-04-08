@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/algos/area.h>
-#include <geometry/algos/centroid.h>
-#include <geometry/algos/normal.h>
-#include <geometry/algos/ear_triangulation.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/algos/area.h>
+#include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/algos/normal.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
 #include <gtest/gtest.h>
 #include <iostream>

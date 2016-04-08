@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/basic/cell.h>
+#include <cgogn/core/basic/cell.h>
 
 namespace cgogn
 {
