@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_BASICS_H_
-#define GEOMETRY_FUNCTIONS_BASICS_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_BASICS_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_BASICS_H_
 
 #include <cmath>
 #include <algorithm>
@@ -75,4 +75,4 @@ typename VEC::Scalar angle(const VEC& a, const VEC& b)
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_BASICS_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_BASICS_H_

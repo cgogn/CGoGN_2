@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP0_H_
-#define CORE_CMAP_CMAP0_H_
+#ifndef CGOGN_CORE_CMAP_CMAP0_H_
+#define CGOGN_CORE_CMAP_CMAP0_H_
 
-#include <core/cmap/map_base.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -178,4 +178,4 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CM
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP0_H_
+#endif // CGOGN_CORE_CMAP_CMAP0_H_

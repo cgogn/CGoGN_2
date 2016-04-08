@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_STACK_H_
-#define CORE_CONTAINER_CHUNK_STACK_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_STACK_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_STACK_H_
 
-#include <core/container/chunk_array.h>
-#include <core/utils/assert.h>
-#include <core/dll.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/dll.h>
 
 namespace cgogn
 {
@@ -159,4 +159,4 @@ extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_STACK_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_STACK_H_

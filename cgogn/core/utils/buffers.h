@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_BUFFERS_H_
-#define CORE_UTILS_BUFFERS_H_
+#ifndef CGOGN_CORE_UTILS_BUFFERS_H_
+#define CGOGN_CORE_UTILS_BUFFERS_H_
 
 #include <vector>
 #include <type_traits>
 
-#include <core/utils/definitions.h>
-#include <core/basic/dart.h>
-#include <core/basic/cell.h>
+#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/basic/dart.h>
+#include <cgogn/core/basic/cell.h>
 
 namespace cgogn
 {
@@ -152,4 +152,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_BUFFERS_H_
+#endif // CGOGN_CORE_UTILS_BUFFERS_H_

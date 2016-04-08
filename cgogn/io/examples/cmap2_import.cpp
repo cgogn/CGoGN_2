@@ -3,10 +3,10 @@
 #include <ctime>
 #include <vector>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap2.h>
-#include <io/map_import.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/geometry/algos/normal.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

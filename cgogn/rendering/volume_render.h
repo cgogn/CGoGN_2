@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_VOLUME_RENDER_H_
-#define RENDERING_VOLUME_RENDER_H_
+#ifndef CGOGN_RENDERING_VOLUME_RENDER_H_
+#define CGOGN_RENDERING_VOLUME_RENDER_H_
 
-#include <rendering/shaders/shader_explode_volumes.h>
-#include <rendering/shaders/shader_explode_volumes_line.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_explode_volumes.h>
+#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
 
-#include <geometry/algos/centroid.h>
-#include <geometry/algos/ear_triangulation.h>
+#include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
 namespace cgogn
 {
@@ -295,4 +295,4 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 
 } // namespace cgogn
 
-#endif // RENDERING_VOLUME_RENDER_H_
+#endif // CGOGN_RENDERING_VOLUME_RENDER_H_

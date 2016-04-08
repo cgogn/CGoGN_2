@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
-#include <core/utils/serialization.h>
-#include <core/dll.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/dll.h>
 
 #include <vector>
 #include <iostream>
@@ -181,4 +181,4 @@ extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_

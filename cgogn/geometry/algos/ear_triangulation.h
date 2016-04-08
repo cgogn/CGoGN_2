@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
-#define GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
+#define CGOGN_GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
 
 #include <set>
 
-#include <geometry/algos/normal.h>
-#include <geometry/functions/inclusion.h>
+#include <cgogn/geometry/algos/normal.h>
+#include <cgogn/geometry/functions/inclusion.h>
 
 namespace cgogn
 {
@@ -425,4 +425,4 @@ static void apply_ear_triangulations(MAP& map, const typename MAP::template Vert
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_EAR_TRIANGULATION_H_
+#endif // CGOGN_GEOMETRY_ALGOS_EAR_TRIANGULATION_H_

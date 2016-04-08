@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_LOG_ENTRY_H_
-#define CORE_UTILS_LOG_ENTRY_H_
+#ifndef CGOGN_CORE_UTILS_LOG_ENTRY_H_
+#define CGOGN_CORE_UTILS_LOG_ENTRY_H_
 
 #include <string>
 #include <sstream>
 #include <memory>
 
-#include <core/dll.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/definitions.h>
 
 namespace cgogn
 {
@@ -133,4 +133,4 @@ private:
 } // namespace logger
 } // namespace cgogn
 
-#endif // CORE_UTILS_LOG_ENTRY_H_
+#endif // CGOGN_CORE_UTILS_LOG_ENTRY_H_

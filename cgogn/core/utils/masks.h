@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_MASKS_H_
-#define CORE_UTILS_MASKS_H_
+#ifndef CGOGN_CORE_UTILS_MASKS_H_
+#define CGOGN_CORE_UTILS_MASKS_H_
 
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 #include <vector>
 
 namespace cgogn
@@ -164,4 +164,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_MASKS_H_
+#endif // CGOGN_CORE_UTILS_MASKS_H_

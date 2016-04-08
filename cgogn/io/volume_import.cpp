@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_IO_DLL_EXPORT
-#define IO_VOLUME_IMPORT_CPP_
+#define CGOGN_IO_VOLUME_IMPORT_CPP_
 
-#include <io/volume_import.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {

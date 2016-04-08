@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_color_per_vertex.h>
+#include <cgogn/rendering/shaders/shader_color_per_vertex.h>
 
 #include <QOpenGLFunctions>
 #include <iostream>

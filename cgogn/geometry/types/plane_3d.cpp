@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_TYPES_PLANE_3D_CPP_
+#define CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_
 
-#include <geometry/types/plane_3d.h>
+#include <cgogn/geometry/types/plane_3d.h>
 
 namespace cgogn
 {

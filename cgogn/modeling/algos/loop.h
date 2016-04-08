@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_ALGOS_LOOP_H_
-#define MODELING_ALGOS_LOOP_H_
+#ifndef CGOGN_MODELING_ALGOS_LOOP_H_
+#define CGOGN_MODELING_ALGOS_LOOP_H_
 
-#include<vector>
-#include<core/basic/dart_marker.h>
+#include <vector>
+
+#include <cgogn/core/basic/dart_marker.h>
 
 namespace cgogn
 {
 
 namespace modeling
 {
-
 
 template <typename VEC3, typename MAP>
 void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
@@ -129,11 +129,10 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 
 	map.swap_attributes(position,position2);
 	map.remove_attribute(position2);
-
 }
 
 } // namespace modeling
 
 } // namespace cgogn
 
-#endif // MODELING_ALGOS_LOOP_H_
+#endif // CGOGN_MODELING_ALGOS_LOOP_H_

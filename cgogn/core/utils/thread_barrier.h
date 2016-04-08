@@ -22,8 +22,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_THREAD_BARRIER_H_
-#define CORE_UTILS_THREAD_BARRIER_H_
+#ifndef CGOGN_CORE_UTILS_THREAD_BARRIER_H_
+#define CGOGN_CORE_UTILS_THREAD_BARRIER_H_
 
 #include <thread>
 #include <mutex>
@@ -77,4 +77,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_THREAD_BARRIER_H_
+#endif // CGOGN_CORE_UTILS_THREAD_BARRIER_H_

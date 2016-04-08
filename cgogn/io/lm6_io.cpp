@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_LM6_IO_CPP_
+#define CGOGN_IO_LM6_IO_CPP_
 
-#include <io/lm6_io.h>
+#include <cgogn/io/lm6_io.h>
 
 namespace cgogn
 {

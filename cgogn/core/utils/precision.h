@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_PRECISION_H_
-#define CORE_UTILS_PRECISION_H_
+#ifndef CGOGN_CORE_UTILS_PRECISION_H_
+#define CGOGN_CORE_UTILS_PRECISION_H_
 
 #include <type_traits>
 #include <cmath>
 #include <limits>
 #include <algorithm>
 
-#include <core/utils/assert.h>
+#include <cgogn/core/utils/assert.h>
 
 namespace cgogn
 {
@@ -53,4 +53,4 @@ inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_PRECISION_H_
+#endif // CGOGN_CORE_UTILS_PRECISION_H_

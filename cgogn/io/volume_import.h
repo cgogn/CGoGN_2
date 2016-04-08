@@ -21,20 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_VOLUME_IMPORT_H_
-#define IO_VOLUME_IMPORT_H_
+#ifndef CGOGN_IO_VOLUME_IMPORT_H_
+#define CGOGN_IO_VOLUME_IMPORT_H_
 
 #include <istream>
 
-#include <core/utils/string.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/cmap3_builder.h>
+#include <cgogn/core/utils/string.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
-#include <geometry/functions/orientation.h>
+#include <cgogn/geometry/functions/orientation.h>
 
-#include <io/c_locale.h>
-#include <io/dll.h>
-#include <io/mesh_io_gen.h>
+#include <cgogn/io/c_locale.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 #include <tinyxml2.h>
 
@@ -581,4 +581,4 @@ extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // IO_VOLUME_IMPORT_H_
+#endif // CGOGN_IO_VOLUME_IMPORT_H_

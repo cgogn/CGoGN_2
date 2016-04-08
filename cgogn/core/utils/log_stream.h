@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_LOG_STREAM_H_
-#define CORE_UTILS_LOG_STREAM_H_
+#ifndef CGOGN_CORE_UTILS_LOG_STREAM_H_
+#define CGOGN_CORE_UTILS_LOG_STREAM_H_
 
 #include <string>
 #include <sstream>
 
-#include <core/utils/log_entry.h>
+#include <cgogn/core/utils/log_entry.h>
 
 namespace cgogn
 {
@@ -60,4 +60,4 @@ private:
 } // namespace logger
 } // namespace cgogn
 
-#endif // CORE_UTILS_LOG_STREAM_H_
+#endif // CGOGN_CORE_UTILS_LOG_STREAM_H_

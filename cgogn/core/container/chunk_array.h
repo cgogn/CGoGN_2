@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <algorithm>
 #include <array>
@@ -30,12 +30,11 @@
 #include <string>
 #include <cstring>
 
-#include <core/container/chunk_array_gen.h>
-#include <core/utils/serialization.h>
-#include <core/utils/assert.h>
-#include <core/dll.h>
-#include<core/utils/logger.h>
-
+#include <cgogn/core/dll.h>
+#include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/logger.h>
 
 namespace cgogn
 {
@@ -737,4 +736,4 @@ extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<f
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_

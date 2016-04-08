@@ -25,8 +25,8 @@
 
 #include <iostream>
 
-#include <core/utils/logger.h>
-#include <rendering/shaders/shader_bold_line.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
 
 #include <QOpenGLFunctions>
 

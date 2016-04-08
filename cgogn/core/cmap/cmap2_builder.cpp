@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_MAP_MAP2_BUILDER_CPP_
+#define CGOGN_CORE_MAP_MAP2_BUILDER_CPP_
 
-#include <core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {

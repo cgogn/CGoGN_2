@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_BUILDER_H_
-#define CORE_MAP_MAP2_BUILDER_H_
+#ifndef CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#define CGOGN_CORE_MAP_MAP2_BUILDER_H_
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -223,5 +223,5 @@ using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 } // namespace cgogn
 
 
-#endif // CORE_MAP_MAP2_BUILDER_H_
+#endif // CGOGN_CORE_MAP_MAP2_BUILDER_H_
 

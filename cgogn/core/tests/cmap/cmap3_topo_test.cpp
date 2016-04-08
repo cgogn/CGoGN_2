@@ -23,8 +23,8 @@
 
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap3.h>
-#include <core/cmap/cmap3_builder.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {

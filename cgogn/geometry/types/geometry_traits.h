@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
-#define GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#ifndef CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#define CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
 
 #include <type_traits>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
 
 namespace cgogn
 {
@@ -106,4 +106,4 @@ void set_zero(T& t) { t = 0; }
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#endif // CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_

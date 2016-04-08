@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/map_render.h>
+#include <cgogn/rendering/map_render.h>
 
 namespace cgogn
 {

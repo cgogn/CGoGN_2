@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/drawer.h>
+#include <cgogn/rendering/drawer.h>
 
 #include <QOpenGLFunctions>
 #include <iostream>

@@ -21,22 +21,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_SURFACE_IMPORT_H_
-#define IO_SURFACE_IMPORT_H_
+#ifndef CGOGN_IO_SURFACE_IMPORT_H_
+#define CGOGN_IO_SURFACE_IMPORT_H_
 
 #include <istream>
 #include <sstream>
 
-#include <core/utils/endian.h>
-#include <core/utils/name_types.h>
-#include <core/utils/string.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap2_builder.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/string.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
-#include <io/dll.h>
-#include <io/c_locale.h>
-#include <io/mesh_io_gen.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/c_locale.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 namespace cgogn
 {
@@ -220,4 +220,4 @@ extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // IO_SURFACE_IMPORT_H_
+#endif // CGOGN_IO_SURFACE_IMPORT_H_

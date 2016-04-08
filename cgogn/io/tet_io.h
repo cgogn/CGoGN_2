@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_TET_IO_H_
-#define IO_TET_IO_H_
+#ifndef CGOGN_IO_TET_IO_H_
+#define CGOGN_IO_TET_IO_H_
 
 #include <map>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {
@@ -145,4 +145,4 @@ extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::V
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_TET_IO_H_
+#endif // CGOGN_IO_TET_IO_H_

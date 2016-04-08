@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
-#define MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
+#define CGOGN_MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
 
-#include <core/cmap/attribute_handler.h>
-#include <core/utils/assert.h>
+#include <cgogn/core/cmap/attribute_handler.h>
+#include <cgogn/core/utils/assert.h>
 
 namespace cgogn
 {
@@ -148,4 +148,4 @@ public:
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_

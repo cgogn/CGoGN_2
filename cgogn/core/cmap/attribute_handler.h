@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_ATTRIBUTE_H_
-#define CORE_MAP_ATTRIBUTE_H_
+#ifndef CGOGN_CORE_MAP_ATTRIBUTE_H_
+#define CGOGN_CORE_MAP_ATTRIBUTE_H_
 
-#include <core/basic/cell.h>
-#include <core/utils/assert.h>
-#include <core/cmap/map_base_data.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/cmap/map_base_data.h>
 
 namespace cgogn
 {
@@ -512,4 +512,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_MAP_ATTRIBUTE_H_
+#endif // CGOGN_CORE_MAP_ATTRIBUTE_H_

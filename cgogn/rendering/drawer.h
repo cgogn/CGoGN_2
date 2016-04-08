@@ -21,17 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_DRAWER_H_
-#define RENDERING_DRAWER_H_
+#ifndef CGOGN_RENDERING_DRAWER_H_
+#define CGOGN_RENDERING_DRAWER_H_
 
-#include <rendering/shaders/shader_color_per_vertex.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_bold_line.h>
-#include <rendering/shaders/shader_round_point.h>
-#include <rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/dll.h>
 
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_color_per_vertex.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
+#include <cgogn/rendering/shaders/shader_round_point.h>
+#include <cgogn/rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
 #include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
@@ -39,7 +40,6 @@ namespace cgogn
 
 namespace rendering
 {
-
 
 class CGOGN_RENDERING_API Drawer
 {
@@ -90,7 +90,9 @@ protected:
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
 public:
+
 	using Self = Drawer;
+
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
@@ -170,7 +172,6 @@ public:
 		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
 	}
 
-
 	/**
 	 * use as a glCallList (draw the compiled drawing list)
 	 * @param projection projection matrix
@@ -202,7 +203,6 @@ public:
 		current_size_ = ps;
 	}
 
-
 	/**
 	 * usr as glLineWidth
 	 */
@@ -217,14 +217,10 @@ public:
 		current_aa_ = true;
 		current_size_ = 2.0*lw;
 	}
-
-
 };
-
-
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_DRAWER_H_
+#endif // CGOGN_RENDERING_DRAWER_H_

@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_TYPES_VEC_CPP_
+#define CGOGN_GEOMETRY_TYPES_VEC_CPP_
 
-#include <geometry/types/vec.h>
+#include <cgogn/geometry/types/vec.h>
 
 namespace cgogn
 {

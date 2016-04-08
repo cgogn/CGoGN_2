@@ -53,8 +53,8 @@
 *distribution.                                                              *
 ****************************************************************************/
 
-#ifndef CORE_UTILS_THREADPOOL_H_
-#define CORE_UTILS_THREADPOOL_H_
+#ifndef CGOGN_CORE_UTILS_THREADPOOL_H_
+#define CGOGN_CORE_UTILS_THREADPOOL_H_
 
 #include <vector>
 #include <queue>
@@ -65,9 +65,9 @@
 #include <future>
 #include <functional>
 
-#include <core/utils/logger.h>
-#include <core/utils/assert.h>
-#include <core/utils/thread.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/thread.h>
 
 namespace cgogn
 {
@@ -137,4 +137,4 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_THREADPOOL_H_
+#endif // CGOGN_CORE_UTILS_THREADPOOL_H_

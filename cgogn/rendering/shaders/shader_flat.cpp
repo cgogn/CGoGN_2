@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>
