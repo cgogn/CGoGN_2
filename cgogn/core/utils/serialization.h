@@ -30,6 +30,7 @@
 #include <array>
 
 #include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/dll.h>
 
 namespace cgogn

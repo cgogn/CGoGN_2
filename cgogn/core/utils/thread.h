@@ -27,7 +27,7 @@
 #include <vector>
 
 #include <cgogn/core/dll.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/thread_barrier.h>
 
 #include <cgogn/core/basic/dart.h>

@@ -28,7 +28,7 @@
 #include <stack>
 #include <vector>
 
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {

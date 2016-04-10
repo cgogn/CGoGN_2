@@ -27,7 +27,7 @@
 #include <vector>
 #include <type_traits>
 
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/dart.h>
 #include <cgogn/core/basic/cell.h>
 

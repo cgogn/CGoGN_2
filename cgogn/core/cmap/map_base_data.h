@@ -31,7 +31,7 @@
 #include <sstream>
 #include <iterator>
 
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/thread.h>
 #include <cgogn/core/utils/thread_pool.h>
 #include <cgogn/core/utils/name_types.h>

@@ -27,7 +27,7 @@
 #include <cgogn/core/basic/dart.h>
 
 #include <cgogn/core/utils/assert.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <climits>
 

@@ -27,7 +27,7 @@
 #include <string>
 #include <clocale>
 
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {

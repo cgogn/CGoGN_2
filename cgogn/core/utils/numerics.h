@@ -21,9 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_UTILS_PRECISION_H_
-#define CGOGN_CORE_UTILS_PRECISION_H_
+#ifndef CGOGN_CORE_UTILS_NUMERICS_H_
+#define CGOGN_CORE_UTILS_NUMERICS_H_
 
+#include <cstdint>
 #include <type_traits>
 #include <cmath>
 #include <limits>
@@ -33,6 +34,22 @@
 
 namespace cgogn
 {
+
+namespace numerics
+{
+
+using  int8 = std::int8_t;
+using  int16 = std::int16_t;
+using  int32 = std::int32_t;
+using  int64 = std::int64_t;
+
+using  uint8 = std::uint8_t;
+using  uint16 = std::uint16_t;
+using  uint32 = std::uint32_t;
+using  uint64 = std::uint64_t;
+
+using float32 = float;
+using float64 = double;
 
 template <class Scalar>
 inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
@@ -51,6 +68,73 @@ inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std
 	return std::fabs(y - x) < epsilon;
 }
 
+template <class Real, class Integer>
+inline Real scale_expand_within_0_1(Real x, const Integer n)
+{
+	static_assert(std::is_floating_point<Real>::value, "Floating point number required.");
+	static_assert(std::is_integral<Integer>::value, "Integer number required.");
+
+	for (Integer i = 1; i <= n; i++)
+		x = Real((1.0 - std::cos(M_PI * x)) / 2.0);
+	for (Integer i = -1; i >= n; i--)
+		x = Real(std::acos(1.0 - 2.0 * x) / M_PI);
+	return x;
+}
+
+template  <class Real, class Integer>
+inline Real scale_expand_towards_1(Real x, const Integer n)
+{
+	static_assert(std::is_floating_point<Real>::value, "Floating point number required.");
+	static_assert(std::is_integral<Integer>::value, "Integer number required.");
+
+	for (Integer i = 1; i <= n; i++)
+		x = Real(std::sin(x * M_PI / 2.0));
+	for (Integer i = -1; i >= n; i--)
+		x = Real(std::asin(x) * 2.0 / M_PI);
+	return x;
+}
+
+template <class Scalar>
+inline Scalar scale_to_0_1(const Scalar x, const Scalar min, const Scalar max)
+{
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
+
+	return (x - min) / (max - min);
+}
+
+template <class Scalar>
+inline Scalar scale_and_clamp_to_0_1(const Scalar x, const Scalar min, const Scalar max)
+{
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
+
+	Scalar v = (x - min) / (max - min);
+	return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+}
+
+template <class Scalar>
+inline void scale_centering_around_0(Scalar& min, Scalar& max)
+{
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
+
+	Scalar new_max = std::max(max, -min);
+	min = std::min(min, -max);
+	max = new_max;
+}
+
+template <class Scalar>
+inline Scalar scale_to_0_1_around_one_half(const Scalar x, const Scalar min, const Scalar max)
+{
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
+
+	Scalar ma = std::max(max, -min);
+	Scalar mi = std::min(min, -max);
+	return (x - mi) / (ma - mi);
+}
+
+} // namespace numerics
+
+using namespace numerics;
+
 } // namespace cgogn
 
-#endif // CGOGN_CORE_UTILS_PRECISION_H_
+#endif // CGOGN_CORE_UTILS_NUMERICS_H_

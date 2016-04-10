@@ -30,7 +30,7 @@
 #include <string>
 
 #include <ply.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/io/dll.h>
 
 namespace cgogn

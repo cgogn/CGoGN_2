@@ -25,7 +25,7 @@
 #define CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
 
 #include <type_traits>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>

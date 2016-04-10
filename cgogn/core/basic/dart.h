@@ -27,7 +27,7 @@
 #include <climits>
 #include <string>
 #include <iostream>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 /**
  * \file cgogn/core/basic/dart.h
