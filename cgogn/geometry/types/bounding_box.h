@@ -27,7 +27,7 @@
 #include <type_traits>
 #include <array>
 
-#include <cgogn/core/utils/precision.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <cgogn/geometry/dll.h>
 #include <cgogn/geometry/types/geometry_traits.h>
