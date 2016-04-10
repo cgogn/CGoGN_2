@@ -21,11 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_GEOMETRY_ALGOS_AREA_H_
-#define CGOGN_GEOMETRY_ALGOS_AREA_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_ANGLE_H_
+#define CGOGN_GEOMETRY_ALGOS_ANGLE_H_
 
-#include <cgogn/geometry/functions/area.h>
-#include <cgogn/geometry/algos/centroid.h>
+#include <cmath>
+
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/algos/normal.h>
 
 namespace cgogn
 {
@@ -34,64 +36,55 @@ namespace geometry
 {
 
 template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	return triangle_area<VEC3_T>(
-		position[Vertex(f.dart)],
-		position[Vertex(map.phi1(f.dart))],
-		position[Vertex(map.phi_1(f.dart))]
-	);
-}
-
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
-{
-	using Vertex = typename MAP::Vertex;
-	if (map.codegree(f) == 3)
-		return triangle_area<VEC3_T>(map, f, position);
-	else
-	{
-		typename VEC3_T::Scalar area{0};
-		VEC3_T center = centroid<VEC3_T>(map, f, position);
-		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
-		{
-			area += triangle_area<VEC3_T>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
-		});
-		return area;
-	}
-}
-
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar incident_faces_area(
+inline typename VEC3_T::Scalar angle_between_face_normals(
 		const MAP& map,
 		const typename MAP::Edge e,
 		const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
 	using Scalar = typename VEC3_T::Scalar;
+    using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
-	Scalar area(0) ;
+	if(map.is_boundary(e.dart))
+        return Scalar(0) ;
 
-	map.foreach_incident_face(e, [&] (Face f)
-	{
-		area += cgogn::geometry::convex_face_area<VEC3_T, MAP>(map, f, position) / map.codegree(f) ;
-	});
+    Vertex v1(e.dart);
+	Vertex v2(map.phi2(e.dart));
+	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v1.dart), position);
+	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v2.dart), position);
 
-	return area ;
+	VEC3_T edge = position[v2] - position[v1] ;
+    edge.normalize() ;
+	Scalar s = edge.dot(n1.cross(n2)) ;
+	Scalar c = n1.dot(n2);
+    Scalar a(0) ;
+
+    // the following trick is useful for avoiding NaNs (due to floating point errors)
+    if (c > 0.5) a = std::asin(s) ;
+    else
+    {
+        if(c < -1) c = -1 ;
+        if (s >= 0) a = std::acos(c) ;
+        else a = -std::acos(c) ;
+    }
+    //	if (isnan(a))
+    if(a != a)
+        std::cerr<< "Warning : computeAngleBetweenNormalsOnEdge returns NaN on edge " << v1 << "-" << v2 << std::endl ;
+
+    return a ;
 }
 
 template <typename VEC3_T, typename MAP>
-inline void incident_faces_area(
+inline void angle_between_face_normals(
 		const MAP& map,
 		const typename MAP::template VertexAttribute<VEC3_T>& position,
-		typename MAP::template EdgeAttribute<typename VEC3_T::Scalar>& edge_area)
+		typename MAP::template Attribute<typename VEC3_T::Scalar, Orbit::PHI2>& angles)
 {
 	using Edge = typename MAP::Edge;
 
 	map.foreach_cell([&] (Edge e)
 	{
-		edge_area[e] = incident_faces_area<VEC3_T, MAP>(map, e, position);
+		angles[e] = angle_between_face_normals<VEC3_T, MAP>(map, e, position);
 	});
 }
 
@@ -99,4 +92,4 @@ inline void incident_faces_area(
 
 } // namespace cgogn
 
-#endif // CGOGN_GEOMETRY_ALGOS_AREA_H_
+#endif // CGOGN_GEOMETRY_ALGOS_ANGLE_H_
