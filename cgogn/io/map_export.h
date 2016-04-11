@@ -52,7 +52,7 @@ namespace io
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -123,7 +123,7 @@ bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -241,7 +241,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -305,7 +305,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
+bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -372,7 +372,7 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 
 
 template <typename VEC3, typename MAP>
-bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -437,7 +437,7 @@ bool export_stl_ascii(MAP& map, const typename MAP::template VertexAttribute<VEC
 
 
 template <typename VEC3, typename MAP>
-bool export_stl_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 
 	//UINT8[80] – Header
@@ -664,7 +664,7 @@ template <> inline std::string nameOfTypePly(const float32&) { return "float32";
 template <> inline std::string nameOfTypePly(const float64&) { return "float64"; }
 
 template <typename VEC3, typename MAP>
-bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_ply(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -738,7 +738,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 
 
 template <typename VEC3, typename MAP>
-bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
