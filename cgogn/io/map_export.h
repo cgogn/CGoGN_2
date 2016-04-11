@@ -539,10 +539,10 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
  * @retval true if exporting was successful, false otherwise
  */
 template <typename VEC3, typename MAP>
-bool export_vtp(MAP& map,
-				const typename MAP::template VertexAttribute<VEC3>& position,
-				const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
-				const std::string& filename)
+bool export_vtp(const MAP& map,
+		const typename MAP::template VertexAttribute<VEC3>& position,
+		const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
+		const std::string& filename)
 {
 
 	using Vertex = typename MAP::Vertex;
