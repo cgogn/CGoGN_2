@@ -73,7 +73,7 @@ public:
 		}
 	}
 
-	const std::string& name() const { return name_; }
+	const std::string& get_name() const { return name_; }
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{

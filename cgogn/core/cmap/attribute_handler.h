@@ -340,7 +340,7 @@ public:
 
 	const std::string& get_name() const
 	{
-		return chunk_array_->name();
+		return chunk_array_->get_name();
 	}
 
 	virtual bool is_valid() const override
