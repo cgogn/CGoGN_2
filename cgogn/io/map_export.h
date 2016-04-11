@@ -26,7 +26,7 @@
 
 #include <string>
 #include <fstream>
-#include <cgogn/iomanip>
+#include <iomanip>
 #include <iostream>
 #include <climits>
 
@@ -531,6 +531,122 @@ bool export_stl_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 	return true;
 }
 
+/**
+ * @brief export surface in vtk format with a scalar attribut
+ * @param map the map to export
+ * @param position the position attribute of vertices
+ * @param filename the name of file to save
+ * @retval true if exporting was successful, false otherwise
+ */
+template <typename VEC3, typename MAP>
+bool export_vtp(MAP& map,
+				const typename MAP::template VertexAttribute<VEC3>& position,
+				const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
+				const std::string& filename)
+{
+
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	std::ofstream fp(filename.c_str(), std::ios::out);
+	if (!fp.good())
+	{
+		cgogn_log_warning("export_vtp") << "Unable to open file \"" << filename << "\".";
+		return false;
+	}
+
+	// set precision for real output
+	fp<< std::setprecision(12);
+
+	fp << "<?xml version=\"1.0\"?>" << std::endl;
+	fp << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"BigEndian\">" << std::endl;
+	fp << "<PolyData>" <<  std::endl;
+	fp << "<Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfPolys=\""<< map.template nb_cells<Face::ORBIT>() << "\">" << std::endl;
+	fp << "<Points>" << std::endl;
+	fp << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
+
+
+	std::vector<float32> scalar_v;
+
+	// first pass to store contiguous indices
+	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	ids.set_all_container_values(UINT_MAX);
+	uint32 count = 0;
+	map.template foreach_cell([&] (Face f)
+	{
+		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		{
+			if (ids[v]==UINT_MAX)
+			{
+				ids[v] = count++;
+				const VEC3& P = position[v];
+				fp << P[0] << " " << P[1] << " " << P[2] << std::endl;
+				scalar_v.push_back(scalar[v]);
+			}
+		});
+	});
+
+	fp << "</DataArray>" << std::endl;
+	fp << "</Points>" << std::endl;
+
+	fp << "<PointData>" << std::endl;
+	fp << "<DataArray type=\"Float32\" Name= \"" <<scalar.get_name() << "\" Format=\"ascii\">" << std::endl;
+
+	for(uint32 i = 0 ; i < scalar_v.size() ; ++i)
+	{
+		fp << scalar_v[i] << std::endl;
+	}
+
+	fp << "</DataArray>" << std::endl;
+	fp << "</PointData>" << std::endl;
+
+	std::vector<unsigned int> triangles;
+	triangles.reserve(2048);
+
+	map.template foreach_cell([&] (Face d)
+	{
+		unsigned int degree = map.codegree(d);
+		Dart f=d.dart;
+		switch(degree)
+		{
+			case 3:
+				triangles.push_back(ids[Vertex(f)]); f = map.phi1(f);
+				triangles.push_back(ids[Vertex(f)]); f = map.phi1(f);
+				triangles.push_back(ids[Vertex(f)]);
+				break;
+		}
+	});
+
+	fp << "<Polys>" << std::endl;
+
+	fp << "<DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">" << std::endl;
+	for (unsigned int i=0; i<triangles.size(); i+=3)
+	{
+		fp << triangles[i]   << " " << triangles[i+1] << " " << triangles[i+2] << std::endl;
+	}
+	fp << "</DataArray>" << std::endl;
+
+	fp << "<DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">" ;
+	unsigned int offset = 0;
+	for (unsigned int i=0; i<triangles.size(); i+=3)
+	{
+		offset += 3;
+		if (i%60 ==0)
+			fp << std::endl;
+		fp << " " << offset;
+	}
+	fp << std::endl << "</DataArray>" << std::endl;
+
+	fp << "</Polys>" << std::endl;
+	fp << "</Piece>" << std::endl;
+	fp << "</PolyData>" << std::endl;
+	fp << "</VTKFile>" << std::endl;
+
+	map.remove_attribute(ids);
+	fp.close();
+	return true;
+}
+
 
 template <typename T>
 std::string nameOfTypePly(const T& v)
@@ -550,6 +666,9 @@ template <> inline std::string nameOfTypePly(const float64&) { return "float64";
 template <typename VEC3, typename MAP>
 bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
 	std::ofstream fp(filename.c_str(), std::ios::out);
 	if (!fp.good())
 	{
@@ -621,6 +740,9 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 template <typename VEC3, typename MAP>
 bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
 	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
 	if (!fp.good())
 	{
@@ -629,7 +751,7 @@ bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 	}
 
 	fp << "ply" << std::endl ;
-	if (internal::cgogn_is_big_endian)
+	if (cgogn::internal::cgogn_is_big_endian)
 		fp << "format binary_big_endian 1.0" << std::endl ;
 	else
 		fp << "format binary_little_endian 1.0" << std::endl ;
