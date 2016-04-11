@@ -42,36 +42,19 @@ inline typename VEC3_T::Scalar angle_between_face_normals(
 		const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
 	using Scalar = typename VEC3_T::Scalar;
-    using Vertex = typename MAP::Vertex;
+	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
 	if(map.is_incident_to_boundary(e))
-        return Scalar(0) ;
+		return Scalar(0) ;
 
 	std::pair<Vertex, Vertex> v = map.vertices(e);
 	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v.first.dart), position);
 	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v.second.dart), position);
 
 	Scalar a = angle(n1, n2);
-//	VEC3_T edge = position[v.second] - position[v.first] ;
-//    edge.normalize() ;
-//	Scalar s = edge.dot(n1.cross(n2)) ;
-//	Scalar c = n1.dot(n2);
-//    Scalar a(0) ;
 
-//    // the following trick is useful for avoiding NaNs (due to floating point errors)
-//    if (c > 0.5) a = std::asin(s) ;
-//    else
-//    {
-//        if(c < -1) c = -1 ;
-//        if (s >= 0) a = std::acos(c) ;
-//        else a = -std::acos(c) ;
-//    }
-//    //	if (isnan(a))
-//    if(a != a)
-//        std::cerr<< "Warning : computeAngleBetweenNormalsOnEdge returns NaN on edge " << v1 << "-" << v2 << std::endl ;
-
-    return a ;
+	return a ;
 }
 
 template <typename VEC3_T, typename MAP>
@@ -80,9 +63,7 @@ inline void angle_between_face_normals(
 		const typename MAP::template VertexAttribute<VEC3_T>& position,
 		typename MAP::template Attribute<typename VEC3_T::Scalar, Orbit::PHI2>& angles)
 {
-	using Edge = typename MAP::Edge;
-
-	map.foreach_cell([&] (Edge e)
+	map.foreach_cell([&] (Cell<Orbit::PHI2> e)
 	{
 		angles[e] = angle_between_face_normals<VEC3_T, MAP>(map, e, position);
 	});

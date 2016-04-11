@@ -38,10 +38,10 @@ inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face 
 {
 	using Vertex = typename MAP::Vertex;
 	return triangle_area<VEC3_T>(
-		position[Vertex(f.dart)],
-		position[Vertex(map.phi1(f.dart))],
-		position[Vertex(map.phi_1(f.dart))]
-	);
+				position[Vertex(f.dart)],
+			position[Vertex(map.phi1(f.dart))],
+			position[Vertex(map.phi_1(f.dart))]
+			);
 }
 
 template <typename VEC3_T, typename MAP>
