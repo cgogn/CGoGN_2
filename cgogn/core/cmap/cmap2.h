@@ -613,6 +613,22 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Boundary information
+	 *******************************************************************************/
+
+	bool is_adjacent_to_boundary(Boundary c)
+	{
+	  CGOGN_CHECK_CONCRETE_TYPE;
+	  bool result = false;
+	  foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+	  {
+		if (this->is_boundary(phi2(d))) { result = true; return false; }
+		return true;
+	  });
+	  return result;
+	}
+
+	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
 
