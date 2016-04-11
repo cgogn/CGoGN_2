@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/core/utils/precision.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
