@@ -338,6 +338,11 @@ public:
 		}
 	}
 
+	const std::string& get_name() const
+	{
+		return chunk_array_->name();
+	}
+
 	virtual bool is_valid() const override
 	{
 		return chunk_array_ != nullptr;
