@@ -40,11 +40,11 @@ inline VEC3_T vector_from(
 		const Dart d,
 		const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
-    using Vertex = typename MAP::Vertex;
+	using Vertex = typename MAP::Vertex;
 
-    VEC3_T vec = position[Vertex(map.phi1(d))] ;
-    vec -= position[Vertex(d)] ;
-    return vec ;
+	VEC3_T vec = position[Vertex(map.phi1(d))] ;
+	vec -= position[Vertex(d)] ;
+	return vec ;
 }
 
 template <typename VEC3_T, typename MAP>
