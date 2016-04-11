@@ -21,55 +21,63 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_MESH_IO_GEN_H_
-#define CGOGN_IO_MESH_IO_GEN_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_LENGTH_H_
+#define CGOGN_GEOMETRY_ALGOS_LENGTH_H_
 
-#include <fstream>
+#include <cgogn/core/basic/cell.h>
 
-#include <cgogn/core/utils/numerics.h>
-
-#include <cgogn/io/dll.h>
-#include <cgogn/io/c_locale.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
 
-namespace io
+namespace geometry
 {
 
-class CGOGN_IO_API MeshImportGen
+template <typename VEC3_T, typename MAP>
+inline VEC3_T vector_from(
+		const MAP& map,
+		const Dart d,
+		const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
-public:
-	using Self = MeshImportGen;
-	inline MeshImportGen() {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshImportGen);
+	using Vertex = typename MAP::Vertex;
 
+	VEC3_T vec = position[Vertex(map.phi1(d))] ;
+	vec -= position[Vertex(d)] ;
+	return vec ;
+}
 
-	bool import_file(const std::string& filename);
-	virtual ~MeshImportGen();
-	virtual void clear() = 0;
+template <typename VEC3_T, typename MAP>
+inline typename VEC3_T::Scalar edge_length(
+		const MAP& map,
+		const typename MAP::Edge e,
+		const typename MAP::template VertexAttribute<VEC3_T>& position)
+{
+	return vector_from<VEC3_T, MAP>(map, e.dart, position).norm();
+}
 
-protected:
-	virtual bool import_file_impl(const std::string& filename) = 0;
+template <typename VEC3_T, typename MAP>
+inline typename VEC3_T::Scalar mean_edge_length(
+		const MAP& map,
+		const typename MAP::template VertexAttribute<VEC3_T>& position)
+{
+	using Scalar = typename VEC3_T::Scalar;
+	using Edge = typename MAP::Edge;
 
-	/**
-	 * @brief skip_empty_lines
-	 * @param a valid data_stream
-	 * @return the first non-empty encountered line
-	 */
-	inline static std::string skip_empty_lines(std::istream& data_stream)
+	Scalar length(0);
+	uint32 nbe = 0;
+
+	map.foreach_cell([&](Edge e)
 	{
-		std::string line;
-		line.reserve(1024ul);
-		while(data_stream.good() && line.empty())
-			std::getline(data_stream,line);
+		length += edge_length<VEC3_T, MAP>(map, e, position);
+		++nbe;
+	});
 
-		return line;
-	}
-};
+	return length / Scalar(nbe);
+}
 
-} // namespace io
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_MESH_IO_GEN_H_
+#endif // CGOGN_GEOMETRY_ALGOS_LENGTH_H_

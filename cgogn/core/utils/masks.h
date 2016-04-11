@@ -24,7 +24,7 @@
 #ifndef CGOGN_CORE_UTILS_MASKS_H_
 #define CGOGN_CORE_UTILS_MASKS_H_
 
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <vector>
 
 namespace cgogn

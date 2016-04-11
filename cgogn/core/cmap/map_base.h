@@ -574,6 +574,19 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
+	template <typename CellType>
+	bool is_incident_to_boundary(CellType c) const
+	{
+	  static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+	  bool result = false;
+	  to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+	  {
+		if (is_boundary(d)) { result = true; return false; }
+		return true;
+	  });
+	  return result;
+	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/

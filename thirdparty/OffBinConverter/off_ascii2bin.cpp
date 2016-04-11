@@ -5,7 +5,7 @@
 #include <string>
 
 #include <cgogn/core/utils/endian.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 using namespace cgogn::numerics;
 

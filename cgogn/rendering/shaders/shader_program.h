@@ -28,7 +28,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions_3_3_Core>
 #include <cassert>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 
 #include <cgogn/rendering/dll.h>

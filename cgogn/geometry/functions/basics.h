@@ -68,7 +68,7 @@ typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
 template <typename VEC>
 typename VEC::Scalar angle(const VEC& a, const VEC& b)
 {
-	return acos(cos_angle(a, b));
+	return std::acos(cos_angle(a, b));
 }
 
 } // namespace geometry

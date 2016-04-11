@@ -26,7 +26,7 @@
 
 #include <cstdint>
 #include <type_traits>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {

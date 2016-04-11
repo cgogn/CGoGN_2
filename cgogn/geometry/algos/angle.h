@@ -21,36 +21,56 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_UTILS_PRECISION_H_
-#define CGOGN_CORE_UTILS_PRECISION_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_ANGLE_H_
+#define CGOGN_GEOMETRY_ALGOS_ANGLE_H_
 
-#include <type_traits>
 #include <cmath>
-#include <limits>
-#include <algorithm>
 
-#include <cgogn/core/utils/assert.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/algos/normal.h>
 
 namespace cgogn
 {
 
-template <class Scalar>
-inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+namespace geometry
 {
-	const Scalar diff = std::fabs(x - y);
-	x = std::fabs(x);
-	y = std::fabs(y);
 
-	return diff <= std::max(x, y) * max_rel_diff;
+template <typename VEC3_T, typename MAP>
+inline typename VEC3_T::Scalar angle_between_face_normals(
+		const MAP& map,
+		const typename MAP::Edge e,
+		const typename MAP::template VertexAttribute<VEC3_T>& position)
+{
+	using Scalar = typename VEC3_T::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	if(map.is_incident_to_boundary(e))
+		return Scalar(0) ;
+
+	std::pair<Vertex, Vertex> v = map.vertices(e);
+	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v.first.dart), position);
+	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v.second.dart), position);
+
+	Scalar a = angle(n1, n2);
+
+	return a ;
 }
 
-template <class Scalar>
-inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+template <typename VEC3_T, typename MAP>
+inline void angle_between_face_normals(
+		const MAP& map,
+		const typename MAP::template VertexAttribute<VEC3_T>& position,
+		typename MAP::template Attribute<typename VEC3_T::Scalar, Orbit::PHI2>& angles)
 {
-	cgogn_assert(epsilon > 0);
-	return std::fabs(y - x) < epsilon;
+	map.foreach_cell([&] (Cell<Orbit::PHI2> e)
+	{
+		angles[e] = angle_between_face_normals<VEC3_T, MAP>(map, e, position);
+	});
 }
+
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // CGOGN_CORE_UTILS_PRECISION_H_
+#endif // CGOGN_GEOMETRY_ALGOS_ANGLE_H_

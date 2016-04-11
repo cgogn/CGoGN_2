@@ -38,12 +38,12 @@ set(HEADER_FILES
 	utils/thread_pool.h
 	utils/thread_barrier.h
 	utils/string.h
-	utils/precision.h
 	utils/masks.h
 	utils/logger.h
 	utils/log_entry.h
 	utils/logger_output.h
 	utils/log_stream.h
+	utils/numerics.h
 )
 
 set(SOURCE_FILES

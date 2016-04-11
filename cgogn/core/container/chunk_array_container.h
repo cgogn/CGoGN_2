@@ -34,7 +34,7 @@
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/dll.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/unique_ptr.h>

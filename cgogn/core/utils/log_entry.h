@@ -29,7 +29,7 @@
 #include <memory>
 
 #include <cgogn/core/dll.h>
-#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {

@@ -24,7 +24,7 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_NORMAL_H_
 #define CGOGN_GEOMETRY_ALGOS_NORMAL_H_
 
-#include <cgogn/core/utils/precision.h>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/cell.h>
 
 #include <cgogn/geometry/algos/area.h>

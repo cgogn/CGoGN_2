@@ -15,6 +15,8 @@ set(HEADER_FILES
 	algos/ear_triangulation.h
 	algos/picking.h
 	algos/filtering.h
+	algos/length.h
+	algos/angle.h
 	functions/basics.h
 	functions/area.h
 	functions/normal.h
