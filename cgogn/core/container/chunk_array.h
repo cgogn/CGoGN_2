@@ -55,7 +55,7 @@ public:
 
 protected:
 
-	/// vector of block pointers
+	// vector of block pointers
 	std::vector<T*> table_data_;
 
 public:
@@ -63,6 +63,11 @@ public:
 	/**
 	 * @brief Constructor of ChunkArray
 	 */
+	inline ChunkArray(const std::string& name) : Inherit(name)
+	{
+		table_data_.reserve(1024u);
+	}
+
 	inline ChunkArray() : Inherit()
 	{
 		table_data_.reserve(1024u);
@@ -82,7 +87,7 @@ public:
 	 */
 	Inherit* clone() const override
 	{
-		return new Self();
+		return new Self(this->name_);
 	}
 
 	bool swap(Inherit* cag) override
@@ -387,11 +392,11 @@ public:
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
 
-	inline void set_all_values( const T& v)
+	inline void set_all_values(const T& v)
 	{
 		for(T* chunk : table_data_)
 		{
-			for(uint32 i=0; i<CHUNKSIZE; ++i)
+			for(uint32 i = 0; i < CHUNKSIZE; ++i)
 				*chunk++ = v;
 		}
 	}
@@ -411,20 +416,22 @@ public:
 
 protected:
 
-	/// vector of block pointers
+	// vector of block pointers
 	std::vector<uint32*> table_data_;
 
 public:
 
-	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArray(const std::string& name) : Inherit(name)
 	{
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const Self& ca) = delete;
-	ChunkArray(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self& ca) = delete;
+	inline ChunkArray() : Inherit()
+	{
+		table_data_.reserve(1024u);
+	}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArray);
 
 	~ChunkArray() override
 	{
@@ -436,9 +443,9 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	Inherit* clone() const override
 	{
-		return new Self();
+		return new Self(this->name_);
 	}
 
 	bool swap(Inherit* cag) override

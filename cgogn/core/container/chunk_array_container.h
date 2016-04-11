@@ -223,8 +223,8 @@ public:
 		}
 
 		// create the new attribute
-		const std::string& typeName = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>();
+		const std::string& type_name = name_of_type(T());
+		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
 		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
 
 		// reserve memory
@@ -233,7 +233,7 @@ public:
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
 		names_.push_back(attribute_name);
-		type_names_.push_back(typeName);
+		type_names_.push_back(type_name);
 
 		return carr;
 	}
@@ -278,7 +278,6 @@ public:
 		return true;
 	}
 
-
 	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
 		uint32 index1 = get_array_index(ptr1);
@@ -292,7 +291,7 @@ public:
 
 		if (index1 == index2)
 		{
-			cgogn_log_warning("swap_data_attributes") << "Attribute same attribute.";
+			cgogn_log_warning("swap_data_attributes") << "Same attributes.";
 			return false;
 		}
 
@@ -300,8 +299,6 @@ public:
 
 		return true;
 	}
-
-
 
 	/**
 	 * @brief add a Marker attribute
@@ -457,7 +454,7 @@ public:
 	 * @brief reverse end of container
 	 * @return the index before the last used line of the container in reverse order
 	 */
-	uint32 real_rend() const
+	uint32 rend() const
 	{
 		return 0xffffffff;
 	}
@@ -855,8 +852,6 @@ public:
 		return ok;
 	}
 };
-
-
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
