@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_AREA_H_
-#define GEOMETRY_ALGOS_AREA_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_AREA_H_
+#define CGOGN_GEOMETRY_ALGOS_AREA_H_
 
-#include <geometry/functions/area.h>
-#include <geometry/algos/centroid.h>
+#include <cgogn/geometry/functions/area.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -34,7 +34,7 @@ namespace geometry
 {
 
 template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	return triangle_area<VEC3_T>(
@@ -45,7 +45,7 @@ inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face 
 }
 
 template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3_T>& position)
+inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	if (map.codegree(f) == 3)
@@ -66,4 +66,4 @@ inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Fa
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_AREA_H_
+#endif // CGOGN_GEOMETRY_ALGOS_AREA_H_

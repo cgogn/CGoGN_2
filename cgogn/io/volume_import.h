@@ -21,20 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_VOLUME_IMPORT_H_
-#define IO_VOLUME_IMPORT_H_
+#ifndef CGOGN_IO_VOLUME_IMPORT_H_
+#define CGOGN_IO_VOLUME_IMPORT_H_
 
 #include <istream>
 
-#include <core/utils/string.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/cmap3_builder.h>
+#include <cgogn/core/utils/string.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
-#include <geometry/functions/orientation.h>
+#include <cgogn/geometry/functions/orientation.h>
 
-#include <io/c_locale.h>
-#include <io/dll.h>
-#include <io/mesh_io_gen.h>
+#include <cgogn/io/c_locale.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 #include <tinyxml2.h>
 
@@ -136,7 +136,7 @@ public:
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 	using MapBuilder = cgogn::CMap3Builder_T<typename Map::MapTraits>;
 
 	virtual ~VolumeImport() override {}
@@ -171,7 +171,7 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+		typename Map::template VertexAttribute<std::vector<Dart>> darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 index = 0u;
 		typename Map::DartMarkerStore m(map);
@@ -581,4 +581,4 @@ extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // IO_VOLUME_IMPORT_H_
+#endif // CGOGN_IO_VOLUME_IMPORT_H_

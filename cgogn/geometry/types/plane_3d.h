@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_PLANE_3D_H_
-#define GEOMETRY_TYPES_PLANE_3D_H_
+#ifndef CGOGN_GEOMETRY_TYPES_PLANE_3D_H_
+#define CGOGN_GEOMETRY_TYPES_PLANE_3D_H_
 
 #include <type_traits>
 #include <array>
 
-#include <core/utils/precision.h>
+#include <cgogn/core/utils/precision.h>
 
-#include <geometry/dll.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -149,4 +149,4 @@ extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float64,3>>>;
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_PLANE_3D_H_
+#endif // CGOGN_GEOMETRY_TYPES_PLANE_3D_H_

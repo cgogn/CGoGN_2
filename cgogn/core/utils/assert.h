@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_ASSERT_H_
-#define CORE_UTILS_ASSERT_H_
+#ifndef CGOGN_CORE_UTILS_ASSERT_H_
+#define CGOGN_CORE_UTILS_ASSERT_H_
 
 #include <string>
 #include <tuple>
 
-#include <core/dll.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
 #define __func__ __FUNCTION__
@@ -243,4 +243,4 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 
 #define inside_type(ATTR) typename std::remove_cv<typename std::remove_reference<decltype(ATTR()[0ul])>::type>::type
 
-#endif // CORE_UTILS_ASSERT_H_
+#endif // CGOGN_CORE_UTILS_ASSERT_H_

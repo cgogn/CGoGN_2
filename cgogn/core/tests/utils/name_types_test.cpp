@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/utils/name_types.h>
-#include <core/basic/cell.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/basic/cell.h>
 #include <gtest/gtest.h>
 
 

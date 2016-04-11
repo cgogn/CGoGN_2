@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_INTERSECTION_H_
-#define GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_
 
 namespace cgogn
 {
@@ -98,4 +98,4 @@ bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T&
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_

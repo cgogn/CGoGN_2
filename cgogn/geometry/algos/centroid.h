@@ -21,10 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGOS_CENTROID_H_
-#define GEOMETRY_ALGOS_CENTROID_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_CENTROID_H_
+#define CGOGN_GEOMETRY_ALGOS_CENTROID_H_
 
-#include <core/basic/cell.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -33,10 +34,10 @@ namespace geometry
 {
 
 template <typename T, Orbit ORBIT, typename MAP>
-inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttributeHandler<T>& attribute)
+inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template VertexAttribute<T>& attribute)
 {
 	T result;
-	result.setZero();
+	set_zero(result);
 	uint32 count = 0;
 	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
 	{
@@ -51,4 +52,4 @@ inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template Ve
 
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGOS_CENTROID_H_
+#endif // CGOGN_GEOMETRY_ALGOS_CENTROID_H_

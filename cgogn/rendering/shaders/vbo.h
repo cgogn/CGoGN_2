@@ -22,13 +22,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_VBO_H_
-#define RENDERING_SHADERS_VBO_H_
+#ifndef CGOGN_RENDERING_SHADERS_VBO_H_
+#define CGOGN_RENDERING_SHADERS_VBO_H_
 
 #include <QOpenGLBuffer>
 
-#include <core/cmap/attribute_handler.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/core/cmap/attribute_handler.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -134,8 +134,8 @@ public:
 };
 
 /**
- * @brief update vbo from one AttributeHandler
- * @param attr AttributeHandler (must contain float or vec<float>
+ * @brief update vbo from one Attribute
+ * @param attr Attribute (must contain float or vec<float>
  * @param vbo vbo to update
  * @param convert conversion lambda
  */
@@ -184,8 +184,8 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 
 
 /**
- * @brief update vbo from one AttributeHandler with conversion lambda
- * @param attr AttributeHandler
+ * @brief update vbo from one Attribute with conversion lambda
+ * @param attr Attribute
  * @param vbo vbo to update
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
@@ -238,9 +238,9 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 
 
 /**
- * @brief update vbo from two AttributeHandlers with conversion lambda
- * @param attr first AttributeHandler
- * @param attr2 second AttributeHandler
+ * @brief update vbo from two Attributes with conversion lambda
+ * @param attr first Attribute
+ * @param attr2 second Attribute
  * @param vbo vbo to update
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
@@ -309,8 +309,8 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 
 /**
  * @brief generate a vbo from an attribute and it's indices
- * @param attr the AttributeHandler
- * @param indices indices in the AttributeHandler
+ * @param attr the Attribute
+ * @param indices indices in the Attribute
  * @param vbo the vbo to generate
  * @param convert conversion lambda  -> float or std::array<float,2/3/4>
  */
@@ -363,4 +363,4 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_VBO_H_
+#endif // CGOGN_RENDERING_SHADERS_VBO_H_

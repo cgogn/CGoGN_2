@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
-#define GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#ifndef CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#define CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
 
 #include <type_traits>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
 
 namespace cgogn
 {
@@ -42,7 +42,7 @@ struct vector_traits
 
 // specialization 1 : cgogn::geometry::Vec_T with a fixed-size array
 template <typename Scalar_, std::size_t Size>
-struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
+struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 {
 	static const std::size_t SIZE = Size;
 	using Scalar = Scalar_;
@@ -50,7 +50,7 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_,Size>>>
 
 // specialization 2 : Eigen::Vector
 template <typename Scalar_, int32 Rows, int32 Options>
-struct vector_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
+struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 {
 	static const std::size_t SIZE = Rows;
 	using Scalar = Scalar_;
@@ -78,25 +78,32 @@ struct nb_components_traits
 {};
 
 template<typename T>
-struct nb_components_traits<T, typename std::enable_if< std::is_integral<T>::value || std::is_floating_point<T>::value >::type >
+struct nb_components_traits<T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
 {
 	const static uint32 value = 1u;
 };
 
 template<typename Scalar, std::size_t size>
-struct nb_components_traits<geometry::Vec_T<std::array<Scalar,size>>>
+struct nb_components_traits<geometry::Vec_T<std::array<Scalar, size>>>
 {
 	const static uint32 value = size;
 };
 
 template <typename Scalar_, int32 Rows, int32 Options>
-struct nb_components_traits<Eigen::Matrix<Scalar_,Rows,1,Options,Rows,1>>
+struct nb_components_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 {
 	const static uint32 value = Rows;
 };
+
+
+template <typename T, typename std::enable_if<(nb_components_traits<T>::value > 1)>::type* = nullptr>
+void set_zero(T& t) { t.setZero(); }
+
+template <typename T, typename std::enable_if<(nb_components_traits<T>::value == 1)>::type* = nullptr>
+void set_zero(T& t) { t = 0; }
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_GEOMETRY_TRAITS_H_
+#endif // CGOGN_GEOMETRY_TYPES_GEOMETRY_TRAITS_H_

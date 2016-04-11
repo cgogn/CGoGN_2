@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_MSH_IO_CPP_
+#define CGOGN_IO_MSH_IO_CPP_
 
-#include <io/msh_io.h>
+#include <cgogn/io/msh_io.h>
 
 namespace cgogn
 {

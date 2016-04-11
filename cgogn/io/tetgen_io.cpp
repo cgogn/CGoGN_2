@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TETGEN_IO_CPP_
+#define CGOGN_IO_TETGEN_IO_CPP_
 
-#include <io/tetgen_io.h>
+#include <cgogn/io/tetgen_io.h>
 
 namespace cgogn
 {

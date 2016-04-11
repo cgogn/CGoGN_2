@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_STRING_H_
-#define CORE_UTILS_STRING_H_
+#ifndef CGOGN_CORE_UTILS_STRING_H_
+#define CGOGN_CORE_UTILS_STRING_H_
 
 
 #include <string>
@@ -60,4 +60,4 @@ inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& 
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_STRING_H_
+#endif // CGOGN_CORE_UTILS_STRING_H_

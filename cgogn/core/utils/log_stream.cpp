@@ -22,13 +22,13 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOG_STREAM_CPP_
+#define CGOGN_CORE_UTILS_LOG_STREAM_CPP_
 
 #include <iostream>
 #include <limits>
 
-#include <core/utils/log_stream.h>
-#include <core/utils/logger.h>
+#include <cgogn/core/utils/log_stream.h>
+#include <cgogn/core/utils/logger.h>
 namespace cgogn
 {
 

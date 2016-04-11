@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_MAP_BASE_DATA_H_
-#define CORE_CMAP_MAP_BASE_DATA_H_
+#ifndef CGOGN_CORE_CMAP_MAP_BASE_DATA_H_
+#define CGOGN_CORE_CMAP_MAP_BASE_DATA_H_
 
 #include <thread>
 #include <mutex>
@@ -31,13 +31,13 @@
 #include <sstream>
 #include <iterator>
 
-#include <core/utils/definitions.h>
-#include <core/utils/thread.h>
-#include <core/utils/thread_pool.h>
-#include <core/utils/name_types.h>
-#include <core/container/chunk_array_container.h>
-#include <core/basic/cell.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/definitions.h>
+#include <cgogn/core/utils/thread.h>
+#include <cgogn/core/utils/thread_pool.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/cmap/map_traits.h>
 
 #define CGOGN_CHECK_DYNAMIC_TYPE cgogn_message_assert( (std::is_same<typename MapType::TYPE, Self>::value),\
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
@@ -78,9 +78,9 @@ public:
 	}
 };
 
-// forward declaration of class AttributeHandlerOrbit
+// forward declaration of class AttributeOrbit
 template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeHandlerOrbit;
+class AttributeOrbit;
 
 /**
  * @brief The MapBaseData class
@@ -95,8 +95,8 @@ public:
 
 	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
-	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
+	template <typename DT, Orbit ORBIT> friend class AttributeOrbit;
+	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
@@ -357,4 +357,4 @@ extern template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_MAP_BASE_DATA_H_
+#endif // CGOGN_CORE_CMAP_MAP_BASE_DATA_H_

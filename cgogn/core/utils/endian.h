@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_ENDIAN_H_
-#define CORE_UTILS_ENDIAN_H_
+#ifndef CGOGN_CORE_UTILS_ENDIAN_H_
+#define CGOGN_CORE_UTILS_ENDIAN_H_
 
 #include <cstdint>
 #include <type_traits>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 
 namespace cgogn
 {
@@ -222,4 +222,4 @@ inline T swap_endianness_native_little(T x)
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_ENDIAN_H_
+#endif // CGOGN_CORE_UTILS_ENDIAN_H_

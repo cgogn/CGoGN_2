@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_PLY_IO_H_
-#define IO_PLY_IO_H_
+#ifndef CGOGN_IO_PLY_IO_H_
+#define CGOGN_IO_PLY_IO_H_
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
-#include <io/surface_import.h>
-#include <io/import_ply_data.h>
+#include <cgogn/io/surface_import.h>
+#include <cgogn/io/import_ply_data.h>
 
 namespace cgogn
 {
@@ -124,4 +124,4 @@ extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::
 
 }// namespace io
 } // namespace cgogn
-#endif // IO_PLY_IO_H_
+#endif // CGOGN_IO_PLY_IO_H_

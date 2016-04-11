@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP3_H_
-#define CORE_CMAP_CMAP3_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_H_
+#define CGOGN_CORE_CMAP_CMAP3_H_
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -66,15 +66,15 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Edge::ORBIT>;
+	using EdgeAttribute = Attribute<T, Edge::ORBIT>;
 	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Face::ORBIT>;
+	using FaceAttribute = Attribute<T, Face::ORBIT>;
 	template <typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Volume::ORBIT>;
+	using VolumeAttribute = Attribute<T, Volume::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -234,7 +234,7 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(internal::check_multi_phi<N>::value_cmap3, "composition on phi1/phi2/phi3 only");
+		static_assert((N%10)<=3,"composition on phi1/phi2/only");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
@@ -1057,4 +1057,4 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CM
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP3_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_H_

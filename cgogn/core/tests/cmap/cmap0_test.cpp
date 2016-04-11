@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap0.h>
 
 namespace cgogn
 {
@@ -45,7 +45,7 @@ class CMap0Test : public ::testing::Test
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
-	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int32>;
+	using VertexAttribute = testCMap0::VertexAttribute<int32>;
 	using Vertex = testCMap0::Vertex;
 
 protected:

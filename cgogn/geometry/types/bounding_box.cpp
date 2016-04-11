@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define GEOMETRY_BOUNDING_BOX_CPP_
+#define CGOGN_GEOMETRY_BOUNDING_BOX_CPP_
 
-#include <geometry/types/bounding_box.h>
+#include <cgogn/geometry/types/bounding_box.h>
 
 namespace cgogn
 {

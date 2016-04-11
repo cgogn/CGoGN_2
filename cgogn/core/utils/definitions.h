@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_DEFINITIONS_H_
-#define CORE_UTILS_DEFINITIONS_H_
+#ifndef CGOGN_CORE_UTILS_DEFINITIONS_H_
+#define CGOGN_CORE_UTILS_DEFINITIONS_H_
 
 
 #include <cstdint>
@@ -177,4 +177,4 @@ using namespace numerics;
 	CLASSNAME& operator=(const CLASSNAME&) = delete;\
 	CLASSNAME& operator=(CLASSNAME&&) = delete
 
-#endif // CORE_UTILS_DEFINITIONS_H_
+#endif // CGOGN_CORE_UTILS_DEFINITIONS_H_

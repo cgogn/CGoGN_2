@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_AREA_H_
-#define GEOMETRY_FUNCTIONS_AREA_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
 
 namespace cgogn
 {
@@ -43,4 +43,4 @@ inline typename VEC3_T::Scalar triangle_area(const VEC3_T& p1, const VEC3_T& p2,
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_AREA_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_AREA_H_

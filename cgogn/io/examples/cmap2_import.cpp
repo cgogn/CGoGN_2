@@ -3,10 +3,10 @@
 #include <ctime>
 #include <vector>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap2.h>
-#include <io/map_import.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/geometry/algos/normal.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -23,9 +23,9 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 template <typename T>
-using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
+using FaceAttribute = Map2::FaceAttribute<T>;
 
 int main(int argc, char** argv)
 {
@@ -61,20 +61,21 @@ int main(int argc, char** argv)
 			nb_darts_2 += n;
 		cgogn_log_info("cmap2_import")<< "nb darts // -> " << nb_darts_2;
 
-		VertexAttributeHandler<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
-		VertexAttributeHandler<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
-		FaceAttributeHandler<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
+		VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+		VertexAttribute<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+		FaceAttribute<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
 		cgogn_log_info("cmap2_import")  << "Map integrity : " << std::boolalpha << map.check_map_integrity();
 
 		uint32 nb_vertices = 0;
-		cgogn::CellCache<Map2::Vertex, Map2> vmask(map);
-		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, vmask);
+		cgogn::CellCache<Map2> cache(map);
+		cache.update<Map2::Vertex>();
+		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, cache);
 		cgogn_log_info("cmap2_import") << "nb vertices -> " << nb_vertices;
 
 		uint32 nb_boundary_faces = 0;
-		cgogn::BoundaryCache<Map2> bmask(map);
-		map.foreach_cell([&nb_boundary_faces] (Map2::Boundary) { nb_boundary_faces++; }, bmask);
+		cgogn::BoundaryCache<Map2> bcache(map);
+		map.foreach_cell([&nb_boundary_faces] (Map2::Boundary) { nb_boundary_faces++; }, bcache);
 		cgogn_log_info("cmap2_import") << "nb boundary faces -> " << nb_boundary_faces;
 
 		uint32 nb_faces = 0;

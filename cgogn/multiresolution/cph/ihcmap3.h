@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP3_H_
-#define MULTIRESOLUTION_CPH_IHCMAP3_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_
 
-#include <core/cmap/cmap3.h>
-#include <multiresolution/cph/cph3.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/multiresolution/cph/cph3.h>
 
 namespace cgogn
 {
@@ -63,17 +63,17 @@ public:
 	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
 	template<typename T>
-	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
+	using DartAttribute = Attribute<T, Self::DART>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	using VertexAttribute = Attribute<T, Self::VERTEX>;
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
+	using EdgeAttribute = Attribute<T, Self::EDGE>;
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	using FaceAttribute = Attribute<T, Self::FACE>;
 	template<typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
+	using VolumeAttribute = Attribute<T, Self::VOLUME>;
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
@@ -369,4 +369,4 @@ extern template class CGOGN_MULTIRESOLUTION_API IHCMap3_T<DefaultMapTraits, IHCM
 } // namespace cgogn
 
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP3_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_

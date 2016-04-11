@@ -21,23 +21,23 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_MAP_BASE_H_
-#define CORE_CMAP_MAP_BASE_H_
+#ifndef CGOGN_CORE_CMAP_MAP_BASE_H_
+#define CGOGN_CORE_CMAP_MAP_BASE_H_
 
 #include <vector>
 #include <memory>
 
-#include <core/cmap/map_base_data.h>
-#include <core/cmap/attribute_handler.h>
+#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/cmap/attribute_handler.h>
 
-#include <core/basic/cell.h>
-#include <core/basic/dart_marker.h>
-#include <core/basic/cell_marker.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/basic/cell_marker.h>
 
-#include <core/utils/masks.h>
-#include <core/utils/logger.h>
-#include <core/utils/thread_barrier.h>
-#include <core/utils/unique_ptr.h>
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/thread_barrier.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 namespace cgogn
 {
@@ -64,9 +64,9 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
+	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
@@ -219,14 +219,14 @@ public:
 	 * @return a handler to the created attribute
 	 */
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
+	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
@@ -235,7 +235,7 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, Orbit ORBIT>
-	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
+	inline bool remove_attribute(Attribute<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
@@ -246,31 +246,45 @@ public:
 	/**
 	* \brief search an attribute for a given orbit
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
+	* @return an Attribute
 	*/
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
-	* \brief search an attribute for a given orbit and change its type (if size is compatible).
+	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
-	* The first template argument is the wanted type, the second is the real type.
+	* @return an Attribute
 	*/
 	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
-	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	inline Attribute<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible cast between attributes");
+		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
 
 		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
-		return AttributeHandler<T_ASK, ORBIT>(this, ca);
+		return Attribute<T_ASK, ORBIT>(this, ca);
+	}
+
+
+	template <typename T, Orbit ORBIT>
+	inline void swap_attributes(Attribute<T, ORBIT>& ah1, Attribute<T, ORBIT>& ah2)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		cgogn_message_assert(ah1.is_linked_to(this), "wrong map");
+		cgogn_message_assert(ah2.is_linked_to(this), "wrong map");
+
+		const ChunkArray<T>* ca1 = ah1.get_data();
+		const ChunkArray<T>* ca2 = ah2.get_data();
+
+		this->attributes_[ORBIT].swap_data_attributes(ca1,ca2);
 	}
 
 protected:
@@ -329,7 +343,7 @@ protected:
 	inline void create_embedding()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(!this->template is_embedded<ORBIT>(), "Orbit is already embedded");
+		cgogn_message_assert(!this->template is_embedded<ORBIT>(), "Invalid parameter: orbit is already embedded");
 
 		std::ostringstream oss;
 		oss << "EMB_" << orbit_name(ORBIT);
@@ -343,6 +357,8 @@ protected:
 
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
+
+		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
 	template <Orbit ORBIT>
@@ -369,7 +385,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		AttributeHandler<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
+		Attribute<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
 		for (uint32& i : counter) i = 0;
 
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
@@ -404,7 +420,7 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		AttributeHandler<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
+		Attribute<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const typename Inherit::template ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];
@@ -465,18 +481,6 @@ public:
 		if (!result)
 		{
 			cgogn_log_error("check_map_integrity") << "Integrity of the topology is broken";
-			return false;
-		}
-
-		// check the integrity of the boundary topology
-		foreach_dart_until([&cmap, &result] (Dart d)
-		{
-			result = cmap->check_boundary_integrity(d);
-			return result;
-		});
-		if (!result)
-		{
-			cgogn_log_error("check_map_integrity") << "Integrity of the boundary is broken";
 			return false;
 		}
 
@@ -806,18 +810,18 @@ public:
 	 */
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void foreach_cell(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
 			f(it);
 	}
 
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = func_parameter_type(FUNC);
@@ -837,21 +841,21 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellType it = mask.begin();
+		CellType it = mask.template begin<CellType>();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		while (!mask.end())
+		while (!mask.template end<CellType>())
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.end(); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.template end<CellType>(); ++k)
 			{
 				CellType c(it);
 				cells.push_back(c);
-				it = mask.next();
+				it = mask.template next<CellType>();
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -939,12 +943,12 @@ public:
 	 */
 	template <typename FUNC,
 			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
+			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
 	inline void foreach_cell_until(const FUNC& f, const MASK& mask) const
 	{
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
 			if (!f(it))
 				break;
 	}
@@ -1185,4 +1189,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_MAP_BASE_H_
+#endif // CGOGN_CORE_CMAP_MAP_BASE_H_

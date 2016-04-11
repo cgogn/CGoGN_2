@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_TOPO_RENDER_H_
-#define RENDERING_TOPO_RENDER_H_
+#ifndef CGOGN_RENDERING_TOPO_RENDER_H_
+#define CGOGN_RENDERING_TOPO_RENDER_H_
 
-#include <rendering/shaders/shader_simple_color.h>
-#include <rendering/shaders/shader_bold_line.h>
-#include <rendering/shaders/shader_round_point.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
+#include <cgogn/rendering/shaders/shader_round_point.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
 
-#include <geometry/algos/centroid.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -88,17 +88,17 @@ public:
 	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
 	template <typename VEC3, typename MAP>
-	void update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	template <typename VEC3, typename MAP>
-	void update_map3(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 
 	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending=true);
 };
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -177,7 +177,7 @@ void TopoRender::update_map2(MAP& m, const typename MAP::template VertexAttribut
 
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -278,4 +278,4 @@ void TopoRender::update_map3(MAP& m, const typename MAP::template VertexAttribut
 
 } // namespace cgogn
 
-#endif // RENDERING_TOPO_RENDER_H_
+#endif // CGOGN_RENDERING_TOPO_RENDER_H_

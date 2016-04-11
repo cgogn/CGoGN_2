@@ -1,0 +1,138 @@
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
+
+#ifndef CGOGN_MODELING_ALGOS_LOOP_H_
+#define CGOGN_MODELING_ALGOS_LOOP_H_
+
+#include <vector>
+
+#include <cgogn/core/basic/dart_marker.h>
+
+namespace cgogn
+{
+
+namespace modeling
+{
+
+template <typename VEC3, typename MAP>
+void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
+{
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+	using Scalar = typename VEC3::Scalar;
+
+	typename MAP::template VertexAttribute<VEC3> position2 = map.template add_attribute<VEC3,Vertex::ORBIT>("position_tempo_loop");
+
+	std::vector<Edge> initial_edges;
+	std::vector<Vertex> initial_vertices;
+
+	DartMarker<MAP> initial_edge_marker(map);
+
+	map.foreach_cell([&] (Edge e)
+	{
+		initial_edges.push_back(e);
+		initial_edge_marker.mark_orbit(e);
+	});
+
+	map.foreach_cell([&] (Vertex v)
+	{
+		initial_vertices.push_back(v);
+	});
+
+	// cut edges
+	for(Edge e: initial_edges)
+	{
+		std::pair<Vertex,Vertex> ve = map.vertices(e);
+		map.cut_edge(e);
+	}
+
+	// compute position of new edge points
+	for(Edge e: initial_edges)
+	{
+		Vertex v1(e.dart);
+		Vertex v2(map.template phi<12>(e.dart));
+		Vertex nve(map.phi1(e.dart));
+		Vertex vr(map.template phi<2111>(e.dart));
+		Vertex vl(map.phi_1(map.phi_1(e.dart)));
+
+		position2[nve] = Scalar(3.0/8.0)*(position[v1]+position[v2]) + Scalar(1.0/8.0)*(position[vr] + position[vl]);
+	}
+
+	// compute new position of old vertices
+	for(Vertex v: initial_vertices)
+	{
+		VEC3 sum_edge;// Sum_E
+		sum_edge.setZero();
+
+		int nb_e = 0;
+		Dart bound;
+		map.foreach_incident_edge(v, [&] (Edge e)
+		{
+			nb_e++;
+			sum_edge += position[Vertex(map.template phi<12>(e.dart))];
+			if (map.is_boundary(e.dart))
+				bound = e.dart;
+		});
+
+		if (!bound.is_nil()) // boundary case
+		{
+			Vertex e1(map.phi2(bound));
+			Vertex e2(map.phi_1(bound));
+			position2[v] = Scalar(3.0/4.0)*position[v] + Scalar(1.0/8.0)*(position[e1]+position[e2]);
+		}
+		else
+		{
+			float64 beta = 3.0/16.0;
+			if (nb_e>3)
+				beta = 3.0/(8.0*nb_e);
+			position2[v] = Scalar(beta)*sum_edge + Scalar(1.0-beta*nb_e)*position[v];
+		}
+	}
+
+	// add edges inside faces
+	map.foreach_cell([&] (Face f)
+	{
+		Dart d0 = f.dart;
+		if (initial_edge_marker.is_marked(d0))
+			d0 = map.phi1(d0);
+
+		Dart d1 = map.template phi<11>(d0);
+		map.cut_face(Vertex(d0),Vertex(d1));
+
+		Dart d2 = map.template phi<11>(d1);
+		map.cut_face(Vertex(d1),Vertex(d2));
+
+		Dart d3 = map.template phi<11>(d2);
+		map.cut_face(Vertex(d2),Vertex(d3));
+	});
+
+	map.swap_attributes(position,position2);
+	map.remove_attribute(position2);
+}
+
+} // namespace modeling
+
+} // namespace cgogn
+
+#endif // CGOGN_MODELING_ALGOS_LOOP_H_

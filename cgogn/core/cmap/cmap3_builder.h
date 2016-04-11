@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP3_BUILDER_H_
-#define CORE_CMAP_CMAP3_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -290,5 +290,5 @@ using CMap3Builder = cgogn::CMap3Builder_T<DefaultMapTraits>;
 } // namespace cgogn
 
 
-#endif // CORE_CMAP_CMAP3_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 

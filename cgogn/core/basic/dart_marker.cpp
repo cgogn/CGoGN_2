@@ -23,7 +23,7 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/basic/dart_marker.h>
+#include <cgogn/core/basic/dart_marker.h>
 
 namespace cgogn
 {

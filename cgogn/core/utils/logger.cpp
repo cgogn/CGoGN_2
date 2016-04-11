@@ -22,10 +22,10 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOGGER_CPP_
+#define CGOGN_CORE_UTILS_LOGGER_CPP_
 
 #include <iostream>
-#include <core/utils/logger.h>
+#include <cgogn/core/utils/logger.h>
 
 namespace cgogn
 {

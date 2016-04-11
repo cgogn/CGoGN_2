@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_VEC_H_
-#define GEOMETRY_TYPES_VEC_H_
+#ifndef CGOGN_GEOMETRY_TYPES_VEC_H_
+#define CGOGN_GEOMETRY_TYPES_VEC_H_
 
 #include <array>
 #include <cmath>
 #include <vector>
 #include <initializer_list>
 
-#include <core/utils/name_types.h>
-#include <core/utils/assert.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/assert.h>
 
-#include <geometry/dll.h>
+#include <cgogn/geometry/dll.h>
 
 namespace cgogn
 {
@@ -195,7 +195,6 @@ public:
 		return v / r;
 	}
 
-
 	inline const Scalar dot(const Self& v) const
 	{
 		Scalar r{0};
@@ -274,4 +273,4 @@ extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_VEC_H_
+#endif // CGOGN_GEOMETRY_TYPES_VEC_H_

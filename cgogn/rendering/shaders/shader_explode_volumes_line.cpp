@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_explode_volumes_line.h>
+#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
 #include <QColor>
 #include <QOpenGLFunctions>
 #include <iostream>

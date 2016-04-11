@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP0_H_
-#define CORE_CMAP_CMAP0_H_
+#ifndef CGOGN_CORE_CMAP_CMAP0_H_
+#define CGOGN_CORE_CMAP_CMAP0_H_
 
-#include <core/cmap/map_base.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -54,9 +54,9 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -196,4 +196,4 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CM
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP0_H_
+#endif // CGOGN_CORE_CMAP_CMAP0_H_

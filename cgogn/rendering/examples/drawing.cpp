@@ -27,7 +27,7 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <rendering/drawer.h>
+#include <cgogn/rendering/drawer.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

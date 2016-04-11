@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_DLL_H_
-#define MULTIRESOLUTION_DLL_H_
+#ifndef CGOGN_MULTIRESOLUTION_DLL_H_
+#define CGOGN_MULTIRESOLUTION_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -37,4 +37,4 @@
 #define CGOGN_MULTIRESOLUTION_API
 #endif
 
-#endif // MULTIRESOLUTION_DLL_H_
+#endif // CGOGN_MULTIRESOLUTION_DLL_H_

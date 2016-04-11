@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_C_LOCALE_H_
-#define IO_C_LOCALE_H_
+#ifndef CGOGN_IO_C_LOCALE_H_
+#define CGOGN_IO_C_LOCALE_H_
 
 #include <string>
 #include <clocale>
 
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 
 namespace cgogn
 {
@@ -58,4 +58,4 @@ public:
 
 } // namespace cgogn
 
-#endif // IO_C_LOCALE_H_
+#endif // CGOGN_IO_C_LOCALE_H_

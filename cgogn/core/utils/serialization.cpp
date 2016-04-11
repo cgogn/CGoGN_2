@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#include <core/utils/serialization.h>
+#include <cgogn/core/utils/serialization.h>
 
 namespace cgogn
 {

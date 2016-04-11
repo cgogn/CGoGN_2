@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_ALGO_BOUNDING_BOX_H_
-#define GEOMETRY_ALGO_BOUNDING_BOX_H_
+#ifndef CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_H_
+#define CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_H_
 
-#include <geometry/types/bounding_box.h>
+#include <cgogn/geometry/types/bounding_box.h>
 
 namespace cgogn
 {
@@ -36,12 +36,12 @@ template<typename ATTR>
 void compute_bounding_box(const ATTR& attr, BoundingBox<inside_type(ATTR)>& bb)
 {
 	bb.reset();
-	for(const auto& p:attr)
+	for(const auto& p : attr)
 		bb.add_point(p);
 }
 
-
 } // namespace geometry
+
 } // namespace cgogn
 
-#endif // GEOMETRY_ALGO_BOUNDING_BOX_H_
+#endif // CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_H_

@@ -26,8 +26,8 @@
 #include <istream>
 #include <iostream>
 
-#include <core/utils/logger.h>
-#include <io/mesh_io_gen.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 namespace cgogn
 {

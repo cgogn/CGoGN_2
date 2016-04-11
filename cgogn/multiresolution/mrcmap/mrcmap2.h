@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
-#define MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
+#ifndef CGOGN_MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
+#define CGOGN_MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
 
-#include <core/cmap/cmap2.h>
-#include <multiresolution/mrcmap/mr_base.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/multiresolution/mrcmap/mr_base.h>
 
 namespace cgogn
 {
@@ -124,4 +124,4 @@ using MRCMap2 = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_MRCMAP_MRCMAP2_H_
+#endif // CGOGN_MULTIRESOLUTION_MRCMAP_MRCMAP2_H_

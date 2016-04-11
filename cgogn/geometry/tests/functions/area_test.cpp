@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/types/geometry_traits.h>
-#include <geometry/functions/area.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/area.h>
 
 #include <gtest/gtest.h>
 
