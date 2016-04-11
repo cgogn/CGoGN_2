@@ -75,7 +75,7 @@ inline typename VEC3_T::Scalar incident_faces_area(
 
 	map.foreach_incident_face(e, [&] (Face f)
 	{
-		area += cgogn::geometry::convex_face_area<VEC3_T, MAP>(map, f, position) / map.codegree(f) ;
+		area += cgogn::geometry::convex_face_area<VEC3_T, MAP>(map, f, position);// / map.codegree(f) ;
 	});
 
 	return area ;

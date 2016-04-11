@@ -45,31 +45,31 @@ inline typename VEC3_T::Scalar angle_between_face_normals(
     using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
-	if(map.is_boundary(e.dart))
+	if(map.is_incident_to_boundary(e))
         return Scalar(0) ;
 
-    Vertex v1(e.dart);
-	Vertex v2(map.phi2(e.dart));
-	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v1.dart), position);
-	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v2.dart), position);
+	std::pair<Vertex, Vertex> v = map.vertices(e);
+	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v.first.dart), position);
+	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v.second.dart), position);
 
-	VEC3_T edge = position[v2] - position[v1] ;
-    edge.normalize() ;
-	Scalar s = edge.dot(n1.cross(n2)) ;
-	Scalar c = n1.dot(n2);
-    Scalar a(0) ;
+	Scalar a = angle(n1, n2);
+//	VEC3_T edge = position[v.second] - position[v.first] ;
+//    edge.normalize() ;
+//	Scalar s = edge.dot(n1.cross(n2)) ;
+//	Scalar c = n1.dot(n2);
+//    Scalar a(0) ;
 
-    // the following trick is useful for avoiding NaNs (due to floating point errors)
-    if (c > 0.5) a = std::asin(s) ;
-    else
-    {
-        if(c < -1) c = -1 ;
-        if (s >= 0) a = std::acos(c) ;
-        else a = -std::acos(c) ;
-    }
-    //	if (isnan(a))
-    if(a != a)
-        std::cerr<< "Warning : computeAngleBetweenNormalsOnEdge returns NaN on edge " << v1 << "-" << v2 << std::endl ;
+//    // the following trick is useful for avoiding NaNs (due to floating point errors)
+//    if (c > 0.5) a = std::asin(s) ;
+//    else
+//    {
+//        if(c < -1) c = -1 ;
+//        if (s >= 0) a = std::acos(c) ;
+//        else a = -std::acos(c) ;
+//    }
+//    //	if (isnan(a))
+//    if(a != a)
+//        std::cerr<< "Warning : computeAngleBetweenNormalsOnEdge returns NaN on edge " << v1 << "-" << v2 << std::endl ;
 
     return a ;
 }
