@@ -134,8 +134,8 @@ void Viewer::import(const std::string& surface_mesh)
 	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
-	cell_cache_.update<Vertex>();
-	cell_cache_.update<Edge>();
+	cell_cache_.build<Vertex>();
+	cell_cache_.build<Edge>();
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);

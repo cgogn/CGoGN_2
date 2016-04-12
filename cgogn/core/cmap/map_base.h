@@ -697,10 +697,8 @@ public:
 protected:
 
 	/*!
-	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts.
-	 * A MASK is a callable that determines if a dart should be traversed or skipped.
-	 * It returns false when a dart should be skipped, true in other cases.
-	 * These functions also skip boundary darts.
+	 * \Brief Methods to iterate over darts.
+	 * These functions skip boundary darts.
 	 */
 	inline Dart begin() const
 	{
@@ -753,16 +751,16 @@ public:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given MASK function (MASK : CellType -> bool)
+	 * that is selected by the given CellFilter function (CellFilter : CellType -> bool)
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename CellFilter,
+			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -770,25 +768,25 @@ public:
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
-				foreach_cell_dart_marking(f, mask);
+				foreach_cell_dart_marking(f, filter);
 				break;
 			case FORCE_CELL_MARKING :
-				foreach_cell_cell_marking(f, mask);
+				foreach_cell_cell_marking(f, filter);
 				break;
 			case AUTO :
 				if (this->template is_embedded<CellType>())
-					foreach_cell_cell_marking(f, mask);
+					foreach_cell_cell_marking(f, filter);
 				else
-					foreach_cell_dart_marking(f, mask);
+					foreach_cell_dart_marking(f, filter);
 				break;
 		}
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename CellFilter,
+			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const CellFilter& filter) const
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
 
@@ -798,41 +796,41 @@ public:
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
-				parallel_foreach_cell_dart_marking(f, mask);
+				parallel_foreach_cell_dart_marking(f, filter);
 				break;
 			case FORCE_CELL_MARKING :
-				parallel_foreach_cell_cell_marking(f, mask);
+				parallel_foreach_cell_cell_marking(f, filter);
 				break;
 			case AUTO :
 				if (this->template is_embedded<CellType>())
-					parallel_foreach_cell_cell_marking(f, mask);
+					parallel_foreach_cell_cell_marking(f, filter);
 				else
-					parallel_foreach_cell_dart_marking(f, mask);
+					parallel_foreach_cell_dart_marking(f, filter);
 				break;
 		}
 	}
 
 	/**
-	 * \brief apply a function on each cell of the map that is provided by the given MASK object
+	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
+		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			f(it);
 	}
 
 	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -851,21 +849,21 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellType it = mask.template begin<CellType>();
+		CellType it = t.template begin<CellType>();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		while (!mask.template end<CellType>())
+		while (!t.template end<CellType>())
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.template end<CellType>(); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !t.template end<CellType>(); ++k)
 			{
 				CellType c(it);
 				cells.push_back(c);
-				it = mask.template next<CellType>();
+				it = t.template next<CellType>();
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -913,7 +911,7 @@ public:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given MASK function (MASK : CellType -> bool)
+	 * that is selected by the given CellFilter function (CellFilter : CellType -> bool)
 	 * and stops when the function returns false
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
@@ -921,52 +919,52 @@ public:
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	void foreach_cell_until(const FUNC& f, const MASK& mask) const
+			  typename CellFilter,
+			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
+	void foreach_cell_until(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking(f, mask);
+				foreach_cell_until_dart_marking(f, filter);
 				break;
 			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking(f, mask);
+				foreach_cell_until_cell_marking(f, filter);
 				break;
 			case AUTO :
 				if (this->template is_embedded<CellType>())
-					foreach_cell_until_cell_marking(f, mask);
+					foreach_cell_until_cell_marking(f, filter);
 				else
-					foreach_cell_until_dart_marking(f, mask);
+					foreach_cell_until_dart_marking(f, filter);
 				break;
 		}
 	}
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is provided by the given MASK object and stops when the function returns false
+	 * that is provided by the given Traversor object and stops when the function returns false
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell, MASK>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const MASK& mask) const
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = typename function_traits<FUNC>::template arg<0>::type;
 
-		for (CellType it = mask.template begin<CellType>(); !mask.template end<CellType>(); it = mask.template next<CellType>())
+		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			if (!f(it))
 				break;
 	}
 
 protected:
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void foreach_cell_dart_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -977,14 +975,14 @@ protected:
 			{
 				CellType c(it);
 				dm.mark_orbit(c);
-				if (mask(c))
+				if (filter(c))
 					f(c);
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -1021,7 +1019,7 @@ protected:
 				{
 					CellType c(it);
 					dm.mark_orbit(c);
-					if (mask(c))
+					if (filter(c))
 					{
 						cells.push_back(c);
 						++k;
@@ -1060,8 +1058,8 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void foreach_cell_cell_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1073,14 +1071,14 @@ protected:
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if (mask(c))
+				if (filter(c))
 					f(c);
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1118,7 +1116,7 @@ protected:
 				if (!cm.is_marked(c))
 				{
 					cm.mark(c);
-					if (mask(c))
+					if (filter(c))
 					{
 						cells.push_back(c);
 						++k;
@@ -1157,8 +1155,8 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_until_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void foreach_cell_until_dart_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -1169,15 +1167,15 @@ protected:
 			{
 				CellType c(it);
 				dm.mark_orbit(c);
-				if(mask(c))
+				if(filter(c))
 					if(!f(c))
 						break;
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_until_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename CellFilter>
+	inline void foreach_cell_until_cell_marking(const FUNC& f, const CellFilter& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1189,7 +1187,7 @@ protected:
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if(mask(c))
+				if(filter(c))
 					if(!f(c))
 						break;
 			}

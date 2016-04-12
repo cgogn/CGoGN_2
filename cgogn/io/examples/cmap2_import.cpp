@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
 		uint32 nb_vertices = 0;
 		cgogn::CellCache<Map2> cache(map);
-		cache.update<Map2::Vertex>();
+		cache.build<Map2::Vertex>();
 		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, cache);
 		cgogn_log_info("cmap2_import") << "nb vertices -> " << nb_vertices;
 
