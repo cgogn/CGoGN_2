@@ -823,6 +823,12 @@ public:
 	{
 		using CellType = func_parameter_type(FUNC);
 
+		if (std::is_same<Traversor, CellTraversorAll>::value)
+		{
+			foreach_cell(f, [] (CellType) { return true; });
+			return;
+		}
+
 		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			f(it);
 	}
@@ -833,6 +839,12 @@ public:
 	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
+
+		if (std::is_same<Traversor, CellTraversorAll>::value)
+		{
+			parallel_foreach_cell(f, [] (CellType) { return true; });
+			return;
+		}
 
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
@@ -954,7 +966,13 @@ public:
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
 	{
-		using CellType = typename function_traits<FUNC>::template arg<0>::type;
+		using CellType = func_parameter_type(FUNC);
+
+		if (std::is_same<Traversor, CellTraversorAll>::value)
+		{
+			foreach_cell_until(f, [] (CellType) { return true; });
+			return;
+		}
 
 		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			if (!f(it))

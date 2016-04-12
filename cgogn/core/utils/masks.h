@@ -44,6 +44,20 @@ public:
 //	virtual bool end() const = 0;
 };
 
+class CellTraversorAll : public CellTraversor
+{
+public:
+
+	template <typename CellType>
+	CellType begin() const { return CellType(); }
+
+	template <typename CellType>
+	CellType next() const { return CellType(); }
+
+	template <typename CellType>
+	bool end() const { return false; }
+};
+
 template <typename MAP>
 class CellCache : public CellTraversor
 {

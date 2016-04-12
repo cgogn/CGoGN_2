@@ -33,10 +33,10 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename T, typename MAP, typename MASK>
+template <typename T, typename MAP, typename Traversor>
 void filter_average(
 	const MAP& map,
-	const MASK& mask,
+	const Traversor& traversor,
 	const typename MAP::template VertexAttribute<T>& attribute_in,
 	typename MAP::template VertexAttribute<T>& attribute_out)
 {
@@ -54,13 +54,22 @@ void filter_average(
 		});
 		attribute_out[v] = sum / typename vector_traits<T>::Scalar(count);
 	},
-	mask);
+	traversor);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename T, typename MAP>
+void filter_average(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<T>& attribute_in,
+	typename MAP::template VertexAttribute<T>& attribute_out)
+{
+	filter_average<T>(map, CellTraversorAll(), attribute_in, attribute_out);
+}
+
+template <typename VEC3, typename MAP, typename Traversor>
 void filter_bilateral(
 	const MAP& map,
-	const MASK& mask,
+	const Traversor& traversor,
 	const typename MAP::template VertexAttribute<VEC3>& position_in,
 	typename MAP::template VertexAttribute<VEC3>& position_out,
 	const typename MAP::template VertexAttribute<VEC3>& normal)
@@ -81,7 +90,7 @@ void filter_bilateral(
 		angle_sum += angle(normal[v.first], normal[v.second]);
 		++nb_edges;
 	},
-	mask);
+	traversor);
 
 	Scalar sigmaC = 1.0 * (length_sum / Scalar(nb_edges));
 	Scalar sigmaS = 2.5 * (angle_sum / Scalar(nb_edges));
@@ -103,13 +112,23 @@ void filter_bilateral(
 
 		position_out[v] = position_in[v] + ((sum / normalizer) * n);
 	},
-	mask);
+	traversor);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename VEC3, typename MAP>
+void filter_bilateral(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position_in,
+	typename MAP::template VertexAttribute<VEC3>& position_out,
+	const typename MAP::template VertexAttribute<VEC3>& normal)
+{
+	filter_bilateral<VEC3>(map, CellTraversorAll(), position_in, position_out, normal);
+}
+
+template <typename VEC3, typename MAP, typename Traversor>
 void filter_taubin(
 	const MAP& map,
-	const MASK& mask,
+	const Traversor& traversor,
 	typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template VertexAttribute<VEC3>& position_tmp)
 {
@@ -134,7 +153,7 @@ void filter_taubin(
 		const VEC3& p = position[v];
 		position_tmp[v] = p + ((avg - p) * lambda);
 	},
-	mask);
+	traversor);
 
 	map.foreach_cell([&] (Vertex v)
 	{
@@ -150,7 +169,16 @@ void filter_taubin(
 		const VEC3& p = position_tmp[v];
 		position[v] = p + ((avg - p) * mu);
 	},
-	mask);
+	traversor);
+}
+
+template <typename VEC3, typename MAP>
+void filter_taubin(
+	const MAP& map,
+	typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template VertexAttribute<VEC3>& position_tmp)
+{
+	filter_taubin<VEC3>(map, CellTraversorAll(), position, position_tmp);
 }
 
 } // namespace geometry
