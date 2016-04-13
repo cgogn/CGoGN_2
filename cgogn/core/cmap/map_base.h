@@ -499,6 +499,20 @@ public:
 	 *******************************************************************************/
 
 	/**
+	 * \brief Dump a cell and all its darts in the console
+	 */
+	template <Orbit ORBIT>
+	void cell_dump(Cell<ORBIT> c)
+	{
+		std::cout << "Cell<" << orbit_name(ORBIT) << ">(" << c.dart << ")" << std::endl;
+
+		to_concrete()->foreach_dart_of_orbit(c, [&] (Dart d)
+		{
+			to_concrete()->dart_dump(d);
+		});
+	}
+
+	/**
 	 * \brief return true if c1 and c2 represent the same cell, i.e. contain darts of the same orbit
 	 * @tparam ORBIT considered orbit
 	 * @param c1 first cell to compare

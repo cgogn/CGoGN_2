@@ -121,12 +121,6 @@ TEST_F(CMap0TopoTest, remove_vertex)
 	add_vertices(NB_MAX);
 	int32 count_vertices = NB_MAX;
 
-	cmap_.remove_vertex(Vertex(darts_.back()));
-	--count_vertices;
-	EXPECT_EQ(cmap_.nb_darts(), count_vertices);
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
-
-	darts_.pop_back();
 	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)

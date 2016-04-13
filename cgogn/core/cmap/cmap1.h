@@ -213,17 +213,17 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
-
-
 	/**
-	 * \brief phi composition
+	 * \brief Composition of PHI calls
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return The result of successive applications of PHI1 on d.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indices.
+	 * If N=0 the identity is used.
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=1,"composition on phi1/phi2/only");
+		static_assert((N%10)<=1,"Composition of PHI: invalid index");
 		if (N >=10)
 			return this->phi1(phi<N/10>(d));
 
@@ -232,8 +232,6 @@ public:
 
 		return d;
 	}
-
-
 
 	/*******************************************************************************
 	 * High-level embedded and topological operations

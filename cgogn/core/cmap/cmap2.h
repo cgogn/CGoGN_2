@@ -142,6 +142,14 @@ protected:
 	}
 
 	/**
+	 * \brief Dump a dart in the console.
+	 */
+	inline void dart_dump(Dart d)
+	{
+		std::cout << " - Dart2: " << d << ", " << this->phi1(d) << ", " << phi2(d) << std::endl;
+	}
+
+	/**
 	 * @brief Check the integrity of a dart
 	 * @param d the dart to check
 	 * @return true if the integrity constraints are locally statisfied
@@ -212,14 +220,16 @@ public:
 
 
 	/**
-	 * \brief phi composition
+	 * \brief Composition of PHI calls
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return The result of successive applications of PHI1 and PHI2 on d.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indeices.
+	 * If N=0 the identity is used.
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=2,"composition on phi1/phi2/only");
+		static_assert((N%10)<=2,"Composition of PHI: invalid index");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
@@ -320,18 +330,18 @@ protected:
 	{
 		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
 
-		Dart first = this->Inherit::add_face_topo(3u);
+		Dart first = this->Inherit::add_face_topo(3u);	// First triangle
 		Dart current = first;
-		Dart next = first;
 
-		for (uint32 i = 1u; i < size; ++i) {
-			next = this->Inherit::add_face_topo(3u);
+		for (uint32 i = 1u; i < size; ++i) {			// Next triangles
+			Dart next = this->Inherit::add_face_topo(3u);
 			this->phi2_sew(this->phi_1(current),this->phi1(next));
 			current = next;
 		}
+														// End the umbrella
 		this->phi2_sew(this->phi_1(current),this->phi1(first));
 
-		return this->close_hole_topo(first);
+		return this->close_hole_topo(first);			// Add the base face
 	}
 
 	/**
@@ -345,41 +355,21 @@ protected:
 	Dart add_prism_topo(uint32 size)
 	{
 		cgogn_message_assert(size > 0u, "The prism cannot be empty");
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(size*2u);
 
-		// creation of quads around circunference and storing vertices
-		for (uint32 i = 0u; i < size; ++i)
-			m_tableVertDarts.push_back(this->Inherit::add_face_topo(4u));
+		Dart first = this->Inherit::add_face_topo(4u);			// First quad
+		Dart current = first;
 
-		// storing a dart from the vertex pointed by phi1(phi1(d))
-		for (uint32 i = 0u; i < size; ++i)
-			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-
-		// sewing the quads
-		for (uint32 i = 0u; i < size-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
-			this->phi2_sew(d,e);
-		}
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[size-1u]));
-
-		// sewing the top & bottom faces
-		Dart top = this->Inherit::add_face_topo(size);
-		Dart bottom = this->Inherit::add_face_topo(size);
-		const Dart dres = top;
-		for(uint32 i = 0u; i < size; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], top);
-			this->phi2_sew(m_tableVertDarts[size+i], bottom);
-			top = this->phi1(top);
-			bottom = this->phi_1(bottom);
+		for (uint32 i = 1u; i < size; ++i) {					// Next quads
+			Dart next = this->Inherit::add_face_topo(4u);
+			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			current = next;
 		}
 
-		// return a dart from the base
-		return dres;
+		this->phi2_sew(this->phi_1(current),this->phi1(first));	// Close the quad strip
+
+		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
+
+		return this->close_hole_topo(first);					// Add the base face
 	}
 
 protected:
@@ -471,6 +461,10 @@ protected:
 	 * @brief Flip an edge
 	 * @param d : a dart of the edge to flip
 	 * @return true if the edge has been flipped, false otherwise
+	 * Each end of the edge is detached from its initial vertex
+	 * and inserted in the next vertex within its incident face.
+	 * An end of the edge that is a vertex of degree 1 is not moved.
+	 * If one of the faces have co-degree 1 then nothing is done.
 	 */
 	inline bool flip_edge_topo(Dart d)
 	{
@@ -478,13 +472,27 @@ protected:
 		if (!this->is_boundary(d) && !this->is_boundary(e))
 		{
 			Dart d1 = this->phi1(d);
+			Dart d11 = this->phi1(d1);
 			Dart d_1 = this->phi_1(d);
 			Dart e1 = this->phi1(e);
+			Dart e11 = this->phi1(e1);
 			Dart e_1 = this->phi_1(e);
-			this->phi1_sew(d, e_1);	// Detach the two
-			this->phi1_sew(e, d_1);	// vertices of the edge
-			this->phi1_sew(d, d1);	// Insert the edge in its
-			this->phi1_sew(e, e1);	// new vertices after flip
+
+			// Cannot flip edge whose incident faces have co-degree 1
+			if (d == d1  || e == e1 ) return false;
+
+			// Both vertices have degree 1 and thus nothing is done // TODO may return true ?
+			if (d == e_1 && e == d_1) return false;
+
+			if (d != e_1) this->phi1_sew(d, e_1);	// Detach the edge from its
+			if (e != d_1) this->phi1_sew(e, d_1);	// two incident vertices
+
+			if (d != e_1) {
+				this->phi1_sew(d, d1);	// Insert the first end in its new vertices
+			}
+			if (e != d_1) {
+				this->phi1_sew(e, e1);	// Insert the second end in its new vertices
+			}
 			return true;
 		}
 		return false;
