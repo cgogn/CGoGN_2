@@ -749,9 +749,15 @@ public:
 		parallel_foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell_until(const FUNC& f) const
+	{
+		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
+	}
+
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given CellFilter function (CellFilter : CellType -> bool)
+	 * that is selected by the given FilterFunction (CellType -> bool)
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
@@ -810,8 +816,34 @@ public:
 		}
 	}
 
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
+			  typename FUNC,
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	void foreach_cell_until(const FUNC& f, const FilterFunction& filter) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_until_dart_marking(f, filter);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_until_cell_marking(f, filter);
+				break;
+			case AUTO :
+				if (this->template is_embedded<CellType>())
+					foreach_cell_until_cell_marking(f, filter);
+				else
+					foreach_cell_until_dart_marking(f, filter);
+				break;
+		}
+	}
+
 	/**
-	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
+	 * \brief apply a function on each cell of the map (boundary cells excluded)
+	 * that is selected by the filter function of the corresponding CellType within the given Filters object
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
@@ -834,6 +866,16 @@ public:
 		using CellType = func_parameter_type(FUNC);
 
 		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	template <typename FUNC,
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void foreach_cell_until(const FUNC& f, const Filters& filters) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		foreach_cell_until(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
 	/**
@@ -922,59 +964,6 @@ public:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_until(const FUNC& f) const
-	{
-		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
-	}
-
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given CellFilter function (CellFilter : CellType -> bool)
-	 * and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename CellFilter,
-			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
-	void foreach_cell_until(const FUNC& f, const CellFilter& filter) const
-	{
-		using CellType = func_parameter_type(FUNC);
-
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking(f, filter);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking(f, filter);
-				break;
-			case AUTO :
-				if (this->template is_embedded<CellType>())
-					foreach_cell_until_cell_marking(f, filter);
-				else
-					foreach_cell_until_dart_marking(f, filter);
-				break;
-		}
-	}
-
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is provided by the given Traversor object and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
 	template <typename FUNC,
 			  typename Traversor,
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
