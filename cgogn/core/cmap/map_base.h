@@ -978,8 +978,8 @@ public:
 
 protected:
 
-	template <typename FUNC, typename CellFilter>
-	inline void foreach_cell_dart_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -996,8 +996,8 @@ protected:
 		}
 	}
 
-	template <typename FUNC, typename CellFilter>
-	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -1073,8 +1073,8 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename CellFilter>
-	inline void foreach_cell_cell_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1092,8 +1092,8 @@ protected:
 		}
 	}
 
-	template <typename FUNC, typename CellFilter>
-	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1170,8 +1170,8 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename CellFilter>
-	inline void foreach_cell_until_dart_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_until_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -1189,8 +1189,8 @@ protected:
 		}
 	}
 
-	template <typename FUNC, typename CellFilter>
-	inline void foreach_cell_until_cell_marking(const FUNC& f, const CellFilter& filter) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_until_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
