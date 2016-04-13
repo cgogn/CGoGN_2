@@ -142,14 +142,6 @@ protected:
 	}
 
 	/**
-	 * \brief Dump a dart in the console.
-	 */
-	inline void dart_dump(Dart d)
-	{
-		std::cout << " - Dart2: " << d << ", " << this->phi1(d) << ", " << phi2(d) << std::endl;
-	}
-
-	/**
 	 * @brief Check the integrity of a dart
 	 * @param d the dart to check
 	 * @return true if the integrity constraints are locally statisfied
@@ -166,7 +158,7 @@ protected:
 	 * @brief Check the integrity of a boundary dart
 	 * @param d the dart to check
 	 * @return true if the bondary constraints are locally statisfied
-	 * The boundary is a 1-manyfold: the boundary marker is the same
+	 * The boundary is a 1-manifold: the boundary marker is the same
 	 * for all darts of a face and two boundary faces cannot be adjacent.
 	 */
 	inline bool check_boundary_integrity(Dart d) const
@@ -256,7 +248,7 @@ protected:
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
 
-		foreach_dart_of_orbit(Face(d), [&] (Dart it)
+		this->foreach_dart_of_PHI1(d, [&] (Dart it)
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
@@ -333,7 +325,8 @@ protected:
 		Dart first = this->Inherit::add_face_topo(3u);	// First triangle
 		Dart current = first;
 
-		for (uint32 i = 1u; i < size; ++i) {			// Next triangles
+		for (uint32 i = 1u; i < size; ++i)				// Next triangles
+		{
 			Dart next = this->Inherit::add_face_topo(3u);
 			this->phi2_sew(this->phi_1(current),this->phi1(next));
 			current = next;
@@ -359,7 +352,8 @@ protected:
 		Dart first = this->Inherit::add_face_topo(4u);			// First quad
 		Dart current = first;
 
-		for (uint32 i = 1u; i < size; ++i) {					// Next quads
+		for (uint32 i = 1u; i < size; ++i)						// Next quads
+		{
 			Dart next = this->Inherit::add_face_topo(4u);
 			this->phi2_sew(this->phi_1(current),this->phi1(next));
 			current = next;
@@ -487,12 +481,9 @@ protected:
 			if (d != e_1) this->phi1_sew(d, e_1);	// Detach the edge from its
 			if (e != d_1) this->phi1_sew(e, d_1);	// two incident vertices
 
-			if (d != e_1) {
-				this->phi1_sew(d, d1);	// Insert the first end in its new vertices
-			}
-			if (e != d_1) {
-				this->phi1_sew(e, e1);	// Insert the second end in its new vertices
-			}
+			if (d != e_1) this->phi1_sew(d, d1);	// Insert the first end in its new vertices
+			if (e != d_1) this->phi1_sew(e, e1);	// Insert the second end in its new vertices
+
 			return true;
 		}
 		return false;
