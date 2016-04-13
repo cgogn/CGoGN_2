@@ -211,7 +211,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			bb_rendering_ = !bb_rendering_;
 //			break;
 		case Qt::Key_A:
-			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
+			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
+//			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);

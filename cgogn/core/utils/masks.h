@@ -24,12 +24,89 @@
 #ifndef CGOGN_CORE_UTILS_MASKS_H_
 #define CGOGN_CORE_UTILS_MASKS_H_
 
-#include <cgogn/core/utils/numerics.h>
 #include <vector>
+
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/basic/cell.h>
 
 namespace cgogn
 {
 
+/**
+ * @brief The CellFilters class
+ * Classes inheriting from CellFilters can be used as a parameter to map.foreach_cell()
+ * They can personalize the filtering function used to filter each Orbit traversal
+ */
+class CellFilters
+{
+public:
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellFilters);
+	CellFilters() {}
+	virtual ~CellFilters() {}
+	virtual void operator() (uint32) const final {}
+
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::DART, bool>::type
+	{
+		return filter_DART(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1, bool>::type
+	{
+		return filter_PHI1(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI2, bool>::type
+	{
+		return filter_PHI2(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1_PHI2, bool>::type
+	{
+		return filter_PHI1_PHI2(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1_PHI3, bool>::type
+	{
+		return filter_PHI1_PHI3(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI2_PHI3, bool>::type
+	{
+		return filter_PHI2_PHI3(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI21, bool>::type
+	{
+		return filter_PHI21(c);
+	}
+	template <typename CellType>
+	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI21_PHI31, bool>::type
+	{
+		return filter_PHI21_PHI31(c);
+	}
+
+protected:
+
+	virtual bool filter_DART(Cell<Orbit::DART>) const { return true; }
+	virtual bool filter_PHI1(Cell<Orbit::PHI1>) const { return true; }
+	virtual bool filter_PHI2(Cell<Orbit::PHI2>) const { return true; }
+	virtual bool filter_PHI1_PHI2(Cell<Orbit::PHI1_PHI2>) const { return true; }
+	virtual bool filter_PHI1_PHI3(Cell<Orbit::PHI1_PHI3>) const { return true; }
+	virtual bool filter_PHI2_PHI3(Cell<Orbit::PHI2_PHI3>) const { return true; }
+	virtual bool filter_PHI21(Cell<Orbit::PHI21>) const { return true; }
+	virtual bool filter_PHI21_PHI31(Cell<Orbit::PHI21_PHI31>) const { return true; }
+};
+
+/**
+ * @brief The CellTraversor class
+ * Classes inheriting from CellTraversor can be used as a parameter to map.foreach_cell()
+ * They should provide the following methods :
+ *  - template <typename CellType> CellType begin() const
+ *  - template <typename CellType> CellType end() const
+ *" - template <typename CellType> CellType next() const
+ */
 class CellTraversor
 {
 public:
@@ -38,25 +115,9 @@ public:
 	inline CellTraversor() {}
 	virtual ~CellTraversor() {}
 	virtual void operator() (uint32) const final {}
-
-//	virtual CellType begin() const = 0;
-//	virtual CellType next() const = 0;
-//	virtual bool end() const = 0;
 };
 
-class CellTraversorAll : public CellTraversor
-{
-public:
 
-	template <typename CellType>
-	CellType begin() const { return CellType(); }
-
-	template <typename CellType>
-	CellType next() const { return CellType(); }
-
-	template <typename CellType>
-	bool end() const { return false; }
-};
 
 template <typename MAP>
 class CellCache : public CellTraversor
@@ -108,9 +169,8 @@ public:
 		this->build<CellType>([] (CellType) { return true; });
 	}
 
-	template <typename CellType, typename CellFilter>
-	void build(const CellFilter& filter)
-//	auto build(const CellFilter& filter) -> typename std::enable_if<std::is_same<CellType, Vertex>::value, void>::type
+	template <typename CellType, typename FilterFunction>
+	void build(const FilterFunction& filter)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		cells_[ORBIT].clear();

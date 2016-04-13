@@ -758,9 +758,9 @@ public:
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename CellFilter,
-			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const CellFilter& filter) const
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -784,9 +784,9 @@ public:
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename CellFilter,
-			  typename std::enable_if<check_func_return_type(CellFilter, bool) && check_func_parameter_type(CellFilter, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const CellFilter& filter) const
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
 
@@ -817,17 +817,37 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC,
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const Filters& filters) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	template <typename FUNC,
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const Filters& filters) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	/**
+	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
+	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC,
 			  typename Traversor,
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void foreach_cell(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
-
-		if (std::is_same<Traversor, CellTraversorAll>::value)
-		{
-			foreach_cell(f, [] (CellType) { return true; });
-			return;
-		}
 
 		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			f(it);
@@ -839,12 +859,6 @@ public:
 	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
-
-		if (std::is_same<Traversor, CellTraversorAll>::value)
-		{
-			parallel_foreach_cell(f, [] (CellType) { return true; });
-			return;
-		}
 
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
@@ -967,12 +981,6 @@ public:
 	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
-
-		if (std::is_same<Traversor, CellTraversorAll>::value)
-		{
-			foreach_cell_until(f, [] (CellType) { return true; });
-			return;
-		}
 
 		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			if (!f(it))
