@@ -45,6 +45,7 @@ public:
 
 	using Inherit = CMap2<DefaultMapTraits>;
 	using MapBuilder = CMap2Builder_T<DefaultMapTraits>;
+	using CDart = CMap2TopoTest::CDart;
 	using Vertex = CMap2TopoTest::Vertex;
 	using Edge   = CMap2TopoTest::Edge;
 	using Face   = CMap2TopoTest::Face;
@@ -204,6 +205,31 @@ TEST_F(CMap2TopoTest, random_map_generators)
 }
 
 /*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap2TopoTest, add_attribute)
+{
+	add_faces(NB_MAX);
+	add_closed_surfaces();
+
+	add_attribute<int32, CDart::ORBIT>("darts");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Edge::ORBIT>("edges");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face::ORBIT>("faces");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Volume::ORBIT>("Volumes");
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is not preserved (this test creates fixed points for PHI2).
@@ -252,11 +278,65 @@ TEST_F(CMap2TopoTest, add_face_topo)
 
 	uint32 count_vertices = 11u + add_faces(NB_MAX);
 
+	for (Dart d : darts_) {
+		EXPECT_TRUE(is_boundary(phi2(d)));
+	}
+
 	EXPECT_EQ(nb_darts(), 2u * count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX + 2u);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), NB_MAX + 2u);
+
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
+ * \brief Adding a pyramid whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * The test adds some pyramides and check that the number of generated cells is correct
+ * and that the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, add_pyramid_topo)
+{
+	add_pyramid_topo(3u);
+	EXPECT_EQ(nb_darts(), 12u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	add_pyramid_topo(10u);
+	EXPECT_EQ(nb_darts(), 40u+12u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 11+4u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 11u+4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
+
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
+ * \brief Adding a prism whose base has n sides build a surface with
+ * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
+ * The test adds some prims and check that the number of generated cells is correct
+ * and that the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, add_prism_topo)
+{
+	add_prism_topo(3u);
+	EXPECT_EQ(nb_darts(), 18u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 9u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	add_prism_topo(10u);
+	EXPECT_EQ(nb_darts(), 60u+18u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 20u+6u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 30u+9u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 12u+5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u+1u);
 
 	EXPECT_TRUE(check_map_integrity());
 }
@@ -298,6 +378,96 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+/*! \brief Fliping an edge changes the degree of its vertices.
+ * The test performs NB_MAX edge flips on randomly generated faces.
+ * The expected cells are modified and the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, flip_edge_topo)
+{
+	add_closed_surfaces();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	for (Dart d : darts_)
+	{
+		Dart e1 = d;	// choose a random edge in the face
+		uint32 i = std::rand() % 10u;
+		while (i-- > 0u) e1 = phi1(e1);
+		Dart e2 = phi2(e1);
+
+		uint32 k1 = codegree(Face(e1));
+		uint32 k2 = codegree(Face(e2));
+
+		Vertex k11_vertex = Vertex(e1);
+		Vertex k12_vertex = Vertex(phi1(phi1(e2)));
+		Vertex k21_vertex = Vertex(e2);
+		Vertex k22_vertex = Vertex(phi1(phi1(e1)));
+
+		uint32 k11 = degree(k11_vertex);
+		uint32 k12 = degree(k12_vertex);
+		uint32 k21 = degree(k21_vertex);
+		uint32 k22 = degree(k22_vertex);
+		uint32* k11_ptr = &k11;
+		uint32* k12_ptr = &k12;
+		uint32* k21_ptr = &k21;
+		uint32* k22_ptr = &k22;
+
+		// Handle special vertex configurations
+		if (same_cell(k11_vertex, k12_vertex)) k12_ptr = k11_ptr;
+		if (same_cell(k11_vertex, k21_vertex)) k21_ptr = k11_ptr;
+		if (same_cell(k11_vertex, k22_vertex)) k22_ptr = k11_ptr;
+		if (same_cell(k12_vertex, k21_vertex)) k21_ptr = k12_ptr;
+		if (same_cell(k12_vertex, k22_vertex)) k22_ptr = k12_ptr;
+		if (same_cell(k21_vertex, k22_vertex)) k22_ptr = k21_ptr;
+
+		// Vertices with degree 1 do not move during an edge flip
+		bool k11_move = (degree(k11_vertex) > 1);
+		bool k21_move = (degree(k21_vertex) > 1);
+
+		if (k11_move) {
+			*k11_ptr -= 1u;
+			*k12_ptr += 1u;
+		}
+		if (k21_move) {
+			*k21_ptr -= 1u;
+			*k22_ptr += 1u;
+		}
+
+		if (flip_edge_topo(e1))
+		{
+			EXPECT_EQ(codegree(Face(e1)), k1);
+			EXPECT_EQ(codegree(Face(e2)), k2);
+
+			if (k11_move) {
+				EXPECT_EQ(degree(Vertex(phi_1(e1))), *k11_ptr);
+				EXPECT_EQ(degree(Vertex(e1)), *k12_ptr);
+			}
+			else {
+				EXPECT_EQ(degree(k11_vertex), *k11_ptr);
+				EXPECT_EQ(degree(k12_vertex), *k12_ptr);
+			}
+			if (k21_move) {
+				EXPECT_EQ(degree(Vertex(phi_1(e2))), *k21_ptr);
+				EXPECT_EQ(degree(Vertex(e2)), *k22_ptr);
+			}
+			else {
+				EXPECT_EQ(degree(k21_vertex), *k21_ptr);
+				EXPECT_EQ(degree(k22_vertex), *k22_ptr);
+			}
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+
+	EXPECT_TRUE(check_map_integrity());
+}
+
 /*! \brief Cutting a face add an edge and replace a face of degree K,
  * with two subfaces whose degrees K1 and K2 verify K1+K2 = K+2.
  * The test performs NB_MAX face cuts between vertices of a randomly generated surface.
@@ -315,9 +485,6 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	for (Dart d : darts_)
 	{
 		Dart dd = d;
-		if (std::rand() % 2 == 1) dd = phi2(d);
-
-		bool boundary_face = is_boundary(dd);
 
 		uint32 k = codegree(Face(dd));
 		if (k > 1u)
@@ -328,11 +495,9 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 			if (e == dd) e = phi1(e);
 
 			cut_face_topo(dd, e);
+			++count_edges;
+			++count_faces;
 
-			if (!boundary_face) {
-				++count_edges;
-				++count_faces;
-			}
 			EXPECT_EQ(codegree(Face(dd)) + codegree(Face(e)), k + 2);
 		}
 	}
@@ -414,9 +579,20 @@ TEST_F(CMap2TopoTest, close_map)
 
 TEST_F(CMap2TopoTest, degree)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
+	EXPECT_EQ(codegree(Edge(f1.dart)), 1u);
+	EXPECT_EQ(degree(Edge(f1.dart)), 1u);
+	EXPECT_EQ(degree(f1), 1u);
 
-	EXPECT_EQ(codegree(f), 10u);
+	Face f2(this->add_face_topo(10u));
+	EXPECT_EQ(codegree(Edge(f2.dart)), 2u);
+	EXPECT_EQ(degree(Edge(f2.dart)), 1u);
+
+	phi2_unsew(f1.dart);
+	phi2_unsew(f2.dart);
+	phi2_sew(f1.dart, f2.dart);
+	EXPECT_EQ(degree(Edge(f1.dart)), 2u);
+	EXPECT_EQ(degree(Edge(f2.dart)), 2u);
 }
 
 

@@ -145,15 +145,26 @@ protected:
 	 * @brief Check the integrity of a dart
 	 * @param d the dart to check
 	 * @return true if the integrity constraints are locally statisfied
-	 * PHI2 should be an involution without fixed poit and
-	 * the boundary marker is identical for all darts of a face.
+	 * PHI2 should be an involution without fixed point
 	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi2(phi2(d)) == d &&
-				phi2(d) != d &&
-				( this->is_boundary(d) == this->is_boundary(this->phi1(d)) ));
+				phi2(d) != d);
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * The boundary is a 1-manifold: the boundary marker is the same
+	 * for all darts of a face and two boundary faces cannot be adjacent.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return ((  this->is_boundary(d) ==  this->is_boundary(this->phi1(d)) ) &&
+				( !this->is_boundary(d) || !this->is_boundary(this->phi2(d)) ));
 	}
 
 	/**
@@ -201,14 +212,16 @@ public:
 
 
 	/**
-	 * \brief phi composition
+	 * \brief Composition of PHI calls
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return The result of successive applications of PHI1 and PHI2 on d.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indeices.
+	 * If N=0 the identity is used.
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=2,"composition on phi1/phi2/only");
+		static_assert((N%10)<=2,"Composition of PHI: invalid index");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
@@ -223,7 +236,7 @@ public:
 
 protected:
 
-	/*!
+	/**
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face.
@@ -235,21 +248,19 @@ protected:
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
 
-		Dart it = d;
-		do
+		this->foreach_dart_of_PHI1(d, [&] (Dart it)
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
-			it = this->phi1(it);
 			e = this->phi_1(e);
-		} while (it != d);
+		});
 
 		return d;
 	}
 
 public:
 
-	/*!
+	/**
 	 * \brief Add a face in the map.
 	 * \param size : the number of edges in the built face
 	 * \return The built face
@@ -269,7 +280,6 @@ public:
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
-//				this->new_orbit_embedding(CDart(phi2(d)));
 			});
 		}
 
@@ -290,15 +300,70 @@ public:
 		}
 
 		if (this->template is_embedded<Face>())
-		{
 			this->new_orbit_embedding(f);
-//			this->new_orbit_embedding(Face(phi2(f.dart)));
-		}
 
 		if (this->template is_embedded<Volume>())
 			this->new_orbit_embedding(Volume(f.dart));
 
 		return f;
+	}
+
+protected:
+
+	/**
+	 * \brief Add a pyramid whose base has n sides.
+	 * \param size : the number of darts in the base face
+	 * \return A dart of the base face
+	 * The base is a face with n vertices and edges.
+	 * Each edge is adjacent to a triangular face.
+	 * These triangles are pairwise sewn to build the top of the pyramid.
+	 */
+	inline Dart add_pyramid_topo(uint32 size)
+	{
+		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
+
+		Dart first = this->Inherit::add_face_topo(3u);	// First triangle
+		Dart current = first;
+
+		for (uint32 i = 1u; i < size; ++i)				// Next triangles
+		{
+			Dart next = this->Inherit::add_face_topo(3u);
+			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			current = next;
+		}
+														// End the umbrella
+		this->phi2_sew(this->phi_1(current),this->phi1(first));
+
+		return this->close_hole_topo(first);			// Add the base face
+	}
+
+	/**
+	 * \brief Add a prism with n sides.
+	 * \param size : the number of sides of the prism
+	 * \return A dart of the base face
+	 * The base and the top are faces with n vertices and edges.
+	 * A set of n pairewise linked quads are built.
+	 * These quads are sewn to the base and top faces.
+	 */
+	Dart add_prism_topo(uint32 size)
+	{
+		cgogn_message_assert(size > 0u, "The prism cannot be empty");
+
+		Dart first = this->Inherit::add_face_topo(4u);			// First quad
+		Dart current = first;
+
+		for (uint32 i = 1u; i < size; ++i)						// Next quads
+		{
+			Dart next = this->Inherit::add_face_topo(4u);
+			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			current = next;
+		}
+
+		this->phi2_sew(this->phi_1(current),this->phi1(first));	// Close the quad strip
+
+		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
+
+		return this->close_hole_topo(first);					// Add the base face
 	}
 
 protected:
@@ -390,6 +455,10 @@ protected:
 	 * @brief Flip an edge
 	 * @param d : a dart of the edge to flip
 	 * @return true if the edge has been flipped, false otherwise
+	 * Each end of the edge is detached from its initial vertex
+	 * and inserted in the next vertex within its incident face.
+	 * An end of the edge that is a vertex of degree 1 is not moved.
+	 * If one of the faces have co-degree 1 then nothing is done.
 	 */
 	inline bool flip_edge_topo(Dart d)
 	{
@@ -397,13 +466,24 @@ protected:
 		if (!this->is_boundary(d) && !this->is_boundary(e))
 		{
 			Dart d1 = this->phi1(d);
+			Dart d11 = this->phi1(d1);
 			Dart d_1 = this->phi_1(d);
 			Dart e1 = this->phi1(e);
+			Dart e11 = this->phi1(e1);
 			Dart e_1 = this->phi_1(e);
-			this->phi1_sew(d, e_1);	// Detach the two
-			this->phi1_sew(e, d_1);	// vertices of the edge
-			this->phi1_sew(d, d1);	// Insert the edge in its
-			this->phi1_sew(e, e1);	// new vertices after flip
+
+			// Cannot flip edge whose incident faces have co-degree 1
+			if (d == d1  || e == e1 ) return false;
+
+			// Both vertices have degree 1 and thus nothing is done // TODO may return true ?
+			if (d == e_1 && e == d_1) return false;
+
+			if (d != e_1) this->phi1_sew(d, e_1);	// Detach the edge from its
+			if (e != d_1) this->phi1_sew(e, d_1);	// two incident vertices
+
+			if (d != e_1) this->phi1_sew(d, d1);	// Insert the first end in its new vertices
+			if (e != d_1) this->phi1_sew(e, e1);	// Insert the second end in its new vertices
+
 			return true;
 		}
 		return false;
@@ -573,18 +653,59 @@ public:
 		}
 	}
 
+protected:
+
+	/*!
+	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
+	 * \param d : a vertex of the hole
+	 * \return a vertex of the face that closes the hole
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * A face is inserted on the boundary that begin at dart d.
+	 */
+	inline Dart close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
+
+		Dart first = this->add_dart();	// First edge of the face that will fill the hole
+		phi2_sew(d, first);				// 2-sew the new edge to the hole
+
+		Dart d_next = d;				// Turn around the hole
+		Dart d_phi1;					// to complete the face
+		do
+		{
+			do
+			{
+				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_next = phi2(d_phi1); // the next dart of the hole
+			} while (d_next != d_phi1 && d_phi1 != d);
+
+			if (d_phi1 != d)
+			{
+				Dart next = this->split_vertex_topo(first);	// Add a vertex into the built face
+				phi2_sew(d_next, next);						// and 2-sew the face to the hole
+			}
+		} while (d_phi1 != d);
+
+		return first;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
+
+public:
 
 	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
-	inline uint32 codegree(Edge) const
+	inline uint32 codegree(Edge e) const
 	{
-		return 2;
+		if (this->phi1(e.dart) == e.dart)
+			return 1;
+		else
+			return 2;
 	}
 
 	inline uint32 degree(Edge e) const

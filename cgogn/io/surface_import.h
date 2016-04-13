@@ -196,10 +196,16 @@ public:
 		});
 
 		if (nb_boundary_edges > 0)
+		{
 			mbuild.close_map();
+			cgogn_log_error("create_map") << nb_boundary_edges << " hole(s) have been closed";
+		}
 
 		if (need_vertex_unicity_check)
+		{
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
+			cgogn_log_error("create_map") << "Warning - Import Surface: non manifold vertices detected and corrected";
+		}
 
 		if (this->face_attributes_.get_nb_attributes() > 0)
 		{

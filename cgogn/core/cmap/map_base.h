@@ -150,6 +150,12 @@ protected:
 	 * Container elements management
 	 *******************************************************************************/
 
+	/**
+	 * \brief Adds a topological element of PRIM_SIZE to the topology container
+	 * \return the index of the added element
+	 * Adding a topological element consists in adding PRIM_SIZE lines
+	 * to the topological container starting from index
+	 */
 	inline uint32 add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
@@ -163,13 +169,10 @@ protected:
 	}
 
 	/**
-	 * \brief Removes a topological element of PRIM_SIZE
-	 * from the topology container
-	 * \details Removing a topological element consists in
-	 * removing PRIM_SIZE lines of the topological container starting
-	 * from index
-	 *
-	 * \param int [description]
+	 * \brief Removes a topological element of PRIM_SIZE from the topology container
+	 * \param index the index of the element to remove
+	 * Removing a topological element consists in removing PRIM_SIZE lines
+	 * of the topological container starting from index
 	 */
 	inline void remove_topology_element(uint32 index)
 	{

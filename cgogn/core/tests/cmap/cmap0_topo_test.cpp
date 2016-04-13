@@ -76,11 +76,22 @@ protected:
 /*!
  * \brief The random generated maps used in the tests are sound.
  */
-TEST_F(CMap0TopoTest, Constructor)
+TEST_F(CMap0TopoTest, random_map_generators)
 {
 	EXPECT_EQ(cmap_.nb_darts(), 0u);
 
 	add_vertices(NB_MAX);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap0TopoTest, add_attribute)
+{
+	add_vertices(NB_MAX);
+	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -110,12 +121,6 @@ TEST_F(CMap0TopoTest, remove_vertex)
 	add_vertices(NB_MAX);
 	int32 count_vertices = NB_MAX;
 
-	cmap_.remove_vertex(Vertex(darts_.back()));
-	--count_vertices;
-	EXPECT_EQ(cmap_.nb_darts(), count_vertices);
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
-
-	darts_.pop_back();
 	for (Dart d : darts_)
 	{
 		if (std::rand() % 3 == 1)

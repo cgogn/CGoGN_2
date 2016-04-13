@@ -124,10 +124,27 @@ protected:
 		(*phi_1_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI1 and PHI_1 are inverse relations.
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (phi1(phi_1(d)) == d &&
 				phi_1(phi1(d)) == d);
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * No boundary dart is accepted.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return !this->is_boundary(d);
 	}
 
 	/*!
@@ -196,17 +213,17 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
-
-
 	/**
-	 * \brief phi composition
+	 * \brief Composition of PHI calls
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return The result of successive applications of PHI1 on d.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indices.
+	 * If N=0 the identity is used.
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=1,"composition on phi1/phi2/only");
+		static_assert((N%10)<=1,"Composition of PHI: invalid index");
 		if (N >=10)
 			return this->phi1(phi<N/10>(d));
 
@@ -215,8 +232,6 @@ public:
 
 		return d;
 	}
-
-
 
 	/*******************************************************************************
 	 * High-level embedded and topological operations
@@ -395,7 +410,7 @@ public:
 
 	inline uint32 degree(Vertex) const
 	{
-		return 2;
+		return 1;
 	}
 
 	inline uint32 codegree(Face f) const
@@ -406,8 +421,9 @@ public:
 
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
+		if (codegree < 1u) return false;
 		Dart it = f.dart ;
-		for (uint32 i = 1; i < codegree; ++i)
+		for (uint32 i = 1u; i < codegree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)

@@ -112,7 +112,7 @@ protected:
 			Dart d = mbuild.add_face_topo_parent(n);
 			darts_.push_back(d);
 		}
-		// Sew some pairs off edges
+		// Sew some pairs of edges
 		for (uint32 i = 0u; i < 3u * NB_MAX; ++i)
 		{
 			Dart e1 = darts_[std::rand() % NB_MAX];
@@ -183,7 +183,6 @@ TEST_F(CMap2Test, add_face)
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), NB_MAX);
-//	EXPECT_EQ(cmap_.nb_boundary_cells(), NB_MAX);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
