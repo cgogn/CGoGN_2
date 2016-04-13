@@ -73,7 +73,7 @@ protected:
 	 * The method supposes that the given dart d is the first dart
 	 * of the open PHI21 orbit (i.e. phi2(d) == d)
 	 */
-	bool same_open_ptr(Dart d, Dart e)
+	bool same_open_vertex(Dart d, Dart e)
 	{
 		cgogn_assert(phi2(d) == d);
 		Dart it = d;
@@ -110,7 +110,7 @@ protected:
 	 * The method supposes that the given dart d is the first dart
 	 * of the open PHI21 orbit (i.e. phi2(d) == d)
 	 */
-	void new_open_ptr_embedding(Dart d)
+	void new_open_vertex_embedding(Dart d)
 	{
 		cgogn_assert(phi2(d) == d);
 		const uint32 emb = add_attribute_element<Vertex::ORBIT>();
@@ -542,8 +542,8 @@ TEST_F(CMap2TopoTest, close_map)
 				{
 					phi2_unsew(e);
 					// correct indexation of vertices
-					if (!same_open_ptr(e2, phi1(e))) new_open_ptr_embedding(e2);
-					if (!same_open_ptr(e, phi1(e2))) new_open_ptr_embedding(e);
+					if (!same_open_vertex(e2, phi1(e))) new_open_vertex_embedding(e2);
+					if (!same_open_vertex(e, phi1(e2))) new_open_vertex_embedding(e);
 					// correct indexation of edges
 					new_orbit_embedding(Edge(e2));
 					// correct indexation of volumes
