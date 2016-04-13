@@ -577,14 +577,14 @@ public:
 	template <typename CellType>
 	bool is_incident_to_boundary(CellType c) const
 	{
-	  static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
-	  bool result = false;
-	  to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
-	  {
-		if (is_boundary(d)) { result = true; return false; }
-		return true;
-	  });
-	  return result;
+		static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+		bool result = false;
+		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (is_boundary(d)) { result = true; return false; }
+			return true;
+		});
+		return result;
 	}
 
 	/*******************************************************************************
@@ -983,8 +983,9 @@ protected:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		DartMarker dm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			if (!dm.is_marked(it))
 			{
@@ -1016,9 +1017,10 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		DartMarker dm(*to_concrete());
-		Dart it = begin();
-		Dart last = end();
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		Dart it = cmap->begin();
+		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
@@ -1040,7 +1042,7 @@ protected:
 						++k;
 					}
 				}
-				next(it);
+				cmap->next(it);
 			}
 			//launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -1079,8 +1081,9 @@ protected:
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))
@@ -1113,9 +1116,10 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		Dart it = begin();
-		Dart last = end();
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		Dart it = cmap->begin();
+		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
@@ -1137,7 +1141,7 @@ protected:
 						++k;
 					}
 				}
-				next(it);
+				cmap->next(it);
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -1175,8 +1179,9 @@ protected:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		DartMarker dm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			if (!dm.is_marked(it))
 			{
@@ -1195,8 +1200,9 @@ protected:
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))

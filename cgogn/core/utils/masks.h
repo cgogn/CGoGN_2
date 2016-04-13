@@ -118,7 +118,6 @@ public:
 };
 
 
-
 template <typename MAP>
 class CellCache : public CellTraversor
 {
