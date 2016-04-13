@@ -114,7 +114,7 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 		cgogn_assert(face_normal.is_valid());
 
 		cgogn::CellCache<Map2> cache(bench_map);
-		cache.template update<Face>();
+		cache.template build<Face>();
 		state.ResumeTiming();
 
 		bench_map.foreach_cell([&] (Face f)
@@ -159,7 +159,6 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 			});
 			state.ResumeTiming();
 		}
-
 	}
 }
 
@@ -174,7 +173,7 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 		cgogn_assert(face_normal.is_valid());
 
 		cgogn::CellCache<Map2> cache(bench_map);
-		cache.template update<Face>();
+		cache.template build<Face>();
 		state.ResumeTiming();
 
 		bench_map.parallel_foreach_cell([&] (Face f, uint32)
@@ -216,7 +215,7 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 		cgogn_assert(vertices_normal.is_valid());
 
 		cgogn::CellCache<Map2> cache(bench_map);
-		cache.template update<Vertex>();
+		cache.template build<Vertex>();
 		state.ResumeTiming();
 
 		bench_map.foreach_cell([&] (Vertex v)
@@ -275,7 +274,7 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		cgogn_assert(vertices_normal.is_valid());
 
 		cgogn::CellCache<Map2> cache(bench_map);
-		cache.template update<Vertex>();
+		cache.template build<Vertex>();
 		state.ResumeTiming();
 
 		bench_map.parallel_foreach_cell([&] (Vertex v, uint32)

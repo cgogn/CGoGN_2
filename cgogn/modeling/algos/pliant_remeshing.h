@@ -48,7 +48,7 @@ void pliant_remeshing(
 	Scalar mean_edge_length = 0;
 
 	CellCache<Map> cache(map);
-	cache.template update<Edge>();
+	cache.template build<Edge>();
 
 	// compute mean edge length
 	map.foreach_cell([&] (Edge e)

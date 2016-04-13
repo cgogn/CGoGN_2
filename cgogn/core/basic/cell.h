@@ -47,7 +47,7 @@ enum Orbit: uint32
 	PHI1_PHI3,
 	PHI2_PHI3,
 	PHI21,
-	PHI21_PHI31,
+	PHI21_PHI31
 };
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;

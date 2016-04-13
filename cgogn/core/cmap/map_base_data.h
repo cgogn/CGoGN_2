@@ -107,7 +107,7 @@ public:
 protected:
 
 	// topology & embedding indices
-	ChunkArrayContainer<unsigned char> topology_;
+	ChunkArrayContainer<uint8> topology_;
 
 	/// per orbit attributes
 	std::array<ChunkArrayContainer<uint32>, NB_ORBITS> attributes_;
@@ -181,6 +181,11 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
+	}
+
+	inline const ChunkArrayContainer<uint8>& get_topology_container() const
+	{
+		return topology_;
 	}
 
 protected:
