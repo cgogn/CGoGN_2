@@ -95,7 +95,7 @@ void filter_bilateral(
 	Scalar sigmaC = 1.0 * (length_sum / Scalar(nb_edges));
 	Scalar sigmaS = 2.5 * (angle_sum / Scalar(nb_edges));
 
-	map.foreach_cell([&] (Vertex v)
+	map.parallel_foreach_cell([&] (Vertex v, uint32)
 	{
 		const VEC3& n = normal[v];
 
@@ -139,7 +139,7 @@ void filter_taubin(
 	const Scalar lambda = 0.6307;
 	const Scalar mu = 0.6732;
 
-	map.foreach_cell([&] (Vertex v)
+	map.parallel_foreach_cell([&] (Vertex v, uint32)
 	{
 		VEC3 avg;
 		set_zero(avg);
@@ -155,7 +155,7 @@ void filter_taubin(
 	},
 	mask);
 
-	map.foreach_cell([&] (Vertex v)
+	map.parallel_foreach_cell([&] (Vertex v, uint32)
 	{
 		VEC3 avg;
 		set_zero(avg);
