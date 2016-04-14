@@ -42,7 +42,7 @@ void filter_average(
 {
 	using Vertex = typename MAP::Vertex;
 
-	map.foreach_cell([&] (Vertex v)
+	map.parallel_foreach_cell([&] (Vertex v, uint32)
 	{
 		T sum;
 		set_zero(sum);
