@@ -911,6 +911,8 @@ public:
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
+		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
+
 		using CellType = func_parameter_type(FUNC);
 
 		using VecCell = std::vector<CellType>;
