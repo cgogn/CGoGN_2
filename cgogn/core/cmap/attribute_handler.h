@@ -389,6 +389,16 @@ public:
 	}
 
 	/**
+	 * @brief set_value method to write in boolean Attributes
+	 * @param c
+	 * @param t
+	 */
+	inline void set_value(Cell<ORBIT> c, const T& t)
+	{
+		chunk_array_->set_value(this->map_->get_embedding(c), t);
+	}
+
+	/**
 	 * \brief operator []
 	 * @param i
 	 * @return
@@ -412,12 +422,12 @@ public:
 
 	/**
 	 * @brief set_value method to write in boolean Attributes
-	 * @param c
+	 * @param i
 	 * @param t
 	 */
-	inline void set_value(Cell<ORBIT> c, const T& t)
+	inline void set_value(uint32 i, const T& t)
 	{
-		chunk_array_->set_value(this->map_->get_embedding(c), t);
+		chunk_array_->set_value(i, t);
 	}
 
 
