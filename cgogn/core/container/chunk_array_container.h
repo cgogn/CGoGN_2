@@ -278,6 +278,12 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief swap the data of two chunk arrays of the container
+	 * @param ptr1 pointer to first chunk array
+	 * @param ptr2 pointer to second chunk array
+	 * @return
+	 */
 	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
 		uint32 index1 = get_array_index(ptr1);
@@ -296,6 +302,33 @@ public:
 		}
 
 		table_arrays_[index1]->swap(table_arrays_[index2]);
+
+		return true;
+	}
+
+	template <typename T>
+	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	{
+		uint32 dest_index = get_array_index(dest);
+		uint32 src_index = get_array_index(src);
+
+		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
+		{
+			cgogn_log_warning("copy_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (dest_index == src_index)
+		{
+			cgogn_log_warning("copy_data_attributes") << "Same attributes.";
+			return false;
+		}
+
+		ChunkArray<T>* dest_ca = static_cast<ChunkArray<T>*>(table_arrays_[dest_index]);
+		ChunkArray<T>* src_ca = static_cast<ChunkArray<T>*>(table_arrays_[src_index]);
+
+		for (uint32 it = begin(), last = end(); it < last; ++it)
+			(*dest_ca)[it] = (*src_ca)[it];
 
 		return true;
 	}
