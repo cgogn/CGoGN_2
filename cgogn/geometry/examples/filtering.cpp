@@ -67,12 +67,12 @@ public:
 	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p)
 	{}
 
-protected:
-
-	bool filter_PHI21(Vertex v) const override
+	filter_cell(Vertex)
 	{
-		return position_[v][0] > 0;
+		return position_[c][0] > 0;
 	}
+
+protected:
 
 	const VertexAttribute<Vec3>& position_;
 };
