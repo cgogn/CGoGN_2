@@ -410,6 +410,16 @@ public:
 		return chunk_array_->operator[](i);
 	}
 
+	/**
+	 * @brief set_value method to write in boolean Attributes
+	 * @param c
+	 * @param t
+	 */
+	inline void set_value(Cell<ORBIT> c, const T& t)
+	{
+		chunk_array_->set_value(this->map_->get_embedding(c), t);
+	}
+
 
 	class const_iterator
 	{
