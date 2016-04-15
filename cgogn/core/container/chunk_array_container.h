@@ -183,6 +183,9 @@ public:
 			delete ptr;
 	}
 
+	const std::vector<std::string>& get_names() const { return names_; }
+	const std::vector<std::string>& get_type_names() const { return type_names_; }
+
 	/**
 	 * @brief get an attribute
 	 * @param attribute_name name of attribute

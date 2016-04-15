@@ -64,15 +64,14 @@ class CustomFilter : public cgogn::CellFilters
 {
 public:
 
-	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p)
-	{}
+	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p) {}
 
-protected:
-
-	bool filter_PHI21(Vertex v) const override
+	bool filter(Vertex v) const
 	{
 		return position_[v][0] > 0;
 	}
+
+protected:
 
 	const VertexAttribute<Vec3>& position_;
 };
