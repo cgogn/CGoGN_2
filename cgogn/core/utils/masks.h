@@ -47,15 +47,8 @@ public:
 	virtual void operator() (uint32) const final {}
 
 	template <typename CellType>
-	bool filter(CellType c) const
-	{
-		return true;
-	}
+	bool filter(CellType c) const { return true; }
 };
-
-#define filter_cell(Type) \
-	template <typename CellType> \
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Type::ORBIT, bool>::type
 
 /**
  * @brief The CellTraversor class

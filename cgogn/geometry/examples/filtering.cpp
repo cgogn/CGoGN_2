@@ -64,12 +64,11 @@ class CustomFilter : public cgogn::CellFilters
 {
 public:
 
-	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p)
-	{}
+	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p) {}
 
-	filter_cell(Vertex)
+	bool filter(Vertex v) const
 	{
-		return position_[c][0] > 0;
+		return position_[v][0] > 0;
 	}
 
 protected:
