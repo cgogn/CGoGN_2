@@ -36,7 +36,6 @@
 
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/core/utils/thread_barrier.h>
 #include <cgogn/core/utils/unique_ptr.h>
 
 namespace cgogn
