@@ -654,6 +654,35 @@ public:
 	}
 
 protected:
+	/**
+	 * \brief Unsew two faces along their common edge
+	 * @param e the edge
+	 */
+	inline void unsew_faces(Edge e)
+	{
+//		cgogn_message_assert(!is_incident_to_boundary(e), "unsew_faces: should not unsew a face from its boundary");
+
+		Dart d = e.dart;
+		Dart dd = phi2(d);
+
+		// managing boundary between these two faces
+		Dart boundary = add_face(2);
+		Dart ee = this->phi1(boundary);
+		this->set_boundary(boundary, true);
+		this->set_boundary(ee, true);
+
+//		Dart f =
+
+
+
+
+		phi2_unsew(d);
+
+		phi2_sew(d, boundary);
+		phi2_sew(dd, ee);
+	}
+
+protected:
 
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
@@ -687,6 +716,89 @@ protected:
 		} while (d_phi1 != d);
 
 		return first;
+	}
+
+
+
+protected:
+
+	void cut_surface_topo(std::vector<Edge>& edges)
+	{
+		Dart e = edges.front().dart;
+		Dart e2 = phi2(e);
+
+		//unsew the edge path
+//		for(auto eit : edges)
+		for(unsigned int i = 0 ; i < edges.size() ; ++i)
+		{
+			phi2_unsew(edges[i].dart);
+		}
+
+//		for(auto eit : edges)
+		for(unsigned int i = 0 ; i < edges.size() ; ++i)
+			std::cout << "phi2(e) == e ? " << std::boolalpha << (phi2(edges[i].dart) == edges[i].dart) << std::endl;
+
+
+		{
+			Dart nd = Inherit::add_face_topo(edges.size());
+			Dart it_nd = nd;
+			Dart it_e = edges.front().dart;
+			do
+			{
+				std::cout << "phi2(e) == e ? " << std::boolalpha << (phi2(it_e) == it_e) << std::endl;
+
+				phi2_sew(it_nd, it_e);
+				it_e = this->phi1(it_e);
+				it_nd = this->phi_1(it_nd);
+			}
+			while(it_nd != nd);
+		}
+
+		{
+			Dart nd = Inherit::add_face_topo(edges.size());
+			Dart it_nd = nd;
+			Dart it_e = e2;
+			do
+			{
+				phi2_sew(it_nd, it_e);
+				it_e = this->phi1(it_e);
+				it_nd = this->phi_1(it_nd);
+			}
+			while(it_nd != nd);
+		}
+	}
+
+public:
+
+	void cut_surface(std::vector<Edge>& edges)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		std::vector<Dart> darts ;
+		darts.reserve(edges.size());
+
+		// save the edge neighbors darts
+		for(auto e : edges)
+		{
+			darts.push_back(phi2(e.dart));
+		}
+
+		cut_surface_topo(edges);
+
+		// follow the edge path a second time to embed the vertex, edge and volume orbits
+		for(unsigned int i = 0; i < edges.size(); ++i)
+		{
+			Dart dit = edges[i].dart;
+			Dart dit2 = darts[i];
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template set_embedding<Vertex>(phi2(dit), this->template get_embedding(Vertex(this->phi1(dit))));
+				this->template set_embedding<Vertex>(phi2(dit2), this->template get_embedding(Vertex(this->phi1(dit2))));
+			}
+
+		}
+
 	}
 
 	/*******************************************************************************
