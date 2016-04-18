@@ -228,6 +228,7 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 	template <size_t i>
 	struct arg
 	{
+		static_assert(i < sizeof...(Args) ,"Trying to access to an argument whose index is higher than the function arity.");
 		using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
 		// the i-th argument is equivalent to the i-th tuple element of a tuple
 		// composed of those arguments.
