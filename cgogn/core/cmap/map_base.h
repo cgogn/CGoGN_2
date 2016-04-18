@@ -918,8 +918,8 @@ public:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
-			f(it);
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; !(it == end); ++it)
+			f(CellType(*it));
 	}
 
 	template <typename FUNC,
