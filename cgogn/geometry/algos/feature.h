@@ -21,36 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_PRECISION_H_
-#define CORE_UTILS_PRECISION_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_FEATURE_H_
+#define CGOGN_GEOMETRY_ALGOS_FEATURE_H_
 
-#include <type_traits>
-#include <cmath>
-#include <limits>
-#include <algorithm>
-
-#include <core/utils/assert.h>
+#include <cgogn/geometry/functions/basics.h>
 
 namespace cgogn
 {
 
-template <class Scalar>
-inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+namespace geometry
 {
-	const Scalar diff = std::fabs(x - y);
-	x = std::fabs(x);
-	y = std::fabs(y);
 
-	return diff <= std::max(x, y) * max_rel_diff;
+template <typename VEC3, typename MAP>
+void mark_feature_edges(
+	const MAP& map,
+	const typename MAP::template FaceAttribute<VEC3>& normal,
+	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
+{
+	feature_edge.unmark_all();
+
+	map.foreach_cell([&] (typename MAP::Edge e)
+	{
+		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
+			feature_edge.mark(e);
+	});
 }
 
-template <class Scalar>
-inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
-{
-	cgogn_assert(epsilon > 0);
-	return std::fabs(y - x) < epsilon;
-}
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_PRECISION_H_
+#endif // CGOGN_GEOMETRY_ALGOS_FEATURE_H_

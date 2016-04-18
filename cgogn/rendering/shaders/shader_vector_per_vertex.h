@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_VECTORPERVERTEX_H_
-#define RENDERING_SHADERS_VECTORPERVERTEX_H_
+#ifndef CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
+#define CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
 
 namespace cgogn
 {
@@ -80,4 +80,4 @@ public:
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_VECTORPERVERTEX_H_
+#endif // CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_

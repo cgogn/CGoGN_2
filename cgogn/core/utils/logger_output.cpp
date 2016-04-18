@@ -22,12 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOGGER_OUTPUT_CPP_
+#define CGOGN_CORE_UTILS_LOGGER_OUTPUT_CPP_
 
 #include <iostream>
 #include <limits>
 
-#include <core/utils/logger_output.h>
+#include <cgogn/core/utils/logger_output.h>
 
 #include <termcolor.hpp>
 

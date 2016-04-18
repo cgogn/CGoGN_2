@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
-#include <core/utils/serialization.h>
-#include <core/dll.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/dll.h>
 
 #include <vector>
 #include <iostream>
@@ -46,12 +46,19 @@ public:
 
 	using Self = ChunkArrayGen<CHUNKSIZE>;
 
-	inline ChunkArrayGen() {}
+	inline ChunkArrayGen(const std::string name) : name_(name)
+	{}
+
+	inline ChunkArrayGen()
+	{}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayGen);
 
 protected:
 
 	std::vector<ChunkArrayGen**> external_refs_;
+
+	std::string name_;
 
 public:
 
@@ -65,6 +72,8 @@ public:
 			*ref = nullptr;
 		}
 	}
+
+	const std::string& get_name() const { return name_; }
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -82,10 +91,12 @@ public:
 	}
 
 	/**
-	 * @brief create a ChunkArray object without knowning type
+	 * @brief create a ChunkArray object without knowing type
 	 * @return generic pointer
 	 */
 	virtual Self* clone() const = 0;
+
+	virtual bool swap(Self*) = 0;
 
 	virtual bool is_boolean_array() const = 0;
 
@@ -179,4 +190,4 @@ extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_

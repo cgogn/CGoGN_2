@@ -21,25 +21,26 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_ATTRIBUTE_HANDLER_H_
-#define CORE_MAP_ATTRIBUTE_HANDLER_H_
+#ifndef CGOGN_CORE_MAP_ATTRIBUTE_H_
+#define CGOGN_CORE_MAP_ATTRIBUTE_H_
 
-#include <core/basic/cell.h>
-#include <core/utils/assert.h>
-#include <core/cmap/map_base_data.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/cmap/map_base_data.h>
+
 namespace cgogn
 {
 
 /**
- * \brief Generic AttributeHandler class
+ * \brief Generic Attribute class
  * @TPARAM DATA_TRAITS storage traits (for MapBaseData ptr type)
  */
 template <typename DATA_TRAITS>
-class AttributeHandlerGen
+class AttributeGen
 {
 public:
 
-	using Self = AttributeHandlerGen<DATA_TRAITS>;
+	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
 
 protected:
@@ -48,7 +49,7 @@ protected:
 
 public:
 
-	inline AttributeHandlerGen(MapData* const map) :
+	inline AttributeGen(MapData* const map) :
 		map_(map)
 	{}
 
@@ -56,7 +57,7 @@ public:
 	 * \brief copy constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(const Self& atthg) :
+	inline AttributeGen(const Self& atthg) :
 		map_(atthg.map_)
 	{}
 
@@ -64,7 +65,7 @@ public:
 	 * \brief move constructor
 	 * @param atthg
 	 */
-	inline AttributeHandlerGen(Self&& atthg) CGOGN_NOEXCEPT :
+	inline AttributeGen(Self&& atthg) CGOGN_NOEXCEPT :
 		map_(atthg.map_)
 	{
 		atthg.map_ = nullptr;
@@ -75,7 +76,7 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(const Self& atthg)
+	inline AttributeGen& operator=(const Self& atthg)
 	{
 		this->map_ = atthg.map_;
 		return *this;
@@ -86,14 +87,19 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeHandlerGen& operator=(Self&& atthg)
+	inline AttributeGen& operator=(Self&& atthg)
 	{
 		this->map_ = atthg.map_;
 		return *this;
 	}
 
-	virtual ~AttributeHandlerGen()
+	virtual ~AttributeGen()
 	{}
+
+	inline bool is_linked_to(MapData* m) const
+	{
+		return m == map_;
+	}
 
 	virtual bool is_valid() const = 0;
 
@@ -102,16 +108,16 @@ public:
 
 
 /**
- * \brief Generic AttributeHandler class with orbit parameter
+ * \brief Generic Attribute class with orbit parameter
  * @TPARAM ORBIT the orbit of the attribute to handlde
  */
 template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeHandlerOrbit : public AttributeHandlerGen<DATA_TRAITS>
+class AttributeOrbit : public AttributeGen<DATA_TRAITS>
 {
 public:
 
-	using Inherit = AttributeHandlerGen<DATA_TRAITS>;
-	using Self = AttributeHandlerOrbit<DATA_TRAITS, ORBIT>;
+	using Inherit = AttributeGen<DATA_TRAITS>;
+	using Self = AttributeOrbit<DATA_TRAITS, ORBIT>;
 	using MapData = typename Inherit::MapData;
 
 	static const uint32 CHUNKSIZE = MapData::CHUNKSIZE;
@@ -128,7 +134,7 @@ protected:
 
 public:
 
-	inline AttributeHandlerOrbit(MapData* const map) :
+	inline AttributeOrbit(MapData* const map) :
 		Inherit(map),
 		chunk_array_cont_(nullptr)
 	{
@@ -140,7 +146,7 @@ public:
 	 * \brief copy constructor
 	 * @param attho
 	 */
-	inline AttributeHandlerOrbit(const Self& attho) :
+	inline AttributeOrbit(const Self& attho) :
 		Inherit(attho),
 		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
@@ -149,7 +155,7 @@ public:
 	 * \brief move constructor
 	 * @param attho
 	 */
-	inline AttributeHandlerOrbit(Self&& attho) CGOGN_NOEXCEPT :
+	inline AttributeOrbit(Self&& attho) CGOGN_NOEXCEPT :
 		Inherit(std::move(attho)),
 		chunk_array_cont_(attho.chunk_array_cont_)
 	{}
@@ -159,7 +165,7 @@ public:
 	 * @param attho
 	 * @return
 	 */
-	inline AttributeHandlerOrbit& operator=(const Self& attho)
+	inline AttributeOrbit& operator=(const Self& attho)
 	{
 		Inherit::operator=(attho);
 		chunk_array_cont_ = attho.chunk_array_cont_;
@@ -170,7 +176,7 @@ public:
 	 * @param attho
 	 * @return
 	 */
-	inline AttributeHandlerOrbit& operator=(Self&& attho)
+	inline AttributeOrbit& operator=(Self&& attho)
 	{
 		Inherit::operator=(std::move(attho));
 		chunk_array_cont_ = attho.chunk_array_cont_;
@@ -182,23 +188,23 @@ public:
 		return ORBIT;
 	}
 
-	virtual ~AttributeHandlerOrbit() override
+	virtual ~AttributeOrbit() override
 	{}
 };
 
 /**
- * \brief AttributeHandler class
+ * \brief Attribute class
  * @TPARAM T the data type of the attribute to handlde
  */
 template <typename DATA_TRAITS, typename T, Orbit ORBIT>
-class AttributeHandler : public AttributeHandlerOrbit<DATA_TRAITS, ORBIT>
+class Attribute : public AttributeOrbit<DATA_TRAITS, ORBIT>
 {
 public:
 
-	using Inherit = AttributeHandlerOrbit<DATA_TRAITS, ORBIT>;
-	using Self = AttributeHandler<DATA_TRAITS, T, ORBIT>;
-	using value_type =  T;
-	using MapData =     typename Inherit::MapData;
+	using Inherit = AttributeOrbit<DATA_TRAITS, ORBIT>;
+	using Self = Attribute<DATA_TRAITS, T, ORBIT>;
+	using value_type = T;
+	using MapData = typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
@@ -210,9 +216,9 @@ public:
 	/**
 	 * \brief Default constructor
 	 *
-	 * Construct a non-valid AttributeHandler (i.e. not linked to any attribute)
+	 * Construct a non-valid Attribute (i.e. not linked to any attribute)
 	 */
-	AttributeHandler() :
+	Attribute() :
 		Inherit(nullptr),
 		chunk_array_(nullptr)
 	{}
@@ -222,7 +228,7 @@ public:
 	 * @param m the map the attribute belongs to
 	 * @param ca ChunkArray pointer
 	 */
-	AttributeHandler(MapData* const m, TChunkArray* const ca) :
+	Attribute(MapData* const m, TChunkArray* const ca) :
 		Inherit(m),
 		chunk_array_(ca)
 	{
@@ -238,7 +244,7 @@ public:
 	 * \brief Copy constructor
 	 * @param att
 	 */
-	AttributeHandler(const Self& att) :
+	Attribute(const Self& att) :
 		Inherit(att),
 		chunk_array_(att.chunk_array_)
 	{
@@ -254,7 +260,7 @@ public:
 	 * \brief Move constructor
 	 * @param att
 	 */
-	AttributeHandler(Self&& att) CGOGN_NOEXCEPT :
+	Attribute(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att)),
 		chunk_array_(att.chunk_array_)
 	{
@@ -271,7 +277,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(const Self& att)
+	Attribute& operator=(const Self& att)
 	{
 		Inherit::operator=(att);
 
@@ -299,7 +305,7 @@ public:
 	 * @param att
 	 * @return
 	 */
-	AttributeHandler& operator=(Self&& att)
+	Attribute& operator=(Self&& att)
 	{
 		Inherit::operator=(std::move(att));
 
@@ -322,7 +328,7 @@ public:
 		return *this;
 	}
 
-	virtual ~AttributeHandler() override
+	virtual ~Attribute() override
 	{
 		if (is_valid())
 		{
@@ -330,6 +336,11 @@ public:
 			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
 			chunk_array_->remove_external_ref(ref);
 		}
+	}
+
+	const std::string& get_name() const
+	{
+		return chunk_array_->get_name();
 	}
 
 	virtual bool is_valid() const override
@@ -362,7 +373,7 @@ public:
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
-		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
@@ -373,8 +384,18 @@ public:
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](this->map_->get_embedding(c));
+	}
+
+	/**
+	 * @brief set_value method to write in boolean Attributes
+	 * @param c
+	 * @param t
+	 */
+	inline void set_value(Cell<ORBIT> c, const T& t)
+	{
+		chunk_array_->set_value(this->map_->get_embedding(c), t);
 	}
 
 	/**
@@ -384,7 +405,7 @@ public:
 	 */
 	inline T& operator[](uint32 i)
 	{
-		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](i);
 	}
 
@@ -395,18 +416,28 @@ public:
 	 */
 	inline const T& operator[](uint32 i) const
 	{
-		cgogn_message_assert(is_valid(), "Invalid AttributeHandler");
+		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](i);
+	}
+
+	/**
+	 * @brief set_value method to write in boolean Attributes
+	 * @param i
+	 * @param t
+	 */
+	inline void set_value(uint32 i, const T& t)
+	{
+		chunk_array_->set_value(i, t);
 	}
 
 
 	class const_iterator
 	{
 	public:
-		const AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+		const Attribute<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
 		uint32 index_;
 
-		inline const_iterator(const AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
+		inline const_iterator(const Attribute<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -455,10 +486,10 @@ public:
 	class iterator
 	{
 	public:
-		AttributeHandler<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+		Attribute<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
 		uint32 index_;
 
-		inline iterator(AttributeHandler<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
+		inline iterator(Attribute<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -506,4 +537,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_MAP_ATTRIBUTE_HANDLER_H_
+#endif // CGOGN_CORE_MAP_ATTRIBUTE_H_

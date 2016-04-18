@@ -27,16 +27,16 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/utils/logger.h>
-#include <core/cmap/cmap3.h>
-#include <io/map_import.h>
-#include <geometry/algos/bounding_box.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/map_render.h>
-#include <rendering/drawer.h>
-#include <rendering/volume_render.h>
-#include <rendering/topo_render.h>
-#include <geometry/algos/picking.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/drawer.h>
+#include <cgogn/rendering/volume_render.h>
+#include <cgogn/rendering/topo_render.h>
+#include <cgogn/geometry/algos/picking.h>
 
 
 
@@ -48,7 +48,7 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map3::VertexAttributeHandler<T>;
+using VertexAttribute = Map3::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -71,7 +71,7 @@ private:
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
 	Map3 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

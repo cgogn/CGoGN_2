@@ -21,17 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_IO_UTILS_H_
-#define IO_IO_UTILS_H_
+#ifndef CGOGN_IO_IO_UTILS_H_
+#define CGOGN_IO_IO_UTILS_H_
 
 #include <type_traits>
 #include <sstream>
 #include <streambuf>
 
-#include <core/utils/logger.h>
-#include <core/utils/endian.h>
-#include <geometry/types/geometry_traits.h>
-#include <io/dll.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/io/dll.h>
 
 namespace cgogn
 {
@@ -276,4 +276,4 @@ private:
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_IO_UTILS_H_
+#endif // CGOGN_IO_IO_UTILS_H_

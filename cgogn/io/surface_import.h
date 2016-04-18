@@ -21,22 +21,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_SURFACE_IMPORT_H_
-#define IO_SURFACE_IMPORT_H_
+#ifndef CGOGN_IO_SURFACE_IMPORT_H_
+#define CGOGN_IO_SURFACE_IMPORT_H_
 
 #include <istream>
 #include <sstream>
 
-#include <core/utils/endian.h>
-#include <core/utils/name_types.h>
-#include <core/utils/string.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap2_builder.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/string.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
-#include <io/dll.h>
-#include <io/c_locale.h>
-#include <io/mesh_io_gen.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/c_locale.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 namespace cgogn
 {
@@ -59,7 +59,7 @@ public:
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
 
 protected:
@@ -116,7 +116,7 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		typename Map::template VertexAttributeHandler<std::vector<Dart>> darts_per_vertex =
+		typename Map::template VertexAttribute<std::vector<Dart>> darts_per_vertex =
 				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;
@@ -196,10 +196,16 @@ public:
 		});
 
 		if (nb_boundary_edges > 0)
+		{
 			mbuild.close_map();
+			cgogn_log_warning("create_map") << nb_boundary_edges << " hole(s) have been closed";
+		}
 
 		if (need_vertex_unicity_check)
+		{
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
+			cgogn_log_warning("create_map") << "Import Surface: non manifold vertices detected and corrected";
+		}
 
 		if (this->face_attributes_.get_nb_attributes() > 0)
 		{
@@ -220,4 +226,4 @@ extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // IO_SURFACE_IMPORT_H_
+#endif // CGOGN_IO_SURFACE_IMPORT_H_

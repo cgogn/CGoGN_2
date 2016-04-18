@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_CELL_H_
-#define CORE_BASIC_CELL_H_
+#ifndef CGOGN_CORE_BASIC_CELL_H_
+#define CGOGN_CORE_BASIC_CELL_H_
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
-#include <core/utils/assert.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <climits>
 
@@ -47,7 +47,7 @@ enum Orbit: uint32
 	PHI1_PHI3,
 	PHI2_PHI3,
 	PHI21,
-	PHI21_PHI31,
+	PHI21_PHI31
 };
 
 static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
@@ -154,4 +154,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_CELL_H_
+#endif // CGOGN_CORE_BASIC_CELL_H_

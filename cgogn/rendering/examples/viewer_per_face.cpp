@@ -27,18 +27,18 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/normal.h>
 
-#include <rendering/map_render.h>
-//#include <rendering/shaders/shader_simple_color.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_phong.h>
-#include <rendering/shaders/vbo.h>
+#include <cgogn/rendering/map_render.h>
+//#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_phong.h>
+#include <cgogn/rendering/shaders/vbo.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -51,10 +51,10 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 template<typename T>
-using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
+using FaceAttribute = Map2::FaceAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -74,8 +74,8 @@ public:
 
 private:
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
-	FaceAttributeHandler<Vec3> face_normal_;
+	VertexAttribute<Vec3> vertex_position_;
+	FaceAttribute<Vec3> face_normal_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

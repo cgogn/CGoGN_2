@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_DISTANCE_H_
-#define GEOMETRY_FUNCTIONS_DISTANCE_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_DISTANCE_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_DISTANCE_H_
 
-#include <core/utils/assert.h>
+#include <cgogn/core/utils/assert.h>
 
 namespace cgogn
 {
@@ -74,4 +74,4 @@ inline typename VEC3_T::Scalar squared_distance_line_point(const VEC3_T& A, cons
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_DISTANCE_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_DISTANCE_H_

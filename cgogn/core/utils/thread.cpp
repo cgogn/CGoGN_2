@@ -23,9 +23,9 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/utils/thread.h>
-#include <core/utils/buffers.h>
-#include <core/utils/thread_pool.h>
+#include <cgogn/core/utils/thread.h>
+#include <cgogn/core/utils/buffers.h>
+#include <cgogn/core/utils/thread_pool.h>
 
 namespace cgogn
 {

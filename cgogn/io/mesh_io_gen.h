@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MESH_IO_GEN_H_
-#define IO_MESH_IO_GEN_H_
+#ifndef CGOGN_IO_MESH_IO_GEN_H_
+#define CGOGN_IO_MESH_IO_GEN_H_
 
 #include <fstream>
 
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
-#include <io/dll.h>
-#include <io/c_locale.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/c_locale.h>
 
 namespace cgogn
 {
@@ -72,4 +72,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // IO_MESH_IO_GEN_H_
+#endif // CGOGN_IO_MESH_IO_GEN_H_

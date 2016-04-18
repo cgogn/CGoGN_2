@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_VOLUME_RENDER_H_
-#define RENDERING_VOLUME_RENDER_H_
+#ifndef CGOGN_RENDERING_VOLUME_RENDER_H_
+#define CGOGN_RENDERING_VOLUME_RENDER_H_
 
-#include <rendering/shaders/shader_explode_volumes.h>
-#include <rendering/shaders/shader_explode_volumes_line.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_explode_volumes.h>
+#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
 
-#include <geometry/algos/centroid.h>
-#include <geometry/algos/ear_triangulation.h>
+#include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
 namespace cgogn
 {
@@ -96,14 +96,14 @@ public:
 	inline void set_edge_color(const QColor& rgb) { edge_color_= rgb; }
 
 	template <typename VEC3, typename MAP>
-	void update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	template <typename VEC3, typename MAP>
-	void update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position,
-				const typename MAP::template VertexAttributeHandler<VEC3>& color);
+	void update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position,
+				const typename MAP::template VertexAttribute<VEC3>& color);
 
 	template <typename VEC3, typename MAP>
-	void update_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position);
+	void update_edge(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 	void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 
@@ -112,7 +112,7 @@ public:
 
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	init_without_color();
 
@@ -169,8 +169,8 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 }
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position,
-						  const typename MAP::template VertexAttributeHandler<VEC3>& color)
+void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position,
+						  const typename MAP::template VertexAttribute<VEC3>& color)
 {
 	init_with_color();
 
@@ -255,7 +255,7 @@ void VolumeRender::update_face(MAP& m, const typename MAP::template VertexAttrib
 
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	init_edge();
 
@@ -295,4 +295,4 @@ void VolumeRender::update_edge(MAP& m, const typename MAP::template VertexAttrib
 
 } // namespace cgogn
 
-#endif // RENDERING_VOLUME_RENDER_H_
+#endif // CGOGN_RENDERING_VOLUME_RENDER_H_

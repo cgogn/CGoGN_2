@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap0.h>
 
 namespace cgogn
 {
@@ -45,7 +45,7 @@ class CMap0Test : public ::testing::Test
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
-	using VertexAttributeHandler = testCMap0::VertexAttributeHandler<int32>;
+	using VertexAttribute = testCMap0::VertexAttribute<int32>;
 	using Vertex = testCMap0::Vertex;
 
 protected:
@@ -94,6 +94,7 @@ TEST_F(CMap0Test, random_map_generators)
 TEST_F(CMap0Test, add_vertex)
 {
 	add_vertices(NB_MAX);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), NB_MAX);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -104,9 +105,15 @@ TEST_F(CMap0Test, remove_vertex)
 {
 	add_vertices(NB_MAX);
 
+	uint32 count_vertices = NB_MAX;
 	for (Dart d: darts_)
-		if (std::rand() % 3 == 1) cmap_.remove_vertex(Vertex(d));
+		if (std::rand() % 3 == 1)
+		{
+			cmap_.remove_vertex(Vertex(d));
+			--count_vertices;
+		}
 
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

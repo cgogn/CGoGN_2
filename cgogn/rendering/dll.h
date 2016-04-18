@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_DLL_H_
-#define RENDERING_DLL_H_
+#ifndef CGOGN_RENDERING_DLL_H_
+#define CGOGN_RENDERING_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -37,4 +37,4 @@
 #define CGOGN_RENDERING_API
 #endif
 
-#endif // RENDERING_DLL_H_
+#endif // CGOGN_RENDERING_DLL_H_

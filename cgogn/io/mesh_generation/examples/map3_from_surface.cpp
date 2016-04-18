@@ -24,9 +24,9 @@
 #include <chrono>
 #include <ctime>
 
-#include <core/cmap/cmap3.h>
-#include <io/mesh_generation/tetgen_structure_io.h>
-#include <io/map_import.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/mesh_generation/tetgen_structure_io.h>
+#include <cgogn/io/map_import.h>
 
 using namespace cgogn::numerics;
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	std::unique_ptr<tetgenio> tetgen_input;
 	{
 		cgogn::io::import_surface<Vec3>(map2, surface_path);
-		Map2::VertexAttributeHandler<Vec3> vertex_position = map2.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+		Map2::VertexAttribute<Vec3> vertex_position = map2.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 		tetgen_input = cgogn::io::export_tetgen<Vec3>(map2, vertex_position);
 	}
 
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
 
-	Map3::VertexAttributeHandler<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+	Map3::VertexAttribute<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
 //	map3.enable_topo_cache<Map3::Volume::ORBIT>();
 //	map3.enable_topo_cache<Map3::Face::ORBIT>();

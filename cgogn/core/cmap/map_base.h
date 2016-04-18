@@ -21,23 +21,23 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_MAP_BASE_H_
-#define CORE_CMAP_MAP_BASE_H_
+#ifndef CGOGN_CORE_CMAP_MAP_BASE_H_
+#define CGOGN_CORE_CMAP_MAP_BASE_H_
 
 #include <vector>
 #include <memory>
 
-#include <core/cmap/map_base_data.h>
-#include <core/cmap/attribute_handler.h>
+#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/cmap/attribute_handler.h>
 
-#include <core/basic/cell.h>
-#include <core/basic/dart_marker.h>
-#include <core/basic/cell_marker.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/basic/cell_marker.h>
 
-#include <core/utils/masks.h>
-#include <core/utils/logger.h>
-#include <core/utils/thread_barrier.h>
-#include <core/utils/unique_ptr.h>
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/thread_barrier.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 namespace cgogn
 {
@@ -64,9 +64,9 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	using AttributeHandlerGen = cgogn::AttributeHandlerGen<MAP_TRAITS>;
+	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = cgogn::AttributeHandler<MAP_TRAITS, T, ORBIT>;
+	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
@@ -150,6 +150,12 @@ protected:
 	 * Container elements management
 	 *******************************************************************************/
 
+	/**
+	 * \brief Adds a topological element of PRIM_SIZE to the topology container
+	 * \return the index of the added element
+	 * Adding a topological element consists in adding PRIM_SIZE lines
+	 * to the topological container starting from index
+	 */
 	inline uint32 add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
@@ -180,13 +186,10 @@ protected:
 	}
 
 	/**
-	 * \brief Removes a topological element of PRIM_SIZE
-	 * from the topology container
-	 * \details Removing a topological element consists in
-	 * removing PRIM_SIZE lines of the topological container starting
-	 * from index
-	 *
-	 * \param int [description]
+	 * \brief Removes a topological element of PRIM_SIZE from the topology container
+	 * \param index the index of the element to remove
+	 * Removing a topological element consists in removing PRIM_SIZE lines
+	 * of the topological container starting from index
 	 */
 	inline void remove_topology_element(uint32 index)
 	{
@@ -233,14 +236,14 @@ public:
 	 * @return a handler to the created attribute
 	 */
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> add_attribute(const std::string& attribute_name = "")
+	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
@@ -249,7 +252,7 @@ public:
 	 * @return true if remove succeed else false
 	 */
 	template <typename T, Orbit ORBIT>
-	inline bool remove_attribute(AttributeHandler<T, ORBIT>& ah)
+	inline bool remove_attribute(Attribute<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
@@ -260,30 +263,53 @@ public:
 	/**
 	* \brief search an attribute for a given orbit
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
+	* @return an Attribute
 	*/
 	template <typename T, Orbit ORBIT>
-	inline AttributeHandler<T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
-		return AttributeHandler<T, ORBIT>(this, ca);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
 	* @param attribute_name attribute name
-	* @return an AttributeHandler
+	* @return an Attribute
 	*/
 	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
-	inline AttributeHandler<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	inline Attribute<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
 
 		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
-		return AttributeHandler<T_ASK, ORBIT>(this, ca);
+		return Attribute<T_ASK, ORBIT>(this, ca);
+	}
+
+
+	template <typename T, Orbit ORBIT>
+	inline void swap_attributes(Attribute<T, ORBIT>& ah1, Attribute<T, ORBIT>& ah2)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
+		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
+
+		this->attributes_[ORBIT].swap_data_attributes(ah1.get_data(), ah2.get_data());
+	}
+
+	template <typename T, Orbit ORBIT>
+	inline void copy_attribute(Attribute<T, ORBIT>& dest, Attribute<T, ORBIT>& src)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
+		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
+
+		this->attributes_[ORBIT].copy_data_attribute(dest.get_data(), src.get_data());
 	}
 
 protected:
@@ -384,7 +410,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		AttributeHandler<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
+		Attribute<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
 		for (uint32& i : counter) i = 0;
 
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
@@ -419,7 +445,7 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		AttributeHandler<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
+		Attribute<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const typename Inherit::template ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];
@@ -576,6 +602,19 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
+	template <typename CellType>
+	bool is_incident_to_boundary(CellType c) const
+	{
+		static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+		bool result = false;
+		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (is_boundary(d)) { result = true; return false; }
+			return true;
+		});
+		return result;
+	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
@@ -686,10 +725,8 @@ public:
 protected:
 
 	/*!
-	 * \Brief Methods to iterate over darts with a MASK that filters the traversed darts.
-	 * A MASK is a callable that determines if a dart should be traversed or skipped.
-	 * It returns false when a dart should be skipped, true in other cases.
-	 * These functions also skip boundary darts.
+	 * \Brief Methods to iterate over darts.
+	 * These functions skip boundary darts.
 	 */
 	inline Dart begin() const
 	{
@@ -740,18 +777,24 @@ public:
 		parallel_foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell_until(const FUNC& f) const
+	{
+		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
+	}
+
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given MASK function (MASK : CellType -> bool)
+	 * that is selected by the given FilterFunction (CellType -> bool)
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -759,25 +802,25 @@ public:
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
-				foreach_cell_dart_marking(f, mask);
+				foreach_cell_dart_marking(f, filter);
 				break;
 			case FORCE_CELL_MARKING :
-				foreach_cell_cell_marking(f, mask);
+				foreach_cell_cell_marking(f, filter);
 				break;
 			case AUTO :
 				if (this->template is_embedded<CellType>())
-					foreach_cell_cell_marking(f, mask);
+					foreach_cell_cell_marking(f, filter);
 				else
-					foreach_cell_dart_marking(f, mask);
+					foreach_cell_dart_marking(f, filter);
 				break;
 		}
 	}
 
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
 
@@ -787,42 +830,106 @@ public:
 		switch (STRATEGY)
 		{
 			case FORCE_DART_MARKING :
-				parallel_foreach_cell_dart_marking(f, mask);
+				parallel_foreach_cell_dart_marking(f, filter);
 				break;
 			case FORCE_CELL_MARKING :
-				parallel_foreach_cell_cell_marking(f, mask);
+				parallel_foreach_cell_cell_marking(f, filter);
 				break;
 			case AUTO :
 				if (this->template is_embedded<CellType>())
-					parallel_foreach_cell_cell_marking(f, mask);
+					parallel_foreach_cell_cell_marking(f, filter);
 				else
-					parallel_foreach_cell_dart_marking(f, mask);
+					parallel_foreach_cell_dart_marking(f, filter);
+				break;
+		}
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
+			  typename FUNC,
+			  typename FilterFunction,
+			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
+	void foreach_cell_until(const FUNC& f, const FilterFunction& filter) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		switch (STRATEGY)
+		{
+			case FORCE_DART_MARKING :
+				foreach_cell_until_dart_marking(f, filter);
+				break;
+			case FORCE_CELL_MARKING :
+				foreach_cell_until_cell_marking(f, filter);
+				break;
+			case AUTO :
+				if (this->template is_embedded<CellType>())
+					foreach_cell_until_cell_marking(f, filter);
+				else
+					foreach_cell_until_dart_marking(f, filter);
 				break;
 		}
 	}
 
 	/**
-	 * \brief apply a function on each cell of the map that is provided by the given MASK object
+	 * \brief apply a function on each cell of the map (boundary cells excluded)
+	 * that is selected by the filter function of the corresponding CellType within the given Filters object
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const Filters& filters) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	template <typename FUNC,
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const Filters& filters) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	template <typename FUNC,
+			  typename Filters,
+			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
+	inline void foreach_cell_until(const FUNC& f, const Filters& filters) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		foreach_cell_until(f, [&filters] (CellType c) { return filters.filter(c); });
+	}
+
+	/**
+	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
+	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC,
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, const Traversor& t) const
+	{
+		using CellType = func_parameter_type(FUNC);
+
+		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			f(it);
 	}
 
 	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const MASK& mask) const
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
+		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
+
 		using CellType = func_parameter_type(FUNC);
 
 		using VecCell = std::vector<CellType>;
@@ -840,21 +947,21 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellType it = mask.begin();
+		CellType it = t.template begin<CellType>();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		while (!mask.end())
+		while (!t.template end<CellType>())
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !mask.end(); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !t.template end<CellType>(); ++k)
 			{
 				CellType c(it);
 				cells.push_back(c);
-				it = mask.next();
+				it = t.template next<CellType>();
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -887,93 +994,41 @@ public:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_until(const FUNC& f) const
-	{
-		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
-	}
-
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given MASK function (MASK : CellType -> bool)
-	 * and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<check_func_return_type(MASK, bool) && check_func_parameter_type(MASK, func_parameter_type(FUNC))>::type* = nullptr>
-	void foreach_cell_until(const FUNC& f, const MASK& mask) const
+	template <typename FUNC,
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking(f, mask);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking(f, mask);
-				break;
-			case AUTO :
-				if (this->template is_embedded<CellType>())
-					foreach_cell_until_cell_marking(f, mask);
-				else
-					foreach_cell_until_dart_marking(f, mask);
-				break;
-		}
-	}
-
-	/**
-	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is provided by the given MASK object and stops when the function returns false
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC,
-			  typename MASK,
-			  typename std::enable_if<std::is_base_of<MaskCell<func_parameter_type(FUNC)>, MASK>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const MASK& mask) const
-	{
-		using CellType = typename function_traits<FUNC>::template arg<0>::type;
-
-		for (CellType it = mask.begin(); !mask.end(); it = mask.next())
+		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
 			if (!f(it))
 				break;
 	}
 
 protected:
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		DartMarker dm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			if (!dm.is_marked(it))
 			{
 				CellType c(it);
 				dm.mark_orbit(c);
-				if (mask(c))
+				if (filter(c))
 					f(c);
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
@@ -992,9 +1047,10 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		DartMarker dm(*to_concrete());
-		Dart it = begin();
-		Dart last = end();
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		Dart it = cmap->begin();
+		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
@@ -1010,13 +1066,13 @@ protected:
 				{
 					CellType c(it);
 					dm.mark_orbit(c);
-					if (mask(c))
+					if (filter(c))
 					{
 						cells.push_back(c);
 						++k;
 					}
 				}
-				next(it);
+				cmap->next(it);
 			}
 			//launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -1049,27 +1105,28 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if (mask(c))
+				if (filter(c))
 					f(c);
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -1089,9 +1146,10 @@ protected:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		Dart it = begin();
-		Dart last = end();
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		Dart it = cmap->begin();
+		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
@@ -1107,13 +1165,13 @@ protected:
 				if (!cm.is_marked(c))
 				{
 					cm.mark(c);
-					if (mask(c))
+					if (filter(c))
 					{
 						cells.push_back(c);
 						++k;
 					}
 				}
-				next(it);
+				cmap->next(it);
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -1146,39 +1204,41 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_until_dart_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_until_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		DartMarker dm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			if (!dm.is_marked(it))
 			{
 				CellType c(it);
 				dm.mark_orbit(c);
-				if(mask(c))
+				if(filter(c))
 					if(!f(c))
 						break;
 			}
 		}
 	}
 
-	template <typename FUNC, typename MASK>
-	inline void foreach_cell_until_cell_marking(const FUNC& f, const MASK& mask) const
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_until_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
-		CellMarker<ORBIT> cm(*to_concrete());
-		for (Dart it = begin(), last = end(); it.index < last.index; next(it))
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<ORBIT> cm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
 			CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if(mask(c))
+				if(filter(c))
 					if(!f(c))
 						break;
 			}
@@ -1188,4 +1248,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_MAP_BASE_H_
+#endif // CGOGN_CORE_CMAP_MAP_BASE_H_

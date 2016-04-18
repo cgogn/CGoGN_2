@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADER_POINT_SPRITE_H_
-#define RENDERING_SHADER_POINT_SPRITE_H_
+#ifndef CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
+#define CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
 
 namespace cgogn
 {
@@ -109,4 +109,4 @@ public:
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADER_POINT_SPRITE_H_
+#endif // CGOGN_RENDERING_SHADER_POINT_SPRITE_H_

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_DLL_H_
-#define CORE_DLL_H_
+#ifndef CGOGN_CORE_DLL_H_
+#define CGOGN_CORE_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -39,4 +39,4 @@
 #define CGOGN_CORE_API
 #endif
 
-#endif // CORE_DLL_H_
+#endif // CGOGN_CORE_DLL_H_

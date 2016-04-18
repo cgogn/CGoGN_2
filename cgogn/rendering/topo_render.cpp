@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/topo_render.h>
+#include <cgogn/rendering/topo_render.h>
 
 #include <QOpenGLFunctions>
 #include <iostream>

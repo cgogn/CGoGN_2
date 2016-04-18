@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/shaders/shader_point_sprite.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>

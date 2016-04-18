@@ -29,18 +29,18 @@
 #include <QMouseEvent>
 #include <QVector3D>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/bounding_box.h>
 
-#include <rendering/map_render.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/drawer.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/drawer.h>
 
-#include <geometry/algos/picking.h>
+#include <cgogn/geometry/algos/picking.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -51,7 +51,7 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
@@ -81,7 +81,7 @@ private:
 	QMatrix4x4 view_;
 
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_DLL_H_
-#define GEOMETRY_DLL_H_
+#ifndef CGOGN_GEOMETRY_DLL_H_
+#define CGOGN_GEOMETRY_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -37,4 +37,4 @@
 #define CGOGN_GEOMETRY_API
 #endif
 
-#endif // GEOMETRY_DLL_H_
+#endif // CGOGN_GEOMETRY_DLL_H_

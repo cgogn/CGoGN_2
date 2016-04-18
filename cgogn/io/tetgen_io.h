@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_TETGEN_IO_H_
-#define IO_TETGEN_IO_H_
+#ifndef CGOGN_IO_TETGEN_IO_H_
+#define CGOGN_IO_TETGEN_IO_H_
 
 #include <map>
 #include <sstream>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/data_io.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/data_io.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {
@@ -155,4 +155,4 @@ extern template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, geometry
 
 } // namespace io
 } // namespace cgogn
-#endif // IO_TETGEN_IO_H_
+#endif // CGOGN_IO_TETGEN_IO_H_

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <algorithm>
 #include <array>
@@ -30,11 +30,11 @@
 #include <string>
 #include <cstring>
 
-#include <core/container/chunk_array_gen.h>
-#include <core/utils/serialization.h>
-#include <core/utils/assert.h>
-#include <core/dll.h>
-
+#include <cgogn/core/dll.h>
+#include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/logger.h>
 
 namespace cgogn
 {
@@ -55,7 +55,7 @@ public:
 
 protected:
 
-	/// vector of block pointers
+	// vector of block pointers
 	std::vector<T*> table_data_;
 
 public:
@@ -63,6 +63,11 @@ public:
 	/**
 	 * @brief Constructor of ChunkArray
 	 */
+	inline ChunkArray(const std::string& name) : Inherit(name)
+	{
+		table_data_.reserve(1024u);
+	}
+
 	inline ChunkArray() : Inherit()
 	{
 		table_data_.reserve(1024u);
@@ -80,14 +85,22 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	Inherit* clone() const override
 	{
-		return new Self();
+		return new Self(this->name_);
 	}
 
-	void swap(Self& ca)
+	bool swap(Inherit* cag) override
 	{
-		table_data_.swap(ca.table_data_);
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
+		}
+
+		table_data_.swap(ca->table_data_);
+		return true;
 	}
 
 	bool is_boolean_array() const override
@@ -379,11 +392,11 @@ public:
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
 
-	inline void set_all_values( const T& v)
+	inline void set_all_values(const T& v)
 	{
 		for(T* chunk : table_data_)
 		{
-			for(uint32 i=0; i<CHUNKSIZE; ++i)
+			for(uint32 i = 0; i < CHUNKSIZE; ++i)
 				*chunk++ = v;
 		}
 	}
@@ -403,20 +416,22 @@ public:
 
 protected:
 
-	/// vector of block pointers
+	// vector of block pointers
 	std::vector<uint32*> table_data_;
 
 public:
 
-	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArray(const std::string& name) : Inherit(name)
 	{
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const Self& ca) = delete;
-	ChunkArray(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self& ca) = delete;
+	inline ChunkArray() : Inherit()
+	{
+		table_data_.reserve(1024u);
+	}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArray);
 
 	~ChunkArray() override
 	{
@@ -428,9 +443,22 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	Inherit* clone() const override
 	{
-		return new Self();
+		return new Self(this->name_);
+	}
+
+	bool swap(Inherit* cag) override
+	{
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
+		}
+
+		table_data_.swap(ca->table_data_);
+		return true;
 	}
 
 	bool is_boolean_array() const override
@@ -715,4 +743,4 @@ extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<f
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_

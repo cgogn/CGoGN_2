@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_DART_MARKER_H_
-#define CORE_BASIC_DART_MARKER_H_
+#ifndef CGOGN_CORE_BASIC_DART_MARKER_H_
+#define CGOGN_CORE_BASIC_DART_MARKER_H_
 
-#include <core/utils/buffers.h>
+#include <cgogn/core/utils/buffers.h>
 
-#include <core/cmap/map_base_data.h>
-#include <core/container/chunk_array.h>
+#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/container/chunk_array.h>
 
 namespace cgogn
 {
@@ -209,4 +209,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_DART_MARKER_H_
+#endif // CGOGN_CORE_BASIC_DART_MARKER_H_

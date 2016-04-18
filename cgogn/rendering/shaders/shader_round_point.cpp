@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_round_point.h>
+#include <cgogn/rendering/shaders/shader_round_point.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>

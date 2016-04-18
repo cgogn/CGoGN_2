@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/volume_render.h>
+#include <cgogn/rendering/volume_render.h>
 
 #include <QOpenGLFunctions>
 #include <iostream>

@@ -30,9 +30,9 @@
 #include <zlib.h>
 #endif
 
-#include <core/utils/logger.h>
-#include <core/utils/string.h>
-#include <io/io_utils.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/string.h>
+#include <cgogn/io/io_utils.h>
 
 namespace cgogn
 {

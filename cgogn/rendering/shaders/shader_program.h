@@ -21,17 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SHADERPROGRAM_H_
-#define RENDERING_SHADERS_SHADERPROGRAM_H_
+#ifndef CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
+#define CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions_3_3_Core>
 #include <cassert>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 
-#include <rendering/dll.h>
+#include <cgogn/rendering/dll.h>
 
 namespace cgogn
 {
@@ -152,4 +152,4 @@ public:
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_SHADERPROGRAM_H_
+#endif // CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_

@@ -22,8 +22,8 @@
 *******************************************************************************/
 
 #include <cmath>
-#include <geometry/types/bounding_box.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/types/bounding_box.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 

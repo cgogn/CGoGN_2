@@ -27,27 +27,27 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/normal.h>
 
-#include <rendering/map_render.h>
-#include <rendering/shaders/shader_simple_color.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_phong.h>
-#include <rendering/shaders/shader_vector_per_vertex.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/shaders/shader_bold_line.h>
-#include <rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_phong.h>
+#include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
+#include <cgogn/rendering/shaders/shader_point_sprite.h>
 
-#include <rendering/shaders/shader_round_point.h>
+#include <cgogn/rendering/shaders/shader_round_point.h>
 
-#include <geometry/algos/ear_triangulation.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <rendering/drawer.h>
+#include <cgogn/rendering/drawer.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -56,12 +56,13 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
 {
 public:
+
 	Viewer();
 	Viewer(const Viewer&) = delete;
 	Viewer& operator=(const Viewer&) = delete;
@@ -70,14 +71,15 @@ public:
 	virtual void init();
 
 	virtual void keyPressEvent(QKeyEvent *);
-	void import(const std::string& surfaceMesh);
+	void import(const std::string& surface_mesh);
 	virtual ~Viewer();
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
+
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
-	VertexAttributeHandler<Vec3> vertex_normal_;
+	VertexAttribute<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_normal_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
@@ -103,7 +105,6 @@ private:
 	bool edge_rendering_;
 	bool normal_rendering_;
 	bool bb_rendering_;
-
 };
 
 
@@ -112,21 +113,21 @@ private:
 //
 
 
-void Viewer::import(const std::string& surfaceMesh)
+void Viewer::import(const std::string& surface_mesh)
 {
-	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
+	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
-	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
+	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 
+	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
@@ -216,7 +217,6 @@ void Viewer::draw()
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 2.0f);
-
 	if (flat_rendering_)
 	{
 		shader_flat_->bind();
@@ -238,7 +238,6 @@ void Viewer::draw()
 		shader_phong_->release();
 	}
 	glDisable(GL_POLYGON_OFFSET_FILL);
-
 
 	if (vertices_rendering_)
 	{
@@ -291,18 +290,17 @@ void Viewer::init()
 
 	// fill a color vbo with abs of normals
 	vbo_color_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_,[] (const Vec3& n) -> std::array<float,3>
+	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 	// fill a sphere size vbo
 	vbo_sphere_sz_ = new cgogn::rendering::VBO(1);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_sphere_sz_,[&] (const Vec3& n) -> float
+	cgogn::rendering::update_vbo(vertex_normal_, *vbo_sphere_sz_, [&] (const Vec3& n) -> float
 	{
 		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
-
 
 	render_ = new cgogn::rendering::MapRender();
 
@@ -317,7 +315,6 @@ void Viewer::init()
 	shader_point_sprite_->set_size(bb_.diag_size()/1000.0);
 	shader_point_sprite_->set_color(QColor(255,0,0));
 	shader_point_sprite_->release();
-
 
 	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 	shader_edge_->add_vao();
@@ -343,7 +340,6 @@ void Viewer::init()
 	shader_normal_->set_length(bb_.diag_size()/50);
 	shader_normal_->release();
 
-
 	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
 	shader_phong_->add_vao();
 	shader_phong_->set_vao(0, vbo_pos_, vbo_norm_, vbo_color_);
@@ -353,7 +349,6 @@ void Viewer::init()
 //	shader_phong_->set_specular_color(QColor(255,255,255));
 //	shader_phong_->set_specular_coef(10.0);
 	shader_phong_->release();
-
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer(this);
@@ -382,20 +377,19 @@ void Viewer::init()
 		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
 	drawer_->end();
 	drawer_->end_list();
-
 }
 
 int main(int argc, char** argv)
 {
-	std::string surfaceMesh;
+	std::string surface_mesh;
 	if (argc < 2)
 	{
 		cgogn_log_info("simple_viewer") << "USAGE: " << argv[0] << " [filename]";
-		surfaceMesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surfaceMesh << "\".";
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
 	}
 	else
-		surfaceMesh = std::string(argv[1]);
+		surface_mesh = std::string(argv[1]);
 
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
@@ -403,7 +397,7 @@ int main(int argc, char** argv)
 	// Instantiate the viewer.
 	Viewer viewer;
 	viewer.setWindowTitle("simpleViewer");
-	viewer.import(surfaceMesh);
+	viewer.import(surface_mesh);
 	viewer.show();
 
 	// Run main loop.

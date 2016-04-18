@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TETGEN_STRUCTURE_IO_CPP
+#define CGOGN_IO_TETGEN_STRUCTURE_IO_CPP
 
-#include <io/mesh_generation/tetgen_structure_io.h>
+#include <cgogn/io/mesh_generation/tetgen_structure_io.h>
 
 namespace cgogn
 {

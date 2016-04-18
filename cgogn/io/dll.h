@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_DLL_H_
-#define IO_DLL_H_
+#ifndef CGOGN_IO_DLL_H_
+#define CGOGN_IO_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
@@ -37,4 +37,4 @@
 #define CGOGN_IO_API
 #endif
 
-#endif // IO_DLL_H_
+#endif // CGOGN_IO_DLL_H_

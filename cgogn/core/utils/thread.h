@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_THREAD_H_
-#define CORE_UTILS_THREAD_H_
+#ifndef CGOGN_CORE_UTILS_THREAD_H_
+#define CGOGN_CORE_UTILS_THREAD_H_
 
 #include <vector>
 
-#include <core/dll.h>
-#include <core/utils/definitions.h>
-#include <core/utils/thread_barrier.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/thread_barrier.h>
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
 namespace cgogn
 {
@@ -123,4 +123,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_THREAD_H_
+#endif // CGOGN_CORE_UTILS_THREAD_H_

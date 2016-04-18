@@ -23,7 +23,7 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/utils/thread_pool.h>
+#include <cgogn/core/utils/thread_pool.h>
 
 namespace cgogn
 

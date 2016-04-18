@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/types/geometry_traits.h>
-#include <geometry/functions/intersection.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/intersection.h>
 
 #include <gtest/gtest.h>
 

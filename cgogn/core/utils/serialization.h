@@ -21,16 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_SERIALIZATION_H_
-#define CORE_UTILS_SERIALIZATION_H_
+#ifndef CGOGN_CORE_UTILS_SERIALIZATION_H_
+#define CGOGN_CORE_UTILS_SERIALIZATION_H_
 
 #include <iostream>
 #include <vector>
 #include <list>
 #include <array>
 
-#include <core/utils/assert.h>
-#include <core/dll.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/dll.h>
 
 namespace cgogn
 {
@@ -263,4 +264,4 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity)
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_SERIALIZATION_H_
+#endif // CGOGN_CORE_UTILS_SERIALIZATION_H_

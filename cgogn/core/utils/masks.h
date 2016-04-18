@@ -21,111 +21,168 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_MASKS_H_
-#define CORE_UTILS_MASKS_H_
+#ifndef CGOGN_CORE_UTILS_MASKS_H_
+#define CGOGN_CORE_UTILS_MASKS_H_
 
-#include <core/utils/definitions.h>
 #include <vector>
+
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/basic/cell.h>
 
 namespace cgogn
 {
 
-template <typename CellType>
-class MaskCell
+/**
+ * @brief The CellFilters class
+ * Classes inheriting from CellFilters can be used as a parameter to map.foreach_cell()
+ * They can personalize the filtering function used to filter each Orbit traversal
+ */
+class CellFilters
 {
 public:
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MaskCell);
-	inline MaskCell() {}
-	virtual ~MaskCell() {}
-	virtual void operator() (CellType) const final {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellFilters);
+	CellFilters() {}
+	virtual ~CellFilters() {}
+	virtual void operator() (uint32) const final {}
 
-	virtual CellType begin() const = 0;
-	virtual CellType next() const = 0;
-	virtual bool end() const = 0;
+	template <typename CellType>
+	bool filter(CellType c) const { return true; }
 };
 
-template <typename CellType, typename MAP>
-class CellCache : public MaskCell<CellType>
+/**
+ * @brief The CellTraversor class
+ * Classes inheriting from CellTraversor can be used as a parameter to map.foreach_cell()
+ * They should provide the following methods :
+ *  - template <typename CellType> CellType begin() const
+ *  - template <typename CellType> CellType end() const
+ *" - template <typename CellType> CellType next() const
+ */
+class CellTraversor
 {
-	MAP& map_;
-	mutable typename std::vector<CellType>::const_iterator current_;
-	std::vector<CellType> cells_;
+public:
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellTraversor);
+	inline CellTraversor() {}
+	virtual ~CellTraversor() {}
+	virtual void operator() (uint32) const final {}
+};
+
+
+template <typename MAP>
+class CellCache : public CellTraversor
+{
+	const MAP& map_;
+	mutable std::array<typename std::vector<Dart>::const_iterator, NB_ORBITS> current_;
+	std::array<std::vector<Dart>, NB_ORBITS> cells_;
 
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
-	CellCache(MAP& m) : map_(m)
-	{
-		cells_.reserve(4096u);
-		update();
-	}
+	CellCache(const MAP& m) : map_(m)
+	{}
 
+	template <typename CellType>
 	CellType begin() const
 	{
-		current_ = cells_.begin();
-		if (end()) return CellType();
-		return *current_;
+		static const Orbit ORBIT = CellType::ORBIT;
+		current_[ORBIT] = cells_[ORBIT].begin();
+		if (end<CellType>()) return CellType();
+		return CellType(*current_[ORBIT]);
 	}
 
+	template <typename CellType>
 	CellType next() const
 	{
-		++current_;
-		return *current_;
+		static const Orbit ORBIT = CellType::ORBIT;
+		++current_[ORBIT];
+		return CellType(*current_[ORBIT]);
 	}
 
-	bool end() const { return current_ == cells_.end(); }
-
-	void update()
+	template <typename CellType>
+	bool end() const
 	{
-		cells_.clear();
-		map_.foreach_cell([&] (CellType c) { cells_.push_back(c); });
-		current_ = cells_.begin();
+		static const Orbit ORBIT = CellType::ORBIT;
+		return current_[ORBIT] == cells_[ORBIT].end();
+	}
+
+	template <typename CellType>
+	uint32 size() const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		return cells_[ORBIT].size();
+	}
+
+	template <typename CellType>
+	void build()
+	{
+		this->build<CellType>([] (CellType) { return true; });
+	}
+
+	template <typename CellType, typename FilterFunction>
+	void build(const FilterFunction& filter)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].clear();
+		cells_[ORBIT].reserve(4096u);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, filter);
+		current_[ORBIT] = cells_[ORBIT].begin();
 	}
 };
 
 template <typename MAP>
-class BoundaryCache : public MaskCell<typename MAP::Boundary>
+class BoundaryCache : public CellTraversor
 {
-	using CellType = typename MAP::Boundary;
+	using BoundaryCellType = typename MAP::Boundary;
 
-	MAP& map_;
-	mutable typename std::vector<CellType>::const_iterator current_;
-	std::vector<CellType> cells_;
+	const MAP& map_;
+	mutable typename std::vector<BoundaryCellType>::const_iterator current_;
+	std::vector<BoundaryCellType> cells_;
 
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(BoundaryCache);
-	BoundaryCache(MAP& m) : map_(m)
+	BoundaryCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
 		update();
 	}
 
+	template <typename CellType = BoundaryCellType>
 	CellType begin() const
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		current_ = cells_.begin();
 		if (end()) return CellType();
 		return *current_;
 	}
 
+	template <typename CellType = BoundaryCellType>
 	CellType next() const
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		++current_;
 		return *current_;
 	}
 
-	bool end() const { return current_ == cells_.end(); }
+	template <typename CellType = BoundaryCellType>
+	bool end() const
+	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
+		return current_ == cells_.end();
+	}
 
+	template <typename CellType = BoundaryCellType>
 	void update()
 	{
+		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		cells_.clear();
 		typename MAP::DartMarker dm(map_);
 		map_.foreach_dart([&] (Dart d)
 		{
 			if (!dm.is_marked(d))
 			{
-				CellType c(d);
+				BoundaryCellType c(d);
 				dm.mark_orbit(c);
 				if (map_.is_boundary(d))
 					cells_.push_back(c);
@@ -137,4 +194,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_MASKS_H_
+#endif // CGOGN_CORE_UTILS_MASKS_H_

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
 #include <iostream>
 #include <fstream>
@@ -32,15 +32,15 @@
 #include <memory>
 #include <climits>
 
-#include <core/utils/logger.h>
-#include <core/dll.h>
-#include <core/utils/definitions.h>
-#include <core/utils/assert.h>
-#include <core/utils/name_types.h>
-#include <core/utils/unique_ptr.h>
-#include <core/container/chunk_array.h>
-#include <core/container/chunk_stack.h>
-#include <core/container/chunk_array_factory.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/container/chunk_stack.h>
+#include <cgogn/core/container/chunk_array_factory.h>
 
 namespace cgogn
 {
@@ -183,6 +183,9 @@ public:
 			delete ptr;
 	}
 
+	const std::vector<std::string>& get_names() const { return names_; }
+	const std::vector<std::string>& get_type_names() const { return type_names_; }
+
 	/**
 	 * @brief get an attribute
 	 * @param attribute_name name of attribute
@@ -223,8 +226,8 @@ public:
 		}
 
 		// create the new attribute
-		const std::string& typeName = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>();
+		const std::string& type_name = name_of_type(T());
+		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
 		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
 
 		// reserve memory
@@ -233,7 +236,7 @@ public:
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
 		names_.push_back(attribute_name);
-		type_names_.push_back(typeName);
+		type_names_.push_back(type_name);
 
 		return carr;
 	}
@@ -274,6 +277,61 @@ public:
 		}
 
 		remove_attribute(index);
+
+		return true;
+	}
+
+	/**
+	 * @brief swap the data of two chunk arrays of the container
+	 * @param ptr1 pointer to first chunk array
+	 * @param ptr2 pointer to second chunk array
+	 * @return
+	 */
+	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	{
+		uint32 index1 = get_array_index(ptr1);
+		uint32 index2 = get_array_index(ptr2);
+
+		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
+		{
+			cgogn_log_warning("swap_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (index1 == index2)
+		{
+			cgogn_log_warning("swap_data_attributes") << "Same attributes.";
+			return false;
+		}
+
+		table_arrays_[index1]->swap(table_arrays_[index2]);
+
+		return true;
+	}
+
+	template <typename T>
+	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	{
+		uint32 dest_index = get_array_index(dest);
+		uint32 src_index = get_array_index(src);
+
+		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
+		{
+			cgogn_log_warning("copy_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (dest_index == src_index)
+		{
+			cgogn_log_warning("copy_data_attributes") << "Same attributes.";
+			return false;
+		}
+
+		ChunkArray<T>* dest_ca = static_cast<ChunkArray<T>*>(table_arrays_[dest_index]);
+		ChunkArray<T>* src_ca = static_cast<ChunkArray<T>*>(table_arrays_[src_index]);
+
+		for (uint32 it = begin(), last = end(); it < last; ++it)
+			(*dest_ca)[it] = (*src_ca)[it];
 
 		return true;
 	}
@@ -432,7 +490,7 @@ public:
 	 * @brief reverse end of container
 	 * @return the index before the last used line of the container in reverse order
 	 */
-	uint32 real_rend() const
+	uint32 rend() const
 	{
 		return 0xffffffff;
 	}
@@ -499,8 +557,8 @@ public:
 		names_.swap(container.names_);
 		type_names_.swap(container.type_names_);
 		table_marker_arrays_.swap(container.table_marker_arrays_);
-		refs_.swap(container.refs_);
-		holes_stack_.swap(container.holes_stack_);
+		refs_.swap(&(container.refs_));
+		holes_stack_.swap(&(container.holes_stack_));
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
 	}
@@ -832,8 +890,6 @@ public:
 	}
 };
 
-
-
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
@@ -841,4 +897,4 @@ extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uns
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_

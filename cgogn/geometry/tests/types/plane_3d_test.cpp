@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <geometry/types/plane_3d.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/types/plane_3d.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 

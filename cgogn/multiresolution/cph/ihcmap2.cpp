@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_IHCMAP2_CPP_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_CPP_
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <cgogn/multiresolution/cph/ihcmap2.h>
 
 namespace cgogn
 {

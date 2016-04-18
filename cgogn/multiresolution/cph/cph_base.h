@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH_BASE_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_
+#define CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_
 
-#include <core/utils/assert.h>
-#include <core/basic/dart.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/basic/dart.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/map_traits.h>
 
-#include <multiresolution/dll.h>
+#include <cgogn/multiresolution/dll.h>
 
 namespace cgogn
 {
@@ -154,4 +154,4 @@ extern template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_CPH_BASE_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_

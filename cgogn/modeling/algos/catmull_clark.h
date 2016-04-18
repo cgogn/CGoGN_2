@@ -21,13 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MODELING_ALGOS_H_
-#define MODELING_ALGOS_H_
+#ifndef CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_
+#define CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_
 
-//#include <geometry/functions/area.h>
-#include <geometry/algos/centroid.h>
-#include<vector>
-#include<core/basic/dart_marker.h>
+#include <vector>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 namespace cgogn
 {
@@ -61,7 +60,7 @@ typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
 }
 
 template <typename VEC3, typename MAP>
-void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>& position)
+void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -87,15 +86,9 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 
 	for(Edge e: initial_edges)
 	{
-//		Vertex v1(e.dart);
-//		Vertex v2(map.phi1(e.dart));
-//		Vertex middle = map.cut_edge(e);
-//		position[middle] = (position[v1] + position[v2] )/Scalar(2);
-
 		std::pair<Vertex,Vertex> ve = map.vertices(e);
 		Vertex middle = map.cut_edge(e);
 		position[middle] = (position[ve.first] + position[ve.second] )/Scalar(2);
-
 	}
 
 
@@ -162,12 +155,10 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttributeHandler<VEC3>
 			position[v] += delta;
 		}
 	}
-
 }
 
-
-} // namespace geometry
+} // namespace modeling
 
 } // namespace cgogn
 
-#endif // MODELING_ALGOS_H_
+#endif // CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_

@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_VTK_IO_CPP_
+#define CGOGN_IO_VTK_IO_CPP_
 
-#include <io/vtk_io.h>
+#include <cgogn/io/vtk_io.h>
 
 namespace cgogn
 {

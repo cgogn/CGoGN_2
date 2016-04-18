@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP0_H_
-#define CORE_CMAP_CMAP0_H_
+#ifndef CGOGN_CORE_CMAP_CMAP0_H_
+#define CGOGN_CORE_CMAP_CMAP0_H_
 
-#include <core/cmap/map_base.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -54,9 +54,9 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -100,10 +100,28 @@ protected:
 	{
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * No contraints.
+	 */
 	inline bool check_integrity(Dart) const
 	{
 		return true;
 	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * No boundary dart is accepted.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return !this->is_boundary(d);
+	}
+
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -178,4 +196,4 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CM
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP0_H_
+#endif // CGOGN_CORE_CMAP_CMAP0_H_

@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_EIGEN_H_
-#define GEOMETRY_TYPES_EIGEN_H_
+#ifndef CGOGN_GEOMETRY_TYPES_EIGEN_H_
+#define CGOGN_GEOMETRY_TYPES_EIGEN_H_
 
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
 CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
@@ -39,4 +39,4 @@ namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_EIGEN_H_
+#endif // CGOGN_GEOMETRY_TYPES_EIGEN_H_

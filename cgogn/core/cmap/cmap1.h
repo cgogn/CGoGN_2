@@ -21,32 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP1_H_
-#define CORE_CMAP_CMAP1_H_
+#ifndef CGOGN_CORE_CMAP_CMAP1_H_
+#define CGOGN_CORE_CMAP_CMAP1_H_
 
-#include <core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap0.h>
 
 namespace cgogn
 {
-
-namespace internal
-{
-template<uint64 N>
-struct check_multi_phi
-{
-	static const bool value_cmap1 = (N<10)?(N%10>0) && (N%10<=1):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap1;
-	static const bool value_cmap2 = (N<10)?(N%10>0) && (N%10<=2):(N%10>0) && (N%10<=2) && check_multi_phi<N/10>::value_cmap2;
-	static const bool value_cmap3 = (N<10)?(N%10>0) && (N%10<=3):(N%10>0) && (N%10<=3) && check_multi_phi<N/10>::value_cmap3;
-
-};
-template<>
-struct check_multi_phi<0>
-{
-	static const bool value_cmap1 = true;
-	static const bool value_cmap2 = true;
-	static const bool value_cmap3 = true;
-};
-}
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
@@ -75,11 +56,11 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Face::ORBIT>;
+	using FaceAttribute = Attribute<T, Face::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -143,10 +124,27 @@ protected:
 		(*phi_1_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI1 and PHI_1 are inverse relations.
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (phi1(phi_1(d)) == d &&
 				phi_1(phi1(d)) == d);
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * No boundary dart is accepted.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return !this->is_boundary(d);
 	}
 
 	/*!
@@ -215,18 +213,17 @@ public:
 		return (*phi_1_)[d.index];
 	}
 
-
-
 	/**
-	 * \brief phi composition
+	 * \brief Composition of PHI calls
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return The result of successive applications of PHI1 on d.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indices.
+	 * If N=0 the identity is used.
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(internal::check_multi_phi<N>::value_cmap1, "composition on phi1 only");
-
+		static_assert((N%10)<=1,"Composition of PHI: invalid index");
 		if (N >=10)
 			return this->phi1(phi<N/10>(d));
 
@@ -235,8 +232,6 @@ public:
 
 		return d;
 	}
-
-
 
 	/*******************************************************************************
 	 * High-level embedded and topological operations
@@ -290,15 +285,10 @@ public:
 		return f;
 	}
 
-	/*!
-	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
-	 */
-	inline void remove_face(Face f)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
+protected:
 
-		Dart d = f.dart;
+	inline void remove_face_topo(Dart d)
+	{
 		Dart it = phi1(d);
 		while(it != d)
 		{
@@ -308,6 +298,19 @@ public:
 		}
 
 		this->remove_dart(d);
+	}
+
+public:
+
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
+	inline void remove_face(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		remove_face_topo(f.dart);
 	}
 
 protected:
@@ -350,18 +353,32 @@ public:
 		return nv;
 	}
 
+protected:
+
+	/**
+	 * \brief Remove a vertex from its face and delete it.
+	 * @param d : a dart of the vertex
+	 * The vertex that preceeds the vertex of d in the face is linked
+	 * to the successor of the vertex of d.
+	 */
+	inline void remove_vertex_topo(Dart d)
+	{
+		Dart e = phi_1(d);
+		if (e != d) phi1_unsew(e);
+		this->remove_dart(d);
+	}
+
+public:
+
 	/**
 	 * \brief Remove a vertex from its face and delete it.
 	 * @param v : a vertex
-	 * The vertex that preceeds v in the face is linked to the successor of v.
 	 */
 	inline void remove_vertex(Vertex v)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		Dart e = phi_1(v.dart);
-		if (e != v.dart) phi1_unsew(e);
-		this->remove_dart(v.dart);
+		remove_vertex_topo(v.dart);
 	}
 
 protected:
@@ -391,10 +408,9 @@ protected:
 
 public:
 
-
-	inline uint32 degree(Vertex ) const
+	inline uint32 degree(Vertex) const
 	{
-		return 2;
+		return 1;
 	}
 
 	inline uint32 codegree(Face f) const
@@ -405,8 +421,9 @@ public:
 
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
+		if (codegree < 1u) return false;
 		Dart it = f.dart ;
-		for (uint32 i = 1; i < codegree; ++i)
+		for (uint32 i = 1u; i < codegree; ++i)
 		{
 			it = phi1(it) ;
 			if (it == f.dart)
@@ -500,7 +517,6 @@ public:
 	}
 };
 
-
 template <typename MAP_TRAITS>
 struct CMap1Type
 {
@@ -521,8 +537,6 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CM
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP1_CPP_))
 
-
-
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP1_H_
+#endif // CGOGN_CORE_CMAP_CMAP1_H_

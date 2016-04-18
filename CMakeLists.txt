@@ -30,7 +30,7 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CGOGN_PATH}/cgogn)
+set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
@@ -127,7 +127,7 @@ endif()
 
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
-add_subdirectory(${CGOGN_SOURCE_DIR})
+add_subdirectory(${CGOGN_SOURCE_DIR}/cgogn)
 
 if(${CGOGN_BUILD_BENCHS})
 	add_subdirectory(benchmarks)
