@@ -946,21 +946,18 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
 
-		CellType it = t.template begin<CellType>();
-
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		while (!t.template end<CellType>())
+		for (typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); !(it == end) ;)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !t.template end<CellType>(); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !(it == end); ++k)
 			{
-				CellType c(it);
-				cells.push_back(c);
-				it = t.template next<CellType>();
+				cells.push_back(CellType(*it));
+				++it;
 			}
 			// launch thread
 			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
@@ -1000,8 +997,8 @@ public:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for (CellType it = t.template begin<CellType>(); !t.template end<CellType>(); it = t.template next<CellType>())
-			if (!f(it))
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; !(it == end); ++it)
+			if (!f(CellType(*it)))
 				break;
 	}
 
