@@ -177,17 +177,32 @@ public:
 	{
 		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		cells_.clear();
-		typename MAP::DartMarker dm(map_);
-		map_.foreach_dart([&] (Dart d)
+		if (map_.template is_embedded<CellType::ORBIT>())
 		{
-			if (!dm.is_marked(d))
+			typename MAP::template CellMarker<CellType::ORBIT> cm(map_);
+			map_.foreach_cell([&] (CellType c)
 			{
-				BoundaryCellType c(d);
-				dm.mark_orbit(c);
-				if (map_.is_boundary(d))
-					cells_.push_back(c);
-			}
-		});
+				if (!cm.is_marked(c))
+				{
+					cm.mark(c);
+					if (map_.is_boundary(c.dart))
+						cells_.push_back(c);
+				}
+			});
+		} else
+		{
+			typename MAP::DartMarker dm(map_);
+			map_.foreach_dart([&] (Dart d)
+			{
+				if (!dm.is_marked(d))
+				{
+					BoundaryCellType c(d);
+					dm.mark_orbit(c);
+					if (map_.is_boundary(d))
+						cells_.push_back(c);
+				}
+			});
+		}
 		current_ = cells_.begin();
 	}
 };
