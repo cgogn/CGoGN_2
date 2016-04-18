@@ -574,19 +574,17 @@ public:
 
 	/**
 	 * @brief container compacting
-	 * @param map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
+	 * @return map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
 	template <uint32 PRIMSIZE>
 	std::vector<uint32> compact()
 	{
-//		map_old_new.clear();
 		if (this->holes_stack_.empty())
 			return std::vector<uint32>();
 
 		uint32 up = rbegin();
 		uint32 down = std::numeric_limits<uint32>::max();
-		std::vector<uint32> map_old_new;
-		map_old_new.resize(up, std::numeric_limits<uint32>::max());
+		std::vector<uint32> map_old_new(up, std::numeric_limits<uint32>::max());
 
 		do
 		{
@@ -595,7 +593,7 @@ public:
 			{
 				const uint32 rdown = down + PRIMSIZE-1u - i;
 				map_old_new[up] = rdown;
-				copy_line(rdown, up,true,true);
+				move_line(rdown, up,true,true);
 				rnext(up);
 			}
 			holes_stack_.pop();
@@ -741,6 +739,29 @@ public:
 		for (auto ptr : table_arrays_)
 			ptr->copy_element(dst, src);
 
+		if (copy_markers)
+		{
+			for (auto ptr : table_marker_arrays_)
+				ptr->copy_element(dst, src);
+		}
+		if (copy_refs)
+			refs_[dst] = refs_[src];
+	}
+
+	/**
+	 * @brief move the content of line src in line dst (with refs & markers)
+	 * After the operation the behaviour is undefined when accessing to the content of the line src.
+	 * @param dstIndex destination
+	 * @param srcIndex source
+	 * @param copy_markers, to specify if the marker should be copied.
+	 * @param copy_refs, to specify if the refs should be copied.
+	 */
+	inline void move_line(uint32 dst, uint32 src, bool copy_markers, bool copy_refs)
+	{
+		for (auto ptr : table_arrays_)
+			ptr->move_element(dst, src);
+
+		//for markers (i.e. uints) there is no gain moving, we can copy
 		if (copy_markers)
 		{
 			for (auto ptr : table_marker_arrays_)
