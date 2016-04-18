@@ -36,14 +36,14 @@
 namespace cgogn
 {
 
+// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+static const uint32 INVALID_INDEX = UINT_MAX;
+
 /**
  * \brief Dart.
  */
 struct Dart
 {
-	// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
-	static const uint32 INVALID_INDEX = UINT_MAX;
-
 	/**
 	 * \brief the value of a dart.
 	 */
@@ -52,7 +52,7 @@ struct Dart
 	/**
 	 * \brief Creates a new nil Dart
 	 */
-	inline Dart() : index(INVALID_INDEX)
+	inline Dart() : index(cgogn::INVALID_INDEX)
 	{}
 
 	/**
@@ -81,7 +81,7 @@ struct Dart
 	 * \retval true if the dart is nil
 	 * \retval false otherwise
 	 */
-	inline bool is_nil() const { return index == INVALID_INDEX; }
+	inline bool is_nil() const { return index == cgogn::INVALID_INDEX; }
 
 	/**
 	 * \brief Assigns to the left hand side dart the value
