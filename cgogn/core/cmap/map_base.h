@@ -586,6 +586,24 @@ public:
 	}
 
 	template <typename CellType>
+	inline void fill_hole(CellType c) const
+	{
+		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
+		{
+			this->set_boundary(d, false);
+		});
+	}
+
+	template <typename CellType>
+	inline void create_hole(CellType c) const
+	{
+		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
+		{
+			this->set_boundary(d, true);
+		});
+	}
+
+	template <typename CellType>
 	bool is_incident_to_boundary(CellType c) const
 	{
 		static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
