@@ -918,7 +918,7 @@ public:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; !(it == end); ++it)
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; it != end; ++it)
 			f(CellType(*it));
 	}
 
@@ -948,13 +948,15 @@ public:
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		for (typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); !(it == end) ;)
+		auto it = t.template begin<CellType>();
+		const auto it_end = t.template end<CellType>();
+		while(it != it_end)
 		{
 			// fill buffer
 			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && !(it == end); ++k)
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && (it != it_end); ++k)
 			{
 				cells.push_back(CellType(*it));
 				++it;
@@ -997,7 +999,7 @@ public:
 	{
 		using CellType = func_parameter_type(FUNC);
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; !(it == end); ++it)
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
 			if (!f(CellType(*it)))
 				break;
 	}
