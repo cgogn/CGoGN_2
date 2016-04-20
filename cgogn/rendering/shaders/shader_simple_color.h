@@ -24,31 +24,60 @@
 #ifndef CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 #define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 
+#include <QColor>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
 
-class QColor;
+
 
 namespace cgogn
 {
 namespace rendering
 {
 
+class ShaderSimpleColor;
+
+class CGOGN_RENDERING_API ShaderParamSimpleColor : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+
+	ShaderParamSimpleColor(ShaderSimpleColor* sh);
+
+	void set_vbo(VBO* vbo_pos, uint32 stride=0, unsigned first=0);
+};
+
+
 class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
+
+	// uniform ids
+	GLint unif_color_;
+
+public:
 
 	enum
 	{
 		ATTRIB_POS = 0
 	};
 
-	// uniform ids
-	GLint unif_color_;
+	using Param = ShaderParamSimpleColor;
 
-public:
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
+
 
 	ShaderSimpleColor();
 
@@ -58,14 +87,8 @@ public:
 	 */
 	void set_color(const QColor& rgb);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos, uint32 stride=0, unsigned first=0);
 };
+
 
 } // namespace rendering
 

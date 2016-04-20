@@ -78,8 +78,10 @@ private:
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
 	cgogn::rendering::MapRender* render_;
+
 	cgogn::rendering::VBO* vbo_pos_;
 	cgogn::rendering::ShaderFlat* shader_flat_;
+	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
 	cgogn::rendering::TopoRender* topo_render;
 
@@ -181,12 +183,9 @@ void Viewer::draw()
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		shader_flat_->bind();
-		shader_flat_->set_matrices(proj,view);
-		shader_flat_->bind_vao(0);
+		param_flat_->bind(proj,view);
 		render_->draw(cgogn::rendering::TRIANGLES);
-		shader_flat_->release_vao(0);
-		shader_flat_->release();
+		param_flat_->release();
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
@@ -207,13 +206,11 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
 	shader_flat_ = new cgogn::rendering::ShaderFlat;
-	shader_flat_->add_vao();
-	shader_flat_->set_vao(0, vbo_pos_);
-	shader_flat_->bind();
-	shader_flat_->set_front_color(QColor(0,150,0));
-	shader_flat_->set_back_color(QColor(0,0,150));
-	shader_flat_->set_ambiant_color(QColor(5,5,5));
-	shader_flat_->release();
+	param_flat_ = shader_flat_->generate_param();
+	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->front_color_ = QColor(0,150,0);
+	param_flat_->back_color_ = QColor(0,0,150);
+	param_flat_->ambiant_color_ = QColor(5,5,5);
 
 	topo_render = new cgogn::rendering::TopoRender(this);
 	topo_render->update_map2<Vec3>(map_,vertex_position_);

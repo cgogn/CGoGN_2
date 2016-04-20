@@ -125,13 +125,6 @@ ShaderFlat::ShaderFlat(bool color_per_vertex)
 	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
 	unif_light_position_ = prg_.uniformLocation("lightPosition");
 
-	//default param
-	bind();
-	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
-	set_front_color(QColor(250,0,0));
-	set_back_color(QColor(0,250,5));
-	set_ambiant_color(QColor(5,5,5));
-	release();
 }
 
 void ShaderFlat::set_light_position(const QVector3D& l)
@@ -163,39 +156,53 @@ void ShaderFlat::set_ambiant_color(const QColor& rgb)
 }
 
 
-bool ShaderFlat::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
 
+
+
+ShaderParamFlat::ShaderParamFlat(ShaderFlat* sh):
+	ShaderParam(sh),
+	front_color_(250,0,0),
+	back_color_(0,250,0),
+	ambiant_color_(5,5,5),
+	light_pos_(10,100,1000)
+{}
+
+void ShaderParamFlat::set_uniforms()
+{
+	ShaderFlat* sh = static_cast<ShaderFlat*>(this->shader_);
+	sh->set_front_color(front_color_);
+	sh->set_back_color(back_color_);
+	sh->set_ambiant_color(ambiant_color_);
+	sh->set_light_position(light_pos_);
+}
+
+void ShaderParamFlat::set_vbo(VBO* vbo_pos, VBO* vbo_color)
+{
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderFlat::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderFlat::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	if (vbo_color)
 	{
 		// color  vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		ogl->glEnableVertexAttribArray(ShaderFlat::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderFlat::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 	}
 
-	vaos_[i]->release();
-	prg_.release();
-
-	return true;
+	vao_->release();
+	shader_->release();
 }
+
+
 
 } // namespace rendering
 

@@ -86,6 +86,9 @@ private:
 	cgogn::rendering::ShaderFlat* shader_flat_;
 	cgogn::rendering::ShaderPhong* shader_phong_;
 
+	cgogn::rendering::ShaderFlat::Param* param_flat_;
+	cgogn::rendering::ShaderPhong::Param* param_phong_;
+
 	bool phong_rendering_;
 	bool flat_rendering_;
 };
@@ -168,22 +171,16 @@ void Viewer::draw()
 
 	if (flat_rendering_)
 	{
-		shader_flat_->bind();
-		shader_flat_->set_matrices(proj,view);
-		shader_flat_->bind_vao(0);
+		param_flat_->bind(proj,view);
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
-		shader_flat_->release_vao(0);
-		shader_flat_->release();
+		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		shader_phong_->bind();
-		shader_phong_->set_matrices(proj,view);
-		shader_phong_->bind_vao(0);
+		param_phong_->bind(proj,view);
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
-		shader_phong_->release_vao(0);
-		shader_phong_->release();
+		param_phong_->release();
 	}
 }
 
@@ -224,22 +221,18 @@ void Viewer::init()
 
 
 	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
-	shader_phong_->add_vao();
-	shader_phong_->set_vao(0, vbo_pos_, vbo_norm_, vbo_color_);
-	shader_phong_->bind();
-	shader_phong_->set_ambiant_color(QColor(5,5,5));
-	shader_phong_->set_double_side(true);
-	shader_phong_->set_specular_color(QColor(255,255,255));
-	shader_phong_->set_specular_coef(100.0);
-	shader_phong_->release();
+	param_phong_ = shader_phong_->generate_param();
+	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
+	param_phong_->ambiant_color_ = QColor(5,5,5);
+	param_phong_->double_side_ = true;
+	param_phong_->specular_color_ = QColor(255,255,255);
+	param_phong_->specular_coef_ = 100.0;
 
 
 	shader_flat_ = new cgogn::rendering::ShaderFlat(true);
-	shader_flat_->add_vao();
-	shader_flat_->set_vao(0, vbo_pos_, vbo_color_);
-	shader_flat_->bind();
-	shader_flat_->set_ambiant_color(QColor(5,5,5));
-	shader_flat_->release();
+	param_flat_ = shader_flat_->generate_param();
+	param_flat_->set_vbo(vbo_pos_, vbo_color_);
+	param_flat_->ambiant_color_ = QColor(5,5,5);
 
 
 

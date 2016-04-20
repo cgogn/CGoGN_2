@@ -36,7 +36,6 @@ namespace rendering
 {
 
 // static members init
-ShaderSimpleColor* TopoRender::shader_cpv_ = nullptr;
 ShaderBoldLine* TopoRender::shader_bl_ = nullptr;
 ShaderRoundPoint* TopoRender::shader_rp_ = nullptr;
 int32 TopoRender::nb_instances_ = 0;
@@ -57,16 +56,23 @@ TopoRender::TopoRender(QOpenGLFunctions_3_3_Core* ogl33):
 
 	if (!shader_bl_)
 		shader_bl_ = new ShaderBoldLine();
-	vao_bl_ = shader_bl_->add_vao();
-	shader_bl_->set_vao(vao_bl_,vbo_darts_);
-	vao_bl2_ = shader_bl_->add_vao();
-	shader_bl_->set_vao(vao_bl2_,vbo_relations_);
+
+	param_bl_ = shader_bl_->generate_param();
+	param_bl_->set_vbo(vbo_darts_);
+	param_bl_->color_= dart_color_;
+
+
+	param_bl2_ = shader_bl_->generate_param();
+	param_bl2_->set_vbo(vbo_relations_);
+	param_bl2_->color_= phi2_color_;
+
 
 	if (!shader_rp_)
 		shader_rp_ = new ShaderRoundPoint();
-	vao_rp_ = shader_rp_->add_vao();
-	shader_rp_->set_vao(vao_rp_,vbo_darts_,nullptr,2,0);
 
+	param_rp_ = shader_rp_->generate_param();
+	param_rp_->set_vbo(vbo_darts_,nullptr,2,0);
+	param_rp_->color_ = dart_color_;
 }
 
 TopoRender::~TopoRender()
@@ -75,45 +81,46 @@ TopoRender::~TopoRender()
 	delete vbo_relations_;
 
 	nb_instances_--;
-	if (nb_instances_ ==0)
+	if (nb_instances_ == 0)
 	{
 		// delete shaders when last TopoRender is deleted
 		// ensure context still enable when delete shaders
 		delete shader_rp_;
 		delete shader_bl_;
-		delete shader_cpv_;
 	}
+
+	delete param_rp_;
+	delete param_bl_;
+	delete param_bl2_;
+
 }
 
 void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending)
 {
-	uint32 lw = 2.0;
+	float32 lw = 2.0;
 	if(with_blending)
 	{
 		ogl33_->glEnable(GL_BLEND);
 		ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		lw = 3.0;
 	}
+//	param_bl_->width_= lw;
+//	param_bl2_->width_= lw;
+	param_rp_->width_ = 2*lw;
 
-	shader_rp_->bind();
-	shader_rp_->set_matrices(projection,modelview);
-	shader_rp_->set_width(2*lw);
-	shader_rp_->set_color(dart_color_);
-	shader_rp_->bind_vao(vao_rp_);
+	param_rp_->bind(projection,modelview);
 	ogl33_->glDrawArrays(GL_POINTS,0,vbo_darts_->size()/2);
-	shader_rp_->release_vao(vao_rp_);
-	shader_rp_->release();
+	param_rp_->release();
 
 	shader_bl_->bind();
 	shader_bl_->set_matrices(projection,modelview);
 	shader_bl_->set_width(lw);
-
-	shader_bl_->bind_vao(vao_bl_);
 	shader_bl_->set_color(dart_color_);
+	param_bl_->bind_vao_only(false);
 	ogl33_->glDrawArrays(GL_LINES,0,vbo_darts_->size());
-	shader_bl_->release_vao(vao_bl_);
+	param_bl_->release_vao_only();
 
-	shader_bl_->bind_vao(vao_bl2_);
+	param_bl2_->bind_vao_only(false);
 	shader_bl_->set_color(phi2_color_);
 	ogl33_->glDrawArrays(GL_LINES,0,vbo_darts_->size());
 
@@ -122,8 +129,7 @@ void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview,
 		shader_bl_->set_color(phi3_color_);
 		ogl33_->glDrawArrays(GL_LINES,vbo_darts_->size(),vbo_darts_->size());
 	}
-	shader_bl_->release_vao(vao_bl2_);
-
+	param_bl2_->release_vao_only();
 	shader_bl_->release();
 
 	ogl33_->glDisable(GL_BLEND);

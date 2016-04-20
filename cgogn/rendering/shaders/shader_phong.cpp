@@ -231,44 +231,63 @@ void ShaderPhong::set_double_side(bool ts)
 	prg_.setUniformValue(unif_double_side_,ts);
 }
 
-bool ShaderPhong::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
+
+
+ShaderParamPhong::ShaderParamPhong(ShaderPhong* sh):
+	ShaderParam(sh),
+	light_position_(10.0f,100.0f,1000.0f),
+	front_color_(250,0,0),
+	back_color_(0,250,5),
+	ambiant_color_(5,5,5),
+	specular_color_(100,100,100),
+	specular_coef_(50.0f),
+	double_side_(true)
+{}
+
+void ShaderParamPhong::set_uniforms()
 {
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
+	ShaderPhong* sh = static_cast<ShaderPhong*>(this->shader_);
+	sh->set_front_color(front_color_);
+	sh->set_back_color(back_color_);
+	sh->set_ambiant_color(ambiant_color_);
+	sh->set_specular_color(specular_color_);
+	sh->set_specular_coef(specular_coef_);
+	sh->set_double_side(double_side_);
+	sh->set_light_position(light_position_);
+}
+
+void ShaderParamPhong::set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
+{
 
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	// normal vbo
 	vbo_norm->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_NORM);
-	ogl->glVertexAttribPointer(ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_NORM);
+	ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_norm->release();
 
 	if (vbo_color)
 	{
 		// color  vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 	}
 
-	vaos_[i]->release();
-	prg_.release();
+	vao_->release();
+	shader_->release();
 
-	return true;
 }
 
 } // namespace rendering

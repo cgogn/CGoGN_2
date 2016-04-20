@@ -27,12 +27,30 @@
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
+#include <QColor>
 
 namespace cgogn
 {
 
 namespace rendering
 {
+
+class ShaderBoldLine;
+
+class CGOGN_RENDERING_API ShaderParamBoldLine : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+	float32 width_;
+
+	ShaderParamBoldLine(ShaderBoldLine* sh);
+
+	void set_vbo(VBO* vbo_pos,  VBO* vbo_color=nullptr);
+};
+
 
 class CGOGN_RENDERING_API ShaderBoldLine : public ShaderProgram
 {
@@ -44,17 +62,29 @@ class CGOGN_RENDERING_API ShaderBoldLine : public ShaderProgram
 	static const char* geometry_shader_source2_;
 	static const char* fragment_shader_source2_;
 
+	// uniform ids
+	GLint unif_color_;
+	GLint unif_width_;
+
+public:
+
 	enum
 	{
 		ATTRIB_POS = 0,
 		ATTRIB_COLOR
 	};
 
-	// uniform ids
-	GLint unif_color_;
-	GLint unif_width_;
+	using Param = ShaderParamBoldLine;
 
-public:
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
+
 
 	ShaderBoldLine(bool color_per_vertex = false);
 
@@ -77,8 +107,10 @@ public:
 	 * @param vbo_color pointer on color vbo
 	 * @return true if ok
 	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL);
+//	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL);
 };
+
+
 
 } // namespace rendering
 

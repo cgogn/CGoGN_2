@@ -184,38 +184,45 @@ void ShaderRoundPoint::set_width(float32 wpix)
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
 
+ShaderParamRoundPoint::ShaderParamRoundPoint(ShaderRoundPoint* sh):
+	ShaderParam(sh)
+{}
+
+void ShaderParamRoundPoint::set_uniforms()
+{
+	ShaderRoundPoint* sh = static_cast<ShaderRoundPoint*>(this->shader_);
+	sh->set_color(color_);
+	sh->set_width(width_);
+}
+
+
+
+void ShaderParamRoundPoint::set_vbo(VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
+{
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
+	ogl->glEnableVertexAttribArray(ShaderRoundPoint::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderRoundPoint::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 	vbo_pos->release();
 
 	if (vbo_color)
 	{
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
+		ogl->glEnableVertexAttribArray(ShaderRoundPoint::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderRoundPoint::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
 		vbo_color->release();
 	}
 
-	vaos_[i]->release();
-	prg_.release();
+	vao_->release();
+	shader_->release();
 
-	return true;
 }
 
 } // namespace rendering

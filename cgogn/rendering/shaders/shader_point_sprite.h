@@ -24,6 +24,8 @@
 #ifndef CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 #define CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 
+#include <QColor>
+#include <QVector3D>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -33,6 +35,25 @@ namespace cgogn
 
 namespace rendering
 {
+
+class ShaderPointSprite;
+
+class CGOGN_RENDERING_API ShaderParamPointSprite : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+	QColor ambiant_color_;
+	QVector3D light_pos_;
+	float32 size_;
+
+	ShaderParamPointSprite(ShaderPointSprite* sh);
+
+	void set_vbo(VBO* vbo_pos,  VBO* vbo_color=nullptr, VBO* vbo_size=nullptr);
+};
+
 
 class CGOGN_RENDERING_API ShaderPointSprite : public ShaderProgram
 {
@@ -44,13 +65,6 @@ class CGOGN_RENDERING_API ShaderPointSprite : public ShaderProgram
 	static const char* geometry_shader_source2_;
 	static const char* fragment_shader_source2_;
 
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_COLOR,
-		ATTRIB_SIZE
-	};
-
 	// uniform ids
 	GLint unif_color_;
 	GLint unif_size_;
@@ -58,6 +72,25 @@ class CGOGN_RENDERING_API ShaderPointSprite : public ShaderProgram
 	GLint unif_light_pos_;
 
 public:
+
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR,
+		ATTRIB_SIZE
+	};
+
+	using Param = ShaderParamPointSprite;
+
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
+
 
 	ShaderPointSprite(bool color_per_vertex = false, bool size_per_vertex = false);
 
@@ -104,6 +137,8 @@ public:
 	 */
 	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL, VBO* vbo_size=NULL);
 };
+
+
 
 } // namespace rendering
 

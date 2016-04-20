@@ -249,7 +249,7 @@ void Viewer::draw()
 	if (topo_rendering_)
 		topo_render_->draw(proj,view);
 
-	drawer_->call_list(proj, view);
+	drawer_->call_list(proj, view, this);
 
 }
 
@@ -269,7 +269,7 @@ void Viewer::init()
 	volume_render_->update_face<Vec3>(map_,vertex_position_);
 	volume_render_->update_edge<Vec3>(map_,vertex_position_);
 
-	drawer_ = new cgogn::rendering::Drawer(this);
+	drawer_ = new cgogn::rendering::Drawer();
 }
 
 int main(int argc, char** argv)

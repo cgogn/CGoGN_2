@@ -31,6 +31,50 @@ namespace cgogn
 namespace rendering
 {
 
+
+ShaderParam::ShaderParam(ShaderProgram* prg):
+	shader_(prg)
+{
+	vao_ = new QOpenGLVertexArrayObject;
+	vao_->create();
+}
+
+void ShaderParam::reinit_vao()
+{
+	vao_->destroy();
+	vao_->create();
+}
+
+
+void ShaderParam::bind_vao_only(bool with_uniforms)
+{
+	if (with_uniforms)
+		set_uniforms();
+	vao_->bind();
+}
+
+
+void ShaderParam::release_vao_only()
+{
+	vao_->release();
+}
+
+
+void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
+{
+	shader_->bind();
+	shader_->set_matrices(proj,mv);
+	set_uniforms();
+	vao_->bind();
+}
+
+void ShaderParam::release()
+{
+	vao_->release();
+	shader_->release();
+}
+
+
 ShaderProgram::~ShaderProgram()
 {
 	for (QOpenGLVertexArrayObject* vao : vaos_)

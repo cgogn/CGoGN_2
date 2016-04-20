@@ -34,10 +34,34 @@ namespace cgogn
 namespace rendering
 {
 
+class ShaderColorPerVertex;
+
+class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
+{
+protected:
+	inline void set_uniforms() {}
+
+public:
+
+	ShaderParamColorPerVertex(ShaderColorPerVertex* prg);
+
+
+	/**
+	 * @brief set a vbo configuration
+	 * @param vbo_pos pointer on position vbo (XYZ)
+	 * @param vbo_col pointer on color vbo (RGB)
+	 */
+	void set_vbo(VBO* vbo_pos, VBO* vbo_col);
+
+};
+
+
 class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
+
+public:
 
 	enum
 	{
@@ -45,19 +69,22 @@ class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
 		ATTRIB_COLOR
 	};
 
-public:
-
     ShaderColorPerVertex();
 
+	using Param = ShaderParamColorPerVertex;
+
 	/**
-	 * @brief set a vao configuration
-	 * @param i vao id (0,1,...)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_col pointer on color vbo (RGB)
-	 * @return true if ok
+	 * @brief generate shader parameter object
+	 * @return pointer
 	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_col);
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
 };
+
+
+
 
 } // namespace rendering
 

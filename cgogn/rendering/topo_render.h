@@ -47,20 +47,20 @@ class CGOGN_RENDERING_API TopoRender
 
 protected:
 
-	static ShaderSimpleColor* shader_cpv_;
+//	static ShaderSimpleColor* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
 	static int32 nb_instances_;
 
+//	ShaderSimpleColor::Param* param_cpv_;
+	ShaderBoldLine::Param* param_bl_;
+	ShaderBoldLine::Param* param_bl2_;
+	ShaderRoundPoint::Param* param_rp_;
+
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
 
-	uint32 vao_bl_;
-	uint32 vao_bl2_;
-	uint32 vao_rp_;
-
 	QOpenGLFunctions_3_3_Core* ogl33_;
-
 
 	QColor dart_color_;
 	QColor phi2_color_;

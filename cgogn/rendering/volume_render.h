@@ -48,17 +48,19 @@ class CGOGN_RENDERING_API VolumeRender
 protected:
 
 	ShaderExplodeVolumes* shader_expl_vol_;
-
 	ShaderExplodeVolumesLine* shader_expl_vol_line_;
+
+	ShaderExplodeVolumes::Param* param_expl_vol_;
+	ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
+
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
-	uint32 vao1_;
+
 	QColor face_color_;
 
 
 	VBO* vbo_pos2_;
-	uint32 vao2_;
 	QColor edge_color_;
 
 
@@ -89,11 +91,24 @@ public:
 
 	inline void set_explode_face(float32 x) { shrink_f_ = x; }
 
-	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
+	inline void set_explode_volume(float32 x)
+	{
+		shrink_v_ = x;
+		param_expl_vol_->explode_factor_=x;
+		param_expl_vol_line_->explode_factor_=x;
+	}
 
-	inline void set_face_color(const QColor& rgb) { face_color_= rgb; }
+	inline void set_face_color(const QColor& rgb)
+	{
+		face_color_= rgb;
+		param_expl_vol_->color_ = rgb;
+	}
 
-	inline void set_edge_color(const QColor& rgb) { edge_color_= rgb; }
+	inline void set_edge_color(const QColor& rgb)
+	{
+		edge_color_= rgb;
+		param_expl_vol_line_->color_=rgb;
+	}
 
 	template <typename VEC3, typename MAP>
 	void update_face(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);

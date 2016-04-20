@@ -66,35 +66,33 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	get_matrices_uniforms();
 }
 
-bool ShaderColorPerVertex::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color)
+ShaderParamColorPerVertex::ShaderParamColorPerVertex(ShaderColorPerVertex* prg):
+	ShaderParam(prg)
+{}
+
+void ShaderParamColorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 {
-	if (i >= vaos_.size())
-    {
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-        return false;
-    }
 
     QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-    vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	// color vbo
 	vbo_color->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-	ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
+	ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
     vbo_color->release();
 
-    vaos_[i]->release();
-	prg_.release();
+	vao_->release();
+	shader_->release();
 
-	return true;
 }
 
 } // namespace rendering
