@@ -63,7 +63,6 @@ Drawer::Drawer():
 	if (!shader_ps_)
 		shader_ps_ = new ShaderPointSprite(true);
 
-
 	param_cpv_ = shader_cpv_->generate_param();
 	param_bl_ = shader_bl_->generate_param();
 	param_rp_ = shader_rp_->generate_param();
@@ -157,14 +156,12 @@ void Drawer::begin(GLenum mode)
 		current_begin_ = &begins_face_;
 		break;
 	}
-
 }
 
 void Drawer::end()
 {
 	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
-
 
 void Drawer::vertex3f(float32 x, float32 y, float32 z)
 {
@@ -178,7 +175,6 @@ void Drawer::vertex3f(float32 x, float32 y, float32 z)
 	data_pos_.push_back(Vec3f{x,y,z});
 }
 
-
 void Drawer::color3f(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
@@ -186,7 +182,6 @@ void Drawer::color3f(float32 r, float32 g, float32 b)
 	else
 		data_col_.back() = Vec3f{r,g,b};
 }
-
 
 void Drawer::end_list()
 {
@@ -205,7 +200,6 @@ void Drawer::end_list()
 	std::memcpy(ptr,data_col_[0].data(),nb_elts*12);
 	vbo_col_->release_pointer();
 
-
 	// free memory
 	data_pos_.clear();
 	data_pos_.shrink_to_fit();
@@ -215,7 +209,6 @@ void Drawer::end_list()
 
 void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
-
 	//classic rendering
 	if (!begins_point_.empty() && !begins_line_.empty() && !begins_face_.empty())
 	{
@@ -271,7 +264,6 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 
 			if (pp.aa)
 				ogl33->glDisable(GL_BLEND);
-
 		}
 		param_rp_->release();
 	}
@@ -296,16 +288,11 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 
 			if (pp.aa)
 				ogl33->glDisable(GL_BLEND);
-
 		}
 
 		param_bl_->release();
 	}
-
 }
-
-
-
 
 } // namespace rendering
 

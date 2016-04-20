@@ -47,56 +47,7 @@ public:
 	virtual void operator() (uint32) const final {}
 
 	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::DART, bool>::type
-	{
-		return filter_DART(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1, bool>::type
-	{
-		return filter_PHI1(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI2, bool>::type
-	{
-		return filter_PHI2(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1_PHI2, bool>::type
-	{
-		return filter_PHI1_PHI2(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI1_PHI3, bool>::type
-	{
-		return filter_PHI1_PHI3(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI2_PHI3, bool>::type
-	{
-		return filter_PHI2_PHI3(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI21, bool>::type
-	{
-		return filter_PHI21(c);
-	}
-	template <typename CellType>
-	auto filter(CellType c) const -> typename std::enable_if<CellType::ORBIT == Orbit::PHI21_PHI31, bool>::type
-	{
-		return filter_PHI21_PHI31(c);
-	}
-
-protected:
-
-	virtual bool filter_DART(Cell<Orbit::DART>) const { return true; }
-	virtual bool filter_PHI1(Cell<Orbit::PHI1>) const { return true; }
-	virtual bool filter_PHI2(Cell<Orbit::PHI2>) const { return true; }
-	virtual bool filter_PHI1_PHI2(Cell<Orbit::PHI1_PHI2>) const { return true; }
-	virtual bool filter_PHI1_PHI3(Cell<Orbit::PHI1_PHI3>) const { return true; }
-	virtual bool filter_PHI2_PHI3(Cell<Orbit::PHI2_PHI3>) const { return true; }
-	virtual bool filter_PHI21(Cell<Orbit::PHI21>) const { return true; }
-	virtual bool filter_PHI21_PHI31(Cell<Orbit::PHI21_PHI31>) const { return true; }
+	bool filter(CellType c) const { return true; }
 };
 
 /**

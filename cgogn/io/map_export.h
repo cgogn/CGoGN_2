@@ -52,7 +52,7 @@ namespace io
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -76,9 +76,9 @@ bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 0;
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			if (ids[v]==UINT_MAX)
 			{
@@ -92,12 +92,12 @@ bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	// second pass to save primitives
 	std::vector<uint32> prim;
 	prim.reserve(20);
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		uint32 valence = 0;
 		prim.clear();
 
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			prim.push_back(ids[v]);
 			++valence;
@@ -114,7 +114,6 @@ bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	return true;
 }
 
-
 /**
  * @brief export surface in off format
  * @param map the map to export
@@ -123,7 +122,7 @@ bool export_off(const MAP& map, const typename MAP::template VertexAttribute<VEC
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -147,7 +146,7 @@ bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 
 	ids.set_all_container_values(UINT_MAX);
 
@@ -158,9 +157,9 @@ bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute
 	std::vector<float32> buffer_pos;
 	buffer_pos.reserve(BUFFER_SZ+3);
 
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			if (ids[v]==UINT_MAX)
 			{
@@ -198,12 +197,12 @@ bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute
 
 	std::vector<uint32> prim;
 	prim.reserve(20);
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		uint32 valence = 0;
 		prim.clear();
 
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			prim.push_back(ids[v]);
 			++valence;
@@ -231,8 +230,6 @@ bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute
 	return true;
 }
 
-
-
 /**
  * @brief export surface in obj format (positions only)
  * @param map the map to export
@@ -241,7 +238,7 @@ bool export_off_bin(const MAP& map, const typename MAP::template VertexAttribute
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -254,8 +251,7 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	}
 
 	// set precision for float output
-	fp<< std::setprecision(12);
-
+	fp << std::setprecision(12);
 
 	// two passes of traversal to avoid huge buffer (with same performance);
 	fp << std::endl << "# vertices" << std::endl;
@@ -263,15 +259,15 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 1;
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			if (ids[v]==UINT_MAX)
+			if (ids[v] == UINT_MAX)
 			{
 				ids[v] = count++;
 				const VEC3& P = position[v];
-				fp <<"v " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+				fp << "v " << P[0] << " " << P[1] << " " << P[2] << std::endl;
 			}
 		});
 	});
@@ -280,10 +276,10 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	// second pass to save primitives
 	std::vector<uint32> prim;
 	prim.reserve(20);
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		fp << "f";
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			fp << " " << ids[v];
 		});
@@ -295,8 +291,6 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	return true;
 }
 
-
-
 /**
  * @brief export surface in obj format (positions & normals)
  * @param map the map to export
@@ -305,7 +299,7 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
+bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -318,7 +312,7 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	}
 
 	// set precision for float output
-	fp<< std::setprecision(12);
+	fp << std::setprecision(12);
 
 	fp << std::endl << "# vertices" << std::endl;
 	// two passes of traversal to avoid huge buffer (with same performance);
@@ -330,34 +324,34 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	indices.reserve(map.template nb_cells<Vertex::ORBIT>());
 	map.template foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			if (ids[v]==UINT_MAX)
+			if (ids[v] == UINT_MAX)
 			{
 				indices.push_back(map.template get_embedding<Vertex::ORBIT>(v));
 				ids[v] = count++;
 				const VEC3& P = position[v];
-				fp <<"v " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+				fp << "v " << P[0] << " " << P[1] << " " << P[2] << std::endl;
 			}
 		});
 	});
 
 	fp << std::endl << "# normals" << std::endl;
 	// save normals
-	for (uint32 i: indices)
+	for (uint32 i : indices)
 	{
 		const VEC3& N = normal[i];
-		fp <<"vn " << N[0] << " " << N[1] << " " << N[2] << std::endl;
+		fp << "vn " << N[0] << " " << N[1] << " " << N[2] << std::endl;
 	}
 
 	fp << std::endl << "# faces" << std::endl;
 	// second pass to save primitives
 	std::vector<uint32> prim;
 	prim.reserve(20);
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		fp << "f";
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			fp << " " << ids[v] << "//" << ids[v];
 		});
@@ -368,8 +362,6 @@ bool export_obj(const MAP& map, const typename MAP::template VertexAttribute<VEC
 	fp.close();
 	return true;
 }
-
-
 
 template <typename VEC3, typename MAP>
 bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
@@ -385,45 +377,45 @@ bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribu
 	}
 
 	// set precision for float output
-	fp<< std::setprecision(12);
+	fp << std::setprecision(12);
 
 	fp << "solid" << filename << std::endl;
 
 	std::vector<uint32> table_indices;
 	table_indices.reserve(256);
 
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		if (map.is_triangle(f))
 		{
-			VEC3 N = geometry::face_normal<VEC3>(map,f,position);
-			fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
-			fp << "outer loop"<< std::endl;
+			VEC3 N = geometry::face_normal<VEC3>(map, f, position);
+			fp << "facet normal " << N[0] << " " << N[1] << " " << N[2] << std::endl;
+			fp << "outer loop" << std::endl;
 			map.template foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				const VEC3& P = position[v];
-				fp <<"vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
+				fp << "vertex " << P[0] << " " << P[1] << " " << P[2] << std::endl;
 			});
-			fp << "endloop"<< std::endl;
-			fp << "endfacet"<< std::endl;
+			fp << "endloop" << std::endl;
+			fp << "endfacet" << std::endl;
 		}
 		else
 		{
 			table_indices.clear();
-			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
-			for(uint32 i=0; i<table_indices.size(); i+=3)
+			cgogn::geometry::compute_ear_triangulation<VEC3>(map, f, position, table_indices);
+			for(uint32 i = 0; i < table_indices.size(); i += 3)
 			{
 				const VEC3& A = position[table_indices[i]];
 				const VEC3& B = position[table_indices[i+1]];
 				const VEC3& C = position[table_indices[i+2]];
 				VEC3 N = geometry::triangle_normal(A,B,C);
-				fp << "facet normal "<< N[0] << " "<< N[1]<< " " << N[2]<< std::endl;
+				fp << "facet normal " << N[0] << " " << N[1] << " " << N[2] << std::endl;
 				fp << "outer loop"<< std::endl;
 				fp << "vertex " << A[0] << " " << A[1] << " " << A[2] << std::endl;
 				fp << "vertex " << B[0] << " " << B[1] << " " << B[2] << std::endl;
 				fp << "vertex " << C[0] << " " << C[1] << " " << C[2] << std::endl;
-				fp << "endloop"<< std::endl;
-				fp << "endfacet"<< std::endl;
+				fp << "endloop" << std::endl;
+				fp << "endfacet" << std::endl;
 			}
 		}
 	});
@@ -434,12 +426,9 @@ bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribu
 	return true;
 }
 
-
-
 template <typename VEC3, typename MAP>
 bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
-
 	//UINT8[80] – Header
 	//UINT32 – Number of triangles
 
@@ -492,7 +481,7 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
 	uint32 nb_tri = 0;
 
 	// write face cutted in triangle if necessary
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		if (map.is_triangle(f))
 		{
@@ -509,7 +498,7 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
 		{
 			table_indices.clear();
 			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
-			for(uint32 i=0; i<table_indices.size(); i+=3)
+			for(uint32 i = 0; i < table_indices.size(); i += 3)
 			{
 				const VEC3& A = position[table_indices[i]];
 				const VEC3& B = position[table_indices[i+1]];
@@ -539,12 +528,12 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
  * @retval true if exporting was successful, false otherwise
  */
 template <typename VEC3, typename MAP>
-bool export_vtp(const MAP& map,
-		const typename MAP::template VertexAttribute<VEC3>& position,
-		const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
-		const std::string& filename)
+bool export_vtp(
+	MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
+	const std::string& filename)
 {
-
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
@@ -565,11 +554,10 @@ bool export_vtp(const MAP& map,
 	fp << "<Points>" << std::endl;
 	fp << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
 
-
 	std::vector<float32> scalar_v;
 
 	// first pass to store contiguous indices
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
@@ -593,9 +581,7 @@ bool export_vtp(const MAP& map,
 	fp << "<DataArray type=\"Float32\" Name= \"" <<scalar.get_name() << "\" Format=\"ascii\">" << std::endl;
 
 	for(uint32 i = 0 ; i < scalar_v.size() ; ++i)
-	{
 		fp << scalar_v[i] << std::endl;
-	}
 
 	fp << "</DataArray>" << std::endl;
 	fp << "</PointData>" << std::endl;
@@ -603,9 +589,9 @@ bool export_vtp(const MAP& map,
 	std::vector<unsigned int> triangles;
 	triangles.reserve(2048);
 
-	map.template foreach_cell([&] (Face d)
+	map.foreach_cell([&] (Face d)
 	{
-		unsigned int degree = map.codegree(d);
+		uint32 degree = map.codegree(d);
 		Dart f=d.dart;
 		switch(degree)
 		{
@@ -620,15 +606,13 @@ bool export_vtp(const MAP& map,
 	fp << "<Polys>" << std::endl;
 
 	fp << "<DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">" << std::endl;
-	for (unsigned int i=0; i<triangles.size(); i+=3)
-	{
+	for (uint32 i = 0; i < triangles.size(); i += 3)
 		fp << triangles[i]   << " " << triangles[i+1] << " " << triangles[i+2] << std::endl;
-	}
 	fp << "</DataArray>" << std::endl;
 
 	fp << "<DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">" ;
-	unsigned int offset = 0;
-	for (unsigned int i=0; i<triangles.size(); i+=3)
+	uint32 offset = 0;
+	for (uint32 i = 0; i < triangles.size(); i += 3)
 	{
 		offset += 3;
 		if (i%60 ==0)
@@ -664,7 +648,7 @@ template <> inline std::string nameOfTypePly(const float32&) { return "float32";
 template <> inline std::string nameOfTypePly(const float64&) { return "float64"; }
 
 template <typename VEC3, typename MAP>
-bool export_ply(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;

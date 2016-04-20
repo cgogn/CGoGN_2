@@ -60,6 +60,23 @@ template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 
+class CustomFilter : public cgogn::CellFilters
+{
+public:
+
+	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p) {}
+
+	bool filter(Vertex v) const
+	{
+		return position_[v][0] > 0;
+	}
+
+protected:
+
+	const VertexAttribute<Vec3>& position_;
+};
+
+
 class Viewer : public QOGLViewer
 {
 public:
@@ -85,6 +102,7 @@ private:
 	VertexAttribute<Vec3> vertex_normal_;
 
 	cgogn::CellCache<Map2> cell_cache_;
+	CustomFilter* filter_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
@@ -118,6 +136,7 @@ private:
 };
 
 
+
 //
 // IMPLEMENTATION
 //
@@ -127,20 +146,23 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	vertex_position_ = map_.get_attribute<Vec3, Vertex::ORBIT>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_position2_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("position2");
+	vertex_position2_ = map_.add_attribute<Vec3, Vertex::ORBIT>("position2");
+	map_.copy_attribute(vertex_position2_, vertex_position_);
 
-	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+	vertex_normal_ = map_.add_attribute<Vec3, Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cell_cache_.build<Vertex>();
 	cell_cache_.build<Edge>();
+
+	filter_ = new CustomFilter(vertex_position_);
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -154,6 +176,7 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
+	delete filter_;
 	delete render_;
 	delete vbo_pos_;
 	delete vbo_norm_;
@@ -215,8 +238,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //		case Qt::Key_B:
 //			bb_rendering_ = !bb_rendering_;
 //			break;
-		case Qt::Key_A:
-			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
+		case Qt::Key_A: {
+			cgogn::geometry::filter_average<Vec3>(map_, *filter_, vertex_position_, vertex_position2_);
 //			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
@@ -229,6 +252,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			update_bb();
 			setSceneRadius(bb_.diag_size()/2.0);
 			break;
+		}
 		case Qt::Key_B:
 			cgogn::geometry::filter_bilateral<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_, vertex_normal_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
