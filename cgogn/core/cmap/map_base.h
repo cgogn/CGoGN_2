@@ -585,21 +585,21 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
-	template <typename CellType>
-	inline void fill_hole(CellType c) const
+	template <Orbit ORBIT>
+	inline void fill_hole(Cell<ORBIT> c)
 	{
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			this->set_boundary(d, false);
+			set_boundary(d, false);
 		});
 	}
 
-	template <typename CellType>
-	inline void create_hole(CellType c) const
+	template <Orbit ORBIT>
+	inline void create_hole(Cell<ORBIT> c)
 	{
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			this->set_boundary(d, true);
+			set_boundary(d, true);
 		});
 	}
 
