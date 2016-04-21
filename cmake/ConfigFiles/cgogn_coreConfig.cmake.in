@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(cgogn_core_LIBRARIES "cgogn_core")
+set(cgogn_core_INCLUDE_DIRS "@PACKAGE_CGOGN_CORE_INCLUDE_DIRS@")
+
+if(NOT TARGET cgogn_core)
+	include("${CMAKE_CURRENT_LIST_DIR}/cgogn_coreTargets.cmake")
+endif()
+
+check_required_components(cgogn_core)

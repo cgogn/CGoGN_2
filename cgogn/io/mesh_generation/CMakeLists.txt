@@ -39,8 +39,8 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TETGEN_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/io/mesh_generation>
 )
+
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_io tet ${LIBRARIES})
 
 

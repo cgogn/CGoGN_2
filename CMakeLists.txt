@@ -18,8 +18,10 @@ endif()
 
 #### CGoGN PATH
 set(CGOGN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+
 #### Here are located the FindPackages that we need
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
@@ -125,6 +127,8 @@ else()
 	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
 endif()
 
+include(GenerateExportHeader)
+include(CMakePackageConfigHelpers)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 add_subdirectory(${CGOGN_SOURCE_DIR}/cgogn)

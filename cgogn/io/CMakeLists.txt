@@ -3,6 +3,11 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(ply REQUIRED)
+find_package(lm6 REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(HEADER_FILES
 	surface_import.h
@@ -54,27 +59,68 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LM6_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
-	$<INSTALL_INTERFACE:include/cgogn/io>
+	$<INSTALL_INTERFACE:include>
 )
 
 if (${ZLIB_FOUND})
-	target_compile_definitions(${PROJECT_NAME} PUBLIC -DZLIB_CONST)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC -DCGOGN_WITH_ZLIB)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DCGOGN_WITH_ZLIB")
 endif()
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply lm6 ${ZLIB_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ZLIB_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
-install(DIRECTORY .
-	DESTINATION include/cgogn/io
-	FILES_MATCHING PATTERN "*.h"
+file(GLOB HEADERS "." "*.h")
+install(FILES ${HEADERS}
+	DESTINATION include/cgogn/io)
+
+######## 1. Build tree
+
+export(TARGETS ${PROJECT_NAME}
+	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
+
+set(CGOGN_IO_INCLUDE_DIRS "${CGOGN_SOURCE_DIR}")
+configure_package_config_file(
+	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
+	PATH_VARS CGOGN_IO_INCLUDE_DIRS
+	INSTALL_DESTINATION "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}"
 )
+
+write_basic_package_version_file(
+	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
+	COMPATIBILITY ExactVersion
+)
+
+######## 2. Install tree
 
 install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION "bin"
+	LIBRARY DESTINATION "lib"
+	ARCHIVE DESTINATION "lib"
 )
+install(EXPORT ${PROJECT_NAME}Targets DESTINATION "lib/cmake/${PROJECT_NAME}")
+
+## <package_name>ConfigVersion.cmake
+write_basic_package_version_file(
+	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
+	COMPATIBILITY ExactVersion
+)
+
+## <package_name>Config.cmake
+set(CGOGN_IO_INCLUDE_DIRS "include")
+configure_package_config_file(
+	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
+	PATH_VARS CGOGN_IO_INCLUDE_DIRS
+	INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+)
+
+install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
+
 
 add_subdirectory(mesh_generation)
 add_subdirectory(examples)

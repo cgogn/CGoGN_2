@@ -18,21 +18,53 @@ if(NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
-#install(TARGETS tinyxml2
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-#install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#foreach(p LIB INCLUDE)
-#	set(var CMAKE_INSTALL_${p}DIR)
-#	if(NOT IS_ABSOLUTE "${${var}}")
-#		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-#	endif()
-#endforeach()
+######## 1. Build tree
 
-#configure_file(tinyxml2.pc.in tinyxml2.pc @ONLY)
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tinyxml2.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+export(TARGETS ${PROJECT_NAME}
+	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
 
-#add_test(xmltest ${SAMPLE_NAME} COMMAND $<TARGET_FILE:${SAMPLE_NAME}>)
+set(TINYXML2_INCLUDE_DIR "${CGOGN_SOURCE_DIR}")
+configure_package_config_file(
+	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
+	PATH_VARS TINYXML2_INCLUDE_DIR
+	INSTALL_DESTINATION "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}"
+)
+
+## <package_name>ConfigVersion.cmake
+write_basic_package_version_file(
+	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
+	COMPATIBILITY ExactVersion
+)
+
+######## 2. Install tree
+
+install(TARGETS ${PROJECT_NAME}
+	EXPORT ${PROJECT_NAME}Targets
+	RUNTIME DESTINATION "bin"
+	LIBRARY DESTINATION "lib"
+	ARCHIVE DESTINATION "lib"
+)
+install(EXPORT ${PROJECT_NAME}Targets DESTINATION "lib/cmake/${PROJECT_NAME}")
+
+## <package_name>ConfigVersion.cmake
+write_basic_package_version_file(
+	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
+	COMPATIBILITY ExactVersion
+)
+
+## <package_name>Config.cmake
+set(TINYXML2_INCLUDE_DIR "include")
+configure_package_config_file(
+	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
+	PATH_VARS TINYXML2_INCLUDE_DIR
+	INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+)
+
+install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
