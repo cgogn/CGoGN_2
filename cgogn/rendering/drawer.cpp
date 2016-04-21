@@ -210,7 +210,7 @@ void Drawer::end_list()
 void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	//classic rendering
-	if (!begins_point_.empty() && !begins_line_.empty() && !begins_face_.empty())
+	if (!begins_point_.empty() || !begins_line_.empty() || !begins_face_.empty())
 	{
 		param_cpv_->bind(projection,modelview);
 
