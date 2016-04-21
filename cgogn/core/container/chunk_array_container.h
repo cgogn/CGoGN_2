@@ -597,7 +597,7 @@ public:
 				rnext(up);
 			}
 			holes_stack_.pop();
-		} while (!holes_stack_.empty());
+		} while (!holes_stack_.empty() && (up > down));
 
 		// free unused memory blocks
 		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
