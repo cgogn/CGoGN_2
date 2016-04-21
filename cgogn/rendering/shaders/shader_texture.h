@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_FLAT_H_
-#define CGOGN_RENDERING_SHADERS_FLAT_H_
+#ifndef CGOGN_RENDERING_SHADERS_TEXTURE_H_
+#define CGOGN_RENDERING_SHADERS_TEXTURE_H_
 
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
-#include <QColor>
+#include <QOpenGLTexture>
 
-class QColor;
+class QOpenGLTexture;
 
 namespace cgogn
 {
@@ -37,50 +37,38 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderFlat;
+class ShaderTexture;
 
-class CGOGN_RENDERING_API ShaderParamFlat : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamTexture : public ShaderParam
 {
 protected:
 	void set_uniforms();
 
 public:
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QVector3D light_pos_;
+	QOpenGLTexture* texture_;
 
-	ShaderParamFlat(ShaderFlat* sh);
+	ShaderParamTexture(ShaderTexture* sh);
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_tc);
 };
 
 
 
-class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
+class CGOGN_RENDERING_API ShaderTexture : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
-
-	static const char* vertex_shader_source2_;
-	static const char* fragment_shader_source2_;
-
-	// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
-	GLint unif_ambiant_color_;
-	GLint unif_light_position_;
 
 public:
 
 	enum
 	{
 		ATTRIB_POS = 0,
-		ATTRIB_COLOR
+		ATTRIB_TC
 	};
 
 
-	using Param = ShaderParamFlat;
+	using Param = ShaderParamTexture;
 
 	/**
 	 * @brief generate shader parameter object
@@ -92,40 +80,7 @@ public:
 	}
 
 
-	ShaderFlat(bool color_per_vertex = false);
-
-
-	/**
-	 * @brief set current front color
-	 * @param rgb
-	 */
-	void set_front_color(const QColor& rgb);
-
-	/**
-	 * @brief set current front color
-	 * @param rgb
-	 */
-	void set_back_color(const QColor& rgb);
-
-	/**
-	 * @brief set current ambiant color
-	 * @param rgb
-	 */
-	void set_ambiant_color(const QColor& rgb);
-
-	/**
-	 * @brief set light position relative to screen
-	 * @param l light position
-	 */
-	void set_light_position(const QVector3D& l);
-
-
-	/**
-	 * @brief set light position relative to world
-	 * @param l light position
-	 * @param view_matrix
-	 */
-	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+	ShaderTexture();
 
 };
 
@@ -134,4 +89,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_FLAT_H_
+#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_
