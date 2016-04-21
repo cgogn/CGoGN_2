@@ -24,11 +24,12 @@
 #ifndef CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 #define CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 
-#include <QColor>
-#include <QVector3D>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
+
+#include <QColor>
+#include <QVector3D>
 
 namespace cgogn
 {
@@ -41,9 +42,11 @@ class ShaderPointSprite;
 class CGOGN_RENDERING_API ShaderParamPointSprite : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
@@ -51,9 +54,8 @@ public:
 
 	ShaderParamPointSprite(ShaderPointSprite* sh);
 
-	void set_vbo(VBO* vbo_pos,  VBO* vbo_color=nullptr, VBO* vbo_size=nullptr);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr, VBO* vbo_size = nullptr);
 };
-
 
 class CGOGN_RENDERING_API ShaderPointSprite : public ShaderProgram
 {
@@ -80,6 +82,8 @@ public:
 		ATTRIB_SIZE
 	};
 
+	ShaderPointSprite(bool color_per_vertex = false, bool size_per_vertex = false);
+
 	using Param = ShaderParamPointSprite;
 
 	/**
@@ -90,9 +94,6 @@ public:
 	{
 		return (new Param(this));
 	}
-
-
-	ShaderPointSprite(bool color_per_vertex = false, bool size_per_vertex = false);
 
 	/**
 	 * @brief set current color
@@ -119,8 +120,6 @@ public:
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 
-
-
 	/**
 	 * @brief set the size of sphere (call before each draw)
 	 * @param w size ofs phere
@@ -135,10 +134,8 @@ public:
 	 * @param vbo_size pointer on size (diameters of spheres) vbo
 	 * @return true if ok
 	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL, VBO* vbo_size=NULL);
+	bool set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color = nullptr, VBO* vbo_size = nullptr);
 };
-
-
 
 } // namespace rendering
 

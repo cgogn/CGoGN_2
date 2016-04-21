@@ -43,7 +43,6 @@ const char* ShaderBoldLine::vertex_shader_source_ =
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
-
 const char* ShaderBoldLine::geometry_shader_source_ =
 "#version 150\n"
 "layout (lines) in;\n"
@@ -97,7 +96,6 @@ const char* ShaderBoldLine::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-
 const char* ShaderBoldLine::fragment_shader_source_ =
 "#version 150\n"
 "in vec4 color_f;\n"
@@ -105,9 +103,6 @@ const char* ShaderBoldLine::fragment_shader_source_ =
 "void main() {\n"
 "   fragColor = color_f;\n"
 "}\n";
-
-
-
 
 const char* ShaderBoldLine::vertex_shader_source2_ =
 "#version 150\n"
@@ -118,7 +113,6 @@ const char* ShaderBoldLine::vertex_shader_source2_ =
 "   color_v = vertex_color;\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
-
 
 const char* ShaderBoldLine::geometry_shader_source2_ =
 "#version 150\n"
@@ -172,7 +166,6 @@ const char* ShaderBoldLine::geometry_shader_source2_ =
 "	}\n"
 "}\n";
 
-
 const char* ShaderBoldLine::fragment_shader_source2_ =
 "#version 150\n"
 "in vec4 color_f;\n"
@@ -206,10 +199,7 @@ ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
 	}
 	unif_color_ = prg_.uniformLocation("lineColor");
 	unif_width_ = prg_.uniformLocation("lineWidths");
-
 }
-
-
 
 void ShaderBoldLine::set_color(const QColor& rgb)
 {
@@ -228,11 +218,10 @@ void ShaderBoldLine::set_width(float32 wpix)
 
 
 
-
 ShaderParamBoldLine::ShaderParamBoldLine(ShaderBoldLine* sh):
 	ShaderParam(sh),
-	color_(255,255,255),
-	width_(2.0)
+	color_(255, 255, 255),
+	width_(2.0f)
 {}
 
 void ShaderParamBoldLine::set_uniforms()
@@ -241,7 +230,6 @@ void ShaderParamBoldLine::set_uniforms()
 	sh->set_color(color_);
 	sh->set_width(width_);
 }
-
 
 void ShaderParamBoldLine::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 {
@@ -267,7 +255,6 @@ void ShaderParamBoldLine::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 
 	vao_->release();
 	shader_->release();
-
 }
 
 } // namespace rendering

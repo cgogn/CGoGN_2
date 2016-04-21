@@ -24,12 +24,11 @@
 #ifndef CGOGN_RENDERING_SHADERS_FLAT_H_
 #define CGOGN_RENDERING_SHADERS_FLAT_H_
 
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
-#include <QColor>
 
-class QColor;
+#include <QColor>
 
 namespace cgogn
 {
@@ -42,9 +41,11 @@ class ShaderFlat;
 class CGOGN_RENDERING_API ShaderParamFlat : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor front_color_;
 	QColor back_color_;
 	QColor ambiant_color_;
@@ -52,10 +53,8 @@ public:
 
 	ShaderParamFlat(ShaderFlat* sh);
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr);
 };
-
-
 
 class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 {
@@ -79,6 +78,7 @@ public:
 		ATTRIB_COLOR
 	};
 
+	ShaderFlat(bool color_per_vertex = false);
 
 	using Param = ShaderParamFlat;
 
@@ -90,10 +90,6 @@ public:
 	{
 		return (new Param(this));
 	}
-
-
-	ShaderFlat(bool color_per_vertex = false);
-
 
 	/**
 	 * @brief set current front color
@@ -119,16 +115,13 @@ public:
 	 */
 	void set_light_position(const QVector3D& l);
 
-
 	/**
 	 * @brief set light position relative to world
 	 * @param l light position
 	 * @param view_matrix
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
-
 };
-
 
 } // namespace rendering
 

@@ -23,10 +23,11 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_color_per_vertex.h>
 
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
@@ -55,6 +56,7 @@ const char* ShaderColorPerVertex::fragment_shader_source_ =
 "}\n";
 
 
+
 ShaderColorPerVertex::ShaderColorPerVertex()
 {
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
@@ -62,17 +64,17 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
     prg_.link();
-
 	get_matrices_uniforms();
 }
 
-ShaderParamColorPerVertex::ShaderParamColorPerVertex(ShaderColorPerVertex* prg):
+
+
+ShaderParamColorPerVertex::ShaderParamColorPerVertex(ShaderColorPerVertex* prg) :
 	ShaderParam(prg)
 {}
 
 void ShaderParamColorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 {
-
     QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
 	shader_->bind();
@@ -92,7 +94,6 @@ void ShaderParamColorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 
 	vao_->release();
 	shader_->release();
-
 }
 
 } // namespace rendering

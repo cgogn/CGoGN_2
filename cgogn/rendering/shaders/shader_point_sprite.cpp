@@ -23,11 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>
-#include <iostream>
 
 namespace cgogn
 {
@@ -41,7 +42,6 @@ const char* ShaderPointSprite::vertex_shader_source_ =
 "void main() {\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
-
 
 const char* ShaderPointSprite::geometry_shader_source_ =
 "#version 150\n"
@@ -61,7 +61,6 @@ const char* ShaderPointSprite::geometry_shader_source_ =
 "}\n"
 "void main()\n"
 "{\n"
-
 "	vec4 posCenter = model_view_matrix * gl_in[0].gl_Position;\n"
 "	sphereCenter = posCenter.xyz;\n"
 "	corner(posCenter, -1.4, 1.4);\n"
@@ -70,7 +69,6 @@ const char* ShaderPointSprite::geometry_shader_source_ =
 "	corner(posCenter,  1.4,-1.4);\n"
 "	EndPrimitive();\n"
 "}\n";
-
 
 const char* ShaderPointSprite::fragment_shader_source_ =
 "#version 150\n"
@@ -102,8 +100,6 @@ const char* ShaderPointSprite::fragment_shader_source_ =
 "	fragColor = result.rgb;\n"
 "}\n";
 
-
-
 const char* ShaderPointSprite::vertex_shader_source2_ =
 "in vec3 vertex_pos;\n"
 "#if WITH_COLOR == 1\n"
@@ -123,7 +119,6 @@ const char* ShaderPointSprite::vertex_shader_source2_ =
 "	#endif\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
-
 
 const char* ShaderPointSprite::geometry_shader_source2_ =
 "layout (points) in;\n"
@@ -188,7 +183,6 @@ const char* ShaderPointSprite::geometry_shader_source2_ =
 "#endif\n"
 "void main()\n"
 "{\n"
-
 "	vec4 posCenter = model_view_matrix * gl_in[0].gl_Position;\n"
 "	sphereCenter = posCenter.xyz;\n"
 "	corner(posCenter, -1.4, 1.4);\n"
@@ -197,7 +191,6 @@ const char* ShaderPointSprite::geometry_shader_source2_ =
 "	corner(posCenter,  1.4,-1.4);\n"
 "	EndPrimitive();\n"
 "}\n";
-
 
 const char* ShaderPointSprite::fragment_shader_source2_ =
 "uniform mat4 projection_matrix;\n"
@@ -246,13 +239,12 @@ const char* ShaderPointSprite::fragment_shader_source2_ =
 
 
 
-
-
 ShaderPointSprite::ShaderPointSprite(bool color_per_vertex, bool size_per_vertex)
 {
 	std::string vs("#version 150\n");
 	std::string fs("#version 150\n");
 	std::string gs("#version 150\n");
+
 	if (color_per_vertex)
 	{
 		vs += std::string("#define WITH_COLOR 1\n");
@@ -282,7 +274,6 @@ ShaderPointSprite::ShaderPointSprite(bool color_per_vertex, bool size_per_vertex
 	vs += std::string(vertex_shader_source2_);
 	gs += std::string(geometry_shader_source2_);
 	fs += std::string(fragment_shader_source2_);
-
 
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vs.c_str());
 	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, gs.c_str());
@@ -314,53 +305,49 @@ ShaderPointSprite::ShaderPointSprite(bool color_per_vertex, bool size_per_vertex
 	unif_light_pos_ = prg_.uniformLocation("lightPos");
 	unif_size_ = prg_.uniformLocation("point_size");
 
-
-	set_color(QColor(250,0,0));
-	set_ambiant(QColor(5,5,5));
+	set_color(QColor(250, 0, 0));
+	set_ambiant(QColor(5, 5, 5));
 	set_size(1.0f);
-	set_light_position(QVector3D(10,10,1000));
+	set_light_position(QVector3D(10, 10, 1000));
 }
-
-
 
 void ShaderPointSprite::set_color(const QColor& rgb)
 {
-	if (unif_color_>=0)
+	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
 void ShaderPointSprite::set_ambiant(const QColor& rgb)
 {
-	if (unif_ambiant_>=0)
+	if (unif_ambiant_ >= 0)
 		prg_.setUniformValue(unif_ambiant_, rgb);
 }
 
 void ShaderPointSprite::set_size(float32 w)
 {
-//	if (unif_size_>=0)
+//	if (unif_size_ >= 0)
 		prg_.setUniformValue(unif_size_, w);
 }
 
 void ShaderPointSprite::set_light_position(const QVector3D& l)
 {
-	prg_.setUniformValue(unif_light_pos_,l);
+	prg_.setUniformValue(unif_light_pos_, l);
 }
 
 void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l,1.0));
-	prg_.setUniformValue(unif_light_pos_, QVector3D(loc4)/loc4.w());
+	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
+	prg_.setUniformValue(unif_light_pos_, QVector3D(loc4) / loc4.w());
 }
 
 
 
 ShaderParamPointSprite::ShaderParamPointSprite(ShaderPointSprite* sh):
 	ShaderParam(sh),
-	color_(0,0,255),
-	ambiant_color_(5,5,5),
-	light_pos_(10,100,1000),
+	color_(0, 0, 255),
+	ambiant_color_(5, 5, 5),
+	light_pos_(10, 100, 1000),
 	size_(1.0)
-
 {}
 
 void ShaderParamPointSprite::set_uniforms()
@@ -403,10 +390,8 @@ void ShaderParamPointSprite::set_vbo(VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size
 		vbo_size->release();
 	}
 
-
 	vao_->release();
 	shader_->release();
-
 }
 
 } // namespace rendering

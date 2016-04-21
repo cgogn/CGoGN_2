@@ -24,10 +24,11 @@
 #ifndef CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 #define CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 
-#include <QColor>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
+
+#include <QColor>
 
 namespace cgogn
 {
@@ -40,17 +41,18 @@ class ShaderRoundPoint;
 class CGOGN_RENDERING_API ShaderParamRoundPoint : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 	float32 size_;
 
 	ShaderParamRoundPoint(ShaderRoundPoint* sh);
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr, uint32 stride=0, unsigned first=0);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr, uint32 stride = 0, uint32 first = 0);
 };
-
 
 class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 {
@@ -74,6 +76,8 @@ public:
 		ATTRIB_COLOR
 	};
 
+	ShaderRoundPoint(bool color_per_vertex = false);
+
 	using Param = ShaderParamRoundPoint;
 
 	/**
@@ -84,8 +88,6 @@ public:
 	{
 		return (new Param(this));
 	}
-
-	ShaderRoundPoint(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current color
@@ -98,9 +100,7 @@ public:
 	 * @param w width in pixel
 	 */
 	void set_size(float32 w);
-
 };
-
 
 } // namespace rendering
 

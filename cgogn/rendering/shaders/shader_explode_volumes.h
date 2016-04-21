@@ -24,12 +24,13 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 
+#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
 #include <QVector3D>
 #include <QVector4D>
 #include <QColor>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
 
 namespace cgogn
 {
@@ -42,9 +43,11 @@ class ShaderExplodeVolumes;
 class CGOGN_RENDERING_API ShaderParamExplodeVolumes : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector3D light_position_;
@@ -52,10 +55,8 @@ public:
 
 	ShaderParamExplodeVolumes(ShaderExplodeVolumes* sh);
 
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr);
 };
-
 
 class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 {
@@ -66,7 +67,6 @@ class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 	static const char* vertex_shader_source2_;
 	static const char* geometry_shader_source2_;
 	static const char* fragment_shader_source2_;
-
 
 	// uniform ids
 	GLint unif_expl_v_;
@@ -102,9 +102,7 @@ public:
 	void set_plane_clip(const QVector4D& plane);
 
 	void set_color(const QColor& rgb);
-
 };
-
 
 } // namespace rendering
 

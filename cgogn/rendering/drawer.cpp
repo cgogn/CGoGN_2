@@ -40,7 +40,7 @@ ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
 ShaderBoldLine* Drawer::shader_bl_ = nullptr;
 ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
 ShaderPointSprite* Drawer::shader_ps_ = nullptr;
-int32 Drawer::nb_instances_ = 0;
+uint32 Drawer::nb_instances_ = 0;
 
 Drawer::Drawer():
 	current_size_(1.0f),
@@ -51,6 +51,7 @@ Drawer::Drawer():
 
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
+
 	if (!shader_cpv_)
 		shader_cpv_ = new ShaderColorPerVertex();
 
@@ -123,36 +124,36 @@ void Drawer::begin(GLenum mode)
 	case GL_POINTS:
 		if (current_ball_)
 		{
-			begins_balls_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
+			begins_balls_.push_back(PrimParam(data_pos_.size(), mode, current_size_, false));
 			current_begin_ = &begins_balls_;
 		}
-		else if (current_size_ > 2.0)
+		else if (current_size_ > 2.0f)
 		{
-			begins_round_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,current_aa_));
+			begins_round_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_, current_aa_));
 			current_begin_ = &begins_round_point_;
 		}
 		else
 		{
-			begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_,false));
+			begins_point_.push_back(PrimParam(data_pos_.size(), mode, current_size_, false));
 			current_begin_ = &begins_point_;
 		}
 		break;
 	case GL_LINES:
 	case GL_LINE_STRIP:
 	case GL_LINE_LOOP:
-		if (current_size_ > 1.0)
+		if (current_size_ > 1.0f)
 		{
-			begins_bold_line_.push_back(PrimParam(data_pos_.size(), mode, current_size_,current_aa_));
+			begins_bold_line_.push_back(PrimParam(data_pos_.size(), mode, current_size_, current_aa_));
 			current_begin_ = &begins_bold_line_;
 		}
 		else
 		{
-			begins_line_.push_back(PrimParam(data_pos_.size(), mode, 1.0,current_aa_));
+			begins_line_.push_back(PrimParam(data_pos_.size(), mode, 1.0f, current_aa_));
 			current_begin_ = &begins_line_;
 		}
 		break;
 	default:
-		begins_face_.push_back(PrimParam(data_pos_.size(), mode, 1.0f,false));
+		begins_face_.push_back(PrimParam(data_pos_.size(), mode, 1.0f, false));
 		current_begin_ = &begins_face_;
 		break;
 	}
@@ -172,15 +173,15 @@ void Drawer::vertex3f(float32 x, float32 y, float32 z)
 		else
 			data_col_.push_back( data_col_.back());
 	}
-	data_pos_.push_back(Vec3f{x,y,z});
+	data_pos_.push_back(Vec3f{x, y, z});
 }
 
 void Drawer::color3f(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
-		data_col_.push_back(Vec3f{r,g,b});
+		data_col_.push_back(Vec3f{r, g, b});
 	else
-		data_col_.back() = Vec3f{r,g,b};
+		data_col_.back() = Vec3f{r, g, b};
 }
 
 void Drawer::end_list()
@@ -190,14 +191,14 @@ void Drawer::end_list()
 	if (nb_elts == 0)
 		return;
 
-	vbo_pos_->allocate(nb_elts,3);
+	vbo_pos_->allocate(nb_elts, 3);
 	float32* ptr = vbo_pos_->lock_pointer();
-	std::memcpy(ptr,data_pos_[0].data(),nb_elts*12);
+	std::memcpy(ptr, data_pos_[0].data(), nb_elts*12);
 	vbo_pos_->release_pointer();
 
-	vbo_col_->allocate(nb_elts,3);
+	vbo_col_->allocate(nb_elts ,3);
 	ptr = vbo_col_->lock_pointer();
-	std::memcpy(ptr,data_col_[0].data(),nb_elts*12);
+	std::memcpy(ptr, data_col_[0].data(), nb_elts*12);
 	vbo_col_->release_pointer();
 
 	// free memory
@@ -212,7 +213,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 	//classic rendering
 	if (!begins_point_.empty() || !begins_line_.empty() || !begins_face_.empty())
 	{
-		param_cpv_->bind(projection,modelview);
+		param_cpv_->bind(projection, modelview);
 
 		for (auto& pp : begins_point_)
 		{
@@ -221,14 +222,10 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 		}
 
 		for (auto& pp : begins_line_)
-		{
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
-		}
 
 		for (auto& pp : begins_face_)
-		{
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
-		}
 
 		param_cpv_->release();
 	}
@@ -249,7 +246,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 	// round points
 	if (!begins_round_point_.empty())
 	{
-		param_rp_->bind(projection,modelview);
+		param_rp_->bind(projection, modelview);
 
 		for (auto& pp : begins_round_point_)
 		{
@@ -271,12 +268,12 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 	// bold lines
 	if (!begins_bold_line_.empty())
 	{
-		param_bl_->bind(projection,modelview);
+		param_bl_->bind(projection, modelview);
 
 		for (auto& pp : begins_bold_line_)
 		{
 			shader_bl_->set_width(pp.width);
-			shader_bl_->set_color(QColor(255,255,0));
+			shader_bl_->set_color(QColor(255, 255, 0));
 
 			if (pp.aa)
 			{

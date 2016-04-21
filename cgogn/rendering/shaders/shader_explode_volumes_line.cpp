@@ -23,10 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
+
 #include <QColor>
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
@@ -64,7 +66,6 @@ const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-
 const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 color;\n"
@@ -72,6 +73,7 @@ const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "void main() {\n"
 "   fragColor = color;\n"
 "}\n";
+
 
 
 ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
@@ -86,7 +88,7 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
 	unif_color_ = prg_.uniformLocation("color");
 
-	//default param
+	// default param
 	bind();
 	set_explode_volume(0.8f);
 	set_color(QColor(255,255,255));
@@ -96,26 +98,26 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 
 void ShaderExplodeVolumesLine::set_color(const QColor& rgb)
 {
-	if (unif_color_>=0)
-		prg_.setUniformValue(unif_color_,rgb);
+	if (unif_color_ >= 0)
+		prg_.setUniformValue(unif_color_, rgb);
 }
-
 
 void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
 {
-		prg_.setUniformValue(unif_expl_v_, x);
+	prg_.setUniformValue(unif_expl_v_, x);
 }
 
 void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 {
-
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
+
+
 ShaderParamExplodeVolumesLine::ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh):
 	ShaderParam(sh),
-	color_(255,255,255),
-	plane_clip_(0,0,0,0),
+	color_(255, 255, 255),
+	plane_clip_(0, 0, 0, 0),
 	explode_factor_(0.8f)
 {}
 
@@ -142,7 +144,6 @@ void ShaderParamExplodeVolumesLine::set_vbo(VBO* vbo_pos)
 
 	vao_->release();
 	shader_->release();
-
 }
 
 } // namespace rendering

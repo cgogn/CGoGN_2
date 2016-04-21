@@ -24,9 +24,9 @@
 #ifndef CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
 
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
 
 namespace cgogn
 {
@@ -39,12 +39,12 @@ class ShaderColorPerVertex;
 class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
 {
 protected:
-	inline void set_uniforms() {}
+
+	inline void set_uniforms() override {}
 
 public:
 
 	ShaderParamColorPerVertex(ShaderColorPerVertex* prg);
-
 
 	/**
 	 * @brief set a vbo configuration
@@ -52,9 +52,7 @@ public:
 	 * @param vbo_col pointer on color vbo (RGB)
 	 */
 	void set_vbo(VBO* vbo_pos, VBO* vbo_col);
-
 };
-
 
 class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
 {
@@ -82,9 +80,6 @@ public:
 		return (new Param(this));
 	}
 };
-
-
-
 
 } // namespace rendering
 

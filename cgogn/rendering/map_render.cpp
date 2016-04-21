@@ -69,6 +69,6 @@ void MapRender::draw(DrawingType prim)
 	indices_buffers_[prim]->release();
 }
 
-
 } // namespace rendering
+
 } // namespace io

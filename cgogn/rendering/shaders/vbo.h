@@ -46,7 +46,7 @@ protected:
 
 public:
 
-	inline VBO(uint32 vec_dim=3u) :
+	inline VBO(uint32 vec_dim = 3u) :
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{
@@ -182,7 +182,6 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	}
 }
 
-
 /**
  * @brief update vbo from one Attribute with conversion lambda
  * @param attr Attribute
@@ -233,9 +232,9 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
+
 	vbo->release_pointer();
 }
-
 
 /**
  * @brief update vbo from two Attributes with conversion lambda
@@ -302,10 +301,9 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}
+
 	vbo->release_pointer();
 }
-
-
 
 /**
  * @brief generate a vbo from an attribute and it's indices
@@ -353,11 +351,6 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 
 	vbo->release_pointer();
 }
-
-
-
-
-
 
 } // namespace rendering
 

@@ -24,15 +24,15 @@
 #ifndef CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 #define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 
-#include <QColor>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
 
-
+#include <QColor>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
@@ -41,16 +41,17 @@ class ShaderSimpleColor;
 class CGOGN_RENDERING_API ShaderParamSimpleColor : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 
 	ShaderParamSimpleColor(ShaderSimpleColor* sh);
 
-	void set_vbo(VBO* vbo_pos, uint32 stride=0, unsigned first=0);
+	void set_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0);
 };
-
 
 class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
 {
@@ -67,6 +68,8 @@ public:
 		ATTRIB_POS = 0
 	};
 
+	ShaderSimpleColor();
+
 	using Param = ShaderParamSimpleColor;
 
 	/**
@@ -78,17 +81,12 @@ public:
 		return (new Param(this));
 	}
 
-
-	ShaderSimpleColor();
-
 	/**
 	 * @brief set current color
 	 * @param rgb
 	 */
 	void set_color(const QColor& rgb);
-
 };
-
 
 } // namespace rendering
 
