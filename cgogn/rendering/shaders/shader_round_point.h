@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 #define CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 
+#include <QColor>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -33,6 +34,23 @@ namespace cgogn
 
 namespace rendering
 {
+
+class ShaderRoundPoint;
+
+class CGOGN_RENDERING_API ShaderParamRoundPoint : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+	float32 size_;
+
+	ShaderParamRoundPoint(ShaderRoundPoint* sh);
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr, uint32 stride=0, unsigned first=0);
+};
+
 
 class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 {
@@ -44,17 +62,28 @@ class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 	static const char* geometry_shader_source2_;
 	static const char* fragment_shader_source2_;
 
+	// uniform ids
+	GLint unif_color_;
+	GLint unif_size_;
+
+public:
+
 	enum
 	{
 		ATTRIB_POS = 0,
 		ATTRIB_COLOR
 	};
 
-	// uniform ids
-	GLint unif_color_;
-	GLint unif_width_;
+	using Param = ShaderParamRoundPoint;
 
-public:
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
 
 	ShaderRoundPoint(bool color_per_vertex = false);
 
@@ -68,17 +97,10 @@ public:
 	 * @brief set the width of lines (call before each draw)
 	 * @param w width in pixel
 	 */
-	void set_width(float32 w);
+	void set_size(float32 w);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i vao id (0,1,...)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_color pointer on color vbo
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color=NULL, uint32 stride=0, unsigned first=0);
 };
+
 
 } // namespace rendering
 

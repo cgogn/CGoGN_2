@@ -164,13 +164,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			expl_ += 0.05f;
 			volume_render_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
-			topo_render_->update_map3<Vec3>(map_,vertex_position_);
+			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_Minus:
 			expl_ -= 0.05f;
 			volume_render_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
-			topo_render_->update_map3<Vec3>(map_,vertex_position_);
+			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		default:
 			break;
@@ -220,7 +220,6 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		drawer_->end_list();
 	}
 
-
 	QOGLViewer::mousePressEvent(event);
 }
 
@@ -237,19 +236,19 @@ void Viewer::draw()
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
 
-		volume_render_->draw_faces(proj,view);
+		volume_render_->draw_faces(proj,view,this);
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
-		volume_render_->draw_edges(proj,view);
+		volume_render_->draw_edges(proj,view,this);
 
 
 	if (topo_rendering_)
-		topo_render_->draw(proj,view);
+		topo_render_->draw(proj,view,this);
 
-	drawer_->call_list(proj, view);
+	drawer_->call_list(proj, view, this);
 
 }
 
@@ -258,18 +257,18 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
-	topo_render_ = new cgogn::rendering::TopoRender(this);
+	topo_render_ = new cgogn::rendering::TopoRender();
 	topo_render_->set_explode_volume(expl_);
-	topo_render_->update_map3<Vec3>(map_,vertex_position_);
+	topo_render_->update<Vec3>(map_,vertex_position_);
 
-	volume_render_ = new cgogn::rendering::VolumeRender(this);
+	volume_render_ = new cgogn::rendering::VolumeRender;
 	volume_render_->set_explode_volume(expl_);
 	volume_render_->update_face<Vec3>(map_,vertex_position_);
 	volume_render_->update_edge<Vec3>(map_,vertex_position_);
 
-	drawer_ = new cgogn::rendering::Drawer(this);
+	drawer_ = new cgogn::rendering::Drawer();
 }
 
 int main(int argc, char** argv)

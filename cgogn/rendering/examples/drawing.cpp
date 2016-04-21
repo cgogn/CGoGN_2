@@ -29,6 +29,8 @@
 
 #include <cgogn/rendering/drawer.h>
 
+#include <cgogn/rendering/wall_paper.h>
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 //using Vec3 = Eigen::Vector3d;
@@ -38,6 +40,7 @@ class Drawing : public QOGLViewer
 {
 public:
 	Drawing();
+	Drawing(Drawing* ptr);
 	Drawing(const Drawing&) = delete;
 	Drawing& operator=(const Drawing&) = delete;
 
@@ -46,9 +49,13 @@ public:
 	virtual void closeEvent(QCloseEvent *e);
 	virtual ~Drawing();
 
-private:
+//private:
 	cgogn::rendering::Drawer* drawer_;
 	cgogn::rendering::Drawer* drawer2_;
+	Drawing* m_first;
+
+	cgogn::rendering::WallPaper* wp_;
+	cgogn::rendering::WallPaper* button_;
 };
 
 
@@ -58,25 +65,47 @@ Drawing::~Drawing()
 
 void Drawing::closeEvent(QCloseEvent*)
 {
-	delete drawer_;
-	delete drawer2_;
+	if (m_first!=this)
+	{
+		delete drawer_;
+//		delete drawer2_;
+	}
 }
 
 Drawing::Drawing() :
 	drawer_(nullptr),
-	drawer2_(nullptr)
+	drawer2_(nullptr),
+	m_first(nullptr)
+{
+	m_first = this;
+}
+
+Drawing::Drawing(Drawing* ptr) :
+	QOGLViewer(ptr),
+	drawer_(nullptr),
+	drawer2_(nullptr),
+	m_first(ptr)
 {}
 
 
 void Drawing::draw()
 {
+	wp_->draw(this);
+
+	button_->draw(this);
+
 	QMatrix4x4 proj;
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_->call_list(proj,view);
-	drawer2_->call_list(proj,view);
+	drawer_->call_list(proj,view,this);
+//	drawer2_->call_list(proj,view,this);
+
+//	std::cout << long(this->context()) << " ==> ";
+//	std::cout << long(this->context()->shareContext()) << " ==> ";
+//	std::cout << long(this->context()->shareGroup()) << std::endl;
+
 }
 
 void Drawing::init()
@@ -84,11 +113,29 @@ void Drawing::init()
 	setSceneRadius(5.0);
 	setSceneCenter(qoglviewer::Vec(0.0,0.0,0.0));
 	showEntireScene();
-
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
+	this->makeCurrent();
+
+
+	wp_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
+
+	button_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
+
+	button_->set_local_position(this->width(),this->height(),10,10,50,50);
+
+	if (m_first!=this)
+	{
+		drawer_ = m_first->drawer_;
+		drawer_->reinit_vao();
+//		wp_->reinit_vao();
+//		button_->reinit_vao();
+		return;
+	}
+
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::Drawer(this);
+
+	drawer_ = new cgogn::rendering::Drawer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
 	drawer_->begin(GL_LINE_LOOP);
@@ -144,44 +191,55 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = new cgogn::rendering::Drawer(this);
-	drawer2_->new_list();
-	drawer2_->point_size_aa(5.0);
-	drawer2_->begin(GL_POINTS);
-	drawer2_->color3f(1.0,1.0,1.0);
-	for (float z=-1.0f; z < 1.0f; z+= 0.1f)
-		for (float y=-2.0f; y < 0.0f; y+= 0.1f)
-			for (float x=0.0f; x < 2.0f; x+= 0.1f)
-			{
-				drawer2_->vertex3f(x,y,z);
-			}
-	drawer2_->end();
+//	drawer2_ = new cgogn::rendering::Drawer();
+//	std::cout << "new drawer2"<< std::endl;
+//	drawer2_->init_vao();
+//	drawer2_->new_list();
+//	drawer2_->point_size_aa(5.0);
+//	drawer2_->begin(GL_POINTS);
+//	drawer2_->color3f(1.0,1.0,1.0);
+//	for (float z=-1.0f; z < 1.0f; z+= 0.1f)
+//		for (float y=-2.0f; y < 0.0f; y+= 0.1f)
+//			for (float x=0.0f; x < 2.0f; x+= 0.1f)
+//			{
+//				drawer2_->vertex3f(x,y,z);
+//			}
+//	drawer2_->end();
 
-	drawer2_->ball_size(0.03f);
-	drawer2_->begin(GL_POINTS);
-	drawer2_->color3f(1.0,1.0,1.0);
-	for (float z=-1.0f; z < 1.0f; z+= 0.2f)
-		for (float y=-2.0f; y < 0.0f; y+= 0.2f)
-			for (float x=-3.0f; x < -1.0f; x+= 0.2f)
-			{
-				drawer2_->vertex3f(x,y,z);
-			}
-	drawer2_->end();
+//	drawer2_->ball_size(0.03f);
+//	drawer2_->begin(GL_POINTS);
+//	drawer2_->color3f(1.0,1.0,1.0);
+//	for (float z=-1.0f; z < 1.0f; z+= 0.2f)
+//		for (float y=-2.0f; y < 0.0f; y+= 0.2f)
+//			for (float x=-3.0f; x < -1.0f; x+= 0.2f)
+//			{
+//				drawer2_->vertex3f(x,y,z);
+//			}
+//	drawer2_->end();
 
-	drawer2_->end_list();
+//	drawer2_->end_list();
 
 }
 
 int main(int argc, char** argv)
 {
+	qoglviewer::init_ogl_context();
+	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
 	QApplication application(argc, argv);
-	qoglviewer::init_ogl_context();
+
 
 	// Instantiate the viewer.
-	Drawing viewer;
-	viewer.setWindowTitle("Drawing");
-	viewer.show();
+
+	Drawing* viewer = new Drawing;
+	viewer->setWindowTitle("Drawing");
+	viewer->show();
+
+	Drawing* viewer2 = new Drawing(viewer);
+	viewer2->setWindowTitle("Drawing");
+	viewer2->show();
+
+	cgogn_log_info("are context shared ?") << std::boolalpha <<	QOpenGLContext::areSharing(viewer2->context(),viewer->context());
 
 	// Run main loop.
 	return application.exec();

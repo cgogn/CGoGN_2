@@ -73,31 +73,35 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 }
 
 
-bool ShaderSimpleColor::set_vao(uint32 i, VBO* vbo_pos, uint32 stride, unsigned first)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
 
+ShaderParamSimpleColor::ShaderParamSimpleColor(ShaderSimpleColor* sh):
+	ShaderParam(sh),
+	color_(255,255,255)
+{}
+
+void ShaderParamSimpleColor::set_uniforms()
+{
+	ShaderSimpleColor* sh = static_cast<ShaderSimpleColor*>(this->shader_);
+	sh->set_color(color_);
+}
+
+void ShaderParamSimpleColor::set_vbo(VBO* vbo_pos, uint32 stride, unsigned first)
+{
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
+	ogl->glEnableVertexAttribArray(ShaderSimpleColor::ATTRIB_POS);
 
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension() * 4,
+	ogl->glVertexAttribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension() * 4,
 		void_ptr(first*vbo_pos->vector_dimension() * 4));
 	vbo_pos->release();
 
-    vaos_[i]->release();
-	prg_.release();
-
-    return true;
+	vao_->release();
+	shader_->release();
 }
 
 } // namespace rendering

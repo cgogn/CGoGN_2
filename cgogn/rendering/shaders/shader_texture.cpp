@@ -23,7 +23,9 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/shader_texture.h>
+#include <QOpenGLFunctions>
+#include <iostream>
 
 namespace cgogn
 {
@@ -31,88 +33,77 @@ namespace cgogn
 namespace rendering
 {
 
+const char* ShaderTexture::vertex_shader_source_ =
+	"#version 150\n"
+	"in vec3 vertex_pos;\n"
+	"in vec2 vertex_tc;\n"
+	"uniform mat4 projection_matrix;\n"
+	"uniform mat4 model_view_matrix;\n"
+	"out vec2 tc;\n"
+	"void main() {\n"
+	"	tc = vertex_tc;\n"
+	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+	"}\n";
 
-ShaderParam::ShaderParam(ShaderProgram* prg):
-	shader_(prg)
+const char* ShaderTexture::fragment_shader_source_ =
+	"#version 150\n"
+	"out vec4 frag_color;\n"
+	"uniform sampler2D texture_unit;\n"
+	"in vec2 tc;\n"
+	"void main() {\n"
+	"		frag_color = texture(texture_unit,tc);\n"
+	"}\n";
+
+ShaderTexture::ShaderTexture()
 {
-	vao_ = new QOpenGLVertexArrayObject;
-	vao_->create();
+	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
+	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
+	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	prg_.bindAttributeLocation("vertex_tc", ATTRIB_TC);
+	prg_.link();
+	get_matrices_uniforms();
+	prg_.setUniformValue("texture_unit", 0);
 }
 
-void ShaderParam::reinit_vao()
+
+ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh):
+	ShaderParam(sh),
+	texture_(nullptr)
+{}
+
+void ShaderParamTexture::set_uniforms()
 {
-	vao_->destroy();
-	vao_->create();
+	if (texture_)
+	{
+		QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
+		texture_->bind();
+	}
 }
 
-
-void ShaderParam::bind_vao_only(bool with_uniforms)
+void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 {
-	if (with_uniforms)
-		set_uniforms();
-	vao_->bind();
-}
+	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-
-void ShaderParam::release_vao_only()
-{
-	vao_->release();
-}
-
-
-void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
 	shader_->bind();
-	shader_->set_matrices(proj,mv);
-	set_uniforms();
 	vao_->bind();
-}
 
-void ShaderParam::release()
-{
+	// position vbo
+	vbo_pos->bind();
+	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	vbo_pos->release();
+
+	// color  vbo
+	vbo_tc->bind();
+	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_TC);
+	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_TC, vbo_tc->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	vbo_tc->release();
+
 	vao_->release();
 	shader_->release();
 }
 
 
-ShaderProgram::~ShaderProgram()
-{
-	for (QOpenGLVertexArrayObject* vao : vaos_)
-	{
-		vao->destroy();
-		delete vao;
-	}
-}
-
-void ShaderProgram::get_matrices_uniforms()
-{
-	unif_mv_matrix_ = prg_.uniformLocation("model_view_matrix");
-	unif_projection_matrix_ = prg_.uniformLocation("projection_matrix");
-	unif_normal_matrix_ = prg_.uniformLocation("normal_matrix");
-}
-
-void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_projection_matrix_, proj);
-	prg_.setUniformValue(unif_mv_matrix_, mv);
-
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
-	}
-}
-
-void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_mv_matrix_, mv);
-
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
-	}
-}
 
 } // namespace rendering
 

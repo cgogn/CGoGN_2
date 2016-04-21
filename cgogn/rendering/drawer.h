@@ -78,6 +78,12 @@ protected:
 	std::vector<PrimParam> begins_face_;
 	std::vector<PrimParam>* current_begin_;
 
+
+	ShaderColorPerVertex::Param* param_cpv_;
+	ShaderBoldLine::Param* param_bl_;
+	ShaderRoundPoint::Param* param_rp_;
+	ShaderPointSprite::Param* param_ps_;
+
 	uint32 vao_cpv_;
 	uint32 vao_bl_;
 	uint32 vao_rp_;
@@ -87,8 +93,6 @@ protected:
 	bool current_aa_;
 	bool current_ball_;
 
-	QOpenGLFunctions_3_3_Core* ogl33_;
-
 public:
 
 	using Self = Drawer;
@@ -97,13 +101,18 @@ public:
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	Drawer(QOpenGLFunctions_3_3_Core* ogl33);
+	Drawer();
 
 	/**
 	 * release buffers and shader
 	 */
 	~Drawer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
+
+	/**
+	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 */
+	void reinit_vao();
 
 	/**
 	 * init the data structure
@@ -176,8 +185,9 @@ public:
 	 * use as a glCallList (draw the compiled drawing list)
 	 * @param projection projection matrix
 	 * @param modelview modelview matrix
+	 * @param a pointer on QOGLViewer object (often this)
 	 */
-	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
 	 * usr as glPointSize

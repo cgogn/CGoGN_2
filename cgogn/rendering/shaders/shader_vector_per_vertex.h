@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 
+#include <QColor>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -34,23 +35,51 @@ namespace cgogn
 namespace rendering
 {
 
+class ShaderVectorPerVertex;
+
+class CGOGN_RENDERING_API ShaderParamVectorPerVertex : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+	float32 length_;
+
+	ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh);
+
+	void set_vbo(VBO* vbo_pos,  VBO* vbo_vect);
+};
+
+
 class CGOGN_RENDERING_API ShaderVectorPerVertex : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
 
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_NORMAL
-	};
 
 	// uniform ids
 	GLint unif_color_;
 	GLint unif_length_;
 
 public:
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_NORMAL
+	};
+
+	using Param = ShaderParamVectorPerVertex;
+
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
 
 	ShaderVectorPerVertex();
 
@@ -66,15 +95,9 @@ public:
 	 */
 	void set_length(float32 l);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i vao id (0,1,...)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_norm pointer on normal vbo
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_norm);
 };
+
+
 
 } // namespace rendering
 

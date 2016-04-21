@@ -21,12 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
-#define CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
+#ifndef CGOGN_RENDERING_WALL_PAPER_H_
+#define CGOGN_RENDERING_WALL_PAPER_H_
 
-#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/shader_texture.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
+#include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
 {
@@ -34,55 +35,45 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderColorPerVertex;
 
-class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
+class CGOGN_RENDERING_API WallPaper
 {
 protected:
-	inline void set_uniforms() {}
+
+	static int32 nb_instances_;
+	static ShaderTexture* shader_texture_;
+	ShaderTexture::Param* param_texture_;
+
+	VBO* vbo_pos_;
+	VBO* vbo_tc_;
 
 public:
 
-	ShaderParamColorPerVertex(ShaderColorPerVertex* prg);
-
-
-	/**
-	 * @brief set a vbo configuration
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_col pointer on color vbo (RGB)
-	 */
-	void set_vbo(VBO* vbo_pos, VBO* vbo_col);
-
-};
-
-
-class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-
-public:
-
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_COLOR
-	};
-
-    ShaderColorPerVertex();
-
-	using Param = ShaderParamColorPerVertex;
+	using Self = WallPaper;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(WallPaper);
 
 	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
+	 * constructor, init all buffers (data and OpenGL) and shader
+	 * @Warning need OpenGL context
 	 */
-	inline Param* generate_param()
-	{
-		return (new Param(this));
-	}
-};
+	WallPaper(const QImage& img);
 
+	/**
+	 * release buffers and shader
+	 */
+	~WallPaper();
+
+	/**
+	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 */
+	void reinit_vao();
+
+	void set_full_screen(bool front = false);
+
+	void set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 y, uint32 w, uint32 h, bool front = true);
+
+	void draw(QOpenGLFunctions_3_3_Core* ogl33);
+};
 
 
 
@@ -90,4 +81,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
+#endif // CGOGN_RENDERING_WALL_PAPER_H_

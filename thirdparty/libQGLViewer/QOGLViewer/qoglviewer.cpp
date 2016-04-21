@@ -173,6 +173,14 @@ QOGLViewer::QOGLViewer(QWidget* parent, Qt::WindowFlags flags)
 	: QOpenGLWidget(parent, flags)
 { defaultConstructor(); }
 
+
+QOGLViewer::QOGLViewer(QOGLViewer* shared, QWidget* parent, Qt::WindowFlags flags)
+	: QOpenGLWidget(parent, flags)
+{
+	shared->context()->setShareContext(this->context());
+	defaultConstructor();
+}
+
 ///*! Same as QOGLViewer(), but a \c QGLContext can be provided so that viewers share GL contexts, even
 //with \c QGLContext sub-classes (use \p shareWidget otherwise). */
 //QOGLViewer::QOGLViewer(QGLContext *context, QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags flags)

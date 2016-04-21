@@ -24,17 +24,40 @@
 #ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
 #define CGOGN_RENDERING_SHADERS_PHONG_H_
 
+#include <QColor>
+#include <QVector3D>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
 
-class QColor;
 
 namespace cgogn
 {
 
 namespace rendering
 {
+
+class ShaderPhong;
+
+class CGOGN_RENDERING_API ShaderParamPhong : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QVector3D light_position_;
+	QColor front_color_;
+	QColor back_color_;
+	QColor ambiant_color_;
+	QColor specular_color_;
+	float32 specular_coef_;
+	bool double_side_;
+
+	ShaderParamPhong(ShaderPhong* sh);
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=nullptr);
+};
+
 
 class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 {
@@ -43,14 +66,6 @@ class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 
 	static const char* vertex_shader_source_2_;
 	static const char* fragment_shader_source_2_;
-
-
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_NORM,
-		ATTRIB_COLOR
-	};
 
 	// uniform ids
 	GLint unif_front_color_;
@@ -62,6 +77,23 @@ class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 	GLint unif_light_position_;
 
 public:
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_NORM,
+		ATTRIB_COLOR
+	};
+
+	using Param = ShaderParamPhong;
+
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
 
 	ShaderPhong(bool color_per_vertex = false);
 
@@ -114,16 +146,8 @@ public:
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i id of vao (0,1,....)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_norm pointer on normal vbo (XYZ)
-	 * @param vbo_color pointer on normal vbo (RGB) only used when color per vertex rendering
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=NULL);
 };
+
 
 } // namespace rendering
 

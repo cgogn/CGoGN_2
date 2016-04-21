@@ -75,21 +75,23 @@ public:
 private:
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
-
-	QRect viewport_;
 	QMatrix4x4 proj_;
 	QMatrix4x4 view_;
 
 	Map2 map_;
+
 	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
 	cgogn::rendering::MapRender* render_;
 
+
 	cgogn::rendering::VBO* vbo_pos_;
 
-	cgogn::rendering::ShaderFlat* shader2_;
+	cgogn::rendering::ShaderFlat* shader_flat_;
+
+	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
 	cgogn::rendering::Drawer* drawer_;
 
@@ -120,7 +122,7 @@ Viewer::~Viewer()
 {
 	delete render_;
 	delete vbo_pos_;
-	delete shader2_;
+	delete shader_flat_;
 }
 
 Viewer::Viewer() :
@@ -129,7 +131,7 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	shader2_(nullptr),
+	shader_flat_(nullptr),
 	drawer_(nullptr),
 	cell_picking(0)
 {}
@@ -142,16 +144,21 @@ void Viewer::draw()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
 
-	shader2_->bind();
-	shader2_->set_matrices(proj_,view_);
-	shader2_->bind_vao(0);
+//	shader_flat_->bind();
+//	shader_flat_->set_matrices(proj_,view_);
+//	param_flat_->bind();
+//	render_->draw(cgogn::rendering::TRIANGLES);
+//	param_flat_->release();
+//	shader_flat_->release();
+
+
+	param_flat_->bind(proj_,view_);
 	render_->draw(cgogn::rendering::TRIANGLES);
-	shader2_->release_vao(0);
-	shader2_->release();
+	param_flat_->release();
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_->call_list(proj_,view_);
+	drawer_->call_list(proj_,view_,this);
 
 }
 
@@ -160,22 +167,21 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+
 	render_ = new cgogn::rendering::MapRender();
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+	shader_flat_ = new cgogn::rendering::ShaderFlat;
+	param_flat_ = shader_flat_->generate_param();
+			//new cgogn::rendering::ParamFlat(shader_flat_);
 
-	shader2_ = new cgogn::rendering::ShaderFlat;
-	shader2_->add_vao();
-	shader2_->set_vao(0, vbo_pos_);
+	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->front_color_ = QColor(0,200,0);
+	param_flat_->back_color_ = QColor(200,0,0);
+	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	shader2_->bind();
-	shader2_->set_front_color(QColor(0,200,0));
-	shader2_->set_back_color(QColor(0,0,200));
-	shader2_->set_ambiant_color(QColor(5,5,5));
-	shader2_->release();
-
-	drawer_ = new cgogn::rendering::Drawer(this);
+	drawer_ = new cgogn::rendering::Drawer();
 }
 
 

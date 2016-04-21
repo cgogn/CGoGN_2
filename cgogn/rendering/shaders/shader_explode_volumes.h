@@ -26,6 +26,7 @@
 
 #include <QVector3D>
 #include <QVector4D>
+#include <QColor>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -35,6 +36,26 @@ namespace cgogn
 
 namespace rendering
 {
+
+class ShaderExplodeVolumes;
+
+class CGOGN_RENDERING_API ShaderParamExplodeVolumes : public ShaderParam
+{
+protected:
+	void set_uniforms();
+
+public:
+	QColor color_;
+	QVector4D plane_clip_;
+	QVector3D light_position_;
+	float32 explode_factor_;
+
+	ShaderParamExplodeVolumes(ShaderExplodeVolumes* sh);
+
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color=nullptr);
+};
+
 
 class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 {
@@ -46,11 +67,6 @@ class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 	static const char* geometry_shader_source2_;
 	static const char* fragment_shader_source2_;
 
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_COLOR
-	};
 
 	// uniform ids
 	GLint unif_expl_v_;
@@ -58,8 +74,24 @@ class CGOGN_RENDERING_API ShaderExplodeVolumes : public ShaderProgram
 	GLint unif_plane_clip_;
 	GLint unif_color_;
 
-
 public:
+
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_COLOR
+	};
+
+	using Param = ShaderParamExplodeVolumes;
+
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
+	{
+		return (new Param(this));
+	}
 
 	ShaderExplodeVolumes(bool color_per_vertex = false);
 
@@ -71,15 +103,8 @@ public:
 
 	void set_color(const QColor& rgb);
 
-	/**
-	 * @brief set a vao configuration
-	 * @param i vao id (0,1,...)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @param vbo_color pointer on color vbo
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos,  VBO* vbo_color = nullptr);
 };
+
 
 } // namespace rendering
 

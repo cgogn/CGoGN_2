@@ -71,6 +71,8 @@ public:
 
 	explicit QOGLViewer(QWidget* parent=0, Qt::WindowFlags flags=0);
 
+	explicit QOGLViewer(QOGLViewer* shared, QWidget* parent=0, Qt::WindowFlags flags=0);
+
 	virtual ~QOGLViewer();
 
 

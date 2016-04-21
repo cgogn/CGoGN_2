@@ -354,31 +354,43 @@ void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatr
 
 
 
-bool ShaderPointSprite::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
+ShaderParamPointSprite::ShaderParamPointSprite(ShaderPointSprite* sh):
+	ShaderParam(sh),
+	color_(0,0,255),
+	ambiant_color_(5,5,5),
+	light_pos_(10,100,1000),
+	size_(1.0)
 
+{}
+
+void ShaderParamPointSprite::set_uniforms()
+{
+	ShaderPointSprite* sh = static_cast<ShaderPointSprite*>(this->shader_);
+	sh->set_color(color_);
+	sh->set_ambiant(ambiant_color_);
+	sh->set_size(size_);
+	sh->set_light_position(light_pos_);
+}
+
+void ShaderParamPointSprite::set_vbo(VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
+{
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderPointSprite::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderPointSprite::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	if (vbo_color)
 	{
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		ogl->glEnableVertexAttribArray(ShaderPointSprite::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderPointSprite::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 	}
 
@@ -386,16 +398,15 @@ bool ShaderPointSprite::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, VBO* vbo
 	{
 		// size vbo
 		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		ogl->glEnableVertexAttribArray(ShaderPointSprite::ATTRIB_SIZE);
+		ogl->glVertexAttribPointer(ShaderPointSprite::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_size->release();
 	}
 
 
-	vaos_[i]->release();
-	prg_.release();
+	vao_->release();
+	shader_->release();
 
-	return true;
 }
 
 } // namespace rendering

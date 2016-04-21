@@ -47,20 +47,16 @@ class CGOGN_RENDERING_API TopoRender
 
 protected:
 
-	static ShaderSimpleColor* shader_cpv_;
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
 	static int32 nb_instances_;
 
+	ShaderBoldLine::Param* param_bl_;
+	ShaderBoldLine::Param* param_bl2_;
+	ShaderRoundPoint::Param* param_rp_;
+
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
-
-	uint32 vao_bl_;
-	uint32 vao_bl2_;
-	uint32 vao_rp_;
-
-	QOpenGLFunctions_3_3_Core* ogl33_;
-
 
 	QColor dart_color_;
 	QColor phi2_color_;
@@ -70,22 +66,7 @@ protected:
 	float32 shrink_f_;
 	float32 shrink_e_;
 
-public:
-	using Self = TopoRender;
-	/**
-	 * constructor, init all buffers (data and OpenGL) and shader
-	 * @Warning need OpenGL context
-	 */
-	TopoRender(QOpenGLFunctions_3_3_Core* ogl33);
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoRender);
-	/**
-	 * release buffers and shader
-	 */
-	~TopoRender();
 
-	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
-	inline void set_explode_face(float32 x) { shrink_f_ = x; }
-	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
 	template <typename VEC3, typename MAP>
 	void update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
@@ -94,7 +75,52 @@ public:
 	void update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 
-	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending=true);
+public:
+	using Self = TopoRender;
+	/**
+	 * constructor, init all buffers (data and OpenGL) and shader
+	 * @Warning need OpenGL context
+	 */
+	TopoRender();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoRender);
+	/**
+	 * release buffers and shader
+	 */
+	~TopoRender();
+
+	/**
+	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 */
+	void reinit_vao();
+
+	/**
+	 * @brief draw
+	 * @param projection projection matrix
+	 * @param modelview model-view matrix
+	 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
+	 * @param with_blending
+	 */
+	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending=true);
+
+	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
+
+	inline void set_explode_face(float32 x) { shrink_f_ = x; }
+
+	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
+
+	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 2>::type* = nullptr>
+	void update(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	{
+		this->update_map2<VEC3,MAP>(m,position);
+	}
+
+	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 3>::type* = nullptr>
+	void update(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	{
+		this->update_map3<VEC3,MAP>(m,position);
+	}
+
+
 };
 
 template <typename VEC3, typename MAP>

@@ -33,6 +33,8 @@
 
 #include <cgogn/rendering/dll.h>
 
+#include <iostream>
+
 namespace cgogn
 {
 namespace rendering
@@ -43,6 +45,57 @@ inline void* void_ptr(uint32 x)
 {
 	return reinterpret_cast<void*>(uint64_t(x));
 }
+
+//forward
+class ShaderProgram;
+
+class ShaderParam
+{
+protected:
+
+	ShaderProgram* shader_;
+	QOpenGLVertexArrayObject* vao_;
+
+	virtual void set_uniforms() = 0;
+
+public:
+	ShaderParam(ShaderProgram* prg);
+
+	inline virtual ~ShaderParam()
+	{}
+
+	/**
+	 * @brief reinitialize vao (for use in new context)
+	 */
+	void reinit_vao();
+
+	/**
+	 * @brief bind vao (and set uniform)
+	 * @param with_uniforms ask to set uniforms
+	 */
+	void bind_vao_only(bool with_uniforms = true);
+
+	/**
+	 * @brief release vao
+	 */
+	void release_vao_only();
+
+	/**
+	 * @brief bind the shader set uniforms & matrices, bind vao
+	 * @param proj projectiob matrix
+	 * @param mv model-view matrix
+	 */
+	void bind(const QMatrix4x4& proj, const QMatrix4x4& mv);
+
+	/**
+	 * @brief release vao adn shader
+	 */
+	void release();
+
+};
+
+
+
 
 
 class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
@@ -79,57 +132,72 @@ public:
 	 */
 	void set_view_matrix(const QMatrix4x4& mv);
 
-	/**
-	 * @brief add a vao (vbo configuration)
-	 * @return the id of vao
-	 */
-	inline uint32 add_vao()
-	{
-		vaos_.push_back(new QOpenGLVertexArrayObject);
-		vaos_.back()->create();
-		return uint32(vaos_.size() - 1);
-	}
+//	/**
+//	 * @brief add a vao (vbo configuration)
+//	 * @return the id of vao
+//	 */
+//	inline uint32 add_vao()
+//	{
+//		vaos_.push_back(new QOpenGLVertexArrayObject);
+//		vaos_.back()->create();
+//		return uint32(vaos_.size() - 1);
+//	}
 
-	/**
-	 * @brief allocate new vaos until total nb is reached
-	 * @param nb number of vaos to reach
-	 */
-	void alloc_vao(uint32 nb)
-	{
-		while (vaos_.size() < nb)
-			vaos_.push_back(new QOpenGLVertexArrayObject);
-	}
+//	/**
+//	 * @brief allocate new vaos until total nb is reached
+//	 * @param nb number of vaos to reach
+//	 */
+//	inline void alloc_vao(uint32 nb)
+//	{
+//		while (vaos_.size() < nb)
+//			vaos_.push_back(new QOpenGLVertexArrayObject);
+//	}
 
-	/**
-	 * @brief number of allocated vaos
-	 * @return the number of allocated vaos
-	 */
-	inline uint32 nb_vaos()
-	{
-		return (uint32)(vaos_.size());
-	}
+//	inline void check_vaos()
+//	{
+//		std::cout<< "Check VAOS " << std::boolalpha << std::endl;
+//		for (QOpenGLVertexArrayObject* vao: vaos_)
+//			std::cout<< std::hex <<long(vao) << std::boolalpha<< ": "<<vao->isCreated() << " / ";
+//		std::cout<< std::endl;
+//	}
 
-	/**
-	 * @brief bind a vao
-	 * @param i vao id (0,1,...)
-	 */
-	inline void bind_vao(uint32 i)
-	{
-//		assert(i < vaos_.size());
-//		if (!vaos_[i]->isCreated())
-//			vaos_[i]->create();
-		vaos_[i]->bind();
-	}
+//	/**
+//	 * @brief number of allocated vaos
+//	 * @return the number of allocated vaos
+//	 */
+//	inline uint32 nb_vaos()
+//	{
+//		return (uint32)(vaos_.size());
+//	}
 
-	/**
-	 * @brief release the vao
-	 * @param i id
-	 */
-	inline void release_vao(uint32 i)
-	{
-//		assert(i < vaos_.size());
-		vaos_[i]->release();
-	}
+//	/**
+//	 * @brief bind a vao
+//	 * @param i vao id (0,1,...)
+//	 */
+//	inline void bind_vao(uint32 i)
+//	{
+////		assert(i < vaos_.size());
+////		if (!vaos_[i]->isCreated())
+////			vaos_[i]->create();
+
+//		if (!vaos_.empty())
+//		{
+//			vaos_[i]->bind();
+//			std::cout << "bind_vao "<< std::hex << long(vaos_[i]) <<  std::dec <<std::endl;
+//		}
+//	}
+
+//	/**
+//	 * @brief release the vao
+//	 * @param i id
+//	 */
+//	inline void release_vao(uint32 i)
+//	{
+////		assert(i < vaos_.size());
+//		if (!vaos_.empty())
+//		vaos_[i]->release();
+//	}
+
 
 	/**
 	 * @brief bind the shader

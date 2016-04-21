@@ -21,9 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
+#ifndef CGOGN_RENDERING_SHADERS_TEXTURE_H_
+#define CGOGN_RENDERING_SHADERS_TEXTURE_H_
 
 #include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
+#include <QOpenGLTexture>
+
+class QOpenGLTexture;
 
 namespace cgogn
 {
@@ -31,89 +37,56 @@ namespace cgogn
 namespace rendering
 {
 
+class ShaderTexture;
 
-ShaderParam::ShaderParam(ShaderProgram* prg):
-	shader_(prg)
+class CGOGN_RENDERING_API ShaderParamTexture : public ShaderParam
 {
-	vao_ = new QOpenGLVertexArrayObject;
-	vao_->create();
-}
+protected:
+	void set_uniforms();
 
-void ShaderParam::reinit_vao()
+public:
+	QOpenGLTexture* texture_;
+
+	ShaderParamTexture(ShaderTexture* sh);
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_tc);
+};
+
+
+
+class CGOGN_RENDERING_API ShaderTexture : public ShaderProgram
 {
-	vao_->destroy();
-	vao_->create();
-}
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
+public:
 
-void ShaderParam::bind_vao_only(bool with_uniforms)
-{
-	if (with_uniforms)
-		set_uniforms();
-	vao_->bind();
-}
-
-
-void ShaderParam::release_vao_only()
-{
-	vao_->release();
-}
-
-
-void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	shader_->bind();
-	shader_->set_matrices(proj,mv);
-	set_uniforms();
-	vao_->bind();
-}
-
-void ShaderParam::release()
-{
-	vao_->release();
-	shader_->release();
-}
-
-
-ShaderProgram::~ShaderProgram()
-{
-	for (QOpenGLVertexArrayObject* vao : vaos_)
+	enum
 	{
-		vao->destroy();
-		delete vao;
-	}
-}
+		ATTRIB_POS = 0,
+		ATTRIB_TC
+	};
 
-void ShaderProgram::get_matrices_uniforms()
-{
-	unif_mv_matrix_ = prg_.uniformLocation("model_view_matrix");
-	unif_projection_matrix_ = prg_.uniformLocation("projection_matrix");
-	unif_normal_matrix_ = prg_.uniformLocation("normal_matrix");
-}
 
-void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_projection_matrix_, proj);
-	prg_.setUniformValue(unif_mv_matrix_, mv);
+	using Param = ShaderParamTexture;
 
-	if (unif_normal_matrix_ >= 0)
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline Param* generate_param()
 	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
+		return (new Param(this));
 	}
-}
 
-void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_mv_matrix_, mv);
 
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
-	}
-}
+	ShaderTexture();
+
+};
+
 
 } // namespace rendering
 
 } // namespace cgogn
+
+#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_

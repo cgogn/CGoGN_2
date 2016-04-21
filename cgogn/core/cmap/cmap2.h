@@ -37,6 +37,8 @@ class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const int32 DIMENSION = 2;
+
 	static const int32 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;

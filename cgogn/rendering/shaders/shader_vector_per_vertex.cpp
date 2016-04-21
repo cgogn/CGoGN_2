@@ -99,35 +99,42 @@ void ShaderVectorPerVertex::set_length(float32 l)
 	prg_.setUniformValue(unif_length_, l);
 }
 
-bool ShaderVectorPerVertex::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_normal)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
 
+ShaderParamVectorPerVertex::ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh):
+	ShaderParam(sh),
+	color_(255,255,255),
+	length_(1.0)
+{}
+
+void ShaderParamVectorPerVertex::set_uniforms()
+{
+	ShaderVectorPerVertex* sh = static_cast<ShaderVectorPerVertex*>(this->shader_);
+	sh->set_color(color_);
+	sh->set_length(length_);
+}
+
+void ShaderParamVectorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_normal)
+{
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+	shader_->bind();
+	vao_->bind();
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
+	ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	// normal vbo
 	vbo_normal->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_NORMAL);
-	ogl->glVertexAttribPointer(ATTRIB_NORMAL, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
+	ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_normal->release();
 
-	vaos_[i]->release();
-	prg_.release();
+	vao_->release();
+	shader_->release();
 
-	return true;
 }
 
 } // namespace rendering

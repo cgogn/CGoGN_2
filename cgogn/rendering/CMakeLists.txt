@@ -20,9 +20,11 @@ set(HEADER_FILES
 	shaders/shader_point_sprite.h
 	shaders/shader_explode_volumes.h
 	shaders/shader_explode_volumes_line.h
+	shaders/shader_texture.h
 	drawer.h
 	topo_render.h
 	volume_render.h
+	wall_paper.h
 )
 
 set(SOURCE_FILES
@@ -37,10 +39,12 @@ set(SOURCE_FILES
 	shaders/shader_point_sprite.cpp
 	shaders/shader_explode_volumes.cpp
 	shaders/shader_explode_volumes_line.cpp
+	shaders/shader_texture.cpp
 	drawer.cpp
 	topo_render.cpp
 	volume_render.cpp
 	map_render.cpp
+	wall_paper.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
