@@ -50,10 +50,13 @@ class CGOGN_RENDERING_API Drawer
 		float32 width;
 		uint32 nb;
 		bool aa;
-		PrimParam(std::size_t b, GLenum m, float32 w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
+
+		PrimParam(std::size_t b, GLenum m, float32 w, bool a) :
+			begin(uint32(b)), mode(m), width(w), nb(0), aa(a)
+		{}
 	};
 
-	using Vec3f = std::array<float32,3>;
+	using Vec3f = std::array<float32, 3>;
 
 protected:
 
@@ -61,7 +64,7 @@ protected:
 	static ShaderBoldLine* shader_bl_;
 	static ShaderRoundPoint* shader_rp_;
 	static ShaderPointSprite* shader_ps_;
-	static int32 nb_instances_;
+	static uint32 nb_instances_;
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
@@ -107,6 +110,7 @@ public:
 	 * release buffers and shader
 	 */
 	~Drawer();
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
 
 	/**
@@ -147,38 +151,38 @@ public:
 	void color3f(float32 r, float32 g, float32 b);
 
 
-	inline void vertex3fv(const std::array<float32,3>& xyz)
+	inline void vertex3fv(const std::array<float32, 3>& xyz)
 	{
-		vertex3f(xyz[0],xyz[1],xyz[2]);
+		vertex3f(xyz[0], xyz[1], xyz[2]);
 	}
 
-	inline void color3fv(const std::array<float32,3>& rgb)
+	inline void color3fv(const std::array<float32, 3>& rgb)
 	{
-		color3f(rgb[0],rgb[1],rgb[2]);
+		color3f(rgb[0], rgb[1], rgb[2]);
 	}
 
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
+		vertex3f(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
+		color3f(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
 	template <typename VEC3>
 	inline void vertex3fv(const VEC3& xyz)
 	{
-		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
+		vertex3f(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename VEC3>
 	inline void color3fv(const VEC3& rgb)
 	{
-		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
+		color3f(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
 	/**

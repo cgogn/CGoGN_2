@@ -31,7 +31,6 @@ namespace cgogn
 namespace rendering
 {
 
-
 ShaderParam::ShaderParam(ShaderProgram* prg):
 	shader_(prg)
 {
@@ -45,7 +44,6 @@ void ShaderParam::reinit_vao()
 	vao_->create();
 }
 
-
 void ShaderParam::bind_vao_only(bool with_uniforms)
 {
 	if (with_uniforms)
@@ -53,12 +51,10 @@ void ShaderParam::bind_vao_only(bool with_uniforms)
 	vao_->bind();
 }
 
-
 void ShaderParam::release_vao_only()
 {
 	vao_->release();
 }
-
 
 void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
 {
@@ -73,7 +69,6 @@ void ShaderParam::release()
 	vao_->release();
 	shader_->release();
 }
-
 
 ShaderProgram::~ShaderProgram()
 {
@@ -98,8 +93,8 @@ void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
+		QMatrix3x3 normal_matrix = mv.normalMatrix();
+		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
 	}
 }
 
@@ -109,8 +104,8 @@ void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
+		QMatrix3x3 normal_matrix = mv.normalMatrix();
+		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
 	}
 }
 

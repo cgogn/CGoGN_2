@@ -34,9 +34,9 @@ class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int32 DIMENSION = 1;
+	static const uint8 DIMENSION = 1;
 
-	static const int32 PRIM_SIZE = 1;
+	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE ;

@@ -23,11 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>
-#include <iostream>
 
 namespace cgogn
 {
@@ -36,39 +37,41 @@ namespace rendering
 {
 
 const char* ShaderVectorPerVertex::vertex_shader_source_ =
-	"#version 150\n"
-	"in vec3 vertex_pos;\n"
-	"in vec3 vertex_normal;\n"
-	"out vec3 normal;\n"
-	"void main() {\n"
-	"   normal = vertex_normal;\n"
-	"   gl_Position = vec4(vertex_pos,1.0);\n"
-	"}\n";
+"#version 150\n"
+"in vec3 vertex_pos;\n"
+"in vec3 vertex_normal;\n"
+"out vec3 normal;\n"
+"void main() {\n"
+"   normal = vertex_normal;\n"
+"   gl_Position = vec4(vertex_pos,1.0);\n"
+"}\n";
 
 const char* ShaderVectorPerVertex::geometry_shader_source_ =
-	"#version 150\n"
-	"layout(points) in;\n"
-	"layout(line_strip,max_vertices=2) out;\n"
-	"in vec3 normal[];\n"
-	"uniform mat4 projection_matrix;\n"
-	"uniform mat4 model_view_matrix;\n"
-	"uniform float length;\n"
-	"void main() {\n"
-	"   gl_Position = projection_matrix * model_view_matrix * gl_in[0].gl_Position;\n"
-	"	EmitVertex();\n"
-	"   vec4 end_point = gl_in[0].gl_Position + vec4(length * normal[0], 0.0);\n"
-	"   gl_Position = projection_matrix * model_view_matrix * end_point;\n"
-	"	EmitVertex();\n"
-	"	EndPrimitive();\n"
-	"}\n";
+"#version 150\n"
+"layout(points) in;\n"
+"layout(line_strip,max_vertices=2) out;\n"
+"in vec3 normal[];\n"
+"uniform mat4 projection_matrix;\n"
+"uniform mat4 model_view_matrix;\n"
+"uniform float length;\n"
+"void main() {\n"
+"   gl_Position = projection_matrix * model_view_matrix * gl_in[0].gl_Position;\n"
+"	EmitVertex();\n"
+"   vec4 end_point = gl_in[0].gl_Position + vec4(length * normal[0], 0.0);\n"
+"   gl_Position = projection_matrix * model_view_matrix * end_point;\n"
+"	EmitVertex();\n"
+"	EndPrimitive();\n"
+"}\n";
 
 const char* ShaderVectorPerVertex::fragment_shader_source_ =
-	"#version 150\n"
-	"uniform vec4 color;\n"
-	"out vec4 fragColor;\n"
-	"void main() {\n"
-	"   fragColor = color;\n"
-	"}\n";
+"#version 150\n"
+"uniform vec4 color;\n"
+"out vec4 fragColor;\n"
+"void main() {\n"
+"   fragColor = color;\n"
+"}\n";
+
+
 
 ShaderVectorPerVertex::ShaderVectorPerVertex()
 {
@@ -85,7 +88,7 @@ ShaderVectorPerVertex::ShaderVectorPerVertex()
 	unif_length_ = prg_.uniformLocation("length");
 
 	//default param
-	set_color(QColor(255,255,255));
+	set_color(QColor(255, 255, 255));
 	set_length(1.0);
 }
 
@@ -100,9 +103,10 @@ void ShaderVectorPerVertex::set_length(float32 l)
 }
 
 
+
 ShaderParamVectorPerVertex::ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh):
 	ShaderParam(sh),
-	color_(255,255,255),
+	color_(255, 255, 255),
 	length_(1.0)
 {}
 
@@ -134,7 +138,6 @@ void ShaderParamVectorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_normal)
 
 	vao_->release();
 	shader_->release();
-
 }
 
 } // namespace rendering

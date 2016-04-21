@@ -24,13 +24,13 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 
+#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
 #include <QVector3D>
 #include <QVector4D>
 #include <QColor>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
-
 
 namespace cgogn
 {
@@ -43,9 +43,11 @@ class ShaderExplodeVolumesLine;
 class CGOGN_RENDERING_API ShaderParamExplodeVolumesLine : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 	QVector4D plane_clip_;
 	float32 explode_factor_;
@@ -54,8 +56,6 @@ public:
 
 	void set_vbo(VBO* vbo_pos);
 };
-
-
 
 class CGOGN_RENDERING_API ShaderExplodeVolumesLine : public ShaderProgram
 {
@@ -86,7 +86,6 @@ public:
 		return (new Param(this));
 	}
 
-
 	ShaderExplodeVolumesLine();
 
 	void set_explode_volume(float32 x);
@@ -95,8 +94,6 @@ public:
 
 	void set_color(const QColor& rgb);
 };
-
-
 
 } // namespace rendering
 

@@ -24,10 +24,11 @@
 #ifndef CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 
-#include <QColor>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
+
+#include <QColor>
 
 namespace cgogn
 {
@@ -40,17 +41,18 @@ class ShaderVectorPerVertex;
 class CGOGN_RENDERING_API ShaderParamVectorPerVertex : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QColor color_;
 	float32 length_;
 
 	ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh);
 
-	void set_vbo(VBO* vbo_pos,  VBO* vbo_vect);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_vect);
 };
-
 
 class CGOGN_RENDERING_API ShaderVectorPerVertex : public ShaderProgram
 {
@@ -58,17 +60,19 @@ class CGOGN_RENDERING_API ShaderVectorPerVertex : public ShaderProgram
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
 
-
 	// uniform ids
 	GLint unif_color_;
 	GLint unif_length_;
 
 public:
+
 	enum
 	{
 		ATTRIB_POS = 0,
 		ATTRIB_NORMAL
 	};
+
+	ShaderVectorPerVertex();
 
 	using Param = ShaderParamVectorPerVertex;
 
@@ -81,8 +85,6 @@ public:
 		return (new Param(this));
 	}
 
-	ShaderVectorPerVertex();
-
 	/**
 	 * @brief set current color
 	 * @param rgb
@@ -94,10 +96,7 @@ public:
 	 * @param l length
 	 */
 	void set_length(float32 l);
-
 };
-
-
 
 } // namespace rendering
 

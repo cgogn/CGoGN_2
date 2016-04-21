@@ -23,11 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 
 #include <QOpenGLFunctions>
 #include <QColor>
-#include <iostream>
 
 namespace cgogn
 {
@@ -36,21 +37,23 @@ namespace rendering
 {
 
 const char* ShaderSimpleColor::vertex_shader_source_ =
-	"#version 150\n"
-	"in vec3 vertex_pos;\n"
-	"uniform mat4 projection_matrix;\n"
-	"uniform mat4 model_view_matrix;\n"
-	"void main() {\n"
-	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-	"}\n";
+"#version 150\n"
+"in vec3 vertex_pos;\n"
+"uniform mat4 projection_matrix;\n"
+"uniform mat4 model_view_matrix;\n"
+"void main() {\n"
+"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+"}\n";
 
 const char* ShaderSimpleColor::fragment_shader_source_ =
-	"#version 150\n"
-	"out vec4 fragColor;\n"
-	"uniform vec4 color;\n"
-	"void main() {\n"
-	"   fragColor = color;\n"
-	"}\n";
+"#version 150\n"
+"out vec4 fragColor;\n"
+"uniform vec4 color;\n"
+"void main() {\n"
+"   fragColor = color;\n"
+"}\n";
+
+
 
 ShaderSimpleColor::ShaderSimpleColor()
 {
@@ -64,7 +67,7 @@ ShaderSimpleColor::ShaderSimpleColor()
 	unif_color_ = prg_.uniformLocation("color");
 
 	//default param
-	set_color(QColor(255,255,255));
+	set_color(QColor(255, 255, 255));
 }
 
 void ShaderSimpleColor::set_color(const QColor& rgb)
@@ -76,7 +79,7 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 
 ShaderParamSimpleColor::ShaderParamSimpleColor(ShaderSimpleColor* sh):
 	ShaderParam(sh),
-	color_(255,255,255)
+	color_(255, 255, 255)
 {}
 
 void ShaderParamSimpleColor::set_uniforms()
@@ -85,7 +88,7 @@ void ShaderParamSimpleColor::set_uniforms()
 	sh->set_color(color_);
 }
 
-void ShaderParamSimpleColor::set_vbo(VBO* vbo_pos, uint32 stride, unsigned first)
+void ShaderParamSimpleColor::set_vbo(VBO* vbo_pos, uint32 stride, uint32 first)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
@@ -96,8 +99,7 @@ void ShaderParamSimpleColor::set_vbo(VBO* vbo_pos, uint32 stride, unsigned first
 	vbo_pos->bind();
 	ogl->glEnableVertexAttribArray(ShaderSimpleColor::ATTRIB_POS);
 
-	ogl->glVertexAttribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension() * 4,
-		void_ptr(first*vbo_pos->vector_dimension() * 4));
+	ogl->glVertexAttribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
 	vbo_pos->release();
 
 	vao_->release();

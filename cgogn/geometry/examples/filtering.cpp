@@ -97,6 +97,7 @@ public:
 private:
 
 	Map2 map_;
+
 	VertexAttribute<Vec3> vertex_position_;
 	VertexAttribute<Vec3> vertex_position2_;
 	VertexAttribute<Vec3> vertex_normal_;
@@ -298,14 +299,14 @@ void Viewer::draw()
 	glPolygonOffset(1.0f, 2.0f);
 	if (flat_rendering_)
 	{
-		param_flat_->bind(proj,view);
+		param_flat_->bind(proj, view);
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		param_phong_->bind(proj,view);
+		param_phong_->bind(proj, view);
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_phong_->release();
 	}
@@ -313,14 +314,14 @@ void Viewer::draw()
 
 	if (vertices_rendering_)
 	{
-		param_point_sprite_->bind(proj,view);
+		param_point_sprite_->bind(proj, view);
 		render_->draw(cgogn::rendering::POINTS);
 		param_point_sprite_->release();
 	}
 
 	if (edge_rendering_)
 	{
-		param_edge_->bind(proj,view);
+		param_edge_->bind(proj, view);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		render_->draw(cgogn::rendering::LINES);
@@ -330,27 +331,27 @@ void Viewer::draw()
 
 	if (normal_rendering_)
 	{
-		param_normal_->bind(proj,view);
+		param_normal_->bind(proj, view);
 		render_->draw(cgogn::rendering::POINTS);
 		param_normal_->release();
 	}
 
 	if (bb_rendering_)
-		drawer_->call_list(proj,view,this);
+		drawer_->call_list(proj, view, this);
 }
 
 void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
+	vbo_pos_ = new cgogn::rendering::VBO();
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
-	vbo_norm_ = new cgogn::rendering::VBO(3);
+	vbo_norm_ = new cgogn::rendering::VBO();
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
 
 	// fill a color vbo with abs of normals
-	vbo_color_ = new cgogn::rendering::VBO(3);
+	vbo_color_ = new cgogn::rendering::VBO();
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
@@ -369,11 +370,11 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
-	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
+	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true, true);
 	param_point_sprite_ = shader_point_sprite_->generate_param();
 	param_point_sprite_->set_vbo(vbo_pos_,vbo_color_,vbo_sphere_sz_);
-	param_point_sprite_->size_ = bb_.diag_size()/1000.0;
-	param_point_sprite_->color_ = QColor(255,0,0);
+	param_point_sprite_->size_ = bb_.diag_size() / 1000.0;
+	param_point_sprite_->color_ = QColor(255, 0, 0);
 
 	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 	param_edge_ = shader_edge_->generate_param();
@@ -384,7 +385,6 @@ void Viewer::init()
 	shader_flat_ = new cgogn::rendering::ShaderFlat;
 	param_flat_ = shader_flat_->generate_param();
 	param_flat_->set_vbo(vbo_pos_);
-
 	param_flat_->front_color_ = QColor(0,200,0);
 	param_flat_->back_color_ = QColor(0,0,200);
 	param_flat_->ambiant_color_ = QColor(5,5,5);

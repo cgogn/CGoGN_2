@@ -24,12 +24,12 @@
 #ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
 #define CGOGN_RENDERING_SHADERS_PHONG_H_
 
-#include <QColor>
-#include <QVector3D>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
 
+#include <QColor>
+#include <QVector3D>
 
 namespace cgogn
 {
@@ -42,9 +42,11 @@ class ShaderPhong;
 class CGOGN_RENDERING_API ShaderParamPhong : public ShaderParam
 {
 protected:
-	void set_uniforms();
+
+	void set_uniforms() override;
 
 public:
+
 	QVector3D light_position_;
 	QColor front_color_;
 	QColor back_color_;
@@ -55,9 +57,8 @@ public:
 
 	ShaderParamPhong(ShaderPhong* sh);
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color=nullptr);
+	void set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color = nullptr);
 };
-
 
 class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 {
@@ -77,12 +78,15 @@ class CGOGN_RENDERING_API ShaderPhong : public ShaderProgram
 	GLint unif_light_position_;
 
 public:
+
 	enum
 	{
 		ATTRIB_POS = 0,
 		ATTRIB_NORM,
 		ATTRIB_COLOR
 	};
+
+	ShaderPhong(bool color_per_vertex = false);
 
 	using Param = ShaderParamPhong;
 
@@ -94,8 +98,6 @@ public:
 	{
 		return (new Param(this));
 	}
-
-	ShaderPhong(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -145,9 +147,7 @@ public:
 	 * @param view_matrix
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
-
 };
-
 
 } // namespace rendering
 

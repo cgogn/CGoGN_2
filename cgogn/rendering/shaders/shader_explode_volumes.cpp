@@ -23,10 +23,12 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
+#include <iostream>
+
 #include <cgogn/rendering/shaders/shader_explode_volumes.h>
+
 #include <QColor>
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
@@ -74,7 +76,6 @@ const char* ShaderExplodeVolumes::geometry_shader_source_ =
 "		EndPrimitive();\n"
 "	}\n"
 "}\n";
-
 
 const char* ShaderExplodeVolumes::fragment_shader_source_ =
 "#version 150\n"
@@ -128,7 +129,6 @@ const char* ShaderExplodeVolumes::geometry_shader_source2_ =
 "	}\n"
 "}\n";
 
-
 const char* ShaderExplodeVolumes::fragment_shader_source2_ =
 "#version 150\n"
 "in vec3 color_f;\n"
@@ -136,6 +136,7 @@ const char* ShaderExplodeVolumes::fragment_shader_source2_ =
 "void main() {\n"
 "   fragColor = color_f;\n"
 "}\n";
+
 
 
 ShaderExplodeVolumes::ShaderExplodeVolumes(bool color_per_vertex)
@@ -162,7 +163,7 @@ ShaderExplodeVolumes::ShaderExplodeVolumes(bool color_per_vertex)
 	unif_light_position_ = prg_.uniformLocation("light_position");
 	unif_color_ = prg_.uniformLocation("color");
 
-	//default param
+	// default param
 	bind();
 	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
 	set_explode_volume(0.8f);
@@ -173,33 +174,32 @@ ShaderExplodeVolumes::ShaderExplodeVolumes(bool color_per_vertex)
 
 void ShaderExplodeVolumes::set_color(const QColor& rgb)
 {
-	if (unif_color_>=0)
-		prg_.setUniformValue(unif_color_,rgb);
+	if (unif_color_ >= 0)
+		prg_.setUniformValue(unif_color_, rgb);
 }
 
 void ShaderExplodeVolumes::set_light_position(const QVector3D& l)
 {
-		prg_.setUniformValue(unif_light_position_,l);
+	prg_.setUniformValue(unif_light_position_, l);
 }
-
 
 void ShaderExplodeVolumes::set_explode_volume(float32 x)
 {
-		prg_.setUniformValue(unif_expl_v_, x);
+	prg_.setUniformValue(unif_expl_v_, x);
 }
 
 void ShaderExplodeVolumes::set_plane_clip(const QVector4D& plane)
 {
-
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
 
-ShaderParamExplodeVolumes::ShaderParamExplodeVolumes(ShaderExplodeVolumes* sh):
+
+ShaderParamExplodeVolumes::ShaderParamExplodeVolumes(ShaderExplodeVolumes* sh) :
 	ShaderParam(sh),
-	color_(255,0,0),
-	plane_clip_(0,0,0,0),
-	light_position_(10.0f,100.0f,1000.0f),
+	color_(255, 0, 0),
+	plane_clip_(0, 0, 0, 0),
+	light_position_(10.0f, 100.0f, 1000.0f),
 	explode_factor_(0.8f)
 {}
 
@@ -212,7 +212,7 @@ void ShaderParamExplodeVolumes::set_uniforms()
 	sh->set_plane_clip(plane_clip_);
 }
 
-void ShaderParamExplodeVolumes::set_vbo( VBO* vbo_pos, VBO* vbo_color)
+void ShaderParamExplodeVolumes::set_vbo(VBO* vbo_pos, VBO* vbo_color)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
