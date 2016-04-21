@@ -294,9 +294,9 @@ void Viewer::init()
 
 	// map rendering object (primitive creation & sending to GPU)
 	render_ = new cgogn::rendering::MapRender();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, vertex_position_);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES, vertex_position_);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	// creation of shader
 	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);

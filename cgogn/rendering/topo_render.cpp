@@ -40,8 +40,7 @@ ShaderBoldLine* TopoRender::shader_bl_ = nullptr;
 ShaderRoundPoint* TopoRender::shader_rp_ = nullptr;
 int32 TopoRender::nb_instances_ = 0;
 
-TopoRender::TopoRender(QOpenGLFunctions_3_3_Core* ogl33):
-	ogl33_(ogl33),
+TopoRender::TopoRender():
 	dart_color_(255,255,255),
 	phi2_color_(255,0,0),
 	phi3_color_(255,255,0),
@@ -95,21 +94,30 @@ TopoRender::~TopoRender()
 
 }
 
-void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending)
+void TopoRender::reinit_vao()
+{
+	param_bl_->reinit_vao();
+	param_bl2_->reinit_vao();
+	param_rp_->reinit_vao();
+
+	param_bl_->set_vbo(vbo_darts_);
+	param_bl2_->set_vbo(vbo_relations_);
+	param_rp_->set_vbo(vbo_darts_,nullptr,2,0);
+}
+
+void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
 {
 	float32 lw = 2.0;
 	if(with_blending)
 	{
-		ogl33_->glEnable(GL_BLEND);
-		ogl33_->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		ogl33->glEnable(GL_BLEND);
+		ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		lw = 3.0;
 	}
-//	param_bl_->width_= lw;
-//	param_bl2_->width_= lw;
-	param_rp_->size_ = 2*lw;
 
+	param_rp_->size_ = 2*lw;
 	param_rp_->bind(projection,modelview);
-	ogl33_->glDrawArrays(GL_POINTS,0,vbo_darts_->size()/2);
+	ogl33->glDrawArrays(GL_POINTS,0,vbo_darts_->size()/2);
 	param_rp_->release();
 
 	shader_bl_->bind();
@@ -117,26 +125,24 @@ void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview,
 	shader_bl_->set_width(lw);
 	shader_bl_->set_color(dart_color_);
 	param_bl_->bind_vao_only(false);
-	ogl33_->glDrawArrays(GL_LINES,0,vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
 	param_bl_->release_vao_only();
 
 	param_bl2_->bind_vao_only(false);
 	shader_bl_->set_color(phi2_color_);
-	ogl33_->glDrawArrays(GL_LINES,0,vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
 
 	if (vbo_relations_->size() > vbo_darts_->size())
 	{
 		shader_bl_->set_color(phi3_color_);
-		ogl33_->glDrawArrays(GL_LINES,vbo_darts_->size(),vbo_darts_->size());
+		ogl33->glDrawArrays(GL_LINES,vbo_darts_->size(),vbo_darts_->size());
 	}
 	param_bl2_->release_vao_only();
 	shader_bl_->release();
 
-	ogl33_->glDisable(GL_BLEND);
+	ogl33->glDisable(GL_BLEND);
 
 }
-
-
 
 
 } // namespace rendering

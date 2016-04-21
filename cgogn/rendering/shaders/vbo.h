@@ -46,7 +46,7 @@ protected:
 
 public:
 
-	inline VBO(uint32 vec_dim) :
+	inline VBO(uint32 vec_dim=3u) :
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{

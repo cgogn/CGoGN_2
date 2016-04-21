@@ -110,7 +110,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
 
 	/**
-	 * @brief reinit vao (call if you want to use drawer in a new context
+	 * @brief reinit the vaos (call if you want to use drawer in a new context)
 	 */
 	void reinit_vao();
 

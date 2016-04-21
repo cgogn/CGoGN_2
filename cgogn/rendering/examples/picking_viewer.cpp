@@ -170,7 +170,7 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	render_ = new cgogn::rendering::MapRender();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	shader_flat_ = new cgogn::rendering::ShaderFlat;
 	param_flat_ = shader_flat_->generate_param();

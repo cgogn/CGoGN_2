@@ -37,13 +37,12 @@ namespace rendering
 
 
 
-VolumeRender::VolumeRender(QOpenGLFunctions_3_3_Core* ogl33):
+VolumeRender::VolumeRender():
 	shader_expl_vol_(nullptr),
 	shader_expl_vol_line_(nullptr),
 	param_expl_vol_(nullptr),
 	param_expl_vol_line_(nullptr),
 	vbo_col_(nullptr),
-	ogl33_(ogl33),
 	face_color_(0,150,0),
 	edge_color_(0,0,0),
 	shrink_v_(0.6f),
@@ -54,8 +53,18 @@ VolumeRender::VolumeRender(QOpenGLFunctions_3_3_Core* ogl33):
 	init_without_color();
 }
 
+void VolumeRender::reinit_vao()
+{
+	param_expl_vol_->reinit_vao();
+	param_expl_vol_line_->reinit_vao();
+	param_expl_vol_->set_vbo(vbo_pos_,vbo_col_);
+	param_expl_vol_line_->set_vbo(vbo_pos2_);
+}
+
+
 void VolumeRender::init_with_color()
 {
+	// check if all is already well initialized
 	if ((vbo_col_!= nullptr) && (shader_expl_vol_!= nullptr))
 		return;
 
@@ -70,6 +79,7 @@ void VolumeRender::init_with_color()
 
 void VolumeRender::init_without_color()
 {
+	// check if all is already well initialized
 	if ((vbo_col_== nullptr) && (shader_expl_vol_!= nullptr))
 		return;
 
@@ -112,19 +122,19 @@ VolumeRender::~VolumeRender()
 }
 
 
-void VolumeRender::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void VolumeRender::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	param_expl_vol_->bind(projection,modelview);
-	ogl33_->glDrawArrays(GL_LINES_ADJACENCY,0,vbo_pos_->size());
+	ogl33->glDrawArrays(GL_LINES_ADJACENCY,0,vbo_pos_->size());
 	param_expl_vol_->release();
 }
 
-void VolumeRender::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void VolumeRender::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 
 	param_expl_vol_line_->bind(projection,modelview);
 
-	ogl33_->glDrawArrays(GL_TRIANGLES,0,vbo_pos2_->size());
+	ogl33->glDrawArrays(GL_TRIANGLES,0,vbo_pos2_->size());
 
 	param_expl_vol_line_->release();
 }

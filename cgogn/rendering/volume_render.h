@@ -63,9 +63,6 @@ protected:
 	VBO* vbo_pos2_;
 	QColor edge_color_;
 
-
-	QOpenGLFunctions_3_3_Core* ogl33_;
-
 	float32 shrink_v_;
 	float32 shrink_f_;
 
@@ -82,12 +79,17 @@ public:
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	VolumeRender(QOpenGLFunctions_3_3_Core* ogl33);
+	VolumeRender();
 
 	/**
 	 * release buffers and shader
 	 */
 	~VolumeRender();
+
+	/**
+	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 */
+	void reinit_vao();
 
 	inline void set_explode_face(float32 x) { shrink_f_ = x; }
 
@@ -120,9 +122,9 @@ public:
 	template <typename VEC3, typename MAP>
 	void update_edge(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
-	void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+	void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 
-	void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+	void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 };
 
 
