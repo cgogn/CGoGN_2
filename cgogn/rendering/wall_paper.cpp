@@ -54,6 +54,7 @@ WallPaper::WallPaper(const QImage& img)
 
 	param_texture_->set_vbo(vbo_pos_, vbo_tc_);
 	param_texture_->texture_ = new QOpenGLTexture(img);
+	param_texture_->texture_->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 	set_full_screen(false);
 

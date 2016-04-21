@@ -47,11 +47,11 @@ const char* ShaderTexture::vertex_shader_source_ =
 
 const char* ShaderTexture::fragment_shader_source_ =
 	"#version 150\n"
-	"out vec3 frag_color;\n"
+	"out vec4 frag_color;\n"
 	"uniform sampler2D texture_unit;\n"
 	"in vec2 tc;\n"
 	"void main() {\n"
-	"		frag_color = texture(texture_unit,tc).rgb;\n"
+	"		frag_color = texture(texture_unit,tc);\n"
 	"}\n";
 
 ShaderTexture::ShaderTexture()

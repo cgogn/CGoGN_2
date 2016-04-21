@@ -29,6 +29,8 @@
 
 #include <cgogn/rendering/drawer.h>
 
+#include <cgogn/rendering/wall_paper.h>
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 //using Vec3 = Eigen::Vector3d;
@@ -51,6 +53,9 @@ public:
 	cgogn::rendering::Drawer* drawer_;
 	cgogn::rendering::Drawer* drawer2_;
 	Drawing* m_first;
+
+	cgogn::rendering::WallPaper* wp_;
+	cgogn::rendering::WallPaper* button_;
 };
 
 
@@ -85,6 +90,10 @@ Drawing::Drawing(Drawing* ptr) :
 
 void Drawing::draw()
 {
+	wp_->draw(this);
+
+	button_->draw(this);
+
 	QMatrix4x4 proj;
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
@@ -97,7 +106,6 @@ void Drawing::draw()
 //	std::cout << long(this->context()->shareContext()) << " ==> ";
 //	std::cout << long(this->context()->shareGroup()) << std::endl;
 
-
 }
 
 void Drawing::init()
@@ -109,10 +117,19 @@ void Drawing::init()
 
 	this->makeCurrent();
 
+
+	wp_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
+
+	button_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
+
+	button_->set_local_position(this->width(),this->height(),10,10,50,50);
+
 	if (m_first!=this)
 	{
 		drawer_ = m_first->drawer_;
 		drawer_->reinit_vao();
+//		wp_->reinit_vao();
+//		button_->reinit_vao();
 		return;
 	}
 
