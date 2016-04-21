@@ -106,7 +106,7 @@ void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview,
 	}
 //	param_bl_->width_= lw;
 //	param_bl2_->width_= lw;
-	param_rp_->width_ = 2*lw;
+	param_rp_->size_ = 2*lw;
 
 	param_rp_->bind(projection,modelview);
 	ogl33_->glDrawArrays(GL_POINTS,0,vbo_darts_->size()/2);

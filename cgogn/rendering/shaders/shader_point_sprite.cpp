@@ -355,7 +355,12 @@ void ShaderPointSprite::set_local_light_position(const QVector3D& l, const QMatr
 
 
 ShaderParamPointSprite::ShaderParamPointSprite(ShaderPointSprite* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(0,0,255),
+	ambiant_color_(5,5,5),
+	light_pos_(10,100,1000),
+	size_(1.0)
+
 {}
 
 void ShaderParamPointSprite::set_uniforms()

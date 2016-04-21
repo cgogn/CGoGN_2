@@ -161,9 +161,9 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 
 	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("color");
-	unif_width_ = prg_.uniformLocation("pointSizes");
+	unif_size_ = prg_.uniformLocation("pointSizes");
 
-	set_width(3.0f);
+	set_size(3.0f);
 	set_color(QColor(255,255,255));
 }
 
@@ -175,25 +175,27 @@ void ShaderRoundPoint::set_color(const QColor& rgb)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderRoundPoint::set_width(float32 wpix)
+void ShaderRoundPoint::set_size(float32 wpix)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
-	prg_.setUniformValue(unif_width_, wd);
+	prg_.setUniformValue(unif_size_, wd);
 }
 
 
 ShaderParamRoundPoint::ShaderParamRoundPoint(ShaderRoundPoint* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(0,0,255),
+	size_(1.0)
 {}
 
 void ShaderParamRoundPoint::set_uniforms()
 {
 	ShaderRoundPoint* sh = static_cast<ShaderRoundPoint*>(this->shader_);
 	sh->set_color(color_);
-	sh->set_width(width_);
+	sh->set_size(size_);
 }
 
 

@@ -113,7 +113,10 @@ void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 }
 
 ShaderParamExplodeVolumesLine::ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(255,255,255),
+	plane_clip_(0,0,0,0),
+	explode_factor_(0.8f)
 {}
 
 void ShaderParamExplodeVolumesLine::set_uniforms()

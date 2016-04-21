@@ -259,7 +259,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 
-			shader_rp_->set_width(pp.width);
+			shader_rp_->set_size(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 			if (pp.aa)

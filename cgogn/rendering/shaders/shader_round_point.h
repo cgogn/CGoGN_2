@@ -44,7 +44,7 @@ protected:
 
 public:
 	QColor color_;
-	float32 width_;
+	float32 size_;
 
 	ShaderParamRoundPoint(ShaderRoundPoint* sh);
 
@@ -64,7 +64,7 @@ class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 
 	// uniform ids
 	GLint unif_color_;
-	GLint unif_width_;
+	GLint unif_size_;
 
 public:
 
@@ -97,7 +97,7 @@ public:
 	 * @brief set the width of lines (call before each draw)
 	 * @param w width in pixel
 	 */
-	void set_width(float32 w);
+	void set_size(float32 w);
 
 };
 

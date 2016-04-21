@@ -101,7 +101,9 @@ void ShaderVectorPerVertex::set_length(float32 l)
 
 
 ShaderParamVectorPerVertex::ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(255,255,255),
+	length_(1.0)
 {}
 
 void ShaderParamVectorPerVertex::set_uniforms()

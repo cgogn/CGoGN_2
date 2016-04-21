@@ -75,7 +75,8 @@ void ShaderSimpleColor::set_color(const QColor& rgb)
 
 
 ShaderParamSimpleColor::ShaderParamSimpleColor(ShaderSimpleColor* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(255,255,255)
 {}
 
 void ShaderParamSimpleColor::set_uniforms()

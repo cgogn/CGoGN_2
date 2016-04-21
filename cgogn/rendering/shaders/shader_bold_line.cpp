@@ -230,7 +230,9 @@ void ShaderBoldLine::set_width(float32 wpix)
 
 
 ShaderParamBoldLine::ShaderParamBoldLine(ShaderBoldLine* sh):
-	ShaderParam(sh)
+	ShaderParam(sh),
+	color_(255,255,255),
+	width_(2.0)
 {}
 
 void ShaderParamBoldLine::set_uniforms()
