@@ -75,7 +75,7 @@ void ShaderParamTexture::set_uniforms()
 {
 	if (texture_)
 	{
-		glActiveTexture(GL_TEXTURE0);
+		QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
 		texture_->bind();
 	}
 }
