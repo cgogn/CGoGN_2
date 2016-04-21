@@ -211,7 +211,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 {
 
 	//classic rendering
-	if (!begins_point_.empty() && !begins_line_.empty())
+	if (!begins_point_.empty() && !begins_line_.empty() && !begins_face_.empty())
 	{
 		shader_cpv_->bind();
 		shader_cpv_->set_matrices(projection,modelview);
@@ -228,18 +228,10 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
-		shader_cpv_->release_vao(vao_cpv_);
-		shader_cpv_->release();
-	}
-
-	if(!begins_face_.empty())
-	{
-		shader_cpv_->bind();
-		shader_cpv_->set_matrices(projection,modelview);
-		shader_cpv_->bind_vao(vao_cpv_);
-
 		for (auto& pp : begins_face_)
+		{
 			ogl33_->glDrawArrays(pp.mode, pp.begin, pp.nb);
+		}
 
 		shader_cpv_->release_vao(vao_cpv_);
 		shader_cpv_->release();
