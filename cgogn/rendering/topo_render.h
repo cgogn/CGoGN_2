@@ -66,6 +66,15 @@ protected:
 	float32 shrink_f_;
 	float32 shrink_e_;
 
+
+
+	template <typename VEC3, typename MAP>
+	void update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+
+	template <typename VEC3, typename MAP>
+	void update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+
+
 public:
 	using Self = TopoRender;
 	/**
@@ -99,11 +108,18 @@ public:
 
 	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
 
-	template <typename VEC3, typename MAP>
-	void update_map2(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 2>::type* = nullptr>
+	void update(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	{
+		this->update_map2<VEC3,MAP>(m,position);
+	}
 
-	template <typename VEC3, typename MAP>
-	void update_map3(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 3>::type* = nullptr>
+	void update(MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	{
+		this->update_map3<VEC3,MAP>(m,position);
+	}
+
 
 };
 

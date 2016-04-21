@@ -164,13 +164,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			expl_ += 0.05f;
 			volume_render_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
-			topo_render_->update_map3<Vec3>(map_,vertex_position_);
+			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_Minus:
 			expl_ -= 0.05f;
 			volume_render_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
-			topo_render_->update_map3<Vec3>(map_,vertex_position_);
+			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		default:
 			break;
@@ -220,7 +220,6 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		drawer_->end_list();
 	}
 
-
 	QOGLViewer::mousePressEvent(event);
 }
 
@@ -262,7 +261,7 @@ void Viewer::init()
 
 	topo_render_ = new cgogn::rendering::TopoRender();
 	topo_render_->set_explode_volume(expl_);
-	topo_render_->update_map3<Vec3>(map_,vertex_position_);
+	topo_render_->update<Vec3>(map_,vertex_position_);
 
 	volume_render_ = new cgogn::rendering::VolumeRender;
 	volume_render_->set_explode_volume(expl_);
