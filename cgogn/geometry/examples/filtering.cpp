@@ -243,9 +243,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -257,9 +257,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::geometry::filter_bilateral<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_, vertex_normal_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -269,9 +269,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -344,21 +344,21 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	vbo_norm_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
 
 	// fill a color vbo with abs of normals
 	vbo_color_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 	// fill a sphere size vbo
 	vbo_sphere_sz_ = new cgogn::rendering::VBO(1);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_sphere_sz_, [&] (const Vec3& n) -> float
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_, [&] (const Vec3& n) -> float
 	{
 		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});

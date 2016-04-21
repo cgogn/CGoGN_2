@@ -270,35 +270,41 @@ void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
+	// create and fill VBO for positions
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
+	// create and fill VBO for normals
 	vbo_norm_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_norm_);
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
 
 	// fill a color vbo with abs of normals
 	vbo_color_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 	// fill a sphere size vbo
 	vbo_sphere_sz_ = new cgogn::rendering::VBO(1);
-	cgogn::rendering::update_vbo(vertex_normal_, *vbo_sphere_sz_, [&] (const Vec3& n) -> float
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_, [&] (const Vec3& n) -> float
 	{
 		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
 
+	// map rendering object (primitive creation & sending to GPU)
 	render_ = new cgogn::rendering::MapRender();
-
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES, vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 
+	// creation of shader
 	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
+	// generation of one parameter set (for this shader) : vbo + uniforms
 	param_point_sprite_ = shader_point_sprite_->generate_param();
+	// set vbo param (see param::set_vbo signature)
 	param_point_sprite_->set_vbo(vbo_pos_,vbo_color_,vbo_sphere_sz_);
+	// set uniforms data
 	param_point_sprite_->size_ = bb_.diag_size()/1000.0;
 	param_point_sprite_->color_ = QColor(255,0,0);
 

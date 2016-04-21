@@ -140,7 +140,7 @@ public:
  * @param convert conversion lambda
  */
 template <typename ATTR>
-void update_vbo(const ATTR& attr, VBO& vbo)
+void update_vbo(const ATTR& attr, VBO* vbo)
 {
 	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
 
@@ -151,17 +151,17 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float32);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
 	{
 		// copy
-		vbo.bind();
+		vbo->bind();
 		for (uint32 i = 0; i < nb_chunks; ++i)
-			vbo.copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
-		vbo.release();
+			vbo->copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
+		vbo->release();
 	}
 	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
 	{
@@ -174,9 +174,9 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 			float64* src = reinterpret_cast<float64*>(chunk_addr[i]);
 			for (uint32 j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
 				*fit++ = *src++;
-			vbo.bind();
-			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
-			vbo.release();
+			vbo->bind();
+			vbo->copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
+			vbo->release();
 		}
 		delete[] float_buffer;
 	}
@@ -190,7 +190,7 @@ void update_vbo(const ATTR& attr, VBO& vbo)
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename FUNC>
-void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
+void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
@@ -222,18 +222,18 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
 
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
-	vbo.release_pointer();
+	vbo->release_pointer();
 }
 
 
@@ -245,7 +245,7 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename ATTR2, typename FUNC>
-void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& convert)
+void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 2 param
 	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arg");
@@ -289,12 +289,12 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
 	// out type conversion
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
@@ -302,7 +302,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}
-	vbo.release_pointer();
+	vbo->release_pointer();
 }
 
 
@@ -315,7 +315,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
  * @param convert conversion lambda  -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename FUNC>
-void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo, const FUNC& convert)
+void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
@@ -342,16 +342,16 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(uint32(indices.size()), vec_dim);
+	vbo->allocate(uint32(indices.size()), vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 
 	for (uint32 i: indices)
 		 *dst++ = convert(attr[i]);
 
-	vbo.release_pointer();
+	vbo->release_pointer();
 }
 
 

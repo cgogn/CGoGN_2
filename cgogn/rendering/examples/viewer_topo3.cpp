@@ -258,7 +258,7 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	topo_render_ = new cgogn::rendering::TopoRender(this);
 	topo_render_->set_explode_volume(expl_);

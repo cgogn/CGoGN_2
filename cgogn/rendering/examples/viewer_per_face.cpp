@@ -202,19 +202,19 @@ void Viewer::init()
 	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
-	cgogn::rendering::generate_vbo(vertex_position_, ind_v, *vbo_pos_, [] (const Vec3& v) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_, [] (const Vec3& v) -> std::array<float32,3>
 	{
 		return {float32(v[0]), float32(v[1]), float32(v[2])};
 	});
 
 	// generate VBO: normals
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_norm_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_norm_, [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(n[0]), float32(n[1]), float32(n[2])};
 	});
 
 	// generate VBO: colors (here abs of normals)
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_color_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_color_, [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(std::abs(n[0])), float32(std::abs(n[1])), float32(std::abs(n[2]))};
 	});

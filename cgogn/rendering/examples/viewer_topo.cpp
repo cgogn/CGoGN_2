@@ -147,19 +147,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_C:
 			cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_L:
 			cgogn::modeling::loop<Vec3>(map_, vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_R:
 			cgogn::modeling::pliant_remeshing<Vec3>(map_,vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
 			topo_render->update_map2<Vec3>(map_,vertex_position_);
 			break;
@@ -200,7 +200,7 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	render_ = new cgogn::rendering::MapRender();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
