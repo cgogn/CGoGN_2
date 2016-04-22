@@ -54,7 +54,7 @@ void pliant_remeshing(
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
+		const VEC3& edge = position[v.first] - position[v.second];
 		mean_edge_length += edge.norm();
 	},
 	cache);
@@ -67,8 +67,8 @@ void pliant_remeshing(
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
-		if(edge.norm() > max_edge_length)
+		const VEC3& edge = position[v.first] - position[v.second];
+		if(edge.squaredNorm() > max_edge_length*max_edge_length)
 		{
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
@@ -84,16 +84,15 @@ void pliant_remeshing(
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
-		Scalar length = edge.norm();
-		if(length < min_edge_length)
+		const VEC3& edge = position[v.first] - position[v.second];
+		if(edge.squaredNorm() < min_edge_length*min_edge_length)
 		{
 			bool collapse = true;
-			VEC3 p = position[v.second];
+			const VEC3& p = position[v.second];
 			map.foreach_adjacent_vertex_through_edge(v.second, [&] (Vertex vv)
 			{
-				VEC3 vec = p - position[vv];
-				if (vec.norm() > max_edge_length)
+				const VEC3& vec = p - position[vv];
+				if (vec.squaredNorm() > max_edge_length*max_edge_length)
 					collapse = false;
 			});
 			if(collapse)
