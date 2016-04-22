@@ -80,7 +80,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream file(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 
 		std::string line;
 		line.reserve(512);
@@ -95,13 +95,12 @@ protected:
 		} while (tag !="GRID");
 
 		// reading vertices
-		this->nb_vertices_ = 0u;
 		std::map<uint32, uint32> old_new_ids_map;
 		do
 		{
 			std::string s_v = line.substr(8,8);
 			const uint32 old_index = std::stoi(s_v);
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			old_new_ids_map[old_index] = new_index;
 			auto& v = position->operator [](new_index);
 
@@ -114,18 +113,17 @@ protected:
 
 			std::getline (file, line);
 			tag = line.substr(0,4);
-			this->nb_vertices_++;
+			this->set_nb_vertices(this->get_nb_vertices() + 1u);
 		} while (tag =="GRID");
 
 		// reading volumes
-		this->nb_volumes_ = 0u;
 		do
 		{
 			std::string s_v = line.substr(0,std::min(line.size(),12ul));
 
 			if (s_v.compare(0, 5,"CHEXA") == 0)
 			{
-				this->nb_volumes_++;
+				this->set_nb_volumes(this->get_nb_volumes() + 1u);
 				std::array<uint32, 8> ids;
 
 				s_v = line.substr(24,8);
@@ -154,7 +152,7 @@ protected:
 			} else {
 				if (s_v.compare(0, 6,"CTETRA") == 0)
 				{
-					this->nb_volumes_++;
+					this->set_nb_volumes(this->get_nb_volumes() + 1u);
 					std::array<uint32, 4> ids;
 
 					s_v = line.substr(24,8);

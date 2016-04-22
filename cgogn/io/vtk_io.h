@@ -764,8 +764,8 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->nb_vertices_ = uint32(this->positions_.size());
-		this->nb_volumes_ = uint32(this->cell_types_.size());
+		this->set_nb_vertices(uint32(this->positions_.size()));
+		this->set_nb_volumes(uint32(this->cell_types_.size()));
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<uint32>* cells_vec		= this->cells_.get_vec();
@@ -799,7 +799,7 @@ protected:
 		}
 
 
-		add_vtk_volumes(cells_buffer,*cell_types_vec, *(this->vertex_attributes_.template get_attribute<VEC3>("position")));
+		add_vtk_volumes(cells_buffer,*cell_types_vec, *(this->template get_position_attribute<VEC3>()));
 
 		return true;
 	}
@@ -809,13 +809,13 @@ protected:
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 
-		this->nb_vertices_ = uint32(this->positions_.size());
-		this->nb_volumes_ = uint32(this->cell_types_.size());
+		this->set_nb_vertices(uint32(this->positions_.size()));
+		this->set_nb_volumes(uint32(this->cell_types_.size()));
 
 		const std::vector<int>* cell_types_vec			= this->cell_types_.get_vec();
 		const std::vector<uint32>* cells_vec		= this->cells_.get_vec();
 
-		ChunkArray<VEC3>* pos = this->vertex_attributes_.template get_attribute<VEC3>("position");
+		ChunkArray<VEC3>* pos = this->template get_position_attribute<VEC3>();
 		cgogn_assert(pos != nullptr);
 		add_vtk_volumes(*cells_vec,*cell_types_vec, *pos);
 
@@ -824,11 +824,11 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_vertex_attributes_container(), attribute_name));
 	}
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->volume_attributes_, attribute_name));
+		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_volume_attributes_container(), attribute_name));
 	}
 
 	virtual bool import_file_impl(const std::string& filename) override
@@ -851,7 +851,7 @@ protected:
 	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
 	{
 		uint32 curr_offset = 0;
-		for (uint32 i=0u; i< this->nb_volumes_; ++i)
+		for (uint32 i=0u, end = this->get_nb_volumes(); i< end; ++i)
 		{
 			if (type_vol[i]== VTK_CELL_TYPES::VTK_HEXAHEDRON || type_vol[i]== VTK_CELL_TYPES::VTK_VOXEL)
 			{

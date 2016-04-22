@@ -141,7 +141,7 @@ public:
 
 	virtual ~VolumeImport() override {}
 
-protected:
+private:
 	uint32 nb_vertices_;
 	uint32 nb_volumes_;
 
@@ -150,6 +150,55 @@ protected:
 
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer volume_attributes_;
+
+protected:
+	inline void set_nb_vertices(uint32 nbv)
+	{
+		nb_vertices_ = nbv;
+	}
+
+	inline uint32 get_nb_vertices() const
+	{
+		return nb_vertices_;
+	}
+
+	inline void set_nb_volumes(uint32 nbw)
+	{
+		nb_volumes_ = nbw;
+		volumes_types.reserve(nbw);
+		volumes_vertex_indices_.reserve(8u*nbw);
+	}
+
+	inline uint32 get_nb_volumes() const
+	{
+		return nb_volumes_;
+	}
+
+	template<typename VEC3>
+	inline ChunkArray<VEC3>* get_position_attribute()
+	{
+		auto res = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		if (res != nullptr)
+			return res;
+		else
+			return this->vertex_attributes_.template get_attribute<VEC3>("position");
+	}
+
+	inline uint32 insert_line_vertex_container()
+	{
+		return vertex_attributes_.template insert_lines<1>();
+	}
+
+	inline ChunkArrayContainer& get_vertex_attributes_container()
+	{
+		return vertex_attributes_;
+	}
+
+	inline ChunkArrayContainer& get_volume_attributes_container()
+	{
+		return volume_attributes_;
+	}
+
 
 public:
 	VolumeImport() :
@@ -466,7 +515,8 @@ public:
 protected:
 	virtual void clear() override
 	{
-		nb_vertices_ = 0;
+		set_nb_vertices(0u);
+		set_nb_volumes(0u);
 		volumes_types.clear();
 		volumes_vertex_indices_.clear();
 		vertex_attributes_.remove_attributes();

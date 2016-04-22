@@ -75,10 +75,7 @@ namespace cgogn
 class CGOGN_CORE_API ThreadPool {
 public:
 	ThreadPool();
-	ThreadPool(const ThreadPool&) = delete;
-	ThreadPool& operator=(const ThreadPool&) = delete;
-	ThreadPool(ThreadPool&&) = delete;
-	ThreadPool& operator=(ThreadPool&&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 	template<class F, class... Args>
 	auto enqueue(const F& f, Args&&... args)

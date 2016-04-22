@@ -149,20 +149,20 @@ protected:
 
 	inline bool import_legacy_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
 		line.reserve(512);
 		word.reserve(128);
 		line = this->skip_empty_lines(data_stream);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -178,9 +178,9 @@ protected:
 			return false;
 
 		std::getline(data_stream,line);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -221,7 +221,7 @@ protected:
 
 	inline bool import_ascii_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -236,13 +236,13 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_vertices(); i < end ; ++i)
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -258,9 +258,9 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -316,7 +316,7 @@ protected:
 
 	inline bool import_binary_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		line.reserve(512);
@@ -329,15 +329,15 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
 		std::vector<char> buff;
-		buff.resize(this->nb_vertices_*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
+		buff.resize(this->get_nb_vertices()*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
 		data_stream.read(&buff[0], buff.size());
 
 		for (auto it = buff.begin(), end = buff.end() ; it != end ;)
 		{
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
@@ -366,9 +366,9 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_;)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end;)
 		{
 			std::array<char,12> header_buff;
 			data_stream.read(&header_buff[0], header_buff.size());
