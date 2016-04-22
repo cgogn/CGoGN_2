@@ -154,6 +154,7 @@ protected:
 			}
 
 		}
+
 		// Close de map
 		MapBuilder mbuild(*this);
 		mbuild.close_map();
@@ -368,6 +369,37 @@ TEST_F(CMap3TopoTest, degree)
 //	Face f(this->add_face_topo(10u));
 
 //	EXPECT_EQ(degree(f), 10u);
+}
+
+/*! \brief The number of connected components is correctly counted
+ */
+TEST_F(CMap3TopoTest, nb_connected_components)
+{
+	auto sew_volumes = [this] (Dart it1, Dart it2)
+	{
+		Dart begin = it1;
+		do
+		{
+			phi3_sew(it1, it2);
+			it1 = phi1(it1);
+			it2 = phi_1(it2);
+		} while (it1 != begin);
+	};
+
+	Dart p1 = add_prism_topo(3u);
+	Dart p2 = add_prism_topo(3u);
+	sew_volumes(p1, p2);
+
+	Dart p3 = add_pyramid_topo(4u);
+	Dart p4 = add_pyramid_topo(4u);
+	sew_volumes(p3, p4);
+
+	add_prism_topo(5u);
+
+	MapBuilder mbuild(*this);
+	mbuild.close_map();
+
+	EXPECT_EQ(nb_connected_components(), 3u);
 }
 
 #undef NB_MAX

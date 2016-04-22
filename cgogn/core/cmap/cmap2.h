@@ -58,6 +58,7 @@ public:
 	using Volume	= Cell<Orbit::PHI1_PHI2>;
 
 	using Boundary  = Face;
+	using ConnectedComponent = Volume;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -223,11 +224,11 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=2,"Composition of PHI: invalid index");
-		switch(N%10)
+		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
+		switch(N % 10)
 		{
-			case 1 : return this->phi1(phi<N/10>(d)) ;
-			case 2 : return this->phi2(phi<N/10>(d)) ;
+			case 1 : return this->phi1(phi<N / 10>(d)) ;
+			case 2 : return this->phi2(phi<N / 10>(d)) ;
 			default : return d ;
 		}
 	}
@@ -330,11 +331,11 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)				// Next triangles
 		{
 			Dart next = this->Inherit::add_face_topo(3u);
-			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			this->phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 														// End the umbrella
-		this->phi2_sew(this->phi_1(current),this->phi1(first));
+		this->phi2_sew(this->phi_1(current), this->phi1(first));
 
 		return this->close_hole_topo(first);			// Add the base face
 	}
@@ -344,7 +345,7 @@ protected:
 	 * \param size : the number of sides of the prism
 	 * \return A dart of the base face
 	 * The base and the top are faces with n vertices and edges.
-	 * A set of n pairewise linked quads are built.
+	 * A set of n pairwise linked quads are built.
 	 * These quads are sewn to the base and top faces.
 	 */
 	Dart add_prism_topo(uint32 size)
@@ -357,18 +358,16 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)						// Next quads
 		{
 			Dart next = this->Inherit::add_face_topo(4u);
-			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			this->phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 
-		this->phi2_sew(this->phi_1(current),this->phi1(first));	// Close the quad strip
+		this->phi2_sew(this->phi_1(current), this->phi1(first));// Close the quad strip
 
 		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
 
 		return this->close_hole_topo(first);					// Add the base face
 	}
-
-protected:
 
 	/**
 	 * \brief Cut an edge.
@@ -741,14 +740,15 @@ public:
 
 	bool is_adjacent_to_boundary(Boundary c)
 	{
-	  CGOGN_CHECK_CONCRETE_TYPE;
-	  bool result = false;
-	  foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
-	  {
-		if (this->is_boundary(phi2(d))) { result = true; return false; }
-		return true;
-	  });
-	  return result;
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		bool result = false;
+		foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (this->is_boundary(phi2(d))) { result = true; return false; }
+			return true;
+		});
+		return result;
 	}
 
 	/*******************************************************************************
@@ -824,6 +824,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
@@ -902,6 +903,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
@@ -1121,9 +1123,8 @@ public:
 
 	inline std::pair<Vertex,Vertex> vertices(Edge e) const
 	{
-		return std::pair<Vertex,Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
-
 };
 
 template <typename MAP_TRAITS>

@@ -529,9 +529,9 @@ public:
 	 * @param c2 second cell to compare
 	 */
 	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2, bool topo_only = false) const
 	{
-		if (this->template is_embedded<ORBIT>())
+		if (!topo_only && this->template is_embedded<ORBIT>())
 			return this->get_embedding(c1) == this->get_embedding(c2);
 
 		bool result = false;
@@ -578,6 +578,11 @@ public:
 		uint32 result = 0;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
 		return result;
+	}
+
+	uint32 nb_connected_components() const
+	{
+		return nb_cells<ConcreteMap::ConnectedComponent::ORBIT>();
 	}
 
 	/**

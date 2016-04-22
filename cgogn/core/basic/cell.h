@@ -47,10 +47,11 @@ enum Orbit: uint32
 	PHI1_PHI3,
 	PHI2_PHI3,
 	PHI21,
-	PHI21_PHI31
+	PHI21_PHI31,
+	PHI1_PHI2_PHI3
 };
 
-static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
+static const std::size_t NB_ORBITS = Orbit::PHI1_PHI2_PHI3 + 1;
 
 static const uint32 EMBNULL = UINT_MAX;
 
@@ -66,6 +67,7 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
+		case Orbit::PHI1_PHI2_PHI3: return "cgogn::Orbit::PHI1_PHI2_PHI3"; break;
 //		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
 	cgogn_assert_not_reached("This orbit does not exist");
@@ -114,7 +116,6 @@ public:
 
 	//TODO
 	// Cell(Cell<ORBIT>&& ) = delete;
-
 
 	/**
 	 * \brief Tests the validity of the cell.
