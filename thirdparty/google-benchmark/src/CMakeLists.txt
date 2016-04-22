@@ -18,7 +18,10 @@ else()
 endif()
 
 add_library(benchmark ${SOURCE_FILES} ${RE_FILES})
-
+# use of target_compile_options to have a transitive c++11 flag
+if(NOT MSVC)
+	target_compile_options(benchmark PUBLIC "-std=c++11")
+endif()
 
 set_target_properties(benchmark PROPERTIES
   OUTPUT_NAME "benchmark"

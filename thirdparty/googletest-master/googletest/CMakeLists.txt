@@ -89,6 +89,10 @@ endif()
 # aggressive about warnings.
 cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
 cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
+# use of target_compile_options to have a transitive c++11 flag
+if(NOT MSVC)
+	target_compile_options(gtest PUBLIC "-std=c++11")
+endif()
 target_link_libraries(gtest_main gtest)
 
 # If the CMake version supports it, attach header directory information
