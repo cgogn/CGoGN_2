@@ -9,6 +9,8 @@ else(MSVC)
 	add_library(tet SHARED tetgen.h tetgen.cxx predicates.cxx)
 endif(MSVC)
 
+install(FILES "tetgen.h" DESTINATION "include/thirdparty/tetgen")
+
 # Add an executable to the project using the specified source files.
 # add_executable(tetgen tetgen.cxx predicates.cxx)
 

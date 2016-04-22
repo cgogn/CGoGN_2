@@ -19,6 +19,7 @@ if(NOT MSVC)
 endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
+install(FILES "tinyxml2.h" DESTINATION "include/thirdparty/TinyXml2")
 
 ######## 1. Build tree
 

@@ -23,6 +23,7 @@ target_include_directories(transmesh PRIVATE
 target_link_libraries(transmesh ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
+install(FILES "libmesh6.h" DESTINATION "include/thirdparty/lm6")
 
 ######## 1. Build tree
 

@@ -15,6 +15,7 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
+install(FILES "ply.h" DESTINATION "include/thirdparty/ply")
 
 ######## 1. Build tree
 

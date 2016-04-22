@@ -47,5 +47,5 @@ install(
 
 install(
   DIRECTORY "${PROJECT_SOURCE_DIR}/include/benchmark"
-  DESTINATION include
+  DESTINATION include/thirdparty/
   FILES_MATCHING PATTERN "*.*h")

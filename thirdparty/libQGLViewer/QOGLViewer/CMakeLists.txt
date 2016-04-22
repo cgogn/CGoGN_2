@@ -56,6 +56,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 
-
-
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	DESTINATION "include/thirdparty/"
+	FILES_MATCHING PATTERN "*.h"
+)
 
