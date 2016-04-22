@@ -162,7 +162,7 @@ protected:
 		for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
 		{
 			if (this->embeddings_[orbit])
-				(*this->embeddings_[orbit])[idx] = EMBNULL;
+				(*this->embeddings_[orbit])[idx] = INVALID_INDEX;
 		}
 		return idx;
 	}
@@ -199,7 +199,7 @@ protected:
 			if(this->embeddings_[orbit])
 			{
 				uint32 emb = (*this->embeddings_[orbit])[index];
-				if (emb != EMBNULL)
+				if (emb != INVALID_INDEX)
 					this->attributes_[orbit].unref_line(emb);
 			}
 		}
@@ -376,8 +376,8 @@ protected:
 		ChunkArray<uint32>* ca = this->topology_.template add_attribute<uint32>(oss.str());
 		this->embeddings_[ORBIT] = ca;
 
-		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
+		// initialize all darts indices to INVALID_INDEX for this ORBIT
+		foreach_dart([ca] (Dart d) { (*ca)[d.index] = INVALID_INDEX; });
 
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
@@ -454,14 +454,14 @@ public:
 		{
 			const uint32 idx = this->get_embedding(c);
 			// check used indices are valid
-			if (idx == EMBNULL)
+			if (idx == INVALID_INDEX)
 			{
 				result = false;
-				cgogn_log_error("is_well_embedded") << "EMBNULL found for dart " << c << " in orbit " << orbit_name(ORBIT);
+				cgogn_log_error("is_well_embedded") << "INVALID_INDEX found for dart " << c << " in orbit " << orbit_name(ORBIT);
 				return;
 			}
 			counter[idx].push_back(c);
-			// check all darts of the cell use the same index (distinct to EMBNULL)
+			// check all darts of the cell use the same index (distinct to INVALID_INDEX)
 			cmap->foreach_dart_of_orbit(c, [&] (Dart d)
 			{
 				const uint32 emb_d = this->get_embedding(CellType(d));

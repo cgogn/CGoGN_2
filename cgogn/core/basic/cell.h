@@ -35,6 +35,7 @@
  * \file core/basic/cell.h
  * \brief Orbit and cell definitions used in cgogn.
  */
+
 namespace cgogn
 {
 
@@ -52,8 +53,6 @@ enum Orbit: uint32
 };
 
 static const std::size_t NB_ORBITS = Orbit::PHI1_PHI2_PHI3 + 1;
-
-static const uint32 EMBNULL = UINT_MAX;
 
 inline std::string orbit_name(Orbit orbit)
 {

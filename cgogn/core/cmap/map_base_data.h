@@ -256,7 +256,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX, "get_embedding result is INVALID_INDEX");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
@@ -269,13 +269,13 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
+		cgogn_message_assert(emb != INVALID_INDEX,"cannot set an embedding to INVALID_INDEX.");
 
 		const uint32 old = (*embeddings_[ORBIT])[d.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
 		attributes_[ORBIT].ref_line(emb);			// ref the new emb
-		if (old != EMBNULL)
+		if (old != INVALID_INDEX)
 			attributes_[ORBIT].unref_line(old);	// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
