@@ -110,7 +110,7 @@ public:
 	uint32 size() const
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
-		return cells_[ORBIT].size();
+		return uint32(cells_[ORBIT].size());
 	}
 
 	template <typename CellType>

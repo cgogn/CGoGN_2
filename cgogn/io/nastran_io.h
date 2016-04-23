@@ -121,7 +121,7 @@ protected:
 		this->nb_volumes_ = 0u;
 		do
 		{
-			std::string s_v = line.substr(0,std::min(line.size(),12ul));
+			std::string s_v = line.substr(0,std::min(line.size(),std::size_t(12)));
 
 			if (s_v.compare(0, 5,"CHEXA") == 0)
 			{
