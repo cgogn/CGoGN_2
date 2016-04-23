@@ -1117,11 +1117,6 @@ public:
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
-
-	inline std::array<Vertex,2> verts(Edge e)
-	{
-		return {{ Vertex(e.dart), Vertex(this->phi1(e.dart)) }};
-	}
 };
 
 template <typename MAP_TRAITS>
