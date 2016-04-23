@@ -577,8 +577,6 @@ protected:
 		// TODO
 	}
 
-protected:
-
 	/**
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
 	 * \param d : first vertex
@@ -622,7 +620,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
-		cut_face_topo(d.dart,e.dart);
+		cut_face_topo(d.dart, e.dart);
 		Dart nd = this->phi_1(d.dart);
 		Dart ne = this->phi_1(e.dart);
 
@@ -651,6 +649,75 @@ public:
 		{
 			this->template copy_embedding<Volume>(nd, d.dart);
 			this->template copy_embedding<Volume>(ne, d.dart);
+		}
+	}
+
+protected:
+
+	inline bool unsew_faces_topo(Edge g)
+	{
+		if (this->is_incident_to_boundary(g))
+			return false;
+
+		Dart d = g.dart;
+		Dart dd = phi2(d);
+
+		Dart e = Inherit::add_face_topo(2);
+		Dart ee = this->phi1(e);
+		this->set_boundary(e, true);
+		this->set_boundary(ee, true);
+
+		Dart f = this->get_boundary_dart(Vertex(d));
+		Dart ff = this->get_boundary_dart(Vertex(dd));
+
+		if(!f.is_nil())
+			this->phi1_sew(e, this->phi_1(f));
+
+		if(!ff.is_nil())
+			this->phi1_sew(ee, this->phi_1(ff));
+
+		phi2_unsew(d);
+
+		phi2_sew(d, e);
+		phi2_sew(dd, ee);
+
+		return true;
+	}
+
+public:
+
+	inline void unsew_faces(Edge d)
+	{
+		Dart e = phi2(d.dart);
+		if (unsew_faces_topo(d))
+		{
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(phi2(e), this->phi1(e));
+				this->template copy_embedding<Vertex>(phi2(d.dart), this->phi1(d.dart));
+
+				Dart ee = this->phi1(e);
+				if (!this->same_cell(Vertex(d.dart), Vertex(ee), true))
+					this->template new_orbit_embedding(Vertex(ee));
+
+				Dart dd = this->phi1(d.dart);
+				if (!this->same_cell(Vertex(e), Vertex(dd), true))
+					this->template new_orbit_embedding(Vertex(dd));
+			}
+
+			if (this->template is_embedded<Edge>())
+				this->template new_orbit_embedding(Edge(e));
+
+			if (this->template is_embedded<Volume>())
+			{
+				if (this->same_cell(Volume(d.dart), Volume(e)))
+				{
+					this->template copy_embedding<Volume>(phi2(e), e);
+					this->template copy_embedding<Volume>(phi2(d.dart), e);
+				}
+				else
+					this->template new_orbit_embedding(Volume(e));
+			}
 		}
 	}
 

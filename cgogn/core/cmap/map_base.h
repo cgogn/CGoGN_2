@@ -606,14 +606,27 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
-	template <typename CellType>
-	bool is_incident_to_boundary(CellType c) const
+	template <Orbit ORBIT>
+	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
-		static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = true; return false; }
+			return true;
+		});
+		return result;
+	}
+
+	template <Orbit ORBIT>
+	Dart get_boundary_dart(Cell<ORBIT> c) const
+	{
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "get_boundary_dart is not defined for boundary cells");
+		Dart result;
+		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (is_boundary(d)) { result = d; return false; }
 			return true;
 		});
 		return result;
