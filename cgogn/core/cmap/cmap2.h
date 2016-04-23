@@ -693,15 +693,16 @@ public:
 		{
 			if (this->template is_embedded<Vertex>())
 			{
-				this->template copy_embedding<Vertex>(phi2(e), this->phi1(e));
-				this->template copy_embedding<Vertex>(phi2(d.dart), this->phi1(d.dart));
-
 				Dart ee = this->phi1(e);
-				if (!this->same_cell(Vertex(d.dart), Vertex(ee), true))
+				if (this->same_cell(Vertex(d.dart), Vertex(ee), true))
+					this->template copy_embedding<Vertex>(phi2(e), ee);
+				else
 					this->template new_orbit_embedding(Vertex(ee));
 
 				Dart dd = this->phi1(d.dart);
-				if (!this->same_cell(Vertex(e), Vertex(dd), true))
+				if (this->same_cell(Vertex(e), Vertex(dd), true))
+					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
+				else
 					this->template new_orbit_embedding(Vertex(dd));
 			}
 

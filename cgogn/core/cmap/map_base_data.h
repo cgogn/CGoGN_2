@@ -276,7 +276,7 @@ protected:
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
 		attributes_[ORBIT].ref_line(emb);			// ref the new emb
 		if (old != INVALID_INDEX)
-			attributes_[ORBIT].unref_line(old);	// unref the old emb
+			attributes_[ORBIT].unref_line(old);		// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
 	}
