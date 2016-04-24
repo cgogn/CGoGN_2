@@ -61,3 +61,4 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 	FILES_MATCHING PATTERN "*.h"
 )
 
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
