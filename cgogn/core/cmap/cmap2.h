@@ -656,6 +656,81 @@ public:
 	}
 
 protected:
+	inline void unsew_faces_topo(Edge g)
+	{
+		//assert is not boundary Edge
+
+		Dart d = g.dart;
+		Dart dd = phi2(d);
+
+		Dart e = Inherit::add_face_topo(2);
+		Dart ee = this->phi1(e);
+		this->set_boundary(e, true);
+		this->set_boundary(ee, true);
+
+		Dart f = this->find_incident_to_boundary(Vertex(d));
+		Dart ff = this->find_incident_to_boundary(Vertex(dd));
+
+		if(!f.is_nil())
+			this->phi1_sew(e, this->phi_1(f));
+
+		if(!ff.is_nil())
+			this->phi1_sew(ee, this->phi_1(ff));
+
+		phi2_unsew(d);
+
+		phi2_sew(d, e);
+		phi2_sew(dd, ee);
+	}
+
+public:
+	inline void unsew_faces(Edge d)
+	{
+		Dart e = phi2(d.dart) ;
+		unsew_faces_topo(d);
+
+		auto same_vertex = [this](Vertex c1, Vertex c2) {
+			bool result = false;
+			this->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
+			{
+				if (d == c2.dart)
+				{
+					result = true;
+					return false;
+				}
+				return true;
+			});
+			return result;
+		};
+
+		if(this->template is_embedded<Vertex>())
+		{
+			this->template copy_embedding<Vertex>(phi2(e), this->phi1(e));
+			this->template copy_embedding<Vertex>(phi2(d.dart), this->phi1(d.dart));
+
+			Dart ee = this->phi1(e);
+			if(!same_vertex(Vertex(d.dart), Vertex(ee)))
+			{
+				this->template new_orbit_embedding(Vertex(ee));
+				this->template copy_cell_attributes<Vertex>(ee, d.dart);
+			}
+
+			Dart dd = this->phi1(d.dart);
+			if(!same_vertex(Vertex(e), Vertex(dd)))
+			{
+				this->template new_orbit_embedding(Vertex(dd));
+				this->template copy_cell_attributes<Vertex>(dd, e);
+			}
+		}
+
+		if(this->template is_embedded<Edge>())
+		{
+			this->template new_orbit_embedding(Edge(e));
+			this->template copy_cell_attributes<Edge>(e, d.dart);
+		}
+	}
+
+protected:
 
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
@@ -689,6 +764,37 @@ protected:
 		} while (d_phi1 != d);
 
 		return first;
+	}
+
+protected:
+
+	/*!
+	 * \brief Cut a surface into two connected components along a path of edges
+	 * \param edges the path of edges
+	 * \return a pair faces
+	 */
+	inline std::pair<Face,Face> cut_surface_topo(std::vector<Edge>& edges)
+	{
+		Dart e = edges.front().dart;
+		Dart e2 = phi2(e);
+
+		//unsew the edges along the path
+		for(const auto& eit : edges)
+		{
+			if(!this->is_boundary(eit.dart) && !this->is_boundary(phi2(eit.dart)))
+				unsew_faces(eit);
+		}
+
+		return std::pair<Face,Face>(Face(phi2(e)), Face(phi2(e2)));
+	}
+
+public:
+
+	inline std::pair<Face,Face> cut_surface(std::vector<Edge>& edges)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		return cut_surface_topo(edges);
 	}
 
 	/*******************************************************************************
@@ -732,6 +838,14 @@ public:
 	{
 		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
+		return result;
+	}
+
+	inline uint32 nb_connected_components() const
+	{
+		uint32 result = 0;
+		this->foreach_cell([&result] (Volume ) { ++result; });
+
 		return result;
 	}
 

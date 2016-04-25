@@ -290,6 +290,23 @@ protected:
 		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
 	}
 
+	template <class CellType>
+	inline void copy_cell_attributes(Dart dest, Dart src)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		uint32 dest_emb = get_embedding(CellType(dest));
+		uint32 src_emb = get_embedding(CellType(src));
+
+		if(dest_emb != EMBNULL)
+		{
+			if(src_emb != EMBNULL)
+			{
+				this->attributes_[ORBIT].copy_line(dest_emb, src_emb, true, false);
+			}
+		}
+
+	}
+
 protected:
 
 	/*******************************************************************************

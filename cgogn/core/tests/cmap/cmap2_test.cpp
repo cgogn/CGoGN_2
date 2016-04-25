@@ -105,7 +105,7 @@ protected:
 		darts_.clear();
 		MapBuilder mbuild(cmap_);
 
-		// Generate NB_MAX random 1-faces (without boundary)
+		// Generate NB_MAX random n-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
 			uint32 n = 1u + std::rand() % 10u;
@@ -220,6 +220,15 @@ TEST_F(CMap2Test, cut_face)
 		}
 	}
 	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/*!
+ * \brief Counts the connected components of the mesh
+ */
+TEST_F(CMap2Test, nb_connected_components)
+{
+	add_faces(NB_MAX);
+	EXPECT_EQ(cmap_.nb_connected_components(), NB_MAX);
 }
 
 #undef NB_MAX
