@@ -93,14 +93,14 @@ private:
 	cgogn::rendering::ShaderBoldLine* shader_edge_;
 	cgogn::rendering::ShaderFlat* shader_flat_;
 	cgogn::rendering::ShaderVectorPerVertex* shader_normal_;
-	cgogn::rendering::ShaderPhong* shader_phong_;
-	cgogn::rendering::ShaderPointSprite* shader_point_sprite_;
+	cgogn::rendering::ShaderPhongColor* shader_phong_;
+	cgogn::rendering::ShaderPointSpriteColorSize* shader_point_sprite_;
 
 	cgogn::rendering::ShaderBoldLine::Param* param_edge_;
 	cgogn::rendering::ShaderFlat::Param* param_flat_;
 	cgogn::rendering::ShaderVectorPerVertex::Param* param_normal_;
-	cgogn::rendering::ShaderPhong::Param* param_phong_;
-	cgogn::rendering::ShaderPointSprite::Param* param_point_sprite_;
+	cgogn::rendering::ShaderPhongColor::Param* param_phong_;
+	cgogn::rendering::ShaderPointSpriteColorSize::Param* param_point_sprite_;
 
 
 	cgogn::rendering::Drawer* drawer_;
@@ -299,14 +299,14 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	// creation of shader
-	shader_point_sprite_ = new cgogn::rendering::ShaderPointSprite(true,true);
+	shader_point_sprite_ = new cgogn::rendering::ShaderPointSpriteColorSize();
 	// generation of one parameter set (for this shader) : vbo + uniforms
 	param_point_sprite_ = shader_point_sprite_->generate_param();
 	// set vbo param (see param::set_vbo signature)
 	param_point_sprite_->set_vbo(vbo_pos_,vbo_color_,vbo_sphere_sz_);
 	// set uniforms data
-	param_point_sprite_->size_ = bb_.diag_size()/1000.0;
-	param_point_sprite_->color_ = QColor(255,0,0);
+	//param_point_sprite_->size_ = bb_.diag_size()/1000.0;
+	//param_point_sprite_->color_ = QColor(255,0,0);
 
 	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 	param_edge_ = shader_edge_->generate_param();
@@ -327,7 +327,7 @@ void Viewer::init()
 	param_normal_->color_ = QColor(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
-	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
+	shader_phong_ = new cgogn::rendering::ShaderPhongColor;
 	param_phong_ = shader_phong_->generate_param();
 	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
 

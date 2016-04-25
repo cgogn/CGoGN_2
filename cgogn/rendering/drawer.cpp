@@ -37,9 +37,9 @@ namespace rendering
 
 // static members init
 ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
-ShaderBoldLine* Drawer::shader_bl_ = nullptr;
-ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
-ShaderPointSprite* Drawer::shader_ps_ = nullptr;
+ShaderBoldLineColor* Drawer::shader_bl_ = nullptr;
+ShaderRoundPointColor* Drawer::shader_rp_ = nullptr;
+ShaderPointSpriteColor* Drawer::shader_ps_ = nullptr;
 uint32 Drawer::nb_instances_ = 0;
 
 Drawer::Drawer():
@@ -56,13 +56,13 @@ Drawer::Drawer():
 		shader_cpv_ = new ShaderColorPerVertex();
 
 	if (!shader_bl_)
-		shader_bl_ = new ShaderBoldLine(true);
+		shader_bl_ = new ShaderBoldLineColor;
 
 	if (!shader_rp_)
-		shader_rp_ = new ShaderRoundPoint(true);
+		shader_rp_ = new ShaderRoundPointColor;
 
 	if (!shader_ps_)
-		shader_ps_ = new ShaderPointSprite(true);
+		shader_ps_ = new ShaderPointSpriteColor;
 
 	param_cpv_ = shader_cpv_->generate_param();
 	param_bl_ = shader_bl_->generate_param();

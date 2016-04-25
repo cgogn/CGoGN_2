@@ -22,13 +22,13 @@
 *******************************************************************************/
 
 #define CGOGN_RENDERING_DLL_EXPORT
+#define CGOGN_RENDER_SHADERS_FLAT_CPP_
+
 
 #include <iostream>
 
 #include <cgogn/rendering/shaders/shader_flat.h>
 
-#include <QOpenGLFunctions>
-#include <QColor>
 
 namespace cgogn
 {
@@ -36,7 +36,7 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderFlat::vertex_shader_source_ =
+const char* ShaderFlatGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "uniform mat4 projection_matrix;\n"
@@ -48,7 +48,7 @@ const char* ShaderFlat::vertex_shader_source_ =
 "   gl_Position = projection_matrix * pos4;\n"
 "}\n";
 
-const char* ShaderFlat::fragment_shader_source_ =
+const char* ShaderFlatGen::fragment_shader_source_ =
 "#version 150\n"
 "out vec4 fragColor;\n"
 "uniform vec4 front_color;\n"
@@ -66,7 +66,7 @@ const char* ShaderFlat::fragment_shader_source_ =
 "		fragColor = ambiant_color+lambert*back_color;\n"
 "}\n";
 
-const char* ShaderFlat::vertex_shader_source2_ =
+const char* ShaderFlatGen::vertex_shader_source2_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_col;\n"
@@ -81,7 +81,7 @@ const char* ShaderFlat::vertex_shader_source2_ =
 "   gl_Position = projection_matrix * pos4;\n"
 "}\n";
 
-const char* ShaderFlat::fragment_shader_source2_ =
+const char* ShaderFlatGen::fragment_shader_source2_ =
 "#version 150\n"
 "out vec4 fragColor;\n"
 "uniform vec4 front_color;\n"
@@ -102,7 +102,7 @@ const char* ShaderFlat::fragment_shader_source2_ =
 
 
 
-ShaderFlat::ShaderFlat(bool color_per_vertex)
+ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
@@ -127,78 +127,39 @@ ShaderFlat::ShaderFlat(bool color_per_vertex)
 	unif_light_position_ = prg_.uniformLocation("lightPosition");
 }
 
-void ShaderFlat::set_light_position(const QVector3D& l)
+void ShaderFlatGen::set_light_position(const QVector3D& l)
 {
 	prg_.setUniformValue(unif_light_position_, l);
 }
 
-void ShaderFlat::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+void ShaderFlatGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
 {
 	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
 	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
 }
 
-void ShaderFlat::set_front_color(const QColor& rgb)
+void ShaderFlatGen::set_front_color(const QColor& rgb)
 {
 	if (unif_front_color_ >= 0)
 		prg_.setUniformValue(unif_front_color_, rgb);
 }
 
-void ShaderFlat::set_back_color(const QColor& rgb)
+void ShaderFlatGen::set_back_color(const QColor& rgb)
 {
 	if (unif_back_color_ >= 0)
 		prg_.setUniformValue(unif_back_color_, rgb);
 }
 
-void ShaderFlat::set_ambiant_color(const QColor& rgb)
+void ShaderFlatGen::set_ambiant_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_ambiant_color_, rgb);
 }
 
 
-
-ShaderParamFlat::ShaderParamFlat(ShaderFlat* sh):
-	ShaderParam(sh),
-	front_color_(250, 0, 0),
-	back_color_(0, 250, 0),
-	ambiant_color_(5, 5, 5),
-	light_pos_(10, 100, 1000)
-{}
-
-void ShaderParamFlat::set_uniforms()
-{
-	ShaderFlat* sh = static_cast<ShaderFlat*>(this->shader_);
-	sh->set_front_color(front_color_);
-	sh->set_back_color(back_color_);
-	sh->set_ambiant_color(ambiant_color_);
-	sh->set_light_position(light_pos_);
-}
-
-void ShaderParamFlat::set_vbo(VBO* vbo_pos, VBO* vbo_color)
-{
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderFlat::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderFlat::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	if (vbo_color)
-	{
-		// color  vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlat::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderFlat::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-	}
-
-	vao_->release();
-	shader_->release();
-}
+template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
+template class CGOGN_RENDERING_API ShaderFlatTpl<true>;
+template class CGOGN_RENDERING_API ShaderParamFlat<false>;
+template class CGOGN_RENDERING_API ShaderParamFlat<true>;
 
 } // namespace rendering
 

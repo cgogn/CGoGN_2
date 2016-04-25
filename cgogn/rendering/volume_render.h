@@ -49,9 +49,11 @@ class CGOGN_RENDERING_API VolumeRender
 protected:
 
 	ShaderExplodeVolumes* shader_expl_vol_;
+	ShaderExplodeVolumesColor* shader_expl_vol_col_;
 	ShaderExplodeVolumesLine* shader_expl_vol_line_;
 
 	ShaderExplodeVolumes::Param* param_expl_vol_;
+	ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
 	ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
 
 	VBO* vbo_pos_;

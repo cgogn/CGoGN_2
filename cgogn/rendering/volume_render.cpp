@@ -49,15 +49,13 @@ VolumeRender::VolumeRender():
 	shrink_f_(0.85f)
 {
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-	init_edge();
-	init_without_color();
 }
 
 void VolumeRender::reinit_vao()
 {
 	param_expl_vol_->reinit_vao();
 	param_expl_vol_line_->reinit_vao();
-	param_expl_vol_->set_vbo(vbo_pos_,vbo_col_);
+	param_expl_vol_->set_vbo(vbo_pos_);
 	param_expl_vol_line_->set_vbo(vbo_pos2_);
 }
 
@@ -72,9 +70,10 @@ void VolumeRender::init_with_color()
 
 	delete shader_expl_vol_;
 	delete param_expl_vol_;
-	shader_expl_vol_ = new ShaderExplodeVolumes(true);
-	param_expl_vol_ = shader_expl_vol_->generate_param();
-	param_expl_vol_->set_vbo(vbo_pos_,vbo_col_);
+	shader_expl_vol_col_ = new ShaderExplodeVolumesColor;
+	param_expl_vol_col_ = shader_expl_vol_col_->generate_param();
+	param_expl_vol_col_->explode_factor_ = shrink_v_;
+	param_expl_vol_col_->set_vbo(vbo_pos_,vbo_col_);
 }
 
 void VolumeRender::init_without_color()
@@ -88,7 +87,7 @@ void VolumeRender::init_without_color()
 
 	delete shader_expl_vol_;
 	delete param_expl_vol_;
-	shader_expl_vol_ = new ShaderExplodeVolumes(false);
+	shader_expl_vol_ = new ShaderExplodeVolumes;
 	param_expl_vol_ = shader_expl_vol_->generate_param();
 	param_expl_vol_->set_vbo(vbo_pos_);
 	param_expl_vol_->explode_factor_ = shrink_v_;
@@ -124,9 +123,18 @@ VolumeRender::~VolumeRender()
 
 void VolumeRender::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
-	param_expl_vol_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_LINES_ADJACENCY,0,vbo_pos_->size());
-	param_expl_vol_->release();
+	if (vbo_col_)
+	{
+		param_expl_vol_col_->bind(projection, modelview);
+		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, vbo_pos_->size());
+		param_expl_vol_col_->release();
+	}
+	else
+	{ 
+		param_expl_vol_->bind(projection, modelview);
+		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, vbo_pos_->size());
+		param_expl_vol_->release();
+	}
 }
 
 void VolumeRender::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)

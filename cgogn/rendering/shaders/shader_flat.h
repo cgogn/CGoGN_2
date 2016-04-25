@@ -28,6 +28,7 @@
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
+#include <QOpenGLFunctions>
 #include <QColor>
 
 namespace cgogn
@@ -36,27 +37,7 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderFlat;
-
-class CGOGN_RENDERING_API ShaderParamFlat : public ShaderParam
-{
-protected:
-
-	void set_uniforms() override;
-
-public:
-
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QVector3D light_pos_;
-
-	ShaderParamFlat(ShaderFlat* sh);
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr);
-};
-
-class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
+class CGOGN_RENDERING_API ShaderFlatGen : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
@@ -72,24 +53,16 @@ class CGOGN_RENDERING_API ShaderFlat : public ShaderProgram
 
 public:
 
+	using Self = ShaderFlatGen;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlatGen);
+
 	enum
 	{
 		ATTRIB_POS = 0,
 		ATTRIB_COLOR
 	};
 
-	ShaderFlat(bool color_per_vertex = false);
-
-	using Param = ShaderParamFlat;
-
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	inline Param* generate_param()
-	{
-		return (new Param(this));
-	}
+	ShaderFlatGen(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -122,6 +95,128 @@ public:
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 };
+
+
+template <bool CPV>
+class ShaderParamFlat: public ShaderParam
+{};
+
+template <bool CPV>
+class ShaderFlatTpl : public ShaderFlatGen
+{
+public:
+	ShaderFlatTpl() :
+		ShaderFlatGen(CPV)
+	{}
+	using Param = ShaderParamFlat<CPV>;
+
+	Param* generate_param();
+};
+
+
+// COLOR UNIFORM PARAM
+template <>
+class ShaderParamFlat<false> : public ShaderParam
+{
+protected:
+	void set_uniforms() override
+	{
+		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
+		sh->set_front_color(front_color_);
+		sh->set_back_color(back_color_);
+		sh->set_ambiant_color(ambiant_color_);
+		sh->set_light_position(light_pos_);
+	}
+
+public:
+	QColor front_color_;
+	QColor back_color_;
+	QColor ambiant_color_;
+	QVector3D light_pos_;
+
+	ShaderParamFlat(ShaderFlatTpl<false>* sh) :
+		ShaderParam(sh),
+		front_color_(250, 0, 0),
+		back_color_(0, 250, 0),
+		ambiant_color_(5, 5, 5),
+		light_pos_(10, 100, 1000)
+	{}
+
+	void set_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		// position vbo
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+};
+
+
+// COLOR PER VERTEX PARAM
+template <>
+class ShaderParamFlat<true> : public ShaderParam
+{
+protected:
+	void set_uniforms() override
+	{
+		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
+		sh->set_ambiant_color(ambiant_color_);
+		sh->set_light_position(light_pos_);
+	}
+
+public:
+	QColor ambiant_color_;
+	QVector3D light_pos_;
+
+	ShaderParamFlat(ShaderFlatTpl<true>* sh) :
+		ShaderParam(sh),
+		ambiant_color_(5, 5, 5),
+		light_pos_(10, 100, 1000)
+	{}
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		// position vbo
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		// color  vbo
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
+};
+
+template <bool CPV>
+typename ShaderFlatTpl<CPV>::Param* ShaderFlatTpl<CPV>::generate_param()
+{
+	return (new Param(this));
+}
+
+
+using ShaderFlat = ShaderFlatTpl<false>;
+using ShaderFlatColor = ShaderFlatTpl<true>;
+
+
+#if !defined(CGOGN_RENDER_SHADERS_FLAT_CPP_)
+extern template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
+extern template class CGOGN_RENDERING_API ShaderFlatTpl<true>;
+extern template class CGOGN_RENDERING_API ShaderParamFlat<false>;
+extern template class CGOGN_RENDERING_API ShaderParamFlat<true>;
+#endif
 
 } // namespace rendering
 

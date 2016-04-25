@@ -54,7 +54,7 @@ TopoRender::TopoRender():
 	vbo_relations_ = new cgogn::rendering::VBO(3);
 
 	if (!shader_bl_)
-		shader_bl_ = new ShaderBoldLine();
+		shader_bl_ = new ShaderBoldLine;
 
 	param_bl_ = shader_bl_->generate_param();
 	param_bl_->set_vbo(vbo_darts_);
@@ -70,7 +70,7 @@ TopoRender::TopoRender():
 		shader_rp_ = new ShaderRoundPoint();
 
 	param_rp_ = shader_rp_->generate_param();
-	param_rp_->set_vbo(vbo_darts_,nullptr,2,0);
+	param_rp_->set_vbo(vbo_darts_,2,0);
 	param_rp_->color_ = dart_color_;
 }
 
@@ -102,7 +102,7 @@ void TopoRender::reinit_vao()
 
 	param_bl_->set_vbo(vbo_darts_);
 	param_bl2_->set_vbo(vbo_relations_);
-	param_rp_->set_vbo(vbo_darts_,nullptr,2,0);
+	param_rp_->set_vbo(vbo_darts_,2,0);
 }
 
 void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
