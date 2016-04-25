@@ -85,22 +85,19 @@ class ShaderParamBoldLine : public ShaderParam
 template <bool CPV>
 class ShaderBoldLineTpl:public ShaderBoldLineGen
 {
+public:
+	using Param = ShaderParamBoldLine<CPV>;
+	static Param* generate_param();
+
+private:
 	ShaderBoldLineTpl():
 		ShaderBoldLineGen(CPV)
 	{}
-
-public:
-
-	using Param = ShaderParamBoldLine<CPV>;
-
-	/**
-	* @brief generate shader parameter object
-	* @return pointer
-	*/
-	inline Param* generate_param();
-
+	static ShaderBoldLineTpl* instance_;
 };
 
+template <bool CPV>
+ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM VERSION
@@ -187,7 +184,9 @@ public:
 template <bool CPV>
 typename ShaderBoldLineTpl<CPV>::Param* ShaderBoldLineTpl<CPV>::generate_param()
 {
-	return (new Param(this));
+	if (instance_==nullptr)
+		instance_ = new ShaderBoldLineTpl<CPV>;
+	return (new Param(instance_));
 }
 
 

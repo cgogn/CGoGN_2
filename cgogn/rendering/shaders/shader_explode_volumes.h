@@ -79,19 +79,22 @@ template <bool CPV>
 class ShaderParamExplodeVolumes
 {};
 
+
 template <bool CPV>
 class ShaderExplodeVolumesTpl : public ShaderExplodeVolumesGen
 {
 public:
+	using Param = ShaderParamExplodeVolumes<CPV>;
+	static Param* generate_param();
+private:
 	ShaderExplodeVolumesTpl():
 		ShaderExplodeVolumesGen(CPV)
 	{}
-
-	using Param = ShaderParamExplodeVolumes<CPV>;
-
-	Param* generate_param();
+	static ShaderExplodeVolumesTpl* instance_;
 };
 
+template <bool CPV>
+ShaderExplodeVolumesTpl<CPV>* ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
 
 
 
@@ -187,7 +190,9 @@ public:
 template <bool CPV>
 typename ShaderExplodeVolumesTpl<CPV>::Param* ShaderExplodeVolumesTpl<CPV>::generate_param()
 {
-	return (new Param(this));
+	if (instance_==nullptr)
+		instance_ = new ShaderExplodeVolumesTpl<CPV>;
+	return (new Param(instance_));
 }
 
 

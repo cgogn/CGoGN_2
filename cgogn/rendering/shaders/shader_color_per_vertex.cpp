@@ -35,6 +35,8 @@ namespace cgogn
 namespace rendering
 {
 
+ShaderColorPerVertex* ShaderColorPerVertex::instance_ = nullptr;
+
 const char* ShaderColorPerVertex::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"

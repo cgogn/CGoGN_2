@@ -65,6 +65,11 @@ public:
 	inline virtual ~ShaderParam()
 	{}
 
+	inline ShaderProgram* get_shader()
+	{
+		return shader_;
+	}
+
 	/**
 	 * @brief reinitialize vao (for use in new context)
 	 */

@@ -38,12 +38,15 @@ namespace rendering
 
 
 VolumeRender::VolumeRender():
-	shader_expl_vol_(nullptr),
-	shader_expl_vol_line_(nullptr),
+//	shader_expl_vol_(nullptr),
+//	shader_expl_vol_line_(nullptr),
 	param_expl_vol_(nullptr),
+	param_expl_vol_col_(nullptr),
 	param_expl_vol_line_(nullptr),
+	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
 	face_color_(0,150,0),
+	vbo_pos2_(nullptr),
 	edge_color_(0,0,0),
 	shrink_v_(0.6f),
 	shrink_f_(0.85f)
@@ -53,42 +56,48 @@ VolumeRender::VolumeRender():
 
 void VolumeRender::reinit_vao()
 {
-	param_expl_vol_->reinit_vao();
-	param_expl_vol_line_->reinit_vao();
-	param_expl_vol_->set_vbo(vbo_pos_);
-	param_expl_vol_line_->set_vbo(vbo_pos2_);
+
+	if (param_expl_vol_)
+	{
+		param_expl_vol_->reinit_vao();
+		param_expl_vol_->set_vbo(vbo_pos_);
+	}
+
+	if (param_expl_vol_col_ && vbo_col_)
+	{
+		param_expl_vol_col_->reinit_vao();
+		param_expl_vol_col_->set_vbo(vbo_pos_, vbo_col_);
+	}
+
+	if(param_expl_vol_line_)
+	{
+		param_expl_vol_line_->reinit_vao();
+		param_expl_vol_line_->set_vbo(vbo_pos2_);
+	}
 }
 
 
 void VolumeRender::init_with_color()
 {
 	// check if all is already well initialized
-	if ((vbo_col_!= nullptr) && (shader_expl_vol_!= nullptr))
+	if (vbo_col_!= nullptr)
 		return;
 
 	vbo_col_ = new cgogn::rendering::VBO(3);
 
-	delete shader_expl_vol_;
 	delete param_expl_vol_;
-	shader_expl_vol_col_ = new ShaderExplodeVolumesColor;
-	param_expl_vol_col_ = shader_expl_vol_col_->generate_param();
+	param_expl_vol_col_ = ShaderExplodeVolumesColor::generate_param();
 	param_expl_vol_col_->explode_factor_ = shrink_v_;
 	param_expl_vol_col_->set_vbo(vbo_pos_,vbo_col_);
 }
 
 void VolumeRender::init_without_color()
 {
-	// check if all is already well initialized
-	if ((vbo_col_== nullptr) && (shader_expl_vol_!= nullptr))
-		return;
-
 	delete vbo_col_;
 	vbo_col_ = nullptr;
 
-	delete shader_expl_vol_;
 	delete param_expl_vol_;
-	shader_expl_vol_ = new ShaderExplodeVolumes;
-	param_expl_vol_ = shader_expl_vol_->generate_param();
+	param_expl_vol_ = ShaderExplodeVolumes::generate_param();
 	param_expl_vol_->set_vbo(vbo_pos_);
 	param_expl_vol_->explode_factor_ = shrink_v_;
 	param_expl_vol_->color_ = face_color_;
@@ -96,13 +105,12 @@ void VolumeRender::init_without_color()
 
 void VolumeRender::init_edge()
 {
-	if (shader_expl_vol_line_!= nullptr)
+	if (vbo_pos2_ != nullptr)
 		return;
 
 	vbo_pos2_ = new cgogn::rendering::VBO(3);
 
-	shader_expl_vol_line_ = new ShaderExplodeVolumesLine();
-	param_expl_vol_line_ = shader_expl_vol_line_->generate_param();
+	param_expl_vol_line_ = ShaderExplodeVolumesLine::generate_param();
 	param_expl_vol_line_->set_vbo(vbo_pos2_);
 	param_expl_vol_line_->explode_factor_ = shrink_v_;
 	param_expl_vol_line_->color_ = edge_color_;
@@ -113,8 +121,6 @@ VolumeRender::~VolumeRender()
 {
 	delete vbo_pos_;
 	delete vbo_col_;
-	delete shader_expl_vol_;
-	delete shader_expl_vol_line_;
 	delete param_expl_vol_;
 	delete param_expl_vol_line_;
 

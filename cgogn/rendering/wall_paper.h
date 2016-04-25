@@ -40,8 +40,6 @@ class CGOGN_RENDERING_API WallPaper
 {
 protected:
 
-	static int32 nb_instances_;
-	static ShaderTexture* shader_texture_;
 	ShaderTexture::Param* param_texture_;
 
 	VBO* vbo_pos_;

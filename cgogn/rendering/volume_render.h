@@ -48,9 +48,9 @@ class CGOGN_RENDERING_API VolumeRender
 
 protected:
 
-	ShaderExplodeVolumes* shader_expl_vol_;
-	ShaderExplodeVolumesColor* shader_expl_vol_col_;
-	ShaderExplodeVolumesLine* shader_expl_vol_line_;
+//	ShaderExplodeVolumes* shader_expl_vol_;
+//	ShaderExplodeVolumesColor* shader_expl_vol_col_;
+//	ShaderExplodeVolumesLine* shader_expl_vol_line_;
 
 	ShaderExplodeVolumes::Param* param_expl_vol_;
 	ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
@@ -100,20 +100,28 @@ public:
 	inline void set_explode_volume(float32 x)
 	{
 		shrink_v_ = x;
-		param_expl_vol_->explode_factor_=x;
-		param_expl_vol_line_->explode_factor_=x;
+		if (param_expl_vol_)
+			param_expl_vol_->explode_factor_=x;
+
+		if (param_expl_vol_col_)
+			param_expl_vol_col_->explode_factor_=x;
+
+		if (param_expl_vol_line_)
+			param_expl_vol_line_->explode_factor_=x;
 	}
 
 	inline void set_face_color(const QColor& rgb)
 	{
 		face_color_= rgb;
-		param_expl_vol_->color_ = rgb;
+		if (param_expl_vol_)
+			param_expl_vol_->color_ = rgb;
 	}
 
 	inline void set_edge_color(const QColor& rgb)
 	{
 		edge_color_= rgb;
-		param_expl_vol_line_->color_=rgb;
+		if (param_expl_vol_line_)
+			param_expl_vol_line_->color_=rgb;
 	}
 
 	template <typename VEC3, typename MAP>

@@ -105,13 +105,17 @@ template <bool CPV>
 class ShaderFlatTpl : public ShaderFlatGen
 {
 public:
+	using Param = ShaderParamFlat<CPV>;
+	static Param* generate_param();
+private:
 	ShaderFlatTpl() :
 		ShaderFlatGen(CPV)
 	{}
-	using Param = ShaderParamFlat<CPV>;
-
-	Param* generate_param();
+	static ShaderFlatTpl* instance_;
 };
+
+template <bool CPV>
+ShaderFlatTpl<CPV>* ShaderFlatTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -203,7 +207,9 @@ public:
 template <bool CPV>
 typename ShaderFlatTpl<CPV>::Param* ShaderFlatTpl<CPV>::generate_param()
 {
-	return (new Param(this));
+	if (instance_==nullptr)
+		instance_ = new ShaderFlatTpl<CPV>;
+	return (new Param(instance_));
 }
 
 

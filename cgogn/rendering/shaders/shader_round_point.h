@@ -87,18 +87,17 @@ template <bool CPV>
 class ShaderRoundPointTpl : public ShaderRoundPointGen
 {
 public:
+	using Param = ShaderParamRoundPoint<CPV>;
+	static Param* generate_param();
+private:
 	ShaderRoundPointTpl():
 		ShaderRoundPointGen(CPV)
 	{}
-
-	using Param = ShaderParamRoundPoint<CPV>;
-
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	inline Param* generate_param();
+	static ShaderRoundPointTpl* instance_;
 };
+
+template <bool CPV>
+ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -184,7 +183,9 @@ public:
 template <bool CPV>
 typename ShaderRoundPointTpl<CPV>::Param* ShaderRoundPointTpl<CPV>::generate_param()
 {
-	return (new Param(this));
+	if (instance_==nullptr)
+		instance_ = new ShaderRoundPointTpl<CPV>;
+	return (new Param(instance_));
 }
 
 

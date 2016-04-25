@@ -36,38 +36,38 @@ namespace rendering
 {
 
 // static members init
-ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
-ShaderBoldLineColor* Drawer::shader_bl_ = nullptr;
-ShaderRoundPointColor* Drawer::shader_rp_ = nullptr;
-ShaderPointSpriteColor* Drawer::shader_ps_ = nullptr;
-uint32 Drawer::nb_instances_ = 0;
+//ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
+//ShaderBoldLineColor* Drawer::shader_bl_ = nullptr;
+//ShaderRoundPointColor* Drawer::shader_rp_ = nullptr;
+//ShaderPointSpriteColor* Drawer::shader_ps_ = nullptr;
+//uint32 Drawer::nb_instances_ = 0;
 
 Drawer::Drawer():
 	current_size_(1.0f),
 	current_aa_(true),
 	current_ball_(true)
 {
-	nb_instances_++;
+//	nb_instances_++;
 
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
 
-	if (!shader_cpv_)
-		shader_cpv_ = new ShaderColorPerVertex();
+//	if (!shader_cpv_)
+//		shader_cpv_ = new ShaderColorPerVertex();
 
-	if (!shader_bl_)
-		shader_bl_ = new ShaderBoldLineColor;
+//	if (!shader_bl_)
+//		shader_bl_ = new ShaderBoldLineColor;
 
-	if (!shader_rp_)
-		shader_rp_ = new ShaderRoundPointColor;
+//	if (!shader_rp_)
+//		shader_rp_ = new ShaderRoundPointColor;
 
-	if (!shader_ps_)
-		shader_ps_ = new ShaderPointSpriteColor;
+//	if (!shader_ps_)
+//		shader_ps_ = new ShaderPointSpriteColor;
 
-	param_cpv_ = shader_cpv_->generate_param();
-	param_bl_ = shader_bl_->generate_param();
-	param_rp_ = shader_rp_->generate_param();
-	param_ps_ = shader_ps_->generate_param();
+	param_cpv_ = ShaderColorPerVertex::generate_param();
+	param_bl_ = ShaderBoldLineColor::generate_param();
+	param_rp_ = ShaderRoundPointColor::generate_param();
+	param_ps_ = ShaderPointSpriteColor::generate_param();
 
 	param_cpv_->set_vbo(vbo_pos_,vbo_col_);
 	param_bl_->set_vbo(vbo_pos_,vbo_col_);
@@ -93,16 +93,16 @@ Drawer::~Drawer()
 	delete vbo_pos_;
 	delete vbo_col_;
 
-	nb_instances_--;
-	if (nb_instances_ == 0)
-	{
-		// delete shaders when last drawer is deleted
-		// ensure context still enable when delete shaders
-		delete shader_ps_;
-		delete shader_rp_;
-		delete shader_bl_;
-		delete shader_cpv_;
-	}
+//	nb_instances_--;
+//	if (nb_instances_ == 0)
+//	{
+//		// delete shaders when last drawer is deleted
+//		// ensure context still enable when delete shaders
+//		delete shader_ps_;
+//		delete shader_rp_;
+//		delete shader_bl_;
+//		delete shader_cpv_;
+//	}
 }
 
 void Drawer::new_list()
@@ -237,6 +237,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 
 		for (auto& pp : begins_balls_)
 		{
+			ShaderRoundPointColor* shader_ps_ = static_cast<ShaderRoundPointColor*>(param_ps_->get_shader());
 			shader_ps_->set_size(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
@@ -255,7 +256,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 				ogl33->glEnable(GL_BLEND);
 				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
-
+			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
 			shader_rp_->set_size(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
@@ -272,6 +273,7 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 
 		for (auto& pp : begins_bold_line_)
 		{
+			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());
 			shader_bl_->set_width(pp.width);
 			shader_bl_->set_color(QColor(255, 255, 0));
 

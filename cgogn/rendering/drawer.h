@@ -60,11 +60,11 @@ class CGOGN_RENDERING_API Drawer
 
 protected:
 
-	static ShaderColorPerVertex* shader_cpv_;
-	static ShaderBoldLineColor* shader_bl_;
-	static ShaderRoundPointColor* shader_rp_;
-	static ShaderPointSpriteColor* shader_ps_;
-	static uint32 nb_instances_;
+//	static ShaderColorPerVertex* shader_cpv_;
+//	static ShaderBoldLineColor* shader_bl_;
+//	static ShaderRoundPointColor* shader_rp_;
+//	static ShaderPointSpriteColor* shader_ps_;
+//	static uint32 nb_instances_;
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;

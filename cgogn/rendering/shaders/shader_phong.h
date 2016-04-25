@@ -125,19 +125,23 @@ template <bool CPV>
 class ShaderParamPhong: public ShaderParam
 {};
 
+
 template <bool CPV>
 class ShaderPhongTpl : public ShaderPhongGen
 {
 public:
-
+	using Param = ShaderParamPhong<CPV>;
+	static Param* generate_param();
+private:
 	ShaderPhongTpl() :
 		ShaderPhongGen(CPV)
 	{}
-
-	using Param = ShaderParamPhong<CPV>;
-
-	Param* generate_param();
+	static ShaderPhongTpl* instance_;
 };
+
+template <bool CPV>
+ShaderPhongTpl<CPV>* ShaderPhongTpl<CPV>::instance_ = nullptr;
+
 
 // COLOR UNIFORM PARAM
 template <>
@@ -256,8 +260,9 @@ public:
 template <bool CPV>
 typename ShaderPhongTpl<CPV>::Param* ShaderPhongTpl<CPV>::generate_param()
 {
-	return (new Param(this));
-}
+	if (instance_==nullptr)
+		instance_ = new ShaderPhongTpl<CPV>;
+	return (new Param(instance_));}
 
 
 

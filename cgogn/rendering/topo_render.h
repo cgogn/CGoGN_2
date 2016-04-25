@@ -48,10 +48,6 @@ class CGOGN_RENDERING_API TopoRender
 
 protected:
 
-	static ShaderBoldLine* shader_bl_;
-	static ShaderRoundPoint* shader_rp_;
-	static int32 nb_instances_;
-
 	ShaderBoldLine::Param* param_bl_;
 	ShaderBoldLine::Param* param_bl2_;
 	ShaderRoundPoint::Param* param_rp_;

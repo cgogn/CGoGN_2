@@ -35,17 +35,11 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderTexture* WallPaper::shader_texture_ = nullptr;
-int32 WallPaper::nb_instances_ = 0;
 
 WallPaper::WallPaper(const QImage& img)
 {
-	nb_instances_++;
 
-	if (shader_texture_ == nullptr)
-		shader_texture_ = new ShaderTexture;
-
-	param_texture_ = shader_texture_->generate_param();
+	param_texture_ = ShaderTexture::generate_param();
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	vbo_pos_->allocate(4,3);
@@ -78,13 +72,6 @@ WallPaper::~WallPaper()
 	delete param_texture_->texture_;
 	delete param_texture_;
 
-	nb_instances_--;
-	if (nb_instances_ == 0)
-	{
-		// delete shaders when last drawer is deleted
-		// ensure context still enable when delete shaders
-		delete shader_texture_;
-	}
 }
 
 void WallPaper::set_full_screen(bool front)

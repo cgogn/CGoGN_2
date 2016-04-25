@@ -104,15 +104,18 @@ template <bool CPV, bool SPV>
 class ShaderPointSpriteTpl : public ShaderPointSpriteGen
 {
 public:
-
+	using Param = ShaderParamPointSprite<CPV,SPV>;
+	static Param* generate_param();
+private:
 	ShaderPointSpriteTpl():
 		ShaderPointSpriteGen(CPV,SPV)
 	{}
-
-	using Param = ShaderParamPointSprite<CPV,SPV>;
-
-	Param* generate_param();
+	static ShaderPointSpriteTpl* instance_;
 };
+
+
+template <bool CPV, bool SPV>
+ShaderPointSpriteTpl<CPV,SPV>* ShaderPointSpriteTpl<CPV,SPV>::instance_ = nullptr;
 
 
 template <>
@@ -294,7 +297,9 @@ public:
 template <bool CPV,bool SPV>
 typename ShaderPointSpriteTpl<CPV,SPV>::Param* ShaderPointSpriteTpl<CPV,SPV>::generate_param()
 {
-	return (new Param(this));
+	if (instance_==nullptr)
+		instance_ = new ShaderPointSpriteTpl<CPV,SPV>;
+	return (new Param(instance_));
 }
 
 

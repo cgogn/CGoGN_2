@@ -67,18 +67,22 @@ public:
 		ATTRIB_COLOR
 	};
 
-    ShaderColorPerVertex();
-
 	using Param = ShaderParamColorPerVertex;
 
 	/**
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline Param* generate_param()
+	inline static Param* generate_param()
 	{
-		return (new Param(this));
+		if (instance_==nullptr)
+			instance_ = new ShaderColorPerVertex;
+		return (new Param(instance_));
 	}
+
+private:
+	ShaderColorPerVertex();
+	static ShaderColorPerVertex* instance_;
 };
 
 } // namespace rendering
