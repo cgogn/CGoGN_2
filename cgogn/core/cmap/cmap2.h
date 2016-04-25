@@ -694,13 +694,13 @@ public:
 			if (this->template is_embedded<Vertex>())
 			{
 				Dart ee = this->phi1(e);
-				if (this->same_cell(Vertex(d.dart), Vertex(ee), true))
+				if (this->same_orbit(Vertex(d.dart), Vertex(ee)))
 					this->template copy_embedding<Vertex>(phi2(e), ee);
 				else
 					this->template new_orbit_embedding(Vertex(ee));
 
 				Dart dd = this->phi1(d.dart);
-				if (this->same_cell(Vertex(e), Vertex(dd), true))
+				if (this->same_orbit(Vertex(e), Vertex(dd)))
 					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
 				else
 					this->template new_orbit_embedding(Vertex(dd));
@@ -711,7 +711,7 @@ public:
 
 			if (this->template is_embedded<Volume>())
 			{
-				if (this->same_cell(Volume(d.dart), Volume(e)))
+				if (this->same_orbit(Volume(d.dart), Volume(e)))
 				{
 					this->template copy_embedding<Volume>(phi2(e), e);
 					this->template copy_embedding<Volume>(phi2(d.dart), e);

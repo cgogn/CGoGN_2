@@ -523,17 +523,15 @@ public:
 	 *******************************************************************************/
 
 	/**
-	 * \brief return true if c1 and c2 represent the same cell, i.e. contain darts of the same orbit
+	 * \brief return true if c1 and c2 represent the same cell
+	 * Comparison is done using exclusively the topological information (darts)
 	 * @tparam ORBIT considered orbit
 	 * @param c1 first cell to compare
 	 * @param c2 second cell to compare
 	 */
 	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2, bool topo_only = false) const
+	bool same_orbit(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (!topo_only && this->template is_embedded<ORBIT>())
-			return this->get_embedding(c1) == this->get_embedding(c2);
-
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
 		{
@@ -545,6 +543,22 @@ public:
 			return true;
 		});
 		return result;
+	}
+
+	/**
+	 * \brief return true if c1 and c2 represent the same cell
+	 * If the orbit is embedded, the comparison is done on the indices, otherwise it is done using the darts
+	 * @tparam ORBIT considered orbit
+	 * @param c1 first cell to compare
+	 * @param c2 second cell to compare
+	 */
+	template <Orbit ORBIT>
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
+	{
+		if (this->template is_embedded<ORBIT>())
+			return this->get_embedding(c1) == this->get_embedding(c2);
+		else
+			return same_orbit(c1, c2);
 	}
 
 	/**
