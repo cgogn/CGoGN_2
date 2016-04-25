@@ -348,19 +348,6 @@ public:
 			}
 		}
 
-		// utilitary function
-		auto sew_volumes = [&mbuild,&map,&m] (Dart w1, Dart w2)
-		{
-			const Dart w1_begin = w1;
-			do
-			{
-				mbuild.phi3_sew(w1, w2);
-				w1 = map.phi1(w1);
-				w2 = map.phi_1(w2);
-			} while (w1_begin != w1);
-		};
-
-
 		//reconstruct neighbourhood
 		uint32 nb_boundary_faces = 0u;
 		map.foreach_dart([&] (Dart d)
@@ -395,7 +382,7 @@ public:
 
 					if (degD == degGD) // normal case : the two opposite faces have the same degree
 					{
-						sew_volumes(d, good_dart);
+						mbuild.sew_volumes(Volume(d), Volume(good_dart));
 						m.unmark_orbit(Face(d));
 					}
 					else
@@ -429,15 +416,15 @@ public:
 								} while (q1_it != d);
 							}
 
-							sew_volumes(d, map.phi1(map.phi1(d_quad)));
+							mbuild.sew_volumes(Volume(d), Volume(map.phi1(map.phi1(d_quad))));
 							m.unmark_orbit(Face(d));
 
-							sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
+							mbuild.sew_volumes(Volume(good_dart), Volume(map.phi2(map.phi1(map.phi1(d_quad)))));
 							m.unmark_orbit(Face(good_dart));
 
 							if (!another_good_dart.is_nil())
 							{
-								sew_volumes(another_good_dart, map.phi2(d_quad));
+								mbuild.sew_volumes(Volume(another_good_dart), Volume(map.phi2(d_quad)));
 								m.unmark_orbit(Face(another_good_dart));
 							}
 							else
@@ -473,15 +460,15 @@ public:
 								} while (q1_it != good_dart);
 							}
 
-							sew_volumes(d_quad, map.phi_1(good_dart));
+							mbuild.sew_volumes(Volume(d_quad), Volume(map.phi_1(good_dart)));
 							m.unmark_orbit(Face(good_dart));
 
-							sew_volumes(d, map.phi2(map.phi_1(d_quad)));
+							mbuild.sew_volumes(Volume(d), Volume(map.phi2(map.phi_1(d_quad))));
 							m.unmark_orbit(Face(d));
 
 							if (!another_good_dart.is_nil())
 							{
-								sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
+								mbuild.sew_volumes(Volume(another_good_dart), Volume(map.phi1(map.phi2(map.phi1(d_quad)))));
 								m.unmark_orbit(Face(another_good_dart));
 							}
 							else

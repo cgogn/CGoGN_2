@@ -375,28 +375,18 @@ TEST_F(CMap3TopoTest, degree)
  */
 TEST_F(CMap3TopoTest, nb_connected_components)
 {
-	auto sew_volumes = [this] (Dart it1, Dart it2)
-	{
-		Dart begin = it1;
-		do
-		{
-			phi3_sew(it1, it2);
-			it1 = phi1(it1);
-			it2 = phi_1(it2);
-		} while (it1 != begin);
-	};
+	MapBuilder mbuild(*this);
 
 	Dart p1 = add_prism_topo(3u);
 	Dart p2 = add_prism_topo(3u);
-	sew_volumes(p1, p2);
+	mbuild.sew_volumes(Volume(p1), Volume(p2));
 
 	Dart p3 = add_pyramid_topo(4u);
 	Dart p4 = add_pyramid_topo(4u);
-	sew_volumes(p3, p4);
+	mbuild.sew_volumes(Volume(p3), Volume(p4));
 
 	add_prism_topo(5u);
 
-	MapBuilder mbuild(*this);
 	mbuild.close_map();
 
 	EXPECT_EQ(nb_connected_components(), 3u);

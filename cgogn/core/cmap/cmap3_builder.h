@@ -49,7 +49,6 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
 
-
 	inline CMap3Builder_T(CMap3& map) : map_(map)
 	{}
 
@@ -124,6 +123,26 @@ public:
 	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
+	}
+
+	/**
+	 * @brief sew two volumes along a face
+	 * The darts given in the Volume parameters must be part of Face2 that have
+	 * a similar co-degree and whose darts are all phi3 fix points
+	 * @param v1 first volume
+	 * @param v2 second volume
+	 */
+	inline void sew_volumes(Volume v1, Volume v2)
+	{
+		Dart it1 = v1.dart;
+		Dart it2 = v2.dart;
+		const Dart begin = it1;
+		do
+		{
+			phi3_sew(it1, it2);
+			it1 = map_.phi1(it1);
+			it2 = map_.phi_1(it2);
+		} while (it1 != begin);
 	}
 
 	inline void close_hole_topo(Dart d)

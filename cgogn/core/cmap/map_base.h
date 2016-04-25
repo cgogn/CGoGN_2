@@ -594,6 +594,9 @@ public:
 		return result;
 	}
 
+	/**
+	 * \brief return the number of connected components of the map
+	 */
 	uint32 nb_connected_components() const
 	{
 		return nb_cells<ConcreteMap::ConnectedComponent::ORBIT>();

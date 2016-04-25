@@ -227,8 +227,6 @@ public:
 		return (*phi3_)[d.index];
 	}
 
-
-
 	/**
 	 * \brief phi composition
 	 * @param d
@@ -250,6 +248,8 @@ public:
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
+
+protected:
 
 	/**
 	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
