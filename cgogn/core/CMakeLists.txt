@@ -36,7 +36,6 @@ set(HEADER_FILES
 	utils/serialization.h
 	utils/thread.h
 	utils/thread_pool.h
-	utils/thread_barrier.h
 	utils/string.h
 	utils/masks.h
 	utils/logger.h

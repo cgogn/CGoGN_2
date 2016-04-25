@@ -198,7 +198,7 @@ public:
 		if (nb_boundary_edges > 0)
 		{
 			mbuild.close_map();
-			cgogn_log_warning("create_map") << nb_boundary_edges << " hole(s) have been closed";
+			cgogn_log_info("create_map") << nb_boundary_edges << " hole(s) have been closed";
 		}
 
 		if (need_vertex_unicity_check)

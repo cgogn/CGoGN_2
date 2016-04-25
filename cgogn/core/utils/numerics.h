@@ -68,29 +68,29 @@ inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std
 	return std::fabs(y - x) < epsilon;
 }
 
-template <class Real, class Integer>
-inline Real scale_expand_within_0_1(Real x, const Integer n)
+template <class Scalar, class Integer>
+inline Scalar scale_expand_within_0_1(Scalar x, const Integer n)
 {
-	static_assert(std::is_floating_point<Real>::value, "Floating point number required.");
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
 	static_assert(std::is_integral<Integer>::value, "Integer number required.");
 
 	for (Integer i = 1; i <= n; i++)
-		x = Real((1.0 - std::cos(M_PI * x)) / 2.0);
+		x = Real((Scalar(1) - std::cos(Scalar(M_PI) * x)) / Scalar(2));
 	for (Integer i = -1; i >= n; i--)
-		x = Real(std::acos(1.0 - 2.0 * x) / M_PI);
+		x = Real(std::acos(Scalar(1) - Scalar(2) * x) / M_PI);
 	return x;
 }
 
-template  <class Real, class Integer>
-inline Real scale_expand_towards_1(Real x, const Integer n)
+template  <class Scalar, class Integer>
+inline Scalar scale_expand_towards_1(Scalar x, const Integer n)
 {
-	static_assert(std::is_floating_point<Real>::value, "Floating point number required.");
+	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
 	static_assert(std::is_integral<Integer>::value, "Integer number required.");
 
 	for (Integer i = 1; i <= n; i++)
-		x = Real(std::sin(x * M_PI / 2.0));
+		x = Real(std::sin(x * Scalar(M_PI_2)));
 	for (Integer i = -1; i >= n; i--)
-		x = Real(std::asin(x) * 2.0 / M_PI);
+		x = Real(std::asin(x) * Scalar(M_2_PI));
 	return x;
 }
 
@@ -107,8 +107,8 @@ inline Scalar scale_and_clamp_to_0_1(const Scalar x, const Scalar min, const Sca
 {
 	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
 
-	Scalar v = (x - min) / (max - min);
-	return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+	const Scalar v = (x - min) / (max - min);
+	return v < Scalar(0) ? Scalar(0) : (v > Scalar(1) ? Scalar(1) : v);
 }
 
 template <class Scalar>
@@ -116,9 +116,8 @@ inline void scale_centering_around_0(Scalar& min, Scalar& max)
 {
 	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
 
-	Scalar new_max = std::max(max, -min);
 	min = std::min(min, -max);
-	max = new_max;
+	max = std::max(max, -min);
 }
 
 template <class Scalar>
@@ -126,8 +125,8 @@ inline Scalar scale_to_0_1_around_one_half(const Scalar x, const Scalar min, con
 {
 	static_assert(std::is_floating_point<Scalar>::value, "Floating point number required.");
 
-	Scalar ma = std::max(max, -min);
-	Scalar mi = std::min(min, -max);
+	const Scalar ma = std::max(max, -min);
+	const Scalar mi = std::min(min, -max);
 	return (x - mi) / (ma - mi);
 }
 

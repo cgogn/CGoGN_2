@@ -574,38 +574,38 @@ public:
 
 	/**
 	 * @brief container compacting
-	 * @param map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
+	 * @return map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
 	 */
 	template <uint32 PRIMSIZE>
-	void compact(std::vector<uint32>& map_old_new)
+	std::vector<uint32> compact()
 	{
-		map_old_new.clear();
-		map_old_new.resize(end(), 0xffffffff);
+		if (this->holes_stack_.empty())
+			return std::vector<uint32>();
 
 		uint32 up = rbegin();
-		uint32 down = 0u;
+		uint32 down = std::numeric_limits<uint32>::max();
+		std::vector<uint32> map_old_new(up, std::numeric_limits<uint32>::max());
 
-		while (down < up)
+		do
 		{
-			if (!used(down))
+			down = holes_stack_.head();
+			for(uint32 i = 0u; i < PRIMSIZE; ++i)
 			{
-				for(uint32 i = 0u; i < PRIMSIZE; ++i)
-				{
-					unsigned rdown = down + PRIMSIZE-1u - i;
-					map_old_new[up] = rdown;
-					copy_line(rdown, up,true,true);
-					rnext(up);
-				}
-				down += PRIMSIZE;
+				const uint32 rdown = down + PRIMSIZE-1u - i;
+				map_old_new[up] = rdown;
+				move_line(rdown, up,true,true);
+				rnext(up);
 			}
-			else
-				down++;
-		}
-
-		nb_max_lines_ = nb_used_lines_;
+			holes_stack_.pop();
+		} while (!holes_stack_.empty() && (up > down));
 
 		// free unused memory blocks
-		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
+		nb_max_lines_ = nb_used_lines_;
+		const uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+
+		if (old_nb_blocks == new_nb_blocks)
+			return map_old_new;
 
 		for (auto arr : table_arrays_)
 			arr->set_nb_chunks(new_nb_blocks);
@@ -615,8 +615,7 @@ public:
 
 		refs_.set_nb_chunks(new_nb_blocks);
 
-		// clear holes
-		holes_stack_.clear();
+		return map_old_new;
 	}
 
 
@@ -784,6 +783,29 @@ public:
 		for (auto ptr : table_arrays_)
 			ptr->copy_element(dst, src);
 
+		if (copy_markers)
+		{
+			for (auto ptr : table_marker_arrays_)
+				ptr->copy_element(dst, src);
+		}
+		if (copy_refs)
+			refs_[dst] = refs_[src];
+	}
+
+	/**
+	 * @brief move the content of line src in line dst (with refs & markers)
+	 * After the operation the behaviour is undefined when accessing to the content of the line src.
+	 * @param dstIndex destination
+	 * @param srcIndex source
+	 * @param copy_markers, to specify if the marker should be copied.
+	 * @param copy_refs, to specify if the refs should be copied.
+	 */
+	inline void move_line(uint32 dst, uint32 src, bool copy_markers, bool copy_refs)
+	{
+		for (auto ptr : table_arrays_)
+			ptr->move_element(dst, src);
+
+		//for markers (i.e. uints) there is no gain moving, we can copy
 		if (copy_markers)
 		{
 			for (auto ptr : table_marker_arrays_)

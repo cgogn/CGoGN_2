@@ -202,6 +202,16 @@ public:
 	}
 
 	/**
+	 * @brief move an element to another one
+	 * @param dst destination index
+	 * @param src source index
+	 */
+	void move_element(uint32 dst, uint32 src) override
+	{
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = std::move(table_data_[src / CHUNKSIZE][src % CHUNKSIZE]);
+	}
+
+	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
