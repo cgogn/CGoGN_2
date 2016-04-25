@@ -50,6 +50,28 @@ else()
 endif()
 endfunction(deduce_build_type)
 
+##############################################################################################
+#                                 cgogn_create_package macro                                 #
+# This macro is a helper to create package configuration and version files. These files are  #
+# needed when using the find_package command.                                                #
+# This macro generate 2 versions of each file : one for the build tree and another for the   #
+# install tree.                                                                              #
+# Build tree:                                                                                #
+# 1.<build-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>Targets.cmake             #
+# 2.<build-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>Config.cmake              #
+# 3.<build-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>ConfigVersion.cmake       #
+#                                                                                            #
+# Install tree:                                                                              #
+# 1.<install-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>Targets.cmake           #
+# 2.<install-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>Config.cmake            #
+# 3.<install-dir>/lib/cmake/<cmake-project-name>/<cmake-project-name>ConfigVersion.cmake     #
+#                                                                                            #
+# Usage example : find_package(cgogn_core); find_package(cgogn_io)                           #
+# Note: template config files are located in  the cmake/ConfigFiles directory.               #
+# By convention they have to define the following two variables:                             #
+# cmake/<cmake-project-name>_LIBRARIES                                                       #
+# cmake/<cmake-project-name>_INCLUDE_DIRS                                                    #
+##############################################################################################
 
 macro(cgogn_create_package include_dirs_build_tree include_dirs_install_tree)
 
