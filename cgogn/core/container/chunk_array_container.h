@@ -619,6 +619,50 @@ public:
 		holes_stack_.clear();
 	}
 
+
+//	template <uint32 PRIMSIZE>
+//	void append(std::vector<uint32>& map_old_new)
+//	{
+//		map_old_new.clear();
+//		map_old_new.resize(end(), 0xffffffff);
+
+//		uint32 up = rbegin();
+//		uint32 down = 0u;
+
+//		while (down < up)
+//		{
+//			if (!used(down))
+//			{
+//				for(uint32 i = 0u; i < PRIMSIZE; ++i)
+//				{
+//					unsigned rdown = down + PRIMSIZE-1u - i;
+//					map_old_new[up] = rdown;
+//					copy_line(rdown, up,true,true);
+//					rnext(up);
+//				}
+//				down += PRIMSIZE;
+//			}
+//			else
+//				down++;
+//		}
+
+//		nb_max_lines_ = nb_used_lines_;
+
+//		// free unused memory blocks
+//		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+
+//		for (auto arr : table_arrays_)
+//			arr->set_nb_chunks(new_nb_blocks);
+
+//		for (auto arr : table_marker_arrays_)
+//			arr->set_nb_chunks(new_nb_blocks);
+
+//		refs_.set_nb_chunks(new_nb_blocks);
+
+//		// clear holes
+//		holes_stack_.clear();
+//	}
+
 	/**************************************
 	 *          LINES MANAGEMENT          *
 	 **************************************/
