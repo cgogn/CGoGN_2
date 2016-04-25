@@ -195,7 +195,7 @@ public:
 //			step++;
 //			uint32 next = next_level_cell_[ORBIT]->operator[](index);
 //			//index = next;
-//			if(next != EMBNULL) index = next;
+//			if(next != INVALID_INDEX) index = next;
 //			else break;
 //		}
 

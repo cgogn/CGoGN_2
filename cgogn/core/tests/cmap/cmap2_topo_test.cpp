@@ -278,9 +278,8 @@ TEST_F(CMap2TopoTest, add_face_topo)
 
 	uint32 count_vertices = 11u + add_faces(NB_MAX);
 
-	for (Dart d : darts_) {
+	for (Dart d : darts_)
 		EXPECT_TRUE(is_boundary(phi2(d)));
-	}
 
 	EXPECT_EQ(nb_darts(), 2u * count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
@@ -427,11 +426,13 @@ TEST_F(CMap2TopoTest, flip_edge_topo)
 		bool k11_move = (degree(k11_vertex) > 1);
 		bool k21_move = (degree(k21_vertex) > 1);
 
-		if (k11_move) {
+		if (k11_move)
+		{
 			*k11_ptr -= 1u;
 			*k12_ptr += 1u;
 		}
-		if (k21_move) {
+		if (k21_move)
+		{
 			*k21_ptr -= 1u;
 			*k22_ptr += 1u;
 		}
@@ -441,19 +442,23 @@ TEST_F(CMap2TopoTest, flip_edge_topo)
 			EXPECT_EQ(codegree(Face(e1)), k1);
 			EXPECT_EQ(codegree(Face(e2)), k2);
 
-			if (k11_move) {
+			if (k11_move)
+			{
 				EXPECT_EQ(degree(Vertex(phi_1(e1))), *k11_ptr);
 				EXPECT_EQ(degree(Vertex(e1)), *k12_ptr);
 			}
-			else {
+			else
+			{
 				EXPECT_EQ(degree(k11_vertex), *k11_ptr);
 				EXPECT_EQ(degree(k12_vertex), *k12_ptr);
 			}
-			if (k21_move) {
+			if (k21_move)
+			{
 				EXPECT_EQ(degree(Vertex(phi_1(e2))), *k21_ptr);
 				EXPECT_EQ(degree(Vertex(e2)), *k22_ptr);
 			}
-			else {
+			else
+			{
 				EXPECT_EQ(degree(k21_vertex), *k21_ptr);
 				EXPECT_EQ(degree(k22_vertex), *k22_ptr);
 			}
@@ -606,6 +611,18 @@ TEST_F(CMap2TopoTest, multi_phi)
 	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
 	EXPECT_EQ(f.dart, this->phi<211111111112>(f.dart));
 	EXPECT_EQ(f.dart, this->phi<11122111221111>(f.dart));
+}
+
+/*! \brief The number of connected components is correctly counted
+ */
+TEST_F(CMap2TopoTest, nb_connected_components)
+{
+	add_faces(10u);
+	add_prism_topo(3u);
+	add_prism_topo(5u);
+	add_pyramid_topo(4u);
+
+	EXPECT_EQ(nb_connected_components(), 13u);
 }
 
 #undef NB_MAX
