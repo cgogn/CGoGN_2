@@ -150,6 +150,16 @@ public:
 	virtual void copy_element(uint32 dst, uint32 src) = 0;
 
 	/**
+	 * @brief move an element to another one
+	 * @param dst destination index
+	 * @param src source index
+	 */
+	virtual void move_element(uint32 dst, uint32 src)
+	{
+		this->copy_element(dst,src);
+	}
+
+	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
