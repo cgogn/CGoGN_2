@@ -4,7 +4,7 @@ project(cgogn_rendering
 
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -53,13 +53,13 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
