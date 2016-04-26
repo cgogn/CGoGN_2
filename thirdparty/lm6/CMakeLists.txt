@@ -25,9 +25,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 install(FILES "libmesh6.h" DESTINATION "include/thirdparty/lm6")
 
-######## 1. Build tree
-
-export(TARGETS ${PROJECT_NAME}
-	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
-
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
