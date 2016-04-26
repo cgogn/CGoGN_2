@@ -93,7 +93,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:"include">
+	$<INSTALL_INTERFACE:include>
 )
 
 install(FILES "dll.h" DESTINATION "include/cgogn/core/")
