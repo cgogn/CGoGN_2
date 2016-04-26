@@ -53,5 +53,3 @@ install(DIRECTORY cph rcmap
 )
 
 cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
-
-#add_subdirectory(examples)

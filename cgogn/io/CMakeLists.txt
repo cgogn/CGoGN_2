@@ -76,4 +76,3 @@ install(FILES ${HEADERS}
 cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
 
 add_subdirectory(mesh_generation)
-add_subdirectory(examples)

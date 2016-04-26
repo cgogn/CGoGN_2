@@ -45,5 +45,3 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${tet_LIBRARIES} ${LIBRARIES})
-
-add_subdirectory(examples)

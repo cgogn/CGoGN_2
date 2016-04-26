@@ -58,9 +58,3 @@ install(DIRECTORY algos functions types
 )
 
 cgogn_create_package("${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include")
-
-add_subdirectory(examples)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()

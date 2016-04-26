@@ -18,9 +18,3 @@ install(DIRECTORY algos
 	DESTINATION include/cgogn/modeling
 	FILES_MATCHING PATTERN "*.h"
 )
-
-add_subdirectory(examples)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()
