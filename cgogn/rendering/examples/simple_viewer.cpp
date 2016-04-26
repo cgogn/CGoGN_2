@@ -98,6 +98,7 @@ private:
 
 
 	cgogn::rendering::Drawer* drawer_;
+	cgogn::rendering::Drawer::Renderer* drawer_rend_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -145,6 +146,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	delete vbo_color_;
 	delete vbo_sphere_sz_;
 	delete drawer_;
+	delete drawer_rend_;
 }
 
 Viewer::Viewer() :
@@ -158,6 +160,7 @@ Viewer::Viewer() :
 	vbo_color_(nullptr),
 	vbo_sphere_sz_(nullptr),
 	drawer_(nullptr),
+	drawer_rend_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false),
 	vertices_rendering_(false),
@@ -247,7 +250,7 @@ void Viewer::draw()
 	}
 
 	if (bb_rendering_)
-		drawer_->call_list(proj,view,this);
+		drawer_rend_->draw(proj,view,this);
 }
 
 void Viewer::init()
@@ -310,6 +313,7 @@ void Viewer::init()
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer();
+	drawer_rend_= drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);
 	drawer_->begin(GL_LINE_LOOP);

@@ -39,13 +39,20 @@ namespace rendering
 class CGOGN_RENDERING_API WallPaper
 {
 protected:
-
-	ShaderTexture::Param* param_texture_;
-
 	VBO* vbo_pos_;
 	VBO* vbo_tc_;
+	QOpenGLTexture* texture_;
 
 public:
+	class Renderer
+	{
+		ShaderTexture::Param* param_texture_;
+		WallPaper* wall_paper_data_;
+	public:
+		Renderer(WallPaper* wp);
+		~Renderer();
+		void draw(QOpenGLFunctions_3_3_Core* ogl33);
+	};
 
 	using Self = WallPaper;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(WallPaper);
@@ -62,9 +69,13 @@ public:
 	~WallPaper();
 
 	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
 	 */
-	void reinit_vao();
+	inline Renderer* generate_renderer()
+	{
+		return (new Renderer(this));
+	}
 
 	void set_full_screen(bool front = false);
 

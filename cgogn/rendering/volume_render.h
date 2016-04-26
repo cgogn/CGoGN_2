@@ -48,14 +48,6 @@ class CGOGN_RENDERING_API VolumeRender
 
 protected:
 
-//	ShaderExplodeVolumes* shader_expl_vol_;
-//	ShaderExplodeVolumesColor* shader_expl_vol_col_;
-//	ShaderExplodeVolumesLine* shader_expl_vol_line_;
-
-	ShaderExplodeVolumes::Param* param_expl_vol_;
-	ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
-	ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
-
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
 
@@ -68,12 +60,26 @@ protected:
 	float32 shrink_f_;
 
 	void init_with_color();
-
 	void init_without_color();
-
 	void init_edge();
 
 public:
+
+	class Renderer
+	{
+		ShaderExplodeVolumes::Param* param_expl_vol_;
+		ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
+		ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
+		VolumeRender* volume_render_data_;
+	public:
+		Renderer(VolumeRender* tr);
+		~Renderer();
+		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+		void set_explode_volume(float32 x);
+		void set_face_color(const QColor& rgb);
+		void set_edge_color(const QColor& rgb);
+	};
 
 	using Self = VolumeRender;
 
@@ -81,7 +87,7 @@ public:
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	VolumeRender();
+	VolumeRender(bool with_color_per_face);
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRender);
 
@@ -91,37 +97,12 @@ public:
 	~VolumeRender();
 
 	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
 	 */
-	void reinit_vao();
-
-	inline void set_explode_face(float32 x) { shrink_f_ = x; }
-
-	inline void set_explode_volume(float32 x)
+	inline Renderer* generate_renderer()
 	{
-		shrink_v_ = x;
-		if (param_expl_vol_)
-			param_expl_vol_->explode_factor_=x;
-
-		if (param_expl_vol_col_)
-			param_expl_vol_col_->explode_factor_=x;
-
-		if (param_expl_vol_line_)
-			param_expl_vol_line_->explode_factor_=x;
-	}
-
-	inline void set_face_color(const QColor& rgb)
-	{
-		face_color_= rgb;
-		if (param_expl_vol_)
-			param_expl_vol_->color_ = rgb;
-	}
-
-	inline void set_edge_color(const QColor& rgb)
-	{
-		edge_color_= rgb;
-		if (param_expl_vol_line_)
-			param_expl_vol_line_->color_=rgb;
+		return (new Renderer(this));
 	}
 
 	template <typename VEC3, typename MAP>
@@ -133,15 +114,13 @@ public:
 	template <typename VEC3, typename MAP>
 	void update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
-	void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
-
-	void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 };
 
 template <typename VEC3, typename MAP>
 void VolumeRender::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
-	init_without_color();
+	if (vbo_col_)
+		cgogn_log_warning("VolumeRender::update_face")<< "missing color attribute";
 
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -198,7 +177,12 @@ void VolumeRender::update_face(const MAP& m, const typename MAP::template Vertex
 template <typename VEC3, typename MAP>
 void VolumeRender::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
 {
-	init_with_color();
+	if (vbo_col_==nullptr)
+	{
+		cgogn_log_warning("VolumeRender::update_face")<< "used color attribute with volume render instanciate with no color vbo";
+		update_face<VEC3,MAP>(m,position);
+		return;
+	}
 
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -280,8 +264,6 @@ void VolumeRender::update_face(const MAP& m, const typename MAP::template Vertex
 template <typename VEC3, typename MAP>
 void VolumeRender::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
-	init_edge();
-
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Volume = typename MAP::Volume;

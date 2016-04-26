@@ -55,6 +55,7 @@ protected:
 
 	ShaderProgram* shader_;
 	QOpenGLVertexArrayObject* vao_;
+	QOpenGLFunctions_3_3_Core* ogl33_;
 
 	virtual void set_uniforms() = 0;
 

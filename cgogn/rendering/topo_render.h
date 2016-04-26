@@ -48,10 +48,6 @@ class CGOGN_RENDERING_API TopoRender
 
 protected:
 
-	ShaderBoldLine::Param* param_bl_;
-	ShaderBoldLine::Param* param_bl2_;
-	ShaderRoundPoint::Param* param_rp_;
-
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
 
@@ -71,6 +67,18 @@ protected:
 
 public:
 
+	class Renderer
+	{
+		ShaderBoldLine::Param* param_bl_;
+		ShaderBoldLine::Param* param_bl2_;
+		ShaderRoundPoint::Param* param_rp_;
+		TopoRender* topo_render_data_;
+	public:
+		Renderer(TopoRender* tr);
+		~Renderer();
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+	};
+
 	using Self = TopoRender;
 
 	/**
@@ -87,9 +95,13 @@ public:
 	~TopoRender();
 
 	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
 	 */
-	void reinit_vao();
+	inline Renderer* generate_renderer()
+	{
+		return (new Renderer(this));
+	}
 
 	/**
 	 * @brief draw
@@ -98,7 +110,6 @@ public:
 	 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
 	 * @param with_blending
 	 */
-	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
 
 	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
 

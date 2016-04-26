@@ -92,6 +92,7 @@ private:
 	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
 	cgogn::rendering::Drawer* drawer_;
+	cgogn::rendering::Drawer::Renderer* drawer_rend_;
 
 	int32 cell_picking;
 };
@@ -146,7 +147,7 @@ void Viewer::draw()
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_->call_list(proj_,view_,this);
+	drawer_rend_->draw(proj_,view_,this);
 
 }
 
@@ -168,6 +169,7 @@ void Viewer::init()
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
 	drawer_ = new cgogn::rendering::Drawer();
+	drawer_rend_ = drawer_->generate_renderer();
 }
 
 

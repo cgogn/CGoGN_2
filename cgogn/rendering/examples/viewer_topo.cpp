@@ -83,7 +83,8 @@ private:
 
 	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
-	cgogn::rendering::TopoRender* topo_render;
+	cgogn::rendering::TopoRender* topo_render_;
+	cgogn::rendering::TopoRender::Renderer* topo_render_rend_;
 
 	bool flat_rendering_;
 	bool topo_rendering_;
@@ -120,7 +121,8 @@ void Viewer::closeEvent(QCloseEvent*)
 {
 	delete render_;
 	delete vbo_pos_;
-	delete topo_render;
+	delete topo_render_;
+	delete topo_render_rend_;
 }
 
 Viewer::Viewer() :
@@ -129,7 +131,8 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	topo_render(nullptr),
+	topo_render_(nullptr),
+	topo_render_rend_(nullptr),
 	flat_rendering_(true),
 	topo_rendering_(true)
 {}
@@ -147,19 +150,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-			topo_render->update<Vec3>(map_, vertex_position_);
+			topo_render_->update<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_L:
 			cgogn::modeling::loop<Vec3>(map_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-			topo_render->update<Vec3>(map_, vertex_position_);
+			topo_render_->update<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_R:
 			cgogn::modeling::pliant_remeshing<Vec3>(map_,vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-			topo_render->update<Vec3>(map_,vertex_position_);
+			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		default:
 			break;
@@ -189,7 +192,7 @@ void Viewer::draw()
 
 	if (topo_rendering_)
 	{
-		topo_render->draw(proj,view,this);
+		topo_render_rend_->draw(proj,view,this);
 	}
 }
 
@@ -209,8 +212,9 @@ void Viewer::init()
 	param_flat_->back_color_ = QColor(0,0,150);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	topo_render = new cgogn::rendering::TopoRender;
-	topo_render->update<Vec3>(map_,vertex_position_);
+	topo_render_ = new cgogn::rendering::TopoRender;
+	topo_render_rend_ = topo_render_->generate_renderer();
+	topo_render_->update<Vec3>(map_,vertex_position_);
 }
 
 int main(int argc, char** argv)

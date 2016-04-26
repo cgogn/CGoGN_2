@@ -121,6 +121,7 @@ private:
 	cgogn::rendering::ShaderPointSpriteSize::Param* param_point_sprite_;
 
 	cgogn::rendering::Drawer* drawer_;
+	cgogn::rendering::Drawer::Renderer* drawer_rend_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -173,6 +174,7 @@ void Viewer::closeEvent(QCloseEvent*)
 {
 	delete filter_;
 	delete render_;
+	delete drawer_rend_;
 	delete vbo_pos_;
 	delete vbo_norm_;
 	delete vbo_color_;
@@ -187,6 +189,7 @@ Viewer::Viewer() :
 	cell_cache_(map_),
 	bb_(),
 	render_(nullptr),
+	drawer_rend_(nullptr),
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
@@ -321,7 +324,7 @@ void Viewer::draw()
 	}
 
 	if (bb_rendering_)
-		drawer_->call_list(proj, view, this);
+		drawer_rend_->draw(proj, view, this);
 }
 
 void Viewer::init()
@@ -381,6 +384,7 @@ void Viewer::init()
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::Drawer();
+	drawer_rend_ = drawer_->generate_renderer();
 	update_bb();
 }
 

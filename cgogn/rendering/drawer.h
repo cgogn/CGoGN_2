@@ -60,12 +60,6 @@ class CGOGN_RENDERING_API Drawer
 
 protected:
 
-//	static ShaderColorPerVertex* shader_cpv_;
-//	static ShaderBoldLineColor* shader_bl_;
-//	static ShaderRoundPointColor* shader_rp_;
-//	static ShaderPointSpriteColor* shader_ps_;
-//	static uint32 nb_instances_;
-
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
 
@@ -87,16 +81,27 @@ protected:
 	ShaderRoundPointColor::Param* param_rp_;
 	ShaderPointSpriteColor::Param* param_ps_;
 
-	uint32 vao_cpv_;
-	uint32 vao_bl_;
-	uint32 vao_rp_;
-	uint32 vao_ps_;
-
 	float32 current_size_;
 	bool current_aa_;
 	bool current_ball_;
 
 public:
+
+	class Renderer
+	{
+		ShaderColorPerVertex::Param* param_cpv_;
+		ShaderBoldLineColor::Param* param_bl_;
+		ShaderRoundPointColor::Param* param_rp_;
+		ShaderPointSpriteColor::Param* param_ps_;
+
+		Drawer* drawer_data_;
+
+	public:
+		Renderer(Drawer* dr);
+		~Renderer();
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+
+	};
 
 	using Self = Drawer;
 
@@ -106,10 +111,21 @@ public:
 	 */
 	Drawer();
 
+
 	/**
 	 * release buffers and shader
 	 */
 	~Drawer();
+
+	/**
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
+	 */
+	inline Renderer* generate_renderer()
+	{
+		return (new Renderer(this));
+	}
+
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
 
@@ -191,7 +207,7 @@ public:
 	 * @param modelview modelview matrix
 	 * @param a pointer on QOGLViewer object (often this)
 	 */
-	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+//	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
 	 * usr as glPointSize

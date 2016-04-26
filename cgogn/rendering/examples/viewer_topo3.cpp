@@ -78,9 +78,13 @@ private:
 	cgogn::rendering::VBO* vbo_pos_;
 
 	cgogn::rendering::TopoRender* topo_render_;
+	cgogn::rendering::TopoRender::Renderer* topo_render_rend_;
+
 	cgogn::rendering::VolumeRender* volume_render_;
+	cgogn::rendering::VolumeRender::Renderer* volume_render_rend_;
 
 	cgogn::rendering::Drawer* drawer_;
+	cgogn::rendering::Drawer::Renderer* drawer_rend_;
 
 	bool vol_rendering_;
 	bool edge_rendering_;
@@ -129,8 +133,11 @@ void Viewer::closeEvent(QCloseEvent*)
 {
 	delete vbo_pos_;
 	delete topo_render_;
+	delete topo_render_rend_;
 	delete volume_render_;
+	delete volume_render_rend_;
 	delete drawer_;
+	delete drawer_rend_;
 }
 
 Viewer::Viewer() :
@@ -139,8 +146,11 @@ Viewer::Viewer() :
 	bb_(),
 	vbo_pos_(nullptr),
 	topo_render_(nullptr),
+	topo_render_rend_(nullptr),
 	volume_render_(nullptr),
+	volume_render_rend_(nullptr),
 	drawer_(nullptr),
+	drawer_rend_(nullptr),
 	vol_rendering_(true),
 	edge_rendering_(true),
 	topo_rendering_(true),
@@ -162,13 +172,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_Plus:
 			expl_ += 0.05f;
-			volume_render_->set_explode_volume(expl_);
+			volume_render_rend_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
 			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_Minus:
 			expl_ -= 0.05f;
-			volume_render_->set_explode_volume(expl_);
+			volume_render_rend_->set_explode_volume(expl_);
 			topo_render_->set_explode_volume(expl_);
 			topo_render_->update<Vec3>(map_,vertex_position_);
 			break;
@@ -236,19 +246,19 @@ void Viewer::draw()
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
 
-		volume_render_->draw_faces(proj,view,this);
+		volume_render_rend_->draw_faces(proj,view,this);
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
-		volume_render_->draw_edges(proj,view,this);
+		volume_render_rend_->draw_edges(proj,view,this);
 
 
 	if (topo_rendering_)
-		topo_render_->draw(proj,view,this);
+		topo_render_rend_->draw(proj,view,this);
 
-	drawer_->call_list(proj, view, this);
+	drawer_rend_->draw(proj, view, this);
 
 }
 
@@ -260,15 +270,20 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	topo_render_ = new cgogn::rendering::TopoRender();
+	topo_render_rend_ = topo_render_->generate_renderer();
 	topo_render_->set_explode_volume(expl_);
 	topo_render_->update<Vec3>(map_,vertex_position_);
 
-	volume_render_ = new cgogn::rendering::VolumeRender;
-	volume_render_->set_explode_volume(expl_);
+	volume_render_ = new cgogn::rendering::VolumeRender(false);
 	volume_render_->update_face<Vec3>(map_,vertex_position_);
 	volume_render_->update_edge<Vec3>(map_,vertex_position_);
 
+	volume_render_rend_ = volume_render_->generate_renderer();
+	volume_render_rend_->set_explode_volume(expl_);
+
+
 	drawer_ = new cgogn::rendering::Drawer();
+	drawer_rend_ = drawer_->generate_renderer();
 }
 
 int main(int argc, char** argv)

@@ -47,42 +47,39 @@ TopoRender::TopoRender():
 	vbo_darts_ = new cgogn::rendering::VBO(3);
 	vbo_relations_ = new cgogn::rendering::VBO(3);
 
-	param_bl_ = ShaderBoldLine::generate_param();
-	param_bl_->set_vbo(vbo_darts_);
-	param_bl_->color_= dart_color_;
-
-	param_bl2_ = ShaderBoldLine::generate_param();
-	param_bl2_->set_vbo(vbo_relations_);
-	param_bl2_->color_= phi2_color_;
-
-	param_rp_ = ShaderRoundPoint::generate_param();
-	param_rp_->set_vbo(vbo_darts_,2,0);
-	param_rp_->color_ = dart_color_;
 }
 
 TopoRender::~TopoRender()
 {
 	delete vbo_darts_;
 	delete vbo_relations_;
+}
 
+
+TopoRender::Renderer::Renderer(TopoRender* tr):
+	topo_render_data_(tr)
+{
+	param_bl_ = ShaderBoldLine::generate_param();
+	param_bl_->set_vbo(tr->vbo_darts_);
+	param_bl_->color_= tr->dart_color_;
+
+	param_bl2_ = ShaderBoldLine::generate_param();
+	param_bl2_->set_vbo(tr->vbo_relations_);
+	param_bl2_->color_= tr->phi2_color_;
+
+	param_rp_ = ShaderRoundPoint::generate_param();
+	param_rp_->set_vbo(tr->vbo_darts_,2,0);
+	param_rp_->color_ = tr->dart_color_;
+}
+
+TopoRender::Renderer::~Renderer()
+{
 	delete param_rp_;
 	delete param_bl_;
 	delete param_bl2_;
-
 }
 
-void TopoRender::reinit_vao()
-{
-	param_bl_->reinit_vao();
-	param_bl2_->reinit_vao();
-	param_rp_->reinit_vao();
-
-	param_bl_->set_vbo(vbo_darts_);
-	param_bl2_->set_vbo(vbo_relations_);
-	param_rp_->set_vbo(vbo_darts_,2,0);
-}
-
-void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
+void TopoRender::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
 {
 	float32 lw = 2.0;
 	if(with_blending)
@@ -97,46 +94,25 @@ void TopoRender::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview,
 	param_rp_->size_ = 2*lw;
 
 	param_rp_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_POINTS,0,vbo_darts_->size()/2);
-	param_rp_->release();	
+	ogl33->glDrawArrays(GL_POINTS,0,topo_render_data_->vbo_darts_->size()/2);
+	param_rp_->release();
 
 	param_bl_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,topo_render_data_->vbo_darts_->size());
 	param_bl_->release();
 
-	param_bl2_->color_ = phi2_color_;
+	param_bl2_->color_ = topo_render_data_->phi2_color_;
 	param_bl2_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,topo_render_data_->vbo_darts_->size());
 	param_bl2_->release();
 
-	if (vbo_relations_->size() > vbo_darts_->size())
+	if (topo_render_data_->vbo_relations_->size() > topo_render_data_->vbo_darts_->size())
 	{
-		param_bl2_->color_ = phi3_color_;
+		param_bl2_->color_ = topo_render_data_->phi3_color_;
 		param_bl2_->bind(projection,modelview);
-		ogl33->glDrawArrays(GL_LINES,vbo_darts_->size(),vbo_darts_->size());
+		ogl33->glDrawArrays(GL_LINES,topo_render_data_->vbo_darts_->size(),topo_render_data_->vbo_darts_->size());
 		param_bl2_->release();
 	}
-
-//	shader_bl_->bind();
-//	shader_bl_->set_matrices(projection,modelview);
-//	shader_bl_->set_width(lw);
-//	shader_bl_->set_color(dart_color_);
-//	param_bl_->bind_vao_only(false);
-//	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
-//	param_bl_->release_vao_only();
-
-//	param_bl2_->bind_vao_only(false);
-//	shader_bl_->set_color(phi2_color_);
-//	ogl33->glDrawArrays(GL_LINES,0,vbo_darts_->size());
-
-//	if (vbo_relations_->size() > vbo_darts_->size())
-//	{
-//		shader_bl_->set_color(phi3_color_);
-//		ogl33->glDrawArrays(GL_LINES,vbo_darts_->size(),vbo_darts_->size());
-//	}
-//	param_bl2_->release_vao_only();
-//	shader_bl_->release();
-
 	ogl33->glDisable(GL_BLEND);
 
 }

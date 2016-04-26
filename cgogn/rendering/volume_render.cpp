@@ -37,122 +37,112 @@ namespace rendering
 
 
 
-VolumeRender::VolumeRender():
-//	shader_expl_vol_(nullptr),
-//	shader_expl_vol_line_(nullptr),
-	param_expl_vol_(nullptr),
-	param_expl_vol_col_(nullptr),
-	param_expl_vol_line_(nullptr),
+VolumeRender::VolumeRender(bool with_color_per_face):
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
 	face_color_(0,150,0),
 	vbo_pos2_(nullptr),
 	edge_color_(0,0,0),
-	shrink_v_(0.6f),
-	shrink_f_(0.85f)
+	shrink_v_(0.6f)
 {
 	vbo_pos_ = new cgogn::rendering::VBO(3);
-}
-
-void VolumeRender::reinit_vao()
-{
-
-	if (param_expl_vol_)
-	{
-		param_expl_vol_->reinit_vao();
-		param_expl_vol_->set_vbo(vbo_pos_);
-	}
-
-	if (param_expl_vol_col_ && vbo_col_)
-	{
-		param_expl_vol_col_->reinit_vao();
-		param_expl_vol_col_->set_vbo(vbo_pos_, vbo_col_);
-	}
-
-	if(param_expl_vol_line_)
-	{
-		param_expl_vol_line_->reinit_vao();
-		param_expl_vol_line_->set_vbo(vbo_pos2_);
-	}
-}
-
-
-void VolumeRender::init_with_color()
-{
-	// check if all is already well initialized
-	if (vbo_col_!= nullptr)
-		return;
-
-	vbo_col_ = new cgogn::rendering::VBO(3);
-
-	delete param_expl_vol_;
-	param_expl_vol_col_ = ShaderExplodeVolumesColor::generate_param();
-	param_expl_vol_col_->explode_factor_ = shrink_v_;
-	param_expl_vol_col_->set_vbo(vbo_pos_,vbo_col_);
-}
-
-void VolumeRender::init_without_color()
-{
-	delete vbo_col_;
-	vbo_col_ = nullptr;
-
-	delete param_expl_vol_;
-	param_expl_vol_ = ShaderExplodeVolumes::generate_param();
-	param_expl_vol_->set_vbo(vbo_pos_);
-	param_expl_vol_->explode_factor_ = shrink_v_;
-	param_expl_vol_->color_ = face_color_;
-}
-
-void VolumeRender::init_edge()
-{
-	if (vbo_pos2_ != nullptr)
-		return;
-
 	vbo_pos2_ = new cgogn::rendering::VBO(3);
 
-	param_expl_vol_line_ = ShaderExplodeVolumesLine::generate_param();
-	param_expl_vol_line_->set_vbo(vbo_pos2_);
-	param_expl_vol_line_->explode_factor_ = shrink_v_;
-	param_expl_vol_line_->color_ = edge_color_;
+	if (with_color_per_face)
+		vbo_col_ = new cgogn::rendering::VBO(3);
 }
+
 
 
 VolumeRender::~VolumeRender()
 {
 	delete vbo_pos_;
+	delete vbo_pos2_;
 	delete vbo_col_;
-	delete param_expl_vol_;
-	delete param_expl_vol_line_;
+}
 
+VolumeRender::Renderer::Renderer(VolumeRender* vr):
+	param_expl_vol_(nullptr),
+	param_expl_vol_col_(nullptr),
+	param_expl_vol_line_(nullptr),
+	volume_render_data_(vr)
+{
+	if (vr->vbo_col_)
+	{
+		param_expl_vol_col_ = ShaderExplodeVolumesColor::generate_param();
+		param_expl_vol_col_->explode_factor_ = vr->shrink_v_;
+		param_expl_vol_col_->set_vbo(vr->vbo_pos_,vr->vbo_col_);
+	}
+	else
+	{
+		param_expl_vol_ = ShaderExplodeVolumes::generate_param();
+		param_expl_vol_->set_vbo(vr->vbo_pos_);
+		param_expl_vol_->explode_factor_ = vr->shrink_v_;
+		param_expl_vol_->color_ = vr->face_color_;
+	}
+
+	if (vr->vbo_pos2_)
+	{
+		param_expl_vol_line_ = ShaderExplodeVolumesLine::generate_param();
+		param_expl_vol_line_->set_vbo(vr->vbo_pos2_);
+		param_expl_vol_line_->explode_factor_ = vr->shrink_v_;
+		param_expl_vol_line_->color_ = vr->edge_color_;
+	}
 }
 
 
-void VolumeRender::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+VolumeRender::Renderer::~Renderer()
 {
-	if (vbo_col_)
+	delete param_expl_vol_;
+	delete param_expl_vol_col_;
+	delete param_expl_vol_line_;
+}
+
+
+void VolumeRender::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+{
+	if (param_expl_vol_col_)
 	{
 		param_expl_vol_col_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, vbo_pos_->size());
+		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_render_data_->vbo_pos_->size());
 		param_expl_vol_col_->release();
 	}
 	else
 	{ 
 		param_expl_vol_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, vbo_pos_->size());
+		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_render_data_->vbo_pos_->size());
 		param_expl_vol_->release();
 	}
 }
 
-void VolumeRender::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void VolumeRender::Renderer::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
-
 	param_expl_vol_line_->bind(projection,modelview);
-
-	ogl33->glDrawArrays(GL_TRIANGLES,0,vbo_pos2_->size());
-
+	ogl33->glDrawArrays(GL_TRIANGLES,0,volume_render_data_->vbo_pos2_->size());
 	param_expl_vol_line_->release();
 }
 
+void VolumeRender::Renderer::set_explode_volume(float32 x)
+{
+	if (param_expl_vol_)
+		param_expl_vol_->explode_factor_=x;
+	if (param_expl_vol_col_)
+		param_expl_vol_col_->explode_factor_=x;
+	if (param_expl_vol_line_)
+		param_expl_vol_line_->explode_factor_=x;
+}
+
+void VolumeRender::Renderer::set_face_color(const QColor& rgb)
+{
+	if (param_expl_vol_)
+		param_expl_vol_->color_ = rgb;
+}
+
+void VolumeRender::Renderer::set_edge_color(const QColor& rgb)
+{
+	if (param_expl_vol_line_)
+		param_expl_vol_line_->color_=rgb;
+}
 
 
 } // namespace rendering
