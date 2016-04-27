@@ -71,10 +71,6 @@ public:
 		return shader_;
 	}
 
-	/**
-	 * @brief reinitialize vao (for use in new context)
-	 */
-	void reinit_vao();
 
 	/**
 	 * @brief bind vao (and set uniform)
