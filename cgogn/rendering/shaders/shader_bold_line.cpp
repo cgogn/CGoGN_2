@@ -22,13 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_RENDERING_DLL_EXPORT
+#define CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_
 
 #include <iostream>
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/rendering/shaders/shader_bold_line.h>
-
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -36,14 +35,14 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderBoldLine::vertex_shader_source_ =
+const char* ShaderBoldLineGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "void main() {\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
-const char* ShaderBoldLine::geometry_shader_source_ =
+const char* ShaderBoldLineGen::geometry_shader_source_ =
 "#version 150\n"
 "layout (lines) in;\n"
 "layout (triangle_strip, max_vertices=6) out;\n"
@@ -96,7 +95,7 @@ const char* ShaderBoldLine::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-const char* ShaderBoldLine::fragment_shader_source_ =
+const char* ShaderBoldLineGen::fragment_shader_source_ =
 "#version 150\n"
 "in vec4 color_f;\n"
 "out vec4 fragColor;\n"
@@ -104,7 +103,7 @@ const char* ShaderBoldLine::fragment_shader_source_ =
 "   fragColor = color_f;\n"
 "}\n";
 
-const char* ShaderBoldLine::vertex_shader_source2_ =
+const char* ShaderBoldLineGen::vertex_shader_source2_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
@@ -114,7 +113,7 @@ const char* ShaderBoldLine::vertex_shader_source2_ =
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
-const char* ShaderBoldLine::geometry_shader_source2_ =
+const char* ShaderBoldLineGen::geometry_shader_source2_ =
 "#version 150\n"
 "layout (lines) in;\n"
 "layout (triangle_strip, max_vertices=6) out;\n"
@@ -166,7 +165,7 @@ const char* ShaderBoldLine::geometry_shader_source2_ =
 "	}\n"
 "}\n";
 
-const char* ShaderBoldLine::fragment_shader_source2_ =
+const char* ShaderBoldLineGen::fragment_shader_source2_ =
 "#version 150\n"
 "in vec4 color_f;\n"
 "out vec4 fragColor;\n"
@@ -175,18 +174,15 @@ const char* ShaderBoldLine::fragment_shader_source2_ =
 "}\n";
 
 
-
-ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
+ShaderBoldLineGen::ShaderBoldLineGen(bool cpv)
 {
-	if (color_per_vertex)
+	if (cpv)
 	{
 		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
 		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source2_);
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-		prg_.link();
-		get_matrices_uniforms();
 	}
 	else
 	{
@@ -194,68 +190,36 @@ ShaderBoldLine::ShaderBoldLine(bool color_per_vertex)
 		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
 		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.link();
-		get_matrices_uniforms();
 	}
+	prg_.link();
+	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("lineColor");
 	unif_width_ = prg_.uniformLocation("lineWidths");
 }
 
-void ShaderBoldLine::set_color(const QColor& rgb)
+void ShaderBoldLineGen::set_color(const QColor& rgb)
 {
 	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderBoldLine::set_width(float32 wpix)
+
+void ShaderBoldLineGen::set_width(float32 w)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 	GLint viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
+	QSizeF wd(w / float32(viewport[2]), w / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 
 
 
-ShaderParamBoldLine::ShaderParamBoldLine(ShaderBoldLine* sh):
-	ShaderParam(sh),
-	color_(255, 255, 255),
-	width_(2.0f)
-{}
+template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
+template class CGOGN_RENDERING_API ShaderBoldLineTpl<true>;
+template class CGOGN_RENDERING_API ShaderParamBoldLine<false>;
+template class CGOGN_RENDERING_API ShaderParamBoldLine<true>;
 
-void ShaderParamBoldLine::set_uniforms()
-{
-	ShaderBoldLine* sh = static_cast<ShaderBoldLine*>(this->shader_);
-	sh->set_color(color_);
-	sh->set_width(width_);
-}
-
-void ShaderParamBoldLine::set_vbo(VBO* vbo_pos, VBO* vbo_color)
-{
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderBoldLine::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderBoldLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	if (vbo_color)
-	{
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLine::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderBoldLine::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-	}
-
-	vao_->release();
-	shader_->release();
-}
 
 } // namespace rendering
 

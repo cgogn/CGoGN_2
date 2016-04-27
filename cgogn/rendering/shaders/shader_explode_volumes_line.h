@@ -81,18 +81,23 @@ public:
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline Param* generate_param()
+	inline static Param* generate_param()
 	{
-		return (new Param(this));
+		if (instance_==nullptr)
+			instance_ = new ShaderExplodeVolumesLine;
+		return (new Param(instance_));
 	}
-
-	ShaderExplodeVolumesLine();
 
 	void set_explode_volume(float32 x);
 
 	void set_plane_clip(const QVector4D& plane);
 
 	void set_color(const QColor& rgb);
+
+private:
+
+	ShaderExplodeVolumesLine();
+	static ShaderExplodeVolumesLine* instance_;
 };
 
 } // namespace rendering

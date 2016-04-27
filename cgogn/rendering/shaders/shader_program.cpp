@@ -38,12 +38,6 @@ ShaderParam::ShaderParam(ShaderProgram* prg):
 	vao_->create();
 }
 
-void ShaderParam::reinit_vao()
-{
-	vao_->destroy();
-	vao_->create();
-}
-
 void ShaderParam::bind_vao_only(bool with_uniforms)
 {
 	if (with_uniforms)

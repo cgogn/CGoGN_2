@@ -35,19 +35,41 @@ namespace cgogn
 namespace rendering
 {
 
-
+/**
+ * @brief WallPaper: allow rendering of a texture, front or back, full-screen or not
+ *
+ * Typical usage:
+ *
+ *  cgogn::rendering::WallPaper* wp_;	// can be shared between contexts
+ *  cgogn::rendering::WallPaper::Renderer* wp_rend_; // one by context,
+ *
+ * init:
+ *  wp_ = new cgogn::rendering::WallPaper();
+ *  wp_rend_ = wp_->generate_renderer(); // warning must be delete when finished
+ *  wp_->update<Vec3>(map_,vertex_position_);
+ *
+ * draw:
+ *  wp_rend_->draw(proj,view,this);
+ *
+ */
 class CGOGN_RENDERING_API WallPaper
 {
 protected:
-
-	static int32 nb_instances_;
-	static ShaderTexture* shader_texture_;
-	ShaderTexture::Param* param_texture_;
-
 	VBO* vbo_pos_;
 	VBO* vbo_tc_;
+	QOpenGLTexture* texture_;
 
 public:
+	class Renderer
+	{
+		friend class WallPaper;
+		ShaderTexture::Param* param_texture_;
+		WallPaper* wall_paper_data_;
+		Renderer(WallPaper* wp);
+	public:
+		~Renderer();
+		void draw(QOpenGLFunctions_3_3_Core* ogl33);
+	};
 
 	using Self = WallPaper;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(WallPaper);
@@ -64,13 +86,42 @@ public:
 	~WallPaper();
 
 	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
 	 */
-	void reinit_vao();
+	inline Renderer* generate_renderer()
+	{
+		return (new Renderer(this));
+	}
 
+	/**
+	 * @brief set the texture in full screen
+	 * @param front if true draw with depth of 0 (front) else with depth of ~1 (back)
+	 */
 	void set_full_screen(bool front = false);
 
+	/**
+	 * @brief set a local position for the image in pixel
+	 * @warning position & size are converted in % when set, and used even when window size has changed
+	 * @param win_w width of window
+	 * @param win_h height of window
+	 * @param x x pos (0 is left)
+	 * @param y y pos (0 is top)
+	 * @param w width to draw
+	 * @param h height to draw
+	 * @param front (default is back drawing)
+	 */
 	void set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 y, uint32 w, uint32 h, bool front = true);
+
+	/**
+	 * @brief set a local position for the image in ratio ([0-1]) of the viewport
+	 * @param x x pos (0.0 is left)
+	 * @param y y pos (0 is top)
+	 * @param w width to draw
+	 * @param h height to draw
+	 * @param front (default is front drawing)
+	 */
+	void set_local_position(float x, float y, float w, float h, bool front = true);
 
 	void draw(QOpenGLFunctions_3_3_Core* ogl33);
 };

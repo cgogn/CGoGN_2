@@ -68,17 +68,17 @@ public:
 		ATTRIB_POS = 0
 	};
 
-	ShaderSimpleColor();
-
 	using Param = ShaderParamSimpleColor;
 
 	/**
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline Param* generate_param()
+	inline static Param* generate_param()
 	{
-		return (new Param(this));
+		if (instance_==nullptr)
+			instance_ = new ShaderSimpleColor;
+		return (new Param(instance_));
 	}
 
 	/**
@@ -86,6 +86,11 @@ public:
 	 * @param rgb
 	 */
 	void set_color(const QColor& rgb);
+
+private:
+	ShaderSimpleColor();
+	static ShaderSimpleColor* instance_;
+
 };
 
 } // namespace rendering

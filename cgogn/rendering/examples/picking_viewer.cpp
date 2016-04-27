@@ -89,11 +89,10 @@ private:
 
 	cgogn::rendering::VBO* vbo_pos_;
 
-	cgogn::rendering::ShaderFlat* shader_flat_;
-
 	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
-	cgogn::rendering::Drawer* drawer_;
+	cgogn::rendering::DisplayListDrawer* drawer_;
+	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
 
 	int32 cell_picking;
 };
@@ -122,7 +121,6 @@ Viewer::~Viewer()
 {
 	delete render_;
 	delete vbo_pos_;
-	delete shader_flat_;
 }
 
 Viewer::Viewer() :
@@ -131,7 +129,6 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	shader_flat_(nullptr),
 	drawer_(nullptr),
 	cell_picking(0)
 {}
@@ -144,21 +141,13 @@ void Viewer::draw()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
 
-//	shader_flat_->bind();
-//	shader_flat_->set_matrices(proj_,view_);
-//	param_flat_->bind();
-//	render_->draw(cgogn::rendering::TRIANGLES);
-//	param_flat_->release();
-//	shader_flat_->release();
-
-
 	param_flat_->bind(proj_,view_);
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_->call_list(proj_,view_,this);
+	drawer_rend_->draw(proj_,view_,this);
 
 }
 
@@ -172,16 +161,15 @@ void Viewer::init()
 	render_ = new cgogn::rendering::MapRender();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
-	shader_flat_ = new cgogn::rendering::ShaderFlat;
-	param_flat_ = shader_flat_->generate_param();
-			//new cgogn::rendering::ParamFlat(shader_flat_);
+	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 
 	param_flat_->set_vbo(vbo_pos_);
 	param_flat_->front_color_ = QColor(0,200,0);
 	param_flat_->back_color_ = QColor(200,0,0);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	drawer_ = new cgogn::rendering::Drawer();
+	drawer_ = new cgogn::rendering::DisplayListDrawer();
+	drawer_rend_ = drawer_->generate_renderer();
 }
 
 
