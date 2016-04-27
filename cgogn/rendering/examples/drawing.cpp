@@ -50,10 +50,10 @@ public:
 	virtual ~Drawing();
 
 //private:
-	cgogn::rendering::Drawer* drawer_;
-	cgogn::rendering::Drawer* drawer2_;
-	cgogn::rendering::Drawer::Renderer* drawer_rend_;
-	cgogn::rendering::Drawer::Renderer* drawer2_rend_;
+	cgogn::rendering::DisplayListDrawer* drawer_;
+	cgogn::rendering::DisplayListDrawer* drawer2_;
+	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
+	cgogn::rendering::DisplayListDrawer::Renderer* drawer2_rend_;
 
 	cgogn::rendering::WallPaper* wp_;
 	cgogn::rendering::WallPaper* button_;
@@ -155,7 +155,7 @@ void Drawing::init()
 	button_rend_ = button_->generate_renderer();
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::Drawer();
+	drawer_ = new cgogn::rendering::DisplayListDrawer();
 	drawer_rend_ = drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
@@ -214,7 +214,7 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = new cgogn::rendering::Drawer();
+	drawer2_ = new cgogn::rendering::DisplayListDrawer();
 	drawer2_rend_ = drawer2_->generate_renderer();
 	drawer2_->new_list();
 	drawer2_->point_size_aa(5.0);

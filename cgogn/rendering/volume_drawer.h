@@ -46,11 +46,11 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::VolumeRender* volu_;	// can be shared between contexts
- *  cgogn::rendering::VolumeRender::Renderer* volu_rend_; // one by context,
+ *  cgogn::rendering::VolumeDrawer* volu_;	// can be shared between contexts
+ *  cgogn::rendering::VolumeDrawer::Renderer* volu_rend_; // one by context,
  *
  * init:
- *  volu_ = new cgogn::rendering::VolumeRender();
+ *  volu_ = new cgogn::rendering::VolumeDrawer();
  *  volu_rend_ = volu_->generate_renderer(); // warning must be delete when finished
  *  volu_->update_face<Vec3>(map_,vertex_position_);
  *  volu_->update_edge<Vec3>(map_,vertex_position_);
@@ -62,7 +62,7 @@ namespace rendering
  *  volu_rend_->draw_edges(proj,view,this);
  *
  */
-class CGOGN_RENDERING_API VolumeRenderGen
+class CGOGN_RENDERING_API VolumeDrawerGen
 {
 protected:
 	using Vec3f = std::array<float32, 3>;
@@ -86,12 +86,12 @@ public:
 
 	class Renderer
 	{
-		friend class VolumeRenderGen;
+		friend class VolumeDrawerGen;
 		ShaderExplodeVolumes::Param* param_expl_vol_;
 		ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
 		ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
-		VolumeRenderGen* volume_render_data_;
-		Renderer(VolumeRenderGen* tr);
+		VolumeDrawerGen* volume_drawer_data_;
+		Renderer(VolumeDrawerGen* tr);
 	public:
 		~Renderer();
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
@@ -101,20 +101,20 @@ public:
 		void set_edge_color(const QColor& rgb);
 	};
 
-	using Self = VolumeRenderGen;
+	using Self = VolumeDrawerGen;
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	VolumeRenderGen(bool with_color_per_face);
+	VolumeDrawerGen(bool with_color_per_face);
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRenderGen);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeDrawerGen);
 
 	/**
 	 * release buffers and shader
 	 */
-	~VolumeRenderGen();
+	~VolumeDrawerGen();
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -132,7 +132,7 @@ public:
 
 
 template <typename VEC3, typename MAP>
-void VolumeRenderGen::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -167,16 +167,16 @@ void VolumeRenderGen::update_edge(const MAP& m, const typename MAP::template Ver
 
 
 template <bool CPV>
-class VolumeRenderTpl : public VolumeRenderGen
+class VolumeDrawerTpl : public VolumeDrawerGen
 {
 };
 
 
 template <>
-class VolumeRenderTpl<false> : public VolumeRenderGen
+class VolumeDrawerTpl<false> : public VolumeDrawerGen
 {
 public:
-	VolumeRenderTpl(): VolumeRenderGen(false) {}
+	VolumeDrawerTpl(): VolumeDrawerGen(false) {}
 
 	template <typename VEC3, typename MAP>
 	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
@@ -237,10 +237,10 @@ public:
 
 
 template <>
-class VolumeRenderTpl<true> : public VolumeRenderGen
+class VolumeDrawerTpl<true> : public VolumeDrawerGen
 {
 public:
-	VolumeRenderTpl(): VolumeRenderGen(true) {}
+	VolumeDrawerTpl(): VolumeDrawerGen(true) {}
 
 	template <typename VEC3, typename MAP>
 	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
@@ -325,12 +325,12 @@ public:
 };
 
 
-using VolumeRender = VolumeRenderTpl<false>;
-using VolumeRenderColor = VolumeRenderTpl<true>;
+using VolumeDrawer = VolumeDrawerTpl<false>;
+using VolumeDrawerColor = VolumeDrawerTpl<true>;
 
 #if !defined(CGOGN_RENDER_VOLUME_RENDER_CPP_)
-extern template class CGOGN_RENDERING_API VolumeRenderTpl<false>;
-extern template class CGOGN_RENDERING_API VolumeRenderTpl<true>;
+extern template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
+extern template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
 #endif
 
 } // namespace rendering

@@ -35,14 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-// static members init
-//ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
-//ShaderBoldLineColor* Drawer::shader_bl_ = nullptr;
-//ShaderRoundPointColor* Drawer::shader_rp_ = nullptr;
-//ShaderPointSpriteColor* Drawer::shader_ps_ = nullptr;
-//uint32 Drawer::nb_instances_ = 0;
-
-Drawer::Drawer():
+DisplayListDrawer::DisplayListDrawer():
 	current_size_(1.0f),
 	current_aa_(true),
 	current_ball_(true)
@@ -52,14 +45,14 @@ Drawer::Drawer():
 }
 
 
-Drawer::~Drawer()
+DisplayListDrawer::~DisplayListDrawer()
 {
 	delete vbo_pos_;
 	delete vbo_col_;
 }
 
 
-void Drawer::new_list()
+void DisplayListDrawer::new_list()
 {
 	data_pos_.clear();
 	data_col_.clear();
@@ -71,7 +64,7 @@ void Drawer::new_list()
 	begins_face_.clear();
 }
 
-void Drawer::begin(GLenum mode)
+void DisplayListDrawer::begin(GLenum mode)
 {
 	switch (mode)
 	{
@@ -113,12 +106,12 @@ void Drawer::begin(GLenum mode)
 	}
 }
 
-void Drawer::end()
+void DisplayListDrawer::end()
 {
 	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
 
-void Drawer::vertex3f(float32 x, float32 y, float32 z)
+void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
 {
 	if (data_pos_.size() == data_col_.size())
 	{
@@ -130,7 +123,7 @@ void Drawer::vertex3f(float32 x, float32 y, float32 z)
 	data_pos_.push_back(Vec3f{x, y, z});
 }
 
-void Drawer::color3f(float32 r, float32 g, float32 b)
+void DisplayListDrawer::color3f(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
 		data_col_.push_back(Vec3f{r, g, b});
@@ -138,7 +131,7 @@ void Drawer::color3f(float32 r, float32 g, float32 b)
 		data_col_.back() = Vec3f{r, g, b};
 }
 
-void Drawer::end_list()
+void DisplayListDrawer::end_list()
 {
 	uint32 nb_elts = uint32(data_pos_.size());
 
@@ -162,7 +155,7 @@ void Drawer::end_list()
 	data_col_.shrink_to_fit();
 }
 
-//void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+//void DisplayListDrawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 //{
 
 //	//classic rendering
@@ -249,7 +242,7 @@ void Drawer::end_list()
 //}
 
 
-Drawer::Renderer::Renderer(Drawer* dr):
+DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr):
 	drawer_data_(dr)
 {
 	param_cpv_ = ShaderColorPerVertex::generate_param();
@@ -263,7 +256,7 @@ Drawer::Renderer::Renderer(Drawer* dr):
 	param_ps_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
 }
 
-Drawer::Renderer::~Renderer()
+DisplayListDrawer::Renderer::~Renderer()
 {
 	delete param_cpv_;
 	delete param_bl_;
@@ -272,7 +265,7 @@ Drawer::Renderer::~Renderer()
 
 }
 
-void Drawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	//classic rendering
 	if (! drawer_data_->begins_point_.empty() || ! drawer_data_->begins_line_.empty() || ! drawer_data_->begins_face_.empty())

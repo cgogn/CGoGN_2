@@ -91,8 +91,8 @@ private:
 
 	cgogn::rendering::ShaderFlat::Param* param_flat_;
 
-	cgogn::rendering::Drawer* drawer_;
-	cgogn::rendering::Drawer::Renderer* drawer_rend_;
+	cgogn::rendering::DisplayListDrawer* drawer_;
+	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
 
 	int32 cell_picking;
 };
@@ -168,7 +168,7 @@ void Viewer::init()
 	param_flat_->back_color_ = QColor(200,0,0);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	drawer_ = new cgogn::rendering::Drawer();
+	drawer_ = new cgogn::rendering::DisplayListDrawer();
 	drawer_rend_ = drawer_->generate_renderer();
 }
 

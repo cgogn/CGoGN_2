@@ -120,8 +120,8 @@ private:
 	cgogn::rendering::ShaderPhongColor::Param* param_phong_;
 	cgogn::rendering::ShaderPointSpriteSize::Param* param_point_sprite_;
 
-	cgogn::rendering::Drawer* drawer_;
-	cgogn::rendering::Drawer::Renderer* drawer_rend_;
+	cgogn::rendering::DisplayListDrawer* drawer_;
+	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -383,7 +383,7 @@ void Viewer::init()
 	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::Drawer();
+	drawer_ = new cgogn::rendering::DisplayListDrawer();
 	drawer_rend_ = drawer_->generate_renderer();
 	update_bb();
 }

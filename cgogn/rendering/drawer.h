@@ -41,15 +41,15 @@ namespace cgogn
 namespace rendering
 {
 /**
- * @brief Drawer revival of old GL display-list
+ * @brief DisplayListDrawer revival of old GL display-list
  *
  * Typical usage:
  *
- *  cgogn::rendering::Drawer* drawer_;	// can be shared between contexts
- *  cgogn::rendering::Drawer::Renderer* drawer_rend_; // one by context,
+ *  cgogn::rendering::DisplayListDrawer* drawer_;	// can be shared between contexts
+ *  cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_; // one by context,
  *
  * init:
- *  drawer_ = new cgogn::rendering::Drawer();
+ *  drawer_ = new cgogn::rendering::DisplayListDrawer();
  *  drawer_rend_ = drawer_->generate_renderer(); // warning must be delete when finished
  *  drawer_->new_list();
  *  drawer_->line_width(2.0);
@@ -63,7 +63,7 @@ namespace rendering
  * draw:
  *  drawer_rend_->draw(proj,view,this);
  */
-class CGOGN_RENDERING_API Drawer
+class CGOGN_RENDERING_API DisplayListDrawer
 {
 	struct PrimParam
 	{
@@ -106,13 +106,13 @@ public:
 
 	class Renderer
 	{
-		friend class Drawer;
+		friend class DisplayListDrawer;
 		ShaderColorPerVertex::Param* param_cpv_;
 		ShaderBoldLineColor::Param* param_bl_;
 		ShaderRoundPointColor::Param* param_rp_;
 		ShaderPointSpriteColor::Param* param_ps_;
-		Drawer* drawer_data_;
-		Renderer(Drawer* dr);
+		DisplayListDrawer* drawer_data_;
+		Renderer(DisplayListDrawer* dr);
 	public:
 		~Renderer();
 
@@ -126,19 +126,19 @@ public:
 
 	};
 
-	using Self = Drawer;
+	using Self = DisplayListDrawer;
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	Drawer();
+	DisplayListDrawer();
 
 
 	/**
 	 * release buffers and shader
 	 */
-	~Drawer();
+	~DisplayListDrawer();
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -150,7 +150,7 @@ public:
 	}
 
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DisplayListDrawer);
 
 
 	/**

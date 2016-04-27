@@ -23,7 +23,7 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <cgogn/rendering/topo_render.h>
+#include <cgogn/rendering/topo_drawer.h>
 
 #include <QOpenGLFunctions>
 #include <iostream>
@@ -35,7 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-TopoRender::TopoRender():
+TopoDrawer::TopoDrawer():
 	dart_color_(255,255,255),
 	phi2_color_(255,0,0),
 	phi3_color_(255,255,0),
@@ -49,15 +49,15 @@ TopoRender::TopoRender():
 
 }
 
-TopoRender::~TopoRender()
+TopoDrawer::~TopoDrawer()
 {
 	delete vbo_darts_;
 	delete vbo_relations_;
 }
 
 
-TopoRender::Renderer::Renderer(TopoRender* tr):
-	topo_render_data_(tr)
+TopoDrawer::Renderer::Renderer(TopoDrawer* tr):
+	topo_drawer_data_(tr)
 {
 	param_bl_ = ShaderBoldLine::generate_param();
 	param_bl_->set_vbo(tr->vbo_darts_);
@@ -72,14 +72,14 @@ TopoRender::Renderer::Renderer(TopoRender* tr):
 	param_rp_->color_ = tr->dart_color_;
 }
 
-TopoRender::Renderer::~Renderer()
+TopoDrawer::Renderer::~Renderer()
 {
 	delete param_rp_;
 	delete param_bl_;
 	delete param_bl2_;
 }
 
-void TopoRender::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
+void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
 {
 	float32 lw = 2.0;
 	if(with_blending)
@@ -94,23 +94,23 @@ void TopoRender::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& 
 	param_rp_->size_ = 2*lw;
 
 	param_rp_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_POINTS,0,topo_render_data_->vbo_darts_->size()/2);
+	ogl33->glDrawArrays(GL_POINTS,0,topo_drawer_data_->vbo_darts_->size()/2);
 	param_rp_->release();
 
 	param_bl_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_LINES,0,topo_render_data_->vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,topo_drawer_data_->vbo_darts_->size());
 	param_bl_->release();
 
-	param_bl2_->color_ = topo_render_data_->phi2_color_;
+	param_bl2_->color_ = topo_drawer_data_->phi2_color_;
 	param_bl2_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_LINES,0,topo_render_data_->vbo_darts_->size());
+	ogl33->glDrawArrays(GL_LINES,0,topo_drawer_data_->vbo_darts_->size());
 	param_bl2_->release();
 
-	if (topo_render_data_->vbo_relations_->size() > topo_render_data_->vbo_darts_->size())
+	if (topo_drawer_data_->vbo_relations_->size() > topo_drawer_data_->vbo_darts_->size())
 	{
-		param_bl2_->color_ = topo_render_data_->phi3_color_;
+		param_bl2_->color_ = topo_drawer_data_->phi3_color_;
 		param_bl2_->bind(projection,modelview);
-		ogl33->glDrawArrays(GL_LINES,topo_render_data_->vbo_darts_->size(),topo_render_data_->vbo_darts_->size());
+		ogl33->glDrawArrays(GL_LINES,topo_drawer_data_->vbo_darts_->size(),topo_drawer_data_->vbo_darts_->size());
 		param_bl2_->release();
 	}
 	ogl33->glDisable(GL_BLEND);
