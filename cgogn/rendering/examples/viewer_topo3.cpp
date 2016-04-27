@@ -274,7 +274,7 @@ void Viewer::init()
 	topo_render_->set_explode_volume(expl_);
 	topo_render_->update<Vec3>(map_,vertex_position_);
 
-	volume_render_ = new cgogn::rendering::VolumeRender(false);
+	volume_render_ = new cgogn::rendering::VolumeRender;
 	volume_render_->update_face<Vec3>(map_,vertex_position_);
 	volume_render_->update_edge<Vec3>(map_,vertex_position_);
 

@@ -52,7 +52,9 @@ namespace rendering
  * init:
  *  volu_ = new cgogn::rendering::VolumeRender();
  *  volu_rend_ = volu_->generate_renderer(); // warning must be delete when finished
- *  volu_->update<Vec3>(map_,vertex_position_);
+ *  volu_->update_face<Vec3>(map_,vertex_position_);
+ *  volu_->update_edge<Vec3>(map_,vertex_position_);
+
  *
  * draw:
  *  volu_rend_->set_explode_volume(0.9);
@@ -60,11 +62,10 @@ namespace rendering
  *  volu_rend_->draw_edges(proj,view,this);
  *
  */
-class CGOGN_RENDERING_API VolumeRender
+class CGOGN_RENDERING_API VolumeRenderGen
 {
-	using Vec3f = std::array<float32, 3>;
-
 protected:
+	using Vec3f = std::array<float32, 3>;
 
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
@@ -85,12 +86,12 @@ public:
 
 	class Renderer
 	{
-		friend class VolumeRender;
+		friend class VolumeRenderGen;
 		ShaderExplodeVolumes::Param* param_expl_vol_;
 		ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
 		ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
-		VolumeRender* volume_render_data_;
-		Renderer(VolumeRender* tr);
+		VolumeRenderGen* volume_render_data_;
+		Renderer(VolumeRenderGen* tr);
 	public:
 		~Renderer();
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
@@ -100,20 +101,20 @@ public:
 		void set_edge_color(const QColor& rgb);
 	};
 
-	using Self = VolumeRender;
+	using Self = VolumeRenderGen;
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	VolumeRender(bool with_color_per_face);
+	VolumeRenderGen(bool with_color_per_face);
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRender);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeRenderGen);
 
 	/**
 	 * release buffers and shader
 	 */
-	~VolumeRender();
+	~VolumeRenderGen();
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -125,163 +126,13 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
-	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color);
-
-	template <typename VEC3, typename MAP>
 	void update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
 
 };
 
-template <typename VEC3, typename MAP>
-void VolumeRender::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
-{
-	if (vbo_col_)
-		cgogn_log_warning("VolumeRender::update_face")<< "missing color attribute";
-
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
-	using Volume = typename MAP::Volume;
-	using Scalar = typename VEC3::Scalar;
-
-	std::vector<Vec3f> out_pos;
-	out_pos.reserve(1024 * 1024);
-
-	std::vector<uint32> ear_indices;
-	ear_indices.reserve(256);
-
-	m.foreach_cell([&] (Volume v)
-	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
-		m.foreach_incident_face(v, [&] (Face f)
-		{
-			if (m.has_codegree(f, 3))
-			{
-				const VEC3& P1 = position[Vertex(f.dart)];
-				const VEC3& P2 = position[Vertex(m.phi1(f.dart))];
-				const VEC3& P3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
-				out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-				out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
-				out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
-				out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
-			}
-			else
-			{
-				ear_indices.clear();
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, ear_indices);
-				for(std::size_t i = 0; i < ear_indices.size(); i += 3)
-				{
-					const VEC3& P1 = position[ear_indices[i]];
-					const VEC3& P2 = position[ear_indices[i+1]];
-					const VEC3& P3 = position[ear_indices[i+2]];
-					out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-					out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
-					out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
-					out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
-				}
-			}
-		});
-	});
-
-	uint32 nbvec = uint32(out_pos.size());
-
-	vbo_pos_->allocate(nbvec, 3);
-	vbo_pos_->bind();
-	vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
-	vbo_pos_->release();
-}
 
 template <typename VEC3, typename MAP>
-void VolumeRender::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
-{
-	if (vbo_col_==nullptr)
-	{
-		cgogn_log_warning("VolumeRender::update_face")<< "used color attribute with volume render instanciate with no color vbo";
-		update_face<VEC3,MAP>(m,position);
-		return;
-	}
-
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
-	using Volume = typename MAP::Volume;
-	using Scalar = typename VEC3::Scalar;
-
-	std::vector<Vec3f> out_pos;
-	out_pos.reserve(1024 * 1024);
-
-	std::vector<Vec3f> out_color;
-	out_color.reserve(1024 * 1024);
-
-	std::vector<uint32> ear_indices;
-	ear_indices.reserve(256);
-
-	m.foreach_cell([&] (Volume v)
-	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
-		m.foreach_incident_face(v, [&] (Face f)
-		{
-			if (m.has_codegree(f, 3))
-			{
-				Dart d = f.dart;
-				const VEC3& P1 = position[Vertex(d)];
-				const VEC3& C1 = color[Vertex(d)];
-				d = m.phi1(d);
-				const VEC3& P2 = position[Vertex(d)];
-				const VEC3& C2 = color[Vertex(d)];
-				d = m.phi1(d);
-				const VEC3& P3 = position[Vertex(d)];
-				const VEC3& C3 = color[Vertex(d)];
-				out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-				out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
-				out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
-				out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
-				out_color.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-				out_color.push_back({float32(C1[0]), float32(C1[1]), float32(C1[2])});
-				out_color.push_back({float32(C2[0]), float32(C2[1]), float32(C2[2])});
-				out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
-			}
-			else
-			{
-				ear_indices.clear();
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f,position,ear_indices);
-				for(std::size_t i = 0; i < ear_indices.size(); i += 3)
-				{
-					const VEC3& P1 = position[ear_indices[i]];
-					const VEC3& C1 = color[ear_indices[i]];
-					const VEC3& P2 = position[ear_indices[i+1]];
-					const VEC3& C2 = color[ear_indices[i+1]];
-					const VEC3& P3 = position[ear_indices[i+2]];
-					const VEC3& C3 = color[ear_indices[i+2]];
-					out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-					out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
-					out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
-					out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
-					out_color.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
-					out_color.push_back({float32(C1[0]), float32(C1[1]), float32(C1[2])});
-					out_color.push_back({float32(C2[0]), float32(C2[1]), float32(C2[2])});
-					out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
-				}
-			}
-		});
-	});
-
-	std::size_t nbvec = out_pos.size();
-
-	vbo_pos_->allocate(nbvec, 3);
-	vbo_pos_->bind();
-	vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
-	vbo_pos_->release();
-
-	vbo_col_->allocate(nbvec, 3);
-	vbo_col_->bind();
-	vbo_col_->copy_data(0, nbvec * 12, out_color[0].data());
-	vbo_col_->release();
-}
-
-template <typename VEC3, typename MAP>
-void VolumeRender::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+void VolumeRenderGen::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -313,6 +164,174 @@ void VolumeRender::update_edge(const MAP& m, const typename MAP::template Vertex
 	vbo_pos2_->copy_data(0, nbvec * 12, out_pos[0].data());
 	vbo_pos2_->release();
 }
+
+
+template <bool CPV>
+class VolumeRenderTpl : public VolumeRenderGen
+{
+};
+
+
+template <>
+class VolumeRenderTpl<false> : public VolumeRenderGen
+{
+public:
+	VolumeRenderTpl(): VolumeRenderGen(false) {}
+
+	template <typename VEC3, typename MAP>
+	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	{
+		using Vertex = typename MAP::Vertex;
+		using Face = typename MAP::Face;
+		using Volume = typename MAP::Volume;
+		using Scalar = typename VEC3::Scalar;
+
+		std::vector<Vec3f> out_pos;
+		out_pos.reserve(1024 * 1024);
+
+		std::vector<uint32> ear_indices;
+		ear_indices.reserve(256);
+
+		m.foreach_cell([&] (Volume v)
+		{
+			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			m.foreach_incident_face(v, [&] (Face f)
+			{
+				if (m.has_codegree(f, 3))
+				{
+					const VEC3& P1 = position[Vertex(f.dart)];
+					const VEC3& P2 = position[Vertex(m.phi1(f.dart))];
+					const VEC3& P3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
+					out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+					out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+					out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+					out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
+				}
+				else
+				{
+					ear_indices.clear();
+					cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, ear_indices);
+					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
+					{
+						const VEC3& P1 = position[ear_indices[i]];
+						const VEC3& P2 = position[ear_indices[i+1]];
+						const VEC3& P3 = position[ear_indices[i+2]];
+						out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+						out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+						out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+						out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
+					}
+				}
+			});
+		});
+
+		uint32 nbvec = uint32(out_pos.size());
+
+		vbo_pos_->allocate(nbvec, 3);
+		vbo_pos_->bind();
+		vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
+		vbo_pos_->release();
+	}
+
+};
+
+
+template <>
+class VolumeRenderTpl<true> : public VolumeRenderGen
+{
+public:
+	VolumeRenderTpl(): VolumeRenderGen(true) {}
+
+	template <typename VEC3, typename MAP>
+	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
+	{
+		using Vertex = typename MAP::Vertex;
+		using Face = typename MAP::Face;
+		using Volume = typename MAP::Volume;
+		using Scalar = typename VEC3::Scalar;
+
+		std::vector<Vec3f> out_pos;
+		out_pos.reserve(1024 * 1024);
+
+		std::vector<Vec3f> out_color;
+		out_color.reserve(1024 * 1024);
+
+		std::vector<uint32> ear_indices;
+		ear_indices.reserve(256);
+
+		m.foreach_cell([&] (Volume v)
+		{
+			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			m.foreach_incident_face(v, [&] (Face f)
+			{
+				if (m.has_codegree(f, 3))
+				{
+					Dart d = f.dart;
+					const VEC3& P1 = position[Vertex(d)];
+					const VEC3& C1 = color[Vertex(d)];
+					d = m.phi1(d);
+					const VEC3& P2 = position[Vertex(d)];
+					const VEC3& C2 = color[Vertex(d)];
+					d = m.phi1(d);
+					const VEC3& P3 = position[Vertex(d)];
+					const VEC3& C3 = color[Vertex(d)];
+					out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+					out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+					out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+					out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
+					out_color.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+					out_color.push_back({float32(C1[0]), float32(C1[1]), float32(C1[2])});
+					out_color.push_back({float32(C2[0]), float32(C2[1]), float32(C2[2])});
+					out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
+				}
+				else
+				{
+					ear_indices.clear();
+					cgogn::geometry::compute_ear_triangulation<VEC3>(m, f,position,ear_indices);
+					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
+					{
+						const VEC3& P1 = position[ear_indices[i]];
+						const VEC3& C1 = color[ear_indices[i]];
+						const VEC3& P2 = position[ear_indices[i+1]];
+						const VEC3& C2 = color[ear_indices[i+1]];
+						const VEC3& P3 = position[ear_indices[i+2]];
+						const VEC3& C3 = color[ear_indices[i+2]];
+						out_pos.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+						out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+						out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+						out_pos.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
+						out_color.push_back({float32(CV[0]), float32(CV[1]), float32(CV[2])});
+						out_color.push_back({float32(C1[0]), float32(C1[1]), float32(C1[2])});
+						out_color.push_back({float32(C2[0]), float32(C2[1]), float32(C2[2])});
+						out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
+					}
+				}
+			});
+		});
+
+		std::size_t nbvec = out_pos.size();
+
+		vbo_pos_->allocate(nbvec, 3);
+		vbo_pos_->bind();
+		vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
+		vbo_pos_->release();
+
+		vbo_col_->allocate(nbvec, 3);
+		vbo_col_->bind();
+		vbo_col_->copy_data(0, nbvec * 12, out_color[0].data());
+		vbo_col_->release();
+	}
+
+};
+
+
+using VolumeRender = VolumeRenderTpl<false>;
+using VolumeRenderColor = VolumeRenderTpl<true>;
+
+#if !defined(CGOGN_RENDER_VOLUME_RENDER_CPP_)
+extern template class CGOGN_RENDERING_API VolumeRenderTpl<false>;
+extern template class CGOGN_RENDERING_API VolumeRenderTpl<true>;
+#endif
 
 } // namespace rendering
 
