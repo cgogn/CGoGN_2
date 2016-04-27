@@ -117,6 +117,34 @@ void WallPaper::set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 
 }
 
 
+void WallPaper::set_local_position(float x, float y, float w, float h, bool front)
+{
+	float32 depth = 0.0f;
+	if (!front)
+		depth = 0.9999999f;
+
+	float32 xmin = -1.0f + 2*x;
+	float32 xmax = xmin + 2*w;
+
+	float32 ymin = 1.0f - 2*y;
+	float32 ymax = ymin - 2*h;
+
+	float32* ptr_pos = vbo_pos_->lock_pointer();
+	*ptr_pos++ = xmin;
+	*ptr_pos++ = ymin;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmax;
+	*ptr_pos++ = ymin;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmax;
+	*ptr_pos++ = ymax;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmin;
+	*ptr_pos++ = ymax;
+	*ptr_pos++ = depth;
+	vbo_pos_->release_pointer();
+}
+
 WallPaper::Renderer::Renderer(WallPaper* wp):
 	wall_paper_data_(wp)
 {
@@ -135,7 +163,7 @@ void WallPaper::Renderer::draw(QOpenGLFunctions_3_3_Core* ogl33)
 {
 	QMatrix4x4 id;
 	param_texture_->bind(id,id);
-	ogl33->glDrawArrays(GL_TRIANGLE_FAN,0,4/*wall_paper_data_->vbo_pos_->size()*/);
+	ogl33->glDrawArrays(GL_TRIANGLE_FAN,0,4);
 	param_texture_->release();
 }
 

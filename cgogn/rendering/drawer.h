@@ -40,7 +40,29 @@ namespace cgogn
 
 namespace rendering
 {
-
+/**
+ * @brief Drawer revival of old GL display-list
+ *
+ * Typical usage:
+ *
+ *  cgogn::rendering::Drawer* drawer_;	// can be shared between contexts
+ *  cgogn::rendering::Drawer::Renderer* drawer_rend_; // one by context,
+ *
+ * init:
+ *  drawer_ = new cgogn::rendering::Drawer();
+ *  drawer_rend_ = drawer_->generate_renderer(); // warning must be delete when finished
+ *  drawer_->new_list();
+ *  drawer_->line_width(2.0);
+ *  drawer_->begin(GL_LINE_LOOP); // or GL_POINTS, GL_LINES, GL_TRIANGLES
+ *    drawer_->color3f(1.0,0.0,0.0);
+ *    drawer_->vertex3f(0,0,0);
+ *    drawer_->color3f(0.0,1.0,1.0);
+ *    ....
+ *  drawer_->end();
+ *
+ * draw:
+ *  drawer_rend_->draw(proj,view,this);
+ */
 class CGOGN_RENDERING_API Drawer
 {
 	struct PrimParam
@@ -63,23 +85,18 @@ protected:
 	VBO* vbo_pos_;
 	VBO* vbo_col_;
 
+	// temporary (between begin()/end()) data storage
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
 
+	// list of primitive call (of each kind)
 	std::vector<PrimParam> begins_point_;
 	std::vector<PrimParam> begins_round_point_;
 	std::vector<PrimParam> begins_balls_;
-
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
 	std::vector<PrimParam>* current_begin_;
-
-
-	ShaderColorPerVertex::Param* param_cpv_;
-	ShaderBoldLineColor::Param* param_bl_;
-	ShaderRoundPointColor::Param* param_rp_;
-	ShaderPointSpriteColor::Param* param_ps_;
 
 	float32 current_size_;
 	bool current_aa_;
@@ -89,16 +106,22 @@ public:
 
 	class Renderer
 	{
+		friend class Drawer;
 		ShaderColorPerVertex::Param* param_cpv_;
 		ShaderBoldLineColor::Param* param_bl_;
 		ShaderRoundPointColor::Param* param_rp_;
 		ShaderPointSpriteColor::Param* param_ps_;
-
 		Drawer* drawer_data_;
-
-	public:
 		Renderer(Drawer* dr);
+	public:
 		~Renderer();
+
+		/**
+		 * draw the compiled drawing list
+		 * @param projection projection matrix
+		 * @param modelview modelview matrix
+		 * @param a pointer compatible with QOpenGLFunctions_3_3_Core* (QOGLViewer)
+		 */
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 
 	};
@@ -129,10 +152,6 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
 
-	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
-	 */
-	void reinit_vao();
 
 	/**
 	 * init the data structure
@@ -202,15 +221,7 @@ public:
 	}
 
 	/**
-	 * use as a glCallList (draw the compiled drawing list)
-	 * @param projection projection matrix
-	 * @param modelview modelview matrix
-	 * @param a pointer on QOGLViewer object (often this)
-	 */
-//	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
-
-	/**
-	 * usr as glPointSize
+	 * use as glPointSize
 	 */
 	inline void point_size(float32 ps)
 	{
@@ -219,6 +230,9 @@ public:
 		current_ball_ = false;
 	}
 
+	/**
+	 * use as glPointSize with use of anti-aliasing (alpha blending)
+	 */
 	inline void point_size_aa(float32 ps)
 	{
 		current_aa_ = true;
@@ -226,6 +240,9 @@ public:
 		current_ball_ = false;
 	}
 
+	/**
+	 * use as glPointSize for shaded ball rendering
+	 */
 	inline void ball_size(float32 ps)
 	{
 		current_ball_ = true;
@@ -234,13 +251,17 @@ public:
 	}
 
 	/**
-	 * usr as glLineWidth
+	 * use as glLineWidth
 	 */
 	inline void line_width(float32 lw)
 	{
 		current_aa_ = false;
 		current_size_ = lw;
 	}
+
+	/**
+	 * use as glLineWidth with use of anti-aliasing (alpha blending)
+	 */
 
 	inline void line_width_aa(float32 lw)
 	{

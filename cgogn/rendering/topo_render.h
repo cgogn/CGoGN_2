@@ -41,7 +41,23 @@ namespace cgogn
 
 namespace rendering
 {
-
+/**
+ * @brief Rendering of the topology
+ *
+ * Typical usage:
+ *
+ *  cgogn::rendering::TopoRender* topo_;	// can be shared between contexts
+ *  cgogn::rendering::TopoRender::Renderer* topo_rend_; // one by context,
+ *
+ * init:
+ *  topo_ = new cgogn::rendering::TopoRender();
+ *  topo_rend_ = topo_->generate_renderer(); // warning must be delete when finished
+ *  topo_->update<Vec3>(map_,vertex_position_);
+ *
+ * draw:
+ *  topo_rend_->draw(proj,view,this);
+ *
+ */
 class CGOGN_RENDERING_API TopoRender
 {
 	using Vec3f = std::array<float32, 3>;
@@ -69,13 +85,21 @@ public:
 
 	class Renderer
 	{
+		friend class TopoRender;
 		ShaderBoldLine::Param* param_bl_;
 		ShaderBoldLine::Param* param_bl2_;
 		ShaderRoundPoint::Param* param_rp_;
 		TopoRender* topo_render_data_;
-	public:
 		Renderer(TopoRender* tr);
+	public:
 		~Renderer();
+		/**
+		 * @brief draw
+		 * @param projection projection matrix
+		 * @param modelview model-view matrix
+		 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
+		 * @param with_blending
+		 */
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
 	};
 
@@ -102,14 +126,6 @@ public:
 	{
 		return (new Renderer(this));
 	}
-
-	/**
-	 * @brief draw
-	 * @param projection projection matrix
-	 * @param modelview model-view matrix
-	 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
-	 * @param with_blending
-	 */
 
 	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
 

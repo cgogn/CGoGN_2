@@ -148,7 +148,8 @@ void Drawing::init()
 
 	wp_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
 	button_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
-	button_->set_local_position(this->width(),this->height(),10,10,50,50);
+//	button_->set_local_position(this->width(),this->height(),10,10,50,50);
+	button_->set_local_position(0.1,0.1,0.2,0.2);
 
 	wp_rend_ = wp_->generate_renderer();
 	button_rend_ = button_->generate_renderer();

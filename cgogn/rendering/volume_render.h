@@ -41,7 +41,25 @@ namespace cgogn
 
 namespace rendering
 {
-
+/**
+ * @brief Rendering ofvolumes
+ *
+ * Typical usage:
+ *
+ *  cgogn::rendering::VolumeRender* volu_;	// can be shared between contexts
+ *  cgogn::rendering::VolumeRender::Renderer* volu_rend_; // one by context,
+ *
+ * init:
+ *  volu_ = new cgogn::rendering::VolumeRender();
+ *  volu_rend_ = volu_->generate_renderer(); // warning must be delete when finished
+ *  volu_->update<Vec3>(map_,vertex_position_);
+ *
+ * draw:
+ *  volu_rend_->set_explode_volume(0.9);
+ *  volu_rend_->draw_faces(proj,view,this);
+ *  volu_rend_->draw_edges(proj,view,this);
+ *
+ */
 class CGOGN_RENDERING_API VolumeRender
 {
 	using Vec3f = std::array<float32, 3>;
@@ -67,12 +85,13 @@ public:
 
 	class Renderer
 	{
+		friend class VolumeRender;
 		ShaderExplodeVolumes::Param* param_expl_vol_;
 		ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
 		ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
 		VolumeRender* volume_render_data_;
-	public:
 		Renderer(VolumeRender* tr);
+	public:
 		~Renderer();
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
