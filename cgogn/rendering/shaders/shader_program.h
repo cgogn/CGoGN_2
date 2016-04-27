@@ -49,7 +49,7 @@ inline void* void_ptr(uint32 x)
 // forward
 class ShaderProgram;
 
-class ShaderParam
+class CGOGN_RENDERING_API ShaderParam
 {
 protected:
 

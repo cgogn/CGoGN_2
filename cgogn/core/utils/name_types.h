@@ -93,7 +93,9 @@ template <typename T>
 inline std::string name_of_type_impl(const std::basic_string<T>&);
 
 template <typename T, std::size_t N>
-inline std::string name_of_type_impl(const std::array<T,N>&);
+inline std::string name_of_type_impl(const std::array<T, N>&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const bool&);
 
 CGOGN_CORE_API std::string name_of_type_impl(const int8&);
 
@@ -127,17 +129,17 @@ inline std::string name_of_type_impl(const std::vector<T>&)
 { return std::string("std::vector<") + name_of_type(T()) + std::string(">"); }
 
 template <typename T, std::size_t N>
-inline std::string name_of_type_impl(const std::array<T,N>&)
+inline std::string name_of_type_impl(const std::array<T, N>&)
 { return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(N) + std::string(">"); }
 
 template <class T>
-inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == true, std::string>::type
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value == true, std::string>::type
 {
 	return T::cgogn_name_of_type();
 }
 
 template <typename T>
-inline auto name_of_type_impl(const T&)->typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value == false, std::string>::type
 {
 	std::string type_name = demangle(std::string(typeid(T).name()));
 #ifdef __GNUG__
@@ -197,8 +199,6 @@ inline std::string name_of_type(const T& t)
 {
 	return internal::name_of_type_impl(t);
 }
-
-
 
 } // namespace cgogn
 

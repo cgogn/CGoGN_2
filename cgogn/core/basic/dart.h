@@ -27,23 +27,25 @@
 #include <climits>
 #include <string>
 #include <iostream>
+
 #include <cgogn/core/utils/numerics.h>
 
 /**
  * \file cgogn/core/basic/dart.h
  * \brief Dart definition.
  */
+
 namespace cgogn
 {
+
+// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+static const uint32 INVALID_INDEX = UINT_MAX;
 
 /**
  * \brief Dart.
  */
 struct Dart
 {
-	// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
-	static const uint32 INVALID_INDEX = UINT_MAX;
-
 	/**
 	 * \brief the value of a dart.
 	 */
