@@ -22,13 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_RENDERING_DLL_EXPORT
+#define CGOGN_RENDER_SHADERS_PHONG_CPP_
 
 #include <iostream>
 
 #include <cgogn/rendering/shaders/shader_phong.h>
 
-#include <QOpenGLFunctions>
-#include <QColor>
 
 namespace cgogn
 {
@@ -36,7 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderPhong::vertex_shader_source_ =
+const char* ShaderPhongGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_normal;\n"
@@ -56,7 +55,7 @@ const char* ShaderPhong::vertex_shader_source_ =
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 "}\n";
 
-const char* ShaderPhong::fragment_shader_source_ =
+const char* ShaderPhongGen::fragment_shader_source_ =
 "#version 150\n"
 "in vec3 EyeVector;\n"
 "in vec3 Normal;\n"
@@ -74,7 +73,7 @@ const char* ShaderPhong::fragment_shader_source_ =
 "	vec3 L = normalize (LightDir);\n"
 "	vec4 finalColor = ambiant_color;\n"
 "	vec4 currentColor = front_color;\n"
-"	if (!gl_FrontFacing)\n"
+"	if (gl_FrontFacing==false)\n" // do not use ! because of bug on old intel under OS/X
 "	{\n"
 "		if (!double_side)\n"
 "			discard;\n"
@@ -90,7 +89,7 @@ const char* ShaderPhong::fragment_shader_source_ =
 "	frag_color=finalColor;\n"
 "}\n";
 
-const char* ShaderPhong::vertex_shader_source_2_ =
+const char* ShaderPhongGen::vertex_shader_source_2_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_normal;\n"
@@ -113,7 +112,7 @@ const char* ShaderPhong::vertex_shader_source_2_ =
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 "}\n";
 
-const char* ShaderPhong::fragment_shader_source_2_ =
+const char* ShaderPhongGen::fragment_shader_source_2_ =
 "#version 150\n"
 "in vec3 EyeVector;\n"
 "in vec3 Normal;\n"
@@ -129,7 +128,7 @@ const char* ShaderPhong::fragment_shader_source_2_ =
 "	vec3 N = normalize (Normal);\n"
 "	vec3 L = normalize (LightDir);\n"
 "	vec4 finalColor = ambiant_color;\n"
-"	if (!gl_FrontFacing)\n"
+"	if (gl_FrontFacing==false)\n" // do not use ! because of bug on old intel under OS/X
 "	{\n"
 "		if (!double_side)\n"
 "			discard;\n"
@@ -146,7 +145,7 @@ const char* ShaderPhong::fragment_shader_source_2_ =
 
 
 
-ShaderPhong::ShaderPhong(bool color_per_vertex)
+ShaderPhongGen::ShaderPhongGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
@@ -187,105 +186,55 @@ ShaderPhong::ShaderPhong(bool color_per_vertex)
 	release();
 }
 
-void ShaderPhong::set_light_position(const QVector3D& l)
+void ShaderPhongGen::set_light_position(const QVector3D& l)
 {
 	prg_.setUniformValue(unif_light_position_, l);
 }
 
-void ShaderPhong::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+void ShaderPhongGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
 {
 	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
 	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
 }
 
-void ShaderPhong::set_front_color(const QColor& rgb)
+void ShaderPhongGen::set_front_color(const QColor& rgb)
 {
 	if (unif_front_color_ >= 0)
 		prg_.setUniformValue(unif_front_color_, rgb);
 }
 
-void ShaderPhong::set_back_color(const QColor& rgb)
+void ShaderPhongGen::set_back_color(const QColor& rgb)
 {
 	if (unif_back_color_ >= 0)
 		prg_.setUniformValue(unif_back_color_, rgb);
 }
 
-void ShaderPhong::set_ambiant_color(const QColor& rgb)
+void ShaderPhongGen::set_ambiant_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_ambiant_color_, rgb);
 }
 
-void ShaderPhong::set_specular_color(const QColor& rgb)
+void ShaderPhongGen::set_specular_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_spec_color_, rgb);
 }
 
-void ShaderPhong::set_specular_coef(float32 coef)
+void ShaderPhongGen::set_specular_coef(float32 coef)
 {
 	prg_.setUniformValue(unif_spec_coef_, coef);
 }
 
-void ShaderPhong::set_double_side(bool ts)
+void ShaderPhongGen::set_double_side(bool ts)
 {
 	prg_.setUniformValue(unif_double_side_, ts);
 }
 
 
+template class CGOGN_RENDERING_API ShaderPhongTpl<false>;
+template class CGOGN_RENDERING_API ShaderPhongTpl<true>;
+template class CGOGN_RENDERING_API ShaderParamPhong<false>;
+template class CGOGN_RENDERING_API ShaderParamPhong<true>;
 
-ShaderParamPhong::ShaderParamPhong(ShaderPhong* sh):
-	ShaderParam(sh),
-	light_position_(10.0f, 100.0f, 1000.0f),
-	front_color_(250, 0, 0),
-	back_color_(0, 250, 5),
-	ambiant_color_(5, 5, 5),
-	specular_color_(100, 100, 100),
-	specular_coef_(50.0f),
-	double_side_(true)
-{}
-
-void ShaderParamPhong::set_uniforms()
-{
-	ShaderPhong* sh = static_cast<ShaderPhong*>(this->shader_);
-	sh->set_front_color(front_color_);
-	sh->set_back_color(back_color_);
-	sh->set_ambiant_color(ambiant_color_);
-	sh->set_specular_color(specular_color_);
-	sh->set_specular_coef(specular_coef_);
-	sh->set_double_side(double_side_);
-	sh->set_light_position(light_position_);
-}
-
-void ShaderParamPhong::set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
-{
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	// normal vbo
-	vbo_norm->bind();
-	ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_NORM);
-	ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_norm->release();
-
-	if (vbo_color)
-	{
-		// color  vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhong::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPhong::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-	}
-
-	vao_->release();
-	shader_->release();
-}
 
 } // namespace rendering
 

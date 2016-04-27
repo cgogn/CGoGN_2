@@ -36,6 +36,8 @@ namespace cgogn
 namespace rendering
 {
 
+ShaderSimpleColor* ShaderSimpleColor::instance_ = nullptr;
+
 const char* ShaderSimpleColor::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"

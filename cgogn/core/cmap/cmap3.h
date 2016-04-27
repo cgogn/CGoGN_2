@@ -61,6 +61,7 @@ public:
 	using Volume	= typename Inherit::Volume;
 
 	using Boundary  = Volume;
+	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -226,8 +227,6 @@ public:
 		return (*phi3_)[d.index];
 	}
 
-
-
 	/**
 	 * \brief phi composition
 	 * @param d
@@ -250,6 +249,7 @@ public:
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
+protected:
 
 	/**
 	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
@@ -356,14 +356,15 @@ public:
 
 	bool is_adjacent_to_boundary(Boundary c)
 	{
-	  CGOGN_CHECK_CONCRETE_TYPE;
-	  bool result = false;
-	  foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
-	  {
-		if (this->is_boundary(phi3(d))) { result = true; return false; }
-		return true;
-	  });
-	  return result;
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		bool result = false;
+		foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (this->is_boundary(phi3(d))) { result = true; return false; }
+			return true;
+		});
+		return result;
 	}
 
 protected:
@@ -429,13 +430,47 @@ protected:
 		});
 	}
 
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2_PHI3(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+
+		std::vector<Dart>* visited_face2 = cgogn::get_dart_buffers()->get_buffer();
+		visited_face2->push_back(d); // Start with the face of d
+
+		// For every face added to the list
+		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		{
+			Dart e = (*visited_face2)[i];
+			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			{
+				// mark visited darts (current face2)
+				// and add non visited phi2-adjacent face2 to the list of face2
+				Dart it = e;
+				do
+				{
+					f(it); // apply the function to the darts of the face2
+					marker.mark(it);				// Mark
+					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
+					if (!marker.is_marked(adj2))
+						visited_face2->push_back(adj2);	// Add it
+					it = this->phi1(it);
+				} while (it != e);
+				// add phi3-adjacent face2 to the list
+				visited_face2->push_back(phi3(it));
+			}
+		}
+		cgogn::get_dart_buffers()->release_buffer(visited_face2);
+	}
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
+					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
@@ -448,6 +483,7 @@ protected:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
 			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -514,6 +550,43 @@ protected:
 		});
 	}
 
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2_PHI3_until(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+
+		std::vector<Dart>* visited_face2 = cgogn::get_dart_buffers()->get_buffer();
+		visited_face2->push_back(d); // Start with the face of d
+
+		// For every face added to the list
+		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		{
+			Dart e = (*visited_face2)[i];
+			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			{
+				// mark visited darts (current face2)
+				// and add non visited phi2-adjacent face2 to the list of face2
+				Dart it = e;
+				do
+				{
+					if (!f(it)) // apply the function to the darts of the face2
+					{
+						cgogn::get_dart_buffers()->release_buffer(visited_face2);
+						return;
+					}
+					marker.mark(it);				// Mark
+					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
+					if (!marker.is_marked(adj2))
+						visited_face2->push_back(adj2);	// Add it
+					it = this->phi1(it);
+				} while (it != e);
+				// add phi3-adjacent face2 to the list
+				visited_face2->push_back(phi3(it));
+			}
+		}
+		cgogn::get_dart_buffers()->release_buffer(visited_face2);
+	}
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -521,7 +594,8 @@ protected:
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
+					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
@@ -534,6 +608,7 @@ protected:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
 			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3_until(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -1038,14 +1113,9 @@ public:
 		});
 	}
 
-	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	inline std::pair<Vertex, Vertex> vertices(Edge e)
 	{
-		return std::pair<Vertex,Vertex>(Vertex(e.dart),Vertex(this->phi1(e.dart)));
-	}
-
-	inline std::array<Vertex,2> verts(Edge e)
-	{
-		return {{ Vertex(e.dart),Vertex(this->phi1(e.dart)) }};
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
 };
 

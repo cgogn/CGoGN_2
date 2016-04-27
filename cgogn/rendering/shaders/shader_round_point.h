@@ -28,7 +28,9 @@
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
+#include <QOpenGLFunctions>
 #include <QColor>
+
 
 namespace cgogn
 {
@@ -36,25 +38,8 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderRoundPoint;
 
-class CGOGN_RENDERING_API ShaderParamRoundPoint : public ShaderParam
-{
-protected:
-
-	void set_uniforms() override;
-
-public:
-
-	QColor color_;
-	float32 size_;
-
-	ShaderParamRoundPoint(ShaderRoundPoint* sh);
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color = nullptr, uint32 stride = 0, uint32 first = 0);
-};
-
-class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
+class CGOGN_RENDERING_API ShaderRoundPointGen : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
@@ -69,6 +54,8 @@ class CGOGN_RENDERING_API ShaderRoundPoint : public ShaderProgram
 	GLint unif_size_;
 
 public:
+	using Self = ShaderRoundPointGen;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderRoundPointGen);
 
 	enum
 	{
@@ -76,18 +63,7 @@ public:
 		ATTRIB_COLOR
 	};
 
-	ShaderRoundPoint(bool color_per_vertex = false);
-
-	using Param = ShaderParamRoundPoint;
-
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	inline Param* generate_param()
-	{
-		return (new Param(this));
-	}
+	ShaderRoundPointGen(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current color
@@ -101,6 +77,130 @@ public:
 	 */
 	void set_size(float32 w);
 };
+
+
+template <bool CPV>
+class ShaderParamRoundPoint: public ShaderParam
+{};
+
+template <bool CPV>
+class ShaderRoundPointTpl : public ShaderRoundPointGen
+{
+public:
+	using Param = ShaderParamRoundPoint<CPV>;
+	static Param* generate_param();
+private:
+	ShaderRoundPointTpl():
+		ShaderRoundPointGen(CPV)
+	{}
+	static ShaderRoundPointTpl* instance_;
+};
+
+template <bool CPV>
+ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
+
+
+// COLOR UNIFORM PARAM
+template <>
+class ShaderParamRoundPoint<false> : public ShaderParam
+{
+protected:
+
+	void set_uniforms() override
+	{
+		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
+		sh->set_color(color_);
+		sh->set_size(size_);
+	}
+
+public:
+	QColor color_;
+	float32 size_;
+
+	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh):
+		ShaderParam(sh), // cast because type of sh in only a forward
+		color_(0, 0, 255),
+		size_(1.0)
+	{}
+
+	void set_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		// position vbo
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+};
+
+
+// COLOR PER VERTEX PARAM
+template <>
+class ShaderParamRoundPoint<true> : public ShaderParam
+{
+protected:
+
+	void set_uniforms() override
+	{
+		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
+		sh->set_size(size_);
+	}
+
+public:
+	float32 size_;
+
+	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh):
+		ShaderParam(sh), // cast because type of sh in only a forward
+		size_(1.0)
+	{}
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_color, uint32 stride = 0, uint32 first = 0)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+			// position vbo
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		vbo_pos->release();
+		// color vbo
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
+};
+
+
+template <bool CPV>
+typename ShaderRoundPointTpl<CPV>::Param* ShaderRoundPointTpl<CPV>::generate_param()
+{
+	if (instance_==nullptr)
+		instance_ = new ShaderRoundPointTpl<CPV>;
+	return (new Param(instance_));
+}
+
+
+using ShaderRoundPoint = ShaderRoundPointTpl<false>;
+using ShaderRoundPointColor = ShaderRoundPointTpl<true>;
+
+
+#if !defined(CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_)
+extern template class CGOGN_RENDERING_API ShaderRoundPointTpl<false>;
+extern template class CGOGN_RENDERING_API ShaderRoundPointTpl<true>;
+extern template class CGOGN_RENDERING_API ShaderParamRoundPoint<false>;
+extern template class CGOGN_RENDERING_API ShaderParamRoundPoint<true>;
+#endif
+
+
 
 } // namespace rendering
 

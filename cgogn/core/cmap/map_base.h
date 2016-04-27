@@ -162,7 +162,7 @@ protected:
 		for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
 		{
 			if (this->embeddings_[orbit])
-				(*this->embeddings_[orbit])[idx] = EMBNULL;
+				(*this->embeddings_[orbit])[idx] = INVALID_INDEX;
 		}
 		return idx;
 	}
@@ -199,7 +199,7 @@ protected:
 			if(this->embeddings_[orbit])
 			{
 				uint32 emb = (*this->embeddings_[orbit])[index];
-				if (emb != EMBNULL)
+				if (emb != INVALID_INDEX)
 					this->attributes_[orbit].unref_line(emb);
 			}
 		}
@@ -376,8 +376,8 @@ protected:
 		ChunkArray<uint32>* ca = this->topology_.template add_attribute<uint32>(oss.str());
 		this->embeddings_[ORBIT] = ca;
 
-		// initialize all darts indices to EMBNULL for this ORBIT
-		foreach_dart([ca] (Dart d) { (*ca)[d.index] = EMBNULL; });
+		// initialize all darts indices to INVALID_INDEX for this ORBIT
+		foreach_dart([ca] (Dart d) { (*ca)[d.index] = INVALID_INDEX; });
 
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
@@ -454,14 +454,14 @@ public:
 		{
 			const uint32 idx = this->get_embedding(c);
 			// check used indices are valid
-			if (idx == EMBNULL)
+			if (idx == INVALID_INDEX)
 			{
 				result = false;
-				cgogn_log_error("is_well_embedded") << "EMBNULL found for dart " << c << " in orbit " << orbit_name(ORBIT);
+				cgogn_log_error("is_well_embedded") << "INVALID_INDEX found for dart " << c << " in orbit " << orbit_name(ORBIT);
 				return;
 			}
 			counter[idx].push_back(c);
-			// check all darts of the cell use the same index (distinct to EMBNULL)
+			// check all darts of the cell use the same index (distinct to INVALID_INDEX)
 			cmap->foreach_dart_of_orbit(c, [&] (Dart d)
 			{
 				const uint32 emb_d = this->get_embedding(CellType(d));
@@ -523,17 +523,15 @@ public:
 	 *******************************************************************************/
 
 	/**
-	 * \brief return true if c1 and c2 represent the same cell, i.e. contain darts of the same orbit
+	 * \brief return true if c1 and c2 represent the same cell
+	 * Comparison is done using exclusively the topological information (darts)
 	 * @tparam ORBIT considered orbit
 	 * @param c1 first cell to compare
 	 * @param c2 second cell to compare
 	 */
 	template <Orbit ORBIT>
-	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
+	bool same_orbit(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_embedded<ORBIT>())
-			return this->get_embedding(c1) == this->get_embedding(c2);
-
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
 		{
@@ -545,6 +543,22 @@ public:
 			return true;
 		});
 		return result;
+	}
+
+	/**
+	 * \brief return true if c1 and c2 represent the same cell
+	 * If the orbit is embedded, the comparison is done on the indices, otherwise it is done using the darts
+	 * @tparam ORBIT considered orbit
+	 * @param c1 first cell to compare
+	 * @param c2 second cell to compare
+	 */
+	template <Orbit ORBIT>
+	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
+	{
+		if (this->template is_embedded<ORBIT>())
+			return this->get_embedding(c1) == this->get_embedding(c2);
+		else
+			return same_orbit(c1, c2);
 	}
 
 	/**
@@ -581,6 +595,14 @@ public:
 	}
 
 	/**
+	 * \brief return the number of connected components of the map
+	 */
+	uint32 nb_connected_components() const
+	{
+		return nb_cells<ConcreteMap::ConnectedComponent::ORBIT>();
+	}
+
+	/**
 	 * \brief return the number of darts in the given cell
 	 */
 	template <Orbit ORBIT>
@@ -601,14 +623,27 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
-	template <typename CellType>
-	bool is_incident_to_boundary(CellType c) const
+	template <Orbit ORBIT>
+	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
-		static_assert(!std::is_same<CellType, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = true; return false; }
+			return true;
+		});
+		return result;
+	}
+
+	template <Orbit ORBIT>
+	Dart get_boundary_dart(Cell<ORBIT> c) const
+	{
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "get_boundary_dart is not defined for boundary cells");
+		Dart result;
+		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (is_boundary(d)) { result = d; return false; }
 			return true;
 		});
 		return result;

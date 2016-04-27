@@ -49,12 +49,13 @@ inline void* void_ptr(uint32 x)
 // forward
 class ShaderProgram;
 
-class ShaderParam
+class CGOGN_RENDERING_API ShaderParam
 {
 protected:
 
 	ShaderProgram* shader_;
 	QOpenGLVertexArrayObject* vao_;
+	QOpenGLFunctions_3_3_Core* ogl33_;
 
 	virtual void set_uniforms() = 0;
 
@@ -65,10 +66,11 @@ public:
 	inline virtual ~ShaderParam()
 	{}
 
-	/**
-	 * @brief reinitialize vao (for use in new context)
-	 */
-	void reinit_vao();
+	inline ShaderProgram* get_shader()
+	{
+		return shader_;
+	}
+
 
 	/**
 	 * @brief bind vao (and set uniform)

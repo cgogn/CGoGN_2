@@ -46,7 +46,9 @@ public:
 
 	using Self = ChunkArrayGen<CHUNKSIZE>;
 
-	inline ChunkArrayGen(const std::string name) : name_(name)
+	inline ChunkArrayGen(const std::string& name, const std::string& type_name) :
+		name_(name),
+		type_name_(type_name)
 	{}
 
 	inline ChunkArrayGen()
@@ -59,6 +61,8 @@ protected:
 	std::vector<ChunkArrayGen**> external_refs_;
 
 	std::string name_;
+
+	std::string type_name_;
 
 public:
 
@@ -74,6 +78,8 @@ public:
 	}
 
 	const std::string& get_name() const { return name_; }
+
+	const std::string& get_type_name() const { return type_name_; }
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -94,7 +100,7 @@ public:
 	 * @brief create a ChunkArray object without knowing type
 	 * @return generic pointer
 	 */
-	virtual Self* clone() const = 0;
+	virtual Self* clone(const std::string& clone_name) const = 0;
 
 	virtual bool swap(Self*) = 0;
 

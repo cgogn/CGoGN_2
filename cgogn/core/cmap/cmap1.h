@@ -51,6 +51,7 @@ public:
 	using Face		= Cell<Orbit::PHI1>;
 
 	using Boundary = Vertex;
+	using ConnectedComponent = Face;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -468,6 +469,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
 		}
 	}
@@ -501,6 +503,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
 		}
 	}

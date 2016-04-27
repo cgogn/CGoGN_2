@@ -32,6 +32,7 @@
 
 #include <cgogn/core/dll.h>
 #include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
@@ -63,7 +64,8 @@ public:
 	/**
 	 * @brief Constructor of ChunkArray
 	 */
-	inline ChunkArray(const std::string& name) : Inherit(name)
+	inline ChunkArray(const std::string& name) :
+		Inherit(name, name_of_type(T()))
 	{
 		table_data_.reserve(1024u);
 	}
@@ -85,9 +87,11 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	Inherit* clone() const override
+	Inherit* clone(const std::string& clone_name) const override
 	{
-		return new Self(this->name_);
+		if (clone_name == this->name_)
+			return nullptr;
+		return new Self(clone_name);
 	}
 
 	bool swap(Inherit* cag) override
@@ -431,7 +435,8 @@ protected:
 
 public:
 
-	inline ChunkArray(const std::string& name) : Inherit(name)
+	inline ChunkArray(const std::string& name) :
+		Inherit(name, name_of_type(bool()))
 	{
 		table_data_.reserve(1024u);
 	}
@@ -453,9 +458,11 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	Inherit* clone() const override
+	Inherit* clone(const std::string& clone_name) const override
 	{
-		return new Self(this->name_);
+		if (clone_name == this->name_)
+			return nullptr;
+		return new Self(clone_name);
 	}
 
 	bool swap(Inherit* cag) override
@@ -593,7 +600,6 @@ public:
 			return;
 		}
 
-
 		// round nbLines to 32 multiple
 		if (nb_lines % 32u)
 			nb_lines = ((nb_lines / 32u) + 1u) * 32u;
@@ -608,13 +614,10 @@ public:
 		// save number of lines
 		serialization::save(fs, &nb_lines, 1);
 
-
 		const uint32 nbc = get_nb_chunks() - 1u;
 		// save data chunks except last
 		for(uint32 i = 0u; i < nbc; ++i)
-		{
 			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNKSIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
-		}
 
 		// save last
 		const uint32 nb = nb_lines - nbc*CHUNKSIZE;
@@ -664,8 +667,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j/32u;
-		const uint32 y = j%32u;
+		const uint32 x = j / 32u;
+		const uint32 y = j % 32u;
 
 		const uint32 mask = 1u << y;
 
@@ -719,7 +722,7 @@ public:
 	{
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNKSIZE)/32u;
+		const uint32 j = (i % CHUNKSIZE) / 32u;
 		table_data_[jj][j] = 0u;
 	}
 
@@ -728,7 +731,7 @@ public:
 		for (uint32 * const ptr : table_data_)
 		{
 //#pragma omp for
-			for (int32 j = 0; j < int32(CHUNKSIZE/32); ++j)
+			for (int32 j = 0; j < int32(CHUNKSIZE / 32); ++j)
 				ptr[j] = 0u;
 		}
 	}

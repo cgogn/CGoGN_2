@@ -43,6 +43,7 @@ protected:
 	uint32 nb_vectors_;
 	uint32 vector_dimension_;
 	QOpenGLBuffer buffer_;
+	std::string name_;
 
 public:
 
@@ -58,6 +59,16 @@ public:
 	inline ~VBO()
 	{
 		buffer_.destroy();
+	}
+
+	inline void set_name(const std::string& name)
+	{
+		name_ = name;
+	}
+
+	inline const std::string& get_name() const
+	{
+		return name_;
 	}
 
 	inline void bind()
@@ -146,6 +157,9 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 
 	const typename ATTR::TChunkArray* ca = attr.get_data();
 
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
+
 	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
 	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
@@ -197,6 +211,9 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	// check that convert param  is compatible with attr
 	using InputConvert = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
+
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
@@ -259,6 +276,9 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	// check that convert param 2 is compatible with attr2
 	using InputConvert2 = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<1>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR2) >::value, "wrong parameter 2");
+
+	// set vbo name based on first attribute name
+	vbo->set_name(attr.get_name());
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
@@ -338,6 +358,9 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 		vec_dim = 3;
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
+
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
 
 	// allocate vbo
 	vbo->allocate(uint32(indices.size()), vec_dim);

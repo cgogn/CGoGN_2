@@ -36,6 +36,8 @@ namespace cgogn
 namespace rendering
 {
 
+ShaderExplodeVolumesLine* ShaderExplodeVolumesLine::instance_ = nullptr;
+
 const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"

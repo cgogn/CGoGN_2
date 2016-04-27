@@ -195,7 +195,7 @@ public:
 	template <typename T>
 	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
 	{
-		// first check if attribute already exist
+		// first check if attribute already exists
 		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
@@ -203,7 +203,20 @@ public:
 			return nullptr;
 		}
 
-		return static_cast<ChunkArray<T>*>(table_arrays_[index]);
+		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
+	}
+
+	ChunkArrayGen* get_attribute(const std::string& attribute_name) const
+	{
+		// first check if attribute already exists
+		uint32 index = get_array_index(attribute_name);
+		if (index == UNKNOWN)
+		{
+			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			return nullptr;
+		}
+
+		return table_arrays_[index];
 	}
 
 	/**
@@ -375,39 +388,6 @@ public:
 	std::size_t get_nb_attributes() const
 	{
 		return table_arrays_.size();
-	}
-
-	/**
-	* @brief get a chunk_array
-	* @param attribute_name name of the array
-	* @return pointer on typed chunk_array
-	*/
-	template <typename T>
-	ChunkArray<T>* get_data_array(const std::string& attribute_name)
-	{
-		uint32 index = get_array_index(attribute_name);
-		if (index == UNKNOWN)
-			return nullptr;
-
-		ChunkArray<T>* atm = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
-
-		cgogn_message_assert(atm != nullptr, "get_data_array : wrong type.");
-
-		return atm;
-	}
-
-	/**
-	* @brief get a chunk_array
-	* @param attribute_name name of the array
-	* @return pointer on virtual chunk_array
-	*/
-	ChunkArrayGen* get_virtual_data_array(const std::string& attribute_name)
-	{
-		uint32 index = get_array_index(attribute_name);
-		if (index == UNKNOWN)
-			return nullptr;
-
-		return table_arrays_[index];
 	}
 
 	/**
@@ -929,12 +909,13 @@ public:
 			type_names_[i] = std::string(buff3);
 		}
 		cgogn_assert(fs.good());
+
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
+			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i], names_[i]);
 			if (cag)
 			{
 				table_arrays_.push_back(cag);
@@ -943,7 +924,7 @@ public:
 			}
 			else
 			{
-				cgogn_log_warning("ChunkArrayContainer::load") << "Could not load attribute \"" << names_[i] << "\" of type \""<< type_names_[i] << "\".";
+				cgogn_log_warning("ChunkArrayContainer::load") << "Could not load attribute \"" << names_[i] << "\" of type \"" << type_names_[i] << "\".";
 				type_names_.erase(type_names_.begin()+i);
 				names_.erase(names_.begin()+i);
 				ChunkArrayGen::skip(fs);

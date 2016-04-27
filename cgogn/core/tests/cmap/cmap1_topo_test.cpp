@@ -346,6 +346,15 @@ TEST_F(CMap1TopoTest, multi_phi)
 	EXPECT_EQ(f2.dart, this->phi<1111111111>(f2.dart));
 }
 
+/*! \brief The number of connected components is correctly counted
+ */
+TEST_F(CMap1TopoTest, nb_connected_components)
+{
+	add_faces(NB_MAX);
+
+	EXPECT_EQ(nb_connected_components(), NB_MAX);
+}
+
 #undef NB_MAX
 
 } // namespace cgogn

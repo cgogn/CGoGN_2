@@ -58,6 +58,7 @@ public:
 	using Volume	= Cell<Orbit::PHI1_PHI2>;
 
 	using Boundary  = Face;
+	using ConnectedComponent = Volume;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -223,11 +224,11 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N%10)<=2,"Composition of PHI: invalid index");
-		switch(N%10)
+		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
+		switch(N % 10)
 		{
-			case 1 : return this->phi1(phi<N/10>(d)) ;
-			case 2 : return this->phi2(phi<N/10>(d)) ;
+			case 1 : return this->phi1(phi<N / 10>(d)) ;
+			case 2 : return this->phi2(phi<N / 10>(d)) ;
 			default : return d ;
 		}
 	}
@@ -330,11 +331,11 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)				// Next triangles
 		{
 			Dart next = this->Inherit::add_face_topo(3u);
-			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			this->phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 														// End the umbrella
-		this->phi2_sew(this->phi_1(current),this->phi1(first));
+		this->phi2_sew(this->phi_1(current), this->phi1(first));
 
 		return this->close_hole_topo(first);			// Add the base face
 	}
@@ -344,7 +345,7 @@ protected:
 	 * \param size : the number of sides of the prism
 	 * \return A dart of the base face
 	 * The base and the top are faces with n vertices and edges.
-	 * A set of n pairewise linked quads are built.
+	 * A set of n pairwise linked quads are built.
 	 * These quads are sewn to the base and top faces.
 	 */
 	Dart add_prism_topo(uint32 size)
@@ -357,18 +358,16 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)						// Next quads
 		{
 			Dart next = this->Inherit::add_face_topo(4u);
-			this->phi2_sew(this->phi_1(current),this->phi1(next));
+			this->phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 
-		this->phi2_sew(this->phi_1(current),this->phi1(first));	// Close the quad strip
+		this->phi2_sew(this->phi_1(current), this->phi1(first));// Close the quad strip
 
 		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
 
 		return this->close_hole_topo(first);					// Add the base face
 	}
-
-protected:
 
 	/**
 	 * \brief Cut an edge.
@@ -578,8 +577,6 @@ protected:
 		// TODO
 	}
 
-protected:
-
 	/**
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
 	 * \param d : first vertex
@@ -623,7 +620,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
-		cut_face_topo(d.dart,e.dart);
+		cut_face_topo(d.dart, e.dart);
 		Dart nd = this->phi_1(d.dart);
 		Dart ne = this->phi_1(e.dart);
 
@@ -652,6 +649,76 @@ public:
 		{
 			this->template copy_embedding<Volume>(nd, d.dart);
 			this->template copy_embedding<Volume>(ne, d.dart);
+		}
+	}
+
+protected:
+
+	inline bool unsew_faces_topo(Edge g)
+	{
+		if (this->is_incident_to_boundary(g))
+			return false;
+
+		Dart d = g.dart;
+		Dart dd = phi2(d);
+
+		Dart e = Inherit::add_face_topo(2);
+		Dart ee = this->phi1(e);
+		this->set_boundary(e, true);
+		this->set_boundary(ee, true);
+
+		Dart f = this->get_boundary_dart(Vertex(d));
+		Dart ff = this->get_boundary_dart(Vertex(dd));
+
+		if(!f.is_nil())
+			this->phi1_sew(e, this->phi_1(f));
+
+		if(!ff.is_nil())
+			this->phi1_sew(ee, this->phi_1(ff));
+
+		phi2_unsew(d);
+
+		phi2_sew(d, e);
+		phi2_sew(dd, ee);
+
+		return true;
+	}
+
+public:
+
+	inline void unsew_faces(Edge d)
+	{
+		Dart e = phi2(d.dart);
+		if (unsew_faces_topo(d))
+		{
+			if (this->template is_embedded<Vertex>())
+			{
+				Dart ee = this->phi1(e);
+				if (this->same_orbit(Vertex(d.dart), Vertex(ee)))
+					this->template copy_embedding<Vertex>(phi2(e), ee);
+				else
+					this->template new_orbit_embedding(Vertex(ee));
+
+				Dart dd = this->phi1(d.dart);
+				if (this->same_orbit(Vertex(e), Vertex(dd)))
+					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
+				else
+					this->template new_orbit_embedding(Vertex(dd));
+			}
+
+			if (this->template is_embedded<Edge>())
+				this->template new_orbit_embedding(Edge(e));
+
+			if (this->template is_embedded<Volume>())
+			{
+				if (this->same_orbit(Volume(d.dart), Volume(e)))
+				{
+					this->template copy_embedding<Volume>(phi2(e), e);
+					this->template copy_embedding<Volume>(phi2(d.dart), e);
+				}
+				else
+					this->template new_orbit_embedding(Volume(e));
+			}
 		}
 	}
 
@@ -741,14 +808,15 @@ public:
 
 	bool is_adjacent_to_boundary(Boundary c)
 	{
-	  CGOGN_CHECK_CONCRETE_TYPE;
-	  bool result = false;
-	  foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
-	  {
-		if (this->is_boundary(phi2(d))) { result = true; return false; }
-		return true;
-	  });
-	  return result;
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		bool result = false;
+		foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (this->is_boundary(phi2(d))) { result = true; return false; }
+			return true;
+		});
+		return result;
 	}
 
 	/*******************************************************************************
@@ -824,6 +892,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
@@ -902,6 +971,7 @@ protected:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
@@ -1121,9 +1191,8 @@ public:
 
 	inline std::pair<Vertex,Vertex> vertices(Edge e) const
 	{
-		return std::pair<Vertex,Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
-
 };
 
 template <typename MAP_TRAITS>

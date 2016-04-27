@@ -100,12 +100,12 @@ public:
 //		{
 //			step++ ;
 //			uint32 nextIdx = m->m_nextLevelCell[orbit]->operator[](index) ;
-//			if (nextIdx == EMBNULL)
+//			if (nextIdx == INVALID_INDEX)
 //			{
 //				nextIdx = m->newCell<ORBIT>() ;
 //				m->copyCell<ORBIT>(nextIdx, index) ;
 //				m->m_nextLevelCell[orbit]->operator[](index) = nextIdx ;
-//				m->m_nextLevelCell[orbit]->operator[](nextIdx) = EMBNULL ;
+//				m->m_nextLevelCell[orbit]->operator[](nextIdx) = INVALID_INDEX ;
 //				cont.refLine(index) ;
 //			}
 //			index = nextIdx ;
@@ -129,7 +129,7 @@ public:
 //		{
 //			step++ ;
 //			uint32 next = m->m_nextLevelCell[orbit]->operator[](index) ;
-//			if(next != EMBNULL) index = next ;
+//			if(next != INVALID_INDEX) index = next ;
 //			else break ;
 //		}
 //		return this->m_attrib->operator[](index);

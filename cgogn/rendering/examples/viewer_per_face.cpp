@@ -83,11 +83,8 @@ private:
 	cgogn::rendering::VBO* vbo_norm_;
 	cgogn::rendering::VBO* vbo_color_;
 
-	cgogn::rendering::ShaderFlat* shader_flat_;
-	cgogn::rendering::ShaderPhong* shader_phong_;
-
-	cgogn::rendering::ShaderFlat::Param* param_flat_;
-	cgogn::rendering::ShaderPhong::Param* param_phong_;
+	cgogn::rendering::ShaderFlatColor::Param* param_flat_;
+	cgogn::rendering::ShaderPhongColor::Param* param_phong_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -123,8 +120,6 @@ void Viewer::closeEvent(QCloseEvent*)
 	delete vbo_pos_;
 	delete vbo_norm_;
 	delete vbo_color_;
-	delete shader_flat_;
-	delete shader_phong_;
 }
 
 Viewer::Viewer() :
@@ -135,8 +130,6 @@ Viewer::Viewer() :
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
-	shader_flat_(nullptr),
-	shader_phong_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false)
 {}
@@ -220,17 +213,14 @@ void Viewer::init()
 	});
 
 
-	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
-	param_phong_ = shader_phong_->generate_param();
+	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
 	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
 	param_phong_->ambiant_color_ = QColor(5,5,5);
 	param_phong_->double_side_ = true;
 	param_phong_->specular_color_ = QColor(255,255,255);
 	param_phong_->specular_coef_ = 100.0;
 
-
-	shader_flat_ = new cgogn::rendering::ShaderFlat(true);
-	param_flat_ = shader_flat_->generate_param();
+	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
 	param_flat_->set_vbo(vbo_pos_, vbo_color_);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 

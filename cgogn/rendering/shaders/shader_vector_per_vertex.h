@@ -72,17 +72,17 @@ public:
 		ATTRIB_NORMAL
 	};
 
-	ShaderVectorPerVertex();
-
 	using Param = ShaderParamVectorPerVertex;
 
 	/**
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline Param* generate_param()
+	inline static Param* generate_param()
 	{
-		return (new Param(this));
+		if (instance_==nullptr)
+			instance_ = new ShaderVectorPerVertex;
+		return (new Param(instance_));
 	}
 
 	/**
@@ -96,6 +96,12 @@ public:
 	 * @param l length
 	 */
 	void set_length(float32 l);
+
+
+private:
+	ShaderVectorPerVertex();
+	static ShaderVectorPerVertex* instance_;
+
 };
 
 } // namespace rendering

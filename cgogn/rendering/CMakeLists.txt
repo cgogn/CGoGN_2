@@ -22,8 +22,8 @@ set(HEADER_FILES
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
 	drawer.h
-	topo_render.h
-	volume_render.h
+	topo_drawer.h
+	volume_drawer.h
 	wall_paper.h
 )
 
@@ -41,8 +41,8 @@ set(SOURCE_FILES
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
 	drawer.cpp
-	topo_render.cpp
-	volume_render.cpp
+	topo_drawer.cpp
+	volume_drawer.cpp
 	map_render.cpp
 	wall_paper.cpp
 )
