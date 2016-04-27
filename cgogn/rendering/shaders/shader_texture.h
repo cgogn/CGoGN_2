@@ -74,13 +74,18 @@ public:
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline Param* generate_param()
+	inline static Param* generate_param()
 	{
-		return (new Param(this));
+		if (instance_==nullptr)
+			instance_ = new ShaderTexture;
+		return (new Param(instance_));
+
 	}
 
+private:
 
 	ShaderTexture();
+	static ShaderTexture* instance_;
 
 };
 

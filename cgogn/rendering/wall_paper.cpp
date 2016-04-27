@@ -35,26 +35,14 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderTexture* WallPaper::shader_texture_ = nullptr;
-int32 WallPaper::nb_instances_ = 0;
-
 WallPaper::WallPaper(const QImage& img)
 {
-	nb_instances_++;
-
-	if (shader_texture_ == nullptr)
-		shader_texture_ = new ShaderTexture;
-
-	param_texture_ = shader_texture_->generate_param();
-
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	vbo_pos_->allocate(4,3);
 	vbo_tc_ = new cgogn::rendering::VBO(2);
 	vbo_tc_->allocate(4,2);
 
-	param_texture_->set_vbo(vbo_pos_, vbo_tc_);
-	param_texture_->texture_ = new QOpenGLTexture(img);
-	param_texture_->texture_->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture_ = new QOpenGLTexture(img);
 
 	set_full_screen(false);
 
@@ -74,17 +62,7 @@ WallPaper::~WallPaper()
 {
 	delete vbo_pos_;
 	delete vbo_tc_;
-
-	delete param_texture_->texture_;
-	delete param_texture_;
-
-	nb_instances_--;
-	if (nb_instances_ == 0)
-	{
-		// delete shaders when last drawer is deleted
-		// ensure context still enable when delete shaders
-		delete shader_texture_;
-	}
+	delete texture_;
 }
 
 void WallPaper::set_full_screen(bool front)
@@ -139,20 +117,53 @@ void WallPaper::set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 
 }
 
 
-void WallPaper::reinit_vao()
+void WallPaper::set_local_position(float x, float y, float w, float h, bool front)
 {
-	param_texture_->reinit_vao();
-	param_texture_->set_vbo(vbo_pos_,vbo_tc_);
+	float32 depth = 0.0f;
+	if (!front)
+		depth = 0.9999999f;
+
+	float32 xmin = -1.0f + 2*x;
+	float32 xmax = xmin + 2*w;
+
+	float32 ymin = 1.0f - 2*y;
+	float32 ymax = ymin - 2*h;
+
+	float32* ptr_pos = vbo_pos_->lock_pointer();
+	*ptr_pos++ = xmin;
+	*ptr_pos++ = ymin;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmax;
+	*ptr_pos++ = ymin;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmax;
+	*ptr_pos++ = ymax;
+	*ptr_pos++ = depth;
+	*ptr_pos++ = xmin;
+	*ptr_pos++ = ymax;
+	*ptr_pos++ = depth;
+	vbo_pos_->release_pointer();
+}
+
+WallPaper::Renderer::Renderer(WallPaper* wp):
+	wall_paper_data_(wp)
+{
+	param_texture_ = ShaderTexture::generate_param();
+	param_texture_->set_vbo(wp->vbo_pos_, wp->vbo_tc_);
+	param_texture_->texture_ = wp->texture_;
+}
+
+WallPaper::Renderer::~Renderer()
+{
+	delete param_texture_;
 }
 
 
-
-
-void WallPaper::draw(QOpenGLFunctions_3_3_Core* ogl33)
+void WallPaper::Renderer::draw(QOpenGLFunctions_3_3_Core* ogl33)
 {
 	QMatrix4x4 id;
 	param_texture_->bind(id,id);
-	ogl33->glDrawArrays(GL_TRIANGLE_FAN,0,vbo_pos_->size());
+	ogl33->glDrawArrays(GL_TRIANGLE_FAN,0,4);
 	param_texture_->release();
 }
 

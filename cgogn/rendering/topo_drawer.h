@@ -41,20 +41,28 @@ namespace cgogn
 
 namespace rendering
 {
-
-class CGOGN_RENDERING_API TopoRender
+/**
+ * @brief Rendering of the topology
+ *
+ * Typical usage:
+ *
+ *  cgogn::rendering::TopoDrawer* topo_;	// can be shared between contexts
+ *  cgogn::rendering::TopoDrawer::Renderer* topo_rend_; // one by context,
+ *
+ * init:
+ *  topo_ = new cgogn::rendering::TopoDrawer();
+ *  topo_rend_ = topo_->generate_renderer(); // warning must be delete when finished
+ *  topo_->update<Vec3>(map_,vertex_position_);
+ *
+ * draw:
+ *  topo_rend_->draw(proj,view,this);
+ *
+ */
+class CGOGN_RENDERING_API TopoDrawer
 {
 	using Vec3f = std::array<float32, 3>;
 
 protected:
-
-	static ShaderBoldLine* shader_bl_;
-	static ShaderRoundPoint* shader_rp_;
-	static int32 nb_instances_;
-
-	ShaderBoldLine::Param* param_bl_;
-	ShaderBoldLine::Param* param_bl2_;
-	ShaderRoundPoint::Param* param_rp_;
 
 	VBO* vbo_darts_;
 	VBO* vbo_relations_;
@@ -75,34 +83,49 @@ protected:
 
 public:
 
-	using Self = TopoRender;
+	class Renderer
+	{
+		friend class TopoDrawer;
+		ShaderBoldLine::Param* param_bl_;
+		ShaderBoldLine::Param* param_bl2_;
+		ShaderRoundPoint::Param* param_rp_;
+		TopoDrawer* topo_drawer_data_;
+		Renderer(TopoDrawer* tr);
+	public:
+		~Renderer();
+		/**
+		 * @brief draw
+		 * @param projection projection matrix
+		 * @param modelview model-view matrix
+		 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
+		 * @param with_blending
+		 */
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+	};
+
+	using Self = TopoDrawer;
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	TopoRender();
+	TopoDrawer();
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoRender);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoDrawer);
 
 	/**
 	 * release buffers and shader
 	 */
-	~TopoRender();
+	~TopoDrawer();
 
 	/**
-	 * @brief reinit the vaos (call if you want to use drawer in a new context)
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
 	 */
-	void reinit_vao();
-
-	/**
-	 * @brief draw
-	 * @param projection projection matrix
-	 * @param modelview model-view matrix
-	 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
-	 * @param with_blending
-	 */
-	void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+	inline Renderer* generate_renderer()
+	{
+		return (new Renderer(this));
+	}
 
 	inline void set_explode_volume(float32 x) { shrink_v_ = x; }
 
@@ -124,7 +147,7 @@ public:
 };
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -199,7 +222,7 @@ void TopoRender::update_map2(const MAP& m, const typename MAP::template VertexAt
 }
 
 template <typename VEC3, typename MAP>
-void TopoRender::update_map3(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;

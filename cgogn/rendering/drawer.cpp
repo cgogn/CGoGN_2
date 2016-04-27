@@ -35,77 +35,24 @@ namespace cgogn
 namespace rendering
 {
 
-// static members init
-ShaderColorPerVertex* Drawer::shader_cpv_ = nullptr;
-ShaderBoldLine* Drawer::shader_bl_ = nullptr;
-ShaderRoundPoint* Drawer::shader_rp_ = nullptr;
-ShaderPointSprite* Drawer::shader_ps_ = nullptr;
-uint32 Drawer::nb_instances_ = 0;
-
-Drawer::Drawer():
+DisplayListDrawer::DisplayListDrawer():
 	current_size_(1.0f),
 	current_aa_(true),
 	current_ball_(true)
 {
-	nb_instances_++;
-
 	vbo_pos_ = new VBO(3);
 	vbo_col_ = new VBO(3);
-
-	if (!shader_cpv_)
-		shader_cpv_ = new ShaderColorPerVertex();
-
-	if (!shader_bl_)
-		shader_bl_ = new ShaderBoldLine(true);
-
-	if (!shader_rp_)
-		shader_rp_ = new ShaderRoundPoint(true);
-
-	if (!shader_ps_)
-		shader_ps_ = new ShaderPointSprite(true);
-
-	param_cpv_ = shader_cpv_->generate_param();
-	param_bl_ = shader_bl_->generate_param();
-	param_rp_ = shader_rp_->generate_param();
-	param_ps_ = shader_ps_->generate_param();
-
-	param_cpv_->set_vbo(vbo_pos_,vbo_col_);
-	param_bl_->set_vbo(vbo_pos_,vbo_col_);
-	param_rp_->set_vbo(vbo_pos_,vbo_col_);
-	param_ps_->set_vbo(vbo_pos_,vbo_col_);
 }
 
-void Drawer::reinit_vao()
-{
-	param_cpv_->reinit_vao();
-	param_bl_->reinit_vao();
-	param_rp_->reinit_vao();
-	param_ps_->reinit_vao();
 
-	param_cpv_->set_vbo(vbo_pos_,vbo_col_);
-	param_bl_->set_vbo(vbo_pos_,vbo_col_);
-	param_rp_->set_vbo(vbo_pos_,vbo_col_);
-	param_ps_->set_vbo(vbo_pos_,vbo_col_);
-}
-
-Drawer::~Drawer()
+DisplayListDrawer::~DisplayListDrawer()
 {
 	delete vbo_pos_;
 	delete vbo_col_;
-
-	nb_instances_--;
-	if (nb_instances_ == 0)
-	{
-		// delete shaders when last drawer is deleted
-		// ensure context still enable when delete shaders
-		delete shader_ps_;
-		delete shader_rp_;
-		delete shader_bl_;
-		delete shader_cpv_;
-	}
 }
 
-void Drawer::new_list()
+
+void DisplayListDrawer::new_list()
 {
 	data_pos_.clear();
 	data_col_.clear();
@@ -117,7 +64,7 @@ void Drawer::new_list()
 	begins_face_.clear();
 }
 
-void Drawer::begin(GLenum mode)
+void DisplayListDrawer::begin(GLenum mode)
 {
 	switch (mode)
 	{
@@ -159,12 +106,12 @@ void Drawer::begin(GLenum mode)
 	}
 }
 
-void Drawer::end()
+void DisplayListDrawer::end()
 {
 	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
 
-void Drawer::vertex3f(float32 x, float32 y, float32 z)
+void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
 {
 	if (data_pos_.size() == data_col_.size())
 	{
@@ -176,7 +123,7 @@ void Drawer::vertex3f(float32 x, float32 y, float32 z)
 	data_pos_.push_back(Vec3f{x, y, z});
 }
 
-void Drawer::color3f(float32 r, float32 g, float32 b)
+void DisplayListDrawer::color3f(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
 		data_col_.push_back(Vec3f{r, g, b});
@@ -184,7 +131,7 @@ void Drawer::color3f(float32 r, float32 g, float32 b)
 		data_col_.back() = Vec3f{r, g, b};
 }
 
-void Drawer::end_list()
+void DisplayListDrawer::end_list()
 {
 	uint32 nb_elts = uint32(data_pos_.size());
 
@@ -208,35 +155,146 @@ void Drawer::end_list()
 	data_col_.shrink_to_fit();
 }
 
-void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+//void DisplayListDrawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+//{
+
+//	//classic rendering
+//	if (!begins_point_.empty() || !begins_line_.empty() || !begins_face_.empty())
+//	{
+//		param_cpv_->bind(projection, modelview);
+
+//		for (auto& pp : begins_point_)
+//		{
+//			ogl33->glPointSize(pp.width);
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//		}
+
+//		for (auto& pp : begins_line_)
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+//		for (auto& pp : begins_face_)
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+//		param_cpv_->release();
+//	}
+
+//	// balls
+//	if (!begins_balls_.empty())
+//	{
+//		param_ps_->bind(projection,modelview);
+
+//		for (auto& pp : begins_balls_)
+//		{
+//			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
+//			shader_ps_->set_size(pp.width);
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//		}
+//		param_ps_->release();
+//	}
+
+//	// round points
+//	if (!begins_round_point_.empty())
+//	{
+//		param_rp_->bind(projection, modelview);
+
+//		for (auto& pp : begins_round_point_)
+//		{
+//			if (pp.aa)
+//			{
+//				ogl33->glEnable(GL_BLEND);
+//				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//			}
+//			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
+//			shader_rp_->set_size(pp.width);
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+//			if (pp.aa)
+//				ogl33->glDisable(GL_BLEND);
+//		}
+//		param_rp_->release();
+//	}
+
+//	// bold lines
+//	if (!begins_bold_line_.empty())
+//	{
+//		param_bl_->bind(projection, modelview);
+
+//		for (auto& pp : begins_bold_line_)
+//		{
+//			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());
+//			shader_bl_->set_width(pp.width);
+//			shader_bl_->set_color(QColor(255, 255, 0));
+
+//			if (pp.aa)
+//			{
+//				ogl33->glEnable(GL_BLEND);
+//				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//			}
+
+//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+
+//			if (pp.aa)
+//				ogl33->glDisable(GL_BLEND);
+//		}
+
+//		param_bl_->release();
+//	}
+//}
+
+
+DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr):
+	drawer_data_(dr)
+{
+	param_cpv_ = ShaderColorPerVertex::generate_param();
+	param_bl_ = ShaderBoldLineColor::generate_param();
+	param_rp_ = ShaderRoundPointColor::generate_param();
+	param_ps_ = ShaderPointSpriteColor::generate_param();
+
+	param_cpv_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
+	param_bl_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
+	param_rp_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
+	param_ps_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
+}
+
+DisplayListDrawer::Renderer::~Renderer()
+{
+	delete param_cpv_;
+	delete param_bl_;
+	delete param_rp_;
+	delete param_ps_;
+
+}
+
+void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	//classic rendering
-	if (!begins_point_.empty() || !begins_line_.empty() || !begins_face_.empty())
+	if (! drawer_data_->begins_point_.empty() || ! drawer_data_->begins_line_.empty() || ! drawer_data_->begins_face_.empty())
 	{
 		param_cpv_->bind(projection, modelview);
 
-		for (auto& pp : begins_point_)
+		for (auto& pp : drawer_data_->begins_point_)
 		{
 			ogl33->glPointSize(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
-		for (auto& pp : begins_line_)
+		for (auto& pp :  drawer_data_->begins_line_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
-		for (auto& pp : begins_face_)
+		for (auto& pp :  drawer_data_->begins_face_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 		param_cpv_->release();
 	}
 
 	// balls
-	if (!begins_balls_.empty())
+	if (! drawer_data_->begins_balls_.empty())
 	{
 		param_ps_->bind(projection,modelview);
 
-		for (auto& pp : begins_balls_)
+		for (auto& pp :  drawer_data_->begins_balls_)
 		{
+			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
 			shader_ps_->set_size(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
@@ -244,18 +302,18 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 	}
 
 	// round points
-	if (!begins_round_point_.empty())
+	if (! drawer_data_->begins_round_point_.empty())
 	{
 		param_rp_->bind(projection, modelview);
 
-		for (auto& pp : begins_round_point_)
+		for (auto& pp :  drawer_data_->begins_round_point_)
 		{
 			if (pp.aa)
 			{
 				ogl33->glEnable(GL_BLEND);
 				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
-
+			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
 			shader_rp_->set_size(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
@@ -266,12 +324,13 @@ void Drawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview
 	}
 
 	// bold lines
-	if (!begins_bold_line_.empty())
+	if (! drawer_data_->begins_bold_line_.empty())
 	{
 		param_bl_->bind(projection, modelview);
 
-		for (auto& pp : begins_bold_line_)
+		for (auto& pp :  drawer_data_->begins_bold_line_)
 		{
+			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());
 			shader_bl_->set_width(pp.width);
 			shader_bl_->set_color(QColor(255, 255, 0));
 
