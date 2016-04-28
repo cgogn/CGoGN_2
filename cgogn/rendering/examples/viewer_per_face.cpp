@@ -212,20 +212,16 @@ void Viewer::init()
 		return {float32(std::abs(n[0])), float32(std::abs(n[1])), float32(std::abs(n[2]))};
 	});
 
-
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
-	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
-	param_phong_->ambiant_color_ = QColor(5,5,5);
+	param_phong_->set_all_vbos(vbo_pos_, vbo_norm_, vbo_color_);
+	param_phong_->ambiant_color_ = QColor(5, 5, 5);
 	param_phong_->double_side_ = true;
-	param_phong_->specular_color_ = QColor(255,255,255);
+	param_phong_->specular_color_ = QColor(255, 255, 255);
 	param_phong_->specular_coef_ = 100.0;
 
 	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
-	param_flat_->set_vbo(vbo_pos_, vbo_color_);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
-
-
-
+	param_flat_->set_all_vbos(vbo_pos_, vbo_color_);
+	param_flat_->ambiant_color_ = QColor(5, 5, 5);
 }
 
 int main(int argc, char** argv)

@@ -27,8 +27,6 @@
 
 #include <cgogn/rendering/shaders/shader_color_per_vertex.h>
 
-#include <QOpenGLFunctions>
-
 namespace cgogn
 {
 
@@ -57,8 +55,6 @@ const char* ShaderColorPerVertex::fragment_shader_source_ =
 "   fragColor = color_v;\n"
 "}\n";
 
-
-
 ShaderColorPerVertex::ShaderColorPerVertex()
 {
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
@@ -67,35 +63,6 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
     prg_.link();
 	get_matrices_uniforms();
-}
-
-
-
-ShaderParamColorPerVertex::ShaderParamColorPerVertex(ShaderColorPerVertex* prg) :
-	ShaderParam(prg)
-{}
-
-void ShaderParamColorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_color)
-{
-    QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	// color vbo
-	vbo_color->bind();
-	ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
-	ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-    vbo_color->release();
-
-	vao_->release();
-	shader_->release();
 }
 
 } // namespace rendering

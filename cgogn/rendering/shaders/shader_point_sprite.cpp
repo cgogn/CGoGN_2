@@ -37,7 +37,6 @@ namespace cgogn
 namespace rendering
 {
 
-
 const char* ShaderPointSpriteGen::vertex_shader_source_ =
 "in vec3 vertex_pos;\n"
 "#if WITH_COLOR == 1\n"
@@ -175,13 +174,13 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "	fragColor = result.rgb;\n"
 "}\n";
 
-ShaderPointSpriteGen::ShaderPointSpriteGen(bool cpv, bool spv)
+ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_vertex)
 {
 	std::string vs("#version 150\n");
 	std::string fs("#version 150\n");
 	std::string gs("#version 150\n");
 
-	if (cpv)
+	if (color_per_vertex)
 	{
 		vs += std::string("#define WITH_COLOR 1\n");
 		gs += std::string("#define WITH_COLOR 1\n");
@@ -194,7 +193,7 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool cpv, bool spv)
 		fs += std::string("#define WITH_COLOR 0\n");
 	}
 
-	if (spv)
+	if (size_per_vertex)
 	{
 		vs += std::string("#define WITH_SIZE 1\n");
 		gs += std::string("#define WITH_SIZE 1\n");
@@ -216,26 +215,28 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool cpv, bool spv)
 	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fs.c_str());
 	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 
-	if (cpv)
+	if (color_per_vertex)
 		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 
-	if (spv)
+	if (size_per_vertex)
 		prg_.bindAttributeLocation("vertex_size", ATTRIB_SIZE);
 
 	prg_.link();
 	get_matrices_uniforms();
-
 
 	unif_color_ = prg_.uniformLocation("color");
 	unif_ambiant_ = prg_.uniformLocation("ambiant");
 	unif_light_pos_ = prg_.uniformLocation("lightPos");
 	unif_size_ = prg_.uniformLocation("point_size");
 
-	if (!cpv)
+	if (!color_per_vertex)
 		set_color(QColor(250, 0, 0));
+
 	set_ambiant(QColor(5, 5, 5));
-	if (!spv)
+
+	if (!size_per_vertex)
 		set_size(1.0f);
+
 	set_light_position(QVector3D(10, 10, 1000));
 }
 
@@ -286,9 +287,7 @@ void ShaderPointSpriteGen::set_size(float32 w)
 		prg_.setUniformValue(unif_size_, w);
 }
 
-
-
-template class CGOGN_RENDERING_API  ShaderPointSpriteTpl<false, false>;
+template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, false>;
 template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, false>;
 template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, true>;
 template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, true>;
