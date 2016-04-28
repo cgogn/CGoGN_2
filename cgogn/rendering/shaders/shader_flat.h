@@ -105,12 +105,13 @@ template <bool CPV>
 class ShaderFlatTpl : public ShaderFlatGen
 {
 public:
+
 	using Param = ShaderParamFlat<CPV>;
 	static Param* generate_param();
+
 private:
-	ShaderFlatTpl() :
-		ShaderFlatGen(CPV)
-	{}
+
+	ShaderFlatTpl() : ShaderFlatGen(CPV) {}
 	static ShaderFlatTpl* instance_;
 };
 
@@ -123,6 +124,7 @@ template <>
 class ShaderParamFlat<false> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
@@ -133,6 +135,7 @@ protected:
 	}
 
 public:
+
 	QColor front_color_;
 	QColor back_color_;
 	QColor ambiant_color_;
@@ -146,7 +149,7 @@ public:
 		light_pos_(10, 100, 1000)
 	{}
 
-	void set_vbo(VBO* vbo_pos)
+	void set_position_vbo(VBO* vbo_pos)
 	{
 		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
@@ -167,6 +170,7 @@ template <>
 class ShaderParamFlat<true> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
@@ -175,6 +179,7 @@ protected:
 	}
 
 public:
+
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 
@@ -189,12 +194,38 @@ public:
 		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
-		// position vbo
+		// position
 		vbo_pos->bind();
 		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
 		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
-		// color  vbo
+		// color
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_color_vbo(VBO* vbo_color)
+	{
+		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
 		vbo_color->bind();
 		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
 		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
@@ -207,15 +238,13 @@ public:
 template <bool CPV>
 typename ShaderFlatTpl<CPV>::Param* ShaderFlatTpl<CPV>::generate_param()
 {
-	if (instance_==nullptr)
+	if (instance_  == nullptr)
 		instance_ = new ShaderFlatTpl<CPV>;
 	return (new Param(instance_));
 }
 
-
 using ShaderFlat = ShaderFlatTpl<false>;
 using ShaderFlatColor = ShaderFlatTpl<true>;
-
 
 #if !defined(CGOGN_RENDER_SHADERS_FLAT_CPP_)
 extern template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
