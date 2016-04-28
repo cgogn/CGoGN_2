@@ -28,7 +28,6 @@
 
 #include <cgogn/rendering/shaders/shader_phong.h>
 
-
 namespace cgogn
 {
 
@@ -166,6 +165,7 @@ ShaderPhongGen::ShaderPhongGen(bool color_per_vertex)
 		prg_.link();
 		get_matrices_uniforms();
 	}
+
 	unif_front_color_ = prg_.uniformLocation("front_color");
 	unif_back_color_ = prg_.uniformLocation("back_color");
 	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
@@ -229,12 +229,10 @@ void ShaderPhongGen::set_double_side(bool ts)
 	prg_.setUniformValue(unif_double_side_, ts);
 }
 
-
 template class CGOGN_RENDERING_API ShaderPhongTpl<false>;
 template class CGOGN_RENDERING_API ShaderPhongTpl<true>;
 template class CGOGN_RENDERING_API ShaderParamPhong<false>;
 template class CGOGN_RENDERING_API ShaderParamPhong<true>;
-
 
 } // namespace rendering
 

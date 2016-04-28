@@ -37,8 +37,17 @@ namespace cgogn
 namespace rendering
 {
 
+// forward
+template <bool CPV>
+class ShaderParamFlat: public ShaderParam
+{};
+
 class CGOGN_RENDERING_API ShaderFlatGen : public ShaderProgram
 {
+	template <bool CPV> friend class ShaderParamFlat;
+
+protected:
+
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
 
@@ -61,8 +70,6 @@ public:
 		ATTRIB_POS = 0,
 		ATTRIB_COLOR
 	};
-
-	ShaderFlatGen(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -94,12 +101,11 @@ public:
 	 * @param view_matrix
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+
+protected:
+
+	ShaderFlatGen(bool color_per_vertex);
 };
-
-
-template <bool CPV>
-class ShaderParamFlat: public ShaderParam
-{};
 
 template <bool CPV>
 class ShaderFlatTpl : public ShaderFlatGen
@@ -189,7 +195,7 @@ public:
 		light_pos_(10, 100, 1000)
 	{}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color)
+	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
 		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();

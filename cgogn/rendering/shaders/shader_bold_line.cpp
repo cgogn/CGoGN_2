@@ -174,9 +174,9 @@ const char* ShaderBoldLineGen::fragment_shader_source2_ =
 "}\n";
 
 
-ShaderBoldLineGen::ShaderBoldLineGen(bool cpv)
+ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 {
-	if (cpv)
+	if (color_per_vertex)
 	{
 		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
 		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source2_);
@@ -203,7 +203,6 @@ void ShaderBoldLineGen::set_color(const QColor& rgb)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-
 void ShaderBoldLineGen::set_width(float32 w)
 {
 	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
@@ -213,13 +212,10 @@ void ShaderBoldLineGen::set_width(float32 w)
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-
-
 template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
 template class CGOGN_RENDERING_API ShaderBoldLineTpl<true>;
 template class CGOGN_RENDERING_API ShaderParamBoldLine<false>;
 template class CGOGN_RENDERING_API ShaderParamBoldLine<true>;
-
 
 } // namespace rendering
 

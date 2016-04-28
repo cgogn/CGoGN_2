@@ -42,17 +42,17 @@ class ShaderTexture;
 class CGOGN_RENDERING_API ShaderParamTexture : public ShaderParam
 {
 protected:
+
 	void set_uniforms();
 
 public:
+
 	QOpenGLTexture* texture_;
 
 	ShaderParamTexture(ShaderTexture* sh);
 
 	void set_vbo(VBO* vbo_pos, VBO* vbo_tc);
 };
-
-
 
 class CGOGN_RENDERING_API ShaderTexture : public ShaderProgram
 {
@@ -67,7 +67,6 @@ public:
 		ATTRIB_TC
 	};
 
-
 	using Param = ShaderParamTexture;
 
 	/**
@@ -76,19 +75,16 @@ public:
 	 */
 	inline static Param* generate_param()
 	{
-		if (instance_==nullptr)
+		if (instance_ == nullptr)
 			instance_ = new ShaderTexture;
 		return (new Param(instance_));
-
 	}
 
-private:
+protected:
 
 	ShaderTexture();
 	static ShaderTexture* instance_;
-
 };
-
 
 } // namespace rendering
 

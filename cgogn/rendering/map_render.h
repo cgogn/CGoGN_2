@@ -136,7 +136,7 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	inline void init_primitives(const MAP& m, DrawingType prim, const typename MAP::template VertexAttribute<VEC3>* position=nullptr)
+	inline void init_primitives(const MAP& m, DrawingType prim, const typename MAP::template VertexAttribute<VEC3>* position = nullptr)
 	{
 		std::vector<uint32> table_indices;
 
