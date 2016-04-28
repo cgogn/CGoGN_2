@@ -82,12 +82,14 @@ TEST_F(ChunkArrayContainerTest, testRemove)
 	EXPECT_EQ(i3,3);
 }
 
-TEST_F(ChunkArrayContainerTest, testCompact)
+TEST_F(ChunkArrayContainerTest, test_compact)
 {
+	using DATA = uint32;
+
 	ChunkArrayContainer<16u,uint32> ca_cont;
 
 
-	ChunkArray<16u,uint32>* indices = ca_cont.add_attribute<uint32>("indices");
+	ChunkArray<16u,DATA>* indices = ca_cont.add_attribute<DATA>("indices");
 
 	for (uint32 i=0; i<20; ++i)
 	{
@@ -96,8 +98,11 @@ TEST_F(ChunkArrayContainerTest, testCompact)
 	}
 
 	ca_cont.remove_lines<1>(0);
+	ca_cont.remove_lines<1>(18);
 	ca_cont.remove_lines<1>(2);
+	ca_cont.remove_lines<1>(17);
 	ca_cont.remove_lines<1>(3);
+	ca_cont.remove_lines<1>(15);
 	ca_cont.remove_lines<1>(5);
 	ca_cont.remove_lines<1>(6);
 	ca_cont.remove_lines<1>(7);
@@ -106,31 +111,98 @@ TEST_F(ChunkArrayContainerTest, testCompact)
 	ca_cont.remove_lines<1>(11);
 	ca_cont.remove_lines<1>(13);
 	ca_cont.remove_lines<1>(14);
-	ca_cont.remove_lines<1>(15);
-	ca_cont.remove_lines<1>(17);
-	ca_cont.remove_lines<1>(18);
-	ca_cont.remove_lines<1>(19);
 
-	EXPECT_EQ(ca_cont.size(),5);
+	EXPECT_EQ(ca_cont.size(),6);
 
-	std::vector<uint32> old_new;
-	ca_cont.compact<1>(old_new);
+	std::vector<uint32> old_new = ca_cont.compact<1>();
+	EXPECT_EQ(old_new.size(),20);
 
-	EXPECT_EQ(ca_cont.size(),5);
+	EXPECT_EQ(ca_cont.size(),6);
 
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //		std::cout << i << " => "<<indices->operator [](i)<< std::endl;
 
-	EXPECT_EQ(indices->operator[](0), 16);
-	EXPECT_EQ(indices->operator[](1), 1);
-	EXPECT_EQ(indices->operator[](2), 12);
-	EXPECT_EQ(indices->operator[](3), 8);
-	EXPECT_EQ(indices->operator[](4), 4);
+	std::vector<DATA> after;
+	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
+		after.push_back(indices->operator [](i));
 
-	uint32 i=0;
-	for(uint32 x: old_new)
-		std::cout << i++ << " : "<< x << std::endl;
+	auto contains = [&] (DATA x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
+	EXPECT_TRUE( contains(1) );
+	EXPECT_TRUE( contains(4) );
+	EXPECT_TRUE( contains(8) );
+	EXPECT_TRUE( contains(12) );
+	EXPECT_TRUE( contains(16) );
+	EXPECT_TRUE( contains(19) );
+
+//	uint32 i=0;
+//	for(uint32 x: old_new)
+//		std::cout << i++ << " : "<< x << std::endl;
+
+}
+
+TEST_F(ChunkArrayContainerTest, test_compact_tri)
+{
+	using DATA = uint32;
+
+	ChunkArrayContainer<16u,uint32> ca_cont;
+
+
+	ChunkArray<16u,DATA>* indices = ca_cont.add_attribute<DATA>("indices");
+
+	for (uint32 i=0; i<10; ++i)
+	{
+		ca_cont.insert_lines<3>();
+		indices->operator [](i) = i;
+	}
+
+	for (uint32 i=0; i<30; ++i)
+	{
+		indices->operator [](i) = i;
+	}
+
+
+	ca_cont.remove_lines<3>(0);
+	ca_cont.remove_lines<3>(8*3);
+	ca_cont.remove_lines<3>(2*3);
+	ca_cont.remove_lines<3>(6*3);
+	ca_cont.remove_lines<3>(4*3);
+
+	EXPECT_EQ(ca_cont.size(),15);
+
+	std::vector<uint32> old_new = ca_cont.compact<3>();
+	EXPECT_EQ(old_new.size(),30);
+
+	EXPECT_EQ(ca_cont.size(),15);
+
+//	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
+//		std::cout << i << " => "<<indices->operator [](i)<< std::endl;
+
+	std::vector<DATA> after;
+	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
+		after.push_back(indices->operator [](i));
+
+	auto contains = [&] (DATA x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
+
+	EXPECT_TRUE( contains(3) );
+	EXPECT_TRUE( contains(4) );
+	EXPECT_TRUE( contains(5) );
+	EXPECT_TRUE( contains(9) );
+	EXPECT_TRUE( contains(10) );
+	EXPECT_TRUE( contains(11) );
+	EXPECT_TRUE( contains(15) );
+	EXPECT_TRUE( contains(16) );
+	EXPECT_TRUE( contains(17) );
+	EXPECT_TRUE( contains(21) );
+	EXPECT_TRUE( contains(22) );
+	EXPECT_TRUE( contains(23) );
+	EXPECT_TRUE( contains(27) );
+	EXPECT_TRUE( contains(28) );
+	EXPECT_TRUE( contains(29) );
+
+//	uint32 i=0;
+//	for(uint32 x: old_new)
+//		std::cout << i++ << " : "<< x << std::endl;
 
 }
 

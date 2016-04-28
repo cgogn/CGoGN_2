@@ -564,20 +564,20 @@ public:
 
 		uint32 up = rbegin();
 		uint32 down = std::numeric_limits<uint32>::max();
-		std::vector<uint32> map_old_new(up, std::numeric_limits<uint32>::max());
-
+		std::vector<uint32> map_old_new(up+1, std::numeric_limits<uint32>::max());
 		do
 		{
 			down = holes_stack_.head();
-			for(uint32 i = 0u; i < PRIMSIZE; ++i)
-			{
-				const uint32 rdown = down + PRIMSIZE-1u - i;
-				map_old_new[up] = rdown;
-				move_line(rdown, up,true,true);
-				rnext(up);
-			}
+			if (down < nb_used_lines_)
+				for(uint32 i = 0u; i < PRIMSIZE; ++i)
+				{
+					const uint32 rdown = down + PRIMSIZE-1u - i;
+					map_old_new[up] = rdown;
+					move_line(rdown, up,true,true);
+					rnext(up);
+				}
 			holes_stack_.pop();
-		} while (!holes_stack_.empty() && (up > down));
+		}while (!holes_stack_.empty());
 
 		// free unused memory blocks
 		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
