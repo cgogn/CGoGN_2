@@ -214,14 +214,14 @@ public:
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3")
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
 		vertex3ff(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3")
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
 		color3ff(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
