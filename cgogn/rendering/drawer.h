@@ -104,7 +104,7 @@ protected:
 
 public:
 
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class DisplayListDrawer;
 		ShaderColorPerVertex::Param* param_cpv_;
@@ -175,37 +175,54 @@ public:
 	 */
 	void end_list();
 
-	/**
-	 * use as glVertex3f
-	 */
-	void vertex3f(float32 x, float32 y, float32 z);
+	void vertex3ff(float32 x, float32 y, float32 z);
 
 	/**
-	 * use as glColor3f
-	 */
-	void color3f(float32 r, float32 g, float32 b);
+	* use as glVertex3f
+	*/
+	template<typename SCAL>
+	inline void vertex3f(SCAL x, SCAL y, SCAL z)
+	{
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		vertex3ff(float32(x), float32(y), float32(z));
+	}
+
+
+	void color3ff(float32 r, float32 g, float32 b);
+
+	/**
+	* use as glColor3f
+	*/
+	template<typename SCAL>
+	inline void color3f(SCAL x, SCAL y, SCAL z)
+	{
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		color3ff(float32(x), float32(y), float32(z));
+	}
 
 
 	inline void vertex3fv(const std::array<float32, 3>& xyz)
 	{
-		vertex3f(xyz[0], xyz[1], xyz[2]);
+		vertex3ff(xyz[0], xyz[1], xyz[2]);
 	}
 
 	inline void color3fv(const std::array<float32, 3>& rgb)
 	{
-		color3f(rgb[0], rgb[1], rgb[2]);
+		color3ff(rgb[0], rgb[1], rgb[2]);
 	}
 
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		vertex3f(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3")
+		vertex3ff(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		color3f(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3")
+		color3ff(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
 	template <typename VEC3>

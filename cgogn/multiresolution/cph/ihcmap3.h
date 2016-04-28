@@ -334,7 +334,8 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 			ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31 ||
+			ORBIT == Orbit::PHI1_PHI2_PHI3,
 			"Orbit not supported in a IHCMap3");
 
 		switch (ORBIT)
@@ -347,6 +348,7 @@ public:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}

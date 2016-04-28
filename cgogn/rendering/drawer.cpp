@@ -111,7 +111,7 @@ void DisplayListDrawer::end()
 	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
 
-void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
+void DisplayListDrawer::vertex3ff(float32 x, float32 y, float32 z)
 {
 	if (data_pos_.size() == data_col_.size())
 	{
@@ -123,7 +123,7 @@ void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
 	data_pos_.push_back(Vec3f{x, y, z});
 }
 
-void DisplayListDrawer::color3f(float32 r, float32 g, float32 b)
+void DisplayListDrawer::color3ff(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
 		data_col_.push_back(Vec3f{r, g, b});
