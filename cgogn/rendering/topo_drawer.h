@@ -83,7 +83,7 @@ protected:
 
 public:
 
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class TopoDrawer;
 		ShaderBoldLine::Param* param_bl_;

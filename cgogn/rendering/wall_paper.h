@@ -60,7 +60,7 @@ protected:
 	QOpenGLTexture* texture_;
 
 public:
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class WallPaper;
 		ShaderTexture::Param* param_texture_;

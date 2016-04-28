@@ -149,7 +149,7 @@ void Drawing::init()
 	wp_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
 	button_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
 //	button_->set_local_position(this->width(),this->height(),10,10,50,50);
-	button_->set_local_position(0.1,0.1,0.2,0.2);
+	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
 
 	wp_rend_ = wp_->generate_renderer();
 	button_rend_ = button_->generate_renderer();
@@ -161,11 +161,11 @@ void Drawing::init()
 	drawer_->line_width(2.0);
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,0.0,0.0);
-		drawer_->vertex3f(0,0,0);
+		drawer_->vertex3f(0.0,0.0,0.0);
 		drawer_->color3f(0.0,1.0,1.0);
 		drawer_->vertex3f(1,0,0);
 		drawer_->color3f(1.0,0.0,1.0);
-		drawer_->vertex3f(1,1,0);
+		drawer_->vertex3f(1.0f,1.0f,0.0f);
 		drawer_->color3f(1.0,1.0,0.0);
 		drawer_->vertex3f(0,1,0);
 	drawer_->end();
