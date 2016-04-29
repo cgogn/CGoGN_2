@@ -206,6 +206,18 @@ public:
 	}
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = ca->table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+	}
+
+	/**
 	 * @brief move an element to another one
 	 * @param dst destination index
 	 * @param src source index
@@ -429,6 +441,8 @@ public:
 	using value_type = uint32;
 
 protected:
+	// ensure real allocated chunk-size for bool is never 0
+	const int UINT32_CHUNKSIZE = (CHUNKSIZE/32u > 0u) ? CHUNKSIZE/32u : 1u;
 
 	// vector of block pointers
 	std::vector<uint32*> table_data_;
@@ -489,7 +503,7 @@ public:
 	void add_chunk() override
 	{
 		// adding the empty parentheses for default-initialization
-		table_data_.push_back(new uint32[CHUNKSIZE/32u]());
+		table_data_.push_back(new uint32[UINT32_CHUNKSIZE]());
 	}
 
 	/**
@@ -526,7 +540,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return uint32(table_data_.size())*CHUNKSIZE/32u;
+		return uint32(table_data_.size())*UINT32_CHUNKSIZE;
 	}
 
 	/**
@@ -576,6 +590,19 @@ public:
 	{
 		set_value(dst, this->operator[](src));
 	}
+
+	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		set_value(dst, ca->operator[](src));
+	}
+
 
 	/**
 	 * @brief swap two elements
@@ -740,7 +767,7 @@ public:
 //	{
 //		for (auto ptr : table_data_)
 //		{
-//			for (uint32 j = 0u; j < CHUNKSIZE/32u; ++j)
+//			for (uint32 j = 0u; j < UINT32_CHUNKSIZE; ++j)
 //				*ptr++ = 0xffffffff;
 //		}
 //	}

@@ -62,6 +62,7 @@ public:
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
 	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
+	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNKSIZE>;
 
 	/**
 	* constante d'attribut inconnu
@@ -241,7 +242,7 @@ public:
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
 		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
-		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
+		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
 		carr->set_nb_chunks(refs_.get_nb_chunks());
@@ -554,7 +555,7 @@ public:
 
 	/**
 	 * @brief container compacting
-	 * @return map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
+	 * @return map_old_new vector that contains a map from old indices to new indices (holes & unchanged -> 0xffffffff)
 	 */
 	template <uint32 PRIMSIZE>
 	std::vector<uint32> compact()
@@ -599,48 +600,67 @@ public:
 	}
 
 
-//	template <uint32 PRIMSIZE>
-//	void append(std::vector<uint32>& map_old_new)
-//	{
-//		map_old_new.clear();
-//		map_old_new.resize(end(), 0xffffffff);
+	template <uint32 PRIMSIZE>
+	bool merge(const Self& cac, std::vector<uint32>& map_old_new)
+	{
+		// mapping table of ca indices of cac in this
+		std::vector<uint32> map_attrib(cac.names_.size());
 
-//		uint32 up = rbegin();
-//		uint32 down = 0u;
+		// First check & find missing attributes
+		for (uint32 i=0; i<cac.names_.size(); ++i)
+		{
+			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
+			if (j == names_.size()) // attrib not in this
+				map_attrib[i] = std::numeric_limits<uint32>::max();
+			else
+				if (cac.type_names_[i] == type_names_[j])
+					map_attrib[i] = j;
+				else
+				{
+					cgogn_log_warning("merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					return false;
+				}
+		}
 
-//		while (down < up)
-//		{
-//			if (!used(down))
-//			{
-//				for(uint32 i = 0u; i < PRIMSIZE; ++i)
-//				{
-//					unsigned rdown = down + PRIMSIZE-1u - i;
-//					map_old_new[up] = rdown;
-//					copy_line(rdown, up,true,true);
-//					rnext(up);
-//				}
-//				down += PRIMSIZE;
-//			}
-//			else
-//				down++;
-//		}
+		// add missing attributes
+		for (uint32 i=0; i<cac.names_.size(); ++i)
+		{
+			if (map_attrib[i] == std::numeric_limits<uint32>::max())
+			{
+				const std::string& name = cac.names_[i];
+				const std::string& type_name = cac.type_names_[i];
 
-//		nb_max_lines_ = nb_used_lines_;
+				map_attrib[i] = table_arrays_.size();
+				ChunkArrayGen* cag = ChunkArrayFactory::create(type_name,name);
+				table_arrays_.push_back(cag);
+				names_.push_back(name);
+				type_names_.push_back(type_name);
+				cag->set_nb_chunks(refs_.get_nb_chunks());
+			}
+		}
 
-//		// free unused memory blocks
-//		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		// line mapping
 
-//		for (auto arr : table_arrays_)
-//			arr->set_nb_chunks(new_nb_blocks);
+		map_old_new.assign(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
 
-//		for (auto arr : table_marker_arrays_)
-//			arr->set_nb_chunks(new_nb_blocks);
+		// copy data
+		for (uint32 it=cac.begin(); it!= cac.end(); cac.next(it))
+		{
+			uint32 new_lines = this->insert_lines<PRIMSIZE>();
+			for(uint32 j = 0u; j < PRIMSIZE; ++j)
+			{
+				uint32 ol = it+j;
+				uint32 nl = new_lines+j;
+				map_old_new[ol] = nl;
+				uint32 nb_att = cac.table_arrays_.size();
+				for (uint32 k=0; k<nb_att; ++k)
+					table_arrays_[map_attrib[k]]->copy_external_element(nl, cac.table_arrays_[k], ol);
+			}
+			it += PRIMSIZE-1u;
+		}
 
-//		refs_.set_nb_chunks(new_nb_blocks);
-
-//		// clear holes
-//		holes_stack_.clear();
-//	}
+		return true;
+	}
 
 	/**************************************
 	 *          LINES MANAGEMENT          *
@@ -883,7 +903,7 @@ public:
 		cgogn_assert(fs.good());
 
 		// check and register all known types if necessaey
-		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
+		ChunkArrayFactory::register_known_types();
 
 		// read info
 		uint32 buff1[4];
@@ -915,7 +935,7 @@ public:
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i], names_[i]);
+			ChunkArrayGen* cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
 			if (cag)
 			{
 				table_arrays_.push_back(cag);

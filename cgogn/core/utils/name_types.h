@@ -113,6 +113,9 @@ CGOGN_CORE_API std::string name_of_type_impl(const int64&);
 
 CGOGN_CORE_API std::string name_of_type_impl(const uint64&);
 
+CGOGN_CORE_API std::string name_of_type_impl(const float32&);
+
+CGOGN_CORE_API std::string name_of_type_impl(const float64&);
 
 // definitions
 

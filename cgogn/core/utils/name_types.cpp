@@ -103,6 +103,16 @@ CGOGN_CORE_API std::string name_of_type_impl(const uint64&)
 	return "uint64";
 }
 
+CGOGN_CORE_API std::string name_of_type_impl(const float32&)
+{
+	return "float32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const float64&)
+{
+	return "float64";
+}
+
 } // namespace internal
 
 } // namespace cgogn
