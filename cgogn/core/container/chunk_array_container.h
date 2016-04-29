@@ -221,6 +221,15 @@ public:
 	}
 
 	/**
+	 * @brief get all attributes (generic pointers)
+	 * @return
+	 */
+	inline std::vector<ChunkArrayGen*>& get_attributes()
+	{
+		return table_arrays_;
+	}
+
+	/**
 	 * @brief add an attribute
 	 * @param attribute_name name of attribute
 	 * @tparam T type of attribute

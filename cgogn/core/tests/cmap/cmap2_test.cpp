@@ -222,6 +222,12 @@ TEST_F(CMap2Test, cut_face)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+
+//TEST_F(CMap2Test, compact_map)
+//{
+//}
+
+
 #undef NB_MAX
 
 } // namespace cgogn
