@@ -71,7 +71,6 @@ public:
 		return shader_;
 	}
 
-
 	/**
 	 * @brief bind vao (and set uniform)
 	 * @param with_uniforms ask to set uniforms

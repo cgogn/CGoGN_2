@@ -84,7 +84,7 @@ protected:
 
 public:
 
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class VolumeDrawerGen;
 		ShaderExplodeVolumes::Param* param_expl_vol_;

@@ -358,29 +358,29 @@ void Viewer::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSpriteSize::generate_param();
-	param_point_sprite_->set_vbo(vbo_pos_,vbo_sphere_sz_);
+	param_point_sprite_->set_all_vbos(vbo_pos_, vbo_sphere_sz_);
 	param_point_sprite_->color_ = QColor(255, 0, 0);
 
 //	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 //	param_edge_ = shader_edge_->generate_param();
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
-	param_edge_->set_vbo(vbo_pos_);
+	param_edge_->set_position_vbo(vbo_pos_);
 	param_edge_->color_ = QColor(255,255,0);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ =  cgogn::rendering::ShaderFlat::generate_param();
-	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->set_position_vbo(vbo_pos_);
 	param_flat_->front_color_ = QColor(0,200,0);
 	param_flat_->back_color_ = QColor(0,0,200);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
-	param_normal_->set_vbo(vbo_pos_, vbo_norm_);
+	param_normal_->set_all_vbos(vbo_pos_, vbo_norm_);
 	param_normal_->color_ = QColor(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
-	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
+	param_phong_->set_all_vbos(vbo_pos_, vbo_norm_, vbo_color_);
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = new cgogn::rendering::DisplayListDrawer();

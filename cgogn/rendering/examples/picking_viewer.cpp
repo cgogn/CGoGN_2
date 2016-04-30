@@ -141,19 +141,18 @@ void Viewer::draw()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
 
-	param_flat_->bind(proj_,view_);
+	param_flat_->bind(proj_, view_);
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_rend_->draw(proj_,view_,this);
-
+	drawer_rend_->draw(proj_, view_, this);
 }
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
@@ -163,7 +162,7 @@ void Viewer::init()
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 
-	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->set_position_vbo(vbo_pos_);
 	param_flat_->front_color_ = QColor(0,200,0);
 	param_flat_->back_color_ = QColor(200,0,0);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
@@ -172,13 +171,11 @@ void Viewer::init()
 	drawer_rend_ = drawer_->generate_renderer();
 }
 
-
 void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
-	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.0));
-	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),1.0));
+	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 0.0));
+	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
 }
-
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {

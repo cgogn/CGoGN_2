@@ -76,8 +76,6 @@ const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "   fragColor = color;\n"
 "}\n";
 
-
-
 ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 {
 	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
@@ -93,8 +91,8 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	// default param
 	bind();
 	set_explode_volume(0.8f);
-	set_color(QColor(255,255,255));
-	set_plane_clip(QVector4D(0,0,0,0));
+	set_color(QColor(255, 255, 255));
+	set_plane_clip(QVector4D(0, 0, 0, 0));
 	release();
 }
 
@@ -112,40 +110,6 @@ void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
 void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
-}
-
-
-
-ShaderParamExplodeVolumesLine::ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh):
-	ShaderParam(sh),
-	color_(255, 255, 255),
-	plane_clip_(0, 0, 0, 0),
-	explode_factor_(0.8f)
-{}
-
-void ShaderParamExplodeVolumesLine::set_uniforms()
-{
-	ShaderExplodeVolumesLine* sh = static_cast<ShaderExplodeVolumesLine*>(this->shader_);
-	sh->set_color(color_);
-	sh->set_explode_volume(explode_factor_);
-	sh->set_plane_clip(plane_clip_);
-}
-
-void ShaderParamExplodeVolumesLine::set_vbo(VBO* vbo_pos)
-{
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderExplodeVolumesLine::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderExplodeVolumesLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	vao_->release();
-	shader_->release();
 }
 
 } // namespace rendering

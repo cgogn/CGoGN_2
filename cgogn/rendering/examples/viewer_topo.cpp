@@ -198,16 +198,16 @@ void Viewer::draw()
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
 	vbo_pos_ = new cgogn::rendering::VBO(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
 
 	render_ = new cgogn::rendering::MapRender();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, nullptr);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES);
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
-	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->set_position_vbo(vbo_pos_);
 	param_flat_->front_color_ = QColor(0,150,0);
 	param_flat_->back_color_ = QColor(0,0,150);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
