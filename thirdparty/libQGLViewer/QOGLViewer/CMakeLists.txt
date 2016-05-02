@@ -1,9 +1,9 @@
-set(CGOGN_THIRDPARTY_QGLVIEWER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
+set(CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
 
 
-project(QGLViewer)
+project(QOGLViewer)
 find_package(OpenGL REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 

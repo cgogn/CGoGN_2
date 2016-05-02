@@ -7,7 +7,7 @@ project(cgogn_geometry_examples
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(cgogn_rendering REQUIRED)
-find_package(QGLViewer REQUIRED)
+find_package(QOGLViewer REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -17,4 +17,4 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 
 
 add_executable(filtering filtering.cpp)
-target_link_libraries(filtering ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QGLViewer_LIBRARIES})
+target_link_libraries(filtering ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
