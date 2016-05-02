@@ -64,8 +64,7 @@ public:
 
 	ShaderParam(ShaderProgram* prg);
 
-	inline virtual ~ShaderParam()
-	{}
+	virtual ~ShaderParam();
 
 	inline ShaderProgram* get_shader()
 	{
@@ -101,8 +100,6 @@ class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
 protected:
 
 	QOpenGLShaderProgram prg_;
-
-	std::vector<std::unique_ptr<QOpenGLVertexArrayObject>> vaos_;
 
 	GLint unif_mv_matrix_;
 	GLint unif_projection_matrix_;

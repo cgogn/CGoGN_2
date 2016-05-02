@@ -39,6 +39,9 @@ ShaderParam::ShaderParam(ShaderProgram* prg):
 	vao_->create();
 }
 
+ShaderParam::~ShaderParam()
+{}
+
 void ShaderParam::bind_vao_only(bool with_uniforms)
 {
 	if (with_uniforms)
@@ -66,12 +69,7 @@ void ShaderParam::release()
 }
 
 ShaderProgram::~ShaderProgram()
-{
-	for (auto& vao : vaos_)
-	{
-		vao->destroy();
-	}
-}
+{}
 
 void ShaderProgram::get_matrices_uniforms()
 {
