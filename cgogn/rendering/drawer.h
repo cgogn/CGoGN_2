@@ -45,12 +45,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::DisplayListDrawer* drawer_;	// can be shared between contexts
- *  cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_; // one by context,
  *
  * init:
- *  drawer_ = new cgogn::rendering::DisplayListDrawer();
- *  drawer_rend_ = drawer_->generate_renderer(); // warning must be delete when finished
+ *  drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+ *  drawer_rend_ = drawer_->generate_renderer(); // don't worry automatically deleted when finished
  *  drawer_->new_list();
  *  drawer_->line_width(2.0);
  *  drawer_->begin(GL_LINE_LOOP); // or GL_POINTS, GL_LINES, GL_TRIANGLES
@@ -82,8 +82,8 @@ class CGOGN_RENDERING_API DisplayListDrawer
 
 protected:
 
-	VBO* vbo_pos_;
-	VBO* vbo_col_;
+	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_col_;
 
 	// temporary (between begin()/end()) data storage
 	std::vector<Vec3f> data_pos_;
@@ -107,10 +107,10 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class DisplayListDrawer;
-		ShaderColorPerVertex::Param* param_cpv_;
-		ShaderBoldLineColor::Param* param_bl_;
-		ShaderRoundPointColor::Param* param_rp_;
-		ShaderPointSpriteColor::Param* param_ps_;
+		std::unique_ptr<ShaderColorPerVertex::Param> param_cpv_;
+		std::unique_ptr<ShaderBoldLineColor::Param> param_bl_;
+		std::unique_ptr<ShaderRoundPointColor::Param> param_rp_;
+		std::unique_ptr<ShaderPointSpriteColor::Param> param_ps_;
 		DisplayListDrawer* drawer_data_;
 		Renderer(DisplayListDrawer* dr);
 	public:
@@ -144,9 +144,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline Renderer* generate_renderer()
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return (new Renderer(this));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 

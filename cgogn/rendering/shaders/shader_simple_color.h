@@ -59,7 +59,7 @@ public:
 	};
 
 	using Param = ShaderParamSimpleColor;
-	inline static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 	/**
 	 * @brief set current color
@@ -70,7 +70,7 @@ public:
 protected:
 
 	ShaderSimpleColor();
-	static ShaderSimpleColor* instance_;
+	static std::unique_ptr<ShaderSimpleColor> instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamSimpleColor : public ShaderParam
@@ -105,13 +105,6 @@ public:
 		shader_->release();
 	}
 };
-
-ShaderSimpleColor::Param* ShaderSimpleColor::generate_param()
-{
-	if (instance_ == nullptr)
-		instance_ = new ShaderSimpleColor;
-	return (new Param(instance_));
-}
 
 } // namespace rendering
 

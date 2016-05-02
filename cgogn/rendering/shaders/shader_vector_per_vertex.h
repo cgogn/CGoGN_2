@@ -60,7 +60,7 @@ public:
 	};
 
 	using Param = ShaderParamVectorPerVertex;
-	inline static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 	/**
 	 * @brief set current color
@@ -77,7 +77,7 @@ public:
 protected:
 
 	ShaderVectorPerVertex();
-	static ShaderVectorPerVertex* instance_;
+	static std::unique_ptr<ShaderVectorPerVertex> instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamVectorPerVertex : public ShaderParam
@@ -147,13 +147,6 @@ public:
 		shader_->release();
 	}
 };
-
-ShaderVectorPerVertex::Param* ShaderVectorPerVertex::generate_param()
-{
-	if (instance_ == nullptr)
-		instance_ = new ShaderVectorPerVertex;
-	return (new Param(instance_));
-}
 
 } // namespace rendering
 

@@ -33,7 +33,7 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderColorPerVertex* ShaderColorPerVertex::instance_ = nullptr;
+std::unique_ptr<ShaderColorPerVertex> ShaderColorPerVertex::instance_ = nullptr;
 
 const char* ShaderColorPerVertex::vertex_shader_source_ =
 "#version 150\n"
@@ -61,8 +61,15 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
 	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
 	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-    prg_.link();
+	prg_.link();
 	get_matrices_uniforms();
+}
+
+std::unique_ptr<ShaderColorPerVertex::Param> ShaderColorPerVertex::generate_param()
+{
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderColorPerVertex>(new ShaderColorPerVertex);
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 } // namespace rendering

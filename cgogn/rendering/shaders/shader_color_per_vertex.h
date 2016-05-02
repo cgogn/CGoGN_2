@@ -57,12 +57,12 @@ public:
 	};
 
 	using Param = ShaderParamColorPerVertex;
-	inline static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 protected:
 
 	ShaderColorPerVertex();
-	static ShaderColorPerVertex* instance_;
+	static std::unique_ptr<ShaderColorPerVertex> instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
@@ -127,13 +127,6 @@ public:
 		shader_->release();
 	}
 };
-
-ShaderColorPerVertex::Param* ShaderColorPerVertex::generate_param()
-{
-	if (instance_ == nullptr)
-		instance_ = new ShaderColorPerVertex;
-	return (new Param(instance_));
-}
 
 } // namespace rendering
 

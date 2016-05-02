@@ -64,8 +64,8 @@ class CGOGN_RENDERING_API TopoDrawer
 
 protected:
 
-	VBO* vbo_darts_;
-	VBO* vbo_relations_;
+	std::unique_ptr<VBO> vbo_darts_;
+	std::unique_ptr<VBO> vbo_relations_;
 
 	QColor dart_color_;
 	QColor phi2_color_;
@@ -86,9 +86,9 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class TopoDrawer;
-		ShaderBoldLine::Param* param_bl_;
-		ShaderBoldLine::Param* param_bl2_;
-		ShaderRoundPoint::Param* param_rp_;
+		std::unique_ptr<ShaderBoldLine::Param> param_bl_;
+		std::unique_ptr<ShaderBoldLine::Param> param_bl2_;
+		std::unique_ptr<ShaderRoundPoint::Param> param_rp_;
 		TopoDrawer* topo_drawer_data_;
 		Renderer(TopoDrawer* tr);
 	public:
@@ -122,9 +122,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline Renderer* generate_renderer()
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return (new Renderer(this));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 	inline void set_explode_volume(float32 x) { shrink_v_ = x; }

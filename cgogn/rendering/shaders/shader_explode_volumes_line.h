@@ -65,7 +65,7 @@ public:
 	};
 
 	using Param = ShaderParamExplodeVolumesLine;
-	inline static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 	void set_explode_volume(float32 x);
 	void set_plane_clip(const QVector4D& plane);
@@ -74,7 +74,7 @@ public:
 protected:
 
 	ShaderExplodeVolumesLine();
-	static ShaderExplodeVolumesLine* instance_;
+	static std::unique_ptr<ShaderExplodeVolumesLine> instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamExplodeVolumesLine : public ShaderParam
@@ -116,12 +116,6 @@ public:
 	}
 };
 
-ShaderExplodeVolumesLine::Param* ShaderExplodeVolumesLine::generate_param()
-{
-	if (instance_ == nullptr)
-		instance_ = new ShaderExplodeVolumesLine;
-	return (new Param(instance_));
-}
 
 } // namespace rendering
 
