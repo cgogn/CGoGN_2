@@ -3,6 +3,11 @@ project(cgogn_io
 )
 
 find_package(ZLIB)
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(ply REQUIRED)
+find_package(lm6 REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(HEADER_FILES
 	surface_import.h
@@ -54,27 +59,20 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LM6_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
-	$<INSTALL_INTERFACE:include/cgogn/io>
+	$<INSTALL_INTERFACE:include>
 )
 
 if (${ZLIB_FOUND})
-	target_compile_definitions(${PROJECT_NAME} PUBLIC -DZLIB_CONST)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC -DCGOGN_WITH_ZLIB)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DCGOGN_WITH_ZLIB")
 endif()
 
-target_link_libraries(${PROJECT_NAME} tinyxml2 cgogn_core cgogn_geometry ply lm6 ${ZLIB_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ZLIB_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
-install(DIRECTORY .
-	DESTINATION include/cgogn/io
-	FILES_MATCHING PATTERN "*.h"
-)
+file(GLOB HEADERS "." "*.h")
+install(FILES ${HEADERS}
+	DESTINATION include/cgogn/io)
 
-install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
+cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
 
 add_subdirectory(mesh_generation)
-add_subdirectory(examples)

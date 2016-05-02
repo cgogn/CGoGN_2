@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+
+set(cgogn_multiresolution_LIBRARIES "cgogn_multiresolution")
+set(cgogn_multiresolution_INCLUDE_DIRS "@PACKAGE_CGOGN_MULTIRESOLUTION_INCLUDE_DIRS@")
+
+if(NOT TARGET cgogn_multiresolution)
+	include("${CMAKE_CURRENT_LIST_DIR}/cgogn_multiresolutionTargets.cmake")
+endif()
+
+check_required_components(cgogn_core cgogn_geometry cgogn_multiresolution)

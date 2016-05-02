@@ -92,6 +92,12 @@ cxx_library(gmock_main
             src/gmock-all.cc
             src/gmock_main.cc)
 
+# use of target_compile_options to have a transitive c++11 flag
+if(NOT MSVC)
+	target_compile_options(gmock PUBLIC "-std=c++11")
+	target_compile_options(gmock_main PUBLIC "-std=c++11")
+endif()
+
 # If the CMake version supports it, attach header directory information
 # to the targets for when we are part of a parent build (ie being pulled
 # in via add_subdirectory() rather than being a standalone build).
@@ -106,7 +112,7 @@ endif()
 install(TARGETS gmock gmock_main
   DESTINATION lib)
 install(DIRECTORY ${gmock_SOURCE_DIR}/include/gmock
-  DESTINATION include)
+  DESTINATION include/thirdparty)
 
 ########################################################################
 #

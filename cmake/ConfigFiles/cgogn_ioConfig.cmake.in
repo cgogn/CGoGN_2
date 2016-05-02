@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+find_package(ZLIB)
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(ply REQUIRED)
+find_package(lm6 REQUIRED)
+find_package(tinyxml2 REQUIRED)
+
+set(cgogn_io_LIBRARIES "cgogn_io")
+set(cgogn_io_INCLUDE_DIRS "@PACKAGE_CGOGN_IO_INCLUDE_DIRS@")
+
+if(NOT TARGET cgogn_io)
+	include("${CMAKE_CURRENT_LIST_DIR}/cgogn_ioTargets.cmake")
+endif()
+
+check_required_components(cgogn_core cgogn_geometry cgogn_io)

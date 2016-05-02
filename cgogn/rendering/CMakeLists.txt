@@ -2,8 +2,9 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
-find_package(Qt5Widgets)
-#find_package(Qt5OpenGL)
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -55,25 +56,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/rendering>
+	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
-install(DIRECTORY .
+file(GLOB HEADERS "." "*.h")
+install(FILES ${HEADERS}
+	DESTINATION include/cgogn/rendering)
+install(DIRECTORY shaders
 	DESTINATION include/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
-
-add_subdirectory(examples)
-
-#if(CGOGN_BUILD_TESTS)
-#	add_subdirectory(tests)
-#endif()
+cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")

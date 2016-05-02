@@ -2,12 +2,7 @@ project(${CGOGN_TEST_PREFIX}map
 	LANGUAGES CXX
 )
 
+find_package(cgogn_core REQUIRED)
+
 add_executable(map map.cpp)
-target_link_libraries(map cgogn_core)
-
-#get_property(cgogn_core_includes
-#			  TARGET cgogn_core
-#			  PROPERTY INCLUDE_DIRECTORIES
-#			)
-#target_include_directories(test_map PRIVATE ${cgogn_core_includes})
-
+target_link_libraries(map ${cgogn_core_LIBRARIES})
