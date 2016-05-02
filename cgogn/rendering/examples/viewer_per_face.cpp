@@ -61,8 +61,7 @@ class Viewer : public QOGLViewer
 {
 public:
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
