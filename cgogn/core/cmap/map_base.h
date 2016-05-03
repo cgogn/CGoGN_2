@@ -1277,6 +1277,97 @@ protected:
 			}
 		}
 	}
+
+
+public:
+
+	/*******************************************************************************
+	 * compacting
+	 *******************************************************************************/
+	/**
+	 * @brief compact an embedding orbit
+	 * @param orbit to compact
+	 */
+	void compact_embedding(uint32 orbit)
+	{
+		ChunkArray<uint32>* embedding = this->embeddings_[orbit];
+		if (embedding != nullptr)
+		{
+			std::vector<uint32> old_new = this->attributes_[orbit].template compact<1>();
+			if (!old_new.empty())
+			{
+				for (uint32 i=this->topology_.begin(); i!= this->topology_.end(); this->topology_.next(i))
+				{
+					uint32& emb = (*embedding)[i];
+					if ((emb != std::numeric_limits<uint32>::max())
+						&& (old_new[emb] != std::numeric_limits<uint32>::max()))
+						emb = old_new[emb];
+				}
+			}
+		}
+	}
+
+	void compact_topo()
+	{
+		std::vector<uint32> old_new = this->topology_.template compact<ConcreteMap::PRIM_SIZE>();
+
+		for (ChunkArrayGen* ptr: this->topology_.get_attributes())
+		{
+			ChunkArray<Dart>* ca = dynamic_cast<ChunkArray<Dart>*>(ptr);
+			if (ca)
+			{
+				for (uint32 i=this->topology_.begin(); i!= this->topology_.end(); this->topology_.next(i))
+				{
+					Dart& d = (*ca)[i];
+					uint32 idx = d.index;
+					if (old_new[idx] != std::numeric_limits<uint32>::max())
+						d = Dart(old_new[idx]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @brief compact the map
+	 */
+	void compact()
+	{
+		compact_topo();
+
+		for (uint32 orb=0; orb<NB_ORBITS; ++orb)
+			compact_embedding(orb); // checking if embedding used done inside
+	}
+
+
+
+//#define FOR_ALL_ORBITS( CODE)\
+//{static const Orbit orbit_const=DART; CODE }\
+//{static const Orbit orbit_const=PHI1; CODE }\
+//{static const Orbit orbit_const=PHI2; CODE }\
+//{static const Orbit orbit_const=PHI1_PHI2; CODE }\
+//{static const Orbit orbit_const=PHI1_PHI3; CODE }\
+//{static const Orbit orbit_const=PHI2_PHI3; CODE }\
+//{static const Orbit orbit_const=PHI21; CODE }\
+//{static const Orbit orbit_const=PHI21_PHI31; CODE }\
+//{static const Orbit orbit_const=PHI1_PHI2_PHI3; CODE }
+
+
+//	bool merge(const ConcreteMap& map)
+//	{
+//		this->compact_topo();
+//		std::vector<uint32> old_new;
+//		this->topology_.template merge<1>(this->topology_,old_new);
+
+//		FOR_ALL_ORBITS
+//		(
+//			if (!this->embeddings_[orbit_const] && map.embeddings_[orbit_const])
+//			{
+//				this->create_embedding<orbit_const>();
+//			}
+
+//		)
+//	}
+
 };
 
 } // namespace cgogn

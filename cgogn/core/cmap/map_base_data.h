@@ -177,7 +177,7 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& get_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& get_const_attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -355,61 +355,6 @@ protected:
 			thread_ids_.insert(it, thread_id);
 	}
 
-	/**
-	 * @brief compact an embedding orbit
-	 * @param orbit to compact
-	 */
-	void compact_embedding(uint32 orbit)
-	{
-		ChunkArray<uint32>* embedding = embeddings_[orbit];
-		if (embedding != nullptr)
-		{
-			std::vector<uint32> old_new = attributes_[orbit].compact<1>();
-			for (uint32 i=0; i!= topology_.end(); topology_.next(i))
-			{
-				uint32& emb = (*embedding)[i];
-				if (old_new[emb] != std::numeric_limits<uint32>::max())
-					emb = old_new[emb];
-			}
-		}
-	}
-
-	/**
-	 * @brief compact the topology
-	 * @param PRIMSIZE (map:1/map_tri:3/ ...)
-	 */
-	template <uint32 PRIMSIZE>
-	void compact_topo()
-	{
-		std::vector<uint32> old_new = topology_.compact<PRIMSIZE>();
-		std::vector<ChunkArray<Dart>*> phis;
-
-		for (ChunkArrayGen* ptr: topology_.get_attributes())
-		{
-			ChunkArray<Dart>* ca = dynamic_cast<ChunkArray<Dart>*>(ptr);
-			if (ca)
-			{
-				for (uint32 i=0; i!= topology_.end(); topology_.next(i))
-				{
-					uint32& idx = (*ca)[i];
-					if (old_new[idx] != std::numeric_limits<uint32>::max())
-						idx = old_new[idx];
-				}
-			}
-		}
-	}
-
-	/**
-	 * @brief compact the map
-	 */
-	template <uint32 PRIMSIZE>
-	void compact()
-	{
-		compact_topo<PRIMSIZE>();
-
-		for (uint32 orb=0; orb<NB_ORBITS; ++orb)
-			compact_embedding(orb); // checking if embedding used done inside
-	}
 
 };
 

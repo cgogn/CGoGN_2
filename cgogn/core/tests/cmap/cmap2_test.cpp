@@ -44,8 +44,13 @@ class CMap2Test : public ::testing::Test
 
 public:
 
-	using testCMap2 = CMap2<DefaultMapTraits>;
-	using MapBuilder = CMap2Builder_T<DefaultMapTraits>;
+	struct MiniMapTraits
+	{
+		static const uint32 CHUNK_SIZE = 16;
+	};
+
+	using testCMap2 = CMap2<MiniMapTraits>;
+	using MapBuilder = CMap2Builder_T<MiniMapTraits>;
 	using CDart = testCMap2::CDart;
 	using Vertex = testCMap2::Vertex;
 	using Edge = testCMap2::Edge;
@@ -223,9 +228,86 @@ TEST_F(CMap2Test, cut_face)
 }
 
 
-//TEST_F(CMap2Test, compact_map)
-//{
-//}
+TEST_F(CMap2Test, compact_map)
+{
+
+	testCMap2::VertexAttribute<int32> att_v = cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
+	testCMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge::ORBIT>("edges");
+	testCMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face::ORBIT>("faces");
+
+	for (int32 i=0; i<100; ++i)
+	{
+		Face f = cmap_.add_face(5);
+		int32 ec=0;
+		cmap_.foreach_incident_edge(f, [&] (Edge e)
+		{
+			ec++;
+			att_e[e]=100*i+ec;
+			att_v[Vertex(e.dart)]=1000*i+ec;
+		});
+		att_f[i]=10*i;
+		darts_.push_back(f.dart);
+	}
+
+	for (int32 i=0; i<100; i+=2)
+	{
+		Edge e(cmap_.phi1(darts_[i]));
+		cmap_.collapse_edge(e);
+		e = Edge(cmap_.phi1(darts_[i]));
+		cmap_.collapse_edge(e);
+	}
+
+//	cmap_.foreach_cell([&] (Face f)
+//	{
+//		std::cout << "FACE:" <<att_f[f]<< std::endl<< "  Vertices: ";
+//		cmap_.foreach_incident_vertex(f, [&] (Vertex v)
+//		{
+//			std::cout << att_v[v]<< " / ";
+//		});
+//		std::cout << std::endl<< "  Edges: ";
+//		cmap_.foreach_incident_edge(f, [&] (Edge e)
+//		{
+//			std::cout << att_e[e]<< " / ";
+//		});
+//		std::cout << std::endl;
+//	});
+
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	cmap_.compact();
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+
+	EXPECT_EQ(cmap_.get_topology_container().size(),cmap_.get_topology_container().end());
+
+	EXPECT_EQ(cmap_.get_const_attribute_container<Vertex::ORBIT>().size(),
+			  cmap_.get_const_attribute_container<Vertex::ORBIT>().end());
+
+	EXPECT_EQ(cmap_.get_const_attribute_container<Edge::ORBIT>().size(),
+			  cmap_.get_const_attribute_container<Edge::ORBIT>().end());
+
+
+//	std::cout << "TOPO SIZE:"<< cmap_.get_topology_container().size() << " / END:"<<  cmap_.get_topology_container().end() << std::endl;
+
+//		std::cout << "VERT SIZE:"<< cmap_.get_attribute_container<Vertex::ORBIT>().size() << " / END:"<<  cmap_.get_attribute_container<Vertex::ORBIT>().end() << std::endl;
+
+
+//	cmap_.foreach_cell([&] (Face f)
+//	{
+//		std::cout << "FACE:" <<att_f[f]<< std::endl<< "  Vertices: ";
+//		cmap_.foreach_incident_vertex(f, [&] (Vertex v)
+//		{
+//			std::cout << att_v[v]<< " / ";
+//		});
+//		std::cout << std::endl<< "  Edges: ";
+//		cmap_.foreach_incident_edge(f, [&] (Edge e)
+//		{
+//			std::cout << att_e[e]<< " / ";
+//		});
+//		std::cout << std::endl;
+//	});
+
+}
 
 
 #undef NB_MAX
