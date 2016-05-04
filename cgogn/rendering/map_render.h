@@ -54,10 +54,9 @@ enum DrawingType
 class CGOGN_RENDERING_API MapRender
 {
 protected:
-
-	QOpenGLBuffer* indices_buffers_[SIZE_BUFFER];
-	bool indices_buffers_uptodate_[SIZE_BUFFER];
-	uint32 nb_indices_[SIZE_BUFFER];
+	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
+	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
+	std::array<uint32, SIZE_BUFFER>							nb_indices_;
 
 public:
 
