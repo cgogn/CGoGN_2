@@ -46,12 +46,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::VolumeDrawer* volu_;	// can be shared between contexts
- *  cgogn::rendering::VolumeDrawer::Renderer* volu_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::VolumeDrawer> volu_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::VolumeDrawer::Renderer> volu_rend_; // one by context,
  *
  * init:
- *  volu_ = new cgogn::rendering::VolumeDrawer();
- *  volu_rend_ = volu_->generate_renderer(); // warning must be delete when finished
+ *  volu_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
+ *  volu_rend_ = volu_->generate_renderer();
  *  volu_->update_face<Vec3>(map_,vertex_position_);
  *  volu_->update_edge<Vec3>(map_,vertex_position_);
 

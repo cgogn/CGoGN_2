@@ -46,12 +46,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::TopoDrawer* topo_;	// can be shared between contexts
- *  cgogn::rendering::TopoDrawer::Renderer* topo_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::TopoDrawer> topo_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::TopoDrawer::Renderer> topo_rend_; // one by context,
  *
  * init:
- *  topo_ = new cgogn::rendering::TopoDrawer();
- *  topo_rend_ = topo_->generate_renderer(); // warning must be delete when finished
+ *  topo_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
+ *  topo_rend_ = topo_->generate_renderer();
  *  topo_->update<Vec3>(map_,vertex_position_);
  *
  * draw:

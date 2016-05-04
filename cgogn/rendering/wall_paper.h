@@ -40,12 +40,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::WallPaper* wp_;	// can be shared between contexts
- *  cgogn::rendering::WallPaper::Renderer* wp_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::WallPaper> wp_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_; // one by context,
  *
  * init:
- *  wp_ = new cgogn::rendering::WallPaper();
- *  wp_rend_ = wp_->generate_renderer(); // warning must be delete when finished
+ *  wp_ = cgogn::make_unique<cgogn::rendering::WallPaper>();
+ *  wp_rend_ = wp_->generate_renderer();
  *  wp_->update<Vec3>(map_,vertex_position_);
  *
  * draw:
