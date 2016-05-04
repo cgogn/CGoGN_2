@@ -46,10 +46,7 @@ DisplayListDrawer::DisplayListDrawer():
 }
 
 DisplayListDrawer::~DisplayListDrawer()
-{
-	vbo_col_.reset();
-	vbo_pos_.reset();
-}
+{}
 
 void DisplayListDrawer::new_list()
 {
