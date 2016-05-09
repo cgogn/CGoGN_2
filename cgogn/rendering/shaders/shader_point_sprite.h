@@ -132,6 +132,8 @@ protected:
 	void set_uniforms() override
 	{
 		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
+		sh->set_color(color_);
+		sh->set_size(size_);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
 	}
