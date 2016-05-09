@@ -84,7 +84,7 @@ void ShaderParamTexture::set_uniforms()
 
 void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 
 	shader_->bind();
 	vao_->bind();

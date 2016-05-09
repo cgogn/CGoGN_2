@@ -135,7 +135,7 @@ public:
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
@@ -176,7 +176,7 @@ public:
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -195,7 +195,7 @@ public:
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
@@ -208,7 +208,7 @@ public:
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();

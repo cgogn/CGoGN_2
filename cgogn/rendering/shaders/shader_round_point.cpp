@@ -170,7 +170,7 @@ void ShaderRoundPointGen::set_color(const QColor& rgb)
 
 void ShaderRoundPointGen::set_size(float32 wpix)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));

@@ -94,7 +94,7 @@ public:
 
 	inline void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
