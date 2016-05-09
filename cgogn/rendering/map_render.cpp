@@ -45,7 +45,7 @@ MapRender::~MapRender()
 
 void MapRender::draw(DrawingType prim)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 
 	indices_buffers_[prim]->bind();
 	switch (prim)

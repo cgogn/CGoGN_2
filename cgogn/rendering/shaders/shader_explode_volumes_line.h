@@ -104,7 +104,7 @@ public:
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();

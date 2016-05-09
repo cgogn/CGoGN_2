@@ -205,7 +205,7 @@ void ShaderBoldLineGen::set_color(const QColor& rgb)
 
 void ShaderBoldLineGen::set_width(float32 w)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	GLint viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(w / float32(viewport[2]), w / float32(viewport[3]));

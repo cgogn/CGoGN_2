@@ -62,7 +62,7 @@ callback mechanism). See the <a href="../examples/callback.html">callback exampl
 complete implementation.
 
 \nosubgrouping */
-class QGLVIEWER_EXPORT QOGLViewer : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
+class QGLVIEWER_EXPORT QOGLViewer : public QOpenGLWidget, public QOpenGLFunctions_3_3_Core
 {
 	Q_OBJECT
 
