@@ -54,9 +54,12 @@ using VertexAttribute = Map3::VertexAttribute<T>;
 class Viewer : public QOGLViewer
 {
 public:
+	using TopoDrawer = cgogn::rendering::TopoDrawer;
+	using VolumeDrawer = cgogn::rendering::VolumeDrawer;
+	using DisplayListDrawer = cgogn::rendering::DisplayListDrawer;
+
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
@@ -75,16 +78,16 @@ private:
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
-	cgogn::rendering::VBO* vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
 
-	cgogn::rendering::TopoDrawer* topo_drawer_;
-	cgogn::rendering::TopoDrawer::Renderer* topo_drawer_rend_;
+	std::unique_ptr<TopoDrawer> topo_drawer_;
+	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
 
-	cgogn::rendering::VolumeDrawer* volume_drawer_;
-	cgogn::rendering::VolumeDrawer::Renderer* volume_drawer_rend_;
+	std::unique_ptr<VolumeDrawer> volume_drawer_;
+	std::unique_ptr<VolumeDrawer::Renderer> volume_drawer_rend_;
 
-	cgogn::rendering::DisplayListDrawer* drawer_;
-	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
+	std::unique_ptr<DisplayListDrawer> drawer_;
+	std::unique_ptr<DisplayListDrawer::Renderer> drawer_rend_;
 
 	bool vol_rendering_;
 	bool edge_rendering_;
@@ -131,13 +134,13 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	delete vbo_pos_;
-	delete topo_drawer_;
-	delete topo_drawer_rend_;
-	delete volume_drawer_;
-	delete volume_drawer_rend_;
-	delete drawer_;
-	delete drawer_rend_;
+	vbo_pos_.reset();
+	topo_drawer_.reset();
+	topo_drawer_rend_.reset();
+	volume_drawer_.reset();
+	volume_drawer_rend_.reset();
+	drawer_.reset();
+	drawer_rend_.reset();
 }
 
 Viewer::Viewer() :
@@ -213,11 +216,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			drawer_->begin(GL_LINES);
 			// closest vol in red
 			drawer_->color3f(1.0, 0.0, 0.0);
-			cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_);
+			cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
 			for (uint32 i = 1u; i<selected.size(); ++i)
-				cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_);
+				cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 			drawer_->end();
 		}
 		drawer_->line_width(4.0);
@@ -266,15 +269,15 @@ void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-	topo_drawer_ = new cgogn::rendering::TopoDrawer();
+	topo_drawer_ =  cgogn::make_unique<cgogn::rendering::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->set_explode_volume(expl_);
 	topo_drawer_->update<Vec3>(map_,vertex_position_);
 
-	volume_drawer_ = new cgogn::rendering::VolumeDrawer;
+	volume_drawer_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
 	volume_drawer_->update_face<Vec3>(map_,vertex_position_);
 	volume_drawer_->update_edge<Vec3>(map_,vertex_position_);
 
@@ -282,7 +285,7 @@ void Viewer::init()
 	volume_drawer_rend_->set_explode_volume(expl_);
 
 
-	drawer_ = new cgogn::rendering::DisplayListDrawer();
+	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 }
 

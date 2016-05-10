@@ -46,12 +46,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::VolumeDrawer* volu_;	// can be shared between contexts
- *  cgogn::rendering::VolumeDrawer::Renderer* volu_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::VolumeDrawer> volu_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::VolumeDrawer::Renderer> volu_rend_; // one by context,
  *
  * init:
- *  volu_ = new cgogn::rendering::VolumeDrawer();
- *  volu_rend_ = volu_->generate_renderer(); // warning must be delete when finished
+ *  volu_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
+ *  volu_rend_ = volu_->generate_renderer();
  *  volu_->update_face<Vec3>(map_,vertex_position_);
  *  volu_->update_edge<Vec3>(map_,vertex_position_);
 
@@ -67,12 +67,12 @@ class CGOGN_RENDERING_API VolumeDrawerGen
 protected:
 	using Vec3f = std::array<float32, 3>;
 
-	VBO* vbo_pos_;
-	VBO* vbo_col_;
+	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_col_;
 
 	QColor face_color_;
 
-	VBO* vbo_pos2_;
+	std::unique_ptr<VBO> vbo_pos2_;
 	QColor edge_color_;
 
 	float32 shrink_v_;
@@ -87,9 +87,9 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class VolumeDrawerGen;
-		ShaderExplodeVolumes::Param* param_expl_vol_;
-		ShaderExplodeVolumesColor::Param* param_expl_vol_col_;
-		ShaderExplodeVolumesLine::Param* param_expl_vol_line_;
+		std::unique_ptr<ShaderExplodeVolumes::Param> param_expl_vol_;
+		std::unique_ptr<ShaderExplodeVolumesColor::Param> param_expl_vol_col_;
+		std::unique_ptr<ShaderExplodeVolumesLine::Param> param_expl_vol_line_;
 		VolumeDrawerGen* volume_drawer_data_;
 		Renderer(VolumeDrawerGen* tr);
 	public:
@@ -120,9 +120,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline Renderer* generate_renderer()
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return (new Renderer(this));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 	template <typename VEC3, typename MAP>

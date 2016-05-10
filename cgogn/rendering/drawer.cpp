@@ -41,15 +41,12 @@ DisplayListDrawer::DisplayListDrawer():
 	current_aa_(true),
 	current_ball_(true)
 {
-	vbo_pos_ = new VBO(3);
-	vbo_col_ = new VBO(3);
+	vbo_pos_ = cgogn::make_unique<VBO>(3);
+	vbo_col_ = cgogn::make_unique<VBO>(3);
 }
 
 DisplayListDrawer::~DisplayListDrawer()
-{
-	delete vbo_pos_;
-	delete vbo_col_;
-}
+{}
 
 void DisplayListDrawer::new_list()
 {
@@ -248,18 +245,18 @@ DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr) :
 	param_rp_ = ShaderRoundPointColor::generate_param();
 	param_ps_ = ShaderPointSpriteColor::generate_param();
 
-	param_cpv_->set_all_vbos(dr->vbo_pos_, dr->vbo_col_);
-	param_bl_->set_all_vbos(dr->vbo_pos_, dr->vbo_col_);
-	param_rp_->set_all_vbos(dr->vbo_pos_, dr->vbo_col_);
-	param_ps_->set_all_vbos(dr->vbo_pos_, dr->vbo_col_);
+	param_cpv_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_bl_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_rp_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_ps_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
 }
 
 DisplayListDrawer::Renderer::~Renderer()
 {
-	delete param_cpv_;
-	delete param_bl_;
-	delete param_rp_;
-	delete param_ps_;
+	param_cpv_.reset();
+	param_bl_.reset();
+	param_rp_.reset();
+	param_ps_.reset();
 }
 
 void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)

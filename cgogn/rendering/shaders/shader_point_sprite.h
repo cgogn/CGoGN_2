@@ -111,17 +111,17 @@ class ShaderPointSpriteTpl : public ShaderPointSpriteGen
 public:
 
 	using Param = ShaderParamPointSprite<CPV, SPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 private:
 
 	ShaderPointSpriteTpl() : ShaderPointSpriteGen(CPV, SPV) {}
-	static ShaderPointSpriteTpl* instance_;
+	static std::unique_ptr<ShaderPointSpriteTpl> instance_;
 };
 
 
 template <bool CPV, bool SPV>
-ShaderPointSpriteTpl<CPV,SPV>* ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullptr;
+std::unique_ptr<ShaderPointSpriteTpl<CPV,SPV>> ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullptr;
 
 
 template <>
@@ -400,11 +400,11 @@ public:
 
 
 template <bool CPV, bool SPV>
-typename ShaderPointSpriteTpl<CPV, SPV>::Param* ShaderPointSpriteTpl<CPV, SPV>::generate_param()
+std::unique_ptr<typename ShaderPointSpriteTpl<CPV, SPV>::Param> ShaderPointSpriteTpl<CPV, SPV>::generate_param()
 {
-	if (instance_ == nullptr)
-		instance_ = new ShaderPointSpriteTpl<CPV, SPV>;
-	return (new Param(instance_));
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderPointSpriteTpl<CPV, SPV>>(new ShaderPointSpriteTpl<CPV, SPV>);
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 

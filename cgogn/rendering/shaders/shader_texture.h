@@ -73,17 +73,17 @@ public:
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline static Param* generate_param()
+	inline static std::unique_ptr<Param> generate_param()
 	{
-		if (instance_ == nullptr)
-			instance_ = new ShaderTexture;
-		return (new Param(instance_));
+		if (!instance_)
+			instance_ = std::unique_ptr<ShaderTexture>(new ShaderTexture());
+		return cgogn::make_unique<Param>(instance_.get());
 	}
 
 protected:
 
 	ShaderTexture();
-	static ShaderTexture* instance_;
+	static std::unique_ptr<ShaderTexture> instance_;
 };
 
 } // namespace rendering

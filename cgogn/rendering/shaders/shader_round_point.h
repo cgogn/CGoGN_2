@@ -94,16 +94,16 @@ class ShaderRoundPointTpl : public ShaderRoundPointGen
 public:
 
 	using Param = ShaderParamRoundPoint<CPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 private:
 
 	ShaderRoundPointTpl() : ShaderRoundPointGen(CPV) {}
-	static ShaderRoundPointTpl* instance_;
+	static std::unique_ptr<ShaderRoundPointTpl> instance_;
 };
 
 template <bool CPV>
-ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
+std::unique_ptr<ShaderRoundPointTpl<CPV>> ShaderRoundPointTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -214,11 +214,11 @@ public:
 
 
 template <bool CPV>
-typename ShaderRoundPointTpl<CPV>::Param* ShaderRoundPointTpl<CPV>::generate_param()
+std::unique_ptr<typename ShaderRoundPointTpl<CPV>::Param> ShaderRoundPointTpl<CPV>::generate_param()
 {
-	if (instance_==nullptr)
-		instance_ = new ShaderRoundPointTpl<CPV>;
-	return (new Param(instance_));
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderRoundPointTpl>(new ShaderRoundPointTpl<CPV>());
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 

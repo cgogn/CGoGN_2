@@ -37,12 +37,12 @@ namespace rendering
 
 WallPaper::WallPaper(const QImage& img)
 {
-	vbo_pos_ = new cgogn::rendering::VBO(3);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	vbo_pos_->allocate(4,3);
-	vbo_tc_ = new cgogn::rendering::VBO(2);
+	vbo_tc_ = cgogn::make_unique<cgogn::rendering::VBO>(2);
 	vbo_tc_->allocate(4,2);
 
-	texture_ = new QOpenGLTexture(img);
+	texture_ = cgogn::make_unique<QOpenGLTexture>(img);
 
 	set_full_screen(false);
 
@@ -59,11 +59,7 @@ WallPaper::WallPaper(const QImage& img)
 }
 
 WallPaper::~WallPaper()
-{
-	delete vbo_pos_;
-	delete vbo_tc_;
-	delete texture_;
-}
+{}
 
 void WallPaper::set_full_screen(bool front)
 {
@@ -149,14 +145,12 @@ WallPaper::Renderer::Renderer(WallPaper* wp):
 	wall_paper_data_(wp)
 {
 	param_texture_ = ShaderTexture::generate_param();
-	param_texture_->set_vbo(wp->vbo_pos_, wp->vbo_tc_);
-	param_texture_->texture_ = wp->texture_;
+	param_texture_->set_vbo(wp->vbo_pos_.get(), wp->vbo_tc_.get());
+	param_texture_->texture_ = wp->texture_.get();
 }
 
 WallPaper::Renderer::~Renderer()
-{
-	delete param_texture_;
-}
+{}
 
 
 void WallPaper::Renderer::draw(QOpenGLFunctions_3_3_Core* ogl33)

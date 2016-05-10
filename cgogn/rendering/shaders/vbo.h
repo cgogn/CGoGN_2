@@ -51,7 +51,12 @@ public:
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{
-		buffer_.create();
+		const bool buffer_created = buffer_.create();
+		if (!buffer_created)
+		{
+			cgogn_log_error("VBO::VBO(uint32)") << "The call to QOpenGLBuffer::create() failed. Maybe there is no QOpenGLContext.";
+			std::exit(EXIT_FAILURE);
+		}
 		buffer_.bind();
 		buffer_.setUsagePattern(QOpenGLBuffer::StreamDraw);
 	}

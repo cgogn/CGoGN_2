@@ -94,16 +94,16 @@ class ShaderBoldLineTpl : public ShaderBoldLineGen
 public:
 
 	using Param = ShaderParamBoldLine<CPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 private:
 
 	ShaderBoldLineTpl() : ShaderBoldLineGen(CPV) {}
-	static ShaderBoldLineTpl* instance_;
+	static std::unique_ptr<ShaderBoldLineTpl> instance_;
 };
 
 template <bool CPV>
-ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
+std::unique_ptr<ShaderBoldLineTpl<CPV>> ShaderBoldLineTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM VERSION
@@ -217,11 +217,11 @@ public:
 
 
 template <bool CPV>
-typename ShaderBoldLineTpl<CPV>::Param* ShaderBoldLineTpl<CPV>::generate_param()
+std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::generate_param()
 {
-	if (instance_ == nullptr)
-		instance_ = new ShaderBoldLineTpl<CPV>;
-	return (new Param(instance_));
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderBoldLineTpl>(new ShaderBoldLineTpl<CPV>);
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 

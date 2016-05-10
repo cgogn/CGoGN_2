@@ -9,6 +9,13 @@ function(add_flags _var)
 	set(${_var} ${string} PARENT_SCOPE)
 endfunction()
 
+function(remove_flags _var)
+    string(REPLACE " " ";" flags "${${_var}}")
+    list(REMOVE_ITEM flags ${ARGN})
+    string(REPLACE ";" " " flags "${flags}")
+    set(${_var} ${flags} PARENT_SCOPE)
+endfunction()
+
 #!
 # @brief Add sources from directories
 # @details

@@ -57,10 +57,11 @@ using VertexAttribute = Map2::VertexAttribute<T>;
 class Viewer : public QOGLViewer
 {
 public:
+	using MapRender = cgogn::rendering::MapRender;
+	using TopoDrawer = cgogn::rendering::TopoDrawer;
 
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
@@ -77,14 +78,14 @@ private:
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
-	cgogn::rendering::MapRender* render_;
+	std::unique_ptr<MapRender> render_;
 
-	cgogn::rendering::VBO* vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
 
-	cgogn::rendering::ShaderFlat::Param* param_flat_;
+	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
 
-	cgogn::rendering::TopoDrawer* topo_drawer_;
-	cgogn::rendering::TopoDrawer::Renderer* topo_drawer_rend_;
+	std::unique_ptr<TopoDrawer> topo_drawer_;
+	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
 
 	bool flat_rendering_;
 	bool topo_drawering_;
@@ -119,10 +120,10 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	delete render_;
-	delete vbo_pos_;
-	delete topo_drawer_;
-	delete topo_drawer_rend_;
+	render_.reset();
+	vbo_pos_.reset();
+	topo_drawer_.reset();
+	topo_drawer_rend_.reset();
 }
 
 Viewer::Viewer() :
@@ -148,19 +149,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_C:
 			cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_L:
 			cgogn::modeling::loop<Vec3>(map_, vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_R:
 			cgogn::modeling::pliant_remeshing<Vec3>(map_,vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
@@ -200,19 +201,19 @@ void Viewer::init()
 {
 	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-	render_ = new cgogn::rendering::MapRender();
+	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES);
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
-	param_flat_->set_position_vbo(vbo_pos_);
+	param_flat_->set_position_vbo(vbo_pos_.get());
 	param_flat_->front_color_ = QColor(0,150,0);
 	param_flat_->back_color_ = QColor(0,0,150);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	topo_drawer_ = new cgogn::rendering::TopoDrawer;
+	topo_drawer_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->update<Vec3>(map_,vertex_position_);
 }
