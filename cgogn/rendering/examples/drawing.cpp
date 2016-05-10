@@ -69,19 +69,20 @@ Drawing::~Drawing()
 
 void Drawing::closeEvent(QCloseEvent*)
 {
+	this->makeCurrent();
+
 	drawer_rend_.reset();
 	drawer2_rend_.reset();
 
 	wp_rend_.reset();
 	button_rend_.reset();
 
-	if (m_first==nullptr)
+	if (m_first==this)
 	{
 		drawer_.reset();
 		drawer2_.reset();
 		wp_.reset();
 		button_.reset();
-
 	}
 }
 
