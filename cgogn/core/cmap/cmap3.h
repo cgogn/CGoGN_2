@@ -1117,6 +1117,30 @@ public:
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
+
+protected:
+	void merge_check_embeddidng(const Self& map)
+	{
+		#define FOR_ALL_ORBITS( CODE)\
+		{static const Orbit orbit_const=DART; CODE }\
+		{static const Orbit orbit_const=PHI1; CODE }\
+		{static const Orbit orbit_const=PHI2; CODE }\
+		{static const Orbit orbit_const=PHI1_PHI2; CODE }\
+		{static const Orbit orbit_const=PHI1_PHI3; CODE }\
+		{static const Orbit orbit_const=PHI2_PHI3; CODE }\
+		{static const Orbit orbit_const=PHI21; CODE }\
+		{static const Orbit orbit_const=PHI21_PHI31; CODE }\
+		{static const Orbit orbit_const=PHI1_PHI2_PHI3; CODE }
+
+		FOR_ALL_ORBITS
+		(
+			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
+				this->template create_embedding<orbit_const>();
+		)
+		#undef FOR_ALL_ORBITS
+	}
+
+
 };
 
 template <typename MAP_TRAITS>

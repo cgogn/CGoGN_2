@@ -36,7 +36,6 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-
 	static const uint8 DIMENSION = 2;
 
 	static const uint8 PRIM_SIZE = 1;
@@ -1193,6 +1192,25 @@ public:
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
+
+protected:
+	void merge_check_embeddidng(const Self& map)
+	{
+		#define FOR_ALL_ORBITS( CODE) {\
+		{static const Orbit orbit_const=DART; CODE }\
+		{static const Orbit orbit_const=PHI1; CODE }\
+		{static const Orbit orbit_const=PHI2; CODE }\
+		{static const Orbit orbit_const=PHI1_PHI2; CODE }\
+		{static const Orbit orbit_const=PHI21; CODE }}
+
+		FOR_ALL_ORBITS
+		(
+			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
+				this->template create_embedding<orbit_const>();
+		)
+		#undef FOR_ALL_ORBITS
+	}
+
 };
 
 template <typename MAP_TRAITS>

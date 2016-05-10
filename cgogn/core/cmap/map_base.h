@@ -1340,33 +1340,16 @@ public:
 
 
 
-//#define FOR_ALL_ORBITS( CODE)\
-//{static const Orbit orbit_const=DART; CODE }\
-//{static const Orbit orbit_const=PHI1; CODE }\
-//{static const Orbit orbit_const=PHI2; CODE }\
-//{static const Orbit orbit_const=PHI1_PHI2; CODE }\
-//{static const Orbit orbit_const=PHI1_PHI3; CODE }\
-//{static const Orbit orbit_const=PHI2_PHI3; CODE }\
-//{static const Orbit orbit_const=PHI21; CODE }\
-//{static const Orbit orbit_const=PHI21_PHI31; CODE }\
-//{static const Orbit orbit_const=PHI1_PHI2_PHI3; CODE }
+	bool merge(const ConcreteMap& map)
+	{
+		ConcreteMap* concrete = to_concrete();
+		this->compact_topo();
+		std::vector<uint32> old_new;
+		this->topology_.template merge<1>(this->topology_,old_new);
+		concrete->merge_check_embeddidng(map);
 
-
-//	bool merge(const ConcreteMap& map)
-//	{
-//		this->compact_topo();
-//		std::vector<uint32> old_new;
-//		this->topology_.template merge<1>(this->topology_,old_new);
-
-//		FOR_ALL_ORBITS
-//		(
-//			if (!this->embeddings_[orbit_const] && map.embeddings_[orbit_const])
-//			{
-//				this->create_embedding<orbit_const>();
-//			}
-
-//		)
-//	}
+		return true;
+	}
 
 };
 

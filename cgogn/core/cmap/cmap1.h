@@ -520,6 +520,19 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
+
+protected:
+	void merge_check_embeddidng(const Self& map)
+	{
+		if (!this->template is_embedded<Orbit::DART>() && map.template is_embedded<Orbit::DART>())
+			this->template create_embedding<Orbit::DART>();
+		if (!this->template is_embedded<Orbit::PHI1>() && map.template is_embedded<Orbit::PHI1>())
+			this->template create_embedding<Orbit::PHI1>();
+
+	}
+
+
+
 };
 
 template <typename MAP_TRAITS>

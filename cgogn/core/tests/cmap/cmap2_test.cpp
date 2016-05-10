@@ -309,6 +309,54 @@ TEST_F(CMap2Test, compact_map)
 
 }
 
+TEST_F(CMap2Test, merge_map)
+{
+	using CDart = testCMap2::CDart;
+	using Vertex = testCMap2::Vertex;
+	using Edge = testCMap2::Edge;
+	using Face = testCMap2::Face;
+	using Volume = testCMap2::Volume;
+
+
+	testCMap2 map1;
+//	map1.add_attribute<int32, CDart::ORBIT>("darts");
+	testCMap2::VertexAttribute<int32> att1_v = map1.add_attribute<int32, Vertex::ORBIT>("vertices");
+//	map1.add_attribute<int32, Edge::ORBIT>("edges");
+	testCMap2::FaceAttribute<int32> att1_f = map1.add_attribute<int32, Face::ORBIT>("faces");
+//	map1.add_attribute<int32, Volume::ORBIT>("volumes");
+
+	testCMap2 map2;
+	testCMap2::Attribute<int32,CDart::ORBIT> att2_d = map2.add_attribute<int32, CDart::ORBIT>("darts");
+//	map2.add_attribute<int32, Vertex::ORBIT>("vertices");
+	testCMap2::EdgeAttribute<int32> att2_e = map2.add_attribute<int32, Edge::ORBIT>("edges");
+//	map2.add_attribute<int32, Face::ORBIT>("faces");
+	testCMap2::VolumeAttribute<int32> att2_w = map2.add_attribute<int32, Volume::ORBIT>("volumes");
+
+	for (int32 i=0; i<5; ++i)
+	{
+		Face f = map1.add_face(4);
+		int32 ec=0;
+		map1.foreach_incident_vertex(f, [&] (Vertex v)
+		{
+			ec++;
+			att1_v[v]=1000*i+ec;
+		});
+		att1_f[i]=10*i;
+	}
+
+	for (int32 i=0; i<5; ++i)
+	{
+		Face f = map2.add_face(3);
+		int32 ec=0;
+		map2.foreach_incident_edge(f, [&] (Edge e)
+		{
+			ec++;
+			att2_e[e]=100*i+ec;
+		});
+	}
+
+	map1.merge(map2);
+}
 
 #undef NB_MAX
 

@@ -176,6 +176,16 @@ protected:
 		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		f(c.dart);
 	}
+
+protected:
+	void merge_check_embeddidng(const Self& map)
+	{
+		if (!this->template is_embedded<Orbit::DART>() && map.template is_embedded<Orbit::DART>())
+			this->template create_embedding<Orbit::DART>();
+	}
+
+
+
 };
 
 template <typename MAP_TRAITS>
