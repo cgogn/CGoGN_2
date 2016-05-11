@@ -614,7 +614,7 @@ public:
 		for (uint32 i=0; i<cac.names_.size(); ++i)
 		{
 			// compute indice of ith names of cac in this (size if not found)
-			uint32 j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
+			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
 			if (j != names_.size())
 			{
 				if (cac.type_names_[i] != type_names_[j])
@@ -642,7 +642,7 @@ public:
 			{
 				const std::string& name = cac.names_[i];
 				const std::string& type_name = cac.type_names_[i];
-				map_attrib[i] = table_arrays_.size();
+				map_attrib[i] = uint32(table_arrays_.size());
 				ChunkArrayGen* cag = ChunkArrayFactory::create(type_name,name);
 				table_arrays_.push_back(cag);
 				names_.push_back(name);
@@ -651,7 +651,7 @@ public:
 			}
 			else
 				if (cac.type_names_[i] == type_names_[j])
-					map_attrib[i] = j;
+					map_attrib[i] = uint32(j);
 		}
 
 		// check if nothing to do
@@ -670,7 +670,7 @@ public:
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
 				map_old_new[ol] = nl;
-				uint32 nb_att = cac.table_arrays_.size();
+				uint32 nb_att = uint32(cac.table_arrays_.size());
 				for (uint32 k=0; k<nb_att; ++k)
 					table_arrays_[map_attrib[k]]->copy_external_element(nl, cac.table_arrays_[k], ol);
 			}
