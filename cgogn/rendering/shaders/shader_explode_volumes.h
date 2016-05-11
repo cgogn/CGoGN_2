@@ -39,8 +39,17 @@ namespace cgogn
 namespace rendering
 {
 
+// forward
+template <bool CPV>
+class ShaderParamExplodeVolumes
+{};
+
 class CGOGN_RENDERING_API ShaderExplodeVolumesGen : public ShaderProgram
 {
+	template <bool CPV> friend class ShaderParamExplodeVolumes;
+
+protected:
+
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
@@ -66,36 +75,32 @@ public:
 		ATTRIB_COLOR
 	};
 
-
-	ShaderExplodeVolumesGen(bool color_per_vertex = false);
 	void set_explode_volume(float32 x);
 	void set_light_position(const QVector3D& l);
 	void set_plane_clip(const QVector4D& plane);
 	void set_color(const QColor& rgb);
+
+protected:
+
+	ShaderExplodeVolumesGen(bool color_per_vertex);
 };
-
-// forward
-template <bool CPV>
-class ShaderParamExplodeVolumes
-{};
-
 
 template <bool CPV>
 class ShaderExplodeVolumesTpl : public ShaderExplodeVolumesGen
 {
 public:
+
 	using Param = ShaderParamExplodeVolumes<CPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
+
 private:
-	ShaderExplodeVolumesTpl():
-		ShaderExplodeVolumesGen(CPV)
-	{}
-	static ShaderExplodeVolumesTpl* instance_;
+
+	ShaderExplodeVolumesTpl() : ShaderExplodeVolumesGen(CPV) {}
+	static std::unique_ptr<ShaderExplodeVolumesTpl> instance_;
 };
 
 template <bool CPV>
-ShaderExplodeVolumesTpl<CPV>* ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
-
+std::unique_ptr<ShaderExplodeVolumesTpl<CPV>> ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -103,6 +108,7 @@ template <>
 class ShaderParamExplodeVolumes<false> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
@@ -113,6 +119,7 @@ protected:
 	}
 
 public:
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector3D light_position_;
@@ -126,12 +133,11 @@ public:
 		explode_factor_(0.8f)
 	{}
 
-	void set_vbo(VBO* vbo_pos)
+	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
-		// position vbo
 		vbo_pos->bind();
 		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
 		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
@@ -146,6 +152,7 @@ template <>
 class ShaderParamExplodeVolumes<true> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
@@ -155,6 +162,7 @@ protected:
 	}
 
 public:
+
 	QVector4D plane_clip_;
 	QVector3D light_position_;
 	float32 explode_factor_;
@@ -166,9 +174,9 @@ public:
 		explode_factor_(0.8f)
 	{}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color)
+	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -184,20 +192,47 @@ public:
 		vao_->release();
 		shader_->release();
 	}
+
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_color_vbo(VBO* vbo_color)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
 };
 
 
 template <bool CPV>
-typename ShaderExplodeVolumesTpl<CPV>::Param* ShaderExplodeVolumesTpl<CPV>::generate_param()
+std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolumesTpl<CPV>::generate_param()
 {
-	if (instance_==nullptr)
-		instance_ = new ShaderExplodeVolumesTpl<CPV>;
-	return (new Param(instance_));
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderExplodeVolumesTpl>(new ShaderExplodeVolumesTpl<CPV>());
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 
 using ShaderExplodeVolumes = ShaderExplodeVolumesTpl<false>;
 using ShaderExplodeVolumesColor = ShaderExplodeVolumesTpl<true>;
+
 
 #if !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
 extern template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<false>;

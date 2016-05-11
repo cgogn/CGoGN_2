@@ -103,25 +103,25 @@ private:
 	VertexAttribute<Vec3> vertex_normal_;
 
 	cgogn::CellCache<Map2> cell_cache_;
-	CustomFilter* filter_;
+	std::unique_ptr<CustomFilter> filter_;
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
-	cgogn::rendering::MapRender* render_;
+	std::unique_ptr<cgogn::rendering::MapRender> render_;
 
-	cgogn::rendering::VBO* vbo_pos_;
-	cgogn::rendering::VBO* vbo_norm_;
-	cgogn::rendering::VBO* vbo_color_;
-	cgogn::rendering::VBO* vbo_sphere_sz_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_color_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_sphere_sz_;
 
-	cgogn::rendering::ShaderBoldLine::Param* param_edge_;
-	cgogn::rendering::ShaderFlat::Param* param_flat_;
-	cgogn::rendering::ShaderVectorPerVertex::Param* param_normal_;
-	cgogn::rendering::ShaderPhongColor::Param* param_phong_;
-	cgogn::rendering::ShaderPointSpriteSize::Param* param_point_sprite_;
+	std::unique_ptr<cgogn::rendering::ShaderBoldLine::Param> param_edge_;
+	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
+	std::unique_ptr<cgogn::rendering::ShaderVectorPerVertex::Param> param_normal_;
+	std::unique_ptr<cgogn::rendering::ShaderPhongColor::Param> param_phong_;
+	std::unique_ptr<cgogn::rendering::ShaderPointSpriteSize::Param> param_point_sprite_;
 
-	cgogn::rendering::DisplayListDrawer* drawer_;
-	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -158,7 +158,7 @@ void Viewer::import(const std::string& surface_mesh)
 	cell_cache_.build<Vertex>();
 	cell_cache_.build<Edge>();
 
-	filter_ = new CustomFilter(vertex_position_);
+	filter_ = cgogn::make_unique<CustomFilter>(vertex_position_);
 
 	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -172,14 +172,14 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	delete filter_;
-	delete render_;
-	delete drawer_rend_;
-	delete vbo_pos_;
-	delete vbo_norm_;
-	delete vbo_color_;
-	delete vbo_sphere_sz_;
-	delete drawer_;
+	filter_.reset();
+	render_.reset();
+	drawer_rend_.reset();
+	vbo_pos_.reset();
+	vbo_norm_.reset();
+	vbo_color_.reset();
+	vbo_sphere_sz_.reset();
+	drawer_.reset();
 }
 
 Viewer::Viewer() :
@@ -231,9 +231,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -245,9 +245,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::geometry::filter_bilateral<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_, vertex_normal_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -257,9 +257,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
-			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 			{
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
@@ -331,59 +331,59 @@ void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO();
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>();
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-	vbo_norm_ = new cgogn::rendering::VBO();
-	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_);
+	vbo_norm_ = cgogn::make_unique<cgogn::rendering::VBO>();
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 
 	// fill a color vbo with abs of normals
-	vbo_color_ = new cgogn::rendering::VBO();
-	cgogn::rendering::update_vbo(vertex_normal_, vbo_color_, [] (const Vec3& n) -> std::array<float,3>
+	vbo_color_ = cgogn::make_unique<cgogn::rendering::VBO>();
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 	// fill a sphere size vbo
-	vbo_sphere_sz_ = new cgogn::rendering::VBO(1);
-	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_, [&] (const Vec3& n) -> float
+	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
 		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
 
-	render_ = new cgogn::rendering::MapRender();
+	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSpriteSize::generate_param();
-	param_point_sprite_->set_vbo(vbo_pos_,vbo_sphere_sz_);
+	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_sphere_sz_.get());
 	param_point_sprite_->color_ = QColor(255, 0, 0);
 
 //	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 //	param_edge_ = shader_edge_->generate_param();
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
-	param_edge_->set_vbo(vbo_pos_);
+	param_edge_->set_position_vbo(vbo_pos_.get());
 	param_edge_->color_ = QColor(255,255,0);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ =  cgogn::rendering::ShaderFlat::generate_param();
-	param_flat_->set_vbo(vbo_pos_);
+	param_flat_->set_position_vbo(vbo_pos_.get());
 	param_flat_->front_color_ = QColor(0,200,0);
 	param_flat_->back_color_ = QColor(0,0,200);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
-	param_normal_->set_vbo(vbo_pos_, vbo_norm_);
+	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
 	param_normal_->color_ = QColor(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
-	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
+	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::DisplayListDrawer();
+	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 	update_bb();
 }

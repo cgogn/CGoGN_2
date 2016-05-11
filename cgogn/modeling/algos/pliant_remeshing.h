@@ -54,21 +54,23 @@ void pliant_remeshing(
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
+		const VEC3& edge = position[v.first] - position[v.second];
 		mean_edge_length += edge.norm();
 	},
 	cache);
 
 	mean_edge_length /= cache.template size<Edge>();
-	Scalar min_edge_length= Scalar(0.75) * mean_edge_length;
-	Scalar max_edge_length = Scalar(1.25) * mean_edge_length;
+
+	const Scalar squared_max_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
+	const Scalar squared_min_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
+
 
 	// cut long edges (and adjacent faces)
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
-		if(edge.norm() > max_edge_length)
+		const VEC3& edge = position[v.first] - position[v.second];
+		if(edge.squaredNorm() > squared_max_edge_length)
 		{
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
@@ -81,19 +83,19 @@ void pliant_remeshing(
 	cache);
 
 	// collapse short edges
+
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		VEC3 edge = position[v.first] - position[v.second];
-		Scalar length = edge.norm();
-		if(length < min_edge_length)
+		const VEC3& edge = position[v.first] - position[v.second];
+		if(edge.squaredNorm() < squared_min_edge_length)
 		{
 			bool collapse = true;
-			VEC3 p = position[v.second];
+			const VEC3& p = position[v.second];
 			map.foreach_adjacent_vertex_through_edge(v.second, [&] (Vertex vv)
 			{
-				VEC3 vec = p - position[vv];
-				if (vec.norm() > max_edge_length)
+				const VEC3& vec = p - position[vv];
+				if (vec.squaredNorm() > squared_max_edge_length)
 					collapse = false;
 			});
 			if(collapse)
@@ -110,8 +112,8 @@ void pliant_remeshing(
 		[&] (Edge e)
 		{
 			map.flip_edge(e); // flip edge
-			Dart d = e.dart;
-			Dart d2 = map.phi2(d);
+			const Dart d = e.dart;
+			const Dart d2 = map.phi2(d);
 			dm.mark_orbit(Edge(map.phi1(d)));
 			dm.mark_orbit(Edge(map.phi_1(d))); // mark adjacent
 			dm.mark_orbit(Edge(map.phi1(d2))); // edges
@@ -121,12 +123,13 @@ void pliant_remeshing(
 		// and whose incident vertices' degree meet some requirements
 		[&] (Edge e) -> bool
 		{
-			if (dm.is_marked(e.dart)) return false;
+			if (dm.is_marked(e.dart))
+				return false;
 			std::pair<Vertex,Vertex> v = map.vertices(e);
-			unsigned int w = map.degree(v.first);
-			unsigned int x = map.degree(v.second);
-			unsigned int y = map.degree(Vertex(map.phi1(map.phi1(v.first.dart))));
-			unsigned int z = map.degree(Vertex(map.phi1(map.phi1(v.second.dart))));
+			const uint32 w = map.degree(v.first);
+			const uint32 x = map.degree(v.second);
+			const uint32 y = map.degree(Vertex(map.phi1(map.phi1(v.first.dart))));
+			const uint32 z = map.degree(Vertex(map.phi1(map.phi1(v.second.dart))));
 			int32 flip = 0;
 			flip += w > 6 ? 1 : (w < 6 ? -1 : 0);
 			flip += x > 6 ? 1 : (x < 6 ? -1 : 0);

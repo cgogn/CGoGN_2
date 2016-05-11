@@ -38,8 +38,17 @@ namespace cgogn
 namespace rendering
 {
 
+// forward
+template <bool CPV>
+class ShaderParamPhong: public ShaderParam
+{};
+
 class CGOGN_RENDERING_API ShaderPhongGen : public ShaderProgram
 {
+	template <bool CPV> friend class ShaderParamPhong;
+
+protected:
+
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
 
@@ -66,8 +75,6 @@ public:
 		ATTRIB_NORM,
 		ATTRIB_COLOR
 	};
-
-	ShaderPhongGen(bool color_per_vertex = false);
 
 	/**
 	 * @brief set current front color
@@ -117,30 +124,29 @@ public:
 	 * @param view_matrix
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+
+protected:
+
+	ShaderPhongGen(bool color_per_vertex);
 };
-
-
-
-template <bool CPV>
-class ShaderParamPhong: public ShaderParam
-{};
 
 
 template <bool CPV>
 class ShaderPhongTpl : public ShaderPhongGen
 {
 public:
+
 	using Param = ShaderParamPhong<CPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
+
 private:
-	ShaderPhongTpl() :
-		ShaderPhongGen(CPV)
-	{}
-	static ShaderPhongTpl* instance_;
+
+	ShaderPhongTpl() : ShaderPhongGen(CPV) {}
+	static std::unique_ptr<ShaderPhongTpl> instance_;
 };
 
 template <bool CPV>
-ShaderPhongTpl<CPV>* ShaderPhongTpl<CPV>::instance_ = nullptr;
+std::unique_ptr<ShaderPhongTpl<CPV>> ShaderPhongTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -148,6 +154,7 @@ template <>
 class ShaderParamPhong<false> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->shader_);
@@ -161,6 +168,7 @@ protected:
 	}
 
 public:
+
 	QVector3D light_position_;
 	QColor front_color_;
 	QColor back_color_;
@@ -180,9 +188,9 @@ public:
 		double_side_(true)
 	{}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_norm)
+	void set_all_vbos(VBO* vbo_pos, VBO* vbo_norm)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -198,6 +206,32 @@ public:
 		vao_->release();
 		shader_->release();
 	}
+
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_normal_vbo(VBO* vbo_norm)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_norm->bind();
+		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_norm->release();
+		vao_->release();
+		shader_->release();
+	}
 };
 
 // COLOR PER VERTEX PARAM
@@ -205,6 +239,7 @@ template <>
 class ShaderParamPhong<true> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->shader_);
@@ -216,6 +251,7 @@ protected:
 	}
 
 public:
+
 	QVector3D light_position_;
 	QColor ambiant_color_;
 	QColor specular_color_;
@@ -231,9 +267,9 @@ public:
 		double_side_(true)
 	{}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
+	void set_all_vbos(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -254,23 +290,62 @@ public:
 		vao_->release();
 		shader_->release();
 	}
+
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_normal_vbo(VBO* vbo_norm)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_norm->bind();
+		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_norm->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_color_vbo(VBO* vbo_color)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
 };
 
 
 template <bool CPV>
-typename ShaderPhongTpl<CPV>::Param* ShaderPhongTpl<CPV>::generate_param()
+std::unique_ptr<typename ShaderPhongTpl<CPV>::Param> ShaderPhongTpl<CPV>::generate_param()
 {
-	if (instance_==nullptr)
-		instance_ = new ShaderPhongTpl<CPV>;
-	return (new Param(instance_));}
-
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderPhongTpl<CPV>>(new ShaderPhongTpl<CPV>);
+	return (cgogn::make_unique<Param>(instance_.get()));
+}
 
 
 using ShaderPhong = ShaderPhongTpl<false>;
 using ShaderPhongColor = ShaderPhongTpl<true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_FLAT_CPP_)
+#if !defined(CGOGN_RENDER_SHADERS_PHONG_CPP_)
 extern template class CGOGN_RENDERING_API ShaderPhongTpl<false>;
 extern template class CGOGN_RENDERING_API ShaderPhongTpl<true>;
 extern template class CGOGN_RENDERING_API ShaderParamPhong<false>;

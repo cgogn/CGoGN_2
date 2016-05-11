@@ -696,17 +696,17 @@ public:
 				if (this->same_orbit(Vertex(d.dart), Vertex(ee)))
 					this->template copy_embedding<Vertex>(phi2(e), ee);
 				else
-					this->template new_orbit_embedding(Vertex(ee));
+					this->new_orbit_embedding(Vertex(ee));
 
 				Dart dd = this->phi1(d.dart);
 				if (this->same_orbit(Vertex(e), Vertex(dd)))
 					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
 				else
-					this->template new_orbit_embedding(Vertex(dd));
+					this->new_orbit_embedding(Vertex(dd));
 			}
 
 			if (this->template is_embedded<Edge>())
-				this->template new_orbit_embedding(Edge(e));
+				this->new_orbit_embedding(Edge(e));
 
 			if (this->template is_embedded<Volume>())
 			{
@@ -716,7 +716,7 @@ public:
 					this->template copy_embedding<Volume>(phi2(d.dart), e);
 				}
 				else
-					this->template new_orbit_embedding(Volume(e));
+					this->new_orbit_embedding(Volume(e));
 			}
 		}
 	}

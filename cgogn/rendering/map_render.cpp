@@ -35,20 +35,17 @@ MapRender::MapRender()
 {
 	for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
 	{
-		indices_buffers_[i] = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
+		indices_buffers_[i] = make_unique<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
 		indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
 	}
 }
 
 MapRender::~MapRender()
-{
-	for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
-		delete indices_buffers_[i];
-}
+{}
 
 void MapRender::draw(DrawingType prim)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 
 	indices_buffers_[prim]->bind();
 	switch (prim)

@@ -27,7 +27,6 @@
 
 #include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
 
-#include <QOpenGLFunctions>
 #include <QColor>
 
 namespace cgogn
@@ -36,7 +35,14 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderVectorPerVertex* ShaderVectorPerVertex::instance_ = nullptr;
+std::unique_ptr<ShaderVectorPerVertex> ShaderVectorPerVertex::instance_ = nullptr;
+
+std::unique_ptr<ShaderVectorPerVertex::Param> ShaderVectorPerVertex::generate_param()
+{
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderVectorPerVertex>(new ShaderVectorPerVertex());
+	return cgogn::make_unique<Param>(instance_.get());
+}
 
 const char* ShaderVectorPerVertex::vertex_shader_source_ =
 "#version 150\n"
@@ -102,44 +108,6 @@ void ShaderVectorPerVertex::set_color(const QColor& rgb)
 void ShaderVectorPerVertex::set_length(float32 l)
 {
 	prg_.setUniformValue(unif_length_, l);
-}
-
-
-
-ShaderParamVectorPerVertex::ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh):
-	ShaderParam(sh),
-	color_(255, 255, 255),
-	length_(1.0)
-{}
-
-void ShaderParamVectorPerVertex::set_uniforms()
-{
-	ShaderVectorPerVertex* sh = static_cast<ShaderVectorPerVertex*>(this->shader_);
-	sh->set_color(color_);
-	sh->set_length(length_);
-}
-
-void ShaderParamVectorPerVertex::set_vbo(VBO* vbo_pos, VBO* vbo_normal)
-{
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
-	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	// normal vbo
-	vbo_normal->bind();
-	ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
-	ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_normal->release();
-
-	vao_->release();
-	shader_->release();
 }
 
 } // namespace rendering

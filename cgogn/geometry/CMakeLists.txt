@@ -2,8 +2,7 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
-find_package(Qt5Widgets)
-#find_package(Qt5OpenGL)
+find_package(cgogn_core REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -47,25 +46,15 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/geometry>
+	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core)
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES})
 
-install(DIRECTORY .
-	DESTINATION include/cgogn/geometry
+install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
+install(DIRECTORY algos functions types
+	DESTINATION "include/cgogn/geometry"
 	FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
-
-add_subdirectory(examples)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()
+cgogn_create_package("${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include")

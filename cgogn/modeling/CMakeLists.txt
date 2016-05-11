@@ -13,13 +13,8 @@ add_custom_target(cgogn_modeling SOURCES ${HEADER_FILES})
 #add_library(HEADER_ONLY_TARGET ${PROJECT_NAME} ${HEADER_FILES})
 #set_target_properties(HEADER_ONLY_TARGET PROPERTIES LINKER_LANGUAGE CXX)
 
-install(DIRECTORY .
+install(FILES "dll.h" DESTINATION "include/cgogn/modeling")
+install(DIRECTORY algos
 	DESTINATION include/cgogn/modeling
 	FILES_MATCHING PATTERN "*.h"
 )
-
-add_subdirectory(examples)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()

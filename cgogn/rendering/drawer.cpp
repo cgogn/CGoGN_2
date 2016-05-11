@@ -26,8 +26,9 @@
 #include <cgogn/rendering/drawer.h>
 
 #include <QOpenGLFunctions>
+#include <QColor>
+
 #include <iostream>
-#include<QColor>
 
 namespace cgogn
 {
@@ -40,17 +41,12 @@ DisplayListDrawer::DisplayListDrawer():
 	current_aa_(true),
 	current_ball_(true)
 {
-	vbo_pos_ = new VBO(3);
-	vbo_col_ = new VBO(3);
+	vbo_pos_ = cgogn::make_unique<VBO>(3);
+	vbo_col_ = cgogn::make_unique<VBO>(3);
 }
-
 
 DisplayListDrawer::~DisplayListDrawer()
-{
-	delete vbo_pos_;
-	delete vbo_col_;
-}
-
+{}
 
 void DisplayListDrawer::new_list()
 {
@@ -111,7 +107,7 @@ void DisplayListDrawer::end()
 	current_begin_->back().nb = uint32(data_pos_.size() - current_begin_->back().begin);
 }
 
-void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
+void DisplayListDrawer::vertex3ff(float32 x, float32 y, float32 z)
 {
 	if (data_pos_.size() == data_col_.size())
 	{
@@ -123,7 +119,7 @@ void DisplayListDrawer::vertex3f(float32 x, float32 y, float32 z)
 	data_pos_.push_back(Vec3f{x, y, z});
 }
 
-void DisplayListDrawer::color3f(float32 r, float32 g, float32 b)
+void DisplayListDrawer::color3ff(float32 r, float32 g, float32 b)
 {
 	if (data_pos_.size() == data_col_.size())
 		data_col_.push_back(Vec3f{r, g, b});
@@ -241,8 +237,7 @@ void DisplayListDrawer::end_list()
 //	}
 //}
 
-
-DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr):
+DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr) :
 	drawer_data_(dr)
 {
 	param_cpv_ = ShaderColorPerVertex::generate_param();
@@ -250,19 +245,18 @@ DisplayListDrawer::Renderer::Renderer(DisplayListDrawer* dr):
 	param_rp_ = ShaderRoundPointColor::generate_param();
 	param_ps_ = ShaderPointSpriteColor::generate_param();
 
-	param_cpv_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
-	param_bl_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
-	param_rp_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
-	param_ps_->set_vbo(dr->vbo_pos_, dr->vbo_col_);
+	param_cpv_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_bl_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_rp_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
+	param_ps_->set_all_vbos(dr->vbo_pos_.get(), dr->vbo_col_.get());
 }
 
 DisplayListDrawer::Renderer::~Renderer()
 {
-	delete param_cpv_;
-	delete param_bl_;
-	delete param_rp_;
-	delete param_ps_;
-
+	param_cpv_.reset();
+	param_bl_.reset();
+	param_rp_.reset();
+	param_ps_.reset();
 }
 
 void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
@@ -278,10 +272,10 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
-		for (auto& pp :  drawer_data_->begins_line_)
+		for (auto& pp : drawer_data_->begins_line_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
-		for (auto& pp :  drawer_data_->begins_face_)
+		for (auto& pp : drawer_data_->begins_face_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 		param_cpv_->release();
@@ -290,14 +284,17 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	// balls
 	if (! drawer_data_->begins_balls_.empty())
 	{
-		param_ps_->bind(projection,modelview);
+		param_ps_->bind(projection, modelview);
 
-		for (auto& pp :  drawer_data_->begins_balls_)
+		for (auto& pp : drawer_data_->begins_balls_)
 		{
+			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
 			shader_ps_->set_size(pp.width);
+
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
+
 		param_ps_->release();
 	}
 
@@ -306,20 +303,24 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_rp_->bind(projection, modelview);
 
-		for (auto& pp :  drawer_data_->begins_round_point_)
+		for (auto& pp : drawer_data_->begins_round_point_)
 		{
+			// get direct access to the shader to modify parameters while keeping the original param binded
+			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
+			shader_rp_->set_size(pp.width);
+
 			if (pp.aa)
 			{
 				ogl33->glEnable(GL_BLEND);
 				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
-			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
-			shader_rp_->set_size(pp.width);
+
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 			if (pp.aa)
 				ogl33->glDisable(GL_BLEND);
 		}
+
 		param_rp_->release();
 	}
 
@@ -328,8 +329,9 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_bl_->bind(projection, modelview);
 
-		for (auto& pp :  drawer_data_->begins_bold_line_)
+		for (auto& pp : drawer_data_->begins_bold_line_)
 		{
+			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());
 			shader_bl_->set_width(pp.width);
 			shader_bl_->set_color(QColor(255, 255, 0));

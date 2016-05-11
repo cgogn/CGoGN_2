@@ -155,7 +155,6 @@ void ShaderFlatGen::set_ambiant_color(const QColor& rgb)
 	prg_.setUniformValue(unif_ambiant_color_, rgb);
 }
 
-
 template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
 template class CGOGN_RENDERING_API ShaderFlatTpl<true>;
 template class CGOGN_RENDERING_API ShaderParamFlat<false>;

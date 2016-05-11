@@ -40,12 +40,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::WallPaper* wp_;	// can be shared between contexts
- *  cgogn::rendering::WallPaper::Renderer* wp_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::WallPaper> wp_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_; // one by context,
  *
  * init:
- *  wp_ = new cgogn::rendering::WallPaper();
- *  wp_rend_ = wp_->generate_renderer(); // warning must be delete when finished
+ *  wp_ = cgogn::make_unique<cgogn::rendering::WallPaper>();
+ *  wp_rend_ = wp_->generate_renderer();
  *  wp_->update<Vec3>(map_,vertex_position_);
  *
  * draw:
@@ -55,15 +55,15 @@ namespace rendering
 class CGOGN_RENDERING_API WallPaper
 {
 protected:
-	VBO* vbo_pos_;
-	VBO* vbo_tc_;
-	QOpenGLTexture* texture_;
+	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_tc_;
+	std::unique_ptr<QOpenGLTexture> texture_;
 
 public:
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class WallPaper;
-		ShaderTexture::Param* param_texture_;
+		std::unique_ptr<ShaderTexture::Param> param_texture_;
 		WallPaper* wall_paper_data_;
 		Renderer(WallPaper* wp);
 	public:
@@ -89,9 +89,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline Renderer* generate_renderer()
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return (new Renderer(this));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 	/**

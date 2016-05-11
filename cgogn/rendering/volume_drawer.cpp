@@ -36,8 +36,6 @@ namespace cgogn
 namespace rendering
 {
 
-
-
 VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
@@ -46,21 +44,15 @@ VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
 	edge_color_(0,0,0),
 	shrink_v_(0.6f)
 {
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	vbo_pos2_ = new cgogn::rendering::VBO(3);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_pos2_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 
 	if (with_color_per_face)
-		vbo_col_ = new cgogn::rendering::VBO(3);
+		vbo_col_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 }
-
-
 
 VolumeDrawerGen::~VolumeDrawerGen()
-{
-	delete vbo_pos_;
-	delete vbo_pos2_;
-	delete vbo_col_;
-}
+{}
 
 VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr):
 	param_expl_vol_(nullptr),
@@ -72,12 +64,12 @@ VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr):
 	{
 		param_expl_vol_col_ = ShaderExplodeVolumesColor::generate_param();
 		param_expl_vol_col_->explode_factor_ = vr->shrink_v_;
-		param_expl_vol_col_->set_vbo(vr->vbo_pos_,vr->vbo_col_);
+		param_expl_vol_col_->set_all_vbos(vr->vbo_pos_.get(), vr->vbo_col_.get());
 	}
 	else
 	{
 		param_expl_vol_ = ShaderExplodeVolumes::generate_param();
-		param_expl_vol_->set_vbo(vr->vbo_pos_);
+		param_expl_vol_->set_position_vbo(vr->vbo_pos_.get());
 		param_expl_vol_->explode_factor_ = vr->shrink_v_;
 		param_expl_vol_->color_ = vr->face_color_;
 	}
@@ -85,20 +77,14 @@ VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr):
 	if (vr->vbo_pos2_)
 	{
 		param_expl_vol_line_ = ShaderExplodeVolumesLine::generate_param();
-		param_expl_vol_line_->set_vbo(vr->vbo_pos2_);
+		param_expl_vol_line_->set_position_vbo(vr->vbo_pos2_.get());
 		param_expl_vol_line_->explode_factor_ = vr->shrink_v_;
 		param_expl_vol_line_->color_ = vr->edge_color_;
 	}
 }
 
-
 VolumeDrawerGen::Renderer::~Renderer()
-{
-	delete param_expl_vol_;
-	delete param_expl_vol_col_;
-	delete param_expl_vol_line_;
-}
-
+{}
 
 void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
@@ -119,18 +105,18 @@ void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const Q
 void VolumeDrawerGen::Renderer::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	param_expl_vol_line_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_TRIANGLES,0,volume_drawer_data_->vbo_pos2_->size());
+	ogl33->glDrawArrays(GL_TRIANGLES, 0, volume_drawer_data_->vbo_pos2_->size());
 	param_expl_vol_line_->release();
 }
 
 void VolumeDrawerGen::Renderer::set_explode_volume(float32 x)
 {
 	if (param_expl_vol_)
-		param_expl_vol_->explode_factor_=x;
+		param_expl_vol_->explode_factor_ = x;
 	if (param_expl_vol_col_)
-		param_expl_vol_col_->explode_factor_=x;
+		param_expl_vol_col_->explode_factor_ = x;
 	if (param_expl_vol_line_)
-		param_expl_vol_line_->explode_factor_=x;
+		param_expl_vol_line_->explode_factor_ = x;
 }
 
 void VolumeDrawerGen::Renderer::set_face_color(const QColor& rgb)
@@ -147,7 +133,6 @@ void VolumeDrawerGen::Renderer::set_edge_color(const QColor& rgb)
 
 template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
 template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
-
 
 } // namespace rendering
 

@@ -45,12 +45,12 @@ namespace rendering
  *
  * Typical usage:
  *
- *  cgogn::rendering::DisplayListDrawer* drawer_;	// can be shared between contexts
- *  cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_; // one by context,
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_; // one by context,
  *
  * init:
- *  drawer_ = new cgogn::rendering::DisplayListDrawer();
- *  drawer_rend_ = drawer_->generate_renderer(); // warning must be delete when finished
+ *  drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+ *  drawer_rend_ = drawer_->generate_renderer(); // don't worry automatically deleted when finished
  *  drawer_->new_list();
  *  drawer_->line_width(2.0);
  *  drawer_->begin(GL_LINE_LOOP); // or GL_POINTS, GL_LINES, GL_TRIANGLES
@@ -82,8 +82,8 @@ class CGOGN_RENDERING_API DisplayListDrawer
 
 protected:
 
-	VBO* vbo_pos_;
-	VBO* vbo_col_;
+	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_col_;
 
 	// temporary (between begin()/end()) data storage
 	std::vector<Vec3f> data_pos_;
@@ -104,13 +104,13 @@ protected:
 
 public:
 
-	class Renderer
+	class CGOGN_RENDERING_API Renderer
 	{
 		friend class DisplayListDrawer;
-		ShaderColorPerVertex::Param* param_cpv_;
-		ShaderBoldLineColor::Param* param_bl_;
-		ShaderRoundPointColor::Param* param_rp_;
-		ShaderPointSpriteColor::Param* param_ps_;
+		std::unique_ptr<ShaderColorPerVertex::Param> param_cpv_;
+		std::unique_ptr<ShaderBoldLineColor::Param> param_bl_;
+		std::unique_ptr<ShaderRoundPointColor::Param> param_rp_;
+		std::unique_ptr<ShaderPointSpriteColor::Param> param_ps_;
 		DisplayListDrawer* drawer_data_;
 		Renderer(DisplayListDrawer* dr);
 	public:
@@ -144,9 +144,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline Renderer* generate_renderer()
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return (new Renderer(this));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 
@@ -175,37 +175,54 @@ public:
 	 */
 	void end_list();
 
-	/**
-	 * use as glVertex3f
-	 */
-	void vertex3f(float32 x, float32 y, float32 z);
+	void vertex3ff(float32 x, float32 y, float32 z);
 
 	/**
-	 * use as glColor3f
-	 */
-	void color3f(float32 r, float32 g, float32 b);
+	* use as glVertex3f
+	*/
+	template<typename SCAL>
+	inline void vertex3f(SCAL x, SCAL y, SCAL z)
+	{
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		vertex3ff(float32(x), float32(y), float32(z));
+	}
+
+
+	void color3ff(float32 r, float32 g, float32 b);
+
+	/**
+	* use as glColor3f
+	*/
+	template<typename SCAL>
+	inline void color3f(SCAL x, SCAL y, SCAL z)
+	{
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		color3ff(float32(x), float32(y), float32(z));
+	}
 
 
 	inline void vertex3fv(const std::array<float32, 3>& xyz)
 	{
-		vertex3f(xyz[0], xyz[1], xyz[2]);
+		vertex3ff(xyz[0], xyz[1], xyz[2]);
 	}
 
 	inline void color3fv(const std::array<float32, 3>& rgb)
 	{
-		color3f(rgb[0], rgb[1], rgb[2]);
+		color3ff(rgb[0], rgb[1], rgb[2]);
 	}
 
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		vertex3f(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		vertex3ff(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		color3f(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		color3ff(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
 	template <typename VEC3>

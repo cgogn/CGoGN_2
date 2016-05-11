@@ -61,8 +61,7 @@ class Viewer : public QOGLViewer
 {
 public:
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
@@ -79,12 +78,12 @@ private:
 
 	cgogn::geometry::BoundingBox<Vec3> bb_;
 
-	cgogn::rendering::VBO* vbo_pos_;
-	cgogn::rendering::VBO* vbo_norm_;
-	cgogn::rendering::VBO* vbo_color_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_color_;
 
-	cgogn::rendering::ShaderFlatColor::Param* param_flat_;
-	cgogn::rendering::ShaderPhongColor::Param* param_phong_;
+	std::unique_ptr<cgogn::rendering::ShaderFlatColor::Param> param_flat_;
+	std::unique_ptr<cgogn::rendering::ShaderPhongColor::Param> param_phong_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -117,9 +116,9 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	delete vbo_pos_;
-	delete vbo_norm_;
-	delete vbo_color_;
+	vbo_pos_.reset();
+	vbo_norm_.reset();
+	vbo_color_.reset();
 }
 
 Viewer::Viewer() :
@@ -182,9 +181,9 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	vbo_norm_ = new cgogn::rendering::VBO(3);
-	vbo_color_ = new cgogn::rendering::VBO(3);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_norm_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_color_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 
 	// indices of vertices emb (f1_v1,f1_v2,f1_v3, f2_v1,f2_v2,f2_v3, f3_v1...)
 	std::vector<uint32> ind_v;
@@ -195,37 +194,33 @@ void Viewer::init()
 	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
-	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_, [] (const Vec3& v) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_.get(), [] (const Vec3& v) -> std::array<float32,3>
 	{
 		return {float32(v[0]), float32(v[1]), float32(v[2])};
 	});
 
 	// generate VBO: normals
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_norm_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_norm_.get(), [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(n[0]), float32(n[1]), float32(n[2])};
 	});
 
 	// generate VBO: colors (here abs of normals)
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_color_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_color_.get(), [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(std::abs(n[0])), float32(std::abs(n[1])), float32(std::abs(n[2]))};
 	});
 
-
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
-	param_phong_->set_vbo(vbo_pos_, vbo_norm_, vbo_color_);
-	param_phong_->ambiant_color_ = QColor(5,5,5);
+	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
+	param_phong_->ambiant_color_ = QColor(5, 5, 5);
 	param_phong_->double_side_ = true;
-	param_phong_->specular_color_ = QColor(255,255,255);
+	param_phong_->specular_color_ = QColor(255, 255, 255);
 	param_phong_->specular_coef_ = 100.0;
 
 	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
-	param_flat_->set_vbo(vbo_pos_, vbo_color_);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
-
-
-
+	param_flat_->set_all_vbos(vbo_pos_.get(), vbo_color_.get());
+	param_flat_->ambiant_color_ = QColor(5, 5, 5);
 }
 
 int main(int argc, char** argv)

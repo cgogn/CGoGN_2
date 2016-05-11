@@ -41,8 +41,7 @@ class Drawing : public QOGLViewer
 public:
 	Drawing();
 	Drawing(Drawing* ptr);
-	Drawing(const Drawing&) = delete;
-	Drawing& operator=(const Drawing&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawing);
 
 	virtual void draw();
 	virtual void init();
@@ -50,15 +49,15 @@ public:
 	virtual ~Drawing();
 
 //private:
-	cgogn::rendering::DisplayListDrawer* drawer_;
-	cgogn::rendering::DisplayListDrawer* drawer2_;
-	cgogn::rendering::DisplayListDrawer::Renderer* drawer_rend_;
-	cgogn::rendering::DisplayListDrawer::Renderer* drawer2_rend_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer2_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer2_rend_;
 
-	cgogn::rendering::WallPaper* wp_;
-	cgogn::rendering::WallPaper* button_;
-	cgogn::rendering::WallPaper::Renderer* wp_rend_;
-	cgogn::rendering::WallPaper::Renderer* button_rend_;
+	std::unique_ptr<cgogn::rendering::WallPaper> wp_;
+	std::unique_ptr<cgogn::rendering::WallPaper> button_;
+	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_;
+	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> button_rend_;
 
 	Drawing* m_first;
 };
@@ -70,19 +69,20 @@ Drawing::~Drawing()
 
 void Drawing::closeEvent(QCloseEvent*)
 {
-	delete drawer_rend_;
-	delete drawer2_rend_;
+	this->makeCurrent();
 
-	delete wp_rend_;
-	delete button_rend_;
+	drawer_rend_.reset();
+	drawer2_rend_.reset();
 
-	if (m_first==nullptr)
+	wp_rend_.reset();
+	button_rend_.reset();
+
+	if (m_first==this)
 	{
-		delete drawer_;
-		delete drawer2_;
-		delete wp_;
-		delete button_;
-
+		drawer_.reset();
+		drawer2_.reset();
+		wp_.reset();
+		button_.reset();
 	}
 }
 
@@ -146,26 +146,26 @@ void Drawing::init()
 		return;
 	}
 
-	wp_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
-	button_ = new cgogn::rendering::WallPaper(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
+	wp_ = cgogn::make_unique<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
+	button_ = cgogn::make_unique<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
 //	button_->set_local_position(this->width(),this->height(),10,10,50,50);
-	button_->set_local_position(0.1,0.1,0.2,0.2);
+	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
 
 	wp_rend_ = wp_->generate_renderer();
 	button_rend_ = button_->generate_renderer();
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = new cgogn::rendering::DisplayListDrawer();
+	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
 	drawer_->begin(GL_LINE_LOOP);
 		drawer_->color3f(1.0,0.0,0.0);
-		drawer_->vertex3f(0,0,0);
+		drawer_->vertex3f(0.0,0.0,0.0);
 		drawer_->color3f(0.0,1.0,1.0);
 		drawer_->vertex3f(1,0,0);
 		drawer_->color3f(1.0,0.0,1.0);
-		drawer_->vertex3f(1,1,0);
+		drawer_->vertex3f(1.0f,1.0f,0.0f);
 		drawer_->color3f(1.0,1.0,0.0);
 		drawer_->vertex3f(0,1,0);
 	drawer_->end();
@@ -214,7 +214,7 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = new cgogn::rendering::DisplayListDrawer();
+	drawer2_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer2_rend_ = drawer2_->generate_renderer();
 	drawer2_->new_list();
 	drawer2_->point_size_aa(5.0);
@@ -253,16 +253,20 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 
-	Drawing* viewer = new Drawing;
+	std::unique_ptr<Drawing> viewer = cgogn::make_unique<Drawing>();
 	viewer->setWindowTitle("Drawing");
 	viewer->show();
 
-	Drawing* viewer2 = new Drawing(viewer);
+	std::unique_ptr<Drawing> viewer2 = cgogn::make_unique<Drawing>(viewer.get());
 	viewer2->setWindowTitle("Drawing2");
 	viewer2->show();
 
 //	cgogn_log_info("are context shared ?") << std::boolalpha <<	QOpenGLContext::areSharing(viewer2->context(),viewer->context());
 
 	// Run main loop.
-	return application.exec();
+	const int ret = application.exec();
+
+	viewer.reset();
+	viewer2.reset();
+	return ret;
 }

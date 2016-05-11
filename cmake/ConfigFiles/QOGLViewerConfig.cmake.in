@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(QOGLViewer_LIBRARIES "QOGLViewer")
+set(QOGLViewer_INCLUDE_DIRS "@PACKAGE_QOGLVIEWER_INCLUDE_DIR@")
+
+if(NOT TARGET QOGLViewer)
+	include("${CMAKE_CURRENT_LIST_DIR}/QOGLViewerTargets.cmake")
+endif()
+
+check_required_components(QOGLViewer)

@@ -36,48 +36,39 @@ namespace rendering
 {
 
 TopoDrawer::TopoDrawer():
-	dart_color_(255,255,255),
-	phi2_color_(255,0,0),
-	phi3_color_(255,255,0),
+	dart_color_(255, 255, 255),
+	phi2_color_(255, 0, 0),
+	phi3_color_(255, 255, 0),
 	shrink_v_(0.6f),
 	shrink_f_(0.85f),
 	shrink_e_(0.95f)
 {
-
-	vbo_darts_ = new cgogn::rendering::VBO(3);
-	vbo_relations_ = new cgogn::rendering::VBO(3);
-
+	vbo_darts_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_relations_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 }
 
 TopoDrawer::~TopoDrawer()
 {
-	delete vbo_darts_;
-	delete vbo_relations_;
 }
-
 
 TopoDrawer::Renderer::Renderer(TopoDrawer* tr):
 	topo_drawer_data_(tr)
 {
 	param_bl_ = ShaderBoldLine::generate_param();
-	param_bl_->set_vbo(tr->vbo_darts_);
+	param_bl_->set_position_vbo(tr->vbo_darts_.get());
 	param_bl_->color_= tr->dart_color_;
 
 	param_bl2_ = ShaderBoldLine::generate_param();
-	param_bl2_->set_vbo(tr->vbo_relations_);
+	param_bl2_->set_position_vbo(tr->vbo_relations_.get());
 	param_bl2_->color_= tr->phi2_color_;
 
 	param_rp_ = ShaderRoundPoint::generate_param();
-	param_rp_->set_vbo(tr->vbo_darts_,2,0);
+	param_rp_->set_position_vbo(tr->vbo_darts_.get(), 2, 0);
 	param_rp_->color_ = tr->dart_color_;
 }
 
 TopoDrawer::Renderer::~Renderer()
-{
-	delete param_rp_;
-	delete param_bl_;
-	delete param_bl2_;
-}
+{}
 
 void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
 {

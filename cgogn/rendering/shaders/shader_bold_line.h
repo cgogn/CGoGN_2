@@ -37,9 +37,17 @@ namespace cgogn
 namespace rendering
 {
 
+// forward
+template <bool CPV>
+class ShaderParamBoldLine : public ShaderParam
+{};
+
 class CGOGN_RENDERING_API ShaderBoldLineGen : public ShaderProgram
 {
+	template <bool CPV> friend class ShaderParamBoldLine;
+
 protected:
+
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
@@ -63,8 +71,6 @@ public:
 		ATTRIB_COLOR
 	};
 
-	ShaderBoldLineGen(bool cpv);
-
 	/**
 	 * @brief set current color
 	 * @param rgb
@@ -76,28 +82,28 @@ public:
 	 * @param w width in pixel
 	 */
 	void set_width(float32 w);
+
+protected:
+
+	ShaderBoldLineGen(bool color_per_vertex);
 };
 
 template <bool CPV>
-class ShaderParamBoldLine : public ShaderParam
-{};
-
-template <bool CPV>
-class ShaderBoldLineTpl:public ShaderBoldLineGen
+class ShaderBoldLineTpl : public ShaderBoldLineGen
 {
 public:
+
 	using Param = ShaderParamBoldLine<CPV>;
-	static Param* generate_param();
+	static std::unique_ptr<Param> generate_param();
 
 private:
-	ShaderBoldLineTpl():
-		ShaderBoldLineGen(CPV)
-	{}
-	static ShaderBoldLineTpl* instance_;
+
+	ShaderBoldLineTpl() : ShaderBoldLineGen(CPV) {}
+	static std::unique_ptr<ShaderBoldLineTpl> instance_;
 };
 
 template <bool CPV>
-ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
+std::unique_ptr<ShaderBoldLineTpl<CPV>> ShaderBoldLineTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM VERSION
@@ -105,6 +111,7 @@ template <>
 class ShaderParamBoldLine<false> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
@@ -123,9 +130,9 @@ public:
 		width_(2.0f)
 	{}
 
-	void set_vbo(VBO* vbo_pos)
+	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -138,11 +145,12 @@ public:
 	}
 };
 
-//// COLOR PER VERTEX VERSION
+// COLOR PER VERTEX VERSION
 template <>
-class  ShaderParamBoldLine<true> : public ShaderParam
+class ShaderParamBoldLine<true> : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override
 	{
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
@@ -150,6 +158,7 @@ protected:
 	}
 
 public:
+
 	using Self = ShaderParamBoldLine<true>;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
@@ -160,9 +169,9 @@ public:
 		width_(2.0f)
 	{}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_color)
+	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
@@ -178,15 +187,41 @@ public:
 		vao_->release();
 		shader_->release();
 	}
+
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
+
+	void set_color_vbo(VBO* vbo_color)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_color->bind();
+		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
+		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
 };
 
 
 template <bool CPV>
-typename ShaderBoldLineTpl<CPV>::Param* ShaderBoldLineTpl<CPV>::generate_param()
+std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::generate_param()
 {
-	if (instance_==nullptr)
-		instance_ = new ShaderBoldLineTpl<CPV>;
-	return (new Param(instance_));
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderBoldLineTpl>(new ShaderBoldLineTpl<CPV>);
+	return cgogn::make_unique<Param>(instance_.get());
 }
 
 

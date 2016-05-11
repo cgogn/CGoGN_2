@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <memory>
 
 namespace cgogn
 {
@@ -54,7 +55,7 @@ class CGOGN_RENDERING_API ShaderParam
 protected:
 
 	ShaderProgram* shader_;
-	QOpenGLVertexArrayObject* vao_;
+	std::unique_ptr<QOpenGLVertexArrayObject> vao_;
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
 	virtual void set_uniforms() = 0;
@@ -63,14 +64,12 @@ public:
 
 	ShaderParam(ShaderProgram* prg);
 
-	inline virtual ~ShaderParam()
-	{}
+	virtual ~ShaderParam();
 
 	inline ShaderProgram* get_shader()
 	{
 		return shader_;
 	}
-
 
 	/**
 	 * @brief bind vao (and set uniform)
@@ -101,8 +100,6 @@ class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
 protected:
 
 	QOpenGLShaderProgram prg_;
-
-	std::vector<QOpenGLVertexArrayObject*> vaos_;
 
 	GLint unif_mv_matrix_;
 	GLint unif_projection_matrix_;

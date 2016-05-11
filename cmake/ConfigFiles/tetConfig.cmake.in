@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(tet_LIBRARIES "tet")
+set(tet_INCLUDE_DIRS "@PACKAGE_TET_INCLUDE_DIR@")
+
+if(NOT TARGET tet)
+	include("${CMAKE_CURRENT_LIST_DIR}/tetTargets.cmake")
+endif()
+
+check_required_components(tet)

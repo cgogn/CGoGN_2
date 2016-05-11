@@ -33,7 +33,7 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderTexture* ShaderTexture::instance_ = nullptr;
+std::unique_ptr<ShaderTexture> ShaderTexture::instance_ = nullptr;
 
 const char* ShaderTexture::vertex_shader_source_ =
 	"#version 150\n"
@@ -84,7 +84,7 @@ void ShaderParamTexture::set_uniforms()
 
 void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 
 	shader_->bind();
 	vao_->bind();
