@@ -319,17 +319,13 @@ TEST_F(CMap2Test, merge_map)
 
 
 	testCMap2 map1;
-//	map1.add_attribute<int32, CDart::ORBIT>("darts");
 	testCMap2::VertexAttribute<int32> att1_v = map1.add_attribute<int32, Vertex::ORBIT>("vertices");
-//	map1.add_attribute<int32, Edge::ORBIT>("edges");
 	testCMap2::FaceAttribute<int32> att1_f = map1.add_attribute<int32, Face::ORBIT>("faces");
-//	map1.add_attribute<int32, Volume::ORBIT>("volumes");
 
 	testCMap2 map2;
 	testCMap2::Attribute<int32,CDart::ORBIT> att2_d = map2.add_attribute<int32, CDart::ORBIT>("darts");
-//	map2.add_attribute<int32, Vertex::ORBIT>("vertices");
+	testCMap2::VertexAttribute<int32> att2_v = map2.add_attribute<int32, Vertex::ORBIT>("vertices");
 	testCMap2::EdgeAttribute<int32> att2_e = map2.add_attribute<int32, Edge::ORBIT>("edges");
-//	map2.add_attribute<int32, Face::ORBIT>("faces");
 	testCMap2::VolumeAttribute<int32> att2_w = map2.add_attribute<int32, Volume::ORBIT>("volumes");
 
 	for (int32 i=0; i<5; ++i)
@@ -356,6 +352,13 @@ TEST_F(CMap2Test, merge_map)
 	}
 
 	map1.merge(map2);
+
+	EXPECT_TRUE(map1.check_map_integrity());
+	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35);
+	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35);
+	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10);
+	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10);
+
 }
 
 #undef NB_MAX

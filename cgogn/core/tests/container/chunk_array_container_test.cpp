@@ -218,10 +218,8 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	ChunkArray<VEC3F>* data2_v = ca_cont2.add_attribute<VEC3F>("data_v");
 	ChunkArray<uint16>* data2_i16 = ca_cont2.add_attribute<uint16>("indices");
 
-	std::vector<uint32> old_new;
-
 	// test impossible merge
-	bool ok = ca_cont.merge<1>(ca_cont2,old_new);
+	bool ok = ca_cont.check_before_merge(ca_cont2);
 	EXPECT_FALSE(ok);
 
 	// correct attribute
@@ -252,9 +250,13 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 
 
 	//testing
-	ok = ca_cont.merge<1>(ca_cont2,old_new);
-
+	ok = ca_cont.check_before_merge(ca_cont2);
 	EXPECT_TRUE(ok);
+
+	if (!ok)
+		return;
+
+	std::vector<uint32> old_new = ca_cont.merge<1>(ca_cont2);
 	EXPECT_EQ(old_new.size(),9);
 	EXPECT_EQ(ca_cont.size(),14);
 
@@ -341,10 +343,14 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	ca_cont2.remove_lines<3>(5);
 
-	std::vector<uint32> old_new;
-	bool ok = ca_cont.merge<3>(ca_cont2,old_new);
-
+	bool ok = ca_cont.check_before_merge(ca_cont2);
 	EXPECT_TRUE(ok);
+
+	if (!ok)
+		return;
+
+	std::vector<uint32> old_new = ca_cont.merge<3>(ca_cont2);
+
 	EXPECT_EQ(old_new.size(),9);
 	EXPECT_EQ(ca_cont.size(),12);
 

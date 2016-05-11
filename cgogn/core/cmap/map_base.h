@@ -167,22 +167,22 @@ protected:
 		return idx;
 	}
 
-	template<Orbit ORBIT>
-	inline void compact_orbit_container()
-	{
-		if (!this->template is_embedded<ORBIT>())
-			return;
+//	template<Orbit ORBIT>
+//	inline void compact_orbit_container()
+//	{
+//		if (!this->template is_embedded<ORBIT>())
+//			return;
 
-		auto& cac = this->template get_attribute_container<ORBIT>();
-		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
-		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
-		{
-			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
-			const uint32 new_idx = map_old_new[old_idx];
-			if (new_idx != UINT32_MAX)
-				old_idx = new_idx;
-		});
-	}
+//		auto& cac = this->template get_attribute_container<ORBIT>();
+//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
+//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
+//		{
+//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
+//			const uint32 new_idx = map_old_new[old_idx];
+//			if (new_idx != UINT32_MAX)
+//				old_idx = new_idx;
+//		});
+//	}
 
 	/**
 	 * \brief Removes a topological element of PRIM_SIZE from the topology container
@@ -1311,6 +1311,9 @@ public:
 	{
 		std::vector<uint32> old_new = this->topology_.template compact<ConcreteMap::PRIM_SIZE>();
 
+		if (old_new.empty())
+			return;			// already compact nothing to do with relationss
+
 		for (ChunkArrayGen* ptr: this->topology_.get_attributes())
 		{
 			ChunkArray<Dart>* ca = dynamic_cast<ChunkArray<Dart>*>(ptr);
@@ -1328,7 +1331,7 @@ public:
 	}
 
 	/**
-	 * @brief compact the map
+	 * @brief compact this map
 	 */
 	void compact()
 	{
@@ -1339,15 +1342,90 @@ public:
 	}
 
 
-
+	/**
+	 * @brief merge map in this map
+	 * @param map must be of same type than map
+	 * @return
+	 */
 	bool merge(const ConcreteMap& map)
 	{
-		ConcreteMap* concrete = to_concrete();
-		this->compact_topo();
-		std::vector<uint32> old_new;
-		this->topology_.template merge<1>(this->topology_,old_new);
-		concrete->merge_check_embeddidng(map);
 
+		// check attribute compatibility
+		for(uint32 i=0; i<NB_ORBITS;++i)
+		{
+			if (this->embeddings_[i] != nullptr)
+			{
+				if (!this->attributes_[i].check_before_merge(map.attributes_[i]))
+					return false;
+			}
+		}
+
+		// compact and store index of copied darts
+		this->compact_topo();
+		uint32 first = this->topology_.size();
+
+		//
+		ConcreteMap* concrete = to_concrete();
+		concrete->merge_check_embedding(map);
+		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
+
+		// change topo relations of copied darts
+		for (ChunkArrayGen* ptr: this->topology_.get_attributes())
+		{
+			ChunkArray<Dart>* cad = dynamic_cast<ChunkArray<Dart>*>(ptr);
+			if (cad)
+			{
+				for (uint32 i=first; i!= this->topology_.end(); this->topology_.next(i))
+				{
+					Dart& d = (*cad)[i];
+					uint32 idx = d.index;
+					if (old_new_topo[idx] != INVALID_INDEX)
+						d = Dart(old_new_topo[idx]);
+				}
+			}
+		}
+
+		// set boundary of copied darts
+		map.foreach_dart([&] (Dart d)
+		{
+			if (map.is_boundary(d))
+			{
+				Dart dd = Dart(old_new_topo[d.index]);
+				this->set_boundary(dd,true);
+			}
+		});
+
+		// change embedding indices of moved lines
+		for(uint32 i=0; i<NB_ORBITS;++i)
+		{
+			ChunkArray<uint32>* emb = this->embeddings_[i];
+			if (emb != nullptr)
+			{
+				if (map.embeddings_[i] == nullptr) //set embedding to INVALID for further easy detection
+				{
+					for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+						(*emb)[j] = INVALID_INDEX;
+				}
+				else
+				{
+					std::vector<uint32> old_new = this->attributes_[i].template merge<1>(map.attributes_[i]);
+					for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+					{
+						uint32& e = (*emb)[j];
+						if (e != INVALID_INDEX)
+						{
+							if (old_new[e] != INVALID_INDEX)
+								e = old_new[e];
+						}
+					}
+				}
+			}
+		}
+
+		// embed remaining cells
+		concrete->merge_finish_embedding(first);
+
+		// ok
 		return true;
 	}
 

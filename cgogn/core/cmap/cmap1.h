@@ -522,7 +522,12 @@ public:
 	}
 
 protected:
-	void merge_check_embeddidng(const Self& map)
+
+	/**
+	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
+	 * @param map
+	 */
+	void merge_check_embedding(const Self& map)
 	{
 		if (!this->template is_embedded<Orbit::DART>() && map.template is_embedded<Orbit::DART>())
 			this->template create_embedding<Orbit::DART>();
@@ -531,7 +536,26 @@ protected:
 
 	}
 
+	/**
+	 * @brief ensure all cells (introduced while merging) are embedded.
+	 * @param first index of first dart to scan
+	 */
+	void merge_finish_embedding(uint32 first)
+	{
+		if (this->template is_embedded<Orbit::DART>())
+			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			{
+				if ((*this->embeddings_[Orbit::DART])[j] == std::numeric_limits<uint32>::max())
+					this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
+			}
 
+		if (this->template is_embedded<Orbit::PHI1>())
+			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			{
+				if ((*this->embeddings_[Orbit::PHI1])[j] == std::numeric_limits<uint32>::max())
+					this->new_orbit_embedding(Cell<Orbit::PHI1>(Dart(j)));
+			}
+	}
 
 };
 

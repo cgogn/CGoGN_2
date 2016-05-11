@@ -609,8 +609,27 @@ public:
 	}
 
 
+	bool check_before_merge(const Self& cac)
+	{
+		for (uint32 i=0; i<cac.names_.size(); ++i)
+		{
+			// compute indice of ith names of cac in this (size if not found)
+			uint32 j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
+			if (j != names_.size())
+			{
+				if (cac.type_names_[i] != type_names_[j])
+				{
+					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
 	template <uint32 PRIMSIZE>
-	bool merge(const Self& cac, std::vector<uint32>& map_old_new)
+	std::vector<uint32> merge(const Self& cac)
 	{
 		// mapping table of ca indices of cac in this
 		std::vector<uint32> map_attrib(cac.names_.size());
@@ -620,25 +639,9 @@ public:
 		{
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
 			if (j == names_.size()) // attrib not in this
-				map_attrib[i] = std::numeric_limits<uint32>::max();
-			else
-				if (cac.type_names_[i] == type_names_[j])
-					map_attrib[i] = j;
-				else
-				{
-					cgogn_log_warning("merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
-					return false;
-				}
-		}
-
-		// add missing attributes
-		for (uint32 i=0; i<cac.names_.size(); ++i)
-		{
-			if (map_attrib[i] == std::numeric_limits<uint32>::max())
 			{
 				const std::string& name = cac.names_[i];
 				const std::string& type_name = cac.type_names_[i];
-
 				map_attrib[i] = table_arrays_.size();
 				ChunkArrayGen* cag = ChunkArrayFactory::create(type_name,name);
 				table_arrays_.push_back(cag);
@@ -646,11 +649,17 @@ public:
 				type_names_.push_back(type_name);
 				cag->set_nb_chunks(refs_.get_nb_chunks());
 			}
+			else
+				if (cac.type_names_[i] == type_names_[j])
+					map_attrib[i] = j;
 		}
 
-		// line mapping
+		// check if nothing to do
+		if (cac.size()==0)
+			return std::vector<uint32>();
 
-		map_old_new.assign(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
+		// line mapping
+		std::vector<uint32> map_old_new(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
 
 		// copy data
 		for (uint32 it=cac.begin(); it!= cac.end(); cac.next(it))
@@ -668,7 +677,7 @@ public:
 			it += PRIMSIZE-1u;
 		}
 
-		return true;
+		return map_old_new;
 	}
 
 	/**************************************
