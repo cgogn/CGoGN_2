@@ -193,7 +193,7 @@ protected:
 	 * @brief ensure all cells (introduced while merging) are embedded.
 	 * @param first index of first dart to scan
 	 */
-	void merge_finish_embeddidng(uint32 first)
+	void merge_finish_embedding(uint32 first)
 	{
 		if (this->template is_embedded<Orbit::DART>())
 		{
