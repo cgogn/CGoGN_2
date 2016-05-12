@@ -101,6 +101,8 @@ public:
 		return m == map_;
 	}
 
+	virtual const std::string& get_name() const = 0;
+
 	virtual bool is_valid() const = 0;
 
 	virtual Orbit get_orbit() const = 0;
@@ -338,7 +340,7 @@ public:
 		}
 	}
 
-	const std::string& get_name() const
+	virtual const std::string& get_name() const override
 	{
 		return chunk_array_->get_name();
 	}
