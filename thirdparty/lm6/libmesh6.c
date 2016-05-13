@@ -664,6 +664,7 @@ long GmfSetKwd(int MshIdx, int KwdCod, ...)
 
 int GmfGetLin(int MshIdx, int KwdCod, ...)
 {
+	int nb_read;
 	int i, j;
 	float *FltSolTab;
 	double *DblSolTab;
@@ -714,7 +715,10 @@ int GmfGetLin(int MshIdx, int KwdCod, ...)
 						else
 							ScaDblWrd(msh, (unsigned char *)va_arg(VarArg, long *));
 					else if(kwd->fmt[i] == 'c')
-						fread(va_arg(VarArg, char *), WrdSiz, FilStrSiz, msh->hdl);
+						{
+							nb_read = fread(va_arg(VarArg, char *), WrdSiz, FilStrSiz, msh->hdl);
+							if (nb_read != FilStrSiz) printf("lm6 error reading file\n");
+						}
 			}
 		}break;
 
@@ -877,6 +881,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
 
 int GmfCpyLin(int InpIdx, int OutIdx, int KwdCod)
 {
+	int nb_read;
 	char s[ WrdSiz * FilStrSiz ];
 	double d;
 	float f;
@@ -967,7 +972,10 @@ int GmfCpyLin(int InpIdx, int OutIdx, int KwdCod)
 			if(InpMsh->typ & Asc)
 				safe_fgets(s, WrdSiz * FilStrSiz, InpMsh->hdl);
 			else
-				fread(s, WrdSiz, FilStrSiz, InpMsh->hdl);
+			{
+				nb_read = fread(s, WrdSiz, FilStrSiz, InpMsh->hdl);
+				if (nb_read != FilStrSiz) printf("lm6 error reading file\n");
+			}
 
 			if(OutMsh->typ & Asc)
 				fprintf(OutMsh->hdl, "%s", s);
