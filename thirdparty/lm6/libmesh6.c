@@ -664,7 +664,7 @@ long GmfSetKwd(int MshIdx, int KwdCod, ...)
 
 int GmfGetLin(int MshIdx, int KwdCod, ...)
 {
-	int nb_read;
+	size_t nb_read;
 	int i, j;
 	float *FltSolTab;
 	double *DblSolTab;
@@ -881,7 +881,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
 
 int GmfCpyLin(int InpIdx, int OutIdx, int KwdCod)
 {
-	int nb_read;
+	size_t nb_read;
 	char s[ WrdSiz * FilStrSiz ];
 	double d;
 	float f;
