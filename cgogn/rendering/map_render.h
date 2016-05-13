@@ -54,6 +54,7 @@ enum DrawingType
 class CGOGN_RENDERING_API MapRender
 {
 protected:
+
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
@@ -66,7 +67,9 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 	~MapRender();
 
-	inline bool is_primitive_uptodate(DrawingType prim)  { return indices_buffers_uptodate_[prim]; }
+	inline bool is_primitive_uptodate(DrawingType prim) { return indices_buffers_uptodate_[prim]; }
+
+	inline void set_primitive_dirty(DrawingType prim) { indices_buffers_uptodate_[prim] = false; }
 
 	template <typename MAP>
 	inline void init_points(const MAP& m, std::vector<uint32>& table_indices)
