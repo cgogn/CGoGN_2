@@ -104,6 +104,10 @@ endif()
 
 if(MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-D_USE_MATH_DEFINES")
+	## CGOGN_WIN_VER : has value 61 for windows 7, 62 for windows 8, 63 for windows 8.1, 100 for windows 10
+	set(WIN_VERSION "")
+	string(REPLACE "." "" WIN_VERSION ${CMAKE_SYSTEM_VERSION})
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_WIN_VER=${WIN_VERSION}")
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
