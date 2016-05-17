@@ -49,13 +49,13 @@ public:
 	virtual ~Drawing();
 
 //private:
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer2_;
+	std::shared_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
+	std::shared_ptr<cgogn::rendering::DisplayListDrawer> drawer2_;
 	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
 	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer2_rend_;
 
-	std::unique_ptr<cgogn::rendering::WallPaper> wp_;
-	std::unique_ptr<cgogn::rendering::WallPaper> button_;
+	std::shared_ptr<cgogn::rendering::WallPaper> wp_;
+	std::shared_ptr<cgogn::rendering::WallPaper> button_;
 	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_;
 	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> button_rend_;
 
@@ -73,17 +73,13 @@ void Drawing::closeEvent(QCloseEvent*)
 
 	drawer_rend_.reset();
 	drawer2_rend_.reset();
-
 	wp_rend_.reset();
 	button_rend_.reset();
 
-	if (m_first==this)
-	{
-		drawer_.reset();
-		drawer2_.reset();
-		wp_.reset();
-		button_.reset();
-	}
+	drawer_.reset();
+	drawer2_.reset();
+	wp_.reset();
+	button_.reset();
 }
 
 Drawing::Drawing() :
@@ -139,15 +135,20 @@ void Drawing::init()
 
 	if (m_first!=this)
 	{
-		drawer_rend_ = m_first->drawer_->generate_renderer();
-		drawer2_rend_ = m_first->drawer2_->generate_renderer();
-		wp_rend_ = m_first->wp_->generate_renderer();
-		button_rend_ = m_first->button_->generate_renderer();
+		drawer_ = m_first->drawer_;
+		drawer2_ = m_first->drawer2_;
+		wp_ = m_first->wp_;
+		button_ = m_first->button_;
+
+		drawer_rend_ = drawer_->generate_renderer();
+		drawer2_rend_ = drawer2_->generate_renderer();
+		wp_rend_ = wp_->generate_renderer();
+		button_rend_ = button_->generate_renderer();
 		return;
 	}
 
-	wp_ = cgogn::make_unique<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
-	button_ = cgogn::make_unique<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
+	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
+	button_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
 //	button_->set_local_position(this->width(),this->height(),10,10,50,50);
 	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
 
@@ -155,7 +156,7 @@ void Drawing::init()
 	button_rend_ = button_->generate_renderer();
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+	drawer_ = std::make_shared<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
@@ -214,7 +215,7 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+	drawer2_ = std::make_shared<cgogn::rendering::DisplayListDrawer>();
 	drawer2_rend_ = drawer2_->generate_renderer();
 	drawer2_->new_list();
 	drawer2_->point_size_aa(5.0);

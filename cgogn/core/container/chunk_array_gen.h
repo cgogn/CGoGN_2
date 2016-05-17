@@ -156,6 +156,14 @@ public:
 	virtual void copy_element(uint32 dst, uint32 src) = 0;
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source ptr (Precond: same type as this)
+	 * @param src source index
+	 */
+	virtual void copy_external_element(uint32 dst, Self* cag_src, uint32 src) =0;
+
+	/**
 	 * @brief move an element to another one
 	 * @param dst destination index
 	 * @param src source index

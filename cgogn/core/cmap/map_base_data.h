@@ -177,7 +177,7 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& get_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& get_const_attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -354,6 +354,8 @@ protected:
 		if (it == thread_ids_.end() || *it != thread_id)
 			thread_ids_.insert(it, thread_id);
 	}
+
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
