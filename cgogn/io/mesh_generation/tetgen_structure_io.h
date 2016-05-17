@@ -106,6 +106,8 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	using Face = typename Map::Face;
 
 	using TetgenReal = REAL;
+
+	map.compact_embedding(Vertex::ORBIT);
 	std::unique_ptr<tetgenio> output = make_unique<tetgenio>();
 
 	// 0-based indexing
