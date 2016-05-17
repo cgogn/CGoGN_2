@@ -116,27 +116,28 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	output->pointlist = new TetgenReal[output->numberofpoints * 3];
 
 	//for each vertex
-	uint32 i = 0u;
-	map.foreach_cell([&output,&i,&pos](Vertex v)
+
+	map.foreach_cell([&output,&map,&pos](Vertex v)
 	{
 		const VEC3& vec = pos[v];
-		output->pointlist[i++] = vec[0];
-		output->pointlist[i++] = vec[1];
-		output->pointlist[i++] = vec[2];
+		const uint32 emb = map.get_embedding(v);
+		output->pointlist[3u*emb + 0u] = vec[0];
+		output->pointlist[3u*emb + 1u] = vec[1];
+		output->pointlist[3u*emb + 2u] = vec[2];
 	});
 
 	output->numberoffacets = map.template nb_cells<Face::ORBIT>();
 	output->facetlist = new tetgenio::facet[output->numberoffacets] ;
 
 	//for each facet
-	i = 0u;
+	uint32 i = 0u;i = 0u;
 	map.foreach_cell([&output,&i,&map](Face face)
 	{
 		tetgenio::facet* f = &(output->facetlist[i]);
 		tetgenio::init(f);
 		f->numberofpolygons = 1;
-		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-		tetgenio::polygon* p = f->polygonlist;
+		f->polygonlist = new tetgenio::polygon[1];
+		tetgenio::polygon* p = &f->polygonlist[0];
 		tetgenio::init(p);
 		p->numberofvertices = map.codegree(face);
 		p->vertexlist = new int[p->numberofvertices];
@@ -147,8 +148,6 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 			p->vertexlist[j++] = map.get_embedding(v);
 		});
 
-		f->numberofholes = 0;
-		f->holelist = nullptr;
 		++i;
 	});
 
