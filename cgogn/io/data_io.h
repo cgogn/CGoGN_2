@@ -409,9 +409,9 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DATA_IO_CPP_))
 extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DATA_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

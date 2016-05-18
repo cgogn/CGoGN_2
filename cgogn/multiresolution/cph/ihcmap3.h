@@ -364,9 +364,9 @@ struct IHCMap3Type
 template <typename MAP_TRAITS>
 using IHCMap3 = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API IHCMap3_T<DefaultMapTraits, IHCMap3Type<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
 
 } // namespace cgogn
 
