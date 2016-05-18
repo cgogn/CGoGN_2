@@ -22,13 +22,17 @@
 *******************************************************************************/
 
 #include <cmath>
+
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/types/bounding_box.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 
-using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
-using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using namespace cgogn::numerics;
+
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float32,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<float64,3>>;
 using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
@@ -44,9 +48,9 @@ TYPED_TEST_CASE(BoundingBox_TEST, VecTypes );
 
 TEST(BoundingBox_TEST, NameOfType)
 {
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayf>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<float,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayf>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<float32,3>>>");
 	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<EigenVec3f>()), "cgogn::geometry::BoundingBox<Eigen::Matrix<float,3,1,0,3,1>>");
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayd>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<double,3>>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<StdArrayd>()), "cgogn::geometry::BoundingBox<cgogn::geometry::Vec_T<std::array<float64,3>>>");
 	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::BoundingBox<EigenVec3d>()), "cgogn::geometry::BoundingBox<Eigen::Matrix<double,3,1,0,3,1>>");
 }
 

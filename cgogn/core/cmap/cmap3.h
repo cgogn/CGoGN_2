@@ -1117,6 +1117,55 @@ public:
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
+
+protected:
+
+#define FOR_ALL_ORBITS( CODE)\
+{static const Orbit orbit_const=DART; CODE }\
+{static const Orbit orbit_const=PHI1; CODE }\
+{static const Orbit orbit_const=PHI2; CODE }\
+{static const Orbit orbit_const=PHI1_PHI2; CODE }\
+{static const Orbit orbit_const=PHI1_PHI3; CODE }\
+{static const Orbit orbit_const=PHI2_PHI3; CODE }\
+{static const Orbit orbit_const=PHI21; CODE }\
+{static const Orbit orbit_const=PHI21_PHI31; CODE }\
+{static const Orbit orbit_const=PHI1_PHI2_PHI3; CODE }
+
+	/**
+	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
+	 * @param map
+	 */
+	void merge_check_embedding(const Self& map)
+	{
+		FOR_ALL_ORBITS
+		(
+			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
+				this->template create_embedding<orbit_const>();
+		)	
+	}
+
+	/**
+	 * @brief ensure all cells (introduced while merging) are embedded.
+	 * @param first index of first dart to scan
+	 */
+	void merge_finish_embedding(uint32 first)
+	{
+		FOR_ALL_ORBITS
+		(
+			if (this->template is_embedded<orbit_const>())
+			{
+				for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+				{
+					if (((orbit_const != Boundary::ORBIT) && (orbit_const != DART)) || (!this->is_boundary(Dart(j))))
+						if ((*this->embeddings_[orbit_const])[j] == std::numeric_limits<uint32>::max())
+							this->new_orbit_embedding(Cell<orbit_const>(Dart(j)));
+				}
+			}
+		)
+	}
+
+#undef FOR_ALL_ORBITS
+
 };
 
 template <typename MAP_TRAITS>

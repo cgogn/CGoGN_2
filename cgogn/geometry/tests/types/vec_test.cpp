@@ -21,14 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 
-using StdArrayf = cgogn::geometry::Vec_T<std::array<float,3>>;
-using StdArrayd = cgogn::geometry::Vec_T<std::array<double,3>>;
+using namespace cgogn::numerics;
+
+using StdArrayf = cgogn::geometry::Vec_T<std::array<float32,3>>;
+using StdArrayd = cgogn::geometry::Vec_T<std::array<float64,3>>;
 using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
@@ -42,9 +45,9 @@ TYPED_TEST_CASE(VEC_OP_TEST, VecTypes );
 
 TEST(VEC_OP_TEST, CGOGN_Typename)
 {
-	EXPECT_EQ(cgogn::name_of_type(StdArrayf()),"cgogn::geometry::Vec_T<std::array<float,3>>");
+	EXPECT_EQ(cgogn::name_of_type(StdArrayf()),"cgogn::geometry::Vec_T<std::array<float32,3>>");
 	EXPECT_EQ(cgogn::name_of_type(EigenVec3f()), "Eigen::Matrix<float,3,1,0,3,1>");
-	EXPECT_EQ(cgogn::name_of_type(StdArrayd()),"cgogn::geometry::Vec_T<std::array<double,3>>");
+	EXPECT_EQ(cgogn::name_of_type(StdArrayd()),"cgogn::geometry::Vec_T<std::array<float64,3>>");
 	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
 }
 
