@@ -50,6 +50,8 @@ protected:
 
 public:
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker_T);
+
 	CellMarker_T(Map& map) :
 		map_(map)
 	{
@@ -67,11 +69,6 @@ public:
 		if (MapGen::is_alive(&map_))
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
-
-	CellMarker_T(const Self& dm) = delete;
-	CellMarker_T(Self&& dm) = delete;
-	Self& operator=(const Self& dm) = delete;
-	Self& operator=(Self&& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{
@@ -101,11 +98,13 @@ public:
 	using Self = CellMarker< MAP, ORBIT >;
 	using Map = typename Inherit::Map;
 
-	CellMarker(Map& map) :
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker);
+
+	inline CellMarker(Map& map) :
 		Inherit(map)
 	{}
 
-	CellMarker(const MAP& map) :
+	inline CellMarker(const MAP& map) :
 		Inherit(map)
 	{}
 
@@ -113,11 +112,6 @@ public:
 	{
 		unmark_all();
 	}
-
-	CellMarker(const Self& dm) = delete;
-	CellMarker(Self&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(Self&& dm) = delete;
-	CellMarker<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
 	inline void unmark_all()
 	{
@@ -141,7 +135,9 @@ protected:
 
 public:
 
-	CellMarkerStore(const MAP& map) :
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerStore);
+
+	inline CellMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
 		marked_cells_ = cgogn::get_uint_buffers()->get_buffer();
@@ -152,11 +148,6 @@ public:
 		unmark_all();
 		cgogn::get_uint_buffers()->release_buffer(marked_cells_);
 	}
-
-	CellMarkerStore(const Self& dm) = delete;
-	CellMarkerStore(Self&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(Self&& dm) = delete;
-	CellMarkerStore<MAP, ORBIT>& operator=(const Self& dm) = delete;
 
 	inline void mark(Cell<ORBIT> c)
 	{
@@ -173,9 +164,9 @@ public:
 		marked_cells_->clear();
 	}
 
-	inline const std::vector<uint32>* get_marked_cells() const
+	inline const std::vector<uint32>& get_marked_cells() const
 	{
-		return marked_cells_;
+		return *marked_cells_;
 	}
 };
 

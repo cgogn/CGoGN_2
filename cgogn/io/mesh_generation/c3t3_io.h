@@ -25,7 +25,7 @@
 #define IO_C3T3_IO_H_
 
 #include <map>
-#include <io/volume_import.h>
+#include <cgogn/io/volume_import.h>
 
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/refine_mesh_3.h>
@@ -78,20 +78,18 @@ protected:
 	{
 		const Triangulation& triangulation = cpx_.triangulation();
 		std::map<Vertex_handle, unsigned int> vertices_indices;
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 
-		const unsigned int num_vertices = triangulation.number_of_vertices();
-		const unsigned int num_cells = cpx_.number_of_cells_in_complex();
+		const uint32 num_vertices = triangulation.number_of_vertices();
+		const uint32 num_cells = cpx_.number_of_cells_in_complex();
 
-		this->volumes_types.reserve(num_cells);
-		this->volumes_vertex_indices_.reserve(4u*num_cells);
-		this->nb_vertices_ = num_vertices;
-		this->nb_volumes_ = num_cells;
+		this->set_nb_volumes(num_cells);
+		this->set_nb_vertices(num_vertices);
 
 		for (auto vit = triangulation.finite_vertices_begin(), vend = triangulation.finite_vertices_end(); vit != vend; ++vit)
 		{
 			const auto& P = vit->point();
-			const unsigned id = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 id = this->insert_line_vertex_container();
 			vertices_indices[vit] = id;
 			position->operator [](id) = VEC3(Scalar(P.x()), Scalar(P.y()), Scalar(P.z()));
 		}
@@ -99,10 +97,10 @@ protected:
 		for (auto cit = cpx_.cells_in_complex_begin(), cend = cpx_.cells_in_complex_end(); cit != cend; ++cit)
 			this->add_tetra(*position, vertices_indices[cit->vertex(0)], vertices_indices[cit->vertex(1)], vertices_indices[cit->vertex(2)], vertices_indices[cit->vertex(3)], true);
 
-		ChunkArray<int>* subdomain_indices = this->volume_attributes_.template add_attribute<int>("subdomain index");
+		ChunkArray<int32>* subdomain_indices = this->get_volume_attributes_container().template add_attribute<int32>("subdomain index");
 		for (auto cit = cpx_.cells_in_complex_begin(), cend = cpx_.cells_in_complex_end(); cit != cend; ++cit)
 		{
-			const unsigned id = this->volume_attributes_.template insert_lines<1>();
+			const uint32 id = this->get_volume_attributes_container().template insert_lines<1>();
 			subdomain_indices->operator [](id) = cpx_.subdomain_index(cit);
 		}
 

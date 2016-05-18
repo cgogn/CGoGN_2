@@ -65,9 +65,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 if (${ZLIB_FOUND})
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DCGOGN_WITH_ZLIB")
+        target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARIES})
 endif()
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ZLIB_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}

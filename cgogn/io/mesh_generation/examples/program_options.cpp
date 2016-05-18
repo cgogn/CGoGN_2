@@ -23,7 +23,7 @@
 
 #include "program_options.h"
 #include <iostream>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/definitions.h>
 
 #define DEFAULT_IMAGE_PATH CGOGN_STR(CGOGN_TEST_IMAGES_PATH)
 
