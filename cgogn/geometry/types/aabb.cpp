@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_GEOMETRY_DLL_EXPORT
-#define CGOGN_GEOMETRY_BOUNDING_BOX_CPP_
+#define CGOGN_GEOMETRY_TYPES_AABB_CPP_
 
-#include <cgogn/geometry/types/bounding_box.h>
+#include <cgogn/geometry/types/aabb.h>
 
 namespace cgogn
 {
@@ -32,10 +32,10 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3d>;
-template class CGOGN_GEOMETRY_API BoundingBox<Eigen::Vector3f>;
-template class CGOGN_GEOMETRY_API BoundingBox<Vec_T<std::array<float32,3>>>;
-template class CGOGN_GEOMETRY_API BoundingBox<Vec_T<std::array<float64,3>>>;
+template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
+template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32,3>>>;
+template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
 
 
 } // namespace geometry

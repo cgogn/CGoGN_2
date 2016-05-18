@@ -80,7 +80,7 @@ private:
 	VertexAttribute<Vec3> vertex_position_;
 	VertexAttribute<Vec3> vertex_normal_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 
@@ -127,7 +127,7 @@ void Viewer::import(const std::string& surface_mesh)
 	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));

@@ -6,7 +6,7 @@ find_package(cgogn_core REQUIRED)
 
 set(HEADER_FILES
 	dll.h
-	algos/bounding_box.h
+        algos/bounding_box.h
 	algos/feature.h
 	algos/area.h
 	algos/centroid.h
@@ -23,7 +23,7 @@ set(HEADER_FILES
 	functions/inclusion.h
 	functions/intersection.h
 	functions/distance.h
-	types/bounding_box.h
+        types/aabb.h
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
@@ -33,7 +33,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	types/plane_3d.cpp
 	types/vec.cpp
-	types/bounding_box.cpp
+        types/aabb.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
