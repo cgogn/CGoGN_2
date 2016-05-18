@@ -105,7 +105,7 @@ private:
 	cgogn::CellCache<Map2> cell_cache_;
 	std::unique_ptr<CustomFilter> filter_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 
@@ -160,7 +160,7 @@ void Viewer::import(const std::string& surface_mesh)
 
 	filter_ = cgogn::make_unique<CustomFilter>(vertex_position_);
 
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
@@ -390,7 +390,7 @@ void Viewer::init()
 
 void Viewer::update_bb()
 {
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);
