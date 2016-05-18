@@ -324,4 +324,4 @@ extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
 
 } // namespace cgogn
 
-#endif // CGOGN_GEOMETRY_TYPES_BOUNDING_BOX_H_
+#endif // CGOGN_GEOMETRY_TYPES_AABB_H_
