@@ -24,6 +24,7 @@ set(HEADER_FILES
 	functions/intersection.h
 	functions/distance.h
         types/aabb.h
+        types/obb.h
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
@@ -31,9 +32,10 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
+        types/aabb.cpp
+        types/obb.cpp
 	types/plane_3d.cpp
 	types/vec.cpp
-        types/aabb.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
