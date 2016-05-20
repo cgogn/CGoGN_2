@@ -79,7 +79,7 @@ public:
 		initialized_ = false;
 	}
 
-	Vec center() const
+	const Vec& center() const
 	{
 		return center_;
 	}
@@ -89,7 +89,7 @@ public:
 		center_ = c;
 	}
 
-	Vec extension() const
+	const Vec& extension() const
 	{
 		return extension_;
 	}
@@ -99,7 +99,7 @@ public:
 		extension_ = e;
 	}
 
-	Eigen::Matrix<Scalar, dim_, dim_> axis() const
+	const Eigen::Matrix<Scalar, dim_, dim_>& axis() const
 	{
 		return axes_;
 	}

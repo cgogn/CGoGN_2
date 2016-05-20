@@ -59,7 +59,7 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	uint32 count = 0;
 	for(const auto& p : attr)
 	{
-		mean += p;
+		mean += Eigen::Vector3d(p[0], p[1], p[2]);
 		++count;
 	}
 	mean /= count;
@@ -68,7 +68,7 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	Eigen::Matrix<double, 3, 3> covariance;
 	covariance.setZero();
 
-	for(const auto p : attr)
+	for(const auto& p : attr)
 	{
 		Eigen::Matrix<double, 4, 1> point;
 		point[0] = p[0] - mean[0];
