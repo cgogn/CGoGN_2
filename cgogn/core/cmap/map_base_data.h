@@ -103,6 +103,7 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
 
 protected:
 
@@ -116,14 +117,14 @@ protected:
 	std::array<ChunkArray<uint32>*, NB_ORBITS> embeddings_;
 
 	/// boundary marker shortcut
-	ChunkArray<bool>* boundary_marker_;
+	ChunkArrayBool* boundary_marker_;
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<std::vector<ChunkArray<bool>*>> mark_attributes_topology_;
+	std::vector<std::vector<ChunkArrayBool*>> mark_attributes_topology_;
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of available mark attributes per orbit per thread on attributes containers
-	std::array<std::vector<std::vector<ChunkArray<bool>*>>, NB_ORBITS> mark_attributes_;
+	std::array<std::vector<std::vector<ChunkArrayBool*>>, NB_ORBITS> mark_attributes_;
 	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
 
 	/// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
@@ -205,19 +206,19 @@ protected:
 	* \brief get a mark attribute on the topology container (from pool or created)
 	* @return a mark attribute on the topology container
 	*/
-	inline ChunkArray<bool>* get_topology_mark_attribute()
+	inline ChunkArrayBool* get_topology_mark_attribute()
 	{
 		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
-			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
+			ChunkArrayBool* ca = this->mark_attributes_topology_[thread].back();
 			this->mark_attributes_topology_[thread].pop_back();
 			return ca;
 		}
 		else
 		{
 			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
+			ChunkArrayBool* ca = this->topology_.add_marker_attribute();
 			return ca;
 		}
 	}
@@ -226,7 +227,7 @@ protected:
 	* \brief release a mark attribute on the topology container
 	* @param the mark attribute to release
 	*/
-	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
+	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
 		std::size_t thread = this->get_current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);

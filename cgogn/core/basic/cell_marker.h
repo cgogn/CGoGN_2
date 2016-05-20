@@ -38,10 +38,9 @@ class CellMarker_T
 
 public:
 
-	static const uint32 CHUNKSIZE = MAP::CHUNKSIZE;
 	using Self = CellMarker_T<MAP, ORBIT>;
 	using Map = MAP;
-	using ChunkArrayBool = ChunkArray<CHUNKSIZE, bool>;
+	using ChunkArrayBool = typename Map::ChunkArrayBool;
 
 protected:
 

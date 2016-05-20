@@ -107,10 +107,10 @@ public:
 		return true;
 	}
 
-	bool is_boolean_array() const override
-	{
-		return false;
-	}
+//	bool is_boolean_array() const override
+//	{
+//		return false;
+//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
@@ -429,15 +429,15 @@ public:
 };
 
 /**
- * @brief specialized version of ChunkArray for bool data. One bit per bool
+ * @brief separate version of ChunkArray specialized for bool data. One bit per bool.
  */
 template <uint32 CHUNKSIZE>
-class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
+class ChunkArrayBool : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
 	using Inherit = ChunkArrayGen<CHUNKSIZE>;
-	using Self = ChunkArray<CHUNKSIZE, bool>;
+	using Self = ChunkArrayBool;
 	using value_type = uint32;
 
 protected:
@@ -450,20 +450,20 @@ protected:
 
 public:
 
-	inline ChunkArray(const std::string& name) :
+	inline ChunkArrayBool(const std::string& name) :
 		Inherit(name, name_of_type(bool()))
 	{
 		table_data_.reserve(1024u);
 	}
 
-	inline ChunkArray() : Inherit()
+	inline ChunkArrayBool() : Inherit()
 	{
 		table_data_.reserve(1024u);
 	}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArray);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayBool);
 
-	~ChunkArray() override
+	~ChunkArrayBool() override
 	{
 		for(auto chunk : table_data_)
 			delete[] chunk;
@@ -493,10 +493,10 @@ public:
 		return true;
 	}
 
-	bool is_boolean_array() const override
-	{
-		return true;
-	}
+//	bool is_boolean_array() const override
+//	{
+//		return true;
+//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE/32])
@@ -603,7 +603,6 @@ public:
 		Self* ca = static_cast<Self*>(cag_src);
 		set_value(dst, ca->operator[](src));
 	}
-
 
 	/**
 	 * @brief swap two elements
