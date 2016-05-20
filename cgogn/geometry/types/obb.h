@@ -44,8 +44,22 @@ namespace geometry
 template <typename VEC_T>
 class OBB
 {
+	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+
+public:
+
+	using Vec = VEC_T;
+	using Scalar = typename vector_traits<Vec>::Scalar;
+	using Self = OBB<Vec>;
+	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 
 private:
+	//center point of this OBB
+	Vec center_;
+	Vec extension_;
+
+	//the axes defining the OBB
+	Eigen::Matrix<Scalar, dim_, dim_> axes_;
 
 	bool initialized_;
 
@@ -57,13 +71,64 @@ public:
 	OBB() :
 		initialized_(false)
 	{}
+
+
+	// reinitialize the axis-aligned bounding box
+	void reset()
+	{
+		initialized_ = false;
+	}
+
+	Vec center() const
+	{
+		return center_;
+	}
+
+	void center(const Vec& c)
+	{
+		center_ = c;
+	}
+
+	Vec extension() const
+	{
+		return extension_;
+	}
+
+	void extension(const Vec& e)
+	{
+		extension_ = e;
+	}
+
+	Eigen::Matrix<Scalar, dim_, dim_> axis() const
+	{
+		return axes_;
+	}
+
+	void axis(const Eigen::Matrix<Scalar, dim_, dim_>& a)
+	{
+		axes_ = a;
+	}
+
+	void edges(std::array<Vec,8>& e)
+	{
+		for(int i=0 ; i < 8 ; ++i)
+		{
+			e[i] = center_ + (i&1?1:-1)*extension_[0]*axes_.col(0) + (i&2?1:-1)*extension_[1]*axes_.col(1) + (i&4?1:-1)*extension_[2]*axes_.col(2);
+		}
+	}
+
+	static std::string cgogn_name_of_type()
+	{
+		return std::string("cgogn::geometry::OBB<") + name_of_type(Vec()) + std::string(">");
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
 extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3f>;
-extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32, 3>>>;
-extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
+//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32, 3>>>;
+//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
 
 } // namespace geometry
