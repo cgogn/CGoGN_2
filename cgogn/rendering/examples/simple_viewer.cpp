@@ -125,6 +125,12 @@ void Viewer::import(const std::string& surface_mesh)
 	}
 
 	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+
+// testing merge method
+//	Map2 map2;
+//	cgogn::io::import_surface<Vec3>(map2, std::string(DEFAULT_MESH_PATH) + std::string("off/star_convex.off"));
+//	map_.merge(map2);
+
 	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);

@@ -1,11 +1,11 @@
 #ifndef IO_MAP3_FROM_IMAGE_H
 #define IO_MAP3_FROM_IMAGE_H
 
-#include <core/cmap/cmap3.h>
-#include <core/utils/string.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/utils/string.h>
 
-#include <io/volume_import.h>
-#include <io/mesh_generation/c3t3_io.h>
+#include <cgogn/io/volume_import.h>
+#include <cgogn/io/mesh_generation/c3t3_io.h>
 
 #include <CGAL/make_mesh_3.h>
 

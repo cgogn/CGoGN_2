@@ -206,6 +206,18 @@ public:
 	}
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = ca->table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+	}
+
+	/**
 	 * @brief move an element to another one
 	 * @param dst destination index
 	 * @param src source index
@@ -430,6 +442,9 @@ public:
 
 protected:
 
+	// ensure we can use CHUNK_SIZE value < 32
+	const int BOOLS_PER_INT = (CHUNKSIZE<32u) ? CHUNKSIZE : 32u;
+
 	// vector of block pointers
 	std::vector<uint32*> table_data_;
 
@@ -489,7 +504,7 @@ public:
 	void add_chunk() override
 	{
 		// adding the empty parentheses for default-initialization
-		table_data_.push_back(new uint32[CHUNKSIZE/32u]());
+		table_data_.push_back(new uint32[CHUNKSIZE/BOOLS_PER_INT]());
 	}
 
 	/**
@@ -526,7 +541,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return uint32(table_data_.size())*CHUNKSIZE/32u;
+		return uint32(table_data_.size())*CHUNKSIZE/BOOLS_PER_INT;
 	}
 
 	/**
@@ -578,6 +593,19 @@ public:
 	}
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		set_value(dst, ca->operator[](src));
+	}
+
+
+	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
@@ -601,8 +629,8 @@ public:
 		}
 
 		// round nbLines to 32 multiple
-		if (nb_lines % 32u)
-			nb_lines = ((nb_lines / 32u) + 1u) * 32u;
+		if (nb_lines % BOOLS_PER_INT)
+			nb_lines = ((nb_lines / BOOLS_PER_INT) + 1u) * BOOLS_PER_INT;
 
 		cgogn_assert(nb_lines / CHUNKSIZE <= table_data_.size());
 		// TODO: if (nb_lines==0) nb_lines = CHUNKSIZE*table_data_.size(); ??
@@ -667,8 +695,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 
 		const uint32 mask = 1u << y;
 
@@ -680,8 +708,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		table_data_[jj][x] &= ~mask;
 	}
@@ -691,8 +719,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		table_data_[jj][x] |= mask;
 	}
@@ -702,8 +730,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		if (b)
 			table_data_[jj][x] |= mask;
@@ -722,7 +750,7 @@ public:
 	{
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNKSIZE) / 32u;
+		const uint32 j = (i % CHUNKSIZE) / BOOLS_PER_INT;
 		table_data_[jj][j] = 0u;
 	}
 
@@ -731,7 +759,7 @@ public:
 		for (uint32 * const ptr : table_data_)
 		{
 //#pragma omp for
-			for (int32 j = 0; j < int32(CHUNKSIZE / 32); ++j)
+			for (int32 j = 0; j < int32(CHUNKSIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
@@ -740,7 +768,7 @@ public:
 //	{
 //		for (auto ptr : table_data_)
 //		{
-//			for (uint32 j = 0u; j < CHUNKSIZE/32u; ++j)
+//			for (uint32 j = 0u; j < CHUNKSIZE/BOOLS_PER_INT; ++j)
 //				*ptr++ = 0xffffffff;
 //		}
 //	}

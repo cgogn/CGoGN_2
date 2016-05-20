@@ -126,7 +126,6 @@
 	_Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
 	_Pragma("clang diagnostic ignored \"-Wdeprecated\"") \
 	_Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
-	_Pragma("clang diagnostic ignored \"-Wreserved-id-macro\"") \
 	_Pragma("clang diagnostic ignored \"-Wshadow\"") \
 	_Pragma("clang diagnostic ignored \"-Wmissing-noreturn\"") \
 	_Pragma("clang diagnostic ignored \"-Wused-but-marked-unused\"")
