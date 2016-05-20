@@ -62,6 +62,7 @@ public:
 	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
+	using typename Inherit::ChunkArrayBool;
 
 	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
 	template <typename T, Orbit ORBIT>
@@ -322,14 +323,14 @@ protected:
 	* @return a mark attribute on the topology container
 	*/
 	template <Orbit ORBIT>
-	inline ChunkArray<bool>* get_mark_attribute()
+	inline ChunkArrayBool* get_mark_attribute()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
-			ChunkArray<bool>* ca = this->mark_attributes_[ORBIT][thread].back();
+			ChunkArrayBool* ca = this->mark_attributes_[ORBIT][thread].back();
 			this->mark_attributes_[ORBIT][thread].pop_back();
 			return ca;
 		}
@@ -338,7 +339,7 @@ protected:
 			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
 			if (!this->template is_embedded<ORBIT>())
 				create_embedding<ORBIT>();
-			ChunkArray<bool>* ca = this->attributes_[ORBIT].add_marker_attribute();
+			ChunkArrayBool* ca = this->attributes_[ORBIT].add_marker_attribute();
 			return ca;
 		}
 	}
@@ -348,7 +349,7 @@ protected:
 	* @param the mark attribute to release
 	*/
 	template <Orbit ORBIT>
-	inline void release_mark_attribute(ChunkArray<bool>* ca)
+	inline void release_mark_attribute(ChunkArrayBool* ca)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
