@@ -105,22 +105,27 @@ protected:
 			output << std::endl;
 		});
 		output << "        </DataArray>" << std::endl;
-		// 1.B : other vertices attributes
-		for (const auto& att : this->get_vertex_attributes())
-		{
-			scalar_type = att->get_nested_type_name();
-			scalar_type[0] = std::toupper(scalar_type[0]);
-			output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
-			map.foreach_cell([&](Vertex v)
-			{
-				output << "          ";
-				att->export_data(output, map.get_embedding(v), false);
-				output << std::endl;
-			});
-			output << "        </DataArray>" << std::endl;
-		}
-
 		output << "      </Points>" << std::endl;
+
+		if (!this->get_vertex_attributes().empty())
+		{
+			output << "      <PointData>" << std::endl;
+			// 1.B : other vertices attributes
+			for (const auto& att : this->get_vertex_attributes())
+			{
+				scalar_type = att->get_nested_type_name();
+				scalar_type[0] = std::toupper(scalar_type[0]);
+				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
+				map.foreach_cell([&](Vertex v)
+				{
+					output << "          ";
+					att->export_data(output, map.get_embedding(v), false);
+					output << std::endl;
+				});
+				output << "        </DataArray>" << std::endl;
+			}
+			output << "      </PointData>" << std::endl;
+		}
 		// end vertices
 		// begin volumes
 		output << "      <Cells>" << std::endl;
@@ -165,23 +170,28 @@ protected:
 			output << std::to_string(VTK_HEXAHEDRON) << " ";
 
 		output << std::endl << "        </DataArray>" << std::endl;
+		output << "      </Cells>" << std::endl;
 
 		//2.d other volumes attributes
-		for (const auto& att : this->get_volume_attributes())
+		if (!this->get_volume_attributes().empty())
 		{
-			scalar_type = att->get_nested_type_name();
-			scalar_type[0] = std::toupper(scalar_type[0]);
-			output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
-			for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
-			map.foreach_cell([&](Volume w)
+			output << "      <CellData>" << std::endl;
+			for (const auto& att : this->get_volume_attributes())
 			{
-				output << "         ";
-				att->export_data(output, map.get_embedding(w), false);
-				output << std::endl;
-			});
-			output << "        </DataArray>" << std::endl;
+				scalar_type = att->get_nested_type_name();
+				scalar_type[0] = std::toupper(scalar_type[0]);
+				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
+				for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
+					map.foreach_cell([&](Volume w)
+					{
+						output << "         ";
+						att->export_data(output, map.get_embedding(w), false);
+						output << std::endl;
+					});
+				output << "        </DataArray>" << std::endl;
+			}
+			output << "      </CellData>" << std::endl;
 		}
-		output << "      </Cells>" << std::endl;
 		output << "    </Piece>" << std::endl;
 		output << "  </UnstructuredGrid>" << std::endl;
 		output << "</VTKFile>" << std::endl;
@@ -817,10 +827,12 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkSurfaceImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
 	}
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkSurfaceImport::add_cell_attribute") << "Adding a face attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
 	}
 	virtual bool import_file_impl(const std::string& filename) override
@@ -972,10 +984,12 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkVolumeImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_vertex_attributes_container(), attribute_name));
 	}
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkVolumeImport::add_cell_attribute") << "Adding a volume attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_volume_attributes_container(), attribute_name));
 	}
 
