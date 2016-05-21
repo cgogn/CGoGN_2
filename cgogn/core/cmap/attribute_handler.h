@@ -26,10 +26,17 @@
 
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/container/chunk_array_container.h>
 #include <cgogn/core/cmap/map_base_data.h>
 
 namespace cgogn
 {
+
+// forward declaration of class AttributeFactory
+template <typename DATA_TRAITS>
+class AttributeFactory;
 
 /**
  * \brief Generic Attribute class
@@ -38,11 +45,11 @@ namespace cgogn
 template <typename DATA_TRAITS>
 class AttributeGen
 {
+	friend class AttributeFactory<DATA_TRAITS>;
 public:
-
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
-
+	using ChunkArrayGen = cgogn::ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>;
 protected:
 
 	MapData* map_;
@@ -87,7 +94,7 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeGen& operator=(Self&& atthg)
+	inline AttributeGen& operator=(Self&& atthg) CGOGN_NOEXCEPT
 	{
 		this->map_ = atthg.map_;
 		return *this;
@@ -101,11 +108,41 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string& get_name() const = 0;
+	virtual const std::string&	get_name() const = 0;
+	virtual std::string			get_type_name() const = 0;
+	virtual std::string			get_nested_type_name() const = 0;
+	virtual uint32				get_nb_components() const = 0;
+	virtual bool				is_valid() const = 0;
+	virtual Orbit				get_orbit() const = 0;
+	virtual void				export_data(std::ofstream& out, uint32 idx, bool binary) const = 0;
 
-	virtual bool is_valid() const = 0;
+protected:
+	// the write_T static function ease exporting array or scalar with the same code.
+	template<typename T>
+	static inline typename std::enable_if<!internal::has_operator_brackets<T>::value, std::ostream&>::type write_T(std::ostream& o, bool binary, const T& x)
+	{
+		if (binary)
+			serialization::save(o,&x,1ul);
+		else
+			o << x;
+		return o;
+	}
 
-	virtual Orbit get_orbit() const = 0;
+	template<typename T>
+	static inline typename std::enable_if<internal::has_operator_brackets<T>::value, std::ostream&>::type write_T(std::ostream& o, bool binary, const T& array)
+	{
+		const std::size_t size = array.size();
+		for(std::size_t i = 0ul ; i < size -1ul; ++i)
+		{
+			Self::write_T(o, binary, array[i]);
+			if (!binary)
+				o << " ";
+		}
+		Self::write_T(o, binary, array[size-1ul]);
+		return o;
+	}
+
+	virtual std::unique_ptr<AttributeGen> clone(MapData* mapbd, ChunkArrayGen* cag) const = 0;
 };
 
 
@@ -122,7 +159,7 @@ public:
 	using Self = AttributeOrbit<DATA_TRAITS, ORBIT>;
 	using MapData = typename Inherit::MapData;
 
-	static const uint32 CHUNKSIZE = MapData::CHUNKSIZE;
+	static const uint32 CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
 	static const Orbit orbit_value = ORBIT;
 
 	template <typename T>
@@ -208,6 +245,7 @@ public:
 	using value_type = T;
 	using MapData = typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
 protected:
 
@@ -228,7 +266,7 @@ public:
 	/**
 	 * \brief Constructor
 	 * @param m the map the attribute belongs to
-	 * @param ca ChunkArray pointer
+	 * @param ca TChunkArray pointer
 	 */
 	Attribute(MapData* const m, TChunkArray* const ca) :
 		Inherit(m),
@@ -535,7 +573,34 @@ public:
 	{
 		return iterator(this, this->chunk_array_cont_->end());
 	}
+
+	virtual std::string get_type_name() const override
+	{
+		return name_of_type(T());
+	}
+
+	virtual std::string get_nested_type_name() const override
+	{
+		return name_of_type(typename internal::nested_type<T>::type());
+	}
+
+	virtual void export_data(std::ofstream& out, uint32 idx, bool binary) const override
+	{
+			Self::write_T(out, binary, this->operator [](idx));
+	}
+
+	virtual uint32	get_nb_components() const
+	{
+		return internal::get_nb_components(*begin());
+	}
+protected:
+	std::unique_ptr<cgogn::AttributeGen<DATA_TRAITS>> clone(MapData* mapbd, ChunkArrayGen* cag) const override
+	{
+		return std::unique_ptr<cgogn::AttributeGen<DATA_TRAITS>>(new Self(mapbd, dynamic_cast<TChunkArray*>(cag)));
+	}
 };
+
+
 
 } // namespace cgogn
 
