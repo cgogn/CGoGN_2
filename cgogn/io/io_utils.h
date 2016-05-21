@@ -80,11 +80,11 @@ enum VolumeType
 	Connector
 };
 
-CGOGN_IO_API bool						file_exists(const std::string& filename);
-CGOGN_IO_API std::ofstream				create_file(const std::string& filename);
-CGOGN_IO_API FileType					get_file_type(const std::string& filename);
-CGOGN_IO_API DataType					get_data_type(const std::string& type_name);
-CGOGN_IO_API std::vector<unsigned char>	base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
+CGOGN_IO_API bool							file_exists(const std::string& filename);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
+CGOGN_IO_API FileType						get_file_type(const std::string& filename);
+CGOGN_IO_API DataType						get_data_type(const std::string& type_name);
+CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
 CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type);

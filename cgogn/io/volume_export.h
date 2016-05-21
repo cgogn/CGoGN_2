@@ -103,10 +103,10 @@ public:
 			return;
 		}
 
-		std::ofstream output = io::create_file(options.filename_);
+		auto output = io::create_file(options.filename_);
 		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert");
 		this->prepare_for_export(map);
-		this->export_file_impl(map,output, options);
+		this->export_file_impl(map,*output, options);
 		map.remove_attribute(indices_);
 	}
 
