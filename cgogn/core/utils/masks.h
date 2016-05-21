@@ -25,6 +25,7 @@
 #define CGOGN_CORE_UTILS_MASKS_H_
 
 #include <vector>
+#include <array>
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/cell.h>

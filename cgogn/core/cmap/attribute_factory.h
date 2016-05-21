@@ -105,8 +105,6 @@ public:
 		register_attribute<std::array<float32, 3>>();
 		register_attribute<std::array<float64, 3>>();
 		// NOT TODO : add Eigen.
-
-		known_types_initialized_ = true;
 	}
 
 	/**

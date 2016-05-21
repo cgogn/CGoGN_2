@@ -31,7 +31,7 @@
 #include <cgogn/core/cmap/attribute.h>
 
 #include <cgogn/io/io_utils.h>
-#pragma once
+
 namespace cgogn
 {
 

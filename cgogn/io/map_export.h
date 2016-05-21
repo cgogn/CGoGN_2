@@ -35,7 +35,6 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/algos/normal.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
-#include <cgogn/io/volume_export.h>
 #include <cgogn/io/vtk_io.h>
 
 namespace cgogn
