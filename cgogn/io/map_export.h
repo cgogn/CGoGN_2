@@ -36,6 +36,7 @@
 #include <cgogn/geometry/algos/normal.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 #include <cgogn/io/vtk_io.h>
+#include <cgogn/io/msh_io.h>
 
 namespace cgogn
 {
@@ -68,6 +69,7 @@ inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& fi
 	{
 //		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:		return make_unique<VtkVolumeExport<MAP>>();
+		case FileType::FileType_MSH:		return make_unique<MshVolumeExport<MAP>>();
 		default:
 			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << get_extension(filename) << "\".";
 			return std::unique_ptr<VolumeExport<MAP>> ();

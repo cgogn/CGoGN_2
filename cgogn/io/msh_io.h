@@ -30,6 +30,7 @@
 #include <cgogn/io/dll.h>
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/volume_import.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -460,7 +461,69 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_MSH_IO_CPP_))
+template<typename MAP>
+class MshVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = MshVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using AttributeGen = typename Map::AttributeGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		AttributeGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+
+		if (!output.good())
+			return;
+
+		// 1. vertices
+		output << "$NOD" << std::endl;
+		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+		uint32 vertices_counter = 1u;
+		map.foreach_cell([&](Vertex v)
+		{
+			output << vertices_counter++ << " ";
+			pos->export_data(output, map.get_embedding(v), false);
+			output << std::endl;
+		});
+		output << "$ENDNOD" << std::endl;
+
+
+		// 2. volumes
+		output << "$ELM" << std::endl;
+		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const uint32 nb_vols = nb_vert_vol.size();
+		output << nb_vols << std::endl;
+
+		uint32 cell_counter = 1u;
+		auto vertices_it = this->get_vertices_of_volumes().begin();
+		for (uint32 w = 0u; w < nb_vols; ++w)
+		{
+			const uint32 type = (nb_vert_vol[w] == 4u)?4u:(nb_vert_vol[w] == 5u)?7u:(nb_vert_vol[w] == 6u)?6u:5u;
+			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nb_vert_vol[w]<<" ";
+			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
+			{
+				output << *vertices_it + 1u << " ";
+				++vertices_it;
+			}
+			output << std::endl;
+		}
+		output << "$ENDELM" << std::endl;
+	}
+};
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
@@ -470,7 +533,9 @@ extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vect
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_MSH_IO_CPP_))
+
+extern template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 
 
 } // namespace io

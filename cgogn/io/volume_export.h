@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #ifndef CGOGN_IO_VOLUME_EXPORT_H_
-#define CGOGN_IO_VOLUME_IMPORT_H_
+#define CGOGN_IO_VOLUME_EXPORT_H_
 
 #include <ostream>
 
