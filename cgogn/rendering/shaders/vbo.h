@@ -27,7 +27,7 @@
 
 #include <QOpenGLBuffer>
 
-#include <cgogn/core/cmap/attribute_handler.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn

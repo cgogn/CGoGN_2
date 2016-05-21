@@ -28,7 +28,6 @@
 #include <memory>
 
 #include <cgogn/core/cmap/map_base_data.h>
-#include <cgogn/core/cmap/attribute_handler.h>
 
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/basic/dart_marker.h>
@@ -37,6 +36,7 @@
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/cmap/attribute.h>
 
 namespace cgogn
 {
