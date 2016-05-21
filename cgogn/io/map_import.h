@@ -67,6 +67,7 @@ inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& fi
 template <typename VEC3, class MAP_TRAITS>
 inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
 {
+	AttributeFactory<MAP_TRAITS>::template register_attribute<VEC3>();
 	auto si = newSurfaceImport<MAP_TRAITS, VEC3>(filename);
 	if (si)
 	{
@@ -78,6 +79,7 @@ inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& f
 template <typename VEC3, class MAP_TRAITS>
 inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename)
 {
+	AttributeFactory<MAP_TRAITS>::template register_attribute<VEC3>();
 	auto si = newVolumeImport<MAP_TRAITS, VEC3>(filename);
 	if (si)
 	{
