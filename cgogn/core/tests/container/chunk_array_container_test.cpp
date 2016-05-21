@@ -309,7 +309,6 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	ChunkArrayContainer::ChunkArrayFactory::register_known_types();
 
-
 	ChunkArrayContainer ca_cont;
 	ChunkArray<uint32>* data_i = ca_cont.add_attribute<uint32>("indices");
 	ChunkArray<float32>* data_f = ca_cont.add_attribute<float32>("data_f");
@@ -338,7 +337,7 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 		data2_i->operator [](i) = 100+i;
 		float32 x = 100.0f+0.01f*i;
 		data2_v->operator [](i) = {{x,x,x}};
-		data2_b->set_true(i);
+		data2_b->operator [](i) = true;
 	}
 
 	ca_cont2.remove_lines<3>(5);

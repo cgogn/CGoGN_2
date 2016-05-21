@@ -104,7 +104,7 @@ public:
 
 	virtual bool swap(Self*) = 0;
 
-	virtual bool is_boolean_array() const = 0;
+//	virtual bool is_boolean_array() const = 0;
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
@@ -161,7 +161,7 @@ public:
 	 * @param cag_src chunk_array source ptr (Precond: same type as this)
 	 * @param src source index
 	 */
-	virtual void copy_external_element(uint32 dst, Self* cag_src, uint32 src) =0;
+	virtual void copy_external_element(uint32 dst, Self* cag_src, uint32 src) = 0;
 
 	/**
 	 * @brief move an element to another one

@@ -60,6 +60,7 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <class T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
 	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
 	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNKSIZE>;
@@ -83,7 +84,7 @@ protected:
 	/**
 	* vector of pointers to Marker ChunkArray
 	*/
-	std::vector<ChunkArray<bool>*> table_marker_arrays_;
+	std::vector<ChunkArrayBool*> table_marker_arrays_;
 
 	/**
 	 * @brief ChunkArray of refs
@@ -363,9 +364,9 @@ public:
 	 * @brief add a Marker attribute
 	 * @return pointer on created ChunkArray
 	 */
-	ChunkArray<bool>* add_marker_attribute()
+	ChunkArrayBool* add_marker_attribute()
 	{
-		ChunkArray<bool>* mca = new ChunkArray<bool>();
+		ChunkArrayBool* mca = new ChunkArrayBool();
 		mca->set_nb_chunks(refs_.get_nb_chunks());
 		table_marker_arrays_.push_back(mca);
 		return mca;
@@ -376,7 +377,7 @@ public:
 	 * @param ptr ChunkArray pointer to the attribute to remove
 	 * @return true if attribute exists and has been removed
 	 */
-	void remove_marker_attribute(const ChunkArray<bool>* ptr)
+	void remove_marker_attribute(const ChunkArrayBool* ptr)
 	{
 		uint32 index = 0u;
 		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)

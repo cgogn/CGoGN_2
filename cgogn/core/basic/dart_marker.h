@@ -39,7 +39,7 @@ public:
 
 	using Self = DartMarker_T<MAP>;
 	using Map = MAP;
-	using ChunkArrayBool = typename Map::template ChunkArray<bool>;
+	using ChunkArrayBool = typename Map::ChunkArrayBool;
 
 protected:
 
