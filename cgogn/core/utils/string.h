@@ -58,6 +58,32 @@ inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& 
 	return str.substr(dot + 1u);
 }
 
+template <typename Char_T>
+inline std::basic_string<Char_T>	remove_extension(const std::basic_string<Char_T>& str)
+{
+	std::size_t dot = str.rfind('.');
+	if (dot == std::basic_string<Char_T>::npos)
+		return str;
+	else
+		return str.substr(0,dot);
+}
+
+template <typename Char_T>
+inline bool equal_case_insensitive(const std::basic_string<Char_T>& str1, const std::basic_string<Char_T>& str2)
+{
+	if (str1.size() != str2.size())
+		return false;
+	auto it1 = str1.begin(), it2 = str2.begin(), end = str1.end();
+	for(auto end = str1.end(); it1 != end ;)
+	{
+		if (std::tolower(*it1) != std::tolower(*it2))
+			return false;
+		++it1;
+		++it2;
+	}
+	return true;
+}
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_STRING_H_
