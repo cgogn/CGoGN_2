@@ -61,9 +61,6 @@ namespace internal
 
 CGOGN_CORE_API std::string demangle(const std::string& str);
 
-template <class>
-struct sfinae_true : std::true_type{};
-
 template <class T>
 static auto test_name_of_type(int ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
 template <class>
