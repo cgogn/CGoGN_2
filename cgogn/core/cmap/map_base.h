@@ -27,16 +27,18 @@
 #include <vector>
 #include <memory>
 
-#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/basic/dart_marker.h>
 #include <cgogn/core/basic/cell_marker.h>
 
-#include <cgogn/core/utils/masks.h>
-#include <cgogn/core/utils/logger.h>
-#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/cmap/map_base_data.h>
 #include <cgogn/core/cmap/attribute.h>
+#include <cgogn/core/cmap/attribute_factory.h>
+
 
 namespace cgogn
 {
@@ -238,7 +240,7 @@ public:
 	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name = "")
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
+		AttributeFactory<MAP_TRAITS>::template register_attribute<T>();
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
@@ -257,6 +259,13 @@ public:
 
 		const ChunkArray<T>* ca = ah.get_data();
 		return this->attributes_[ORBIT].remove_attribute(ca);
+	}
+
+	inline std::unique_ptr<AttributeGen> get_attribute_gen(Orbit orb, const std::string& attribute_name)
+	{
+		ChunkArrayGen* cag = this->attributes_[orb].get_attribute(attribute_name);
+		std::unique_ptr<AttributeGen> res = AttributeFactory<MAP_TRAITS>::create(orb, this, cag);
+		return res;
 	}
 
 	/**
