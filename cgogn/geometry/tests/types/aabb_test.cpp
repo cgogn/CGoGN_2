@@ -90,6 +90,6 @@ TYPED_TEST(AABB_TEST, testing)
 
 	EXPECT_TRUE(this->bb_.contains(bb3));
 
-	EXPECT_TRUE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
-	EXPECT_FALSE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(-1), Scalar(0)})));
+//	EXPECT_TRUE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
+//	EXPECT_FALSE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(-1), Scalar(0)})));
 }

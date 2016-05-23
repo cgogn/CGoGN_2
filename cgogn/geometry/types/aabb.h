@@ -44,7 +44,6 @@ namespace geometry
 template <typename VEC_T>
 class AABB
 {
-	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 
 public:
 
@@ -257,41 +256,41 @@ public:
 		p_max_ = ((p_max_ - center) * size) + center;
 	}
 
-	// test if bb is intersected by a ray
-	bool ray_intersect(const Vec& P, const Vec& V) const
-	{
-		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-				return true;
-			Q = P + ((p_max_[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-				return true;
-		}
+//	// test if bb is intersected by a ray
+//	bool ray_intersect(const Vec& P, const Vec& V) const
+//	{
+//		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
+//		{
+//			Vec Q = P + ((p_min_[2] - P[2]) / V[2]) * V;
+//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
+//				return true;
+//			Q = P + ((p_max_[2] - P[2]) / V[2]) * V;
+//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
+//				return true;
+//		}
 
-		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-			Q = P + ((p_max_[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-		}
+//		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
+//		{
+//			Vec Q = P + ((p_min_[1] - P[1]) / V[1]) * V;
+//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
+//				return true;
+//			Q = P + ((p_max_[1] - P[1]) / V[1]) * V;
+//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
+//				return true;
+//		}
 
-		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-			Q = P + ((p_max_[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-		}
+//		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
+//		{
+//			Vec Q = P + ((p_min_[0] - P[0]) / V[0]) * V;
+//			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
+//				return true;
+//			Q = P + ((p_max_[0] - P[0]) / V[0]) * V;
+//			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
+//				return true;
+//		}
 
-		return false;
-	}
+//		return false;
+//	}
 
 	static std::string cgogn_name_of_type()
 	{

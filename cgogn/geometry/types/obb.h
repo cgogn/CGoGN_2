@@ -44,7 +44,6 @@ namespace geometry
 template <typename VEC_T>
 class OBB
 {
-	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 
 public:
 
