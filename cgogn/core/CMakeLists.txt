@@ -43,6 +43,7 @@ set(HEADER_FILES
 	utils/logger_output.h
 	utils/log_stream.h
 	utils/numerics.h
+	utils/type_traits.h
 )
 
 set(SOURCE_FILES

@@ -134,49 +134,6 @@ inline Scalar scale_to_0_1_around_one_half(const Scalar x, const Scalar min, con
 
 using namespace numerics;
 
-namespace internal
-{
-template <class>
-struct sfinae_true : std::true_type {};
-
-template <class T>
-static auto test_operator_brackets(int32 ) -> sfinae_true<decltype(std::declval<T>()[0ul])>;
-template <class>
-static auto test_operator_brackets(int64) -> std::false_type;
-
-template <class T>
-struct has_operator_brackets : decltype(test_operator_brackets<T>(0)){};
-
-
-template<typename T, typename Enable = void>
-struct nested_type;
-
-template<typename T>
-struct nested_type<T, typename std::enable_if<!has_operator_brackets<T>::value>::type>
-{
-	using type = typename std::remove_cv< typename std::remove_reference<T>::type>::type;
-};
-
-template<typename T>
-struct nested_type<T, typename std::enable_if<has_operator_brackets<T>::value>::type>
-{
-	using type = typename nested_type<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type>::type;
-};
-
-template<typename T>
-inline typename std::enable_if<!has_operator_brackets<T>::value, uint32>::type get_nb_components(const T& )
-{
-	return 1u;
-}
-
-template<typename T>
-inline typename std::enable_if<has_operator_brackets<T>::value, uint32>::type get_nb_components(const T& val)
-{
-	return val.size() * get_nb_components(val[0]);
-}
-
-} //namespace internal
-
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_NUMERICS_H_

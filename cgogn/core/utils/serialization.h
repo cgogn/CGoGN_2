@@ -31,6 +31,7 @@
 
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/type_traits.h>
 #include <cgogn/core/dll.h>
 
 namespace cgogn
@@ -51,6 +52,49 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
+}
+
+template<typename T>
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x);
+template<typename T>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
+template<typename T>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
+
+template<typename T>
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x)
+{
+	if (binary)
+		save(o,&x,1ul);
+	else
+		o << x;
+}
+
+template<typename T>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
+{
+	const std::size_t size = array.size();
+	for(std::size_t i = 0ul ; i < size -1ul; ++i)
+	{
+		ostream_writer(o, binary, array[i]);
+		if (!binary)
+			o << " ";
+	}
+	ostream_writer(o, binary, array[size-1ul]);
+}
+
+template<typename T>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
+{
+	const auto end = array.end();
+
+	for (auto it = array.begin(); it != end; )
+	{
+		ostream_writer(o, binary, *it);
+		++it;
+		if ((!binary) && it != end)
+			o << " ";
+	}
 }
 
 template <typename T>
