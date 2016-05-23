@@ -87,11 +87,11 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	Inherit* clone(const std::string& clone_name) const override
+	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
 	{
 		if (clone_name == this->name_)
 			return nullptr;
-		return new Self(clone_name);
+		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
 	bool swap(Inherit* cag) override
@@ -426,6 +426,22 @@ public:
 				*chunk++ = v;
 		}
 	}
+
+	virtual std::string get_nested_type_name() const override
+	{
+		return name_of_type(typename type_traits::nested_type<T>::type());
+	}
+
+	virtual uint32	get_nb_components() const override
+	{
+		// Warning : the line 0 might be unused.
+		return type_traits::get_nb_components(this->operator [](0u));
+	}
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	{
+		serialization::ostream_writer(o, binary, this->operator [](idx));
+	}
 };
 
 /**
@@ -473,11 +489,11 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	Inherit* clone(const std::string& clone_name) const override
+	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
 	{
 		if (clone_name == this->name_)
 			return nullptr;
-		return new Self(clone_name);
+		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
 	bool swap(Inherit* cag) override
@@ -771,6 +787,21 @@ public:
 //				*ptr++ = 0xffffffff;
 //		}
 //	}
+
+	virtual std::string get_nested_type_name() const override
+	{
+		return name_of_type(bool());
+	}
+
+	virtual uint32	get_nb_components() const override
+	{
+		return 1u;
+	}
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	{
+		serialization::ostream_writer(o,binary, this->operator [](idx));
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))

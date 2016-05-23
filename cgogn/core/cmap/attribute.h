@@ -105,39 +105,8 @@ public:
 
 	virtual const std::string&	get_name() const = 0;
 	virtual std::string			get_type_name() const = 0;
-	virtual std::string			get_nested_type_name() const = 0;
-	virtual uint32				get_nb_components() const = 0;
 	virtual bool				is_valid() const = 0;
 	virtual Orbit				get_orbit() const = 0;
-	virtual void				export_data(std::ofstream& out, uint32 idx, bool binary) const = 0;
-
-protected:
-	// the write_T static function ease exporting array or scalar with the same code.
-	template<typename T>
-	static inline typename std::enable_if<!internal::has_operator_brackets<T>::value, std::ostream&>::type write_T(std::ostream& o, bool binary, const T& x)
-	{
-		if (binary)
-			serialization::save(o,&x,1ul);
-		else
-			o << x;
-		return o;
-	}
-
-	template<typename T>
-	static inline typename std::enable_if<internal::has_operator_brackets<T>::value, std::ostream&>::type write_T(std::ostream& o, bool binary, const T& array)
-	{
-		const std::size_t size = array.size();
-		for(std::size_t i = 0ul ; i < size -1ul; ++i)
-		{
-			Self::write_T(o, binary, array[i]);
-			if (!binary)
-				o << " ";
-		}
-		Self::write_T(o, binary, array[size-1ul]);
-		return o;
-	}
-
-	virtual std::unique_ptr<AttributeGen> clone(MapData* mapbd, ChunkArrayGen* cag) const = 0;
 };
 
 
@@ -572,26 +541,6 @@ public:
 	virtual std::string get_type_name() const override
 	{
 		return name_of_type(T());
-	}
-
-	virtual std::string get_nested_type_name() const override
-	{
-		return name_of_type(typename internal::nested_type<T>::type());
-	}
-
-	virtual void export_data(std::ofstream& out, uint32 idx, bool binary) const override
-	{
-			Self::write_T(out, binary, this->operator [](idx));
-	}
-
-	virtual uint32	get_nb_components() const
-	{
-		return internal::get_nb_components(*begin());
-	}
-protected:
-	std::unique_ptr<cgogn::AttributeGen<DATA_TRAITS>> clone(MapData* mapbd, ChunkArrayGen* cag) const override
-	{
-		return std::unique_ptr<cgogn::AttributeGen<DATA_TRAITS>>(new Self(mapbd, dynamic_cast<TChunkArray*>(cag)));
 	}
 };
 

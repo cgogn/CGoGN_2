@@ -30,6 +30,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 namespace cgogn
 {
@@ -77,9 +78,13 @@ public:
 		}
 	}
 
-	const std::string& get_name() const { return name_; }
+	inline const std::string& get_name() const { return name_; }
 
-	const std::string& get_type_name() const { return type_name_; }
+	inline const std::string& get_type_name() const { return type_name_; }
+
+	virtual std::string get_nested_type_name() const = 0;
+
+	virtual uint32 get_nb_components() const = 0;
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -100,7 +105,7 @@ public:
 	 * @brief create a ChunkArray object without knowing type
 	 * @return generic pointer
 	 */
-	virtual Self* clone(const std::string& clone_name) const = 0;
+	virtual std::unique_ptr<Self> clone(const std::string& clone_name) const = 0;
 
 	virtual bool swap(Self*) = 0;
 
@@ -186,6 +191,8 @@ public:
 	 * @param nb_lines number of line to save
 	 */
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const = 0;
 
 	/**
 	 * @brief load

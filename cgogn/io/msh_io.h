@@ -470,14 +470,14 @@ public:
 	using Map = typename Inherit::Map;
 	using Vertex = typename Inherit::Vertex;
 	using Volume = typename Inherit::Volume;
-	using AttributeGen = typename Map::AttributeGen;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
 
 protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 
-		AttributeGen const* pos = this->get_position_attribute();
+		ChunkArrayGen const* pos = this->get_position_attribute();
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->get_nested_type_name();
@@ -493,7 +493,7 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_data(output, map.get_embedding(v), false);
+			pos->export_element(map.get_embedding(v), output, false);
 			output << std::endl;
 		});
 		output << "$ENDNOD" << std::endl;

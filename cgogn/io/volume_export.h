@@ -59,7 +59,8 @@ public:
 	using Map = MAP;
 	using Vertex = typename Map::Vertex;
 	using Volume = typename Map::Volume;
-	using AttributeGen = typename Map::AttributeGen;
+	using ChunkArrayGen = typename Map::ChunkArrayGen;
+	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
 	inline VolumeExport() :
 		vertices_of_volumes_()
@@ -70,34 +71,36 @@ public:
 	  ,nb_hexas_(0u)
 	  ,vertex_attributes()
 	  ,volume_attributes()
-	  ,position_attribute()
+	  ,position_attribute(nullptr)
 	{}
-
 
 	virtual ~VolumeExport() {}
 
 	void export_file(Map& map, const ExportOptions& options)
 	{
 		this->reset();
+		const ChunkArrayContainer& ver_cac= map.template get_const_attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& vol_cac= map.template get_const_attribute_container<Volume::ORBIT>();
+
 		for (const auto& pair : options.attributes_to_export_)
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
-				auto v_att = map.get_attribute_gen(pair.first, pair.second);
+				ChunkArrayGen* ver_cag = ver_cac.get_attribute(pair.second);
 				if (pair.second == "position")
-					position_attribute = std::move(v_att);
+					position_attribute = ver_cag;
 				else {
-					if (v_att->is_valid())
-						vertex_attributes.push_back(std::move(v_att));
+					if (ver_cag)
+						vertex_attributes.push_back(ver_cag);
 				}
 			} else {
-				auto w_att = map.get_attribute_gen(pair.first, pair.second);
-				if (w_att->is_valid())
-					volume_attributes.push_back(std::move(w_att));
+				ChunkArrayGen* vol_cag = vol_cac.get_attribute(pair.second);
+				if (vol_cag)
+					volume_attributes.push_back(vol_cag);
 			}
 		}
 
-		if (position_attribute == nullptr || !position_attribute->is_valid())
+		if (position_attribute == nullptr)
 		{
 			cgogn_log_warning("VolumeExport::export_file") << "The position attribute is invalid.";
 			return;
@@ -144,19 +147,19 @@ public:
 		return number_of_vertices_;
 	}
 
-	inline std::vector<std::unique_ptr<AttributeGen>> const & get_vertex_attributes() const
+	inline std::vector<ChunkArrayGen*> const & get_vertex_attributes() const
 	{
 		return vertex_attributes;
 	}
 
-	inline std::vector<std::unique_ptr<AttributeGen>> const & get_volume_attributes() const
+	inline std::vector<ChunkArrayGen*> const & get_volume_attributes() const
 	{
 		return volume_attributes;
 	}
 
-	AttributeGen const * get_position_attribute() const
+	ChunkArrayGen const * get_position_attribute() const
 	{
-		return position_attribute.get();
+		return position_attribute;
 	}
 private:
 	void prepare_for_export(Map& map)
@@ -263,9 +266,9 @@ private:
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
 	uint32 nb_hexas_;
-	std::vector<std::unique_ptr<AttributeGen>>	vertex_attributes;
-	std::vector<std::unique_ptr<AttributeGen>>	volume_attributes;
-	std::unique_ptr<AttributeGen>				position_attribute;
+	std::vector<ChunkArrayGen*>	vertex_attributes;
+	std::vector<ChunkArrayGen*>	volume_attributes;
+	ChunkArrayGen*				position_attribute;
 };
 
 } // namespace io
