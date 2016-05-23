@@ -645,10 +645,11 @@ public:
 				const std::string& type_name = cac.type_names_[i];
 				map_attrib[i] = uint32(table_arrays_.size());
 				auto cag = ChunkArrayFactory::create(type_name,name);
+				cgogn_assert(cag);
+				cag->set_nb_chunks(refs_.get_nb_chunks());
 				table_arrays_.push_back(cag.release());
 				names_.push_back(name);
 				type_names_.push_back(type_name);
-				cag->set_nb_chunks(refs_.get_nb_chunks());
 			}
 			else
 				if (cac.type_names_[i] == type_names_[j])
