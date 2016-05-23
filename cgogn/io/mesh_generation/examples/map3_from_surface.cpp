@@ -75,11 +75,10 @@ int main(int argc, char** argv)
 	}
 
 	Map3::VertexAttribute<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
-	Map3::VertexAttribute<Vec3> vertex_normals = map3.add_attribute<Vec3, Map3::Vertex::ORBIT>("normal");
-	cgogn::geometry::compute_normal_vertices<Vec3>(map3, vertex_position, vertex_normals);
+	Map3::VertexAttribute<Vec3> vertex_test_att = map3.add_attribute<Vec3, Map3::Vertex::ORBIT>("test");
 	std::vector<std::pair<cgogn::Orbit,std::string>>	att_vec;
 	att_vec.push_back(std::make_pair(cgogn::Orbit(Map3::Vertex::ORBIT), std::string("position")));
-	att_vec.push_back(std::make_pair(cgogn::Orbit(Map3::Vertex::ORBIT), std::string("normal")));
+	att_vec.push_back(std::make_pair(cgogn::Orbit(Map3::Vertex::ORBIT), std::string("test")));
 	cgogn::io::export_volume(map3, cgogn::io::ExportOptions(output_filename, att_vec, false));
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
