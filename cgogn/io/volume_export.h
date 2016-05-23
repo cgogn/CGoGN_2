@@ -28,9 +28,10 @@
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/cmap/attribute.h>
+#include <cgogn/core/container/chunk_array_container.h>
 
 #include <cgogn/io/io_utils.h>
+#include <cgogn/io/c_locale.h>
 
 namespace cgogn
 {
@@ -78,6 +79,7 @@ public:
 
 	void export_file(Map& map, const ExportOptions& options)
 	{
+		Scoped_C_Locale loc;
 		this->reset();
 		const ChunkArrayContainer& ver_cac= map.template get_const_attribute_container<Vertex::ORBIT>();
 		const ChunkArrayContainer& vol_cac= map.template get_const_attribute_container<Volume::ORBIT>();
@@ -107,6 +109,8 @@ public:
 		}
 
 		auto output = io::create_file(options.filename_);
+		if (!output || !output->good())
+			return;
 		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert");
 		this->prepare_for_export(map);
 		this->export_file_impl(map,*output, options);

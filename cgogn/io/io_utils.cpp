@@ -286,7 +286,7 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	}
 	output = cgogn::make_unique<std::ofstream>(new_filename, std::ios::out);
 	if (!output->good())
-		cgogn_log_warning("create_file")  << "Unable to open the file \"" << filename << "\"";
+		cgogn_log_warning("create_file")  << "Error while opening the file \"" << filename << "\"";
 	return output;
 }
 

@@ -483,9 +483,6 @@ protected:
 		std::string scalar_type = pos->get_nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0]);
 
-		if (!output.good())
-			return;
-
 		// 1. vertices
 		output << "$NOD" << std::endl;
 		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
