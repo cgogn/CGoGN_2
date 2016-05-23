@@ -20,7 +20,6 @@ set(HEADER_FILES
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
 	cmap/attribute.h
-	cmap/attribute_factory.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -56,7 +55,6 @@ set(SOURCE_FILES
 	cmap/cmap3.cpp
 	cmap/cmap2_builder.cpp
 	cmap/cmap3_builder.cpp
-	cmap/attribute_factory.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp

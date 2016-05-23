@@ -34,10 +34,6 @@
 namespace cgogn
 {
 
-// forward declaration of class AttributeFactory
-template <typename DATA_TRAITS>
-class AttributeFactory;
-
 /**
  * \brief Generic Attribute class
  * @TPARAM DATA_TRAITS storage traits (for MapBaseData ptr type)
@@ -45,7 +41,6 @@ class AttributeFactory;
 template <typename DATA_TRAITS>
 class AttributeGen
 {
-	friend class AttributeFactory<DATA_TRAITS>;
 public:
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
