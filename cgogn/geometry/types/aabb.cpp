@@ -21,67 +21,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MULTIRESOLUTION_CPH_CPH3_BASE_H_
-#define CGOGN_MULTIRESOLUTION_CPH_CPH3_BASE_H_
+#define CGOGN_GEOMETRY_DLL_EXPORT
+#define CGOGN_GEOMETRY_TYPES_AABB_CPP_
 
-#include <cgogn/multiresolution/cph/cph2.h>
+#include <cgogn/geometry/types/aabb.h>
 
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH3 : public CPH2<DATA_TRAITS>
+namespace geometry
 {
 
-public:
-	using Self =  CPH3<DATA_TRAITS>;
-	using Inherit = CPH2<DATA_TRAITS>;
-	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
+template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32,3>>>;
+template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
 
-protected:
-	ChunkArray<uint32>* face_id_;
 
-public:
-	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
-	{
-		face_id_ = topology.template add_attribute<uint32>("faceId");
-	}
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH3);
-	~CPH3() override {}
-
-	/***************************************************
-	 *             FACE ID MANAGEMENT                  *
-	 ***************************************************/
-
-	inline uint32 get_face_id(Dart d) const
-	{
-		return (*face_id_)[d.index] ;
-	}
-
-	inline void set_face_id(Dart d, uint32 i)
-	{
-		(*face_id_)[d.index] = i ;
-	}
-
-	inline uint32 get_tri_refinement_face_id(Dart /*d*/, Dart /*e*/) const
-	{
-		return 0u;
-	}
-
-	inline uint32 get_quad_refinement_face_id(Dart /*d*/) const
-	{
-		return 0u;
-	}
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH3_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH3<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH3_CPP_))
-
+} // namespace geometry
 } // namespace cgogn
-
-#endif // CGOGN_MULTIRESOLUTION_CPH_CPH3_BASE_H_

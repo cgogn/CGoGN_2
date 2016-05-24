@@ -8,7 +8,7 @@ find_package(cgogn_io REQUIRED)
 set(SOURCE_FILES
 	types/vec_test.cpp
 	types/plane_3d_test.cpp
-	types/bounding_box_test.cpp
+        types/aabb_test.cpp
 
 	functions/area_test.cpp
 	functions/normal_test.cpp

@@ -76,7 +76,7 @@ private:
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
 	std::unique_ptr<MapRender> render_;
 
@@ -108,7 +108,7 @@ void Viewer::import(const std::string& surface_mesh)
 		std::exit(EXIT_FAILURE);
 	}
 
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
