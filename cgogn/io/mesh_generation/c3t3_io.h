@@ -110,12 +110,12 @@ private:
 	C3T3 cpx_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_C3T3_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_C3T3_IO_CPP_))
 extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API C3T3VolumeImport<VolumeMeshFromImageCGALTraits::C3T3, DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_C3T3_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_C3T3_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn

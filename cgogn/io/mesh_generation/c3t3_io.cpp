@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_C3T3_IO_CPP_
+#define CGOGN_IO_C3T3_IO_CPP_
 
 #include <cgogn/io/mesh_generation/c3t3_io.h>
 
