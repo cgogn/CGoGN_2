@@ -42,9 +42,11 @@ template <typename DATA_TRAITS>
 class AttributeGen
 {
 public:
+
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>;
+
 protected:
 
 	MapData* map_;
@@ -174,6 +176,7 @@ public:
 		chunk_array_cont_ = attho.chunk_array_cont_;
 		return *this;
 	}
+
 	/**
 	 * \brief move operator =
 	 * @param attho
@@ -186,13 +189,13 @@ public:
 		return *this;
 	}
 
+	virtual ~AttributeOrbit() override
+	{}
+
 	virtual Orbit get_orbit() const override
 	{
 		return ORBIT;
 	}
-
-	virtual ~AttributeOrbit() override
-	{}
 };
 
 /**
@@ -345,6 +348,11 @@ public:
 	virtual const std::string& get_name() const override
 	{
 		return chunk_array_->get_name();
+	}
+
+	virtual const std::string& get_type_name() const override
+	{
+		return chunk_array_->get_type_name();
 	}
 
 	virtual bool is_valid() const override
@@ -536,11 +544,6 @@ public:
 	inline iterator end()
 	{
 		return iterator(this, this->chunk_array_cont_->end());
-	}
-
-	virtual const std::string& get_type_name() const override
-	{
-		return chunk_array_->get_type_name();
 	}
 };
 
