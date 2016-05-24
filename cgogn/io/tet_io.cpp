@@ -36,5 +36,7 @@ template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
+template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
+
 } // namespace io
 } // namespace cgogn
