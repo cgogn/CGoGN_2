@@ -105,9 +105,9 @@ public:
 
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH2_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API CPH2<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH2_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
 
 } // namespace cgogn
 

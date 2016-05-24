@@ -41,5 +41,7 @@ template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
+template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
+
 } // namespace io
 } // namespace cgogn

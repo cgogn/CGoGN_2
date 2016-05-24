@@ -266,6 +266,30 @@ CharArrayBuffer::~CharArrayBuffer() {}
 
 IMemoryStream::~IMemoryStream() {}
 
+CGOGN_IO_API bool file_exists(const std::string& filename)
+{
+	return std::ifstream(filename).good();
+}
+
+CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename)
+{
+	std::unique_ptr<std::ofstream> output;
+	std::string new_filename(filename);
+	if (file_exists(new_filename))
+	{
+		uint32 i{1u};
+		const std::string base_name = cgogn::remove_extension(filename);
+		do {
+			new_filename = base_name + "(" + std::to_string(i++)  + ")." + cgogn::get_extension(filename);
+		} while (file_exists(new_filename));
+		cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
+	}
+	output = cgogn::make_unique<std::ofstream>(new_filename, std::ios::out);
+	if (!output->good())
+		cgogn_log_warning("create_file")  << "Error while opening the file \"" << filename << "\"";
+	return output;
+}
+
 } // namespace io
 
 } // namespace cgogn

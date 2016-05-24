@@ -26,6 +26,7 @@
 
 #include <istream>
 #include <sstream>
+#include <ostream>
 
 #include <cgogn/core/utils/logger.h>
 
@@ -33,7 +34,7 @@
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/volume_import.h>
-
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -41,36 +42,166 @@ namespace cgogn
 namespace io
 {
 
+enum VTK_CELL_TYPES
+{
+	VTK_VERTEX = 1,
+	VTK_POLY_VERTEX = 2,
+	VTK_LINE = 3,
+	VTK_POLY_LINE = 4,
+	VTK_TRIANGLE = 5,
+	VTK_TRIANGLE_STRIP = 6,
+	VTK_POLYGON = 7,
+	VTK_PIXEL = 8,
+	VTK_QUAD = 9,
+
+	VTK_TETRA = 10,
+	VTK_VOXEL = 11,
+	VTK_HEXAHEDRON = 12,
+	VTK_WEDGE = 13,
+	VTK_PYRAMID = 14,
+
+	VTK_QUADRATIC_EDGE = 21,
+	VTK_QUADRATIC_TRIANGLE = 22,
+	VTK_QUADRATIC_QUAD = 23,
+	VTK_QUADRATIC_TETRA = 24,
+	VTK_QUADRATIC_HEXAHEDRON = 25
+};
+
+template<typename MAP>
+class VtkVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = VtkVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		ChunkArrayGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+
+		output << "<?xml version=\"1.0\"?>" << std::endl;
+		output << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"" << endianness << "\">" << std::endl;
+		output << "  <UnstructuredGrid>" <<  std::endl;
+		output << "    <Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfCells=\""<< (this->get_nb_tetras() + this->get_nb_pyramids() + this->get_nb_triangular_prisms() + this->get_nb_hexas()) << "\">" << std::endl;
+
+		// 1st step : vertices
+		output << "      <Points>" << std::endl;
+		// 1.a : positions
+		output << "        <DataArray type=\""<< scalar_type  << "\" Name=\"" << pos->get_name() << "\" NumberOfComponents=\"" << pos->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
+		map.foreach_cell([&](Vertex v)
+		{
+			output << "          ";
+			pos->export_element(map.get_embedding(v), output, false);
+			output << std::endl;
+		});
+		output << "        </DataArray>" << std::endl;
+		output << "      </Points>" << std::endl;
+
+		if (!this->get_vertex_attributes().empty())
+		{
+			output << "      <PointData>" << std::endl;
+			// 1.B : other vertices attributes
+			for (const auto& att : this->get_vertex_attributes())
+			{
+				scalar_type = att->get_nested_type_name();
+				scalar_type[0] = std::toupper(scalar_type[0]);
+				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
+				map.foreach_cell([&](Vertex v)
+				{
+					output << "          ";
+					att->export_element(map.get_embedding(v), output, false);
+					output << std::endl;
+				});
+				output << "        </DataArray>" << std::endl;
+			}
+			output << "      </PointData>" << std::endl;
+		}
+		// end vertices
+		// begin volumes
+		output << "      <Cells>" << std::endl;
+		// 2.a. Connectivity
+		output << "        <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << std::endl;
+
+		std::vector<uint32> const& vertices_of_vol = this->get_vertices_of_volumes();
+		std::vector<uint32> const& nb_vert = this->get_number_of_vertices();
+
+		std::size_t it = 0ul;
+		for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
+		{
+			output << "          ";
+			for (std::size_t j = 0ul, nbv = nb_vert[i] ; j < nbv; ++j)
+				output << vertices_of_vol[it++] << " ";
+			output << std::endl;
+		}
+
+		output << "        </DataArray>" << std::endl;
+		// 2.b. offsets
+		output << "        <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
+		output << "         ";
+
+		std::size_t offset{0ul};
+		for (std::size_t i=0ul; i<nb_vert.size(); ++i)
+		{
+			offset += nb_vert[i];
+			output << " " << offset;
+		}
+		output << std::endl << "        </DataArray>" << std::endl;
+		// 2.c cell types
+		output << "        <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
+		output << "         ";
+
+		for (uint32 i=0u; i< this->get_nb_tetras(); ++i)
+			output << std::to_string(VTK_TETRA) << " ";
+		for (uint32 i=0u; i< this->get_nb_pyramids(); ++i)
+			output << std::to_string(VTK_PYRAMID) << " ";
+		for (uint32 i=0u; i< this->get_nb_triangular_prisms(); ++i)
+			output << std::to_string(VTK_WEDGE) << " ";
+		for (uint32 i=0u; i< this->get_nb_hexas(); ++i)
+			output << std::to_string(VTK_HEXAHEDRON) << " ";
+
+		output << std::endl << "        </DataArray>" << std::endl;
+		output << "      </Cells>" << std::endl;
+
+		//2.d other volumes attributes
+		if (!this->get_volume_attributes().empty())
+		{
+			output << "      <CellData>" << std::endl;
+			for (const auto& att : this->get_volume_attributes())
+			{
+				scalar_type = att->get_nested_type_name();
+				scalar_type[0] = std::toupper(scalar_type[0]);
+				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->get_name() << "\" NumberOfComponents=\"" << att->get_nb_components() << "\" format=\"" << format << "\">" << std::endl;
+				for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
+					map.foreach_cell([&](Volume w)
+					{
+						output << "         ";
+						att->export_element(map.get_embedding(w), output, false);
+						output << std::endl;
+					});
+				output << "        </DataArray>" << std::endl;
+			}
+			output << "      </CellData>" << std::endl;
+		}
+		output << "    </Piece>" << std::endl;
+		output << "  </UnstructuredGrid>" << std::endl;
+		output << "</VTKFile>" << std::endl;
+	}
+};
+
 template<uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
 class VtkIO
 {
-public :
-	enum VTK_CELL_TYPES
-	{
-		VTK_VERTEX = 1,
-		VTK_POLY_VERTEX = 2,
-		VTK_LINE = 3,
-		VTK_POLY_LINE = 4,
-		VTK_TRIANGLE = 5,
-		VTK_TRIANGLE_STRIP = 6,
-		VTK_POLYGON = 7,
-		VTK_PIXEL = 8,
-		VTK_QUAD = 9,
-
-		VTK_TETRA = 10,
-		VTK_VOXEL = 11,
-		VTK_HEXAHEDRON = 12,
-		VTK_WEDGE = 13,
-		VTK_PYRAMID = 14,
-
-		VTK_QUADRATIC_EDGE = 21,
-		VTK_QUADRATIC_TRIANGLE = 22,
-		VTK_QUADRATIC_QUAD = 23,
-		VTK_QUADRATIC_TETRA = 24,
-		VTK_QUADRATIC_HEXAHEDRON = 25
-	};
-
-
+public:
 	enum VTK_MESH_TYPE
 	{
 		UNKNOWN = 0,
@@ -608,6 +739,35 @@ protected :
 		cgogn_log_error("vtk_data_type_to_cgogn_name_of_type") << "Unknown vtk type \"" << vtk_type_str << "\".";
 		return std::string();
 	}
+
+	template<typename T>
+	static inline std::string vtk_name_of_type(const T& t)
+	{
+		static_assert(std::is_arithmetic<T>::value, "T must be a scalar.");
+		if (std::is_same<T,int8>::value)
+			return "Int8";
+		if (std::is_same<T,uint8>::value)
+			return "UInt8";
+		if (std::is_same<T,int16>::value)
+			return "Int16";
+		if (std::is_same<T,uint16>::value)
+			return "UInt16";
+		if (std::is_same<T,int32>::value)
+			return "Int32";
+		if (std::is_same<T,uint32>::value)
+			return "UInt32";
+		if (std::is_same<T,int64>::value)
+			return "Int64";
+		if (std::is_same<T,uint64>::value)
+			return "UInt64";
+		if (std::is_same<T,float32>::value)
+			return "Float32";
+		if (std::is_same<T,float64>::value)
+			return "Float64";
+
+		cgogn_log_error("vtk_name_of_type") << "Cannot convert to VTK the type \"" << cgogn::name_of_type(t) << "\".";
+		return std::string();
+	}
 };
 
 
@@ -621,7 +781,6 @@ public:
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template<typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
-	using VTK_CELL_TYPES = typename Inherit_Vtk::VTK_CELL_TYPES;
 
 	virtual ~VtkSurfaceImport() override {}
 protected:
@@ -668,10 +827,12 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkSurfaceImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
 	}
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkSurfaceImport::add_cell_attribute") << "Adding a face attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
 	}
 	virtual bool import_file_impl(const std::string& filename) override
@@ -750,7 +911,6 @@ public:
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template<typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
-	using VTK_CELL_TYPES = typename Inherit_Vtk::VTK_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
@@ -824,10 +984,12 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkVolumeImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_vertex_attributes_container(), attribute_name));
 	}
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
+		cgogn_log_info("VtkVolumeImport::add_cell_attribute") << "Adding a volume attribute named \"" << attribute_name << "\".";
 		attribute_data.to_chunk_array(attribute_data.add_attribute(this->get_volume_attributes_container(), attribute_name));
 	}
 
@@ -895,6 +1057,8 @@ extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vect
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
 
 } // namespace io

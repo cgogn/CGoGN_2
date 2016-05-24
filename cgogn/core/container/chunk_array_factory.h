@@ -103,9 +103,9 @@ public:
 	 * @param keyType typename of type store in ChunkArray
 	 * @return ptr on created ChunkArray
 	 */
-	static ChunkArrayGen<CHUNKSIZE>* create(const std::string& type_name, const std::string& name)
+	static ChunkArrayGenPtr create(const std::string& type_name, const std::string& name)
 	{
-		ChunkArrayGen<CHUNKSIZE>* tmp = nullptr;
+		ChunkArrayGenPtr tmp = nullptr;
 		typename NamePtrMap::const_iterator it = map_CA_->find(type_name);
 
 		if(it != map_CA_->end())

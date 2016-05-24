@@ -24,7 +24,7 @@
 #ifndef CGOGN_MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
 #define CGOGN_MULTIRESOLUTION_CPH_ATTRIBUTE_HANDLER_CPH_H_
 
-#include <cgogn/core/cmap/attribute_handler.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/utils/assert.h>
 
 namespace cgogn

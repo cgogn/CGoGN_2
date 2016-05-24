@@ -34,6 +34,21 @@ public:
 	{
 		return "Vec3f";
 	}
+
+	inline uint32 size() const
+	{
+		return 3u;
+	}
+
+	inline float32& operator[](std::size_t i)
+	{
+		return data_[i];
+	}
+
+	inline const float32& operator[](std::size_t i) const
+	{
+		return data_[i];
+	}
 };
 
 const uint32 NB_LINES = 20000000;

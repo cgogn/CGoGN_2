@@ -32,9 +32,10 @@
 
 #include <cgogn/geometry/functions/orientation.h>
 
-#include <cgogn/io/c_locale.h>
 #include <cgogn/io/dll.h>
+#include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
+#include <cgogn/io/io_utils.h>
 
 #include <tinyxml2.h>
 
@@ -112,16 +113,6 @@ template <typename MAP_TRAITS>
 class VolumeImport : public MeshImportGen
 {
 public:
-
-	enum VolumeType
-	{
-		Tetra,
-		Pyramid,
-		TriangularPrism,
-		Hexa,
-		Connector
-	};
-
 	using Self = VolumeImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
 	using Map = CMap3<MAP_TRAITS>;

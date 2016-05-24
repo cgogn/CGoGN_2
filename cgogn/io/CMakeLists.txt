@@ -29,6 +29,7 @@ set(HEADER_FILES
 	tetgen_io.h
 	nastran_io.h
 	tet_io.h
+        volume_export.h
 )
 
 set(SOURCE_FILES

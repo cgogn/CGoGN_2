@@ -26,6 +26,9 @@
 
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/container/chunk_array_container.h>
 #include <cgogn/core/cmap/map_base_data.h>
 
 namespace cgogn
@@ -39,10 +42,9 @@ template <typename DATA_TRAITS>
 class AttributeGen
 {
 public:
-
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
-
+	using ChunkArrayGen = cgogn::ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>;
 protected:
 
 	MapData* map_;
@@ -87,7 +89,7 @@ public:
 	 * @param atthg
 	 * @return
 	 */
-	inline AttributeGen& operator=(Self&& atthg)
+	inline AttributeGen& operator=(Self&& atthg) CGOGN_NOEXCEPT
 	{
 		this->map_ = atthg.map_;
 		return *this;
@@ -101,11 +103,10 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string& get_name() const = 0;
-
-	virtual bool is_valid() const = 0;
-
-	virtual Orbit get_orbit() const = 0;
+	virtual const std::string&	get_name() const = 0;
+	virtual const std::string&	get_type_name() const = 0;
+	virtual bool				is_valid() const = 0;
+	virtual Orbit				get_orbit() const = 0;
 };
 
 
@@ -122,7 +123,7 @@ public:
 	using Self = AttributeOrbit<DATA_TRAITS, ORBIT>;
 	using MapData = typename Inherit::MapData;
 
-	static const uint32 CHUNKSIZE = MapData::CHUNKSIZE;
+	static const uint32 CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
 	static const Orbit orbit_value = ORBIT;
 
 	template <typename T>
@@ -208,6 +209,7 @@ public:
 	using value_type = T;
 	using MapData = typename Inherit::MapData;
 	using TChunkArray = typename Inherit::template ChunkArray<T>;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
 protected:
 
@@ -228,7 +230,7 @@ public:
 	/**
 	 * \brief Constructor
 	 * @param m the map the attribute belongs to
-	 * @param ca ChunkArray pointer
+	 * @param ca TChunkArray pointer
 	 */
 	Attribute(MapData* const m, TChunkArray* const ca) :
 		Inherit(m),
@@ -535,7 +537,14 @@ public:
 	{
 		return iterator(this, this->chunk_array_cont_->end());
 	}
+
+	virtual const std::string& get_type_name() const override
+	{
+		return chunk_array_->get_type_name();
+	}
 };
+
+
 
 } // namespace cgogn
 

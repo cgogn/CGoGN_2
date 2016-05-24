@@ -19,7 +19,7 @@ set(HEADER_FILES
 	cmap/cmap2_builder.h
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
-	cmap/attribute_handler.h
+	cmap/attribute.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -43,6 +43,7 @@ set(HEADER_FILES
 	utils/logger_output.h
 	utils/log_stream.h
 	utils/numerics.h
+	utils/type_traits.h
 )
 
 set(SOURCE_FILES

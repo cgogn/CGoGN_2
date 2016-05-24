@@ -27,7 +27,7 @@
 
 #include <cgogn/rendering/dll.h>
 
-#include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
+#include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute.h !
 
 #include <cgogn/geometry/algos/ear_triangulation.h>
 

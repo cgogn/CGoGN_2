@@ -644,11 +644,12 @@ public:
 				const std::string& name = cac.names_[i];
 				const std::string& type_name = cac.type_names_[i];
 				map_attrib[i] = uint32(table_arrays_.size());
-				ChunkArrayGen* cag = ChunkArrayFactory::create(type_name,name);
-				table_arrays_.push_back(cag);
+				auto cag = ChunkArrayFactory::create(type_name,name);
+				cgogn_assert(cag);
+				cag->set_nb_chunks(refs_.get_nb_chunks());
+				table_arrays_.push_back(cag.release());
 				names_.push_back(name);
 				type_names_.push_back(type_name);
-				cag->set_nb_chunks(refs_.get_nb_chunks());
 			}
 			else
 				if (cac.type_names_[i] == type_names_[j])
@@ -954,10 +955,10 @@ public:
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			ChunkArrayGen* cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
+			auto cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
 			if (cag)
 			{
-				table_arrays_.push_back(cag);
+				table_arrays_.push_back(cag.release());
 				ok &= table_arrays_.back()->load(fs);
 				++i;
 			}

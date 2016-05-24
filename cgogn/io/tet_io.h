@@ -29,6 +29,7 @@
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/io/dll.h>
 #include <cgogn/io/volume_import.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -137,11 +138,62 @@ protected:
 	}
 };
 
+
+template<typename MAP>
+class TetVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = TetVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		ChunkArrayGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const uint32 nb_vols = nb_vert_vol.size();
+
+		// 1. vertices
+		output << map.template nb_cells<Vertex::ORBIT>() << " vertices" << std::endl;
+		output << nb_vols << " cells" << std::endl;
+
+		map.foreach_cell([&](Vertex v)
+		{
+			pos->export_element(map.get_embedding(v), output, false);
+			output << std::endl;
+		});
+
+		auto vertices_it = this->get_vertices_of_volumes().begin();
+		for (uint32 w = 0u; w < nb_vols; ++w)
+		{
+			output << nb_vert_vol[w] << " ";
+			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
+			{
+				output << *vertices_it  << " ";
+				++vertices_it;
+			}
+			output << std::endl;
+		}
+	}
+};
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 
 } // namespace io

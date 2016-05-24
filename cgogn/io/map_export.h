@@ -32,8 +32,13 @@
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/algos/normal.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
+#include <cgogn/io/vtk_io.h>
+#include <cgogn/io/msh_io.h>
+#include <cgogn/io/nastran_io.h>
+#include <cgogn/io/tet_io.h>
 
 namespace cgogn
 {
@@ -41,8 +46,40 @@ namespace cgogn
 namespace io
 {
 
-//template <typename VEC3, class MAP_TRAITS>
-//void export_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
+template <typename MAP>
+inline std::unique_ptr<VolumeExport<MAP>> newVolumeExport(const std::string& filename);
+
+
+template <class MAP>
+inline void export_volume(MAP& map3, const ExportOptions& options);
+
+
+
+template <class MAP>
+inline void export_volume(MAP& map3, const ExportOptions& options)
+{
+	auto ve = newVolumeExport<MAP>(options.filename_);
+	if (ve)
+		ve->export_file(map3,options);
+}
+
+template <typename MAP>
+inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& filename)
+{
+	const FileType file_type = get_file_type(filename);
+	switch (file_type)
+	{
+//		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTU:		return make_unique<VtkVolumeExport<MAP>>();
+		case FileType::FileType_MSH:		return make_unique<MshVolumeExport<MAP>>();
+		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();
+		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
+		default:
+			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << get_extension(filename) << "\".";
+			return std::unique_ptr<VolumeExport<MAP>> ();
+	}
+}
+
 
 /**
  * @brief export surface in off format
@@ -833,4 +870,4 @@ bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_MAP_IMPORT_H_
+#endif // CGOGN_IO_MAP_EXPORT_H_
