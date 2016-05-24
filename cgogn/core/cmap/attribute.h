@@ -104,7 +104,7 @@ public:
 	}
 
 	virtual const std::string&	get_name() const = 0;
-	virtual std::string			get_type_name() const = 0;
+	virtual const std::string&	get_type_name() const = 0;
 	virtual bool				is_valid() const = 0;
 	virtual Orbit				get_orbit() const = 0;
 };
@@ -538,9 +538,9 @@ public:
 		return iterator(this, this->chunk_array_cont_->end());
 	}
 
-	virtual std::string get_type_name() const override
+	virtual const std::string& get_type_name() const override
 	{
-		return name_of_type(T());
+		return chunk_array_->get_type_name();
 	}
 };
 
