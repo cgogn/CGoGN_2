@@ -76,7 +76,7 @@ private:
 	VertexAttribute<Vec3> vertex_position_;
 	FaceAttribute<Vec3> face_normal_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
@@ -103,7 +103,7 @@ void Viewer::import(const std::string& surfaceMesh)
 	face_normal_ = map_.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
 	cgogn::geometry::compute_normal_faces<Vec3>(map_, vertex_position_, face_normal_);
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
