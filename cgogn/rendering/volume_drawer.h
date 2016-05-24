@@ -328,10 +328,10 @@ public:
 using VolumeDrawer = VolumeDrawerTpl<false>;
 using VolumeDrawerColor = VolumeDrawerTpl<true>;
 
-#if !defined(CGOGN_RENDER_VOLUME_RENDER_CPP_)
+#if !defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_)
 extern template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
 extern template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_))
+#endif // (!defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_))
 
 } // namespace rendering
 
