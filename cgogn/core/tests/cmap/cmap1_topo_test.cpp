@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/cmap/cmap1.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn
 {
@@ -110,6 +110,22 @@ TEST_F(CMap1TopoTest, random_map_generators)
 }
 
 /*!
+ * \brief Test attribute management
+ *
+ */
+TEST_F(CMap1TopoTest, add_attribute)
+{
+	add_vertices(NB_MAX);
+	add_faces(NB_MAX);
+
+	add_attribute<int32, Vertex::ORBIT>("vertices");
+	EXPECT_TRUE(check_map_integrity());
+
+	add_attribute<int32, Face::ORBIT>("faces");
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*!
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is preserved.
@@ -155,10 +171,10 @@ TEST_F(CMap1TopoTest, add_face_topo)
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), 2u);
 
 	uint32 count_vertices = 11u + add_faces(NB_MAX);
-
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX + 2u);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -166,7 +182,7 @@ TEST_F(CMap1TopoTest, add_face_topo)
  * The test randomly removes 1/3 of the initial faces.
  * The number of cells correctly decreases and the map integrity is preserved.
  */
-TEST_F(CMap1TopoTest, remove_face)
+TEST_F(CMap1TopoTest, remove_face_topo)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
 	uint32 count_faces = NB_MAX;
@@ -177,7 +193,7 @@ TEST_F(CMap1TopoTest, remove_face)
 		{
 			Face f(d);
 			uint32 k = codegree(f);
-			remove_face(f);
+			remove_face_topo(d);
 			count_vertices -= k;
 			--count_faces;
 		}
@@ -186,6 +202,7 @@ TEST_F(CMap1TopoTest, remove_face)
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -204,9 +221,11 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 		++count_vertices;
 		EXPECT_EQ(codegree(Face(d)), k + 1);
 	}
+
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), NB_MAX);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -214,7 +233,7 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 * The test performs NB_MAX vertex removing on vertices of randomly generated faces.
 * The number of removed cells is correct and the map integrity is preserved.
 */
-TEST_F(CMap1TopoTest, remove_vertex)
+TEST_F(CMap1TopoTest, remove_vertex_topo)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
 	uint32 count_faces = NB_MAX;
@@ -225,20 +244,22 @@ TEST_F(CMap1TopoTest, remove_vertex)
 		if (k > 1)
 		{
 			Dart e = phi1(d);
-			remove_vertex(Vertex(d));
+			remove_vertex_topo(d);
 			--count_vertices;
 			EXPECT_EQ(codegree(Face(e)), k - 1);
 		}
 		else
 		{
-			remove_vertex(Vertex(d));
+			remove_vertex_topo(d);
 			--count_faces;
 			--count_vertices;
 		}
 	}
+
 	EXPECT_EQ(nb_darts(), count_vertices);
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -291,23 +312,48 @@ TEST_F(CMap1TopoTest, codegree)
  */
 TEST_F(CMap1TopoTest, has_codegree)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
 
-	EXPECT_TRUE(has_codegree(f, 10u));
-	EXPECT_FALSE(has_codegree(f, 0u));
-	EXPECT_FALSE(has_codegree(f, 9u));
-	EXPECT_FALSE(has_codegree(f, 11u));
+	EXPECT_TRUE(has_codegree(f1, 1u));
+	EXPECT_FALSE(has_codegree(f1, 0u));
+	EXPECT_FALSE(has_codegree(f1, 2u));
+
+	Face f2(this->add_face_topo(2u));
+
+	EXPECT_TRUE(has_codegree(f2, 2u));
+	EXPECT_FALSE(has_codegree(f2, 0u));
+	EXPECT_FALSE(has_codegree(f2, 1u));
+	EXPECT_FALSE(has_codegree(f2, 3u));
+
+	Face f3(this->add_face_topo(10u));
+
+	EXPECT_TRUE(has_codegree(f3, 10u));
+	EXPECT_FALSE(has_codegree(f3, 0u));
+	EXPECT_FALSE(has_codegree(f3, 9u));
+	EXPECT_FALSE(has_codegree(f3, 11u));
 }
 
 /*! \brief The multi_phi are correctly applied
  */
 TEST_F(CMap1TopoTest, multi_phi)
 {
-	Face f(this->add_face_topo(10u));
+	Face f1(this->add_face_topo(1u));
 
-	EXPECT_EQ(f.dart, this->phi<1111111111>(f.dart));
+	EXPECT_EQ(f1.dart, this->phi<1>(f1.dart));
+
+	Face f2(this->add_face_topo(10u));
+
+	EXPECT_EQ(f2.dart, this->phi<1111111111>(f2.dart));
 }
 
+/*! \brief The number of connected components is correctly counted
+ */
+TEST_F(CMap1TopoTest, nb_connected_components)
+{
+	add_faces(NB_MAX);
+
+	EXPECT_EQ(nb_connected_components(), NB_MAX);
+}
 
 #undef NB_MAX
 

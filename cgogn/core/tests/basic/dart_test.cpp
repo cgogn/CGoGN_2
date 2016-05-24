@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
 namespace cgogn
 {

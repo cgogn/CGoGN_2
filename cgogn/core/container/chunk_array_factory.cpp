@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_
 
-#include <core/container/chunk_array_factory.h>
+#include <cgogn/core/container/chunk_array_factory.h>
 
 namespace cgogn
 {

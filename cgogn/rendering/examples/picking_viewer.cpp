@@ -29,18 +29,18 @@
 #include <QMouseEvent>
 #include <QVector3D>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/bounding_box.h>
 
-#include <rendering/map_render.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/drawer.h>
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/drawer.h>
 
-#include <geometry/algos/picking.h>
+#include <cgogn/geometry/algos/picking.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -51,15 +51,14 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 
 class Viewer : public QOGLViewer
 {
 public:
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
@@ -75,23 +74,24 @@ public:
 private:
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
-
-	QRect viewport_;
 	QMatrix4x4 proj_;
 	QMatrix4x4 view_;
 
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	VertexAttribute<Vec3> vertex_position_;
 
-	cgogn::rendering::MapRender* render_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
-	cgogn::rendering::VBO* vbo_pos_;
+	std::unique_ptr<cgogn::rendering::MapRender> render_;
 
-	cgogn::rendering::ShaderFlat* shader2_;
 
-	cgogn::rendering::Drawer* drawer_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+
+	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
+
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
 
 	int32 cell_picking;
 };
@@ -108,7 +108,7 @@ void Viewer::import(const std::string& surfaceMesh)
 
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
@@ -117,11 +117,7 @@ void Viewer::import(const std::string& surfaceMesh)
 }
 
 Viewer::~Viewer()
-{
-	delete render_;
-	delete vbo_pos_;
-	delete shader2_;
-}
+{}
 
 Viewer::Viewer() :
 	map_(),
@@ -129,7 +125,6 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	shader2_(nullptr),
 	drawer_(nullptr),
 	cell_picking(0)
 {}
@@ -142,49 +137,41 @@ void Viewer::draw()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
 
-	shader2_->bind();
-	shader2_->set_matrices(proj_,view_);
-	shader2_->bind_vao(0);
+	param_flat_->bind(proj_, view_);
 	render_->draw(cgogn::rendering::TRIANGLES);
-	shader2_->release_vao(0);
-	shader2_->release();
+	param_flat_->release();
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_->call_list(proj_,view_);
-
+	drawer_rend_->draw(proj_, view_, this);
 }
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	cgogn::rendering::update_vbo(vertex_position_, *vbo_pos_);
-	render_ = new cgogn::rendering::MapRender();
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, vertex_position_);
+	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
-	shader2_ = new cgogn::rendering::ShaderFlat;
-	shader2_->add_vao();
-	shader2_->set_vao(0, vbo_pos_);
+	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 
-	shader2_->bind();
-	shader2_->set_front_color(QColor(0,200,0));
-	shader2_->set_back_color(QColor(0,0,200));
-	shader2_->set_ambiant_color(QColor(5,5,5));
-	shader2_->release();
+	param_flat_->set_position_vbo(vbo_pos_.get());
+	param_flat_->front_color_ = QColor(0,200,0);
+	param_flat_->back_color_ = QColor(200,0,0);
+	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	drawer_ = new cgogn::rendering::Drawer(this);
+	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+	drawer_rend_ = drawer_->generate_renderer();
 }
-
 
 void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
-	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),0.0));
-	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(),event->y(),1.0));
+	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 0.0));
+	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
 }
-
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
@@ -252,11 +239,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0,1.0,0.0);
 					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+						cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -272,11 +259,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0,1.0,0.0);
 					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+						cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -292,11 +279,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_);
+					cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0,1.0,0.0);
 					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_);
+						cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
 					drawer_->end();
 				}
 			}

@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP3_BUILDER_H_
-#define CORE_CMAP_CMAP3_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -48,7 +48,6 @@ public:
 	using DartMarkerStore = typename CMap3::DartMarkerStore;
 	template <typename T>
 	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
-
 
 	inline CMap3Builder_T(CMap3& map) : map_(map)
 	{}
@@ -124,6 +123,26 @@ public:
 	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
+	}
+
+	/**
+	 * @brief sew two volumes along a face
+	 * The darts given in the Volume parameters must be part of Face2 that have
+	 * a similar co-degree and whose darts are all phi3 fix points
+	 * @param v1 first volume
+	 * @param v2 second volume
+	 */
+	inline void sew_volumes(Volume v1, Volume v2)
+	{
+		Dart it1 = v1.dart;
+		Dart it2 = v2.dart;
+		const Dart begin = it1;
+		do
+		{
+			phi3_sew(it1, it2);
+			it1 = map_.phi1(it1);
+			it2 = map_.phi_1(it2);
+		} while (it1 != begin);
 	}
 
 	inline void close_hole_topo(Dart d)
@@ -207,7 +226,7 @@ public:
 				close_hole_topo(d);
 				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
 				{
-					map_.set_boundary(db,true);
+					map_.set_boundary(db, true);
 				});
 
 				const Volume new_volume(map_.phi3(d));
@@ -282,13 +301,13 @@ private:
 	CMap3& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CMAP_CMAP3_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CMAP_CMAP3_BUILDER_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
 using CMap3Builder = cgogn::CMap3Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
 
-#endif // CORE_CMAP_CMAP3_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 

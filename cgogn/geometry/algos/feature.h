@@ -1,7 +1,6 @@
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
-* version 0.1                                                                  *
-* Copyright (C) 2009-2012, IGG Team, LSIIT, University of Strasbourg           *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
 * This library is free software; you can redistribute it and/or modify it      *
 * under the terms of the GNU Lesser General Public License as published by the *
@@ -22,59 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_THREAD_BARRIER_H_
-#define CORE_UTILS_THREAD_BARRIER_H_
+#ifndef CGOGN_GEOMETRY_ALGOS_FEATURE_H_
+#define CGOGN_GEOMETRY_ALGOS_FEATURE_H_
 
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include <cgogn/geometry/functions/basics.h>
 
 namespace cgogn
 {
 
-/**
-* Implementation of simple counter barrier (rdv)
-* for c++11 std::thread
-*/
-class Barrier
+namespace geometry
 {
-private:
 
-	uint32 init_count_;
-	uint32 count_;
-	uint32 generation_;
-	
-	std::mutex protect_;
-	std::condition_variable cond_;
+template <typename VEC3, typename MAP>
+void mark_feature_edges(
+	const MAP& map,
+	const typename MAP::template FaceAttribute<VEC3>& normal,
+	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
+{
+	feature_edge.unmark_all();
 
-public:
-
-	/**
-	* constructor
-	* @param count number of threads to syncronize
-	*/
-	inline Barrier(uint32 count) :
-		init_count_(count),
-		count_(count),
-		generation_(0)
-	{}
-	
-	inline void wait()
+	map.foreach_cell([&] (typename MAP::Edge e)
 	{
-		std::unique_lock<std::mutex> lock(protect_);
-		uint32 gen = generation_;
+		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
+			feature_edge.mark(e);
+	});
+}
 
-		if (--count_ == 0)
-		{
-			++generation_;
-			count_ = init_count_;
-			cond_.notify_all();
-		}
-		else
-			cond_.wait(lock, [this, gen] () { return gen != generation_; });
-	}
-};
+} // namespace geometry
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_THREAD_BARRIER_H_
+#endif // CGOGN_GEOMETRY_ALGOS_FEATURE_H_

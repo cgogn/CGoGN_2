@@ -21,14 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
-#define RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
+#ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
+#define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 
+#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
+#include <QOpenGLFunctions>
 #include <QVector3D>
 #include <QVector4D>
-#include <rendering/shaders/shader_program.h>
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <QColor>
 
 namespace cgogn
 {
@@ -36,44 +39,86 @@ namespace cgogn
 namespace rendering
 {
 
+// forward
+class ShaderParamExplodeVolumesLine;
+
 class CGOGN_RENDERING_API ShaderExplodeVolumesLine : public ShaderProgram
 {
+	friend class ShaderParamExplodeVolumesLine;
+
+protected:
+
 	static const char* vertex_shader_source_;
 	static const char* geometry_shader_source_;
 	static const char* fragment_shader_source_;
-
-	enum
-	{
-		ATTRIB_POS = 0,
-	};
 
 	// uniform ids
 	GLint unif_expl_v_;
 	GLint unif_plane_clip_;
 	GLint unif_color_;
 
+public:
+
+	enum
+	{
+		ATTRIB_POS = 0,
+	};
+
+	using Param = ShaderParamExplodeVolumesLine;
+	static std::unique_ptr<Param> generate_param();
+
+	void set_explode_volume(float32 x);
+	void set_plane_clip(const QVector4D& plane);
+	void set_color(const QColor& rgb);
+
+protected:
+
+	ShaderExplodeVolumesLine();
+	static std::unique_ptr<ShaderExplodeVolumesLine> instance_;
+};
+
+class CGOGN_RENDERING_API ShaderParamExplodeVolumesLine : public ShaderParam
+{
+protected:
+
+	inline void set_uniforms() override
+	{
+		ShaderExplodeVolumesLine* sh = static_cast<ShaderExplodeVolumesLine*>(this->shader_);
+		sh->set_color(color_);
+		sh->set_explode_volume(explode_factor_);
+		sh->set_plane_clip(plane_clip_);
+	}
 
 public:
 
-	ShaderExplodeVolumesLine();
+	QColor color_;
+	QVector4D plane_clip_;
+	float32 explode_factor_;
 
-	void set_explode_volume(float32 x);
+	ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh) :
+		ShaderParam(sh),
+		color_(255, 255, 255),
+		plane_clip_(0, 0, 0, 0),
+		explode_factor_(0.8f)
+	{}
 
-	void set_plane_clip(const QVector4D& plane);
-
-	void set_color(const QColor& rgb);
-
-	/**
-	 * @brief set a vao configuration
-	 * @param i vao id (0,1,...)
-	 * @param vbo_pos pointer on position vbo (XYZ)
-	 * @return true if ok
-	 */
-	bool set_vao(uint32 i, VBO* vbo_pos);
+	void set_position_vbo(VBO* vbo_pos)
+	{
+		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+		shader_->bind();
+		vao_->bind();
+		vbo_pos->bind();
+		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesLine::ATTRIB_POS);
+		ogl->glVertexAttribPointer(ShaderExplodeVolumesLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		vbo_pos->release();
+		vao_->release();
+		shader_->release();
+	}
 };
+
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
+#endif // CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_

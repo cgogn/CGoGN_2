@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP0_H_
-#define CORE_CMAP_CMAP0_H_
+#ifndef CGOGN_CORE_CMAP_CMAP0_H_
+#define CGOGN_CORE_CMAP_CMAP0_H_
 
-#include <core/cmap/map_base.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -34,7 +34,7 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int32 PRIM_SIZE = 1;
+	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -46,7 +46,9 @@ public:
 	friend class cgogn::DartMarkerStore<Self>;
 
 	using Vertex = Cell<Orbit::DART>;
+
 	using Boundary = Vertex;  // just for compilation
+	using ConnectedComponent = Vertex;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -54,9 +56,9 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -100,10 +102,28 @@ protected:
 	{
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * No contraints.
+	 */
 	inline bool check_integrity(Dart) const
 	{
 		return true;
 	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * No boundary dart is accepted.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return !this->is_boundary(d);
+	}
+
 	/*******************************************************************************
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
@@ -156,6 +176,36 @@ protected:
 		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		f(c.dart);
 	}
+
+protected:
+
+	/**
+	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
+	 * @param map
+	 */
+	void merge_check_embedding(const Self& map)
+	{
+		if (!this->template is_embedded<Orbit::DART>() && map.template is_embedded<Orbit::DART>())
+			this->template create_embedding<Orbit::DART>();
+	}
+
+	/**
+	 * @brief ensure all cells (introduced while merging) are embedded.
+	 * @param first index of first dart to scan
+	 */
+	void merge_finish_embedding(uint32 first)
+	{
+		if (this->template is_embedded<Orbit::DART>())
+		{
+			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			{
+				if ((*this->embeddings_[Orbit::DART])[j] == std::numeric_limits<uint32>::max())
+					this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
+			}
+		}
+	}
+
+
 };
 
 template <typename MAP_TRAITS>
@@ -167,15 +217,15 @@ struct CMap0Type
 template <typename MAP_TRAITS>
 using CMap0 = CMap0_T<MAP_TRAITS, CMap0Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
 extern template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP0_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP0_H_
+#endif // CGOGN_CORE_CMAP_CMAP0_H_

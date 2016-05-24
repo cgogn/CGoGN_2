@@ -21,17 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_LOGGER_H_
-#define CORE_UTILS_LOGGER_H_
+#ifndef CGOGN_CORE_UTILS_LOGGER_H_
+#define CGOGN_CORE_UTILS_LOGGER_H_
 
 #include <ostream>
 #include <memory>
 #include <vector>
 
-#include <core/utils/log_entry.h>
-#include <core/utils/logger_output.h>
-#include <core/utils/log_stream.h>
-#include <core/utils/unique_ptr.h>
+#include <cgogn/core/utils/log_entry.h>
+#include <cgogn/core/utils/logger_output.h>
+#include <cgogn/core/utils/log_stream.h>
+#include <cgogn/core/utils/unique_ptr.h>
 
 #define CGOGN_FILE_INFO ::cgogn::logger::internal::FileInfo(__FILE__, __LINE__)
 #define cgogn_log_info(emitter) ::cgogn::logger::Logger::get_logger().info(emitter,CGOGN_FILE_INFO)
@@ -80,4 +80,4 @@ private:
 
 } // namespace logger
 } // namespace cgogn
-#endif // CORE_UTILS_LOGGER_H_
+#endif // CGOGN_CORE_UTILS_LOGGER_H_

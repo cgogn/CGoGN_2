@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_STACK_H_
-#define CORE_CONTAINER_CHUNK_STACK_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_STACK_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_STACK_H_
 
-#include <core/container/chunk_array.h>
-#include <core/utils/assert.h>
-#include <core/dll.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/dll.h>
 
 namespace cgogn
 {
@@ -141,17 +141,22 @@ public:
 		Inherit::clear();
 	}
 
-	void swap(Self &cs)
+	bool swap(ChunkArrayGen<CHUNKSIZE>* cag) override
 	{
-		Inherit::swap(cs);
-		std::swap(stack_size_, cs.stack_size_);
+		if (Inherit::swap(cag))
+		{
+			Self* cs = dynamic_cast<Self*>(cag);
+			std::swap(stack_size_, cs->stack_size_);
+			return true;
+		}
+		return false;
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
 extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_STACK_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_STACK_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_STACK_H_

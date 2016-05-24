@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_CPH_BASE_H_
-#define MULTIRESOLUTION_CPH_CPH_BASE_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_
+#define CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_
 
-#include <core/utils/assert.h>
-#include <core/basic/dart.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/basic/dart.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/map_traits.h>
 
-#include <multiresolution/dll.h>
+#include <cgogn/multiresolution/dll.h>
 
 namespace cgogn
 {
@@ -147,11 +147,11 @@ public:
 };
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
 
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_CPH_BASE_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_H_

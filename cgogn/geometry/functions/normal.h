@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_NORMAL_H_
-#define GEOMETRY_FUNCTIONS_NORMAL_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_NORMAL_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_NORMAL_H_
 
 namespace cgogn
 {
@@ -43,4 +43,4 @@ inline VEC3_T triangle_normal(const VEC3_T& p1, const VEC3_T& p2, const VEC3_T& 
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_NORMAL_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_NORMAL_H_

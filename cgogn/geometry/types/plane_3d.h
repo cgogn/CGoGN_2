@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_PLANE_3D_H_
-#define GEOMETRY_TYPES_PLANE_3D_H_
+#ifndef CGOGN_GEOMETRY_TYPES_PLANE_3D_H_
+#define CGOGN_GEOMETRY_TYPES_PLANE_3D_H_
 
 #include <type_traits>
 #include <array>
 
-#include <core/utils/precision.h>
+#include <cgogn/core/utils/numerics.h>
 
-#include <geometry/dll.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -138,15 +138,15 @@ private:
 	Scalar d_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_PLANE_3D_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float32,3>>>;
 extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float64,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_PLANE_3D_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_PLANE_3D_H_
+#endif // CGOGN_GEOMETRY_TYPES_PLANE_3D_H_

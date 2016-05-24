@@ -1,6 +1,6 @@
 
-#include <core/container/chunk_array_container.h>
-#include <core/utils/serialization.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/utils/serialization.h>
 #define BLK_SZ 4096
 
 using namespace cgogn;
@@ -33,6 +33,21 @@ public:
 	static std::string cgogn_name_of_type()
 	{
 		return "Vec3f";
+	}
+
+	inline uint32 size() const
+	{
+		return 3u;
+	}
+
+	inline float32& operator[](std::size_t i)
+	{
+		return data_[i];
+	}
+
+	inline const float32& operator[](std::size_t i) const
+	{
+		return data_[i];
 	}
 };
 
@@ -114,8 +129,8 @@ int test3()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 3 = random bool cleaning" ;
 
-	ChunkArrayContainer<BLK_SZ, bool> container;
-	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
+	ChunkArrayContainer<BLK_SZ, uint8> container;
+	ChunkArrayBool<BLK_SZ>* att1 = container.add_marker_attribute();
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -142,8 +157,8 @@ int test4()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 4 = random bool cleaning with set_false_byte" ;
 
-	ChunkArrayContainer<BLK_SZ,  bool> container;
-	ChunkArray<BLK_SZ,bool>* att1 = container.add_attribute<bool>("bools");
+	ChunkArrayContainer<BLK_SZ, uint8> container;
+	ChunkArrayBool<BLK_SZ>* att1 = container.add_marker_attribute();
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();

@@ -22,13 +22,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_VBO_H_
-#define RENDERING_SHADERS_VBO_H_
+#ifndef CGOGN_RENDERING_SHADERS_VBO_H_
+#define CGOGN_RENDERING_SHADERS_VBO_H_
 
 #include <QOpenGLBuffer>
 
-#include <core/cmap/attribute_handler.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/core/cmap/attribute.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -43,14 +43,20 @@ protected:
 	uint32 nb_vectors_;
 	uint32 vector_dimension_;
 	QOpenGLBuffer buffer_;
+	std::string name_;
 
 public:
 
-	inline VBO(uint32 vec_dim) :
+	inline VBO(uint32 vec_dim = 3u) :
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{
-		buffer_.create();
+		const bool buffer_created = buffer_.create();
+		if (!buffer_created)
+		{
+			cgogn_log_error("VBO::VBO(uint32)") << "The call to QOpenGLBuffer::create() failed. Maybe there is no QOpenGLContext.";
+			std::exit(EXIT_FAILURE);
+		}
 		buffer_.bind();
 		buffer_.setUsagePattern(QOpenGLBuffer::StreamDraw);
 	}
@@ -58,6 +64,16 @@ public:
 	inline ~VBO()
 	{
 		buffer_.destroy();
+	}
+
+	inline void set_name(const std::string& name)
+	{
+		name_ = name;
+	}
+
+	inline const std::string& get_name() const
+	{
+		return name_;
 	}
 
 	inline void bind()
@@ -134,34 +150,37 @@ public:
 };
 
 /**
- * @brief update vbo from one AttributeHandler
- * @param attr AttributeHandler (must contain float or vec<float>
+ * @brief update vbo from one Attribute
+ * @param attr Attribute (must contain float or vec<float>
  * @param vbo vbo to update
  * @param convert conversion lambda
  */
 template <typename ATTR>
-void update_vbo(const ATTR& attr, VBO& vbo)
+void update_vbo(const ATTR& attr, VBO* vbo)
 {
 	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.get_data();
+
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
 
 	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
 	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float32);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
 	{
 		// copy
-		vbo.bind();
+		vbo->bind();
 		for (uint32 i = 0; i < nb_chunks; ++i)
-			vbo.copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
-		vbo.release();
+			vbo->copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
+		vbo->release();
 	}
 	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
 	{
@@ -174,23 +193,22 @@ void update_vbo(const ATTR& attr, VBO& vbo)
 			float64* src = reinterpret_cast<float64*>(chunk_addr[i]);
 			for (uint32 j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
 				*fit++ = *src++;
-			vbo.bind();
-			vbo.copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
-			vbo.release();
+			vbo->bind();
+			vbo->copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
+			vbo->release();
 		}
 		delete[] float_buffer;
 	}
 }
 
-
 /**
- * @brief update vbo from one AttributeHandler with conversion lambda
- * @param attr AttributeHandler
+ * @brief update vbo from one Attribute with conversion lambda
+ * @param attr Attribute
  * @param vbo vbo to update
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename FUNC>
-void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
+void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
@@ -198,6 +216,9 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	// check that convert param  is compatible with attr
 	using InputConvert = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
+
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
@@ -222,30 +243,30 @@ void update_vbo(const ATTR& attr, VBO& vbo, const FUNC& convert)
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
 
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
-	vbo.release_pointer();
+
+	vbo->release_pointer();
 }
 
-
 /**
- * @brief update vbo from two AttributeHandlers with conversion lambda
- * @param attr first AttributeHandler
- * @param attr2 second AttributeHandler
+ * @brief update vbo from two Attributes with conversion lambda
+ * @param attr first Attribute
+ * @param attr2 second Attribute
  * @param vbo vbo to update
  * @param convert conversion lambda -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename ATTR2, typename FUNC>
-void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& convert)
+void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 2 param
 	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arg");
@@ -260,6 +281,9 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 	// check that convert param 2 is compatible with attr2
 	using InputConvert2 = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<1>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR2) >::value, "wrong parameter 2");
+
+	// set vbo name based on first attribute name
+	vbo->set_name(attr.get_name());
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.get_data();
@@ -289,12 +313,12 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo.allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
 
 	// copy (after conversion)
 	// out type conversion
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
@@ -302,20 +326,19 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO& vbo, const FUNC& conv
 		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}
-	vbo.release_pointer();
+
+	vbo->release_pointer();
 }
-
-
 
 /**
  * @brief generate a vbo from an attribute and it's indices
- * @param attr the AttributeHandler
- * @param indices indices in the AttributeHandler
+ * @param attr the Attribute
+ * @param indices indices in the Attribute
  * @param vbo the vbo to generate
  * @param convert conversion lambda  -> float or std::array<float,2/3/4>
  */
 template <typename ATTR, typename FUNC>
-void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo, const FUNC& convert)
+void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
 	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
@@ -341,26 +364,24 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO& vbo
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
 
+	// set vbo name based on attribute name
+	vbo->set_name(attr.get_name());
+
 	// allocate vbo
-	vbo.allocate(uint32(indices.size()), vec_dim);
+	vbo->allocate(uint32(indices.size()), vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
-	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo.lock_pointer());
+	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 
 	for (uint32 i: indices)
 		 *dst++ = convert(attr[i]);
 
-	vbo.release_pointer();
+	vbo->release_pointer();
 }
-
-
-
-
-
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_VBO_H_
+#endif // CGOGN_RENDERING_SHADERS_VBO_H_

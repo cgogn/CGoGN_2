@@ -21,18 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_TYPES_VEC_H_
-#define GEOMETRY_TYPES_VEC_H_
+#ifndef CGOGN_GEOMETRY_TYPES_VEC_H_
+#define CGOGN_GEOMETRY_TYPES_VEC_H_
 
 #include <array>
 #include <cmath>
 #include <vector>
 #include <initializer_list>
 
-#include <core/utils/name_types.h>
-#include <core/utils/assert.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/assert.h>
 
-#include <geometry/dll.h>
+#include <cgogn/geometry/dll.h>
 
 namespace cgogn
 {
@@ -195,7 +195,6 @@ public:
 		return v / r;
 	}
 
-
 	inline const Scalar dot(const Self& v) const
 	{
 		Scalar r{0};
@@ -260,18 +259,42 @@ public:
 		return o;
 	}
 
+	inline std::size_t size() const
+	{
+		return data_.size();
+	}
+	inline auto begin() const ->decltype(std::declval<const Container>().begin())
+	{
+		return data_.begin();
+	}
+
+	inline auto begin() ->decltype(std::declval<Container>().begin())
+	{
+		return data_.begin();
+	}
+
+	inline auto end() const ->decltype(std::declval<const Container>().end())
+	{
+		return data_.end();
+	}
+
+	inline auto end() ->decltype(std::declval<Container>().end())
+	{
+		return data_.end();
+	}
+
 private:
 
 	Container data_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_VEC_CPP_))
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
 extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(GEOMETRY_TYPES_VEC_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_VEC_CPP_))
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_TYPES_VEC_H_
+#endif // CGOGN_GEOMETRY_TYPES_VEC_H_

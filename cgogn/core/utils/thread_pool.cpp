@@ -23,7 +23,7 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/utils/thread_pool.h>
+#include <cgogn/core/utils/thread_pool.h>
 
 namespace cgogn
 
@@ -44,7 +44,9 @@ ThreadPool::~ThreadPool()
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		stop_ = true;
 	}
+#if !(defined(CGOGN_WIN_VER) && (CGOGN_WIN_VER <= 61))
 	condition_.notify_all();
+#endif
 	for(std::thread &worker: workers_)
 		worker.join();
 }

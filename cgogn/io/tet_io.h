@@ -21,14 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_TET_IO_H_
-#define IO_TET_IO_H_
+#ifndef CGOGN_IO_TET_IO_H_
+#define CGOGN_IO_TET_IO_H_
 
 #include <map>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/volume_import.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -47,7 +48,7 @@ class TetVolumeImport : public VolumeImport<MAP_TRAITS>
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -57,27 +58,29 @@ protected:
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		iss >> this->nb_vertices_;
+		uint32 nbv = 0u;
+		iss >> nbv;
+		this->set_nb_vertices(nbv);
 		}
 
 		// reading number of tetrahedra
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		iss >> this->nb_volumes_;
-		this->volumes_types.reserve(this->nb_volumes_);
-		this->volumes_vertex_indices_.reserve(4u*this->nb_volumes_);
+		uint32 nbw = 0u;
+		iss >> nbw;
+		this->set_nb_volumes(nbw);
 		}
 
 		//reading vertices
-		for(uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
 			do
 			{
 				std::getline(fp, line);
 			} while (line.empty());
 
-			const uint32 new_id = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_id = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_id);
 			std::istringstream iss(line);
 			iss >> v[0];
@@ -88,7 +91,7 @@ protected:
 
 
 		// reading volumes
-		for (uint32 i = 0u; i < this->nb_volumes_ ; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			do
 			{
@@ -104,10 +107,10 @@ protected:
 
 				iss.clear();
 				char connector;
-				iss >> connector >> connector;
+				iss >> connector >> connector; // the line should be like this: # C id0 id1 id2 id3
 				if (connector == 'C')
 				{
-					--this->nb_volumes_;
+					this->set_nb_volumes(this->get_nb_volumes() -1u);
 					std::array<uint32,4> ids;
 					iss >> ids[0] >> ids[1] >> ids[2] >> ids[3];
 					this->add_connector(ids[0], ids[1], ids[2], ids[3]);
@@ -135,14 +138,65 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TET_IO_CPP_))
+
+template<typename MAP>
+class TetVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = TetVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		ChunkArrayGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const uint32 nb_vols = nb_vert_vol.size();
+
+		// 1. vertices
+		output << map.template nb_cells<Vertex::ORBIT>() << " vertices" << std::endl;
+		output << nb_vols << " cells" << std::endl;
+
+		map.foreach_cell([&](Vertex v)
+		{
+			pos->export_element(map.get_embedding(v), output, false);
+			output << std::endl;
+		});
+
+		auto vertices_it = this->get_vertices_of_volumes().begin();
+		for (uint32 w = 0u; w < nb_vols; ++w)
+		{
+			output << nb_vert_vol[w] << " ";
+			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
+			{
+				output << *vertices_it  << " ";
+				++vertices_it;
+			}
+			output << std::endl;
+		}
+	}
+};
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TET_IO_CPP_))
+
+extern template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_TET_IO_H_
+#endif // CGOGN_IO_TET_IO_H_

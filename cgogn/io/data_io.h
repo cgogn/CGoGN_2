@@ -21,19 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_DATA_IO_H_
-#define IO_DATA_IO_H_
+#ifndef CGOGN_IO_DATA_IO_H_
+#define CGOGN_IO_DATA_IO_H_
 
 #include <memory>
 #include <string>
 
-#include <core/utils/logger.h>
-#include <core/utils/unique_ptr.h>
-#include <core/container/chunk_array.h>
-#include <core/container/chunk_array_container.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/map_traits.h>
 
-#include <io/io_utils.h>
+#include <cgogn/io/io_utils.h>
 
 namespace cgogn
 {
@@ -409,11 +409,11 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 	return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DATA_IO_CPP_))
 extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_DATA_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DATA_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_DATA_IO_H_
+#endif // CGOGN_IO_DATA_IO_H_

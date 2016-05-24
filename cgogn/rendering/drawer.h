@@ -21,17 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_DRAWER_H_
-#define RENDERING_DRAWER_H_
+#ifndef CGOGN_RENDERING_DRAWER_H_
+#define CGOGN_RENDERING_DRAWER_H_
 
-#include <rendering/shaders/shader_color_per_vertex.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_bold_line.h>
-#include <rendering/shaders/shader_round_point.h>
-#include <rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/dll.h>
 
-#include <rendering/shaders/vbo.h>
-#include <rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_color_per_vertex.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
+#include <cgogn/rendering/shaders/shader_round_point.h>
+#include <cgogn/rendering/shaders/shader_point_sprite.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
 #include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
@@ -39,9 +40,30 @@ namespace cgogn
 
 namespace rendering
 {
-
-
-class CGOGN_RENDERING_API Drawer
+/**
+ * @brief DisplayListDrawer revival of old GL display-list
+ *
+ * Typical usage:
+ *
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;	// can be shared between contexts
+ *  std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_; // one by context,
+ *
+ * init:
+ *  drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+ *  drawer_rend_ = drawer_->generate_renderer(); // don't worry automatically deleted when finished
+ *  drawer_->new_list();
+ *  drawer_->line_width(2.0);
+ *  drawer_->begin(GL_LINE_LOOP); // or GL_POINTS, GL_LINES, GL_TRIANGLES
+ *    drawer_->color3f(1.0,0.0,0.0);
+ *    drawer_->vertex3f(0,0,0);
+ *    drawer_->color3f(0.0,1.0,1.0);
+ *    ....
+ *  drawer_->end();
+ *
+ * draw:
+ *  drawer_rend_->draw(proj,view,this);
+ */
+class CGOGN_RENDERING_API DisplayListDrawer
 {
 	struct PrimParam
 	{
@@ -50,58 +72,86 @@ class CGOGN_RENDERING_API Drawer
 		float32 width;
 		uint32 nb;
 		bool aa;
-		PrimParam(std::size_t b, GLenum m, float32 w, bool a) : begin(uint32(b)), mode(m), width(w), nb(0), aa(a){}
+
+		PrimParam(std::size_t b, GLenum m, float32 w, bool a) :
+			begin(uint32(b)), mode(m), width(w), nb(0), aa(a)
+		{}
 	};
 
-	using Vec3f = std::array<float32,3>;
+	using Vec3f = std::array<float32, 3>;
 
 protected:
 
-	static ShaderColorPerVertex* shader_cpv_;
-	static ShaderBoldLine* shader_bl_;
-	static ShaderRoundPoint* shader_rp_;
-	static ShaderPointSprite* shader_ps_;
-	static int32 nb_instances_;
+	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_col_;
 
-	VBO* vbo_pos_;
-	VBO* vbo_col_;
-
+	// temporary (between begin()/end()) data storage
 	std::vector<Vec3f> data_pos_;
 	std::vector<Vec3f> data_col_;
 
+	// list of primitive call (of each kind)
 	std::vector<PrimParam> begins_point_;
 	std::vector<PrimParam> begins_round_point_;
 	std::vector<PrimParam> begins_balls_;
-
 	std::vector<PrimParam> begins_line_;
 	std::vector<PrimParam> begins_bold_line_;
 	std::vector<PrimParam> begins_face_;
 	std::vector<PrimParam>* current_begin_;
 
-	uint32 vao_cpv_;
-	uint32 vao_bl_;
-	uint32 vao_rp_;
-	uint32 vao_ps_;
-
 	float32 current_size_;
 	bool current_aa_;
 	bool current_ball_;
 
-	QOpenGLFunctions_3_3_Core* ogl33_;
-
 public:
-	using Self = Drawer;
+
+	class CGOGN_RENDERING_API Renderer
+	{
+		friend class DisplayListDrawer;
+		std::unique_ptr<ShaderColorPerVertex::Param> param_cpv_;
+		std::unique_ptr<ShaderBoldLineColor::Param> param_bl_;
+		std::unique_ptr<ShaderRoundPointColor::Param> param_rp_;
+		std::unique_ptr<ShaderPointSpriteColor::Param> param_ps_;
+		DisplayListDrawer* drawer_data_;
+		Renderer(DisplayListDrawer* dr);
+	public:
+		~Renderer();
+
+		/**
+		 * draw the compiled drawing list
+		 * @param projection projection matrix
+		 * @param modelview modelview matrix
+		 * @param a pointer compatible with QOpenGLFunctions_3_3_Core* (QOGLViewer)
+		 */
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+
+	};
+
+	using Self = DisplayListDrawer;
+
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
 	 * @Warning need OpenGL context
 	 */
-	Drawer(QOpenGLFunctions_3_3_Core* ogl33);
+	DisplayListDrawer();
+
 
 	/**
 	 * release buffers and shader
 	 */
-	~Drawer();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawer);
+	~DisplayListDrawer();
+
+	/**
+	 * @brief generate a renderer (one per context)
+	 * @return pointer on renderer
+	 */
+	inline std::unique_ptr<Renderer> generate_renderer()
+	{
+		return std::unique_ptr<Renderer>(new Renderer(this));
+	}
+
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DisplayListDrawer);
+
 
 	/**
 	 * init the data structure
@@ -125,61 +175,70 @@ public:
 	 */
 	void end_list();
 
-	/**
-	 * use as glVertex3f
-	 */
-	void vertex3f(float32 x, float32 y, float32 z);
+	void vertex3ff(float32 x, float32 y, float32 z);
 
 	/**
-	 * use as glColor3f
-	 */
-	void color3f(float32 r, float32 g, float32 b);
-
-
-	inline void vertex3fv(const std::array<float32,3>& xyz)
+	* use as glVertex3f
+	*/
+	template<typename SCAL>
+	inline void vertex3f(SCAL x, SCAL y, SCAL z)
 	{
-		vertex3f(xyz[0],xyz[1],xyz[2]);
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		vertex3ff(float32(x), float32(y), float32(z));
 	}
 
-	inline void color3fv(const std::array<float32,3>& rgb)
+
+	void color3ff(float32 r, float32 g, float32 b);
+
+	/**
+	* use as glColor3f
+	*/
+	template<typename SCAL>
+	inline void color3f(SCAL x, SCAL y, SCAL z)
 	{
-		color3f(rgb[0],rgb[1],rgb[2]);
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		color3ff(float32(x), float32(y), float32(z));
+	}
+
+
+	inline void vertex3fv(const std::array<float32, 3>& xyz)
+	{
+		vertex3ff(xyz[0], xyz[1], xyz[2]);
+	}
+
+	inline void color3fv(const std::array<float32, 3>& rgb)
+	{
+		color3ff(rgb[0], rgb[1], rgb[2]);
 	}
 
 	template <typename SCAL>
 	inline void vertex3fv(SCAL* xyz)
 	{
-		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		vertex3ff(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename SCAL>
 	inline void color3fv(SCAL* rgb)
 	{
-		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
+		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		color3ff(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
 	template <typename VEC3>
 	inline void vertex3fv(const VEC3& xyz)
 	{
-		vertex3f(float32(xyz[0]),float32(xyz[1]),float32(xyz[2]));
+		vertex3f(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
 	template <typename VEC3>
 	inline void color3fv(const VEC3& rgb)
 	{
-		color3f(float32(rgb[0]),float32(rgb[1]),float32(rgb[2]));
+		color3f(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
-
 	/**
-	 * use as a glCallList (draw the compiled drawing list)
-	 * @param projection projection matrix
-	 * @param modelview modelview matrix
-	 */
-	void call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview);
-
-	/**
-	 * usr as glPointSize
+	 * use as glPointSize
 	 */
 	inline void point_size(float32 ps)
 	{
@@ -188,6 +247,9 @@ public:
 		current_ball_ = false;
 	}
 
+	/**
+	 * use as glPointSize with use of anti-aliasing (alpha blending)
+	 */
 	inline void point_size_aa(float32 ps)
 	{
 		current_aa_ = true;
@@ -195,6 +257,9 @@ public:
 		current_ball_ = false;
 	}
 
+	/**
+	 * use as glPointSize for shaded ball rendering
+	 */
 	inline void ball_size(float32 ps)
 	{
 		current_ball_ = true;
@@ -202,9 +267,8 @@ public:
 		current_size_ = ps;
 	}
 
-
 	/**
-	 * usr as glLineWidth
+	 * use as glLineWidth
 	 */
 	inline void line_width(float32 lw)
 	{
@@ -212,19 +276,19 @@ public:
 		current_size_ = lw;
 	}
 
+	/**
+	 * use as glLineWidth with use of anti-aliasing (alpha blending)
+	 */
+
 	inline void line_width_aa(float32 lw)
 	{
 		current_aa_ = true;
 		current_size_ = 2.0*lw;
 	}
-
-
 };
-
-
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_DRAWER_H_
+#endif // CGOGN_RENDERING_DRAWER_H_

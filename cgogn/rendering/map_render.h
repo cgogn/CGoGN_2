@@ -22,17 +22,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_MAP_RENDER_H_
-#define RENDERING_MAP_RENDER_H_
+#ifndef CGOGN_RENDERING_MAP_RENDER_H_
+#define CGOGN_RENDERING_MAP_RENDER_H_
+
+#include <cgogn/rendering/dll.h>
+
+#include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute.h !
+
+#include <cgogn/geometry/algos/ear_triangulation.h>
+
+#include <cgogn/rendering/drawer.h>
+#include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
-
-#include <core/cmap/map_base.h> // impossible to include directly attribute_handler.h !
-#include <geometry/algos/ear_triangulation.h>
-#include <rendering/drawer.h>
-
-#include <rendering/shaders/vbo.h>
 
 namespace cgogn
 {
@@ -52,23 +55,26 @@ class CGOGN_RENDERING_API MapRender
 {
 protected:
 
-	QOpenGLBuffer* indices_buffers_[SIZE_BUFFER];
-	bool indices_buffers_uptodate_[SIZE_BUFFER];
-	uint32 nb_indices_[SIZE_BUFFER];
+	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
+	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
+	std::array<uint32, SIZE_BUFFER>							nb_indices_;
 
 public:
+
 	using Self = MapRender;
 
 	MapRender();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 	~MapRender();
 
-	inline bool is_primitive_uptodate(DrawingType prim)  { return indices_buffers_uptodate_[prim]; }
+	inline bool is_primitive_uptodate(DrawingType prim) { return indices_buffers_uptodate_[prim]; }
+
+	inline void set_primitive_dirty(DrawingType prim) { indices_buffers_uptodate_[prim] = false; }
 
 	template <typename MAP>
-	inline void init_points(MAP& m, std::vector<uint32>& table_indices)
+	inline void init_points(const MAP& m, std::vector<uint32>& table_indices)
 	{
-		//		table_indices.reserve(m.get_nb_darts()/6);
+//		table_indices.reserve(m.get_nb_darts() / 6);
 		m.foreach_cell([&] (typename MAP::Vertex v)
 		{
 			table_indices.push_back(m.get_embedding(v));
@@ -76,11 +82,11 @@ public:
 	}
 
 	template <typename MAP>
-	inline void init_lines(MAP& m, std::vector<uint32>& table_indices)
+	inline void init_lines(const MAP& m, std::vector<uint32>& table_indices)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Edge = typename MAP::Edge;
-		//		table_indices.reserve(m.get_nb_darts()/2);
+//		table_indices.reserve(m.get_nb_darts() / 2);
 		m.foreach_cell([&] (Edge e)
 		{
 			table_indices.push_back(m.get_embedding(Vertex(e.dart)));
@@ -89,12 +95,35 @@ public:
 	}
 
 	template <typename VEC3, typename MAP>
-	inline void init_triangles(MAP& m, std::vector<uint32>& table_indices, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+	inline void init_triangles(const MAP& m, std::vector<uint32>& table_indices)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		// reserve more ?
-		//		table_indices.reserve(m.get_nb_darts()/3);
+//		table_indices.reserve(m.get_nb_darts() / 3);
+		m.foreach_cell([&] (Face f)
+		{
+			Dart d0 = f.dart;
+			Dart d1 = m.phi1(d0);
+			Dart d2 = m.phi1(d1);
+			do
+			{
+				table_indices.push_back(m.get_embedding(Vertex(d0)));
+				table_indices.push_back(m.get_embedding(Vertex(d1)));
+				table_indices.push_back(m.get_embedding(Vertex(d2)));
+				d1 = d2;
+				d2 = m.phi1(d1);
+			} while(d2 != d0);
+		});
+	}
+
+	template <typename VEC3, typename MAP>
+	inline void init_triangles_ear(const MAP& m, std::vector<uint32>& table_indices, const typename MAP::template VertexAttribute<VEC3>* position)
+	{
+		using Vertex = typename MAP::Vertex;
+		using Face = typename MAP::Face;
+		// reserve more ?
+//		table_indices.reserve(m.get_nb_darts() / 3);
 		m.foreach_cell([&] (Face f)
 		{
 			if (m.has_codegree(f, 3))
@@ -104,14 +133,12 @@ public:
 				table_indices.push_back(m.get_embedding(Vertex(m.phi1(m.phi1(f.dart)))));
 			}
 			else
-			{
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, table_indices);
-			}
+				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, *position, table_indices);
 		});
 	}
 
 	template <typename VEC3, typename MAP>
-	inline void init_primitives(MAP& m, DrawingType prim, const typename MAP::template VertexAttributeHandler<VEC3>& position)
+	inline void init_primitives(const MAP& m, DrawingType prim, const typename MAP::template VertexAttribute<VEC3>* position = nullptr)
 	{
 		std::vector<uint32> table_indices;
 
@@ -124,7 +151,10 @@ public:
 				init_lines(m, table_indices);
 				break;
 			case TRIANGLES:
-				init_triangles<VEC3>(m, table_indices, position);
+				if (position)
+					init_triangles_ear<VEC3>(m, table_indices, position);
+				else
+					init_triangles<VEC3>(m, table_indices);
 				break;
 			default:
 				break;
@@ -143,8 +173,6 @@ public:
 	void draw(DrawingType prim);
 };
 
-
-
 /**
  * @brief create embedding indices of vertices and faces for arch vertx of each face
  * @param m
@@ -153,7 +181,7 @@ public:
  * @param indices2 embedding indices of faces
  */
 template <typename VEC3, typename MAP>
-void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAttributeHandler<VEC3>& position, std::vector<uint32>& indices1, std::vector<uint32>& indices2)
+void create_indices_vertices_faces(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, std::vector<uint32>& indices1, std::vector<uint32>& indices2)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -169,7 +197,6 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 
 	m.foreach_cell([&] (Face f)
 	{
-
 		uint32 ef = m.get_embedding(Face(f.dart));
 		if (m.has_codegree(f, 3))
 		{
@@ -179,11 +206,10 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 			indices2.push_back(ef);
 			indices2.push_back(ef);
 			indices2.push_back(ef);
-
 		}
 		else
 		{
-			cgogn::geometry::compute_ear_triangulation<VEC3>(m,f,position,local_vert_indices);
+			cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{
 				indices1.push_back(i);
@@ -193,18 +219,16 @@ void create_indices_vertices_faces(MAP& m, const typename MAP::template VertexAt
 	});
 }
 
-
 template <typename VEC3, typename MAP>
-void add_edge_to_drawer(MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+void add_edge_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	dr->vertex3fv(position[Vertex(e.dart)]);
 	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
 }
 
-
 template <typename VEC3, typename MAP>
-void add_face_to_drawer(MAP& m, typename MAP::Face f, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+void add_face_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -216,7 +240,7 @@ void add_face_to_drawer(MAP& m, typename MAP::Face f, const typename MAP::templa
 }
 
 template <typename VEC3, typename MAP>
-void add_volume_to_drawer(MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttributeHandler<VEC3>& position, Drawer* dr)
+void add_volume_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -225,12 +249,10 @@ void add_volume_to_drawer(MAP& m, typename MAP::Volume vo, const typename MAP::t
 		dr->vertex3fv(position[Vertex(e.dart)]);
 		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
 	});
-
 }
-
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_MAP_RENDER_H_
+#endif // CGOGN_RENDERING_MAP_RENDER_H_

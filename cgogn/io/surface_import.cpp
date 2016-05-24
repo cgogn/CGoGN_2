@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_IO_DLL_EXPORT
-#define IO_SURFACE_IMPORT_CPP_
+#define CGOGN_IO_SURFACE_IMPORT_CPP_
 
-#include <io/surface_import.h>
+#include <cgogn/io/surface_import.h>
 
 namespace cgogn
 {

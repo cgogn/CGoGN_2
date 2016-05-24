@@ -21,36 +21,73 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_PRECISION_H_
-#define CORE_UTILS_PRECISION_H_
+#ifndef CGOGN_RENDERING_SHADERS_TEXTURE_H_
+#define CGOGN_RENDERING_SHADERS_TEXTURE_H_
 
-#include <type_traits>
-#include <cmath>
-#include <limits>
-#include <algorithm>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
+#include <QOpenGLTexture>
 
-#include <core/utils/assert.h>
+class QOpenGLTexture;
 
 namespace cgogn
 {
 
-template <class Scalar>
-inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+namespace rendering
 {
-	const Scalar diff = std::fabs(x - y);
-	x = std::fabs(x);
-	y = std::fabs(y);
 
-	return diff <= std::max(x, y) * max_rel_diff;
-}
+class ShaderTexture;
 
-template <class Scalar>
-inline auto almost_equal_absolute(Scalar x, Scalar y, const Scalar epsilon = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
+class CGOGN_RENDERING_API ShaderParamTexture : public ShaderParam
 {
-	cgogn_assert(epsilon > 0);
-	return std::fabs(y - x) < epsilon;
-}
+protected:
+
+	void set_uniforms();
+
+public:
+
+	QOpenGLTexture* texture_;
+
+	ShaderParamTexture(ShaderTexture* sh);
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_tc);
+};
+
+class CGOGN_RENDERING_API ShaderTexture : public ShaderProgram
+{
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
+
+public:
+
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_TC
+	};
+
+	using Param = ShaderParamTexture;
+
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	inline static std::unique_ptr<Param> generate_param()
+	{
+		if (!instance_)
+			instance_ = std::unique_ptr<ShaderTexture>(new ShaderTexture());
+		return cgogn::make_unique<Param>(instance_.get());
+	}
+
+protected:
+
+	ShaderTexture();
+	static std::unique_ptr<ShaderTexture> instance_;
+};
+
+} // namespace rendering
 
 } // namespace cgogn
 
-#endif // CORE_UTILS_PRECISION_H_
+#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_

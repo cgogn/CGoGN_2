@@ -22,12 +22,12 @@
 *******************************************************************************/
 
 #define CGOGN_RENDERING_DLL_EXPORT
+#define CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_
 
-#include <rendering/shaders/shader_round_point.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
 #include <iostream>
+
+#include <cgogn/rendering/shaders/shader_round_point.h>
+
 
 namespace cgogn
 {
@@ -35,15 +35,14 @@ namespace cgogn
 namespace rendering
 {
 
-const char* ShaderRoundPoint::vertex_shader_source_ =
+const char* ShaderRoundPointGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "void main() {\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
-
-const char* ShaderRoundPoint::geometry_shader_source_ =
+const char* ShaderRoundPointGen::geometry_shader_source_ =
 "#version 150\n"
 "layout (points) in;\n"
 "layout (triangle_strip, max_vertices=4) out;\n"
@@ -70,8 +69,7 @@ const char* ShaderRoundPoint::geometry_shader_source_ =
 "	EndPrimitive();\n"
 "}\n";
 
-
-const char* ShaderRoundPoint::fragment_shader_source_ =
+const char* ShaderRoundPointGen::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 color;\n"
 "in vec2 local;\n"
@@ -83,10 +81,7 @@ const char* ShaderRoundPoint::fragment_shader_source_ =
 "   fragColor = vec4(color.rgb,(1.0-r2*r2));\n"
 "}\n";
 
-
-
-
-const char* ShaderRoundPoint::vertex_shader_source2_ =
+const char* ShaderRoundPointGen::vertex_shader_source2_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
@@ -96,8 +91,7 @@ const char* ShaderRoundPoint::vertex_shader_source2_ =
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
-
-const char* ShaderRoundPoint::geometry_shader_source2_ =
+const char* ShaderRoundPointGen::geometry_shader_source2_ =
 "#version 150\n"
 "layout (points) in;\n"
 "layout (triangle_strip, max_vertices=4) out;\n"
@@ -127,7 +121,7 @@ const char* ShaderRoundPoint::geometry_shader_source2_ =
 "	EndPrimitive();\n"
 "}\n";
 
-const char* ShaderRoundPoint::fragment_shader_source2_ =
+const char* ShaderRoundPointGen::fragment_shader_source2_ =
 "#version 150\n"
 "in vec2 local;\n"
 "in vec3 color_f;\n"
@@ -139,7 +133,8 @@ const char* ShaderRoundPoint::fragment_shader_source2_ =
 "}\n";
 
 
-ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
+
+ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
@@ -161,62 +156,34 @@ ShaderRoundPoint::ShaderRoundPoint(bool color_per_vertex)
 
 	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("color");
-	unif_width_ = prg_.uniformLocation("pointSizes");
+	unif_size_ = prg_.uniformLocation("pointSizes");
 
-	set_width(3.0f);
-	set_color(QColor(255,255,255));
+	set_size(3.0f);
+	set_color(QColor(255, 255, 255));
 }
 
-
-
-void ShaderRoundPoint::set_color(const QColor& rgb)
+void ShaderRoundPointGen::set_color(const QColor& rgb)
 {
-	if (unif_color_>=0)
+	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
 }
 
-void ShaderRoundPoint::set_width(float32 wpix)
+void ShaderRoundPointGen::set_size(float32 wpix)
 {
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
+	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
-	prg_.setUniformValue(unif_width_, wd);
+	prg_.setUniformValue(unif_size_, wd);
 }
 
-bool ShaderRoundPoint::set_vao(uint32 i, VBO* vbo_pos, VBO* vbo_color, uint32 stride, unsigned first)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
 
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
 
-	prg_.bind();
-	vaos_[i]->bind();
+template class CGOGN_RENDERING_API ShaderRoundPointTpl<false>;
+template class CGOGN_RENDERING_API ShaderRoundPointTpl<true>;
+template class CGOGN_RENDERING_API ShaderParamRoundPoint<false>;
+template class CGOGN_RENDERING_API ShaderParamRoundPoint<true>;
 
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
-	vbo_pos->release();
-
-	if (vbo_color)
-	{
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension()*4, void_ptr(first*vbo_pos->vector_dimension()*4));
-		vbo_color->release();
-	}
-
-	vaos_[i]->release();
-	prg_.release();
-
-	return true;
-}
 
 } // namespace rendering
 

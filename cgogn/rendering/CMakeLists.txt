@@ -1,9 +1,10 @@
 project(cgogn_rendering
 	LANGUAGES CXX
-	)
+)
 
-find_package(Qt5Widgets)
-#find_package(Qt5OpenGL)
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -20,10 +21,12 @@ set(HEADER_FILES
 	shaders/shader_point_sprite.h
 	shaders/shader_explode_volumes.h
 	shaders/shader_explode_volumes_line.h
+	shaders/shader_texture.h
 	drawer.h
-	topo_render.h
-	volume_render.h
-	)
+	topo_drawer.h
+	volume_drawer.h
+	wall_paper.h
+)
 
 set(SOURCE_FILES
 	shaders/shader_program.cpp
@@ -37,11 +40,13 @@ set(SOURCE_FILES
 	shaders/shader_point_sprite.cpp
 	shaders/shader_explode_volumes.cpp
 	shaders/shader_explode_volumes_line.cpp
+	shaders/shader_texture.cpp
 	drawer.cpp
-	topo_render.cpp
-	volume_render.cpp
+	topo_drawer.cpp
+	volume_drawer.cpp
 	map_render.cpp
-	)
+	wall_paper.cpp
+)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -51,28 +56,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/rendering>
-	)
+	$<INSTALL_INTERFACE:include>
+)
 
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Widgets)
-
-install(DIRECTORY .
+file(GLOB HEADERS "." "*.h")
+install(FILES ${HEADERS}
+	DESTINATION include/cgogn/rendering)
+install(DIRECTORY shaders
 	DESTINATION include/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
-	)
+)
 
-install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	)
-
-add_subdirectory(examples)
-
-#if(CGOGN_BUILD_TESTS)
-#	add_subdirectory(tests)
-#endif()
-
-
+cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")

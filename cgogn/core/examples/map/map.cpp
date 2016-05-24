@@ -1,10 +1,10 @@
 
-#include <core/cmap/cmap1.h>
-#include <core/cmap/cmap2.h>
-#include <core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap1.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap3.h>
 
-#include <core/basic/dart_marker.h>
-#include <core/basic/cell_marker.h>
+#include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/basic/cell_marker.h>
 
 using namespace cgogn;
 using namespace cgogn::numerics;
@@ -15,17 +15,17 @@ using Map3 = CMap3<DefaultMapTraits>;
 
 
 template <typename MAP>
-void fonc_const(const typename MAP::template VertexAttributeHandler<float32>& ah);
+void fonc_const(const typename MAP::template VertexAttribute<float32>& ah);
 
 template <typename MAP>
-void fonc_non_const(typename MAP::template VertexAttributeHandler<float32>& ah);
+void fonc_non_const(typename MAP::template VertexAttribute<float32>& ah);
 
 template <typename MAP>
 int test1(MAP& map);
 
 
 template <typename MAP>
-void fonc_const(const typename MAP::template VertexAttributeHandler<float32>& ah)
+void fonc_const(const typename MAP::template VertexAttribute<float32>& ah)
 {
 	for (const float32& f : ah)
 	{
@@ -33,12 +33,12 @@ void fonc_const(const typename MAP::template VertexAttributeHandler<float32>& ah
 	}
 
 	// equivalent to
-	for (typename MAP::template VertexAttributeHandler<float32>::const_iterator it = ah.begin(); it != ah.end(); ++it)
+	for (typename MAP::template VertexAttribute<float32>::const_iterator it = ah.begin(); it != ah.end(); ++it)
 		cgogn_log_info("example_map") << *it;
 }
 
 template <typename MAP>
-void fonc_non_const(typename MAP::template VertexAttributeHandler<float32>& ah)
+void fonc_non_const(typename MAP::template VertexAttribute<float32>& ah)
 {
 	for (float32& f : ah)
 	{
@@ -47,7 +47,7 @@ void fonc_non_const(typename MAP::template VertexAttributeHandler<float32>& ah)
 	}
 
 	// equivalent to
-	for (typename MAP::template VertexAttributeHandler<float32>::iterator it = ah.begin(); it != ah.end(); ++it)
+	for (typename MAP::template VertexAttribute<float32>::iterator it = ah.begin(); it != ah.end(); ++it)
 	{
 		*it /= 2.0f;
 	}
@@ -60,12 +60,12 @@ int test1(MAP& map)
 	using Face = typename MAP::Face;
 
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttributeHandler<float32> ah = map.template add_attribute<float32, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttribute<float32> ah = map.template add_attribute<float32, Vertex::ORBIT>("floats");
 
-	typename MAP::template FaceAttributeHandler<float32> ahf = map.template add_attribute<float32, Face::ORBIT>("floats");
+	typename MAP::template FaceAttribute<float32> ahf = map.template add_attribute<float32, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
-	typename MAP::template VertexAttributeHandler<int32> ahf2 = map.template get_attribute_force_type<int32,float32, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttribute<int32> ahf2 = map.template get_attribute_force_type<int32,float32, Vertex::ORBIT>("floats");
 
 	map.remove_attribute(ahf);
 	cgogn_log_info("example_map") << "ahf valid : " << std::boolalpha << ahf.is_valid();

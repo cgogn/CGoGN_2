@@ -27,18 +27,18 @@
 #include <qoglviewer.h>
 #include <QKeyEvent>
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
-#include <io/map_import.h>
+#include <cgogn/io/map_import.h>
 
-#include <geometry/algos/bounding_box.h>
-#include <geometry/algos/normal.h>
+#include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/normal.h>
 
-#include <rendering/map_render.h>
-//#include <rendering/shaders/shader_simple_color.h>
-#include <rendering/shaders/shader_flat.h>
-#include <rendering/shaders/shader_phong.h>
-#include <rendering/shaders/vbo.h>
+#include <cgogn/rendering/map_render.h>
+//#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_phong.h>
+#include <cgogn/rendering/shaders/vbo.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -51,18 +51,17 @@ using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template<typename T>
-using VertexAttributeHandler = Map2::VertexAttributeHandler<T>;
+using VertexAttribute = Map2::VertexAttribute<T>;
 
 template<typename T>
-using FaceAttributeHandler = Map2::FaceAttributeHandler<T>;
+using FaceAttribute = Map2::FaceAttribute<T>;
 
 
 class Viewer : public QOGLViewer
 {
 public:
 	Viewer();
-	Viewer(const Viewer&) = delete;
-	Viewer& operator=(const Viewer&) = delete;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	virtual void draw();
 	virtual void init();
@@ -74,17 +73,17 @@ public:
 
 private:
 	Map2 map_;
-	VertexAttributeHandler<Vec3> vertex_position_;
-	FaceAttributeHandler<Vec3> face_normal_;
+	VertexAttribute<Vec3> vertex_position_;
+	FaceAttribute<Vec3> face_normal_;
 
-	cgogn::geometry::BoundingBox<Vec3> bb_;
+	cgogn::geometry::AABB<Vec3> bb_;
 
-	cgogn::rendering::VBO* vbo_pos_;
-	cgogn::rendering::VBO* vbo_norm_;
-	cgogn::rendering::VBO* vbo_color_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_color_;
 
-	cgogn::rendering::ShaderFlat* shader_flat_;
-	cgogn::rendering::ShaderPhong* shader_phong_;
+	std::unique_ptr<cgogn::rendering::ShaderFlatColor::Param> param_flat_;
+	std::unique_ptr<cgogn::rendering::ShaderPhongColor::Param> param_phong_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -104,7 +103,7 @@ void Viewer::import(const std::string& surfaceMesh)
 	face_normal_ = map_.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
 	cgogn::geometry::compute_normal_faces<Vec3>(map_, vertex_position_, face_normal_);
-	cgogn::geometry::compute_bounding_box(vertex_position_, bb_);
+	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
@@ -117,11 +116,9 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	delete vbo_pos_;
-	delete vbo_norm_;
-	delete vbo_color_;
-	delete shader_flat_;
-	delete shader_phong_;
+	vbo_pos_.reset();
+	vbo_norm_.reset();
+	vbo_color_.reset();
 }
 
 Viewer::Viewer() :
@@ -132,8 +129,6 @@ Viewer::Viewer() :
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
-	shader_flat_(nullptr),
-	shader_phong_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false)
 {}
@@ -168,22 +163,16 @@ void Viewer::draw()
 
 	if (flat_rendering_)
 	{
-		shader_flat_->bind();
-		shader_flat_->set_matrices(proj,view);
-		shader_flat_->bind_vao(0);
+		param_flat_->bind(proj,view);
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
-		shader_flat_->release_vao(0);
-		shader_flat_->release();
+		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		shader_phong_->bind();
-		shader_phong_->set_matrices(proj,view);
-		shader_phong_->bind_vao(0);
+		param_phong_->bind(proj,view);
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
-		shader_phong_->release_vao(0);
-		shader_phong_->release();
+		param_phong_->release();
 	}
 }
 
@@ -192,9 +181,9 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 
-	vbo_pos_ = new cgogn::rendering::VBO(3);
-	vbo_norm_ = new cgogn::rendering::VBO(3);
-	vbo_color_ = new cgogn::rendering::VBO(3);
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_norm_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_color_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 
 	// indices of vertices emb (f1_v1,f1_v2,f1_v3, f2_v1,f2_v2,f2_v3, f3_v1...)
 	std::vector<uint32> ind_v;
@@ -205,44 +194,33 @@ void Viewer::init()
 	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
-	cgogn::rendering::generate_vbo(vertex_position_, ind_v, *vbo_pos_, [] (const Vec3& v) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_.get(), [] (const Vec3& v) -> std::array<float32,3>
 	{
 		return {float32(v[0]), float32(v[1]), float32(v[2])};
 	});
 
 	// generate VBO: normals
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_norm_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_norm_.get(), [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(n[0]), float32(n[1]), float32(n[2])};
 	});
 
 	// generate VBO: colors (here abs of normals)
-	cgogn::rendering::generate_vbo(face_normal_, ind_f, *vbo_color_, [] (const Vec3& n) -> std::array<float32,3>
+	cgogn::rendering::generate_vbo(face_normal_, ind_f, vbo_color_.get(), [] (const Vec3& n) -> std::array<float32,3>
 	{
 		return {float32(std::abs(n[0])), float32(std::abs(n[1])), float32(std::abs(n[2]))};
 	});
 
+	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
+	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
+	param_phong_->ambiant_color_ = QColor(5, 5, 5);
+	param_phong_->double_side_ = true;
+	param_phong_->specular_color_ = QColor(255, 255, 255);
+	param_phong_->specular_coef_ = 100.0;
 
-	shader_phong_ = new cgogn::rendering::ShaderPhong(true);
-	shader_phong_->add_vao();
-	shader_phong_->set_vao(0, vbo_pos_, vbo_norm_, vbo_color_);
-	shader_phong_->bind();
-	shader_phong_->set_ambiant_color(QColor(5,5,5));
-	shader_phong_->set_double_side(true);
-	shader_phong_->set_specular_color(QColor(255,255,255));
-	shader_phong_->set_specular_coef(100.0);
-	shader_phong_->release();
-
-
-	shader_flat_ = new cgogn::rendering::ShaderFlat(true);
-	shader_flat_->add_vao();
-	shader_flat_->set_vao(0, vbo_pos_, vbo_color_);
-	shader_flat_->bind();
-	shader_flat_->set_ambiant_color(QColor(5,5,5));
-	shader_flat_->release();
-
-
-
+	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
+	param_flat_->set_all_vbos(vbo_pos_.get(), vbo_color_.get());
+	param_flat_->ambiant_color_ = QColor(5, 5, 5);
 }
 
 int main(int argc, char** argv)

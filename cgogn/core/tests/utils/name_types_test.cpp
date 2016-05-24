@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/utils/name_types.h>
-#include <core/basic/cell.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/basic/cell.h>
 #include <gtest/gtest.h>
 
 
@@ -53,13 +53,13 @@ TEST(NameTypesTest, NumTypes)
 	EXPECT_EQ(cgogn::name_of_type(int64()), "int64");
 	EXPECT_EQ(cgogn::name_of_type(uint64()), "uint64");
 
-	EXPECT_EQ(cgogn::name_of_type(float()), "float");
-	EXPECT_EQ(cgogn::name_of_type(double()), "double");
+	EXPECT_EQ(cgogn::name_of_type(float()), "float32");
+	EXPECT_EQ(cgogn::name_of_type(double()), "float64");
 
 	EXPECT_EQ(cgogn::name_of_type(std::string()), "std::basic_string<char>");
-	EXPECT_EQ(cgogn::name_of_type(std::vector<double>()), "std::vector<double>");
-	EXPECT_EQ(cgogn::name_of_type(std::vector<std::list<double>>()), "std::vector<std::list<double>>");
-	EXPECT_EQ(cgogn::name_of_type(std::array<double,3>()), "std::array<double,3>");
+	EXPECT_EQ(cgogn::name_of_type(std::vector<float64>()), "std::vector<float64>");
+	EXPECT_EQ(cgogn::name_of_type(std::vector<std::list<float64>>()), "std::vector<std::list<float64>>");
+	EXPECT_EQ(cgogn::name_of_type(std::array<float64,3>()), "std::array<float64,3>");
 
 	EXPECT_EQ(cgogn::name_of_type(cgogn::Dart()), "cgogn::Dart");
 	EXPECT_EQ(cgogn::name_of_type(cgogn::Cell<cgogn::Orbit::PHI1>()), "cgogn::Cell<cgogn::Orbit::PHI1>");

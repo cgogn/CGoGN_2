@@ -21,17 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_IO_UTILS_H_
-#define IO_IO_UTILS_H_
+#ifndef CGOGN_IO_IO_UTILS_H_
+#define CGOGN_IO_IO_UTILS_H_
 
 #include <type_traits>
 #include <sstream>
 #include <streambuf>
 
-#include <core/utils/logger.h>
-#include <core/utils/endian.h>
-#include <geometry/types/geometry_traits.h>
-#include <io/dll.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/io/dll.h>
 
 namespace cgogn
 {
@@ -70,9 +70,21 @@ enum DataType
 	DOUBLE,
 	UNKNOWN
 };
-CGOGN_IO_API FileType get_file_type(const std::string& filename);
-CGOGN_IO_API DataType get_data_type(const std::string& type_name);
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
+
+enum VolumeType
+{
+	Tetra,
+	Pyramid,
+	TriangularPrism,
+	Hexa,
+	Connector
+};
+
+CGOGN_IO_API bool							file_exists(const std::string& filename);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
+CGOGN_IO_API FileType						get_file_type(const std::string& filename);
+CGOGN_IO_API DataType						get_data_type(const std::string& type_name);
+CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
 CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type);
@@ -91,14 +103,14 @@ inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::int
 
 // #2 cast x if both types have only one component.
 template<typename U, typename T>
-inline auto convert(const T&x) -> typename std::enable_if<(std::is_arithmetic<T>::value || std::is_floating_point<T>::value) && (std::is_arithmetic<U>::value || std::is_floating_point<U>::value),U>::type
+inline auto convert(const T&x) -> typename std::enable_if<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,U>::type
 {
 	return U(x);
 }
 
 // #3 copy component by component if both type have the same number of components (>1)
 template<typename U, typename T>
-inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
+inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
 {
 	U res;
 	for(uint32 i = 0u; i < geometry::nb_components_traits<T>::value ; ++i)
@@ -108,13 +120,13 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 
 
 template<typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, T>::type swap_endianness(const T& x)
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type swap_endianness(const T& x)
 {
 	return ::cgogn::swap_endianness(x);
 }
 
 template<typename T>
-inline typename std::enable_if<(!std::is_arithmetic<T>::value) && !std::is_floating_point<T>::value, T>::type swap_endianness(T& x)
+inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endianness(T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
 		x[i] = ::cgogn::swap_endianness(x[i]);
@@ -122,14 +134,14 @@ inline typename std::enable_if<(!std::is_arithmetic<T>::value) && !std::is_float
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_floating_point<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
 	return iss;
 }
 
 template<typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<!std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
 		iss >> x[i];
@@ -276,4 +288,4 @@ private:
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_IO_UTILS_H_
+#endif // CGOGN_IO_IO_UTILS_H_

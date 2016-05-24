@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_MAP_MAP2_BUILDER_H_
-#define CORE_MAP_MAP2_BUILDER_H_
+#ifndef CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#define CGOGN_CORE_MAP_MAP2_BUILDER_H_
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -47,6 +47,7 @@ public:
 
 	inline CMap2Builder_T(CMap2& map) : map_(map)
 	{}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 
 public:
@@ -90,38 +91,9 @@ public:
 		return map_.CMap2::Inherit::add_face_topo(nb_edges);
 	}
 
-	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
-	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that close the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
-	 */
 	inline Dart close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(map_.phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
-
-		Dart first = map_.add_dart();	// First edge of the face that will fill the hole
-		map_.phi2_sew(d, first);		// 2-sew the new edge to the hole
-
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
-		do
-		{
-			do
-			{
-				d_phi1 = map_.phi1(d_next); // Search and put in d_next
-				d_next = map_.phi2(d_phi1); // the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
-
-			if (d_phi1 != d)
-			{
-				Dart next = map_.split_vertex_topo(first);	// Add a vertex into the built face
-				phi2_sew(d_next, next);						// and 2-sew the face to the hole
-			}
-		} while (d_phi1 != d);
-
-		return first;
+		return map_.close_hole_topo(d);
 	}
 
 	/*!
@@ -137,7 +109,7 @@ public:
 	 */
 	inline Face close_hole(Dart d)
 	{
-		const Face f(close_hole_topo(d));
+		const Face f(map_.close_hole_topo(d));
 
 //		if (map_.template is_embedded<CDart>())
 //		{
@@ -215,13 +187,13 @@ private:
 	CMap2& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP2_BUILDER_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
 
-#endif // CORE_MAP_MAP2_BUILDER_H_
+#endif // CGOGN_CORE_MAP_MAP2_BUILDER_H_
 

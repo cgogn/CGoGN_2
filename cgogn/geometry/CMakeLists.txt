@@ -2,21 +2,29 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
+find_package(cgogn_core REQUIRED)
+
 set(HEADER_FILES
 	dll.h
-	algos/bounding_box.h
+        algos/bounding_box.h
+	algos/feature.h
 	algos/area.h
 	algos/centroid.h
 	algos/normal.h
 	algos/ear_triangulation.h
 	algos/picking.h
+	algos/filtering.h
+	algos/length.h
+	algos/angle.h
+	functions/basics.h
 	functions/area.h
 	functions/normal.h
 	functions/orientation.h
 	functions/inclusion.h
 	functions/intersection.h
 	functions/distance.h
-	types/bounding_box.h
+        types/aabb.h
+        types/obb.h
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
@@ -24,9 +32,10 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
+        types/aabb.cpp
+        types/obb.cpp
 	types/plane_3d.cpp
 	types/vec.cpp
-	types/bounding_box.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -39,23 +48,15 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/geometry>
+	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core)
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES})
 
-install(DIRECTORY .
-	DESTINATION include/cgogn/geometry
+install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
+install(DIRECTORY algos functions types
+	DESTINATION "include/cgogn/geometry"
 	FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()
+cgogn_create_package("${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include")

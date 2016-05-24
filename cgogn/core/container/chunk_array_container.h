@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
 
 #include <iostream>
 #include <fstream>
@@ -32,15 +32,15 @@
 #include <memory>
 #include <climits>
 
-#include <core/utils/logger.h>
-#include <core/dll.h>
-#include <core/utils/definitions.h>
-#include <core/utils/assert.h>
-#include <core/utils/name_types.h>
-#include <core/utils/unique_ptr.h>
-#include <core/container/chunk_array.h>
-#include <core/container/chunk_stack.h>
-#include <core/container/chunk_array_factory.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/container/chunk_array.h>
+#include <cgogn/core/container/chunk_stack.h>
+#include <cgogn/core/container/chunk_array_factory.h>
 
 namespace cgogn
 {
@@ -60,8 +60,10 @@ public:
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <class T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
 	template <class T>
 	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
+	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNKSIZE>;
 
 	/**
 	* constante d'attribut inconnu
@@ -82,7 +84,7 @@ protected:
 	/**
 	* vector of pointers to Marker ChunkArray
 	*/
-	std::vector<ChunkArray<bool>*> table_marker_arrays_;
+	std::vector<ChunkArrayBool*> table_marker_arrays_;
 
 	/**
 	 * @brief ChunkArray of refs
@@ -183,6 +185,9 @@ public:
 			delete ptr;
 	}
 
+	const std::vector<std::string>& get_names() const { return names_; }
+	const std::vector<std::string>& get_type_names() const { return type_names_; }
+
 	/**
 	 * @brief get an attribute
 	 * @param attribute_name name of attribute
@@ -192,7 +197,7 @@ public:
 	template <typename T>
 	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
 	{
-		// first check if attribute already exist
+		// first check if attribute already exists
 		uint32 index = get_array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
@@ -200,7 +205,29 @@ public:
 			return nullptr;
 		}
 
-		return static_cast<ChunkArray<T>*>(table_arrays_[index]);
+		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
+	}
+
+	ChunkArrayGen* get_attribute(const std::string& attribute_name) const
+	{
+		// first check if attribute already exists
+		uint32 index = get_array_index(attribute_name);
+		if (index == UNKNOWN)
+		{
+			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			return nullptr;
+		}
+
+		return table_arrays_[index];
+	}
+
+	/**
+	 * @brief get all attributes (generic pointers)
+	 * @return
+	 */
+	inline std::vector<ChunkArrayGen*>& get_attributes()
+	{
+		return table_arrays_;
 	}
 
 	/**
@@ -223,9 +250,9 @@ public:
 		}
 
 		// create the new attribute
-		const std::string& typeName = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>();
-		ChunkArrayFactory<CHUNKSIZE>::template register_CA<T>();
+		const std::string& type_name = name_of_type(T());
+		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
+		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
 		carr->set_nb_chunks(refs_.get_nb_chunks());
@@ -233,7 +260,7 @@ public:
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
 		names_.push_back(attribute_name);
-		type_names_.push_back(typeName);
+		type_names_.push_back(type_name);
 
 		return carr;
 	}
@@ -279,12 +306,67 @@ public:
 	}
 
 	/**
+	 * @brief swap the data of two chunk arrays of the container
+	 * @param ptr1 pointer to first chunk array
+	 * @param ptr2 pointer to second chunk array
+	 * @return
+	 */
+	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	{
+		uint32 index1 = get_array_index(ptr1);
+		uint32 index2 = get_array_index(ptr2);
+
+		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
+		{
+			cgogn_log_warning("swap_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (index1 == index2)
+		{
+			cgogn_log_warning("swap_data_attributes") << "Same attributes.";
+			return false;
+		}
+
+		table_arrays_[index1]->swap(table_arrays_[index2]);
+
+		return true;
+	}
+
+	template <typename T>
+	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	{
+		uint32 dest_index = get_array_index(dest);
+		uint32 src_index = get_array_index(src);
+
+		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
+		{
+			cgogn_log_warning("copy_data_attributes") << "Attribute not found.";
+			return false;
+		}
+
+		if (dest_index == src_index)
+		{
+			cgogn_log_warning("copy_data_attributes") << "Same attributes.";
+			return false;
+		}
+
+		ChunkArray<T>* dest_ca = static_cast<ChunkArray<T>*>(table_arrays_[dest_index]);
+		ChunkArray<T>* src_ca = static_cast<ChunkArray<T>*>(table_arrays_[src_index]);
+
+		for (uint32 it = begin(), last = end(); it < last; ++it)
+			(*dest_ca)[it] = (*src_ca)[it];
+
+		return true;
+	}
+
+	/**
 	 * @brief add a Marker attribute
 	 * @return pointer on created ChunkArray
 	 */
-	ChunkArray<bool>* add_marker_attribute()
+	ChunkArrayBool* add_marker_attribute()
 	{
-		ChunkArray<bool>* mca = new ChunkArray<bool>();
+		ChunkArrayBool* mca = new ChunkArrayBool();
 		mca->set_nb_chunks(refs_.get_nb_chunks());
 		table_marker_arrays_.push_back(mca);
 		return mca;
@@ -295,7 +377,7 @@ public:
 	 * @param ptr ChunkArray pointer to the attribute to remove
 	 * @return true if attribute exists and has been removed
 	 */
-	void remove_marker_attribute(const ChunkArray<bool>* ptr)
+	void remove_marker_attribute(const ChunkArrayBool* ptr)
 	{
 		uint32 index = 0u;
 		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
@@ -317,39 +399,6 @@ public:
 	std::size_t get_nb_attributes() const
 	{
 		return table_arrays_.size();
-	}
-
-	/**
-	* @brief get a chunk_array
-	* @param attribute_name name of the array
-	* @return pointer on typed chunk_array
-	*/
-	template <typename T>
-	ChunkArray<T>* get_data_array(const std::string& attribute_name)
-	{
-		uint32 index = get_array_index(attribute_name);
-		if (index == UNKNOWN)
-			return nullptr;
-
-		ChunkArray<T>* atm = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
-
-		cgogn_message_assert(atm != nullptr, "get_data_array : wrong type.");
-
-		return atm;
-	}
-
-	/**
-	* @brief get a chunk_array
-	* @param attribute_name name of the array
-	* @return pointer on virtual chunk_array
-	*/
-	ChunkArrayGen* get_virtual_data_array(const std::string& attribute_name)
-	{
-		uint32 index = get_array_index(attribute_name);
-		if (index == UNKNOWN)
-			return nullptr;
-
-		return table_arrays_[index];
 	}
 
 	/**
@@ -432,7 +481,7 @@ public:
 	 * @brief reverse end of container
 	 * @return the index before the last used line of the container in reverse order
 	 */
-	uint32 real_rend() const
+	uint32 rend() const
 	{
 		return 0xffffffff;
 	}
@@ -499,8 +548,8 @@ public:
 		names_.swap(container.names_);
 		type_names_.swap(container.type_names_);
 		table_marker_arrays_.swap(container.table_marker_arrays_);
-		refs_.swap(container.refs_);
-		holes_stack_.swap(container.holes_stack_);
+		refs_.swap(&(container.refs_));
+		holes_stack_.swap(&(container.holes_stack_));
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
 	}
@@ -516,38 +565,38 @@ public:
 
 	/**
 	 * @brief container compacting
-	 * @param map_old_new vector that contains a map from old indices to new indices (holes -> 0xffffffff)
+	 * @return map_old_new vector that contains a map from old indices to new indices (holes & unchanged -> 0xffffffff)
 	 */
 	template <uint32 PRIMSIZE>
-	void compact(std::vector<uint32>& map_old_new)
+	std::vector<uint32> compact()
 	{
-		map_old_new.clear();
-		map_old_new.resize(end(), 0xffffffff);
+		if (this->holes_stack_.empty())
+			return std::vector<uint32>();
 
 		uint32 up = rbegin();
-		uint32 down = 0u;
-
-		while (down < up)
+		uint32 down = std::numeric_limits<uint32>::max();
+		std::vector<uint32> map_old_new(up+1, std::numeric_limits<uint32>::max());
+		do
 		{
-			if (!used(down))
-			{
+			down = holes_stack_.head();
+			if (down < nb_used_lines_)
 				for(uint32 i = 0u; i < PRIMSIZE; ++i)
 				{
-					unsigned rdown = down + PRIMSIZE-1u - i;
+					const uint32 rdown = down + PRIMSIZE-1u - i;
 					map_old_new[up] = rdown;
-					copy_line(rdown, up,true,true);
+					move_line(rdown, up,true,true);
 					rnext(up);
 				}
-				down += PRIMSIZE;
-			}
-			else
-				down++;
-		}
-
-		nb_max_lines_ = nb_used_lines_;
+			holes_stack_.pop();
+		}while (!holes_stack_.empty());
 
 		// free unused memory blocks
-		uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
+		nb_max_lines_ = nb_used_lines_;
+		const uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+
+		if (old_nb_blocks == new_nb_blocks)
+			return map_old_new;
 
 		for (auto arr : table_arrays_)
 			arr->set_nb_chunks(new_nb_blocks);
@@ -557,8 +606,80 @@ public:
 
 		refs_.set_nb_chunks(new_nb_blocks);
 
-		// clear holes
-		holes_stack_.clear();
+		return map_old_new;
+	}
+
+
+	bool check_before_merge(const Self& cac)
+	{
+		for (uint32 i=0; i<cac.names_.size(); ++i)
+		{
+			// compute indice of ith names of cac in this (size if not found)
+			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
+			if (j != names_.size())
+			{
+				if (cac.type_names_[i] != type_names_[j])
+				{
+					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+	template <uint32 PRIMSIZE>
+	std::vector<uint32> merge(const Self& cac)
+	{
+		// mapping table of ca indices of cac in this
+		std::vector<uint32> map_attrib(cac.names_.size());
+
+		// First check & find missing attributes
+		for (uint32 i=0; i<cac.names_.size(); ++i)
+		{
+			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
+			if (j == names_.size()) // attrib not in this
+			{
+				const std::string& name = cac.names_[i];
+				const std::string& type_name = cac.type_names_[i];
+				map_attrib[i] = uint32(table_arrays_.size());
+				auto cag = ChunkArrayFactory::create(type_name,name);
+				cgogn_assert(cag);
+				cag->set_nb_chunks(refs_.get_nb_chunks());
+				table_arrays_.push_back(cag.release());
+				names_.push_back(name);
+				type_names_.push_back(type_name);
+			}
+			else
+				if (cac.type_names_[i] == type_names_[j])
+					map_attrib[i] = uint32(j);
+		}
+
+		// check if nothing to do
+		if (cac.size()==0)
+			return std::vector<uint32>();
+
+		// line mapping
+		std::vector<uint32> map_old_new(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
+
+		// copy data
+		for (uint32 it=cac.begin(); it!= cac.end(); cac.next(it))
+		{
+			uint32 new_lines = this->insert_lines<PRIMSIZE>();
+			for(uint32 j = 0u; j < PRIMSIZE; ++j)
+			{
+				uint32 ol = it+j;
+				uint32 nl = new_lines+j;
+				map_old_new[ol] = nl;
+				uint32 nb_att = uint32(cac.table_arrays_.size());
+				for (uint32 k=0; k<nb_att; ++k)
+					table_arrays_[map_attrib[k]]->copy_external_element(nl, cac.table_arrays_[k], ol);
+			}
+			it += PRIMSIZE-1u;
+		}
+
+		return map_old_new;
 	}
 
 	/**************************************
@@ -692,6 +813,29 @@ public:
 	}
 
 	/**
+	 * @brief move the content of line src in line dst (with refs & markers)
+	 * After the operation the behaviour is undefined when accessing to the content of the line src.
+	 * @param dstIndex destination
+	 * @param srcIndex source
+	 * @param copy_markers, to specify if the marker should be copied.
+	 * @param copy_refs, to specify if the refs should be copied.
+	 */
+	inline void move_line(uint32 dst, uint32 src, bool copy_markers, bool copy_refs)
+	{
+		for (auto ptr : table_arrays_)
+			ptr->move_element(dst, src);
+
+		//for markers (i.e. uints) there is no gain moving, we can copy
+		if (copy_markers)
+		{
+			for (auto ptr : table_marker_arrays_)
+				ptr->copy_element(dst, src);
+		}
+		if (copy_refs)
+			refs_[dst] = refs_[src];
+	}
+
+	/**
 	* @brief increment the reference counter of the given line (only for PRIMSIZE==1)
 	* @param index index of the line
 	*/
@@ -779,7 +923,7 @@ public:
 		cgogn_assert(fs.good());
 
 		// check and register all known types if necessaey
-		ChunkArrayFactory<CHUNKSIZE>::register_known_types();
+		ChunkArrayFactory::register_known_types();
 
 		// read info
 		uint32 buff1[4];
@@ -805,21 +949,22 @@ public:
 			type_names_[i] = std::string(buff3);
 		}
 		cgogn_assert(fs.good());
+
 		// read chunk array
 		table_arrays_.reserve(buff1[0]);
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			ChunkArrayGen* cag = ChunkArrayFactory<CHUNKSIZE>::create(type_names_[i]);
+			auto cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
 			if (cag)
 			{
-				table_arrays_.push_back(cag);
+				table_arrays_.push_back(cag.release());
 				ok &= table_arrays_.back()->load(fs);
 				++i;
 			}
 			else
 			{
-				cgogn_log_warning("ChunkArrayContainer::load") << "Could not load attribute \"" << names_[i] << "\" of type \""<< type_names_[i] << "\".";
+				cgogn_log_warning("ChunkArrayContainer::load") << "Could not load attribute \"" << names_[i] << "\" of type \"" << type_names_[i] << "\".";
 				type_names_.erase(type_names_.begin()+i);
 				names_.erase(names_.begin()+i);
 				ChunkArrayGen::skip(fs);
@@ -831,13 +976,11 @@ public:
 	}
 };
 
-
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_H_

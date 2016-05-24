@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <core/utils/precision.h>
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/functions/normal.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/functions/normal.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <gtest/gtest.h>
 

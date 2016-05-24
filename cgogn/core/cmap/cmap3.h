@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_CMAP3_H_
-#define CORE_CMAP_CMAP3_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_H_
+#define CGOGN_CORE_CMAP_CMAP3_H_
 
-#include <core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -37,7 +37,9 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
-	static const int32 PRIM_SIZE = 1;
+	static const uint8 DIMENSION = 3;
+
+	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
@@ -59,6 +61,7 @@ public:
 	using Volume	= typename Inherit::Volume;
 
 	using Boundary  = Volume;
+	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -66,15 +69,15 @@ public:
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
 	template <typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Vertex::ORBIT>;
+	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Edge::ORBIT>;
+	using EdgeAttribute = Attribute<T, Edge::ORBIT>;
 	template <typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Face::ORBIT>;
+	using FaceAttribute = Attribute<T, Face::ORBIT>;
 	template <typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Volume::ORBIT>;
+	using VolumeAttribute = Attribute<T, Volume::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -153,12 +156,32 @@ protected:
 		(*phi3_)[d.index] = d;
 	}
 
+	/**
+	 * @brief Check the integrity of a dart
+	 * @param d the dart to check
+	 * @return true if the integrity constraints are locally statisfied
+	 * PHI3_PHI1 should be an involution without fixed point and
+	 */
 	inline bool check_integrity(Dart d) const
 	{
 		return (Inherit::check_integrity(d) &&
 				phi3(phi3(d)) == d &&
 				phi3(d) != d &&
-				phi3(this->phi1(phi3(this->phi1(d)))) == d);
+				phi3(this->phi1(phi3(this->phi1(d)))) == d &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
+	}
+
+	/**
+	 * @brief Check the integrity of a boundary dart
+	 * @param d the dart to check
+	 * @return true if the bondary constraints are locally statisfied
+	 * The boundary is a 2-manyfold: the boundary marker is the same
+	 * for all darts of a face and for two adjacent faces.
+	 */
+	inline bool check_boundary_integrity(Dart d) const
+	{
+		return (( this->is_boundary(d) == this->is_boundary(this->phi1(d))  ) &&
+				( this->is_boundary(d) == this->is_boundary(this->phi2(d)) ));
 	}
 
 	/**
@@ -204,8 +227,6 @@ public:
 		return (*phi3_)[d.index];
 	}
 
-
-
 	/**
 	 * \brief phi composition
 	 * @param d
@@ -214,7 +235,7 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert(internal::check_multi_phi<N>::value_cmap3, "composition on phi1/phi2/phi3 only");
+		static_assert((N%10)<=3,"composition on phi1/phi2/only");
 		switch(N%10)
 		{
 			case 1 : return this->phi1(phi<N/10>(d)) ;
@@ -229,91 +250,6 @@ public:
 	 *******************************************************************************/
 
 protected:
-
-	/**
-	 * @brief create_pyramid_topo : create a pyramid whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	inline Dart add_pyramid_topo(uint32 n)
-	{
-		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
-
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(n);
-
-		// creation of triangles around circumference and storing vertices
-		for (uint32 i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(3u));
-
-		// sewing the triangles
-		for (uint32 i = 0u; i < n-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1]);
-			this->phi2_sew(d,e);
-		}
-
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
-
-		// sewing the bottom face
-		Dart base = this->Inherit::Inherit::add_face_topo(n);
-		const Dart dres = base;
-		for(uint32 i = 0u; i < n; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], base);
-			base = this->phi1(base);
-		}
-
-		// return a dart from the base
-		return dres;
-	}
-
-	/**
-	 * @brief create_prism_topo : create a prism whose base is n-sided
-	 * @param n, the number of edges of the base
-	 * @return a dart from the base
-	 */
-	Dart add_prism_topo(uint32 n)
-	{
-		cgogn_message_assert( n >= 3u ,"The base must have at least 3 edges.");
-		std::vector<Dart> m_tableVertDarts;
-		m_tableVertDarts.reserve(n*2u);
-
-		// creation of quads around circunference and storing vertices
-		for (uint32 i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->Inherit::Inherit::add_face_topo(4u));
-
-		// storing a dart from the vertex pointed by phi1(phi1(d))
-		for (uint32 i = 0u; i < n; ++i)
-			m_tableVertDarts.push_back(this->phi1(this->phi1(m_tableVertDarts[i])));
-
-		// sewing the quads
-		for (uint32 i = 0u; i < n-1u; ++i)
-		{
-			const Dart d = this->phi_1(m_tableVertDarts[i]);
-			const Dart e = this->phi1(m_tableVertDarts[i+1u]);
-			this->phi2_sew(d,e);
-		}
-		// sewing the last with the first
-		this->phi2_sew(this->phi1(m_tableVertDarts[0u]), this->phi_1(m_tableVertDarts[n-1u]));
-
-		// sewing the top & bottom faces
-		Dart top = this->Inherit::Inherit::add_face_topo(n);
-		Dart bottom = this->Inherit::Inherit::add_face_topo(n);
-		const Dart dres = top;
-		for(uint32 i = 0u; i < n; ++i)
-		{
-			this->phi2_sew(m_tableVertDarts[i], top);
-			this->phi2_sew(m_tableVertDarts[n+i], bottom);
-			top = this->phi1(top);
-			bottom = this->phi_1(bottom);
-		}
-
-		// return a dart from the base
-		return dres;
-	}
 
 	/**
 	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
@@ -414,6 +350,23 @@ public:
 		return Inherit::has_codegree(Face2(f.dart), codegree);
 	}
 
+	/*******************************************************************************
+	 * Boundary information
+	 *******************************************************************************/
+
+	bool is_adjacent_to_boundary(Boundary c)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		bool result = false;
+		foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		{
+			if (this->is_boundary(phi3(d))) { result = true; return false; }
+			return true;
+		});
+		return result;
+	}
+
 protected:
 
 	/*******************************************************************************
@@ -477,13 +430,47 @@ protected:
 		});
 	}
 
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2_PHI3(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+
+		std::vector<Dart>* visited_face2 = cgogn::get_dart_buffers()->get_buffer();
+		visited_face2->push_back(d); // Start with the face of d
+
+		// For every face added to the list
+		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		{
+			Dart e = (*visited_face2)[i];
+			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			{
+				// mark visited darts (current face2)
+				// and add non visited phi2-adjacent face2 to the list of face2
+				Dart it = e;
+				do
+				{
+					f(it); // apply the function to the darts of the face2
+					marker.mark(it);				// Mark
+					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
+					if (!marker.is_marked(adj2))
+						visited_face2->push_back(adj2);	// Add it
+					it = this->phi1(it);
+				} while (it != e);
+				// add phi3-adjacent face2 to the list
+				visited_face2->push_back(phi3(it));
+			}
+		}
+		cgogn::get_dart_buffers()->release_buffer(visited_face2);
+	}
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
+					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
@@ -496,6 +483,7 @@ protected:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
 			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -562,6 +550,43 @@ protected:
 		});
 	}
 
+	template <typename FUNC>
+	void foreach_dart_of_PHI1_PHI2_PHI3_until(Dart d, const FUNC& f) const
+	{
+		DartMarkerStore marker(*this);
+
+		std::vector<Dart>* visited_face2 = cgogn::get_dart_buffers()->get_buffer();
+		visited_face2->push_back(d); // Start with the face of d
+
+		// For every face added to the list
+		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		{
+			Dart e = (*visited_face2)[i];
+			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			{
+				// mark visited darts (current face2)
+				// and add non visited phi2-adjacent face2 to the list of face2
+				Dart it = e;
+				do
+				{
+					if (!f(it)) // apply the function to the darts of the face2
+					{
+						cgogn::get_dart_buffers()->release_buffer(visited_face2);
+						return;
+					}
+					marker.mark(it);				// Mark
+					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
+					if (!marker.is_marked(adj2))
+						visited_face2->push_back(adj2);	// Add it
+					it = this->phi1(it);
+				} while (it != e);
+				// add phi3-adjacent face2 to the list
+				visited_face2->push_back(phi3(it));
+			}
+		}
+		cgogn::get_dart_buffers()->release_buffer(visited_face2);
+	}
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -569,7 +594,8 @@ protected:
 		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
+					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3");
 
 		switch (ORBIT)
@@ -582,6 +608,7 @@ protected:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
 			case Orbit::PHI21: this->foreach_dart_of_PHI21_until(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3_until(c.dart, f); break;
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
@@ -1086,15 +1113,59 @@ public:
 		});
 	}
 
-	inline std::pair<Vertex,Vertex> vertices(Edge e)
+	inline std::pair<Vertex, Vertex> vertices(Edge e)
 	{
-		return std::pair<Vertex,Vertex>(Vertex(e.dart),Vertex(this->phi1(e.dart)));
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
 
-	inline std::array<Vertex,2> verts(Edge e)
+protected:
+
+#define FOR_ALL_ORBITS( CODE)\
+{static const Orbit orbit_const=DART; CODE }\
+{static const Orbit orbit_const=PHI1; CODE }\
+{static const Orbit orbit_const=PHI2; CODE }\
+{static const Orbit orbit_const=PHI1_PHI2; CODE }\
+{static const Orbit orbit_const=PHI1_PHI3; CODE }\
+{static const Orbit orbit_const=PHI2_PHI3; CODE }\
+{static const Orbit orbit_const=PHI21; CODE }\
+{static const Orbit orbit_const=PHI21_PHI31; CODE }\
+{static const Orbit orbit_const=PHI1_PHI2_PHI3; CODE }
+
+	/**
+	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
+	 * @param map
+	 */
+	void merge_check_embedding(const Self& map)
 	{
-		return {{ Vertex(e.dart),Vertex(this->phi1(e.dart)) }};
+		FOR_ALL_ORBITS
+		(
+			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
+				this->template create_embedding<orbit_const>();
+		)	
 	}
+
+	/**
+	 * @brief ensure all cells (introduced while merging) are embedded.
+	 * @param first index of first dart to scan
+	 */
+	void merge_finish_embedding(uint32 first)
+	{
+		FOR_ALL_ORBITS
+		(
+			if (this->template is_embedded<orbit_const>())
+			{
+				for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+				{
+					if (((orbit_const != Boundary::ORBIT) && (orbit_const != DART)) || (!this->is_boundary(Dart(j))))
+						if ((*this->embeddings_[orbit_const])[j] == std::numeric_limits<uint32>::max())
+							this->new_orbit_embedding(Cell<orbit_const>(Dart(j)));
+				}
+			}
+		)
+	}
+
+#undef FOR_ALL_ORBITS
+
 };
 
 template <typename MAP_TRAITS>
@@ -1106,7 +1177,7 @@ struct CMap3Type
 template <typename MAP_TRAITS>
 using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
 extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
@@ -1119,8 +1190,8 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CM
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP3_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_CMAP3_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_H_

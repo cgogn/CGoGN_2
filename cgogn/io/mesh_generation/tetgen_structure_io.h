@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_TETGEN_STRUCTURE_IO_H
-#define IO_TETGEN_STRUCTURE_IO_H
+#ifndef CGOGN_IO_TETGEN_STRUCTURE_IO_H
+#define CGOGN_IO_TETGEN_STRUCTURE_IO_H
 
 #include <memory>
 
-#include <io/dll.h>
-#include <io/volume_import.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/volume_import.h>
 
 #include <tetgen.h>
 
@@ -58,27 +58,24 @@ protected:
 	virtual bool import_file_impl(const std::string& /*filename*/) override
 	{
 
-		this->nb_vertices_ = volume_->numberofpoints;
-		this->nb_volumes_ = volume_->numberoftetrahedra;
-		this->volumes_types.reserve(this->nb_volumes_);
-		this->volumes_vertex_indices_.reserve(4u*this->nb_volumes_);
+		this->set_nb_vertices(volume_->numberofpoints);
+		this->set_nb_volumes(volume_->numberoftetrahedra);
 
-		if (this->nb_vertices_ == 0u || this->nb_volumes_ == 0u)
+		if (this->get_nb_vertices() == 0u || this->get_nb_volumes()== 0u)
 		{
+			cgogn_log_warning("TetgenStructureVolumeImport") << "Error while importing data.";
 			this->clear();
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
-
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		//create vertices
 		std::vector<uint32> vertices_indices;
 		float64* p = volume_->pointlist ;
-		vertices_indices.reserve(this->nb_vertices_);
 
-		for(uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
-			const unsigned id = this->vertex_attributes_.template insert_lines<1>();
+			const unsigned id = this->insert_line_vertex_container();
 			position->operator [](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
 			vertices_indices.push_back(id);
 			p += 3 ;
@@ -86,7 +83,7 @@ protected:
 
 		//create tetrahedrons
 		int* t = volume_->tetrahedronlist ;
-		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::array<uint32,4> ids;
 			for(uint32 j = 0u; j < 4u; j++)
@@ -102,13 +99,15 @@ private:
 };
 
 template <typename VEC3, typename MAP_TRAITS>
-std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename CMap2<MAP_TRAITS>::template VertexAttributeHandler<VEC3>& pos)
+std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename CMap2<MAP_TRAITS>::template VertexAttribute<VEC3>& pos)
 {
 	using Map = CMap2<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;
 	using Face = typename Map::Face;
 
 	using TetgenReal = REAL;
+
+	map.compact_embedding(Vertex::ORBIT);
 	std::unique_ptr<tetgenio> output = make_unique<tetgenio>();
 
 	// 0-based indexing
@@ -119,27 +118,28 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	output->pointlist = new TetgenReal[output->numberofpoints * 3];
 
 	//for each vertex
-	uint32 i = 0u;
-	map.foreach_cell([&output,&i,&pos](Vertex v)
+
+	map.foreach_cell([&output,&map,&pos](Vertex v)
 	{
 		const VEC3& vec = pos[v];
-		output->pointlist[i++] = vec[0];
-		output->pointlist[i++] = vec[1];
-		output->pointlist[i++] = vec[2];
+		const uint32 emb = map.get_embedding(v);
+		output->pointlist[3u*emb + 0u] = vec[0];
+		output->pointlist[3u*emb + 1u] = vec[1];
+		output->pointlist[3u*emb + 2u] = vec[2];
 	});
 
 	output->numberoffacets = map.template nb_cells<Face::ORBIT>();
 	output->facetlist = new tetgenio::facet[output->numberoffacets] ;
 
 	//for each facet
-	i = 0u;
+	uint32 i = 0u;i = 0u;
 	map.foreach_cell([&output,&i,&map](Face face)
 	{
 		tetgenio::facet* f = &(output->facetlist[i]);
 		tetgenio::init(f);
 		f->numberofpolygons = 1;
-		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-		tetgenio::polygon* p = f->polygonlist;
+		f->polygonlist = new tetgenio::polygon[1];
+		tetgenio::polygon* p = &f->polygonlist[0];
 		tetgenio::init(p);
 		p->numberofvertices = map.codegree(face);
 		p->vertexlist = new int[p->numberofvertices];
@@ -150,22 +150,20 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 			p->vertexlist[j++] = map.get_embedding(v);
 		});
 
-		f->numberofholes = 0;
-		f->holelist = nullptr;
 		++i;
 	});
 
 	return output;
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TETGEN_STRUCTURE_IO_CPP))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_STRUCTURE_IO_CPP))
 extern template class CGOGN_IO_API TetgenStructureVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API TetgenStructureVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API TetgenStructureVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API TetgenStructureVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TETGEN_STRUCTURE_IO_CPP))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_STRUCTURE_IO_CPP))
 
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_TETGEN_STRUCTURE_IO_H
+#endif // CGOGN_IO_TETGEN_STRUCTURE_IO_H

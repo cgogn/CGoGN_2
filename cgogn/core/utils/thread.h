@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_UTILS_THREAD_H_
-#define CORE_UTILS_THREAD_H_
+#ifndef CGOGN_CORE_UTILS_THREAD_H_
+#define CGOGN_CORE_UTILS_THREAD_H_
 
+#include <thread>
 #include <vector>
 
-#include <core/dll.h>
-#include <core/utils/definitions.h>
-#include <core/utils/thread_barrier.h>
+#include <cgogn/core/dll.h>
+#include <cgogn/core/utils/numerics.h>
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
 namespace cgogn
 {
@@ -75,52 +75,6 @@ CGOGN_CORE_API void thread_stop();
 CGOGN_CORE_API Buffers<Dart>*         get_dart_buffers();
 CGOGN_CORE_API Buffers<uint32>* get_uint_buffers();
 
-template <typename ELEM, typename FUNC>
-class ThreadFunction
-{
-private:
-
-	FUNC f_;
-	std::vector<ELEM>& elements_;
-	Barrier& sync1_;
-	Barrier& sync2_;
-	bool& finished_;
-	uint32 thread_order_;
-
-public:
-
-	ThreadFunction(
-		FUNC f,
-		std::vector<ELEM>& elements,
-		Barrier& sync1,
-		Barrier& sync2,
-		bool& finished,
-		uint32 thread_order
-	) :
-		f_(f),
-		elements_(elements),
-		sync1_(sync1),
-		sync2_(sync2),
-		finished_(finished),
-		thread_order_(thread_order)
-	{}
-
-	void operator()()
-	{
-		thread_start();
-		while (true)
-		{
-			sync2_.wait(); // wait for vectors to be filled
-			if (finished_)
-				break;
-			for (ELEM& e : elements_)
-				f_(e, thread_order_);
-			sync1_.wait(); // wait every thread has finished
-		}
-		thread_stop();
-	}
-};
-
 } // namespace cgogn
 
-#endif // CORE_UTILS_THREAD_H_
+#endif // CGOGN_CORE_UTILS_THREAD_H_

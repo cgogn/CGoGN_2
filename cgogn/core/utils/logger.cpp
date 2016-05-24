@@ -22,10 +22,10 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CORE_UTILS_LOGGER_CPP_
+#define CGOGN_CORE_UTILS_LOGGER_CPP_
 
 #include <iostream>
-#include <core/utils/logger.h>
+#include <cgogn/core/utils/logger.h>
 
 namespace cgogn
 {
@@ -100,7 +100,7 @@ void Logger::add_file_output(const std::string& filename)
 		if (fileout->get_filename() == filename)
 			already_added = true;
 	if (!already_added)
-		file_out_.push_back(make_unique<FileOutput>(filename));
+		file_out_.push_back(cgogn::make_unique<FileOutput>(filename));
 	else
 		std::cerr << "Logger::add_file_output: The file \"" << filename <<  "\" is already used by the logger." << std::endl;
 }

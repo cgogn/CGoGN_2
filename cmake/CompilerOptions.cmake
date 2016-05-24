@@ -130,5 +130,6 @@ else() # MSVC
 	# C4910 - __declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
 	# C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910 /wd4251 /bigobj")
+	add_definitions("/DNOMINMAX")
 	
 endif()

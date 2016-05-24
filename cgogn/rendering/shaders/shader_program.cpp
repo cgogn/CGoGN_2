@@ -23,7 +23,8 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_program.h>
+#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/rendering/shaders/shader_program.h>
 
 namespace cgogn
 {
@@ -31,14 +32,44 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderProgram::~ShaderProgram()
+ShaderParam::ShaderParam(ShaderProgram* prg):
+	shader_(prg)
 {
-	for (QOpenGLVertexArrayObject* vao : vaos_)
-	{
-		vao->destroy();
-		delete vao;
-	}
+	vao_ = cgogn::make_unique<QOpenGLVertexArrayObject>();
+	vao_->create();
 }
+
+ShaderParam::~ShaderParam()
+{}
+
+void ShaderParam::bind_vao_only(bool with_uniforms)
+{
+	if (with_uniforms)
+		set_uniforms();
+	vao_->bind();
+}
+
+void ShaderParam::release_vao_only()
+{
+	vao_->release();
+}
+
+void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
+{
+	shader_->bind();
+	shader_->set_matrices(proj,mv);
+	set_uniforms();
+	vao_->bind();
+}
+
+void ShaderParam::release()
+{
+	vao_->release();
+	shader_->release();
+}
+
+ShaderProgram::~ShaderProgram()
+{}
 
 void ShaderProgram::get_matrices_uniforms()
 {
@@ -54,8 +85,8 @@ void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
+		QMatrix3x3 normal_matrix = mv.normalMatrix();
+		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
 	}
 }
 
@@ -65,8 +96,8 @@ void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		QMatrix3x3 normalMatrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normalMatrix);
+		QMatrix3x3 normal_matrix = mv.normalMatrix();
+		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
 	}
 }
 

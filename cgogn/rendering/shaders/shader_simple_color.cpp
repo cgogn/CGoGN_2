@@ -23,11 +23,11 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_simple_color.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
 #include <iostream>
+
+#include <cgogn/rendering/shaders/shader_simple_color.h>
+
+#include <QColor>
 
 namespace cgogn
 {
@@ -35,22 +35,31 @@ namespace cgogn
 namespace rendering
 {
 
+std::unique_ptr<ShaderSimpleColor> ShaderSimpleColor::instance_ = nullptr;
+
+std::unique_ptr<ShaderSimpleColor::Param> ShaderSimpleColor::generate_param()
+{
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderSimpleColor>(new ShaderSimpleColor());
+	return cgogn::make_unique<Param>(instance_.get());
+}
+
 const char* ShaderSimpleColor::vertex_shader_source_ =
-	"#version 150\n"
-	"in vec3 vertex_pos;\n"
-	"uniform mat4 projection_matrix;\n"
-	"uniform mat4 model_view_matrix;\n"
-	"void main() {\n"
-	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-	"}\n";
+"#version 150\n"
+"in vec3 vertex_pos;\n"
+"uniform mat4 projection_matrix;\n"
+"uniform mat4 model_view_matrix;\n"
+"void main() {\n"
+"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+"}\n";
 
 const char* ShaderSimpleColor::fragment_shader_source_ =
-	"#version 150\n"
-	"out vec4 fragColor;\n"
-	"uniform vec4 color;\n"
-	"void main() {\n"
-	"   fragColor = color;\n"
-	"}\n";
+"#version 150\n"
+"out vec4 fragColor;\n"
+"uniform vec4 color;\n"
+"void main() {\n"
+"   fragColor = color;\n"
+"}\n";
 
 ShaderSimpleColor::ShaderSimpleColor()
 {
@@ -63,41 +72,13 @@ ShaderSimpleColor::ShaderSimpleColor()
 
 	unif_color_ = prg_.uniformLocation("color");
 
-	//default param
-	set_color(QColor(255,255,255));
+	// default param
+	set_color(QColor(255, 255, 255));
 }
 
 void ShaderSimpleColor::set_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_color_, rgb);
-}
-
-
-bool ShaderSimpleColor::set_vao(uint32 i, VBO* vbo_pos, uint32 stride, unsigned first)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
-
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	prg_.bind();
-	vaos_[i]->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride*vbo_pos->vector_dimension() * 4,
-		void_ptr(first*vbo_pos->vector_dimension() * 4));
-	vbo_pos->release();
-
-    vaos_[i]->release();
-	prg_.release();
-
-    return true;
 }
 
 } // namespace rendering

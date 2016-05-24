@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_
-#define MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_
 
-#include <multiresolution/cph/ihcmap2.h>
+#include <cgogn/multiresolution/cph/ihcmap2.h>
 
 namespace cgogn
 {
@@ -578,11 +578,11 @@ struct IHCMap2AdaptiveType
 template <typename MAP_TRAITS>
 using IHCMap2Adaptive = IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Adaptive_T<DefaultMapTraits, IHCMap2AdaptiveType<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
 
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_H_

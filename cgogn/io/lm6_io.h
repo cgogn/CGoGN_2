@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_LM6_IO_H_
-#define IO_LM6_IO_H_
+#ifndef CGOGN_IO_LM6_IO_H_
+#define CGOGN_IO_LM6_IO_H_
 
 #include <libmesh6.h>
-#include <io/volume_import.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {
@@ -66,26 +66,24 @@ protected:
 		const int number_of_pyramids = GmfStatKwd(mesh_index, GmfPyramids);
 
 
-		this->volumes_vertex_indices_.reserve(4*number_of_tetras + 8*number_of_hexas + 6*number_of_prisms + 5*number_of_pyramids);
+		this->set_nb_vertices(number_of_vertices);
+		this->set_nb_volumes(number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids);
 
-		this->nb_vertices_ = number_of_vertices;
-		this->nb_volumes_ = number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids;
-		this->volumes_types.reserve(this->nb_volumes_);
-
-		if (number_of_vertices == 0 || this->nb_volumes_ == 0u)
+		if (this->get_nb_vertices() == 0 || this->get_nb_volumes()== 0u)
 		{
+			cgogn_log_warning("LM6VolumeImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
 			clear();
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
-		int ref;
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
-		for (int i = 0 ; i < number_of_vertices; ++i)
+		for (uint32 i = 0u, end = this->get_nb_vertices() ; i < end; ++i)
 		{
-			uint32 idx = this->vertex_attributes_.template insert_lines<1>();
+			uint32 idx = this->insert_line_vertex_container();
 			std::array<float32, 3> v;
 			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
 			position->operator [](idx)[0] = v[0];
@@ -152,15 +150,15 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_LM6_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
 extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_LM6_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
 
 
-#endif // IO_LM6_IO_H_
+#endif // CGOGN_IO_LM6_IO_H_

@@ -21,15 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_NASTRAN_IO_H_
-#define IO_NASTRAN_IO_H_
+#ifndef CGOGN_IO_NASTRAN_IO_H_
+#define CGOGN_IO_NASTRAN_IO_H_
 
 #include <map>
+#include <sstream>
+#include <iomanip>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/data_io.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/data_io.h>
+#include <cgogn/io/volume_import.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -80,7 +83,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream file(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 
 		std::string line;
 		line.reserve(512);
@@ -95,13 +98,12 @@ protected:
 		} while (tag !="GRID");
 
 		// reading vertices
-		this->nb_vertices_ = 0u;
 		std::map<uint32, uint32> old_new_ids_map;
 		do
 		{
 			std::string s_v = line.substr(8,8);
 			const uint32 old_index = std::stoi(s_v);
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			old_new_ids_map[old_index] = new_index;
 			auto& v = position->operator [](new_index);
 
@@ -114,48 +116,19 @@ protected:
 
 			std::getline (file, line);
 			tag = line.substr(0,4);
-			this->nb_vertices_++;
+			this->set_nb_vertices(this->get_nb_vertices() + 1u);
 		} while (tag =="GRID");
 
 		// reading volumes
-		this->nb_volumes_ = 0u;
 		do
 		{
-			std::string s_v = line.substr(0,std::min(line.size(),12ul));
-
-			if (s_v.compare(0, 5,"CHEXA") == 0)
+			std::string s_v = line.substr(0,std::min(line.size(),std::size_t(12)));
+			if (s_v[0] != '$')
 			{
-				this->nb_volumes_++;
-				std::array<uint32, 8> ids;
-
-				s_v = line.substr(24,8);
-				ids[0] = uint32(std::stoi(s_v));
-				s_v = line.substr(32,8);
-				ids[1] = uint32(std::stoi(s_v));
-				s_v = line.substr(40,8);
-				ids[2] = uint32(std::stoi(s_v));
-				s_v = line.substr(48,8);
-				ids[3] = uint32(std::stoi(s_v));
-				s_v = line.substr(56,8);
-				ids[4] = uint32(std::stoi(s_v));
-				s_v = line.substr(64,8);
-				ids[5] = uint32(std::stoi(s_v));
-
-				std::getline (file, line);
-				s_v = line.substr(8,8);
-				ids[6] = uint32(std::stoi(s_v));
-				s_v = line.substr(16,8);
-				ids[7] = uint32(std::stoi(s_v));
-
-				for (uint32& id : ids)
-					id = old_new_ids_map[id];
-
-				this->add_hexa(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5],ids[6], ids[7], true);
-			} else {
-				if (s_v.compare(0, 6,"CTETRA") == 0)
+				if (s_v.compare(0, 5,"CHEXA") == 0)
 				{
-					this->nb_volumes_++;
-					std::array<uint32, 4> ids;
+					this->set_nb_volumes(this->get_nb_volumes() + 1u);
+					std::array<uint32, 8> ids;
 
 					s_v = line.substr(24,8);
 					ids[0] = uint32(std::stoi(s_v));
@@ -165,15 +138,45 @@ protected:
 					ids[2] = uint32(std::stoi(s_v));
 					s_v = line.substr(48,8);
 					ids[3] = uint32(std::stoi(s_v));
+					s_v = line.substr(56,8);
+					ids[4] = uint32(std::stoi(s_v));
+					s_v = line.substr(64,8);
+					ids[5] = uint32(std::stoi(s_v));
+
+					std::getline (file, line);
+					s_v = line.substr(8,8);
+					ids[6] = uint32(std::stoi(s_v));
+					s_v = line.substr(16,8);
+					ids[7] = uint32(std::stoi(s_v));
 
 					for (uint32& id : ids)
 						id = old_new_ids_map[id];
 
-					this->add_tetra(*position, ids[0], ids[1], ids[2], ids[3], true);
+					this->add_hexa(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5],ids[6], ids[7], true);
 				} else {
-					if (s_v.compare(0, 7,"ENDDATA") == 0)
-						break;
-					cgogn_log_warning("NastranVolumeImport") << "Elements of type \"" << s_v << "\" are not supported. Ignoring.";
+					if (s_v.compare(0, 6,"CTETRA") == 0)
+					{
+						this->set_nb_volumes(this->get_nb_volumes() + 1u);
+						std::array<uint32, 4> ids;
+
+						s_v = line.substr(24,8);
+						ids[0] = uint32(std::stoi(s_v));
+						s_v = line.substr(32,8);
+						ids[1] = uint32(std::stoi(s_v));
+						s_v = line.substr(40,8);
+						ids[2] = uint32(std::stoi(s_v));
+						s_v = line.substr(48,8);
+						ids[3] = uint32(std::stoi(s_v));
+
+						for (uint32& id : ids)
+							id = old_new_ids_map[id];
+
+						this->add_tetra(*position, ids[0], ids[1], ids[2], ids[3], true);
+					} else {
+						if (s_v.compare(0, 7,"ENDDATA") == 0)
+							break;
+						cgogn_log_warning("NastranVolumeImport") << "Elements of type \"" << s_v << "\" are not supported. Ignoring.";
+					}
 				}
 			}
 
@@ -186,7 +189,131 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_NASTRAN_IO_CPP_))
+template<typename MAP>
+class NastranVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = NastranVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		ChunkArrayGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+
+
+		output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+		output << "$$      NASTRAN MEsh File Generated by CGoGN_2 (ICube/IGG)                      $"<< std::endl;
+		output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+		output << "CEND" << std::endl;
+		output << "BEGIN BULK" << std::endl;
+		output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+		output << "$$      Vertices position                                                       $"<< std::endl;
+		output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+
+		// 1. vertices
+		uint32 count{1u};
+		map.foreach_cell([&](Vertex v)
+		{
+			output << "GRID    ";
+			output << std::right;
+			output.width(8);
+			output << count++;
+			output << "        ";
+			output << std::left;
+			std::stringstream position_stream;
+			pos->export_element(map.get_embedding(v), position_stream, false);
+			float32 tmp[3];
+			position_stream >> tmp[0];
+			position_stream >> tmp[1];
+			position_stream >> tmp[2];
+			output << std::setw(8) << trunc_float_to8(tmp[0]) << std::setw(8) << trunc_float_to8(tmp[1]) <<std::setw(8) << trunc_float_to8(tmp[2]) << std::endl;
+		});
+
+		count = 1u;
+		auto vertices_it = this->get_vertices_of_volumes().begin();
+		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const uint32 nb_vols = nb_vert_vol.size();
+		output << std::right;
+
+
+		if (this->get_nb_hexas() > 0u)
+		{
+			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+			output << "$$      Hexa indices                                                            $"<< std::endl;
+			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+
+			for (uint32 w = 0u; w < nb_vols; ++w)
+			{
+				if (nb_vert_vol[w] == 8u)
+				{
+					output << "CHEXA   ";
+					output << std::setw(8) << count++ << std::setw(8)<< 0;
+					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u);
+					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << "+"<< std::endl;
+					output << "+       " <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+				} else
+				{
+					for (uint32 i = 0u ; i < nb_vert_vol[w] ; ++i)
+						++vertices_it;
+				}
+			}
+		}
+
+		if (this->get_nb_tetras() > 0u)
+		{
+			vertices_it = this->get_vertices_of_volumes().begin();
+			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+			output << "$$      Tetra indices                                                           $"<< std::endl;
+			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
+
+			for (uint32 w = 0u; w < nb_vols; ++w)
+			{
+				if (nb_vert_vol[w] == 4u)
+				{
+					output << "CTETRA  ";
+					output << std::setw(8) << count++ << std::setw(8)<< 0;
+					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+				} else
+				{
+					for (uint32 i = 0u ; i < nb_vert_vol[w] ; ++i)
+						++vertices_it;
+				}
+			}
+		}
+		output << "ENDDATA" << std::endl;
+	}
+
+private:
+	static inline std::string trunc_float_to8(float32 f)
+	{
+		std::stringstream ss;
+		ss << f;
+		std::string res = ss.str();
+		size_t expo = res.find('e');
+		if (expo != std::string::npos)
+		{
+			if ( res[expo+2] == '0')
+				return res.substr(0,6) + res[expo+1] + res[expo+3];
+
+			return res.substr(0,5) + res.substr(expo+1);
+		}
+		return res.substr(0,8);
+	}
+};
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_NASTRAN_IO_CPP_))
 extern template class CGOGN_IO_API NastranIO<Eigen::Vector3d>;
 extern template class CGOGN_IO_API NastranIO<Eigen::Vector3f>;
 extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float64,3>>>;
@@ -196,8 +323,10 @@ extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::
 extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_NASTRAN_IO_CPP_))
+
+extern template class CGOGN_IO_API NastranVolumeExport<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_NASTRAN_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
-#endif // IO_NASTRAN_IO_H_
+#endif // CGOGN_IO_NASTRAN_IO_H_

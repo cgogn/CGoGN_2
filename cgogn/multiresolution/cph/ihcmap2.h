@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP2_H_
-#define MULTIRESOLUTION_CPH_IHCMAP2_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_
 
-#include <core/cmap/cmap2.h>
-#include <multiresolution/cph/cph2.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/multiresolution/cph/cph2.h>
 
 namespace cgogn
 {
@@ -60,17 +60,17 @@ public:
 	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
 	template<typename T>
-	using DartAttributeHandler = AttributeHandler<T, Orbit::DART>;
+	using DartAttribute = Attribute<T, Orbit::DART>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Orbit::PHI21>;
+	using VertexAttribute = Attribute<T, Orbit::PHI21>;
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Orbit::PHI2>;
+	using EdgeAttribute = Attribute<T, Orbit::PHI2>;
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Orbit::PHI1>;
+	using FaceAttribute = Attribute<T, Orbit::PHI1>;
 	template<typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Orbit::PHI1_PHI2>;
+	using VolumeAttribute = Attribute<T, Orbit::PHI1_PHI2>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -195,7 +195,7 @@ public:
 //			step++;
 //			uint32 next = next_level_cell_[ORBIT]->operator[](index);
 //			//index = next;
-//			if(next != EMBNULL) index = next;
+//			if(next != INVALID_INDEX) index = next;
 //			else break;
 //		}
 
@@ -345,10 +345,10 @@ struct IHCMap2Type
 template <typename MAP_TRAITS>
 using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
 
 } // namespace cgogn
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP2_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_H_

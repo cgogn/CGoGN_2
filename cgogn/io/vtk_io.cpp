@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_VTK_IO_CPP_
+#define CGOGN_IO_VTK_IO_CPP_
 
-#include <io/vtk_io.h>
+#include <cgogn/io/vtk_io.h>
 
 namespace cgogn
 {
@@ -39,5 +39,7 @@ template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
 } // namespace io
 } // namespace cgogn

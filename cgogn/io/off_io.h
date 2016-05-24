@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_OFF_IO_H_
-#define IO_OFF_IO_H_
+#ifndef CGOGN_IO_OFF_IO_H_
+#define CGOGN_IO_OFF_IO_H_
 
-#include <geometry/types/eigen.h>
-#include <geometry/types/vec.h>
-#include <geometry/types/geometry_traits.h>
+#include <cgogn/geometry/types/eigen.h>
+#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
-#include <io/surface_import.h>
+#include <cgogn/io/surface_import.h>
 
 namespace cgogn
 {
@@ -242,14 +242,14 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_OFF_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
 
-#endif // IO_OFF_IO_H_
+#endif // CGOGN_IO_OFF_IO_H_

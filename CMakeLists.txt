@@ -18,8 +18,10 @@ endif()
 
 #### CGoGN PATH
 set(CGOGN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+
 #### Here are located the FindPackages that we need
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 #### Compile Options
 include(cmake/CompilerOptions.cmake)
@@ -30,7 +32,7 @@ include(cmake/EnableCoverageReport.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CGOGN_PATH}/cgogn)
+set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
@@ -43,8 +45,10 @@ set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
 option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." ON)
+option(CGOGN_BUILD_EXAMPLES "Build some example apps." ON)
 option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." ON)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
+option(CGOGN_ENABLE_LTO "Enable link-time optimizations (only with gcc)" ON)
 if (NOT MSVC)
 	option(CGOGN_USE_GLIBCXX_DEBUG "Use the debug version of STL (useful for bounds checking)." OFF)
 	option(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC "Use an extremely picky debug version of STL." OFF)
@@ -125,13 +129,43 @@ else()
 	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
 endif()
 
+#### Link time optimisation
+if (CGOGN_ENABLE_LTO AND ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
+	add_flags(CMAKE_CXX_FLAGS_RELEASE -flto)
+	find_program(GCC_AR gcc-ar)
+	if (GCC_AR)
+		set(CMAKE_AR ${GCC_AR})
+	endif()
+	find_program(GCC_RANLIB gcc-ranlib)
+	if (GCC_RANLIB)
+		set(CMAKE_RANLIB ${GCC_RANLIB})
+	endif()
+endif()
+
+include(GenerateExportHeader)
+include(CMakePackageConfigHelpers)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
-add_subdirectory(${CGOGN_SOURCE_DIR})
+add_subdirectory(${CGOGN_SOURCE_DIR}/cgogn)
 
 if(${CGOGN_BUILD_BENCHS})
 	add_subdirectory(benchmarks)
 endif(${CGOGN_BUILD_BENCHS})
+
+if(CGOGN_BUILD_TESTS)
+	add_subdirectory(cgogn/core/tests)
+	add_subdirectory(cgogn/geometry/tests)
+	add_subdirectory(cgogn/modeling/tests)
+endif()
+
+if(CGOGN_BUILD_EXAMPLES)
+	add_subdirectory(cgogn/core/examples)
+	add_subdirectory(cgogn/geometry/examples)
+	add_subdirectory(cgogn/io/examples)
+	add_subdirectory(cgogn/io/mesh_generation/examples)
+	add_subdirectory(cgogn/modeling/examples)
+	add_subdirectory(cgogn/rendering/examples)
+endif()
 
 
 ##  TODO a mettre dans un fichier cmake particulier

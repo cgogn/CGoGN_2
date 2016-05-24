@@ -21,15 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
-#include <core/utils/serialization.h>
-#include <core/dll.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/dll.h>
 
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 namespace cgogn
 {
@@ -46,12 +47,23 @@ public:
 
 	using Self = ChunkArrayGen<CHUNKSIZE>;
 
-	inline ChunkArrayGen() {}
+	inline ChunkArrayGen(const std::string& name, const std::string& type_name) :
+		name_(name),
+		type_name_(type_name)
+	{}
+
+	inline ChunkArrayGen()
+	{}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayGen);
 
 protected:
 
 	std::vector<ChunkArrayGen**> external_refs_;
+
+	std::string name_;
+
+	std::string type_name_;
 
 public:
 
@@ -65,6 +77,14 @@ public:
 			*ref = nullptr;
 		}
 	}
+
+	inline const std::string& get_name() const { return name_; }
+
+	inline const std::string& get_type_name() const { return type_name_; }
+
+	virtual std::string get_nested_type_name() const = 0;
+
+	virtual uint32 get_nb_components() const = 0;
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -82,12 +102,14 @@ public:
 	}
 
 	/**
-	 * @brief create a ChunkArray object without knowning type
+	 * @brief create a ChunkArray object without knowing type
 	 * @return generic pointer
 	 */
-	virtual Self* clone() const = 0;
+	virtual std::unique_ptr<Self> clone(const std::string& clone_name) const = 0;
 
-	virtual bool is_boolean_array() const = 0;
+	virtual bool swap(Self*) = 0;
+
+//	virtual bool is_boolean_array() const = 0;
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
@@ -139,6 +161,24 @@ public:
 	virtual void copy_element(uint32 dst, uint32 src) = 0;
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source ptr (Precond: same type as this)
+	 * @param src source index
+	 */
+	virtual void copy_external_element(uint32 dst, Self* cag_src, uint32 src) = 0;
+
+	/**
+	 * @brief move an element to another one
+	 * @param dst destination index
+	 * @param src source index
+	 */
+	virtual void move_element(uint32 dst, uint32 src)
+	{
+		this->copy_element(dst,src);
+	}
+
+	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
@@ -151,6 +191,8 @@ public:
 	 * @param nb_lines number of line to save
 	 */
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const = 0;
 
 	/**
 	 * @brief load
@@ -173,10 +215,10 @@ public:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_

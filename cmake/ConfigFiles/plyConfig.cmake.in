@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(ply_LIBRARIES "ply")
+set(ply_INCLUDE_DIRS "@PACKAGE_PLY_INCLUDE_DIR@")
+
+if(NOT TARGET ply)
+	include("${CMAKE_CURRENT_LIST_DIR}/plyTargets.cmake")
+endif()
+
+check_required_components(ply)

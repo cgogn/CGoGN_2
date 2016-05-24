@@ -21,37 +21,85 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef RENDERING_SHADERS_SHADERPROGRAM_H_
-#define RENDERING_SHADERS_SHADERPROGRAM_H_
+#ifndef CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
+#define CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
+
+#include <cgogn/rendering/dll.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions_3_3_Core>
+
+#include <iostream>
 #include <cassert>
-#include <core/utils/definitions.h>
-
-
-#include <rendering/dll.h>
+#include <memory>
 
 namespace cgogn
 {
+
 namespace rendering
 {
 
-//convenient conversion function
+// convenient conversion function
 inline void* void_ptr(uint32 x)
 {
 	return reinterpret_cast<void*>(uint64_t(x));
 }
 
+// forward
+class ShaderProgram;
+
+class CGOGN_RENDERING_API ShaderParam
+{
+protected:
+
+	ShaderProgram* shader_;
+	std::unique_ptr<QOpenGLVertexArrayObject> vao_;
+	QOpenGLFunctions_3_3_Core* ogl33_;
+
+	virtual void set_uniforms() = 0;
+
+public:
+
+	ShaderParam(ShaderProgram* prg);
+
+	virtual ~ShaderParam();
+
+	inline ShaderProgram* get_shader()
+	{
+		return shader_;
+	}
+
+	/**
+	 * @brief bind vao (and set uniform)
+	 * @param with_uniforms ask to set uniforms
+	 */
+	void bind_vao_only(bool with_uniforms = true);
+
+	/**
+	 * @brief release vao
+	 */
+	void release_vao_only();
+
+	/**
+	 * @brief bind the shader set uniforms & matrices, bind vao
+	 * @param proj projectiob matrix
+	 * @param mv model-view matrix
+	 */
+	void bind(const QMatrix4x4& proj, const QMatrix4x4& mv);
+
+	/**
+	 * @brief release vao adn shader
+	 */
+	void release();
+};
 
 class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
 {
 protected:
 
 	QOpenGLShaderProgram prg_;
-
-	std::vector<QOpenGLVertexArrayObject*> vaos_;
 
 	GLint unif_mv_matrix_;
 	GLint unif_projection_matrix_;
@@ -80,76 +128,18 @@ public:
 	void set_view_matrix(const QMatrix4x4& mv);
 
 	/**
-	 * @brief add a vao (vbo configuration)
-	 * @return the id of vao
-	 */
-	inline uint32 add_vao()
-	{
-		vaos_.push_back(new QOpenGLVertexArrayObject);
-		vaos_.back()->create();
-		return uint32(vaos_.size() - 1);
-	}
-
-	/**
-	 * @brief allocate new vaos until total nb is reached
-	 * @param nb number of vaos to reach
-	 */
-	void alloc_vao(uint32 nb)
-	{
-		while (vaos_.size() < nb)
-			vaos_.push_back(new QOpenGLVertexArrayObject);
-	}
-
-	/**
-	 * @brief number of allocated vaos
-	 * @return the number of allocated vaos
-	 */
-	inline uint32 nb_vaos()
-	{
-		return (uint32)(vaos_.size());
-	}
-
-	/**
-	 * @brief bind a vao
-	 * @param i vao id (0,1,...)
-	 */
-	inline void bind_vao(uint32 i)
-	{
-//		assert(i < vaos_.size());
-//		if (!vaos_[i]->isCreated())
-//			vaos_[i]->create();
-		vaos_[i]->bind();
-	}
-
-	/**
-	 * @brief release the vao
-	 * @param i id
-	 */
-	inline void release_vao(uint32 i)
-	{
-//		assert(i < vaos_.size());
-		vaos_[i]->release();
-	}
-
-	/**
 	 * @brief bind the shader
 	 */
-	inline void bind()
-	{
-		prg_.bind();
-	}
+	inline void bind() { prg_.bind(); }
 
 	/**
 	 * @brief release the shader
 	 */
-	inline void release()
-	{
-		prg_.release();
-	}
+	inline void release() { prg_.release(); }
 };
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // RENDERING_SHADERS_SHADERPROGRAM_H_
+#endif // CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_

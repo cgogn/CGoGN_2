@@ -19,7 +19,7 @@ set(HEADER_FILES
 	cmap/cmap2_builder.h
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
-	cmap/attribute_handler.h
+	cmap/attribute.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -36,14 +36,14 @@ set(HEADER_FILES
 	utils/serialization.h
 	utils/thread.h
 	utils/thread_pool.h
-	utils/thread_barrier.h
 	utils/string.h
-	utils/precision.h
 	utils/masks.h
 	utils/logger.h
 	utils/log_entry.h
 	utils/logger_output.h
 	utils/log_stream.h
+	utils/numerics.h
+	utils/type_traits.h
 )
 
 set(SOURCE_FILES
@@ -76,13 +76,39 @@ set(SOURCE_FILES
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+# generate_export_header(${PROJECT_NAME}
+#   EXPORT_MACRO_NAME "CGOGN_CORE_API"
+#   EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/exports/${PROJECT_NAME}_export.h"
+# )
 
-# use of target_compile_options to have a transitive c++11 flag
+# use of target_compile_options to have transitive flags
 if(NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+	remove_flags(CMAKE_CXX_FLAGS "-std=c++11")
+	if(${CGOGN_USE_CXX11_ABI})
+		target_compile_options(${PROJECT_NAME} PUBLIC "-D_GLIBCXX_USE_CXX11_ABI")
+		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
+	endif()
+	if (${CGOGN_USE_GLIBCXX_DEBUG})
+		target_compile_options(${PROJECT_NAME} PUBLIC "-D_GLIBCXX_DEBUG")
+		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_DEBUG")
+		if(${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
+			target_compile_options(${PROJECT_NAME} PUBLIC "-D_GLIBCXX_DEBUG_PEDANTIC")
+			remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_DEBUG_PEDANTIC")
+		endif()
+	endif()
+	if(${CGOGN_USE_PARALLEL_GLIBCXX} AND (NOT ${CGOGN_USE_GLIBCXX_DEBUG}))
+		target_compile_options(${PROJECT_NAME} PUBLIC "-D_GLIBCXX_PARALLEL")
+		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_PARALLEL")
+	endif()
 endif()
+
 if(MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC "-D_USE_MATH_DEFINES")
+	## CGOGN_WIN_VER : has value 61 for windows 7, 62 for windows 8, 63 for windows 8.1, 100 for windows 10
+	set(WIN_VERSION "")
+	string(REPLACE "." "" WIN_VERSION ${CMAKE_SYSTEM_VERSION})
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_WIN_VER=${WIN_VERSION}")
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
@@ -90,23 +116,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/core>
+	$<INSTALL_INTERFACE:include>
 )
 
- install(DIRECTORY basic cmap container utils
-	DESTINATION include/cgogn/core/
+install(FILES "dll.h" DESTINATION "include/cgogn/core/")
+install(DIRECTORY basic cmap container utils
+	DESTINATION "include/cgogn/core/"
 	FILES_MATCHING PATTERN "*.h"
- )
+)
 
- install(TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
- )
-
-add_subdirectory(examples)
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(tests)
-endif()
+cgogn_create_package("${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include")

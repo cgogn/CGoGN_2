@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_TET_IO_CPP_
+#define CGOGN_IO_TET_IO_CPP_
 
-#include <io/tet_io.h>
+#include <cgogn/io/tet_io.h>
 
 namespace cgogn
 {
@@ -35,6 +35,8 @@ template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
 
 } // namespace io
 } // namespace cgogn

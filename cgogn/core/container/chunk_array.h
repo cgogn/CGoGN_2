@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CONTAINER_CHUNK_ARRAY_H_
-#define CORE_CONTAINER_CHUNK_ARRAY_H_
+#ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
+#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_
 
 #include <algorithm>
 #include <array>
@@ -30,11 +30,12 @@
 #include <string>
 #include <cstring>
 
-#include <core/container/chunk_array_gen.h>
-#include <core/utils/serialization.h>
-#include <core/utils/assert.h>
-#include <core/dll.h>
-
+#include <cgogn/core/dll.h>
+#include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/logger.h>
 
 namespace cgogn
 {
@@ -55,7 +56,7 @@ public:
 
 protected:
 
-	/// vector of block pointers
+	// vector of block pointers
 	std::vector<T*> table_data_;
 
 public:
@@ -63,6 +64,12 @@ public:
 	/**
 	 * @brief Constructor of ChunkArray
 	 */
+	inline ChunkArray(const std::string& name) :
+		Inherit(name, name_of_type(T()))
+	{
+		table_data_.reserve(1024u);
+	}
+
 	inline ChunkArray() : Inherit()
 	{
 		table_data_.reserve(1024u);
@@ -80,20 +87,30 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
 	{
-		return new Self();
+		if (clone_name == this->name_)
+			return nullptr;
+		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
-	void swap(Self& ca)
+	bool swap(Inherit* cag) override
 	{
-		table_data_.swap(ca.table_data_);
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
+		}
+
+		table_data_.swap(ca->table_data_);
+		return true;
 	}
 
-	bool is_boolean_array() const override
-	{
-		return false;
-	}
+//	bool is_boolean_array() const override
+//	{
+//		return false;
+//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE])
@@ -186,6 +203,28 @@ public:
 	void copy_element(uint32 dst, uint32 src) override
 	{
 		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = ca->table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+	}
+
+	/**
+	 * @brief move an element to another one
+	 * @param dst destination index
+	 * @param src source index
+	 */
+	void move_element(uint32 dst, uint32 src) override
+	{
+		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = std::move(table_data_[src / CHUNKSIZE][src % CHUNKSIZE]);
 	}
 
 	/**
@@ -379,46 +418,68 @@ public:
 		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
 	}
 
-	inline void set_all_values( const T& v)
+	inline void set_all_values(const T& v)
 	{
 		for(T* chunk : table_data_)
 		{
-			for(uint32 i=0; i<CHUNKSIZE; ++i)
+			for(uint32 i = 0; i < CHUNKSIZE; ++i)
 				*chunk++ = v;
 		}
+	}
+
+	virtual std::string get_nested_type_name() const override
+	{
+		return name_of_type(typename type_traits::nested_type<T>::type());
+	}
+
+	virtual uint32	get_nb_components() const override
+	{
+		// Warning : the line 0 might be unused.
+		return type_traits::get_nb_components(this->operator [](0u));
+	}
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	{
+		serialization::ostream_writer(o, binary, this->operator [](idx));
 	}
 };
 
 /**
- * @brief specialized version of ChunkArray for bool data. One bit per bool
+ * @brief separate version of ChunkArray specialized for bool data. One bit per bool.
  */
 template <uint32 CHUNKSIZE>
-class ChunkArray<CHUNKSIZE, bool> : public ChunkArrayGen<CHUNKSIZE>
+class ChunkArrayBool : public ChunkArrayGen<CHUNKSIZE>
 {
 public:
 
 	using Inherit = ChunkArrayGen<CHUNKSIZE>;
-	using Self = ChunkArray<CHUNKSIZE, bool>;
+	using Self = ChunkArrayBool;
 	using value_type = uint32;
 
 protected:
 
-	/// vector of block pointers
+	// ensure we can use CHUNK_SIZE value < 32
+	const int BOOLS_PER_INT = (CHUNKSIZE<32u) ? CHUNKSIZE : 32u;
+
+	// vector of block pointers
 	std::vector<uint32*> table_data_;
 
 public:
 
-	inline ChunkArray() : ChunkArrayGen<CHUNKSIZE>()
+	inline ChunkArrayBool(const std::string& name) :
+		Inherit(name, name_of_type(bool()))
 	{
 		table_data_.reserve(1024u);
 	}
 
-	ChunkArray(const Self& ca) = delete;
-	ChunkArray(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self&& ca) = delete;
-	ChunkArray<CHUNKSIZE, bool>& operator=(Self& ca) = delete;
+	inline ChunkArrayBool() : Inherit()
+	{
+		table_data_.reserve(1024u);
+	}
 
-	~ChunkArray() override
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayBool);
+
+	~ChunkArrayBool() override
 	{
 		for(auto chunk : table_data_)
 			delete[] chunk;
@@ -428,15 +489,30 @@ public:
 	 * @brief create a ChunkArray<CHUNKSIZE,T>
 	 * @return generic pointer
 	 */
-	ChunkArrayGen<CHUNKSIZE>* clone() const override
+	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
 	{
-		return new Self();
+		if (clone_name == this->name_)
+			return nullptr;
+		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
-	bool is_boolean_array() const override
+	bool swap(Inherit* cag) override
 	{
+		Self* ca = dynamic_cast<Self*>(cag);
+		if (!ca)
+		{
+			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			return false;
+		}
+
+		table_data_.swap(ca->table_data_);
 		return true;
 	}
+
+//	bool is_boolean_array() const override
+//	{
+//		return true;
+//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNKSIZE/32])
@@ -444,7 +520,7 @@ public:
 	void add_chunk() override
 	{
 		// adding the empty parentheses for default-initialization
-		table_data_.push_back(new uint32[CHUNKSIZE/32u]());
+		table_data_.push_back(new uint32[CHUNKSIZE/BOOLS_PER_INT]());
 	}
 
 	/**
@@ -481,7 +557,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return uint32(table_data_.size())*CHUNKSIZE/32u;
+		return uint32(table_data_.size())*CHUNKSIZE/BOOLS_PER_INT;
 	}
 
 	/**
@@ -533,6 +609,18 @@ public:
 	}
 
 	/**
+	 * @brief copy an element (of another C.A.) to another one
+	 * @param dst destination index
+	 * @param cag_src chunk_array source (Precond: same type as this)
+	 * @param src source index
+	 */
+	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
+	{
+		Self* ca = static_cast<Self*>(cag_src);
+		set_value(dst, ca->operator[](src));
+	}
+
+	/**
 	 * @brief swap two elements
 	 * @param idx1 first element index
 	 * @param idx2 second element index
@@ -555,10 +643,9 @@ public:
 			return;
 		}
 
-
 		// round nbLines to 32 multiple
-		if (nb_lines % 32u)
-			nb_lines = ((nb_lines / 32u) + 1u) * 32u;
+		if (nb_lines % BOOLS_PER_INT)
+			nb_lines = ((nb_lines / BOOLS_PER_INT) + 1u) * BOOLS_PER_INT;
 
 		cgogn_assert(nb_lines / CHUNKSIZE <= table_data_.size());
 		// TODO: if (nb_lines==0) nb_lines = CHUNKSIZE*table_data_.size(); ??
@@ -570,13 +657,10 @@ public:
 		// save number of lines
 		serialization::save(fs, &nb_lines, 1);
 
-
 		const uint32 nbc = get_nb_chunks() - 1u;
 		// save data chunks except last
 		for(uint32 i = 0u; i < nbc; ++i)
-		{
 			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNKSIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
-		}
 
 		// save last
 		const uint32 nb = nb_lines - nbc*CHUNKSIZE;
@@ -626,8 +710,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j/32u;
-		const uint32 y = j%32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 
 		const uint32 mask = 1u << y;
 
@@ -639,8 +723,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		table_data_[jj][x] &= ~mask;
 	}
@@ -650,8 +734,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		table_data_[jj][x] |= mask;
 	}
@@ -661,8 +745,8 @@ public:
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
 		const uint32 j = i % CHUNKSIZE;
-		const uint32 x = j / 32u;
-		const uint32 y = j % 32u;
+		const uint32 x = j / BOOLS_PER_INT;
+		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
 		if (b)
 			table_data_[jj][x] |= mask;
@@ -681,7 +765,7 @@ public:
 	{
 		const uint32 jj = i / CHUNKSIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNKSIZE)/32u;
+		const uint32 j = (i % CHUNKSIZE) / BOOLS_PER_INT;
 		table_data_[jj][j] = 0u;
 	}
 
@@ -690,7 +774,7 @@ public:
 		for (uint32 * const ptr : table_data_)
 		{
 //#pragma omp for
-			for (int32 j = 0; j < int32(CHUNKSIZE/32); ++j)
+			for (int32 j = 0; j < int32(CHUNKSIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
@@ -699,20 +783,35 @@ public:
 //	{
 //		for (auto ptr : table_data_)
 //		{
-//			for (uint32 j = 0u; j < CHUNKSIZE/32u; ++j)
+//			for (uint32 j = 0u; j < CHUNKSIZE/BOOLS_PER_INT; ++j)
 //				*ptr++ = 0xffffffff;
 //		}
 //	}
+
+	virtual std::string get_nested_type_name() const override
+	{
+		return name_of_type(bool());
+	}
+
+	virtual uint32	get_nb_components() const override
+	{
+		return 1u;
+	}
+
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	{
+		serialization::ostream_writer(o,binary, this->operator [](idx));
+	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, bool>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float32, 3>>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float64, 3>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_CONTAINER_CHUNK_ARRAY_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CONTAINER_CHUNK_ARRAY_H_
+#endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_H_

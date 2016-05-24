@@ -26,9 +26,9 @@
 #endif
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_IMPORT_PLY_DATA_CPP_
+#define CGOGN_IO_IMPORT_PLY_DATA_CPP_
 
-#include <io/import_ply_data.h>
+#include <cgogn/io/import_ply_data.h>
 #include <cstdlib>
 #include <clocale>
 #include <fstream>

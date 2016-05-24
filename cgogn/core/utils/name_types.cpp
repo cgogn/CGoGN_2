@@ -23,8 +23,8 @@
 
 #define CGOGN_CORE_DLL_EXPORT
 
-#include <core/utils/logger.h>
-#include <core/utils/name_types.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/name_types.h>
 
 #ifdef __GNUG__
 #include <memory>
@@ -56,6 +56,11 @@ CGOGN_CORE_API std::string demangle(const std::string& str)
 		cgogn_log_warning("demangle") << "__cxa_demangle exited with error code " << status << ".";
 	return str;
 #endif // __GNUG__
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const bool&)
+{
+	return "bool";
 }
 
 CGOGN_CORE_API std::string name_of_type_impl(const int8&)
@@ -98,5 +103,16 @@ CGOGN_CORE_API std::string name_of_type_impl(const uint64&)
 	return "uint64";
 }
 
+CGOGN_CORE_API std::string name_of_type_impl(const float32&)
+{
+	return "float32";
+}
+
+CGOGN_CORE_API std::string name_of_type_impl(const float64&)
+{
+	return "float64";
+}
+
 } // namespace internal
+
 } // namespace cgogn

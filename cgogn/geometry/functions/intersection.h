@@ -21,8 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef GEOMETRY_FUNCTIONS_INTERSECTION_H_
-#define GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#ifndef CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#define CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_
+
+#include <cmath>
 
 namespace cgogn
 {
@@ -30,6 +32,14 @@ namespace cgogn
 namespace geometry
 {
 
+/**
+ * \todo geometric predicate : move it to a specific location with other geometric predicates
+ */
+template <typename VEC3_T>
+bool in_sphere(const VEC3_T& point, const VEC3_T& center, const typename VEC3_T::Scalar& radius)
+{
+	return (point - center).norm() < radius;
+}
 
 template <typename VEC3_T>
 bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T& Ta, const VEC3_T& Tb, const VEC3_T& Tc, VEC3_T* inter=nullptr)
@@ -92,10 +102,37 @@ bool intersection_ray_triangle(const VEC3_T& P, const VEC3_T& Dir, const VEC3_T&
 
 }
 
+/**
+ * \param[in] center the position of the center of the sphere.
+ * \param[in] radius the radius of the sphere
+ * \param[in] p1 first point of the edge
+ * \param[in] p2 second point of the edge
+ * \param[out] alpha size of the edge inside the sphere
+ */
+template <typename VEC3_T>
+bool intersection_sphere_edge(
+		const VEC3_T& center,
+		const typename VEC3_T::Scalar& radius,
+		const VEC3_T& p1,
+		const VEC3_T& p2,
+		typename VEC3_T::Scalar& alpha)
+{
+	using Scalar = typename VEC3_T::Scalar;
 
+	if(cgogn::geometry::in_sphere(p1, center, radius) && !cgogn::geometry::in_sphere(p2, center, radius))
+	{
+		VEC3_T p = p1 - center;
+		VEC3_T qminusp = p2 - center - p;
+		Scalar s = p.dot(qminusp);
+		Scalar n2 = qminusp.squaredNorm();
+		alpha = (- s + std::sqrt(s*s + n2 * (radius*radius - p.squaredNorm()))) / n2;
+		return true ;
+	}
+	return false ;
+}
 
 } // namespace geometry
 
 } // namespace cgogn
 
-#endif // GEOMETRY_FUNCTIONS_INTERSECTION_H_
+#endif // CGOGN_GEOMETRY_FUNCTIONS_INTERSECTION_H_

@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_CPH_IHCMAP3_H_
-#define MULTIRESOLUTION_CPH_IHCMAP3_H_
+#ifndef CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_
+#define CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_
 
-#include <core/cmap/cmap3.h>
-#include <multiresolution/cph/cph3.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/multiresolution/cph/cph3.h>
 
 namespace cgogn
 {
@@ -63,17 +63,17 @@ public:
 	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
 	template<typename T, Orbit ORBIT>
-	using AttributeHandler = typename Inherit_CMAP::template AttributeHandler<T, ORBIT>;
+	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
 	template<typename T>
-	using DartAttributeHandler = AttributeHandler<T, Self::DART>;
+	using DartAttribute = Attribute<T, Self::DART>;
 	template<typename T>
-	using VertexAttributeHandler = AttributeHandler<T, Self::VERTEX>;
+	using VertexAttribute = Attribute<T, Self::VERTEX>;
 	template<typename T>
-	using EdgeAttributeHandler = AttributeHandler<T, Self::EDGE>;
+	using EdgeAttribute = Attribute<T, Self::EDGE>;
 	template<typename T>
-	using FaceAttributeHandler = AttributeHandler<T, Self::FACE>;
+	using FaceAttribute = Attribute<T, Self::FACE>;
 	template<typename T>
-	using VolumeAttributeHandler = AttributeHandler<T, Self::VOLUME>;
+	using VolumeAttribute = Attribute<T, Self::VOLUME>;
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 
@@ -334,7 +334,8 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 			ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
-			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31,
+			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31 ||
+			ORBIT == Orbit::PHI1_PHI2_PHI3,
 			"Orbit not supported in a IHCMap3");
 
 		switch (ORBIT)
@@ -347,6 +348,7 @@ public:
 			case Orbit::PHI2_PHI3: foreach_dart_of_PHI2_PHI3(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
 			case Orbit::PHI21_PHI31: foreach_dart_of_PHI21_PHI31(c.dart, f); break;
+			case Orbit::PHI1_PHI2_PHI3: foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;
 		}
 	}
@@ -362,11 +364,11 @@ struct IHCMap3Type
 template <typename MAP_TRAITS>
 using IHCMap3 = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API IHCMap3_T<DefaultMapTraits, IHCMap3Type<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
 
 } // namespace cgogn
 
 
-#endif // MULTIRESOLUTION_CPH_IHCMAP3_H_
+#endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_

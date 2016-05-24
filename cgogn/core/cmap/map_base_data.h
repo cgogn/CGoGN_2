@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_CMAP_MAP_BASE_DATA_H_
-#define CORE_CMAP_MAP_BASE_DATA_H_
+#ifndef CGOGN_CORE_CMAP_MAP_BASE_DATA_H_
+#define CGOGN_CORE_CMAP_MAP_BASE_DATA_H_
 
 #include <thread>
 #include <mutex>
@@ -31,13 +31,13 @@
 #include <sstream>
 #include <iterator>
 
-#include <core/utils/definitions.h>
-#include <core/utils/thread.h>
-#include <core/utils/thread_pool.h>
-#include <core/utils/name_types.h>
-#include <core/container/chunk_array_container.h>
-#include <core/basic/cell.h>
-#include <core/cmap/map_traits.h>
+#include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/thread.h>
+#include <cgogn/core/utils/thread_pool.h>
+#include <cgogn/core/utils/name_types.h>
+#include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/cmap/map_traits.h>
 
 #define CGOGN_CHECK_DYNAMIC_TYPE cgogn_message_assert( (std::is_same<typename MapType::TYPE, Self>::value),\
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
@@ -78,9 +78,9 @@ public:
 	}
 };
 
-// forward declaration of class AttributeHandlerOrbit
+// forward declaration of class AttributeOrbit
 template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeHandlerOrbit;
+class AttributeOrbit;
 
 /**
  * @brief The MapBaseData class
@@ -95,19 +95,20 @@ public:
 
 	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, Orbit ORBIT> friend class AttributeHandlerOrbit;
-	template <typename DT, typename T, Orbit ORBIT> friend class AttributeHandler;
+	template <typename DT, Orbit ORBIT> friend class AttributeOrbit;
+	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
 
 protected:
 
 	// topology & embedding indices
-	ChunkArrayContainer<unsigned char> topology_;
+	ChunkArrayContainer<uint8> topology_;
 
 	/// per orbit attributes
 	std::array<ChunkArrayContainer<uint32>, NB_ORBITS> attributes_;
@@ -116,14 +117,14 @@ protected:
 	std::array<ChunkArray<uint32>*, NB_ORBITS> embeddings_;
 
 	/// boundary marker shortcut
-	ChunkArray<bool>* boundary_marker_;
+	ChunkArrayBool* boundary_marker_;
 
 	/// vector of available mark attributes per thread on the topology container
-	std::vector<std::vector<ChunkArray<bool>*>> mark_attributes_topology_;
+	std::vector<std::vector<ChunkArrayBool*>> mark_attributes_topology_;
 	std::mutex mark_attributes_topology_mutex_;
 
 	/// vector of available mark attributes per orbit per thread on attributes containers
-	std::array<std::vector<std::vector<ChunkArray<bool>*>>, NB_ORBITS> mark_attributes_;
+	std::array<std::vector<std::vector<ChunkArrayBool*>>, NB_ORBITS> mark_attributes_;
 	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
 
 	/// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
@@ -177,10 +178,15 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& get_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& get_const_attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
+	}
+
+	inline const ChunkArrayContainer<uint8>& get_topology_container() const
+	{
+		return topology_;
 	}
 
 protected:
@@ -200,19 +206,19 @@ protected:
 	* \brief get a mark attribute on the topology container (from pool or created)
 	* @return a mark attribute on the topology container
 	*/
-	inline ChunkArray<bool>* get_topology_mark_attribute()
+	inline ChunkArrayBool* get_topology_mark_attribute()
 	{
 		std::size_t thread = this->get_current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
-			ChunkArray<bool>* ca = this->mark_attributes_topology_[thread].back();
+			ChunkArrayBool* ca = this->mark_attributes_topology_[thread].back();
 			this->mark_attributes_topology_[thread].pop_back();
 			return ca;
 		}
 		else
 		{
 			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-			ChunkArray<bool>* ca = this->topology_.add_marker_attribute();
+			ChunkArrayBool* ca = this->topology_.add_marker_attribute();
 			return ca;
 		}
 	}
@@ -221,7 +227,7 @@ protected:
 	* \brief release a mark attribute on the topology container
 	* @param the mark attribute to release
 	*/
-	inline void release_topology_mark_attribute(ChunkArray<bool>* ca)
+	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
 		std::size_t thread = this->get_current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);
@@ -251,7 +257,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != EMBNULL, "get_embedding result is EMBNULL");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX, "get_embedding result is INVALID_INDEX");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
@@ -264,14 +270,14 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert(emb != EMBNULL,"cannot set an embedding to EMBNULL.");
+		cgogn_message_assert(emb != INVALID_INDEX,"cannot set an embedding to INVALID_INDEX.");
 
 		const uint32 old = (*embeddings_[ORBIT])[d.index];
 
 		// ref_line() is done before unref_line() to avoid deleting the indexed line if old == emb
 		attributes_[ORBIT].ref_line(emb);			// ref the new emb
-		if (old != EMBNULL)
-			attributes_[ORBIT].unref_line(old);	// unref the old emb
+		if (old != INVALID_INDEX)
+			attributes_[ORBIT].unref_line(old);		// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
 	}
@@ -349,12 +355,14 @@ protected:
 		if (it == thread_ids_.end() || *it != thread_id)
 			thread_ids_.insert(it, thread_id);
 	}
+
+
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
 extern template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CORE_MAP_MAP_BASE_DATA_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
 
 } // namespace cgogn
 
-#endif // CORE_CMAP_MAP_BASE_DATA_H_
+#endif // CGOGN_CORE_CMAP_MAP_BASE_DATA_H_

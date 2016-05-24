@@ -2131,6 +2131,7 @@ bool tetgenio::load_vtk(char* filebasename)
   int nn = -1;
   int nn_old = -1;
   int i, j;
+  int nb_read;
   bool ImALittleEndian = !testIsBigEndian();
 
   int smallestidx = 0;
@@ -2177,18 +2178,20 @@ bool tetgenio::load_vtk(char* filebasename)
 		for(i = 0; i < nverts; i++) {
 		  coord = &pointlist[i * 3];
 		  if(!strcmp(fmt, "double")) {
-			fread((char*)(&(coord[0])), sizeof(double), 1, fp);
-			fread((char*)(&(coord[1])), sizeof(double), 1, fp);
-			fread((char*)(&(coord[2])), sizeof(double), 1, fp);
+			nb_read = fread((char*)(&(coord[0])), sizeof(double), 1, fp);
+			nb_read += fread((char*)(&(coord[1])), sizeof(double), 1, fp);
+			nb_read += fread((char*)(&(coord[2])), sizeof(double), 1, fp);
+			if (nb_read != 3) printf("Error: can not read vertex position!\n");
 			if(ImALittleEndian){
 			  swapBytes((unsigned char *) &(coord[0]), sizeof(coord[0]));
 			  swapBytes((unsigned char *) &(coord[1]), sizeof(coord[1]));
 			  swapBytes((unsigned char *) &(coord[2]), sizeof(coord[2]));
 			}
 		  } else if(!strcmp(fmt, "float")) {
-			fread((char*)(&_x), sizeof(float), 1, fp);
-			fread((char*)(&_y), sizeof(float), 1, fp);
-			fread((char*)(&_z), sizeof(float), 1, fp);
+			nb_read = fread((char*)(&_x), sizeof(float), 1, fp);
+			nb_read += fread((char*)(&_y), sizeof(float), 1, fp);
+			nb_read += fread((char*)(&_z), sizeof(float), 1, fp);
+			if (nb_read != 3) printf("Error: can not read vertex position!\n");
 			if(ImALittleEndian){
 			  swapBytes((unsigned char *) &_x, sizeof(_x));
 			  swapBytes((unsigned char *) &_y, sizeof(_y));
@@ -2237,7 +2240,8 @@ bool tetgenio::load_vtk(char* filebasename)
 
 	  if(!strcmp(mode, "BINARY")) {
 		for(i = 0; i < nfaces; i++){
-		  fread((char*)(&nn), sizeof(int), 1, fp);
+		  nb_read = fread((char*)(&nn), sizeof(int), 1, fp);
+		  if (nb_read != 1) printf("Error: can not read nb faces!\n");
 		  if(ImALittleEndian){
 			swapBytes((unsigned char *) &nn, sizeof(nn));
 		  }
@@ -2249,9 +2253,10 @@ bool tetgenio::load_vtk(char* filebasename)
 		  }
 
 		  if(nn == 3){
-			fread((char*)(&id1), sizeof(int), 1, fp);
-			fread((char*)(&id2), sizeof(int), 1, fp);
-			fread((char*)(&id3), sizeof(int), 1, fp);
+			nb_read = fread((char*)(&id1), sizeof(int), 1, fp);
+			nb_read += fread((char*)(&id2), sizeof(int), 1, fp);
+			nb_read += fread((char*)(&id3), sizeof(int), 1, fp);
+			if (nb_read != 3) printf("Error: can not read faces!\n");
 			if(ImALittleEndian){
 			  swapBytes((unsigned char *) &id1, sizeof(id1));
 			  swapBytes((unsigned char *) &id2, sizeof(id2));

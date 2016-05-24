@@ -21,29 +21,31 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_DART_H_
-#define CORE_BASIC_DART_H_
+#ifndef CGOGN_CORE_BASIC_DART_H_
+#define CGOGN_CORE_BASIC_DART_H_
 
 #include <climits>
 #include <string>
 #include <iostream>
-#include <core/utils/definitions.h>
+
+#include <cgogn/core/utils/numerics.h>
 
 /**
  * \file cgogn/core/basic/dart.h
  * \brief Dart definition.
  */
+
 namespace cgogn
 {
+
+// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+static const uint32 INVALID_INDEX = UINT_MAX;
 
 /**
  * \brief Dart.
  */
 struct Dart
 {
-	// MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
-	static const uint32 INVALID_INDEX = UINT_MAX;
-
 	/**
 	 * \brief the value of a dart.
 	 */
@@ -137,4 +139,4 @@ struct Dart
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_DART_H_
+#endif // CGOGN_CORE_BASIC_DART_H_

@@ -21,13 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CORE_BASIC_CELL_H_
-#define CORE_BASIC_CELL_H_
+#ifndef CGOGN_CORE_BASIC_CELL_H_
+#define CGOGN_CORE_BASIC_CELL_H_
 
-#include <core/basic/dart.h>
+#include <cgogn/core/basic/dart.h>
 
-#include <core/utils/assert.h>
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/numerics.h>
 
 #include <climits>
 
@@ -35,6 +35,7 @@
  * \file core/basic/cell.h
  * \brief Orbit and cell definitions used in cgogn.
  */
+
 namespace cgogn
 {
 
@@ -48,11 +49,10 @@ enum Orbit: uint32
 	PHI2_PHI3,
 	PHI21,
 	PHI21_PHI31,
+	PHI1_PHI2_PHI3
 };
 
-static const std::size_t NB_ORBITS = Orbit::PHI21_PHI31 + 1;
-
-static const uint32 EMBNULL = UINT_MAX;
+static const std::size_t NB_ORBITS = Orbit::PHI1_PHI2_PHI3 + 1;
 
 inline std::string orbit_name(Orbit orbit)
 {
@@ -66,6 +66,7 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
 		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
+		case Orbit::PHI1_PHI2_PHI3: return "cgogn::Orbit::PHI1_PHI2_PHI3"; break;
 //		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
 	}
 	cgogn_assert_not_reached("This orbit does not exist");
@@ -115,7 +116,6 @@ public:
 	//TODO
 	// Cell(Cell<ORBIT>&& ) = delete;
 
-
 	/**
 	 * \brief Tests the validity of the cell.
 	 * \retval true if the cell is valid
@@ -154,4 +154,4 @@ public:
 
 } // namespace cgogn
 
-#endif // CORE_BASIC_CELL_H_
+#endif // CGOGN_CORE_BASIC_CELL_H_

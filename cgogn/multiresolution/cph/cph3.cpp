@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_MULTIRESOLUTION_DLL_EXPORT
-#define MULTIRESOLUTION_CPH_CPH3_CPP_
+#define CGOGN_MULTIRESOLUTION_CPH_CPH3_CPP_
 
-#include <multiresolution/cph/cph3.h>
+#include <cgogn/multiresolution/cph/cph3.h>
 
 namespace cgogn
 {

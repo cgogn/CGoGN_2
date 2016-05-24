@@ -21,16 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_TETGEN_IO_H_
-#define IO_TETGEN_IO_H_
+#ifndef CGOGN_IO_TETGEN_IO_H_
+#define CGOGN_IO_TETGEN_IO_H_
 
 #include <map>
 #include <sstream>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/data_io.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/data_io.h>
+#include <cgogn/io/volume_import.h>
 
 namespace cgogn
 {
@@ -53,8 +53,7 @@ protected:
 		const std::string node_filename = filename.substr(0, filename.rfind('.')) + ".node";
 		const std::string ele_filename = filename.substr(0, filename.rfind('.')) + ".ele";
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
-
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::ifstream node_file(node_filename, std::ios::in);
 		if (!node_file.good())
 		{
@@ -81,7 +80,9 @@ protected:
 			}while(line.empty());
 
 			std::istringstream iss(line);
-			iss >> this->nb_vertices_;
+			uint32 nbv = 0u;
+			iss >> nbv;
+			this->set_nb_vertices(nbv);
 		}
 
 		//Reading number of tetrahedra in ELE file
@@ -92,15 +93,15 @@ protected:
 			}while(line.empty());
 
 			std::istringstream iss(line);
-			iss >> this->nb_volumes_;
-			this->volumes_types.reserve(this->nb_volumes_);
-			this->volumes_vertex_indices_.reserve(this->nb_volumes_);
+			uint32 nbw = 0u;
+			iss >> nbw;
+			this->set_nb_volumes(nbw);
 		}
 
 		//Reading vertices
 		std::map<uint32, uint32> old_new_ids_map;
 
-		for(uint32 i = 0u ; i < this->nb_vertices_ ; ++i)
+		for(uint32 i = 0u, end = this->get_nb_vertices() ; i < end; ++i)
 		{
 			do
 			{
@@ -112,7 +113,7 @@ protected:
 			uint32 old_index;
 			iss >> old_index;
 
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			old_new_ids_map[old_index] = new_index;
 
 			auto& v = position->operator [](new_index);
@@ -122,7 +123,7 @@ protected:
 		}
 
 		// reading tetrahedra
-		for(uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for(uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			do
 			{
@@ -145,13 +146,13 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TETGEN_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
 extern template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API TetgenVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_TETGEN_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
 
 } // namespace io
 } // namespace cgogn
-#endif // IO_TETGEN_IO_H_
+#endif // CGOGN_IO_TETGEN_IO_H_

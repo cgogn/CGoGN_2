@@ -21,15 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef IO_MSH_IO_H_
-#define IO_MSH_IO_H_
+#ifndef CGOGN_IO_MSH_IO_H_
+#define CGOGN_IO_MSH_IO_H_
 
 #include <map>
 
-#include <core/utils/logger.h>
-#include <io/dll.h>
-#include <io/data_io.h>
-#include <io/volume_import.h>
+#include <cgogn/core/utils/logger.h>
+#include <cgogn/io/dll.h>
+#include <cgogn/io/data_io.h>
+#include <cgogn/io/volume_import.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
@@ -149,20 +150,20 @@ protected:
 
 	inline bool import_legacy_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
 		line.reserve(512);
 		word.reserve(128);
 		line = this->skip_empty_lines(data_stream);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -178,9 +179,9 @@ protected:
 			return false;
 
 		std::getline(data_stream,line);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -221,7 +222,7 @@ protected:
 
 	inline bool import_ascii_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -236,13 +237,13 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_vertices(); i < end ; ++i)
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -258,9 +259,9 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -316,7 +317,7 @@ protected:
 
 	inline bool import_binary_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		line.reserve(512);
@@ -329,15 +330,15 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->nb_vertices_ = uint32(std::stoul(line));
+		this->set_nb_vertices(uint32(std::stoul(line)));
 
 		std::vector<char> buff;
-		buff.resize(this->nb_vertices_*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
+		buff.resize(this->get_nb_vertices()*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
 		data_stream.read(&buff[0], buff.size());
 
 		for (auto it = buff.begin(), end = buff.end() ; it != end ;)
 		{
-			const uint32 new_index = this->vertex_attributes_.template insert_lines<1>();
+			const uint32 new_index = this->insert_line_vertex_container();
 			auto& v = position->operator [](new_index);
 			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
@@ -366,9 +367,9 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->nb_volumes_ = uint32(std::stoul(line));
+		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u; i < this->nb_volumes_;)
+		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end;)
 		{
 			std::array<char,12> header_buff;
 			data_stream.read(&header_buff[0], header_buff.size());
@@ -460,7 +461,66 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_MSH_IO_CPP_))
+template<typename MAP>
+class MshVolumeExport : public VolumeExport<MAP>
+{
+public:
+	using Inherit = VolumeExport<MAP>;
+	using Self = MshVolumeExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Volume = typename Inherit::Volume;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+
+		ChunkArrayGen const* pos = this->get_position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = pos->get_nested_type_name();
+		scalar_type[0] = std::toupper(scalar_type[0]);
+
+		// 1. vertices
+		output << "$NOD" << std::endl;
+		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+		uint32 vertices_counter = 1u;
+		map.foreach_cell([&](Vertex v)
+		{
+			output << vertices_counter++ << " ";
+			pos->export_element(map.get_embedding(v), output, false);
+			output << std::endl;
+		});
+		output << "$ENDNOD" << std::endl;
+
+
+		// 2. volumes
+		output << "$ELM" << std::endl;
+		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const uint32 nb_vols = nb_vert_vol.size();
+		output << nb_vols << std::endl;
+
+		uint32 cell_counter = 1u;
+		auto vertices_it = this->get_vertices_of_volumes().begin();
+		for (uint32 w = 0u; w < nb_vols; ++w)
+		{
+			const uint32 type = (nb_vert_vol[w] == 4u)?4u:(nb_vert_vol[w] == 5u)?7u:(nb_vert_vol[w] == 6u)?6u:5u;
+			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nb_vert_vol[w]<<" ";
+			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
+			{
+				output << *vertices_it + 1u << " ";
+				++vertices_it;
+			}
+			output << std::endl;
+		}
+		output << "$ENDELM" << std::endl;
+	}
+};
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
@@ -470,9 +530,11 @@ extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vect
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(IO_MSH_IO_CPP_))
+
+extern template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 
 
 } // namespace io
 } // namespace cgogn
-#endif // IO_MSH_IO_H_
+#endif // CGOGN_IO_MSH_IO_H_

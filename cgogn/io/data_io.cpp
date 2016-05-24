@@ -22,9 +22,9 @@
 *******************************************************************************/
 
 #define CGOGN_IO_DLL_EXPORT
-#define IO_DATA_IO_CPP_
+#define CGOGN_IO_DATA_IO_CPP_
 
-#include <io/data_io.h>
+#include <cgogn/io/data_io.h>
 
 namespace cgogn
 {

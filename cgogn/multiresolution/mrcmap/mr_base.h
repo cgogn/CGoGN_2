@@ -21,14 +21,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef MULTIRESOLUTION_MRCMAP_MR_BASE_H_
-#define MULTIRESOLUTION_MRCMAP_MR_BASE_H_
+#ifndef CGOGN_MULTIRESOLUTION_MRCMAP_MR_BASE_H_
+#define CGOGN_MULTIRESOLUTION_MRCMAP_MR_BASE_H_
 
 #include <deque>
 #include <stack>
 #include <vector>
 
-#include <core/utils/definitions.h>
+#include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {
@@ -167,4 +167,4 @@ public:
 
 }
 
-#endif // MULTIRESOLUTION_MRCMAP_MR_BASE_H_
+#endif // CGOGN_MULTIRESOLUTION_MRCMAP_MR_BASE_H_

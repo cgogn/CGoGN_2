@@ -1,5 +1,5 @@
 
-#include <core/container/chunk_array_container.h>
+#include <cgogn/core/container/chunk_array_container.h>
 
 #include <list>
 
@@ -70,8 +70,8 @@ int test1()
 	container.remove_lines<1>(19);
 	container.remove_lines<1>(35);
 
-	std::vector<uint32> mapOldNew;
-	container.compact<1>(mapOldNew);
+
+	container.compact<1>();
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
@@ -121,8 +121,7 @@ int test2()
 		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "-Compact--------------------------------------" << std::endl;
 
-	std::vector<uint32> mapOldNew;
-	container.compact<3>(mapOldNew);
+	container.compact<3>();
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 		std::cout << i << ": " << (*att1)[i] << std::endl;

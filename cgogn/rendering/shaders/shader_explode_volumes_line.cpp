@@ -23,16 +23,27 @@
 
 #define CGOGN_RENDERING_DLL_EXPORT
 
-#include <rendering/shaders/shader_explode_volumes_line.h>
+#include <iostream>
+
+#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
+
 #include <QColor>
 #include <QOpenGLFunctions>
-#include <iostream>
 
 namespace cgogn
 {
 
 namespace rendering
 {
+
+std::unique_ptr<ShaderExplodeVolumesLine> ShaderExplodeVolumesLine::instance_ = nullptr;
+
+std::unique_ptr<ShaderExplodeVolumesLine::Param> ShaderExplodeVolumesLine::generate_param()
+{
+	if (!instance_)
+		instance_ = std::unique_ptr<ShaderExplodeVolumesLine>(new ShaderExplodeVolumesLine());
+	return cgogn::make_unique<Param>(instance_.get());
+}
 
 const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
 "#version 150\n"
@@ -64,7 +75,6 @@ const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-
 const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 color;\n"
@@ -72,7 +82,6 @@ const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "void main() {\n"
 "   fragColor = color;\n"
 "}\n";
-
 
 ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 {
@@ -86,55 +95,28 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
 	unif_color_ = prg_.uniformLocation("color");
 
-	//default param
+	// default param
 	bind();
 	set_explode_volume(0.8f);
-	set_color(QColor(255,255,255));
-	set_plane_clip(QVector4D(0,0,0,0));
+	set_color(QColor(255, 255, 255));
+	set_plane_clip(QVector4D(0, 0, 0, 0));
 	release();
 }
 
 void ShaderExplodeVolumesLine::set_color(const QColor& rgb)
 {
-	if (unif_color_>=0)
-		prg_.setUniformValue(unif_color_,rgb);
+	if (unif_color_ >= 0)
+		prg_.setUniformValue(unif_color_, rgb);
 }
-
 
 void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
 {
-		prg_.setUniformValue(unif_expl_v_, x);
+	prg_.setUniformValue(unif_expl_v_, x);
 }
 
 void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 {
-
 	prg_.setUniformValue(unif_plane_clip_, plane);
-}
-
-bool ShaderExplodeVolumesLine::set_vao(uint32 i, VBO* vbo_pos)
-{
-	if (i >= vaos_.size())
-	{
-		cgogn_log_warning("set_vao") << "VAO number " << i << " does not exist.";
-		return false;
-	}
-
-	QOpenGLFunctions *ogl = QOpenGLContext::currentContext()->functions();
-
-	prg_.bind();
-	vaos_[i]->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ATTRIB_POS);
-	ogl->glVertexAttribPointer(ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	vaos_[i]->release();
-	prg_.release();
-
-	return true;
 }
 
 } // namespace rendering
