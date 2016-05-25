@@ -188,6 +188,13 @@ public:
 		return attributes_[ORBIT];
 	}
 
+	inline const ChunkArrayContainer<uint32>& get_const_attribute_container(Orbit orbit) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[orbit];
+	}
+
+
 	inline const ChunkArrayContainer<uint8>& get_topology_container() const
 	{
 		return topology_;
