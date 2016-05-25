@@ -78,9 +78,13 @@ public:
 	}
 };
 
-// forward declaration of class AttributeOrbit
-template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeOrbit;
+// forward declaration of class Attribute_T
+template<typename DATA_TRAITS, typename T>
+class Attribute_T;
+
+// forward declaration of class Attribute
+template <typename DATA_TRAITS, typename T, Orbit ORBIT>
+class Attribute;
 
 /**
  * @brief The MapBaseData class
@@ -93,17 +97,17 @@ public:
 	using Inherit = MapGen;
 	using Self = MapBaseData<MAP_TRAITS>;
 
-	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, Orbit ORBIT> friend class AttributeOrbit;
+	template<typename DT, typename T> friend class Attribute_T;
 	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
 protected:
 
@@ -138,7 +142,7 @@ public:
 	{
 		if (init_CA_factory)
 		{
-			ChunkArrayFactory<CHUNKSIZE>::reset();
+			ChunkArrayFactory<CHUNK_SIZE>::reset();
 			init_CA_factory = false;
 		}
 		for (uint32 i = 0; i < NB_ORBITS; ++i)
@@ -183,6 +187,13 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
 	}
+
+	inline const ChunkArrayContainer<uint32>& get_const_attribute_container(Orbit orbit) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[orbit];
+	}
+
 
 	inline const ChunkArrayContainer<uint8>& get_topology_container() const
 	{

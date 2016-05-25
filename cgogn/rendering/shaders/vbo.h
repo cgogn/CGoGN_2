@@ -170,9 +170,9 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
-	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
-	const uint32 vbo_blk_bytes =  ATTR::CHUNKSIZE * vec_dim * sizeof(float32);
+	const uint32 vbo_blk_bytes =  ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
 	{
@@ -185,16 +185,16 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
-		float32* float_buffer = new float32[ATTR::CHUNKSIZE * vec_dim];
+		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];
 		for (uint32 i = 0; i < nb_chunks; ++i)
 		{
 			// transform double into float
 			float32* fit = float_buffer;
 			float64* src = reinterpret_cast<float64*>(chunk_addr[i]);
-			for (uint32 j = 0; j < ATTR::CHUNKSIZE * vec_dim; ++j)
+			for (uint32 j = 0; j < ATTR::CHUNK_SIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo->bind();
-			vbo->copy_data(i* ATTR::CHUNKSIZE * vec_dim * sizeof(float32), ATTR::CHUNKSIZE * vec_dim * sizeof(float32),float_buffer);
+			vbo->copy_data(i* ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), ATTR::CHUNK_SIZE * vec_dim * sizeof(float32),float_buffer);
 			vbo->release();
 		}
 		delete[] float_buffer;
@@ -243,7 +243,7 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	else if (check_func_return_type(FUNC,Vec4f) )
 		vec_dim = 4;
 
-	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
 	// copy (after conversion)
 	using OutputConvert = typename function_traits<FUNC>::result_type;
@@ -251,7 +251,7 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
-		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
+		for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
 
@@ -313,7 +313,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 		vec_dim = 4;
 
 	// allocate vbo
-	vbo->allocate(nb_chunks * ATTR::CHUNKSIZE, vec_dim);
+	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
 	// copy (after conversion)
 	// out type conversion
@@ -323,7 +323,7 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	{
 		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
 		InputConvert2* typed_chunk2 = static_cast<InputConvert2*>(chunk_addr2[i]);
-		for (uint32 j = 0; j < ATTR::CHUNKSIZE; ++j)
+		for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}
 

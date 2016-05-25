@@ -37,16 +37,16 @@
 namespace cgogn
 {
 
-template <uint32 CHUNKSIZE>
+template <uint32 CHUNK_SIZE>
 class ChunkArrayFactory
 {
-	static_assert(CHUNKSIZE >= 1u, "ChunkSize must be at least 1");
-	static_assert(!(CHUNKSIZE & (CHUNKSIZE - 1)), "CHUNKSIZE must be a power of 2");
+	static_assert(CHUNK_SIZE >= 1u, "ChunkSize must be at least 1");
+	static_assert(!(CHUNK_SIZE & (CHUNK_SIZE - 1)), "CHUNK_SIZE must be a power of 2");
 
 public:
 
-	using Self = ChunkArrayFactory<CHUNKSIZE>;
-	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNKSIZE> >;
+	using Self = ChunkArrayFactory<CHUNK_SIZE>;
+	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNK_SIZE> >;
 	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
 	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
@@ -68,7 +68,7 @@ public:
 
 		std::string&& keyType(name_of_type(T()));
 		if(map_CA_->find(keyType) == map_CA_->end())
-			(*map_CA_)[std::move(keyType)] = make_unique<ChunkArray<CHUNKSIZE, T>>();
+			(*map_CA_)[std::move(keyType)] = make_unique<ChunkArray<CHUNK_SIZE, T>>();
 	}
 
 	static void register_known_types()
@@ -118,7 +118,7 @@ public:
 
 	static void reset()
 	{
-		ChunkArrayFactory<CHUNKSIZE>::map_CA_ = make_unique<NamePtrMap>();
+		ChunkArrayFactory<CHUNK_SIZE>::map_CA_ = make_unique<NamePtrMap>();
 	}
 
 private:
@@ -126,8 +126,8 @@ private:
 	inline ChunkArrayFactory() {}
 };
 
-template <uint32 CHUNKSIZE>
-typename ChunkArrayFactory<CHUNKSIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNKSIZE>::map_CA_ = nullptr;
+template <uint32 CHUNK_SIZE>
+typename ChunkArrayFactory<CHUNK_SIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNK_SIZE>::map_CA_ = nullptr;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayFactory<DEFAULT_CHUNK_SIZE>;

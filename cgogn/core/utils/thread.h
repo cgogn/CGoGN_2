@@ -72,7 +72,7 @@ CGOGN_CORE_API void thread_start();
  */
 CGOGN_CORE_API void thread_stop();
 
-CGOGN_CORE_API Buffers<Dart>*         get_dart_buffers();
+CGOGN_CORE_API Buffers<Dart>*   get_dart_buffers();
 CGOGN_CORE_API Buffers<uint32>* get_uint_buffers();
 
 } // namespace cgogn

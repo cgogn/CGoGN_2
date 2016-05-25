@@ -27,72 +27,129 @@
 #include <cgogn/geometry/functions/area.h>
 #include <cgogn/geometry/algos/centroid.h>
 
+#include <cgogn/core/utils/masks.h>
+
 namespace cgogn
 {
 
 namespace geometry
 {
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar triangle_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename MAP>
+inline typename VEC3::Scalar triangle_area(
+	const MAP& map,
+	const typename MAP::Face f,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
 	using Vertex = typename MAP::Vertex;
-	return triangle_area<VEC3_T>(
-				position[Vertex(f.dart)],
-			position[Vertex(map.phi1(f.dart))],
-			position[Vertex(map.phi_1(f.dart))]
-			);
+	return triangle_area<VEC3>(
+		position[Vertex(f.dart)],
+		position[Vertex(map.phi1(f.dart))],
+		position[Vertex(map.phi_1(f.dart))]
+	);
 }
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar convex_face_area(const MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename MAP>
+inline typename VEC3::Scalar convex_face_area(
+	const MAP& map,
+	const typename MAP::Face f,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
 	using Vertex = typename MAP::Vertex;
 	if (map.codegree(f) == 3)
-		return triangle_area<VEC3_T>(map, f, position);
+		return triangle_area<VEC3>(map, f, position);
 	else
 	{
-		typename VEC3_T::Scalar area{0};
-		VEC3_T center = centroid<VEC3_T>(map, f, position);
+		typename VEC3::Scalar area{0};
+		VEC3 center = centroid<VEC3>(map, f, position);
 		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
 		{
-			area += triangle_area<VEC3_T>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
+			area += triangle_area<VEC3>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
 		});
 		return area;
 	}
 }
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar incident_faces_area(
-		const MAP& map,
-		const typename MAP::Edge e,
-		const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename CellType, typename MAP>
+inline typename VEC3::Scalar incident_faces_area(
+	const MAP& map,
+	const CellType c,
+	const typename MAP::template VertexAttribute<VEC3>& position)
 {
-	using Scalar = typename VEC3_T::Scalar;
+	using Scalar = typename VEC3::Scalar;
 	using Face = typename MAP::Face;
 
-	Scalar area(0) ;
-
-	map.foreach_incident_face(e, [&] (Face f)
+	Scalar area(0);
+	map.foreach_incident_face(c, [&] (Face f)
 	{
-		area += cgogn::geometry::convex_face_area<VEC3_T, MAP>(map, f, position);// / map.codegree(f) ;
+		area += cgogn::geometry::convex_face_area<VEC3>(map, f, position);
 	});
-
 	return area ;
 }
 
-template <typename VEC3_T, typename MAP>
-inline void incident_faces_area(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC3_T>& position,
-		typename MAP::template EdgeAttribute<typename VEC3_T::Scalar>& edge_area)
+template <typename VEC3, typename CellType, typename MAP, typename MASK>
+inline void compute_incident_faces_area(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area)
 {
-	using Edge = typename MAP::Edge;
-
-	map.foreach_cell([&] (Edge e)
+	map.parallel_foreach_cell([&] (CellType c, uint32)
 	{
-		edge_area[e] = incident_faces_area<VEC3_T, MAP>(map, e, position);
+		area[c] = incident_faces_area<VEC3>(map, c, position);
+	},
+	mask);
+}
+
+template <typename VEC3, typename CellType, typename MAP>
+inline void compute_incident_faces_area(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area)
+{
+	compute_incident_faces_area<VEC3>(map, CellFilters(), position, area);
+}
+
+template <typename VEC3, typename CellType, typename MAP>
+inline typename VEC3::Scalar cell_area(
+	const MAP& map,
+	const CellType c,
+	const typename MAP::template VertexAttribute<VEC3>& position)
+{
+	using Scalar = typename VEC3::Scalar;
+	using Face = typename MAP::Face;
+
+	Scalar area(0);
+	map.foreach_incident_face(c, [&] (Face f)
+	{
+		area += cgogn::geometry::convex_face_area<VEC3>(map, f, position) / map.codegree(f);
 	});
+	return area ;
+}
+
+template <typename VEC3, typename CellType, typename MAP, typename MASK>
+inline void compute_cell_area(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area)
+{
+	map.parallel_foreach_cell([&] (CellType c, uint32)
+	{
+		area[c] = cell_area<VEC3>(map, c, position);
+	},
+	mask);
+}
+
+template <typename VEC3, typename CellType, typename MAP>
+inline void compute_cell_area(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area)
+{
+	compute_cell_area<VEC3, CellType>(map, CellFilters(), position, area);
 }
 
 } // namespace geometry

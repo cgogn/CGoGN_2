@@ -53,22 +53,22 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 {
 	bb.reset();
 
-	//compute the mean of the dataset (centroid)
+	// compute the mean of the dataset (centroid)
 	Eigen::Vector3d mean;
 	mean.setZero();
 	uint32 count = 0;
-	for(const auto& p : attr)
+	for (const auto& p : attr)
 	{
 		mean += Eigen::Vector3d(p[0], p[1], p[2]);
 		++count;
 	}
 	mean /= count;
 
-	//compute covariance matrix
+	// compute covariance matrix
 	Eigen::Matrix<double, 3, 3> covariance;
 	covariance.setZero();
 
-	for(const auto& p : attr)
+	for (const auto& p : attr)
 	{
 		Eigen::Matrix<double, 4, 1> point;
 		point[0] = p[0] - mean[0];
@@ -87,9 +87,9 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 		covariance(0, 2) += point[2];
 	}
 
-	covariance (1, 0) = covariance (0, 1);
-	covariance (2, 0) = covariance (0, 2);
-	covariance (2, 1) = covariance (1, 2);
+	covariance(1, 0) = covariance(0, 1);
+	covariance(2, 0) = covariance(0, 2);
+	covariance(2, 1) = covariance(1, 2);
 
 	covariance /= count;
 
@@ -100,17 +100,19 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	// Compute the size of the obb
 	Eigen::Vector3d ex;
 	Eigen::Vector3d t;
-	for(const auto& p : attr)
+	for (const auto& p : attr)
 	{
 		t = eivecs.transpose() * (p - mean);
 
-		t(0) = std::abs(t(0)); t(1) = std::abs(t(1)); t(2) = std::abs(t(2));
+		t(0) = std::abs(t(0));
+		t(1) = std::abs(t(1));
+		t(2) = std::abs(t(2));
 
-		if(t(0) > ex(0))
+		if (t(0) > ex(0))
 			ex(0) = t(0);
-		if(t(1) > ex(1))
+		if (t(1) > ex(1))
 			ex(1) = t(1);
-		if(t(2) > ex(2))
+		if (t(2) > ex(2))
 			ex(2) = t(2);
 	}
 
@@ -119,10 +121,8 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	bb.extension(ex);
 }
 
-
 } // namespace geometry
 
 } // namespace cgogn
 
 #endif // CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_H_
-

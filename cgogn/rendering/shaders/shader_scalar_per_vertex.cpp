@@ -46,6 +46,7 @@ const char* ShaderScalarPerVertex::vertex_shader_source_ =
 "uniform int color_map;\n"
 "uniform int expansion;\n"
 "out vec3 color_v;\n"
+"out float scalar_v;\n"
 "#define M_PI 3.1415926535897932384626433832795\n"
 "float scale_and_clamp_to_0_1(float x, float min, float max)\n"
 "{\n"
@@ -140,15 +141,21 @@ const char* ShaderScalarPerVertex::vertex_shader_source_ =
 "		case 2 : color_v = color_map_BCGYR(value); break;\n"
 "		case 3 : color_v = color_map_blue_green_red(value); break;\n"
 "	}\n"
+"	scalar_v = value;\n"
 "   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos, 1.0);\n"
 "}\n";
 
 const char* ShaderScalarPerVertex::fragment_shader_source_ =
 "#version 150\n"
 "in vec3 color_v;\n"
+"in float scalar_v;\n"
 "out vec3 fragColor;\n"
 "void main() {\n"
-"   fragColor = color_v;\n"
+"	float s = scalar_v * 20.0;\n"
+"	if (s - floor(s) < 0.05)\n"
+"		fragColor = vec3(0.0);\n"
+"	else\n"
+"		fragColor = color_v;\n"
 "}\n";
 
 ShaderScalarPerVertex::ShaderScalarPerVertex()

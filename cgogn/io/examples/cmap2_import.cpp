@@ -127,8 +127,8 @@ int main(int argc, char** argv)
 //				vertex_normal[v] = sum / nb_incident;
 //			});
 
-//			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, vertex_normal);
-			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, face_normal, vertex_normal);
+			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, vertex_normal);
+//			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, face_normal, vertex_normal);
 		}
 
 		end = std::chrono::system_clock::now();

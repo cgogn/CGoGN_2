@@ -64,7 +64,6 @@ void pliant_remeshing(
 	const Scalar squared_max_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
 	const Scalar squared_min_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
 
-
 	// cut long edges (and adjacent faces)
 	map.foreach_cell([&] (Edge e)
 	{

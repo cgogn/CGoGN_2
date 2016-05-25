@@ -27,6 +27,7 @@
 #include <cgogn/core/basic/cell.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/core/utils/masks.h>
 
 namespace cgogn
 {
@@ -34,46 +35,92 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3_T, typename MAP>
-inline VEC3_T vector_from(
-		const MAP& map,
-		const Dart d,
-		const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename MAP>
+inline VEC3 vector_from(
+	const MAP& map,
+	const Dart d,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
 	using Vertex = typename MAP::Vertex;
 
-	VEC3_T vec = position[Vertex(map.phi1(d))] ;
+	VEC3 vec = position[Vertex(map.phi1(d))] ;
 	vec -= position[Vertex(d)] ;
 	return vec ;
 }
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar edge_length(
-		const MAP& map,
-		const typename MAP::Edge e,
-		const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename MAP>
+inline typename VEC3::Scalar edge_length(
+	const MAP& map,
+	const typename MAP::Edge e,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
-	return vector_from<VEC3_T, MAP>(map, e.dart, position).norm();
+	return vector_from<VEC3, MAP>(map, e.dart, position).norm();
 }
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar mean_edge_length(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC3_T>& position)
+template <typename VEC3, typename MAP, typename MASK>
+inline void compute_edge_length(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template EdgeAttribute<VEC3>& edge_length_attr
+)
 {
-	using Scalar = typename VEC3_T::Scalar;
+	map.parallel_foreach_cell([&] (typename MAP::Edge e, uint32)
+	{
+		edge_length_attr[e] = edge_length<VEC3, MAP>(map, e, position);
+	},
+	mask);
+}
+
+template <typename VEC3, typename MAP>
+inline void compute_edge_length(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template EdgeAttribute<VEC3>& edge_length
+)
+{
+	compute_edge_length<VEC3>(map, CellFilters(), position, edge_length);
+}
+
+template <typename VEC3, typename MAP, typename MASK>
+inline typename VEC3::Scalar mean_edge_length(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
+{
+	using Scalar = typename VEC3::Scalar;
 	using Edge = typename MAP::Edge;
 
-	Scalar length(0);
-	uint32 nbe = 0;
+	std::vector<Scalar> edge_length_per_thread(cgogn::get_nb_threads());
+	std::vector<uint32> nb_edges_per_thread(cgogn::get_nb_threads());
+	for (Scalar& l : edge_length_per_thread) l = 0;
+	for (uint32& n : nb_edges_per_thread) n = 0;
 
-	map.foreach_cell([&](Edge e)
+	map.parallel_foreach_cell([&] (Edge e, uint32 thread_index)
 	{
-		length += edge_length<VEC3_T, MAP>(map, e, position);
-		++nbe;
-	});
+		edge_length_per_thread[thread_index] += edge_length<VEC3, MAP>(map, e, position);
+		nb_edges_per_thread[thread_index]++;
+	},
+	mask);
+
+	Scalar length = 0;
+	uint32 nbe = 0;
+	for (Scalar l : edge_length_per_thread) length += l;
+	for (uint32 n : nb_edges_per_thread) nbe += n;
 
 	return length / Scalar(nbe);
+}
+
+template <typename VEC3, typename MAP>
+inline typename VEC3::Scalar mean_edge_length(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
+{
+	return mean_edge_length<VEC3>(map, CellFilters(), position);
 }
 
 } // namespace geometry
