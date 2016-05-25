@@ -138,11 +138,11 @@ public:
 		chunk_array_(ca)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = get_chunk_array_container_tmpl(map,orbit);
+			chunk_array_cont_ = &map->get_const_attribute_container(orbit);
 		if (chunk_array_ != nullptr)
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->add_external_ref(ref);
 		}
 	}
@@ -155,7 +155,7 @@ public:
 		if (chunk_array_ != nullptr)
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->add_external_ref(ref);
 		}
 	}
@@ -168,7 +168,7 @@ public:
 		if (chunk_array_ != nullptr)
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->add_external_ref(ref);
 		}
 	}
@@ -180,7 +180,7 @@ public:
 		if (is_valid())
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->remove_external_ref(ref);
 		}
 
@@ -190,7 +190,7 @@ public:
 		if (chunk_array_ != nullptr)
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->add_external_ref(ref);
 		}
 
@@ -204,7 +204,7 @@ public:
 		if (is_valid())
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->remove_external_ref(ref);
 		}
 
@@ -214,7 +214,7 @@ public:
 		if (chunk_array_ != nullptr)
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->add_external_ref(ref);
 		}
 
@@ -226,7 +226,7 @@ public:
 		if (is_valid())
 		{
 			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
+			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
 			chunk_array_->remove_external_ref(ref);
 		}
 	}
@@ -401,26 +401,8 @@ public:
 	}
 
 protected:
-	ChunkArrayContainer*	chunk_array_cont_;
-	TChunkArray*			chunk_array_;
-
-private:
-	inline static ChunkArrayContainer* get_chunk_array_container_tmpl(MapData* map, Orbit orb)
-	{
-		switch (orb) {
-			case Orbit::DART : return &(map->template get_attribute_container<Orbit::DART>());
-			case Orbit::PHI1 : return &(map->template get_attribute_container<Orbit::PHI1>());
-			case Orbit::PHI2 : return &(map->template get_attribute_container<Orbit::PHI2>());
-			case Orbit::PHI1_PHI2 : return &(map->template get_attribute_container<Orbit::PHI1_PHI2>());
-			case Orbit::PHI1_PHI3 : return &(map->template get_attribute_container<Orbit::PHI1_PHI3>());
-			case Orbit::PHI2_PHI3 : return &(map->template get_attribute_container<Orbit::PHI2_PHI3>());
-			case Orbit::PHI21 : return &(map->template get_attribute_container<Orbit::PHI21>());
-			case Orbit::PHI21_PHI31 : return &(map->template get_attribute_container<Orbit::PHI21_PHI31>());
-			case Orbit::PHI1_PHI2_PHI3 : return &(map->template get_attribute_container<Orbit::PHI1_PHI2_PHI3>());
-			default:
-				return nullptr;
-		}
-	}
+	ChunkArrayContainer const*	chunk_array_cont_;
+	TChunkArray*				chunk_array_;
 };
 
 /**
