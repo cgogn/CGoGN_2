@@ -47,23 +47,23 @@ namespace cgogn
 
 /**
  * @brief class that manage the storage of several ChunkArray
- * @tparam CHUNKSIZE chunk size for ChunkArray
+ * @tparam CHUNK_SIZE chunk size for ChunkArray
  */
-template <uint32 CHUNKSIZE, typename T_REF>
+template <uint32 CHUNK_SIZE, typename T_REF>
 class ChunkArrayContainer
 {
 public:
 
-	using Self = ChunkArrayContainer<CHUNKSIZE, T_REF>;
+	using Self = ChunkArrayContainer<CHUNK_SIZE, T_REF>;
 	using ref_type = T_REF;
 
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	template <class T>
-	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 	template <class T>
-	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
-	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNKSIZE>;
+	using ChunkStack = cgogn::ChunkStack<CHUNK_SIZE, T>;
+	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNK_SIZE>;
 
 	/**
 	* constante d'attribut inconnu
@@ -591,9 +591,9 @@ public:
 		}while (!holes_stack_.empty());
 
 		// free unused memory blocks
-		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNK_SIZE + 1u;
 		nb_max_lines_ = nb_used_lines_;
-		const uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 new_nb_blocks = nb_max_lines_/CHUNK_SIZE + 1u;
 
 		if (old_nb_blocks == new_nb_blocks)
 			return map_old_new;
@@ -703,7 +703,7 @@ public:
 	template <uint32 PRIMSIZE>
 	uint32 insert_lines()
 	{
-		static_assert(PRIMSIZE < CHUNKSIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNKSIZE");
+		static_assert(PRIMSIZE < CHUNK_SIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNK_SIZE");
 
 		uint32 index;
 
@@ -718,9 +718,9 @@ public:
 				refs_.add_chunk();
 			}
 
-			if ((nb_max_lines_ + PRIMSIZE) % CHUNKSIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
+			if ((nb_max_lines_ + PRIMSIZE) % CHUNK_SIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
 			{
-				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
+				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNK_SIZE; // next index will be at start of new chunk
 
 				for (auto arr : table_arrays_)
 					arr->add_chunk();
