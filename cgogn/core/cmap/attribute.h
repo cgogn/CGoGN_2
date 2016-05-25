@@ -140,11 +140,7 @@ public:
 		if (map != nullptr)
 			chunk_array_cont_ = &map->get_const_attribute_container(orbit);
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
 	Attribute_T(const Self& att) :
@@ -153,11 +149,7 @@ public:
 		chunk_array_(att.chunk_array_)
 	{
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
 	inline Attribute_T(Self&& att) CGOGN_NOEXCEPT :
@@ -166,11 +158,7 @@ public:
 		chunk_array_(att.chunk_array_)
 	{
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
 	inline Attribute_T& operator=(const Self& att)
@@ -178,21 +166,13 @@ public:
 		Inherit::operator=(att);
 
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
 
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		return *this;
 	}
@@ -202,21 +182,13 @@ public:
 		Inherit::operator=(std::move(att));
 
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
 
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		return *this;
 	}
@@ -224,11 +196,7 @@ public:
 	virtual ~Attribute_T() override
 	{
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			ChunkArrayGen** ref = reinterpret_cast<ChunkArrayGen**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
 	/**
