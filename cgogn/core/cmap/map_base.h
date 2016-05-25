@@ -277,7 +277,7 @@ public:
 	}
 
 	template <typename T>
-	inline Attribute_T<T> get_attribute(const std::string& attribute_name, Orbit orbit)
+	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name)
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 
