@@ -62,7 +62,6 @@ void MapRender::draw(DrawingType prim)
 	default:
 		break;
 	}
-
 	indices_buffers_[prim]->release();
 }
 

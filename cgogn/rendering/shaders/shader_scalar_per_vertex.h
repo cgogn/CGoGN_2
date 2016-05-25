@@ -53,6 +53,7 @@ protected:
 	GLint unif_expansion_;
 	GLint unif_min_value_;
 	GLint unif_max_value_;
+	GLint unif_show_iso_lines_;
 
 public:
 
@@ -100,6 +101,12 @@ public:
 	 */
 	void set_max_value(float32 value);
 
+	/**
+	 * @brief set current show_iso_lines value
+	 * @param b
+	 */
+	void set_show_iso_lines(bool b);
+
 protected:
 
 	ShaderScalarPerVertex();
@@ -117,6 +124,7 @@ protected:
 		sh->set_expansion(expansion_);
 		sh->set_min_value(min_value_);
 		sh->set_max_value(max_value_);
+		sh->set_show_iso_lines(show_iso_lines_);
 	}
 
 public:
@@ -125,13 +133,15 @@ public:
 	int32 expansion_;
 	float32 min_value_;
 	float32 max_value_;
+	bool show_iso_lines_;
 
 	ShaderParamScalarPerVertex(ShaderScalarPerVertex* prg) :
 		ShaderParam(prg),
 		color_map_(ShaderScalarPerVertex::BWR),
 		expansion_(1),
 		min_value_(.0f),
-		max_value_(.0f)
+		max_value_(.0f),
+		show_iso_lines_(false)
 	{}
 
 	/**
