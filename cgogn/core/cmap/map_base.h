@@ -66,6 +66,8 @@ public:
 	using typename Inherit::ChunkArrayBool;
 
 	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
+	template <typename T>
+	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
 	template <typename T, Orbit ORBIT>
 	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
@@ -272,6 +274,15 @@ public:
 
 		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
 		return Attribute<T, ORBIT>(this, ca);
+	}
+
+	template <typename T>
+	inline Attribute_T<T> get_attribute(const std::string& attribute_name, Orbit orbit)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+
+		ChunkArray<T>* ca = this->attributes_[orbit].template get_attribute<T>(attribute_name);
+		return Attribute_T<T>(this, ca, orbit);
 	}
 
 	/**
