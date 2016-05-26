@@ -84,6 +84,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
 protected:
 
@@ -1116,6 +1118,11 @@ public:
 	inline std::pair<Vertex, Vertex> vertices(Edge e)
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+	}
+
+	inline std::pair<Vertex2, Vertex2> vertices(Edge2 e)
+	{
+		return std::pair<Vertex2, Vertex2>(Vertex2(e.dart), Vertex2(this->phi1(e.dart)));
 	}
 
 protected:

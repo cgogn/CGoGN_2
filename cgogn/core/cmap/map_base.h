@@ -78,6 +78,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
