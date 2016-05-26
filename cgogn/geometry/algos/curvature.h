@@ -132,6 +132,24 @@ void compute_curvature_vertices_normal_cycles_projected(
 	mask);
 }
 
+template <typename VEC3, typename MAP>
+void compute_curvature_vertices_normal_cycles_projected(
+	const MAP& map,
+	typename VEC3::Scalar radius,
+	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
+	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
+	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_angle,
+	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_area,
+	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmax,
+	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmin,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+)
+{
+	compute_curvature_vertices_normal_cycles_projected<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+}
+
 } // namespace geometry
 
 } // namespace cgogn
