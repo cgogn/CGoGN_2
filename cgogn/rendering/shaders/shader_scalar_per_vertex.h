@@ -138,9 +138,9 @@ public:
 	ShaderParamScalarPerVertex(ShaderScalarPerVertex* prg) :
 		ShaderParam(prg),
 		color_map_(ShaderScalarPerVertex::BWR),
-		expansion_(1),
+		expansion_(0),
 		min_value_(.0f),
-		max_value_(.0f),
+		max_value_(1.0f),
 		show_iso_lines_(false)
 	{}
 
