@@ -4,7 +4,7 @@ project(cgogn_topology
 
 set(HEADER_FILES
 	dll.h
-        algos/dijkstra.h
+        algos/distance_field.h
 )
 
 add_custom_target(cgogn_topology SOURCES ${HEADER_FILES})
