@@ -177,6 +177,7 @@ ShaderScalarPerVertex::ShaderScalarPerVertex()
 	unif_expansion_ = prg_.uniformLocation("expansion");
 	unif_min_value_ = prg_.uniformLocation("min_value");
 	unif_max_value_ = prg_.uniformLocation("max_value");
+	unif_show_iso_lines_ = prg_.uniformLocation("show_iso_lines");
 }
 
 void ShaderScalarPerVertex::set_color_map(ColorMap cm)
