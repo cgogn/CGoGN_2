@@ -205,36 +205,36 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 	return decoded_chars;
 }
 
-CGOGN_IO_API FileType get_file_type(const std::string& filename)
+CGOGN_IO_API FileType file_type(const std::string& filename)
 {
-	const std::string& extension = to_lower(get_extension(filename));
-	if (extension == "off")
+	const std::string& ext = to_lower(extension(filename));
+	if (ext == "off")
 		return FileType::FileType_OFF;
-	if (extension == "obj")
+	if (ext == "obj")
 		return FileType::FileType_OBJ;
-	if (extension == "ply")
+	if (ext == "ply")
 		return FileType::FileType_PLY;
-	if (extension == "vtk")
+	if (ext == "vtk")
 		return FileType::FileType_VTK_LEGACY;
-	if (extension == "vtu")
+	if (ext == "vtu")
 		return FileType::FileType_VTU;
-	if (extension == "vtp")
+	if (ext == "vtp")
 		return FileType::FileType_VTP;
-	if (extension == "meshb" || extension == "mesh")
+	if (ext == "meshb" || ext == "mesh")
 		return FileType::FileType_MESHB;
-	if (extension == "msh")
+	if (ext == "msh")
 		return FileType::FileType_MSH;
-	if (extension == "node" || extension == "ele")
+	if (ext == "node" || ext == "ele")
 		return FileType::FileType_TETGEN;
-	if (extension == "nas" || extension == "bdf")
+	if (ext == "nas" || ext == "bdf")
 		return FileType::FileType_NASTRAN;
-	if (extension == "tet")
+	if (ext == "tet")
 		return FileType::FileType_AIMATSHAPE;
 
 	return FileType::FileType_UNKNOWN;
 }
 
-CGOGN_IO_API DataType get_data_type(const std::string& type_name)
+CGOGN_IO_API DataType data_type(const std::string& type_name)
 {
 	if (type_name == name_of_type(float32()))
 		return DataType::FLOAT;
@@ -278,9 +278,10 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	if (file_exists(new_filename))
 	{
 		uint32 i{1u};
-		const std::string base_name = cgogn::remove_extension(filename);
-		do {
-			new_filename = base_name + "(" + std::to_string(i++)  + ")." + cgogn::get_extension(filename);
+		const std::string base_name = remove_extension(filename);
+		do
+		{
+			new_filename = base_name + "(" + std::to_string(i++)  + ")." + extension(filename);
 		} while (file_exists(new_filename));
 		cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
 	}

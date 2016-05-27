@@ -49,11 +49,8 @@ namespace io
 template <typename MAP>
 inline std::unique_ptr<VolumeExport<MAP>> newVolumeExport(const std::string& filename);
 
-
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options);
-
-
 
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options)
@@ -66,8 +63,8 @@ inline void export_volume(MAP& map3, const ExportOptions& options)
 template <typename MAP>
 inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& filename)
 {
-	const FileType file_type = get_file_type(filename);
-	switch (file_type)
+	const FileType ft = file_type(filename);
+	switch (ft)
 	{
 //		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:		return make_unique<VtkVolumeExport<MAP>>();
@@ -75,11 +72,10 @@ inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& fi
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
 		default:
-			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << get_extension(filename) << "\".";
+			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeExport<MAP>> ();
 	}
 }
-
 
 /**
  * @brief export surface in off format
@@ -101,8 +97,8 @@ bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 		return false;
 	}
 
-	fp << "OFF"<< std::endl;
-	fp << map.template nb_cells<Vertex::ORBIT>() << " "<< map.template nb_cells<Face::ORBIT>() << " 0"<< std::endl; // nb_edge unused ?
+	fp << "OFF" << std::endl;
+	fp << map.template nb_cells<Vertex::ORBIT>() << " "<< map.template nb_cells<Face::ORBIT>() << " 0" << std::endl; // nb_edge unused ?
 
 	// set precision for real output
 	fp<< std::setprecision(12);

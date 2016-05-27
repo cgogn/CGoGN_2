@@ -112,7 +112,7 @@ protected:
 	 * @param attribName name of ChunkArray
 	 * @return the index in table
 	 */
-	uint32 get_array_index(const std::string& attribute_name) const
+	uint32 array_index(const std::string& attribute_name) const
 	{
 		for (uint32 i = 0u; i != names_.size(); ++i)
 		{
@@ -128,7 +128,7 @@ protected:
 	 * @param ptr of ChunkArray
 	 * @return the index in table
 	 */
-	uint32 get_array_index(const ChunkArrayGen* ptr) const
+	uint32 array_index(const ChunkArrayGen* ptr) const
 	{
 		for (uint32 i = 0u; i != table_arrays_.size(); ++i)
 		{
@@ -198,7 +198,7 @@ public:
 	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
 	{
 		// first check if attribute already exists
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
@@ -211,7 +211,7 @@ public:
 	ChunkArrayGen* get_attribute(const std::string& attribute_name) const
 	{
 		// first check if attribute already exists
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(attribute_name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
@@ -242,7 +242,7 @@ public:
 		cgogn_assert(attribute_name.size() != 0);
 
 		// first check if attribute already exist
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(attribute_name);
 		if (index != UNKNOWN)
 		{
 			cgogn_log_warning("add_attribute") << "Attribute \"" << attribute_name << "\" already exists.";
@@ -255,7 +255,7 @@ public:
 		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
-		carr->set_nb_chunks(refs_.get_nb_chunks());
+		carr->set_nb_chunks(refs_.nb_chunks());
 
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
@@ -272,7 +272,7 @@ public:
 	 */
 	bool remove_attribute(const std::string& attribute_name)
 	{
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(attribute_name);
 
 		if (index == UNKNOWN)
 		{
@@ -292,7 +292,7 @@ public:
 	 */
 	bool remove_attribute(const ChunkArrayGen* ptr)
 	{
-		uint32 index = get_array_index(ptr);
+		uint32 index = array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
@@ -313,8 +313,8 @@ public:
 	 */
 	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
-		uint32 index1 = get_array_index(ptr1);
-		uint32 index2 = get_array_index(ptr2);
+		uint32 index1 = array_index(ptr1);
+		uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
@@ -336,8 +336,8 @@ public:
 	template <typename T>
 	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
-		uint32 dest_index = get_array_index(dest);
-		uint32 src_index = get_array_index(src);
+		uint32 dest_index = array_index(dest);
+		uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
@@ -367,7 +367,7 @@ public:
 	ChunkArrayBool* add_marker_attribute()
 	{
 		ChunkArrayBool* mca = new ChunkArrayBool();
-		mca->set_nb_chunks(refs_.get_nb_chunks());
+		mca->set_nb_chunks(refs_.nb_chunks());
 		table_marker_arrays_.push_back(mca);
 		return mca;
 	}
@@ -628,7 +628,6 @@ public:
 		return true;
 	}
 
-
 	template <uint32 PRIMSIZE>
 	std::vector<uint32> merge(const Self& cac)
 	{
@@ -636,7 +635,7 @@ public:
 		std::vector<uint32> map_attrib(cac.names_.size());
 
 		// First check & find missing attributes
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
 			if (j == names_.size()) // attrib not in this
@@ -646,7 +645,7 @@ public:
 				map_attrib[i] = uint32(table_arrays_.size());
 				auto cag = ChunkArrayFactory::create(type_name,name);
 				cgogn_assert(cag);
-				cag->set_nb_chunks(refs_.get_nb_chunks());
+				cag->set_nb_chunks(refs_.nb_chunks());
 				table_arrays_.push_back(cag.release());
 				names_.push_back(name);
 				type_names_.push_back(type_name);
@@ -657,14 +656,14 @@ public:
 		}
 
 		// check if nothing to do
-		if (cac.size()==0)
+		if (cac.size() == 0)
 			return std::vector<uint32>();
 
 		// line mapping
-		std::vector<uint32> map_old_new(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
+		std::vector<uint32> map_old_new(cac.rbegin() + 1u, std::numeric_limits<uint32>::max());
 
 		// copy data
-		for (uint32 it=cac.begin(); it!= cac.end(); cac.next(it))
+		for (uint32 it = cac.begin(); it != cac.end(); cac.next(it))
 		{
 			uint32 new_lines = this->insert_lines<PRIMSIZE>();
 			for(uint32 j = 0u; j < PRIMSIZE; ++j)
@@ -720,7 +719,7 @@ public:
 
 			if ((nb_max_lines_ + PRIMSIZE) % CHUNK_SIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
 			{
-				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNK_SIZE; // next index will be at start of new chunk
+				// nb_max_lines_ = refs_.nb_chunks() * CHUNK_SIZE; // next index will be at start of new chunk
 
 				for (auto arr : table_arrays_)
 					arr->add_chunk();

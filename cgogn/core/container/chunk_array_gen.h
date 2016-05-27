@@ -78,13 +78,13 @@ public:
 		}
 	}
 
-	inline const std::string& get_name() const { return name_; }
+	inline const std::string& name() const { return name_; }
 
-	inline const std::string& get_type_name() const { return type_name_; }
+	inline const std::string& type_name() const { return type_name_; }
 
-	virtual std::string get_nested_type_name() const = 0;
+	virtual std::string nested_type_name() const = 0;
 
-	virtual uint32 get_nb_components() const = 0;
+	virtual uint32 nb_components() const = 0;
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -126,7 +126,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	virtual uint32 get_nb_chunks() const = 0;
+	virtual uint32 nb_chunks() const = 0;
 
 	/**
 	 * @brief get the capacity of the array
@@ -145,7 +145,7 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
+	virtual uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())

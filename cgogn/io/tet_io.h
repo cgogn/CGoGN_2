@@ -46,9 +46,10 @@ class TetVolumeImport : public VolumeImport<MAP_TRAITS>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -73,7 +74,7 @@ protected:
 		}
 
 		//reading vertices
-		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
+		for(uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
 		{
 			do
 			{
@@ -91,7 +92,7 @@ protected:
 
 
 		// reading volumes
-		for (uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
+		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
 		{
 			do
 			{
@@ -110,7 +111,7 @@ protected:
 				iss >> connector >> connector; // the line should be like this: # C id0 id1 id2 id3
 				if (connector == 'C')
 				{
-					this->set_nb_volumes(this->get_nb_volumes() -1u);
+					this->set_nb_volumes(this->nb_volumes() -1u);
 					std::array<uint32,4> ids;
 					iss >> ids[0] >> ids[1] >> ids[2] >> ids[3];
 					this->add_connector(ids[0], ids[1], ids[2], ids[3]);
@@ -138,11 +139,11 @@ protected:
 	}
 };
 
-
 template<typename MAP>
 class TetVolumeExport : public VolumeExport<MAP>
 {
 public:
+
 	using Inherit = VolumeExport<MAP>;
 	using Self = TetVolumeExport<MAP>;
 	using Map = typename Inherit::Map;
@@ -150,17 +151,15 @@ public:
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
-
 protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-
-		ChunkArrayGen const* pos = this->get_position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute();
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
-		std::string scalar_type = pos->get_nested_type_name();
+		std::string scalar_type = pos->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0]);
-		const auto& nb_vert_vol = this->get_number_of_vertices();
+		const auto& nb_vert_vol = this->number_of_vertices();
 		const uint32 nb_vols = nb_vert_vol.size();
 
 		// 1. vertices
@@ -173,7 +172,7 @@ protected:
 			output << std::endl;
 		});
 
-		auto vertices_it = this->get_vertices_of_volumes().begin();
+		auto vertices_it = this->vertices_of_volumes().begin();
 		for (uint32 w = 0u; w < nb_vols; ++w)
 		{
 			output << nb_vert_vol[w] << " ";
@@ -197,6 +196,7 @@ extern template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_TET_IO_H_

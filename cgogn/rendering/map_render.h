@@ -64,8 +64,8 @@ public:
 	using Self = MapRender;
 
 	MapRender();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 	~MapRender();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 
 	inline bool is_primitive_uptodate(DrawingType prim) { return indices_buffers_uptodate_[prim]; }
 
@@ -228,6 +228,7 @@ template <typename VEC3, typename MAP>
 void add_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
+
 	dr->vertex3fv(position[Vertex(e.dart)]);
 	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
 }
@@ -237,6 +238,7 @@ void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::templ
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
+
 	m.foreach_incident_edge(f, [&] (Edge e)
 	{
 		dr->vertex3fv(position[Vertex(e.dart)]);
@@ -249,6 +251,7 @@ void add_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::te
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
+
 	m.foreach_incident_edge(vo, [&] (Edge e)
 	{
 		dr->vertex3fv(position[Vertex(e.dart)]);

@@ -105,8 +105,8 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string&	get_name() const = 0;
-	virtual const std::string&	get_type_name() const = 0;
+	virtual const std::string&	name() const = 0;
+	virtual const std::string&	type_name() const = 0;
 	virtual bool				is_valid() const = 0;
 };
 
@@ -205,7 +205,7 @@ public:
 	 * \brief getDataVector
 	 * @return
 	 */
-	TChunkArray const* get_data() const
+	TChunkArray const* data() const
 	{
 		return chunk_array_;
 	}
@@ -241,24 +241,24 @@ public:
 		return chunk_array_->operator[](i);
 	}
 
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param i
-	 * @param t
-	 */
-	inline void set_value(uint32 i, const T& t)
+//	/**
+//	 * @brief set_value method to write in boolean Attributes
+//	 * @param i
+//	 * @param t
+//	 */
+//	inline void set_value(uint32 i, const T& t)
+//	{
+//		chunk_array_->set_value(i, t);
+//	}
+
+	virtual const std::string& name() const override
 	{
-		chunk_array_->set_value(i, t);
+		return chunk_array_->name();
 	}
 
-	virtual const std::string& get_name() const override
+	virtual const std::string& type_name() const override
 	{
-		return chunk_array_->get_name();
-	}
-
-	virtual const std::string& get_type_name() const override
-	{
-		return chunk_array_->get_type_name();
+		return chunk_array_->type_name();
 	}
 
 	virtual bool is_valid() const override
@@ -465,17 +465,17 @@ public:
 		return this->chunk_array_->operator[](this->map_->get_embedding(c));
 	}
 
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param c
-	 * @param t
-	 */
-	inline void set_value(Cell<ORBIT> c, const T& t)
-	{
-		this->chunk_array_->set_value(this->map_->get_embedding(c), t);
-	}
+//	/**
+//	 * @brief set_value method to write in boolean Attributes
+//	 * @param c
+//	 * @param t
+//	 */
+//	inline void set_value(Cell<ORBIT> c, const T& t)
+//	{
+//		this->chunk_array_->set_value(this->map_->get_embedding(c), t);
+//	}
 
-	inline Orbit get_orbit() const
+	inline Orbit orbit() const
 	{
 		return ORBIT;
 	}

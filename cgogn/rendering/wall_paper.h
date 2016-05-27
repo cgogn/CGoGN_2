@@ -55,24 +55,30 @@ namespace rendering
 class CGOGN_RENDERING_API WallPaper
 {
 protected:
+
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_tc_;
 	std::unique_ptr<QOpenGLTexture> texture_;
 
 public:
+
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class WallPaper;
+
 		std::unique_ptr<ShaderTexture::Param> param_texture_;
 		WallPaper* wall_paper_data_;
+
 		Renderer(WallPaper* wp);
+
 	public:
+
 		~Renderer();
+
 		void draw(QOpenGLFunctions_3_3_Core* ogl33);
 	};
 
 	using Self = WallPaper;
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(WallPaper);
 
 	/**
 	 * constructor, init all buffers (data and OpenGL) and shader
@@ -84,6 +90,8 @@ public:
 	 * release buffers and shader
 	 */
 	~WallPaper();
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(WallPaper);
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -125,8 +133,6 @@ public:
 
 	void draw(QOpenGLFunctions_3_3_Core* ogl33);
 };
-
-
 
 } // namespace rendering
 

@@ -97,32 +97,33 @@ struct nested_type<T, typename std::enable_if<has_operator_brackets<T>::value>::
 
 
 template<typename T>
-inline typename std::enable_if<!has_size_method<T>::value, uint32>::type get_nb_components(const T& );
+inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T& );
 template<typename T>
-inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type get_nb_components(const T& val);
+inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val);
 template<typename T>
-inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type get_nb_components(const T& val);
+inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type nb_components(const T& val);
 
 
 template<typename T>
-inline typename std::enable_if<!has_size_method<T>::value, uint32>::type get_nb_components(const T& )
+inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T&)
 {
 	return 1u;
 }
 
 template<typename T>
-inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type get_nb_components(const T& val)
+inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val)
 {
-	return val.size() * get_nb_components(*(val.begin()));
+	return val.size() * nb_components(*(val.begin()));
 }
 
 template<typename T>
-inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type get_nb_components(const T& val)
+inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type nb_components(const T& val)
 {
-	return val.size() * get_nb_components(val[0]);
+	return val.size() * nb_components(val[0]);
 }
 
 } // namespace type_traits
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_TYPE_TRAITS_H_

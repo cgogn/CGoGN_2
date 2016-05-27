@@ -260,7 +260,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		const ChunkArray<T>* ca = ah.get_data();
+		const ChunkArray<T>* ca = ah.data();
 		return this->attributes_[ORBIT].remove_attribute(ca);
 	}
 
@@ -311,7 +311,7 @@ public:
 		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
 		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
 
-		this->attributes_[ORBIT].swap_data_attributes(ah1.get_data(), ah2.get_data());
+		this->attributes_[ORBIT].swap_data_attributes(ah1.data(), ah2.data());
 	}
 
 	template <typename T, Orbit ORBIT>
@@ -322,7 +322,7 @@ public:
 		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
 		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
 
-		this->attributes_[ORBIT].copy_data_attribute(dest.get_data(), src.get_data());
+		this->attributes_[ORBIT].copy_data_attribute(dest.data(), src.data());
 	}
 
 protected:

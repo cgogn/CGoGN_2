@@ -53,7 +53,7 @@ protected:
 		const std::string node_filename = filename.substr(0, filename.rfind('.')) + ".node";
 		const std::string ele_filename = filename.substr(0, filename.rfind('.')) + ".ele";
 
-		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 		std::ifstream node_file(node_filename, std::ios::in);
 		if (!node_file.good())
 		{
@@ -101,7 +101,7 @@ protected:
 		//Reading vertices
 		std::map<uint32, uint32> old_new_ids_map;
 
-		for(uint32 i = 0u, end = this->get_nb_vertices() ; i < end; ++i)
+		for(uint32 i = 0u, end = this->nb_vertices() ; i < end; ++i)
 		{
 			do
 			{
@@ -123,7 +123,7 @@ protected:
 		}
 
 		// reading tetrahedra
-		for(uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
+		for(uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
 		{
 			do
 			{

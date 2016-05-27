@@ -44,11 +44,11 @@ namespace cgogn
 namespace io
 {
 
-
 template <typename MAP_TRAITS>
 class SurfaceImport : public MeshImportGen
 {
 public:
+
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
 	using Map = CMap2<MAP_TRAITS>;
@@ -61,8 +61,8 @@ public:
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
-
 protected:
+
 	uint32 nb_vertices_;
 	uint32 nb_edges_;
 	uint32 nb_faces_;
@@ -87,7 +87,6 @@ public:
 
 	virtual ~SurfaceImport() override
 	{}
-
 
 	virtual void clear() override
 	{
@@ -117,7 +116,7 @@ public:
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
 		typename Map::template VertexAttribute<std::vector<Dart>> darts_per_vertex =
-				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+			map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;
 		std::vector<uint32> vertices_buffer;

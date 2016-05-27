@@ -83,7 +83,6 @@ void WallPaper::set_full_screen(bool front)
 	vbo_pos_->release_pointer();
 }
 
-
 void WallPaper::set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 y, uint32 w, uint32 h, bool front)
 {
 	float32 depth = 0.0f;
@@ -111,7 +110,6 @@ void WallPaper::set_local_position(uint32 win_w, uint32 win_h, uint32 x, uint32 
 	*ptr_pos++ = depth;
 	vbo_pos_->release_pointer();
 }
-
 
 void WallPaper::set_local_position(float x, float y, float w, float h, bool front)
 {
@@ -152,16 +150,13 @@ WallPaper::Renderer::Renderer(WallPaper* wp):
 WallPaper::Renderer::~Renderer()
 {}
 
-
 void WallPaper::Renderer::draw(QOpenGLFunctions_3_3_Core* ogl33)
 {
 	QMatrix4x4 id;
-	param_texture_->bind(id,id);
-	ogl33->glDrawArrays(GL_TRIANGLE_FAN,0,4);
+	param_texture_->bind(id, id);
+	ogl33->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	param_texture_->release();
 }
-
-
 
 } // namespace rendering
 

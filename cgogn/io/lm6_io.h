@@ -69,7 +69,7 @@ protected:
 		this->set_nb_vertices(number_of_vertices);
 		this->set_nb_volumes(number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids);
 
-		if (this->get_nb_vertices() == 0 || this->get_nb_volumes()== 0u)
+		if (this->nb_vertices() == 0 || this->nb_volumes()== 0u)
 		{
 			cgogn_log_warning("LM6VolumeImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
@@ -77,11 +77,11 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
-		for (uint32 i = 0u, end = this->get_nb_vertices() ; i < end; ++i)
+		for (uint32 i = 0u, end = this->nb_vertices() ; i < end; ++i)
 		{
 			uint32 idx = this->insert_line_vertex_container();
 			std::array<float32, 3> v;

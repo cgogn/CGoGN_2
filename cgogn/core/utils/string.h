@@ -32,7 +32,7 @@ namespace cgogn
 {
 
 template <typename Char_T>
-inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
+inline std::basic_string<Char_T> to_upper(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
@@ -41,7 +41,7 @@ inline std::basic_string<Char_T>	to_upper(const std::basic_string<Char_T>& str)
 }
 
 template <typename Char_T>
-inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
+inline std::basic_string<Char_T> to_lower(const std::basic_string<Char_T>& str)
 {
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
@@ -50,7 +50,7 @@ inline std::basic_string<Char_T>	to_lower(const std::basic_string<Char_T>& str)
 }
 
 template <typename Char_T>
-inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& str)
+inline std::basic_string<Char_T> extension(const std::basic_string<Char_T>& str)
 {
 	std::size_t dot = str.rfind('.');
 	if (dot == std::basic_string<Char_T>::npos || dot == str.size() -1u)
@@ -59,7 +59,7 @@ inline std::basic_string<Char_T>	get_extension(const std::basic_string<Char_T>& 
 }
 
 template <typename Char_T>
-inline std::basic_string<Char_T>	remove_extension(const std::basic_string<Char_T>& str)
+inline std::basic_string<Char_T> remove_extension(const std::basic_string<Char_T>& str)
 {
 	std::size_t dot = str.rfind('.');
 	if (dot == std::basic_string<Char_T>::npos)

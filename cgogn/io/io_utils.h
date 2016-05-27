@@ -82,8 +82,8 @@ enum VolumeType
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
 CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
-CGOGN_IO_API FileType						get_file_type(const std::string& filename);
-CGOGN_IO_API DataType						get_data_type(const std::string& type_name);
+CGOGN_IO_API FileType						file_type(const std::string& filename);
+CGOGN_IO_API DataType						data_type(const std::string& type_name);
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
@@ -185,12 +185,15 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
 
 	virtual ~CharArrayBuffer();
+
 private:
+
 	virtual void imbue(const std::locale& __loc) override
 	{
 		cgogn_log_error("CharArrayBuffer::imbue") << "CharArrayBuffer::imbue method not implemented.";
 		return Inherit::imbue(__loc);
 	}
+
 	virtual Inherit*setbuf(char_type*, std::streamsize) override
 	{
 		cgogn_log_error("CharArrayBuffer::setbuf") << "CharArrayBuffer::setbuf does nothing.";
@@ -202,31 +205,37 @@ private:
 		cgogn_log_error("CharArrayBuffer::seekpos") << "CharArrayBuffer::setbuf does nothing.";
 		return pos_type(-1);
 	}
+
 	virtual int sync() override
 	{
 		cgogn_log_error("CharArrayBuffer::sync") << "CharArrayBuffer::sync does nothing.";
 		return Inherit::sync();
 	}
+
 	virtual std::streamsize showmanyc() override
 	{
 		return end_ - current_;
 	}
+
 	virtual std::streamsize xsgetn(char_type* __s, std::streamsize __n) override
 	{
 		return Inherit::xsgetn(__s, __n);
 	}
+
 	virtual int_type underflow() override
 	{
 		if (current_ == end_)
 			return traits_type::eof();
 		return traits_type::to_int_type(*current_);
 	}
+
 	virtual int_type uflow() override
 	{
 		if (current_ == end_)
 			return traits_type::eof();
 		return traits_type::to_int_type(*current_++);
 	}
+
 	virtual int_type pbackfail(int_type c) override
 	{
 		if (current_ == begin_ || (c != traits_type::eof() && c != current_[-1]))
@@ -234,17 +243,20 @@ private:
 
 		return traits_type::to_int_type(*--current_);
 	}
+
 	virtual std::streamsize xsputn(const char_type* , std::streamsize ) override
 	{
 		cgogn_log_error("CharArrayBuffer::xsputn") << "CharArrayBuffer::xsputn does nothing.";
 		return std::streamsize(-1);
 	}
+
 	virtual int_type overflow(int_type c) override
 	{
 		return Inherit::overflow(c);
 	}
 
 private:
+
 	const char* begin_;
 	const char* end_;
 	const char* current_;
@@ -258,6 +270,7 @@ private:
 class CGOGN_IO_API IMemoryStream : public std::istream
 {
 public:
+
 	using Inherit = std::istream;
 	using Self = IMemoryStream;
 
@@ -281,11 +294,14 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IMemoryStream);
 
 	virtual ~IMemoryStream() override;
+
 private:
+
 	CharArrayBuffer buffer_;
 };
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_IO_UTILS_H_

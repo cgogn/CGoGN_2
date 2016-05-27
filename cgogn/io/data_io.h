@@ -48,6 +48,7 @@ template<uint32 CHUNK_SIZE>
 class DataInputGen
 {
 public:
+
 	using Self = DataInputGen<CHUNK_SIZE>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
@@ -58,12 +59,12 @@ public:
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
-	virtual void* get_data() = 0;
-	virtual const void* get_data() const = 0;
+	virtual void* data() = 0;
+	virtual const void* data() const = 0;
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
 	/**
-	 * @brief simplify, transform a DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T ,T> into a DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>
+	 * @brief simplify, transform a DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T , T> into a DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>
 	 * @return a DataInput with T = BUFFER_T
 	 * WARNING : after a call to simplify, the data is moved to the returned DataInputGen, leaving an empty vector.
 	 */
@@ -73,7 +74,6 @@ public:
 	virtual ChunkArrayGen* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const = 0;
 
 	virtual uint32 nb_components() const = 0;
-
 
 	template<uint32 PRIM_SIZE>
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name);
@@ -88,13 +88,13 @@ public:
 	inline static std::unique_ptr<DataInputGen> newDataIO(const std::string type_name, uint32 nb_components);
 };
 
-
 template<uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename BUFFER_T, typename T = BUFFER_T>
 class DataInput : public DataInputGen<CHUNK_SIZE>
 {
 public:
+
 	using Inherit		= DataInputGen<CHUNK_SIZE>;
-	using Self			= DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T ,T> ;
+	using Self			= DataInput<CHUNK_SIZE, PRIM_SIZE, BUFFER_T , T> ;
 	using ChunkArrayGen	= typename Inherit::ChunkArrayGen;
 	using ChunkArray	= cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
@@ -107,7 +107,7 @@ public:
 	{}
 
 	inline DataInput(Self&& other) :
-	data_(std::move(other.data_))
+		data_(std::move(other.data_))
 	{}
 
 	inline DataInput& operator =(const Self& other)
@@ -141,7 +141,9 @@ public:
 
 				if (fp.eof() || fp.bad())
 					this->reset();
-			} else { // 2nd case : BUFFER_T and T are different.
+			}
+			else
+			{ // 2nd case : BUFFER_T and T are different.
 				std::vector<BUFFER_T> buffer(old_size+n);
 				fp.read(reinterpret_cast<char*>(&buffer[old_size]), n * sizeof(BUFFER_T));
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
@@ -156,7 +158,9 @@ public:
 				for (auto & x : buffer)
 					*dest_it++ = internal::convert<T>(x);
 			}
-		} else {
+		}
+		else
+		{
 			std::string line;
 			line.reserve(256);
 			std::size_t i = 0ul;
@@ -192,7 +196,9 @@ public:
 		if (binary)
 		{
 			fp.ignore(n * sizeof(BUFFER_T));
-		} else {
+		}
+		else
+		{
 			std::string line;
 			line.reserve(256);
 			std::size_t i = 0ul;
@@ -235,17 +241,17 @@ public:
 			ca->operator[](i++) = x;
 	}
 
-	virtual void* get_data() override
+	virtual void* data() override
 	{
 		return &data_;
 	}
 
-	virtual const void* get_data() const override
+	virtual const void* data() const override
 	{
 		return &data_;
 	}
 
-	inline std::vector<T> const * get_vec() const
+	inline std::vector<T> const * vec() const
 	{
 		return &data_;
 	}
@@ -262,14 +268,15 @@ public:
 
 	virtual std::unique_ptr<Inherit> simplify() override
 	{
-		std::unique_ptr<DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>> res = make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, T ,T>>();
-		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->get_data()));
+		std::unique_ptr<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>> res = make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>>();
+		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->data()));
 		res_vec = std::move(this->data_);
 		this->data_ = std::vector<T>();
 		return std::unique_ptr<Inherit>(res.release());
 	}
 
 private:
+
 	std::vector<T> data_;
 };
 
@@ -277,19 +284,20 @@ template<uint32 CHUNK_SIZE>
 template<uint32 PRIM_SIZE>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
-	const DataType type = get_data_type(type_name);
-	switch (type) {
-		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float32>>();
-		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float64>>();
-		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char>>();
-		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t>>();
-		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t>>();
-		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int16_t>>();
-		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint16_t>>();
-		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int32_t>>();
-		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint32_t>>();
-		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t>>();
-		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t>>();
+	const DataType type = data_type(type_name);
+	switch (type)
+	{
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float32>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float64>>();
+		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, char>>();
+		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int8_t>>();
+		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint8_t>>();
+		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int16_t>>();
+		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint16_t>>();
+		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int32_t>>();
+		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint32_t>>();
+		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int64_t>>();
+		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint64_t>>();
 		default:
 			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
@@ -300,19 +308,20 @@ template<uint32 CHUNK_SIZE>
 template<uint32 PRIM_SIZE, typename T>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
-	const DataType type = get_data_type(type_name);
-	switch (type) {
-		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float32,T>>();
-		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,float64,T>>();
-		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,char,T>>();
-		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int8_t,T>>();
-		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint8_t,T>>();
-		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int16_t,T>>();
-		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint16_t,T>>();
-		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int32_t,T>>();
-		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint32_t,T>>();
-		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::int64_t,T>>();
-		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE,std::uint64_t,T>>();
+	const DataType type = data_type(type_name);
+	switch (type)
+	{
+		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float32, T>>();
+		case DataType::DOUBLE:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float64, T>>();
+		case DataType::CHAR:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, char, T>>();
+		case DataType::INT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int8_t, T>>();
+		case DataType::UINT8:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint8_t, T>>();
+		case DataType::INT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int16_t, T>>();
+		case DataType::UINT16:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint16_t, T>>();
+		case DataType::INT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int32_t, T>>();
+		case DataType::UINT32:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint32_t, T>>();
+		case DataType::INT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::int64_t, T>>();
+		case DataType::UINT64:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, std::uint64_t, T>>();
 		default:
 			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen<CHUNK_SIZE>>();
@@ -336,7 +345,9 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 			case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4i>>(); break;
 			default:break;
 		}
-	} else {
+	}
+	else
+	{
 		if (type_name == name_of_type(float32()))
 		{
 			switch (nb_components)
@@ -346,7 +357,9 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 				case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4f>>(); break;
 				default:break;
 			}
-		} else {
+		}
+		else
+		{
 			if (type_name == name_of_type(float64()))
 			{
 				switch (nb_components)
@@ -370,35 +383,39 @@ std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(co
 {
 	cgogn_assert(nb_components >=1u && nb_components <= 4u);
 	if (nb_components == 1u)
-		return DataInputGen<CHUNK_SIZE>::newDataIO<PRIM_SIZE,T>(type_name);
+		return DataInputGen<CHUNK_SIZE>::newDataIO<PRIM_SIZE, T>(type_name);
 
 	if (type_name == name_of_type(std::int32_t()))
 	{
 		switch (nb_components)
 		{
-			case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2i,T>>(); break;
-			case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3i,T>>(); break;
-			case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4i,T>>(); break;
+			case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2i, T>>(); break;
+			case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3i, T>>(); break;
+			case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4i, T>>(); break;
 			default:break;
 		}
-	} else {
+	}
+	else
+	{
 		if (type_name == name_of_type(float32()))
 		{
 			switch (nb_components)
 			{
-				case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2f,T>>(); break;
-				case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3f,T>>(); break;
-				case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4f,T>>(); break;
+				case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2f, T>>(); break;
+				case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3f, T>>(); break;
+				case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4f, T>>(); break;
 				default:break;
 			}
-		} else {
+		}
+		else
+		{
 			if (type_name == name_of_type(float64()))
 			{
 				switch (nb_components)
 				{
-					case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2d,T>>(); break;
-					case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3d,T>>(); break;
-					case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4d,T>>(); break;
+					case 2u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector2d, T>>(); break;
+					case 3u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector3d, T>>(); break;
+					case 4u: return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, Eigen::Vector4d, T>>(); break;
 					default:break;
 				}
 			}
@@ -414,6 +431,7 @@ extern template class CGOGN_IO_API DataInputGen<DefaultMapTraits::CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DATA_IO_CPP_))
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_DATA_IO_H_
