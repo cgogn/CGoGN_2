@@ -125,7 +125,7 @@ class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 public:
 
 	using Inherit = CellMarker_T<MAP, ORBIT>;
-	using Self = CellMarkerStore< MAP, ORBIT >;
+	using Self = CellMarkerStore<MAP, ORBIT>;
 	using Map = typename Inherit::Map;
 
 protected:

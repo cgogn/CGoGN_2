@@ -42,10 +42,6 @@ public:
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
-	template <typename T>
-	using VertexAttribute = typename MAP::VertexAttribute<T>;
-	template <Orbit ORBIT>
-	using CellMarkerStore = typename MAP::CellMarkerStore<ORBIT>;
 
 	using iterator = std::vector<Dart>::iterator;
 	using const_iterator = std::vector<Dart>::const_iterator;
@@ -87,7 +83,7 @@ public:
 	void collect_within_sphere(
 		const Vertex center,
 		Scalar radius,
-		const VertexAttribute<VEC3>& position
+		const typename MAP::template VertexAttribute<VEC3>& position
 	)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -99,16 +95,16 @@ public:
 		{
 			case Vertex::ORBIT: {
 				const VEC3& center_position = position[center];
-				cells_[ORBIT].push_back(center);
-				CellMarkerStore<Vertex> cmv(map_);
+				cells_[ORBIT].push_back(center.dart);
+				typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(map_);
 				uint32 i = 0;
 				while (i < cells_[ORBIT].size())
 				{
-					map.foreach_adjacent_vertex_through_edge([] (Vertex nv)
+					map_.foreach_adjacent_vertex_through_edge(Vertex(cells_[ORBIT][i]), [&] (Vertex nv)
 					{
 						if (!cmv.is_marked(nv) && (position[nv] - center_position).norm() < radius)
 						{
-							cells_[ORBIT].push_back(nv);
+							cells_[ORBIT].push_back(nv.dart);
 							cmv.mark(nv);
 						}
 					});

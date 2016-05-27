@@ -26,6 +26,7 @@
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/selection.h>
+#include <cgogn/geometry/algos/length.h>
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -55,24 +56,27 @@ void curvature(
 	using Edge2 = Cell<Orbit::PHI2>;
 
 	// collect the normal cycle tensor
-	geometry::Collector<VEC3> neighborhood(map);
-	neigh.collect_within_sphere<Edge2>(v, radius, position);
-	Eigen::Matrix3d tensor(0);
+	geometry::Collector<VEC3, MAP> neighborhood(map);
+	neighborhood.template collect_within_sphere<Edge2>(v, radius, position);
+	Eigen::Matrix3d tensor;
+	tensor.setZero();
 	map.foreach_cell([&] (Edge2 e)
 	{
 		std::pair<Vertex2, Vertex2> vv = map.vertices(e);
 		const VEC3& p1 = position[vv.first];
 		const VEC3& p2 = position[vv.second];
 		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
-		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / edge_length(map, e, position));
+		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / length<VEC3>(map, e, position));
 	},
 	neighborhood);
+
+	const VEC3& normal_v = normal[v];
+	Eigen::Vector3d e_normal_v(normal_v[0], normal_v[1], normal_v[2]);
 
 	// project the tensor
 	Eigen::Matrix3d proj;
 	proj.setIdentity();
-	Eigen::Vector3d nv = normal[v];
-	proj -= nv * nv.transpose();
+	proj -= e_normal_v * e_normal_v.transpose();
 	tensor = proj * tensor * proj;
 
 	// solve eigen problem
@@ -90,45 +94,52 @@ void curvature(
 
 	// set curvatures from sorted eigen components
 	// warning : Kmin and Kmax are switched w.r.t. kmin and kmax
+
 	// normal direction : minimal absolute eigen value
-	Knormal[0] = evec(0, inormal);
-	Knormal[1] = evec(1, inormal);
-	Knormal[2] = evec(2, inormal);
-	if (Knormal * normal < 0) Knormal *= -1; // change orientation
+	VEC3& Knormal_v = Knormal[v];
+	Knormal_v[0] = evec(0, inormal);
+	Knormal_v[1] = evec(1, inormal);
+	Knormal_v[2] = evec(2, inormal);
+	if (Knormal_v.dot(normal_v) < 0)
+		Knormal_v *= Scalar(-1); // change orientation
+
 	// min curvature
-	kmin = ev[imin] ;
-	Kmin[0] = evec(0, imax);
-	Kmin[1] = evec(1, imax);
-	Kmin[2] = evec(2, imax);
+	kmin[v] = ev[imin];
+	VEC3& Kmin_v = Kmin[v];
+	Kmin_v[0] = evec(0, imax);
+	Kmin_v[1] = evec(1, imax);
+	Kmin_v[2] = evec(2, imax);
+
 	// max curvature
-	kmax = ev[imax] ;
-	Kmax[0] = evec(0, imin);
-	Kmax[1] = evec(1, imin);
-	Kmax[2] = evec(2, imin);
+	kmax[v] = ev[imax];
+	VEC3& Kmax_v = Kmax[v];
+	Kmax_v[0] = evec(0, imin);
+	Kmax_v[1] = evec(1, imin);
+	Kmax_v[2] = evec(2, imin);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
-void curvature(
-	const MAP& map,
-	const MASK& mask,
-	typename vector_traits<VEC3>::Scalar radius,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
-)
-{
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
-	{
-		curvature(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
-	},
-	mask);
-}
+//template <typename VEC3, typename MAP, typename MASK>
+//void curvature(
+//	const MAP& map,
+//	const MASK& mask,
+//	typename vector_traits<VEC3>::Scalar radius,
+//	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
+//	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
+//	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+//	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+//	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+//	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
+//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
+//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+//)
+//{
+//	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+//	{
+//		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+//	},
+//	mask);
+//}
 
 template <typename VEC3, typename MAP>
 void curvature(
@@ -145,7 +156,11 @@ void curvature(
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	{
+		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	});
+//	curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry
