@@ -25,9 +25,7 @@
 #define CGOGN_GEOMETRY_ALGOS_CURVATURE_H_
 
 #include <cgogn/geometry/types/geometry_traits.h>
-
 #include <cgogn/geometry/algos/selection.h>
-
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -40,19 +38,19 @@ template <typename VEC3, typename MAP>
 void curvature(
 	const MAP& map,
 	const Cell<Orbit::PHI21> v,
-	typename VEC3::Scalar radius,
+	typename vector_traits<VEC3>::Scalar radius,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmin,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Edge2 = Cell<Orbit::PHI2>;
 
@@ -113,13 +111,13 @@ template <typename VEC3, typename MAP, typename MASK>
 void curvature(
 	const MAP& map,
 	const MASK& mask,
-	typename VEC3::Scalar radius,
+	typename vector_traits<VEC3>::Scalar radius,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmin,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
@@ -135,13 +133,13 @@ void curvature(
 template <typename VEC3, typename MAP>
 void curvature(
 	const MAP& map,
-	typename VEC3::Scalar radius,
+	typename vector_traits<VEC3>::Scalar radius,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI21>& kmin,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal

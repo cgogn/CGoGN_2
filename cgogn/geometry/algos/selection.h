@@ -25,7 +25,6 @@
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 
 #include <cgogn/geometry/types/geometry_traits.h>
-
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -39,7 +38,7 @@ class Collector : public CellTraversor
 {
 public:
 
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;

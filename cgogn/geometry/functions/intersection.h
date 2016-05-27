@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -45,7 +46,7 @@ bool in_sphere(const VEC3& point, const VEC3& center, const typename VEC3::Scala
 template <typename VEC3>
 bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc, VEC3* inter = nullptr)
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 
 	VEC3 u = Ta - P ;
 	VEC3 v = Tb - P ;
@@ -110,13 +111,13 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 template <typename VEC3>
 bool intersection_sphere_edge(
 	const VEC3& center,
-	const typename VEC3::Scalar& radius,
+	const typename vector_traits<VEC3>::Scalar& radius,
 	const VEC3& p1,
 	const VEC3& p2,
-	typename VEC3::Scalar& alpha
+	typename vector_traits<VEC3>::Scalar& alpha
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 
 	if(in_sphere(p1, center, radius) && !in_sphere(p2, center, radius))
 	{

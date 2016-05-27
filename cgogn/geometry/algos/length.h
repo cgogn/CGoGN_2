@@ -48,7 +48,7 @@ inline VEC3 vector_from(
 }
 
 template <typename VEC3, typename MAP>
-inline typename VEC3::Scalar length(
+inline typename vector_traits<VEC3>::Scalar length(
 	const MAP& map,
 	const typename MAP::Edge e,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -83,7 +83,7 @@ inline void length(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline typename VEC3::Scalar mean_edge_length(
+inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -113,7 +113,7 @@ inline typename VEC3::Scalar mean_edge_length(
 }
 
 template <typename VEC3, typename MAP>
-inline typename VEC3::Scalar mean_edge_length(
+inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )

@@ -28,11 +28,11 @@
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/basic/dart_marker.h>
 
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/area.h>
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/geometry/functions/distance.h>
-#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <tuple>
 
@@ -48,19 +48,19 @@ inline void picking_internal_face(
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>>& selected
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename vector_traits<VEC3>::Scalar>>& selected
 )
 {
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
 
 	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
 	AB.normalize();
 
 	// thread data
-	using Triplet = typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>>;
+	using Triplet = typename std::vector<std::tuple<Face, VEC3, Scalar>>;
 	std::vector<Triplet> selected_th(cgogn::get_nb_threads());
 	std::vector<std::vector<uint32>> ear_indices_th(cgogn::get_nb_threads());
 
@@ -120,7 +120,9 @@ bool picking(
 	typename std::vector<typename MAP::Face>& selected
 )
 {
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename VEC3::Scalar>> sel;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, Scalar>> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
@@ -140,11 +142,11 @@ bool picking(
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
 
-	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
+	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
@@ -186,12 +188,12 @@ bool picking(
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
 
-	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
+	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
@@ -236,10 +238,11 @@ bool picking(
 {
 	// here used Face2 for selecting the 2 volumes incident to selected faces
 
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
 
-	typename std::vector<std::tuple<Face, VEC3, typename VEC3::Scalar>> sel;
+	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	selected.clear();

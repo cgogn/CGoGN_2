@@ -24,9 +24,9 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_CENTROID_H_
 #define CGOGN_GEOMETRY_ALGOS_CENTROID_H_
 
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/utils/masks.h>
-#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -49,7 +49,7 @@ inline VEC centroid(
 		result += attribute[v];
 		++count;
 	});
-	result /= typename VEC::Scalar(count);
+	result /= typename vector_traits<VEC>::Scalar(count);
 	return result;
 }
 

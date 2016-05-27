@@ -26,6 +26,7 @@
 
 #include <set>
 
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/normal.h>
 #include <cgogn/geometry/functions/inclusion.h>
 
@@ -40,7 +41,7 @@ class EarTriangulation
 {
 	using Vertex = typename MAP::Vertex;
 	using Face   = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 
 	class VertexPoly
 	{

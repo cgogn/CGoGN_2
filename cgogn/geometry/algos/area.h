@@ -24,6 +24,7 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_AREA_H_
 #define CGOGN_GEOMETRY_ALGOS_AREA_H_
 
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/area.h>
 #include <cgogn/geometry/algos/centroid.h>
 
@@ -36,13 +37,13 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-inline typename VEC3::Scalar convex_area(
+inline typename vector_traits<VEC3>::Scalar convex_area(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 
 	if (map.codegree(f) == 3)
@@ -60,7 +61,7 @@ inline typename VEC3::Scalar convex_area(
 }
 
 template <typename VEC3, typename MAP>
-inline typename VEC3::Scalar area(
+inline typename vector_traits<VEC3>::Scalar area(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -74,9 +75,9 @@ inline auto area(
 	const MAP& map,
 	const CellType c,
 	const typename MAP::template VertexAttribute<VEC3>& position
-) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, typename VEC3::Scalar>::type
+) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, typename vector_traits<VEC3>::Scalar>::type
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Face = typename MAP::Face;
 
 	Scalar cell_area(0);
@@ -92,7 +93,7 @@ inline void area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& cell_area
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c, uint32)
@@ -106,20 +107,20 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& cell_area
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
 	area<VEC3, CellType>(map, CellFilters(), position, cell_area);
 }
 
 template <typename VEC3, typename CellType, typename MAP>
-inline typename VEC3::Scalar incident_faces_area(
+inline typename vector_traits<VEC3>::Scalar incident_faces_area(
 	const MAP& map,
 	const CellType c,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Face = typename MAP::Face;
 
 	Scalar area(0);
@@ -135,7 +136,7 @@ inline void incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c, uint32)
@@ -149,7 +150,7 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void incident_faces_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename VEC3::Scalar, CellType::ORBIT>& area
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
 	incident_faces_area<VEC3>(map, CellFilters(), position, area);
