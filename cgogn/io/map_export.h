@@ -33,6 +33,7 @@
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/normal.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 #include <cgogn/io/vtk_io.h>
@@ -47,7 +48,7 @@ namespace io
 {
 
 template <typename MAP>
-inline std::unique_ptr<VolumeExport<MAP>> newVolumeExport(const std::string& filename);
+inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& filename);
 
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options);
@@ -55,13 +56,13 @@ inline void export_volume(MAP& map3, const ExportOptions& options);
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options)
 {
-	auto ve = newVolumeExport<MAP>(options.filename_);
+	auto ve = new_volume_export<MAP>(options.filename_);
 	if (ve)
 		ve->export_file(map3,options);
 }
 
 template <typename MAP>
-inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& filename)
+inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -73,7 +74,7 @@ inline std::unique_ptr<VolumeExport<MAP> > newVolumeExport(const std::string& fi
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
 		default:
 			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<VolumeExport<MAP>> ();
+			return std::unique_ptr<VolumeExport<MAP>>();
 	}
 }
 
@@ -98,22 +99,24 @@ bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 	}
 
 	fp << "OFF" << std::endl;
-	fp << map.template nb_cells<Vertex::ORBIT>() << " "<< map.template nb_cells<Face::ORBIT>() << " 0" << std::endl; // nb_edge unused ?
+	fp << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Face::ORBIT>() << " 0" << std::endl; // nb_edge unused ?
 
 	// set precision for real output
-	fp<< std::setprecision(12);
+	fp << std::setprecision(12);
 
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_container_values(UINT_MAX);
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	ids.set_all_values(UINT_MAX);
+
 	uint32 count = 0;
+
 	map.foreach_cell([&] (Face f)
 	{
 		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			if (ids[v]==UINT_MAX)
+			if (ids[v] == UINT_MAX)
 			{
 				ids[v] = count++;
 				const VEC3& P = position[v];
@@ -180,26 +183,24 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-
-	ids.set_all_container_values(UINT_MAX);
+	ids.set_all_values(UINT_MAX);
 
 	uint32 count = 0;
-
-	static const uint32 BUFFER_SZ = 1024*1024;
+	static const uint32 BUFFER_SZ = 1024 * 1024;
 
 	std::vector<float32> buffer_pos;
-	buffer_pos.reserve(BUFFER_SZ+3);
+	buffer_pos.reserve(BUFFER_SZ + 3);
 
 	map.foreach_cell([&] (Face f)
 	{
 		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			if (ids[v]==UINT_MAX)
+			if (ids[v] == UINT_MAX)
 			{
 				ids[v] = count++;
 				VEC3 P = position[v];
 				// VEC3 can be double !
-				float32 Pf[3]={float32(P[0]),float32(P[1]),float32(P[2])};
+				float32 Pf[3] = { float32(P[0]), float32(P[1]), float32(P[2]) };
 				uint32* ui_vec = reinterpret_cast<uint32*>(Pf);
 				ui_vec[0] = swap_endianness_native_big(ui_vec[0]);
 				ui_vec[1] = swap_endianness_native_big(ui_vec[1]);
@@ -226,7 +227,7 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 
 	// second pass to save primitives
 	std::vector<uint32> buffer_prims;
-	buffer_prims.reserve(BUFFER_SZ+128);// + 128 to avoid re-allocations
+	buffer_prims.reserve(BUFFER_SZ + 128);// + 128 to avoid re-allocations
 
 	std::vector<uint32> prim;
 	prim.reserve(20);
@@ -247,13 +248,13 @@ bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>
 
 		if (buffer_prims.size() >= BUFFER_SZ)
 		{
-			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(uint32));
+			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
 			buffer_prims.clear();
 		}
 	});
 	if (!buffer_prims.empty())
 	{
-		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])),buffer_prims.size()*sizeof(uint32));
+		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
 		buffer_prims.clear();
 		buffer_prims.shrink_to_fit();
 	}
@@ -290,8 +291,10 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 	fp << std::endl << "# vertices" << std::endl;
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
 	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_container_values(UINT_MAX);
+	ids.set_all_values(UINT_MAX);
+
 	uint32 count = 1;
+
 	map.foreach_cell([&] (Face f)
 	{
 		map.foreach_incident_vertex(f, [&] (Vertex v)
@@ -332,7 +335,12 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
  * @return ok ?
  */
 template <typename VEC3, typename MAP>
-bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position,  const typename MAP::template VertexAttribute<VEC3>& normal, const std::string& filename)
+bool export_obj(
+	MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	const typename MAP::template VertexAttribute<VEC3>& normal,
+	const std::string& filename
+)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -350,8 +358,8 @@ bool export_obj(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 	fp << std::endl << "# vertices" << std::endl;
 	// two passes of traversal to avoid huge buffer (with same performance);
 	// first pass to save positions & store contiguous indices (from 1 because of obj format)
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_container_values(UINT_MAX);
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	ids.set_all_values(UINT_MAX);
 	uint32 count = 1;
 	std::vector<uint32> indices;
 	indices.reserve(map.template nb_cells<Vertex::ORBIT>());
@@ -564,8 +572,9 @@ template <typename VEC3, typename MAP>
 bool export_vtp(
 	MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template VertexAttribute<typename VEC3::Scalar>& scalar,
-	const std::string& filename)
+	const typename MAP::template VertexAttribute<typename geometry::vector_traits<VEC3>::Scalar>& scalar,
+	const std::string& filename
+)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -583,7 +592,7 @@ bool export_vtp(
 	fp << "<?xml version=\"1.0\"?>" << std::endl;
 	fp << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"BigEndian\">" << std::endl;
 	fp << "<PolyData>" <<  std::endl;
-	fp << "<Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfPolys=\""<< map.template nb_cells<Face::ORBIT>() << "\">" << std::endl;
+	fp << "<Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfPolys=\"" << map.template nb_cells<Face::ORBIT>() << "\">" << std::endl;
 	fp << "<Points>" << std::endl;
 	fp << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
 
@@ -591,11 +600,13 @@ bool export_vtp(
 
 	// first pass to store contiguous indices
 	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_container_values(UINT_MAX);
+	ids.set_all_values(UINT_MAX);
+
 	uint32 count = 0;
-	map.template foreach_cell([&] (Face f)
+
+	map.foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			if (ids[v]==UINT_MAX)
 			{
@@ -712,8 +723,10 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 
 	// first pass to save positions & store contiguous indices
 	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_container_values(UINT_MAX);
+	ids.set_all_values(UINT_MAX);
+
 	uint32 count = 0;
+
 	map.template foreach_cell([&] (Face f)
 	{
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -753,7 +766,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 }
 
 template <typename VEC3, typename MAP>
-bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
+bool export_ply_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -784,20 +797,18 @@ bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-
-	ids.set_all_container_values(UINT_MAX);
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	ids.set_all_values(UINT_MAX);
 
 	uint32 count = 0;
-
-	static const uint32 BUFFER_SZ = 1024*1024;
+	static const uint32 BUFFER_SZ = 1024 * 1024;
 
 	std::vector<VEC3> buffer_pos;
 	buffer_pos.reserve(BUFFER_SZ);
 
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			if (ids[v] == UINT_MAX)
 			{
@@ -821,16 +832,16 @@ bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute
 
 	// second pass to save primitives
 	std::vector<uint32> buffer_prims;
-	buffer_prims.reserve(BUFFER_SZ+128);// + 128 to avoid re-allocations
+	buffer_prims.reserve(BUFFER_SZ + 128);// + 128 to avoid re-allocations
 
 	std::vector<uint32> prim;
 	prim.reserve(20);
-	map.template foreach_cell([&] (Face f)
+	map.foreach_cell([&] (Face f)
 	{
 		uint32 valence = 0;
 		prim.clear();
 
-		map.template foreach_incident_vertex(f, [&] (Vertex v)
+		map.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			prim.push_back(ids[v]);
 			++valence;

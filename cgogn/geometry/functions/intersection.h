@@ -38,7 +38,7 @@ namespace geometry
  * \todo geometric predicate : move it to a specific location with other geometric predicates
  */
 template <typename VEC3>
-bool in_sphere(const VEC3& point, const VEC3& center, const typename VEC3::Scalar& radius)
+bool in_sphere(const VEC3& point, const VEC3& center, const typename vector_traits<VEC3>::Scalar& radius)
 {
 	return (point - center).norm() < radius;
 }
