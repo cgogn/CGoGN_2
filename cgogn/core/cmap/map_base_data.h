@@ -79,7 +79,7 @@ public:
 };
 
 // forward declaration of class Attribute_T
-template<typename DATA_TRAITS, typename T>
+template <typename DATA_TRAITS, typename T>
 class Attribute_T;
 
 // forward declaration of class Attribute
@@ -99,7 +99,7 @@ public:
 
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template<typename DT, typename T> friend class Attribute_T;
+	template <typename DT, typename T> friend class Attribute_T;
 	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>

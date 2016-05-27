@@ -54,14 +54,14 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x);
-template<typename T>
+template <typename T>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
-template<typename T>
+template <typename T>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x)
 {
 	if (binary)
@@ -70,7 +70,7 @@ inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::t
 		o << x;
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
 {
 	const std::size_t size = array.size();
@@ -83,7 +83,7 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_t
 	ostream_writer(o, binary, array[size-1ul]);
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
 {
 	const auto end = array.end();

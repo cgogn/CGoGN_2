@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class PlySurfaceImport : public SurfaceImport<MAP_TRAITS>
 {
 public:
@@ -45,7 +45,7 @@ public:
 	using Self = PlySurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit = SurfaceImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	inline PlySurfaceImport() {}
@@ -99,9 +99,9 @@ protected:
 		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
 		for (uint32 i = 0; i < this->nb_faces_; ++i)
 		{
-			uint32 n = pid.get_face_valence(i);
+			uint32 n = pid.face_valence(i);
 			this->faces_nb_edges_.push_back(n);
-			int* indices = pid.get_face_indices(i);
+			int* indices = pid.face_indices(i);
 			for (uint32 j = 0; j < n; ++j)
 			{
 				uint32 index = (uint32)(indices[j]);
@@ -120,7 +120,7 @@ extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::
 extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_PLY_IO_CPP_))
 
-}// namespace io
+} // namespace io
 
 } // namespace cgogn
 

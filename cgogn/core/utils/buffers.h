@@ -80,7 +80,6 @@ public:
 	}
 };
 
-
 template <>
 class Buffers<Dart>
 {
@@ -130,16 +129,7 @@ public:
 	inline std::vector<CELL>* cell_buffer()
 	{
 		static_assert(sizeof(CELL) == sizeof(Dart), "Cannot cast dart buffer in buffer of ??");
-		if (buffers_.empty())
-		{
-			std::vector<Dart>* v = new std::vector<Dart>;
-			v->reserve(DEFAULT_SIZE);
-			return reinterpret_cast<std::vector<CELL>*>(v);
-		}
-
-		std::vector<Dart>* v = buffers_.back();
-		buffers_.pop_back();
-		return reinterpret_cast<std::vector<CELL>*>(v);
+		return reinterpret_cast<std::vector<CELL>*>(buffer());
 	}
 
 	template <typename CELL>

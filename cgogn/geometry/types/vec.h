@@ -44,7 +44,7 @@ namespace geometry
  * @brief The Vec_T class, designed to mimic Eigen's Vector interface.
  * The template parameter is the kind of container you want to use to store your vec (std::array)
  * The Container class must provide an iterator nested type and the following methods :
- *  -operator []
+ *  -operator[]
  *  -begin()
  *  -end()
  * Its size has to be known at compile time

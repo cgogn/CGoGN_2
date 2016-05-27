@@ -62,17 +62,17 @@ public:
 	template <typename T>
 	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
-	template<typename T, Orbit ORBIT>
+	template <typename T, Orbit ORBIT>
 	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
-	template<typename T>
+	template <typename T>
 	using DartAttribute = Attribute<T, Self::DART>;
-	template<typename T>
+	template <typename T>
 	using VertexAttribute = Attribute<T, Self::VERTEX>;
-	template<typename T>
+	template <typename T>
 	using EdgeAttribute = Attribute<T, Self::EDGE>;
-	template<typename T>
+	template <typename T>
 	using FaceAttribute = Attribute<T, Self::FACE>;
-	template<typename T>
+	template <typename T>
 	using VolumeAttribute = Attribute<T, Self::VOLUME>;
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;

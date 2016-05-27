@@ -566,7 +566,7 @@ public:
 	 * @brief container compacting
 	 * @return map_old_new vector that contains a map from old indices to new indices (holes & unchanged -> 0xffffffff)
 	 */
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	std::vector<uint32> compact()
 	{
 		if (this->holes_stack_.empty())
@@ -579,9 +579,9 @@ public:
 		{
 			down = holes_stack_.head();
 			if (down < nb_used_lines_)
-				for(uint32 i = 0u; i < PRIMSIZE; ++i)
+				for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 				{
-					const uint32 rdown = down + PRIMSIZE - 1u - i;
+					const uint32 rdown = down + PRIM_SIZE - 1u - i;
 					map_old_new[up] = rdown;
 					move_line(rdown, up,true,true);
 					rnext(up);
@@ -626,7 +626,7 @@ public:
 		return true;
 	}
 
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	std::vector<uint32> merge(const Self& cac)
 	{
 		// mapping table of ca indices of cac in this
@@ -663,8 +663,8 @@ public:
 		// copy data
 		for (uint32 it = cac.begin(); it != cac.end(); cac.next(it))
 		{
-			uint32 new_lines = this->insert_lines<PRIMSIZE>();
-			for(uint32 j = 0u; j < PRIMSIZE; ++j)
+			uint32 new_lines = this->insert_lines<PRIM_SIZE>();
+			for(uint32 j = 0u; j < PRIM_SIZE; ++j)
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
@@ -673,7 +673,7 @@ public:
 				for (uint32 k=0; k<nb_att; ++k)
 					table_arrays_[map_attrib[k]]->copy_external_element(nl, cac.table_arrays_[k], ol);
 			}
-			it += PRIMSIZE-1u;
+			it += PRIM_SIZE-1u;
 		}
 
 		return map_old_new;
@@ -694,13 +694,13 @@ public:
 	}
 
 	/**
-	* @brief insert a group of PRIMSIZE consecutive lines in the container
+	* @brief insert a group of PRIM_SIZE consecutive lines in the container
 	* @return index of the first line of group
 	*/
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	uint32 insert_lines()
 	{
-		static_assert(PRIMSIZE < CHUNK_SIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNK_SIZE");
+		static_assert(PRIM_SIZE < CHUNK_SIZE, "Cannot insert lines in a container if PRIM_SIZE < CHUNK_SIZE");
 
 		uint32 index;
 
@@ -715,7 +715,7 @@ public:
 				refs_.add_chunk();
 			}
 
-			if ((nb_max_lines_ + PRIMSIZE) % CHUNK_SIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
+			if ((nb_max_lines_ + PRIM_SIZE) % CHUNK_SIZE < PRIM_SIZE) // prim does not fit on current chunk? -> add chunk
 			{
 				// nb_max_lines_ = refs_.nb_chunks() * CHUNK_SIZE; // next index will be at start of new chunk
 
@@ -727,7 +727,7 @@ public:
 			}
 
 			index = nb_max_lines_;
-			nb_max_lines_ += PRIMSIZE;
+			nb_max_lines_ += PRIM_SIZE;
 		}
 		else
 		{
@@ -736,32 +736,32 @@ public:
 		}
 
 		// mark lines as used
-		for(uint32 i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 			refs_.set_value(index + i, 1u); // do not use [] in case of refs_ is bool
 
-		nb_used_lines_ += PRIMSIZE;
+		nb_used_lines_ += PRIM_SIZE;
 
 		return index;
 	}
 
 	/**
-	* @brief remove a group of PRIMSIZE lines in the container
+	* @brief remove a group of PRIM_SIZE lines in the container
 	* @param index index of one line of group to remove
 	*/
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	void remove_lines(uint32 index)
 	{
-		uint32 begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
+		uint32 begin_prim_idx = (index / PRIM_SIZE) * PRIM_SIZE;
 
 		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 
 		holes_stack_.push(begin_prim_idx);
 
 		// mark lines as unused
-		for(uint32 i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 			refs_.set_value(begin_prim_idx++, 0u); // do not use [] in case of refs_ is bool
 
-		nb_used_lines_ -= PRIMSIZE;
+		nb_used_lines_ -= PRIM_SIZE;
 	}
 
 	/**
@@ -833,23 +833,23 @@ public:
 	}
 
 	/**
-	* @brief increment the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief increment the reference counter of the given line (only for PRIM_SIZE==1)
 	* @param index index of the line
 	*/
 	void ref_line(uint32 index)
 	{
-		// static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "refLine with container where PRIM_SIZE!=1");
 		refs_[index]++;
 	}
 
 	/**
-	* @brief decrement the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief decrement the reference counter of the given line (only for PRIM_SIZE==1)
 	* @param index index of the line
 	* @return true if the line was removed
 	*/
 	bool unref_line(uint32 index)
 	{
-		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "unrefLine with container where PRIM_SIZE!=1");
 		cgogn_message_assert(refs_[index] > 1u, "Container: unref line with nb_ref == 1");
 
 		refs_[index]--;
@@ -870,7 +870,7 @@ public:
 	*/
 	T_REF nb_refs(uint32 index) const
 	{
-		// static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "getNbRefs with container where PRIM_SIZE!=1");
 		return refs_[index];
 	}
 

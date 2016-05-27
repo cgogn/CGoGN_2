@@ -384,7 +384,7 @@ protected:
 		marker.mark(d);
 		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
-			const Dart curr_dart = marked_darts->operator [](i);
+			const Dart curr_dart = marked_darts->operator[](i);
 			f(curr_dart);
 
 			const Dart d_1 = this->phi_1(curr_dart);
@@ -499,7 +499,7 @@ protected:
 		marker.mark(d);
 		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
-			const Dart curr_dart = marked_darts->operator [](i);
+			const Dart curr_dart = marked_darts->operator[](i);
 			if (!f(curr_dart))
 				break;
 

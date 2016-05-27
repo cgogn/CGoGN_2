@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class TetgenStructureVolumeImport : public VolumeImport<MAP_TRAITS>
 {
 public:
@@ -53,7 +53,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TetgenStructureVolumeImport);
 
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
@@ -78,7 +78,7 @@ protected:
 		for(uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
 		{
 			const unsigned id = this->insert_line_vertex_container();
-			position->operator [](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
+			position->operator[](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
 			vertices_indices.push_back(id);
 			p += 3 ;
 		}

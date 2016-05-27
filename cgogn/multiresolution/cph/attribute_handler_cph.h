@@ -34,7 +34,7 @@ namespace cgogn
  * \brief Attribute class
  * @TPARAM T the data type of the attribute to handlde
  */
-template<typename MAP, typename DATA_TRAITS, typename T, Orbit ORBIT>
+template <typename MAP, typename DATA_TRAITS, typename T, Orbit ORBIT>
 class AttributeCPH : public Attribute<DATA_TRAITS, T, ORBIT>
 {
 public:

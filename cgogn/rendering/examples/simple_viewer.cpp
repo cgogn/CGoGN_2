@@ -55,7 +55,7 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 

@@ -67,7 +67,7 @@ enum VTK_CELL_TYPES
 	VTK_QUADRATIC_HEXAHEDRON = 25
 };
 
-template<typename MAP>
+template <typename MAP>
 class VtkVolumeExport : public VolumeExport<MAP>
 {
 public:
@@ -197,7 +197,7 @@ protected:
 	}
 };
 
-template<uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
+template <uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
 class VtkIO
 {
 public:
@@ -211,7 +211,7 @@ public:
 
 	using Self = VtkIO<DEFAULT_CHUNK_SIZE, PRIM_SIZE, VEC3>;
 	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
-	template<typename T>
+	template <typename T>
 	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
@@ -761,7 +761,7 @@ protected:
 		return std::string();
 	}
 
-	template<typename T>
+	template <typename T>
 	static inline std::string vtk_name_of_type(const T& t)
 	{
 		static_assert(std::is_arithmetic<T>::value, "T must be a scalar.");
@@ -800,7 +800,7 @@ public:
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
 	using Inherit_Import = SurfaceImport<MAP_TRAITS>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
-	template<typename T>
+	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 
 	virtual ~VtkSurfaceImport() override
@@ -937,7 +937,7 @@ public:
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
 	using Inherit_Import = VolumeImport<MAP_TRAITS>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
-	template<typename T>
+	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;

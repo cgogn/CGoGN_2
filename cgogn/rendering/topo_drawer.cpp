@@ -35,7 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-TopoDrawer::TopoDrawer():
+TopoDrawer::TopoDrawer() :
 	dart_color_(255, 255, 255),
 	phi2_color_(255, 0, 0),
 	phi3_color_(255, 255, 0),
@@ -48,10 +48,9 @@ TopoDrawer::TopoDrawer():
 }
 
 TopoDrawer::~TopoDrawer()
-{
-}
+{}
 
-TopoDrawer::Renderer::Renderer(TopoDrawer* tr):
+TopoDrawer::Renderer::Renderer(TopoDrawer* tr) :
 	topo_drawer_data_(tr)
 {
 	param_bl_ = ShaderBoldLine::generate_param();

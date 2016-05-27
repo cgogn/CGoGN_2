@@ -92,7 +92,7 @@ TEST_F(ChunkArrayContainerTest, test_compact)
 	for (uint32 i=0; i<20; ++i)
 	{
 		ca_cont.insert_lines<1>();
-		indices->operator [](i) = i;
+		indices->operator[](i) = i;
 	}
 
 	ca_cont.remove_lines<1>(0);
@@ -118,11 +118,11 @@ TEST_F(ChunkArrayContainerTest, test_compact)
 	EXPECT_EQ(ca_cont.size(),6);
 
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
-//		std::cout << i << " => "<<indices->operator [](i)<< std::endl;
+//		std::cout << i << " => "<<indices->operator[](i)<< std::endl;
 
 	std::vector<DATA> after;
 	for (uint32 i = ca_cont.begin(); i != ca_cont.end(); ca_cont.next(i))
-		after.push_back(indices->operator [](i));
+		after.push_back(indices->operator[](i));
 
 	auto contains = [&] (DATA x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
@@ -150,12 +150,12 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 	for (uint32 i = 0; i < 10; ++i)
 	{
 		ca_cont.insert_lines<3>();
-		indices->operator [](i) = i;
+		indices->operator[](i) = i;
 	}
 
 	for (uint32 i = 0; i < 30; ++i)
 	{
-		indices->operator [](i) = i;
+		indices->operator[](i) = i;
 	}
 
 	ca_cont.remove_lines<3>(0);
@@ -172,11 +172,11 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 	EXPECT_EQ(ca_cont.size(),15);
 
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
-//		std::cout << i << " => "<<indices->operator [](i)<< std::endl;
+//		std::cout << i << " => "<<indices->operator[](i)<< std::endl;
 
 	std::vector<DATA> after;
 	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
-		after.push_back(indices->operator [](i));
+		after.push_back(indices->operator[](i));
 
 	auto contains = [&] (DATA x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
@@ -226,8 +226,8 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	for (uint32 i=0; i<10; ++i)
 	{
 		ca_cont.insert_lines<1>();
-		data_i->operator [](i) = i;
-		data_f->operator [](i) = 0.01f*i;
+		data_i->operator[](i) = i;
+		data_f->operator[](i) = 0.01f*i;
 	}
 	ca_cont.remove_lines<1>(2);
 	ca_cont.remove_lines<1>(4);
@@ -236,9 +236,9 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	for (uint32 i=0; i<10; ++i)
 	{
 		ca_cont2.insert_lines<1>();
-		data2_i->operator [](i) = 100+i;
+		data2_i->operator[](i) = 100+i;
 		float32 x = 100.0f+0.01f*i;
-		data2_v->operator [](i) = {{x,x,x}};
+		data2_v->operator[](i) = {{x,x,x}};
 	}
 	ca_cont2.remove_lines<1>(3);
 	ca_cont2.remove_lines<1>(6);
@@ -261,9 +261,9 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //	{
 //		std::cout << i << " => ";
-//		std::cout << data_i->operator [](i) <<" / ";
-//		std::cout << data_f->operator [](i) <<" / ";
-//		const VEC3F& X= data_v->operator [](i);
+//		std::cout << data_i->operator[](i) <<" / ";
+//		std::cout << data_f->operator[](i) <<" / ";
+//		const VEC3F& X= data_v->operator[](i);
 //		std::cout << X[0]<< "," << X[1]<< "," << X[2];
 //		std::cout << std::endl;
 //	}
@@ -275,7 +275,7 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	// check contains of result
 	std::vector<int32> after;
 	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
-		after.push_back(data_i->operator [](i));
+		after.push_back(data_i->operator[](i));
 
 	auto contains = [&] (uint32 x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
@@ -316,8 +316,8 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	for (uint32 i=0; i<9; ++i)
 	{
-		data_i->operator [](i) = i;
-		data_f->operator [](i) = 0.01f*i;
+		data_i->operator[](i) = i;
+		data_f->operator[](i) = 0.01f*i;
 	}
 
 	ca_cont.remove_lines<3>(4);
@@ -327,10 +327,10 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	for (uint32 i=0; i<9; ++i)
 	{
-		data2_i->operator [](i) = 100+i;
+		data2_i->operator[](i) = 100+i;
 		float32 x = 100.0f+0.01f*i;
-		data2_v->operator [](i) = {{x,x,x}};
-		data2_b->operator [](i) = true;
+		data2_v->operator[](i) = {{x,x,x}};
+		data2_b->operator[](i) = true;
 	}
 
 	ca_cont2.remove_lines<3>(5);
@@ -353,10 +353,10 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //	{
 //		std::cout << i << " => ";
-//		std::cout << data_i->operator [](i) <<" / ";
-//		std::cout << data_f->operator [](i) <<" / ";
-//		const VEC3F& X= data_v->operator [](i);
-//		std::cout << X[0]<< "," << X[1]<< "," << X[2] << " / " << data_b->operator [](i);
+//		std::cout << data_i->operator[](i) <<" / ";
+//		std::cout << data_f->operator[](i) <<" / ";
+//		const VEC3F& X= data_v->operator[](i);
+//		std::cout << X[0]<< "," << X[1]<< "," << X[2] << " / " << data_b->operator[](i);
 //		std::cout << std::endl;
 //	}
 //	std::cout << "=============================" << std::endl;
@@ -371,8 +371,8 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 	uint32 nb_true=0u;
 	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 	{
-		after.push_back(data_i->operator [](i));
-		if (data_b->operator [](i))
+		after.push_back(data_i->operator[](i));
+		if (data_b->operator[](i))
 			nb_true++;
 	}
 

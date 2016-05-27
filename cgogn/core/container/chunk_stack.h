@@ -52,7 +52,7 @@ public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
-	inline ChunkStack():
+	inline ChunkStack() :
 		Inherit(),
 		stack_size_(0u)
 	{}

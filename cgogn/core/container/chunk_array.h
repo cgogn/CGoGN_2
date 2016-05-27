@@ -386,7 +386,7 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief ref operator[]
 	 * @param i index of element to access
 	 * @return ref to the element
 	 */
@@ -397,7 +397,7 @@ public:
 	}
 
 	/**
-	 * @brief const ref operator []
+	 * @brief const ref operator[]
 	 * @param i index of element to access
 	 * @return const ref to the element
 	 */
@@ -435,12 +435,12 @@ public:
 	virtual uint32 nb_components() const override
 	{
 		// Warning : the line 0 might be unused.
-		return type_traits::nb_components(this->operator [](0u));
+		return type_traits::nb_components(this->operator[](0u));
 	}
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
 	{
-		serialization::ostream_writer(o, binary, this->operator [](idx));
+		serialization::ostream_writer(o, binary, this->operator[](idx));
 	}
 };
 
@@ -701,7 +701,7 @@ public:
 	}
 
 	/**
-	 * @brief operator []
+	 * @brief operator[]
 	 * @param i index of element to access
 	 * @return value of the element
 	 */
@@ -800,7 +800,7 @@ public:
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
 	{
-		serialization::ostream_writer(o,binary, this->operator [](idx));
+		serialization::ostream_writer(o,binary, this->operator[](idx));
 	}
 };
 

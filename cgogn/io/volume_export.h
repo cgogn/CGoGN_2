@@ -52,7 +52,7 @@ struct ExportOptions
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 };
 
-template<typename MAP>
+template <typename MAP>
 class VolumeExport
 {
 public:

@@ -36,7 +36,7 @@ namespace cgogn
 namespace rendering
 {
 
-DisplayListDrawer::DisplayListDrawer():
+DisplayListDrawer::DisplayListDrawer() :
 	current_size_(1.0f),
 	current_aa_(true),
 	current_ball_(true)

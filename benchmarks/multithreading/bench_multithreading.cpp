@@ -84,7 +84,7 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -125,7 +125,7 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -185,7 +185,7 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 }
 
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -226,7 +226,7 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())

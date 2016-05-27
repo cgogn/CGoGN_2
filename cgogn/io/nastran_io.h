@@ -40,7 +40,7 @@ namespace cgogn
 namespace io
 {
 
-template<typename VEC3>
+template <typename VEC3>
 class NastranIO
 {
 public:
@@ -110,7 +110,7 @@ protected:
 			const uint32 old_index = std::stoi(s_v);
 			const uint32 new_index = this->insert_line_vertex_container();
 			old_new_ids_map[old_index] = new_index;
-			auto& v = position->operator [](new_index);
+			auto& v = position->operator[](new_index);
 
 			s_v = line.substr(24,8);
 			v[0] = this->parse_scalar(s_v);

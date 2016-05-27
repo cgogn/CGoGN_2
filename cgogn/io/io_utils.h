@@ -94,7 +94,7 @@ namespace internal
 {
 
 // #1 return default value when U and T don't have the same nb of components.
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value,U>::type
 {
 	cgogn_log_warning("convert") << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\".";
@@ -102,14 +102,14 @@ inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::int
 }
 
 // #2 cast x if both types have only one component.
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T&x) -> typename std::enable_if<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,U>::type
 {
 	return U(x);
 }
 
 // #3 copy component by component if both type have the same number of components (>1)
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
 {
 	U res;
@@ -119,13 +119,13 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 }
 
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type swap_endianness(const T& x)
 {
 	return ::cgogn::swap_endianness(x);
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endianness(T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
@@ -133,14 +133,14 @@ inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endi
 	return x;
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
 	return iss;
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)

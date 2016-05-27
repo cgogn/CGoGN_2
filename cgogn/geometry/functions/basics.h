@@ -39,7 +39,7 @@ namespace geometry
  * @brief normalize_safe, normalize a non-zero vector
  * @param v
  */
-template<typename VEC>
+template <typename VEC>
 inline void normalize_safe(VEC& v)
 {
 	using Scalar = typename vector_traits<VEC>::Scalar;

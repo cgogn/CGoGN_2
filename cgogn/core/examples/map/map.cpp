@@ -77,16 +77,15 @@ int test1(MAP& map)
 	Dart d1 = map.add_face(3).dart;
 
 	// get cell buffer typed
-//	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();
+	std::vector<typename MAP::Vertex>* vertb = cgogn::dart_buffers()->cell_buffer<typename MAP::Vertex>();
 
-	std::vector<Dart>* vertdb = cgogn::dart_buffers()->buffer();
-	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
+//	std::vector<Dart>* vertdb = cgogn::dart_buffers()->buffer();
+//	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
 
-	vert_b->push_back(typename MAP::Vertex(d1));
-	vert_b->push_back(typename MAP::Vertex(d1));
+	vertb->push_back(typename MAP::Vertex(d1));
+	vertb->push_back(typename MAP::Vertex(d1));
 
-	cgogn::dart_buffers()->release_cell_buffer(vertdb);
-//	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
+	cgogn::dart_buffers()->release_cell_buffer(vertb);
 
 	DartMarker<MAP> dm(map);
 	CellMarker<MAP, MAP::Vertex::ORBIT> cm(map);

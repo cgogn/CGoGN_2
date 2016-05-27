@@ -124,7 +124,7 @@ public:
 	QColor color_;
 	float32 size_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh):
+	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		size_(1.0)
@@ -161,7 +161,7 @@ public:
 
 	float32 size_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh):
+	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh) :
 		ShaderParam(sh),
 		size_(1.0)
 	{}

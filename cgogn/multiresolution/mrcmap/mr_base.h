@@ -39,7 +39,7 @@ class MRBase
 public:
 	using Self = MRBase<MAP>;
 
-	template<typename T>
+	template <typename T>
 	using ChunkArray =  typename MAP::template ChunkArray<T>;
 
 protected:

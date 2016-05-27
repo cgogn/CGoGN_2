@@ -33,12 +33,12 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class LM6VolumeImport : public VolumeImport<MAP_TRAITS>
 {
 	using Inherit = VolumeImport<MAP_TRAITS>;
 	using Self = LM6VolumeImport<MAP_TRAITS,VEC3>;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	// MeshImportGen interface
@@ -86,9 +86,9 @@ protected:
 			uint32 idx = this->insert_line_vertex_container();
 			std::array<float32, 3> v;
 			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-			position->operator [](idx)[0] = v[0];
-			position->operator [](idx)[1] = v[1];
-			position->operator [](idx)[2] = v[2];
+			position->operator[](idx)[0] = v[0];
+			position->operator[](idx)[1] = v[1];
+			position->operator[](idx)[2] = v[2];
 		}
 
 		if (number_of_tetras > 0)

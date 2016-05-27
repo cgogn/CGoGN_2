@@ -173,7 +173,7 @@ protected:
 		return idx;
 	}
 
-//	template<Orbit ORBIT>
+//	template <Orbit ORBIT>
 //	inline void compact_orbit_container()
 //	{
 //		if (!this->template is_embedded<ORBIT>())

@@ -38,7 +38,7 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class TetgenVolumeImport : public VolumeImport<MAP_TRAITS>
 {
 public:
@@ -116,7 +116,7 @@ protected:
 			const uint32 new_index = this->insert_line_vertex_container();
 			old_new_ids_map[old_index] = new_index;
 
-			auto& v = position->operator [](new_index);
+			auto& v = position->operator[](new_index);
 			iss >> v[0];
 			iss >> v[1];
 			iss >> v[2];

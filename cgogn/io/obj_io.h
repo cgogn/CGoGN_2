@@ -36,7 +36,7 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class ObjSurfaceImport : public SurfaceImport<MAP_TRAITS>
 {
 public:
@@ -44,7 +44,7 @@ public:
 	using Self = ObjSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit = SurfaceImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	inline ObjSurfaceImport() {}

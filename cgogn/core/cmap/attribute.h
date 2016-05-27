@@ -115,7 +115,7 @@ public:
  * @TPARAM T the data type of the attribute to handlde
  * In this class we do not know the orbit of the Attribute.
  */
-template<typename DATA_TRAITS, typename T>
+template <typename DATA_TRAITS, typename T>
 class Attribute_T : public AttributeGen<DATA_TRAITS>
 {
 public:
@@ -214,13 +214,13 @@ public:
 	 * \brief affect a value to all elements of container (even holes)
 	 * @param val value to affect
 	 */
-	inline void set_all_container_values(const T& val)
+	inline void set_all_values(const T& val)
 	{
 		chunk_array_->set_all_values(val);
 	}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param i
 	 * @return
 	 */
@@ -231,7 +231,7 @@ public:
 	}
 
 	/**
-	 * \brief const operator []
+	 * \brief const operator[]
 	 * @param i
 	 * @return
 	 */
@@ -240,16 +240,6 @@ public:
 		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](i);
 	}
-
-//	/**
-//	 * @brief set_value method to write in boolean Attributes
-//	 * @param i
-//	 * @param t
-//	 */
-//	inline void set_value(uint32 i, const T& t)
-//	{
-//		chunk_array_->set_value(i, t);
-//	}
 
 	virtual const std::string& name() const override
 	{
@@ -387,7 +377,7 @@ public:
 	using Self = Attribute<DATA_TRAITS, T, ORBIT>;
 	using MapData = typename Inherit::MapData;
 	using TChunkArray = typename Inherit::TChunkArray;
-	using Inherit::operator [];
+	using Inherit::operator[];
 
 	/**
 	 * \brief Default constructor
@@ -444,7 +434,7 @@ public:
 	{}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param c
 	 * @return
 	 */
@@ -455,7 +445,7 @@ public:
 	}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param c
 	 * @return
 	 */
@@ -464,16 +454,6 @@ public:
 		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
 		return this->chunk_array_->operator[](this->map_->embedding(c));
 	}
-
-//	/**
-//	 * @brief set_value method to write in boolean Attributes
-//	 * @param c
-//	 * @param t
-//	 */
-//	inline void set_value(Cell<ORBIT> c, const T& t)
-//	{
-//		this->chunk_array_->set_value(this->map_->embedding(c), t);
-//	}
 
 	inline Orbit orbit() const
 	{

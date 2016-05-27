@@ -139,7 +139,7 @@ void WallPaper::set_local_position(float x, float y, float w, float h, bool fron
 	vbo_pos_->release_pointer();
 }
 
-WallPaper::Renderer::Renderer(WallPaper* wp):
+WallPaper::Renderer::Renderer(WallPaper* wp) :
 	wall_paper_data_(wp)
 {
 	param_texture_ = ShaderTexture::generate_param();

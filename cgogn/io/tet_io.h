@@ -37,12 +37,12 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class TetVolumeImport : public VolumeImport<MAP_TRAITS>
 {
 	using Inherit = VolumeImport<MAP_TRAITS>;
 	using Self = TetVolumeImport<MAP_TRAITS,VEC3>;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
@@ -82,7 +82,7 @@ protected:
 			} while (line.empty());
 
 			const uint32 new_id = this->insert_line_vertex_container();
-			auto& v = position->operator [](new_id);
+			auto& v = position->operator[](new_id);
 			std::istringstream iss(line);
 			iss >> v[0];
 			iss >> v[1];
@@ -139,7 +139,7 @@ protected:
 	}
 };
 
-template<typename MAP>
+template <typename MAP>
 class TetVolumeExport : public VolumeExport<MAP>
 {
 public:

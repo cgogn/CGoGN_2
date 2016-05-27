@@ -79,7 +79,7 @@ public:
 	ThreadPool();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
-	template<class F, class... Args>
+	template <class F, class... Args>
 	auto enqueue(const F& f, Args&&... args)
 	-> std::future<typename std::result_of<F(uint32, Args...)>::type>;
 
@@ -105,7 +105,7 @@ private:
 };
 
 // add new work item to the pool
-template<class F, class... Args>
+template <class F, class... Args>
 auto ThreadPool::enqueue(const F& f, Args&&... args)
 -> std::future<typename std::result_of<F(uint32, Args...)>::type>
 {

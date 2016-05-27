@@ -33,7 +33,7 @@ namespace cgogn
 namespace geometry
 {
 
-template<typename ATTR>
+template <typename ATTR>
 void compute_AABB(const ATTR& attr, AABB<inside_type(ATTR)>& bb)
 {
 	bb.reset();

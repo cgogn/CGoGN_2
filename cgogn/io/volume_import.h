@@ -170,7 +170,7 @@ protected:
 		return nb_volumes_;
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline ChunkArray<VEC3>* position_attribute()
 	{
 		auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
@@ -514,7 +514,7 @@ protected:
 		volume_attributes_.remove_chunk_arrays();
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	void add_hexa(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
 		if (check_orientation)
@@ -530,7 +530,7 @@ protected:
 		this->volumes_vertex_indices_.push_back(p7);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
@@ -542,7 +542,7 @@ protected:
 		}
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	void add_tetra(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
 	{
 		if (check_orientation)
@@ -554,14 +554,14 @@ protected:
 		this->volumes_vertex_indices_.push_back(p3);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
 		if (geometry::test_orientation_3D(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	void add_pyramid(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
 	{
 		this->volumes_types.push_back(VolumeType::Pyramid);
@@ -574,14 +574,14 @@ protected:
 		this->volumes_vertex_indices_.push_back(p4);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	void add_triangular_prism(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
 	{
 		if (check_orientation)
@@ -595,7 +595,7 @@ protected:
 		this->volumes_vertex_indices_.push_back(p5);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
 		if (geometry::test_orientation_3D(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)

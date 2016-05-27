@@ -38,7 +38,7 @@ namespace cgogn
 namespace io
 {
 
-template<uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
+template <uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
 class MshIO
 {
 public :
@@ -139,7 +139,7 @@ public:
 	using Inherit_Msh = MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
 	using Inherit_Import = VolumeImport<MAP_TRAITS>;
 //	using DataInputGen = typename Inherit_Msh::DataInputGen;
-//	template<typename T>
+//	template <typename T>
 //	using DataInput = typename Inherit_Msh::template DataInput<T>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
@@ -172,7 +172,7 @@ protected:
 			std::getline(data_stream,line);
 
 			const uint32 new_index = this->insert_line_vertex_container();
-			auto& v = position->operator [](new_index);
+			auto& v = position->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
 			iss >> old_index >> v[0] >> v[1] >> v[2];
@@ -253,7 +253,7 @@ protected:
 			std::getline(data_stream,line);
 
 			const uint32 new_index = this->insert_line_vertex_container();
-			auto& v = position->operator [](new_index);
+			auto& v = position->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
 			iss >> old_index >> v[0] >> v[1] >> v[2];
@@ -349,7 +349,7 @@ protected:
 		for (auto it = buff.begin(), end = buff.end(); it != end ; )
 		{
 			const uint32 new_index = this->insert_line_vertex_container();
-			auto& v = position->operator [](new_index);
+			auto& v = position->operator[](new_index);
 			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
@@ -472,7 +472,7 @@ protected:
 	}
 };
 
-template<typename MAP>
+template <typename MAP>
 class MshVolumeExport : public VolumeExport<MAP>
 {
 public:

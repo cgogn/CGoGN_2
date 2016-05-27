@@ -339,7 +339,7 @@ public:
 /*
 	Template child class to create pools of the correct type.
 */
-template< int SIZE >
+template < int SIZE >
 class MemPoolT : public MemPool
 {
 public:

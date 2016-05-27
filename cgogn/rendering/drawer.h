@@ -181,7 +181,7 @@ public:
 	/**
 	* use as glVertex3f
 	*/
-	template<typename SCALAR>
+	template <typename SCALAR>
 	inline void vertex3f(SCALAR x, SCALAR y, SCALAR z)
 	{
 		static_assert(std::is_arithmetic<SCALAR>::value, "scalar value only allowed for vertex3");
@@ -193,7 +193,7 @@ public:
 	/**
 	* use as glColor3f
 	*/
-	template<typename SCALAR>
+	template <typename SCALAR>
 	inline void color3f(SCALAR x, SCALAR y, SCALAR z)
 	{
 		static_assert(std::is_arithmetic<SCALAR>::value, "scalar value only allowed for vertex3");
