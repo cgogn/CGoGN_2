@@ -423,9 +423,9 @@ bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribu
 
 	map.foreach_cell([&] (Face f)
 	{
-		if (map.is_triangle(f))
+		if (map.codegree(f) == 3)
 		{
-			VEC3 N = geometry::face_normal<VEC3>(map, f, position);
+			VEC3 N = geometry::normal<VEC3>(map, f, position);
 			fp << "facet normal " << N[0] << " " << N[1] << " " << N[2] << std::endl;
 			fp << "outer loop" << std::endl;
 			map.template foreach_incident_vertex(f, [&] (Vertex v)
@@ -439,13 +439,13 @@ bool export_stl_ascii(const MAP& map, const typename MAP::template VertexAttribu
 		else
 		{
 			table_indices.clear();
-			cgogn::geometry::compute_ear_triangulation<VEC3>(map, f, position, table_indices);
+			cgogn::geometry::append_ear_triangulation<VEC3>(map, f, position, table_indices);
 			for(uint32 i = 0; i < table_indices.size(); i += 3)
 			{
 				const VEC3& A = position[table_indices[i]];
 				const VEC3& B = position[table_indices[i+1]];
 				const VEC3& C = position[table_indices[i+2]];
-				VEC3 N = geometry::triangle_normal(A,B,C);
+				VEC3 N = geometry::normal(A, B, C);
 				fp << "facet normal " << N[0] << " " << N[1] << " " << N[2] << std::endl;
 				fp << "outer loop"<< std::endl;
 				fp << "vertex " << A[0] << " " << A[1] << " " << A[2] << std::endl;
@@ -498,17 +498,17 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
 	// local function for writing a triangle
 	auto write_tri = [&] (const VEC3& A, const VEC3& B, const VEC3& C)
 	{
-		VEC3 N = geometry::triangle_normal(A,B,C);
+		VEC3 N = geometry::normal(A,B,C);
 		uint32 i=0;
-		for (uint32 j=0; j<3; ++j)
+		for (uint32 j = 0; j < 3; ++j)
 			buffer_floats[i++]= float32(N[j]);
-		for (uint32 j=0; j<3; ++j)
+		for (uint32 j = 0; j < 3; ++j)
 			buffer_floats[i++]= float32(A[j]);
-		for (uint32 j=0; j<3; ++j)
+		for (uint32 j = 0; j < 3; ++j)
 			buffer_floats[i++]= float32(B[j]);
-		for (uint32 j=0; j<3; ++j)
+		for (uint32 j = 0; j < 3; ++j)
 			buffer_floats[i++]= float32(C[j]);
-		fp.write(reinterpret_cast<char*>(buffer_floats.data()),12*sizeof(float32)+2); // +2 for #@! ushort at end of each triangle
+		fp.write(reinterpret_cast<char*>(buffer_floats.data()), 12*sizeof(float32)+2); // +2 for #@! ushort at end of each triangle
 	};
 
 	// indices for ear triangulation
@@ -520,7 +520,7 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
 	// write face cutted in triangle if necessary
 	map.foreach_cell([&] (Face f)
 	{
-		if (map.is_triangle(f))
+		if (map.codegree(f) == 3)
 		{
 			Dart d = f.dart;
 			const VEC3& A = position[Vertex(d)];
@@ -534,7 +534,7 @@ bool export_stl_bin(const MAP& map, const typename MAP::template VertexAttribute
 		else
 		{
 			table_indices.clear();
-			cgogn::geometry::compute_ear_triangulation<VEC3>(map,f,position,table_indices);
+			cgogn::geometry::append_ear_triangulation<VEC3>(map,f,position,table_indices);
 			for(uint32 i = 0; i < table_indices.size(); i += 3)
 			{
 				const VEC3& A = position[table_indices[i]];
@@ -668,7 +668,6 @@ bool export_vtp(
 	return true;
 }
 
-
 template <typename T>
 std::string nameOfTypePly(const T& v)
 {
@@ -716,7 +715,7 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 	// two pass of traversal to avoid huge buffer (with same performance);
 
 	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32>  ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
+	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
 	ids.set_all_container_values(UINT_MAX);
 	uint32 count = 0;
 	map.template foreach_cell([&] (Face f)
@@ -756,7 +755,6 @@ bool export_ply(MAP& map, const typename MAP::template VertexAttribute<VEC3>& po
 	fp.close();
 	return true;
 }
-
 
 template <typename VEC3, typename MAP>
 bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
@@ -805,14 +803,14 @@ bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute
 	{
 		map.template foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			if (ids[v]==UINT_MAX)
+			if (ids[v] == UINT_MAX)
 			{
 				ids[v] = count++;
 				buffer_pos.push_back(position[v]);
 
 				if (buffer_pos.size() >= BUFFER_SZ)
 				{
-					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(VEC3));
+					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])), buffer_pos.size()*sizeof(VEC3));
 					buffer_pos.clear();
 				}
 			}
@@ -862,9 +860,6 @@ bool export_ply_bin(const MAP& map, const typename MAP::template VertexAttribute
 	map.remove_attribute(ids);
 	return true;
 }
-
-
-
 
 } // namespace io
 

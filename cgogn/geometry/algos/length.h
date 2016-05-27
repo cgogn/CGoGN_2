@@ -44,44 +44,42 @@ inline VEC3 vector_from(
 {
 	using Vertex = typename MAP::Vertex;
 
-	VEC3 vec = position[Vertex(map.phi1(d))] ;
-	vec -= position[Vertex(d)] ;
-	return vec ;
+	return position[Vertex(map.phi1(d))] - position[Vertex(d)];
 }
 
 template <typename VEC3, typename MAP>
-inline typename VEC3::Scalar edge_length(
+inline typename VEC3::Scalar length(
 	const MAP& map,
 	const typename MAP::Edge e,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	return vector_from<VEC3, MAP>(map, e.dart, position).norm();
+	return vector_from<VEC3>(map, e.dart, position).norm();
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void compute_edge_length(
+inline void length(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template EdgeAttribute<VEC3>& edge_length_attr
+	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
 	map.parallel_foreach_cell([&] (typename MAP::Edge e, uint32)
 	{
-		edge_length_attr[e] = edge_length<VEC3, MAP>(map, e, position);
+		edge_length[e] = length<VEC3>(map, e, position);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-inline void compute_edge_length(
+inline void length(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
-	compute_edge_length<VEC3>(map, CellFilters(), position, edge_length);
+	length<VEC3>(map, CellFilters(), position, edge_length);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -91,7 +89,7 @@ inline typename VEC3::Scalar mean_edge_length(
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Edge = typename MAP::Edge;
 
 	std::vector<Scalar> edge_length_per_thread(cgogn::get_nb_threads());
@@ -101,7 +99,7 @@ inline typename VEC3::Scalar mean_edge_length(
 
 	map.parallel_foreach_cell([&] (Edge e, uint32 thread_index)
 	{
-		edge_length_per_thread[thread_index] += edge_length<VEC3, MAP>(map, e, position);
+		edge_length_per_thread[thread_index] += length<VEC3, MAP>(map, e, position);
 		nb_edges_per_thread[thread_index]++;
 	},
 	mask);

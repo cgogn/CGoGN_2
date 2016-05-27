@@ -133,7 +133,7 @@ public:
 				table_indices.push_back(m.get_embedding(Vertex(m.phi1(m.phi1(f.dart)))));
 			}
 			else
-				cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, *position, table_indices);
+				cgogn::geometry::append_ear_triangulation<VEC3>(m, f, *position, table_indices);
 		});
 	}
 
@@ -181,7 +181,12 @@ public:
  * @param indices2 embedding indices of faces
  */
 template <typename VEC3, typename MAP>
-void create_indices_vertices_faces(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, std::vector<uint32>& indices1, std::vector<uint32>& indices2)
+void create_indices_vertices_faces(
+	const MAP& m,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	std::vector<uint32>& indices1,
+	std::vector<uint32>& indices2
+)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -209,7 +214,7 @@ void create_indices_vertices_faces(const MAP& m, const typename MAP::template Ve
 		}
 		else
 		{
-			cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, local_vert_indices);
+			cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{
 				indices1.push_back(i);
@@ -220,7 +225,7 @@ void create_indices_vertices_faces(const MAP& m, const typename MAP::template Ve
 }
 
 template <typename VEC3, typename MAP>
-void add_edge_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+void add_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	dr->vertex3fv(position[Vertex(e.dart)]);
@@ -228,7 +233,7 @@ void add_edge_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::
 }
 
 template <typename VEC3, typename MAP>
-void add_face_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -240,7 +245,7 @@ void add_face_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::
 }
 
 template <typename VEC3, typename MAP>
-void add_volume_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+void add_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;

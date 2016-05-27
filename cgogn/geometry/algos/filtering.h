@@ -40,6 +40,7 @@ void filter_average(
 	const typename MAP::template VertexAttribute<T>& attribute_in,
 	typename MAP::template VertexAttribute<T>& attribute_out)
 {
+	using Scalar = typename vector_traits<T>::Scalar;
 	using Vertex = typename MAP::Vertex;
 
 	map.parallel_foreach_cell([&] (Vertex v, uint32)
@@ -52,7 +53,7 @@ void filter_average(
 			sum += attribute_in[av];
 			++count;
 		});
-		attribute_out[v] = sum / typename vector_traits<T>::Scalar(count);
+		attribute_out[v] = sum / Scalar(count);
 	},
 	mask);
 }

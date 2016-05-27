@@ -33,12 +33,11 @@ namespace cgogn
 namespace geometry
 {
 
-
-template <typename VEC3_T>
-inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+template <typename VEC3>
+inline bool in_triangle(const VEC3& P, const VEC3& normal, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
 {
-	using Scalar = typename vector_traits<VEC3_T>::Scalar;
-	static const auto triple_positive = [] (const VEC3_T& U, const VEC3_T& V, const VEC3_T& W) -> bool
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static const auto triple_positive = [] (const VEC3& U, const VEC3& V, const VEC3& W) -> bool
 	{
 		return U.dot(V.cross(W)) >= Scalar(0);
 	};
@@ -51,12 +50,11 @@ inline bool in_triangle(const VEC3_T& P, const VEC3_T& normal, const VEC3_T& Ta,
 	return true;
 }
 
-template <typename VEC3_T>
-inline bool in_triangle(const VEC3_T& P, const VEC3_T& Ta,  const VEC3_T& Tb, const VEC3_T& Tc)
+template <typename VEC3>
+inline bool in_triangle(const VEC3& P, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
 {
-	return in_triangle(P, triangle_normal(Ta, Tb, Tc), Ta, Tb,Tc );
+	return in_triangle(P, normal(Ta, Tb, Tc), Ta, Tb,Tc );
 }
-
 
 } // namespace geometry
 

@@ -98,38 +98,10 @@ int main(int argc, char** argv)
 		start = std::chrono::system_clock::now();
 
 		for	(uint32 i = 0; i < 10; ++i)
-		{
-//			map.parallel_foreach_cell<Map2::FACE>([&] (Map2::Face f, uint32)
-//			map.foreach_cell<Map2::FACE>([&] (Map2::Face f)
-//			{
-//				Vec3 v1 = vertex_position[map.phi1(f.dart)] - vertex_position[f.dart];
-//				Vec3 v2 = vertex_position[map.phi_1(f.dart)] - vertex_position[f.dart];
-//				Vec3 n = v1.cross(v2);
-//				n.normalize();
-//				face_normal[f] = v1.cross(v2);
-//			});
-
-			cgogn::geometry::template compute_normal_faces<Vec3>(map, vertex_position, face_normal);
-		}
+			cgogn::geometry::normal<Vec3>(map, vertex_position, face_normal);
 
 		for	(uint32 i = 0; i < 10; ++i)
-		{
-//			map.parallel_foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v, uint32)
-//			map.foreach_cell<Map2::VERTEX>([&] (Map2::Vertex v)
-//			{
-//				Vec3 sum({0, 0, 0});
-//				uint32 nb_incident = 0;
-//				map.foreach_incident_face(v, [&] (Map2::Face f)
-//				{
-//					++nb_incident;
-//					sum += face_normal[f];
-//				});
-//				vertex_normal[v] = sum / nb_incident;
-//			});
-
-			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, vertex_normal);
-//			cgogn::geometry::template compute_normal_vertices<Vec3>(map, vertex_position, face_normal, vertex_normal);
-		}
+			cgogn::geometry::normal<Vec3>(map, vertex_position, vertex_normal);
 
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float64> elapsed_seconds = end - start;

@@ -38,28 +38,31 @@ namespace cgogn
 namespace geometry
 {
 
+/**
+ * compute and return the angle formed by the normals of the two faces incident to the given edge
+ */
 template <typename VEC3, typename MAP>
 inline typename VEC3::Scalar angle_between_face_normals(
 	const MAP& map,
-	const typename MAP::Edge e,
+	const Cell<Orbit::PHI2> e,
 	const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Scalar = typename VEC3::Scalar;
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
+	using Vertex2 = Cell<Orbit::PHI21>;
+	using Face2 = Cell<Orbit::PHI1>;
 
-	if(map.is_incident_to_boundary(e))
+	if (map.is_incident_to_boundary(e))
 		return Scalar(0);
 
-	std::pair<Vertex, Vertex> v = map.vertices(e);
-	const VEC3 n1 = face_normal<VEC3, MAP>(map, Face(v.first.dart), position);
-	const VEC3 n2 = face_normal<VEC3, MAP>(map, Face(v.second.dart), position);
+	std::pair<Vertex2, Vertex2> v = map.vertices(e);
+	const VEC3 n1 = normal<VEC3, MAP>(map, Face2(v.first.dart), position);
+	const VEC3 n2 = normal<VEC3, MAP>(map, Face2(v.second.dart), position);
 
 	return angle(n1, n2);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void compute_angle_between_face_normals(
+inline void angle_between_face_normals(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -67,18 +70,18 @@ inline void compute_angle_between_face_normals(
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e, uint32)
 	{
-		angles[e] = angle_between_face_normals<VEC3, MAP>(map, e, position);
+		angles[e] = angle_between_face_normals<VEC3>(map, e, position);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-inline void compute_angle_between_face_normals(
+inline void angle_between_face_normals(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template Attribute<typename VEC3::Scalar, Orbit::PHI2>& angles)
 {
-	compute_angle_between_face_normals<VEC3>(map, CellFilters(), position, angles);
+	angle_between_face_normals<VEC3>(map, CellFilters(), position, angles);
 }
 
 } // namespace geometry

@@ -45,6 +45,7 @@ class EarTriangulation
 	class VertexPoly
 	{
 	public:
+
 		using VPMS = std::multiset<VertexPoly*, bool(*)(VertexPoly*,VertexPoly*)>;
 
 		int32 id;
@@ -79,25 +80,25 @@ class EarTriangulation
 
 	using VPMS = typename VertexPoly::VPMS;
 
-	/// normal to polygon (for orientation of angles)
+	// normal to polygon (for orientation of angles)
 	VEC3 normalPoly_;
 
-	/// ref on map
+	// ref on map
 	MAP& map_;
 
-	/// ref on position attribute
+	// ref on position attribute
 	const typename MAP::template VertexAttribute<VEC3>& positions_;
 
-	/// map of ears
+	// map of ears
 	VPMS ears_;
 
-	/// is current polygin convex
+	// is current polygin convex
 	bool convex_;
 
-	/// number off vertices
+	// number off vertices
 	uint32 nb_verts_;
 
-	/// initial face
+	// initial face
 	Face face_;
 
 	inline static bool cmp_VP(VertexPoly* lhs, VertexPoly* rhs)
@@ -168,7 +169,7 @@ class EarTriangulation
 		convex_ = (*(ears_.rbegin()))->value_ < 5.0f;
 	}
 
-	Scalar compute_ear_angle(const VEC3& P1, const VEC3& P2, const VEC3& P3)
+	Scalar ear_angle(const VEC3& P1, const VEC3& P2, const VEC3& P3)
 	{
 		VEC3 v1 = P1 - P2;
 		VEC3 v2 = P3 - P2;
@@ -184,7 +185,7 @@ class EarTriangulation
 		return dotpr;
 	}
 
-	bool compute_ear_intersection(VertexPoly* vp)
+	bool ear_intersection(VertexPoly* vp)
 	{
 		VertexPoly* endV = vp->prev_;
 		VertexPoly* curr = vp->next_;
@@ -213,12 +214,12 @@ public:
 	 * @param f the face to tringulate
 	 * @param position attribute of position to use
 	 */
-	EarTriangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position) :
+	EarTriangulation(MAP& map, const typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position) :
 		map_(map),
 		positions_(position),
 		ears_(cmp_VP)
 	{
-		if (map_.has_codegree(f, 3))
+		if (map_.codegree(f) == 3)
 		{
 			face_ = f;
 			nb_verts_ = 3;
@@ -226,7 +227,7 @@ public:
 		}
 
 		// compute normals for orientation
-		normalPoly_ = geometry::face_normal<VEC3>(map_, Cell<Orbit::PHI1>(f.dart), position);
+		normalPoly_ = normal<VEC3>(map_, Cell<Orbit::PHI1>(f.dart), position);
 
 		// first pass create polygon in chained list with angle computation
 		VertexPoly* vpp = nullptr;
@@ -243,7 +244,7 @@ public:
 			const VEC3& P2 = position[Vertex(b)];
 			const VEC3& P3 = position[Vertex(c)];
 
-			Scalar val = compute_ear_angle(P1, P2, P3);
+			Scalar val = ear_angle(P1, P2, P3);
 			VertexPoly* vp = new VertexPoly(Vertex(b), val, Scalar((P3-P1).squaredNorm()), vpp);
 
 			if (vp->value_ > 5.0f)  // concav angle
@@ -277,7 +278,7 @@ public:
 			for (uint32 i = 0; i < nb_verts_; ++i)
 			{
 				if (vpp->value_ < 5.0f)
-					compute_ear_intersection(vpp);
+					ear_intersection(vpp);
 				vpp->ear_ = ears_.insert(vpp);
 				vpp = vpp->next_;
 			}
@@ -288,11 +289,11 @@ public:
 	 * @brief compute table of vertices indices (embeddings) of triangulation
 	 * @param table_indices
 	 */
-	void compute_indices(std::vector<uint32>& table_indices)
+	void append_indices(std::vector<uint32>& table_indices)
 	{
 		table_indices.reserve((nb_verts_ - 2) * 3);
 
-		if (nb_verts_ ==3)
+		if (nb_verts_ == 3)
 		{
 			map_.foreach_incident_vertex(face_, [&] (Vertex v)
 			{
@@ -338,9 +339,9 @@ public:
 	}
 
 	/**
-	 * @brief triangulate the face
+	 * @brief apply the ear triangulation the face
 	 */
-	void triangulate()
+	void apply()
 	{
 		while (nb_verts_ > 3)
 		{
@@ -380,13 +381,18 @@ public:
  * @param map
  * @param f face
  * @param position
- * @param table_indices table of indices (vertex embedding) to fill (append)
+ * @param table_indices table of indices (vertex embedding) to append
  */
 template <typename VEC3, typename MAP>
-static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, std::vector<uint32>& table_indices)
+static void append_ear_triangulation(
+	MAP& map,
+	const typename MAP::Face f,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	std::vector<uint32>& table_indices
+)
 {
 	EarTriangulation<VEC3, MAP> tri(map, f, position);
-	tri.compute_indices(table_indices);
+	tri.append_indices(table_indices);
 }
 
 /**
@@ -396,10 +402,14 @@ static void compute_ear_triangulation(MAP& map, typename MAP::Face f, const type
  * @param position
  */
 template <typename VEC3, typename MAP>
-static void apply_ear_triangulation(MAP& map, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position)
+static void apply_ear_triangulation(
+	MAP& map,
+	const typename MAP::Face f,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
 	EarTriangulation<VEC3, MAP> tri(map, f, position);
-	tri.triangulate();
+	tri.apply();
 }
 
 /**
@@ -409,14 +419,17 @@ static void apply_ear_triangulation(MAP& map, typename MAP::Face f, const typena
  * @param position
  */
 template <typename VEC3, typename MAP>
-static void apply_ear_triangulations(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position)
+static void apply_ear_triangulation(
+	MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
 	map.template foreach_cell([&] (typename MAP::Face f)
 	{
 		if (!map.has_codegree(f, 3))
 		{
-			EarTriangulation<VEC3,MAP> tri(map, f, position);
-			tri.triangulate();
+			EarTriangulation<VEC3, MAP> tri(map, f, position);
+			tri.apply();
 		}
 	});
 }

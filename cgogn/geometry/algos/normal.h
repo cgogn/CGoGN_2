@@ -40,103 +40,88 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-inline VEC3 triangle_normal(
+inline VEC3 normal(
 	const MAP& map,
 	Cell<Orbit::PHI1> f,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
-	VEC3 n = triangle_normal<VEC3>(
-		position[Vertex(f.dart)],
-		position[Vertex(map.phi1(f.dart))],
-		position[Vertex(map.phi_1(f.dart))]
-	);
-	normalize_safe(n);
-	return n;
-}
 
-template <typename VEC3, typename MAP>
-inline VEC3 newell_normal(
-	const MAP& map,
-	Cell<Orbit::PHI1> f,
-	const typename MAP::template VertexAttribute<VEC3>& position
-)
-{
-	using Vertex = typename MAP::Vertex;
-	using Scalar = typename cgogn::geometry::vector_traits<VEC3>::Scalar;
-	VEC3 n{Scalar(0), Scalar(0), Scalar(0)};
-	map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
+	if (map.codegree(f) == 3)
 	{
-		const VEC3& p = position[Vertex(v.dart)];
-		const VEC3& q = position[Vertex(map.phi1(v.dart))];
-		n[0] += (p[1] - q[1]) * (p[2] + q[2]);
-		n[1] += (p[2] - q[2]) * (p[0] + q[0]);
-		n[2] += (p[0] - q[0]) * (p[1] + q[1]);
-	});
-	normalize_safe(n);
-	return n;
-}
-
-template <typename VEC3, typename MAP>
-inline VEC3 face_normal(
-	const MAP& map,
-	Cell<Orbit::PHI1> f,
-	const typename MAP::template VertexAttribute<VEC3>& position
-)
-{
-	if (map.has_codegree(f, 3))
-		return triangle_normal<VEC3>(map, f, position);
+		VEC3 n = normal<VEC3>(
+			position[Vertex(f.dart)],
+			position[Vertex(map.phi1(f.dart))],
+			position[Vertex(map.phi_1(f.dart))]
+		);
+		normalize_safe(n);
+		return n;
+	}
 	else
-		return newell_normal<VEC3>(map, f, position);
+	{
+		VEC3 n{Scalar(0), Scalar(0), Scalar(0)};
+		map.foreach_incident_vertex(f, [&] (Cell<Orbit::PHI21> v)
+		{
+			const VEC3& p = position[Vertex(v.dart)];
+			const VEC3& q = position[Vertex(map.phi1(v.dart))];
+			n[0] += (p[1] - q[1]) * (p[2] + q[2]);
+			n[1] += (p[2] - q[2]) * (p[0] + q[0]);
+			n[2] += (p[0] - q[0]) * (p[1] + q[1]);
+		});
+		normalize_safe(n);
+		return n;
+	}
 }
 
 template <typename VEC3, typename MAP>
-inline VEC3 vertex_normal(
+inline VEC3 normal(
 	const MAP& map,
 	Cell<Orbit::PHI21> v,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Vertex = typename MAP::Vertex;
 	using Scalar = typename VEC3::Scalar;
+	using Vertex = typename MAP::Vertex;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
 	const VEC3& p = position[Vertex(v.dart)];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
-		VEC3 facen = face_normal<VEC3>(map, f, position);
+		VEC3 face_normal = normal<VEC3>(map, f, position);
 		const VEC3& p1 = position[Vertex(map.phi1(f.dart))];
 		const VEC3& p2 = position[Vertex(map.phi_1(f.dart))];
 		const Scalar l = (p1-p).squaredNorm() * (p2-p).squaredNorm();
 		if (l != Scalar(0))
-			facen *= convex_face_area<VEC3>(map, f, position) / l;
-		n += facen;
+			face_normal *= convex_area<VEC3>(map, f, position) / l;
+		n += face_normal;
 	});
 	normalize_safe(n);
 	return n;
 }
 
 template <typename VEC3, typename MAP>
-inline VEC3 vertex_normal(
-	const MAP& map, Cell<Orbit::PHI21> v,
+inline VEC3 normal(
+	const MAP& map,
+	Cell<Orbit::PHI21> v,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& fnormal
+	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	using Vertex = typename MAP::Vertex;
 	using Scalar = typename VEC3::Scalar;
+	using Vertex = typename MAP::Vertex;
 
-	VEC3 n{Scalar{0}, Scalar{0} ,Scalar{0}};
+	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
 	const VEC3& p = position[Vertex(v.dart)];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
-		VEC3 facen = fnormal[f];
+		VEC3 facen = face_normal[f];
 		const VEC3& p1 = position[Vertex(map.phi1(f.dart))];
 		const VEC3& p2 = position[Vertex(map.phi_1(f.dart))];
 		const Scalar l = (p1-p).squaredNorm() * (p2-p).squaredNorm();
 		if (l != Scalar(0))
-			facen *= convex_face_area<VEC3>(map, f, position) / l;
+			facen *= convex_area<VEC3>(map, f, position) / l;
 		n += facen;
 	});
 	normalize_safe(n);
@@ -144,80 +129,80 @@ inline VEC3 vertex_normal(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void compute_normal_faces(
+inline void normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI1>& normal
+	typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f, uint32)
 	{
-		normal[f] = face_normal<VEC3>(map, f, position);
+		face_normal[f] = normal<VEC3>(map, f, position);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-inline void compute_normal_faces(
+inline void normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI1>& normal
+	typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	compute_normal_faces<VEC3>(map, CellFilters(), position, normal);
+	normal<VEC3>(map, CellFilters(), position, face_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void compute_normal_vertices(
+inline void normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
 	{
-		normal[v] = vertex_normal<VEC3>(map, v, position);
+		vertex_normal[v] = normal<VEC3>(map, v, position);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-inline void compute_normal_vertices(
+inline void normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal_vertices<VEC3>(map, CellFilters(), position, normal);
+	normal<VEC3>(map, CellFilters(), position, vertex_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void compute_normal_vertices(
+inline void normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& fnormal,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal
+	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
 	{
-		normal[v] = vertex_normal<VEC3>(map, v, position, fnormal);
+		vertex_normal[v] = normal<VEC3>(map, v, position, face_normal);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-inline void compute_normal_vertices(
+inline void normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& fnormal,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal
+	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal_vertices<VEC3>(map, CellFilters(), position, fnormal, normal);
+	normal<VEC3>(map, CellFilters(), position, face_normal, vertex_normal);
 }
 
 } // namespace geometry

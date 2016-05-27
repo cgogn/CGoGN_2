@@ -263,22 +263,22 @@ public:
 	{
 		return data_.size();
 	}
-	inline auto begin() const ->decltype(std::declval<const Container>().begin())
+	inline auto begin() const -> decltype(std::declval<const Container>().begin())
 	{
 		return data_.begin();
 	}
 
-	inline auto begin() ->decltype(std::declval<Container>().begin())
+	inline auto begin() -> decltype(std::declval<Container>().begin())
 	{
 		return data_.begin();
 	}
 
-	inline auto end() const ->decltype(std::declval<const Container>().end())
+	inline auto end() const -> decltype(std::declval<const Container>().end())
 	{
 		return data_.end();
 	}
 
-	inline auto end() ->decltype(std::declval<Container>().end())
+	inline auto end() -> decltype(std::declval<Container>().end())
 	{
 		return data_.end();
 	}

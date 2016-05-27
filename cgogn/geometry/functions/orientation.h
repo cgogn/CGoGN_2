@@ -40,11 +40,11 @@ namespace geometry
  * @param C plane point 3
  * @return the orientation
  */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T& B, const VEC3_T& C)
+template <typename VEC3>
+Orientation3D test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(A, B, C).orient(P);
+	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3>(A, B, C).orient(P);
 }
 
 /**
@@ -54,11 +54,11 @@ Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& A, const VEC3_T
  * @param PP plane point
  * @return the orientation
  */
-template <typename VEC3_T>
-Orientation3D test_orientation_3D(const VEC3_T& P, const VEC3_T& N, const VEC3_T& PP)
+template <typename VEC3>
+Orientation3D test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
 {
-	static_assert(vector_traits<VEC3_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3_T>(N, PP).orient(P);
+	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D<VEC3>(N, PP).orient(P);
 }
 
 } // namespace geometry

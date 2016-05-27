@@ -208,7 +208,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		drawer_->new_list();
 
 		std::vector<Map3::Volume> selected;
-		cgogn::geometry::picking_volumes<Vec3>(map_, vertex_position_, A, B, selected);
+		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
 		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{
@@ -216,11 +216,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			drawer_->begin(GL_LINES);
 			// closest vol in red
 			drawer_->color3f(1.0, 0.0, 0.0);
-			cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
-			for (uint32 i = 1u; i<selected.size(); ++i)
-				cgogn::rendering::add_volume_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+			for (uint32 i = 1u; i < selected.size(); ++i)
+				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 			drawer_->end();
 		}
 		drawer_->line_width(4.0);
@@ -236,7 +236,6 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	QOGLViewer::mousePressEvent(event);
 }
 
-
 void Viewer::draw()
 {
 	QMatrix4x4 proj;
@@ -248,21 +247,17 @@ void Viewer::draw()
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-
 		volume_drawer_rend_->draw_faces(proj,view,this);
-
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
 		volume_drawer_rend_->draw_edges(proj,view,this);
 
-
 	if (topo_drawering_)
 		topo_drawer_rend_->draw(proj,view,this);
 
 	drawer_rend_->draw(proj, view, this);
-
 }
 
 void Viewer::init()
@@ -283,7 +278,6 @@ void Viewer::init()
 
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
-
 
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();

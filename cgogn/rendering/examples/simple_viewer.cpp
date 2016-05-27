@@ -131,7 +131,7 @@ void Viewer::import(const std::string& surface_mesh)
 //	cgogn::io::import_surface<Vec3>(map2, std::string(DEFAULT_MESH_PATH) + std::string("off/star_convex.off"));
 //	map_.merge(map2);
 
-	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
+	cgogn::geometry::normal<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);

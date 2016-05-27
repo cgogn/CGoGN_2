@@ -25,6 +25,7 @@
 #define CGOGN_GEOMETRY_ALGOS_CENTROID_H_
 
 #include <cgogn/core/basic/cell.h>
+#include <cgogn/core/utils/masks.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -33,14 +34,14 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename T, Orbit ORBIT, typename MAP>
-inline T centroid(
+template <typename VEC, typename CellType, typename MAP>
+inline VEC centroid(
 	const MAP& map,
-	const Cell<ORBIT> c,
-	const typename MAP::template VertexAttribute<T>& attribute
+	const CellType c,
+	const typename MAP::template VertexAttribute<VEC>& attribute
 )
 {
-	T result;
+	VEC result;
 	set_zero(result);
 	uint32 count = 0;
 	map.foreach_incident_vertex(c, [&] (typename MAP::Vertex v)
@@ -48,8 +49,33 @@ inline T centroid(
 		result += attribute[v];
 		++count;
 	});
-	result /= typename T::Scalar(count);
+	result /= typename VEC::Scalar(count);
 	return result;
+}
+
+template <typename VEC, typename CellType, typename MAP, typename MASK>
+inline void centroid(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC>& attribute,
+	typename MAP::template Attribute<VEC, CellType::ORBIT>& cell_centroid
+)
+{
+	map.foreach_cell([&] (CellType c)
+	{
+		cell_centroid[c] = centroid<VEC>(map, c, attribute);
+	},
+	mask);
+}
+
+template <typename VEC, typename CellType, typename MAP>
+inline void centroid(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC>& attribute,
+	typename MAP::template Attribute<VEC, CellType::ORBIT>& cell_centroid
+)
+{
+	centroid<VEC, CellType>(map, CellFilters(), attribute, cell_centroid);
 }
 
 } // namespace geometry

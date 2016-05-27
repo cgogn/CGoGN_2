@@ -44,7 +44,7 @@ namespace geometry
 
 template <typename VEC3, typename MAP>
 inline void picking_internal_face(
-	MAP& m,
+	const MAP& m,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
@@ -67,7 +67,7 @@ inline void picking_internal_face(
 	m.parallel_foreach_cell([&] (Face f, uint32 th)
 	{
 		VEC3 inter;
-		if (m.has_codegree(f, 3))
+		if (m.codegree(f) == 3)
 		{
 			const VEC3& p1 = position[Vertex(f.dart)];
 			const VEC3& p2 = position[Vertex(m.phi1(f.dart))];
@@ -79,7 +79,7 @@ inline void picking_internal_face(
 		{
 			std::vector<uint32>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
-			cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, ear_indices);
+			cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
 			for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
@@ -112,8 +112,8 @@ inline void picking_internal_face(
 }
 
 template <typename VEC3, typename MAP>
-bool picking_faces(
-	MAP& m,
+bool picking(
+	const MAP& m,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
@@ -125,15 +125,15 @@ bool picking_faces(
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
-	for (auto fs : sel)
+	for (const auto& fs : sel)
 		selected.push_back(std::get<0>(fs));
 
 	return !selected.empty();
 }
 
 template <typename VEC3, typename MAP>
-bool picking_vertices(
-	MAP& m,
+bool picking(
+	const MAP& m,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
@@ -149,7 +149,7 @@ bool picking_vertices(
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
-	for (auto fs : sel)
+	for (const auto& fs : sel)
 	{
 		Scalar min_d2 = std::numeric_limits<Scalar>::max();
 		Vertex closest_vertex;
@@ -178,8 +178,8 @@ bool picking_vertices(
 }
 
 template <typename VEC3, typename MAP>
-bool picking_edges(
-	MAP& m,
+bool picking(
+	const MAP& m,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
@@ -196,7 +196,7 @@ bool picking_edges(
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
-	for (auto fs : sel)
+	for (const auto& fs : sel)
 	{
 		Scalar min_d2 = std::numeric_limits<Scalar>::max();
 		Edge closest_edge;
@@ -226,8 +226,8 @@ bool picking_edges(
 }
 
 template <typename VEC3, typename MAP>
-bool picking_volumes(
-	MAP& m,
+bool picking(
+	const MAP& m,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
@@ -244,7 +244,7 @@ bool picking_volumes(
 
 	selected.clear();
 	DartMarker<MAP> dm(m);
-	for (auto fs : sel)
+	for (const auto& fs : sel)
 	{
 		Face f = std::get<0>(fs);
 		m.foreach_incident_volume(f, [&] (Volume vo)

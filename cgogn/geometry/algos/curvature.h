@@ -37,7 +37,7 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-void compute_curvature_vertex__normal_cycles_projected(
+void curvature(
 	const MAP& map,
 	const Cell<Orbit::PHI21> v,
 	typename VEC3::Scalar radius,
@@ -110,7 +110,7 @@ void compute_curvature_vertex__normal_cycles_projected(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-void compute_curvature_vertices_normal_cycles_projected(
+void curvature(
 	const MAP& map,
 	const MASK& mask,
 	typename VEC3::Scalar radius,
@@ -127,13 +127,13 @@ void compute_curvature_vertices_normal_cycles_projected(
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
 	{
-		compute_curvature_vertex_normal_cycles_projected(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+		curvature(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 	},
 	mask);
 }
 
 template <typename VEC3, typename MAP>
-void compute_curvature_vertices_normal_cycles_projected(
+void curvature(
 	const MAP& map,
 	typename VEC3::Scalar radius,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
@@ -147,7 +147,7 @@ void compute_curvature_vertices_normal_cycles_projected(
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	compute_curvature_vertices_normal_cycles_projected<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry
