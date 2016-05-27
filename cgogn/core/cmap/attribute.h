@@ -472,7 +472,7 @@ public:
 //	 */
 //	inline void set_value(Cell<ORBIT> c, const T& t)
 //	{
-//		this->chunk_array_->set_value(this->map_->get_embedding(c), t);
+//		this->chunk_array_->set_value(this->map_->embedding(c), t);
 //	}
 
 	inline Orbit orbit() const

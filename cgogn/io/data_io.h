@@ -221,6 +221,7 @@ public:
 			}
 		}
 	}
+
 	virtual void reset() override
 	{
 		data_.clear();
@@ -228,9 +229,9 @@ public:
 
 	virtual ChunkArray* add_attribute(ChunkArrayContainer& cac, const std::string& att_name) const override
 	{
-		for (std::size_t i = cac.capacity(), end = data_.size(); i < end; i+=PRIM_SIZE)
+		for (std::size_t i = cac.capacity(), end = data_.size(); i < end; i += PRIM_SIZE)
 			cac.template insert_lines<PRIM_SIZE>();
-		return cac.template add_attribute<T>(att_name);
+		return cac.template add_chunk_array<T>(att_name);
 	}
 
 	virtual void to_chunk_array(ChunkArrayGen* ca_gen) const override

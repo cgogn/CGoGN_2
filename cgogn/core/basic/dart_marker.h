@@ -182,7 +182,7 @@ public:
 		marked_darts_->clear();
 	}
 
-	inline const std::vector<Dart>* get_marked_darts() const
+	inline const std::vector<Dart>* marked_darts() const
 	{
 		return marked_darts_;
 	}

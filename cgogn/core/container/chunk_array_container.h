@@ -107,16 +107,16 @@ protected:
 	uint32 nb_max_lines_;
 
 	/**
-	 * @brief get array index from name
+	 * @brief get chunk array index from name
 	 * @warning do not store index (not stable)
-	 * @param attribName name of ChunkArray
+	 * @param name name of ChunkArray
 	 * @return the index in table
 	 */
-	uint32 array_index(const std::string& attribute_name) const
+	uint32 array_index(const std::string& name) const
 	{
 		for (uint32 i = 0u; i != names_.size(); ++i)
 		{
-			if (names_[i] == attribute_name)
+			if (names_[i] == name)
 				return i;
 		}
 		return UNKNOWN;
@@ -139,10 +139,10 @@ protected:
 	}
 
 	/**
-	 * @brief remove an attribute by its index
-	 * @param index index of attribute to remove
+	 * @brief remove a chunk array by its index
+	 * @param index index of chunk array to remove
 	 */
-	void remove_attribute(uint32 index)
+	void remove_chunk_array(uint32 index)
 	{
 		// store ptr for using it before delete
 		ChunkArrayGen* ptr_to_del = table_arrays_[index];
@@ -166,7 +166,7 @@ public:
 	/**
 	 * @brief ChunkArrayContainer constructor
 	 */
-	ChunkArrayContainer():
+	ChunkArrayContainer() :
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
 	{}
@@ -185,36 +185,36 @@ public:
 			delete ptr;
 	}
 
-	const std::vector<std::string>& get_names() const { return names_; }
-	const std::vector<std::string>& get_type_names() const { return type_names_; }
+	const std::vector<std::string>& names() const { return names_; }
+	const std::vector<std::string>& type_names() const { return type_names_; }
 
 	/**
-	 * @brief get an attribute
-	 * @param attribute_name name of attribute
+	 * @brief get a chunk array
+	 * @param name name of attribute
 	 * @tparam T type of attribute
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
+	ChunkArray<T>* get_chunk_array(const std::string& name) const
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 
 		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
-	ChunkArrayGen* get_attribute(const std::string& attribute_name) const
+	ChunkArrayGen* get_chunk_array(const std::string& name) const
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 
@@ -222,36 +222,36 @@ public:
 	}
 
 	/**
-	 * @brief get all attributes (generic pointers)
+	 * @brief get all chunk arrays (generic pointers)
 	 * @return
 	 */
-	inline std::vector<ChunkArrayGen*>& get_attributes()
+	inline std::vector<ChunkArrayGen*>& chunk_arrays()
 	{
 		return table_arrays_;
 	}
 
 	/**
 	 * @brief add an attribute
-	 * @param attribute_name name of attribute
-	 * @tparam T type of attribute
-	 * @return pointer on created attribute ChunkArray
+	 * @param name name of chunk array
+	 * @tparam T type of chunk array data
+	 * @return pointer on created ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* add_attribute(const std::string& attribute_name)
+	ChunkArray<T>* add_chunk_array(const std::string& name)
 	{
-		cgogn_assert(attribute_name.size() != 0);
+		cgogn_assert(name.size() != 0);
 
 		// first check if attribute already exist
-		uint32 index = array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index != UNKNOWN)
 		{
-			cgogn_log_warning("add_attribute") << "Attribute \"" << attribute_name << "\" already exists.";
+			cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists.";
 			return nullptr;
 		}
 
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
+		ChunkArray<T>* carr = new ChunkArray<T>(name);
 		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
@@ -259,48 +259,48 @@ public:
 
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
-		names_.push_back(attribute_name);
+		names_.push_back(name);
 		type_names_.push_back(type_name);
 
 		return carr;
 	}
 
 	/**
-	 * @brief remove an attribute by its name
-	 * @param attribute_name name of attribute to remove
-	 * @return true if attribute exists and has been removed
+	 * @brief remove a chunk array by its name
+	 * @param name name of chunk array to remove
+	 * @return true if chunk array exists and has been removed
 	 */
-	bool remove_attribute(const std::string& attribute_name)
+	bool remove_chunk_array(const std::string& name)
 	{
-		uint32 index = array_index(attribute_name);
+		uint32 index = array_index(name);
 
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("remove_attribute_by_name") << "Attribute \""<< attribute_name << "\" not found.";
+			cgogn_log_warning("remove_chunk_array") << "Chunk array of name \""<< name << "\" not found.";
 			return false;
 		}
 
-		remove_attribute(index);
+		remove_chunk_array(index);
 
 		return true;
 	}
 
 	/**
-	 * @brief remove an attribute by its ChunkArray pointer
-	 * @param ptr ChunkArray pointer to the attribute to remove
-	 * @return true if attribute exists and has been removed
+	 * @brief remove a chunk array by pointer
+	 * @param ptr of the chunk array to remove
+	 * @return true if chunk array exists and has been removed
 	 */
-	bool remove_attribute(const ChunkArrayGen* ptr)
+	bool remove_chunk_array(const ChunkArrayGen* ptr)
 	{
 		uint32 index = array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("remove_attribute_by_ptr") << "Attribute not found.";
+			cgogn_log_warning("remove_chunk_array") << "Chunk array not found.";
 			return false;
 		}
 
-		remove_attribute(index);
+		remove_chunk_array(index);
 
 		return true;
 	}
@@ -311,7 +311,7 @@ public:
 	 * @param ptr2 pointer to second chunk array
 	 * @return
 	 */
-	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	bool swap_data(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
 		uint32 index1 = array_index(ptr1);
 		uint32 index2 = array_index(ptr2);
@@ -334,7 +334,7 @@ public:
 	}
 
 	template <typename T>
-	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	bool copy_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
 		uint32 dest_index = array_index(dest);
 		uint32 src_index = array_index(src);
@@ -393,10 +393,10 @@ public:
 	}
 
 	/**
-	 * @brief Number of attributes of the container
-	 * @return number of attributes
+	 * @brief Number of chunk arrays of the container
+	 * @return number of chunk arrays
 	 */
-	std::size_t get_nb_attributes() const
+	std::size_t nb_chunk_arrays() const
 	{
 		return table_arrays_.size();
 	}
@@ -500,9 +500,8 @@ public:
 
 	/**
 	 * @brief clear the container
-	 * @param remove_attributes remove the attributes (not only their data)
 	 */
-	void clear_attributes()
+	void clear_chunk_arrays()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -520,7 +519,7 @@ public:
 			ca_bool->clear();
 	}
 
-	void remove_attributes()
+	void remove_chunk_arrays()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -582,13 +581,13 @@ public:
 			if (down < nb_used_lines_)
 				for(uint32 i = 0u; i < PRIMSIZE; ++i)
 				{
-					const uint32 rdown = down + PRIMSIZE-1u - i;
+					const uint32 rdown = down + PRIMSIZE - 1u - i;
 					map_old_new[up] = rdown;
 					move_line(rdown, up,true,true);
 					rnext(up);
 				}
 			holes_stack_.pop();
-		}while (!holes_stack_.empty());
+		} while (!holes_stack_.empty());
 
 		// free unused memory blocks
 		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNK_SIZE + 1u;
@@ -608,7 +607,6 @@ public:
 
 		return map_old_new;
 	}
-
 
 	bool check_before_merge(const Self& cac)
 	{
@@ -870,7 +868,7 @@ public:
 	* @param index index of the line
 	* @return number of references of the line
 	*/
-	T_REF get_nb_refs(uint32 index) const
+	T_REF nb_refs(uint32 index) const
 	{
 		// static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
 		return refs_[index];

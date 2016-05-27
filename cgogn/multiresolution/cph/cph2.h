@@ -51,7 +51,7 @@ public:
 
 	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		edge_id_ = topology.template add_attribute<uint32>("edgeId");
+		edge_id_ = topology.template add_chunk_array<uint32>("edgeId");
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH2);

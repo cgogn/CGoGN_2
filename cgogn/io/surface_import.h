@@ -95,8 +95,8 @@ public:
 		nb_faces_ = 0;
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
-		vertex_attributes_.remove_attributes();
-		face_attributes_.remove_attributes();
+		vertex_attributes_.remove_chunk_arrays();
+		face_attributes_.remove_chunk_arrays();
 	}
 
 	inline void create_map(Map& map)
@@ -206,7 +206,7 @@ public:
 			cgogn_log_warning("create_map") << "Import Surface: non manifold vertices detected and corrected";
 		}
 
-		if (this->face_attributes_.get_nb_attributes() > 0)
+		if (this->face_attributes_.nb_chunk_arrays() > 0)
 		{
 			mbuild.template create_embedding<Face::ORBIT>();
 			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);

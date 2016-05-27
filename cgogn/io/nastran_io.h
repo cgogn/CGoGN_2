@@ -265,13 +265,14 @@ protected:
 				if (nb_vert_vol[w] == 8u)
 				{
 					output << "CHEXA   ";
-					output << std::setw(8) << count++ << std::setw(8)<< 0;
-					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u);
-					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << "+"<< std::endl;
-					output << "+       " <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << std::endl;
-				} else
+					output << std::setw(8) << count++ << std::setw(8) << 0;
+					output << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u);
+					output << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << "+" << std::endl;
+					output << "+       " << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+				}
+				else
 				{
-					for (uint32 i = 0u ; i < nb_vert_vol[w] ; ++i)
+					for (uint32 i = 0u; i < nb_vert_vol[w]; ++i)
 						++vertices_it;
 				}
 			}
@@ -289,11 +290,12 @@ protected:
 				if (nb_vert_vol[w] == 4u)
 				{
 					output << "CTETRA  ";
-					output << std::setw(8) << count++ << std::setw(8)<< 0;
-					output <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) <<  std::setw(8) << (*vertices_it++ + 1u) << std::endl;
-				} else
+					output << std::setw(8) << count++ << std::setw(8) << 0;
+					output << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+				}
+				else
 				{
-					for (uint32 i = 0u ; i < nb_vert_vol[w] ; ++i)
+					for (uint32 i = 0u; i < nb_vert_vol[w]; ++i)
 						++vertices_it;
 				}
 			}
@@ -311,12 +313,12 @@ private:
 		size_t expo = res.find('e');
 		if (expo != std::string::npos)
 		{
-			if ( res[expo+2] == '0')
-				return res.substr(0,6) + res[expo+1] + res[expo+3];
+			if (res[expo+2] == '0')
+				return res.substr(0, 6) + res[expo+1] + res[expo+3];
 
-			return res.substr(0,5) + res.substr(expo+1);
+			return res.substr(0, 5) + res.substr(expo + 1);
 		}
-		return res.substr(0,8);
+		return res.substr(0, 8);
 	}
 };
 

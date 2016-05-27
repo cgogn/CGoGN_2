@@ -87,7 +87,7 @@ TEST_F(ChunkArrayContainerTest, test_compact)
 {
 	using DATA = uint32;
 	ChunkArrayContainer ca_cont;
-	ChunkArray<DATA>* indices = ca_cont.add_attribute<DATA>("indices");
+	ChunkArray<DATA>* indices = ca_cont.add_chunk_array<DATA>("indices");
 
 	for (uint32 i=0; i<20; ++i)
 	{
@@ -121,7 +121,7 @@ TEST_F(ChunkArrayContainerTest, test_compact)
 //		std::cout << i << " => "<<indices->operator [](i)<< std::endl;
 
 	std::vector<DATA> after;
-	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
+	for (uint32 i = ca_cont.begin(); i != ca_cont.end(); ca_cont.next(i))
 		after.push_back(indices->operator [](i));
 
 	auto contains = [&] (DATA x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
@@ -145,20 +145,18 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 
 	ChunkArrayContainer ca_cont;
 
+	ChunkArray<DATA>* indices = ca_cont.add_chunk_array<DATA>("indices");
 
-	ChunkArray<DATA>* indices = ca_cont.add_attribute<DATA>("indices");
-
-	for (uint32 i=0; i<10; ++i)
+	for (uint32 i = 0; i < 10; ++i)
 	{
 		ca_cont.insert_lines<3>();
 		indices->operator [](i) = i;
 	}
 
-	for (uint32 i=0; i<30; ++i)
+	for (uint32 i = 0; i < 30; ++i)
 	{
 		indices->operator [](i) = i;
 	}
-
 
 	ca_cont.remove_lines<3>(0);
 	ca_cont.remove_lines<3>(8*3);
@@ -201,9 +199,7 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 //	uint32 i=0;
 //	for(uint32 x: old_new)
 //		std::cout << i++ << " : "<< x << std::endl;
-
 }
-
 
 TEST_F(ChunkArrayContainerTest, test_merge)
 {
@@ -211,20 +207,20 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	ChunkArrayContainer::ChunkArrayFactory::register_known_types();
 
 	ChunkArrayContainer ca_cont;
-	ChunkArray<uint32>* data_i = ca_cont.add_attribute<uint32>("indices");
-	ChunkArray<float32>* data_f = ca_cont.add_attribute<float32>("data_f");
+	ChunkArray<uint32>* data_i = ca_cont.add_chunk_array<uint32>("indices");
+	ChunkArray<float32>* data_f = ca_cont.add_chunk_array<float32>("data_f");
 
 	ChunkArrayContainer ca_cont2;
-	ChunkArray<VEC3F>* data2_v = ca_cont2.add_attribute<VEC3F>("data_v");
-	ChunkArray<uint16>* data2_i16 = ca_cont2.add_attribute<uint16>("indices");
+	ChunkArray<VEC3F>* data2_v = ca_cont2.add_chunk_array<VEC3F>("data_v");
+	ChunkArray<uint16>* data2_i16 = ca_cont2.add_chunk_array<uint16>("indices");
 
 	// test impossible merge
 	bool ok = ca_cont.check_before_merge(ca_cont2);
 	EXPECT_FALSE(ok);
 
 	// correct attribute
-	ca_cont2.remove_attribute(data2_i16);
-	ChunkArray<uint32>* data2_i = ca_cont2.add_attribute<uint32>("indices");
+	ca_cont2.remove_chunk_array(data2_i16);
+	ChunkArray<uint32>* data2_i = ca_cont2.add_chunk_array<uint32>("indices");
 
 	// filling
 	for (uint32 i=0; i<10; ++i)
@@ -298,10 +294,7 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	EXPECT_TRUE( contains(105) );
 	EXPECT_TRUE( contains(107) );
 	EXPECT_TRUE( contains(108) );
-
 }
-
-
 
 TEST_F(ChunkArrayContainerTest, test_merge_tri)
 {
@@ -310,13 +303,13 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 	ChunkArrayContainer::ChunkArrayFactory::register_known_types();
 
 	ChunkArrayContainer ca_cont;
-	ChunkArray<uint32>* data_i = ca_cont.add_attribute<uint32>("indices");
-	ChunkArray<float32>* data_f = ca_cont.add_attribute<float32>("data_f");
+	ChunkArray<uint32>* data_i = ca_cont.add_chunk_array<uint32>("indices");
+	ChunkArray<float32>* data_f = ca_cont.add_chunk_array<float32>("data_f");
 
 	ChunkArrayContainer ca_cont2;
-	ChunkArray<VEC3F>* data2_v = ca_cont2.add_attribute<VEC3F>("data_v");
-	ChunkArray<uint32>* data2_i = ca_cont2.add_attribute<uint32>("indices");
-	ChunkArray<bool>* data2_b = ca_cont2.add_attribute<bool>("booleens");
+	ChunkArray<VEC3F>* data2_v = ca_cont2.add_chunk_array<VEC3F>("data_v");
+	ChunkArray<uint32>* data2_i = ca_cont2.add_chunk_array<uint32>("indices");
+	ChunkArray<bool>* data2_b = ca_cont2.add_chunk_array<bool>("booleens");
 
 	for (uint32 i=0; i<3; ++i)
 		ca_cont.insert_lines<3>();
@@ -353,7 +346,7 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 	EXPECT_EQ(old_new.size(),9);
 	EXPECT_EQ(ca_cont.size(),12);
 
-	ChunkArray<bool>* data_b = ca_cont.get_attribute<bool>("booleens");
+	ChunkArray<bool>* data_b = ca_cont.get_chunk_array<bool>("booleens");
 
 	//	ChunkArray<VEC3F>* data_v = ca_cont.get_attribute<VEC3F>("data_v");
 //	std::cout << "=============================" << std::boolalpha<<std::endl;

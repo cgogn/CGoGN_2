@@ -106,19 +106,19 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
-		this->topology_.clear_attributes();
+		this->topology_.clear_chunk_arrays();
 
 		for (auto& mark_att_topo : this->mark_attributes_topology_)
 			mark_att_topo.clear();
 
 		for (auto& att : this->attributes_)
-			att.remove_attributes();
+			att.remove_chunk_arrays();
 
 		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
-				this->topology_.remove_attribute(this->embeddings_[i]);
+				this->topology_.remove_chunk_array(this->embeddings_[i]);
 				this->embeddings_[i] = nullptr;
 			}
 
@@ -179,7 +179,7 @@ protected:
 //		if (!this->template is_embedded<ORBIT>())
 //			return;
 
-//		auto& cac = this->template get_attribute_container<ORBIT>();
+//		auto& cac = this->template attribute_container<ORBIT>();
 //		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
 //		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
 //		{
@@ -246,7 +246,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
-		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_attribute<T>(attribute_name);
+		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_chunk_array<T>(attribute_name);
 		return Attribute<T, ORBIT>(this, ca);
 	}
 
@@ -261,7 +261,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
 		const ChunkArray<T>* ca = ah.data();
-		return this->attributes_[ORBIT].remove_attribute(ca);
+		return this->attributes_[ORBIT].remove_chunk_array(ca);
 	}
 
 	/**
@@ -274,7 +274,7 @@ public:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_attribute<T>(attribute_name);
+		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
 		return Attribute<T, ORBIT>(this, ca);
 	}
 
@@ -283,7 +283,7 @@ public:
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = this->attributes_[orbit].template get_attribute<T>(attribute_name);
+		ChunkArray<T>* ca = this->attributes_[orbit].template get_chunk_array<T>(attribute_name);
 		return Attribute_T<T>(this, ca, orbit);
 	}
 
@@ -298,10 +298,9 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
 
-		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_attribute<T_ATT>(attribute_name));
+		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_chunk_array<T_ATT>(attribute_name));
 		return Attribute<T_ASK, ORBIT>(this, ca);
 	}
-
 
 	template <typename T, Orbit ORBIT>
 	inline void swap_attributes(Attribute<T, ORBIT>& ah1, Attribute<T, ORBIT>& ah2)
@@ -311,7 +310,7 @@ public:
 		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
 		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
 
-		this->attributes_[ORBIT].swap_data_attributes(ah1.data(), ah2.data());
+		this->attributes_[ORBIT].swap_data(ah1.data(), ah2.data());
 	}
 
 	template <typename T, Orbit ORBIT>
@@ -322,7 +321,7 @@ public:
 		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
 		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
 
-		this->attributes_[ORBIT].copy_data_attribute(dest.data(), src.data());
+		this->attributes_[ORBIT].copy_data(dest.data(), src.data());
 	}
 
 protected:
@@ -387,7 +386,7 @@ protected:
 		oss << "EMB_" << orbit_name(ORBIT);
 
 		// create the topology attribute that stores the orbit indices
-		ChunkArray<uint32>* ca = this->topology_.template add_attribute<uint32>(oss.str());
+		ChunkArray<uint32>* ca = this->topology_.template add_chunk_array<uint32>(oss.str());
 		this->embeddings_[ORBIT] = ca;
 
 		// initialize all darts indices to INVALID_INDEX for this ORBIT
@@ -653,7 +652,7 @@ public:
 	template <Orbit ORBIT>
 	Dart boundary_dart(Cell<ORBIT> c) const
 	{
-		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "get_boundary_dart is not defined for boundary cells");
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
 		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
 		{
@@ -1328,7 +1327,7 @@ public:
 		if (old_new.empty())
 			return;			// already compact nothing to do with relationss
 
-		for (ChunkArrayGen* ptr: this->topology_.get_attributes())
+		for (ChunkArrayGen* ptr: this->topology_.chunk_arrays())
 		{
 			ChunkArray<Dart>* ca = dynamic_cast<ChunkArray<Dart>*>(ptr);
 			if (ca)
@@ -1381,7 +1380,7 @@ public:
 		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
 
 		// change topo relations of copied darts
-		for (ChunkArrayGen* ptr: this->topology_.get_attributes())
+		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
 		{
 			ChunkArray<Dart>* cad = dynamic_cast<ChunkArray<Dart>*>(ptr);
 			if (cad)

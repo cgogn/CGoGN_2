@@ -70,7 +70,7 @@ public:
 	{
 		nb_darts_per_level_.reserve(32u);
 		nb_darts_per_level_.push_back(0);
-		dart_level_ = topology.template add_attribute<uint32>("dartLevel") ;
+		dart_level_ = topology.template add_chunk_array<uint32>("dartLevel") ;
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPHBase);

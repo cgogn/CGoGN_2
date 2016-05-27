@@ -80,8 +80,8 @@ protected:
 
 	void init()
 	{
-		phi1_ = this->topology_.template add_attribute<Dart>("phi1");
-		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
+		phi1_ = this->topology_.template add_chunk_array<Dart>("phi1");
+		phi_1_ = this->topology_.template add_chunk_array<Dart>("phi_1");
 	}
 
 public:

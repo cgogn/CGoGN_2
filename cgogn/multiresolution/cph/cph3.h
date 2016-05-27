@@ -47,7 +47,7 @@ protected:
 public:
 	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
 	{
-		face_id_ = topology.template add_attribute<uint32>("faceId");
+		face_id_ = topology.template add_chunk_array<uint32>("faceId");
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH3);

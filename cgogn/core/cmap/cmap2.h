@@ -89,7 +89,7 @@ protected:
 
 	inline void init()
 	{
-		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
+		phi2_ = this->topology_.template add_chunk_array<Dart>("phi2");
 	}
 
 public:

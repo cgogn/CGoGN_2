@@ -163,7 +163,7 @@ public:
 		marked_cells_->clear();
 	}
 
-	inline const std::vector<uint32>& get_marked_cells() const
+	inline const std::vector<uint32>& marked_cells() const
 	{
 		return *marked_cells_;
 	}

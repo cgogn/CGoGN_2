@@ -90,7 +90,7 @@ public:
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
-				ChunkArrayGen* ver_cag = ver_cac.get_attribute(pair.second);
+				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (pair.second == "position")
 					position_attribute_ = ver_cag;
 				else
@@ -101,7 +101,7 @@ public:
 			}
 			else
 			{
-				ChunkArrayGen* vol_cag = vol_cac.get_attribute(pair.second);
+				ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
 				if (vol_cag)
 					volume_attributes_.push_back(vol_cag);
 			}

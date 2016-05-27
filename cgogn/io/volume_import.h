@@ -173,11 +173,11 @@ protected:
 	template<typename VEC3>
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		auto res = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 		if (res != nullptr)
 			return res;
 		else
-			return this->vertex_attributes_.template get_attribute<VEC3>("position");
+			return this->vertex_attributes_.template get_chunk_array<VEC3>("position");
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -493,7 +493,7 @@ public:
 		if (this->nb_vertices_ != nb_vert_dart_marking)
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
-		if (this->volume_attributes_.get_nb_attributes() > 0)
+		if (this->volume_attributes_.nb_chunk_arrays() > 0)
 		{
 			mbuild.template create_embedding<Volume::ORBIT>();
 			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
@@ -510,8 +510,8 @@ protected:
 		set_nb_volumes(0u);
 		volumes_types.clear();
 		volumes_vertex_indices_.clear();
-		vertex_attributes_.remove_attributes();
-		volume_attributes_.remove_attributes();
+		vertex_attributes_.remove_chunk_arrays();
+		volume_attributes_.remove_chunk_arrays();
 	}
 
 	template<typename VEC3>

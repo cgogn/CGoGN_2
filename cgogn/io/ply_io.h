@@ -38,8 +38,10 @@ namespace io
 {
 
 template<typename MAP_TRAITS, typename VEC3>
-class PlySurfaceImport : public SurfaceImport<MAP_TRAITS> {
+class PlySurfaceImport : public SurfaceImport<MAP_TRAITS>
+{
 public:
+
 	using Self = PlySurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit = SurfaceImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
@@ -51,9 +53,9 @@ public:
 	virtual ~PlySurfaceImport() override {}
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-
 		PlyImportData pid;
 
 		if (! pid.read_file(filename) )
@@ -62,16 +64,13 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 		ChunkArray<VEC3>* color = nullptr;
 		if (pid.has_colors())
-		{
-			color = this->vertex_attributes_.template add_attribute<VEC3>("color");
-		}
+			color = this->vertex_attributes_.template add_chunk_array<VEC3>("color");
 
 		this->nb_vertices_ = pid.nb_vertices();
 		this->nb_faces_ = pid.nb_faces();
-
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
@@ -91,7 +90,6 @@ protected:
 			{
 				VEC3 rgb;
 				pid.vertex_color_float32(i, rgb);
-
 				(*color)[vertex_id] = pos;
 			}
 		}
@@ -123,5 +121,7 @@ extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_PLY_IO_CPP_))
 
 }// namespace io
+
 } // namespace cgogn
+
 #endif // CGOGN_IO_PLY_IO_H_
