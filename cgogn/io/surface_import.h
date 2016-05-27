@@ -162,7 +162,7 @@ public:
 		{
 			if (map.phi2(d) == d)
 			{
-				uint32 vertex_index = map.get_embedding(Vertex(d));
+				uint32 vertex_index = map.embedding(Vertex(d));
 
 				std::vector<Dart>& next_vertex_darts = darts_per_vertex[Vertex(map.phi1(d))];
 				bool phi2_found = false;
@@ -172,7 +172,7 @@ public:
 					 it != next_vertex_darts.end() && !phi2_found;
 					 ++it)
 				{
-					if (map.get_embedding(Vertex(map.phi1(*it))) == vertex_index)
+					if (map.embedding(Vertex(map.phi1(*it))) == vertex_index)
 					{
 						if (map.phi2(*it) == *it)
 						{

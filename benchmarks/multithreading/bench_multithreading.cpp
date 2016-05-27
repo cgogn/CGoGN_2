@@ -69,7 +69,7 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		uint32 nb_darts_2 = 0u;
-		std::vector<uint32> nb_darts_per_thread(cgogn::get_nb_threads()+2);
+		std::vector<uint32> nb_darts_per_thread(cgogn::nb_threads() + 2);
 		for (auto& n : nb_darts_per_thread)
 			n = 0u;
 		nb_darts_2 = 0u;

@@ -246,7 +246,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -269,7 +269,7 @@ protected:
 			}
 		}
 
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <typename FUNC>

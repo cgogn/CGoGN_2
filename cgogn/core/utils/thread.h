@@ -48,9 +48,9 @@ class Buffers;
 const uint32 MAX_NB_THREADS = 8u;
 CGOGN_CORE_API extern uint32 NB_THREADS;
 
-CGOGN_CORE_API ThreadPool* get_thread_pool();
+CGOGN_CORE_API ThreadPool* thread_pool();
 
-inline uint32 get_nb_threads()
+inline uint32 nb_threads()
 {
 	uint32 c = std::thread::hardware_concurrency();
 	return c < MAX_NB_THREADS ? c : MAX_NB_THREADS;
@@ -59,8 +59,8 @@ inline uint32 get_nb_threads()
 const uint32 PARALLEL_BUFFER_SIZE = 1024u;
 
 /// buffers of pre-allocated vectors of dart or uint32
-extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread;
-extern CGOGN_TLS Buffers<uint32>* uint_buffers_thread;
+extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread_;
+extern CGOGN_TLS Buffers<uint32>* uint_buffers_thread_;
 
 /**
  * @brief function to call at begin of each thread which use a map
@@ -72,8 +72,8 @@ CGOGN_CORE_API void thread_start();
  */
 CGOGN_CORE_API void thread_stop();
 
-CGOGN_CORE_API Buffers<Dart>*   get_dart_buffers();
-CGOGN_CORE_API Buffers<uint32>* get_uint_buffers();
+CGOGN_CORE_API Buffers<Dart>*   dart_buffers();
+CGOGN_CORE_API Buffers<uint32>* uint_buffers();
 
 } // namespace cgogn
 

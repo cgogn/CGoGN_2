@@ -123,10 +123,10 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 
 	//for each vertex
 
-	map.foreach_cell([&output,&map,&pos](Vertex v)
+	map.foreach_cell([&output, &map, &pos] (Vertex v)
 	{
 		const VEC3& vec = pos[v];
-		const uint32 emb = map.get_embedding(v);
+		const uint32 emb = map.embedding(v);
 		output->pointlist[3u*emb + 0u] = vec[0];
 		output->pointlist[3u*emb + 1u] = vec[1];
 		output->pointlist[3u*emb + 2u] = vec[2];
@@ -151,7 +151,7 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 		uint32 j = 0u;
 		map.foreach_incident_vertex(face, [&p, &map, &j] (Vertex v)
 		{
-			p->vertexlist[j++] = map.get_embedding(v);
+			p->vertexlist[j++] = map.embedding(v);
 		});
 
 		++i;

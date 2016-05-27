@@ -70,23 +70,22 @@ int test1(MAP& map)
 	map.remove_attribute(ahf);
 	cgogn_log_info("example_map") << "ahf valid : " << std::boolalpha << ahf.is_valid();
 
-	std::vector<uint32>* uib = cgogn::get_uint_buffers()->get_buffer();
+	std::vector<uint32>* uib = cgogn::uint_buffers()->buffer();
 	uib->push_back(3);
-	cgogn::get_uint_buffers()->release_buffer(uib);
-
+	cgogn::uint_buffers()->release_buffer(uib);
 
 	Dart d1 = map.add_face(3).dart;
 
 	// get cell buffer typed
 //	std::vector<typename MAP::Vertex>* vert_b = cgogn::get_dart_buffers()->get_cell_buffer<typename MAP::Vertex>();
 
-	std::vector<Dart>* vertdb = cgogn::get_dart_buffers()->get_buffer();
+	std::vector<Dart>* vertdb = cgogn::dart_buffers()->buffer();
 	std::vector<typename MAP::Vertex>* vert_b = reinterpret_cast< std::vector<typename MAP::Vertex>* >(vertdb);
 
 	vert_b->push_back(typename MAP::Vertex(d1));
 	vert_b->push_back(typename MAP::Vertex(d1));
 
-	cgogn::get_dart_buffers()->release_cell_buffer(vertdb);
+	cgogn::dart_buffers()->release_cell_buffer(vertdb);
 //	cgogn::get_dart_buffers()->release_cell_buffer(vert_b);
 
 	DartMarker<MAP> dm(map);

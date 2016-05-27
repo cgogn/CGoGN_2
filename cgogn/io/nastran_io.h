@@ -231,7 +231,7 @@ protected:
 
 		// 1. vertices
 		uint32 count{1u};
-		map.foreach_cell([&](Vertex v)
+		map.foreach_cell([&] (Vertex v)
 		{
 			output << "GRID    ";
 			output << std::right;
@@ -240,7 +240,7 @@ protected:
 			output << "        ";
 			output << std::left;
 			std::stringstream position_stream;
-			pos->export_element(map.get_embedding(v), position_stream, false);
+			pos->export_element(map.embedding(v), position_stream, false);
 			float32 tmp[3];
 			position_stream >> tmp[0];
 			position_stream >> tmp[1];
@@ -253,7 +253,6 @@ protected:
 		const auto& nb_vert_vol = this->number_of_vertices();
 		const uint32 nb_vols = nb_vert_vol.size();
 		output << std::right;
-
 
 		if (this->nb_hexas() > 0u)
 		{

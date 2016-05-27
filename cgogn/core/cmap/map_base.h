@@ -336,11 +336,11 @@ protected:
 	* @return a mark attribute on the topology container
 	*/
 	template <Orbit ORBIT>
-	inline ChunkArrayBool* get_mark_attribute()
+	inline ChunkArrayBool* mark_attribute()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		std::size_t thread = this->get_current_thread_index();
+		std::size_t thread = this->current_thread_index();
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_[ORBIT][thread].back();
@@ -367,7 +367,7 @@ protected:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		this->mark_attributes_[ORBIT][this->get_current_thread_index()].push_back(ca);
+		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
 	}
 
 	/*******************************************************************************
@@ -430,10 +430,10 @@ public:
 		{
 			if (counter[c] > 0)
 			{
-				const uint32 old_emb = this->get_embedding(c);
+				const uint32 old_emb = this->embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
 				cgogn_log_warning("enforce_unique_orbit_embedding") << "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT);
-				this->template get_attribute_container<ORBIT>().copy_line(new_emb, old_emb, false, false);
+				this->template attribute_container<ORBIT>().copy_line(new_emb, old_emb, false, false);
 			}
 
 			counter[c]++;
@@ -466,7 +466,7 @@ public:
 		// Check that the indexation of cells is correct
 		foreach_cell<FORCE_DART_MARKING>([&] (CellType c)
 		{
-			const uint32 idx = this->get_embedding(c);
+			const uint32 idx = this->embedding(c);
 			// check used indices are valid
 			if (idx == INVALID_INDEX)
 			{
@@ -478,7 +478,7 @@ public:
 			// check all darts of the cell use the same index (distinct to INVALID_INDEX)
 			cmap->foreach_dart_of_orbit(c, [&] (Dart d)
 			{
-				const uint32 emb_d = this->get_embedding(CellType(d));
+				const uint32 emb_d = this->embedding(CellType(d));
 				if (emb_d != idx)
 					cgogn_log_error("is_well_embedded") << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT);
 			});
@@ -570,7 +570,7 @@ public:
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
 		if (this->template is_embedded<ORBIT>())
-			return this->get_embedding(c1) == this->get_embedding(c2);
+			return this->embedding(c1) == this->embedding(c2);
 		else
 			return same_orbit(c1, c2);
 	}
@@ -651,7 +651,7 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	Dart get_boundary_dart(Cell<ORBIT> c) const
+	Dart boundary_dart(Cell<ORBIT> c) const
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "get_boundary_dart is not defined for boundary cells");
 		Dart result;
@@ -692,8 +692,8 @@ public:
 		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
 		using VecDarts = std::vector<Dart>;
 
-		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -702,7 +702,7 @@ public:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		Dart it = Dart(this->topology_.begin());
 		Dart last = Dart(this->topology_.end());
@@ -713,7 +713,7 @@ public:
 			{
 				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
 				{
-					dart_buffers[i].push_back(dbuffs->get_buffer());
+					dart_buffers[i].push_back(dbuffs->buffer());
 					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
 					std::vector<Dart>& darts = *dart_buffers[i].back();
 					darts.reserve(PARALLEL_BUFFER_SIZE);
@@ -983,8 +983,8 @@ public:
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
 
-		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -993,7 +993,7 @@ public:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
@@ -1002,7 +1002,7 @@ public:
 		while(it != it_end)
 		{
 			// fill buffer
-			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
+			cells_buffers[i].push_back(dbuffs->template cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && (it != it_end); ++k)
@@ -1082,8 +1082,8 @@ protected:
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
 
-		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -1092,7 +1092,7 @@ protected:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		const ConcreteMap* cmap = to_concrete();
 		DartMarker dm(*cmap);
@@ -1104,7 +1104,7 @@ protected:
 		while (it.index < last.index)
 		{
 			// fill buffer
-			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
+			cells_buffers[i].push_back(dbuffs->template cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; )
@@ -1181,8 +1181,8 @@ protected:
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
 
-		ThreadPool* thread_pool = cgogn::get_thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->get_nb_threads();
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -1191,7 +1191,7 @@ protected:
 		futures[0].reserve(nb_threads_pool);
 		futures[1].reserve(nb_threads_pool);
 
-		Buffers<Dart>* dbuffs = cgogn::get_dart_buffers();
+		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		const ConcreteMap* cmap = to_concrete();
 		CellMarker<ORBIT> cm(*cmap);
@@ -1203,7 +1203,7 @@ protected:
 		while (it.index < last.index)
 		{
 			// fill buffer
-			cells_buffers[i].push_back(dbuffs->template get_cell_buffer<CellType>());
+			cells_buffers[i].push_back(dbuffs->template cell_buffer<CellType>());
 			VecCell& cells = *cells_buffers[i].back();
 			cells.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; )
@@ -1350,11 +1350,9 @@ public:
 	void compact()
 	{
 		compact_topo();
-
-		for (uint32 orb=0; orb<NB_ORBITS; ++orb)
-			compact_embedding(orb); // checking if embedding used done inside
+		for (uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
+			compact_embedding(orbit); // checking if embedding used done inside
 	}
-
 
 	/**
 	 * @brief merge map in this map
@@ -1363,9 +1361,8 @@ public:
 	 */
 	bool merge(const ConcreteMap& map)
 	{
-
 		// check attribute compatibility
-		for(uint32 i=0; i<NB_ORBITS;++i)
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
@@ -1389,7 +1386,7 @@ public:
 			ChunkArray<Dart>* cad = dynamic_cast<ChunkArray<Dart>*>(ptr);
 			if (cad)
 			{
-				for (uint32 i=first; i!= this->topology_.end(); this->topology_.next(i))
+				for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 				{
 					Dart& d = (*cad)[i];
 					uint32 idx = d.index;
@@ -1410,20 +1407,20 @@ public:
 		});
 
 		// change embedding indices of moved lines
-		for(uint32 i=0; i<NB_ORBITS;++i)
+		for(uint32 i = 0; i < NB_ORBITS;++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)
 			{
 				if (map.embeddings_[i] == nullptr) //set embedding to INVALID for further easy detection
 				{
-					for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 						(*emb)[j] = INVALID_INDEX;
 				}
 				else
 				{
 					std::vector<uint32> old_new = this->attributes_[i].template merge<1>(map.attributes_[i]);
-					for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 					{
 						uint32& e = (*emb)[j];
 						if (e != INVALID_INDEX)
@@ -1442,7 +1439,6 @@ public:
 		// ok
 		return true;
 	}
-
 };
 
 } // namespace cgogn

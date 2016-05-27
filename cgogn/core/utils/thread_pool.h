@@ -72,8 +72,10 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API ThreadPool {
+class CGOGN_CORE_API ThreadPool
+{
 public:
+
 	ThreadPool();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
@@ -81,26 +83,26 @@ public:
 	auto enqueue(const F& f, Args&&... args)
 	-> std::future<typename std::result_of<F(uint32, Args...)>::type>;
 
-	std::vector<std::thread::id> get_threads_ids() const;
+	std::vector<std::thread::id> threads_ids() const;
 	virtual ~ThreadPool();
 
-	inline std::size_t get_nb_threads() const
+	inline std::size_t nb_threads() const
 	{
 		return workers_.size();
 	}
 
 private:
+
 	// need to keep track of threads so we can join them
-	std::vector< std::thread > workers_;
+	std::vector<std::thread> workers_;
 	// the task queue
-	std::queue< std::function<void(uint32)> > tasks_;
+	std::queue<std::function<void(uint32)>> tasks_;
 
 	// synchronization
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
 };
-
 
 // add new work item to the pool
 template<class F, class... Args>
@@ -109,11 +111,10 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 {
 	using return_type = typename std::result_of<F(uint32, Args...)>::type;
 
-	auto task = std::make_shared< std::packaged_task<return_type(uint32)> >([f,&args...](uint32 i)
+	auto task = std::make_shared<std::packaged_task<return_type(uint32)>>([f, &args...] (uint32 i)
 	{
 		std::bind(std::cref(f),i, std::forward<Args>(args)...)();
-	}
-	);
+	});
 
 	std::future<return_type> res = task->get_future();
 	{
@@ -125,7 +126,7 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 		}
 		// Push work back on the queue
-		tasks_.emplace([task](uint32 i){ (*task)(i); });
+		tasks_.emplace([task] (uint32 i) { (*task)(i); });
 	}
 	// Notify a thread that there is new work to perform
 	condition_.notify_one();

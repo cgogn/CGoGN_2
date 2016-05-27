@@ -140,7 +140,7 @@ public:
 		chunk_array_(ca)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = &map->get_const_attribute_container(orbit);
+			chunk_array_cont_ = &map->const_attribute_container(orbit);
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
@@ -451,7 +451,7 @@ public:
 	inline T& operator[](Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
-		return this->chunk_array_->operator[](this->map_->get_embedding(c));
+		return this->chunk_array_->operator[](this->map_->embedding(c));
 	}
 
 	/**
@@ -462,7 +462,7 @@ public:
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
-		return this->chunk_array_->operator[](this->map_->get_embedding(c));
+		return this->chunk_array_->operator[](this->map_->embedding(c));
 	}
 
 //	/**

@@ -50,7 +50,7 @@ public:
 	DartMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
-		mark_attribute_ = map_.get_topology_mark_attribute();
+		mark_attribute_ = map_.topology_mark_attribute();
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarker_T);
@@ -145,7 +145,7 @@ public:
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
-		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
+		marked_darts_ = cgogn::dart_buffers()->buffer();
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarkerStore);
@@ -153,7 +153,7 @@ public:
 	~DartMarkerStore() override
 	{
 		unmark_all();
-		cgogn::get_dart_buffers()->release_buffer(marked_darts_);
+		cgogn::dart_buffers()->release_buffer(marked_darts_);
 	}
 
 	inline void mark(Dart d)

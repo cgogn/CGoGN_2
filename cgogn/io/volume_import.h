@@ -358,8 +358,8 @@ public:
 						const std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi1(d_it))];
 						for (auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
 						{
-							if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d_it)) &&
-									map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d_it)))))
+							if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(d_it)) &&
+									map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(d_it)))))
 							{
 								good_dart = *it;
 							}
@@ -390,8 +390,8 @@ public:
 							Dart another_good_dart;
 							for (auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
 							{
-								if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_d)) &&
-										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(another_d)))))
+								if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(another_d)) &&
+										map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(another_d)))))
 								{
 									another_good_dart = *it ;
 								}
@@ -404,7 +404,7 @@ public:
 								Dart q2_it = map.phi_1(d_quad);
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != d);
@@ -435,8 +435,8 @@ public:
 							Dart another_good_dart;
 							for (auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
 							{
-								if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_dart)) &&
-										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(good_dart)))))
+								if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(another_dart)) &&
+										map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(good_dart)))))
 								{
 									another_good_dart = *it ;
 								}
@@ -448,7 +448,7 @@ public:
 								Dart q2_it = d_quad;
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != good_dart);

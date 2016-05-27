@@ -298,7 +298,7 @@ public:
 		{
 			map_.foreach_incident_vertex(face_, [&] (Vertex v)
 			{
-				table_indices.push_back(map_.get_embedding(v));
+				table_indices.push_back(map_.embedding(v));
 			});
 			return;
 		}
@@ -309,9 +309,9 @@ public:
 			typename VPMS::iterator be_it = ears_.begin(); // best ear
 			VertexPoly* be = *be_it;
 
-			table_indices.push_back(map_.get_embedding(be->vert_));
-			table_indices.push_back(map_.get_embedding(be->next_->vert_));
-			table_indices.push_back(map_.get_embedding(be->prev_->vert_));
+			table_indices.push_back(map_.embedding(be->vert_));
+			table_indices.push_back(map_.embedding(be->next_->vert_));
+			table_indices.push_back(map_.embedding(be->prev_->vert_));
 			--nb_verts_;
 
 			if (nb_verts_ > 3)	// do not recompute if only one triangle left
@@ -328,9 +328,9 @@ public:
 				// remove ear from polygon
 				be = VertexPoly::erase(be);
 				// last triangle
-				table_indices.push_back(map_.get_embedding(be->vert_));
-				table_indices.push_back(map_.get_embedding(be->next_->vert_));
-				table_indices.push_back(map_.get_embedding(be->prev_->vert_));
+				table_indices.push_back(map_.embedding(be->vert_));
+				table_indices.push_back(map_.embedding(be->next_->vert_));
+				table_indices.push_back(map_.embedding(be->prev_->vert_));
 				// release memory of last triangle in polygon
 				delete be->next_;
 				delete be->prev_;

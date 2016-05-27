@@ -100,7 +100,7 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << "          ";
-			pos->export_element(map.get_embedding(v), output, false);
+			pos->export_element(map.embedding(v), output, false);
 			output << std::endl;
 		});
 		output << "        </DataArray>" << std::endl;
@@ -118,7 +118,7 @@ protected:
 				map.foreach_cell([&](Vertex v)
 				{
 					output << "          ";
-					att->export_element(map.get_embedding(v), output, false);
+					att->export_element(map.embedding(v), output, false);
 					output << std::endl;
 				});
 				output << "        </DataArray>" << std::endl;
@@ -184,7 +184,7 @@ protected:
 					map.foreach_cell([&](Volume w)
 					{
 						output << "         ";
-						att->export_element(map.get_embedding(w), output, false);
+						att->export_element(map.embedding(w), output, false);
 						output << std::endl;
 					});
 				output << "        </DataArray>" << std::endl;

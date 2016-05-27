@@ -83,8 +83,8 @@ public:
 	{
 		Scoped_C_Locale loc;
 		this->reset();
-		const ChunkArrayContainer& ver_cac = map.template get_const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& vol_cac = map.template get_const_attribute_container<Volume::ORBIT>();
+		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
 
 		for (const auto& pair : options.attributes_to_export_)
 		{

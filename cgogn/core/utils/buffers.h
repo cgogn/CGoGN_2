@@ -53,7 +53,7 @@ public:
 			delete i;
 	}
 
-	inline std::vector<T>* get_buffer()
+	inline std::vector<T>* buffer()
 	{
 		if (buffers_.empty())
 		{
@@ -100,7 +100,7 @@ public:
 			delete i;
 	}
 
-	inline std::vector<Dart>* get_buffer()
+	inline std::vector<Dart>* buffer()
 	{
 		if (buffers_.empty())
 		{
@@ -127,7 +127,7 @@ public:
 	}
 
 	template <typename CELL>
-	inline std::vector<CELL>* get_cell_buffer()
+	inline std::vector<CELL>* cell_buffer()
 	{
 		static_assert(sizeof(CELL) == sizeof(Dart), "Cannot cast dart buffer in buffer of ??");
 		if (buffers_.empty())

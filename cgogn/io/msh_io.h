@@ -501,7 +501,7 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_element(map.get_embedding(v), output, false);
+			pos->export_element(map.embedding(v), output, false);
 			output << std::endl;
 		});
 		output << "$ENDNOD" << std::endl;
