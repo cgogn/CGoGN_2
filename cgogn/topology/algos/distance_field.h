@@ -49,9 +49,29 @@ class DistanceField
 	using VertexArray = std::vector<Vertex>;
 
 public:
-	DistanceField(const EdgeAttribute<Scalar>& weight) :
+	DistanceField(MAP& map, const EdgeAttribute<Scalar>& weight) :
+		map_(map),
+		intern_edge_weight_(false),
 		edge_weight_(weight)
 	{
+	}
+
+	DistanceField(MAP& map) :
+		map_(map),
+		intern_edge_weight_(true)
+	{
+		edge_weight_ = map.template add_attribute<Scalar, Edge::ORBIT>("__edge_weight__");
+
+		map.foreach_cell([&](Edge e)
+		{
+			edge_weight_[e] = Scalar(1);
+		});
+	}
+
+	~DistanceField()
+	{
+		if (intern_edge_weight_)
+			map_.remove_attribute(edge_weight_);
 	}
 
 	/**
@@ -62,7 +82,6 @@ public:
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
 	 */
 	void dijkstra_compute_distances(
-			MAP& map,
 			const VertexArray& sources,
 			VertexAttribute<Scalar>& distance_to_source)
 	{
@@ -92,7 +111,7 @@ public:
 
 			vertex_queue.pop();
 
-			map.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
 				Scalar distance_through_u = dist + edge_weight_[Edge(v.dart)];
 				if (distance_through_u < distance_to_source[v])
@@ -113,7 +132,6 @@ public:
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
 	 */
 	void dijkstra_compute_paths(
-			MAP& map,
 			const VertexArray& sources,
 			VertexAttribute<Scalar>& distance_to_source,
 			VertexAttribute<Vertex>& path_to_source)
@@ -148,7 +166,7 @@ public:
 
 			vertex_queue.pop();
 
-			map.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
 				Scalar distance_through_u = dist + edge_weight_[Edge(v.dart)];
 				if (distance_through_u < distance_to_source[v])
@@ -176,7 +194,7 @@ public:
 		VertexAttribute<Scalar> distance_to_source = map.template add_attribute<Scalar, Vertex::ORBIT>("__dist_to_source__");
 
 		// Compute the shortest paths to sources
-		dijkstra_compute_distances(map, sources, distance_to_source);
+		dijkstra_compute_distances(sources, distance_to_source);
 
 		// Search for the vertices that maximize the disctance to the sources
 		Scalar max_distance = Scalar(0);
@@ -248,35 +266,14 @@ public:
 		if (boundary_vertices.size() == 0u)
 			cgogn_log_error("distance_to_boundary") << "No boundary found";
 		else
-			dijkstra_compute_distances(map, boundary_vertices, scalar_field);
+			dijkstra_compute_distances(boundary_vertices, scalar_field);
 	}
 
-
 private:
-	const EdgeAttribute<Scalar> edge_weight_;
+	MAP& map_;
+	EdgeAttribute<Scalar> edge_weight_;
+	bool intern_edge_weight_;
 };
-
-template <typename Scalar, typename MAP>
-void argmin(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<Scalar>& scalar_field,
-		std::vector<typename MAP::Vertex>& result)
-{
-	using Vertex = typename MAP::Vertex;
-
-	Scalar min_distance = std::numeric_limits<Scalar>::max();
-	for(auto& d : scalar_field)
-		min_distance = std::min(min_distance, d);
-
-	map.foreach_cell([&] (Vertex v)
-	{
-		Scalar distance = scalar_field[v];
-		if(distance == min_distance)
-		{
-			result.push_back(v);
-		}
-	});
-}
 
 } // namespace topology
 
