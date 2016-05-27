@@ -123,12 +123,12 @@ inline typename vector_traits<VEC3>::Scalar incident_faces_area(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Face = typename MAP::Face;
 
-	Scalar area(0);
+	Scalar incident_area(0);
 	map.foreach_incident_face(c, [&] (Face f)
 	{
-		area += cgogn::geometry::convex_area<VEC3>(map, f, position);
+		incident_area += area<VEC3>(map, f, position);
 	});
-	return area ;
+	return incident_area;
 }
 
 template <typename VEC3, typename CellType, typename MAP, typename MASK>
