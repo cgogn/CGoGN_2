@@ -105,7 +105,7 @@ inline void compute_area(
 }
 
 template <typename VEC3, typename CellType, typename MAP>
-inline void area(
+inline void compute_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
