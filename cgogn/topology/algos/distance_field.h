@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H
-#define CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H
+#ifndef CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
+#define CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
 
 //#include <map>
 //#include <set>
@@ -314,4 +314,4 @@ private:
 
 } // namespace cgogn
 
-#endif // CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H
+#endif // CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
