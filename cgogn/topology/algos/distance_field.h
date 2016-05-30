@@ -34,7 +34,13 @@ namespace cgogn
 
 namespace topology
 {
-
+/**
+ * class DistanceField : build, query and manage distance fields.
+ * A distance field is a scalar field that associated each vertex with
+ * its minimal distance to a given set of sources (a set of selected vertices).
+ * Maps are interpreted as graphs containing vertices linked by edges.
+ * The distances are computed as the sum of the edge weights along a path.
+ */
 template <typename Scalar, typename MAP>
 class DistanceField
 {
@@ -179,6 +185,33 @@ public:
 		}
 	}
 
+public:
+
+	/**
+	 * @brief find the vertex that maximizes the distance field,
+	 * or in other words the vertex that is the furthest from all sources.
+	 * @param distance_to_source : the distance to sources computed during the generation of the distance field
+	 * @return a pair made of the maximum of the distance field and the vertex that maximize it.
+	 */
+	Vertex find_maximum(const VertexAttribute<Scalar>& distance_to_source)
+	{
+		Scalar max_distance = Scalar(0);
+		Vertex max_vertex = Vertex();
+
+		map_.foreach_cell([&](Vertex v)
+		{
+			Scalar distance = distance_to_source[v];
+			if(distance > max_distance) {
+				max_distance = distance;
+				max_vertex = v;
+			}
+		});
+
+		return max_vertex;
+	}
+
+public:
+
 	/**
 	 * Compute a morse function from the shortest path distances to the sources.
 	 * The morse function has disctinct values in each vertex.
@@ -187,35 +220,24 @@ public:
 	 * @param[out] morse_function : the values of the morse function
 	 */
 	void dijkstra_to_morse_function(
-			MAP& map,
 			const VertexArray& sources,
 			VertexAttribute<Scalar>& morse_function)
 	{
-		VertexAttribute<Scalar> distance_to_source = map.template add_attribute<Scalar, Vertex::ORBIT>("__dist_to_source__");
+		VertexAttribute<Scalar> distance_to_source = map_.template add_attribute<Scalar, Vertex::ORBIT>("__dist_to_source__");
 
 		// Compute the shortest paths to sources
 		dijkstra_compute_distances(sources, distance_to_source);
 
-		// Search for the vertices that maximize the disctance to the sources
-		Scalar max_distance = Scalar(0);
-		Vertex max_vertex = Vertex();
-
-		map.foreach_cell([&] (Vertex v)
-		{
-			Scalar distance = distance_to_source[v];
-			if(distance > max_distance)
-			{
-				max_vertex = v;
-				max_distance = distance;
-			}
-		});
+		// Search for the vertices that maximize the distance to the sources
+		Vertex max_vertex = find_maximum(distance_to_source);
+		Scalar max_distance = distance_to_source[max_vertex];
 
 		// Inverse the distances so that the maxima are on the sources
 		for (auto& d : distance_to_source)
 			d = max_distance - d;
 
 		for(auto& d : morse_function)
-			d = Scalar(3);							// To mark unvisited vertices
+			d = Scalar(0);							// To mark unvisited vertices
 
 		using my_pair = std::pair<Scalar, unsigned int>;
 		using my_queue = std::priority_queue<my_pair, std::vector<my_pair>, std::greater<my_pair> >;
@@ -228,8 +250,8 @@ public:
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
 		// in an sorted array of the distances and n the number of vertices.
-		Scalar n = map.template nb_cells<Vertex::ORBIT>();
-		uint32 i = 0;
+		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
+		uint32 i = 1;
 		while(!vertex_queue.empty())
 		{
 			Vertex u = Vertex(Dart(vertex_queue.top().second));
@@ -239,27 +261,40 @@ public:
 			morse_function[u] = Scalar(i)/n;		// Set the final value
 			++i;
 
-			map.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
-				if(morse_function[v] > Scalar(2)) {	// If not visited
+				if(morse_function[v] == Scalar(0)) {	// If not visited
 					vertex_queue.push(std::make_pair(distance_to_source[v], v.dart.index));
-					morse_function[v] = Scalar(1);	// Set as visited
+					morse_function[v] = Scalar(1);		// Set as visited
 				}
 			});
 		}
-		map.remove_attribute(distance_to_source);
+		map_.remove_attribute(distance_to_source);
 	}
 
 public:
+	template <typename T>
+	void distance_to_center(
+			const VertexAttribute<T>& attribute,
+			VertexAttribute<Scalar>& scalar_field)
+	{
+		if (!attribute.is_valid())
+			cgogn_log_error("distance_to_center") << "Invalid attribute";
+		else
+		{
+			Vertex center = cgogn::geometry::central_vertex<T, MAP>(map_, attribute);
+			dijkstra_compute_distances({center}, scalar_field);
+		}
+	}
+
 	void distance_to_boundary(
-		MAP& map,
-		VertexAttribute<Scalar>& scalar_field)
+			VertexAttribute<Scalar>& scalar_field)
 	{
 		std::vector<Vertex> boundary_vertices;
 
-		map.foreach_cell([&](Vertex v)
+		map_.foreach_cell([&](Vertex v)
 		{
-			if (map.is_incident_to_boundary(v))
+			if (map_.is_incident_to_boundary(v))
 				boundary_vertices.push_back(v);
 		});
 
