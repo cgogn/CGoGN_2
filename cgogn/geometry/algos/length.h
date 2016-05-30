@@ -58,7 +58,7 @@ inline typename vector_traits<VEC3>::Scalar length(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void length(
+inline void compute_length(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -73,13 +73,13 @@ inline void length(
 }
 
 template <typename VEC3, typename MAP>
-inline void length(
+inline void compute_length(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
-	length<VEC3>(map, CellFilters(), position, edge_length);
+	compute_length<VEC3>(map, CellFilters(), position, edge_length);
 }
 
 template <typename VEC3, typename MAP, typename MASK>

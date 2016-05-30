@@ -102,7 +102,7 @@ void Viewer::import(const std::string& surfaceMesh)
 	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
 	face_normal_ = map_.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
 
-	cgogn::geometry::normal<Vec3>(map_, vertex_position_, face_normal_);
+	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, face_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);

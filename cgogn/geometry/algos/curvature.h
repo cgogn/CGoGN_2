@@ -119,7 +119,7 @@ void curvature(
 }
 
 //template <typename VEC3, typename MAP, typename MASK>
-//void curvature(
+//void compute_curvature(
 //	const MAP& map,
 //	const MASK& mask,
 //	typename vector_traits<VEC3>::Scalar radius,
@@ -142,7 +142,7 @@ void curvature(
 //}
 
 template <typename VEC3, typename MAP>
-void curvature(
+void compute_curvature(
 	const MAP& map,
 	typename vector_traits<VEC3>::Scalar radius,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
@@ -160,7 +160,7 @@ void curvature(
 	{
 		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 	});
-//	curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+//	compute_curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry

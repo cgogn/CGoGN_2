@@ -129,7 +129,7 @@ inline VEC3 normal(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -144,17 +144,17 @@ inline void normal(
 }
 
 template <typename VEC3, typename MAP>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	normal<VEC3>(map, CellFilters(), position, face_normal);
+	compute_normal<VEC3>(map, CellFilters(), position, face_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -169,17 +169,17 @@ inline void normal(
 }
 
 template <typename VEC3, typename MAP>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	normal<VEC3>(map, CellFilters(), position, vertex_normal);
+	compute_normal<VEC3>(map, CellFilters(), position, vertex_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -195,14 +195,14 @@ inline void normal(
 }
 
 template <typename VEC3, typename MAP>
-inline void normal(
+inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal,
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	normal<VEC3>(map, CellFilters(), position, face_normal, vertex_normal);
+	compute_normal<VEC3>(map, CellFilters(), position, face_normal, vertex_normal);
 }
 
 } // namespace geometry

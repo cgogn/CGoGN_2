@@ -45,6 +45,7 @@ inline typename vector_traits<VEC3>::Scalar convex_area(
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 
 	if (map.codegree(f) == 3)
 		return area<VEC3>(position[Vertex(f.dart)], position[Vertex(map.phi1(f.dart))], position[Vertex(map.phi_1(f.dart))]);
@@ -52,7 +53,7 @@ inline typename vector_traits<VEC3>::Scalar convex_area(
 	{
 		Scalar face_area{0};
 		VEC3 center = centroid<VEC3>(map, f, position);
-		map.foreach_incident_edge(f, [&] (typename MAP::Edge e)
+		map.foreach_incident_edge(f, [&] (Edge e)
 		{
 			face_area += area<VEC3>(center, position[Vertex(e.dart)], position[Vertex(map.phi1(e.dart))]);
 		});
@@ -83,13 +84,13 @@ inline auto area(
 	Scalar cell_area(0);
 	map.foreach_incident_face(c, [&] (Face f)
 	{
-		cell_area += convex_area<VEC3>(map, f, position) / map.codegree(f);
+		cell_area += area<VEC3>(map, f, position) / map.codegree(f);
 	});
 	return cell_area;
 }
 
 template <typename VEC3, typename CellType, typename MAP, typename MASK>
-inline void area(
+inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -110,7 +111,7 @@ inline void area(
 	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
-	area<VEC3, CellType>(map, CellFilters(), position, cell_area);
+	compute_area<VEC3, CellType>(map, CellFilters(), position, cell_area);
 }
 
 template <typename VEC3, typename CellType, typename MAP>
@@ -132,7 +133,7 @@ inline typename vector_traits<VEC3>::Scalar incident_faces_area(
 }
 
 template <typename VEC3, typename CellType, typename MAP, typename MASK>
-inline void incident_faces_area(
+inline void compute_incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
@@ -147,13 +148,13 @@ inline void incident_faces_area(
 }
 
 template <typename VEC3, typename CellType, typename MAP>
-inline void incident_faces_area(
+inline void compute_incident_faces_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
-	incident_faces_area<VEC3>(map, CellFilters(), position, area);
+	compute_incident_faces_area<VEC3>(map, CellFilters(), position, area);
 }
 
 } // namespace geometry

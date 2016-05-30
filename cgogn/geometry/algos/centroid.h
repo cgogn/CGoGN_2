@@ -54,7 +54,7 @@ inline VEC centroid(
 }
 
 template <typename VEC, typename CellType, typename MAP, typename MASK>
-inline void centroid(
+inline void compute_centroid(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC>& attribute,
@@ -69,13 +69,13 @@ inline void centroid(
 }
 
 template <typename VEC, typename CellType, typename MAP>
-inline void centroid(
+inline void compute_centroid(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC>& attribute,
 	typename MAP::template Attribute<VEC, CellType::ORBIT>& cell_centroid
 )
 {
-	centroid<VEC, CellType>(map, CellFilters(), attribute, cell_centroid);
+	compute_centroid<VEC, CellType>(map, CellFilters(), attribute, cell_centroid);
 }
 
 } // namespace geometry
