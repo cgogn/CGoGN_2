@@ -48,6 +48,48 @@ inline T centroid(const MAP& map, Cell<ORBIT> c, const typename MAP::template Ve
 	return result;
 }
 
+template <typename T, typename MAP>
+inline T centroid(const MAP& map, const typename MAP::template VertexAttribute<T>& attribute)
+{
+	T result;
+	set_zero(result);
+	uint32 count = 0;
+	map.foreach_cell([&] (typename MAP::Vertex v)
+	{
+		result += attribute[v];
+		++count;
+	});
+	result /= typename T::Scalar(count);
+	return result;
+}
+
+template <typename T, typename MAP>
+typename MAP::Vertex central_vertex(
+		const MAP& map,
+		const typename MAP::template VertexAttribute<T>& attribute)
+{
+	using Vertex = typename MAP::Vertex;
+	using Scalar = typename T::Scalar;
+
+	T center = centroid<T, MAP>(map, attribute);
+
+	Scalar min_distance = std::numeric_limits<Scalar>::max();
+	Vertex min_vertex;
+
+	map.foreach_cell([&](Vertex v)
+	{
+		Scalar distance = (attribute[v] - center).squaredNorm();
+
+		if(distance < min_distance)
+		{
+			min_distance = distance;
+			min_vertex = v;
+		}
+	});
+	return min_vertex;
+}
+
+
 } // namespace geometry
 
 } // namespace cgogn
