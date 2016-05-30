@@ -27,6 +27,7 @@
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/selection.h>
 #include <cgogn/geometry/algos/length.h>
+#include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -57,9 +58,8 @@ void curvature(
 	using Face = typename MAP::Face;
 
 	// collect the normal cycle tensor
-	geometry::Collector<VEC3, MAP> neighborhood(map);
-//	neighborhood.collect_within_sphere(v, radius, position);
-	neighborhood.collect_one_ring(v);
+	geometry::Collector_WithinSphere<VEC3, MAP> neighborhood(map, radius, position);
+	neighborhood.collect(v);
 
 	Eigen::Matrix3d tensor;
 	tensor.setZero();
@@ -73,7 +73,16 @@ void curvature(
 		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / ev.norm());
 	});
 
-	// TODO: manage border
+	neighborhood.foreach_border([&] (Dart d)
+	{
+		Scalar alpha;
+		geometry::intersection_sphere_segment<VEC3>(position[v], radius, position[Vertex2(d)], position[Vertex2(map.phi1(d))], alpha);
+		std::pair<Vertex2, Vertex2> vv = map.vertices(Edge2(d));
+		const VEC3& p1 = position[vv.first];
+		const VEC3& p2 = position[vv.second];
+		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
+		tensor += (ev * ev.transpose()) * edge_angle[Edge2(d)] * (Scalar(1) / ev.norm()) * alpha;
+	});
 
 	tensor /= neighborhood.area(position);
 

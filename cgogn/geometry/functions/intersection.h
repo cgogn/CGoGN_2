@@ -27,21 +27,13 @@
 #include <cmath>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/inclusion.h>
 
 namespace cgogn
 {
 
 namespace geometry
 {
-
-/**
- * \todo geometric predicate : move it to a specific location with other geometric predicates
- */
-template <typename VEC3>
-bool in_sphere(const VEC3& point, const VEC3& center, const typename vector_traits<VEC3>::Scalar& radius)
-{
-	return (point - center).norm() < radius;
-}
 
 template <typename VEC3>
 bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc, VEC3* inter = nullptr)
@@ -104,12 +96,12 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 /**
  * \param[in] center the position of the center of the sphere.
  * \param[in] radius the radius of the sphere
- * \param[in] p1 first point of the edge
- * \param[in] p2 second point of the edge
- * \param[out] alpha size of the edge inside the sphere
+ * \param[in] p1 first point of the segment
+ * \param[in] p2 second point of the segment
+ * \param[out] alpha ratio of the segment inside the sphere
  */
 template <typename VEC3>
-bool intersection_sphere_edge(
+bool intersection_sphere_segment(
 	const VEC3& center,
 	const typename vector_traits<VEC3>::Scalar& radius,
 	const VEC3& p1,
@@ -119,16 +111,17 @@ bool intersection_sphere_edge(
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 
-	if(in_sphere(p1, center, radius) && !in_sphere(p2, center, radius))
+	if (in_sphere(p1, center, radius) && !in_sphere(p2, center, radius))
 	{
 		VEC3 p = p1 - center;
 		VEC3 qminusp = p2 - center - p;
 		Scalar s = p.dot(qminusp);
 		Scalar n2 = qminusp.squaredNorm();
 		alpha = (- s + std::sqrt(s*s + n2 * (radius*radius - p.squaredNorm()))) / n2;
-		return true ;
+		return true;
 	}
-	return false ;
+
+	return false;
 }
 
 } // namespace geometry

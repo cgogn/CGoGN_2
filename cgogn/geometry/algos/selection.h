@@ -26,6 +26,8 @@
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/area.h>
+#include <cgogn/geometry/functions/inclusion.h>
+#include <cgogn/geometry/functions/intersection.h>
 
 namespace cgogn
 {
@@ -43,35 +45,8 @@ public:
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 
-	using iterator = std::vector<Dart>::iterator;
-	using const_iterator = std::vector<Dart>::const_iterator;
-
 	inline Collector(const MAP& m) : map_(m)
 	{}
-
-	template <typename CellType>
-	inline const_iterator begin() const
-	{
-		return cells_[CellType::ORBIT].begin();
-	}
-
-	template <typename CellType>
-	inline iterator begin()
-	{
-		return cells_[CellType::ORBIT].begin();
-	}
-
-	template <typename CellType>
-	inline const_iterator end() const
-	{
-		return cells_[CellType::ORBIT].end();
-	}
-
-	template <typename CellType>
-	inline iterator end()
-	{
-		return cells_[CellType::ORBIT].end();
-	}
 
 	template <typename CellType>
 	inline std::size_t size() const
@@ -88,85 +63,177 @@ public:
 			f(CellType(d));
 	}
 
-	Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const
+	template <typename FUNC>
+	void foreach_border(const FUNC& f)
 	{
-		Scalar result = 0;
-		for (Dart d : cells_[Face::ORBIT])
-		{
-			result += geometry::area<VEC3>(map_, Face(d), position);
-		}
-		// TODO: manage border
-		return result;
+		for (Dart d : border_)
+			f(d);
 	}
 
-	void collect_one_ring(const Vertex center)
-	{
-		for (auto& cells_vector : cells_)
-		{
-			cells_vector.clear();
-			cells_vector.reserve(32u);
-		}
+	virtual void collect(const Vertex center) = 0;
 
-		cells_[Vertex::ORBIT].push_back(center.dart);
-		map_.foreach_adjacent_vertex_through_edge(center, [&] (Vertex nv)
-		{
-			cells_[Edge::ORBIT].push_back(nv.dart);
-			cells_[Edge::ORBIT].push_back(map_.phi1(nv.dart));
-			cells_[Face::ORBIT].push_back(nv.dart);
-		});
-	}
+	virtual Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const = 0;
 
-	void collect_within_sphere(
-		const Vertex center,
-		const Scalar radius,
-		const typename MAP::template VertexAttribute<VEC3>& position
-	)
+protected:
+
+	void clear()
 	{
 		for (auto& cells_vector : cells_)
 		{
 			cells_vector.clear();
 			cells_vector.reserve(256u);
 		}
+		border_.clear();
+		border_.reserve(256u);
+	}
 
-		const VEC3& center_position = position[center];
+	const MAP& map_;
+	Vertex center_;
+	std::array<std::vector<Dart>, NB_ORBITS> cells_;
+	std::vector<Dart> border_;
+};
 
-		std::vector<Vertex>* visited_vertices = cgogn::dart_buffers()->cell_buffer<Vertex>();
-		visited_vertices->push_back(center);
-		cells_[Vertex::ORBIT].push_back(center.dart);
+template <typename VEC3, typename MAP>
+class Collector_OneRing : public Collector<VEC3, MAP>
+{
+public:
 
-		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(map_);
+	using Self = Collector_OneRing<VEC3, MAP>;
+	using Inherit = Collector<VEC3, MAP>;
+
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+
+	Collector_OneRing(const MAP& map) : Inherit(map)
+	{}
+
+	void collect(const Vertex center) override
+	{
+		this->clear();
+		this->center_ = center;
+
+		this->cells_[Vertex::ORBIT].push_back(center.dart);
+		this->map_.foreach_adjacent_vertex_through_edge(center, [&] (Vertex nv)
+		{
+			this->cells_[Edge::ORBIT].push_back(nv.dart);
+			this->cells_[Face::ORBIT].push_back(nv.dart);
+			this->border_.push_back(this->map_.phi1(nv.dart));
+		});
+	}
+
+	Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const override
+	{
+		Scalar result = 0;
+		for (Dart d : this->cells_[Face::ORBIT])
+		{
+			result += geometry::area<VEC3>(this->map_, Face(d), position);
+		}
+		return result;
+	}
+};
+
+template <typename VEC3, typename MAP>
+class Collector_WithinSphere : public Collector<VEC3, MAP>
+{
+public:
+
+	using Self = Collector_WithinSphere<VEC3, MAP>;
+	using Inherit = Collector<VEC3, MAP>;
+
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+
+	Collector_WithinSphere(
+		const MAP& map,
+		const Scalar radius,
+		const typename MAP::template VertexAttribute<VEC3>& position
+	) : Inherit(map),
+		radius_(radius),
+		position_(position)
+	{}
+
+	void collect(const Vertex center) override
+	{
+		this->clear();
+		this->center_ = center;
+
+		const VEC3& center_position = position_[center];
+
+		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(this->map_);
+
+		this->cells_[Vertex::ORBIT].push_back(center.dart);
+		cmv.mark(center);
 
 		uint32 i = 0;
-		while (i < visited_vertices->size())
+		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			map_.foreach_adjacent_vertex_through_edge((*visited_vertices)[i], [&] (Vertex nv)
+			this->map_.foreach_adjacent_vertex_through_edge(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Vertex nv)
 			{
-				if (!cmv.is_marked(nv))
+				Face nf(nv.dart);
+				bool all_in = true;
+				this->map_.foreach_incident_vertex(nf, [&] (Vertex v)
 				{
-					if ((position[nv] - center_position).norm() < radius)
+					if (!cmv.is_marked(v))
 					{
-						cmv.mark(nv);
-						visited_vertices->push_back(nv);
-						cells_[Vertex::ORBIT].push_back(nv.dart);
-						cells_[Edge::ORBIT].push_back(nv.dart);
+						if (in_sphere(position_[v], center_position, radius_))
+						{
+							cmv.mark(v);
+							this->cells_[Vertex::ORBIT].push_back(v.dart);
+							this->cells_[Edge::ORBIT].push_back(v.dart);
+						}
+						else
+						{
+							all_in = false;
+							this->border_.push_back(v.dart);
+						}
 					}
-					else
-					{
-						border_edges_.push_back(Edge(nv.dart));
-					}
-				}
+				});
+				if (all_in)
+					this->cells_[Face::ORBIT].push_back(nf.dart);
 			});
 			++i;
 		}
+	}
 
-		cgogn::dart_buffers()->release_cell_buffer(visited_vertices);
+	Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const override
+	{
+		Scalar result = 0;
+		const VEC3& center_position = position[this->center_];
+		for (Dart d : this->cells_[Face::ORBIT])
+		{
+			result += geometry::area<VEC3>(this->map_, Face(d), position);
+		}
+		for (Dart d : this->border_)
+		{
+			// Vertex(d) is outside
+			const Dart f = this->map_.phi1(d); // Vertex(f) is inside
+			const Dart g = this->map_.phi1(f);
+			if (geometry::in_sphere(position[Vertex(g)], center_position, radius_)) // Vertex(g) is inside
+			{
+				Scalar alpha, beta;
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(d)], alpha);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(g)], position[Vertex(d)], beta);
+				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
+			}
+			else // Vertex(g) is outside
+			{
+				Scalar alpha, beta;
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(d)], alpha);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(g)], beta);
+				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
+			}
+		}
+		return result;
 	}
 
 protected:
 
-	const MAP& map_;
-	std::array<std::vector<Dart>, NB_ORBITS> cells_;
-	std::vector<Edge> border_edges_;
+	Scalar radius_;
+	const typename MAP::template VertexAttribute<VEC3>& position_;
 };
 
 } // namespace geometry

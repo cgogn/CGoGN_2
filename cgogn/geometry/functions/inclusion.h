@@ -33,6 +33,15 @@ namespace cgogn
 namespace geometry
 {
 
+/**
+ * \todo geometric predicate : move it to a specific location with other geometric predicates
+ */
+template <typename VEC3>
+bool in_sphere(const VEC3& point, const VEC3& center, const typename vector_traits<VEC3>::Scalar& radius)
+{
+	return (point - center).norm() < radius;
+}
+
 template <typename VEC3>
 inline bool in_triangle(const VEC3& P, const VEC3& normal, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
 {
