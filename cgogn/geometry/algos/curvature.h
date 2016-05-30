@@ -54,21 +54,28 @@ void curvature(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Edge2 = Cell<Orbit::PHI2>;
+	using Face = typename MAP::Face;
 
 	// collect the normal cycle tensor
 	geometry::Collector<VEC3, MAP> neighborhood(map);
-	neighborhood.template collect_within_sphere<Edge2>(v, radius, position);
+//	neighborhood.collect_within_sphere(v, radius, position);
+	neighborhood.collect_one_ring(v);
+
 	Eigen::Matrix3d tensor;
 	tensor.setZero();
-	map.foreach_cell([&] (Edge2 e)
+
+	neighborhood.foreach_cell([&] (Edge2 e)
 	{
 		std::pair<Vertex2, Vertex2> vv = map.vertices(e);
 		const VEC3& p1 = position[vv.first];
 		const VEC3& p2 = position[vv.second];
 		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
-		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / length<VEC3>(map, e, position));
-	},
-	neighborhood);
+		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / ev.norm());
+	});
+
+	// TODO: manage border
+
+	tensor /= neighborhood.area(position);
 
 	const VEC3& normal_v = normal[v];
 	Eigen::Vector3d e_normal_v(normal_v[0], normal_v[1], normal_v[2]);
@@ -90,7 +97,7 @@ void curvature(
 	if (fabs(ev[2]) < fabs(ev[inormal])) inormal = 2;
 	imin = (inormal + 1) % 3;
 	imax = (inormal + 2) % 3;
-	if (ev[imax] < ev[imin]) { uint32 tmp = imin; imin = imax; imax = tmp; }
+	if (ev[imax] < ev[imin]) { std::swap(imin, imax); }
 
 	// set curvatures from sorted eigen components
 	// warning : Kmin and Kmax are switched w.r.t. kmin and kmax

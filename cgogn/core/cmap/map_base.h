@@ -734,7 +734,7 @@ public:
 				for (auto& fu : futures[id])
 					fu.wait();
 				for (auto& b : dart_buffers[id])
-					dbuffs->release_cell_buffer(b);
+					dbuffs->release_buffer(b);
 
 				futures[id].clear();
 				dart_buffers[id].clear();

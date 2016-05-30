@@ -55,9 +55,8 @@ inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
 	if (map.is_incident_to_boundary(e))
 		return Scalar(0);
 
-	std::pair<Vertex2, Vertex2> v = map.vertices(e);
-	const VEC3 n1 = normal<VEC3, MAP>(map, Face2(v.first.dart), position);
-	const VEC3 n2 = normal<VEC3, MAP>(map, Face2(v.second.dart), position);
+	const VEC3 n1 = normal<VEC3>(map, Face2(e.dart), position);
+	const VEC3 n2 = normal<VEC3>(map, Face2(map.phi2(e.dart)), position);
 
 	return angle(n1, n2);
 }

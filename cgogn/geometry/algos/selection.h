@@ -25,7 +25,7 @@
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 
 #include <cgogn/geometry/types/geometry_traits.h>
-#include <cgogn/core/utils/masks.h>
+#include <cgogn/geometry/algos/area.h>
 
 namespace cgogn
 {
@@ -34,7 +34,7 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-class Collector : public CellTraversor
+class Collector
 {
 public:
 
@@ -79,53 +79,94 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
-	template <typename CellType>
+	template <typename FUNC>
+	void foreach_cell(const FUNC& f)
+	{
+		using CellType = func_parameter_type(FUNC);
+		static const Orbit ORBIT = CellType::ORBIT;
+		for (Dart d : cells_[ORBIT])
+			f(CellType(d));
+	}
+
+	Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const
+	{
+		Scalar result = 0;
+		for (Dart d : cells_[Face::ORBIT])
+		{
+			result += geometry::area<VEC3>(map_, Face(d), position);
+		}
+		// TODO: manage border
+		return result;
+	}
+
+	void collect_one_ring(const Vertex center)
+	{
+		for (auto& cells_vector : cells_)
+		{
+			cells_vector.clear();
+			cells_vector.reserve(32u);
+		}
+
+		cells_[Vertex::ORBIT].push_back(center.dart);
+		map_.foreach_adjacent_vertex_through_edge(center, [&] (Vertex nv)
+		{
+			cells_[Edge::ORBIT].push_back(nv.dart);
+			cells_[Edge::ORBIT].push_back(map_.phi1(nv.dart));
+			cells_[Face::ORBIT].push_back(nv.dart);
+		});
+	}
+
 	void collect_within_sphere(
 		const Vertex center,
-		Scalar radius,
+		const Scalar radius,
 		const typename MAP::template VertexAttribute<VEC3>& position
 	)
 	{
-		static const Orbit ORBIT = CellType::ORBIT;
-
-		cells_[ORBIT].clear();
-		cells_[ORBIT].reserve(1024u);
-
-		switch (ORBIT)
+		for (auto& cells_vector : cells_)
 		{
-			case Vertex::ORBIT: {
-				const VEC3& center_position = position[center];
-				cells_[ORBIT].push_back(center.dart);
-				typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(map_);
-				uint32 i = 0;
-				while (i < cells_[ORBIT].size())
-				{
-					map_.foreach_adjacent_vertex_through_edge(Vertex(cells_[ORBIT][i]), [&] (Vertex nv)
-					{
-						if (!cmv.is_marked(nv) && (position[nv] - center_position).norm() < radius)
-						{
-							cells_[ORBIT].push_back(nv.dart);
-							cmv.mark(nv);
-						}
-					});
-				}
-				break;
-			}
-			case Edge::ORBIT: {
-
-				break;
-			}
-			case Face::ORBIT: {
-
-				break;
-			}
+			cells_vector.clear();
+			cells_vector.reserve(256u);
 		}
+
+		const VEC3& center_position = position[center];
+
+		std::vector<Vertex>* visited_vertices = cgogn::dart_buffers()->cell_buffer<Vertex>();
+		visited_vertices->push_back(center);
+		cells_[Vertex::ORBIT].push_back(center.dart);
+
+		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(map_);
+
+		uint32 i = 0;
+		while (i < visited_vertices->size())
+		{
+			map_.foreach_adjacent_vertex_through_edge((*visited_vertices)[i], [&] (Vertex nv)
+			{
+				if (!cmv.is_marked(nv))
+				{
+					if ((position[nv] - center_position).norm() < radius)
+					{
+						cmv.mark(nv);
+						visited_vertices->push_back(nv);
+						cells_[Vertex::ORBIT].push_back(nv.dart);
+						cells_[Edge::ORBIT].push_back(nv.dart);
+					}
+					else
+					{
+						border_edges_.push_back(Edge(nv.dart));
+					}
+				}
+			});
+			++i;
+		}
+
+		cgogn::dart_buffers()->release_cell_buffer(visited_vertices);
 	}
 
 protected:
 
 	const MAP& map_;
 	std::array<std::vector<Dart>, NB_ORBITS> cells_;
+	std::vector<Edge> border_edges_;
 };
 
 } // namespace geometry
