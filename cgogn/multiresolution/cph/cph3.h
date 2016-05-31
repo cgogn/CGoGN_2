@@ -32,8 +32,8 @@ namespace cgogn
 template <typename DATA_TRAITS>
 class CPH3 : public CPH2<DATA_TRAITS>
 {
-
 public:
+
 	using Self =  CPH3<DATA_TRAITS>;
 	using Inherit = CPH2<DATA_TRAITS>;
 	template <typename T>
@@ -42,16 +42,19 @@ public:
 	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
 
 protected:
+
 	ChunkArray<uint32>* face_id_;
 
 public:
-	CPH3(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
+	CPH3(ChunkArrayContainer<unsigned char>& topology) : Inherit(topology)
 	{
-		face_id_ = topology.template add_attribute<uint32>("faceId");
+		face_id_ = topology.template add_chunk_array<uint32>("faceId");
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH3);
-	~CPH3() override {}
+
+	~CPH3() override
+	{}
 
 	/***************************************************
 	 *             FACE ID MANAGEMENT                  *

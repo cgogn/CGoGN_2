@@ -89,7 +89,8 @@ string(TOUPPER ${PROJECT_NAME} UPPER_NAME)
 set(${UPPER_NAME}_INCLUDE_DIRS ${include_dirs_build_tree})
 
 export(TARGETS ${PROJECT_NAME}
-FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
+	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
+)
 
 configure_package_config_file(
 	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
@@ -106,7 +107,7 @@ write_basic_package_version_file(
 
 ######## 2. Install tree
 
-set(${UPPER_NAME}_INCLUDE_DIRS  ${include_dirs_install_tree})
+set(${UPPER_NAME}_INCLUDE_DIRS ${include_dirs_install_tree})
 
 install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets

@@ -106,7 +106,7 @@ public:
 		return level_;
 	}
 
-	template<class T>
+	template <class T>
 	LogEntry& operator<<(const T &x)
 	{
 		(*message_) << x;

@@ -11,7 +11,7 @@ if(CGOGN_BUILD_TESTS)
 endif(CGOGN_BUILD_TESTS)
 
 if(CGOGN_USE_QT)
-	add_subdirectory(libQGLViewer/QOGLViewer)
+	add_subdirectory(libQGLViewer)
 endif(CGOGN_USE_QT)
 
 if (CGOGN_BUILD_BENCHS)

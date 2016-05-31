@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_TOPO_RENDER_H_
-#define CGOGN_RENDERING_TOPO_RENDER_H_
+#ifndef CGOGN_RENDERING_TOPO_DRAWER_H_
+#define CGOGN_RENDERING_TOPO_DRAWER_H_
 
 #include <cgogn/rendering/dll.h>
 
@@ -32,6 +32,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
@@ -86,13 +87,18 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class TopoDrawer;
+
 		std::unique_ptr<ShaderBoldLine::Param> param_bl_;
 		std::unique_ptr<ShaderBoldLine::Param> param_bl2_;
 		std::unique_ptr<ShaderRoundPoint::Param> param_rp_;
 		TopoDrawer* topo_drawer_data_;
+
 		Renderer(TopoDrawer* tr);
+
 	public:
+
 		~Renderer();
+
 		/**
 		 * @brief draw
 		 * @param projection projection matrix
@@ -111,12 +117,12 @@ public:
 	 */
 	TopoDrawer();
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoDrawer);
-
 	/**
 	 * release buffers and shader
 	 */
 	~TopoDrawer();
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TopoDrawer);
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -151,7 +157,7 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 	Scalar opp_shrink_e = 1.0 - shrink_e_;
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
@@ -227,7 +233,7 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 	Scalar opp_shrink_e = 1.0 - shrink_e_;
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
@@ -318,4 +324,4 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_TOPO_RENDER_H_
+#endif // CGOGN_RENDERING_TOPO_DRAWER_H_

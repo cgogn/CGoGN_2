@@ -10,9 +10,11 @@ set(HEADER_FILES
 	algos/feature.h
 	algos/area.h
 	algos/centroid.h
+	algos/curvature.h
 	algos/normal.h
 	algos/ear_triangulation.h
 	algos/picking.h
+	algos/selection.h
 	algos/filtering.h
 	algos/length.h
 	algos/angle.h

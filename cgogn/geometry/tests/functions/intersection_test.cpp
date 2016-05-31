@@ -34,7 +34,7 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Intesection_TEST : public testing::Test
 {
 };

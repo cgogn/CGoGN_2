@@ -143,7 +143,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	uint32 get_nb_chunks() const override
+	uint32 nb_chunks() const override
 	{
 		return uint32(table_data_.size());
 	}
@@ -173,7 +173,7 @@ public:
 	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_chunk_size) const override
+	uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_chunk_size) const override
 	{
 		byte_chunk_size = CHUNK_SIZE * sizeof(T);
 
@@ -306,7 +306,7 @@ public:
 	void save(std::ostream& fs, uint32 nb_lines) const override
 	{
 		cgogn_assert(fs.good());
-		cgogn_assert(nb_lines / CHUNK_SIZE <= get_nb_chunks());
+		cgogn_assert(nb_lines / CHUNK_SIZE <= nb_chunks());
 
 		// no data -> finished
 		if (nb_lines == 0)
@@ -317,7 +317,7 @@ public:
 			return;
 		}
 
-		uint32 nbc = get_nb_chunks() - 1u;
+		uint32 nbc = nb_chunks() - 1u;
 		// nb of lines of last chunk
 		const unsigned nb = nb_lines - nbc*CHUNK_SIZE;
 
@@ -386,7 +386,7 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief ref operator[]
 	 * @param i index of element to access
 	 * @return ref to the element
 	 */
@@ -397,7 +397,7 @@ public:
 	}
 
 	/**
-	 * @brief const ref operator []
+	 * @brief const ref operator[]
 	 * @param i index of element to access
 	 * @return const ref to the element
 	 */
@@ -427,20 +427,20 @@ public:
 		}
 	}
 
-	virtual std::string get_nested_type_name() const override
+	virtual std::string nested_type_name() const override
 	{
 		return name_of_type(typename type_traits::nested_type<T>::type());
 	}
 
-	virtual uint32	get_nb_components() const override
+	virtual uint32 nb_components() const override
 	{
 		// Warning : the line 0 might be unused.
-		return type_traits::get_nb_components(this->operator [](0u));
+		return type_traits::nb_components(this->operator[](0u));
 	}
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
 	{
-		serialization::ostream_writer(o, binary, this->operator [](idx));
+		serialization::ostream_writer(o, binary, this->operator[](idx));
 	}
 };
 
@@ -546,7 +546,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	uint32 get_nb_chunks() const override
+	uint32 nb_chunks() const override
 	{
 		return uint32(table_data_.size());
 	}
@@ -576,7 +576,7 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	inline uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const override
+	inline uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const override
 	{
 		byte_block_size = CHUNK_SIZE / 8u;
 
@@ -657,13 +657,13 @@ public:
 		// save number of lines
 		serialization::save(fs, &nb_lines, 1);
 
-		const uint32 nbc = get_nb_chunks() - 1u;
+		const uint32 nbc = nb_chunks() - 1u;
 		// save data chunks except last
 		for(uint32 i = 0u; i < nbc; ++i)
 			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNK_SIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
 
 		// save last
-		const uint32 nb = nb_lines - nbc*CHUNK_SIZE;
+		const uint32 nb = nb_lines - nbc * CHUNK_SIZE;
 		fs.write(reinterpret_cast<const char*>(table_data_[nbc]), nb / 8u);
 	}
 
@@ -701,7 +701,7 @@ public:
 	}
 
 	/**
-	 * @brief operator []
+	 * @brief operator[]
 	 * @param i index of element to access
 	 * @return value of the element
 	 */
@@ -788,19 +788,19 @@ public:
 //		}
 //	}
 
-	virtual std::string get_nested_type_name() const override
+	virtual std::string nested_type_name() const override
 	{
 		return name_of_type(bool());
 	}
 
-	virtual uint32	get_nb_components() const override
+	virtual uint32 nb_components() const override
 	{
 		return 1u;
 	}
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
 	{
-		serialization::ostream_writer(o,binary, this->operator [](idx));
+		serialization::ostream_writer(o,binary, this->operator[](idx));
 	}
 };
 

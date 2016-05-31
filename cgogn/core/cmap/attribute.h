@@ -42,9 +42,11 @@ template <typename DATA_TRAITS>
 class AttributeGen
 {
 public:
+
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>;
+
 protected:
 
 	MapData* map_;
@@ -103,8 +105,8 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string&	get_name() const = 0;
-	virtual const std::string&	get_type_name() const = 0;
+	virtual const std::string&	name() const = 0;
+	virtual const std::string&	type_name() const = 0;
 	virtual bool				is_valid() const = 0;
 };
 
@@ -113,10 +115,11 @@ public:
  * @TPARAM T the data type of the attribute to handlde
  * In this class we do not know the orbit of the Attribute.
  */
-template<typename DATA_TRAITS, typename T>
+template <typename DATA_TRAITS, typename T>
 class Attribute_T : public AttributeGen<DATA_TRAITS>
 {
 public:
+
 	using Inherit = AttributeGen<DATA_TRAITS>;
 	using Self = Attribute_T<DATA_TRAITS, T>;
 	using value_type = T;
@@ -125,7 +128,6 @@ public:
 	using TChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
-
 
 	inline Attribute_T() :
 		Inherit(nullptr),
@@ -138,7 +140,7 @@ public:
 		chunk_array_(ca)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = &map->get_const_attribute_container(orbit);
+			chunk_array_cont_ = &map->const_attribute_container(orbit);
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
@@ -203,7 +205,7 @@ public:
 	 * \brief getDataVector
 	 * @return
 	 */
-	TChunkArray const* get_data() const
+	TChunkArray const* data() const
 	{
 		return chunk_array_;
 	}
@@ -212,13 +214,13 @@ public:
 	 * \brief affect a value to all elements of container (even holes)
 	 * @param val value to affect
 	 */
-	inline void set_all_container_values(const T& val)
+	inline void set_all_values(const T& val)
 	{
 		chunk_array_->set_all_values(val);
 	}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param i
 	 * @return
 	 */
@@ -229,7 +231,7 @@ public:
 	}
 
 	/**
-	 * \brief const operator []
+	 * \brief const operator[]
 	 * @param i
 	 * @return
 	 */
@@ -239,30 +241,19 @@ public:
 		return chunk_array_->operator[](i);
 	}
 
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param i
-	 * @param t
-	 */
-	inline void set_value(uint32 i, const T& t)
+	virtual const std::string& name() const override
 	{
-		chunk_array_->set_value(i, t);
+		return chunk_array_->name();
 	}
 
-
-	virtual const std::string& get_name() const override
+	virtual const std::string& type_name() const override
 	{
-		return chunk_array_->get_name();
+		return chunk_array_->type_name();
 	}
 
 	virtual bool is_valid() const override
 	{
 		return chunk_array_ != nullptr;
-	}
-
-	virtual const std::string& get_type_name() const override
-	{
-		return chunk_array_->get_type_name();
 	}
 
 	class const_iterator
@@ -316,7 +307,6 @@ public:
 		return const_iterator(this, this->chunk_array_cont_->end());
 	}
 
-
 	class iterator
 	{
 	public:
@@ -369,6 +359,7 @@ public:
 	}
 
 protected:
+
 	ChunkArrayContainer const*	chunk_array_cont_;
 	TChunkArray*				chunk_array_;
 };
@@ -381,11 +372,13 @@ template <typename DATA_TRAITS, typename T, Orbit ORBIT>
 class Attribute : public Attribute_T<DATA_TRAITS, T>
 {
 public:
+
 	using Inherit = Attribute_T<DATA_TRAITS, T>;
 	using Self = Attribute<DATA_TRAITS, T, ORBIT>;
 	using MapData = typename Inherit::MapData;
 	using TChunkArray = typename Inherit::TChunkArray;
-	using Inherit::operator [];
+	using Inherit::operator[];
+
 	/**
 	 * \brief Default constructor
 	 *
@@ -398,7 +391,6 @@ public:
 	inline Attribute(MapData* const map, TChunkArray* const ca) :
 		Inherit(map, ca, ORBIT)
 	{}
-
 
 	/**
 	 * \brief Copy constructor
@@ -442,44 +434,32 @@ public:
 	{}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param c
 	 * @return
 	 */
 	inline T& operator[](Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
-		return this->chunk_array_->operator[](this->map_->get_embedding(c));
+		return this->chunk_array_->operator[](this->map_->embedding(c));
 	}
 
 	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param c
 	 * @return
 	 */
 	inline const T& operator[](Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
-		return this->chunk_array_->operator[](this->map_->get_embedding(c));
+		return this->chunk_array_->operator[](this->map_->embedding(c));
 	}
 
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param c
-	 * @param t
-	 */
-	inline void set_value(Cell<ORBIT> c, const T& t)
-	{
-		this->chunk_array_->set_value(this->map_->get_embedding(c), t);
-	}
-
-	inline Orbit get_orbit() const
+	inline Orbit orbit() const
 	{
 		return ORBIT;
 	}
 };
-
-
 
 } // namespace cgogn
 

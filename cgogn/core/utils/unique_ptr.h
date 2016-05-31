@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_UTILS_MAKE_UNIQUE_H
-#define CGOGN_CORE_UTILS_MAKE_UNIQUE_H
+#ifndef CGOGN_CORE_UTILS_MAKE_UNIQUE_H_
+#define CGOGN_CORE_UTILS_MAKE_UNIQUE_H_
 
 #include <cstddef>
 #include <memory>
@@ -82,7 +82,7 @@ make_unique(Args&&...) = delete;
  * @return nullptr if the cast wasn't successfull, a valid unique_ptr<TO> otherwise
  * Warning : if the cast is successfull, the unique_ptr "ptr" loses the ownership (ptr.release() is called), whereas if the cast fails ptr still has the ownership.
  */
-template<typename TO, typename FROM>
+template <typename TO, typename FROM>
 inline std::unique_ptr<TO> dynamic_cast_unique_ptr(std::unique_ptr<FROM>&& ptr)
 {
 	TO* const res = dynamic_cast<TO*>(ptr.get());
@@ -93,4 +93,4 @@ inline std::unique_ptr<TO> dynamic_cast_unique_ptr(std::unique_ptr<FROM>&& ptr)
 
 } // namespace cgogn
 
-#endif // CGOGN_CORE_UTILS_MAKE_UNIQUE_H
+#endif // CGOGN_CORE_UTILS_MAKE_UNIQUE_H_

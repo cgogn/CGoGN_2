@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_VOLUME_RENDER_H_
-#define CGOGN_RENDERING_VOLUME_RENDER_H_
+#ifndef CGOGN_RENDERING_VOLUME_DRAWER_H_
+#define CGOGN_RENDERING_VOLUME_DRAWER_H_
 
 #include <cgogn/rendering/dll.h>
 
@@ -30,6 +30,7 @@
 #include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
@@ -41,8 +42,9 @@ namespace cgogn
 
 namespace rendering
 {
+
 /**
- * @brief Rendering ofvolumes
+ * @brief Rendering of volumes
  *
  * Typical usage:
  *
@@ -52,19 +54,19 @@ namespace rendering
  * init:
  *  volu_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
  *  volu_rend_ = volu_->generate_renderer();
- *  volu_->update_face<Vec3>(map_,vertex_position_);
- *  volu_->update_edge<Vec3>(map_,vertex_position_);
-
+ *  volu_->update_face<Vec3>(map_, vertex_position_);
+ *  volu_->update_edge<Vec3>(map_, vertex_position_);
  *
  * draw:
  *  volu_rend_->set_explode_volume(0.9);
- *  volu_rend_->draw_faces(proj,view,this);
- *  volu_rend_->draw_edges(proj,view,this);
+ *  volu_rend_->draw_faces(proj, view, this);
+ *  volu_rend_->draw_edges(proj, view, this);
  *
  */
 class CGOGN_RENDERING_API VolumeDrawerGen
 {
 protected:
+
 	using Vec3f = std::array<float32, 3>;
 
 	std::unique_ptr<VBO> vbo_pos_;
@@ -87,12 +89,16 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class VolumeDrawerGen;
+
 		std::unique_ptr<ShaderExplodeVolumes::Param> param_expl_vol_;
 		std::unique_ptr<ShaderExplodeVolumesColor::Param> param_expl_vol_col_;
 		std::unique_ptr<ShaderExplodeVolumesLine::Param> param_expl_vol_line_;
 		VolumeDrawerGen* volume_drawer_data_;
+
 		Renderer(VolumeDrawerGen* tr);
+
 	public:
+
 		~Renderer();
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
@@ -109,12 +115,12 @@ public:
 	 */
 	VolumeDrawerGen(bool with_color_per_face);
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeDrawerGen);
-
 	/**
 	 * release buffers and shader
 	 */
 	~VolumeDrawerGen();
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeDrawerGen);
 
 	/**
 	 * @brief generate a renderer (one per context)
@@ -127,7 +133,6 @@ public:
 
 	template <typename VEC3, typename MAP>
 	void update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
 };
 
 
@@ -137,7 +142,7 @@ void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template Ver
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Volume = typename MAP::Volume;
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 	std::vector<Vec3f> out_pos;
 	out_pos.reserve(1024 * 1024);
@@ -176,7 +181,9 @@ template <>
 class VolumeDrawerTpl<false> : public VolumeDrawerGen
 {
 public:
-	VolumeDrawerTpl(): VolumeDrawerGen(false) {}
+
+	VolumeDrawerTpl() : VolumeDrawerGen(false)
+	{}
 
 	template <typename VEC3, typename MAP>
 	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
@@ -184,7 +191,7 @@ public:
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
-		using Scalar = typename VEC3::Scalar;
+		using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 		std::vector<Vec3f> out_pos;
 		out_pos.reserve(1024 * 1024);
@@ -210,7 +217,7 @@ public:
 				else
 				{
 					ear_indices.clear();
-					cgogn::geometry::compute_ear_triangulation<VEC3>(m, f, position, ear_indices);
+					cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
 					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 					{
 						const VEC3& P1 = position[ear_indices[i]];
@@ -232,7 +239,6 @@ public:
 		vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
 		vbo_pos_->release();
 	}
-
 };
 
 
@@ -240,7 +246,9 @@ template <>
 class VolumeDrawerTpl<true> : public VolumeDrawerGen
 {
 public:
-	VolumeDrawerTpl(): VolumeDrawerGen(true) {}
+
+	VolumeDrawerTpl() : VolumeDrawerGen(true)
+	{}
 
 	template <typename VEC3, typename MAP>
 	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
@@ -248,7 +256,7 @@ public:
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
-		using Scalar = typename VEC3::Scalar;
+		using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 		std::vector<Vec3f> out_pos;
 		out_pos.reserve(1024 * 1024);
@@ -287,7 +295,7 @@ public:
 				else
 				{
 					ear_indices.clear();
-					cgogn::geometry::compute_ear_triangulation<VEC3>(m, f,position,ear_indices);
+					cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
 					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 					{
 						const VEC3& P1 = position[ear_indices[i]];
@@ -321,9 +329,7 @@ public:
 		vbo_col_->copy_data(0, nbvec * 12, out_color[0].data());
 		vbo_col_->release();
 	}
-
 };
-
 
 using VolumeDrawer = VolumeDrawerTpl<false>;
 using VolumeDrawerColor = VolumeDrawerTpl<true>;
@@ -337,4 +343,4 @@ extern template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_VOLUME_RENDER_H_
+#endif // CGOGN_RENDERING_VOLUME_DRAWER_H_

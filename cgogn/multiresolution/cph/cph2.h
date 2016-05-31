@@ -32,7 +32,6 @@ namespace cgogn
 template <typename DATA_TRAITS>
 class CPH2 : public CPHBase<DATA_TRAITS>
 {
-
 public:
 
 	using Self = CPH2<DATA_TRAITS>;
@@ -49,13 +48,15 @@ protected:
 
 public:
 
-	CPH2(ChunkArrayContainer<unsigned char>& topology): Inherit(topology)
+	CPH2(ChunkArrayContainer<unsigned char>& topology) : Inherit(topology)
 	{
-		edge_id_ = topology.template add_attribute<uint32>("edgeId");
+		edge_id_ = topology.template add_chunk_array<uint32>("edgeId");
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH2);
-	~CPH2() override {}
+
+	~CPH2() override
+	{}
 
 	/***************************************************
 	 *             EDGE ID MANAGEMENT                  *
@@ -78,18 +79,18 @@ public:
 
 		uint32 id = d_id + e_id;
 
-		if(id == 0u)
+		if (id == 0u)
 			return 1u;
-		else if(id == 1u)
+		else if (id == 1u)
 			return 2u;
-		else if(id == 2u)
+		else if (id == 2u)
 		{
-			if(d_id == e_id)
+			if (d_id == e_id)
 				return 0u;
 			else
 				return 1u;
 		}
-		// else if(id == 3)
+		// else if (id == 3)
 		return 0u;
 	}
 
@@ -97,12 +98,11 @@ public:
 	{
 		uint32 e_id = get_edge_id(d);
 
-		if(e_id == 0u)
+		if (e_id == 0u)
 			return 1u;
-		// else if(e_id == 1)
+		// else if (e_id == 1)
 		return 0u;
 	}
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))

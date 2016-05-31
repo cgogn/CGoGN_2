@@ -33,8 +33,8 @@ namespace geometry
 /**
  * normal of the plane spanned by 3 points in 3D
  */
-template <typename VEC3_T>
-inline VEC3_T triangle_normal(const VEC3_T& p1, const VEC3_T& p2, const VEC3_T& p3)
+template <typename VEC3>
+inline VEC3 normal(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 {
 	return (p2-p1).cross(p3-p1);
 }

@@ -34,11 +34,10 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Area_TEST : public testing::Test
 {
 };
-
 
 TYPED_TEST_CASE(Area_TEST, VecTypes );
 
@@ -48,5 +47,5 @@ TYPED_TEST(Area_TEST, TriangleArea)
 	TypeParam p0(Scalar(0), Scalar(0), Scalar(0));
 	TypeParam p1(Scalar(2), Scalar(0), Scalar(0));
 	TypeParam p2(Scalar(0), Scalar(2), Scalar(0));
-	EXPECT_DOUBLE_EQ(cgogn::geometry::triangle_area(p0,p1,p2), Scalar(2));
+	EXPECT_DOUBLE_EQ(cgogn::geometry::area(p0, p1, p2), Scalar(2));
 }

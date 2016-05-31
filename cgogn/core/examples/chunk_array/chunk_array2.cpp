@@ -27,11 +27,11 @@ int test_save()
 
 	ChunkArrayContainer container;
 
-	ChunkArray<float32>* att1 = container.add_attribute<float32>("float32");
-	ChunkArray<std::string>* att4 = container.add_attribute<std::string>("std::string");
-	ChunkArray<DoubleVecList>* att2 = container.add_attribute<DoubleVecList>("ListVecDouble");
-	ChunkArray<StringListVec>* att3 = container.add_attribute<StringListVec>("VecListString");
-	ChunkArray<StringArray>* att_string_array = container.add_attribute<StringArray>("StringArray");
+	ChunkArray<float32>* att1 = container.add_chunk_array<float32>("float32");
+	ChunkArray<std::string>* att4 = container.add_chunk_array<std::string>("std::string");
+	ChunkArray<DoubleVecList>* att2 = container.add_chunk_array<DoubleVecList>("ListVecDouble");
+	ChunkArray<StringListVec>* att3 = container.add_chunk_array<StringListVec>("VecListString");
+	ChunkArray<StringArray>* att_string_array = container.add_chunk_array<StringArray>("StringArray");
 
 	for (uint32 i = 0u; i < 10u; ++i)
 		container.insert_lines<1>();
@@ -127,11 +127,11 @@ int test_load(bool with_register)
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<float32>* att1 = cont2.get_attribute<float32>("float32");
-	ChunkArray<std::string>* att4 = cont2.get_attribute<std::string>("std::string");
-	ChunkArray<DoubleVecList>* att2 = cont2.get_attribute<DoubleVecList>("ListVecDouble");
-	ChunkArray<StringListVec>* att3 = cont2.get_attribute<StringListVec>("VecListString");
-	ChunkArray<StringArray>* att_string_array = cont2.get_attribute<StringArray>("StringArray");
+	ChunkArray<float32>* att1 = cont2.get_chunk_array<float32>("float32");
+	ChunkArray<std::string>* att4 = cont2.get_chunk_array<std::string>("std::string");
+	ChunkArray<DoubleVecList>* att2 = cont2.get_chunk_array<DoubleVecList>("ListVecDouble");
+	ChunkArray<StringListVec>* att3 = cont2.get_chunk_array<StringListVec>("VecListString");
+	ChunkArray<StringArray>* att_string_array = cont2.get_chunk_array<StringArray>("StringArray");
 
 	for(uint32 i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
