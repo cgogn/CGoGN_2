@@ -160,11 +160,14 @@ protected:
 	inline uint32 add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		this->topology_.init_markers_of_line(idx);
-		for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
+		for(uint32 jdx=idx; jdx<idx+ConcreteMap::PRIM_SIZE; ++jdx)
 		{
-			if (this->embeddings_[orbit])
-				(*this->embeddings_[orbit])[idx] = INVALID_INDEX;
+			this->topology_.init_markers_of_line(jdx);
+			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
+			{
+				if (this->embeddings_[orbit])
+					(*this->embeddings_[orbit])[jdx] = INVALID_INDEX;
+			}
 		}
 		return idx;
 	}
@@ -200,9 +203,12 @@ protected:
 		{
 			if(this->embeddings_[orbit])
 			{
-				uint32 emb = (*this->embeddings_[orbit])[index];
-				if (emb != INVALID_INDEX)
-					this->attributes_[orbit].unref_line(emb);
+				for(uint32 jdx=index; jdx<index+ConcreteMap::PRIM_SIZE; ++jdx)
+				{
+					uint32 emb = (*this->embeddings_[orbit])[jdx];
+					if (emb != INVALID_INDEX)
+						this->attributes_[orbit].unref_line(emb);
+				}
 			}
 		}
 	}

@@ -55,8 +55,8 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 template <typename MAP_TRAITS, typename VEC3>
 inline std::unique_ptr<VolumeImport<MAP_TRAITS>> newVolumeImport(const std::string& filename);
 
-template <typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename);
+template <typename VEC3, typename MAP2>
+inline void import_surface(MAP2& cmap2, const std::string& filename);
 
 template <typename VEC3, class MAP_TRAITS>
 inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& filename);
@@ -64,10 +64,10 @@ inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& fi
 
 
 
-template <typename VEC3, class MAP_TRAITS>
-inline void import_surface(cgogn::CMap2<MAP_TRAITS>& cmap2, const std::string& filename)
+template <typename VEC3, typename MAP2>
+inline void import_surface(MAP2& cmap2, const std::string& filename)
 {
-	auto si = newSurfaceImport<MAP_TRAITS, VEC3>(filename);
+	auto si = newSurfaceImport<typename MAP2::Traits, VEC3>(filename);
 	if (si)
 	{
 		if (si->import_file(filename))

@@ -31,8 +31,8 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
 #include <cgogn/core/container/chunk_array_container.h>
-#include <cgogn/core/cmap/cmap2.h>
-#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/map_base.h>
+
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
@@ -51,7 +51,6 @@ class SurfaceImport : public MeshImportGen
 public:
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
-	using Map = CMap2<MAP_TRAITS>;
 
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -100,12 +99,15 @@ public:
 		face_attributes_.remove_attributes();
 	}
 
-	inline void create_map(Map& map)
+	template <typename Map>
+	void create_map(Map& map)
 	{
+		static_assert(Map::DIMENSION == 2, "must use map of dim 2 in surface import");
+
 		using Vertex = typename Map::Vertex;
 		using Edge = typename Map::Edge;
 		using Face = typename Map::Face;
-		using MapBuilder = cgogn::CMap2Builder_T<typename Map::MapTraits>;
+		using MapBuilder = typename Map::Builder;
 
 		if (this->nb_vertices_ == 0u)
 			return;
