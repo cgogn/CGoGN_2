@@ -6,7 +6,7 @@ find_package(cgogn_core REQUIRED)
 
 set(HEADER_FILES
 	dll.h
-        algos/bounding_box.h
+	algos/bounding_box.h
 	algos/feature.h
 	algos/area.h
 	algos/centroid.h
@@ -23,8 +23,8 @@ set(HEADER_FILES
 	functions/inclusion.h
 	functions/intersection.h
 	functions/distance.h
-        types/aabb.h
-        types/obb.h
+	types/aabb.h
+	types/obb.h
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
@@ -32,8 +32,8 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-        types/aabb.cpp
-        types/obb.cpp
+	types/aabb.cpp
+	types/obb.cpp
 	types/plane_3d.cpp
 	types/vec.cpp
 )
