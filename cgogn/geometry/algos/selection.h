@@ -207,6 +207,7 @@ public:
 		{
 			result += geometry::area<VEC3>(this->map_, Face(d), position);
 		}
+		// TODO: the following works only for triangle meshes
 		for (Dart d : this->border_)
 		{
 			// Vertex(d) is outside

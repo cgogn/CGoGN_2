@@ -37,6 +37,7 @@ MapRender::MapRender()
 	{
 		indices_buffers_[i] = make_unique<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
 		indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
+		indices_buffers_uptodate_[i] = false;
 	}
 }
 

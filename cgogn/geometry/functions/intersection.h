@@ -40,48 +40,39 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 
-	VEC3 u = Ta - P ;
-	VEC3 v = Tb - P ;
-	VEC3 w = Tc - P ;
+	VEC3 u = Ta - P;
+	VEC3 v = Tb - P;
+	VEC3 w = Tc - P;
 
-	Scalar x = Dir.dot(u.cross(v));//tripleProduct(Dir, u, v) ;
-	Scalar y = Dir.dot(v.cross(w));//tripleProduct(Dir, v, w) ;
-	Scalar z = Dir.dot(w.cross(u));//tripleProduct(Dir, w, u) ;
+	Scalar x = Dir.dot(u.cross(v));
+	Scalar y = Dir.dot(v.cross(w));
+	Scalar z = Dir.dot(w.cross(u));
 
-	uint32 np = 0 ;
-	uint32 nn = 0 ;
-	uint32 nz = 0 ;
+	uint32 np = 0;
+	uint32 nn = 0;
+	uint32 nz = 0;
 
-	if (x > Scalar(0))
-		++np ;
-	else if (x < Scalar(0))
-		++nn ;
-	else
-		++nz;
+	if (x > Scalar(0)) ++np;
+	else if (x < Scalar(0)) ++nn;
+	else ++nz;
 
-	if (y > Scalar(0))
-		++np ;
-	else if (y < Scalar(0))
-		++nn ;
-	else
-		++nz;
+	if (y > Scalar(0)) ++np;
+	else if (y < Scalar(0)) ++nn;
+	else ++nz;
 
-	if (z > Scalar(0))
-		++np ;
-	else if (z < Scalar(0))
-		++nn ;
-	else
-		++nz;
+	if (z > Scalar(0)) ++np;
+	else if (z < Scalar(0)) ++nn;
+	else ++nz;
 
 	// line intersect the triangle
 	if (((np != 0) && (nn != 0)) || (nz == 3))
-		return false ;
+		return false;
 
-	Scalar sum = x + y + z ;
-	Scalar alpha = y / sum ;
-	Scalar beta = z / sum ;
-	Scalar gamma =Scalar(1) - alpha - beta ;
-	VEC3 I = Ta * alpha + Tb * beta + Tc * gamma ;
+	Scalar sum = x + y + z;
+	Scalar alpha = y / sum;
+	Scalar beta = z / sum;
+	Scalar gamma =Scalar(1) - alpha - beta;
+	VEC3 I = Ta * alpha + Tb * beta + Tc * gamma;
 
 	//  it's a ray not a line !
 	if (Dir.dot(I-P) < 0.0)
@@ -90,7 +81,7 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 	if (inter)
 		*inter = I;
 
-	return true ;
+	return true;
 }
 
 /**
