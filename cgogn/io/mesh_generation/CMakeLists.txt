@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-find_package(CGAL)
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(tet REQUIRED)
@@ -20,9 +19,10 @@ set(SOURCE_FILES
 )
 
 if (CGOGN_WITH_CGAL_EXAMPLES)
+	find_package(CGAL REQUIRED COMPONENTS Core ImageIO)
 	find_package(MPFR REQUIRED)
 	find_package(GMP REQUIRED)
-	find_package(Boost QUIET REQUIRED COMPONENTS thread)
+	find_package(Boost REQUIRED COMPONENTS thread)
 
 	set(	HEADER_FILES
 		${HEADER_FILES}
@@ -32,16 +32,19 @@ if (CGOGN_WITH_CGAL_EXAMPLES)
 	set(	SOURCE_FILES
 		${SOURCE_FILES}
 		c3t3_io.cpp
-	)
+		)
 
-	set(LIBRARIES "${LIBRARIES};${Boost_LIBRARIES};${GMP_LIBRARIES};${MPFR_LIBRARIES};CGAL;CGAL_ImageIO")
-endif()
-
+	link_directories(${Boost_LIBRARY_DIRS})
+endif (CGOGN_WITH_CGAL_EXAMPLES)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TETGEN_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGAL_INCLUDE_DIRS}>
+	$<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+	$<BUILD_INTERFACE:${GMP_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${MPFR_INCLUDE_DIR}>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${tet_LIBRARIES} ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${tet_LIBRARIES} CGAL::CGAL_ImageIO CGAL::CGAL_Core ${Boost_LIBRARIES} ${MPFR_LIBRARIES} ${GMP_LIBRARIES})

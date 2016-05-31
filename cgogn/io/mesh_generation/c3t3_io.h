@@ -46,9 +46,9 @@ struct VolumeMeshFromImageCGALTraits
 	using Image			= CGAL::Image_3;
 	using Kernel		= CGAL::Exact_predicates_inexact_constructions_kernel;
 	using Domain		= CGAL::Labeled_image_mesh_domain_3<Image, Kernel>;
-	using Triangulation	= typename CGAL::Mesh_triangulation_3<Domain>::type;
+	using Triangulation	= CGAL::Mesh_triangulation_3<Domain>::type;
 	using Criteria		= CGAL::Mesh_criteria_3<Triangulation>;
-	using C3T3			= typename CGAL::Mesh_complex_3_in_triangulation_3<Triangulation>;
+	using C3T3			= CGAL::Mesh_complex_3_in_triangulation_3<Triangulation>;
 };
 
 
