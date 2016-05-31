@@ -95,10 +95,10 @@ public:
 	 */
 	inline void clear()
 	{
-		this->topology_.clear_attributes();
+		this->topology_.clear_chunk_arrays();
 
 		for (uint32 i = 0u; i < NB_ORBITS; ++i)
-			this->attributes_[i].clear_attributes();
+			this->attributes_[i].clear_chunk_arrays();
 	}
 
 	/**
