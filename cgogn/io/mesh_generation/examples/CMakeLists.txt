@@ -7,6 +7,7 @@ project(cgogn_io_mesh_gen_examples
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_io REQUIRED)
 
+
 set(CGOGN_TEST_PREFIX "test_")
 set(CGOGN_TEST_IMAGES_PATH "${CMAKE_SOURCE_DIR}/data/images/")
 add_definitions("-DCGOGN_TEST_IMAGES_PATH=${CGOGN_TEST_IMAGES_PATH}")
@@ -21,10 +22,13 @@ set(SOURCE_FILES
 	program_options.cpp
 )
 
+
+
 if (CGOGN_WITH_CGAL_EXAMPLES)
-	find_package(Boost REQUIRED COMPONENTS program_options)
+	find_package(Boost REQUIRED COMPONENTS thread)
+	link_directories(${Boost_LIBRARY_DIRS})
 	add_executable(map3_from_image ${HEADER_FILES} ${SOURCE_FILES})
-	target_link_libraries(map3_from_image ${cgogn_core_LIBRARIES} cgogn_io_mesh_generation ${Boost_LIBRARIES})
+	target_link_libraries(map3_from_image ${cgogn_core_LIBRARIES} cgogn_io_mesh_generation)
 endif()
 
 add_executable(map3_from_surface map3_from_surface.cpp)
