@@ -47,4 +47,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${MPFR_INCLUDE_DIR}>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${tet_LIBRARIES} CGAL::CGAL_ImageIO CGAL::CGAL_Core ${Boost_LIBRARIES} ${MPFR_LIBRARIES} ${GMP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${tet_LIBRARIES})
+if (CGOGN_WITH_CGAL_EXAMPLES)
+	target_link_libraries(${PROJECT_NAME} CGAL::CGAL_ImageIO CGAL::CGAL_Core ${Boost_LIBRARIES} ${MPFR_LIBRARIES} ${GMP_LIBRARIES})
+endif()
