@@ -827,7 +827,9 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void foreach_cell_until(const FUNC& f) const
 	{
-		foreach_cell_until<STRATEGY>(f, [] (Dart) { return true; });
+		using CellType = func_parameter_type(FUNC);
+
+		foreach_cell_until<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
 	/**

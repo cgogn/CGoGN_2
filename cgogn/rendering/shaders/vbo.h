@@ -71,7 +71,7 @@ public:
 		name_ = name;
 	}
 
-	inline const std::string& get_name() const
+	inline const std::string& name() const
 	{
 		return name_;
 	}
