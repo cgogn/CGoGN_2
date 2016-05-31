@@ -75,12 +75,12 @@ void curvature(
 
 	neighborhood.foreach_border([&] (Dart d)
 	{
-		Scalar alpha;
-		geometry::intersection_sphere_segment<VEC3>(position[v], radius, position[Vertex2(d)], position[Vertex2(map.phi1(d))], alpha);
 		std::pair<Vertex2, Vertex2> vv = map.vertices(Edge2(d));
 		const VEC3& p1 = position[vv.first];
 		const VEC3& p2 = position[vv.second];
 		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
+		Scalar alpha;
+		geometry::intersection_sphere_segment<VEC3>(position[v], radius, position[Vertex2(d)], position[Vertex2(map.phi1(d))], alpha);
 		tensor += (ev * ev.transpose()) * edge_angle[Edge2(d)] * (Scalar(1) / ev.norm()) * alpha;
 	});
 
@@ -134,28 +134,28 @@ void curvature(
 	Kmax_v[2] = evec(2, imin);
 }
 
-//template <typename VEC3, typename MAP, typename MASK>
-//void compute_curvature(
-//	const MAP& map,
-//	const MASK& mask,
-//	typename vector_traits<VEC3>::Scalar radius,
-//	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
-//	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-//	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-//	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-//	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-//	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
-//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
-//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
-//	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
-//)
-//{
-//	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
-//	{
-//		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
-//	},
-//	mask);
-//}
+template <typename VEC3, typename MAP, typename MASK>
+void compute_curvature(
+	const MAP& map,
+	const MASK& mask,
+	typename vector_traits<VEC3>::Scalar radius,
+	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
+	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
+	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+)
+{
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	{
+		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	},
+	mask);
+}
 
 template <typename VEC3, typename MAP>
 void compute_curvature(
@@ -172,11 +172,7 @@ void compute_curvature(
 	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
-	{
-		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
-	});
-//	compute_curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	compute_curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry

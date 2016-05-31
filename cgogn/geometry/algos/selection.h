@@ -164,6 +164,7 @@ public:
 		const VEC3& center_position = position_[center];
 
 		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(this->map_);
+//		typename MAP::DartMarkerStore dm(this->map_);
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
 		cmv.mark(center);
@@ -171,29 +172,36 @@ public:
 		uint32 i = 0;
 		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			this->map_.foreach_adjacent_vertex_through_edge(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Vertex nv)
+			this->map_.foreach_incident_face(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Face f)
 			{
-				Face nf(nv.dart);
-				bool all_in = true;
-				this->map_.foreach_incident_vertex(nf, [&] (Vertex v)
+				bool all_vertices_in = true;
+				bool add_at_least_one_vertex = false;
+				bool previous_in = in_sphere(position_[Vertex(f.dart)], center_position, radius_);
+				this->map_.foreach_incident_vertex(f, [&] (Vertex v)
 				{
-					if (!cmv.is_marked(v))
+					if (in_sphere(position_[v], center_position, radius_))
 					{
-						if (in_sphere(position_[v], center_position, radius_))
+						if (!cmv.is_marked(v))
 						{
+							add_at_least_one_vertex = true;
 							cmv.mark(v);
 							this->cells_[Vertex::ORBIT].push_back(v.dart);
 							this->cells_[Edge::ORBIT].push_back(v.dart);
 						}
-						else
-						{
-							all_in = false;
-							this->border_.push_back(v.dart);
-						}
+						previous_in = true;
+					}
+					else
+					{
+						all_vertices_in = false;
+						if (previous_in)
+							this->border_.push_back(this->map_.phi_1(v.dart));
+						previous_in = false;
 					}
 				});
-				if (all_in)
-					this->cells_[Face::ORBIT].push_back(nf.dart);
+				if (add_at_least_one_vertex && all_vertices_in)
+				{
+					this->cells_[Face::ORBIT].push_back(f.dart);
+				}
 			});
 			++i;
 		}
@@ -210,21 +218,21 @@ public:
 		// TODO: the following works only for triangle meshes
 		for (Dart d : this->border_)
 		{
-			// Vertex(d) is outside
-			const Dart f = this->map_.phi1(d); // Vertex(f) is inside
+			// Vertex(d) is inside
+			const Dart f = this->map_.phi1(d); // Vertex(f) is outside
 			const Dart g = this->map_.phi1(f);
 			if (geometry::in_sphere(position[Vertex(g)], center_position, radius_)) // Vertex(g) is inside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(d)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(g)], position[Vertex(d)], beta);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
 				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 			else // Vertex(g) is outside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(d)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(f)], position[Vertex(g)], beta);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
 				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 		}
