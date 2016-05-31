@@ -47,6 +47,7 @@ protected:
 	ChunkArrayBool* mark_attribute_;
 
 public:
+
 	DartMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
