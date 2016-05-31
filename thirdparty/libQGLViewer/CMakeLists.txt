@@ -10,31 +10,31 @@ set(CMAKE_AUTOMOC ON)
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(HEADER_FILES
-	qoglviewer.h
-	camera.h
-	manipulatedFrame.h
-	manipulatedCameraFrame.h
-	frame.h
-	keyFrameInterpolator.h
-	config.h
-	constraint.h
-	mouseGrabber.h
-	quaternion.h
-	vec.h
+	QOGLViewer/qoglviewer.h
+	QOGLViewer/camera.h
+	QOGLViewer/manipulatedFrame.h
+	QOGLViewer/manipulatedCameraFrame.h
+	QOGLViewer/frame.h
+	QOGLViewer/keyFrameInterpolator.h
+	QOGLViewer/config.h
+	QOGLViewer/constraint.h
+	QOGLViewer/mouseGrabber.h
+	QOGLViewer/quaternion.h
+	QOGLViewer/vec.h
 )
 
 set(SOURCE_FILES
-	qoglviewer.cpp
-	camera.cpp
-	manipulatedFrame.cpp
-	manipulatedCameraFrame.cpp
-	frame.cpp
-	saveSnapshot.cpp
-	constraint.cpp
-	keyFrameInterpolator.cpp
-	mouseGrabber.cpp
-	quaternion.cpp
-	vec.cpp
+	QOGLViewer/qoglviewer.cpp
+	QOGLViewer/camera.cpp
+	QOGLViewer/manipulatedFrame.cpp
+	QOGLViewer/manipulatedCameraFrame.cpp
+	QOGLViewer/frame.cpp
+	QOGLViewer/saveSnapshot.cpp
+	QOGLViewer/constraint.cpp
+	QOGLViewer/keyFrameInterpolator.cpp
+	QOGLViewer/mouseGrabber.cpp
+	QOGLViewer/quaternion.cpp
+	QOGLViewer/vec.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
