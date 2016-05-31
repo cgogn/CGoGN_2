@@ -54,13 +54,13 @@ public:
 	CellMarker_T(Map& map) :
 		map_(map)
 	{
-		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
+		mark_attribute_ = map_.template mark_attribute<ORBIT>();
 	}
 
 	CellMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
-		mark_attribute_ = map_.template get_mark_attribute<ORBIT>();
+		mark_attribute_ = map_.template mark_attribute<ORBIT>();
 	}
 
 	virtual ~CellMarker_T() // override
@@ -72,19 +72,19 @@ public:
 	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->set_true(map_.get_embedding(c));
+		mark_attribute_->set_true(map_.embedding(c));
 	}
 
 	inline void unmark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		mark_attribute_->set_false(map_.get_embedding(c));
+		mark_attribute_->set_false(map_.embedding(c));
 	}
 
 	inline bool is_marked(Cell<ORBIT> c) const
 	{
 		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
-		return (*mark_attribute_)[map_.get_embedding(c)];
+		return (*mark_attribute_)[map_.embedding(c)];
 	}
 };
 
@@ -125,7 +125,7 @@ class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 public:
 
 	using Inherit = CellMarker_T<MAP, ORBIT>;
-	using Self = CellMarkerStore< MAP, ORBIT >;
+	using Self = CellMarkerStore<MAP, ORBIT>;
 	using Map = typename Inherit::Map;
 
 protected:
@@ -139,20 +139,20 @@ public:
 	inline CellMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
-		marked_cells_ = cgogn::get_uint_buffers()->get_buffer();
+		marked_cells_ = cgogn::uint_buffers()->buffer();
 	}
 
 	~CellMarkerStore() override
 	{
 		unmark_all();
-		cgogn::get_uint_buffers()->release_buffer(marked_cells_);
+		cgogn::uint_buffers()->release_buffer(marked_cells_);
 	}
 
 	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
 		Inherit::mark(c);
-		marked_cells_->push_back(this->map_.get_embedding(c));
+		marked_cells_->push_back(this->map_.embedding(c));
 	}
 
 	inline void unmark_all()
@@ -163,7 +163,7 @@ public:
 		marked_cells_->clear();
 	}
 
-	inline const std::vector<uint32>& get_marked_cells() const
+	inline const std::vector<uint32>& marked_cells() const
 	{
 		return *marked_cells_;
 	}

@@ -58,9 +58,9 @@ int test1()
 	cgogn_log_info("bench_chunk_array") << "= TEST 1 = ref unsigned char" ;
 
 	ChunkArrayContainer<BLK_SZ, unsigned char> container;
-	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<BLK_SZ,float32>* att2 = container.add_attribute<float32>("reel");
-	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_chunk_array<float32>("reel");
+	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -94,9 +94,9 @@ int test2()
 	cgogn_log_info("bench_chunk_array") << "= TEST 2 = ref bool" ;
 
 	ChunkArrayContainer<BLK_SZ, bool> container;
-	ChunkArray<BLK_SZ,int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<BLK_SZ,float32>* att2 = container.add_attribute<float32>("reel");
-	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_attribute<Vec3f>("Vec3f");
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_chunk_array<float32>("reel");
+	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -186,7 +186,7 @@ int test5()
 	cgogn_log_info("bench_chunk_array") << "= TEST 5 = Traversal" ;
 
 	ChunkArrayContainer<BLK_SZ, uint32> container;
-	ChunkArray<BLK_SZ,uint32>* att1 = container.add_attribute<uint32>("uints");
+	ChunkArray<BLK_SZ,uint32>* att1 = container.add_chunk_array<uint32>("uints");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();

@@ -25,8 +25,10 @@
 #define CGOGN_MODELING_ALGOS_CATMULL_CLARK_H_
 
 #include <vector>
+
 #include <cgogn/core/basic/dart_marker.h>
 #include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -34,8 +36,8 @@ namespace cgogn
 namespace modeling
 {
 
-template < typename MAP>
-typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
+template <typename MAP>
+typename MAP::Vertex quadrangule_face(MAP& map, typename MAP::Face f)
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -43,13 +45,13 @@ typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
 	Dart d1 = map.phi1(f.dart);
 	Dart d2 = map.phi1(map.phi1(d1));
 
-	map.cut_face(Vertex(d1),Vertex(d2));
+	map.cut_face(Vertex(d1), Vertex(d2));
 
 	map.cut_edge(Edge(map.phi_1(d1)));
 
 	Dart x = map.phi2(map.phi_1(d1)) ;
 	Dart dd = map.template phi<1111>(x) ;
-	while(dd != x)
+	while (dd != x)
 	{
 		Dart next = map.template phi<11>(dd) ;
 		map.cut_face(Vertex(dd), Vertex(map.phi1(x))) ;
@@ -62,35 +64,32 @@ typename MAP::Vertex quadranguleFace(MAP& map, typename MAP::Face f)
 template <typename VEC3, typename MAP>
 void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 {
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
-	using Scalar = typename VEC3::Scalar;
-
-
-	std::vector<Edge> initial_edges;
-	std::vector<Vertex> initial_vertices;
 
 	DartMarker<MAP> initial_edge_marker(map);
 
+	std::vector<Edge>* initial_edges = cgogn::dart_buffers()->cell_buffer<Edge>();
 	map.foreach_cell([&] (Edge e)
 	{
-		initial_edges.push_back(e);
+		initial_edges->push_back(e);
 		initial_edge_marker.mark_orbit(e);
 	});
 
+	std::vector<Vertex>* initial_vertices = cgogn::dart_buffers()->cell_buffer<Vertex>();
 	map.foreach_cell([&] (Vertex v)
 	{
-		initial_vertices.push_back(v);
+		initial_vertices->push_back(v);
 	});
 
-	for(Edge e: initial_edges)
+	for (Edge e : *initial_edges)
 	{
 		std::pair<Vertex,Vertex> ve = map.vertices(e);
 		Vertex middle = map.cut_edge(e);
-		position[middle] = (position[ve.first] + position[ve.second] )/Scalar(2);
+		position[middle] = (position[ve.first] + position[ve.second]) / Scalar(2);
 	}
-
 
 	map.foreach_cell([&] (Face f)
 	{
@@ -100,12 +99,12 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 
 		initial_edge_marker.unmark_orbit(ff);
 
-		VEC3 center = geometry::centroid<VEC3>(map,ff,position);
-		Vertex vc = quadranguleFace(map,ff);
+		VEC3 center = geometry::centroid<VEC3>(map, ff, position);
+		Vertex vc = quadrangule_face(map, ff);
 		position[vc] = center;
 	});
 
-	for(Edge e: initial_edges)
+	for (Edge e : *initial_edges)
 	{
 		Dart e2 = map.phi2(e.dart);
 		if (!map.is_boundary(e.dart) && !map.is_boundary(e2))
@@ -113,17 +112,16 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 			Vertex f1(map.template phi<11>(e.dart));
 			Vertex f2(map.phi_1(e2));
 			Vertex m(map.phi1(e.dart));
-			position[m] = (Scalar(2)*position[m]+position[f1]+position[f2])/Scalar(4);
+			position[m] = (Scalar(2) * position[m] + position[f1] + position[f2]) / Scalar(4);
 		}
 	}
 
-	for(Vertex v: initial_vertices)
+	for (Vertex v : *initial_vertices)
 	{
 		VEC3 sum_face; // Sum_F
 		sum_face.setZero();
 		VEC3 sum_edge;// Sum_E
 		sum_edge.setZero();
-
 
 		int nb_f = 0;
 		int nb_e = 0;
@@ -145,16 +143,19 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 		{
 			Vertex e1(map.phi2(bound));
 			Vertex e2(map.phi_1(bound));
-			position[v] = Scalar(3.0/8.0)*position[v] + Scalar(1.0/4.0)*(position[e1]+position[e2]);
+			position[v] = Scalar(3.0/8.0) * position[v] + Scalar(1.0/4.0) * (position[e1] + position[e2]);
 		}
 		else
 		{
-			VEC3 delta = position[v]*Scalar(-3*nb_f);
-			delta += sum_face + Scalar(2)*sum_edge;
-			delta /= Scalar(nb_f*nb_f);
+			VEC3 delta = position[v] * Scalar(-3*nb_f);
+			delta += sum_face + Scalar(2) * sum_edge;
+			delta /= Scalar(nb_f * nb_f);
 			position[v] += delta;
 		}
 	}
+
+	cgogn::dart_buffers()->release_cell_buffer(initial_edges);
+	cgogn::dart_buffers()->release_cell_buffer(initial_vertices);
 }
 
 } // namespace modeling

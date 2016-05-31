@@ -44,7 +44,7 @@ public:
 	explicit LogStream(LogLevel level, const std::string& sender, const FileInfo& fileinfo);
 	LogStream(LogStream&& ls);
 
-	template<class T>
+	template <class T>
 	LogStream& operator<<(const T &x)
 	{
 		log_entry_ << x;

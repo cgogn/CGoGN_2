@@ -74,10 +74,9 @@ template <typename MAP>
 class CellCache : public CellTraversor
 {
 public:
+
 	using iterator = std::vector<Dart>::iterator;
 	using const_iterator = std::vector<Dart>::const_iterator;
-
-public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
 	inline CellCache(const MAP& m) : map_(m)
@@ -129,6 +128,7 @@ public:
 	}
 
 private:
+
 	const MAP& map_;
 	std::array<std::vector<Dart>, NB_ORBITS> cells_;
 };
@@ -137,6 +137,7 @@ template <typename MAP>
 class BoundaryCache : public CellTraversor
 {
 public:
+
 	using BoundaryCellType = typename MAP::Boundary;
 	using iterator = typename std::vector<BoundaryCellType>::iterator;
 	using const_iterator = typename std::vector<BoundaryCellType>::const_iterator;
@@ -145,7 +146,7 @@ public:
 	inline BoundaryCache(const MAP& m) : map_(m)
 	{
 		cells_.reserve(4096u);
-		update();
+		build();
 	}
 
 	template <typename CellType = BoundaryCellType>
@@ -177,7 +178,7 @@ public:
 	}
 
 	template <typename CellType = BoundaryCellType>
-	inline void update()
+	inline void build()
 	{
 		static_assert(std::is_same<CellType, BoundaryCellType>::value, "BoundaryCache can only be used with BoundaryCellType");
 		cells_.clear();
@@ -195,6 +196,7 @@ public:
 	}
 
 private:
+
 	const MAP& map_;
 	std::vector<BoundaryCellType> cells_;
 };

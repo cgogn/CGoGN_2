@@ -117,20 +117,19 @@ inline float64 swap_endianness_double(float64 x)
 	return u.as_f64;
 }
 
-
-template< bool COND>
+template <bool COND>
 inline char swap_endianness_if(char x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint8_t swap_endianness_if(std::uint8_t x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint16_t swap_endianness_if(std::uint16_t x)
 {
 	if (COND)
@@ -138,7 +137,7 @@ inline std::uint16_t swap_endianness_if(std::uint16_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint32_t swap_endianness_if(std::uint32_t x)
 {
 	if (COND)
@@ -146,7 +145,7 @@ inline std::uint32_t swap_endianness_if(std::uint32_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint64_t swap_endianness_if(std::uint64_t x)
 {
 	if (COND)
@@ -154,13 +153,13 @@ inline std::uint64_t swap_endianness_if(std::uint64_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int8_t swap_endianness_if(std::int8_t x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int16_t swap_endianness_if(std::int16_t x)
 {
 	if (COND)
@@ -168,7 +167,7 @@ inline std::int16_t swap_endianness_if(std::int16_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int32_t swap_endianness_if(std::int32_t x)
 {
 	if (COND)
@@ -176,7 +175,7 @@ inline std::int32_t swap_endianness_if(std::int32_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int64_t swap_endianness_if(std::int64_t x)
 {
 	if (COND)
@@ -184,7 +183,7 @@ inline std::int64_t swap_endianness_if(std::int64_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline float32 swap_endianness_if(float32 x)
 {
 	if (COND)
@@ -192,7 +191,7 @@ inline float32 swap_endianness_if(float32 x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline float64 swap_endianness_if(float64 x)
 {
 	if (COND)
@@ -202,19 +201,19 @@ inline float64 swap_endianness_if(float64 x)
 
 } // namespace internal
 
-template<typename T>
+template <typename T>
 inline T swap_endianness(T x)
 {
 	return internal::swap_endianness_if<true>(x);
 }
 
-template<typename T>
+template <typename T>
 inline T swap_endianness_native_big(T x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_little_endian>(x);
 }
 
-template<typename T>
+template <typename T>
 inline T swap_endianness_native_little(T x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_big_endian>(x);

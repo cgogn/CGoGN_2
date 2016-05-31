@@ -8,11 +8,11 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h
-	map_render.h
 	shaders/vbo.h
 	shaders/shader_program.h
 	shaders/shader_simple_color.h
 	shaders/shader_color_per_vertex.h
+	shaders/shader_scalar_per_vertex.h
 	shaders/shader_flat.h
 	shaders/shader_vector_per_vertex.h
 	shaders/shader_phong.h
@@ -25,6 +25,7 @@ set(HEADER_FILES
 	drawer.h
 	topo_drawer.h
 	volume_drawer.h
+	map_render.h
 	wall_paper.h
 )
 
@@ -32,6 +33,7 @@ set(SOURCE_FILES
 	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
+	shaders/shader_scalar_per_vertex.cpp
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
 	shaders/shader_phong.cpp

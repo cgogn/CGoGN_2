@@ -32,7 +32,6 @@ namespace cgogn
 namespace geometry
 {
 
-
 /**
  * @brief squared distance line point (optimized version for testing many points with the same line
  * @param A one point of line
@@ -40,12 +39,12 @@ namespace geometry
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3_T>
-inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3_T& A, const VEC3_T& AB_norm, const VEC3_T& P)
+template <typename VEC3>
+inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
 {
 	// here use const & ? Strange Schmitt optimization proposition ;)
-	const VEC3_T& V = A - P ;
-	const VEC3_T& W = V.cross(AB_norm) ;
+	const VEC3& V = A - P ;
+	const VEC3& W = V.cross(AB_norm) ;
 	return W.squaredNorm() ;
 }
 
@@ -56,19 +55,14 @@ inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3_T>
-inline typename VEC3_T::Scalar squared_distance_line_point(const VEC3_T& A, const VEC3_T& B, const VEC3_T& P)
+template <typename VEC3>
+inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
 {
-	VEC3_T AB = B - A ;
+	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
 	AB.normalize();
 	return squared_distance_normalized_line_point(A, AB, P) ;
 }
-
-
-
-
-
 
 } // namespace geometry
 

@@ -36,7 +36,7 @@ using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Plane3D_TEST : public testing::Test {};
 
 TYPED_TEST_CASE(Plane3D_TEST, VecTypes );

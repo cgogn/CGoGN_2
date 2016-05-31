@@ -58,7 +58,7 @@ struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 
 // specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
 // specialization 3 : float
-template<>
+template <>
 struct vector_traits<float32>
 {
 	static const std::size_t SIZE = 1;
@@ -66,24 +66,24 @@ struct vector_traits<float32>
 };
 
 // specialization 4 : double
-template<>
+template <>
 struct vector_traits<float64>
 {
 	static const std::size_t SIZE = 1;
 	using Scalar = float64;
 };
 
-template<typename T, typename Enable = void>
+template <typename T, typename Enable = void>
 struct nb_components_traits
 {};
 
-template<typename T>
+template <typename T>
 struct nb_components_traits<T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
 {
 	const static uint32 value = 1u;
 };
 
-template<typename Scalar, std::size_t size>
+template <typename Scalar, std::size_t size>
 struct nb_components_traits<geometry::Vec_T<std::array<Scalar, size>>>
 {
 	const static uint32 value = size;

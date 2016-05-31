@@ -36,7 +36,7 @@ namespace cgogn
 namespace rendering
 {
 
-VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
+VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face) :
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
 	face_color_(0,150,0),
@@ -54,7 +54,7 @@ VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
 VolumeDrawerGen::~VolumeDrawerGen()
 {}
 
-VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr):
+VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr) :
 	param_expl_vol_(nullptr),
 	param_expl_vol_col_(nullptr),
 	param_expl_vol_line_(nullptr),
