@@ -103,7 +103,7 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 template <typename VEC3>
 bool intersection_sphere_segment(
 	const VEC3& center,
-	const typename vector_traits<VEC3>::Scalar& radius,
+	const typename vector_traits<VEC3>::Scalar radius,
 	const VEC3& p1,
 	const VEC3& p2,
 	typename vector_traits<VEC3>::Scalar& alpha

@@ -23,9 +23,9 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
 #include <QKeyEvent>
+
+#include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/cmap/cmap3.h>

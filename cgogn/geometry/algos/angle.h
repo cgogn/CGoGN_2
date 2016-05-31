@@ -55,10 +55,30 @@ inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
 	if (map.is_incident_to_boundary(e))
 		return Scalar(0);
 
-	const VEC3 n1 = normal<VEC3>(map, Face2(e.dart), position);
-	const VEC3 n2 = normal<VEC3>(map, Face2(map.phi2(e.dart)), position);
+	const Dart d = e.dart;
+	const Dart d2 = map.phi2(d);
 
-	return angle(n1, n2);
+	const VEC3 n1 = normal<VEC3>(map, Face2(d), position);
+	const VEC3 n2 = normal<VEC3>(map, Face2(d2), position);
+
+	VEC3 edge = position[Vertex2(d2)] - position[Vertex2(d)];
+	edge.normalize();
+	Scalar s = edge.dot(n1.cross(n2));
+	Scalar c = n1.dot(n2);
+	Scalar a(0);
+
+	// the following trick is useful to avoid NaNs (due to floating point errors)
+	if (c > 0.5) a = asin(s);
+	else
+	{
+		if(c < -1) c = -1;
+		if (s >= 0) a = acos(c);
+		else a = -acos(c);
+	}
+	if(a != a)
+		cgogn_log_warning("angle_between_face_normals") << "NaN computed";
+
+	return a;
 }
 
 template <typename VEC3, typename MAP, typename MASK>

@@ -23,11 +23,11 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
-#include <vec.h>
 #include <QMouseEvent>
 #include <QVector3D>
+
+#include <QOGLViewer/qoglviewer.h>
+#include <QOGLViewer/vec.h>
 
 #include <cgogn/core/cmap/cmap2.h>
 
