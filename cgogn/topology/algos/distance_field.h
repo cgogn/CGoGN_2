@@ -21,13 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
-#define CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
-
-//#include <map>
-//#include <set>
-//#include <vector>
-//#include <algorithm>
+#ifndef CGOGN_TOPOLOGY_DISTANCE_FIELD_H_
+#define CGOGN_TOPOLOGY_DISTANCE_FIELD_H_
 
 namespace cgogn
 {
@@ -51,8 +46,6 @@ class DistanceField
 	using Edge = typename MAP::Edge;
 	template<typename T>
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
-
-	using VertexArray = std::vector<Vertex>;
 
 public:
 	DistanceField(MAP& map, const EdgeAttribute<Scalar>& weight) :
@@ -80,6 +73,8 @@ public:
 			map_.remove_attribute(edge_weight_);
 	}
 
+private:
+
 	/**
 	 * Compute for each vertex of the map, the shortest path to the sources
 	 * A path is a sequence of adjacent edges whose weights are summed along the paths
@@ -88,7 +83,7 @@ public:
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
 	 */
 	void dijkstra_compute_distances(
-			const VertexArray& sources,
+			const std::vector<Vertex>& sources,
 			VertexAttribute<Scalar>& distance_to_source)
 	{
 		for (auto& d : distance_to_source)
@@ -129,6 +124,8 @@ public:
 		}
 	}
 
+public:
+
 	/**
 	 * Compute for each vertex of the map, the shortest path to the sources
 	 * A path is a sequence of adjacent edges whose weights are summed along the paths
@@ -138,7 +135,7 @@ public:
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
 	 */
 	void dijkstra_compute_paths(
-			const VertexArray& sources,
+			const std::vector<Vertex>& sources,
 			VertexAttribute<Scalar>& distance_to_source,
 			VertexAttribute<Vertex>& path_to_source)
 	{
@@ -185,6 +182,58 @@ public:
 		}
 	}
 
+private:
+
+	/**
+	 * Compute a morse function from a scalar field.
+	 * The morse function has disctinct values in each vertex.
+	 * Its maxima are the same than those of the scalar field and has only one minima.
+	 * The morse function regularize the critical points of the scalar field.
+	 * @param[in] source the vertex that minimize the scalar field
+	 * @param[in] scalar_field : the scalar field
+	 * @param[out] morse_function : the values of the morse function
+	 * The algorithm makes a dijkstra flood of the graph using the scalar field values
+	 * in place of the shortest path distance computed in dijkstra_compute_distances()
+	 */
+	void dijkstra_to_morse_function(
+			Vertex source,
+			const VertexAttribute<Scalar>& scalar_field,
+			VertexAttribute<Scalar>& morse_function)
+	{
+		for(auto& d : morse_function)
+			d = Scalar(0);							// To mark unvisited vertices
+
+		using my_pair = std::pair<Scalar, unsigned int>;
+		using my_queue = std::priority_queue<my_pair, std::vector<my_pair>, std::greater<my_pair> >;
+
+		my_queue vertex_queue;
+
+		vertex_queue.push(std::make_pair(Scalar(0), source.dart.index));
+
+		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
+		// and fill the morse function with i/n where i is index of distance_to_source
+		// in an sorted array of the distances and n the number of vertices.
+		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
+		uint32 i = 1;
+		while(!vertex_queue.empty())
+		{
+			Vertex u = Vertex(Dart(vertex_queue.top().second));
+
+			vertex_queue.pop();
+
+			morse_function[u] = Scalar(i)/n;		// Set the final value
+			++i;
+
+			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			{
+				if(morse_function[v] == Scalar(0)) {	// If not visited
+					vertex_queue.push(std::make_pair(scalar_field[v], v.dart.index));
+					morse_function[v] = Scalar(1);		// Set as visited
+				}
+			});
+		}
+	}
+
 public:
 
 	/**
@@ -210,73 +259,35 @@ public:
 		return max_vertex;
 	}
 
-public:
-
 	/**
-	 * Compute a morse function from the shortest path distances to the sources.
-	 * The morse function has disctinct values in each vertex.
-	 * Its maxima are on the sources vertices and it has only one minima.
-	 * @param[in] sources the vertices from which the shortest paths are computed
-	 * @param[out] morse_function : the values of the morse function
+	 * @brief find the vertex that minilizes the distance field.
+	 * @param scalar_field : the scalar_filed to analyse
+	 * @return a vertex that minimize the scalar field
 	 */
-	void dijkstra_to_morse_function(
-			const VertexArray& sources,
-			VertexAttribute<Scalar>& morse_function)
+	Vertex find_minimum(const VertexAttribute<Scalar>& scalar_field)
 	{
-		VertexAttribute<Scalar> distance_to_source = map_.template add_attribute<Scalar, Vertex::ORBIT>("__dist_to_source__");
+		Scalar min_distance = std::numeric_limits<Scalar>::max();
+		Vertex min_vertex = Vertex();
 
-		// Compute the shortest paths to sources
-		dijkstra_compute_distances(sources, distance_to_source);
-
-		// Search for the vertices that maximize the distance to the sources
-		Vertex max_vertex = find_maximum(distance_to_source);
-		Scalar max_distance = distance_to_source[max_vertex];
-
-		// Inverse the distances so that the maxima are on the sources
-		for (auto& d : distance_to_source)
-			d = max_distance - d;
-
-		for(auto& d : morse_function)
-			d = Scalar(0);							// To mark unvisited vertices
-
-		using my_pair = std::pair<Scalar, unsigned int>;
-		using my_queue = std::priority_queue<my_pair, std::vector<my_pair>, std::greater<my_pair> >;
-
-		my_queue vertex_queue;
-
-
-		vertex_queue.push(std::make_pair(Scalar(0), max_vertex.dart.index));
-
-		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
-		// and fill the morse function with i/n where i is index of distance_to_source
-		// in an sorted array of the distances and n the number of vertices.
-		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
-		uint32 i = 1;
-		while(!vertex_queue.empty())
+		map_.foreach_cell([&](Vertex v)
 		{
-			Vertex u = Vertex(Dart(vertex_queue.top().second));
+			Scalar distance = scalar_field[v];
+			if(distance < min_distance) {
+				min_distance = distance;
+				min_vertex = v;
+			}
+		});
 
-			vertex_queue.pop();
-
-			morse_function[u] = Scalar(i)/n;		// Set the final value
-			++i;
-
-			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
-			{
-				if(morse_function[v] == Scalar(0)) {	// If not visited
-					vertex_queue.push(std::make_pair(distance_to_source[v], v.dart.index));
-					morse_function[v] = Scalar(1);		// Set as visited
-				}
-			});
-		}
-		map_.remove_attribute(distance_to_source);
+		return min_vertex;
 	}
 
-public:
+	/**
+	 * @brief Build a scalar field that represent the lenght of a minimal path
+	 * from a vertex to the center of the Map.
+	 */
 	template <typename T>
-	void distance_to_center(
-			const VertexAttribute<T>& attribute,
-			VertexAttribute<Scalar>& scalar_field)
+	void distance_to_center(const VertexAttribute<T>& attribute,
+							VertexAttribute<Scalar>& scalar_field)
 	{
 		if (!attribute.is_valid())
 			cgogn_log_error("distance_to_center") << "Invalid attribute";
@@ -287,8 +298,11 @@ public:
 		}
 	}
 
-	void distance_to_boundary(
-			VertexAttribute<Scalar>& scalar_field)
+	/**
+	 * @brief Build a scalar field that represent the lenght of a minimal path
+	 * from a vertex to the boundary of the Map.
+	 */
+	void distance_to_boundary(VertexAttribute<Scalar>& scalar_field)
 	{
 		std::vector<Vertex> boundary_vertices;
 
@@ -304,6 +318,66 @@ public:
 			dijkstra_compute_distances(boundary_vertices, scalar_field);
 	}
 
+	/**
+	 * @brief Build a scalar field that represent the lenght of a minimal path
+	 * from a vertex to a given set of features (selected vertices) of the Map.
+	 */
+	void distance_to_features(const std::vector<Vertex>& features,
+							  VertexAttribute<Scalar>& scalar_field)
+	{
+		dijkstra_compute_distances(features, scalar_field);
+	}
+
+	/**
+	 * Compute a morse function from the shortest path distance to the boundary.
+	 * The morse function has disctinct values in each vertex.
+	 * Its maxima are on the maxima of distance and it has only one minima.
+	 * @param[in] features the vertices from which the shortest paths are computed
+	 * @param[out] morse_function : the values of the morse function
+	 */
+	void morse_distance_to_boundary(VertexAttribute<Scalar>& morse_function)
+	{
+		VertexAttribute<Scalar> scalar_field =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__scalar_field__");
+
+		// Compute the shortest paths to sources
+		distance_to_boundary(scalar_field);
+
+		// Search for the vertices that minimize the distance to the sources
+		Vertex min_vertex = find_minimum(scalar_field);
+
+		dijkstra_to_morse_function(min_vertex, scalar_field, morse_function);
+		map_.remove_attribute(scalar_field);
+	}
+
+	/**
+	 * Compute a morse function from the shortest path distances to the features.
+	 * The morse function has disctinct values in each vertex.
+	 * Its maxima are on the features and it has only one minima.
+	 * @param[in] features the vertices from which the shortest paths are computed
+	 * @param[out] morse_function : the values of the morse function
+	 */
+	void morse_distance_to_features(const std::vector<Vertex>& features,
+									VertexAttribute<Scalar>& morse_function)
+	{
+		VertexAttribute<Scalar> scalar_field =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__scalar_field__");
+
+		// Compute the shortest paths to sources
+		dijkstra_compute_distances(features, scalar_field);
+
+		// Search for the vertices that maximize the distance to the sources
+		Vertex max_vertex = find_maximum(scalar_field);
+		Scalar max_distance = scalar_field[max_vertex];
+
+		// Inverse the distances so that the maxima are on the sources
+		for (auto& d : scalar_field)
+			d = max_distance - d;
+
+		dijkstra_to_morse_function(max_vertex, scalar_field, morse_function);
+		map_.remove_attribute(scalar_field);
+	}
+
 private:
 	MAP& map_;
 	EdgeAttribute<Scalar> edge_weight_;
@@ -314,4 +388,4 @@ private:
 
 } // namespace cgogn
 
-#endif // CGOGN_TOPOLOGY_ALGOS_DIJKSTRA_H_
+#endif // CGOGN_TOPOLOGY_DISTANCE_FIELD_H_

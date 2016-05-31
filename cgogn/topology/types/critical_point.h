@@ -30,24 +30,25 @@ namespace cgogn
 namespace topology
 {
 
-enum CriticalVertexType: unsigned int
-{
-	REGULAR = 0,
-	MAXIMUM = 1,
-	MINIMUM = 2,
-	SADDLE  = 4,
-	UNKNOWN = 8
-};
 
-struct CriticalVertex
+struct CriticalPoint
 {
+	enum Type : unsigned int
+	{
+		REGULAR = 0,
+		MAXIMUM = 1,
+		MINIMUM = 2,
+		SADDLE  = 4,
+		UNKNOWN = 8
+	};
+
 	unsigned int n_;
-	CriticalVertexType v_;
+	CriticalPoint::Type v_;
 
-	inline CriticalVertex(CriticalVertexType v): v_(v), n_(0)
+	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
 	{}
 
-	inline CriticalVertex(CriticalVertexType v, unsigned int n) : v_(v), n_(n)
+	inline CriticalPoint(CriticalPoint::Type v, unsigned int n) : v_(v), n_(n)
 	{}
 };
 
