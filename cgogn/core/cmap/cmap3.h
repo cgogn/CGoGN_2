@@ -429,6 +429,21 @@ protected:
 
 public:
 
+	/**
+	 * \brief Cut a face by inserting an edge between the vertices d and e
+	 * \param d : first vertex
+	 * \param e : second vertex
+	 * The vertices d and e should belong to the same Face2 and be distinct from each other.
+	 * An edge is inserted between the two given vertices.
+	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
+	 * the inserted cells are automatically embedded on new attribute elements.
+	 * More precisely :
+	 *  - two Edge2 attribute are created, if needed, for the inserted Edge2.
+	 *  - an Edge attribute is created, if needed, for the inserted edge.
+	 *  - two Face2 attributes are created, if needed, for the subdivided Face2 of e and phi3(e).
+	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
+	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
+	 */
 	inline void cut_face(Vertex d, Vertex e)
 	{
 		cut_face_topo(d.dart, e.dart);
