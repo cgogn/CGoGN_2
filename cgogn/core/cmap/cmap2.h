@@ -419,10 +419,8 @@ public:
 
 		if (this->template is_embedded<CDart>())
 		{
-			if (!this->is_boundary(v))
-				this->new_orbit_embedding(CDart(v));
-			if (!this->is_boundary(nf))
-				this->new_orbit_embedding(CDart(nf));
+			if (!this->is_boundary(v)) this->new_orbit_embedding(CDart(v));
+			if (!this->is_boundary(nf)) this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -622,6 +620,7 @@ public:
 
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
 		cut_face_topo(d.dart, e.dart);
+
 		Dart nd = this->phi_1(d.dart);
 		Dart ne = this->phi_1(e.dart);
 
