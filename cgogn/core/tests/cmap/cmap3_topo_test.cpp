@@ -151,7 +151,6 @@ protected:
 				default:
 					break;
 			}
-
 		}
 
 		// Close de map
@@ -295,6 +294,7 @@ TEST_F(CMap3TopoTest, cut_face_topo)
 			EXPECT_EQ(codegree(Face(d)) + codegree(Face(e)), k + 2);
 		}
 	}
+
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);

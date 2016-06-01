@@ -409,10 +409,12 @@ protected:
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
 	 * \param d : first vertex
 	 * \param e : second vertex
+	 * \return A dart of the inserted edge
 	 * Darts d and e should belong to the same Face2 and be distinct from each other.
 	 * An edge made of four new darts is inserted between the two given vertices.
+	 * The returned dart is the dart of the inserted edge that belongs to the Face2 of d.
 	 */
-	inline void cut_face_topo(Dart d, Dart e)
+	inline Dart cut_face_topo(Dart d, Dart e)
 	{
 		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
 		cgogn_message_assert(this->same_cell(Face2(d), Face2(e)), "cut_face_topo: d and e should belong to the same Face2");
@@ -420,11 +422,13 @@ protected:
 		Dart dd = this->phi1(phi3(d));
 		Dart ee = this->phi1(phi3(e));
 
-		Inherit::cut_face_topo(d, e);
-		Inherit::cut_face_topo(dd, ee);
+		Dart nd = Inherit::cut_face_topo(d, e);
+		Dart ndd = Inherit::cut_face_topo(dd, ee);
 
-		phi3_sew(this->phi_1(d), this->phi_1(ee));
-		phi3_sew(this->phi_1(e), this->phi_1(dd));
+		phi3_sew(nd, this->phi_1(ee));
+		phi3_sew(ndd, this->phi_1(e));
+
+		return nd;
 	}
 
 public:
@@ -433,8 +437,10 @@ public:
 	 * \brief Cut a face by inserting an edge between the vertices d and e
 	 * \param d : first vertex
 	 * \param e : second vertex
+	 * \return The inserted edge
 	 * The vertices d and e should belong to the same Face2 and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.dart
 	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -444,11 +450,9 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline void cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Vertex d, Vertex e)
 	{
-		cut_face_topo(d.dart, e.dart);
-
-		Dart nd = this->phi_1(d.dart);
+		Dart nd = cut_face_topo(d.dart, e.dart);
 		Dart ne = this->phi_1(e.dart);
 		Dart nd3 = phi3(nd);
 		Dart ne3 = phi3(ne);
@@ -515,6 +519,41 @@ public:
 				this->template copy_embedding<Volume>(ne3, d3);
 			}
 		}
+
+		return Edge(nd);
+	}
+
+protected:
+
+	Dart cut_volume_topo(const std::vector<Dart>& path)
+	{
+		Dart face1 = Inherit::Inherit::add_face_topo(path.size());
+		Dart face2 = Inherit::Inherit::add_face_topo(path.size());
+
+		for (Dart d : path)
+		{
+			Dart d2 = this->phi2(d);
+			this->phi2_unsew(d);
+
+			this->phi2_sew(d, face1);
+			this->phi2_sew(d2, face2);
+
+			phi3_sew(face1, face2);
+
+			face1 = this->phi1(face1);
+			face2 = this->phi_1(face2);
+		}
+
+		return this->phi1(face1);
+	}
+
+public:
+
+	Face cut_volume(const std::vector<Edge>& path)
+	{
+		Dart nf = cut_volume_topo(reinterpret_cast<const std::vector<Dart>&>(path));
+
+		return Face(nf);
 	}
 
 	/*******************************************************************************

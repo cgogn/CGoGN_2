@@ -401,7 +401,7 @@ public:
 	 * \param e : the edge to cut
 	 * \return The inserted vertex
 	 * The edge e is cut by inserting a new vertex.
-	 * The returned vertex is represented by the dart of the inserted vertex that belongs to the face of e.
+	 * The returned vertex is represented by the dart of the inserted vertex that belongs to the face of e.dart
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -580,10 +580,12 @@ protected:
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
 	 * \param d : first vertex
 	 * \param e : second vertex
+	 * \return A dart of the inserted edge
 	 * Darts d and e should belong to the same face and be distinct from each other.
 	 * An edge made of two new darts is inserted between the two given vertices.
+	 * The returned dart is the dart of the inserted edge that belongs to the face of d.
 	 */
-	inline void cut_face_topo(Dart d, Dart e)
+	inline Dart cut_face_topo(Dart d, Dart e)
 	{
 		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
 		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face_topo: d and e should belong to the same face");
@@ -597,6 +599,8 @@ protected:
 
 		this->set_boundary(nd, this->is_boundary(dd));
 		this->set_boundary(ne, this->is_boundary(ee));
+
+		return nd;
 	}
 
 public:
@@ -605,8 +609,10 @@ public:
 	 * \brief Cut a face by inserting an edge between the vertices d and e
 	 * \param d : first vertex
 	 * \param e : second vertex
+	 * \return The inserted edge
 	 * The vertices d and e should belong to the same face and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the face of d.dart
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -614,14 +620,12 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline void cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Vertex d, Vertex e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
-		cut_face_topo(d.dart, e.dart);
-
-		Dart nd = this->phi_1(d.dart);
+		Dart nd = cut_face_topo(d.dart, e.dart);
 		Dart ne = this->phi_1(e.dart);
 
 		if (this->template is_embedded<CDart>())
@@ -650,6 +654,8 @@ public:
 			this->template copy_embedding<Volume>(nd, d.dart);
 			this->template copy_embedding<Volume>(ne, d.dart);
 		}
+
+		return Edge(nd);
 	}
 
 protected:
