@@ -88,6 +88,10 @@ public:
 
 	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
+		cgogn_message_assert(nb_edges == 3u, "Can create only triangles");
+		if (nb_edges != 3)
+			cgogn_log_warning("add_face") << "Attempt to create a face which is not a triangle";
+
 		return map_.CMap2Tri::Inherit::add_tri_topo();
 	}
 
@@ -169,7 +173,7 @@ private:
 	CMap2Tri& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2TRI_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 using CMap2TriBuilder = cgogn::CMap2TriBuilder_T<DefaultMapTraits>;

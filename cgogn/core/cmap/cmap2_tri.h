@@ -187,7 +187,7 @@ protected:
 		(*phi2_)[e.index] = d;
 	}
 
-	inline void phi2_sew_internal(Dart d, Dart e)
+	inline void phi2_sew_nocheck(Dart d, Dart e)
 	{
 		(*phi2_)[d.index] = e;
 		(*phi2_)[e.index] = d;
@@ -287,7 +287,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		cgogn_message_assert(size == 3u, "Can create only triangle");
+		cgogn_message_assert(size == 3u, "Can create only triangles");
 		if (size != 3)
 			cgogn_log_warning("add_face") << "Attempt to create a face which is not a triangle";
 
@@ -332,10 +332,10 @@ protected:
 	{
 		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
 
-		Dart f1 = this->Inherit::add_face_topo(3u);
-		Dart f2 = this->Inherit::add_face_topo(3u);
-		Dart f3 = this->Inherit::add_face_topo(3u);
-		Dart f4 = this->Inherit::add_face_topo(3u);
+		Dart f1 = this->Inherit::add_tri_topo();
+		Dart f2 = this->Inherit::add_tri_topo();
+		Dart f3 = this->Inherit::add_tri_topo();
+		Dart f4 = this->Inherit::add_tri_topo();
 
 		this->phi2_sew(this->phi_1(f2), f1);
 		this->phi2_sew(this->phi_1(f3), f2);
@@ -377,10 +377,10 @@ protected:
 			Dart xe1  = phi2(e1);
 			Dart xe11 = phi2(e11);
 
-			phi2_sew_internal(d1,xd11);
-			phi2_sew_internal(d11,xe1);
-			phi2_sew_internal(e1,xe11);
-			phi2_sew_internal(e11,xd1);
+			phi2_sew_nocheck(d1,xd11);
+			phi2_sew_nocheck(d11,xe1);
+			phi2_sew_nocheck(e1,xe11);
+			phi2_sew_nocheck(e11,xd1);
 
 			return true;
 		}
@@ -441,8 +441,8 @@ protected:
 		Dart res = phi2(this->phi_1(d));
 		Dart e = phi2(d);
 
-		phi2_sew_internal(phi<12>(d),phi2(this->phi_1(d)));
-		phi2_sew_internal(phi<12>(e),phi2(this->phi_1(e)));
+		phi2_sew_nocheck(phi<12>(d),phi2(this->phi_1(d)));
+		phi2_sew_nocheck(phi<12>(e),phi2(this->phi_1(e)));
 
 		return res;
 	}
@@ -1025,7 +1025,7 @@ struct CMap2TriType
 template <typename MAP_TRAITS>
 using CMap2Tri = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2TRI_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_CPP_))
 extern template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;

@@ -208,20 +208,6 @@ protected:
 		return d;
 	}
 
-//	/*!
-//	 * \brief Add a face in the map.
-//	 * \param size : the number of darts in the built face (only 3 allowed here)
-//	 * \return A dart of the built face
-//	 */
-//	inline Dart add_face_topo(uint32 size)
-//	{
-//		cgogn_message_assert(size == 3u, "Can create only triangle");
-
-//		if (size != 3)
-//			cgogn_log_warning("add_face_topo") << "Attempt to create a face which is not a triangle";
-
-//		return add_tri_topo();
-//	}
 
 public:
 
@@ -429,7 +415,7 @@ struct CMap1TriType
 template <typename MAP_TRAITS>
 using CMap1Tri = CMap1Tri_T<MAP_TRAITS, CMap1TriType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1TRI_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_TRI_CPP_))
 extern template class CGOGN_CORE_API CMap1Tri_T<DefaultMapTraits, CMap1TriType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap1Tri<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1Tri<DefaultMapTraits>>;
