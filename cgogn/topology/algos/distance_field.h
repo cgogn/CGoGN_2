@@ -40,10 +40,10 @@ template <typename Scalar, typename MAP>
 class DistanceField
 {
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+
 	template<typename T>
 	using VertexAttribute = typename MAP::template VertexAttribute<T>;
-
-	using Edge = typename MAP::Edge;
 	template<typename T>
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
@@ -322,8 +322,10 @@ public:
 	}
 
 	/**
-	 * @brief Build a scalar field that represent the lenght of a minimal path
-	 * from a vertex to a given set of features (selected vertices) of the Map.
+	 * Build a scalar field that represent the distance of each vertex
+	 * to a given set of features (selected vertices) of the Map.
+	 * @param[in] features the vertices from which the shortest paths are computed
+	 * @param[out] scalar_field : the computed distance field
 	 */
 	void distance_to_features(const std::vector<Vertex>& features,
 							  VertexAttribute<Scalar>& scalar_field)
@@ -332,10 +334,7 @@ public:
 	}
 
 	/**
-	 * Compute a morse function from the shortest path distance to the boundary.
-	 * The morse function has disctinct values in each vertex.
-	 * Its maxima are on the maxima of distance and it has only one minima.
-	 * @param[in] features the vertices from which the shortest paths are computed
+	 * Build a morse function from the shortest path distance to the boundary.
 	 * @param[out] morse_function : the values of the morse function
 	 */
 	void morse_distance_to_boundary(VertexAttribute<Scalar>& morse_function)
@@ -364,9 +363,7 @@ public:
 	}
 
 	/**
-	 * Compute a morse function from the shortest path distances to the features.
-	 * The morse function has disctinct values in each vertex.
-	 * Its maxima are on the features and it has only one minima.
+	 * Build a morse function from the shortest path distances to the features.
 	 * @param[in] features the vertices from which the shortest paths are computed
 	 * @param[out] morse_function : the values of the morse function
 	 */
