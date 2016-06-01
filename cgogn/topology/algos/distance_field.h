@@ -187,16 +187,18 @@ private:
 	/**
 	 * Compute a morse function from a scalar field.
 	 * The morse function has disctinct values in each vertex.
-	 * Its maxima are the same than those of the scalar field and has only one minima.
-	 * The morse function regularize the critical points of the scalar field.
-	 * @param[in] source the vertex that minimize the scalar field
+	 * Its maxima are the same than those of the scalar field.
+	 * Its minima are given.
+	 * The morse function regularizes the other critical points of the scalar field.
+	 * @param[in] minima the vertices that minimize the scalar field
 	 * @param[in] scalar_field : the scalar field
 	 * @param[out] morse_function : the values of the morse function
 	 * The algorithm makes a dijkstra flood of the graph using the scalar field values
-	 * in place of the shortest path distance computed in dijkstra_compute_distances()
+	 * in place of the shortest path distance computed in dijkstra_compute_distances().
+	 * The vertices are traversed in increasing value of their scalar field.
 	 */
 	void dijkstra_to_morse_function(
-			Vertex source,
+			std::vector<Vertex> minima,
 			const VertexAttribute<Scalar>& scalar_field,
 			VertexAttribute<Scalar>& morse_function)
 	{
@@ -208,7 +210,8 @@ private:
 
 		my_queue vertex_queue;
 
-		vertex_queue.push(std::make_pair(Scalar(0), source.dart.index));
+		for (auto source : minima)
+			vertex_queue.push(std::make_pair(Scalar(0), source.dart.index));
 
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
@@ -337,17 +340,27 @@ public:
 	 */
 	void morse_distance_to_boundary(VertexAttribute<Scalar>& morse_function)
 	{
-		VertexAttribute<Scalar> scalar_field =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__scalar_field__");
+		VertexAttribute<Scalar> distance_to_boundary =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_boundary__");
 
-		// Compute the shortest paths to sources
-		distance_to_boundary(scalar_field);
+		std::vector<Vertex> boundary_vertices;
 
-		// Search for the vertices that minimize the distance to the sources
-		Vertex min_vertex = find_minimum(scalar_field);
+		map_.foreach_cell([&](Vertex v)
+		{
+			if (map_.is_incident_to_boundary(v))
+				boundary_vertices.push_back(v);
+		});
 
-		dijkstra_to_morse_function(min_vertex, scalar_field, morse_function);
-		map_.remove_attribute(scalar_field);
+		if (boundary_vertices.size() == 0u)
+		{
+			cgogn_log_error("distance_to_boundary") << "No boundary found";
+			return;
+		}
+
+		dijkstra_compute_distances(boundary_vertices, distance_to_boundary);
+
+		dijkstra_to_morse_function(boundary_vertices, distance_to_boundary, morse_function);
+		map_.remove_attribute(distance_to_boundary);
 	}
 
 	/**
@@ -360,22 +373,22 @@ public:
 	void morse_distance_to_features(const std::vector<Vertex>& features,
 									VertexAttribute<Scalar>& morse_function)
 	{
-		VertexAttribute<Scalar> scalar_field =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__scalar_field__");
+		VertexAttribute<Scalar> distance_to_features =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_features__");
 
 		// Compute the shortest paths to sources
-		dijkstra_compute_distances(features, scalar_field);
+		dijkstra_compute_distances(features, distance_to_features);
 
 		// Search for the vertices that maximize the distance to the sources
-		Vertex max_vertex = find_maximum(scalar_field);
-		Scalar max_distance = scalar_field[max_vertex];
+		Vertex max_vertex = find_maximum(distance_to_features);
+		Scalar max_distance = distance_to_features[max_vertex];
 
-		// Inverse the distances so that the maxima are on the sources
-		for (auto& d : scalar_field)
+		// Inverse the distances so that the maxima are on the features
+		for (auto& d : distance_to_features)
 			d = max_distance - d;
 
-		dijkstra_to_morse_function(max_vertex, scalar_field, morse_function);
-		map_.remove_attribute(scalar_field);
+		dijkstra_to_morse_function({max_vertex}, distance_to_features, morse_function);
+		map_.remove_attribute(distance_to_features);
 	}
 
 private:
