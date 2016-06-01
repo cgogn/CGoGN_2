@@ -97,58 +97,47 @@ public:
 	}
 
 	/*!
-	 * \brief Close a hole with a new face and update the embedding of incident cells.
-	 * \param d : a vertex of the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted face and incident cells are automatically updated.
-	 * More precisely :
-	 *  - a Face attribute is created, if needed, for the face that fill the hole.
-	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
+	 * \brief Close a hole with a triangle fan
 	 */
 	inline Face close_hole(Dart d)
 	{
-		const Face f(map_.close_hole_topo(d));
+		//	const Face f(map_.close_hole_topo(d));
+		Dart dh = map_.close_hole_topo(d);
 
-		if (map_.template is_embedded<Vertex>())
+		Dart di = dh;
+
+		do
 		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.template copy_embedding<Vertex>(it, map_.phi1(map_.phi2(it)));
-			});
-		}
+			Dart di0 = map_.phi2(di);
+			Dart di1 = map_.phi1(di);
 
-		if (map_.template is_embedded<Edge>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+			if (map_.template is_embedded<Vertex>())
 			{
-				map_.template copy_embedding<Edge>(it, map_.phi2(it));
-			});
-		}
+				map_.template copy_embedding<Vertex>(di,map_.phi1(di0));
+				map_.template copy_embedding<Vertex>(di1,di0);
+			}
 
-		if (map_.template is_embedded<Volume>())
-		{
-			const uint32 idx = map_.get_embedding(Volume(d));
-			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
+			if (map_.template is_embedded<Edge>())
 			{
-				map_.template set_embedding<Volume>(it, idx);
-			});
-		}
+				map_.template copy_embedding<Edge>(di,di0);
+			}
 
-		return f;
+			if (map_.template is_embedded<Volume>())
+			{
+				const uint32 idx = map_.get_embedding(Volume(d));
+				map_.foreach_dart_of_orbit(Face(di), [this, idx] (Dart it)
+				{
+					map_.template set_embedding<Volume>(it, idx);
+				});
+			}
+
+
+			di = map_.template phi<21>(di1);
+		} while (di!=dh);
+
+		return Face(dh);
 	}
 
-	/*!
-	 * \brief Close the map by inserting faces in its holes and update the embedding of incident cells.
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted faces and incident cells are automatically updated.
-	 * More precisely :
-	 *  - Face attributes are created, if needed, for the faces that fill the holes.
-	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
-	 * If the indexation of embedding was unique, the closed map is well embedded.
-	 */
 	inline void close_map()
 	{
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
