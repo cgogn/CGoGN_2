@@ -21,34 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#ifndef CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
+#define CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
 
-#include <cgogn/core/cmap/cmap2_tri.h>
+#include <cgogn/core/cmap/cmap2_quad.h>
 
 namespace cgogn
 {
 
 template <typename MAP_TRAITS>
-class CMap2TriBuilder_T
+class CMap2QuadBuilder_T
 {
 public:
 
-	using Self = CMap2TriBuilder_T<MAP_TRAITS>;
-	using CMap2Tri = cgogn::CMap2Tri<MAP_TRAITS>;
-	using CDart = typename CMap2Tri::CDart;
-	using Vertex = typename CMap2Tri::Vertex;
-	using Edge = typename CMap2Tri::Edge;
-	using Face = typename CMap2Tri::Face;
-	using Volume = typename CMap2Tri::Volume;
+	using Self = CMap2QuadBuilder_T<MAP_TRAITS>;
+	using CMap2Quad = cgogn::CMap2Quad<MAP_TRAITS>;
+	using CDart = typename CMap2Quad::CDart;
+	using Vertex = typename CMap2Quad::Vertex;
+	using Edge = typename CMap2Quad::Edge;
+	using Face = typename CMap2Quad::Face;
+	using Volume = typename CMap2Quad::Volume;
 
 	template <typename T>
-	using ChunkArrayContainer = typename CMap2Tri::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename CMap2Quad::template ChunkArrayContainer<T>;
 
-	inline CMap2TriBuilder_T(CMap2Tri& map) : map_(map)
+	inline CMap2QuadBuilder_T(CMap2Quad& map) : map_(map)
 	{}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2TriBuilder_T);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2QuadBuilder_T);
 
 public:
 
@@ -88,11 +88,11 @@ public:
 
 	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
-		cgogn_message_assert(nb_edges == 3u, "Can create only triangles");
-		if (nb_edges != 3)
-			cgogn_log_warning("add_face") << "Attempt to create a face which is not a triangle";
+		cgogn_message_assert(nb_edges == 4u, "Can create only quads");
+		if (nb_edges != 4u)
+			cgogn_log_warning("add_face") << "Attempt to create a face which is not a quad";
 
-		return map_.add_tri_topo_fp();
+		return map_.add_quad_topo_fp();
 	}
 
 	inline Dart close_hole_topo(Dart d)
@@ -135,55 +135,59 @@ public:
 				});
 			}
 
-
 			di = map_.template phi<21>(di1);
 		} while (di!=dh);
 
 		return Face(dh);
 	}
 
-	inline uint32 close_map()
+	inline int32 close_map()
 	{
 		uint32 nb_holes = 0;
 
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+
 		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi2(d) == d)
 				fix_point_darts->push_back(d);
 		});
+
 		for (Dart d : (*fix_point_darts))
 		{
 			if (map_.phi2(d) == d)
 			{
 				Face f = close_hole(d);
-				Vertex fan_center(map_.phi_1(f.dart));
-				map_.foreach_incident_face(fan_center, [&] (Face ff)
+				Dart df = f.dart;
+				do
 				{
-					map_.foreach_dart_of_orbit(ff, [&] (Dart e)
+					map_.foreach_dart_of_orbit(Face(df), [&] (Dart e)
 					{
 						map_.set_boundary(e, true);
 					});
-				});
+					 df = map_.template phi<121>(df);
+				} while (df != f.dart);
 				++nb_holes;
 			}
 		}
+
 		get_dart_buffers()->release_buffer(fix_point_darts);
+
 		return nb_holes;
 	}
 
 private:
 
-	CMap2Tri& map_;
+	CMap2Quad& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap2QuadBuilder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2TriBuilder = cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
+using CMap2QuadBuilder = cgogn::CMap2QuadBuilder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#endif // CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
 

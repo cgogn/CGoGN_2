@@ -160,8 +160,10 @@ public:
 	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 * If the indexation of embedding was unique, the closed map is well embedded.
 	 */
-	inline void close_map()
+	inline uint32 close_map()
 	{
+		uint32 nb_holes=0;
+
 		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
 		map_.foreach_dart([&] (Dart d)
 		{
@@ -177,9 +179,11 @@ public:
 				{
 					map_.set_boundary(e, true);
 				});
+				++nb_holes;
 			}
 		}
 		get_dart_buffers()->release_buffer(fix_point_darts);
+		return nb_holes;
 	}
 
 private:

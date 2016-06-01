@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("viewer_topo");
 	viewer.import(surface_mesh);
 	viewer.show();
 

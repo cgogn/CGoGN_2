@@ -306,7 +306,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("viewer_topo3");
 	viewer.import(volumeMesh);
 	viewer.show();
 

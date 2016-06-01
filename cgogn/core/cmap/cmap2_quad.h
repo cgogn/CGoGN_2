@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_CMAP_CMAP2_TRI_H_
-#define CGOGN_CORE_CMAP_CMAP2_TRI_H_
+#ifndef CGOGN_CORE_CMAP_CMAP2_QUAD_H_
+#define CGOGN_CORE_CMAP_CMAP2_QUAD_H_
 
 #include <cgogn/core/cmap/map_base.h>
 
@@ -30,25 +30,25 @@ namespace cgogn
 {
 
 // forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS> class CMap2TriBuilder_T;
+template <typename MAP_TRAITS> class CMap2QuadBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap2Tri_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+class CMap2Quad_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 	static const uint8 DIMENSION = 2;
-	static const uint8 PRIM_SIZE = 3;
+	static const uint8 PRIM_SIZE = 4;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
 	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
-	using Self = CMap2Tri_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap2Quad_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap2TriBuilder_T<MapTraits>;
+	using Builder = CMap2QuadBuilder_T<MapTraits>;
 
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap2TriBuilder_T<MapTraits>;
+	friend class CMap2QuadBuilder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -94,14 +94,14 @@ protected:
 
 public:
 
-	CMap2Tri_T() : Inherit()
+	CMap2Quad_T() : Inherit()
 	{
 		init();
 	}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Tri_T);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Quad_T);
 
-	~CMap2Tri_T() override
+	~CMap2Quad_T() override
 	{}
 
 	/*!
@@ -144,6 +144,7 @@ protected:
 		(*phi2_)[d.index] = d;
 		(*phi2_)[d.index+1] = Dart(d.index+1);
 		(*phi2_)[d.index+2] = Dart(d.index+2);
+		(*phi2_)[d.index+3] = Dart(d.index+3);
 	}
 
 	/**
@@ -154,10 +155,10 @@ protected:
 	 */
 	inline bool check_integrity(Dart d) const
 	{
-		return (phi1(phi_1(d)) == d &&
-				 phi_1(phi1(d)) == d &&
+		return phi1(phi_1(d)) == d &&
+				phi_1(phi1(d)) == d &&
 				phi2(phi2(d)) == d &&
-				phi2(d) != d);
+				phi2(d) != d;
 	}
 
 	/**
@@ -220,12 +221,13 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		switch(d.index%3)
+		switch(d.index%4)
 		{
 		case 0: return Dart(d.index+1);break;
 		case 1: return Dart(d.index+1);break;
+		case 2: return Dart(d.index+1);break;
 		}
-		return Dart(d.index-2);
+		return Dart(d.index-3);
 	}
 
 	/*!
@@ -235,13 +237,15 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		switch(d.index%3)
+		switch(d.index%4)
 		{
-		case 0: return Dart(d.index+2);break;
+		case 3: return Dart(d.index-1);break;
+		case 2: return Dart(d.index-1);break;
 		case 1: return Dart(d.index-1);break;
 		}
-		return Dart(d.index-1);
+		return Dart(d.index+3);
 	}
+
 
 	/**
 	 * \brief phi2
@@ -280,36 +284,37 @@ public:
 protected:
 
 	/**
-	 * @brief Add a triangle with fixed point phi2
+	 * @brief add a quad with fixed point phi2
 	 * @return
 	 */
-	inline Dart add_tri_topo_fp()
+	inline Dart add_quad_topo_fp()
 	{
-		Dart d = this->add_dart(); // in fact remove_dart insert PRIM_SIZE darts
+		Dart d = this->add_dart(); // this insert PRIM_SIZE darts
 		// no need to set phi1
 		return d;
 	}
 
 	/**
-	 * @brief remove a triangle (3 dart)
+	 * @brief remove a quad
 	 * @param d
 	 */
-	inline void remove_tri_topo_fp(Dart d)
+	inline void remove_face_topo_fp(Dart d)
 	{
 		this->remove_dart(d); // in fact remove_dart remove PRIM_SIZE darts
 	}
 
+
 	/**
-	 * \brief Add a triangle in the map.
+	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face.
 	 * Two 1-face are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
-	Dart add_tri_topo()
+	Dart add_quad_topo()
 	{
-		Dart d = add_tri_topo_fp();
-		Dart e = add_tri_topo_fp();
+		Dart d = add_quad_topo_fp();
+		Dart e = add_quad_topo_fp();
 
 		this->foreach_dart_of_PHI1(d, [&] (Dart it)
 		{
@@ -336,11 +341,11 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		cgogn_message_assert(size == 3u, "Can create only triangles");
-		if (size != 3)
-			cgogn_log_warning("add_face") << "Attempt to create a face which is not a triangle";
+		cgogn_message_assert(size == 4u, "Can create only quad");
+		if (size != 4)
+			cgogn_log_warning("add_face") << "Attempt to create a face which is not a quad";
 
-		const Face f(add_tri_topo());
+		const Face f(add_quad_topo());
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -377,157 +382,24 @@ public:
 
 protected:
 
-	inline Dart add_tetra_topo(uint32 size)
-	{
-		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
+//	inline Dart add_hexa_topo(uint32 size)
+//	{
+//		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
 
-		Dart f1 = this->add_tri_topo_fp();
-		Dart f2 = this->add_tri_topo_fp();
-		Dart f3 = this->add_tri_topo_fp();
-		Dart f4 = this->add_tri_topo_fp();
-
-		this->phi2_sew(this->phi_1(f2), f1);
-		this->phi2_sew(this->phi_1(f3), f2);
-		this->phi2_sew(this->phi_1(f1), f3);
-
-		this->phi2_sew(this->phi1(f1), f4);
-		f4 = this->phi1(f4);
-		this->phi2_sew(this->phi1(f2), f4);
-		f4 = this->phi1(f4);
-		this->phi2_sew(this->phi1(f3), f4);
-
-		return f1;
-	}
+//		Dart f1 = this->Inherit::add_quad_topo();
+//		Dart f2 = this->Inherit::add_quad_topo();
+//		Dart f3 = this->Inherit::add_quad_topo();
+//		Dart f4 = this->Inherit::add_quad_topo();
+//		Dart f5 = this->Inherit::add_quad_topo();
+//		Dart f6 = this->Inherit::add_quad_topo();
 
 
-protected:
+////		this->phi2_sew(...);
 
-	/**
-	 * @brief Flip an edge
-	 * @param d : a dart of the edge to flip
-	 * @return true if the edge has been flipped, false otherwise
-	 * Each end of the edge is detached from its initial vertex
-	 * and inserted in the next vertex within its incident face.
-	 * An end of the edge that is a vertex of degree 1 is not moved.
-	 * If one of the faces have co-degree 1 then nothing is done.
-	 */
-	inline bool flip_edge_topo(Dart d)
-	{
-		Dart e = phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(e))
-		{
-			Dart d1  = this->phi1(d);
-			Dart d11 = this->phi1(d1);
-			Dart e1  = this->phi1(e);
-			Dart e11 = this->phi1(e1);
-
-			Dart xd1  = phi2(d1);
-			Dart xd11 = phi2(d11);
-			Dart xe1  = phi2(e1);
-			Dart xe11 = phi2(e11);
-
-			phi2_sew_nocheck(d1,xd11);
-			phi2_sew_nocheck(d11,xe1);
-			phi2_sew_nocheck(e1,xe11);
-			phi2_sew_nocheck(e11,xd1);
-
-			return true;
-		}
-		return false;
-	}
-
-public:
-
-	/**
-	 * @brief Flip an edge
-	 * @param ed : the edge to flip
-	 * The two endpoints of the given edge are moved to the next vertices
-	 * of their two adjacent faces
-	 */
-	inline void flip_edge(Edge e)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		if (flip_edge_topo(e.dart))
-		{
-			Dart d = e.dart;
-			Dart dd = phi2(d);
-
-			Dart d1  = this->phi1(d);
-			Dart d11 = this->phi1(d1);
-			Dart dd1  = this->phi1(dd);
-			Dart dd11 = this->phi1(dd1);
-
-			if (this->template is_embedded<Vertex>())
-			{
-				this->template copy_embedding<Vertex>(d1, phi<21>(d1));
-				this->template copy_embedding<Vertex>(d11, phi<21>(d11));
-				this->template copy_embedding<Vertex>(dd1, phi<21>(dd1));
-				this->template copy_embedding<Vertex>(dd11, phi<21>(dd11));
-				this->template copy_embedding<Vertex>(d, dd1);
-				this->template copy_embedding<Vertex>(dd, d11);
-			}
-
-			if (this->template is_embedded<Edge>())
-			{
-				this->template copy_embedding<Edge>(d1, phi2(d1));
-				this->template copy_embedding<Edge>(d11, phi2(d11));
-				this->template copy_embedding<Edge>(dd1, phi2(dd1));
-				this->template copy_embedding<Edge>(dd11, phi2(dd11));
-			}
-		}
-	}
-
-protected:
-
-	/**
-	 * @brief Collapse an edge
-	 * @param d : a dart of the edge to collapse
-	 * @return a dart of the resulting vertex
-	 */
-	inline Dart collapse_edge_topo(Dart d)
-	{
-		Dart res = phi2(this->phi_1(d));
-		Dart e = phi2(d);
-
-		phi2_sew_nocheck(phi<12>(d),phi2(this->phi_1(d)));
-		phi2_sew_nocheck(phi<12>(e),phi2(this->phi_1(e)));
-
-		return res;
-	}
-
-public:
-
-	/**
-	 * @brief Collapse an edge
-	 * @param e : the edge to collapse
-	 * @return the resulting vertex
-	 */
-	inline Vertex collapse_edge(Edge e)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		// dart for edge of one side
-		Dart d2 = phi2(this->phi_1(phi2(e.dart)));
-		// dart for edge of other side, and vertex
-		Dart d1 = collapse_edge_topo(e.dart);
+//		return f1;
+//	}
 
 
-		Vertex v(d1);
-		if (this->template is_embedded<Vertex>())
-		{
-			uint32 emb = this->get_embedding(v);
-			foreach_dart_of_orbit(v, [this, emb] (Dart d) { this->template set_embedding<Vertex>(d, emb); });
-		}
-
-		if (this->template is_embedded<Edge>())
-		{
-			this->template copy_embedding<Edge>(d1, phi2(d1));
-			this->template copy_embedding<Edge>(d2, phi2(d2));
-		}
-
-		return v;
-	}
 
 protected:
 
@@ -540,12 +412,12 @@ protected:
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(phi2(d) == d, "CMap2Tri: close hole called on a dart that is not a phi2 fix point");
+		cgogn_message_assert(phi2(d) == d, "CMap2quad: close hole called on a dart that is not a phi2 fix point");
 
-		Dart first = add_tri_topo_fp();	// First edge of the face that will fill the hole
+		Dart first = add_quad_topo_fp();	// First edge of the face that will fill the hole
 		phi2_sew(d, first);				// 2-sew the new edge to the hole
 
-		Dart prec_tri = first;
+		Dart prec_quad = first;
 		Dart d_next = d;				// Turn around the hole
 		Dart d_phi1;					// to complete the face
 		do
@@ -558,14 +430,14 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart tri = add_tri_topo_fp();
-				phi2_sew(d_next, tri);
-				phi2_sew(this->phi_1(prec_tri), this->phi1(tri));
-				prec_tri = tri;
+				Dart quad = add_quad_topo_fp();
+				phi2_sew(d_next, quad);
+				phi2_sew(this->phi_1(prec_quad), this->phi1(quad));
+				prec_quad = quad;
 			}
 		} while (d_phi1 != d);
 
-		phi2_sew(this->phi_1(prec_tri), this->phi1(first));
+		phi2_sew(this->phi_1(prec_quad), this->phi1(first));
 
 		return first;
 	}
@@ -599,7 +471,7 @@ public:
 
 	inline uint32 codegree(Face f) const
 	{
-		return 3;
+		return 4;
 	}
 
 	inline uint32 degree(Face) const
@@ -609,8 +481,9 @@ public:
 
 	inline bool has_codegree(Face, uint32 codegree) const
 	{
-		return codegree == 3;
+		return codegree == 4;
 	}
+
 
 	inline uint32 codegree(Volume v) const
 	{
@@ -830,7 +703,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
-			func(Edge(d));
+				func(Edge(d));
 		});
 	}
 
@@ -953,7 +826,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart d)
 		{
-			f(Vertex(this->phi2(d)));
+				f(Vertex(this->phi2(d)));
 		});
 	}
 
@@ -984,6 +857,7 @@ public:
 		{
 			this->foreach_dart_of_orbit(Vertex(ed), [&, ed] (Dart vd)
 			{
+				if (!this->is_boundary(vd) && !this->is_boundary(phi2(vd)))
 					// skip Edge e itself
 					if (vd != ed)
 						f(Edge(vd));
@@ -1093,31 +967,31 @@ protected:
 };
 
 template <typename MAP_TRAITS>
-struct CMap2TriType
+struct CMap2QuadType
 {
-	using TYPE = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
+	using TYPE = CMap2Quad_T<MAP_TRAITS, CMap2QuadType<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>
-using CMap2Tri = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
+using CMap2Quad = CMap2Quad_T<MAP_TRAITS, CMap2QuadType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_CPP_))
-extern template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_QUAD_CPP_))
+extern template class CGOGN_CORE_API CMap2Quad_T<DefaultMapTraits, CMap2QuadType<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarker<CMap2Quad<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap2Quad<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Quad<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quadz<DefaultMapTraits>::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
 
-#include <cgogn/core/cmap/cmap2_tri_builder.h>
+#include <cgogn/core/cmap/cmap2_quad_builder.h>
 
-#endif // CGOGN_CORE_CMAP_CMAP2_TRI_H_
+#endif // CGOGN_CORE_CMAP_CMAP2_QUAD_H_

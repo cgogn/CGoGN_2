@@ -240,7 +240,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("viewer_per_face");
 	viewer.import(surfaceMesh);
 	viewer.show();
 

@@ -22,20 +22,24 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_MAP_MAP1_TRI_CPP_
+#define CGOGN_CORE_MAP_MAP2_QUAD_CPP_
 
-#include <cgogn/core/cmap/cmap1_tri.h>
+#include <cgogn/core/cmap/cmap2_quad.h>
 
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API CMap1Tri_T<DefaultMapTraits, CMap1TriType<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarker<CMap1Tri<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarkerStore<CMap1Tri<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1Tri<DefaultMapTraits>>;
-	template class CGOGN_CORE_API CellMarker<CMap1Tri<DefaultMapTraits>, CMap1Tri<DefaultMapTraits>::Vertex::ORBIT>;
-	template class CGOGN_CORE_API CellMarker<CMap1Tri<DefaultMapTraits>, CMap1Tri<DefaultMapTraits>::Face::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap1Tri<DefaultMapTraits>, CMap1Tri<DefaultMapTraits>::Vertex::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap1Tri<DefaultMapTraits>, CMap1Tri<DefaultMapTraits>::Face::ORBIT>;
+	template class CGOGN_CORE_API CMap2Quad_T<DefaultMapTraits, CMap2QuadType<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarker<CMap2Quad<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerStore<CMap2Quad<DefaultMapTraits>>;
+	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Quad<DefaultMapTraits>>;
+	template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
+	template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
+	template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
+	template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Volume::ORBIT>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
+	template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Volume::ORBIT>;
 
 } // namespace cgogn

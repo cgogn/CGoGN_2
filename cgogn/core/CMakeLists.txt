@@ -20,9 +20,11 @@ set(HEADER_FILES
 	cmap/cmap3.h
 	cmap/cmap3_builder.h
 	cmap/attribute.h
-	cmap/cmap1_tri.h
 	cmap/cmap2_tri.h
 	cmap/cmap2_tri_builder.h
+	cmap/cmap2_quad.h
+	cmap/cmap2_quad_builder.h
+
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -59,9 +61,10 @@ set(SOURCE_FILES
 	cmap/cmap3.cpp
 	cmap/cmap2_builder.cpp
 	cmap/cmap3_builder.cpp
-        cmap/cmap1_tri.cpp
-        cmap/cmap2_tri.cpp
-        cmap/cmap2_tri_builder.cpp
+	cmap/cmap2_tri.cpp
+	cmap/cmap2_tri_builder.cpp
+	cmap/cmap2_quad.cpp
+	cmap/cmap2_quad_builder.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
