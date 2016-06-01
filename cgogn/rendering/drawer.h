@@ -107,13 +107,17 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class DisplayListDrawer;
+
 		std::unique_ptr<ShaderColorPerVertex::Param> param_cpv_;
 		std::unique_ptr<ShaderBoldLineColor::Param> param_bl_;
 		std::unique_ptr<ShaderRoundPointColor::Param> param_rp_;
 		std::unique_ptr<ShaderPointSpriteColor::Param> param_ps_;
 		DisplayListDrawer* drawer_data_;
+
 		Renderer(DisplayListDrawer* dr);
+
 	public:
+
 		~Renderer();
 
 		/**
@@ -123,7 +127,6 @@ public:
 		 * @param a pointer compatible with QOpenGLFunctions_3_3_Core* (QOGLViewer)
 		 */
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
-
 	};
 
 	using Self = DisplayListDrawer;
@@ -140,6 +143,8 @@ public:
 	 */
 	~DisplayListDrawer();
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DisplayListDrawer);
+
 	/**
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
@@ -148,10 +153,6 @@ public:
 	{
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
-
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DisplayListDrawer);
-
 
 	/**
 	 * init the data structure
@@ -180,23 +181,22 @@ public:
 	/**
 	* use as glVertex3f
 	*/
-	template<typename SCAL>
-	inline void vertex3f(SCAL x, SCAL y, SCAL z)
+	template <typename SCALAR>
+	inline void vertex3f(SCALAR x, SCALAR y, SCALAR z)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		static_assert(std::is_arithmetic<SCALAR>::value, "scalar value only allowed for vertex3");
 		vertex3ff(float32(x), float32(y), float32(z));
 	}
-
 
 	void color3ff(float32 r, float32 g, float32 b);
 
 	/**
 	* use as glColor3f
 	*/
-	template<typename SCAL>
-	inline void color3f(SCAL x, SCAL y, SCAL z)
+	template <typename SCALAR>
+	inline void color3f(SCALAR x, SCALAR y, SCALAR z)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar value only allowed for vertex3");
+		static_assert(std::is_arithmetic<SCALAR>::value, "scalar value only allowed for vertex3");
 		color3ff(float32(x), float32(y), float32(z));
 	}
 
@@ -211,17 +211,17 @@ public:
 		color3ff(rgb[0], rgb[1], rgb[2]);
 	}
 
-	template <typename SCAL>
-	inline void vertex3fv(SCAL* xyz)
+	template <typename SCALAR>
+	inline void vertex3fv(SCALAR* xyz)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		static_assert(std::is_arithmetic<SCALAR>::value, "scalar vector only allowed for vertex3");
 		vertex3ff(float32(xyz[0]), float32(xyz[1]), float32(xyz[2]));
 	}
 
-	template <typename SCAL>
-	inline void color3fv(SCAL* rgb)
+	template <typename SCALAR>
+	inline void color3fv(SCALAR* rgb)
 	{
-		static_assert(std::is_arithmetic<SCAL>::value, "scalar vector only allowed for vertex3");
+		static_assert(std::is_arithmetic<SCALAR>::value, "scalar vector only allowed for vertex3");
 		color3ff(float32(rgb[0]), float32(rgb[1]), float32(rgb[2]));
 	}
 
@@ -279,7 +279,6 @@ public:
 	/**
 	 * use as glLineWidth with use of anti-aliasing (alpha blending)
 	 */
-
 	inline void line_width_aa(float32 lw)
 	{
 		current_aa_ = true;

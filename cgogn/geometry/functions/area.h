@@ -24,6 +24,8 @@
 #ifndef CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
 #define CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
 
+#include <cgogn/geometry/types/geometry_traits.h>
+
 namespace cgogn
 {
 
@@ -33,10 +35,11 @@ namespace geometry
 /**
  * area of the triangle formed by 3 points in 3D
  */
-template <typename VEC3_T>
-inline typename VEC3_T::Scalar triangle_area(const VEC3_T& p1, const VEC3_T& p2, const VEC3_T& p3)
+template <typename VEC3>
+inline typename vector_traits<VEC3>::Scalar area(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 {
-	return (typename VEC3_T::Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
 }
 
 } // namespace geometry

@@ -28,7 +28,7 @@ StringCatImp(std::ostream& out, First&& f, Rest&&... rest)
   return StringCatImp(out, std::forward<Rest>(rest)...);
 }
 
-template<class ...Args>
+template <class ...Args>
 inline std::string StrCat(Args&&... args)
 {
   std::ostringstream ss;

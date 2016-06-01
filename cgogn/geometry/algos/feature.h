@@ -24,6 +24,7 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_FEATURE_H_
 #define CGOGN_GEOMETRY_ALGOS_FEATURE_H_
 
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/functions/basics.h>
 
 namespace cgogn
@@ -36,11 +37,12 @@ template <typename VEC3, typename MAP>
 void mark_feature_edges(
 	const MAP& map,
 	const typename MAP::template FaceAttribute<VEC3>& normal,
-	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge)
+	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge
+)
 {
 	feature_edge.unmark_all();
 
-	map.foreach_cell([&] (typename MAP::Edge e)
+	map.parallel_foreach_cell([&] (typename MAP::Edge e, uint32)
 	{
 		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
 			feature_edge.mark(e);

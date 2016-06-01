@@ -140,7 +140,7 @@ public:
 
 		if (map_.template is_embedded<Volume>())
 		{
-			const uint32 idx = map_.get_embedding(Volume(d));
+			const uint32 idx = map_.embedding(Volume(d));
 			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
 			{
 				map_.template set_embedding<Volume>(it, idx);
@@ -162,7 +162,7 @@ public:
 	 */
 	inline void close_map()
 	{
-		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi2(d) == d)
@@ -179,7 +179,7 @@ public:
 				});
 			}
 		}
-		get_dart_buffers()->release_buffer(fix_point_darts);
+		dart_buffers()->release_buffer(fix_point_darts);
 	}
 
 private:

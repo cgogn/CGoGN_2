@@ -227,10 +227,8 @@ TEST_F(CMap2Test, cut_face)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-
 TEST_F(CMap2Test, compact_map)
 {
-
 	testCMap2::VertexAttribute<int32> att_v = cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
 	testCMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge::ORBIT>("edges");
 	testCMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face::ORBIT>("faces");
@@ -272,24 +270,22 @@ TEST_F(CMap2Test, compact_map)
 //		std::cout << std::endl;
 //	});
 
-
 	EXPECT_TRUE(cmap_.check_map_integrity());
 	cmap_.compact();
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
+	EXPECT_EQ(cmap_.topology_container().size(),cmap_.topology_container().end());
 
-	EXPECT_EQ(cmap_.get_topology_container().size(),cmap_.get_topology_container().end());
+	EXPECT_EQ(cmap_.const_attribute_container<Vertex::ORBIT>().size(),
+			  cmap_.const_attribute_container<Vertex::ORBIT>().end());
 
-	EXPECT_EQ(cmap_.get_const_attribute_container<Vertex::ORBIT>().size(),
-			  cmap_.get_const_attribute_container<Vertex::ORBIT>().end());
-
-	EXPECT_EQ(cmap_.get_const_attribute_container<Edge::ORBIT>().size(),
-			  cmap_.get_const_attribute_container<Edge::ORBIT>().end());
+	EXPECT_EQ(cmap_.const_attribute_container<Edge::ORBIT>().size(),
+			  cmap_.const_attribute_container<Edge::ORBIT>().end());
 
 
-//	std::cout << "TOPO SIZE:"<< cmap_.get_topology_container().size() << " / END:"<<  cmap_.get_topology_container().end() << std::endl;
+//	std::cout << "TOPO SIZE:"<< cmap_.topology_container().size() << " / END:"<<  cmap_.topology_container().end() << std::endl;
 
-//		std::cout << "VERT SIZE:"<< cmap_.get_attribute_container<Vertex::ORBIT>().size() << " / END:"<<  cmap_.get_attribute_container<Vertex::ORBIT>().end() << std::endl;
+//		std::cout << "VERT SIZE:"<< cmap_.attribute_container<Vertex::ORBIT>().size() << " / END:"<<  cmap_.attribute_container<Vertex::ORBIT>().end() << std::endl;
 
 
 //	cmap_.foreach_cell([&] (Face f)

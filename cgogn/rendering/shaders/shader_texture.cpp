@@ -67,8 +67,7 @@ ShaderTexture::ShaderTexture()
 	prg_.setUniformValue("texture_unit", 0);
 }
 
-
-ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh):
+ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh) :
 	ShaderParam(sh),
 	texture_(nullptr)
 {}
@@ -104,8 +103,6 @@ void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 	vao_->release();
 	shader_->release();
 }
-
-
 
 } // namespace rendering
 

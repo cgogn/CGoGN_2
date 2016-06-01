@@ -44,11 +44,11 @@ namespace cgogn
 namespace io
 {
 
-
 template <typename MAP_TRAITS>
 class SurfaceImport : public MeshImportGen
 {
 public:
+
 	using Self = SurfaceImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
 	using Map = CMap2<MAP_TRAITS>;
@@ -61,8 +61,8 @@ public:
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
-
 protected:
+
 	uint32 nb_vertices_;
 	uint32 nb_edges_;
 	uint32 nb_faces_;
@@ -88,7 +88,6 @@ public:
 	virtual ~SurfaceImport() override
 	{}
 
-
 	virtual void clear() override
 	{
 		nb_vertices_ = 0;
@@ -96,8 +95,8 @@ public:
 		nb_faces_ = 0;
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
-		vertex_attributes_.remove_attributes();
-		face_attributes_.remove_attributes();
+		vertex_attributes_.remove_chunk_arrays();
+		face_attributes_.remove_chunk_arrays();
 	}
 
 	inline void create_map(Map& map)
@@ -117,7 +116,7 @@ public:
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
 		typename Map::template VertexAttribute<std::vector<Dart>> darts_per_vertex =
-				map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+			map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;
 		std::vector<uint32> vertices_buffer;
@@ -163,7 +162,7 @@ public:
 		{
 			if (map.phi2(d) == d)
 			{
-				uint32 vertex_index = map.get_embedding(Vertex(d));
+				uint32 vertex_index = map.embedding(Vertex(d));
 
 				std::vector<Dart>& next_vertex_darts = darts_per_vertex[Vertex(map.phi1(d))];
 				bool phi2_found = false;
@@ -173,7 +172,7 @@ public:
 					 it != next_vertex_darts.end() && !phi2_found;
 					 ++it)
 				{
-					if (map.get_embedding(Vertex(map.phi1(*it))) == vertex_index)
+					if (map.embedding(Vertex(map.phi1(*it))) == vertex_index)
 					{
 						if (map.phi2(*it) == *it)
 						{
@@ -207,7 +206,7 @@ public:
 			cgogn_log_warning("create_map") << "Import Surface: non manifold vertices detected and corrected";
 		}
 
-		if (this->face_attributes_.get_nb_attributes() > 0)
+		if (this->face_attributes_.nb_chunk_arrays() > 0)
 		{
 			mbuild.template create_embedding<Face::ORBIT>();
 			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);

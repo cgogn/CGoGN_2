@@ -1,6 +1,5 @@
 set(CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "QOGLViewer include directory")
 
-
 project(QOGLViewer)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
@@ -11,36 +10,35 @@ set(CMAKE_AUTOMOC ON)
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(HEADER_FILES
-	qoglviewer.h
-	camera.h
-	manipulatedFrame.h
-	manipulatedCameraFrame.h
-	frame.h
-	keyFrameInterpolator.h
-	config.h
-	constraint.h
-	mouseGrabber.h
-	quaternion.h
-	vec.h
-	)
-	
-set(SOURCE_FILES
-	qoglviewer.cpp
-	camera.cpp
-	manipulatedFrame.cpp
-	manipulatedCameraFrame.cpp
-	frame.cpp
-	saveSnapshot.cpp
-	constraint.cpp
-	keyFrameInterpolator.cpp
-	mouseGrabber.cpp
-	quaternion.cpp
-	vec.cpp
-	)
+	QOGLViewer/qoglviewer.h
+	QOGLViewer/camera.h
+	QOGLViewer/manipulatedFrame.h
+	QOGLViewer/manipulatedCameraFrame.h
+	QOGLViewer/frame.h
+	QOGLViewer/keyFrameInterpolator.h
+	QOGLViewer/config.h
+	QOGLViewer/constraint.h
+	QOGLViewer/mouseGrabber.h
+	QOGLViewer/quaternion.h
+	QOGLViewer/vec.h
+)
 
+set(SOURCE_FILES
+	QOGLViewer/qoglviewer.cpp
+	QOGLViewer/camera.cpp
+	QOGLViewer/manipulatedFrame.cpp
+	QOGLViewer/manipulatedCameraFrame.cpp
+	QOGLViewer/frame.cpp
+	QOGLViewer/saveSnapshot.cpp
+	QOGLViewer/constraint.cpp
+	QOGLViewer/keyFrameInterpolator.cpp
+	QOGLViewer/mouseGrabber.cpp
+	QOGLViewer/quaternion.cpp
+	QOGLViewer/vec.cpp
+)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME}  ${OPENGL_LIBRARY} ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARY} ${Qt5Widgets_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDE_DIRS})
 
 if(WIN32)
@@ -54,7 +52,6 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_flags(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
 endif()
-
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 	DESTINATION "include/thirdparty/"

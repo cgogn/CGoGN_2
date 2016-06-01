@@ -44,7 +44,6 @@ namespace geometry
 template <typename VEC_T>
 class OBB
 {
-
 public:
 
 	using Vec = VEC_T;
@@ -53,16 +52,18 @@ public:
 	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 
 private:
-	//center point of this OBB
+
+	// center point of this OBB
 	Vec center_;
 	Vec extension_;
 
-	//the axes defining the OBB
+	// the axes defining the OBB
 	Eigen::Matrix<Scalar, dim_, dim_> axes_;
 
 	bool initialized_;
 
 public:
+
 	/**********************************************/
 	/*                CONSTRUCTORS                */
 	/**********************************************/
@@ -70,7 +71,6 @@ public:
 	OBB() :
 		initialized_(false)
 	{}
-
 
 	// reinitialize the axis-aligned bounding box
 	void reset()
@@ -108,9 +108,9 @@ public:
 		axes_ = a;
 	}
 
-	void edges(std::array<Vec,8>& e)
+	void edges(std::array<Vec, 8>& e)
 	{
-		for(int i=0 ; i < 8 ; ++i)
+		for(int i = 0 ; i < 8 ; ++i)
 		{
 			e[i] = center_ + (i&1?1:-1)*extension_[0]*axes_.col(0) + (i&2?1:-1)*extension_[1]*axes_.col(1) + (i&4?1:-1)*extension_[2]*axes_.col(2);
 		}
@@ -120,7 +120,6 @@ public:
 	{
 		return std::string("cgogn::geometry::OBB<") + name_of_type(Vec()) + std::string(">");
 	}
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))

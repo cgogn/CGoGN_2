@@ -27,6 +27,8 @@
 #include <cmath>
 #include <algorithm>
 
+#include <cgogn/geometry/types/geometry_traits.h>
+
 namespace cgogn
 {
 
@@ -37,10 +39,10 @@ namespace geometry
  * @brief normalize_safe, normalize a non-zero vector
  * @param v
  */
-template<typename VEC3>
-inline void normalize_safe(VEC3& v)
+template <typename VEC>
+inline void normalize_safe(VEC& v)
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename vector_traits<VEC>::Scalar;
 
 	const Scalar norm2 = v.squaredNorm();
 	if (norm2 > Scalar(0))
@@ -53,7 +55,7 @@ inline void normalize_safe(VEC3& v)
 template <typename VEC>
 typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
 {
-	using Scalar = typename VEC::Scalar;
+	using Scalar = typename vector_traits<VEC>::Scalar;
 
 	Scalar na2 = a.squaredNorm();
 	Scalar nb2 = b.squaredNorm();

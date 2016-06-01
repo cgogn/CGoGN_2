@@ -69,7 +69,7 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		uint32 nb_darts_2 = 0u;
-		std::vector<uint32> nb_darts_per_thread(cgogn::get_nb_threads()+2);
+		std::vector<uint32> nb_darts_per_thread(cgogn::nb_threads() + 2);
 		for (auto& n : nb_darts_per_thread)
 			n = 0u;
 		nb_darts_2 = 0u;
@@ -84,7 +84,7 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -98,7 +98,7 @@ static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 
 		bench_map.template foreach_cell<STRATEGY>([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		});
 	}
 }
@@ -119,13 +119,13 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 
 		bench_map.foreach_cell([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		},
 		cache);
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -139,7 +139,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 
 		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f, uint32)
 		{
-			face_normal_mt[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
+			face_normal_mt[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		});
 
 		{
@@ -178,14 +178,14 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 
 		bench_map.parallel_foreach_cell([&] (Face f, uint32)
 		{
-			face_normal[f] = cgogn::geometry::face_normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		},
 		cache);
 	}
 }
 
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -199,7 +199,7 @@ static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 
 		bench_map.template foreach_cell<STRATEGY>([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -220,13 +220,13 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 
 		bench_map.foreach_cell([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		},
 		cache);
 	}
 }
 
-template<cgogn::TraversalStrategy STRATEGY>
+template <cgogn::TraversalStrategy STRATEGY>
 static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -240,7 +240,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 
 		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, uint32)
 		{
-			vertices_normal_mt[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		});
 
 		{
@@ -279,7 +279,7 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 
 		bench_map.parallel_foreach_cell([&] (Vertex v, uint32)
 		{
-			vertices_normal[v] = cgogn::geometry::vertex_normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		},
 		cache);
 	}
@@ -327,4 +327,3 @@ int main(int argc, char** argv)
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;
 }
-

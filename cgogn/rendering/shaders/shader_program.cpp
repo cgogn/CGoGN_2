@@ -32,7 +32,7 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderParam::ShaderParam(ShaderProgram* prg):
+ShaderParam::ShaderParam(ShaderProgram* prg) :
 	shader_(prg)
 {
 	vao_ = cgogn::make_unique<QOpenGLVertexArrayObject>();

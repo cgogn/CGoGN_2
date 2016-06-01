@@ -36,13 +36,15 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
-class OffSurfaceImport : public SurfaceImport<MAP_TRAITS> {
+template <typename MAP_TRAITS, typename VEC3>
+class OffSurfaceImport : public SurfaceImport<MAP_TRAITS>
+{
 public:
+
 	using Self = OffSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit = SurfaceImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	inline OffSurfaceImport() {}
@@ -50,6 +52,7 @@ public:
 	virtual ~OffSurfaceImport() override {}
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
@@ -67,17 +70,14 @@ protected:
 
 		// check if binary file
 		if (line.rfind("BINARY") != std::string::npos)
-		{
 			return this->import_off_bin(fp);
-		}
-
 
 		// read number of vertices, edges, faces
 		this->nb_vertices_ = this->read_uint(fp,line);
 		this->nb_faces_ = this->read_uint(fp,line);
 		this->nb_edges_ = this->read_uint(fp,line);
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
@@ -110,7 +110,6 @@ protected:
 				uint32 index = this->read_uint(fp,line);
 				this->faces_vertex_indices_.push_back(vertices_id[index]);
 			}
-
 		}
 
 		return true;
@@ -125,17 +124,15 @@ protected:
 		this->nb_faces_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
 		this->nb_edges_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+8)));
 
+		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_attribute<VEC3>("position");
-
-
-		static const uint32 BUFFER_SZ = 1024*1024;
+		static const uint32 BUFFER_SZ = 1024 * 1024;
 		float32* buff_pos = new float32[3*BUFFER_SZ];
 		std::vector<uint32> vertices_id;
 		vertices_id.reserve(this->nb_vertices_);
 
 		{ // limit j scope
-			unsigned j = BUFFER_SZ;
+			uint32 j = BUFFER_SZ;
 			for (uint32 i = 0; i < this->nb_vertices_; ++i, ++j)
 			{
 				if (j == BUFFER_SZ)
@@ -218,7 +215,9 @@ protected:
 
 		return true;
 	}
+
 private:
+
 	static inline float64 read_double(std::istream& fp, std::string& line)
 	{
 		fp >> line;
@@ -250,6 +249,7 @@ extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_OFF_IO_H_

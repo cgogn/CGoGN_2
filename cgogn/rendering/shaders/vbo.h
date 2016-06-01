@@ -71,7 +71,7 @@ public:
 		name_ = name;
 	}
 
-	inline const std::string& get_name() const
+	inline const std::string& name() const
 	{
 		return name_;
 	}
@@ -160,14 +160,14 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 {
 	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
 
-	const typename ATTR::TChunkArray* ca = attr.get_data();
+	const typename ATTR::TChunkArray* ca = attr.data();
 
 	// set vbo name based on attribute name
-	vbo->set_name(attr.get_name());
+	vbo->set_name(attr.name());
 
 	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
@@ -194,7 +194,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 			for (uint32 j = 0; j < ATTR::CHUNK_SIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo->bind();
-			vbo->copy_data(i* ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), ATTR::CHUNK_SIZE * vec_dim * sizeof(float32),float_buffer);
+			vbo->copy_data(i* ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), float_buffer);
 			vbo->release();
 		}
 		delete[] float_buffer;
@@ -211,36 +211,36 @@ template <typename ATTR, typename FUNC>
 void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 1 param
-	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one arg");
+	static_assert(function_traits<FUNC>::arity == 1, "convert lambda function must have only one argument");
 
 	// check that convert param  is compatible with attr
 	using InputConvert = typename std::remove_cv< typename std::remove_reference<typename function_traits<FUNC>::template arg<0>::type>::type >::type;
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
 	// set vbo name based on attribute name
-	vbo->set_name(attr.get_name());
+	vbo->set_name(attr.name());
 
 	// get chunk data pointers
-	const typename ATTR::TChunkArray* ca = attr.get_data();
+	const typename ATTR::TChunkArray* ca = attr.data();
 	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	using Vec2f = std::array<float32,2>;
-	using Vec3f = std::array<float32,3>;
-	using Vec4f = std::array<float32,4>;
-	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
+	using Vec2f = std::array<float32, 2>;
+	using Vec3f = std::array<float32, 3>;
+	using Vec4f = std::array<float32, 4>;
+	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) || check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>");
 
 	// set vec dimension
 	uint32 vec_dim = 0;
-	if (check_func_return_type(FUNC,float32) )
+	if (check_func_return_type(FUNC, float32))
 		vec_dim = 1;
-	else if (check_func_return_type(FUNC,Vec2f) )
+	else if (check_func_return_type(FUNC, Vec2f))
 		vec_dim = 2;
-	else if (check_func_return_type(FUNC,Vec3f) )
+	else if (check_func_return_type(FUNC, Vec3f))
 		vec_dim = 3;
-	else if (check_func_return_type(FUNC,Vec4f) )
+	else if (check_func_return_type(FUNC, Vec4f))
 		vec_dim = 4;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
@@ -269,7 +269,7 @@ template <typename ATTR, typename ATTR2, typename FUNC>
 void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& convert)
 {
 	// check that convert has 2 param
-	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arg");
+	static_assert(function_traits<FUNC>::arity == 2, "convert lambda function must have two arguments");
 
 	//check that attr & attr2 are on same orbit
 	static_assert(ATTR::orbit_value == ATTR2::orbit_value, "attributes must be on same orbit");
@@ -283,17 +283,17 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	static_assert(std::is_same<InputConvert,inside_type(ATTR2) >::value, "wrong parameter 2");
 
 	// set vbo name based on first attribute name
-	vbo->set_name(attr.get_name());
+	vbo->set_name(attr.name());
 
 	// get chunk data pointers
-	const typename ATTR::TChunkArray* ca = attr.get_data();
+	const typename ATTR::TChunkArray* ca = attr.data();
 	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->get_chunks_pointers(chunk_addr, byte_chunk_size);
+	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
 
-	const typename ATTR::TChunkArray* ca2 = attr2.get_data();
+	const typename ATTR::TChunkArray* ca2 = attr2.data();
 	std::vector<void*> chunk_addr2;
-	ca2->get_chunks_pointers(chunk_addr2, byte_chunk_size);
+	ca2->chunks_pointers(chunk_addr2, byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	using Vec2f = std::array<float32,2>;
@@ -348,24 +348,24 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	static_assert(std::is_same<InputConvert,inside_type(ATTR) >::value, "wrong parameter 1");
 
 	// check that out of convert is float or std::array<float,2/3/4>
-	using Vec2f = std::array<float32,2>;
-	using Vec3f = std::array<float32,3>;
-	using Vec4f = std::array<float32,4>;
-	static_assert(check_func_return_type(FUNC,float32) || check_func_return_type(FUNC,Vec2f) || check_func_return_type(FUNC,Vec3f) ||check_func_return_type(FUNC,Vec4f), "convert output must be float or std::array<float,2/3/4>" );
+	using Vec2f = std::array<float32, 2>;
+	using Vec3f = std::array<float32, 3>;
+	using Vec4f = std::array<float32, 4>;
+	static_assert(check_func_return_type(FUNC, float32) || check_func_return_type(FUNC, Vec2f) || check_func_return_type(FUNC, Vec3f) || check_func_return_type(FUNC, Vec4f), "convert output must be float or std::array<float,2/3/4>");
 
 	// set vec dimension
 	uint32 vec_dim = 0;
-	if (check_func_return_type(FUNC,float32) )
+	if (check_func_return_type(FUNC, float32))
 		vec_dim = 1;
-	else if (check_func_return_type(FUNC,Vec2f) )
+	else if (check_func_return_type(FUNC, Vec2f))
 		vec_dim = 2;
-	else if (check_func_return_type(FUNC,Vec3f) )
+	else if (check_func_return_type(FUNC, Vec3f))
 		vec_dim = 3;
-	else if (check_func_return_type(FUNC,Vec4f) )
+	else if (check_func_return_type(FUNC, Vec4f))
 		vec_dim = 4;
 
 	// set vbo name based on attribute name
-	vbo->set_name(attr.get_name());
+	vbo->set_name(attr.name());
 
 	// allocate vbo
 	vbo->allocate(uint32(indices.size()), vec_dim);
