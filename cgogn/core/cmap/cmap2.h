@@ -623,8 +623,8 @@ public:
 	inline Edge cut_face(Vertex d, Vertex e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
+
 		Dart nd = cut_face_topo(d.dart, e.dart);
 		Dart ne = this->phi_1(e.dart);
 

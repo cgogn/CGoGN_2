@@ -540,18 +540,85 @@ protected:
 
 			phi3_sew(face1, face2);
 
-			face1 = this->phi1(face1);
-			face2 = this->phi_1(face2);
+			face1 = this->phi_1(face1);
+			face2 = this->phi1(face2);
 		}
 
-		return this->phi1(face1);
+		return this->phi_1(face1);
 	}
 
 public:
 
 	Face cut_volume(const std::vector<Edge>& path)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		cgogn_message_assert(!this->is_boundary(path[0].dart), "cut_volume: should not cut a boundary volume");
+
 		Dart nf = cut_volume_topo(reinterpret_cast<const std::vector<Dart>&>(path));
+
+		if (this->template is_embedded<CDart>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+				this->new_orbit_embedding(CDart(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex2>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Vertex2>(d, this->phi1(this->phi2(d)));
+				this->new_orbit_embedding(Vertex2(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Vertex>(d, this->phi1(this->phi2(d)));
+				Dart d3 = phi3(d);
+				this->template copy_embedding<Vertex>(d3, this->phi1(this->phi2(d3)));
+			});
+		}
+
+		if (this->template is_embedded<Edge2>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge2>(d, this->phi2(d));
+				this->new_orbit_embedding(Edge2(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge>(d, this->phi2(d));
+				this->template copy_embedding<Edge>(phi3(d), this->phi2(d));
+			});
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			this->new_orbit_embedding(Face2(nf));
+			this->new_orbit_embedding(Face2(phi3(nf)));
+		}
+
+		if (this->template is_embedded<Face>())
+			this->new_orbit_embedding(Face(nf));
+
+		if (this->template is_embedded<Volume>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Volume>(d, this->phi2(d));
+			});
+			this->new_orbit_embedding(Volume(phi3(nf)));
+		}
 
 		return Face(nf);
 	}
