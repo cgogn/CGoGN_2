@@ -272,6 +272,124 @@ protected:
 		return d_quad;
 	}
 
+	/**
+	 * \brief Cut an edge.
+	 * \param d : A dart that represents the edge to cut
+	 * \return A dart of the inserted vertex
+	 * The edge of d is cut by inserting a new vertex.
+	 * The returned dart is the dart of the inserted vertex that belongs to the face of d.
+	 */
+	inline Dart cut_edge_topo(Dart d)
+	{
+		Dart prev = d;
+		Dart dd = phi3(this->phi2(d));
+
+		Dart nd = Inherit::cut_edge_topo(d);
+
+		while (dd != d)
+		{
+			prev = dd;
+			dd = phi3(this->phi2(dd));
+
+			Inherit::cut_edge_topo(prev);
+
+			Dart d3 = phi3(prev);
+			phi3_unsew(prev);
+			phi3_sew(prev, this->phi1(d3));
+			phi3_sew(d3, this->phi1(prev));
+		}
+
+		Dart d3 = phi3(d);
+		phi3_unsew(d);
+		phi3_sew(d, this->phi1(d3));
+		phi3_sew(d3, this->phi1(d));
+
+		return nd;
+	}
+
+public:
+
+	inline Vertex cut_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart v = cut_edge_topo(e.dart);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				Dart nv1 = this->phi1(d);
+				Dart nv2 = this->phi2(d);
+				if (!this->is_boundary(nv1))
+					this->new_orbit_embedding(CDart(nv1));
+				if (!this->is_boundary(nv2))
+					this->new_orbit_embedding(CDart(nv2));
+			});
+		}
+
+		if (this->template is_embedded<Vertex2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+			this->new_orbit_embedding(Vertex(v));
+
+		if (this->template is_embedded<Edge2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge2>(this->phi2(d), d);
+				this->new_orbit_embedding(Edge2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge>(this->phi2(d), d);
+			});
+			this->new_orbit_embedding(Edge(v));
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Face2>(this->phi1(d), d);
+				this->template copy_embedding<Face2>(this->phi2(d), this->phi2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Face>(this->phi1(d), d);
+				this->template copy_embedding<Face>(phi3(d), d);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				if (!this->is_boundary(d))
+				{
+					this->template copy_embedding<Volume>(this->phi1(d), d);
+					this->template copy_embedding<Volume>(this->phi2(d), d);
+				}
+			});
+		}
+
+		return Vertex(v);
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
