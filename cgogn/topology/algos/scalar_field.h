@@ -99,7 +99,7 @@ private:
 	 * The algorithm traverse Link(v) and counts the number of times
 	 * the scalar field values becomes greater or lower than the value in v.
 	 */
-	template <typename USEDMAP, typename std::enable_if<USEDMAP::DIMENSION == 2>::type* = nullptr>
+	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 2>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
 		Dart next = v.dart;
@@ -206,7 +206,7 @@ private:
 	 * they are stored in two vector of Dart and theirs vertices are marked.
 	 * Then the marker are used to count their numbers of connected components.
 	 */
-	template <typename USEDMAP, typename std::enable_if<USEDMAP::DIMENSION == 3>::type* = nullptr>
+	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
 		VertexMarkerStore sup_vertex_marker(map_);
