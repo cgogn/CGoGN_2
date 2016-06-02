@@ -160,17 +160,9 @@ protected:
 				phi2(d) != d);
 	}
 
-	/**
-	 * @brief Check the integrity of a boundary dart
-	 * @param d the dart to check
-	 * @return true if the bondary constraints are locally statisfied
-	 * The boundary is a 1-manifold: the boundary marker is the same
-	 * for all darts of a face and two boundary faces cannot be adjacent.
-	 */
 	inline bool check_boundary_integrity(Dart d) const
 	{
-		return ((  this->is_boundary(d) ==  this->is_boundary(this->phi1(d)) ) &&
-				( !this->is_boundary(d) || !this->is_boundary(this->phi2(d)) ));
+		return true;
 	}
 
 	/**
@@ -267,8 +259,8 @@ public:
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
 		switch(N % 10)
 		{
-			case 1 : return this->phi1(phi<N / 10>(d)) ;
-			case 2 : return this->phi2(phi<N / 10>(d)) ;
+			case 1 : return phi1(phi<N / 10>(d)) ;
+			case 2 : return phi2(phi<N / 10>(d)) ;
 			default : return d ;
 		}
 	}
@@ -315,7 +307,7 @@ protected:
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
-			e = this->phi_1(e);
+			e = phi_1(e);
 		});
 
 		return d;
@@ -386,15 +378,15 @@ protected:
 		Dart f3 = this->add_tri_topo_fp();
 		Dart f4 = this->add_tri_topo_fp();
 
-		this->phi2_sew(this->phi_1(f2), f1);
-		this->phi2_sew(this->phi_1(f3), f2);
-		this->phi2_sew(this->phi_1(f1), f3);
+		phi2_sew(phi_1(f2), f1);
+		phi2_sew(phi_1(f3), f2);
+		phi2_sew(phi_1(f1), f3);
 
-		this->phi2_sew(this->phi1(f1), f4);
-		f4 = this->phi1(f4);
-		this->phi2_sew(this->phi1(f2), f4);
-		f4 = this->phi1(f4);
-		this->phi2_sew(this->phi1(f3), f4);
+		phi2_sew(phi1(f1), f4);
+		f4 = phi1(f4);
+		phi2_sew(phi1(f2), f4);
+		f4 = phi1(f4);
+		phi2_sew(phi1(f3), f4);
 
 		return f1;
 	}
@@ -416,10 +408,10 @@ protected:
 		Dart e = phi2(d);
 		if (!this->is_boundary(d) && !this->is_boundary(e))
 		{
-			Dart d1  = this->phi1(d);
-			Dart d11 = this->phi1(d1);
-			Dart e1  = this->phi1(e);
-			Dart e11 = this->phi1(e1);
+			Dart d1  = phi1(d);
+			Dart d11 = phi1(d1);
+			Dart e1  = phi1(e);
+			Dart e11 = phi1(e1);
 
 			Dart xd1  = phi2(d1);
 			Dart xd11 = phi2(d11);
@@ -453,19 +445,22 @@ public:
 			Dart d = e.dart;
 			Dart dd = phi2(d);
 
-			Dart d1  = this->phi1(d);
-			Dart d11 = this->phi1(d1);
-			Dart dd1  = this->phi1(dd);
-			Dart dd11 = this->phi1(dd1);
+			Dart d1  = phi1(d);
+			Dart d11 = phi1(d1);
+			Dart dd1  = phi1(dd);
+			Dart dd11 = phi1(dd1);
 
 			if (this->template is_embedded<Vertex>())
 			{
-				this->template copy_embedding<Vertex>(d1, phi<21>(d1));
-				this->template copy_embedding<Vertex>(d11, phi<21>(d11));
-				this->template copy_embedding<Vertex>(dd1, phi<21>(dd1));
-				this->template copy_embedding<Vertex>(dd11, phi<21>(dd11));
+				// warning not all darts of boundary are embedded
+				// only those which are phi2-sewed with non-boundary
+				this->template copy_embedding<Vertex>(d1, phi2(dd11));
+				this->template copy_embedding<Vertex>(dd1, phi2(d11));
+				this->template copy_embedding<Vertex>(d11, phi2(d1));
+				this->template copy_embedding<Vertex>(dd11, phi2(dd1));
 				this->template copy_embedding<Vertex>(d, dd1);
-				this->template copy_embedding<Vertex>(dd, d11);
+				this->template copy_embedding<Vertex>(dd, d1);
+
 			}
 
 			if (this->template is_embedded<Edge>())
@@ -487,11 +482,14 @@ protected:
 	 */
 	inline Dart collapse_edge_topo(Dart d)
 	{
-		Dart res = phi2(this->phi_1(d));
+		Dart res = phi2(phi_1(d));
 		Dart e = phi2(d);
 
-		phi2_sew_nocheck(phi<12>(d),phi2(this->phi_1(d)));
-		phi2_sew_nocheck(phi<12>(e),phi2(this->phi_1(e)));
+		phi2_sew_nocheck(phi<12>(d),res);
+		phi2_sew_nocheck(phi<12>(e),phi2(phi_1(e)));
+
+		remove_tri_topo_fp(d);
+		remove_tri_topo_fp(e);
 
 		return res;
 	}
@@ -508,7 +506,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		// dart for edge of one side
-		Dart d2 = phi2(this->phi_1(phi2(e.dart)));
+		Dart d2 = phi2(phi_1(phi2(e.dart)));
 		// dart for edge of other side, and vertex
 		Dart d1 = collapse_edge_topo(e.dart);
 
@@ -528,6 +526,306 @@ public:
 
 		return v;
 	}
+
+protected:
+	/**
+	 * @brief split a vertex into an edge (2 triangles are inserted)
+	 * @param v1 Vertex to split (dart give edge ti be replaced by a triangle)
+	 * @param v2 Vertex to split (dart give edge ti be replaced by a triangle)
+	 * @return the inserted edge
+	 */
+	Edge split_vertex_topo(Vertex v1, Vertex v2)
+	{
+		cgogn_message_assert(this->same_orbit(v1,v2), "CMap2Tri::split_vertex_topo:v1 & v2 must be the same vertex");
+		cgogn_message_assert(v1.dart != v2.dart, "CMap2Tri::split_vertex_topo:v1 & v2 must be different darts ");
+
+		Dart e1  = v1.dart;
+		Dart ee1 = phi2(e1);
+		Dart e2  = v2.dart;
+		Dart ee2 = phi2(e2);
+
+
+		Dart f1 = add_tri_topo_fp();
+		Dart f2 = add_tri_topo_fp();
+
+		phi2_sew(f1,f2);
+
+		phi2_sew_nocheck(phi1(f1),ee1);
+		phi2_sew_nocheck(phi_1(f1),e1);
+
+		phi2_sew_nocheck(phi1(f2),ee2);
+		phi2_sew_nocheck(phi_1(f2),e2);
+
+		return Edge(f1);
+	}
+
+public:
+	Edge split_vertex(Vertex v1, Vertex v2)
+	{
+		Edge res_edge = split_vertex_topo(v1,v2);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_incident_face(res_edge, [this] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this] (Dart d)
+				{
+					this->new_orbit_embedding(CDart(d));
+				});
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(res_edge.dart));
+			Dart v1 = phi2(res_edge.dart);
+			Dart v0 = phi2(phi_1(v1));
+			this->template copy_embedding<Vertex>(v1,v0);
+			Dart v2 = phi1(res_edge.dart);
+			this->template copy_embedding<Vertex>(v2,v0);
+
+			foreach_incident_face(res_edge, [this] (Face nf)
+			{
+				Dart v1 = phi_1(nf.dart); // new dart of exiting vertex
+				Dart v0 = phi2(phi1(nf.dart)); // old dart of exiting vertex
+				this->template copy_embedding<Vertex>(v1,v0);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->new_orbit_embedding(res_edge); // new edge
+			foreach_incident_face(res_edge, [this] (Face nf)
+			{
+				Dart d = phi1(nf.dart);
+				this->new_orbit_embedding(Edge(d));
+				d = phi1(d);
+				this->template copy_embedding<Edge>(d,phi2(d)); // more efficient to use the old emb
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(res_edge, [this] (Face nf)
+			{
+				this->new_orbit_embedding(nf);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			uint32 emb = this->get_embedding(Volume(this->template phi<12>(res_edge.dart)));
+			foreach_incident_face(res_edge, [this, emb] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			});
+		}
+
+		return res_edge;
+	}
+
+protected:
+	/**
+	 * @brief cut an edge and the two incident triangles
+	 * @param f
+	 */
+	Vertex cut_edge_topo(Edge e)
+	{
+		Dart d = phi1(e.dart);
+		Dart e1 = phi2(d);
+		d = phi1(d);
+		Dart e2 = phi2(d);
+		d = phi1(phi2(e.dart));
+		Dart e3 = phi2(d);
+		d = phi1(d);
+		Dart e4 = phi2(d);
+
+		remove_tri_topo_fp(e.dart);
+		remove_tri_topo_fp(phi2(e.dart));
+
+		Dart f1 = add_tri_topo_fp();
+		Dart f2 = add_tri_topo_fp();
+		Dart f3 = add_tri_topo_fp();
+		Dart f4 = add_tri_topo_fp();
+
+		phi2_sew(f1,f4);
+		phi2_sew(f2,f3);
+		phi2_sew(phi1(f1),phi_1(f2));
+		phi2_sew(phi1(f3),phi_1(f4));
+
+		phi2_sew_nocheck(phi_1(f1),e2);
+		phi2_sew_nocheck(phi1(f2),e1);
+		phi2_sew_nocheck(phi_1(f3),e4);
+		phi2_sew_nocheck(phi1(f4),e3);
+
+		return Vertex(f2);
+	}
+
+public:
+
+	/**
+	 * @brief cut an edge and the two incident triangles
+	 * @param f
+	 */
+	Vertex cut_edge(Edge e)
+	{
+		Vertex nv = cut_edge_topo(e);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_incident_face(nv, [this] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this] (Dart d)
+				{
+					this->new_orbit_embedding(CDart(d));
+				});
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(nv));
+
+			foreach_incident_edge(nv, [this] (Edge ne)
+			{
+				Dart v1 = phi2(ne.dart); // new dart of exiting vertex
+				Dart v2 = phi1(ne.dart); // new dart of exiting vertex
+				Dart v0 = phi2(phi_1(v1)); // old dart of exiting vertex
+				this->template copy_embedding<Vertex>(v1,v0);
+				this->template copy_embedding<Vertex>(v2,v0);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(nv, [this] (Edge ne)
+			{
+				this->new_orbit_embedding(ne); // new edge
+				Dart ne2 = phi1(ne.dart); // new dart of existing dart
+				this->template copy_embedding<Edge>(ne2, phi2(ne2));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(nv, [this] (Face nf)
+			{
+				this->new_orbit_embedding(nf);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			uint32 emb = this->get_embedding(Volume(this->template phi<12>(nv.dart)));
+			foreach_incident_face(nv, [this, emb] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			});
+		}
+
+		return nv;
+	}
+
+protected:
+	/**
+	 * @brief split a triangle in 3 triangles
+	 * @param f
+	 */
+	Vertex split_triangle_topo(Face f)
+	{
+		Dart e1 = phi2(f.dart);
+		Dart e2 = phi2(phi1(f.dart));
+		Dart e3 = phi2(phi_1(f.dart));
+
+		Dart f1 = add_tri_topo_fp();
+		Dart f2 = add_tri_topo_fp();
+		Dart f3 = add_tri_topo_fp();
+		phi2_sew(phi1(f1),phi_1(f2));
+		phi2_sew(phi1(f2),phi_1(f3));
+		phi2_sew(phi1(f3),phi_1(f1));
+		phi2_sew_nocheck(e1,f1);
+		phi2_sew_nocheck(e2,f2);
+		phi2_sew_nocheck(e3,f3);
+		remove_tri_topo_fp(f.dart);
+
+		return Vertex(phi_1(f1));
+	}
+
+public:
+
+	/**
+	 * @brief split a triangle in 3 triangles
+	 * @param f
+	 */
+	Vertex split_triangle(Face f)
+	{
+		Vertex vc = split_triangle_topo(f);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_incident_face(vc, [this] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this] (Dart d)
+				{
+					this->new_orbit_embedding(CDart(d));
+				});
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(vc));
+
+			foreach_incident_edge(vc, [this] (Edge ne)
+			{
+				Dart v1 = phi2(ne.dart); // new dart of exiting vertex
+				Dart v2 = phi1(ne.dart); // new dart of exiting vertex
+				Dart v0 = phi2(phi_1(v1)); // old dart of exiting vertex
+				this->template copy_embedding<Vertex>(v1,v0);
+				this->template copy_embedding<Vertex>(v2,v0);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vc, [this] (Edge ne)
+			{
+				this->new_orbit_embedding(ne); // new edge
+				Dart ne2 = phi1(ne.dart); // new dart of existing dart
+				this->template copy_embedding<Edge>(ne2, phi2(ne2));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vc, [this] (Face nf)
+			{
+				this->new_orbit_embedding(nf);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			uint32 emb = this->get_embedding(Volume(this->template phi<12>(vc.dart)));
+			foreach_incident_face(vc, [this, emb] (Face nf)
+			{
+				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			});
+		}
+
+		return vc;
+	}
+
+
 
 protected:
 
@@ -552,7 +850,7 @@ protected:
 		{
 			do
 			{
-				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_phi1 = phi1(d_next); // Search and put in d_next
 				d_next = phi2(d_phi1); // the next dart of the hole
 			} while (d_next != d_phi1 && d_phi1 != d);
 
@@ -560,12 +858,12 @@ protected:
 			{
 				Dart tri = add_tri_topo_fp();
 				phi2_sew(d_next, tri);
-				phi2_sew(this->phi_1(prec_tri), this->phi1(tri));
+				phi2_sew(phi_1(prec_tri), phi1(tri));
 				prec_tri = tri;
 			}
 		} while (d_phi1 != d);
 
-		phi2_sew(this->phi_1(prec_tri), this->phi1(first));
+		phi2_sew(phi_1(prec_tri), phi1(first));
 
 		return first;
 	}
@@ -583,7 +881,7 @@ public:
 
 	inline uint32 codegree(Edge e) const
 	{
-		if (this->phi1(e.dart) == e.dart)
+		if (phi1(e.dart) == e.dart)
 			return 1;
 		else
 			return 2;
@@ -668,7 +966,7 @@ protected:
 		{
 			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
 				f(it);
-			it = phi2(this->phi_1(it));
+			it = phi2(phi_1(it));
 		} while (it != d);
 	}
 
@@ -696,7 +994,7 @@ protected:
 					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					it = this->phi1(it);
+					it = phi1(it);
 				} while (it != e);
 			}
 		}
@@ -754,7 +1052,7 @@ protected:
 			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
 				if (!f(it))
 					break;
-			it = phi2(this->phi_1(it));
+			it = phi2(phi_1(it));
 		} while (it != d);
 	}
 
@@ -786,7 +1084,7 @@ protected:
 					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					it = this->phi1(it);
+					it = phi1(it);
 				} while (it != e);
 			}
 		}
@@ -953,7 +1251,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart d)
 		{
-			f(Vertex(this->phi2(d)));
+			f(Vertex(phi2(d)));
 		});
 	}
 
@@ -965,7 +1263,7 @@ public:
 		{
 			if (!this->is_boundary(vd))
 			{
-				Dart vd1 = this->phi1(vd);
+				Dart vd1 = phi1(vd);
 				this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
 				{
 					// skip Vertex v itself and its first successor around current face
@@ -1015,7 +1313,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
-			Dart fd1 = this->phi2(this->phi_1(fd));
+			Dart fd1 = phi2(phi_1(fd));
 			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
@@ -1031,7 +1329,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d)
 		{
-			const Dart d2 = this->phi2(d);
+			const Dart d2 = phi2(d);
 			if (!this->is_boundary(d2))
 				func(Face(d2));
 		});
@@ -1039,7 +1337,7 @@ public:
 
 	inline std::pair<Vertex,Vertex> vertices(Edge e) const
 	{
-		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(phi1(e.dart)));
 	}
 
 protected:

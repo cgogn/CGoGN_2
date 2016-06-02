@@ -151,27 +151,18 @@ protected:
 	 * @brief Check the integrity of a dart
 	 * @param d the dart to check
 	 * @return true if the integrity constraints are locally statisfied
-	 * PHI2 should be an involution without fixed point
+	 * PHI2 should be an involution without fixed point (except for some boundary darts)
 	 */
 	inline bool check_integrity(Dart d) const
 	{
-		return phi1(phi_1(d)) == d &&
-				phi_1(phi1(d)) == d &&
+		return phi1(phi_1(d)) == d && phi_1(phi1(d)) == d &&
 				phi2(phi2(d)) == d &&
-				phi2(d) != d;
+				( phi2(d) != d || ( phi2(d) == d && this->is_boundary(d)));
 	}
 
-	/**
-	 * @brief Check the integrity of a boundary dart
-	 * @param d the dart to check
-	 * @return true if the bondary constraints are locally statisfied
-	 * The boundary is a 1-manifold: the boundary marker is the same
-	 * for all darts of a face and two boundary faces cannot be adjacent.
-	 */
 	inline bool check_boundary_integrity(Dart d) const
 	{
-		return ((  this->is_boundary(d) ==  this->is_boundary(this->phi1(d)) ) &&
-				( !this->is_boundary(d) || !this->is_boundary(this->phi2(d)) ));
+		return true;
 	}
 
 	/**
@@ -271,8 +262,8 @@ public:
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
 		switch(N % 10)
 		{
-			case 1 : return this->phi1(phi<N / 10>(d)) ;
-			case 2 : return this->phi2(phi<N / 10>(d)) ;
+			case 1 : return phi1(phi<N / 10>(d)) ;
+			case 2 : return phi2(phi<N / 10>(d)) ;
 			default : return d ;
 		}
 	}
@@ -320,7 +311,7 @@ protected:
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
-			e = this->phi_1(e);
+			e = phi_1(e);
 		});
 
 		return d;
@@ -394,7 +385,7 @@ protected:
 //		Dart f6 = this->Inherit::add_quad_topo();
 
 
-////		this->phi2_sew(...);
+////		phi2_sew(...);
 
 //		return f1;
 //	}
@@ -424,7 +415,7 @@ protected:
 		{
 			do
 			{
-				d_phi1 = this->phi1(d_next); // Search and put in d_next
+				d_phi1 = phi1(d_next); // Search and put in d_next
 				d_next = phi2(d_phi1); // the next dart of the hole
 			} while (d_next != d_phi1 && d_phi1 != d);
 
@@ -432,12 +423,12 @@ protected:
 			{
 				Dart quad = add_quad_topo_fp();
 				phi2_sew(d_next, quad);
-				phi2_sew(this->phi_1(prec_quad), this->phi1(quad));
+				phi2_sew(phi_1(prec_quad), phi1(quad));
 				prec_quad = quad;
 			}
 		} while (d_phi1 != d);
 
-		phi2_sew(this->phi_1(prec_quad), this->phi1(first));
+		phi2_sew(phi_1(prec_quad), phi1(first));
 
 		return first;
 	}
@@ -455,7 +446,7 @@ public:
 
 	inline uint32 codegree(Edge e) const
 	{
-		if (this->phi1(e.dart) == e.dart)
+		if (phi1(e.dart) == e.dart)
 			return 1;
 		else
 			return 2;
@@ -541,7 +532,7 @@ protected:
 		{
 			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
 				f(it);
-			it = phi2(this->phi_1(it));
+			it = phi2(phi_1(it));
 		} while (it != d);
 	}
 
@@ -569,7 +560,7 @@ protected:
 					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					it = this->phi1(it);
+					it = phi1(it);
 				} while (it != e);
 			}
 		}
@@ -627,7 +618,7 @@ protected:
 			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
 				if (!f(it))
 					break;
-			it = phi2(this->phi_1(it));
+			it = phi2(phi_1(it));
 		} while (it != d);
 	}
 
@@ -659,7 +650,7 @@ protected:
 					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
 						visited_faces->push_back(adj);	// Add it
-					it = this->phi1(it);
+					it = phi1(it);
 				} while (it != e);
 			}
 		}
@@ -826,7 +817,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart d)
 		{
-				f(Vertex(this->phi2(d)));
+				f(Vertex(phi2(d)));
 		});
 	}
 
@@ -838,7 +829,7 @@ public:
 		{
 			if (!this->is_boundary(vd))
 			{
-				Dart vd1 = this->phi1(vd);
+				Dart vd1 = phi1(vd);
 				this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
 				{
 					// skip Vertex v itself and its first successor around current face
@@ -889,7 +880,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
-			Dart fd1 = this->phi2(this->phi_1(fd));
+			Dart fd1 = phi2(phi_1(fd));
 			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
@@ -905,7 +896,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d)
 		{
-			const Dart d2 = this->phi2(d);
+			const Dart d2 = phi2(d);
 			if (!this->is_boundary(d2))
 				func(Face(d2));
 		});
@@ -913,7 +904,7 @@ public:
 
 	inline std::pair<Vertex,Vertex> vertices(Edge e) const
 	{
-		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(phi1(e.dart)));
 	}
 
 protected:

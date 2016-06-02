@@ -60,9 +60,12 @@ public:
 protected:
 
 	testCMap2Tri cmap_;
-	testCMap2Tri cmap2_;
 
 	CMap2TriTest()
+	{
+	}
+
+	void embed_map()
 	{
 		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
 		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
@@ -70,34 +73,39 @@ protected:
 		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 	}
+
 };
 
 TEST_F(CMap2TriTest,tris)
 {
 	for (uint32 i=0; i<10; ++i)
 	{
-		cmap2_.add_face(3);
-	}
-	EXPECT_EQ(cmap2_.nb_cells<Vertex::ORBIT>(), 30);
-	EXPECT_EQ(cmap2_.nb_cells<Edge::ORBIT>(), 30);
-	EXPECT_EQ(cmap2_.nb_cells<Face::ORBIT>(), 10);
-	EXPECT_EQ(cmap2_.nb_cells<Volume::ORBIT>(), 10);
-
-	for (uint32 i=0; i<10; ++i)
-	{
 		cmap_.add_face(3);
 	}
+	EXPECT_TRUE(cmap_.check_map_integrity());
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 30);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 30);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 10);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 10);
 
+
+	embed_map();
+
+	for (uint32 i=0; i<10; ++i)
+	{
+		cmap_.add_face(3);
+	}
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 60);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 60);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 20);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 20);
+
 }
 
 TEST_F(CMap2TriTest, builder)
 {
-	MapBuilder builder(cmap2_);
-
+	MapBuilder builder(cmap_);
 	Dart d1 = builder.add_face_topo_parent(3);
 	Dart d2 = builder.add_face_topo_parent(3);
 
@@ -105,43 +113,144 @@ TEST_F(CMap2TriTest, builder)
 
 	builder.close_map();
 
-	EXPECT_EQ(cmap2_.nb_cells<Vertex::ORBIT>(), 4);
-	EXPECT_EQ(cmap2_.nb_cells<Edge::ORBIT>(), 5);
-	EXPECT_EQ(cmap2_.nb_cells<Face::ORBIT>(), 2);
-	EXPECT_EQ(cmap2_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
 }
 
 
 TEST_F(CMap2TriTest, flip)
 {
-	MapBuilder builder(cmap2_);
+	MapBuilder builder(cmap_);
+	Dart d1 = builder.add_face_topo_parent(3);
+	Dart d2 = builder.add_face_topo_parent(3);
+	builder.phi2_sew(d1,d2);
+	builder.close_map();
+
+	embed_map();
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.degree(Vertex(d1)), 3);
+	EXPECT_EQ(cmap_.degree(Vertex(d2)), 3);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d1))), 2);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d2))), 2);
+
+	cmap_.flip_edge(Edge(d1));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.degree(Vertex(d1)), 3);
+	EXPECT_EQ(cmap_.degree(Vertex(d2)), 3);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d1))), 2);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d2))), 2);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+}
+
+
+TEST_F(CMap2TriTest, collapse)
+{
+	MapBuilder builder(cmap_);
 
 	Dart d1 = builder.add_face_topo_parent(3);
 	Dart d2 = builder.add_face_topo_parent(3);
 
 	builder.phi2_sew(d1,d2);
+	builder.close_hole(cmap_.phi1(d1));
 
-	builder.close_map();
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 9);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
 
-	EXPECT_EQ(cmap2_.degree(Vertex(d1)), 3);
-	EXPECT_EQ(cmap2_.degree(Vertex(d2)), 3);
-	EXPECT_EQ(cmap2_.degree(Vertex(cmap2_.phi_1(d1))), 2);
-	EXPECT_EQ(cmap2_.degree(Vertex(cmap2_.phi_1(d2))), 2);
+	embed_map();
 
-	Dart  x = cmap2_.phi2(d1);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.degree(Vertex(d1)), 4);
+	EXPECT_EQ(cmap_.degree(Vertex(d2)), 4);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d1))), 3);
+	EXPECT_EQ(cmap_.degree(Vertex(cmap_.phi_1(d2))), 3);
 
-	cmap2_.flip_edge(Edge(d1));
 
-	EXPECT_EQ(cmap2_.degree(Vertex(d1)), 3);
-	EXPECT_EQ(cmap2_.degree(Vertex(d2)), 3);
-	EXPECT_EQ(cmap2_.degree(Vertex(cmap2_.phi_1(d1))), 2);
-	EXPECT_EQ(cmap2_.degree(Vertex(cmap2_.phi_1(d2))), 2);
+	Vertex nv = cmap_.collapse_edge(Edge(d1));
 
-	EXPECT_EQ(cmap2_.nb_cells<Vertex::ORBIT>(), 4);
-	EXPECT_EQ(cmap2_.nb_cells<Edge::ORBIT>(), 5);
-	EXPECT_EQ(cmap2_.nb_cells<Face::ORBIT>(), 2);
-	EXPECT_EQ(cmap2_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.degree(nv), 4);
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
 }
 
+
+TEST_F(CMap2TriTest, split_triangle)
+{
+
+	embed_map();
+	Face f=cmap_.add_face(3);
+
+	Vertex center = cmap_.split_triangle(f);
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 3);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_EQ(cmap_.degree(center), 3);
+}
+
+TEST_F(CMap2TriTest, split_vertex)
+{
+	MapBuilder builder(cmap_);
+	Dart d1 = builder.add_face_topo_parent(3);
+	builder.close_hole(cmap_.phi1(d1));
+	embed_map();
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+
+	Vertex v1(d1);
+	Vertex v2(cmap_.phi2(cmap_.phi_1(d1)));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	Edge e = cmap_.split_vertex(v1,v2);
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 9);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+}
+
+TEST_F(CMap2TriTest, cut_edge)
+{
+	MapBuilder builder(cmap_);
+
+	Dart d1 = builder.add_face_topo_parent(3);
+	Dart d2 = builder.add_face_topo_parent(3);
+
+	builder.phi2_sew(d1,d2);
+	builder.close_map();
+
+	embed_map();
+
+	Vertex nv = cmap_.cut_edge(Edge(d1));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.degree(nv), 4);
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 8);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+}
 
 } // namespace cgogn
