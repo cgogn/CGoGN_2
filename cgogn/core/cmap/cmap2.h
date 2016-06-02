@@ -82,6 +82,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
 protected:
 
@@ -89,7 +91,7 @@ protected:
 
 	inline void init()
 	{
-		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
+		phi2_ = this->topology_.template add_chunk_array<Dart>("phi2");
 	}
 
 public:
@@ -555,7 +557,7 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			uint32 emb = this->get_embedding(v);
+			uint32 emb = this->embedding(v);
 			foreach_dart_of_orbit(v, [this, emb] (Dart d) { this->template set_embedding<Vertex>(d, emb); });
 		}
 
@@ -668,8 +670,8 @@ protected:
 		this->set_boundary(e, true);
 		this->set_boundary(ee, true);
 
-		Dart f = this->get_boundary_dart(Vertex(d));
-		Dart ff = this->get_boundary_dart(Vertex(dd));
+		Dart f = this->boundary_dart(Vertex(d));
+		Dart ff = this->boundary_dart(Vertex(dd));
 
 		if(!f.is_nil())
 			this->phi1_sew(e, this->phi_1(f));
@@ -849,7 +851,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -872,7 +874,7 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -922,7 +924,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -938,7 +940,7 @@ protected:
 				{
 					if (!f(it)) // apply the function to the darts of the face
 					{
-						cgogn::get_dart_buffers()->release_buffer(visited_faces);
+						cgogn::dart_buffers()->release_buffer(visited_faces);
 						return;
 					}
 					marker.mark(it);				// Mark
@@ -949,7 +951,7 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>

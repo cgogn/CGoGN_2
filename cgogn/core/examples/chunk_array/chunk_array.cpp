@@ -22,8 +22,8 @@ int test1()
 	std::cout << "############### TEST 1 ###############" << std::endl;
 
 	ChunkArrayContainer<uint32> container;
-	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<float32>* att2 = container.add_attribute<float32>("reel");
+	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<float32>* att2 = container.add_chunk_array<float32>("reel");
 
 	for (uint32 i = 0; i < 41; ++i)
 		container.insert_lines<1>();
@@ -37,7 +37,6 @@ int test1()
 	container.remove_lines<1>(3);
 	container.remove_lines<1>(19);
 	container.remove_lines<1>(35);
-
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 	{
@@ -87,7 +86,7 @@ int test2()
 	std::cout << "############### TEST 2 ###############" << std::endl;
 
 	ChunkArrayContainer<unsigned char> container;
-	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
+	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
 
 	for (uint32 i = 0; i < 13; ++i)
 		container.insert_lines<3>();
@@ -143,7 +142,7 @@ int test2()
 		std::cout << i << ": " << (*att1)[i] << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
 
-	ChunkArray<bool>* attB = container.add_attribute<bool>("bools");
+	ChunkArray<bool>* attB = container.add_chunk_array<bool>("bools");
 
 	for(uint32 i = container.begin(); i != container.end(); container.next(i))
 		std::cout << i << ": " << (*att1)[i]<< " / "<< (*attB)[i] << std::endl;
@@ -157,9 +156,9 @@ int test3()
 	std::cout << "############### TEST 3 ###############" << std::endl;
 
 	ChunkArrayContainer<bool> container;
-	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<std::vector<int32> >* att2 = container.add_attribute<std::vector<int32> >("V_entier");
-	ChunkArray<std::list<int32> >* att3 = container.add_attribute<std::list<int32> >("L_entier");
+	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<std::vector<int32> >* att2 = container.add_chunk_array<std::vector<int32> >("V_entier");
+	ChunkArray<std::list<int32> >* att3 = container.add_chunk_array<std::list<int32> >("L_entier");
 
 	for (uint32 i = 0; i < 13; ++i)
 		container.insert_lines<3>();
@@ -214,11 +213,11 @@ int test4()
 	using vecvecdouble = std::vector< std::vector< float64 > >;
 	using veclistdouble = std::vector< std::list< float64 > >;
 	ChunkArrayContainer<uint32> container;
-	ChunkArray<int32>* att1 = container.add_attribute<int32>("entier");
-	ChunkArray<float32>* att2 = container.add_attribute<float32>("reel");
-	ChunkArray<bool>* att3 = container.add_attribute<bool>("bools");
-	ChunkArray<vecvecdouble>* att4 = container.add_attribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<veclistdouble>* att5 = container.add_attribute<veclistdouble>("veclistdouble");
+	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<float32>* att2 = container.add_chunk_array<float32>("reel");
+	ChunkArray<bool>* att3 = container.add_chunk_array<bool>("bools");
+	ChunkArray<vecvecdouble>* att4 = container.add_chunk_array<vecvecdouble>("vecvecdouble");
+	ChunkArray<veclistdouble>* att5 = container.add_chunk_array<veclistdouble>("veclistdouble");
 
 	for (uint32 i = 0u; i < 7u; ++i)
 		container.insert_lines<3>();
@@ -244,13 +243,13 @@ int test4()
 	cont2.load(ifi);
 	ifi.close();
 
-	ChunkArray<int32>* load_att1 = cont2.get_attribute<int32>("entier");
-	ChunkArray<float32>* load_att2 = cont2.get_attribute<float32>("reel");
-	ChunkArray<bool>* load_att3 = cont2.get_attribute<bool>("bools");
-	ChunkArray<vecvecdouble>* load_att4 = cont2.get_attribute<vecvecdouble>("vecvecdouble");
-	ChunkArray<veclistdouble>* load_att5 = cont2.get_attribute<veclistdouble>("veclistdouble");
+	ChunkArray<int32>* load_att1 = cont2.get_chunk_array<int32>("entier");
+	ChunkArray<float32>* load_att2 = cont2.get_chunk_array<float32>("reel");
+	ChunkArray<bool>* load_att3 = cont2.get_chunk_array<bool>("bools");
+	ChunkArray<vecvecdouble>* load_att4 = cont2.get_chunk_array<vecvecdouble>("vecvecdouble");
+	ChunkArray<veclistdouble>* load_att5 = cont2.get_chunk_array<veclistdouble>("veclistdouble");
 
-	for(uint32 i = cont2.begin(); i != cont2.end(); cont2.next(i))
+	for (uint32 i = cont2.begin(); i != cont2.end(); cont2.next(i))
 	{
 		std::cout << i << ": " << (*load_att1)[i] << " / " << (*load_att2)[i] << " / " <<  (*load_att3)[i] << " / ";
 		for (const auto& v : (*load_att4)[i])

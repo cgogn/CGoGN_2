@@ -46,9 +46,9 @@ struct VolumeMeshFromImageCGALTraits
 	using Image			= CGAL::Image_3;
 	using Kernel		= CGAL::Exact_predicates_inexact_constructions_kernel;
 	using Domain		= CGAL::Labeled_image_mesh_domain_3<Image, Kernel>;
-	using Triangulation	= typename CGAL::Mesh_triangulation_3<Domain>::type;
+	using Triangulation	= CGAL::Mesh_triangulation_3<Domain>::type;
 	using Criteria		= CGAL::Mesh_criteria_3<Triangulation>;
-	using C3T3			= typename CGAL::Mesh_complex_3_in_triangulation_3<Triangulation>;
+	using C3T3			= CGAL::Mesh_complex_3_in_triangulation_3<Triangulation>;
 };
 
 
@@ -78,7 +78,7 @@ protected:
 	{
 		const Triangulation& triangulation = cpx_.triangulation();
 		std::map<Vertex_handle, unsigned int> vertices_indices;
-		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 
 		const uint32 num_vertices = triangulation.number_of_vertices();
 		const uint32 num_cells = cpx_.number_of_cells_in_complex();
@@ -97,10 +97,10 @@ protected:
 		for (auto cit = cpx_.cells_in_complex_begin(), cend = cpx_.cells_in_complex_end(); cit != cend; ++cit)
 			this->add_tetra(*position, vertices_indices[cit->vertex(0)], vertices_indices[cit->vertex(1)], vertices_indices[cit->vertex(2)], vertices_indices[cit->vertex(3)], true);
 
-		ChunkArray<int32>* subdomain_indices = this->get_volume_attributes_container().template add_attribute<int32>("subdomain index");
+		ChunkArray<int32>* subdomain_indices = this->volume_attributes_container().template add_chunk_array<int32>("subdomain index");
 		for (auto cit = cpx_.cells_in_complex_begin(), cend = cpx_.cells_in_complex_end(); cit != cend; ++cit)
 		{
-			const uint32 id = this->get_volume_attributes_container().template insert_lines<1>();
+			const uint32 id = this->volume_attributes_container().template insert_lines<1>();
 			subdomain_indices->operator [](id) = cpx_.subdomain_index(cit);
 		}
 

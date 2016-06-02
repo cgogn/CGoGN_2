@@ -40,12 +40,12 @@ static const uint32 DEFAULT_CHUNK_SIZE = 4096;
 /**
  * @brief Virtual version of ChunkArray
  */
-template <uint32 CHUNKSIZE>
+template <uint32 CHUNK_SIZE>
 class ChunkArrayGen
 {
 public:
 
-	using Self = ChunkArrayGen<CHUNKSIZE>;
+	using Self = ChunkArrayGen<CHUNK_SIZE>;
 
 	inline ChunkArrayGen(const std::string& name, const std::string& type_name) :
 		name_(name),
@@ -78,13 +78,13 @@ public:
 		}
 	}
 
-	inline const std::string& get_name() const { return name_; }
+	inline const std::string& name() const { return name_; }
 
-	inline const std::string& get_type_name() const { return type_name_; }
+	inline const std::string& type_name() const { return type_name_; }
 
-	virtual std::string get_nested_type_name() const = 0;
+	virtual std::string nested_type_name() const = 0;
 
-	virtual uint32 get_nb_components() const = 0;
+	virtual uint32 nb_components() const = 0;
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
@@ -112,7 +112,7 @@ public:
 //	virtual bool is_boolean_array() const = 0;
 
 	/**
-	 * @brief add a chunk (T[CHUNKSIZE])
+	 * @brief add a chunk (T[CHUNK_SIZE])
 	 */
 	virtual void add_chunk() = 0;
 
@@ -126,7 +126,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	virtual uint32 get_nb_chunks() const = 0;
+	virtual uint32 nb_chunks() const = 0;
 
 	/**
 	 * @brief get the capacity of the array
@@ -142,10 +142,10 @@ public:
 	/**
 	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
+	virtual uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())

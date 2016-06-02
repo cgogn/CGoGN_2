@@ -47,23 +47,23 @@ namespace cgogn
 
 /**
  * @brief class that manage the storage of several ChunkArray
- * @tparam CHUNKSIZE chunk size for ChunkArray
+ * @tparam CHUNK_SIZE chunk size for ChunkArray
  */
-template <uint32 CHUNKSIZE, typename T_REF>
+template <uint32 CHUNK_SIZE, typename T_REF>
 class ChunkArrayContainer
 {
 public:
 
-	using Self = ChunkArrayContainer<CHUNKSIZE, T_REF>;
+	using Self = ChunkArrayContainer<CHUNK_SIZE, T_REF>;
 	using ref_type = T_REF;
 
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	template <class T>
-	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 	template <class T>
-	using ChunkStack = cgogn::ChunkStack<CHUNKSIZE, T>;
-	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNKSIZE>;
+	using ChunkStack = cgogn::ChunkStack<CHUNK_SIZE, T>;
+	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNK_SIZE>;
 
 	/**
 	* constante d'attribut inconnu
@@ -107,16 +107,16 @@ protected:
 	uint32 nb_max_lines_;
 
 	/**
-	 * @brief get array index from name
+	 * @brief get chunk array index from name
 	 * @warning do not store index (not stable)
-	 * @param attribName name of ChunkArray
+	 * @param name name of ChunkArray
 	 * @return the index in table
 	 */
-	uint32 get_array_index(const std::string& attribute_name) const
+	uint32 array_index(const std::string& name) const
 	{
 		for (uint32 i = 0u; i != names_.size(); ++i)
 		{
-			if (names_[i] == attribute_name)
+			if (names_[i] == name)
 				return i;
 		}
 		return UNKNOWN;
@@ -128,7 +128,7 @@ protected:
 	 * @param ptr of ChunkArray
 	 * @return the index in table
 	 */
-	uint32 get_array_index(const ChunkArrayGen* ptr) const
+	uint32 array_index(const ChunkArrayGen* ptr) const
 	{
 		for (uint32 i = 0u; i != table_arrays_.size(); ++i)
 		{
@@ -139,10 +139,10 @@ protected:
 	}
 
 	/**
-	 * @brief remove an attribute by its index
-	 * @param index index of attribute to remove
+	 * @brief remove a chunk array by its index
+	 * @param index index of chunk array to remove
 	 */
-	void remove_attribute(uint32 index)
+	void remove_chunk_array(uint32 index)
 	{
 		// store ptr for using it before delete
 		ChunkArrayGen* ptr_to_del = table_arrays_[index];
@@ -166,7 +166,7 @@ public:
 	/**
 	 * @brief ChunkArrayContainer constructor
 	 */
-	ChunkArrayContainer():
+	ChunkArrayContainer() :
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
 	{}
@@ -185,36 +185,36 @@ public:
 			delete ptr;
 	}
 
-	const std::vector<std::string>& get_names() const { return names_; }
-	const std::vector<std::string>& get_type_names() const { return type_names_; }
+	const std::vector<std::string>& names() const { return names_; }
+	const std::vector<std::string>& type_names() const { return type_names_; }
 
 	/**
-	 * @brief get an attribute
-	 * @param attribute_name name of attribute
+	 * @brief get a chunk array
+	 * @param name name of attribute
 	 * @tparam T type of attribute
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* get_attribute(const std::string& attribute_name) const
+	ChunkArray<T>* get_chunk_array(const std::string& name) const
 	{
 		// first check if attribute already exists
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 
 		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
-	ChunkArrayGen* get_attribute(const std::string& attribute_name) const
+	ChunkArrayGen* get_chunk_array(const std::string& name) const
 	{
 		// first check if attribute already exists
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_attribute") << "Attribute \"" << attribute_name << "\" not found.";
+			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 
@@ -222,85 +222,85 @@ public:
 	}
 
 	/**
-	 * @brief get all attributes (generic pointers)
+	 * @brief get all chunk arrays (generic pointers)
 	 * @return
 	 */
-	inline std::vector<ChunkArrayGen*>& get_attributes()
+	inline std::vector<ChunkArrayGen*>& chunk_arrays()
 	{
 		return table_arrays_;
 	}
 
 	/**
 	 * @brief add an attribute
-	 * @param attribute_name name of attribute
-	 * @tparam T type of attribute
-	 * @return pointer on created attribute ChunkArray
+	 * @param name name of chunk array
+	 * @tparam T type of chunk array data
+	 * @return pointer on created ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* add_attribute(const std::string& attribute_name)
+	ChunkArray<T>* add_chunk_array(const std::string& name)
 	{
-		cgogn_assert(attribute_name.size() != 0);
+		cgogn_assert(name.size() != 0);
 
 		// first check if attribute already exist
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(name);
 		if (index != UNKNOWN)
 		{
-			cgogn_log_warning("add_attribute") << "Attribute \"" << attribute_name << "\" already exists.";
+			cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists.";
 			return nullptr;
 		}
 
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>(attribute_name);
+		ChunkArray<T>* carr = new ChunkArray<T>(name);
 		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
-		carr->set_nb_chunks(refs_.get_nb_chunks());
+		carr->set_nb_chunks(refs_.nb_chunks());
 
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
-		names_.push_back(attribute_name);
+		names_.push_back(name);
 		type_names_.push_back(type_name);
 
 		return carr;
 	}
 
 	/**
-	 * @brief remove an attribute by its name
-	 * @param attribute_name name of attribute to remove
-	 * @return true if attribute exists and has been removed
+	 * @brief remove a chunk array by its name
+	 * @param name name of chunk array to remove
+	 * @return true if chunk array exists and has been removed
 	 */
-	bool remove_attribute(const std::string& attribute_name)
+	bool remove_chunk_array(const std::string& name)
 	{
-		uint32 index = get_array_index(attribute_name);
+		uint32 index = array_index(name);
 
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("remove_attribute_by_name") << "Attribute \""<< attribute_name << "\" not found.";
+			cgogn_log_warning("remove_chunk_array") << "Chunk array of name \""<< name << "\" not found.";
 			return false;
 		}
 
-		remove_attribute(index);
+		remove_chunk_array(index);
 
 		return true;
 	}
 
 	/**
-	 * @brief remove an attribute by its ChunkArray pointer
-	 * @param ptr ChunkArray pointer to the attribute to remove
-	 * @return true if attribute exists and has been removed
+	 * @brief remove a chunk array by pointer
+	 * @param ptr of the chunk array to remove
+	 * @return true if chunk array exists and has been removed
 	 */
-	bool remove_attribute(const ChunkArrayGen* ptr)
+	bool remove_chunk_array(const ChunkArrayGen* ptr)
 	{
-		uint32 index = get_array_index(ptr);
+		uint32 index = array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("remove_attribute_by_ptr") << "Attribute not found.";
+			cgogn_log_warning("remove_chunk_array") << "Chunk array not found.";
 			return false;
 		}
 
-		remove_attribute(index);
+		remove_chunk_array(index);
 
 		return true;
 	}
@@ -311,10 +311,10 @@ public:
 	 * @param ptr2 pointer to second chunk array
 	 * @return
 	 */
-	bool swap_data_attributes(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	bool swap_data(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
-		uint32 index1 = get_array_index(ptr1);
-		uint32 index2 = get_array_index(ptr2);
+		uint32 index1 = array_index(ptr1);
+		uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
@@ -334,10 +334,10 @@ public:
 	}
 
 	template <typename T>
-	bool copy_data_attribute(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	bool copy_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
-		uint32 dest_index = get_array_index(dest);
-		uint32 src_index = get_array_index(src);
+		uint32 dest_index = array_index(dest);
+		uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
@@ -367,7 +367,7 @@ public:
 	ChunkArrayBool* add_marker_attribute()
 	{
 		ChunkArrayBool* mca = new ChunkArrayBool();
-		mca->set_nb_chunks(refs_.get_nb_chunks());
+		mca->set_nb_chunks(refs_.nb_chunks());
 		table_marker_arrays_.push_back(mca);
 		return mca;
 	}
@@ -393,10 +393,10 @@ public:
 	}
 
 	/**
-	 * @brief Number of attributes of the container
-	 * @return number of attributes
+	 * @brief Number of chunk arrays of the container
+	 * @return number of chunk arrays
 	 */
-	std::size_t get_nb_attributes() const
+	std::size_t nb_chunk_arrays() const
 	{
 		return table_arrays_.size();
 	}
@@ -500,9 +500,8 @@ public:
 
 	/**
 	 * @brief clear the container
-	 * @param remove_attributes remove the attributes (not only their data)
 	 */
-	void clear_attributes()
+	void clear_chunk_arrays()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -520,7 +519,7 @@ public:
 			ca_bool->clear();
 	}
 
-	void remove_attributes()
+	void remove_chunk_arrays()
 	{
 		nb_used_lines_ = 0u;
 		nb_max_lines_ = 0u;
@@ -567,7 +566,7 @@ public:
 	 * @brief container compacting
 	 * @return map_old_new vector that contains a map from old indices to new indices (holes & unchanged -> 0xffffffff)
 	 */
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	std::vector<uint32> compact()
 	{
 		if (this->holes_stack_.empty())
@@ -580,20 +579,20 @@ public:
 		{
 			down = holes_stack_.head();
 			if (down < nb_used_lines_)
-				for(uint32 i = 0u; i < PRIMSIZE; ++i)
+				for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 				{
-					const uint32 rdown = down + PRIMSIZE-1u - i;
+					const uint32 rdown = down + PRIM_SIZE - 1u - i;
 					map_old_new[up] = rdown;
 					move_line(rdown, up,true,true);
 					rnext(up);
 				}
 			holes_stack_.pop();
-		}while (!holes_stack_.empty());
+		} while (!holes_stack_.empty());
 
 		// free unused memory blocks
-		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 old_nb_blocks = this->nb_max_lines_/CHUNK_SIZE + 1u;
 		nb_max_lines_ = nb_used_lines_;
-		const uint32 new_nb_blocks = nb_max_lines_/CHUNKSIZE + 1u;
+		const uint32 new_nb_blocks = nb_max_lines_/CHUNK_SIZE + 1u;
 
 		if (old_nb_blocks == new_nb_blocks)
 			return map_old_new;
@@ -608,7 +607,6 @@ public:
 
 		return map_old_new;
 	}
-
 
 	bool check_before_merge(const Self& cac)
 	{
@@ -628,15 +626,14 @@ public:
 		return true;
 	}
 
-
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	std::vector<uint32> merge(const Self& cac)
 	{
 		// mapping table of ca indices of cac in this
 		std::vector<uint32> map_attrib(cac.names_.size());
 
 		// First check & find missing attributes
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
 			if (j == names_.size()) // attrib not in this
@@ -646,7 +643,7 @@ public:
 				map_attrib[i] = uint32(table_arrays_.size());
 				auto cag = ChunkArrayFactory::create(type_name,name);
 				cgogn_assert(cag);
-				cag->set_nb_chunks(refs_.get_nb_chunks());
+				cag->set_nb_chunks(refs_.nb_chunks());
 				table_arrays_.push_back(cag.release());
 				names_.push_back(name);
 				type_names_.push_back(type_name);
@@ -657,17 +654,17 @@ public:
 		}
 
 		// check if nothing to do
-		if (cac.size()==0)
+		if (cac.size() == 0)
 			return std::vector<uint32>();
 
 		// line mapping
-		std::vector<uint32> map_old_new(cac.rbegin()+1u, std::numeric_limits<uint32>::max());
+		std::vector<uint32> map_old_new(cac.rbegin() + 1u, std::numeric_limits<uint32>::max());
 
 		// copy data
-		for (uint32 it=cac.begin(); it!= cac.end(); cac.next(it))
+		for (uint32 it = cac.begin(); it != cac.end(); cac.next(it))
 		{
-			uint32 new_lines = this->insert_lines<PRIMSIZE>();
-			for(uint32 j = 0u; j < PRIMSIZE; ++j)
+			uint32 new_lines = this->insert_lines<PRIM_SIZE>();
+			for(uint32 j = 0u; j < PRIM_SIZE; ++j)
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
@@ -676,7 +673,7 @@ public:
 				for (uint32 k=0; k<nb_att; ++k)
 					table_arrays_[map_attrib[k]]->copy_external_element(nl, cac.table_arrays_[k], ol);
 			}
-			it += PRIMSIZE-1u;
+			it += PRIM_SIZE-1u;
 		}
 
 		return map_old_new;
@@ -697,13 +694,13 @@ public:
 	}
 
 	/**
-	* @brief insert a group of PRIMSIZE consecutive lines in the container
+	* @brief insert a group of PRIM_SIZE consecutive lines in the container
 	* @return index of the first line of group
 	*/
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	uint32 insert_lines()
 	{
-		static_assert(PRIMSIZE < CHUNKSIZE, "Cannot insert lines in a container if PRIMSIZE < CHUNKSIZE");
+		static_assert(PRIM_SIZE < CHUNK_SIZE, "Cannot insert lines in a container if PRIM_SIZE < CHUNK_SIZE");
 
 		uint32 index;
 
@@ -718,9 +715,9 @@ public:
 				refs_.add_chunk();
 			}
 
-			if ((nb_max_lines_ + PRIMSIZE) % CHUNKSIZE < PRIMSIZE) // prim does not fit on current chunk? -> add chunk
+			if ((nb_max_lines_ + PRIM_SIZE) % CHUNK_SIZE < PRIM_SIZE) // prim does not fit on current chunk? -> add chunk
 			{
-				// nb_max_lines_ = refs_.get_nb_chunks() * CHUNKSIZE; // next index will be at start of new chunk
+				// nb_max_lines_ = refs_.nb_chunks() * CHUNK_SIZE; // next index will be at start of new chunk
 
 				for (auto arr : table_arrays_)
 					arr->add_chunk();
@@ -730,7 +727,7 @@ public:
 			}
 
 			index = nb_max_lines_;
-			nb_max_lines_ += PRIMSIZE;
+			nb_max_lines_ += PRIM_SIZE;
 		}
 		else
 		{
@@ -739,32 +736,32 @@ public:
 		}
 
 		// mark lines as used
-		for(uint32 i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 			refs_.set_value(index + i, 1u); // do not use [] in case of refs_ is bool
 
-		nb_used_lines_ += PRIMSIZE;
+		nb_used_lines_ += PRIM_SIZE;
 
 		return index;
 	}
 
 	/**
-	* @brief remove a group of PRIMSIZE lines in the container
+	* @brief remove a group of PRIM_SIZE lines in the container
 	* @param index index of one line of group to remove
 	*/
-	template <uint32 PRIMSIZE>
+	template <uint32 PRIM_SIZE>
 	void remove_lines(uint32 index)
 	{
-		uint32 begin_prim_idx = (index / PRIMSIZE) * PRIMSIZE;
+		uint32 begin_prim_idx = (index / PRIM_SIZE) * PRIM_SIZE;
 
 		cgogn_message_assert(used(begin_prim_idx), "Error removing non existing index");
 
 		holes_stack_.push(begin_prim_idx);
 
 		// mark lines as unused
-		for(uint32 i = 0u; i < PRIMSIZE; ++i)
+		for(uint32 i = 0u; i < PRIM_SIZE; ++i)
 			refs_.set_value(begin_prim_idx++, 0u); // do not use [] in case of refs_ is bool
 
-		nb_used_lines_ -= PRIMSIZE;
+		nb_used_lines_ -= PRIM_SIZE;
 	}
 
 	/**
@@ -836,23 +833,23 @@ public:
 	}
 
 	/**
-	* @brief increment the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief increment the reference counter of the given line (only for PRIM_SIZE==1)
 	* @param index index of the line
 	*/
 	void ref_line(uint32 index)
 	{
-		// static_assert(PRIMSIZE == 1u, "refLine with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "refLine with container where PRIM_SIZE!=1");
 		refs_[index]++;
 	}
 
 	/**
-	* @brief decrement the reference counter of the given line (only for PRIMSIZE==1)
+	* @brief decrement the reference counter of the given line (only for PRIM_SIZE==1)
 	* @param index index of the line
 	* @return true if the line was removed
 	*/
 	bool unref_line(uint32 index)
 	{
-		// static_assert(PRIMSIZE == 1u, "unrefLine with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "unrefLine with container where PRIM_SIZE!=1");
 		cgogn_message_assert(refs_[index] > 1u, "Container: unref line with nb_ref == 1");
 
 		refs_[index]--;
@@ -871,9 +868,9 @@ public:
 	* @param index index of the line
 	* @return number of references of the line
 	*/
-	T_REF get_nb_refs(uint32 index) const
+	T_REF nb_refs(uint32 index) const
 	{
-		// static_assert(PRIMSIZE == 1u, "getNbRefs with container where PRIMSIZE!=1");
+		// static_assert(PRIM_SIZE == 1u, "getNbRefs with container where PRIM_SIZE!=1");
 		return refs_[index];
 	}
 

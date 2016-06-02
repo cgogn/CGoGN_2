@@ -37,10 +37,11 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
+template <typename MAP_TRAITS, typename VEC3>
 class TetgenStructureVolumeImport : public VolumeImport<MAP_TRAITS>
 {
 public:
+
 	using Inherit = VolumeImport<MAP_TRAITS>;
 	using Self = TetgenStructureVolumeImport<MAP_TRAITS,VEC3>;
 
@@ -48,42 +49,43 @@ public:
 	{
 		volume_ = tetgen_output;
 	}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TetgenStructureVolumeImport);
 
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 protected:
+
 	virtual bool import_file_impl(const std::string& /*filename*/) override
 	{
-
 		this->set_nb_vertices(volume_->numberofpoints);
 		this->set_nb_volumes(volume_->numberoftetrahedra);
 
-		if (this->get_nb_vertices() == 0u || this->get_nb_volumes()== 0u)
+		if (this->nb_vertices() == 0u || this->nb_volumes()== 0u)
 		{
 			cgogn_log_warning("TetgenStructureVolumeImport") << "Error while importing data.";
 			this->clear();
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->template get_position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 		//create vertices
 		std::vector<uint32> vertices_indices;
 		float64* p = volume_->pointlist ;
 
-		for(uint32 i = 0u, end = this->get_nb_vertices(); i < end; ++i)
+		for(uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
 		{
 			const unsigned id = this->insert_line_vertex_container();
-			position->operator [](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
+			position->operator[](id) = VEC3(Scalar(p[0]), Scalar(p[1]), Scalar(p[2]));
 			vertices_indices.push_back(id);
 			p += 3 ;
 		}
 
 		//create tetrahedrons
 		int* t = volume_->tetrahedronlist ;
-		for(uint32 i = 0u, end = this->get_nb_volumes(); i < end; ++i)
+		for(uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
 		{
 			std::array<uint32,4> ids;
 			for(uint32 j = 0u; j < 4u; j++)
@@ -94,7 +96,9 @@ protected:
 
 		return true;
 	}
+
 private:
+
 	tetgenio* volume_;
 };
 
@@ -119,10 +123,10 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 
 	//for each vertex
 
-	map.foreach_cell([&output,&map,&pos](Vertex v)
+	map.foreach_cell([&output, &map, &pos] (Vertex v)
 	{
 		const VEC3& vec = pos[v];
-		const uint32 emb = map.get_embedding(v);
+		const uint32 emb = map.embedding(v);
 		output->pointlist[3u*emb + 0u] = vec[0];
 		output->pointlist[3u*emb + 1u] = vec[1];
 		output->pointlist[3u*emb + 2u] = vec[2];
@@ -132,8 +136,8 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 	output->facetlist = new tetgenio::facet[output->numberoffacets] ;
 
 	//for each facet
-	uint32 i = 0u;i = 0u;
-	map.foreach_cell([&output,&i,&map](Face face)
+	uint32 i = 0u;
+	map.foreach_cell([&output, &i, &map] (Face face)
 	{
 		tetgenio::facet* f = &(output->facetlist[i]);
 		tetgenio::init(f);
@@ -145,9 +149,9 @@ std::unique_ptr<tetgenio> export_tetgen(CMap2<MAP_TRAITS>& map, const typename C
 		p->vertexlist = new int[p->numberofvertices];
 
 		uint32 j = 0u;
-		map.foreach_incident_vertex(face, [&p,&map,&j](Vertex v)
+		map.foreach_incident_vertex(face, [&p, &map, &j] (Vertex v)
 		{
-			p->vertexlist[j++] = map.get_embedding(v);
+			p->vertexlist[j++] = map.embedding(v);
 		});
 
 		++i;
@@ -164,6 +168,7 @@ extern template class CGOGN_IO_API TetgenStructureVolumeImport<DefaultMapTraits,
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_STRUCTURE_IO_CPP))
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_TETGEN_STRUCTURE_IO_H

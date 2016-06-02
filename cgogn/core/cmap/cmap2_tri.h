@@ -89,7 +89,7 @@ protected:
 
 	inline void init()
 	{
-		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
+		phi2_ = this->topology_.template add_chunk_array<Dart>("phi2");
 	}
 
 public:
@@ -514,7 +514,7 @@ public:
 		Vertex v(d1);
 		if (this->template is_embedded<Vertex>())
 		{
-			uint32 emb = this->get_embedding(v);
+			uint32 emb = this->embedding(v);
 			foreach_dart_of_orbit(v, [this, emb] (Dart d) { this->template set_embedding<Vertex>(d, emb); });
 		}
 
@@ -614,7 +614,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			uint32 emb = this->get_embedding(Volume(this->template phi<12>(res_edge.dart)));
+			uint32 emb = this->embedding(Volume(this->template phi<12>(res_edge.dart)));
 			foreach_incident_face(res_edge, [this, emb] (Face nf)
 			{
 				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
@@ -719,7 +719,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			uint32 emb = this->get_embedding(Volume(this->template phi<12>(nv.dart)));
+			uint32 emb = this->embedding(Volume(this->template phi<12>(nv.dart)));
 			foreach_incident_face(nv, [this, emb] (Face nf)
 			{
 				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
@@ -812,7 +812,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			uint32 emb = this->get_embedding(Volume(this->template phi<12>(vc.dart)));
+			uint32 emb = this->embedding(Volume(this->template phi<12>(vc.dart)));
 			foreach_incident_face(vc, [this, emb] (Face nf)
 			{
 				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
@@ -975,7 +975,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -998,7 +998,7 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>
@@ -1061,7 +1061,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -1077,7 +1077,7 @@ protected:
 				{
 					if (!f(it)) // apply the function to the darts of the face
 					{
-						cgogn::get_dart_buffers()->release_buffer(visited_faces);
+						cgogn::dart_buffers()->release_buffer(visited_faces);
 						return;
 					}
 					marker.mark(it);				// Mark
@@ -1088,7 +1088,7 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <Orbit ORBIT, typename FUNC>

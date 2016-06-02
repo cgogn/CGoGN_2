@@ -89,8 +89,8 @@ inline void import_volume(cgogn::CMap3<MAP_TRAITS>& cmap3, const std::string& fi
 template <typename MAP_TRAITS, typename VEC3>
 inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::string& filename)
 {
-	const FileType file_type = get_file_type(filename);
-	switch (file_type)
+	const FileType ft = file_type(filename);
+	switch (ft)
 	{
 		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_VTK_LEGACY:
@@ -99,7 +99,7 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP_TRAITS, VEC3>>();
 		default:
-			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << get_extension(filename) << "\".";
+			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceImport<MAP_TRAITS>> ();
 	}
 }
@@ -107,8 +107,8 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 template <typename MAP_TRAITS, typename VEC3>
 inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::string& filename)
 {
-	const FileType file_type = get_file_type(filename);
-	switch (file_type)
+	const FileType ft = file_type(filename);
+	switch (ft)
 	{
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<MAP_TRAITS, VEC3>>();
@@ -118,10 +118,11 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP_TRAITS, VEC3>>();
 		default:
-			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << get_extension(filename) << "\".";
+			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeImport<MAP_TRAITS>> ();
 	}
 }
+
 } // namespace io
 
 } // namespace cgogn

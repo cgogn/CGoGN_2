@@ -82,8 +82,8 @@ enum VolumeType
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
 CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
-CGOGN_IO_API FileType						get_file_type(const std::string& filename);
-CGOGN_IO_API DataType						get_data_type(const std::string& type_name);
+CGOGN_IO_API FileType						file_type(const std::string& filename);
+CGOGN_IO_API DataType						data_type(const std::string& type_name);
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
@@ -94,7 +94,7 @@ namespace internal
 {
 
 // #1 return default value when U and T don't have the same nb of components.
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value,U>::type
 {
 	cgogn_log_warning("convert") << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\".";
@@ -102,14 +102,14 @@ inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::int
 }
 
 // #2 cast x if both types have only one component.
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T&x) -> typename std::enable_if<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,U>::type
 {
 	return U(x);
 }
 
 // #3 copy component by component if both type have the same number of components (>1)
-template<typename U, typename T>
+template <typename U, typename T>
 inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
 {
 	U res;
@@ -119,13 +119,13 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 }
 
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type swap_endianness(const T& x)
 {
 	return ::cgogn::swap_endianness(x);
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endianness(T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
@@ -133,14 +133,14 @@ inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endi
 	return x;
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
 	return iss;
 }
 
-template<typename T>
+template <typename T>
 inline typename std::enable_if<!std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
@@ -185,12 +185,15 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
 
 	virtual ~CharArrayBuffer();
+
 private:
+
 	virtual void imbue(const std::locale& __loc) override
 	{
 		cgogn_log_error("CharArrayBuffer::imbue") << "CharArrayBuffer::imbue method not implemented.";
 		return Inherit::imbue(__loc);
 	}
+
 	virtual Inherit*setbuf(char_type*, std::streamsize) override
 	{
 		cgogn_log_error("CharArrayBuffer::setbuf") << "CharArrayBuffer::setbuf does nothing.";
@@ -202,31 +205,37 @@ private:
 		cgogn_log_error("CharArrayBuffer::seekpos") << "CharArrayBuffer::setbuf does nothing.";
 		return pos_type(-1);
 	}
+
 	virtual int sync() override
 	{
 		cgogn_log_error("CharArrayBuffer::sync") << "CharArrayBuffer::sync does nothing.";
 		return Inherit::sync();
 	}
+
 	virtual std::streamsize showmanyc() override
 	{
 		return end_ - current_;
 	}
+
 	virtual std::streamsize xsgetn(char_type* __s, std::streamsize __n) override
 	{
 		return Inherit::xsgetn(__s, __n);
 	}
+
 	virtual int_type underflow() override
 	{
 		if (current_ == end_)
 			return traits_type::eof();
 		return traits_type::to_int_type(*current_);
 	}
+
 	virtual int_type uflow() override
 	{
 		if (current_ == end_)
 			return traits_type::eof();
 		return traits_type::to_int_type(*current_++);
 	}
+
 	virtual int_type pbackfail(int_type c) override
 	{
 		if (current_ == begin_ || (c != traits_type::eof() && c != current_[-1]))
@@ -234,17 +243,20 @@ private:
 
 		return traits_type::to_int_type(*--current_);
 	}
+
 	virtual std::streamsize xsputn(const char_type* , std::streamsize ) override
 	{
 		cgogn_log_error("CharArrayBuffer::xsputn") << "CharArrayBuffer::xsputn does nothing.";
 		return std::streamsize(-1);
 	}
+
 	virtual int_type overflow(int_type c) override
 	{
 		return Inherit::overflow(c);
 	}
 
 private:
+
 	const char* begin_;
 	const char* end_;
 	const char* current_;
@@ -258,6 +270,7 @@ private:
 class CGOGN_IO_API IMemoryStream : public std::istream
 {
 public:
+
 	using Inherit = std::istream;
 	using Self = IMemoryStream;
 
@@ -281,11 +294,14 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IMemoryStream);
 
 	virtual ~IMemoryStream() override;
+
 private:
+
 	CharArrayBuffer buffer_;
 };
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_IO_UTILS_H_

@@ -36,24 +36,28 @@ namespace cgogn
 namespace io
 {
 
-template<typename MAP_TRAITS, typename VEC3>
-class ObjSurfaceImport : public SurfaceImport<MAP_TRAITS> {
+template <typename MAP_TRAITS, typename VEC3>
+class ObjSurfaceImport : public SurfaceImport<MAP_TRAITS>
+{
 public:
+
 	using Self = ObjSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit = SurfaceImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	template<typename T>
+	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	inline ObjSurfaceImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjSurfaceImport);
-	virtual ~ObjSurfaceImport() override {}
+	virtual ~ObjSurfaceImport() override
+	{}
+
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position =
-				this->vertex_attributes_.template add_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
 		std::string line, tag;
 
@@ -159,6 +163,7 @@ extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OBJ_IO_CPP_))
 
 } // namespace io
+
 } // namespace cgogn
 
 #endif // CGOGN_IO_OBJ_IO_H_

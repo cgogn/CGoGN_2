@@ -113,6 +113,7 @@ template <typename MAP_TRAITS>
 class VolumeImport : public MeshImportGen
 {
 public:
+
 	using Self = VolumeImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
 	using Map = CMap3<MAP_TRAITS>;
@@ -131,7 +132,8 @@ public:
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 	using MapBuilder = cgogn::CMap3Builder_T<typename Map::MapTraits>;
 
-	virtual ~VolumeImport() override {}
+	virtual ~VolumeImport() override
+	{}
 
 private:
 
@@ -151,7 +153,7 @@ protected:
 		nb_vertices_ = nbv;
 	}
 
-	inline uint32 get_nb_vertices() const
+	inline uint32 nb_vertices() const
 	{
 		return nb_vertices_;
 	}
@@ -163,19 +165,19 @@ protected:
 		volumes_vertex_indices_.reserve(8u * nbw);
 	}
 
-	inline uint32 get_nb_volumes() const
+	inline uint32 nb_volumes() const
 	{
 		return nb_volumes_;
 	}
 
-	template<typename VEC3>
-	inline ChunkArray<VEC3>* get_position_attribute()
+	template <typename VEC3>
+	inline ChunkArray<VEC3>* position_attribute()
 	{
-		auto res = this->vertex_attributes_.template add_attribute<VEC3>("position");
+		auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 		if (res != nullptr)
 			return res;
 		else
-			return this->vertex_attributes_.template get_attribute<VEC3>("position");
+			return this->vertex_attributes_.template get_chunk_array<VEC3>("position");
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -183,12 +185,12 @@ protected:
 		return vertex_attributes_.template insert_lines<1>();
 	}
 
-	inline ChunkArrayContainer& get_vertex_attributes_container()
+	inline ChunkArrayContainer& vertex_attributes_container()
 	{
 		return vertex_attributes_;
 	}
 
-	inline ChunkArrayContainer& get_volume_attributes_container()
+	inline ChunkArrayContainer& volume_attributes_container()
 	{
 		return volume_attributes_;
 	}
@@ -229,11 +231,12 @@ public:
 			{
 				const Dart d = mbuild.add_pyramid_topo(3u);
 
-				const std::array<Dart, 4> vertices_of_tetra = {d,
-									   map.phi1(d),
-									   map.phi_1(d),
-									   map.phi_1(map.phi2(map.phi_1(d)))
-									  };
+				const std::array<Dart, 4> vertices_of_tetra = {
+					d,
+					map.phi1(d),
+					map.phi_1(d),
+					map.phi_1(map.phi2(map.phi_1(d)))
+				};
 
 				for (const Dart dv : vertices_of_tetra)
 				{
@@ -253,12 +256,13 @@ public:
 			{
 				Dart d = mbuild.add_pyramid_topo(4u);
 
-				const std::array<Dart, 5> vertices_of_pyramid = {d,
-									   map.phi1(d),
-									   map.phi1(map.phi1(d)),
-									   map.phi_1(d),
-									   map.phi_1(map.phi2(map.phi_1(d)))
-									  };
+				const std::array<Dart, 5> vertices_of_pyramid = {
+					d,
+					map.phi1(d),
+					map.phi1(map.phi1(d)),
+					map.phi_1(d),
+					map.phi_1(map.phi2(map.phi_1(d)))
+				};
 
 				for (Dart dv : vertices_of_pyramid)
 				{
@@ -279,11 +283,11 @@ public:
 				Dart d = mbuild.add_prism_topo(3u);
 				const std::array<Dart, 6> vertices_of_prism = {
 					d,
-				   map.phi1(d),
-				   map.phi_1(d),
-				   map.phi2(map.phi1(map.phi1(map.phi2(map.phi_1(d))))),
-				   map.phi2(map.phi1(map.phi1(map.phi2(d)))),
-				   map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(d)))))
+					map.phi1(d),
+					map.phi_1(d),
+					map.phi2(map.phi1(map.phi1(map.phi2(map.phi_1(d))))),
+					map.phi2(map.phi1(map.phi1(map.phi2(d)))),
+					map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(d)))))
 				};
 
 				for (Dart dv : vertices_of_prism)
@@ -308,7 +312,6 @@ public:
 					map.phi1(d),
 					map.phi1(map.phi1(d)),
 					map.phi_1(d),
-
 					map.phi2(map.phi1(map.phi1(map.phi2(map.phi_1(d))))),
 					map.phi2(map.phi1(map.phi1(map.phi2(d)))),
 					map.phi2(map.phi1(map.phi1(map.phi2(map.phi1(d))))),
@@ -355,8 +358,8 @@ public:
 						const std::vector<Dart>& vec = darts_per_vertex[Vertex(map.phi1(d_it))];
 						for (auto it = vec.begin(); it != vec.end() && good_dart.is_nil(); ++it)
 						{
-							if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(d_it)) &&
-									map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(d_it)))))
+							if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(d_it)) &&
+									map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(d_it)))))
 							{
 								good_dart = *it;
 							}
@@ -387,8 +390,8 @@ public:
 							Dart another_good_dart;
 							for (auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
 							{
-								if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_d)) &&
-										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(another_d)))))
+								if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(another_d)) &&
+										map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(another_d)))))
 								{
 									another_good_dart = *it ;
 								}
@@ -401,7 +404,7 @@ public:
 								Dart q2_it = map.phi_1(d_quad);
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != d);
@@ -432,8 +435,8 @@ public:
 							Dart another_good_dart;
 							for (auto it = vec.begin(); it != vec.end() && another_good_dart.is_nil(); ++it)
 							{
-								if (map.get_embedding(Vertex(map.phi1(*it))) == map.get_embedding(Vertex(another_dart)) &&
-										map.get_embedding(Vertex(map.phi_1(*it))) == map.get_embedding(Vertex(map.phi1(map.phi1(good_dart)))))
+								if (map.embedding(Vertex(map.phi1(*it))) == map.embedding(Vertex(another_dart)) &&
+										map.embedding(Vertex(map.phi_1(*it))) == map.embedding(Vertex(map.phi1(map.phi1(good_dart)))))
 								{
 									another_good_dart = *it ;
 								}
@@ -445,7 +448,7 @@ public:
 								Dart q2_it = d_quad;
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.get_embedding(Vertex(q1_it)));
+									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != good_dart);
@@ -490,7 +493,7 @@ public:
 		if (this->nb_vertices_ != nb_vert_dart_marking)
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
-		if (this->volume_attributes_.get_nb_attributes() > 0)
+		if (this->volume_attributes_.nb_chunk_arrays() > 0)
 		{
 			mbuild.template create_embedding<Volume::ORBIT>();
 			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
@@ -507,12 +510,12 @@ protected:
 		set_nb_volumes(0u);
 		volumes_types.clear();
 		volumes_vertex_indices_.clear();
-		vertex_attributes_.remove_attributes();
-		volume_attributes_.remove_attributes();
+		vertex_attributes_.remove_chunk_arrays();
+		volume_attributes_.remove_chunk_arrays();
 	}
 
-	template<typename VEC3>
-	void add_hexa(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
+	template <typename VEC3>
+	void add_hexa(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_hexa(pos, p0, p1, p2, p3, p4, p5, p6, p7);
@@ -527,7 +530,7 @@ protected:
 		this->volumes_vertex_indices_.push_back(p7);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_hexa(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
@@ -539,8 +542,8 @@ protected:
 		}
 	}
 
-	template<typename VEC3>
-	void add_tetra(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
+	template <typename VEC3>
+	void add_tetra(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_tetra(pos, p0, p1, p2, p3);
@@ -551,15 +554,15 @@ protected:
 		this->volumes_vertex_indices_.push_back(p3);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_tetra(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
 		if (geometry::test_orientation_3D(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
-	template<typename VEC3>
-	void add_pyramid(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
+	template <typename VEC3>
+	void add_pyramid(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
 	{
 		this->volumes_types.push_back(VolumeType::Pyramid);
 		if (check_orientation)
@@ -571,15 +574,15 @@ protected:
 		this->volumes_vertex_indices_.push_back(p4);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_pyramid(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
 		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
-	template<typename VEC3>
-	void add_triangular_prism(ChunkArray<VEC3>const& pos,uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
+	template <typename VEC3>
+	void add_triangular_prism(ChunkArray<VEC3>const& pos, uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
 	{
 		if (check_orientation)
 			this->reoriente_triangular_prism(pos, p0, p1, p2, p3, p4, p5);
@@ -592,7 +595,7 @@ protected:
 		this->volumes_vertex_indices_.push_back(p5);
 	}
 
-	template<typename VEC3>
+	template <typename VEC3>
 	inline void reoriente_triangular_prism(ChunkArray<VEC3>const& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
 		if (geometry::test_orientation_3D(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)

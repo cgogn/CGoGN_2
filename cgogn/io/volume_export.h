@@ -52,10 +52,11 @@ struct ExportOptions
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 };
 
-template<typename MAP>
+template <typename MAP>
 class VolumeExport
 {
 public:
+
 	using Self = VolumeExport<MAP>;
 	using Map = MAP;
 	using Vertex = typename Map::Vertex;
@@ -70,39 +71,43 @@ public:
 	  ,nb_pyramids_(0u)
 	  ,nb_triangular_prisms_(0u)
 	  ,nb_hexas_(0u)
-	  ,vertex_attributes()
-	  ,volume_attributes()
-	  ,position_attribute(nullptr)
+	  ,vertex_attributes_()
+	  ,volume_attributes_()
+	  ,position_attribute_(nullptr)
 	{}
 
-	virtual ~VolumeExport() {}
+	virtual ~VolumeExport()
+	{}
 
 	void export_file(Map& map, const ExportOptions& options)
 	{
 		Scoped_C_Locale loc;
 		this->reset();
-		const ChunkArrayContainer& ver_cac= map.template get_const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& vol_cac= map.template get_const_attribute_container<Volume::ORBIT>();
+		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
-				ChunkArrayGen* ver_cag = ver_cac.get_attribute(pair.second);
+				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (pair.second == "position")
-					position_attribute = ver_cag;
-				else {
+					position_attribute_ = ver_cag;
+				else
+				{
 					if (ver_cag)
-						vertex_attributes.push_back(ver_cag);
+						vertex_attributes_.push_back(ver_cag);
 				}
-			} else {
-				ChunkArrayGen* vol_cag = vol_cac.get_attribute(pair.second);
+			}
+			else
+			{
+				ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
 				if (vol_cag)
-					volume_attributes.push_back(vol_cag);
+					volume_attributes_.push_back(vol_cag);
 			}
 		}
 
-		if (position_attribute == nullptr)
+		if (position_attribute_ == nullptr)
 		{
 			cgogn_log_warning("VolumeExport::export_file") << "The position attribute is invalid.";
 			return;
@@ -117,64 +122,66 @@ public:
 		map.remove_attribute(indices_);
 	}
 
-	protected:
+protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
 
-	inline uint32 get_nb_tetras() const
+	inline uint32 nb_tetras() const
 	{
 		return nb_tetras_;
 	}
 
-	inline uint32 get_nb_pyramids() const
+	inline uint32 nb_pyramids() const
 	{
 		return nb_pyramids_;
 	}
 
-	inline uint32 get_nb_triangular_prisms() const
+	inline uint32 nb_triangular_prisms() const
 	{
 		return nb_triangular_prisms_;
 	}
 
-	inline uint32 get_nb_hexas() const
+	inline uint32 nb_hexas() const
 	{
 		return nb_hexas_;
 	}
 
-	inline std::vector<uint32> const & get_vertices_of_volumes() const
+	inline std::vector<uint32> const & vertices_of_volumes() const
 	{
 		return vertices_of_volumes_;
 	}
 
-	inline std::vector<uint32> const & get_number_of_vertices() const
+	inline std::vector<uint32> const & number_of_vertices() const
 	{
 		return number_of_vertices_;
 	}
 
-	inline std::vector<ChunkArrayGen*> const & get_vertex_attributes() const
+	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
 	{
-		return vertex_attributes;
+		return vertex_attributes_;
 	}
 
-	inline std::vector<ChunkArrayGen*> const & get_volume_attributes() const
+	inline std::vector<ChunkArrayGen*> const & volume_attributes() const
 	{
-		return volume_attributes;
+		return volume_attributes_;
 	}
 
-	ChunkArrayGen const * get_position_attribute() const
+	ChunkArrayGen const * position_attribute() const
 	{
-		return position_attribute;
+		return position_attribute_;
 	}
+
 private:
+
 	void prepare_for_export(Map& map)
 	{
 		number_of_vertices_.reserve(map.template nb_cells<Volume::ORBIT>());
 		vertices_of_volumes_.reserve(4u* number_of_vertices_.capacity());
 
 		uint32 count{0u};
-		map.foreach_cell([&](Vertex v) { indices_[v] = count++;} );
+		map.foreach_cell([&] (Vertex v) { indices_[v] = count++;} );
 
-		map.foreach_cell([&](Volume w)
+		map.foreach_cell([&] (Volume w)
 		{
 			uint32 nb_vert{0u};
 			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
@@ -191,7 +198,9 @@ private:
 				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
 				it = map.template phi<211>(it);
 				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-			} else {
+			}
+			else
+			{
 				if (nb_vert == 5u)
 				{
 					number_of_vertices_.push_back(5u);
@@ -205,7 +214,9 @@ private:
 					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
 					it = map.template phi<212>(it);
 					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-				} else {
+				}
+				else
+				{
 					if (nb_vert == 6u)
 					{
 						number_of_vertices_.push_back(6u);
@@ -221,7 +232,9 @@ private:
 						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
 						it = map.phi_1(it);
 						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					} else {
+					}
+					else
+					{
 						if (nb_vert == 8u)
 						{
 							number_of_vertices_.push_back(8u);
@@ -241,7 +254,9 @@ private:
 							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
 							it = map.phi1(it);
 							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						} else {
+						}
+						else
+						{
 							cgogn_log_warning("VolumeExport::prepare_for_export") << "Unknown volume with " << nb_vert << " vertices. Ignoring.";
 						}
 					}
@@ -258,21 +273,21 @@ private:
 		nb_pyramids_ = 0u;
 		nb_triangular_prisms_ = 0u;
 		nb_hexas_ = 0u;
-		vertex_attributes.clear();
-		volume_attributes.clear();
-		position_attribute = nullptr;
+		vertex_attributes_.clear();
+		volume_attributes_.clear();
+		position_attribute_ = nullptr;
 	}
 
-	std::vector<uint32>			vertices_of_volumes_;
-	std::vector<uint32>			number_of_vertices_;
+	std::vector<uint32>	vertices_of_volumes_;
+	std::vector<uint32>	number_of_vertices_;
 	typename Map::template Attribute<uint32, Vertex::ORBIT> indices_;
 	uint32 nb_tetras_;
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
 	uint32 nb_hexas_;
-	std::vector<ChunkArrayGen*>	vertex_attributes;
-	std::vector<ChunkArrayGen*>	volume_attributes;
-	ChunkArrayGen*				position_attribute;
+	std::vector<ChunkArrayGen*>	vertex_attributes_;
+	std::vector<ChunkArrayGen*>	volume_attributes_;
+	ChunkArrayGen*				position_attribute_;
 };
 
 } // namespace io

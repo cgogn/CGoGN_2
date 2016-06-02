@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 
 set(ply_LIBRARIES "ply")
-set(ply_INCLUDE_DIRS "@PACKAGE_PLY_INCLUDE_DIR@")
+set(ply_INCLUDE_DIRS "@PACKAGE_PLY_INCLUDE_DIRS@")
 
 if(NOT TARGET ply)
 	include("${CMAKE_CURRENT_LIST_DIR}/plyTargets.cmake")

@@ -78,9 +78,13 @@ public:
 	}
 };
 
-// forward declaration of class AttributeOrbit
-template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeOrbit;
+// forward declaration of class Attribute_T
+template <typename DATA_TRAITS, typename T>
+class Attribute_T;
+
+// forward declaration of class Attribute
+template <typename DATA_TRAITS, typename T, Orbit ORBIT>
+class Attribute;
 
 /**
  * @brief The MapBaseData class
@@ -95,17 +99,18 @@ public:
 
 	using Traits = MAP_TRAITS;
 
-	static const uint32 CHUNKSIZE = MAP_TRAITS::CHUNK_SIZE;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, Orbit ORBIT> friend class AttributeOrbit;
+	template <typename DT, typename T> friend class Attribute_T;
 	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T_REF>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNKSIZE>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNKSIZE>;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
 protected:
 
@@ -140,7 +145,7 @@ public:
 	{
 		if (init_CA_factory)
 		{
-			ChunkArrayFactory<CHUNKSIZE>::reset();
+			ChunkArrayFactory<CHUNK_SIZE>::reset();
 			init_CA_factory = false;
 		}
 		for (uint32 i = 0; i < NB_ORBITS; ++i)
@@ -165,7 +170,7 @@ public:
 		thread_ids_.resize(NB_UNKNOWN_THREADS);
 
 		this->add_thread(std::this_thread::get_id());
-		const auto& pool_threads_ids = cgogn::get_thread_pool()->get_threads_ids();
+		const auto& pool_threads_ids = cgogn::thread_pool()->threads_ids();
 		for (const std::thread::id& ids : pool_threads_ids)
 			this->add_thread(ids);
 	}
@@ -180,13 +185,20 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& get_const_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& const_attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
 	}
 
-	inline const ChunkArrayContainer<uint8>& get_topology_container() const
+	inline const ChunkArrayContainer<uint32>& const_attribute_container(Orbit orbit) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[orbit];
+	}
+
+
+	inline const ChunkArrayContainer<uint8>& topology_container() const
 	{
 		return topology_;
 	}
@@ -194,7 +206,7 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline ChunkArrayContainer<uint32>& get_attribute_container()
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -208,9 +220,9 @@ protected:
 	* \brief get a mark attribute on the topology container (from pool or created)
 	* @return a mark attribute on the topology container
 	*/
-	inline ChunkArrayBool* get_topology_mark_attribute()
+	inline ChunkArrayBool* topology_mark_attribute()
 	{
-		std::size_t thread = this->get_current_thread_index();
+		std::size_t thread = this->current_thread_index();
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_topology_[thread].back();
@@ -231,7 +243,7 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
-		std::size_t thread = this->get_current_thread_index();
+		std::size_t thread = this->current_thread_index();
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
@@ -255,11 +267,11 @@ public:
 	}
 
 	template <Orbit ORBIT>
-	inline uint32 get_embedding(Cell<ORBIT> c) const
+	inline uint32 embedding(Cell<ORBIT> c) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX, "get_embedding result is INVALID_INDEX");
+		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX, "embedding result is INVALID_INDEX");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
@@ -290,7 +302,7 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		this->template set_embedding<CellType>(dest, get_embedding(CellType(src)));
+		this->template set_embedding<CellType>(dest, embedding(CellType(src)));
 	}
 
 protected:
@@ -310,7 +322,7 @@ protected:
 		return old_index;
 	}
 
-	inline std::size_t get_unknown_thread_index(std::thread::id thread_id) const
+	inline std::size_t unknown_thread_index(std::thread::id thread_id) const
 	{
 		auto end = thread_ids_.begin();
 		std::advance(end, NB_UNKNOWN_THREADS);
@@ -321,7 +333,7 @@ protected:
 		return add_unknown_thread();
 	}
 
-	inline std::size_t get_current_thread_index() const
+	inline std::size_t current_thread_index() const
 	{
 		// avoid the unknown threads stored at the beginning of the vector
 		auto real_begin = thread_ids_.begin();
@@ -332,7 +344,7 @@ protected:
 		if (it_lower_bound != end)
 			return std::distance(thread_ids_.begin(), it_lower_bound);
 
-		return get_unknown_thread_index(std::this_thread::get_id());
+		return unknown_thread_index(std::this_thread::get_id());
 	}
 
 	inline void remove_thread(std::thread::id thread_id) const

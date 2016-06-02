@@ -23,11 +23,11 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
-#include <vec.h>
 #include <QMouseEvent>
 #include <QVector3D>
+
+#include <QOGLViewer/qoglviewer.h>
+#include <QOGLViewer/vec.h>
 
 #include <cgogn/core/cmap/cmap2.h>
 
@@ -50,7 +50,7 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 
@@ -211,7 +211,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 0:
 			{
 				std::vector<Map2::Vertex> selected;
-				cgogn::geometry::picking_vertices<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking<Vec3>(map_,vertex_position_, A, B, selected);
 				cgogn_log_info("picking_viewer") << "Selected vertices: "<< selected.size();
 				if (!selected.empty())
 				{
@@ -231,19 +231,19 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 1:
 			{
 				std::vector<Map2::Edge> selected;
-				cgogn::geometry::picking_edges<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
 				cgogn_log_info("picking_viewer") << "Selected edges: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
 					drawer_->begin(GL_LINES);
 					// closest face in red
-					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 0.0, 0.0);
+					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
-					drawer_->color3f(1.0,1.0,0.0);
-					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_edge_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 1.0, 0.0);
+					for(uint32 i = 1u; i < selected.size(); ++i)
+						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -251,19 +251,19 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 2:
 			{
 				std::vector<Map2::Face> selected;
-				cgogn::geometry::picking_faces<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
 				cgogn_log_info("picking_viewer") << "Selected faces: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
 					drawer_->begin(GL_LINES);
 					// closest face in red
-					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 0.0, 0.0);
+					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
-					drawer_->color3f(1.0,1.0,0.0);
-					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_face_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 1.0, 0.0);
+					for(uint32 i = 1u; i < selected.size(); ++i)
+						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -271,19 +271,19 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			case 3:
 			{
 				std::vector<Map2::Volume> selected;
-				cgogn::geometry::picking_volumes<Vec3>(map_,vertex_position_,A,B,selected);
+				cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
 				cgogn_log_info("picking_viewer") << "Selected volumes: "<< selected.size();
 				if (!selected.empty())
 				{
 					drawer_->line_width(2.0);
 					drawer_->begin(GL_LINES);
 					// closest face in red
-					drawer_->color3f(1.0,0.0,0.0);
-					cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[0],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 0.0, 0.0);
+					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
-					drawer_->color3f(1.0,1.0,0.0);
-					for(uint32 i=1u;i<selected.size();++i)
-						cgogn::rendering::add_volume_to_drawer<Vec3>(map_,selected[i],vertex_position_,drawer_.get());
+					drawer_->color3f(1.0, 1.0, 0.0);
+					for(uint32 i = 1u; i < selected.size(); ++i)
+						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -298,10 +298,8 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		drawer_->end_list();
 	}
 
-
 	QOGLViewer::mousePressEvent(event);
 }
-
 
 int main(int argc, char** argv)
 {
@@ -323,7 +321,7 @@ int main(int argc, char** argv)
 	viewer.setWindowTitle("picking_viewer");
 	viewer.import(surfaceMesh);
 	viewer.show();
-	viewer.resize(800,600);
+	viewer.resize(800, 600);
 
 	// Run main loop.
 	return application.exec();

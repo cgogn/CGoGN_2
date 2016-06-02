@@ -33,15 +33,15 @@ namespace cgogn
 
 /**
  * @brief Heap implemented in a chunk array
- * @tparam CHUNKSIZE chunk size of array
+ * @tparam CHUNK_SIZE chunk size of array
  * @tparam T type stored in heap
  */
-template <uint32 CHUNKSIZE, typename T>
-class ChunkStack : public ChunkArray<CHUNKSIZE, T>
+template <uint32 CHUNK_SIZE, typename T>
+class ChunkStack : public ChunkArray<CHUNK_SIZE, T>
 {
 public:
-	using Inherit = ChunkArray<CHUNKSIZE, T>;
-	using Self = ChunkStack<CHUNKSIZE, T>;
+	using Inherit = ChunkArray<CHUNK_SIZE, T>;
+	using Self = ChunkStack<CHUNK_SIZE, T>;
 	using value_type = T;
 
 protected:
@@ -52,7 +52,7 @@ public:
 	/**
 	 * @brief ChunkStack constructor
 	 */
-	inline ChunkStack():
+	inline ChunkStack() :
 		Inherit(),
 		stack_size_(0u)
 	{}
@@ -72,8 +72,8 @@ public:
 	void push(const T& val)
 	{
 		stack_size_++;
-		uint32 offset = stack_size_ % CHUNKSIZE;
-		uint32 blkId  = stack_size_ / CHUNKSIZE;
+		uint32 offset = stack_size_ % CHUNK_SIZE;
+		uint32 blkId  = stack_size_ / CHUNK_SIZE;
 
 		if (blkId >= this->table_data_.size())
 			this->add_chunk();
@@ -113,8 +113,8 @@ public:
 	 */
 	inline T head() const
 	{
-		const uint32 offset = stack_size_ % CHUNKSIZE;
-		const uint32 blkId  = stack_size_ / CHUNKSIZE;
+		const uint32 offset = stack_size_ % CHUNK_SIZE;
+		const uint32 blkId  = stack_size_ / CHUNK_SIZE;
 
 		return this->table_data_[blkId][offset];
 	}
@@ -124,7 +124,7 @@ public:
 	 */
 	void compact()
 	{
-		const uint32 keep = (stack_size_+CHUNKSIZE-1u) / CHUNKSIZE;
+		const uint32 keep = (stack_size_+CHUNK_SIZE-1u) / CHUNK_SIZE;
 		while (this->table_data_.size() > keep)
 		{
 			delete[] this->table_data_.back();
@@ -141,7 +141,7 @@ public:
 		Inherit::clear();
 	}
 
-	bool swap(ChunkArrayGen<CHUNKSIZE>* cag) override
+	bool swap(ChunkArrayGen<CHUNK_SIZE>* cag) override
 	{
 		if (Inherit::swap(cag))
 		{
