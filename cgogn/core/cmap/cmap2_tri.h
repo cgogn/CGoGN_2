@@ -634,17 +634,17 @@ public:
 		if (this->template is_embedded<Vertex>())
 		{
 			this->new_orbit_embedding(Vertex(res_edge.dart));
-			Dart v1 = phi2(res_edge.dart);
-			Dart v0 = phi2(phi_1(v1));
-			this->template copy_embedding<Vertex>(v1,v0);
-			Dart v2 = phi1(res_edge.dart);
-			this->template copy_embedding<Vertex>(v2,v0);
+			Dart d1 = phi2(res_edge.dart);
+			Dart d0 = phi2(phi_1(d1));
+			this->template copy_embedding<Vertex>(d1,d0);
+			Dart d2 = phi1(res_edge.dart);
+			this->template copy_embedding<Vertex>(d2,d0);
 
 			foreach_incident_face(res_edge, [this] (Face nf)
 			{
-				Dart v1 = phi_1(nf.dart); // new dart of exiting vertex
-				Dart v0 = phi2(phi1(nf.dart)); // old dart of exiting vertex
-				this->template copy_embedding<Vertex>(v1,v0);
+				Dart dv1 = phi_1(nf.dart); // new dart of exiting vertex
+				Dart dv0 = phi2(phi1(nf.dart)); // old dart of exiting vertex
+				this->template copy_embedding<Vertex>(dv1,dv0);
 			});
 		}
 
