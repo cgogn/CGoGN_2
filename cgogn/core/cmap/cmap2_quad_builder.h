@@ -100,8 +100,9 @@ public:
 		return map_.close_hole_topo(d);
 	}
 
-	/*!
-	 * \brief Close a hole with a triangle fan
+	/**
+	 * @brief Close (not really) a hole with a set of quad.
+	 * @return a face of the fan
 	 */
 	inline Face close_hole(Dart d)
 	{
@@ -141,6 +142,10 @@ public:
 		return Face(dh);
 	}
 
+	/**
+	 * @brief close_map
+	 * @return the number of holes (filled)
+	 */
 	inline int32 close_map()
 	{
 		uint32 nb_holes = 0;

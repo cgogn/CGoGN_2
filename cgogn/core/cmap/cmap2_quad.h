@@ -136,7 +136,7 @@ public:
 protected:
 
 	/**
-	 * \brief Init an newly added dart.
+	 * \brief Init a newly added set of 4 darts.
 	 * The dart is defined as a fixed point for PHI2.
 	 */
 	inline void init_dart(Dart d)
@@ -160,7 +160,11 @@ protected:
 				( phi2(d) != d || ( phi2(d) == d && this->is_boundary(d)));
 	}
 
-	inline bool check_boundary_integrity(Dart d) const
+	/**
+	 * @brief check boundary integrity
+	 * @return always true (boundary could is not set of separated faces)
+	 */
+	inline bool check_boundary_integrity(Dart) const
 	{
 		return true;
 	}
@@ -179,6 +183,11 @@ protected:
 		(*phi2_)[e.index] = d;
 	}
 
+	/**
+	 * @brief phi2_sew without checking that darts have phi2 fixed point
+	 * @param d
+	 * @param e
+	 */
 	inline void phi2_sew_nocheck(Dart d, Dart e)
 	{
 		(*phi2_)[d.index] = e;
@@ -237,6 +246,22 @@ public:
 		return Dart(d.index+3);
 	}
 
+	/*!
+	 * \brief phi11
+	 * @param d
+	 * @return phi1(phi1(d))
+	 */
+	inline Dart phi11(Dart d) const
+	{
+		switch(d.index%4)
+		{
+		case 0: return Dart(d.index+2);break;
+		case 1: return Dart(d.index+2);break;
+		case 2: return Dart(d.index-2);break;
+		}
+		return Dart(d.index-2);
+	}
+
 
 	/**
 	 * \brief phi2
@@ -286,7 +311,7 @@ protected:
 	}
 
 	/**
-	 * @brief remove a quad
+	 * @brief remove a quad (4 darts)
 	 * @param d
 	 */
 	inline void remove_face_topo_fp(Dart d)
@@ -296,10 +321,9 @@ protected:
 
 
 	/**
-	 * \brief Add a face in the map.
-	 * \param size : the number of darts in the built face
+	 * \brief Add a quad in the map.
 	 * \return A dart of the built face.
-	 * Two 1-face are built. The first one is the returned face,
+	 * Two 1-quad (f.p.) are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
 	Dart add_quad_topo()
@@ -320,8 +344,8 @@ protected:
 public:
 
 	/**
-	 * \brief Add a face in the map.
-	 * \param size : the number of edges in the built face
+	 * \brief Add a face (quad) in the map. Necessary function for import
+	 * \param size : 4 or assert failed
 	 * \return The built face
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
@@ -373,33 +397,221 @@ public:
 
 protected:
 
-//	inline Dart add_hexa_topo(uint32 size)
-//	{
-//		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
+	inline Dart add_hexa_topo()
+	{
 
-//		Dart f1 = this->Inherit::add_quad_topo();
-//		Dart f2 = this->Inherit::add_quad_topo();
-//		Dart f3 = this->Inherit::add_quad_topo();
-//		Dart f4 = this->Inherit::add_quad_topo();
-//		Dart f5 = this->Inherit::add_quad_topo();
-//		Dart f6 = this->Inherit::add_quad_topo();
+		Dart f1 = add_quad_topo_fp();
+		Dart f2 = add_quad_topo_fp();
+		Dart f3 = add_quad_topo_fp();
+		Dart f4 = add_quad_topo_fp();
+		Dart f5 = add_quad_topo_fp();
+		Dart f6 = add_quad_topo_fp();
 
 
-////		phi2_sew(...);
+		phi2_sew(f1,f2);
+		f1 = phi1(f1);
+		phi2_sew(f1,f3);
+		f1 = phi1(f1);
+		phi2_sew(f1,f4);
+		f1 = phi1(f1);
+		phi2_sew(f1,f5);
+		f1 = phi1(f1);
 
-//		return f1;
-//	}
+		phi2_sew(phi1(f3),phi_1(f2));
+		phi2_sew(phi1(f4),phi_1(f3));
+		phi2_sew(phi1(f5),phi_1(f4));
+		phi2_sew(phi1(f2),phi_1(f5));
+
+		phi2_sew(phi11(f2),f6);
+		f6 = phi1(f6);
+		phi2_sew(phi11(f5),f6);
+		f6 = phi1(f6);
+		phi2_sew(phi11(f4),f6);
+		f6 = phi1(f6);
+		phi2_sew(phi11(f3),f6);
+		f6 = phi1(f6);
+
+		return f1;
+	}
+
+public:
+
+	Volume add_hexa()
+	{
+		Volume vol(add_hexa_topo());
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(vol, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_incident_vertex(vol, [this] (Vertex v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vol, [this] (Edge e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(vol);
+
+		return vol;
+	}
+
+
+protected:
+
+	/**
+	 * @brief extrude a quad: replace by 5 faces. (topo version)
+	 * @param f the quad face to extrude
+	 */
+	void extrude_quad_topo(Face f)
+	{
+		Dart d = f.dart;
+		Dart ff1 = phi2(d);
+		d = phi1(d);
+		Dart ff2 = phi2(d);
+		d = phi1(d);
+		Dart ff3 = phi2(d);
+		d = phi1(d);
+		Dart ff4 = phi2(d);
+
+		Dart f1 = f.dart;
+		Dart f2 = add_quad_topo_fp();
+		Dart f3 = add_quad_topo_fp();
+		Dart f4 = add_quad_topo_fp();
+		Dart f5 = add_quad_topo_fp();
+
+		phi2_sew_nocheck(f1,f2);
+		f1 = phi1(f1);
+		phi2_sew_nocheck(f1,f3);
+		f1 = phi1(f1);
+		phi2_sew_nocheck(f1,f4);
+		f1 = phi1(f1);
+		phi2_sew_nocheck(f1,f5);
+		f1 = phi1(f1);
+
+		phi2_sew(phi1(f3),phi_1(f2));
+		phi2_sew(phi1(f4),phi_1(f3));
+		phi2_sew(phi1(f5),phi_1(f4));
+		phi2_sew(phi1(f2),phi_1(f5));
+
+		phi2_sew_nocheck(phi11(f2),ff1);
+		phi2_sew_nocheck(phi11(f3),ff2);
+		phi2_sew_nocheck(phi11(f4),ff3);
+		phi2_sew_nocheck(phi11(f5),ff4);
+	}
+
+public:
+
+	/**
+	 * @brief extrude a quad: replace by 5 quads.
+	 * @param f the quad face
+	 */
+	Face extrude_quad(Face f)
+	{
+		extrude_quad_topo(f);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				// darts of f
+				this->new_orbit_embedding(CDart(d));
+				// darts of faces adjacent to f
+				foreach_dart_of_orbit(Face(phi2(d)), [this] (Dart e)
+				{
+					this->new_orbit_embedding(CDart(e));
+				});
+			});
+
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex(d));
+				Dart v1 = phi_1(phi2(d));
+				Dart v0 = phi2(phi_1(v1));
+				this->template copy_embedding<Vertex>(v1, v0);
+				Dart v2 = phi1(phi2(v1));
+				this->template copy_embedding<Vertex>(v2, v0);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Edge(d));
+				Dart d1 =phi1(phi2(d));
+				this->new_orbit_embedding(Edge(d1));
+				d1 =phi1(d1);
+				this->template copy_embedding<Edge>(d1, phi2(d1));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->new_orbit_embedding(f);
+			foreach_adjacent_face_through_edge(f, [this] (Face fi)
+			{
+				this->new_orbit_embedding(fi);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			uint32 emb = this->embedding(Volume(this->template phi<2112>(f.dart)));
+
+			foreach_dart_of_orbit(f, [this,emb] (Dart d)
+			{
+				this->template set_embedding<Volume>(d, emb);
+			});
+
+
+			foreach_adjacent_face_through_edge(f, [this,emb] (Face fi)
+			{
+				foreach_dart_of_orbit(fi, [this,emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			});
+		}
+
+		return f;
+	}
+
 
 
 
 protected:
 
-	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
-	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that closes the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
+	/**
+	 * @brief Close the topological hole that contains Dart d (a fixed point for PHI2).
+	 * @param d : a dart of the hole
+	 * @return a dart of on of the faces that closes the hole
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
@@ -460,7 +672,7 @@ public:
 			return 2;
 	}
 
-	inline uint32 codegree(Face f) const
+	inline uint32 codegree(Face) const
 	{
 		return 4;
 	}

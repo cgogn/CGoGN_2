@@ -119,8 +119,45 @@ TEST_F(CMap2QuadTest, builder)
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 7);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2);
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
-
-
 }
+
+
+TEST_F(CMap2QuadTest, add_hexa)
+{
+	embed_map();
+	Volume vol = cmap_.add_hexa();
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+
+	cmap_.foreach_incident_vertex(vol, [&] (Vertex v)
+	{
+		EXPECT_EQ(cmap_.degree(v), 3);
+	});
+}
+
+
+TEST_F(CMap2QuadTest, extrude_quad)
+{
+	MapBuilder builder(cmap_);
+	Dart d1 = builder.add_face_topo_parent(4);
+	builder.close_map();
+	embed_map();
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	cmap_.extrude_quad(Face(d1));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 5);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+}
+
+
 
 } // namespace cgogn

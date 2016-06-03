@@ -136,7 +136,7 @@ public:
 protected:
 
 	/**
-	 * \brief Init an newly added dart.
+	 * \brief Init newly added set of 3 darts.
 	 * The dart is defined as a fixed point for PHI2.
 	 */
 	inline void init_dart(Dart d)
@@ -160,7 +160,11 @@ protected:
 				phi2(d) != d);
 	}
 
-	inline bool check_boundary_integrity(Dart d) const
+	/**
+	 * @brief check boundary integrity
+	 * @return always true (boundary could is not set of separated faces)
+	 */
+	inline bool check_boundary_integrity(Dart) const
 	{
 		return true;
 	}
@@ -179,6 +183,11 @@ protected:
 		(*phi2_)[e.index] = d;
 	}
 
+	/**
+	 * @brief phi2_sew without checking that darts have phi2 fixed point
+	 * @param d
+	 * @param e
+	 */
 	inline void phi2_sew_nocheck(Dart d, Dart e)
 	{
 		(*phi2_)[d.index] = e;
@@ -229,10 +238,10 @@ public:
 	{
 		switch(d.index%3)
 		{
-		case 0: return Dart(d.index+2);break;
+		case 2: return Dart(d.index-1);break;
 		case 1: return Dart(d.index-1);break;
 		}
-		return Dart(d.index-1);
+		return Dart(d.index+2);
 	}
 
 	/**
@@ -283,7 +292,7 @@ protected:
 	}
 
 	/**
-	 * @brief remove a triangle (3 dart)
+	 * @brief remove a triangle (3 darts)
 	 * @param d
 	 */
 	inline void remove_tri_topo_fp(Dart d)
@@ -293,9 +302,8 @@ protected:
 
 	/**
 	 * \brief Add a triangle in the map.
-	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face.
-	 * Two 1-face are built. The first one is the returned face,
+	 * Two 1-triangle (f.p.) are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
 	Dart add_tri_topo()
@@ -316,8 +324,8 @@ protected:
 public:
 
 	/**
-	 * \brief Add a face in the map.
-	 * \param size : the number of edges in the built face
+	 * \brief Add a face (triangle) in the map. Necessary function for import
+	 * \param size : 3 or assert failed
 	 * \return The built face
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
@@ -369,28 +377,69 @@ public:
 
 protected:
 
-	inline Dart add_tetra_topo(uint32 size)
+	inline Dart add_tetra_topo()
 	{
-		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
-
 		Dart f1 = this->add_tri_topo_fp();
 		Dart f2 = this->add_tri_topo_fp();
 		Dart f3 = this->add_tri_topo_fp();
 		Dart f4 = this->add_tri_topo_fp();
 
-		phi2_sew(phi_1(f2), f1);
-		phi2_sew(phi_1(f3), f2);
-		phi2_sew(phi_1(f1), f3);
+		phi2_sew(phi_1(f2), phi1(f1));
+		phi2_sew(phi_1(f3), phi1(f2));
+		phi2_sew(phi_1(f1), phi1(f3));
 
-		phi2_sew(phi1(f1), f4);
+		phi2_sew(f1,f4);
 		f4 = phi1(f4);
-		phi2_sew(phi1(f2), f4);
+		phi2_sew(f3,f4);
 		f4 = phi1(f4);
-		phi2_sew(phi1(f3), f4);
+		phi2_sew(f2,f4);
 
 		return f1;
 	}
 
+public:
+
+	Volume add_tetra()
+	{
+		Volume vol(add_tetra_topo());
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(vol, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_incident_vertex(vol, [this] (Vertex v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vol, [this] (Edge e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(vol);
+
+		return vol;
+	}
 
 protected:
 
@@ -476,7 +525,7 @@ public:
 protected:
 
 	/**
-	 * @brief Collapse an edge
+	 * @brief Collapse an edge (only topo)
 	 * @param d : a dart of the edge to collapse
 	 * @return a dart of the resulting vertex
 	 */
@@ -529,12 +578,12 @@ public:
 
 protected:
 	/**
-	 * @brief split a vertex into an edge (2 triangles are inserted)
-	 * @param v1 Vertex to split (dart give edge ti be replaced by a triangle)
-	 * @param v2 Vertex to split (dart give edge ti be replaced by a triangle)
-	 * @return the inserted edge
+	 * @brief split a vertex into an edge (2 triangles are inserted) TOPO ONLY
+	 * @param v1 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @param v2 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @return a dart of the inserted edge
 	 */
-	Edge split_vertex_topo(Vertex v1, Vertex v2)
+	Dart split_vertex_topo(Vertex v1, Vertex v2)
 	{
 		cgogn_message_assert(this->same_orbit(v1,v2), "CMap2Tri::split_vertex_topo:v1 & v2 must be the same vertex");
 		cgogn_message_assert(v1.dart != v2.dart, "CMap2Tri::split_vertex_topo:v1 & v2 must be different darts ");
@@ -556,13 +605,20 @@ protected:
 		phi2_sew_nocheck(phi1(f2),ee2);
 		phi2_sew_nocheck(phi_1(f2),e2);
 
-		return Edge(f1);
+		return f1;
 	}
 
 public:
+
+	/**
+	 * @brief split a vertex into an edge (2 triangles are inserted)
+	 * @param v1 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @param v2 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @return the inserted edge
+	 */
 	Edge split_vertex(Vertex v1, Vertex v2)
 	{
-		Edge res_edge = split_vertex_topo(v1,v2);
+		Edge res_edge(split_vertex_topo(v1,v2));
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -630,9 +686,10 @@ public:
 protected:
 	/**
 	 * @brief cut an edge and the two incident triangles
-	 * @param f
+	 * @param e the edge to cut
+	 * @return a dart of created vertex
 	 */
-	Vertex cut_edge_topo(Edge e)
+	Dart cut_edge_topo(Edge e)
 	{
 		Dart d = phi1(e.dart);
 		Dart e1 = phi2(d);
@@ -661,18 +718,19 @@ protected:
 		phi2_sew_nocheck(phi_1(f3),e4);
 		phi2_sew_nocheck(phi1(f4),e3);
 
-		return Vertex(f2);
+		return f2;
 	}
 
 public:
 
 	/**
 	 * @brief cut an edge and the two incident triangles
-	 * @param f
+	 * @param e the edge to cut
+	 * @return the created vertex
 	 */
 	Vertex cut_edge(Edge e)
 	{
-		Vertex nv = cut_edge_topo(e);
+		Vertex nv(cut_edge_topo(e));
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -734,8 +792,9 @@ public:
 
 protected:
 	/**
-	 * @brief split a triangle in 3 triangles
-	 * @param f
+	 * @brief split a triangle in 3 triangles (TOPO ONLY)
+	 * @param f the triangle to split
+	 * @return a dart of central vertex
 	 */
 	Vertex split_triangle_topo(Face f)
 	{
@@ -829,12 +888,10 @@ public:
 
 protected:
 
-	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
-	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that closes the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
+	/**
+	 * @brief Close the topological hole that contains Dart d (a fixed point for PHI2) with a fan
+	 * @param d : a dart of the hole
+	 * @return a dart of one of the faces that closes the hole
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
@@ -895,7 +952,7 @@ public:
 			return 2;
 	}
 
-	inline uint32 codegree(Face f) const
+	inline uint32 codegree(Face) const
 	{
 		return 3;
 	}

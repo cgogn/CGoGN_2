@@ -253,4 +253,22 @@ TEST_F(CMap2TriTest, cut_edge)
 	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
 }
 
+
+TEST_F(CMap2TriTest, add_tetra)
+{
+	embed_map();
+	Volume vol = cmap_.add_tetra();
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 6);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 4);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+
+	cmap_.foreach_incident_vertex(vol, [&] (Vertex v)
+	{
+		EXPECT_EQ(cmap_.degree(v), 3);
+	});
+}
+
 } // namespace cgogn
