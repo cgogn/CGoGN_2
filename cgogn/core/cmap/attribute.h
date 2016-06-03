@@ -132,12 +132,14 @@ public:
 	inline Attribute_T() :
 		Inherit(nullptr),
 		chunk_array_cont_(nullptr),
-		chunk_array_(nullptr)
+		chunk_array_(nullptr),
+		orbit_(NB_ORBITS)
 	{}
 
 	Attribute_T(MapData* const map, TChunkArray* const ca, Orbit orbit) :
 		Inherit(map),
-		chunk_array_(ca)
+		chunk_array_(ca),
+		orbit_(orbit)
 	{
 		if (map != nullptr)
 			chunk_array_cont_ = &map->const_attribute_container(orbit);
@@ -148,7 +150,8 @@ public:
 	Attribute_T(const Self& att) :
 		Inherit(att),
 		chunk_array_cont_(att.chunk_array_cont_),
-		chunk_array_(att.chunk_array_)
+		chunk_array_(att.chunk_array_),
+		orbit_(att.orbit_)
 	{
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
@@ -157,7 +160,8 @@ public:
 	inline Attribute_T(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att)),
 		chunk_array_cont_(att.chunk_array_cont_),
-		chunk_array_(att.chunk_array_)
+		chunk_array_(att.chunk_array_),
+		orbit_(att.orbit_)
 	{
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
@@ -172,6 +176,7 @@ public:
 
 		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
+		orbit_ = att.orbit_;
 
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
@@ -188,6 +193,7 @@ public:
 
 		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
+		orbit_ = att.orbit_;
 
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
@@ -239,6 +245,18 @@ public:
 	{
 		cgogn_message_assert(is_valid(), "Invalid Attribute");
 		return chunk_array_->operator[](i);
+	}
+
+	inline T& operator[](Dart d)
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(d, orbit_));
+	}
+
+	inline const T& operator[](Dart d) const
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(d, orbit_));
 	}
 
 	virtual const std::string& name() const override
@@ -362,6 +380,7 @@ protected:
 
 	ChunkArrayContainer const*	chunk_array_cont_;
 	TChunkArray*				chunk_array_;
+	Orbit						orbit_;
 };
 
 /**
