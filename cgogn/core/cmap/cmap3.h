@@ -272,6 +272,357 @@ protected:
 		return d_quad;
 	}
 
+	/**
+	 * \brief Cut an edge.
+	 * \param d : A dart that represents the edge to cut
+	 * \return A dart of the inserted vertex
+	 * The edge of d is cut by inserting a new vertex.
+	 * The returned dart is the dart of the inserted vertex that belongs to the face of d.
+	 */
+	inline Dart cut_edge_topo(Dart d)
+	{
+		Dart prev = d;
+		Dart dd = phi3(this->phi2(d));
+
+		Dart nd = Inherit::cut_edge_topo(d);
+
+		while (dd != d)
+		{
+			prev = dd;
+			dd = phi3(this->phi2(dd));
+
+			Inherit::cut_edge_topo(prev);
+
+			Dart d3 = phi3(prev);
+			phi3_unsew(prev);
+			phi3_sew(prev, this->phi1(d3));
+			phi3_sew(d3, this->phi1(prev));
+		}
+
+		Dart d3 = phi3(d);
+		phi3_unsew(d);
+		phi3_sew(d, this->phi1(d3));
+		phi3_sew(d3, this->phi1(d));
+
+		return nd;
+	}
+
+public:
+
+	/**
+	 * \brief Cut an edge.
+	 * \param e : the edge to cut
+	 * \return The inserted vertex
+	 * The edge e is cut by inserting a new vertex.
+	 * The returned vertex is represented by the dart of the inserted vertex that belongs to the face of e.
+	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
+	 * the inserted cells are automatically embedded on new attribute elements.
+	 * More precisely :
+	 *  - Vertex2 attributes are created, if needed, for each inserted Vertex2.
+	 *  - a Vertex attribute is created, if needed, for the inserted vertex.
+	 *  - Edge2 attributes are created, if needed, for each inserted Edge2.
+	 *  - an Edge attribute is created, if needed, for the edge inserted after e.
+	 *  - the Edge attribute of e is kept unchanged.
+	 */
+	inline Vertex cut_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart v = cut_edge_topo(e.dart);
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				Dart nv1 = this->phi1(d);
+				Dart nv2 = this->phi2(d);
+				if (!this->is_boundary(nv1)) this->new_orbit_embedding(CDart(nv1));
+				if (!this->is_boundary(nv2)) this->new_orbit_embedding(CDart(nv2));
+			});
+		}
+
+		if (this->template is_embedded<Vertex2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+			this->new_orbit_embedding(Vertex(v));
+
+		if (this->template is_embedded<Edge2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge2>(this->phi2(d), d);
+				this->new_orbit_embedding(Edge2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge>(this->phi2(d), d);
+			});
+			this->new_orbit_embedding(Edge(v));
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Face2>(this->phi1(d), d);
+				this->template copy_embedding<Face2>(this->phi2(d), this->phi2(this->phi1(d)));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				this->template copy_embedding<Face>(this->phi1(d), d);
+				this->template copy_embedding<Face>(phi3(d), d);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			foreach_dart_of_PHI23(e.dart, [this] (Dart d)
+			{
+				if (!this->is_boundary(d))
+				{
+					this->template copy_embedding<Volume>(this->phi1(d), d);
+					this->template copy_embedding<Volume>(this->phi2(d), d);
+				}
+			});
+		}
+
+		return Vertex(v);
+	}
+
+protected:
+
+	/**
+	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
+	 * \param d : first vertex
+	 * \param e : second vertex
+	 * \return A dart of the inserted edge
+	 * Darts d and e should belong to the same Face2 and be distinct from each other.
+	 * An edge made of four new darts is inserted between the two given vertices.
+	 * The returned dart is the dart of the inserted edge that belongs to the Face2 of d.
+	 */
+	inline Dart cut_face_topo(Dart d, Dart e)
+	{
+		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
+		cgogn_message_assert(this->same_cell(Face2(d), Face2(e)), "cut_face_topo: d and e should belong to the same Face2");
+
+		Dart dd = this->phi1(phi3(d));
+		Dart ee = this->phi1(phi3(e));
+
+		Dart nd = Inherit::cut_face_topo(d, e);
+		Dart ndd = Inherit::cut_face_topo(dd, ee);
+
+		phi3_sew(nd, this->phi_1(ee));
+		phi3_sew(ndd, this->phi_1(e));
+
+		return nd;
+	}
+
+public:
+
+	/**
+	 * \brief Cut a face by inserting an edge between the vertices d and e
+	 * \param d : first vertex
+	 * \param e : second vertex
+	 * \return The inserted edge
+	 * The vertices d and e should belong to the same Face2 and be distinct from each other.
+	 * An edge is inserted between the two given vertices.
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.dart
+	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
+	 * the inserted cells are automatically embedded on new attribute elements.
+	 * More precisely :
+	 *  - two Edge2 attribute are created, if needed, for the inserted Edge2.
+	 *  - an Edge attribute is created, if needed, for the inserted edge.
+	 *  - two Face2 attributes are created, if needed, for the subdivided Face2 of e and phi3(e).
+	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
+	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
+	 */
+	inline Edge cut_face(Vertex d, Vertex e)
+	{
+		Dart nd = cut_face_topo(d.dart, e.dart);
+		Dart ne = this->phi_1(e.dart);
+		Dart nd3 = phi3(nd);
+		Dart ne3 = phi3(ne);
+
+		if (this->template is_embedded<CDart>())
+		{
+			if (!this->is_boundary(nd)) this->new_orbit_embedding(CDart(nd));
+			if (!this->is_boundary(ne)) this->new_orbit_embedding(CDart(ne));
+			if (!this->is_boundary(nd3)) this->new_orbit_embedding(CDart(nd3));
+			if (!this->is_boundary(ne3)) this->new_orbit_embedding(CDart(ne3));
+		}
+
+		if (this->template is_embedded<Vertex2>())
+		{
+			this->template copy_embedding<Vertex2>(nd, e.dart);
+			this->template copy_embedding<Vertex2>(ne, d.dart);
+			this->template copy_embedding<Vertex2>(nd3, this->phi1(ne3));
+			this->template copy_embedding<Vertex2>(ne3, this->phi1(nd3));
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->template copy_embedding<Vertex>(nd, e.dart);
+			this->template copy_embedding<Vertex>(ne3, e.dart);
+			this->template copy_embedding<Vertex>(ne, d.dart);
+			this->template copy_embedding<Vertex>(nd3, d.dart);
+		}
+
+		if (this->template is_embedded<Edge2>())
+		{
+			this->new_orbit_embedding(Edge2(nd));
+			this->new_orbit_embedding(Edge2(nd3));
+		}
+
+		if (this->template is_embedded<Edge>())
+			this->new_orbit_embedding(Edge(nd));
+
+		if (this->template is_embedded<Face2>())
+		{
+			this->template copy_embedding<Face2>(nd, d.dart);
+			this->new_orbit_embedding(Face2(ne));
+			this->template copy_embedding<Face2>(nd3, phi3(d.dart));
+			this->new_orbit_embedding(Face2(ne3));
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->template copy_embedding<Face>(nd, d.dart);
+			this->template copy_embedding<Face>(nd3, d.dart);
+			this->new_orbit_embedding(Face(ne));
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			if (!this->is_boundary(d.dart))
+			{
+				this->template copy_embedding<Volume>(nd, d.dart);
+				this->template copy_embedding<Volume>(ne, d.dart);
+			}
+			Dart d3 = phi3(d.dart);
+			if (!this->is_boundary(phi3(d3)))
+			{
+				this->template copy_embedding<Volume>(nd3, d3);
+				this->template copy_embedding<Volume>(ne3, d3);
+			}
+		}
+
+		return Edge(nd);
+	}
+
+protected:
+
+	Dart cut_volume_topo(const std::vector<Dart>& path)
+	{
+		Dart face1 = Inherit::Inherit::add_face_topo(path.size());
+		Dart face2 = Inherit::Inherit::add_face_topo(path.size());
+
+		for (Dart d : path)
+		{
+			Dart d2 = this->phi2(d);
+			this->phi2_unsew(d);
+
+			this->phi2_sew(d, face1);
+			this->phi2_sew(d2, face2);
+
+			phi3_sew(face1, face2);
+
+			face1 = this->phi_1(face1);
+			face2 = this->phi1(face2);
+		}
+
+		return this->phi_1(face1);
+	}
+
+public:
+
+	Face cut_volume(const std::vector<Edge>& path)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		cgogn_message_assert(!this->is_boundary(path[0].dart), "cut_volume: should not cut a boundary volume");
+
+		Dart nf = cut_volume_topo(reinterpret_cast<const std::vector<Dart>&>(path));
+
+		if (this->template is_embedded<CDart>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+				this->new_orbit_embedding(CDart(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex2>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Vertex2>(d, this->phi1(this->phi2(d)));
+				this->new_orbit_embedding(Vertex2(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Vertex>(d, this->phi1(this->phi2(d)));
+				Dart d3 = phi3(d);
+				this->template copy_embedding<Vertex>(d3, this->phi1(this->phi2(d3)));
+			});
+		}
+
+		if (this->template is_embedded<Edge2>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge2>(d, this->phi2(d));
+				this->new_orbit_embedding(Edge2(phi3(d)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Edge>(d, this->phi2(d));
+				this->template copy_embedding<Edge>(phi3(d), this->phi2(d));
+			});
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			this->new_orbit_embedding(Face2(nf));
+			this->new_orbit_embedding(Face2(phi3(nf)));
+		}
+
+		if (this->template is_embedded<Face>())
+			this->new_orbit_embedding(Face(nf));
+
+		if (this->template is_embedded<Volume>())
+		{
+			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			{
+				this->template copy_embedding<Volume>(d, this->phi2(d));
+			});
+			this->new_orbit_embedding(Volume(phi3(nf)));
+		}
+
+		return Face(nf);
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
