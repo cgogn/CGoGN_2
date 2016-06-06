@@ -383,7 +383,9 @@ protected:
 	{
 		Dart e = phi2(d);						// Get the adjacent 1D-edge
 
+#ifndef	NDEBUG
 		phi2_unsew(d);							// Separate the two 1D-edges of the edge
+#endif
 		Dart nd = this->split_vertex_topo(d);
 		Dart ne = this->split_vertex_topo(e);	// Cut the two adjacent 1D-edges
 
@@ -738,11 +740,11 @@ protected:
 	{
 		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
-		Dart first = this->add_dart();	// First edge of the face that will fill the hole
-		phi2_sew(d, first);				// 2-sew the new edge to the hole
+		Dart first = this->add_topology_element();	// First edge of the face that will fill the hole
+		phi2_sew(d, first);							// 2-sew the new edge to the hole
 
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
+		Dart d_next = d;							// Turn around the hole
+		Dart d_phi1;								// to complete the face
 		do
 		{
 			do

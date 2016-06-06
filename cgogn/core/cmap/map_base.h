@@ -139,17 +139,6 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
-	inline Dart add_dart()
-	{
-		Dart d(add_topology_element());
-		to_concrete()->init_dart(d);
-		return d;
-	}
-
-	inline void remove_dart(Dart d)
-	{
-		this->remove_topology_element(d.index);
-	}
 
 	/*******************************************************************************
 	 * Container elements management
@@ -161,7 +150,7 @@ protected:
 	 * Adding a topological element consists in adding PRIM_SIZE lines
 	 * to the topological container starting from index
 	 */
-	inline uint32 add_topology_element()
+	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
 		for(uint32 jdx=idx; jdx<idx+ConcreteMap::PRIM_SIZE; ++jdx)
@@ -172,8 +161,9 @@ protected:
 				if (this->embeddings_[orbit])
 					(*this->embeddings_[orbit])[jdx] = INVALID_INDEX;
 			}
+			to_concrete()->init_dart(/*d*/Dart(jdx));
 		}
-		return idx;
+		return Dart(idx);
 	}
 
 //	template <Orbit ORBIT>
@@ -195,12 +185,13 @@ protected:
 
 	/**
 	 * \brief Removes a topological element of PRIM_SIZE from the topology container
-	 * \param index the index of the element to remove
+	 * \param d the element to remove ( or one them if PRIM_SIZE >1)
 	 * Removing a topological element consists in removing PRIM_SIZE lines
 	 * of the topological container starting from index
 	 */
-	inline void remove_topology_element(uint32 index)
+	inline void remove_topology_element(Dart d)
 	{
+		uint32 index = d.index;
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
 
 		for(uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)

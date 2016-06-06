@@ -136,14 +136,12 @@ public:
 protected:
 
 	/**
-	 * \brief Init newly added set of 3 darts.
+	 * \brief Init newly added dart.
 	 * The dart is defined as a fixed point for PHI2.
 	 */
 	inline void init_dart(Dart d)
 	{
 		(*phi2_)[d.index] = d;
-		(*phi2_)[d.index+1] = Dart(d.index+1);
-		(*phi2_)[d.index+2] = Dart(d.index+2);
 	}
 
 	/**
@@ -182,18 +180,6 @@ protected:
 		(*phi2_)[d.index] = e;
 		(*phi2_)[e.index] = d;
 	}
-
-	/**
-	 * @brief phi2_sew without checking that darts have phi2 fixed point
-	 * @param d
-	 * @param e
-	 */
-	inline void phi2_sew_nocheck(Dart d, Dart e)
-	{
-		(*phi2_)[d.index] = e;
-		(*phi2_)[e.index] = d;
-	}
-
 
 	/**
 	 * \brief Remove the phi2 link between the current dart and its linked dart
@@ -286,7 +272,7 @@ protected:
 	 */
 	inline Dart add_tri_topo_fp()
 	{
-		Dart d = this->add_dart(); // in fact remove_dart insert PRIM_SIZE darts
+		Dart d = this->add_topology_element(); // in fact insert PRIM_SIZE darts
 		// no need to set phi1
 		return d;
 	}
@@ -297,7 +283,7 @@ protected:
 	 */
 	inline void remove_tri_topo_fp(Dart d)
 	{
-		this->remove_dart(d); // in fact remove_dart remove PRIM_SIZE darts
+		this->remove_topology_element(d); // in fact remove PRIM_SIZE darts
 	}
 
 	/**
@@ -311,7 +297,7 @@ protected:
 		Dart d = add_tri_topo_fp();
 		Dart e = add_tri_topo_fp();
 
-		this->foreach_dart_of_PHI1(d, [&] (Dart it)
+		foreach_dart_of_PHI1(d, [&] (Dart it)
 		{
 			this->set_boundary(e, true);
 			phi2_sew(it, e);
@@ -379,10 +365,10 @@ protected:
 
 	inline Dart add_tetra_topo()
 	{
-		Dart f1 = this->add_tri_topo_fp();
-		Dart f2 = this->add_tri_topo_fp();
-		Dart f3 = this->add_tri_topo_fp();
-		Dart f4 = this->add_tri_topo_fp();
+		Dart f1 = add_tri_topo_fp();
+		Dart f2 = add_tri_topo_fp();
+		Dart f3 = add_tri_topo_fp();
+		Dart f4 = add_tri_topo_fp();
 
 		phi2_sew(phi_1(f2), phi1(f1));
 		phi2_sew(phi_1(f3), phi1(f2));
@@ -467,10 +453,17 @@ protected:
 			Dart xe1  = phi2(e1);
 			Dart xe11 = phi2(e11);
 
-			phi2_sew_nocheck(d1,xd11);
-			phi2_sew_nocheck(d11,xe1);
-			phi2_sew_nocheck(e1,xe11);
-			phi2_sew_nocheck(e11,xd1);
+#ifndef	NDEBUG
+			phi2_unsew(d1);
+			phi2_unsew(d11);
+			phi2_unsew(e1);
+			phi2_unsew(e11);
+#endif
+
+			phi2_sew(d1,xd11);
+			phi2_sew(d11,xe1);
+			phi2_sew(e1,xe11);
+			phi2_sew(e11,xd1);
 
 			return true;
 		}
@@ -534,8 +527,15 @@ protected:
 		Dart res = phi2(phi_1(d));
 		Dart e = phi2(d);
 
-		phi2_sew_nocheck(phi<12>(d),res);
-		phi2_sew_nocheck(phi<12>(e),phi2(phi_1(e)));
+#ifndef	NDEBUG
+		phi2_unsew(phi<12>(d));
+		phi2_unsew(res);
+		phi2_unsew(phi<12>(e));
+		phi2_unsew(phi2(phi_1(e)));
+#endif
+
+		phi2_sew(phi<12>(d),res);
+		phi2_sew(phi<12>(e),phi2(phi_1(e)));
 
 		remove_tri_topo_fp(d);
 		remove_tri_topo_fp(e);
@@ -579,31 +579,37 @@ public:
 protected:
 	/**
 	 * @brief split a vertex into an edge (2 triangles are inserted) TOPO ONLY
-	 * @param v1 Vertex to split (dart give edge to be replaced by a triangle)
-	 * @param v2 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @param d1 Dart of vertex to split (dart give edge to be replaced by a triangle)
+	 * @param d2 Dart of vertex to split (dart give edge to be replaced by a triangle)
 	 * @return a dart of the inserted edge
 	 */
-	Dart split_vertex_topo(Vertex v1, Vertex v2)
+	Dart split_vertex_topo(Dart d1, Dart d2)
 	{
-		cgogn_message_assert(this->same_orbit(v1,v2), "CMap2Tri::split_vertex_topo:v1 & v2 must be the same vertex");
-		cgogn_message_assert(v1.dart != v2.dart, "CMap2Tri::split_vertex_topo:v1 & v2 must be different darts ");
+		cgogn_message_assert(this->same_orbit(Vertex(d1),Vertex(d2)), "CMap2Tri::split_vertex_topo:d1 & d2 must be the same vertex");
+		cgogn_message_assert(d1 != d2, "CMap2Tri::split_vertex_topo:d1 & d2 must be different darts ");
 
-		Dart e1  = v1.dart;
+		Dart e1  = d1;
 		Dart ee1 = phi2(e1);
-		Dart e2  = v2.dart;
+		Dart e2  = d2;
 		Dart ee2 = phi2(e2);
 
+#ifndef	NDEBUG
+		phi2_unsew(e1);
+		phi2_unsew(ee1);
+		phi2_unsew(e2);
+		phi2_unsew(ee2);
+#endif
 
 		Dart f1 = add_tri_topo_fp();
 		Dart f2 = add_tri_topo_fp();
 
 		phi2_sew(f1,f2);
 
-		phi2_sew_nocheck(phi1(f1),ee1);
-		phi2_sew_nocheck(phi_1(f1),e1);
+		phi2_sew(phi1(f1),ee1);
+		phi2_sew(phi_1(f1),e1);
 
-		phi2_sew_nocheck(phi1(f2),ee2);
-		phi2_sew_nocheck(phi_1(f2),e2);
+		phi2_sew(phi1(f2),ee2);
+		phi2_sew(phi_1(f2),e2);
 
 		return f1;
 	}
@@ -612,13 +618,13 @@ public:
 
 	/**
 	 * @brief split a vertex into an edge (2 triangles are inserted)
-	 * @param v1 Vertex to split (dart give edge to be replaced by a triangle)
-	 * @param v2 Vertex to split (dart give edge to be replaced by a triangle)
+	 * @param d1 Dart of vertex to split (dart give edge to be replaced by a triangle)
+	 * @param d2 Dart of vertex to split (dart give edge to be replaced by a triangle)
 	 * @return the inserted edge
 	 */
-	Edge split_vertex(Vertex v1, Vertex v2)
+	Edge split_vertex(Dart d1, Dart d2)
 	{
-		Edge res_edge(split_vertex_topo(v1,v2));
+		Edge res_edge(split_vertex_topo(d1,d2));
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -634,11 +640,11 @@ public:
 		if (this->template is_embedded<Vertex>())
 		{
 			this->new_orbit_embedding(Vertex(res_edge.dart));
-			Dart d1 = phi2(res_edge.dart);
-			Dart d0 = phi2(phi_1(d1));
-			this->template copy_embedding<Vertex>(d1,d0);
-			Dart d2 = phi1(res_edge.dart);
-			this->template copy_embedding<Vertex>(d2,d0);
+			Dart vd1 = phi2(res_edge.dart);
+			Dart d0 = phi2(phi_1(vd1));
+			this->template copy_embedding<Vertex>(vd1,d0);
+			Dart vd2 = phi1(res_edge.dart);
+			this->template copy_embedding<Vertex>(vd2,d0);
 
 			foreach_incident_face(res_edge, [this] (Face nf)
 			{
@@ -700,6 +706,13 @@ protected:
 		d = phi1(d);
 		Dart e4 = phi2(d);
 
+#ifndef	NDEBUG
+		phi2_unsew(e1);
+		phi2_unsew(e2);
+		phi2_unsew(e3);
+		phi2_unsew(e4);
+#endif
+
 		remove_tri_topo_fp(e.dart);
 		remove_tri_topo_fp(phi2(e.dart));
 
@@ -713,10 +726,10 @@ protected:
 		phi2_sew(phi1(f1),phi_1(f2));
 		phi2_sew(phi1(f3),phi_1(f4));
 
-		phi2_sew_nocheck(phi_1(f1),e2);
-		phi2_sew_nocheck(phi1(f2),e1);
-		phi2_sew_nocheck(phi_1(f3),e4);
-		phi2_sew_nocheck(phi1(f4),e3);
+		phi2_sew(phi_1(f1),e2);
+		phi2_sew(phi1(f2),e1);
+		phi2_sew(phi_1(f3),e4);
+		phi2_sew(phi1(f4),e3);
 
 		return f2;
 	}
@@ -777,7 +790,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			uint32 emb = this->embedding(Volume(this->template phi<12>(nv.dart)));
+			uint32 emb = this->embedding(Volume(phi<12>(nv.dart)));
 			foreach_incident_face(nv, [this, emb] (Face nf)
 			{
 				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
@@ -802,15 +815,24 @@ protected:
 		Dart e2 = phi2(phi1(f.dart));
 		Dart e3 = phi2(phi_1(f.dart));
 
+#ifndef	NDEBUG
+		phi2_unsew(e1);
+		phi2_unsew(e2);
+		phi2_unsew(e3);
+
+#endif
+
 		Dart f1 = add_tri_topo_fp();
 		Dart f2 = add_tri_topo_fp();
 		Dart f3 = add_tri_topo_fp();
+
 		phi2_sew(phi1(f1),phi_1(f2));
 		phi2_sew(phi1(f2),phi_1(f3));
 		phi2_sew(phi1(f3),phi_1(f1));
-		phi2_sew_nocheck(e1,f1);
-		phi2_sew_nocheck(e2,f2);
-		phi2_sew_nocheck(e3,f3);
+
+		phi2_sew(e1,f1);
+		phi2_sew(e2,f2);
+		phi2_sew(e3,f3);
 		remove_tri_topo_fp(f.dart);
 
 		return Vertex(phi_1(f1));
@@ -821,6 +843,7 @@ public:
 	/**
 	 * @brief split a triangle in 3 triangles
 	 * @param f
+	 * @return centroid vertex inserted
 	 */
 	Vertex split_triangle(Face f)
 	{
@@ -1069,7 +1092,7 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1(c.dart, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
@@ -1161,7 +1184,7 @@ protected:
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: this->foreach_dart_of_PHI1_until(c.dart, f); break;
+			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
 			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
@@ -1321,7 +1344,7 @@ public:
 			if (!this->is_boundary(vd))
 			{
 				Dart vd1 = phi1(vd);
-				this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
+				foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
 				{
 					// skip Vertex v itself and its first successor around current face
 					if (fd != vd && fd != vd1)
@@ -1337,7 +1360,7 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
-			this->foreach_dart_of_orbit(Vertex(ed), [&, ed] (Dart vd)
+			foreach_dart_of_orbit(Vertex(ed), [&, ed] (Dart vd)
 			{
 					// skip Edge e itself
 					if (vd != ed)
@@ -1354,7 +1377,7 @@ public:
 		{
 			if (!this->is_boundary(ed))
 			{
-				this->foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
+				foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
 				{
 					// skip Edge e itself
 					if (fd != ed)
@@ -1371,7 +1394,7 @@ public:
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = phi2(phi_1(fd));
-			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
+			foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
