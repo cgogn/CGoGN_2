@@ -24,6 +24,8 @@
 #ifndef CGOGN_IO_OFF_IO_H_
 #define CGOGN_IO_OFF_IO_H_
 
+#include <cgogn/core/cmap/cmap3.h>
+
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
@@ -326,7 +328,7 @@ private:
 
 		map.foreach_cell([&] (Vertex v)
 		{
-			this->position_attribute_->export_element(map.embedding(v), output, true, false);
+			this->position_attribute_->export_element(map.embedding(v), output, true, false,4ul);
 		}, *(this->cell_cache_));
 
 

@@ -55,49 +55,49 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
-template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool little_endian, bool binary, const T& x);
-template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array);
-template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array);
+template <typename T, std::size_t Precision = UINT64_MAX>
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+template <typename T, std::size_t Precision = UINT64_MAX>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+template <typename T, std::size_t Precision = UINT64_MAX>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 
-template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& x)
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary, bool little_endian)
 {
 	if (binary)
-		if (little_endian == internal::cgogn_is_little_endian)
-			save(o,&x,1ul);
-		else
-		{
-			const T& tmp = swap_endianness(x);
-			save(o,&tmp,1ul);
-		}
-	else
+	{
+		typename fixed_precision<T,Precision>::type tmp(x);
+		if (little_endian != internal::cgogn_is_little_endian)
+			tmp = swap_endianness(tmp);
+		save(o,&tmp,1ul);
+	} else
 		o << x;
 }
 
-template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array)
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
+	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array[0])>::type>::type;
 	const std::size_t size = array.size();
 	for(std::size_t i = 0ul ; i < size -1ul; ++i)
 	{
-		ostream_writer(o, binary, little_endian, array[i]);
+		ostream_writer<nested_type, Precision>(o, array[i], binary, little_endian);
 		if (!binary)
 			o << " ";
 	}
-	ostream_writer(o, binary,little_endian, array[size-1ul]);
+	ostream_writer<nested_type, Precision>(o, array[size-1ul], binary,little_endian);
 }
 
-template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array)
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
+	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(*(array.begin()))>::type>::type;
 	const auto end = array.end();
 
 	for (auto it = array.begin(); it != end; )
 	{
-		ostream_writer(o, binary, little_endian, *it);
+		ostream_writer<nested_type,Precision>(o,(*it), binary, little_endian);
 		++it;
 		if ((!binary) && it != end)
 			o << " ";

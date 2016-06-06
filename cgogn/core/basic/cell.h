@@ -121,7 +121,7 @@ public:
 	 * \retval true if the cell is valid
 	 * \retval false otherwise
 	 */
-	inline bool is_valid() const { return !dart.is_nil(); }
+	inline bool is_valid() const { return !dart.is_nil(); } const
 
 	/**
 	 * \brief Assigns to the left hand side cell the value

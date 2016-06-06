@@ -192,7 +192,7 @@ public:
 	 */
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian) const = 0;
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = UINT64_MAX) const = 0;
 
 	/**
 	 * @brief load
