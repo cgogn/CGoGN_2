@@ -120,20 +120,6 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 
 
 template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type swap_endianness(const T& x)
-{
-	return ::cgogn::swap_endianness(x);
-}
-
-template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endianness(T& x)
-{
-	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
-		x[i] = ::cgogn::swap_endianness(x[i]);
-	return x;
-}
-
-template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
