@@ -27,9 +27,9 @@
 #include <fstream>
 
 #include <cgogn/core/utils/numerics.h>
-
-#include <cgogn/io/dll.h>
+#include <cgogn/core/utils/masks.h>
 #include <cgogn/io/c_locale.h>
+#include <cgogn/io/io_utils.h>
 
 namespace cgogn
 {
@@ -67,6 +67,81 @@ protected:
 		return line;
 	}
 };
+
+template<typename MAP>
+class MeshExport
+{
+public:
+	using Map = MAP;
+	using Self = MeshExport<Map>;
+	using Vertex = typename Map::Vertex;
+	using ChunkArrayGen = typename Map::ChunkArrayGen;
+	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
+	template<typename T>
+	using VertexAttribute = typename Map::template VertexAttribute<T>;
+	using CellCache = cgogn::CellCache<Map>;
+
+	inline MeshExport() :
+		position_attribute_(nullptr),
+		cell_cache_(nullptr)
+	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshExport);
+
+	void export_file(Map& map, const ExportOptions& options)
+	{
+		Scoped_C_Locale loc;
+		this->reset();
+
+		this->cell_cache_ = cgogn::make_unique<CellCache>(map);
+		cgogn_assert(cell_cache_);
+		cell_cache_->template build<Vertex>();
+
+		auto output = io::create_file(options.filename_);
+		if (!output || !output->good())
+			return;
+
+		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert_export");
+
+		this->prepare_for_export(map, options);
+
+		if (position_attribute_ == nullptr)
+		{
+			cgogn_log_warning("MeshExport::export_file") << "The position attribute is invalid.";
+			return;
+		}
+
+		this->export_file_impl(map,*output, options);
+		map.remove_attribute(indices_);
+	}
+
+	virtual ~MeshExport() {}
+protected:
+	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
+	{
+		return vertex_attributes_;
+	}
+
+	ChunkArrayGen const * position_attribute() const
+	{
+		return position_attribute_;
+	}
+
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
+	virtual void prepare_for_export(Map& map, const ExportOptions& options) = 0;
+	virtual void reset()
+	{
+		position_attribute_ = nullptr;
+		vertex_attributes_.clear();
+		cell_cache_.reset();
+	}
+
+	VertexAttribute<uint32>		indices_;
+	std::vector<ChunkArrayGen*>	vertex_attributes_;
+	ChunkArrayGen*				position_attribute_;
+	std::unique_ptr<CellCache>	cell_cache_;
+};
+
 
 } // namespace io
 

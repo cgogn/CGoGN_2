@@ -36,6 +36,7 @@
 #include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
 
 namespace cgogn
 {
@@ -438,9 +439,9 @@ public:
 		return type_traits::nb_components(this->operator[](0u));
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian) const override
 	{
-		serialization::ostream_writer(o, binary, this->operator[](idx));
+			serialization::ostream_writer(o, binary, little_endian, this->operator[](idx));
 	}
 };
 
@@ -798,9 +799,9 @@ public:
 		return 1u;
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian) const override
 	{
-		serialization::ostream_writer(o,binary, this->operator[](idx));
+		serialization::ostream_writer(o,binary, little_endian, this->operator[](idx));
 	}
 };
 

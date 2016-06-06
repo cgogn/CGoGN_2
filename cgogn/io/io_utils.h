@@ -30,6 +30,7 @@
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/basic/cell.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/io/dll.h>
 
@@ -38,6 +39,19 @@ namespace cgogn
 
 namespace io
 {
+
+struct ExportOptions
+{
+	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary) :
+		filename_(filename)
+	  ,binary_(binary)
+	  ,attributes_to_export_(attributes)
+	{}
+
+	std::string filename_;
+	bool binary_;
+	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
+};
 
 enum FileType
 {

@@ -6,6 +6,7 @@
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/cmap/cmap2.h>
 #include <cgogn/io/map_import.h>
+#include <cgogn/io/map_export.h>
 #include <cgogn/geometry/algos/normal.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -19,7 +20,7 @@ struct MyMapTraits : public cgogn::DefaultMapTraits
 
 using Map2 = cgogn::CMap2<MyMapTraits>;
 
-using Vec3 = Eigen::Vector3d;
+using Vec3 = Eigen::Vector3f;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
@@ -108,5 +109,8 @@ int main(int argc, char** argv)
 		cgogn_log_info("cmap2_import") << "elapsed time: " << elapsed_seconds.count() << "s";
 	}
 
+	std::vector<std::pair<cgogn::Orbit, std::string>> attribs;
+	attribs.push_back(std::make_pair(cgogn::Orbit(Map2::Vertex::ORBIT), std::string("position")));
+	cgogn::io::export_surface(map, cgogn::io::ExportOptions("test.off", attribs, true));
 	return 0;
 }

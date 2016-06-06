@@ -28,10 +28,9 @@
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
-
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/io_utils.h>
-#include <cgogn/io/c_locale.h>
+#include <cgogn/io/mesh_io_gen.h>
 
 namespace cgogn
 {
@@ -39,24 +38,11 @@ namespace cgogn
 namespace io
 {
 
-struct ExportOptions
-{
-	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary) :
-		filename_(filename)
-	  ,binary_(binary)
-	  ,attributes_to_export_(attributes)
-	{}
-
-	std::string filename_;
-	bool binary_;
-	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
-};
-
 template <typename MAP>
-class VolumeExport
+class VolumeExport : public MeshExport<MAP>
 {
 public:
-
+	using Inherit = MeshExport<MAP>;
 	using Self = VolumeExport<MAP>;
 	using Map = MAP;
 	using Vertex = typename Map::Vertex;
@@ -71,18 +57,15 @@ public:
 	  ,nb_pyramids_(0u)
 	  ,nb_triangular_prisms_(0u)
 	  ,nb_hexas_(0u)
-	  ,vertex_attributes_()
 	  ,volume_attributes_()
-	  ,position_attribute_(nullptr)
 	{}
 
-	virtual ~VolumeExport()
+	virtual ~VolumeExport() override
 	{}
 
-	void export_file(Map& map, const ExportOptions& options)
+	protected:
+	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
-		Scoped_C_Locale loc;
-		this->reset();
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
 		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
 
@@ -92,11 +75,11 @@ public:
 			{
 				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (pair.second == "position")
-					position_attribute_ = ver_cag;
+					this->position_attribute_ = ver_cag;
 				else
 				{
 					if (ver_cag)
-						vertex_attributes_.push_back(ver_cag);
+						this->vertex_attributes_.push_back(ver_cag);
 				}
 			}
 			else
@@ -107,24 +90,98 @@ public:
 			}
 		}
 
-		if (position_attribute_ == nullptr)
+		this->cell_cache_->template build<Volume>();
+		number_of_vertices_.reserve(map.template nb_cells<Volume::ORBIT>());
+		vertices_of_volumes_.reserve(4u* number_of_vertices_.capacity());
+
+		uint32 count{0u};
+		map.foreach_cell([&] (Vertex v) { this->indices_[v] = count++;}
+		, *(this->cell_cache_));
+
+		const auto& ids = this->indices_;
+		map.foreach_cell([&] (Volume w)
 		{
-			cgogn_log_warning("VolumeExport::export_file") << "The position attribute is invalid.";
-			return;
-		}
+			uint32 nb_vert{0u};
+			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
+			Dart it = w.dart;
 
-		auto output = io::create_file(options.filename_);
-		if (!output || !output->good())
-			return;
-		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert");
-		this->prepare_for_export(map);
-		this->export_file_impl(map,*output, options);
-		map.remove_attribute(indices_);
+			if (nb_vert == 4u)
+			{
+				number_of_vertices_.push_back(4u);
+				++nb_tetras_;
+				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				it = map.phi1(it);
+				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				it = map.phi1(it);
+				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				it = map.template phi<211>(it);
+				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+			}
+			else
+			{
+				if (nb_vert == 5u)
+				{
+					number_of_vertices_.push_back(5u);
+					++nb_pyramids_;
+					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					it = map.phi1(it);
+					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					it = map.phi1(it);
+					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					it = map.phi1(it);
+					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					it = map.template phi<212>(it);
+					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				}
+				else
+				{
+					if (nb_vert == 6u)
+					{
+						number_of_vertices_.push_back(6u);
+						++nb_triangular_prisms_;
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						it = map.phi1(it);
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						it = map.phi1(it);
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						it = map.template phi<21121>(w.dart);
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						it = map.phi_1(it);
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						it = map.phi_1(it);
+						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					}
+					else
+					{
+						if (nb_vert == 8u)
+						{
+							number_of_vertices_.push_back(8u);
+							++nb_hexas_;
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi_1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi_1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi_1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.template phi<21121>(w.dart);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							it = map.phi1(it);
+							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						}
+						else
+						{
+							cgogn_log_warning("VolumeExport::prepare_for_export") << "Unknown volume with " << nb_vert << " vertices. Ignoring.";
+						}
+					}
+				}
+			}
+		}, *(this->cell_cache_));
 	}
-
-protected:
-
-	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
 
 	inline uint32 nb_tetras() const
 	{
@@ -156,139 +213,37 @@ protected:
 		return number_of_vertices_;
 	}
 
-	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
-	{
-		return vertex_attributes_;
-	}
-
 	inline std::vector<ChunkArrayGen*> const & volume_attributes() const
 	{
 		return volume_attributes_;
 	}
 
-	ChunkArrayGen const * position_attribute() const
-	{
-		return position_attribute_;
-	}
-
 private:
 
-	void prepare_for_export(Map& map)
+	void reset() override
 	{
-		number_of_vertices_.reserve(map.template nb_cells<Volume::ORBIT>());
-		vertices_of_volumes_.reserve(4u* number_of_vertices_.capacity());
-
-		uint32 count{0u};
-		map.foreach_cell([&] (Vertex v) { indices_[v] = count++;} );
-
-		map.foreach_cell([&] (Volume w)
-		{
-			uint32 nb_vert{0u};
-			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
-			Dart it = w.dart;
-
-			if (nb_vert == 4u)
-			{
-				number_of_vertices_.push_back(4u);
-				++nb_tetras_;
-				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-				it = map.phi1(it);
-				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-				it = map.phi1(it);
-				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-				it = map.template phi<211>(it);
-				vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-			}
-			else
-			{
-				if (nb_vert == 5u)
-				{
-					number_of_vertices_.push_back(5u);
-					++nb_pyramids_;
-					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					it = map.phi1(it);
-					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					it = map.phi1(it);
-					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					it = map.phi1(it);
-					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					it = map.template phi<212>(it);
-					vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-				}
-				else
-				{
-					if (nb_vert == 6u)
-					{
-						number_of_vertices_.push_back(6u);
-						++nb_triangular_prisms_;
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						it = map.phi1(it);
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						it = map.phi1(it);
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						it = map.template phi<21121>(w.dart);
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						it = map.phi_1(it);
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						it = map.phi_1(it);
-						vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-					}
-					else
-					{
-						if (nb_vert == 8u)
-						{
-							number_of_vertices_.push_back(8u);
-							++nb_hexas_;
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.template phi<21121>(w.dart);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-							it = map.phi1(it);
-							vertices_of_volumes_.push_back(indices_[Vertex(it)]);
-						}
-						else
-						{
-							cgogn_log_warning("VolumeExport::prepare_for_export") << "Unknown volume with " << nb_vert << " vertices. Ignoring.";
-						}
-					}
-				}
-			}
-		});
-	}
-
-	void reset()
-	{
+		Inherit::reset();
 		vertices_of_volumes_.clear();
 		number_of_vertices_.clear();
 		nb_tetras_ = 0u;
 		nb_pyramids_ = 0u;
 		nb_triangular_prisms_ = 0u;
 		nb_hexas_ = 0u;
-		vertex_attributes_.clear();
 		volume_attributes_.clear();
-		position_attribute_ = nullptr;
 	}
 
 	std::vector<uint32>	vertices_of_volumes_;
 	std::vector<uint32>	number_of_vertices_;
-	typename Map::template Attribute<uint32, Vertex::ORBIT> indices_;
 	uint32 nb_tetras_;
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
 	uint32 nb_hexas_;
-	std::vector<ChunkArrayGen*>	vertex_attributes_;
 	std::vector<ChunkArrayGen*>	volume_attributes_;
-	ChunkArrayGen*				position_attribute_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
+extern template class CGOGN_IO_API VolumeExport<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
 
 } // namespace io
 

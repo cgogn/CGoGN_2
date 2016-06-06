@@ -168,7 +168,7 @@ protected:
 
 		map.foreach_cell([&](Vertex v)
 		{
-			pos->export_element(map.embedding(v), output, false);
+			pos->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		});
 

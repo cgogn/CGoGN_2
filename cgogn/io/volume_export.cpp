@@ -20,22 +20,19 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
 #define CGOGN_IO_DLL_EXPORT
-#define CGOGN_IO_OFF_IO_CPP_
+#define CGOGN_IO_VOLUME_EXPORT_CPP_
 
-#include <cgogn/io/off_io.h>
+#include <cgogn/io/volume_export.h>
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-template class CGOGN_IO_API OffSurfaceExport<CMap2<DefaultMapTraits>>;
+template class CGOGN_IO_API VolumeExport<CMap3<DefaultMapTraits>>;
 
 } // namespace io
+
 } // namespace cgogn

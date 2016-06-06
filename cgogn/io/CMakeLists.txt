@@ -29,12 +29,14 @@ set(HEADER_FILES
 	tetgen_io.h
 	nastran_io.h
 	tet_io.h
-        volume_export.h
+	surface_export.h
+	volume_export.h
 )
 
 set(SOURCE_FILES
 	surface_import.cpp
 	volume_import.cpp
+	volume_export.cpp
 	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp

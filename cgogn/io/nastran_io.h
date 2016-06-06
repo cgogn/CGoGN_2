@@ -240,13 +240,13 @@ protected:
 			output << "        ";
 			output << std::left;
 			std::stringstream position_stream;
-			pos->export_element(map.embedding(v), position_stream, false);
+			pos->export_element(map.embedding(v), position_stream, false, false);
 			float32 tmp[3];
 			position_stream >> tmp[0];
 			position_stream >> tmp[1];
 			position_stream >> tmp[2];
 			output << std::setw(8) << trunc_float_to8(tmp[0]) << std::setw(8) << trunc_float_to8(tmp[1]) << std::setw(8) << trunc_float_to8(tmp[2]) << std::endl;
-		});
+		}, *(this->cell_cache_));
 
 		count = 1u;
 		auto vertices_it = this->vertices_of_volumes().begin();

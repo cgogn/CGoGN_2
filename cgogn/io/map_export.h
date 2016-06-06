@@ -40,6 +40,8 @@
 #include <cgogn/io/msh_io.h>
 #include <cgogn/io/nastran_io.h>
 #include <cgogn/io/tet_io.h>
+#include <cgogn/io/off_io.h>
+#include <cgogn/io/surface_export.h>
 
 namespace cgogn
 {
@@ -48,17 +50,46 @@ namespace io
 {
 
 template <typename MAP>
+inline std::unique_ptr<SurfaceExport<MAP>> new_surface_export(const std::string& filename);
+
+template <typename MAP>
 inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& filename);
+
+template <class MAP>
+inline void export_surface(MAP& map2, const ExportOptions& options);
 
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options);
 
 template <class MAP>
+inline void export_surface(MAP& map2, const ExportOptions& options)
+{
+	static_assert(MAP::DIMENSION == 2,"export_surface is designed for 2D maps.");
+	auto se = new_surface_export<MAP>(options.filename_);
+	if (se)
+		se->export_file(map2,options);
+}
+
+template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options)
 {
+	static_assert(MAP::DIMENSION == 3,"export_volume is designed for 3D maps.");
 	auto ve = new_volume_export<MAP>(options.filename_);
 	if (ve)
 		ve->export_file(map3,options);
+}
+
+template <typename MAP>
+inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch (ft)
+	{
+		case FileType::FileType_OFF:		return make_unique<OffSurfaceExport<MAP>>();
+		default:
+			cgogn_log_warning("new_surface_export") << "SurfaceExport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<SurfaceExport<MAP>>();
+	}
 }
 
 template <typename MAP>
@@ -73,195 +104,9 @@ inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& 
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
 		default:
-			cgogn_log_warning("newVolumeExport") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
+			cgogn_log_warning("new_volume_export") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeExport<MAP>>();
 	}
-}
-
-/**
- * @brief export surface in off format
- * @param map the map to export
- * @param position the position attribute of vertices
- * @param filename the name of file to save
- * @return ok ?
- */
-template <typename VEC3, typename MAP>
-bool export_off(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
-{
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
-
-	std::ofstream fp(filename.c_str(), std::ios::out);
-	if (!fp.good())
-	{
-		cgogn_log_warning("export_off") << "Unable to open file \"" << filename << "\".";
-		return false;
-	}
-
-	fp << "OFF" << std::endl;
-	fp << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Face::ORBIT>() << " 0" << std::endl; // nb_edge unused ?
-
-	// set precision for real output
-	fp << std::setprecision(12);
-
-	// two pass of traversal to avoid huge buffer (with same performance);
-
-	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_values(UINT_MAX);
-
-	uint32 count = 0;
-
-	map.foreach_cell([&] (Face f)
-	{
-		map.foreach_incident_vertex(f, [&] (Vertex v)
-		{
-			if (ids[v] == UINT_MAX)
-			{
-				ids[v] = count++;
-				const VEC3& P = position[v];
-				fp << P[0] << " " << P[1] << " " << P[2] << std::endl;
-			}
-		});
-	});
-
-	// second pass to save primitives
-	std::vector<uint32> prim;
-	prim.reserve(20);
-	map.foreach_cell([&] (Face f)
-	{
-		uint32 valence = 0;
-		prim.clear();
-
-		map.foreach_incident_vertex(f, [&] (Vertex v)
-		{
-			prim.push_back(ids[v]);
-			++valence;
-		});
-		fp << valence;
-		for(uint32 i: prim)
-			fp << " " << i;
-		fp << std::endl;
-
-	});
-
-	map.remove_attribute(ids);
-	fp.close();
-	return true;
-}
-
-/**
- * @brief export surface in off format
- * @param map the map to export
- * @param position the position attribute of vertices
- * @param filename the name of file to save
- * @return ok ?
- */
-template <typename VEC3, typename MAP>
-bool export_off_bin(MAP& map, const typename MAP::template VertexAttribute<VEC3>& position, const std::string& filename)
-{
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
-
-	std::ofstream fp(filename.c_str(), std::ios::out|std::ofstream::binary);
-	if (!fp.good())
-	{
-		cgogn_log_warning("export_off_bin") << "Unable to open file \"" << filename << "\".";
-		return false;
-	}
-
-	fp << "OFF BINARY"<< std::endl;
-
-	uint32 nb_cells[3];
-	nb_cells[0] = swap_endianness_native_big(map.template nb_cells<Vertex::ORBIT>());
-	nb_cells[1] = swap_endianness_native_big(map.template nb_cells<Vertex::ORBIT>());
-	nb_cells[2] = 0;
-
-	fp.write(reinterpret_cast<char*>(nb_cells),3*sizeof(uint32));
-
-	// two pass of traversal to avoid huge buffer (with same performance);
-
-	// first pass to save positions & store contiguous indices
-	typename MAP::template VertexAttribute<uint32> ids = map.template add_attribute<uint32, Vertex::ORBIT>("indices");
-	ids.set_all_values(UINT_MAX);
-
-	uint32 count = 0;
-	static const uint32 BUFFER_SZ = 1024 * 1024;
-
-	std::vector<float32> buffer_pos;
-	buffer_pos.reserve(BUFFER_SZ + 3);
-
-	map.foreach_cell([&] (Face f)
-	{
-		map.foreach_incident_vertex(f, [&] (Vertex v)
-		{
-			if (ids[v] == UINT_MAX)
-			{
-				ids[v] = count++;
-				VEC3 P = position[v];
-				// VEC3 can be double !
-				float32 Pf[3] = { float32(P[0]), float32(P[1]), float32(P[2]) };
-				uint32* ui_vec = reinterpret_cast<uint32*>(Pf);
-				ui_vec[0] = swap_endianness_native_big(ui_vec[0]);
-				ui_vec[1] = swap_endianness_native_big(ui_vec[1]);
-				ui_vec[2] = swap_endianness_native_big(ui_vec[2]);
-
-				buffer_pos.push_back(Pf[0]);
-				buffer_pos.push_back(Pf[1]);
-				buffer_pos.push_back(Pf[2]);
-
-				if (buffer_pos.size() >= BUFFER_SZ)
-				{
-					fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
-					buffer_pos.clear();
-				}
-			}
-		});
-	});
-	if (!buffer_pos.empty())
-	{
-		fp.write(reinterpret_cast<char*>(&(buffer_pos[0])),buffer_pos.size()*sizeof(float32));
-		buffer_pos.clear();
-		buffer_pos.shrink_to_fit();
-	}
-
-	// second pass to save primitives
-	std::vector<uint32> buffer_prims;
-	buffer_prims.reserve(BUFFER_SZ + 128);// + 128 to avoid re-allocations
-
-	std::vector<uint32> prim;
-	prim.reserve(20);
-	map.foreach_cell([&] (Face f)
-	{
-		uint32 valence = 0;
-		prim.clear();
-
-		map.foreach_incident_vertex(f, [&] (Vertex v)
-		{
-			prim.push_back(ids[v]);
-			++valence;
-		});
-
-		buffer_prims.push_back(swap_endianness_native_big(valence));
-		for(uint32 i: prim)
-			buffer_prims.push_back(swap_endianness_native_big(i));
-
-		if (buffer_prims.size() >= BUFFER_SZ)
-		{
-			fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
-			buffer_prims.clear();
-		}
-	});
-	if (!buffer_prims.empty())
-	{
-		fp.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
-		buffer_prims.clear();
-		buffer_prims.shrink_to_fit();
-	}
-
-	map.remove_attribute(ids);
-	fp.close();
-	return true;
 }
 
 /**

@@ -30,6 +30,7 @@
 #include <array>
 
 #include <cgogn/core/utils/assert.h>
+#include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/type_traits.h>
 #include <cgogn/core/dll.h>
@@ -55,42 +56,48 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 }
 
 template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x);
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool little_endian, bool binary, const T& x);
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array);
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array);
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array);
 
 template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& x)
+inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& x)
 {
 	if (binary)
-		save(o,&x,1ul);
+		if (little_endian == internal::cgogn_is_little_endian)
+			save(o,&x,1ul);
+		else
+		{
+			const T& tmp = swap_endianness(x);
+			save(o,&tmp,1ul);
+		}
 	else
 		o << x;
 }
 
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array)
 {
 	const std::size_t size = array.size();
 	for(std::size_t i = 0ul ; i < size -1ul; ++i)
 	{
-		ostream_writer(o, binary, array[i]);
+		ostream_writer(o, binary, little_endian, array[i]);
 		if (!binary)
 			o << " ";
 	}
-	ostream_writer(o, binary, array[size-1ul]);
+	ostream_writer(o, binary,little_endian, array[size-1ul]);
 }
 
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, const T& array)
+inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, bool binary, bool little_endian, const T& array)
 {
 	const auto end = array.end();
 
 	for (auto it = array.begin(); it != end; )
 	{
-		ostream_writer(o, binary, *it);
+		ostream_writer(o, binary, little_endian, *it);
 		++it;
 		if ((!binary) && it != end)
 			o << " ";

@@ -501,9 +501,9 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_element(map.embedding(v), output, false);
+			pos->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
-		});
+		}, *(this->cell_cache_));
 		output << "$ENDNOD" << std::endl;
 
 		// 2. volumes
