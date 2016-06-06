@@ -351,10 +351,10 @@ TEST_F(CMap3TopoTest, close_map)
 //				while (it != e)
 //				{
 //					Dart next = phi1(it);
-//					this->remove_dart(it);
+//					this->remove_topology_element(it);
 //					it = next;
 //				}
-//				this->remove_dart(e);
+//				this->remove_topology_element(e);
 //			}
 //		}
 //	}
