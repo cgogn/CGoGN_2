@@ -495,7 +495,7 @@ public:
 	 * @brief Flip an edge
 	 * @param e : the edge to flip
 	 * The two endpoints of the given edge are moved to the next vertices
-	 * of their two adjacent faces
+	 * of their two incident faces
 	 */
 	inline void flip_edge(Edge e)
 	{
@@ -570,11 +570,54 @@ protected:
 		// TODO
 	}
 
-	void merge_adjacent_faces_topo(Dart d)
+	/**
+	 * \brief Merge the two faces incident to the edge of d by removing the edge of d
+	 * \param d : dart of the edge
+	 * \return true if the faces have been merged, false otherwise
+	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
+	 * If the edge of d is incident to the boundary, nothing is done.
+	 */
+	bool merge_incident_faces_topo(Dart d)
 	{
-		Dart e = this->phi2(d);
-		// TODO
+		Dart d2 = this->phi2(d);
+		if (!this->is_boundary(d) && !this->is_boundary(d2))
+		{
+			this->phi1_sew(this->phi_1(d), d2);
+			this->phi1_sew(this->phi_1(d2), d);
+			this->remove_face_topo(d);
+			return true;
+		}
+		return false;
 	}
+
+public:
+
+	/**
+	 * \brief Merge the two faces incident to the given edge
+	 * \param e : the edge
+	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
+	 * If the map has Face attributes, the attributes of the Face of e.dart are kept on the resulting face.
+	 * If the edge of d is incident to the boundary, nothing is done.
+	 */
+	void merge_incident_faces(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d1 = this->phi1(e.dart);
+		if (merge_incident_faces_topo(e.dart))
+		{
+			if (this->template is_embedded<Face>())
+			{
+				uint32 emb = this->embedding(Face(d1));
+				this->foreach_dart_of_PHI1(d1, [this, emb] (Dart d)
+				{
+					this->template set_embedding<Face>(d, emb);
+				});
+			}
+		}
+	}
+
+protected:
 
 	/**
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
@@ -806,6 +849,24 @@ public:
 		uint32 result = 0;
 		foreach_incident_face(v, [&result] (Face) { ++result; });
 		return result;
+	}
+
+	bool simple_closed_oriented_path(const std::vector<Dart>& path)
+	{
+		DartMarkerStore dm(*this);
+		Dart prev = path.back();
+		for (Dart d : path)
+		{
+			if(dm.is_marked(d))
+				return false;
+			dm.mark_orbit(Vertex(d));
+
+			if(!this->same_cell(Vertex(d), Vertex(this->phi1(prev))))
+				return false;
+
+			prev = d;
+		}
+		return true;
 	}
 
 	/*******************************************************************************

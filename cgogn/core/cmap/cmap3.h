@@ -527,6 +527,8 @@ protected:
 
 	Dart cut_volume_topo(const std::vector<Dart>& path)
 	{
+		cgogn_message_assert(this->simple_closed_oriented_path(path), "cut_volume_topo: the given path should be a simple closed oriented path");
+
 		Dart face1 = Inherit::Inherit::add_face_topo(path.size());
 		Dart face2 = Inherit::Inherit::add_face_topo(path.size());
 
