@@ -466,14 +466,12 @@ protected:
 		if (!this->is_boundary(d) && !this->is_boundary(e))
 		{
 			Dart d1 = this->phi1(d);
-			Dart d11 = this->phi1(d1);
 			Dart d_1 = this->phi_1(d);
 			Dart e1 = this->phi1(e);
-			Dart e11 = this->phi1(e1);
 			Dart e_1 = this->phi_1(e);
 
 			// Cannot flip edge whose incident faces have co-degree 1
-			if (d == d1  || e == e1 ) return false;
+			if (d == d1  || e == e1) return false;
 
 			// Both vertices have degree 1 and thus nothing is done // TODO may return true ?
 			if (d == e_1 && e == d_1) return false;
@@ -579,15 +577,15 @@ protected:
 	 */
 	bool merge_incident_faces_topo(Dart d)
 	{
+		if (this->is_incident_to_boundary(Edge(d)))
+			return false;
+
 		Dart d2 = this->phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(d2))
-		{
-			this->phi1_sew(this->phi_1(d), d2);
-			this->phi1_sew(this->phi_1(d2), d);
-			this->remove_face_topo(d);
-			return true;
-		}
-		return false;
+		this->phi1_sew(this->phi_1(d), d2);
+		this->phi1_sew(this->phi_1(d2), d);
+		this->remove_face_topo(d);
+
+		return true;
 	}
 
 public:
@@ -703,12 +701,20 @@ public:
 
 protected:
 
-	inline bool unsew_faces_topo(Edge g)
+	/**
+	 * @brief Unsew the faces incident to the edge of d
+	 * @param d : dart of the edge
+	 * @return true if the faces have been unsewn, false otherwise
+	 * The two faces are detached, a 2-sided boundary face is inserted.
+	 * For each of the two end vertices of the edge, if it is already incident to a boundary
+	 * face, the new boundary face is merged with the existing boundary, resulting in a separation
+	 * of the vertex into two vertices.
+	 */
+	inline bool unsew_faces_topo(Dart d)
 	{
-		if (this->is_incident_to_boundary(g))
+		if (this->is_incident_to_boundary(Edge(d)))
 			return false;
 
-		Dart d = g.dart;
 		Dart dd = phi2(d);
 
 		Dart e = Inherit::add_face_topo(2);
@@ -726,7 +732,6 @@ protected:
 			this->phi1_sew(ee, this->phi_1(ff));
 
 		phi2_unsew(d);
-
 		phi2_sew(d, e);
 		phi2_sew(dd, ee);
 
@@ -735,38 +740,53 @@ protected:
 
 public:
 
-	inline void unsew_faces(Edge d)
+	/**
+	 * @brief Unsew the faces incident to the edge of d
+	 * @param d : dart of the edge
+	 * @return true if the faces have been unsewn, false otherwise
+	 * The two faces are detached, a 2-sided boundary face is inserted.
+	 * For each of the two end vertices of the edge, if it is already incident to a boundary
+	 * face, the new boundary face is merged with the existing boundary, resulting in a split
+	 * of the vertex into two vertices.
+	 * If the map has Vertex attributes, in case of vertex split, the attributes of the vertices of e.dart
+	 * and phi2(e.dart) are kept on their side and new attributes are created for the new vertices
+	 * If the map has Edge attributes, a new attribute is created for the edge of phi2(e.dart)
+	 * If the map has Volume attribute, in the case of volume split, a new attribute is created
+	 * for the volume of phi2(e.dart)
+	 */
+	inline void unsew_faces(Edge e)
 	{
-		Dart e = phi2(d.dart);
+		Dart d = e.dart;
+		Dart d2 = phi2(d);
 		if (unsew_faces_topo(d))
 		{
 			if (this->template is_embedded<Vertex>())
 			{
-				Dart ee = this->phi1(e);
-				if (this->same_orbit(Vertex(d.dart), Vertex(ee)))
-					this->template copy_embedding<Vertex>(phi2(e), ee);
+				Dart d21 = this->phi1(d2);
+				if (this->same_orbit(Vertex(d), Vertex(d21)))
+					this->template copy_embedding<Vertex>(phi2(d2), d21);
 				else
-					this->new_orbit_embedding(Vertex(ee));
+					this->new_orbit_embedding(Vertex(d21));
 
-				Dart dd = this->phi1(d.dart);
-				if (this->same_orbit(Vertex(e), Vertex(dd)))
-					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
+				Dart d1 = this->phi1(d);
+				if (this->same_orbit(Vertex(d2), Vertex(d1)))
+					this->template copy_embedding<Vertex>(phi2(d), d1);
 				else
-					this->new_orbit_embedding(Vertex(dd));
+					this->new_orbit_embedding(Vertex(d1));
 			}
 
 			if (this->template is_embedded<Edge>())
-				this->new_orbit_embedding(Edge(e));
+				this->new_orbit_embedding(d2);
 
 			if (this->template is_embedded<Volume>())
 			{
-				if (this->same_orbit(Volume(d.dart), Volume(e)))
+				if (this->same_orbit(Volume(d), Volume(d2)))
 				{
-					this->template copy_embedding<Volume>(phi2(e), e);
-					this->template copy_embedding<Volume>(phi2(d.dart), e);
+					this->template copy_embedding<Volume>(phi2(d2), d);
+					this->template copy_embedding<Volume>(phi2(d), d);
 				}
 				else
-					this->new_orbit_embedding(Volume(e));
+					this->new_orbit_embedding(Volume(d2));
 			}
 		}
 	}
@@ -851,6 +871,11 @@ public:
 		return result;
 	}
 
+	/**
+	 * @brief Check if the given darts form a simple closed oriented path within a single Volume
+	 * @param path : a vector of darts
+	 * @return
+	 */
 	bool simple_closed_oriented_path(const std::vector<Dart>& path)
 	{
 		DartMarkerStore dm(*this);
