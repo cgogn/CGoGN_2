@@ -67,7 +67,7 @@ protected:
 	{
 		darts_.clear();
 		for (uint32 i = 0u; i < n; ++i)
-			darts_.push_back(add_dart());
+			darts_.push_back(add_topology_element());
 	}
 
 	/*!
