@@ -434,13 +434,13 @@ protected:
 public:
 
 	/**
-	 * \brief Cut a face by inserting an edge between the vertices d and e
-	 * \param d : first vertex
-	 * \param e : second vertex
+	 * \brief Cut a face by inserting an edge between the vertices of d and e
+	 * \param d : a dart of the first vertex
+	 * \param e : a dart of the second vertex
 	 * \return The inserted edge
-	 * The vertices d and e should belong to the same Face2 and be distinct from each other.
+	 * The darts d and e should belong to the same Face2 and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
-	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.dart
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.
 	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -450,10 +450,10 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline Edge cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Dart d, Dart e)
 	{
-		Dart nd = cut_face_topo(d.dart, e.dart);
-		Dart ne = this->phi_1(e.dart);
+		Dart nd = cut_face_topo(d, e);
+		Dart ne = this->phi_1(e);
 		Dart nd3 = phi3(nd);
 		Dart ne3 = phi3(ne);
 
@@ -467,18 +467,18 @@ public:
 
 		if (this->template is_embedded<Vertex2>())
 		{
-			this->template copy_embedding<Vertex2>(nd, e.dart);
-			this->template copy_embedding<Vertex2>(ne, d.dart);
+			this->template copy_embedding<Vertex2>(nd, e);
+			this->template copy_embedding<Vertex2>(ne, d);
 			this->template copy_embedding<Vertex2>(nd3, this->phi1(ne3));
 			this->template copy_embedding<Vertex2>(ne3, this->phi1(nd3));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->template copy_embedding<Vertex>(nd, e.dart);
-			this->template copy_embedding<Vertex>(ne3, e.dart);
-			this->template copy_embedding<Vertex>(ne, d.dart);
-			this->template copy_embedding<Vertex>(nd3, d.dart);
+			this->template copy_embedding<Vertex>(nd, e);
+			this->template copy_embedding<Vertex>(ne3, e);
+			this->template copy_embedding<Vertex>(ne, d);
+			this->template copy_embedding<Vertex>(nd3, d);
 		}
 
 		if (this->template is_embedded<Edge2>())
@@ -492,28 +492,28 @@ public:
 
 		if (this->template is_embedded<Face2>())
 		{
-			this->template copy_embedding<Face2>(nd, d.dart);
+			this->template copy_embedding<Face2>(nd, d);
 			this->new_orbit_embedding(Face2(ne));
-			this->template copy_embedding<Face2>(nd3, phi3(d.dart));
+			this->template copy_embedding<Face2>(nd3, phi3(d));
 			this->new_orbit_embedding(Face2(ne3));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(nd, d.dart);
-			this->template copy_embedding<Face>(nd3, d.dart);
+			this->template copy_embedding<Face>(nd, d);
+			this->template copy_embedding<Face>(nd3, d);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			if (!this->is_boundary(d.dart))
+			if (!this->is_boundary(d))
 			{
-				this->template copy_embedding<Volume>(nd, d.dart);
-				this->template copy_embedding<Volume>(ne, d.dart);
+				this->template copy_embedding<Volume>(nd, d);
+				this->template copy_embedding<Volume>(ne, d);
 			}
-			Dart d3 = phi3(d.dart);
-			if (!this->is_boundary(phi3(d3)))
+			Dart d3 = phi3(d);
+			if (!this->is_boundary(d3))
 			{
 				this->template copy_embedding<Volume>(nd3, d3);
 				this->template copy_embedding<Volume>(ne3, d3);
