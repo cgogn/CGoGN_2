@@ -221,7 +221,7 @@ TEST_F(CMap2Test, cut_face)
 			while (i-- > 0u) e = cmap_.phi1(e);
 			if (e == d) e = cmap_.phi1(e);
 
-			cmap_.cut_face(Vertex(d), Vertex(e));
+			cmap_.cut_face(d, e);
 		}
 	}
 	EXPECT_TRUE(cmap_.check_map_integrity());

@@ -580,7 +580,7 @@ protected:
 		if (this->is_incident_to_boundary(Edge(d)))
 			return false;
 
-		Dart d2 = this->phi2(d);
+		Dart d2 = phi2(d);
 		this->phi1_sew(this->phi_1(d), d2);
 		this->phi1_sew(this->phi_1(d2), d);
 		this->remove_face_topo(d);
@@ -647,11 +647,11 @@ protected:
 public:
 
 	/**
-	 * \brief Cut a face by inserting an edge between the vertices d and e
-	 * \param d : first vertex
-	 * \param e : second vertex
+	 * \brief Cut a face by inserting an edge between the vertices of d and e
+	 * \param d : a dart of the first vertex
+	 * \param e : a dart of the second vertex
 	 * \return The inserted edge
-	 * The vertices d and e should belong to the same face and be distinct from each other.
+	 * The darts d and e should belong to the same Face and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
 	 * The returned edge is represented by the dart of the inserted edge that belongs to the face of d.dart
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
@@ -661,13 +661,13 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline Edge cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Dart d, Dart e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
 
-		Dart nd = cut_face_topo(d.dart, e.dart);
-		Dart ne = this->phi_1(e.dart);
+		Dart nd = cut_face_topo(d, e);
+		Dart ne = this->phi_1(e);
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -677,8 +677,8 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->template copy_embedding<Vertex>(nd, e.dart);
-			this->template copy_embedding<Vertex>(ne, d.dart);
+			this->template copy_embedding<Vertex>(nd, e);
+			this->template copy_embedding<Vertex>(ne, d);
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -686,14 +686,14 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(nd, d.dart);
+			this->template copy_embedding<Face>(nd, d);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->template copy_embedding<Volume>(nd, d.dart);
-			this->template copy_embedding<Volume>(ne, d.dart);
+			this->template copy_embedding<Volume>(nd, d);
+			this->template copy_embedding<Volume>(ne, d);
 		}
 
 		return Edge(nd);
@@ -752,7 +752,7 @@ public:
 	 * and phi2(e.dart) are kept on their side and new attributes are created for the new vertices
 	 * If the map has Edge attributes, a new attribute is created for the edge of phi2(e.dart)
 	 * If the map has Volume attribute, in the case of volume split, a new attribute is created
-	 * for the volume of phi2(e.dart)
+	 * for the volume
 	 */
 	inline void unsew_faces(Edge e)
 	{
@@ -776,7 +776,7 @@ public:
 			}
 
 			if (this->template is_embedded<Edge>())
-				this->new_orbit_embedding(d2);
+				this->new_orbit_embedding(Edge(d2));
 
 			if (this->template is_embedded<Volume>())
 			{

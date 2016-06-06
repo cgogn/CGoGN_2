@@ -350,7 +350,7 @@ public:
 			typename VPMS::iterator be_it = ears_.begin(); // best ear
 			VertexPoly* be = *be_it;
 
-			map_.cut_face(be->prev_->vert_, be->next_->vert_);
+			map_.cut_face(be->prev_->vert_.dart, be->next_->vert_.dart);
 			--nb_verts_;
 
 			if (nb_verts_ > 3)	// do not recompute if only one triangle left

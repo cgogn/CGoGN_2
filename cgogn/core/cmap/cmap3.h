@@ -551,12 +551,12 @@ protected:
 
 public:
 
-	Face cut_volume(const std::vector<Edge>& path)
+	Face cut_volume(const std::vector<Dart>& path)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		cgogn_message_assert(!this->is_boundary(path[0].dart), "cut_volume: should not cut a boundary volume");
+		cgogn_message_assert(!this->is_boundary(path[0]), "cut_volume: should not cut a boundary volume");
 
-		Dart nf = cut_volume_topo(reinterpret_cast<const std::vector<Dart>&>(path));
+		Dart nf = cut_volume_topo(path);
 
 		if (this->template is_embedded<CDart>())
 		{

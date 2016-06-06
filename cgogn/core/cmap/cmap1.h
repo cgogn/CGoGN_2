@@ -301,7 +301,6 @@ protected:
 			this->remove_dart(it);
 			it = next;
 		}
-
 		this->remove_dart(d);
 	}
 

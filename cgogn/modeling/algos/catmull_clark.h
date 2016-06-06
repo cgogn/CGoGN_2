@@ -45,16 +45,16 @@ typename MAP::Vertex quadrangule_face(MAP& map, typename MAP::Face f)
 	Dart d1 = map.phi1(f.dart);
 	Dart d2 = map.phi1(map.phi1(d1));
 
-	map.cut_face(Vertex(d1), Vertex(d2));
+	map.cut_face(d1, d2);
 
 	map.cut_edge(Edge(map.phi_1(d1)));
 
-	Dart x = map.phi2(map.phi_1(d1)) ;
-	Dart dd = map.template phi<1111>(x) ;
+	Dart x = map.phi2(map.phi_1(d1));
+	Dart dd = map.template phi<1111>(x);
 	while (dd != x)
 	{
-		Dart next = map.template phi<11>(dd) ;
-		map.cut_face(Vertex(dd), Vertex(map.phi1(x))) ;
+		Dart next = map.template phi<11>(dd);
+		map.cut_face(dd, map.phi1(x));
 		dd = next ;
 	}
 

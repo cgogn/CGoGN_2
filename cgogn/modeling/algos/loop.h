@@ -118,13 +118,13 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 			d0 = map.phi1(d0);
 
 		Dart d1 = map.template phi<11>(d0);
-		map.cut_face(Vertex(d0), Vertex(d1));
+		map.cut_face(d0, d1);
 
 		Dart d2 = map.template phi<11>(d1);
-		map.cut_face(Vertex(d1), Vertex(d2));
+		map.cut_face(d1, d2);
 
 		Dart d3 = map.template phi<11>(d2);
-		map.cut_face(Vertex(d2), Vertex(d3));
+		map.cut_face(d2, d3);
 	});
 
 	cgogn::dart_buffers()->release_cell_buffer(initial_edges);

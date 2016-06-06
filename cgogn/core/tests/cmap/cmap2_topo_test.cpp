@@ -161,7 +161,7 @@ protected:
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			uint32 n = 1u + std::rand() % 10u;
+			uint32 n = 3u + std::rand() % 10u;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
@@ -511,6 +511,44 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/*! \brief Merging the faces incident to an edge removes an edge and a face.
+ * The codegree of the resulting face is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original faces)
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, merge_incident_faces)
+{
+	add_closed_surfaces();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	for (Dart d : darts_)
+	{
+		Dart d1 = phi1(d);
+		Dart d2 = phi2(d);
+
+		uint32 k1 = codegree(Face(d));
+		uint32 k2 = codegree(Face(d2));
+
+		if (merge_incident_faces_topo(d))
+		{
+			--count_edges;
+			--count_faces;
+
+//			EXPECT_EQ(codegree(Face(d1)), k1 + k2 - 2);
+		}
+	}
+
+//	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+//	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+//	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+//	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 
 	EXPECT_TRUE(check_map_integrity());
 }
