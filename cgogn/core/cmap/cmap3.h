@@ -525,6 +525,11 @@ public:
 
 protected:
 
+	/**
+	 * @brief Cut a single volume following a simple closed oriented path
+	 * @param path a vector of darts representing the path
+	 * @return a dart of the inserted face
+	 */
 	Dart cut_volume_topo(const std::vector<Dart>& path)
 	{
 		cgogn_message_assert(this->simple_closed_oriented_path(path), "cut_volume_topo: the given path should be a simple closed oriented path");
@@ -551,6 +556,11 @@ protected:
 
 public:
 
+	/**
+	 * @brief Cut a single volume following a simple closed oriented path
+	 * @param path a vector of darts representing the path
+	 * @return the inserted face
+	 */
 	Face cut_volume(const std::vector<Dart>& path)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
