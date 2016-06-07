@@ -530,6 +530,9 @@ TEST_F(CMap2TopoTest, merge_incident_faces)
 
 	for (Dart d : darts_)
 	{
+		// TODO: must test if d is still valid as it
+		// can have been removed by a previous merge
+
 		Dart d1 = phi1(d);
 		Dart d2 = phi2(d);
 

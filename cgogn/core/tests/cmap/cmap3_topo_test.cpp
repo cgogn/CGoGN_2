@@ -340,6 +340,52 @@ TEST_F(CMap3TopoTest, cut_volume_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+/*! \brief Merging the volumes incident to a face removes a face and a volume.
+ * The codegree of the resulting volume is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original volumes)
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap3TopoTest, merge_incident_volumes_topo)
+{
+	MapBuilder mbuild(*this);
+
+	Dart p1 = add_prism_topo(3u);
+	Dart p2 = add_prism_topo(3u);
+	mbuild.sew_volumes(Volume(p1), Volume(p2));
+
+	Dart p3 = add_pyramid_topo(4u);
+	Dart p4 = add_pyramid_topo(4u);
+	mbuild.sew_volumes(Volume(p3), Volume(p4));
+
+	mbuild.close_map();
+
+	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
+	unsigned int count_edges = nb_cells<Edge::ORBIT>();
+	unsigned int count_faces = nb_cells<Face::ORBIT>();
+	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
+
+	uint32 k1 = codegree(Volume(p1));
+	uint32 k2 = codegree(Volume(p2));
+	Dart p12 = phi2(p1);
+	merge_incident_volumes(Face(p1));
+	--count_faces;
+	--count_volumes;
+	EXPECT_EQ(codegree(Volume(p12)), k1 + k2 - 2);
+
+	uint32 k3 = codegree(Volume(p3));
+	uint32 k4 = codegree(Volume(p4));
+	Dart p32 = phi2(p3);
+	merge_incident_volumes(Face(p3));
+	--count_faces;
+	--count_volumes;
+	EXPECT_EQ(codegree(Volume(p32)), k3 + k4 - 2);
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
 /*! \brief Closing a map add one face per holes.
  * The test closes the holes of a randomly generated open surface.
  * The map integrity is preserved and the cell indexation is soundly completed
