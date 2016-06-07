@@ -313,7 +313,7 @@ protected:
 				{
 					std::string type_str;
 					sstream >> nb_vertices >> type_str;
-					type_str = to_lower(type_str);
+					type_str = vtk_data_type_to_cgogn_name_of_type(type_str);
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					pos->read_n(fp, nb_vertices, !ascii_file, big_endian);
 					this->add_vertex_attribute(*pos,"position");
