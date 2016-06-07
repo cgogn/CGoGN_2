@@ -256,7 +256,7 @@ protected:
 		if (size == 0)
 			cgogn_log_warning("add_face_topo") << "Attempt to create an empty face results in a single dart.";
 
-		Dart d = this->add_dart();
+		Dart d = this->add_topology_element();
 		for (uint32 i = 1u; i < size; ++i)
 			split_vertex_topo(d);
 		return d;
@@ -292,16 +292,20 @@ public:
 
 protected:
 
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
 	inline void remove_face_topo(Dart d)
 	{
 		Dart it = phi1(d);
 		while(it != d)
 		{
 			Dart next = phi1(it);
-			this->remove_dart(it);
+			this->remove_topology_element(it);
 			it = next;
 		}
-		this->remove_dart(d);
+		this->remove_topology_element(d);
 	}
 
 public:
@@ -327,8 +331,8 @@ protected:
 	 */
 	inline Dart split_vertex_topo(Dart d)
 	{
-		Dart e = this->add_dart();	// Create a new dart e
-		phi1_sew(d, e);				// Insert e between d and phi1(d)
+		Dart e = this->add_topology_element();	// Create a new dart e
+		phi1_sew(d, e);							// Insert e between d and phi1(d)
 		return e;
 	}
 
@@ -369,7 +373,7 @@ protected:
 	{
 		Dart e = phi_1(d);
 		if (e != d) phi1_unsew(e);
-		this->remove_dart(d);
+		this->remove_topology_element(d);
 	}
 
 public:

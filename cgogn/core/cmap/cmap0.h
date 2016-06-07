@@ -141,7 +141,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex v(this->add_dart());
+		const Vertex v(this->add_topology_element());
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
@@ -156,7 +156,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		this->remove_dart(v.dart);
+		this->remove_topology_element(v.dart);
 	}
 
 	/*******************************************************************************
