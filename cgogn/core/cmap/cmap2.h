@@ -611,7 +611,7 @@ public:
 			if (this->template is_embedded<Face>())
 			{
 				uint32 emb = this->embedding(Face(d1));
-				this->foreach_dart_of_PHI1(d1, [this, emb] (Dart d)
+				foreach_dart_of_orbit(Face(d1), [this, emb] (Dart d)
 				{
 					this->template set_embedding<Face>(d, emb);
 				});

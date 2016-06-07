@@ -570,7 +570,7 @@ public:
 
 		if (this->template is_embedded<CDart>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
 				this->new_orbit_embedding(CDart(phi3(d)));
@@ -579,7 +579,7 @@ public:
 
 		if (this->template is_embedded<Vertex2>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Vertex2>(d, this->phi1(this->phi2(d)));
 				this->new_orbit_embedding(Vertex2(phi3(d)));
@@ -588,7 +588,7 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Vertex>(d, this->phi1(this->phi2(d)));
 				Dart d3 = phi3(d);
@@ -598,7 +598,7 @@ public:
 
 		if (this->template is_embedded<Edge2>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Edge2>(d, this->phi2(d));
 				this->new_orbit_embedding(Edge2(phi3(d)));
@@ -607,7 +607,7 @@ public:
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Edge>(d, this->phi2(d));
 				this->template copy_embedding<Edge>(phi3(d), this->phi2(d));
@@ -625,7 +625,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Volume>(d, this->phi2(d));
 			});
@@ -633,6 +633,75 @@ public:
 		}
 
 		return Face(nf);
+	}
+
+protected:
+
+	bool merge_incident_volumes_topo(Dart d)
+	{
+		if (this->is_incident_to_boundary(Face(d)))
+			return false;
+
+		Dart f = d;
+		do
+		{
+			Dart ff = phi3(f);
+			Dart f2 = this->phi2(f);
+			Dart ff2 = this->phi2(ff);
+#ifndef	NDEBUG
+			this->phi2_unsew(f);
+			this->phi2_unsew(ff);
+#endif
+			this->phi2_sew(f2, ff2);
+			f = this->phi1(f);
+		} while (f != d);
+
+		Dart d3 = phi3(d);
+		this->remove_face_topo(d);
+		this->remove_face_topo(d3);
+
+		return true;
+	}
+
+public:
+
+	void merge_incident_volumes(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d2 = this->phi2(f.dart);
+		if (merge_incident_volumes_topo(f.dart))
+		{
+			if (this->template is_embedded<Vertex2>())
+			{
+				Dart it = d2;
+				do
+				{
+					uint32 emb = this->embedding(Vertex2(it));
+					foreach_dart_of_orbit(Vertex2(it), [this, emb] (Dart d) { this->template set_embedding<Vertex2>(d, emb); });
+					it = this->phi<121>(it);
+				} while (it != d2);
+			}
+
+			if (this->template is_embedded<Edge2>())
+			{
+				Dart it = d2;
+				do
+				{
+					this->template copy_embedding<Edge2>(this->phi2(it), it);
+					it = this->phi<121>(it);
+				} while (it != d2);
+			}
+
+			if (this->template is_embedded<Volume>())
+			{
+				uint32 emb = this->embedding(Volume(d2));
+				foreach_dart_of_orbit(Volume(d2), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			}
+		}
 	}
 
 	/*******************************************************************************
