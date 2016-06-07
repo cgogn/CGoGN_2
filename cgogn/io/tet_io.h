@@ -158,7 +158,7 @@ protected:
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
-		scalar_type[0] = std::toupper(scalar_type[0]);
+		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 		const auto& nb_vert_vol = this->number_of_vertices();
 		const uint32 nb_vols = nb_vert_vol.size();
 
@@ -170,7 +170,7 @@ protected:
 		{
 			pos->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
-		});
+		}, *(this->cell_cache_));
 
 		auto vertices_it = this->vertices_of_volumes().begin();
 		for (uint32 w = 0u; w < nb_vols; ++w)

@@ -492,7 +492,7 @@ protected:
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
-		scalar_type[0] = std::toupper(scalar_type[0]);
+		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
 		// 1. vertices
 		output << "$NOD" << std::endl;
