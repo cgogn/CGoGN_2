@@ -93,6 +93,9 @@ public:
 		Scalar current_distance = Scalar(0);
 		while (current_distance < max_distance)
 		{
+			// Store the actual distance
+			current_distance = max_distance;
+
 			// Move A to the furthest vertices from B
 			distance_field_.dijkstra_compute_paths({B}, distance_to_B_, paths_);
 			A = distance_field_.find_maximum(distance_to_B_);
@@ -101,13 +104,32 @@ public:
 			distance_field_.dijkstra_compute_paths({A}, distance_to_A_, paths_);
 			B = distance_field_.find_maximum(distance_to_A_);
 			max_distance = distance_to_A_[B];
-
-			current_distance = max_distance;
 		};
 
 		features.push_back(A);
 		features.push_back(B);
 		return max_distance;
+	}
+
+	void get_features(Vertex central_vertex, std::vector<Vertex>& features)
+	{
+		// Get two Vertices A and B on a maximal diameter
+		// as side effect this build the two scalar field distance_to_A_ and distance_to_B_
+		Scalar max_distance = maximal_diameter(central_vertex, features);
+
+		// Get the maxima in the scalar field distance_to_A_
+		ScalarField<Scalar, MAP> scalar_field_A(map_, distance_to_A_);
+		scalar_field_A.differential_analysis();
+		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
+		std::cout << "FA size: " << maxima_A.size() << std::endl;
+
+		// Get the maxima in the scalar field distance_to_B_
+		cgogn::topology::ScalarField<Scalar, MAP> scalar_field_B(map_, distance_to_B_);
+		scalar_field_B.differential_analysis();
+		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
+		std::cout << "FB size: " << maxima_B.size() << std::endl;
+
+		Scalar filter_distance = max_distance / Scalar(4);
 	}
 
 private:

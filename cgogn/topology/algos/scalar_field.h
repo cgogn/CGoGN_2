@@ -285,6 +285,9 @@ public:
 			else if (type.v_ == CriticalPoint::Type::SADDLE)
 				saddles_.push_back(v);
 		});
+		std::cout << "maxima : " << maxima_.size() << std::endl;
+		std::cout << "minima : " << minima_.size() << std::endl;
+		std::cout << "saddles : " << saddles_.size() << std::endl;
 	}
 
 	void extract_level_sets(std::vector<Edge>& level_lines)
