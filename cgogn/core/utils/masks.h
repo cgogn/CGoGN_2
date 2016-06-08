@@ -48,7 +48,7 @@ public:
 	virtual void operator() (uint32) const final {}
 
 	template <typename CellType>
-	bool filter(CellType c) const { return true; }
+	bool filter(CellType) const { return true; }
 };
 
 /**

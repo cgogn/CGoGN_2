@@ -41,18 +41,17 @@ namespace cgogn
  */
 class CMap3TopoTest : public CMap3<DefaultMapTraits>, public ::testing::Test
 {
-
 public:
 
 	using Inherit = CMap3<DefaultMapTraits>;
 	using MapBuilder = CMap3Builder_T<DefaultMapTraits>;
 	using Vertex2 = CMap3TopoTest::Vertex2;
 	using Vertex = CMap3TopoTest::Vertex;
-	using Edge2   = CMap3TopoTest::Edge2;
-	using Edge   = CMap3TopoTest::Edge;
-	using Face2   = CMap3TopoTest::Face2;
-	using Face   = CMap3TopoTest::Face;
-	using Volume   = CMap3TopoTest::Volume;
+	using Edge2 = CMap3TopoTest::Edge2;
+	using Edge = CMap3TopoTest::Edge;
+	using Face2 = CMap3TopoTest::Face2;
+	using Face = CMap3TopoTest::Face;
+	using Volume = CMap3TopoTest::Volume;
 	using VertexMarker = CMap3TopoTest::CellMarker<Vertex::ORBIT>;
 
 protected:
@@ -152,7 +151,6 @@ protected:
 				default:
 					break;
 			}
-
 		}
 
 		// Close de map
@@ -236,33 +234,34 @@ TEST_F(CMap3TopoTest, phi3_sew_unsew)
  */
 TEST_F(CMap3TopoTest, cut_edge_topo)
 {
-//	add_closed_surfaces();
+	add_closed_surfaces();
 
-//	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
-//	unsigned int count_edges = nb_cells<Edge::ORBIT>();
-//	unsigned int count_faces = nb_cells<Face::ORBIT>();
-//	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
+	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
+	unsigned int count_edges = nb_cells<Edge::ORBIT>();
+	unsigned int count_faces = nb_cells<Face::ORBIT>();
+	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
-//	for (Dart d : darts_)
-//	{
-//		unsigned int k1 = degree(Face(d));
-//		unsigned int k2 = degree(Face(phi2(d)));
-//		cut_edge_topo(d);
-//		if (same_cell(Face(d), Face(phi2(d))))
-//		{
-//			EXPECT_EQ(degree(Face(d)), k1 + 2u);
-//		}
-//		else
-//		{
-//			EXPECT_EQ(degree(Face(d)), k1 + 1u);
-//			EXPECT_EQ(degree(Face(phi2(d))), k2 + 1u);
-//		}
-//	}
-//	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices + NB_MAX);
-//	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges + NB_MAX);
-//	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
-//	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
-//	EXPECT_TRUE(check_map_integrity());
+	for (Dart d : darts_)
+	{
+		unsigned int k1 = codegree(Face(d));
+		unsigned int k2 = codegree(Face(phi2(d)));
+		cut_edge_topo(d);
+		if (same_cell(Face(d), Face(phi2(d))))
+		{
+			EXPECT_EQ(codegree(Face(d)), k1 + 2u);
+		}
+		else
+		{
+			EXPECT_EQ(codegree(Face(d)), k1 + 1u);
+			EXPECT_EQ(codegree(Face(phi2(d))), k2 + 1u);
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices + NB_MAX);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges + NB_MAX);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
 }
 
 /*! \brief Cutting a face add an edge and replace a face of degree K,
@@ -272,34 +271,35 @@ TEST_F(CMap3TopoTest, cut_edge_topo)
  */
 TEST_F(CMap3TopoTest, cut_face_topo)
 {
-//	add_closed_surfaces();
+	add_closed_surfaces();
 
-//	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
-//	unsigned int count_edges = nb_cells<Edge::ORBIT>();
-//	unsigned int count_faces = nb_cells<Face::ORBIT>();
-//	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
+	unsigned int count_vertices = nb_cells<Vertex::ORBIT>();
+	unsigned int count_edges = nb_cells<Edge::ORBIT>();
+	unsigned int count_faces = nb_cells<Face::ORBIT>();
+	unsigned int count_volumes = nb_cells<Volume::ORBIT>();
 
-//	for (Dart d : darts_)
-//	{
-//		unsigned int k = degree(Face(d));
-//		if (k > 1u)
-//		{
-//			Dart e = d; // find a second dart in the face of d (distinct from d)
-//			unsigned int i = std::rand() % 10u;
-//			while (i-- > 0u) e = phi1(e);
-//			if (e == d) e = phi1(e);
+	for (Dart d : darts_)
+	{
+		unsigned int k = codegree(Face(d));
+		if (k > 1u)
+		{
+			Dart e = d; // find a second dart in the face of d (distinct from d)
+			unsigned int i = std::rand() % 10u;
+			while (i-- > 0u) e = phi1(e);
+			if (e == d) e = phi1(e);
 
-//			cut_face_topo(d, e);
-//			++count_edges;
-//			++count_faces;
-//			EXPECT_EQ(degree(Face(d)) + degree(Face(e)), k + 2);
-//		}
-//	}
-//	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
-//	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
-//	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
-//	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
-//	EXPECT_TRUE(check_map_integrity());
+			cut_face_topo(d, e);
+			++count_edges;
+			++count_faces;
+			EXPECT_EQ(codegree(Face(d)) + codegree(Face(e)), k + 2);
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
 }
 
 /*! \brief Closing a map add one face per holes.
@@ -351,10 +351,10 @@ TEST_F(CMap3TopoTest, close_map)
 //				while (it != e)
 //				{
 //					Dart next = phi1(it);
-//					this->remove_dart(it);
+//					this->remove_topology_element(it);
 //					it = next;
 //				}
-//				this->remove_dart(e);
+//				this->remove_topology_element(e);
 //			}
 //		}
 //	}
@@ -362,13 +362,6 @@ TEST_F(CMap3TopoTest, close_map)
 //	MapBuilder mbuild(*this);
 //	mbuild.close_map();
 //	EXPECT_TRUE(check_map_integrity());
-}
-
-TEST_F(CMap3TopoTest, degree)
-{
-//	Face f(this->add_face_topo(10u));
-
-//	EXPECT_EQ(degree(f), 10u);
 }
 
 /*! \brief The number of connected components is correctly counted

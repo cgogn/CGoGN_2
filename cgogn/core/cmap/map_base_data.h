@@ -97,7 +97,10 @@ public:
 	using Inherit = MapGen;
 	using Self = MapBaseData<MAP_TRAITS>;
 
+	using Traits = MAP_TRAITS;
+
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
 	template <typename DT, typename T> friend class Attribute_T;
 	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;

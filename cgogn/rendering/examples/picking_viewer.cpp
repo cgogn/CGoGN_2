@@ -318,7 +318,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("picking_viewer");
 	viewer.import(surfaceMesh);
 	viewer.show();
 	viewer.resize(800, 600);

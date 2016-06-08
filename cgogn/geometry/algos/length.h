@@ -99,7 +99,7 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 
 	map.parallel_foreach_cell([&] (Edge e, uint32 thread_index)
 	{
-		edge_length_per_thread[thread_index] += length<VEC3, MAP>(map, e, position);
+		edge_length_per_thread[thread_index] += ::cgogn::geometry::length<VEC3>(map, e, position);
 		nb_edges_per_thread[thread_index]++;
 	},
 	mask);
