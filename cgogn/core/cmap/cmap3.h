@@ -434,13 +434,13 @@ protected:
 public:
 
 	/**
-	 * \brief Cut a face by inserting an edge between the vertices d and e
-	 * \param d : first vertex
-	 * \param e : second vertex
+	 * \brief Cut a face by inserting an edge between the vertices of d and e
+	 * \param d : a dart of the first vertex
+	 * \param e : a dart of the second vertex
 	 * \return The inserted edge
-	 * The vertices d and e should belong to the same Face2 and be distinct from each other.
+	 * The darts d and e should belong to the same Face2 and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
-	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.dart
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the Face2 of d.
 	 * If the map has Dart, Vertex2, Vertex, Edge2, Edge, Face2, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -450,10 +450,10 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline Edge cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Dart d, Dart e)
 	{
-		Dart nd = cut_face_topo(d.dart, e.dart);
-		Dart ne = this->phi_1(e.dart);
+		Dart nd = cut_face_topo(d, e);
+		Dart ne = this->phi_1(e);
 		Dart nd3 = phi3(nd);
 		Dart ne3 = phi3(ne);
 
@@ -467,18 +467,18 @@ public:
 
 		if (this->template is_embedded<Vertex2>())
 		{
-			this->template copy_embedding<Vertex2>(nd, e.dart);
-			this->template copy_embedding<Vertex2>(ne, d.dart);
+			this->template copy_embedding<Vertex2>(nd, e);
+			this->template copy_embedding<Vertex2>(ne, d);
 			this->template copy_embedding<Vertex2>(nd3, this->phi1(ne3));
 			this->template copy_embedding<Vertex2>(ne3, this->phi1(nd3));
 		}
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->template copy_embedding<Vertex>(nd, e.dart);
-			this->template copy_embedding<Vertex>(ne3, e.dart);
-			this->template copy_embedding<Vertex>(ne, d.dart);
-			this->template copy_embedding<Vertex>(nd3, d.dart);
+			this->template copy_embedding<Vertex>(nd, e);
+			this->template copy_embedding<Vertex>(ne3, e);
+			this->template copy_embedding<Vertex>(ne, d);
+			this->template copy_embedding<Vertex>(nd3, d);
 		}
 
 		if (this->template is_embedded<Edge2>())
@@ -492,28 +492,28 @@ public:
 
 		if (this->template is_embedded<Face2>())
 		{
-			this->template copy_embedding<Face2>(nd, d.dart);
+			this->template copy_embedding<Face2>(nd, d);
 			this->new_orbit_embedding(Face2(ne));
-			this->template copy_embedding<Face2>(nd3, phi3(d.dart));
+			this->template copy_embedding<Face2>(nd3, phi3(d));
 			this->new_orbit_embedding(Face2(ne3));
 		}
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(nd, d.dart);
-			this->template copy_embedding<Face>(nd3, d.dart);
+			this->template copy_embedding<Face>(nd, d);
+			this->template copy_embedding<Face>(nd3, d);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			if (!this->is_boundary(d.dart))
+			if (!this->is_boundary(d))
 			{
-				this->template copy_embedding<Volume>(nd, d.dart);
-				this->template copy_embedding<Volume>(ne, d.dart);
+				this->template copy_embedding<Volume>(nd, d);
+				this->template copy_embedding<Volume>(ne, d);
 			}
-			Dart d3 = phi3(d.dart);
-			if (!this->is_boundary(phi3(d3)))
+			Dart d3 = phi3(d);
+			if (!this->is_boundary(d3))
 			{
 				this->template copy_embedding<Volume>(nd3, d3);
 				this->template copy_embedding<Volume>(ne3, d3);
@@ -525,8 +525,15 @@ public:
 
 protected:
 
+	/**
+	 * @brief Cut a single volume following a simple closed oriented path
+	 * @param path a vector of darts representing the path
+	 * @return a dart of the inserted face
+	 */
 	Dart cut_volume_topo(const std::vector<Dart>& path)
 	{
+		cgogn_message_assert(this->simple_closed_oriented_path(path), "cut_volume_topo: the given path should be a simple closed oriented path");
+
 		Dart face1 = Inherit::Inherit::add_face_topo(path.size());
 		Dart face2 = Inherit::Inherit::add_face_topo(path.size());
 
@@ -549,16 +556,21 @@ protected:
 
 public:
 
-	Face cut_volume(const std::vector<Edge>& path)
+	/**
+	 * @brief Cut a single volume following a simple closed oriented path
+	 * @param path a vector of darts representing the path
+	 * @return the inserted face
+	 */
+	Face cut_volume(const std::vector<Dart>& path)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
-		cgogn_message_assert(!this->is_boundary(path[0].dart), "cut_volume: should not cut a boundary volume");
+		cgogn_message_assert(!this->is_boundary(path[0]), "cut_volume: should not cut a boundary volume");
 
-		Dart nf = cut_volume_topo(reinterpret_cast<const std::vector<Dart>&>(path));
+		Dart nf = cut_volume_topo(path);
 
 		if (this->template is_embedded<CDart>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->new_orbit_embedding(CDart(d));
 				this->new_orbit_embedding(CDart(phi3(d)));
@@ -567,7 +579,7 @@ public:
 
 		if (this->template is_embedded<Vertex2>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Vertex2>(d, this->phi1(this->phi2(d)));
 				this->new_orbit_embedding(Vertex2(phi3(d)));
@@ -576,7 +588,7 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Vertex>(d, this->phi1(this->phi2(d)));
 				Dart d3 = phi3(d);
@@ -586,7 +598,7 @@ public:
 
 		if (this->template is_embedded<Edge2>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Edge2>(d, this->phi2(d));
 				this->new_orbit_embedding(Edge2(phi3(d)));
@@ -595,7 +607,7 @@ public:
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Edge>(d, this->phi2(d));
 				this->template copy_embedding<Edge>(phi3(d), this->phi2(d));
@@ -613,7 +625,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->foreach_dart_of_PHI1(nf, [this] (Dart d)
+			foreach_dart_of_orbit(Face2(nf), [this] (Dart d)
 			{
 				this->template copy_embedding<Volume>(d, this->phi2(d));
 			});
@@ -621,6 +633,75 @@ public:
 		}
 
 		return Face(nf);
+	}
+
+protected:
+
+	bool merge_incident_volumes_topo(Dart d)
+	{
+		if (this->is_incident_to_boundary(Face(d)))
+			return false;
+
+		Dart f = d;
+		do
+		{
+			Dart ff = phi3(f);
+			Dart f2 = this->phi2(f);
+			Dart ff2 = this->phi2(ff);
+#ifndef	NDEBUG
+			this->phi2_unsew(f);
+			this->phi2_unsew(ff);
+#endif
+			this->phi2_sew(f2, ff2);
+			f = this->phi1(f);
+		} while (f != d);
+
+		Dart d3 = phi3(d);
+		this->remove_face_topo(d);
+		this->remove_face_topo(d3);
+
+		return true;
+	}
+
+public:
+
+	void merge_incident_volumes(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d2 = this->phi2(f.dart);
+		if (merge_incident_volumes_topo(f.dart))
+		{
+			if (this->template is_embedded<Vertex2>())
+			{
+				Dart it = d2;
+				do
+				{
+					uint32 emb = this->embedding(Vertex2(it));
+					foreach_dart_of_orbit(Vertex2(it), [this, emb] (Dart d) { this->template set_embedding<Vertex2>(d, emb); });
+					it = this->phi<121>(it);
+				} while (it != d2);
+			}
+
+			if (this->template is_embedded<Edge2>())
+			{
+				Dart it = d2;
+				do
+				{
+					this->template copy_embedding<Edge2>(this->phi2(it), it);
+					it = this->phi<121>(it);
+				} while (it != d2);
+			}
+
+			if (this->template is_embedded<Volume>())
+			{
+				uint32 emb = this->embedding(Volume(d2));
+				foreach_dart_of_orbit(Volume(d2), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Volume>(d, emb);
+				});
+			}
+		}
 	}
 
 	/*******************************************************************************

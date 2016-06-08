@@ -48,7 +48,8 @@ std::unique_ptr<ShaderExplodeVolumesLine::Param> ShaderExplodeVolumesLine::gener
 const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
@@ -79,7 +80,8 @@ const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 color;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color;\n"
 "}\n";
 

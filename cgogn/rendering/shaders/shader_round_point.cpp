@@ -38,7 +38,8 @@ namespace rendering
 const char* ShaderRoundPointGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
@@ -74,7 +75,8 @@ const char* ShaderRoundPointGen::fragment_shader_source_ =
 "uniform vec4 color;\n"
 "in vec2 local;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 
 "	float r2 = dot(local,local);\n"
 "   if (r2 > 1.0) discard;\n"
@@ -86,7 +88,8 @@ const char* ShaderRoundPointGen::vertex_shader_source2_ =
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
 "out vec3 color_v;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   color_v = vertex_color;\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -126,13 +129,12 @@ const char* ShaderRoundPointGen::fragment_shader_source2_ =
 "in vec2 local;\n"
 "in vec3 color_f;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	float r2 = dot(local,local);\n"
 "   if (r2 > 1.0) discard;\n"
 "   fragColor = vec4(color_f,(1.0-r2*r2));\n"
 "}\n";
-
-
 
 ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 {

@@ -73,7 +73,7 @@ public:
 
 	inline void init_parent_vertex_embedding(Dart d, uint32 emb)
 	{
-		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
+		map_.foreach_dart_of_orbit(Vertex2(d), [&] (Dart dit)
 		{
 			map_.template set_embedding<Vertex>(dit, emb);
 		});
@@ -123,6 +123,12 @@ public:
 	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
+	}
+
+	template <class CellType>
+	inline void new_orbit_embedding(CellType c)
+	{
+		map_.new_orbit_embedding(c);
 	}
 
 	/**
@@ -231,38 +237,6 @@ public:
 
 				const Volume new_volume(map_.phi3(d));
 
-//				if (map_.template is_embedded<CDart>())
-//				{
-//					map_.foreach_dart_of_orbit(new_volume, [this] (Dart d)
-//					{
-//						map_.new_orbit_embedding(CDart(d));
-//					});
-//				}
-
-//				if (map_.template is_embedded<Vertex2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
-//					{
-//						map_.new_orbit_embedding(v);
-//					});
-//				}
-
-//				if (map_.template is_embedded<Edge2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
-//					{
-//						map_.new_orbit_embedding(e);
-//					});
-//				}
-
-//				if (map_.template is_embedded<Face2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_face(new_volume, [this] (Face2 f)
-//					{
-//						map_.new_orbit_embedding(f);
-//					});
-//				}
-
 				if (map_.template is_embedded<Vertex>())
 				{
 					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
@@ -286,11 +260,6 @@ public:
 						map_.template copy_embedding<Face>(wd, map_.phi3(wd));
 					});
 				}
-
-//				if (map_.template is_embedded<Volume>())
-//				{
-//					map_.new_orbit_embedding(new_volume);
-//				}
 			}
 		}
 		dart_buffers()->release_buffer(fix_point_darts);

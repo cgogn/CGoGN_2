@@ -292,6 +292,10 @@ public:
 
 protected:
 
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
 	inline void remove_face_topo(Dart d)
 	{
 		Dart it = phi1(d);
@@ -301,7 +305,6 @@ protected:
 			this->remove_topology_element(it);
 			it = next;
 		}
-
 		this->remove_topology_element(d);
 	}
 

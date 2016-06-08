@@ -66,9 +66,9 @@ void pliant_remeshing(
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
 			position[nv] = Scalar(0.5) * (position[v.first] + position[v.second]);
-			map.cut_face(nv, Vertex(map.phi_1(e.dart)));
+			map.cut_face(nv.dart, map.phi_1(e.dart));
 			if(!map.is_boundary(e2))
-				map.cut_face(Vertex(map.phi1(e2)), Vertex(map.phi_1(e2)));
+				map.cut_face(map.phi1(e2), map.phi_1(e2));
 		}
 	},
 	cache);
