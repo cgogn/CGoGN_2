@@ -30,7 +30,7 @@ namespace cgogn
 
 #define NB_MAX 100
 
-/*!
+/**
  * \brief The CMap1Test class implements tests on embedded CMap1
  * It contains a CMap1 to which vertex and face attribute are added
  * to enforce the indexation mecanism in cell traversals.
@@ -41,7 +41,6 @@ namespace cgogn
  */
 class CMap1Test : public ::testing::Test
 {
-
 public:
 
 	using testCMap1 = CMap1<DefaultMapTraits>;
@@ -52,7 +51,7 @@ protected:
 
 	testCMap1 cmap_;
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
@@ -66,7 +65,7 @@ protected:
 		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	}
 
-	/*!
+	/**
 	 * \brief Generate a random set of faces and put them in darts_
 	 * \return The total number of added darts or vertices.
 	 * The face size ranges from 1 to 10.
@@ -91,7 +90,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap1Test, random_map_generators)
@@ -100,7 +99,7 @@ TEST_F(CMap1Test, random_map_generators)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding faces preserves the cell indexation
  */
 TEST_F(CMap1Test, add_face)
@@ -112,7 +111,7 @@ TEST_F(CMap1Test, add_face)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Removing faces preserves the cell indexation
  */
 TEST_F(CMap1Test, remove_face)
@@ -137,7 +136,7 @@ TEST_F(CMap1Test, remove_face)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Splitting vertices preserves the cell indexation
  */
 TEST_F(CMap1Test, split_vertex)
@@ -155,7 +154,7 @@ TEST_F(CMap1Test, split_vertex)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Removing vertices preserves the cell indexation
  */
 TEST_F(CMap1Test, remove_vertex)

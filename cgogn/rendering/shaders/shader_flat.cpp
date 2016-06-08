@@ -42,7 +42,8 @@ const char* ShaderFlatGen::vertex_shader_source_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "out vec3 pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	vec4 pos4 = model_view_matrix * vec4(vertex_pos,1.0);\n"
 "	pos = pos4.xyz;"
 "   gl_Position = projection_matrix * pos4;\n"
@@ -56,7 +57,8 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "uniform vec4 ambiant_color;\n"
 "uniform vec3 lightPosition;\n"
 "in vec3 pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
 "	vec3 L = normalize(lightPosition-pos);\n"
 "	float lambert = dot(N,L);\n"
@@ -74,7 +76,8 @@ const char* ShaderFlatGen::vertex_shader_source2_ =
 "uniform mat4 model_view_matrix;\n"
 "out vec3 pos;\n"
 "out vec3 col;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	vec4 pos4 = model_view_matrix * vec4(vertex_pos,1.0);\n"
 "	pos = pos4.xyz;\n"
 "	col = vertex_col;\n"
@@ -90,7 +93,8 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "uniform vec3 lightPosition;\n"
 "in vec3 pos;\n"
 "in vec3 col;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
 "	vec3 L = normalize(lightPosition-pos);\n"
 "	float lambert = dot(N,L);\n"
@@ -99,8 +103,6 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "	else\n"
 "		fragColor = ambiant_color-vec4(lambert*col,1.0);\n"
 "}\n";
-
-
 
 ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
 {

@@ -43,7 +43,8 @@ namespace internal
 
 CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
 {
-	switch (lvl) {
+	switch (lvl)
+	{
 		case LogLevel::LogLevel_INFO: return "INFO";
 		case LogLevel::LogLevel_DEBUG: return "DEBUG";
 		case LogLevel::LogLevel_DEPRECATED: return "DEPRECATED";

@@ -140,7 +140,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_F:
 			flat_rendering_ = !flat_rendering_;
 			break;

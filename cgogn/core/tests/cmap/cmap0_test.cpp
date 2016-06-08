@@ -30,7 +30,7 @@ namespace cgogn
 
 #define NB_MAX 100
 
-/*!
+/**
  * \brief The CMap0Test class implements tests on embedded CMap0
  * It contains a CMap0 to which a vertex attribute is added
  * to enforce the indexation mechanism in cell traversals.
@@ -41,7 +41,6 @@ namespace cgogn
  */
 class CMap0Test : public ::testing::Test
 {
-
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
@@ -52,12 +51,12 @@ protected:
 
 	testCMap0 cmap_;
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
 
-	/*!
+	/**
 	 * \brief Add a vertex attribute to the testing configuration
 	 */
 	CMap0Test()
@@ -67,7 +66,7 @@ protected:
 		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
 	}
 
-	/*!
+	/**
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
@@ -79,7 +78,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap0Test, random_map_generators)
@@ -88,7 +87,7 @@ TEST_F(CMap0Test, random_map_generators)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding vertices preserves the cell indexation
  */
 TEST_F(CMap0Test, add_vertex)
@@ -98,7 +97,7 @@ TEST_F(CMap0Test, add_vertex)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Removing vertices preserves the cell indexation
  */
 TEST_F(CMap0Test, remove_vertex)
