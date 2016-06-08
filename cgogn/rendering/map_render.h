@@ -176,6 +176,15 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
+		-> typename std::enable_if<MAP::DIMENSION == 2 && !std::is_same<MASK, BoundaryCache<MAP>>::value, void>::type
+	{
+		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
+		BoundaryCache<MAP> bcache(m);
+		init_boundaries(m, bcache, table_indices);
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 		-> typename std::enable_if<MAP::DIMENSION == 3 && std::is_same<MASK, BoundaryCache<MAP>>::value, void>::type
 	{
 		using Vertex = typename MAP::Vertex;
@@ -206,55 +215,11 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
-		-> typename std::enable_if<MAP::DIMENSION == 2 && !std::is_same<MASK, BoundaryCache<MAP>>::value, void>::type
-	{
-		using Vertex = typename MAP::Vertex;
-		using Edge = typename MAP::Edge;
-		using Face = typename MAP::Face;
-
-		BoundaryCache<MAP> bcache(m);
-		m.foreach_cell([&] (Face f)
-		{
-			m.foreach_incident_edge(f, [&] (Edge e)
-			{
-				table_indices.push_back(m.embedding(Vertex(e.dart)));
-				table_indices.push_back(m.embedding(Vertex(m.phi1(e.dart))));
-			});
-		},
-		bcache);
-
-		boundary_dimension_ = 1;
-	}
-
-	template <typename MAP, typename MASK>
-	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 		-> typename std::enable_if<MAP::DIMENSION == 3 && !std::is_same<MASK, BoundaryCache<MAP>>::value, void>::type
 	{
-		using Vertex = typename MAP::Vertex;
-		using Face = typename MAP::Face;
-		using Volume = typename MAP::Volume;
-
+		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
 		BoundaryCache<MAP> bcache(m);
-		m.foreach_cell([&] (Volume v)
-		{
-			m.foreach_incident_face(v, [&] (Face f)
-			{
-				Dart d0 = f.dart;
-				Dart d1 = m.phi1(d0);
-				Dart d2 = m.phi1(d1);
-				do
-				{
-					table_indices.push_back(m.embedding(Vertex(d0)));
-					table_indices.push_back(m.embedding(Vertex(d1)));
-					table_indices.push_back(m.embedding(Vertex(d2)));
-					d1 = d2;
-					d2 = m.phi1(d1);
-				} while(d2 != d0);
-			});
-		},
-		bcache);
-
-		boundary_dimension_ = 2;
+		init_boundaries(m, bcache, table_indices);
 	}
 
 public:
