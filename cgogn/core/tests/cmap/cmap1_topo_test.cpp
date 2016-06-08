@@ -30,7 +30,7 @@ namespace cgogn
 
 #define NB_MAX 100
 
-/*!
+/**
  * \brief The CMap1TopoTest class implements topological tests on CMap1
  * It derives from CMap1 to allow the test of protected methods
  *
@@ -40,7 +40,6 @@ namespace cgogn
  */
 class CMap1TopoTest : public CMap1<DefaultMapTraits>, public ::testing::Test
 {
-
 public:
 
 	using Vertex = CMap1TopoTest::Vertex;
@@ -48,7 +47,7 @@ public:
 
 protected:
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
@@ -59,7 +58,7 @@ protected:
 		std::srand(uint32(std::time(0)));
 	}
 
-	/*!
+	/**
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
@@ -70,7 +69,7 @@ protected:
 			darts_.push_back(add_topology_element());
 	}
 
-	/*!
+	/**
 	 * \brief Generate a random set of faces and put them in darts_
 	 * \return The total number of added darts or vertices.
 	 * The face size ranges from 1 to 10.
@@ -95,7 +94,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap1TopoTest, random_map_generators)
@@ -109,7 +108,7 @@ TEST_F(CMap1TopoTest, random_map_generators)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Test attribute management
  *
  */
@@ -125,7 +124,7 @@ TEST_F(CMap1TopoTest, add_attribute)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is preserved.
@@ -153,7 +152,7 @@ TEST_F(CMap1TopoTest, phi1_sew_unsew)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding a face of size n adds n darts, n vertices and 1 face.
  * The test adds some faces and check that the number of generated cells is correct
  * and that the map integrity is preserved.
@@ -178,7 +177,8 @@ TEST_F(CMap1TopoTest, add_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Removing a face removes all its vertices.
+/**
+ * \brief Removing a face removes all its vertices.
  * The test randomly removes 1/3 of the initial faces.
  * The number of cells correctly decreases and the map integrity is preserved.
  */
@@ -206,7 +206,8 @@ TEST_F(CMap1TopoTest, remove_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Splitting a vertex increases the size of its face.
+/**
+ * \brief Splitting a vertex increases the size of its face.
  * The test performs NB_MAX vertex splitting on vertices of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
  */
@@ -229,10 +230,11 @@ TEST_F(CMap1TopoTest, split_vertex_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Removing a vertex decreases the size of its face and removes its if its degree is 1.
-* The test performs NB_MAX vertex removing on vertices of randomly generated faces.
-* The number of removed cells is correct and the map integrity is preserved.
-*/
+/**
+ * \brief Removing a vertex decreases the size of its face and removes its if its degree is 1.
+ * The test performs NB_MAX vertex removing on vertices of randomly generated faces.
+ * The number of removed cells is correct and the map integrity is preserved.
+ */
 TEST_F(CMap1TopoTest, remove_vertex_topo)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
@@ -263,7 +265,8 @@ TEST_F(CMap1TopoTest, remove_vertex_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Reversing a face reverses the order of its vertices.
+/**
+ * \brief Reversing a face reverses the order of its vertices.
  * The test reverses randomly generated faces.
  * The number of faces and their codegree do not change and the map integrity is preserved.
  */
@@ -299,7 +302,8 @@ TEST_F(CMap1TopoTest, reverse_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief The codegree of a face is correctly computed.
+/**
+ * \brief The codegree of a face is correctly computed.
  */
 TEST_F(CMap1TopoTest, codegree)
 {
@@ -308,7 +312,8 @@ TEST_F(CMap1TopoTest, codegree)
 	EXPECT_EQ(codegree(f), 10u);
 }
 
-/*! \brief The codegree of a face is correctly tested.
+/**
+ * \brief The codegree of a face is correctly tested.
  */
 TEST_F(CMap1TopoTest, has_codegree)
 {
@@ -333,7 +338,8 @@ TEST_F(CMap1TopoTest, has_codegree)
 	EXPECT_FALSE(has_codegree(f3, 11u));
 }
 
-/*! \brief The multi_phi are correctly applied
+/**
+ * \brief The multi_phi are correctly applied
  */
 TEST_F(CMap1TopoTest, multi_phi)
 {
@@ -346,7 +352,8 @@ TEST_F(CMap1TopoTest, multi_phi)
 	EXPECT_EQ(f2.dart, this->phi<1111111111>(f2.dart));
 }
 
-/*! \brief The number of connected components is correctly counted
+/**
+ * \brief The number of connected components is correctly counted
  */
 TEST_F(CMap1TopoTest, nb_connected_components)
 {

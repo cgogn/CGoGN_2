@@ -124,7 +124,8 @@ protected:
 			for (auto& id : ids)
 				iss >> id;
 
-			switch (nbv) {
+			switch (nbv)
+			{
 				case 4: this->add_tetra(*position, ids[1], ids[2], ids[3], ids[0], false); break;
 				case 5: this->add_pyramid(*position, ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
 				case 6: this->add_triangular_prism(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;

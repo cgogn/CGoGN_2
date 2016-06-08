@@ -38,7 +38,8 @@ namespace rendering
 const char* ShaderBoldLineGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
@@ -99,7 +100,8 @@ const char* ShaderBoldLineGen::fragment_shader_source_ =
 "#version 150\n"
 "in vec4 color_f;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -108,7 +110,8 @@ const char* ShaderBoldLineGen::vertex_shader_source2_ =
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
 "out vec3 color_v;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   color_v = vertex_color;\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -169,10 +172,10 @@ const char* ShaderBoldLineGen::fragment_shader_source2_ =
 "#version 150\n"
 "in vec4 color_f;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color_f;\n"
 "}\n";
-
 
 ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 {

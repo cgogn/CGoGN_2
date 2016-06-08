@@ -135,7 +135,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_P:
 			phong_rendering_ = true;
 			flat_rendering_ = false;

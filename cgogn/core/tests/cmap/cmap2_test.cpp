@@ -30,7 +30,7 @@ namespace cgogn
 
 #define NB_MAX 100
 
-/*!
+/**
  * \brief The CMap2Test class implements tests on embedded CMap2
  * It contains a CMap2 to which vertex, edge, face and volume attribute
  * are added to enforce the indexation mechanism in cell traversals.
@@ -41,7 +41,6 @@ namespace cgogn
  */
 class CMap2Test : public ::testing::Test
 {
-
 public:
 
 	struct MiniMapTraits
@@ -61,7 +60,7 @@ protected:
 
 	testCMap2 cmap_;
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
@@ -78,7 +77,7 @@ protected:
 		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 	}
 
-	/*!
+	/**
 	 * \brief Generate a random set of faces and put them in darts_
 	 * \return The total number of added vertices.
 	 * The face size ranges from 1 to 10.
@@ -102,7 +101,7 @@ protected:
 		return count;
 	}
 
-	/*!
+	/**
 	 * \brief Generate a closed surface from the set of faces in darts_
 	 */
 	void add_closed_surfaces()
@@ -166,7 +165,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap2Test, random_map_generators)
@@ -178,7 +177,7 @@ TEST_F(CMap2Test, random_map_generators)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding faces preserves the cell indexation
  */
 TEST_F(CMap2Test, add_face)
@@ -192,7 +191,7 @@ TEST_F(CMap2Test, add_face)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Cutting edges preserves the cell indexation
  */
 TEST_F(CMap2Test, cut_edge)
@@ -205,7 +204,26 @@ TEST_F(CMap2Test, cut_edge)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
+ * \brief Flipping edges preserves the cell indexation
+ */
+TEST_F(CMap2Test, flip_edge)
+{
+	add_closed_surfaces();
+
+	for (Dart d : darts_)
+	{
+		Dart e1 = d;	// choose a random edge in the face
+		uint32 i = std::rand() % 10u;
+		while (i-- > 0u) e1 = cmap_.phi1(e1);
+
+		cmap_.flip_edge(Edge(e1));
+	}
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/**
  * \brief Cutting faces preserves the cell indexation
  */
 TEST_F(CMap2Test, cut_face)
@@ -224,6 +242,52 @@ TEST_F(CMap2Test, cut_face)
 			cmap_.cut_face(d, e);
 		}
 	}
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/**
+ * \brief Merging faces preserves the cell indexation
+ */
+TEST_F(CMap2Test, merge_incident_faces)
+{
+	MapBuilder mbuild(cmap_);
+
+	Dart f1 = mbuild.add_face_topo_parent(5u);
+	Dart f2 = mbuild.add_face_topo_parent(3u);
+	mbuild.phi2_sew(f1, f2);
+
+	// Close the map (remove remaining boundary)
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (cmap_.phi2(d) == d) mbuild.close_hole_topo(d);
+	});
+
+	// Embed the map
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (!cmap_.is_boundary(d))
+			mbuild.new_orbit_embedding(CDart(d));
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
+	{
+		mbuild.new_orbit_embedding(v);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
+	{
+		mbuild.new_orbit_embedding(e);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
+	{
+		mbuild.new_orbit_embedding(f);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
+	{
+		mbuild.new_orbit_embedding(w);
+	});
+
+	cmap_.merge_incident_faces(Edge(f1));
+
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
@@ -233,21 +297,21 @@ TEST_F(CMap2Test, compact_map)
 	testCMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge::ORBIT>("edges");
 	testCMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face::ORBIT>("faces");
 
-	for (int32 i=0; i<100; ++i)
+	for (uint32 i = 0; i < 100; ++i)
 	{
 		Face f = cmap_.add_face(5);
-		int32 ec=0;
+		uint32 ec = 0;
 		cmap_.foreach_incident_edge(f, [&] (Edge e)
 		{
 			ec++;
-			att_e[e]=100*i+ec;
-			att_v[Vertex(e.dart)]=1000*i+ec;
+			att_e[e] = 100*i+ec;
+			att_v[Vertex(e.dart)] = 1000*i+ec;
 		});
-		att_f[i]=10*i;
+		att_f[i] = 10*i;
 		darts_.push_back(f.dart);
 	}
 
-	for (int32 i=0; i<100; i+=2)
+	for (uint32 i = 0; i < 100; i += 2)
 	{
 		Edge e(cmap_.phi1(darts_[i]));
 		cmap_.collapse_edge(e);
@@ -282,11 +346,9 @@ TEST_F(CMap2Test, compact_map)
 	EXPECT_EQ(cmap_.const_attribute_container<Edge::ORBIT>().size(),
 			  cmap_.const_attribute_container<Edge::ORBIT>().end());
 
-
 //	std::cout << "TOPO SIZE:"<< cmap_.topology_container().size() << " / END:"<<  cmap_.topology_container().end() << std::endl;
 
 //		std::cout << "VERT SIZE:"<< cmap_.attribute_container<Vertex::ORBIT>().size() << " / END:"<<  cmap_.attribute_container<Vertex::ORBIT>().end() << std::endl;
-
 
 //	cmap_.foreach_cell([&] (Face f)
 //	{
@@ -302,7 +364,6 @@ TEST_F(CMap2Test, compact_map)
 //		});
 //		std::cout << std::endl;
 //	});
-
 }
 
 TEST_F(CMap2Test, merge_map)
@@ -312,7 +373,6 @@ TEST_F(CMap2Test, merge_map)
 	using Edge = testCMap2::Edge;
 	using Face = testCMap2::Face;
 	using Volume = testCMap2::Volume;
-
 
 	testCMap2 map1;
 	testCMap2::VertexAttribute<int32> att1_v = map1.add_attribute<int32, Vertex::ORBIT>("vertices");
@@ -324,26 +384,26 @@ TEST_F(CMap2Test, merge_map)
 	testCMap2::EdgeAttribute<int32> att2_e = map2.add_attribute<int32, Edge::ORBIT>("edges");
 	testCMap2::VolumeAttribute<int32> att2_w = map2.add_attribute<int32, Volume::ORBIT>("volumes");
 
-	for (int32 i=0; i<5; ++i)
+	for (uint32 i = 0; i < 5; ++i)
 	{
 		Face f = map1.add_face(4);
 		int32 ec=0;
 		map1.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			ec++;
-			att1_v[v]=1000*i+ec;
+			att1_v[v] = 1000*i+ec;
 		});
-		att1_f[i]=10*i;
+		att1_f[i] = 10*i;
 	}
 
-	for (int32 i=0; i<5; ++i)
+	for (uint32 i = 0; i < 5; ++i)
 	{
 		Face f = map2.add_face(3);
-		int32 ec=0;
+		uint32 ec = 0;
 		map2.foreach_incident_edge(f, [&] (Edge e)
 		{
 			ec++;
-			att2_e[e]=100*i+ec;
+			att2_e[e] = 100*i+ec;
 		});
 	}
 
@@ -354,7 +414,6 @@ TEST_F(CMap2Test, merge_map)
 	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35);
 	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10);
 	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10);
-
 }
 
 #undef NB_MAX

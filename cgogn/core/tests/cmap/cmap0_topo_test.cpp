@@ -30,7 +30,7 @@ namespace cgogn
 
 #define NB_MAX 100
 
-/*!
+/**
  * \brief The CMap0TopoTest class implements topological tests on CMap0
  * It contains a CMap0 with no attribute avoiding the indexation mechanism.
  *
@@ -40,7 +40,6 @@ namespace cgogn
  */
 class CMap0TopoTest : public ::testing::Test
 {
-
 public:
 
 	using testCMap0 = CMap0<DefaultMapTraits>;
@@ -50,7 +49,7 @@ protected:
 
 	testCMap0 cmap_;
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
@@ -61,7 +60,7 @@ protected:
 		std::srand(uint32(std::time(0)));
 	}
 
-	/*!
+	/**
 	 * \brief Initialize the darts in darts_ with added vertices
 	 * \param n : the number of added darts or vertices
 	 */
@@ -73,7 +72,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap0TopoTest, random_map_generators)
@@ -84,7 +83,7 @@ TEST_F(CMap0TopoTest, random_map_generators)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Test attribute management
  *
  */
@@ -95,7 +94,7 @@ TEST_F(CMap0TopoTest, add_attribute)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding vertices adds one dart per vertex
  * and the map integrity is preserved
  */
@@ -112,7 +111,7 @@ TEST_F(CMap0TopoTest, add_vertex)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
-/*!
+/**
  * \brief Removing vertices remove one dart per vertex
  * and the map integrity is preserved
  */
@@ -129,6 +128,7 @@ TEST_F(CMap0TopoTest, remove_vertex)
 			--count_vertices;
 		}
 	}
+
 	EXPECT_EQ(cmap_.nb_darts(), count_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_TRUE(cmap_.check_map_integrity());
