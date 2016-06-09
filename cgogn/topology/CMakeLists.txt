@@ -7,7 +7,7 @@ set(HEADER_FILES
 	types/critical_point.h
 	algos/distance_field.h
 	algos/scalar_field.h
-	algos/features.h
+        algos/topology_analyser.h
 	)
 
 add_custom_target(cgogn_topology SOURCES ${HEADER_FILES})

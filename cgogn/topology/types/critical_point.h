@@ -24,6 +24,8 @@
 #ifndef CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
 #define CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
 
+#include <cgogn/core/utils/numerics.h>
+
 namespace cgogn
 {
 
@@ -33,7 +35,7 @@ namespace topology
 
 struct CriticalPoint
 {
-	enum Type : unsigned int
+	enum Type : uint32
 	{
 		REGULAR = 0,
 		MAXIMUM = 1,
@@ -48,7 +50,7 @@ struct CriticalPoint
 	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
 	{}
 
-	inline CriticalPoint(CriticalPoint::Type v, unsigned int n) : v_(v), n_(n)
+	inline CriticalPoint(CriticalPoint::Type v, uint32 n) : v_(v), n_(n)
 	{}
 };
 

@@ -73,6 +73,11 @@ public:
 			map_.remove_attribute(edge_weight_);
 	}
 
+	const EdgeAttribute<Scalar>& edge_weight()
+	{
+		return edge_weight_;
+	}
+
 private:
 
 	/**

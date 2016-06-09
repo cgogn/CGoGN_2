@@ -259,8 +259,8 @@ private:
 		//	if (nb_inf == 2 && nb_sup == 2)
 		//		return CriticalPoint(CriticalPoint::Type::SADDLE, 22);
 
-		cgogn_log_error("critical_vertex_analysis<dimension 3>") << "UNKNOW Critical Type" <<
-																	nb_inf << ", " << nb_sup;
+		cgogn_log_error("critical_vertex_analysis<dimension 3>") << "UNKNOW Critical Type"
+																 << nb_inf << ", " << nb_sup;
 		return CriticalPoint(CriticalPoint::Type::UNKNOWN);
 	}
 
@@ -285,9 +285,6 @@ public:
 			else if (type.v_ == CriticalPoint::Type::SADDLE)
 				saddles_.push_back(v);
 		});
-		std::cout << "maxima : " << maxima_.size() << std::endl;
-		std::cout << "minima : " << minima_.size() << std::endl;
-		std::cout << "saddles : " << saddles_.size() << std::endl;
 	}
 
 	void extract_level_sets(std::vector<Edge>& level_lines)
