@@ -208,7 +208,8 @@ protected:
 				node_ids[j] = old_new_indices[node_ids[j]];
 			}
 
-			switch (elem_type) {
+			switch (elem_type)
+			{
 				case MSH_CELL_TYPES::MSH_TETRA:
 					this->add_tetra(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3],true);
 					break;
@@ -285,7 +286,8 @@ protected:
 
 			uint32 number_of_nodes;
 			std::vector<uint32> node_ids;
-			switch(elem_type) {
+			switch(elem_type)
+			{
 				case MSH_CELL_TYPES::MSH_TETRA:		number_of_nodes = 4u; break;
 				case MSH_CELL_TYPES::MSH_PYRAMID:	number_of_nodes = 5u; break;
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
@@ -396,7 +398,8 @@ protected:
 			}
 
 			uint32 number_of_nodes;
-			switch(elem_type) {
+			switch(elem_type)
+			{
 				case MSH_CELL_TYPES::MSH_TETRA:		number_of_nodes = 4u; break;
 				case MSH_CELL_TYPES::MSH_PYRAMID:	number_of_nodes = 5u; break;
 				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;

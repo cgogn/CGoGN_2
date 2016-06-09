@@ -129,8 +129,10 @@ public:
 	{
 		cgogn_message_assert(current_level_ > 0u, "dec_current_level : already at minimal resolution level");
 
-		if (current_level_ == maximum_level_) {
-			if (nb_darts_per_level_[current_level_] == 0u) {
+		if (current_level_ == maximum_level_)
+		{
+			if (nb_darts_per_level_[current_level_] == 0u)
+			{
 				maximum_level_--;
 				nb_darts_per_level_.pop_back();
 			}

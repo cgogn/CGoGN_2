@@ -49,7 +49,8 @@ const char* ShaderVectorPerVertex::vertex_shader_source_ =
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_normal;\n"
 "out vec3 normal;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	normal = vertex_normal;\n"
 "	gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -62,7 +63,8 @@ const char* ShaderVectorPerVertex::geometry_shader_source_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform float length;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	gl_Position = projection_matrix * model_view_matrix * gl_in[0].gl_Position;\n"
 "	EmitVertex();\n"
 "	vec4 end_point = gl_in[0].gl_Position + vec4(length * normal[0], 0.0);\n"
@@ -75,11 +77,10 @@ const char* ShaderVectorPerVertex::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 color;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	fragColor = color;\n"
 "}\n";
-
-
 
 ShaderVectorPerVertex::ShaderVectorPerVertex()
 {

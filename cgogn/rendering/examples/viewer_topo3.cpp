@@ -162,7 +162,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_V:
 			vol_rendering_ = !vol_rendering_;
 			break;

@@ -151,11 +151,13 @@ const char* ShaderScalarPerVertex::fragment_shader_source_ =
 "in vec3 color_v;\n"
 "in float scalar_v;\n"
 "uniform bool show_iso_lines;\n"
+"uniform int nb_iso_levels;\n"
 "out vec3 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	if (show_iso_lines)\n"
 "	{\n"
-"		float s = scalar_v * 20.0;\n"
+"		float s = scalar_v * float(nb_iso_levels);\n"
 "		if (s - floor(s) < 0.05)\n"
 "			fragColor = vec3(0.0);\n"
 "		else\n"
@@ -178,6 +180,7 @@ ShaderScalarPerVertex::ShaderScalarPerVertex()
 	unif_min_value_ = prg_.uniformLocation("min_value");
 	unif_max_value_ = prg_.uniformLocation("max_value");
 	unif_show_iso_lines_ = prg_.uniformLocation("show_iso_lines");
+	unif_nb_iso_levels_ = prg_.uniformLocation("nb_iso_levels");
 }
 
 void ShaderScalarPerVertex::set_color_map(ColorMap cm)
@@ -208,6 +211,12 @@ void ShaderScalarPerVertex::set_show_iso_lines(bool b)
 {
 	if (unif_show_iso_lines_ >= 0)
 		prg_.setUniformValue(unif_show_iso_lines_, b);
+}
+
+void ShaderScalarPerVertex::set_nb_iso_levels(int32 nb)
+{
+	if (unif_nb_iso_levels_ >= 0)
+		prg_.setUniformValue(unif_nb_iso_levels_, nb);
 }
 
 std::unique_ptr<ShaderScalarPerVertex::Param> ShaderScalarPerVertex::generate_param()

@@ -31,7 +31,7 @@ namespace cgogn
 
 #define NB_MAX 1000
 
-/*!
+/**
  * \brief The CMap2TopoTest class implements topological tests on CMap2
  * It derives from CMap2 to allow the test of protected methods
  *
@@ -54,12 +54,12 @@ public:
 
 protected:
 
-	/*!
+	/**
 	 * \brief A vector of darts on which the methods are tested.
 	 */
 	std::vector<Dart> darts_;
 
-	/*!
+	/**
 	 * \brief Generate a random set of faces.
 	*/
 	CMap2TopoTest()
@@ -68,7 +68,7 @@ protected:
 		std::srand(uint32(std::time(0)));
 	}
 
-	/*!
+	/**
 	 * \brief Tests if the open vertex of d contains a specified dart e.
 	 * The method supposes that the given dart d is the first dart
 	 * of the open PHI21 orbit (i.e. phi2(d) == d)
@@ -88,7 +88,7 @@ protected:
 		return false;
 	}
 
-	/*!
+	/**
 	 * \brief Tests if the volume of d contains a specified dart e.
 	 * The method does not exploit the indexing information
 	 */
@@ -105,7 +105,7 @@ protected:
 		return result;
 	}
 
-	/*!
+	/**
 	 * \brief Embed an open vertex d on a new attribute.
 	 * The method supposes that the given dart d is the first dart
 	 * of the open PHI21 orbit (i.e. phi2(d) == d)
@@ -127,7 +127,7 @@ protected:
 		}
 	}
 
-	/*!
+	/**
 	 * \brief Generate a random set of faces and put them in darts_
 	 * \return The total number of added vertices.
 	 * The face size ranges from 1 to 10.
@@ -151,7 +151,7 @@ protected:
 		return count;
 	}
 
-	/*!
+	/**
 	 * \brief Generate a set of closed surfaces with arbitrary genus.
 	 */
 	void add_closed_surfaces()
@@ -161,7 +161,7 @@ protected:
 		// Generate NB_MAX random 1-faces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			uint32 n = 1u + std::rand() % 10u;
+			uint32 n = 3u + std::rand() % 10u;
 			Dart d = Inherit::Inherit::add_face_topo(n);
 			darts_.push_back(d);
 		}
@@ -190,7 +190,7 @@ protected:
 	}
 };
 
-/*!
+/**
  * \brief The random generated maps used in the tests are sound.
  */
 TEST_F(CMap2TopoTest, random_map_generators)
@@ -204,7 +204,7 @@ TEST_F(CMap2TopoTest, random_map_generators)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Test attribute management
  *
  */
@@ -229,7 +229,7 @@ TEST_F(CMap2TopoTest, add_attribute)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Sewing and unsewing darts correctly changes the topological relations.
  * The test performs NB_MAX sewing and unsewing on randomly chosen dart of darts_.
  * The map integrity is not preserved (this test creates fixed points for PHI2).
@@ -255,7 +255,7 @@ TEST_F(CMap2TopoTest, phi2_sew_unsew)
 	}
 }
 
-/*!
+/**
  * \brief Adding a 2-face of size n adds 2*n darts, n vertices and edges, 2 1-faces and 1 volume.
  * The test adds some faces and check that the number of generated cells is correct
  * and that the map integrity is preserved.
@@ -290,7 +290,7 @@ TEST_F(CMap2TopoTest, add_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding a pyramid whose base has n sides build a surface with
  * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
  * The test adds some pyramides and check that the number of generated cells is correct
@@ -315,7 +315,7 @@ TEST_F(CMap2TopoTest, add_pyramid_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*!
+/**
  * \brief Adding a prism whose base has n sides build a surface with
  * 4*n darts, n+1 vertices, 2*n edges, n+1 faces and 1 volume.
  * The test adds some prims and check that the number of generated cells is correct
@@ -340,7 +340,8 @@ TEST_F(CMap2TopoTest, add_prism_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Cutting an edge increases the size of both incident faces and add a vertex of degree 2.
+/**
+ * \brief Cutting an edge increases the size of both incident faces and add a vertex of degree 2.
  * The test performs NB_MAX edge cutting on edges of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
  */
@@ -377,7 +378,8 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Fliping an edge changes the degree of its vertices.
+/**
+ * \brief Fliping an edge changes the degree of its vertices.
  * The test performs NB_MAX edge flips on randomly generated faces.
  * The expected cells are modified and the map integrity is preserved.
  */
@@ -473,7 +475,8 @@ TEST_F(CMap2TopoTest, flip_edge_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Cutting a face add an edge and replace a face of degree K,
+/**
+ * \brief Cutting a face add an edge and replace a face of degree K,
  * with two subfaces whose degrees K1 and K2 verify K1+K2 = K+2.
  * The test performs NB_MAX face cuts between vertices of a randomly generated surface.
  * The number of generated cells is correct and the map integrity is preserved.
@@ -515,7 +518,68 @@ TEST_F(CMap2TopoTest, cut_face_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
-/*! \brief Closing a map add one face per holes.
+/**
+ * \brief Merging the faces incident to an edge removes an edge and a face.
+ * The codegree of the resulting face is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original faces)
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap2TopoTest, merge_incident_faces_topo)
+{
+//	add_closed_surfaces();
+
+	MapBuilder mbuild(*this);
+
+	Dart f1 = Inherit::Inherit::add_face_topo(5u);
+	Dart f2 = Inherit::Inherit::add_face_topo(3u);
+	phi2_sew(f1, f2);
+
+	mbuild.close_map();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	uint32 k1 = codegree(Face(f1));
+	uint32 k2 = codegree(Face(f2));
+	Dart f11 = phi1(f1);
+	merge_incident_faces_topo(f1);
+	--count_edges;
+	--count_faces;
+	EXPECT_EQ(codegree(Face(f11)), k1 + k2 - 2);
+
+//	const ChunkArrayContainer<uint8>& topo_container = topology_container();
+
+//	for (Dart d : darts_)
+//	{
+//		// check if the dart has not been removed by a previous merge
+//		if (topo_container.used(d.index))
+//		{
+//			Dart d1 = phi1(d);
+//			Dart d2 = phi2(d);
+
+//			uint32 k1 = codegree(Face(d));
+//			uint32 k2 = codegree(Face(d2));
+
+//			if (merge_incident_faces_topo(d))
+//			{
+//				--count_edges;
+//				--count_faces;
+//				EXPECT_EQ(codegree(Face(d1)), k1 + k2 - 2);
+//			}
+//		}
+//	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Closing a map add one face per holes.
  * The test closes the holes of a randomly generated open surface.
  * The map integrity is preserved and the cell indexation is soundly completed
  */
@@ -582,6 +646,9 @@ TEST_F(CMap2TopoTest, close_map)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+/**
+ * \brief The degree & codegree of cells are correctly computed
+ */
 TEST_F(CMap2TopoTest, degree)
 {
 	Face f1(this->add_face_topo(1u));
@@ -600,8 +667,8 @@ TEST_F(CMap2TopoTest, degree)
 	EXPECT_EQ(degree(Edge(f2.dart)), 2u);
 }
 
-
-/*! \brief The multi_phi are correctly applied
+/**
+ * \brief The multi_phi are correctly applied
  */
 TEST_F(CMap2TopoTest, multi_phi)
 {
@@ -613,7 +680,8 @@ TEST_F(CMap2TopoTest, multi_phi)
 	EXPECT_EQ(f.dart, this->phi<11122111221111>(f.dart));
 }
 
-/*! \brief The number of connected components is correctly counted
+/**
+ * \brief The number of connected components is correctly counted
  */
 TEST_F(CMap2TopoTest, nb_connected_components)
 {
