@@ -59,6 +59,7 @@ enum FileType
 	FileType_OFF,
 	FileType_OBJ,
 	FileType_PLY,
+	FileType_STL,
 	FileType_VTK_LEGACY,
 	FileType_VTU,
 	FileType_VTP,
@@ -95,7 +96,7 @@ enum VolumeType
 };
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());

@@ -97,7 +97,7 @@ public:
 		cgogn_assert(cell_cache_);
 		cell_cache_->template build<Vertex>();
 
-		auto output = io::create_file(options.filename_);
+		auto output = io::create_file(options.filename_, options.binary_);
 		if (!output || !output->good())
 			return;
 

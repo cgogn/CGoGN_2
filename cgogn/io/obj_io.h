@@ -29,6 +29,9 @@
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <cgogn/io/surface_import.h>
+#include <cgogn/io/surface_export.h>
+
+#include <iomanip>
 
 namespace cgogn
 {
@@ -105,6 +108,40 @@ protected:
 		{
 			fp >> tag;
 			std::getline(fp, line);
+		} while (tag != std::string("vn"));
+
+		if (tag == "vn")
+		{
+			uint32 counter{0u};
+			ChunkArray<VEC3>* normal = this->vertex_attributes_.template add_chunk_array<VEC3>("normal");
+			do
+			{
+				if (tag == std::string("vn"))
+				{
+					std::stringstream oss(line);
+
+					float64 x, y, z;
+					oss >> x;
+					oss >> y;
+					oss >> z;
+
+					VEC3 norm{Scalar(x), Scalar(y), Scalar(z)};
+					(*normal)[vertices_id[counter++]] = norm;
+				}
+
+				fp >> tag;
+				std::getline(fp, line);
+			} while (!fp.eof());
+		}
+
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
+
+		do
+		{
+			fp >> tag;
+			std::getline(fp, line);
 		} while (tag != std::string("f"));
 
 		this->faces_nb_edges_.reserve(vertices_id.size() * 2);
@@ -155,11 +192,85 @@ protected:
 	}
 };
 
+template <typename MAP>
+class ObjSurfaceExport : public SurfaceExport<MAP>
+{
+public:
+
+	using Inherit = SurfaceExport<MAP>;
+	using Self = ObjSurfaceExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Face = typename Inherit::Face;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template<typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+protected:
+
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+		ChunkArrayGen* normal_attribute(nullptr);
+		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
+
+		for (const auto& pair : option.attributes_to_export_)
+			if (pair.first == Vertex::ORBIT && (to_lower(pair.second) == "normal" || to_lower(pair.second) == "normals"))
+			{
+				normal_attribute = ver_cac.get_chunk_array(pair.second);
+				break;
+			}
+
+
+
+		// set precision for float output
+		output << std::setprecision(12);
+
+		// two passes of traversal to avoid huge buffer (with same performance);
+		output << "# vertices" << std::endl;
+
+		map.foreach_cell([&] (Vertex v)
+		{
+			output << "v ";
+			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+		if (normal_attribute != nullptr)
+		{
+			output << std::endl << "# normals" << std::endl;
+
+			map.foreach_cell([&] (Vertex v)
+			{
+				output << "vn ";
+				normal_attribute->export_element(map.embedding(v), output, false, false);
+				output << std::endl;
+			}, *(this->cell_cache_));
+		}
+
+		output << std::endl << "# faces" << std::endl;
+		// second pass to save primitives
+		std::vector<uint32> prim;
+		prim.reserve(20);
+		map.foreach_cell([&] (Face f)
+		{
+			output << "f";
+			map.foreach_incident_vertex(f, [&] (Vertex v)
+			{
+				output << " " << (this->indices_[v]+1u);
+			});
+			output << std::endl;
+		}, *(this->cell_cache_));
+	}
+};
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OBJ_IO_CPP_))
 extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API ObjSurfaceExport<CMap2<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OBJ_IO_CPP_))
 
 } // namespace io

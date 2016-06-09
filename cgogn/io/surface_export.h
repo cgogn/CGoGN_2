@@ -25,10 +25,12 @@
 #define CGOGN_IO_SURFACE_EXPORT_H_
 
 #include <ostream>
+#include <iomanip>
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/string.h>
 #include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 #include <cgogn/io/io_utils.h>
 #include <cgogn/io/mesh_io_gen.h>
@@ -109,6 +111,10 @@ private:
 
 	std::vector<ChunkArrayGen*>	face_attributes_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))
+extern template class CGOGN_IO_API SurfaceExport<CMap2<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))
 
 } // namespace io
 

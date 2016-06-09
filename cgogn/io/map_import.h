@@ -42,6 +42,7 @@
 #include <cgogn/io/tetgen_io.h>
 #include <cgogn/io/nastran_io.h>
 #include <cgogn/io/tet_io.h>
+#include <cgogn/io/stl_io.h>
 
 namespace cgogn
 {
@@ -98,6 +99,7 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP_TRAITS, VEC3>>();
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP_TRAITS, VEC3>>();
 		default:
 			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceImport<MAP_TRAITS>> ();

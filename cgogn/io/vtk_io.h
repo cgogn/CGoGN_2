@@ -27,12 +27,14 @@
 #include <istream>
 #include <sstream>
 #include <ostream>
+#include <iomanip>
 
 #include <cgogn/core/utils/logger.h>
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/surface_import.h>
+#include <cgogn/io/surface_export.h>
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/volume_export.h>
 
@@ -65,6 +67,181 @@ enum VTK_CELL_TYPES
 	VTK_QUADRATIC_QUAD = 23,
 	VTK_QUADRATIC_TETRA = 24,
 	VTK_QUADRATIC_HEXAHEDRON = 25
+};
+
+CGOGN_IO_API std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type);
+
+template <typename T>
+inline std::string vtk_name_of_type(const T& t)
+{
+	static_assert(std::is_arithmetic<T>::value, "T must be a scalar.");
+	if (std::is_same<T, int8>::value)
+		return "Int8";
+	if (std::is_same<T,uint8>::value)
+		return "UInt8";
+	if (std::is_same<T, int16>::value)
+		return "Int16";
+	if (std::is_same<T,uint16>::value)
+		return "UInt16";
+	if (std::is_same<T, int32>::value)
+		return "Int32";
+	if (std::is_same<T,uint32>::value)
+		return "UInt32";
+	if (std::is_same<T, int64>::value)
+		return "Int64";
+	if (std::is_same<T,uint64>::value)
+		return "UInt64";
+	if (std::is_same<T,float32>::value)
+		return "Float32";
+	if (std::is_same<T,float64>::value)
+		return "Float64";
+
+	cgogn_log_error("vtk_name_of_type") << "Cannot convert to VTK the type \"" << cgogn::name_of_type(t) << "\".";
+	return std::string();
+}
+
+template<typename MAP>
+class VtkSurfaceExport : public SurfaceExport<MAP>
+{
+public:
+
+	using Inherit = SurfaceExport<MAP>;
+	using Self = VtkSurfaceExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Face = typename Inherit::Face;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template<typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+		if (to_lower(extension(option.filename_)) == "vtp")
+			this->export_vtp(map, output, option);
+	}
+private:
+	void export_vtp(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
+		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
+
+		// set precision for real output
+		output << std::setprecision(12);
+
+		output << "<?xml version=\"1.0\"?>" << std::endl;
+		output << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"BigEndian\">" << std::endl;
+		output << "<PolyData>" <<  std::endl;
+		output << "<Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfPolys=\"" << map.template nb_cells<Face::ORBIT>() << "\">" << std::endl;
+		output << "<Points>" << std::endl;
+		output << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
+
+
+		map.foreach_cell([&] (Vertex v)
+		{
+			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+
+		output << "</DataArray>" << std::endl;
+		output << "</Points>" << std::endl;
+
+		{
+			bool vertex_attr = false;
+			for (const auto& pair: option.attributes_to_export_)
+			{
+				if (pair.first == Vertex::ORBIT && pair.second != "position")
+				{
+					ChunkArrayGen* vatt = ver_cac.get_chunk_array(pair.second);
+					if (vatt != nullptr)
+					{
+						if (!vertex_attr)
+						{
+							vertex_attr = true;
+							output << "<PointData>" << std::endl;
+						}
+
+						output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(vatt->nested_type_name()) <<"\" Name=\"" << pair.second << "\" NumberOfComponents=\""<< vatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+
+						map.foreach_cell([&] (Vertex v)
+						{
+							vatt->export_element(map.embedding(v), output, false, false);
+							output << std::endl;
+						}, *(this->cell_cache_));
+						output << "</DataArray>" << std::endl;
+					}
+				}
+			}
+			if (vertex_attr)
+				output << "</PointData>" << std::endl;
+		}
+
+		{
+			bool face_attr = false;
+			for (const auto& pair: option.attributes_to_export_)
+			{
+				if (pair.first == Face::ORBIT)
+				{
+					ChunkArrayGen* fatt = face_cac.get_chunk_array(pair.second);
+					if (fatt != nullptr)
+					{
+						if (!face_attr)
+						{
+							face_attr = true;
+							output << "<CellData>" << std::endl;
+						}
+
+						output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(fatt->nested_type_name()) <<"\" Name=\"" << pair.second << "\" NumberOfComponents=\""<< fatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+
+						map.foreach_cell([&] (Vertex v)
+						{
+							fatt->export_element(map.embedding(v), output, false, false);
+							output << std::endl;
+						}, *(this->cell_cache_));
+						output << "</DataArray>" << std::endl;
+					}
+				}
+			}
+			if (face_attr)
+				output << "</CellData>" << std::endl;
+		}
+
+		output << "<Polys>" << std::endl;
+
+		output << "<DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">" << std::endl;
+		map.foreach_cell([&] (Face f)
+		{
+			Dart it = f.dart;
+			do {
+				output << this->indices_[Vertex(it)] << " ";
+				it = map.phi1(it);
+			} while (it != f.dart);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+		output << "</DataArray>" << std::endl;
+
+		output << "<DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">" << std::endl;
+		uint32 offset = 0;
+		uint32 i = 0u;
+		map.foreach_cell([&] (Face f)
+		{
+			offset += map.codegree(f);
+			output << offset << " ";
+			++i;
+			if (i%60u == 0u)
+				output << std::endl;
+		}, *(this->cell_cache_));
+
+		output << std::endl << "</DataArray>" << std::endl;
+
+		output << "</Polys>" << std::endl;
+		output << "</Piece>" << std::endl;
+		output << "</PolyData>" << std::endl;
+		output << "</VTKFile>" << std::endl;
+	}
 };
 
 template <typename MAP>
@@ -732,63 +909,6 @@ protected:
 		}
 		return true;
 	}
-
-	static inline std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
-	{
-		const std::string& data_type = to_lower(vtk_type_str);
-		if (data_type == "char" || data_type == "int8")
-			return name_of_type(std::int8_t());
-		if (data_type == "unsigned_char" || data_type == "uint8")
-			return name_of_type(std::uint8_t());
-		if (data_type == "short" || data_type == "int16")
-			return name_of_type(std::int16_t());
-		if (data_type == "unsigned_short" || data_type == "uint16")
-			return name_of_type(std::uint16_t());
-		if (data_type == "int" || data_type == "int32")
-			return name_of_type(std::int32_t());
-		if (data_type == "unsigned_int" || data_type == "uint32")
-			return name_of_type(std::uint32_t());
-		if (data_type == "long" || data_type == "int64")
-			return name_of_type(std::int64_t());
-		if (data_type == "unsigned_long" || data_type == "uint64")
-			return name_of_type(std::uint64_t());
-		if (data_type == "float"  || data_type == "float32")
-			return name_of_type(float32());
-		if (data_type == "double" || data_type == "float64")
-			return name_of_type(float64());
-
-		cgogn_log_error("vtk_data_type_to_cgogn_name_of_type") << "Unknown vtk type \"" << vtk_type_str << "\".";
-		return std::string();
-	}
-
-	template <typename T>
-	static inline std::string vtk_name_of_type(const T& t)
-	{
-		static_assert(std::is_arithmetic<T>::value, "T must be a scalar.");
-		if (std::is_same<T, int8>::value)
-			return "Int8";
-		if (std::is_same<T,uint8>::value)
-			return "UInt8";
-		if (std::is_same<T, int16>::value)
-			return "Int16";
-		if (std::is_same<T,uint16>::value)
-			return "UInt16";
-		if (std::is_same<T, int32>::value)
-			return "Int32";
-		if (std::is_same<T,uint32>::value)
-			return "UInt32";
-		if (std::is_same<T, int64>::value)
-			return "Int64";
-		if (std::is_same<T,uint64>::value)
-			return "UInt64";
-		if (std::is_same<T,float32>::value)
-			return "Float32";
-		if (std::is_same<T,float64>::value)
-			return "Float64";
-
-		cgogn_log_error("vtk_name_of_type") << "Cannot convert to VTK the type \"" << cgogn::name_of_type(t) << "\".";
-		return std::string();
-	}
 };
 
 template <typename MAP_TRAITS, typename VEC3>
@@ -1097,6 +1217,7 @@ extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::V
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
 
 } // namespace io

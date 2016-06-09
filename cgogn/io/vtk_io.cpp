@@ -41,5 +41,63 @@ template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<st
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
+template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;
+
+CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
+{
+	const std::string& data_type = to_lower(vtk_type_str);
+	static const std::map<std::string, std::string> type_map{
+		{"char", name_of_type(int8())},
+		{"int8", name_of_type(int8())},
+		{"unsigned_char", name_of_type(uint8())},
+		{"uint8", name_of_type(uint8())},
+		{"short", name_of_type(int16())},
+		{"int16", name_of_type(int16())},
+		{"unsigned_short", name_of_type(uint16())},
+		{"uint16", name_of_type(uint16())},
+		{"int", name_of_type(int32())},
+		{"int32", name_of_type(int32())},
+		{"unsigned_int", name_of_type(uint32())},
+		{"uint32", name_of_type(uint32())},
+		{"long", name_of_type(int64())},
+		{"int64", name_of_type(int64())},
+		{"unsigned_long", name_of_type(uint64())},
+		{"uint64", name_of_type(uint64())},
+		{"float", name_of_type(float32())},
+		{"float32", name_of_type(float32())},
+		{"double", name_of_type(float64())},
+		{"float64", name_of_type(float64())}
+	};
+
+	const auto it = type_map.find(data_type);
+	if ( it != type_map.end())
+		return it->second;
+	cgogn_log_error("vtk_data_type_to_cgogn_name_of_type") << "Unknown vtk type \"" << vtk_type_str << "\".";
+	return std::string();
+}
+
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type)
+{
+	static const std::map<std::string, std::string> type_map{
+		{name_of_type(int8()), "Int8"},
+		{name_of_type(uint8()), "UInt8"},
+		{name_of_type(int16()), "Int16"},
+		{name_of_type(uint16()), "UInt16"},
+		{name_of_type(int32()), "Int32"},
+		{name_of_type(uint32()), "UInt32"},
+		{name_of_type(int64()), "Int64"},
+		{name_of_type(uint64()), "UInt64"},
+		{name_of_type(float32()), "Float32"},
+		{name_of_type(float64()), "Float64"}
+	};
+
+	const auto it = type_map.find(cgogn_type);
+	if ( it != type_map.end())
+		return it->second;
+
+	cgogn_log_error("cgogn_name_of_type_to_vtk_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
+	return std::string();
+}
+
 } // namespace io
 } // namespace cgogn
