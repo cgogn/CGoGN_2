@@ -276,7 +276,7 @@ private:
 			if (map.codegree(f) == 3)
 			{
 				normal_attribute->export_element(map.embedding(f), output, true, true, 4ul);
-				map.template foreach_incident_vertex(f, [&] (Vertex v)
+				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
 					this->position_attribute_->export_element(map.embedding(v), output, true, true, 4ul);
 				});

@@ -108,6 +108,7 @@ public:
 		if (position_attribute_ == nullptr)
 		{
 			cgogn_log_warning("MeshExport::export_file") << "The position attribute is invalid.";
+			map.remove_attribute(indices_);
 			return;
 		}
 

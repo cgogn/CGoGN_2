@@ -168,7 +168,7 @@ private:
 
 		std::vector<uint32> prim;
 		prim.reserve(20);
-		map.template foreach_cell([&] (Face f)
+		map.foreach_cell([&] (Face f)
 		{
 			uint32 valence = 0;
 			prim.clear();

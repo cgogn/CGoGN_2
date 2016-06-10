@@ -25,6 +25,7 @@
 
 #include <istream>
 #include <iostream>
+#include <map>
 
 #ifdef CGOGN_WITH_ZLIB
 #include <zlib.h>
