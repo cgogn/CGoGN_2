@@ -636,7 +636,7 @@ public:
 	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
-		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for boundary cells");
+		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
 		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
 		{
