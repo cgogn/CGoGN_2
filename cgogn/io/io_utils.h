@@ -30,6 +30,7 @@
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/basic/cell.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/io/dll.h>
 
@@ -39,12 +40,26 @@ namespace cgogn
 namespace io
 {
 
+struct ExportOptions
+{
+	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary) :
+		filename_(filename)
+	  ,binary_(binary)
+	  ,attributes_to_export_(attributes)
+	{}
+
+	std::string filename_;
+	bool binary_;
+	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
+};
+
 enum FileType
 {
 	FileType_UNKNOWN = 0,
 	FileType_OFF,
 	FileType_OBJ,
 	FileType_PLY,
+	FileType_STL,
 	FileType_VTK_LEGACY,
 	FileType_VTU,
 	FileType_VTP,
@@ -81,7 +96,7 @@ enum VolumeType
 };
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
@@ -118,20 +133,6 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 	return res;
 }
 
-
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type swap_endianness(const T& x)
-{
-	return ::cgogn::swap_endianness(x);
-}
-
-template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value, T>::type swap_endianness(T& x)
-{
-	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
-		x[i] = ::cgogn::swap_endianness(x[i]);
-	return x;
-}
 
 template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)

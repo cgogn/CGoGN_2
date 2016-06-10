@@ -24,17 +24,21 @@ set(HEADER_FILES
 	obj_io.h
 	ply_io.h
 	lm6_io.h
+	stl_io.h
 	mesh_io_gen.h
 	msh_io.h
 	tetgen_io.h
 	nastran_io.h
 	tet_io.h
-        volume_export.h
+	surface_export.h
+	volume_export.h
 )
 
 set(SOURCE_FILES
 	surface_import.cpp
+	surface_export.cpp
 	volume_import.cpp
+	volume_export.cpp
 	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
@@ -45,6 +49,7 @@ set(SOURCE_FILES
 	obj_io.cpp
 	off_io.cpp
 	ply_io.cpp
+	stl_io.cpp
 	tetgen_io.cpp
 	nastran_io.cpp
 	tet_io.cpp

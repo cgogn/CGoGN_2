@@ -130,6 +130,105 @@ inline Scalar scale_to_0_1_around_one_half(const Scalar x, const Scalar min, con
 	return (x - mi) / (ma - mi);
 }
 
+template<typename T, std::size_t bytes, typename enable = void>
+struct fixed_precision {};
+
+template<typename T>
+struct fixed_precision<T,1ul,typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = int8;
+};
+
+template<typename T>
+struct fixed_precision<T,2ul,typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = int16;
+};
+
+template<typename T>
+struct fixed_precision<T,4ul,typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = int32;
+};
+
+template<typename T>
+struct fixed_precision<T,8ul,typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = int64;
+};
+
+template<typename T>
+struct fixed_precision<T, UINT64_MAX,typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = int64;
+};
+
+template<typename T>
+struct fixed_precision<T,1ul,typename std::enable_if<std::is_unsigned<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = uint8;
+};
+
+template<typename T>
+struct fixed_precision<T,2ul,typename std::enable_if<std::is_unsigned<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = uint16;
+};
+
+template<typename T>
+struct fixed_precision<T,4ul,typename std::enable_if<std::is_unsigned<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = uint32;
+};
+
+template<typename T>
+struct fixed_precision<T,8ul,typename std::enable_if<std::is_unsigned<T>::value && std::is_integral<T>::value>::type>
+{
+	using type = uint64;
+};
+
+template<typename T>
+struct fixed_precision<T, UINT64_MAX,typename std::enable_if<std::is_unsigned<T>::value>::type>
+{
+	using type = uint64;
+};
+
+template<typename T>
+struct fixed_precision<T,1ul,typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	using type = float32; // float is at least 32 bits, but we need this specialization for the compilation
+};
+
+template<typename T>
+struct fixed_precision<T,2ul,typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	using type = float32; // float is at least 32 bits, but we need this specialization for the compilation
+};
+
+template<typename T>
+struct fixed_precision<T,4ul,typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	using type = float32;
+};
+
+template<typename T>
+struct fixed_precision<T,8ul,typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	using type = float64;
+};
+
+template<typename T>
+struct fixed_precision<T, UINT64_MAX,typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	using type = float64;
+};
+
+template<typename T, std::size_t sz>
+struct fixed_precision<T, sz,typename std::enable_if<!std::is_arithmetic<T>::value>::type>
+{
+	using type = T;
+};
+
 } // namespace numerics
 
 using namespace numerics;

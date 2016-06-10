@@ -24,11 +24,16 @@
 #ifndef CGOGN_IO_OFF_IO_H_
 #define CGOGN_IO_OFF_IO_H_
 
+#include <cgogn/core/cmap/cmap3.h>
+
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <cgogn/io/surface_import.h>
+#include <cgogn/io/surface_export.h>
+
+#include <iomanip>
 
 namespace cgogn
 {
@@ -241,11 +246,139 @@ private:
 	}
 };
 
+template <typename MAP>
+class OffSurfaceExport : public SurfaceExport<MAP>
+{
+public:
+
+	using Inherit = SurfaceExport<MAP>;
+	using Self = OffSurfaceExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Face = typename Inherit::Face;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template<typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+
+protected:
+
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+		if (option.binary_)
+			this->export_binary(map,output,option);
+		else
+			this->export_ascii(map,output,option);
+	}
+private:
+	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
+		output << "OFF" << std::endl;
+		output << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Face::ORBIT>() << " 0" << std::endl;
+
+		// set precision for real output
+		output << std::setprecision(12);
+
+		// first pass to save positions
+		map.foreach_cell([&] (Vertex v)
+		{
+			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+		const auto& ids = this->indices_;
+		// second pass to save primitives
+		std::vector<uint32> prim;
+		prim.reserve(20);
+		map.foreach_cell([&] (Face f)
+		{
+			uint32 valence{0u};
+			prim.clear();
+
+			map.foreach_incident_vertex(f, [&] (Vertex v)
+			{
+				prim.push_back(ids[v]);
+				++valence;
+			});
+			output << valence;
+			for(uint32 i: prim)
+				output << " " << i;
+			output << std::endl;
+
+		}, *(this->cell_cache_));
+	}
+
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
+		output << "OFF BINARY"<< std::endl;
+
+		uint32 nb_cells[3];
+		nb_cells[0] = swap_endianness_native_big(map.template nb_cells<Vertex::ORBIT>());
+		nb_cells[1] = swap_endianness_native_big(map.template nb_cells<Face::ORBIT>());
+		nb_cells[2] = 0;
+
+		output.write(reinterpret_cast<char*>(nb_cells),3*sizeof(uint32));
+
+		// two pass of traversal to avoid huge buffer (with same performance);
+
+		// first pass to save positions & store contiguous indices
+		static const uint32 BUFFER_SZ = 1024 * 1024;
+
+		std::vector<float32> buffer_pos;
+		buffer_pos.reserve(BUFFER_SZ + 3);
+
+		map.foreach_cell([&] (Vertex v)
+		{
+			this->position_attribute_->export_element(map.embedding(v), output, true, false,4ul);
+		}, *(this->cell_cache_));
+
+
+//		// second pass to save primitives
+		std::vector<uint32> buffer_prims;
+		buffer_prims.reserve(BUFFER_SZ + 128);// + 128 to avoid re-allocations
+
+		std::vector<uint32> prim;
+		prim.reserve(20);
+
+		const auto& ids = this->indices_;
+
+		map.foreach_cell([&] (Face f)
+		{
+			uint32 valence = 0;
+			prim.clear();
+
+			map.foreach_incident_vertex(f, [&] (Vertex v)
+			{
+				prim.push_back(ids[v]);
+				++valence;
+			});
+
+			buffer_prims.push_back(swap_endianness_native_big(valence));
+			for(uint32 i: prim)
+				buffer_prims.push_back(swap_endianness_native_big(i));
+
+			if (buffer_prims.size() >= BUFFER_SZ)
+			{
+				output.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
+				buffer_prims.clear();
+			}
+		}, *(this->cell_cache_));
+
+		if (!buffer_prims.empty())
+		{
+			output.write(reinterpret_cast<char*>(&(buffer_prims[0])), buffer_prims.size()*sizeof(uint32));
+			buffer_prims.clear();
+			buffer_prims.shrink_to_fit();
+		}
+
+	}
+};
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API OffSurfaceExport<CMap2<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 
 } // namespace io

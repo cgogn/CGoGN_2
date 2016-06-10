@@ -136,7 +136,7 @@ public:
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
 					for (auto it = data_.begin() + old_size, end = data_.end() ; it != end; ++it)
-						*it = cgogn::io::internal::swap_endianness(*it);
+						*it = cgogn::swap_endianness(*it);
 				}
 
 				if (fp.eof() || fp.bad())
@@ -149,7 +149,7 @@ public:
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
 					for (auto it = buffer.begin() + old_size, end = buffer.end() ; it != end; ++it)
-						*it = cgogn::io::internal::swap_endianness(*it);
+						*it = cgogn::swap_endianness(*it);
 				}
 				if (fp.eof() || fp.bad())
 					this->reset();

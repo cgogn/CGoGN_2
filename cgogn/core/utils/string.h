@@ -26,7 +26,8 @@
 
 
 #include <string>
-#include <cctype>
+#include <locale>
+#include <iostream>
 
 namespace cgogn
 {
@@ -34,18 +35,20 @@ namespace cgogn
 template <typename Char_T>
 inline std::basic_string<Char_T> to_upper(const std::basic_string<Char_T>& str)
 {
+	const std::locale locale;
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
-		c = Char_T(std::toupper(c));
+		c = Char_T(std::toupper(c,locale));
 	return res;
 }
 
 template <typename Char_T>
 inline std::basic_string<Char_T> to_lower(const std::basic_string<Char_T>& str)
 {
+	const std::locale locale;
 	std::basic_string<Char_T> res(str);
 	for (auto& c : res)
-		c = Char_T(std::tolower(c));
+		c = Char_T(std::tolower(c,locale));
 	return res;
 }
 

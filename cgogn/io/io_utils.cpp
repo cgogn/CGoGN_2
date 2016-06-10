@@ -25,6 +25,7 @@
 
 #include <istream>
 #include <iostream>
+#include <map>
 
 #ifdef CGOGN_WITH_ZLIB
 #include <zlib.h>
@@ -208,58 +209,52 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 CGOGN_IO_API FileType file_type(const std::string& filename)
 {
 	const std::string& ext = to_lower(extension(filename));
-	if (ext == "off")
-		return FileType::FileType_OFF;
-	if (ext == "obj")
-		return FileType::FileType_OBJ;
-	if (ext == "ply")
-		return FileType::FileType_PLY;
-	if (ext == "vtk")
-		return FileType::FileType_VTK_LEGACY;
-	if (ext == "vtu")
-		return FileType::FileType_VTU;
-	if (ext == "vtp")
-		return FileType::FileType_VTP;
-	if (ext == "meshb" || ext == "mesh")
-		return FileType::FileType_MESHB;
-	if (ext == "msh")
-		return FileType::FileType_MSH;
-	if (ext == "node" || ext == "ele")
-		return FileType::FileType_TETGEN;
-	if (ext == "nas" || ext == "bdf")
-		return FileType::FileType_NASTRAN;
-	if (ext == "tet")
-		return FileType::FileType_AIMATSHAPE;
+	static const std::map<std::string, FileType> file_type_map{
+		{"off", FileType_OFF},
+		{"obj", FileType_OBJ},
+		{"stl", FileType_STL},
+		{"ply", FileType_PLY},
+		{"vtk", FileType_VTK_LEGACY},
+		{"vtu", FileType_VTU},
+		{"vtp", FileType_VTP},
+		{"meshb", FileType_MESHB},
+		{"mesh", FileType_MESHB},
+		{"msh", FileType_MSH},
+		{"node", FileType_TETGEN},
+		{"ele", FileType_TETGEN},
+		{"nas", FileType_NASTRAN},
+		{"bdf", FileType_NASTRAN},
+		{"tet", FileType_AIMATSHAPE}
+	};
 
-	return FileType::FileType_UNKNOWN;
+	const auto it = file_type_map.find(ext);
+	if ( it != file_type_map.end())
+		return it->second;
+	else
+		return FileType::FileType_UNKNOWN;
 }
 
 CGOGN_IO_API DataType data_type(const std::string& type_name)
 {
-	if (type_name == name_of_type(float32()))
-		return DataType::FLOAT;
-	else if (type_name == name_of_type(float64()))
-		return DataType::DOUBLE;
-	else if (type_name == name_of_type(char()))
-		return DataType::CHAR;
-	else if (type_name == name_of_type(std::int8_t()))
-		return DataType::INT8;
-	else if (type_name == name_of_type(std::uint8_t()))
-		return DataType::UINT8;
-	else if (type_name == name_of_type(std::int16_t()))
-		return DataType::INT16;
-	else if (type_name == name_of_type(std::uint16_t()))
-		return DataType::UINT16;
-	else if (type_name == name_of_type(std::int32_t()))
-		return DataType::INT32;
-	else if (type_name == name_of_type(std::uint32_t()))
-		return DataType::UINT32;
-	else if (type_name == name_of_type(std::int64_t()))
-		return DataType::INT64;
-	else if (type_name == name_of_type(std::uint64_t()))
-		return DataType::UINT64;
+	static const std::map<std::string, DataType> data_type_map{
+		{name_of_type(float32()), DataType::FLOAT},
+		{name_of_type(float64()), DataType::DOUBLE},
+		{name_of_type(char()), DataType::CHAR},
+		{name_of_type(int8()), DataType::INT8},
+		{name_of_type(uint8()), DataType::UINT8},
+		{name_of_type(int16()), DataType::INT16},
+		{name_of_type(uint16()), DataType::UINT16},
+		{name_of_type(int32()), DataType::INT32},
+		{name_of_type(uint32()), DataType::UINT32},
+		{name_of_type(int64()), DataType::INT64},
+		{name_of_type(uint64()), DataType::UINT64}
+	};
 
-	return DataType::UNKNOWN;
+	const auto it = data_type_map.find(type_name);
+	if ( it != data_type_map.end())
+		return it->second;
+	else
+		return DataType::UNKNOWN;
 }
 
 CharArrayBuffer::~CharArrayBuffer() {}
@@ -271,9 +266,14 @@ CGOGN_IO_API bool file_exists(const std::string& filename)
 	return std::ifstream(filename).good();
 }
 
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename)
+CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary)
 {
 	std::unique_ptr<std::ofstream> output;
+
+	std::ios_base::openmode open_mode = std::ios_base::out;
+	if (binary)
+		open_mode |= std::ios::binary;
+
 	std::string new_filename(filename);
 	if (file_exists(new_filename))
 	{
@@ -285,7 +285,7 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 		} while (file_exists(new_filename));
 		cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
 	}
-	output = cgogn::make_unique<std::ofstream>(new_filename, std::ios::out);
+	output = cgogn::make_unique<std::ofstream>(new_filename, open_mode);
 	if (!output->good())
 		cgogn_log_warning("create_file")  << "Error while opening the file \"" << filename << "\"";
 	return output;

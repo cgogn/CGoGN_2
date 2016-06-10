@@ -260,6 +260,13 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
+
+	inline bool is_embedded(Orbit orb) const
+	{
+		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
+		return embeddings_[orb] != nullptr;
+	}
+
 	template <class CellType>
 	inline bool is_embedded() const
 	{
@@ -274,6 +281,15 @@ public:
 		cgogn_message_assert((*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX, "embedding result is INVALID_INDEX");
 
 		return (*embeddings_[ORBIT])[c.dart.index];
+	}
+
+	inline uint32 embedding(Dart d, Orbit orb) const
+	{
+		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded(orb), "Invalid parameter: orbit not embedded");
+		cgogn_message_assert((*embeddings_[orb])[d.index] != INVALID_INDEX, "embedding result is INVALID_INDEX");
+
+		return (*embeddings_[orb])[d.index];
 	}
 
 protected:

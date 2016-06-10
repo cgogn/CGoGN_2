@@ -495,7 +495,7 @@ protected:
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
-		scalar_type[0] = std::toupper(scalar_type[0]);
+		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
 		// 1. vertices
 		output << "$NOD" << std::endl;
@@ -504,9 +504,9 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_element(map.embedding(v), output, false);
+			pos->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
-		});
+		}, *(this->cell_cache_));
 		output << "$ENDNOD" << std::endl;
 
 		// 2. volumes

@@ -36,6 +36,7 @@
 #include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
 
 namespace cgogn
 {
@@ -438,9 +439,16 @@ public:
 		return type_traits::nb_components(this->operator[](0u));
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
 	{
-		serialization::ostream_writer(o, binary, this->operator[](idx));
+		switch (precision) {
+			case 1ul: serialization::ostream_writer<T, 1ul>(o,this->operator[](idx), binary, little_endian); break;
+			case 2ul: serialization::ostream_writer<T, 2ul>(o,this->operator[](idx), binary, little_endian); break;
+			case 4ul: serialization::ostream_writer<T, 4ul>(o,this->operator[](idx), binary, little_endian); break;
+			case 8ul: serialization::ostream_writer<T, 8ul>(o,this->operator[](idx), binary, little_endian); break;
+			default:
+				serialization::ostream_writer<T, UINT64_MAX>(o,this->operator[](idx), binary, little_endian);
+		}
 	}
 };
 
@@ -798,9 +806,9 @@ public:
 		return 1u;
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
 	{
-		serialization::ostream_writer(o,binary, this->operator[](idx));
+		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
 	}
 };
 
