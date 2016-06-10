@@ -133,7 +133,7 @@ public:
 		Inherit(nullptr),
 		chunk_array_cont_(nullptr),
 		chunk_array_(nullptr),
-		orbit_(NB_ORBITS)
+		orbit_(Orbit(NB_ORBITS))
 	{}
 
 	Attribute_T(MapData* const map, TChunkArray* const ca, Orbit orbit) :

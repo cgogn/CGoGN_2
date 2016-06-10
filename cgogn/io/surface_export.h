@@ -103,7 +103,7 @@ private:
 		}, *(this->cell_cache_));
 	}
 
-	void reset()
+	virtual void reset() override
 	{
 		Inherit::reset();
 		face_attributes_.clear();
