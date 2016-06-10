@@ -148,64 +148,40 @@ private:
 		output << "</DataArray>" << std::endl;
 		output << "</Points>" << std::endl;
 
+
+		if (!this->vertex_attributes().empty())
 		{
-			bool vertex_attr = false;
-			for (const auto& pair: option.attributes_to_export_)
+			output << "<PointData>" << std::endl;
+			for(ChunkArrayGen* vatt : this->vertex_attributes_)
 			{
-				if (pair.first == Vertex::ORBIT && pair.second != "position")
+				output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(vatt->nested_type_name()) <<"\" Name=\"" << vatt->name() << "\" NumberOfComponents=\""<< vatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+
+				map.foreach_cell([&] (Vertex v)
 				{
-					ChunkArrayGen* vatt = ver_cac.get_chunk_array(pair.second);
-					if (vatt != nullptr)
-					{
-						if (!vertex_attr)
-						{
-							vertex_attr = true;
-							output << "<PointData>" << std::endl;
-						}
-
-						output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(vatt->nested_type_name()) <<"\" Name=\"" << pair.second << "\" NumberOfComponents=\""<< vatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
-
-						map.foreach_cell([&] (Vertex v)
-						{
-							vatt->export_element(map.embedding(v), output, false, false);
-							output << std::endl;
-						}, *(this->cell_cache_));
-						output << "</DataArray>" << std::endl;
-					}
-				}
+					vatt->export_element(map.embedding(v), output, false, false);
+					output << std::endl;
+				}, *(this->cell_cache_));
+				output << "</DataArray>" << std::endl;
 			}
-			if (vertex_attr)
-				output << "</PointData>" << std::endl;
+			output << "</PointData>" << std::endl;
 		}
 
+
+		if (!this->face_attributes().empty())
 		{
-			bool face_attr = false;
-			for (const auto& pair: option.attributes_to_export_)
+			output << "<CellData>" << std::endl;
+			for(ChunkArrayGen* fatt : this->vertex_attributes_)
 			{
-				if (pair.first == Face::ORBIT)
+				output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(fatt->nested_type_name()) <<"\" Name=\"" << fatt->name() << "\" NumberOfComponents=\""<< fatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+
+				map.foreach_cell([&] (Face f)
 				{
-					ChunkArrayGen* fatt = face_cac.get_chunk_array(pair.second);
-					if (fatt != nullptr)
-					{
-						if (!face_attr)
-						{
-							face_attr = true;
-							output << "<CellData>" << std::endl;
-						}
-
-						output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(fatt->nested_type_name()) <<"\" Name=\"" << pair.second << "\" NumberOfComponents=\""<< fatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
-
-						map.foreach_cell([&] (Vertex v)
-						{
-							fatt->export_element(map.embedding(v), output, false, false);
-							output << std::endl;
-						}, *(this->cell_cache_));
-						output << "</DataArray>" << std::endl;
-					}
-				}
+					fatt->export_element(map.embedding(f), output, false, false);
+					output << std::endl;
+				}, *(this->cell_cache_));
+				output << "</DataArray>" << std::endl;
 			}
-			if (face_attr)
-				output << "</CellData>" << std::endl;
+			output << "</CellData>" << std::endl;
 		}
 
 		output << "<Polys>" << std::endl;
