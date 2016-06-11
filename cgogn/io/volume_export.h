@@ -49,10 +49,11 @@ public:
 	using Volume = typename Map::Volume;
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
+	template<typename T, Orbit ORB>
+	using Attribute = typename Map::template Attribute<T, ORB>;
 
 	inline VolumeExport() :
 		vertices_of_volumes_()
-	  ,number_of_vertices_()
 	  ,nb_tetras_(0u)
 	  ,nb_pyramids_(0u)
 	  ,nb_triangular_prisms_(0u)
@@ -68,6 +69,8 @@ public:
 	{
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
 		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
+
+		vertices_of_volumes_ = map.template add_attribute<std::vector<int32>, Volume::ORBIT>("vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
@@ -90,9 +93,8 @@ public:
 			}
 		}
 
+		this->cell_cache_->template build<Vertex>();
 		this->cell_cache_->template build<Volume>();
-		number_of_vertices_.reserve(map.template nb_cells<Volume::ORBIT>());
-		vertices_of_volumes_.reserve(4u* number_of_vertices_.capacity());
 
 		uint32 count{0u};
 		map.foreach_cell([&] (Vertex v) { this->indices_[v] = count++;}
@@ -101,77 +103,75 @@ public:
 		const auto& ids = this->indices_;
 		map.foreach_cell([&] (Volume w)
 		{
-			uint32 nb_vert{0u};
+			int32 nb_vert{0u};
 			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
 			Dart it = w.dart;
 
+			std::vector<int32>& vertices = vertices_of_volumes_[w];
+
 			if (nb_vert == 4u)
 			{
-				number_of_vertices_.push_back(4u);
 				++nb_tetras_;
-				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				vertices.push_back(ids[Vertex(it)]);
 				it = map.phi1(it);
-				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				vertices.push_back(ids[Vertex(it)]);
 				it = map.phi1(it);
-				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				vertices.push_back(ids[Vertex(it)]);
 				it = map.template phi<211>(it);
-				vertices_of_volumes_.push_back(ids[Vertex(it)]);
+				vertices.push_back(ids[Vertex(it)]);
 			}
 			else
 			{
 				if (nb_vert == 5u)
 				{
-					number_of_vertices_.push_back(5u);
 					++nb_pyramids_;
-					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					vertices.push_back(ids[Vertex(it)]);
 					it = map.phi1(it);
-					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					vertices.push_back(ids[Vertex(it)]);
 					it = map.phi1(it);
-					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					vertices.push_back(ids[Vertex(it)]);
 					it = map.phi1(it);
-					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					vertices.push_back(ids[Vertex(it)]);
 					it = map.template phi<212>(it);
-					vertices_of_volumes_.push_back(ids[Vertex(it)]);
+					vertices.push_back(ids[Vertex(it)]);
 				}
 				else
 				{
 					if (nb_vert == 6u)
 					{
-						number_of_vertices_.push_back(6u);
 						++nb_triangular_prisms_;
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 						it = map.phi1(it);
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 						it = map.phi1(it);
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 						it = map.template phi<21121>(w.dart);
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 						it = map.phi_1(it);
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 						it = map.phi_1(it);
-						vertices_of_volumes_.push_back(ids[Vertex(it)]);
+						vertices.push_back(ids[Vertex(it)]);
 					}
 					else
 					{
 						if (nb_vert == 8u)
 						{
-							number_of_vertices_.push_back(8u);
 							++nb_hexas_;
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi_1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.template phi<21121>(w.dart);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 							it = map.phi1(it);
-							vertices_of_volumes_.push_back(ids[Vertex(it)]);
+							vertices.push_back(ids[Vertex(it)]);
 						}
 						else
 						{
@@ -203,14 +203,14 @@ public:
 		return nb_hexas_;
 	}
 
-	inline std::vector<uint32> const & vertices_of_volumes() const
+	inline std::vector<int32> const & vertices_of_volumes(Volume w) const
 	{
-		return vertices_of_volumes_;
+		return vertices_of_volumes_[w];
 	}
 
-	inline std::vector<uint32> const & number_of_vertices() const
+	inline std::size_t number_of_vertices(Volume w) const
 	{
-		return number_of_vertices_;
+		return vertices_of_volumes_[w].size();
 	}
 
 	inline std::vector<ChunkArrayGen*> const & volume_attributes() const
@@ -223,8 +223,8 @@ private:
 	void reset() override
 	{
 		Inherit::reset();
-		vertices_of_volumes_.clear();
-		number_of_vertices_.clear();
+		if (vertices_of_volumes_.is_valid())
+			vertices_of_volumes_.set_all_values(std::vector<int32>());
 		nb_tetras_ = 0u;
 		nb_pyramids_ = 0u;
 		nb_triangular_prisms_ = 0u;
@@ -232,8 +232,7 @@ private:
 		volume_attributes_.clear();
 	}
 
-	std::vector<uint32>	vertices_of_volumes_;
-	std::vector<uint32>	number_of_vertices_;
+	Attribute<std::vector<int32>, Volume::ORBIT> vertices_of_volumes_;
 	uint32 nb_tetras_;
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;

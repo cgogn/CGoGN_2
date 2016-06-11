@@ -215,8 +215,6 @@ protected:
 	{
 
 		ChunkArrayGen const* pos = this->position_attribute();
-		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
-		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
@@ -249,9 +247,6 @@ protected:
 		}, *(this->cell_cache_));
 
 		count = 1u;
-		auto vertices_it = this->vertices_of_volumes().begin();
-		const auto& nb_vert_vol = this->number_of_vertices();
-		const uint32 nb_vols = nb_vert_vol.size();
 		output << std::right;
 
 		if (this->nb_hexas() > 0u)
@@ -260,53 +255,47 @@ protected:
 			output << "$$      Hexa indices                                                            $"<< std::endl;
 			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
 
-			for (uint32 w = 0u; w < nb_vols; ++w)
+			map.foreach_cell([&](Volume w)
 			{
-				if (nb_vert_vol[w] == 8u)
+				const auto& vertices = this->vertices_of_volumes(w);
+				if (vertices.size() == 8ul)
 				{
+					auto it = vertices.begin();
 					output << "CHEXA   ";
 					output << std::setw(8) << count++ << std::setw(8) << 0;
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u) << "+" << std::endl;
-					output << "+       " << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1) << "+" << std::endl;
+					output << "+       " << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1) << std::endl;
 				}
-				else
-				{
-					for (uint32 i = 0u; i < nb_vert_vol[w]; ++i)
-						++vertices_it;
-				}
-			}
+			}, *(this->cell_cache_));
 		}
 
 		if (this->nb_tetras() > 0u)
 		{
-			vertices_it = this->vertices_of_volumes().begin();
 			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
 			output << "$$      Tetra indices                                                           $"<< std::endl;
 			output << "$$ ---------------------------------------------------------------------------- $"<< std::endl;
 
-			for (uint32 w = 0u; w < nb_vols; ++w)
+
+			map.foreach_cell([&](Volume w)
 			{
-				if (nb_vert_vol[w] == 4u)
+				const auto& vertices = this->vertices_of_volumes(w);
+				if (vertices.size() == 4ul)
 				{
+					auto it = vertices.begin();
 					output << "CTETRA  ";
 					output << std::setw(8) << count++ << std::setw(8) << 0;
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u);
-					output << std::setw(8) << (*vertices_it++ + 1u) << std::endl;
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1);
+					output << std::setw(8) << (*it++ + 1) << std::endl;
 				}
-				else
-				{
-					for (uint32 i = 0u; i < nb_vert_vol[w]; ++i)
-						++vertices_it;
-				}
-			}
+			}, *(this->cell_cache_));
 		}
 		output << "ENDDATA" << std::endl;
 	}
