@@ -71,6 +71,8 @@ enum VTK_CELL_TYPES
 
 CGOGN_IO_API std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
 CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type);
+CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type);
+CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size);
 
 template <typename T>
 inline std::string vtk_name_of_type(const T& t)
@@ -119,14 +121,11 @@ public:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		if (to_lower(extension(option.filename_)) == "vtp")
-			this->export_vtp(map, output, option);
+			this->export_vtp_ascii(map, output, option);
 	}
 private:
-	void export_vtp(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_vtp_ascii(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
-		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
-
 		// set precision for real output
 		output << std::setprecision(12);
 
@@ -235,27 +234,57 @@ public:
 protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
+		if (to_lower(extension(option.filename_)) == "vtu")
+			this->export_vtu(map, output, option);
+	}
+
+private:
+	void export_vtu(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
 		ChunkArrayGen const* pos = this->position_attribute();
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
-		std::string scalar_type = pos->nested_type_name();
-		scalar_type[0] = std::toupper(scalar_type[0]);
+		std::string scalar_type = cgogn_name_of_type_to_vtk_data_type(pos->nested_type_name());
+		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
+		const uint32 nbw = map.template nb_cells<Volume::ORBIT>();
+		const bool bin = option.binary_;
 
 		output << "<?xml version=\"1.0\"?>" << std::endl;
-		output << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"" << endianness << "\">" << std::endl;
+		output << "<VTKFile type=\"UnstructuredGrid\" header_type=\"UInt32\" version=\"0.1\" byte_order=\"" << endianness << "\">" << std::endl;
 		output << "  <UnstructuredGrid>" <<  std::endl;
-		output << "    <Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfCells=\""<< (this->nb_tetras() + this->nb_pyramids() + this->nb_triangular_prisms() + this->nb_hexas()) << "\">" << std::endl;
+		output << "    <Piece NumberOfPoints=\"" << nbv << "\" NumberOfCells=\""<< nbw << "\">" << std::endl;
 
 		// 1st step : vertices
 		output << "      <Points>" << std::endl;
 		// 1.a : positions
 		output << "        <DataArray type=\""<< scalar_type  << "\" Name=\"" << pos->name() << "\" NumberOfComponents=\"" << pos->nb_components() << "\" format=\"" << format << "\">" << std::endl;
-		map.foreach_cell([&](Vertex v)
+
+		std::vector<char> buffer_char;
+
+		if (bin)
 		{
-			output << "          ";
-			pos->export_element(map.embedding(v), output, false, false);
+			const uint32 elem_size{pos->element_size()};
+			buffer_char.clear();
+			buffer_char.reserve(nbv * elem_size);
+
+			map.foreach_cell([&](Vertex v)
+			{
+				const char* elem =  static_cast<const char*>(pos->element_ptr(map.embedding(v)));
+				for(uint32 i = 0u; i < elem_size; ++i)
+					buffer_char.push_back(elem[i]);
+			}, *(this->cell_cache_));
+
+			write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
 			output << std::endl;
-		}, *(this->cell_cache_));
+		} else {
+			map.foreach_cell([&](Vertex v)
+			{
+					output << "          ";
+					pos->export_element(map.embedding(v), output, false, false);
+					output << std::endl;
+			}, *(this->cell_cache_));
+		}
+
 		output << "        </DataArray>" << std::endl;
 		output << "      </Points>" << std::endl;
 
@@ -265,15 +294,32 @@ protected:
 			// 1.B : other vertices attributes
 			for (const auto& att : this->vertex_attributes())
 			{
-				scalar_type = att->nested_type_name();
-				scalar_type[0] = std::toupper(scalar_type[0]);
+				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
 				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
-				map.foreach_cell([&](Vertex v)
+
+				if (bin)
 				{
-					output << "          ";
-					att->export_element(map.embedding(v), output, false, false);
+					const uint32 elem_size{pos->element_size()};
+					buffer_char.clear();
+					buffer_char.reserve(nbv * elem_size);
+
+					map.foreach_cell([&](Vertex v)
+					{
+						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(v)));
+						for(uint32 i = 0u; i < elem_size; ++i)
+							buffer_char.push_back(elem[i]);
+					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
 					output << std::endl;
-				});
+				} else {
+					map.foreach_cell([&](Vertex v)
+					{
+							output << "          ";
+							att->export_element(map.embedding(v), output, false, false);
+							output << std::endl;
+					}, *(this->cell_cache_));
+				}
+
 				output << "        </DataArray>" << std::endl;
 			}
 			output << "      </PointData>" << std::endl;
@@ -282,45 +328,81 @@ protected:
 		// begin volumes
 		output << "      <Cells>" << std::endl;
 		// 2.a. Connectivity
-		output << "        <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << std::endl;
+		output << "        <DataArray type=\"Int32\" Name=\"connectivity\" format=\"" << format << "\">" << std::endl;
 
-		std::vector<uint32> const& vertices_of_vol = this->vertices_of_volumes();
-		std::vector<uint32> const& nb_vert = this->number_of_vertices();
-
-		std::size_t it = 0ul;
-		for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
+		if (bin)
 		{
-			output << "          ";
-			for (std::size_t j = 0ul, nbv = nb_vert[i] ; j < nbv; ++j)
-				output << vertices_of_vol[it++] << " ";
+			buffer_char.clear();
+			map.foreach_cell([&](Volume w)
+			{
+				const auto& vertices = this->vertices_of_volumes(w);
+				const char*data = reinterpret_cast<const char*>(&vertices[0]);
+				for(uint32 i = 0u; i < vertices.size() * sizeof(int32) ; ++i)
+					buffer_char.push_back(data[i]);
+			}, *(this->cell_cache_));
+			write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
 			output << std::endl;
+		} else {
+			map.foreach_cell([&](Volume w)
+			{
+				const auto& vertices = this->vertices_of_volumes(w);
+				output << "          ";
+				for (auto i : vertices)
+					output << i << " ";
+				output << std::endl;
+			}, *(this->cell_cache_));
 		}
 
 		output << "        </DataArray>" << std::endl;
 		// 2.b. offsets
-		output << "        <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
-		output << "         ";
+		output << "        <DataArray type=\"Int32\" Name=\"offsets\" format=\"" << format << "\">" << std::endl;
 
-		std::size_t offset{0ul};
-		for (std::size_t i=0ul; i<nb_vert.size(); ++i)
+
+		int32 offset{0};
+		std::vector<int32> buffer_offset;
+		buffer_offset.reserve(nbw);
+		map.foreach_cell([&](Volume w)
 		{
-			offset += nb_vert[i];
-			output << " " << offset;
+			offset+= int32(this->number_of_vertices(w));
+			buffer_offset.push_back(offset);
+		}, *(this->cell_cache_));
+
+		if (bin)
+		{
+			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32));
+		} else {
+			output << "         ";
+			for (auto o : buffer_offset)
+				output << " " << o;
 		}
 		output << std::endl << "        </DataArray>" << std::endl;
+
+
 		// 2.c cell types
-		output << "        <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
-		output << "         ";
+		output << "        <DataArray type=\"UInt8\" Name=\"types\" format=\"" << format << "\">" << std::endl;
+		std::vector<uint8> buffer_format;
+		buffer_format.reserve((map.template nb_cells<Volume::ORBIT>()));
+		map.foreach_cell([&](Volume w)
+		{
+			const int32 nbv = this->number_of_vertices(w);
+			switch (nbv) {
+				case 4: buffer_format.push_back(VTK_TETRA); break;
+				case 5: buffer_format.push_back(VTK_PYRAMID); break;
+				case 6: buffer_format.push_back(VTK_WEDGE); break;
+				case 8: buffer_format.push_back(VTK_HEXAHEDRON); break;
+				default:
+					break;
+			}
+		}, *(this->cell_cache_));
 
-		for (uint32 i=0u; i< this->nb_tetras(); ++i)
-			output << std::to_string(VTK_TETRA) << " ";
-		for (uint32 i=0u; i< this->nb_pyramids(); ++i)
-			output << std::to_string(VTK_PYRAMID) << " ";
-		for (uint32 i=0u; i< this->nb_triangular_prisms(); ++i)
-			output << std::to_string(VTK_WEDGE) << " ";
-		for (uint32 i=0u; i< this->nb_hexas(); ++i)
-			output << std::to_string(VTK_HEXAHEDRON) << " ";
-
+		if (bin)
+		{
+			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_format[0]),  buffer_format.size() * sizeof(uint8));
+		} else {
+			output << "         ";
+			for (auto i : buffer_format)
+				output << std::to_string(i) << " ";
+		}
 		output << std::endl << "        </DataArray>" << std::endl;
 		output << "      </Cells>" << std::endl;
 
@@ -330,17 +412,33 @@ protected:
 			output << "      <CellData>" << std::endl;
 			for (const auto& att : this->volume_attributes())
 			{
-				scalar_type = att->nested_type_name();
-				scalar_type[0] = std::toupper(scalar_type[0]);
+				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
 				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
-				for(std::size_t i = 0ul, end = nb_vert.size() ; i < end; ++i)
+
+				if (bin)
+				{
+					const uint32 elem_size{att->element_size()};
+					buffer_char.clear();
+					buffer_char.reserve(nbw * elem_size);
+
+					map.foreach_cell([&](Volume w)
+					{
+						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(w)));
+						for(uint32 i = 0u; i < elem_size; ++i)
+							buffer_char.push_back(elem[i]);
+						write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
+					}, *(this->cell_cache_));
+					output << std::endl;
+				} else {
 					map.foreach_cell([&](Volume w)
 					{
 						output << "         ";
 						att->export_element(map.embedding(w), output, false, false);
 						output << std::endl;
-					});
-				output << "        </DataArray>" << std::endl;
+					}, *(this->cell_cache_));
+				}
+
+				output << "         </DataArray>" << std::endl;
 			}
 			output << "      </CellData>" << std::endl;
 		}
@@ -384,23 +482,6 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 
-	inline std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type)
-	{
-		if (!is_compressed)
-		{
-			std::vector<unsigned char> decode = base64_decode(data_str, 0);
-			decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
-			return decode;
-		}
-		else {
-#ifdef CGOGN_WITH_ZLIB
-			return zlib_decompress(data_str, header_type);
-#else
-			cgogn_log_error("read_binary_xml_data") <<  "read_binary_xml_data : unable to decompress the data : Zlib was not found.";
-			std::exit(EXIT_FAILURE);
-#endif
-		}
-	}
 
 	/**
 	 * @brief parse_vtk_legacy_file
@@ -708,7 +789,7 @@ protected:
 				const char*					ascii_data = vertex_data->GetText();
 				std::vector<unsigned char>	binary_data;
 				if (binary)
-					binary_data = this->read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+					binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
 
 				std::unique_ptr<IMemoryStream> mem_stream;
 				if (binary)
@@ -775,7 +856,7 @@ protected:
 					const char*					ascii_data = cell_data->GetText();
 					std::vector<unsigned char>	binary_data;
 					if (binary)
-						binary_data = this->read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -855,7 +936,7 @@ protected:
 					const char*					ascii_data = poly_data_array->GetText();
 					std::vector<unsigned char>	binary_data;
 					if (binary)
-						binary_data = this->read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)

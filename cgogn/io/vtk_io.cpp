@@ -99,5 +99,39 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& 
 	return std::string();
 }
 
+CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_str, bool is_compressed, DataType header_type)
+{
+	if (!is_compressed)
+	{
+		std::vector<unsigned char> decode = base64_decode(data_str, 0);
+		decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
+		return decode;
+	}
+	else {
+#ifdef CGOGN_WITH_ZLIB
+		return zlib_decompress(data_str, header_type);
+#else
+		cgogn_log_error("read_binary_xml_data") <<  "read_binary_xml_data : unable to decompress the data : Zlib was not found.";
+		std::exit(EXIT_FAILURE);
+#endif
+	}
+}
+
+CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size)
+{
+	uint32 header(size);
+	char* header_ptr = reinterpret_cast<char*>(&header);
+	std::vector<char> data;
+	data.reserve(sizeof(header) + size);
+
+	for (std::size_t i = 0u ; i < sizeof(header) ; ++i)
+		data.push_back(header_ptr[i]);
+	for (std::size_t i = 0u; i < size ; ++i)
+		data.push_back(data_str[i]);
+
+	const auto& encoded_data = base64_encode(&data[0], data.size());
+	output.write(&encoded_data[0], encoded_data.size());
+}
+
 } // namespace io
 } // namespace cgogn
