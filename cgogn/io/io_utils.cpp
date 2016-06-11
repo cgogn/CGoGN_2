@@ -113,6 +113,59 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 }
 #endif
 
+CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
+{
+	const static char encode_lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	const char pad_char = '=';
+
+	while (std::isspace(*input_buffer))
+	{
+		++input_buffer;
+		--buffer_size;
+	}
+
+	int i = 0;
+	int j = 0;
+	char char_array_3[3];
+	char char_array_4[4];
+
+	std::vector<char> res;
+
+	while (buffer_size--) {
+		char_array_3[i++] = *(input_buffer++);
+		if (i == 3) {
+			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[3] = char_array_3[2] & 0x3f;
+
+			for(i = 0; i <4 ; ++i)
+				res.push_back(encode_lookup[char_array_4[i]]);
+			i = 0;
+		}
+	}
+
+	if (i != 0)
+	{
+		for(j = i; j < 3; j++)
+			char_array_3[j] = '\0';
+
+		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[3] = char_array_3[2] & 0x3f;
+
+		for (j = 0; (j < i + 1); j++)
+			res.push_back(encode_lookup[char_array_4[j]]);
+
+		while((i++ < 3))
+			res.push_back('=');
+	}
+
+	return res;
+}
+
+
 CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length)
 {
 	const static char padCharacter('=');
