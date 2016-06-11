@@ -86,6 +86,13 @@ public:
 
 	virtual uint32 nb_components() const = 0;
 
+	/**
+	 * @brief element_size
+	 * @return the size of an element of the ChunkArray
+	 * Warning : shall not be used with ChunkArrayBool.
+	 */
+	virtual uint32 element_size() const = 0;
+
 	void add_external_ref(ChunkArrayGen** ref)
 	{
 		cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
@@ -193,6 +200,12 @@ public:
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = UINT64_MAX) const = 0;
+	/**
+	 * @brief element_ptr
+	 * @return a generic pointer to the element of index idx.
+	 * Use with caution. This method can't be used with ChunkArrayBool.
+	 */
+	virtual const void* element_ptr(uint32 idx) const = 0;
 
 	/**
 	 * @brief load

@@ -450,6 +450,16 @@ public:
 				serialization::ostream_writer<T, UINT64_MAX>(o,this->operator[](idx), binary, little_endian);
 		}
 	}
+
+	virtual const void* element_ptr(uint32 idx) const override
+	{
+		return &(this->operator [](idx));
+	}
+
+	virtual uint32 element_size() const override
+	{
+		return sizeof(this->operator [](0ul));
+	}
 };
 
 /**
@@ -809,6 +819,16 @@ public:
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
 	{
 		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
+	}
+
+	virtual const void* element_ptr(uint32) const
+	{
+		return nullptr; // shall not be used with ChunkArrayBool
+	}
+
+	virtual uint32 element_size() const override
+	{
+		return UINT32_MAX;
 	}
 };
 
