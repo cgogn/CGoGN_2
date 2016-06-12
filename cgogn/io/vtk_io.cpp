@@ -107,14 +107,8 @@ CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_st
 		decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
 		return decode;
 	}
-	else {
-#ifdef CGOGN_WITH_ZLIB
+	else
 		return zlib_decompress(data_str, header_type);
-#else
-		cgogn_log_error("read_binary_xml_data") <<  "read_binary_xml_data : unable to decompress the data : Zlib was not found.";
-		std::exit(EXIT_FAILURE);
-#endif
-	}
 }
 
 CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress)

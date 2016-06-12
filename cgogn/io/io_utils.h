@@ -102,13 +102,12 @@ CGOGN_IO_API bool							file_exists(const std::string& filename);
 CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
+
 CGOGN_IO_API std::vector<char>				base64_encode(const char* input_buffer, std::size_t buffer_size);
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
-#ifdef CGOGN_WITH_ZLIB
 CGOGN_IO_API std::vector<unsigned char>					zlib_decompress(const char* input, DataType header_type);
 CGOGN_IO_API std::vector<std::vector<unsigned char>>	zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size = std::numeric_limits<std::size_t>::max());
-#endif
 
 namespace internal
 {

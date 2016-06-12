@@ -27,9 +27,7 @@
 #include <iostream>
 #include <map>
 
-#ifdef CGOGN_WITH_ZLIB
 #include <zlib.h>
-#endif
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/string.h>
@@ -40,8 +38,6 @@ namespace cgogn
 
 namespace io
 {
-
-#ifdef CGOGN_WITH_ZLIB
 
 CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
 {
@@ -153,7 +149,6 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	}
 	return res;
 }
-#endif
 
 CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
 {
@@ -205,14 +200,14 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length)
 {
 	const char padCharacter('=');
-
+	const std::locale locale;
 	// needed if begin = 0
-	while (std::isspace(*input))
+	while (std::isspace(*input, locale))
 		++input;
 
 	for (std::size_t i = 0ul ; i < begin ;)
 	{
-		if (!std::isspace(*input))
+		if (!std::isspace(*input, locale))
 			++i;
 		++input;
 	}
@@ -221,11 +216,11 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 	std::size_t i = 0ul;
 	for ( ; i < length && (*end != '\0') ;)
 	{
-		if (!std::isspace(*end))
+		if (!std::isspace(*end, locale))
 			++i;
 		++end;
 	}
-	while (std::isspace(*(end-1)))
+	while (std::isspace(*(end-1), locale))
 		--end;
 
 	if (i % 4ul) //Sanity check
@@ -249,10 +244,10 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 	const char* cursor = input;
 	while (cursor != end)
 	{
-		cgogn_assert(!std::isspace(*cursor));
-		cgogn_assert(!std::isspace(*(cursor+1)));
-		cgogn_assert(!std::isspace(*(cursor+2)));
-		cgogn_assert(!std::isspace(*(cursor+3)));
+		cgogn_assert(!std::isspace(*cursor, locale));
+		cgogn_assert(!std::isspace(*(cursor+1), locale));
+		cgogn_assert(!std::isspace(*(cursor+2), locale));
+		cgogn_assert(!std::isspace(*(cursor+3), locale));
 		for (size_t quantumPosition = 0; quantumPosition < 4; quantumPosition++)
 		{
 			temp <<= 6;
