@@ -42,15 +42,18 @@ namespace io
 
 struct ExportOptions
 {
-	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary) :
+	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary, bool compress = false) :
 		filename_(filename)
-	  ,binary_(binary)
 	  ,attributes_to_export_(attributes)
+	  ,binary_(binary)
+	  ,compress_(compress)
 	{}
 
 	std::string filename_;
-	bool binary_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
+	bool binary_;
+	bool compress_;
+
 };
 
 enum FileType
@@ -103,7 +106,8 @@ CGOGN_IO_API std::vector<char>				base64_encode(const char* input_buffer, std::s
 CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
 #ifdef CGOGN_WITH_ZLIB
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type);
+CGOGN_IO_API std::vector<unsigned char>					zlib_decompress(const char* input, DataType header_type);
+CGOGN_IO_API std::vector<std::vector<unsigned char>>	zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size = std::numeric_limits<std::size_t>::max());
 #endif
 
 namespace internal

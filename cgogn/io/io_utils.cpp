@@ -42,6 +42,47 @@ namespace io
 {
 
 #ifdef CGOGN_WITH_ZLIB
+
+CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
+{
+	chunk_size = std::min(size, chunk_size);
+	std::size_t buffer_size = std::min(chunk_size + 16384ul, 2ul*chunk_size); // has to be large enough to store the compressed data
+	std::vector<std::vector<unsigned char>> res;
+	res.reserve(64);
+
+	// zlib init
+	int32 ret;
+	z_stream zstream;
+	zstream.zalloc = Z_NULL;
+	zstream.zfree = Z_NULL;
+	zstream.opaque = Z_NULL;
+
+	do
+	{
+		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
+		cgogn_assert(ret == Z_OK);
+
+		buffer_size = std::min(deflateBound(&zstream,std::min(chunk_size, size)), buffer_size);
+
+		zstream.avail_in = std::min(chunk_size, size);
+		size -= zstream.avail_in;
+		zstream.next_in = input;
+		input += zstream.avail_in;
+		res.emplace_back(buffer_size);
+		zstream.avail_out = res.back().size();
+		zstream.next_out = &(res.back()[0]);
+		cgogn_assert(zstream.next_out  != nullptr);
+		ret = deflate(&zstream, Z_FINISH);
+		cgogn_assert(ret == Z_STREAM_END);
+		res.back().resize(buffer_size - zstream.avail_out);
+	} while (size > 0ul);
+
+	/* clean up and return */
+	(void)deflateEnd(&zstream);
+
+	return res;
+}
+
 CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type)
 {
 
@@ -63,7 +104,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 		compressed_size.resize(nb_blocks);
 	} else
 	{
-		header_data = base64_decode(input, 0, 24);
+		header_data = base64_decode(input, 0, 16);
 		nb_blocks = *reinterpret_cast<const uint32*>(&header_data[0]);
 		uncompressed_block_size = *reinterpret_cast<const uint32*>(&header_data[4]);
 		last_block_size = *reinterpret_cast<const uint32*>(&header_data[8]);
@@ -71,10 +112,9 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	}
 
 	std::size_t header_end = 4ul * word_size;
-	std::size_t length = nb_blocks * word_size *4ul;
-	while ((length % 12ul != 0ul))
-		++length;
-	length/=3ul;
+	std::size_t length = (nb_blocks * word_size *4ul + 2ul)/3ul; // round up of 4/3 *( nb_blocks * word_size)
+	length = ((length + 3ul)/4ul)*4ul; // next multiple of 4
+
 	header_data = base64_decode(input, header_end, length);
 	if (header_type == DataType::UINT64)
 	{
@@ -86,7 +126,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 			compressed_size[i] = uint32(*reinterpret_cast<const uint32*>(&header_data[4u * i]));
 	}
 
-	std::vector<unsigned char> data = base64_decode(input, header_end +length);
+	std::vector<unsigned char> data = base64_decode(input, header_end + length);
 	std::vector<unsigned char> res(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
 
 	// zlib init
@@ -100,11 +140,13 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	for (uint32 i = 0; i < nb_blocks; ++i)
 	{
 		ret = inflateInit(&zstream);
+		cgogn_assert(ret == Z_OK);
 		zstream.avail_in = compressed_size[i];
 		zstream.next_in = &data[in_data_it];
 		zstream.avail_out = uint32( (i == nb_blocks - 1u) ? last_block_size : uncompressed_block_size );
 		zstream.next_out = &res[out_data_it];
-		ret = inflate(&zstream, Z_NO_FLUSH);
+		ret = inflate(&zstream, Z_FINISH);
+		cgogn_assert(ret == Z_STREAM_END);
 		ret = inflateEnd(&zstream);
 		in_data_it += compressed_size[i];
 		out_data_it += uint32(uncompressed_block_size);
@@ -115,14 +157,8 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 
 CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
 {
-	const static char encode_lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	const char pad_char = '=';
 
-	while (std::isspace(*input_buffer))
-	{
-		++input_buffer;
-		--buffer_size;
-	}
+	const static char encode_lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 	int i = 0;
 	int j = 0;
@@ -168,7 +204,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 
 CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length)
 {
-	const static char padCharacter('=');
+	const char padCharacter('=');
 
 	// needed if begin = 0
 	while (std::isspace(*input))
@@ -194,7 +230,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 
 	if (i % 4ul) //Sanity check
 	{
-		cgogn_log_error("base64_decode") << "The given length (" << length << ") is not a multiple of 4. This is not valid.";
+		cgogn_log_error("base64_decode") << "The given length (" << i << ") is not a multiple of 4. This is not valid.";
 		std::exit(EXIT_FAILURE);
 	}
 
