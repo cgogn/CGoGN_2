@@ -207,7 +207,7 @@ public:
 
 	bool create_map(Map& map)
 	{
-		if (this->nb_vertices_ == 0u)
+		if (this->nb_vertices_ == 0u || this->volumes_types.size() != this->nb_volumes_)
 			return false;
 
 		MapBuilder mbuild(map);

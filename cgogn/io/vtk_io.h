@@ -72,7 +72,7 @@ enum VTK_CELL_TYPES
 CGOGN_IO_API std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
 CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type);
 CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type);
-CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size);
+CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress = false);
 
 template <typename T>
 inline std::string vtk_name_of_type(const T& t)
@@ -250,7 +250,10 @@ private:
 		const bool bin = option.binary_;
 
 		output << "<?xml version=\"1.0\"?>" << std::endl;
-		output << "<VTKFile type=\"UnstructuredGrid\" header_type=\"UInt32\" version=\"0.1\" byte_order=\"" << endianness << "\">" << std::endl;
+		output << "<VTKFile type=\"UnstructuredGrid\" header_type=\"UInt32\" version=\"0.1\" byte_order=\"" << endianness << "\"";
+		if (option.compress_)
+			output << " compressor=\"vtkZLibDataCompressor\"";
+		output << ">" << std::endl;
 		output << "  <UnstructuredGrid>" <<  std::endl;
 		output << "    <Piece NumberOfPoints=\"" << nbv << "\" NumberOfCells=\""<< nbw << "\">" << std::endl;
 
@@ -274,7 +277,7 @@ private:
 					buffer_char.push_back(elem[i]);
 			}, *(this->cell_cache_));
 
-			write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
+			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
 		} else {
 			map.foreach_cell([&](Vertex v)
@@ -309,7 +312,7 @@ private:
 						for(uint32 i = 0u; i < elem_size; ++i)
 							buffer_char.push_back(elem[i]);
 					}, *(this->cell_cache_));
-					write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
 				} else {
 					map.foreach_cell([&](Vertex v)
@@ -340,7 +343,7 @@ private:
 				for(uint32 i = 0u; i < vertices.size() * sizeof(int32) ; ++i)
 					buffer_char.push_back(data[i]);
 			}, *(this->cell_cache_));
-			write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
+			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
 		} else {
 			map.foreach_cell([&](Volume w)
@@ -369,7 +372,7 @@ private:
 
 		if (bin)
 		{
-			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32));
+			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32), option.compress_);
 		} else {
 			output << "         ";
 			for (auto o : buffer_offset)
@@ -397,7 +400,7 @@ private:
 
 		if (bin)
 		{
-			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_format[0]),  buffer_format.size() * sizeof(uint8));
+			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_format[0]),  buffer_format.size() * sizeof(uint8), option.compress_);
 		} else {
 			output << "         ";
 			for (auto i : buffer_format)
@@ -426,7 +429,7 @@ private:
 						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(w)));
 						for(uint32 i = 0u; i < elem_size; ++i)
 							buffer_char.push_back(elem[i]);
-						write_binary_xml_data(output,&buffer_char[0], buffer_char.size());
+						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					}, *(this->cell_cache_));
 					output << std::endl;
 				} else {

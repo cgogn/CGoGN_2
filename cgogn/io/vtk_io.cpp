@@ -117,17 +117,48 @@ CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_st
 	}
 }
 
-CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size)
+CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress)
 {
-	uint32 header(size);
-	char* header_ptr = reinterpret_cast<char*>(&header);
 	std::vector<char> data;
-	data.reserve(sizeof(header) + size);
+	std::vector<uint32> header;
+	if (!compress)
+	{
+		header.push_back(size);
+		char* header_ptr = reinterpret_cast<char*>(&header[0]);
 
-	for (std::size_t i = 0u ; i < sizeof(header) ; ++i)
-		data.push_back(header_ptr[i]);
-	for (std::size_t i = 0u; i < size ; ++i)
-		data.push_back(data_str[i]);
+		data.reserve(sizeof(header) + size);
+
+		for (std::size_t i = 0u ; i < sizeof(uint32) ; ++i)
+			data.push_back(header_ptr[i]);
+		for (std::size_t i = 0u; i < size ; ++i)
+			data.push_back(data_str[i]);
+	} else {
+		const std::size_t uncompressed_chunk_size = std::min(size, 262144ul);
+		const std::vector<std::vector<unsigned char>>& compressed_blocks = zlib_compress(reinterpret_cast<const unsigned char*>(data_str), size, uncompressed_chunk_size);
+		std::size_t compressed_size{0ul};
+		const std::size_t last_block_size = (compressed_blocks.size() == 1ul) ? uncompressed_chunk_size : size % uncompressed_chunk_size;
+
+		header.push_back(compressed_blocks.size());
+		header.push_back(uncompressed_chunk_size);
+		header.push_back(last_block_size);
+		for (const auto& block : compressed_blocks)
+		{
+			header.push_back(block.size());
+			compressed_size += block.size();
+		}
+
+		const auto& encoded_header = base64_encode(reinterpret_cast<char*>(&header[0]), header.size() * sizeof(uint32));
+		output.write(&encoded_header[0], encoded_header.size());
+
+		data.resize(compressed_size);
+		char* data_ptr = &data[0];
+		for (const auto& block : compressed_blocks)
+		{
+			const char* src = reinterpret_cast<const char*>(&block[0]);
+			std::memcpy(data_ptr, src, block.size());
+			data_ptr += block.size();
+		}
+	}
 
 	const auto& encoded_data = base64_encode(&data[0], data.size());
 	output.write(&encoded_data[0], encoded_data.size());
