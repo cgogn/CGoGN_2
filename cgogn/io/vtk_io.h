@@ -121,63 +121,133 @@ public:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		if (to_lower(extension(option.filename_)) == "vtp")
-			this->export_vtp_ascii(map, output, option);
+			this->export_vtp_xml(map, output, option);
 	}
 private:
-	void export_vtp_ascii(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_vtp_xml(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
+		ChunkArrayGen const* pos = this->position_attribute();
+		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+		const std::string format = (option.binary_?"binary" :"ascii");
+		std::string scalar_type = cgogn_name_of_type_to_vtk_data_type(pos->nested_type_name());
+		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
+		const uint32 nbf = map.template nb_cells<Face::ORBIT>();
+		const bool bin = option.binary_;
+		const bool compress = option.compress_;
 		// set precision for real output
 		output << std::setprecision(12);
 
 		output << "<?xml version=\"1.0\"?>" << std::endl;
-		output << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"BigEndian\">" << std::endl;
+		output << "<VTKFile type=\"PolyData\" header_type=\"UInt32\" version=\"0.1\" byte_order=\"" << endianness << "\"";
+		if (compress)
+			output << " compressor=\"vtkZLibDataCompressor\"";
+		output << ">" << std::endl;
 		output << "<PolyData>" <<  std::endl;
-		output << "<Piece NumberOfPoints=\"" << map.template nb_cells<Vertex::ORBIT>() << "\" NumberOfPolys=\"" << map.template nb_cells<Face::ORBIT>() << "\">" << std::endl;
-		output << "<Points>" << std::endl;
-		output << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" Format=\"ascii\">" << std::endl;
+		output << "<Piece NumberOfPoints=\"" << nbv << "\" NumberOfPolys=\"" << nbf << "\">" << std::endl;
+		// 1st step : vertices
+		output << "      <Points>" << std::endl;
+		// 1.a : positions
+		output << "        <DataArray type=\""<< scalar_type  << "\" Name=\"" << pos->name() << "\" NumberOfComponents=\"" << pos->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
+		std::vector<char> buffer_char;
 
-		map.foreach_cell([&] (Vertex v)
+		if (bin)
 		{
-			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			const uint32 elem_size{pos->element_size()};
+			buffer_char.clear();
+			buffer_char.reserve(nbv * elem_size);
+
+			map.foreach_cell([&](Vertex v)
+			{
+				const char* elem =  static_cast<const char*>(pos->element_ptr(map.embedding(v)));
+				for(uint32 i = 0u; i < elem_size; ++i)
+					buffer_char.push_back(elem[i]);
+			}, *(this->cell_cache_));
+
+			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
-		}, *(this->cell_cache_));
+		} else {
+			map.foreach_cell([&](Vertex v)
+			{
+					output << "          ";
+					pos->export_element(map.embedding(v), output, false, false);
+					output << std::endl;
+			}, *(this->cell_cache_));
+		}
 
-
-		output << "</DataArray>" << std::endl;
-		output << "</Points>" << std::endl;
+		output << "        </DataArray>" << std::endl;
+		output << "      </Points>" << std::endl;
 
 
 		if (!this->vertex_attributes().empty())
 		{
-			output << "<PointData>" << std::endl;
-			for(ChunkArrayGen* vatt : this->vertex_attributes_)
+			output << "      <PointData>" << std::endl;
+			// 1.B : other vertices attributes
+			for (const auto& att : this->vertex_attributes())
 			{
-				output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(vatt->nested_type_name()) <<"\" Name=\"" << vatt->name() << "\" NumberOfComponents=\""<< vatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
-				map.foreach_cell([&] (Vertex v)
+				if (bin)
 				{
-					vatt->export_element(map.embedding(v), output, false, false);
+					const uint32 elem_size{pos->element_size()};
+					buffer_char.clear();
+					buffer_char.reserve(nbv * elem_size);
+
+					map.foreach_cell([&](Vertex v)
+					{
+						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(v)));
+						for(uint32 i = 0u; i < elem_size; ++i)
+							buffer_char.push_back(elem[i]);
+					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
-				}, *(this->cell_cache_));
-				output << "</DataArray>" << std::endl;
+				} else {
+					map.foreach_cell([&](Vertex v)
+					{
+							output << "          ";
+							att->export_element(map.embedding(v), output, false, false);
+							output << std::endl;
+					}, *(this->cell_cache_));
+				}
+
+				output << "        </DataArray>" << std::endl;
 			}
-			output << "</PointData>" << std::endl;
+			output << "      </PointData>" << std::endl;
 		}
+		// end vertices
 
 
 		if (!this->face_attributes().empty())
 		{
 			output << "<CellData>" << std::endl;
-			for(ChunkArrayGen* fatt : this->vertex_attributes_)
+			for (const auto& att : this->face_attributes())
 			{
-				output << "<DataArray type=\"" << cgogn_name_of_type_to_vtk_data_type(fatt->nested_type_name()) <<"\" Name=\"" << fatt->name() << "\" NumberOfComponents=\""<< fatt->nb_components() <<"\" Format=\"ascii\">" << std::endl;
+				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				output << "<DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
-				map.foreach_cell([&] (Face f)
+				if (bin)
 				{
-					fatt->export_element(map.embedding(f), output, false, false);
+					const uint32 elem_size{att->element_size()};
+					buffer_char.clear();
+					buffer_char.reserve(nbf * elem_size);
+
+					map.foreach_cell([&](Face f)
+					{
+						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(f)));
+						for(uint32 i = 0u; i < elem_size; ++i)
+							buffer_char.push_back(elem[i]);
+						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
+					}, *(this->cell_cache_));
 					output << std::endl;
-				}, *(this->cell_cache_));
+				} else {
+					map.foreach_cell([&](Face f)
+					{
+						att->export_element(map.embedding(f), output, false, false);
+						output << std::endl;
+					}, *(this->cell_cache_));
+				}
+
 				output << "</DataArray>" << std::endl;
 			}
 			output << "</CellData>" << std::endl;
@@ -185,31 +255,58 @@ private:
 
 		output << "<Polys>" << std::endl;
 
-		output << "<DataArray type=\"Int32\" Name=\"connectivity\" Format=\"ascii\">" << std::endl;
-		map.foreach_cell([&] (Face f)
+
+		output << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"" << format << "\">" << std::endl;
+
+		if (bin)
 		{
-			Dart it = f.dart;
-			do {
-				output << this->indices_[Vertex(it)] << " ";
-				it = map.phi1(it);
-			} while (it != f.dart);
+			buffer_char.clear();
+			std::vector<int32> buffer_vertices;
+			buffer_vertices.reserve(3 * nbf);
+			map.foreach_cell([&](Face f)
+			{
+				Dart it = f.dart;
+				do {
+					buffer_vertices.push_back(this->indices_[Vertex(it)]);
+					it = map.phi1(it);
+				} while (it != f.dart);
+			}, *(this->cell_cache_));
+			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_vertices[0]), buffer_vertices.size() * sizeof(int32), compress);
 			output << std::endl;
-		}, *(this->cell_cache_));
+		} else {
+			map.foreach_cell([&](Face f)
+			{
+				Dart it = f.dart;
+				do {
+					output << this->indices_[Vertex(it)] << " ";
+					it = map.phi1(it);
+				} while (it != f.dart);
+				output << std::endl;
+			}, *(this->cell_cache_));
+		}
+
 
 		output << "</DataArray>" << std::endl;
 
-		output << "<DataArray type=\"Int32\" Name=\"offsets\" Format=\"ascii\">" << std::endl;
-		uint32 offset = 0;
-		uint32 i = 0u;
-		map.foreach_cell([&] (Face f)
+		output << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"" << format << "\">" << std::endl;
+
+		int32 offset{0};
+		std::vector<int32> buffer_offset;
+		buffer_offset.reserve(nbf);
+		map.foreach_cell([&](Face f)
 		{
-			offset += map.codegree(f);
-			output << offset << " ";
-			++i;
-			if (i%60u == 0u)
-				output << std::endl;
+			offset+= int32(map.codegree(f));
+			buffer_offset.push_back(offset);
 		}, *(this->cell_cache_));
 
+		if (bin)
+		{
+			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32), compress);
+		} else {
+			output << "         ";
+			for (auto o : buffer_offset)
+				output << " " << o;
+		}
 		output << std::endl << "</DataArray>" << std::endl;
 
 		output << "</Polys>" << std::endl;
@@ -336,6 +433,7 @@ private:
 		if (bin)
 		{
 			buffer_char.clear();
+			buffer_char.reserve(4*nbw*sizeof(int32));
 			map.foreach_cell([&](Volume w)
 			{
 				const auto& vertices = this->vertices_of_volumes(w);
