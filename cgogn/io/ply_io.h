@@ -173,7 +173,7 @@ private:
 			uint32 valence = 0;
 			prim.clear();
 
-			map.template foreach_incident_vertex(f, [&] (Vertex v)
+			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				prim.push_back(this->indices_[v]);
 				++valence;

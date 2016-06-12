@@ -237,7 +237,7 @@ private:
 				normal_attribute->export_element(map.embedding(f), output, false, false);
 				output << std::endl;
 				output << "outer loop" << std::endl;
-				map.template foreach_incident_vertex(f, [&] (Vertex v)
+				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
 					output << "vertex ";
 					this->position_attribute_->export_element(map.embedding(v), output, false, false);
