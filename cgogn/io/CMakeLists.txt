@@ -69,8 +69,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
-
 target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
