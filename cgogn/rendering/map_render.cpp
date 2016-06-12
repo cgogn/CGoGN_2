@@ -31,7 +31,7 @@ namespace cgogn
 namespace rendering
 {
 
-MapRender::MapRender()
+MapRender::MapRender() : boundary_dimension_(1)
 {
 	for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
 	{
@@ -51,21 +51,32 @@ void MapRender::draw(DrawingType prim)
 	indices_buffers_[prim]->bind();
 	switch (prim)
 	{
-	case POINTS:
-		ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
-		break;
-	case LINES:
-		ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
-		break;
-	case TRIANGLES:
-		ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
-		break;
-	default:
-		break;
+		case POINTS:
+			ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
+			break;
+		case LINES:
+			ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
+			break;
+		case TRIANGLES:
+			ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
+			break;
+		case BOUNDARY:
+			switch (boundary_dimension_)
+			{
+				case 1:
+					ogl->glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
+					break;
+				case 2:
+					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
+					break;
+			}
+			break;
+		default:
+			break;
 	}
 	indices_buffers_[prim]->release();
 }
 
 } // namespace rendering
 
-} // namespace io
+} // namespace cgogn
