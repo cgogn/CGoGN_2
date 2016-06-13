@@ -160,10 +160,11 @@ protected:
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
-		const uint32 nb_vols = map.template nb_cells<Volume::ORBIT>();
+		const uint32 nb_vols = this->nb_volumes();
+		const uint32 nb_vert = this->nb_vertices();
 
 		// 1. vertices
-		output << map.template nb_cells<Vertex::ORBIT>() << " vertices" << std::endl;
+		output << nb_vert << " vertices" << std::endl;
 		output << nb_vols << " cells" << std::endl;
 
 		map.foreach_cell([&](Vertex v)
