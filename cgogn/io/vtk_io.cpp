@@ -76,7 +76,7 @@ CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string&
 	return std::string();
 }
 
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type)
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type)
 {
 	static const std::map<std::string, std::string> type_map{
 		{name_of_type(int8()), "Int8"},
@@ -95,7 +95,31 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& 
 	if ( it != type_map.end())
 		return it->second;
 
-	cgogn_log_error("cgogn_name_of_type_to_vtk_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
+	cgogn_log_error("cgogn_name_of_type_to_vtk_xml_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
+	return std::string();
+}
+
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type)
+{
+	static const std::map<std::string, std::string> type_map{
+		{name_of_type(bool()), "bit"},
+		{name_of_type(int8()), "char"},
+		{name_of_type(uint8()), "unsigned_char"},
+		{name_of_type(int16()), "short"},
+		{name_of_type(uint16()), "unsigned_short"},
+		{name_of_type(int32()), "int"},
+		{name_of_type(uint32()), "unsigned_int"},
+		{name_of_type(int64()), "long"},
+		{name_of_type(uint64()), "unsigned_long"},
+		{name_of_type(float32()), "float"},
+		{name_of_type(float64()), "double"}
+	};
+
+	const auto it = type_map.find(cgogn_type);
+	if ( it != type_map.end())
+		return it->second;
+
+	cgogn_log_error("cgogn_name_of_type_to_vtk_legacy_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
 	return std::string();
 }
 
