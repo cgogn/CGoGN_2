@@ -61,20 +61,9 @@ public:
 		{
 			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
 		}
-		inline bool filter(Vertex v) const
+		inline bool filter(Vertex ) const
 		{
-			if (filter(Volume(v.dart)))
-				return true;
-			uint32 nb_inc_vol{0};
-			map_.foreach_incident_volume(v, [&](Volume w)
-			{
-				if (filter(w))
-					++nb_inc_vol;
-			});
-			if (nb_inc_vol == 0u)
-				return false;
-			else
-				return true;
+			return true;
 		}
 
 
