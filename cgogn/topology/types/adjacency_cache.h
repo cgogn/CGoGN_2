@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
-#define CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
+#ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
+#define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 
 #include <cgogn/core/utils/numerics.h>
 
@@ -33,31 +33,53 @@ namespace topology
 {
 
 
-struct CriticalPoint
+template <typename MAP>
+class AdjacencyCache
 {
-	enum Type : uint32
+	using Vertex = typename MAP::Vertex;
+	using VertexArray = std::vector<Vertex>;
+	template<typename T>
+	using VertexAttribute = typename MAP::template VertexAttribute<T>;
+
+public:
+
+	AdjacencyCache(MAP& map) :
+		map_(map)
 	{
-		REGULAR = 0,
-		MAXIMUM,
-		MINIMUM,
-		SADDLE,		// SADDLE for 2-manifold
-		SADDLE1,	// 1-SADDLE for 3-manifold
-		SADDLE2,	// 2-SADDLE for 3-manifold
-		UNKNOWN
-	};
+	}
 
-	unsigned int n_;
-	CriticalPoint::Type v_;
+	~AdjacencyCache()
+	{
+//		map_.remove_attribute(adjacency_);
+	}
 
-	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
-	{}
+	void init()
+	{
+		adjacency_ = map_.template add_attribute<VertexArray, Vertex::ORBIT>("__adjacency__");
+		map_.foreach_cell([&](Vertex v)
+		{
+			map_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
+			{
+				adjacency_[v].push_back(u);
+			});
+		});
+	}
 
-	inline CriticalPoint(CriticalPoint::Type v, uint32 n) : v_(v), n_(n)
-	{}
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
+	{
+		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		for (Vertex u : adjacency_[v]) f(u);
+	}
+
+
+private:
+	MAP& map_;
+	VertexAttribute<VertexArray> adjacency_;
 };
 
 } // namespace topology
 
 } // namespace cgogn
 
-#endif // CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
+#endif // CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_

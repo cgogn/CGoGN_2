@@ -33,13 +33,13 @@ namespace cgogn
 namespace topology
 {
 /**
- * class TopologyAnalyser : support the topological analysis of combinatorial manifolds:
+ * class FeaturesFinder : support the extraction of topological features of manifolds:
  * - extractions of maximal diameter
  * - extractions of topological features
  * - filtering of topological features
  */
 template <typename Scalar, typename MAP>
-class TopologyAnalyser
+class FeaturesFinder
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -54,21 +54,26 @@ class TopologyAnalyser
 	using FaceMarkerStore = typename cgogn::CellMarkerStore<MAP, Face::ORBIT>;
 
 public:
-	TopologyAnalyser(MAP& map, const EdgeAttribute<Scalar>& weight) :
+	FeaturesFinder(MAP& map,
+				   const AdjacencyCache<MAP>& cache,
+				   const EdgeAttribute<Scalar>& weight) :
 		map_(map),
+		cache_(cache),
 		intern_edge_weight_(false),
 		edge_weight_(weight),
-		distance_field_(map, weight)
+		distance_field_(map, cache, weight)
 	{
 		distance_to_A_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__feature_A__");
 		distance_to_B_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__feature_B__");
 		paths_ = map.template add_attribute<Vertex, Vertex::ORBIT>("__paths__");
 	}
 
-	TopologyAnalyser(MAP& map) :
+	FeaturesFinder(MAP& map,
+				   const AdjacencyCache<MAP>& cache) :
 		map_(map),
+		cache_(cache),
 		intern_edge_weight_(true),
-		distance_field_(map)
+		distance_field_(map, cache)
 	{
 		edge_weight_ = distance_field_.edge_weight();
 		distance_to_A_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_A__");
@@ -76,13 +81,21 @@ public:
 		paths_ = map.template add_attribute<Vertex, Vertex::ORBIT>("__paths__");
 	}
 
-	~TopologyAnalyser()
+	~FeaturesFinder()
 	{
 		map_.remove_attribute(distance_to_A_);
 		map_.remove_attribute(distance_to_B_);
 		map_.remove_attribute(paths_);
 	}
 
+	/**
+	 * @brief Search a maximal diameter made of two remote vertices
+	 * @param[in] central_vertex a vertex from which the distance are computed
+	 * @param[out] features the two vertices that define the maximal diameter
+	 * @return the lenght of the maximal diameter
+	 * The two furthest vertices from the center are searched first.
+	 * Then their distance is locally maximized.
+	 */
 	Scalar get_maximal_diameter(Vertex central_vertex, std::vector<Vertex>& features)
 	{
 		// Init A with a vertex near the center of the mesh
@@ -93,7 +106,7 @@ public:
 		Vertex B = distance_field_.find_maximum(distance_to_A_);
 		Scalar max_distance = distance_to_A_[B];
 
-		// Try to optimize these two vertices by maximizing their distance
+		// Try to optimize these two vertices by locally maximizing their distance
 		Scalar current_distance = Scalar(0);
 		while (current_distance < max_distance)
 		{
@@ -115,7 +128,15 @@ public:
 		return max_distance;
 	}
 
-	void get_features(Vertex central_vertex, std::vector<Vertex>& features)
+	/**
+	 * @brief Extract the basic features of the manifold.
+	 * @param[in] central_vertex a vertex from which the distance are computed
+	 * @param[out] features the two vertices that define the maximal diameter
+	 * Startig from a central vertex, compute the maxima of the distance_field
+	 * build from this single source. Then select the maxima whose distance
+	 * to the central vertex is greater than the average distance.
+	 */
+	void get_basic_features(Vertex central_vertex, std::vector<Vertex>& features)
 	{
 		// Init A with a vertex near the center of the mesh
 		Vertex A = central_vertex;
@@ -125,9 +146,8 @@ public:
 
 		// Get the maxima in the scalar field distance_to_A_
 		ScalarField<Scalar, MAP> scalar_field_A(map_, distance_to_A_);
-		scalar_field_A.differential_analysis();
+		scalar_field_A.critical_vertex_analysis();
 		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
-		std::cout << "FA size: " << maxima_A.size() << std::endl;
 
 		// Select as features the maxima that are greater than their mean value
 		Scalar mean_value = Scalar(0);
@@ -139,14 +159,8 @@ public:
 		}
 		mean_value /= Scalar(count);
 
-		std::cout << "Features ";
 		for (Vertex v: maxima_A)
-			if (distance_to_A_[v] > mean_value)
-			{
-				features.push_back(v);
-				std::cout << distance_to_A_[v] << " ";
-			}
-		std::cout << std::endl;
+			if (distance_to_A_[v] > mean_value) features.push_back(v);
 	}
 
 private:
@@ -220,13 +234,13 @@ public:
 		Scalar max_distance = get_maximal_diameter(central_vertex, features);
 
 		// Get the maxima in the scalar field distance_to_A_
-		ScalarField<Scalar, MAP> scalar_field_A(map_, distance_to_A_);
-		scalar_field_A.differential_analysis();
+		ScalarField<Scalar, MAP> scalar_field_A(map_, cache_, distance_to_A_);
+		scalar_field_A.critical_vertex_analysis();
 		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
 
 		// Get the maxima in the scalar field distance_to_B_
-		cgogn::topology::ScalarField<Scalar, MAP> scalar_field_B(map_, distance_to_B_);
-		scalar_field_B.differential_analysis();
+		ScalarField<Scalar, MAP> scalar_field_B(map_, cache_, distance_to_B_);
+		scalar_field_B.critical_vertex_analysis();
 		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
 
 		// Set the criteria to stop the features filtering to 1/2 of the maximal diameter
@@ -256,7 +270,7 @@ public:
 		// The loop ends when all possible maxima have been tried or when
 		// the distance to the last added source is smaller than a target distance
 		Scalar actual_distance = max_distance;
-		std::cout << "Distances: (" << max_distance << ") ";
+		//std::cout << "Distances: (" << max_distance << ") ";
 		while (target_distance < actual_distance && !(maxima_A.empty() && maxima_B.empty())) {
 			// Select the maximum as a new feature
 			Vertex v = distance_field_.find_maximum(scalar_field);
@@ -264,7 +278,7 @@ public:
 			actual_distance = scalar_field[v];
 			if (target_distance < actual_distance)
 			{
-				std::cout << actual_distance/max_distance << " ";
+				//std::cout << actual_distance << " ";
 				// Rebuild the scalar field from the update set of features
 				distance_field_.dijkstra_compute_paths(features, scalar_field, paths_);
 				// Filter the remaing maxima with this scalar field or in other words
@@ -274,7 +288,7 @@ public:
 				features_filter(maxima_B, filtered_maxima_B, filter_distance, scalar_field, paths_);
 			}
 		}
-		std::cout << std::endl;
+		//std::cout << std::endl;
 
 		intersection(filtered_maxima_A, filtered_maxima_B, features);
 		cgogn_log_info("get_filtered_features") << "Selected features " << features.size();
@@ -282,6 +296,7 @@ public:
 
 private:
 	MAP& map_;
+	AdjacencyCache<MAP> cache_;
 	VertexAttribute<Scalar> distance_to_A_;
 	VertexAttribute<Scalar> distance_to_B_;
 	VertexAttribute<Vertex> paths_;

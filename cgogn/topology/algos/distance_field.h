@@ -24,6 +24,8 @@
 #ifndef CGOGN_TOPOLOGY_DISTANCE_FIELD_H_
 #define CGOGN_TOPOLOGY_DISTANCE_FIELD_H_
 
+#include <cgogn/topology/types/adjacency_cache.h>
+
 namespace cgogn
 {
 
@@ -48,15 +50,20 @@ class DistanceField
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
 public:
-	DistanceField(MAP& map, const EdgeAttribute<Scalar>& weight) :
+	DistanceField(MAP& map,
+				  const AdjacencyCache<MAP>& cache,
+				  const EdgeAttribute<Scalar>& weight) :
 		map_(map),
+		cache_(cache),
 		intern_edge_weight_(false),
 		edge_weight_(weight)
 	{
 	}
 
-	DistanceField(MAP& map) :
+	DistanceField(MAP& map,
+				  const AdjacencyCache<MAP>& cache) :
 		map_(map),
+		cache_(cache),
 		intern_edge_weight_(true)
 	{
 		edge_weight_ = map.template add_attribute<Scalar, Edge::ORBIT>("__edge_weight__");
@@ -117,7 +124,7 @@ private:
 
 			vertex_queue.pop();
 
-			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			cache_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
 				Scalar distance_through_u = dist + edge_weight_[Edge(v.dart)];
 				if (distance_through_u < distance_to_source[v])
@@ -174,7 +181,7 @@ public:
 
 			vertex_queue.pop();
 
-			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			cache_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
 				Scalar distance_through_u = dist + edge_weight_[Edge(v.dart)];
 				if (distance_through_u < distance_to_source[v])
@@ -232,7 +239,7 @@ private:
 			morse_function[u] = Scalar(i)/n;		// Set the final value
 			++i;
 
-			map_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
+			cache_.foreach_adjacent_vertex_through_edge(u, [&](Vertex v)
 			{
 				if(morse_function[v] == Scalar(0)) {	// If not visited
 					vertex_queue.push(std::make_pair(scalar_field[v], v.dart.index));
@@ -395,6 +402,7 @@ public:
 
 private:
 	MAP& map_;
+	AdjacencyCache<MAP> cache_;
 	EdgeAttribute<Scalar> edge_weight_;
 	bool intern_edge_weight_;
 };

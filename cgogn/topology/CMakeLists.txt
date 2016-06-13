@@ -4,10 +4,11 @@ project(cgogn_topology
 
 set(HEADER_FILES
 	dll.h
+	types/adjacency_cache.h
 	types/critical_point.h
 	algos/distance_field.h
+	algos/features.h
 	algos/scalar_field.h
-        algos/topology_analyser.h
 	)
 
 add_custom_target(cgogn_topology SOURCES ${HEADER_FILES})
