@@ -485,7 +485,7 @@ private:
 		buffer_format.reserve((map.template nb_cells<Volume::ORBIT>()));
 		map.foreach_cell([&](Volume w)
 		{
-			const int32 nbv = this->number_of_vertices(w);
+			const int32 nbv = static_cast<int32>(this->number_of_vertices(w));
 			switch (nbv) {
 				case 4: buffer_format.push_back(VTK_TETRA); break;
 				case 5: buffer_format.push_back(VTK_PYRAMID); break;

@@ -252,7 +252,7 @@ private:
 		output << "endsolid " << remove_extension(option.filename_) << std::endl;
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& option, ChunkArrayGen* normal_attribute)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, ChunkArrayGen* normal_attribute)
 	{
 		// header + nb triangles
 		std::array<uint32, 21> header;

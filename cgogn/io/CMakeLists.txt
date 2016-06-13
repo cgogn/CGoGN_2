@@ -7,7 +7,7 @@ find_package(cgogn_geometry REQUIRED)
 find_package(ply REQUIRED)
 find_package(lm6 REQUIRED)
 find_package(tinyxml2 REQUIRED)
-find_package(Zlib REQUIRED)
+find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(HEADER_FILES
 	surface_import.h

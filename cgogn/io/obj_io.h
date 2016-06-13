@@ -209,7 +209,7 @@ public:
 
 protected:
 
-	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& /*option*/) override
 	{
 		ChunkArrayGen* normal_attribute(nullptr);
 

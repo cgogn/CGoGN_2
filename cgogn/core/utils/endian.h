@@ -219,8 +219,7 @@ template<bool COND, typename T>
 inline typename std::enable_if<type_traits::has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x)
 {
 	T res;
-	std::size_t i = 0u;
-	for (std::size_t i = 0ul; i < x.size(); ++i)
+	for (std::size_t i = 0ul, size = static_cast<std::size_t>(x.size()); i < size; ++i)
 		res[i] = swap_endianness_if<COND>(x[i]);
 	return res;
 }

@@ -117,7 +117,7 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 	std::vector<uint32> header;
 	if (!compress)
 	{
-		header.push_back(size);
+		header.push_back(static_cast<uint32>(size));
 		char* header_ptr = reinterpret_cast<char*>(&header[0]);
 
 		data.reserve(sizeof(header) + size);
@@ -127,17 +127,17 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 		for (std::size_t i = 0u; i < size ; ++i)
 			data.push_back(data_str[i]);
 	} else {
-		const std::size_t uncompressed_chunk_size = std::min(size, 262144ul);
+		const std::size_t uncompressed_chunk_size = std::min(size, std::size_t(262144));
 		const std::vector<std::vector<unsigned char>>& compressed_blocks = zlib_compress(reinterpret_cast<const unsigned char*>(data_str), size, uncompressed_chunk_size);
 		std::size_t compressed_size{0ul};
 		const std::size_t last_block_size = (compressed_blocks.size() == 1ul) ? uncompressed_chunk_size : size % uncompressed_chunk_size;
 
-		header.push_back(compressed_blocks.size());
-		header.push_back(uncompressed_chunk_size);
-		header.push_back(last_block_size);
+		header.push_back(static_cast<uint32>(compressed_blocks.size()));
+		header.push_back(static_cast<uint32>(uncompressed_chunk_size));
+		header.push_back(static_cast<uint32>(last_block_size));
 		for (const auto& block : compressed_blocks)
 		{
-			header.push_back(block.size());
+			header.push_back(static_cast<uint32>(block.size()));
 			compressed_size += block.size();
 		}
 

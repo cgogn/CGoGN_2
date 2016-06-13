@@ -58,14 +58,14 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = std::min(deflateBound(&zstream,std::min(chunk_size, size)), buffer_size);
+		buffer_size = std::min(static_cast<std::size_t>(deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)))), buffer_size);
 
-		zstream.avail_in = std::min(chunk_size, size);
+		zstream.avail_in = static_cast<uLong>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
 		zstream.next_in = input;
 		input += zstream.avail_in;
 		res.emplace_back(buffer_size);
-		zstream.avail_out = res.back().size();
+		zstream.avail_out = static_cast<uLong>(res.back().size());
 		zstream.next_out = &(res.back()[0]);
 		cgogn_assert(zstream.next_out  != nullptr);
 		ret = deflate(&zstream, Z_FINISH);

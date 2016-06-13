@@ -191,7 +191,7 @@ add_library(Zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC
 
 set_target_properties(Zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(Zlib PROPERTIES SOVERSION 1)
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(Zlib PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
 
@@ -214,7 +214,7 @@ if(UNIX)
 	endif()
 elseif(BUILD_SHARED_LIBS AND WIN32)
 	# Creates zlib1.dll when building shared library version
-	set_target_properties(Zlib PROPERTIES SUFFIX "1.dll")
+	#set_target_properties(Zlib PROPERTIES SUFFIX "1.dll")
 endif()
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
