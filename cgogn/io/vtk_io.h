@@ -70,7 +70,8 @@ enum VTK_CELL_TYPES
 };
 
 CGOGN_IO_API std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_data_type(const std::string& cgogn_type);
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type);
+CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type);
 CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type);
 CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress = false);
 
@@ -122,14 +123,159 @@ public:
 	{
 		if (to_lower(extension(option.filename_)) == "vtp")
 			this->export_vtp_xml(map, output, option);
+		if (to_lower(extension(option.filename_)) == "vtk")
+			this->export_legacy_vtk(map, output, option);
 	}
 private:
+	void export_legacy_vtk(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
+		const bool bin = option.binary_;
+		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
+		const uint32 nbf = map.template nb_cells<Face::ORBIT>();
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+
+		output << "# vtk DataFile Version 2.0" << std::endl;
+		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
+		if (bin)
+			output << " --- endianness = BigEndian";
+		output << std::endl;
+		output << (bin?"BINARY":"ASCII") << std::endl;
+		output << "DATASET UNSTRUCTURED_GRID" << std::endl;
+
+		{// point section
+			output << "POINTS " << nbv << " " << scalar_type << std::endl;
+			map.foreach_cell([&](Vertex v)
+			{
+				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				if (!bin)
+					output << std::endl;
+			}, *(this->cell_cache_));
+			output << std::endl;
+		} // end point section
+
+		{ // cell section
+			std::vector<uint32> buffer_cells;
+			buffer_cells.reserve(4u*nbf);
+			uint32 cell_section_size{0u};
+			map.foreach_cell([&](Face f)
+			{
+				buffer_cells.push_back(map.codegree(f));
+				cell_section_size += buffer_cells.back();
+				Dart it = f.dart;
+				do {
+					buffer_cells.push_back(this->indices_[Vertex(it)]);
+					it = map.phi1(it);
+				} while (it != f.dart);
+			}, *(this->cell_cache_));
+
+			cell_section_size += nbf; // we add an integer for each face (the nb of vertices)
+
+			output << "CELLS " << nbf << " " << cell_section_size << std::endl;
+
+			if (bin)
+			{
+				for (auto& i : buffer_cells)
+					i = swap_endianness_native_big(i);
+				output.write(reinterpret_cast<char*>(&buffer_cells[0]), buffer_cells.size() * sizeof(uint32));
+				for (auto& i : buffer_cells)
+					i = swap_endianness_native_big(i);
+				output << std::endl;
+			} else {
+					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
+					{
+						const uint32 nb_vert = buffer_cells[i++];
+						output << nb_vert << " ";
+						for (uint32 j = 0u; j < nb_vert; ++j)
+						{
+							output << buffer_cells[i++] << " ";
+						}
+						output << std::endl;
+					}
+				}
+
+			output << "CELL_TYPES " << nbf << std::endl;
+			if (bin)
+			{
+				std::vector<int32> buffer_cell_type;
+				buffer_cell_type.reserve(nbf);
+				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				{
+					const uint32 nb_vert = *it;
+					switch (nb_vert) {
+						case 3u: buffer_cell_type.push_back(VTK_TRIANGLE); break;
+						case 4u: buffer_cell_type.push_back(VTK_QUAD); break;
+						default: buffer_cell_type.push_back(VTK_POLYGON); break;
+					}
+					it += nb_vert + 1u;
+				}
+				for (auto& i : buffer_cell_type)
+					i = swap_endianness_native_big(i);
+				output.write(reinterpret_cast<char*>(&buffer_cell_type[0]), buffer_cell_type.size() * sizeof(int32));
+				output << std::endl;
+			} else {
+				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				{
+					const uint32 nb_vert = *it;
+					switch (nb_vert) {
+						case 3u: output << VTK_TRIANGLE; break;
+						case 4u: output << VTK_QUAD; break;
+						default: output << VTK_POLYGON; break;
+					}
+					output << std::endl;
+					it += nb_vert + 1u;
+				}
+			}
+		} // end cell section
+
+		{ // point data section
+			if (!this->vertex_attributes().empty())
+			{
+				const auto& vertex_attributes = this->vertex_attributes();
+				output << "POINT_DATA " << nbv << std::endl;
+				for(ChunkArrayGen const* vatt : vertex_attributes)
+				{
+					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+					output << "LOOKUP_TABLE default" << std::endl;
+					map.foreach_cell([&](Vertex v)
+					{
+						vatt->export_element(map.embedding(v), output, bin, false);
+						if (!bin)
+							output << std::endl;
+					}, *(this->cell_cache_));
+					if (bin)
+						output << std::endl;
+				}
+			}
+		} // end point data section
+
+		{ // cell data section
+			if (!this->face_attributes().empty())
+			{
+				const auto& face_attributes = this->face_attributes();
+				output << "CELL_DATA " << nbf << std::endl;
+				for(ChunkArrayGen const* fatt : face_attributes)
+				{
+					output << "SCALARS " << fatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(fatt->nested_type_name()) << " " << fatt->nb_components() << std::endl;
+					output << "LOOKUP_TABLE default" << std::endl;
+					map.foreach_cell([&](Face f)
+					{
+						fatt->export_element(map.embedding(f), output, bin, false);
+						if (!bin)
+							output << std::endl;
+					}, *(this->cell_cache_));
+					if (bin)
+						output << std::endl;
+				}
+			}
+		} // end cell data section
+	}
+
 	void export_vtp_xml(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
 		ChunkArrayGen const* pos = this->position_attribute();
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
-		std::string scalar_type = cgogn_name_of_type_to_vtk_data_type(pos->nested_type_name());
+		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
 		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
 		const uint32 nbf = map.template nb_cells<Face::ORBIT>();
 		const bool bin = option.binary_;
@@ -185,7 +331,7 @@ private:
 			// 1.B : other vertices attributes
 			for (const auto& att : this->vertex_attributes())
 			{
-				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(att->nested_type_name());
 				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
 				if (bin)
@@ -223,7 +369,7 @@ private:
 			output << "<CellData>" << std::endl;
 			for (const auto& att : this->face_attributes())
 			{
-				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(att->nested_type_name());
 				output << "<DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
 				if (bin)
@@ -333,17 +479,162 @@ protected:
 	{
 		if (to_lower(extension(option.filename_)) == "vtu")
 			this->export_vtu(map, output, option);
+		if (to_lower(extension(option.filename_)) == "vtk")
+			this->export_legacy_vtk(map, output, option);
 	}
 
 private:
+	void export_legacy_vtk(const Map& map, std::ofstream& output, const ExportOptions& option)
+	{
+		const bool bin = option.binary_;
+		const uint32 nbv = this->nb_vertices();
+		const uint32 nbw = this->nb_volumes();
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+
+		output << "# vtk DataFile Version 2.0" << std::endl;
+		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
+		if (bin)
+			output << " --- endianness = BigEndian";
+		output << std::endl;
+		output << (bin?"BINARY":"ASCII") << std::endl;
+		output << "DATASET UNSTRUCTURED_GRID" << std::endl;
+
+		{// point section
+			output << "POINTS " << nbv << " " << scalar_type << std::endl;
+			map.foreach_cell([&](Vertex v)
+			{
+				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				if (!bin)
+					output << std::endl;
+			}, *(this->cell_cache_));
+			output << std::endl;
+		} // end point section
+
+		{ // cell section
+			std::vector<uint32> buffer_cells;
+			buffer_cells.reserve(5u*nbw);
+			uint32 cell_section_size{0u};
+			map.foreach_cell([&](Volume w)
+			{
+				const auto& indices = this->vertices_of_volumes(w);
+				buffer_cells.push_back(static_cast<uint32>(indices.size()));
+				cell_section_size += buffer_cells.back();
+				for (auto i : indices)
+					buffer_cells.push_back(static_cast<uint32>(i));
+			}, *(this->cell_cache_));
+
+			cell_section_size += nbw; // we add an integer for each volume (the nb of vertices)
+
+			output << "CELLS " << nbw << " " << cell_section_size << std::endl;
+
+			if (bin)
+			{
+				for (auto& i : buffer_cells)
+					i = swap_endianness_native_big(i);
+				output.write(reinterpret_cast<char*>(&buffer_cells[0]), buffer_cells.size() * sizeof(uint32));
+				output << std::endl;
+			} else {
+					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
+					{
+						const uint32 nb_vert = buffer_cells[i++];
+						output << nb_vert << " ";
+						for (uint32 j = 0u; j < nb_vert; ++j)
+						{
+							output << buffer_cells[i++] << " ";
+						}
+						output << std::endl;
+					}
+				}
+
+			output << "CELL_TYPES " << nbw << std::endl;
+			if (bin)
+			{
+				std::vector<int32> buffer_cell_type;
+				buffer_cell_type.reserve(nbw);
+				map.foreach_cell([&](Volume w)
+				{
+					const auto& indices = this->vertices_of_volumes(w);
+					switch (indices.size()) {
+						case 4u: buffer_cell_type.push_back(VTK_TETRA); break;
+						case 5u: buffer_cell_type.push_back(VTK_PYRAMID); break;
+						case 6u: buffer_cell_type.push_back(VTK_WEDGE); break;
+						case 8u: buffer_cell_type.push_back(VTK_HEXAHEDRON); break;
+						default: buffer_cell_type.push_back(INT32_MAX); break;
+					}
+				}, *(this->cell_cache_));
+
+				for (auto& i : buffer_cell_type)
+					i = swap_endianness_native_big(i);
+				output.write(reinterpret_cast<char*>(&buffer_cell_type[0]), buffer_cell_type.size() * sizeof(int32));
+				output << std::endl;
+			} else {
+				map.foreach_cell([&](Volume w)
+				{
+					const auto& indices = this->vertices_of_volumes(w);
+					switch (indices.size()) {
+						case 4u: output << VTK_TETRA; break;
+						case 5u: output << VTK_PYRAMID; break;
+						case 6u: output << VTK_WEDGE; break;
+						case 8u: output << VTK_HEXAHEDRON; break;
+						default: output << INT32_MAX; break;
+					}
+					output << std::endl;
+				}, *(this->cell_cache_));
+				output << std::endl;
+			}
+		} // end cell section
+
+		{ // point data section
+			if (!this->vertex_attributes().empty())
+			{
+				const auto& vertex_attributes = this->vertex_attributes();
+				output << "POINT_DATA " << nbv << std::endl;
+				for(ChunkArrayGen const* vatt : vertex_attributes)
+				{
+					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+					output << "LOOKUP_TABLE default" << std::endl;
+					map.foreach_cell([&](Vertex v)
+					{
+						vatt->export_element(map.embedding(v), output, bin, false);
+						if (!bin)
+							output << std::endl;
+					}, *(this->cell_cache_));
+					if (bin)
+						output << std::endl;
+				}
+			}
+		} // end point data section
+
+		{ // cell data section
+			if (!this->volume_attributes().empty())
+			{
+				const auto& volume_attributes = this->volume_attributes();
+				output << "CELL_DATA " << nbw << std::endl;
+				for(ChunkArrayGen const* watt : volume_attributes)
+				{
+					output << "SCALARS " << watt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(watt->nested_type_name()) << " " << watt->nb_components() << std::endl;
+					output << "LOOKUP_TABLE default" << std::endl;
+					map.foreach_cell([&](Volume w)
+					{
+						watt->export_element(map.embedding(w), output, bin, false);
+						if (!bin)
+							output << std::endl;
+					}, *(this->cell_cache_));
+					if (bin)
+						output << std::endl;
+				}
+			}
+		} // end cell data section
+	}
+
 	void export_vtu(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
 		ChunkArrayGen const* pos = this->position_attribute();
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
-		std::string scalar_type = cgogn_name_of_type_to_vtk_data_type(pos->nested_type_name());
-		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
-		const uint32 nbw = map.template nb_cells<Volume::ORBIT>();
+		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
+		const uint32 nbv = this->nb_vertices();
+		const uint32 nbw = this->nb_volumes();
 		const bool bin = option.binary_;
 
 		output << "<?xml version=\"1.0\"?>" << std::endl;
@@ -394,7 +685,7 @@ private:
 			// 1.B : other vertices attributes
 			for (const auto& att : this->vertex_attributes())
 			{
-				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(att->nested_type_name());
 				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
 				if (bin)
@@ -482,7 +773,7 @@ private:
 		// 2.c cell types
 		output << "        <DataArray type=\"UInt8\" Name=\"types\" format=\"" << format << "\">" << std::endl;
 		std::vector<uint8> buffer_format;
-		buffer_format.reserve((map.template nb_cells<Volume::ORBIT>()));
+		buffer_format.reserve(this->nb_volumes());
 		map.foreach_cell([&](Volume w)
 		{
 			const int32 nbv = static_cast<int32>(this->number_of_vertices(w));
@@ -513,7 +804,7 @@ private:
 			output << "      <CellData>" << std::endl;
 			for (const auto& att : this->volume_attributes())
 			{
-				scalar_type = cgogn_name_of_type_to_vtk_data_type(att->nested_type_name());
+				scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(att->nested_type_name());
 				output << "        <DataArray type=\""<< scalar_type  <<"\" Name=\"" << att->name() << "\" NumberOfComponents=\"" << att->nb_components() << "\" format=\"" << format << "\">" << std::endl;
 
 				if (bin)

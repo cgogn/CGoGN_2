@@ -499,7 +499,7 @@ protected:
 
 		// 1. vertices
 		output << "$NOD" << std::endl;
-		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+		output << this->nb_vertices() << std::endl;
 		uint32 vertices_counter = 1u;
 		map.foreach_cell([&](Vertex v)
 		{
@@ -511,7 +511,7 @@ protected:
 
 		// 2. volumes
 		output << "$ELM" << std::endl;
-		const uint32 nb_vols = map.template nb_cells<Volume::ORBIT>();
+		const uint32 nb_vols = this->nb_volumes();
 		output << nb_vols << std::endl;
 
 

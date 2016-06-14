@@ -47,10 +47,30 @@ public:
 	using Map = MAP;
 	using Vertex = typename Map::Vertex;
 	using Volume = typename Map::Volume;
+	using Face   = typename Map::Face;
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 	template<typename T, Orbit ORB>
 	using Attribute = typename Map::template Attribute<T, ORB>;
+
+	class ConnectorCellFilter : public cgogn::CellFilters
+	{
+	public:
+		inline ConnectorCellFilter(const Map& map) : map_(map){}
+		inline bool filter(Volume w) const
+		{
+			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
+		}
+		inline bool filter(Vertex ) const
+		{
+			return true;
+		}
+
+
+	private:
+		const Map& map_;
+	};
+
 
 	inline VolumeExport() :
 		vertices_of_volumes_()
@@ -93,8 +113,8 @@ public:
 			}
 		}
 
-		this->cell_cache_->template build<Vertex>();
-		this->cell_cache_->template build<Volume>();
+		this->cell_cache_->template build<Vertex>(ConnectorCellFilter(map));
+		this->cell_cache_->template build<Volume>(ConnectorCellFilter(map));
 
 		uint32 count{0u};
 		map.foreach_cell([&] (Vertex v) { this->indices_[v] = count++;}
@@ -117,7 +137,7 @@ public:
 				vertices.push_back(ids[Vertex(it)]);
 				it = map.phi1(it);
 				vertices.push_back(ids[Vertex(it)]);
-				it = map.template phi<211>(it);
+				it = map.phi_1(map.phi2(it));
 				vertices.push_back(ids[Vertex(it)]);
 			}
 			else
@@ -125,6 +145,13 @@ public:
 				if (nb_vert == 5u)
 				{
 					++nb_pyramids_;
+					Face fit(it);
+					while(map.codegree(fit) != 4u)
+					{
+						it = map.phi1(it);
+						fit = Face(map.phi2(it));
+					}
+					it = fit.dart;
 					vertices.push_back(ids[Vertex(it)]);
 					it = map.phi1(it);
 					vertices.push_back(ids[Vertex(it)]);
@@ -132,7 +159,7 @@ public:
 					vertices.push_back(ids[Vertex(it)]);
 					it = map.phi1(it);
 					vertices.push_back(ids[Vertex(it)]);
-					it = map.template phi<212>(it);
+					it = map.phi_1(map.phi2(it));
 					vertices.push_back(ids[Vertex(it)]);
 				}
 				else
@@ -140,16 +167,24 @@ public:
 					if (nb_vert == 6u)
 					{
 						++nb_triangular_prisms_;
+						Face fit(it);
+						while(map.codegree(fit) != 3u)
+						{
+							it = map.phi1(it);
+							fit = Face(map.phi2(it));
+						}
+						it = fit.dart;
+						w.dart = it;
 						vertices.push_back(ids[Vertex(it)]);
-						it = map.phi1(it);
+						it = map.phi_1(it);
 						vertices.push_back(ids[Vertex(it)]);
-						it = map.phi1(it);
+						it = map.phi_1(it);
 						vertices.push_back(ids[Vertex(it)]);
 						it = map.template phi<21121>(w.dart);
 						vertices.push_back(ids[Vertex(it)]);
-						it = map.phi_1(it);
+						it = map.phi1(it);
 						vertices.push_back(ids[Vertex(it)]);
-						it = map.phi_1(it);
+						it = map.phi1(it);
 						vertices.push_back(ids[Vertex(it)]);
 					}
 					else
@@ -174,9 +209,7 @@ public:
 							vertices.push_back(ids[Vertex(it)]);
 						}
 						else
-						{
-							cgogn_log_warning("VolumeExport::prepare_for_export") << "Unknown volume with " << nb_vert << " vertices. Ignoring.";
-						}
+								cgogn_log_warning("VolumeExport::prepare_for_export") << "Unknown volume with " << nb_vert << " vertices. Ignoring.";
 					}
 				}
 			}
@@ -201,6 +234,16 @@ public:
 	inline uint32 nb_hexas() const
 	{
 		return nb_hexas_;
+	}
+
+	inline uint32 nb_volumes() const
+	{
+		return this->cell_cache_->template size<Volume>();
+	}
+
+	inline uint32 nb_vertices() const
+	{
+		return this->cell_cache_->template size<Vertex>();
 	}
 
 	inline std::vector<int32> const & vertices_of_volumes(Volume w) const
