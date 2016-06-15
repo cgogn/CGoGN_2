@@ -249,7 +249,7 @@ protected:
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Dart add_face_topo(uint32 size)
+	inline Dart add_face_topo(std::size_t size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
@@ -257,7 +257,7 @@ protected:
 			cgogn_log_warning("add_face_topo") << "Attempt to create an empty face results in a single dart.";
 
 		Dart d = this->add_topology_element();
-		for (uint32 i = 1u; i < size; ++i)
+		for (std::size_t i = 1u; i < size; ++i)
 			split_vertex_topo(d);
 		return d;
 	}

@@ -499,7 +499,7 @@ protected:
 
 		// 1. vertices
 		output << "$NOD" << std::endl;
-		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+		output << this->nb_vertices() << std::endl;
 		uint32 vertices_counter = 1u;
 		map.foreach_cell([&](Vertex v)
 		{
@@ -511,23 +511,23 @@ protected:
 
 		// 2. volumes
 		output << "$ELM" << std::endl;
-		const auto& nb_vert_vol = this->number_of_vertices();
-		const uint32 nb_vols = nb_vert_vol.size();
+		const uint32 nb_vols = this->nb_volumes();
 		output << nb_vols << std::endl;
 
+
 		uint32 cell_counter = 1u;
-		auto vertices_it = this->vertices_of_volumes().begin();
-		for (uint32 w = 0u; w < nb_vols; ++w)
+		map.foreach_cell([&](Volume w)
 		{
-			const uint32 type = (nb_vert_vol[w] == 4u)?4u:(nb_vert_vol[w] == 5u)?7u:(nb_vert_vol[w] == 6u)?6u:5u;
-			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nb_vert_vol[w]<<" ";
-			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
+			const auto& vertices = this->vertices_of_volumes(w);
+			const std::size_t nbv = this->number_of_vertices(w);
+			const uint32 type = (nbv == 4u)?4u:(nbv == 5u)?7u:(nbv == 6u)?6u:5u;
+			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nbv <<" ";
+			for (const auto i : vertices)
 			{
-				output << *vertices_it + 1u << " ";
-				++vertices_it;
+				output << i + 1 << " ";
 			}
 			output << std::endl;
-		}
+		}, *(this->cell_cache_));
 		output << "$ENDELM" << std::endl;
 	}
 };

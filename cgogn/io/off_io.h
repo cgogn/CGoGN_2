@@ -270,7 +270,7 @@ protected:
 			this->export_ascii(map,output,option);
 	}
 private:
-	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& /*option*/)
 	{
 		output << "OFF" << std::endl;
 		output << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Face::ORBIT>() << " 0" << std::endl;
@@ -307,7 +307,7 @@ private:
 		}, *(this->cell_cache_));
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/)
 	{
 		output << "OFF BINARY"<< std::endl;
 

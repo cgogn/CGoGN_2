@@ -160,11 +160,11 @@ protected:
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
-		const auto& nb_vert_vol = this->number_of_vertices();
-		const uint32 nb_vols = nb_vert_vol.size();
+		const uint32 nb_vols = this->nb_volumes();
+		const uint32 nb_vert = this->nb_vertices();
 
 		// 1. vertices
-		output << map.template nb_cells<Vertex::ORBIT>() << " vertices" << std::endl;
+		output << nb_vert << " vertices" << std::endl;
 		output << nb_vols << " cells" << std::endl;
 
 		map.foreach_cell([&](Vertex v)
@@ -173,17 +173,15 @@ protected:
 			output << std::endl;
 		}, *(this->cell_cache_));
 
-		auto vertices_it = this->vertices_of_volumes().begin();
-		for (uint32 w = 0u; w < nb_vols; ++w)
+		map.foreach_cell([&](Volume w)
 		{
-			output << nb_vert_vol[w] << " ";
-			for (uint32 i = 0u ; i < nb_vert_vol[w]; ++i)
-			{
-				output << *vertices_it  << " ";
-				++vertices_it;
-			}
+			const auto& vertices = this->vertices_of_volumes(w);
+			output << vertices.size() << " ";
+			for (auto i : vertices)
+				output << i  << " ";
 			output << std::endl;
-		}
+		}, *(this->cell_cache_));
+
 	}
 };
 
