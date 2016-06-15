@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 
-find_package(ZLIB)
+find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(ply REQUIRED)
