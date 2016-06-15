@@ -204,16 +204,10 @@ protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		ChunkArrayGen* normal_attribute(nullptr);
-		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
 
-		for (const auto& pair : option.attributes_to_export_)
-			if (pair.first == Face::ORBIT && (to_lower(pair.second) == "normal" || to_lower(pair.second) == "normals"))
-			{
-				normal_attribute = face_cac.get_chunk_array(pair.second);
-				break;
-			}
-		if (normal_attribute == nullptr)
-			normal_attribute = face_cac.get_chunk_array("normal");
+		for (ChunkArrayGen* vatt: this->face_attributes())
+			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
+				normal_attribute = vatt;
 
 		if (normal_attribute == nullptr)
 		{
@@ -243,7 +237,7 @@ private:
 				normal_attribute->export_element(map.embedding(f), output, false, false);
 				output << std::endl;
 				output << "outer loop" << std::endl;
-				map.template foreach_incident_vertex(f, [&] (Vertex v)
+				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
 					output << "vertex ";
 					this->position_attribute_->export_element(map.embedding(v), output, false, false);
@@ -258,7 +252,7 @@ private:
 		output << "endsolid " << remove_extension(option.filename_) << std::endl;
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& option, ChunkArrayGen* normal_attribute)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, ChunkArrayGen* normal_attribute)
 	{
 		// header + nb triangles
 		std::array<uint32, 21> header;

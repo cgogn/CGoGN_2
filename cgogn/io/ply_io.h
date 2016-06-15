@@ -141,7 +141,7 @@ protected:
 			this->export_ascii(map, output, option);
 	}
 private:
-	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& /*option*/)
 	{
 		output << "ply" << std::endl ;
 		output << "format ascii 1.0" << std::endl ;
@@ -173,7 +173,7 @@ private:
 			uint32 valence = 0;
 			prim.clear();
 
-			map.template foreach_incident_vertex(f, [&] (Vertex v)
+			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				prim.push_back(this->indices_[v]);
 				++valence;
@@ -186,7 +186,7 @@ private:
 		}, *(this->cell_cache_));
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& option)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/)
 	{
 
 		output << "ply" << std::endl ;

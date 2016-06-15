@@ -90,7 +90,7 @@ inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string
 		case FileType::FileType_OFF:		return make_unique<OffSurfaceExport<MAP>>();
 		case FileType::FileType_OBJ:		return make_unique<ObjSurfaceExport<MAP>>();
 		case FileType::FileType_STL:		return make_unique<StlSurfaceExport<MAP>>();
-//		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTP:		return make_unique<VtkSurfaceExport<MAP>>();
 		case FileType::FileType_PLY:		return make_unique<PlySurfaceExport<MAP>>();
 		default:
@@ -105,7 +105,7 @@ inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& 
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
-//		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:		return make_unique<VtkVolumeExport<MAP>>();
 		case FileType::FileType_MSH:		return make_unique<MshVolumeExport<MAP>>();
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();

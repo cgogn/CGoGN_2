@@ -25,8 +25,12 @@ set(SOURCE_FILES
 
 
 if (CGOGN_WITH_CGAL_EXAMPLES)
+	find_package(CGAL REQUIRED)
+	find_package(MPFR REQUIRED)
+	find_package(GMP REQUIRED)
+	include(${CGAL_USE_FILE})
 	find_package(Boost REQUIRED COMPONENTS thread program_options)
-	link_directories(${Boost_LIBRARY_DIRS})
+	link_directories("${Boost_LIBRARY_DIRS};${CGAL_LIBRARIES_DIR}")
 	add_executable(map3_from_image ${HEADER_FILES} ${SOURCE_FILES})
 	target_link_libraries(map3_from_image ${cgogn_core_LIBRARIES} cgogn_io_mesh_generation ${Boost_LIBRARIES})
 endif()

@@ -2,12 +2,12 @@ project(cgogn_io
 	LANGUAGES CXX
 )
 
-find_package(ZLIB)
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(ply REQUIRED)
 find_package(lm6 REQUIRED)
 find_package(tinyxml2 REQUIRED)
+find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(HEADER_FILES
 	surface_import.h
@@ -64,17 +64,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LM6_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include>
 )
 
-if (${ZLIB_FOUND})
-	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DZLIB_CONST")
-	target_compile_definitions(${PROJECT_NAME} PUBLIC "-DCGOGN_WITH_ZLIB")
-        target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARIES})
-endif()
-
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}

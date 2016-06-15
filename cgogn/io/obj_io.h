@@ -209,19 +209,13 @@ public:
 
 protected:
 
-	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& /*option*/) override
 	{
 		ChunkArrayGen* normal_attribute(nullptr);
-		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
 
-		for (const auto& pair : option.attributes_to_export_)
-			if (pair.first == Vertex::ORBIT && (to_lower(pair.second) == "normal" || to_lower(pair.second) == "normals"))
-			{
-				normal_attribute = ver_cac.get_chunk_array(pair.second);
-				break;
-			}
-
-
+		for (ChunkArrayGen* vatt: this->vertex_attributes())
+			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
+				normal_attribute = vatt;
 
 		// set precision for float output
 		output << std::setprecision(12);

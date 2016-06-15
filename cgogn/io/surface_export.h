@@ -95,6 +95,7 @@ private:
 			}
 		}
 
+		this->cell_cache_->template build<Vertex>();
 		this->cell_cache_->template build<Face>();
 		uint32 count{0u};
 		map.foreach_cell([&] (Vertex v)

@@ -65,9 +65,10 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && type_tr
 template <typename T, std::size_t Precision>
 inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary, bool little_endian)
 {
+	using numerical_type = typename fixed_precision<T, Precision>::type;
 	if (binary)
 	{
-		typename fixed_precision<T,Precision>::type tmp(x);
+		numerical_type tmp = static_cast<numerical_type>(x);
 		if (little_endian != internal::cgogn_is_little_endian)
 			tmp = swap_endianness(tmp);
 		save(o,&tmp,1ul);
