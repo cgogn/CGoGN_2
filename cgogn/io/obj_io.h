@@ -108,7 +108,7 @@ protected:
 		{
 			fp >> tag;
 			std::getline(fp, line);
-		} while (tag != std::string("vn"));
+		} while (tag != std::string("vn") && (!fp.eof()));
 
 		if (tag == "vn")
 		{
@@ -133,7 +133,6 @@ protected:
 				std::getline(fp, line);
 			} while (!fp.eof());
 		}
-
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
