@@ -101,7 +101,7 @@ protected:
 		mask);
 	}
 
-	template <typename VEC3, typename MAP, typename MASK>
+	template <typename MAP, typename MASK>
 	inline void init_triangles(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 	{
 		using Vertex = typename MAP::Vertex;
@@ -229,7 +229,7 @@ public:
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position = nullptr
+		const typename MAP::template VertexAttribute<VEC3>* position
 	)
 	{
 		std::vector<uint32> table_indices;
@@ -246,7 +246,7 @@ public:
 				if (position)
 					init_triangles_ear<VEC3>(m, mask, table_indices, position);
 				else
-					init_triangles<VEC3>(m, mask, table_indices);
+					init_triangles(m, mask, table_indices);
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -269,10 +269,56 @@ public:
 	inline void init_primitives(
 		const MAP& m,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position = nullptr
+		const typename MAP::template VertexAttribute<VEC3>* position
 	)
 	{
 		init_primitives<VEC3>(m, CellFilters(), prim, position);
+	}
+
+	template <typename MAP, typename MASK>
+	inline void init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim
+	)
+	{
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			case LINES:
+				init_lines(m, mask, table_indices);
+				break;
+			case TRIANGLES:
+				init_triangles(m, mask, table_indices);
+				break;
+			case BOUNDARY:
+				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP>
+	inline void init_primitives(
+		const MAP& m,
+		DrawingType prim
+	)
+	{
+		init_primitives(m, CellFilters(), prim);
 	}
 
 	void draw(DrawingType prim);
