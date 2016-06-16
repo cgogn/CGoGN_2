@@ -24,6 +24,8 @@ set(HEADER_FILES
 	cmap/cmap2_tri_builder.h
 	cmap/cmap2_quad.h
 	cmap/cmap2_quad_builder.h
+	cmap/cmap3_tetra.h
+	cmap/cmap3_tetra_builder.h
 
 
 	container/chunk_array_container.h
