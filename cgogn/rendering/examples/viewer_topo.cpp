@@ -30,6 +30,7 @@
 #include <cgogn/core/cmap/cmap2.h>
 
 #include <cgogn/io/map_import.h>
+#include <cgogn/io/map_export.h>
 
 #include <cgogn/geometry/algos/bounding_box.h>
 
@@ -165,6 +166,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
+			break;
+		case Qt::Key_E:
+			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{Map2::Vertex::ORBIT,"position"}},false));
 			break;
 		default:
 			break;
