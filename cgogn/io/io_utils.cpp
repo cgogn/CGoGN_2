@@ -42,7 +42,7 @@ namespace io
 CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
 {
 	chunk_size = std::min(size, chunk_size);
-	std::size_t buffer_size = std::min(chunk_size + 16384ul, 2ul*chunk_size); // has to be large enough to store the compressed data
+	std::size_t buffer_size{0ul};
 	std::vector<std::vector<unsigned char>> res;
 	res.reserve(64);
 
@@ -58,7 +58,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = std::min(static_cast<std::size_t>(deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)))), buffer_size);
+		buffer_size = deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)));
 
 		zstream.avail_in = static_cast<uLong>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
