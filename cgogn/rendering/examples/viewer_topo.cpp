@@ -48,6 +48,8 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Vertex = Map2::Vertex;
+
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
@@ -168,7 +170,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_E:
-			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{Map2::Vertex::ORBIT,"position"}},false));
+		{
+			const cgogn::Orbit orb = Map2::Vertex::ORBIT;
+			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{orb,"position"}},false));
+//			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{cgogn::PHI21,"position"}},false));
+//			WARNING following line do not link with clang
+//			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{Map2::Vertex::ORBIT,"position"}},false));
+		}
 			break;
 		default:
 			break;
