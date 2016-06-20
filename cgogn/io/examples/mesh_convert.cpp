@@ -59,11 +59,11 @@ int main(int argc, char** argv)
 	{
 		Map2 map;
 		cgogn::io::import_surface<Vec3>(map, input_filename);
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions(output_filename, {{vertex2, "position"}, {vertex2, "normal"}, {face2, "normal"}}, output_is_binary, compress_output));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions(output_filename, {vertex2, "position"}, {{vertex2, "normal"}, {face2, "normal"}}, output_is_binary, compress_output));
 	} else {
 		Map3 map;
 		cgogn::io::import_volume<Vec3>(map, input_filename);
-		cgogn::io::export_volume(map, cgogn::io::ExportOptions(output_filename, {{vertex3, "position"}}, output_is_binary, compress_output));
+		cgogn::io::export_volume(map, cgogn::io::ExportOptions(output_filename, {vertex3, "position"}, {}, output_is_binary, compress_output));
 	}
 
 	return 0;

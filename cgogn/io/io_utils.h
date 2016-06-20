@@ -69,14 +69,16 @@ namespace io
 
 struct ExportOptions
 {
-	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary, bool compress = false) :
-		filename_(filename)
-	  ,attributes_to_export_(attributes)
-	  ,binary_(binary)
-	  ,compress_(compress)
+	inline ExportOptions(const std::string& filename,std::pair<Orbit, std::string> position_attribute, std::vector<std::pair<Orbit, std::string>> const& attributes = {}, bool binary = true, bool compress = false) :
+		filename_(filename),
+		position_attribute_(position_attribute),
+		attributes_to_export_(attributes),
+		binary_(binary),
+		compress_(compress)
 	{}
 
 	std::string filename_;
+	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	bool binary_;
 	bool compress_;

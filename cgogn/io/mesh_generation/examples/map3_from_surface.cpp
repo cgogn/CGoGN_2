@@ -73,13 +73,8 @@ int main(int argc, char** argv)
 		tetgen_import.create_map(map3);
 
 	}
-
 	Map3::VertexAttribute<Vec3> vertex_position = map3.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
-	Map3::VertexAttribute<Vec3> vertex_test_att = map3.add_attribute<Vec3, Map3::Vertex::ORBIT>("test");
-	std::vector<std::pair<cgogn::Orbit,std::string>>	att_vec;
-	att_vec.push_back(std::make_pair(cgogn::Orbit(Map3::Vertex::ORBIT), std::string("position")));
-	att_vec.push_back(std::make_pair(cgogn::Orbit(Map3::Vertex::ORBIT), std::string("test")));
-	cgogn::io::export_volume(map3, cgogn::io::ExportOptions(output_filename, att_vec, false));
+	cgogn::io::export_volume(map3, cgogn::io::ExportOptions(output_filename,{cgogn::Orbit(Map3::Vertex::ORBIT), "position"}));
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
 
