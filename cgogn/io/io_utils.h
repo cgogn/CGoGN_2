@@ -28,14 +28,41 @@
 #include <sstream>
 #include <streambuf>
 
-#include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/io/dll.h>
 
 namespace cgogn
 {
+
+// stream insertion / extraction for Attribute_T
+template <typename DATA_TRAITS, typename T>
+inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, T>& att)
+{
+	for(auto it = att.begin(), end = att.end() ; it != end;)
+	{
+		o << (*it);
+		++it;
+		if (it != end)
+			o << " ";
+	}
+	return o;
+}
+
+template <typename DATA_TRAITS, typename T>
+inline std::istream& operator>>(std::istream& in, Attribute_T<DATA_TRAITS, T>& att)
+{
+	for (auto& it : att)
+	{
+		if (in.good())
+			in >> it;
+		else
+			it = std::move(T());
+	}
+	return in;
+}
 
 namespace io
 {
