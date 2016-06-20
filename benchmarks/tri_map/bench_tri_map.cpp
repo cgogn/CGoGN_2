@@ -145,7 +145,7 @@ static void BENCH_vertices_normals_tri(benchmark::State& state)
 		cgogn_assert(vertices_normal.is_valid());
 		state.ResumeTiming();
 
-		bench_tri_map.template foreach_cell([&] (TVertex v)
+		bench_tri_map.foreach_cell([&] (TVertex v)
 		{
 			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_tri_map, v, vertex_position);
 		});

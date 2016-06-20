@@ -145,7 +145,7 @@ static void BENCH_vertices_normals_quad(benchmark::State& state)
 		cgogn_assert(vertices_normal.is_valid());
 		state.ResumeTiming();
 
-		bench_quad_map.template foreach_cell([&] (QVertex v)
+		bench_quad_map.foreach_cell([&] (QVertex v)
 		{
 			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_quad_map, v, vertex_position);
 		});
