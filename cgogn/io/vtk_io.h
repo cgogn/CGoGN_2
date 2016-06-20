@@ -376,15 +376,16 @@ private:
 				{
 					const uint32 elem_size{att->element_size()};
 					buffer_char.clear();
-					buffer_char.reserve(nbf * elem_size);
+					buffer_char.resize(nbf * elem_size);
+					char* buffer_ptr = &buffer_char[0];
 
 					map.foreach_cell([&](Face f)
 					{
 						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(f)));
-						for(uint32 i = 0u; i < elem_size; ++i)
-							buffer_char.push_back(elem[i]);
-						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
+						std::memcpy(buffer_ptr, elem, elem_size);
+						buffer_ptr += elem_size;
 					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
 				} else {
 					map.foreach_cell([&](Face f)
