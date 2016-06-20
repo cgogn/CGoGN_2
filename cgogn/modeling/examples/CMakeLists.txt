@@ -14,3 +14,6 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 
 add_executable(remeshing remeshing.cpp)
 target_link_libraries(remeshing ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES})
+
+add_executable(tiling tiling.cpp)
+target_link_libraries(tiling ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES})
