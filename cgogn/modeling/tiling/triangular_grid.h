@@ -157,7 +157,7 @@ public:
 			{
 				attribute[this->vertex_table_[i*(this->nx_+1)+j]] =
 						T(dx*float32(j)+dx*0.5f*float32(i),
-						  dy*float32(i)*std::sqrtf(3.0f) / 2.0f,
+						  dy*float32(i)*std::sqrt(3.0f) / 2.0f,
 						  z);
 			}
 		}
