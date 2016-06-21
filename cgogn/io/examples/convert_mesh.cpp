@@ -36,9 +36,11 @@ int main(int argc, char** argv)
 	bool is_surface = true;
 	bool output_is_binary = false;
 	bool compress_output = false;
-	if (argc < 4 || argc >= 7)
+	bool overwrite_output = false;
+
+	if (argc < 4 || argc > 8)
 	{
-		cgogn_log_info("mesh_convert") << "USAGE: " << argv[0] << " [input_filename] [output_filename] [bool(is_surface)] [bool(binary_output)](optional, default 0) [bool(compress_output)](optional, default 0)";
+		cgogn_log_info("convert_mesh") << "USAGE: " << argv[0] << " [input_filename] [output_filename] [bool(is_surface)] [bool(binary_output)](optional, default 0) [bool(compress_output)](optional, default 0) [bool(overwrite_output)](optional, default 0)";
 		return 0;
 	} else {
 		input_filename = std::string(argv[1]);
@@ -46,24 +48,26 @@ int main(int argc, char** argv)
 		is_surface = string_to_bool(argv[3]);
 		if (argc > 4)
 			output_is_binary = string_to_bool(argv[4]);
-		if (argc == 6)
+		if (argc > 5)
 			compress_output = string_to_bool(argv[5]);
+		if (argc > 6)
+			overwrite_output = string_to_bool(argv[6]);
 
-		cgogn_log_info("mesh_convert") << "input mesh : " << input_filename;
-		cgogn_log_info("mesh_convert") << "output mesh : " << output_filename;
-		cgogn_log_info("mesh_convert") << "binary output : " << output_is_binary;
-		cgogn_log_info("mesh_convert") << "compress output : " << compress_output;
+		cgogn_log_info("convert_mesh") << "input mesh : " << input_filename;
+		cgogn_log_info("convert_mesh") << "output mesh : " << output_filename;
+		cgogn_log_info("convert_mesh") << "binary output : " << output_is_binary;
+		cgogn_log_info("convert_mesh") << "compress output : " << compress_output;
 	}
 
 	if (is_surface)
 	{
 		Map2 map;
 		cgogn::io::import_surface<Vec3>(map, input_filename);
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions(output_filename, {vertex2, "position"}, {{vertex2, "normal"}, {face2, "normal"}}, output_is_binary, compress_output));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions(output_filename, {vertex2, "position"}, {{vertex2, "normal"}, {face2, "normal"}}, output_is_binary, compress_output, overwrite_output));
 	} else {
 		Map3 map;
 		cgogn::io::import_volume<Vec3>(map, input_filename);
-		cgogn::io::export_volume(map, cgogn::io::ExportOptions(output_filename, {vertex3, "position"}, {}, output_is_binary, compress_output));
+		cgogn::io::export_volume(map, cgogn::io::ExportOptions(output_filename, {vertex3, "position"}, {}, output_is_binary, compress_output, overwrite_output));
 	}
 
 	return 0;

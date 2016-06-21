@@ -17,5 +17,5 @@ target_link_libraries(cmap2_import ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES}
 add_executable(cmap3_import cmap3_import.cpp)
 target_link_libraries(cmap3_import ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES})
 
-add_executable(mesh_convert mesh_convert.cpp)
-target_link_libraries(mesh_convert ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES})
+add_executable(convert_mesh convert_mesh.cpp)
+target_link_libraries(convert_mesh ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES})
