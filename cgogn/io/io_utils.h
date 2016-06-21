@@ -128,7 +128,7 @@ enum VolumeType
 };
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary, bool overwrite = true);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
 

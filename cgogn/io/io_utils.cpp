@@ -350,7 +350,7 @@ CGOGN_IO_API bool file_exists(const std::string& filename)
 	return std::ifstream(filename).good();
 }
 
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary)
+CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
 {
 	std::unique_ptr<std::ofstream> output;
 
@@ -361,13 +361,19 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	std::string new_filename(filename);
 	if (file_exists(new_filename))
 	{
-		uint32 i{1u};
-		const std::string base_name = remove_extension(filename);
-		do
+		if (overwrite)
 		{
-			new_filename = base_name + "(" + std::to_string(i++)  + ")." + extension(filename);
-		} while (file_exists(new_filename));
-		cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
+			std::remove(filename.c_str());
+			cgogn_log_info("create_file")  << "The file \"" << new_filename << "\" has been deleted.";
+		} else {
+			uint32 i{1u};
+			const std::string base_name = remove_extension(filename);
+			do
+			{
+				new_filename = base_name + "-" + std::to_string(i++) + extension(filename);
+			} while (file_exists(new_filename));
+			cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
+		}
 	}
 	output = cgogn::make_unique<std::ofstream>(new_filename, open_mode);
 	if (!output->good())
