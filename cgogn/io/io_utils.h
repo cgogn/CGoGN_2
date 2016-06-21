@@ -69,12 +69,13 @@ namespace io
 
 struct ExportOptions
 {
-	inline ExportOptions(const std::string& filename,std::pair<Orbit, std::string> position_attribute, std::vector<std::pair<Orbit, std::string>> const& attributes = {}, bool binary = true, bool compress = false) :
+	inline ExportOptions(const std::string& filename,std::pair<Orbit, std::string> position_attribute, std::vector<std::pair<Orbit, std::string>> const& attributes = {}, bool binary = true, bool compress = false, bool overwrite = true) :
 		filename_(filename),
 		position_attribute_(position_attribute),
 		attributes_to_export_(attributes),
 		binary_(binary),
-		compress_(compress)
+		compress_(compress),
+		overwrite_(overwrite)
 	{}
 
 	std::string filename_;
@@ -82,6 +83,7 @@ struct ExportOptions
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	bool binary_;
 	bool compress_;
+	bool overwrite_;
 
 };
 
@@ -128,7 +130,7 @@ enum VolumeType
 };
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary, bool overwrite = true);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary, bool overwrite);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
 

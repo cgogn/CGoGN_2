@@ -96,7 +96,7 @@ public:
 		this->cell_cache_ = cgogn::make_unique<CellCache>(map);
 		cgogn_assert(cell_cache_);
 
-		auto output = io::create_file(options.filename_, options.binary_);
+		auto output = io::create_file(options.filename_, options.binary_, options.overwrite_);
 		if (!output || !output->good())
 			return;
 
