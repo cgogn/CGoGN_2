@@ -370,7 +370,7 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 			const std::string base_name = remove_extension(filename);
 			do
 			{
-				new_filename = base_name + "-" + std::to_string(i++) + extension(filename);
+				new_filename = base_name + "-" + std::to_string(i++) + std::string(".") + extension(filename);
 			} while (file_exists(new_filename));
 			cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
 		}
