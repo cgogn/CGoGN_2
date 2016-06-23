@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_TILING_TRIANGULAR_GRID_H_
-#define CGOGN_MODELING_TILING_TRIANGULAR_GRID_H_
+#ifndef CGOGN_MODELING_TILING_SQUARE_GRID_H_
+#define CGOGN_MODELING_TILING_SQUARE_GRID_H_
 
 #include <cgogn/core/cmap/cmap2_builder.h>
 #include <cgogn/modeling/tiling/tiling.h>
@@ -34,12 +34,12 @@ namespace modeling
 {
 
 template <typename MAP>
-class TriangularTiling : public Tiling<MAP>
+class SquareGrid : public Tiling<MAP>
 {
-protected:
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
+protected:
 	//@{
 	//! Create a 2D grid
 	/*! @param[in] x nb of squares in x
@@ -48,14 +48,11 @@ protected:
 	void grid(uint32 x, uint32 y)
 	{
 		using MapBuilder = typename MAP::Builder;
+
 		MapBuilder mbuild(this->map_);
 
-		this->nx_ = x;
-		this->ny_ = y;
-		this->nz_ = -1;
-
 		const uint32 nb_vertices = (x+1)*(y+1);
-		const uint32 nb_faces = 2*x*y;
+		const uint32 nb_faces = x*y;
 
 		this->vertex_table_.reserve(nb_vertices);
 		this->face_table_.reserve(nb_faces);
@@ -65,17 +62,12 @@ protected:
 		{
 			for(uint32 j = 1 ; j <= x ; ++j)
 			{
-				Dart d = mbuild.add_face_topo_parent(3);
-				Dart d2 = mbuild.add_face_topo_parent(3);
-				mbuild.phi2_sew(this->map_.phi1(d), this->map_.phi_1(d2));
-
+				Dart d = mbuild.add_face_topo_parent(4);
 				this->vertex_table_.push_back(Vertex(d));
-
 				this->face_table_.push_back(Face(d));
-				this->face_table_.push_back(Face(d2));
 
 				if (j == x)
-					this->vertex_table_.push_back(Vertex(d2));
+					this->vertex_table_.push_back(Vertex(this->map_.phi1(d)));
 			}
 		}
 
@@ -97,7 +89,7 @@ protected:
 					const int32 pos = i*nb_x+j;
 					Dart d = this->vertex_table_[pos].dart;
 					Dart e = this->vertex_table_[pos-nb_x].dart;
-					e = this->map_.phi_1(this->map_.phi2(this->map_.phi1(e)));
+					e = this->map_.phi1(this->map_.phi1(e));
 					mbuild.phi2_sew(d, e);
 				}
 				if (j > 0) // sew with preceeding column
@@ -106,7 +98,7 @@ protected:
 					Dart d = this->vertex_table_[pos].dart;
 					d = this->map_.phi_1(d);
 					Dart e = this->vertex_table_[pos-1].dart;
-					e = this->map_.phi1(this->map_.phi2(this->map_.phi1(e)));
+					e = this->map_.phi1(e);
 					mbuild.phi2_sew(d, e);
 				}
 			}
@@ -114,101 +106,17 @@ protected:
 
 		this->dart_ = this->vertex_table_[0].dart;
 	}
-
-	//@{
-	//! Create a subdivided 2D cylinder
-	/*! @param[in] n nb of squares around circumference
-	 *  @param[in] z nb of squares in height
-	 */
-	void cylinder(uint32 n, uint32 z)
-	{
-		this->nx_ = n;
-		this->ny_ = z;
-		this->nz_ = -1;
-
-		this->grid(n,z);
-
-		using MapBuilder = typename MAP::Builder;
-		MapBuilder mbuild(this->map_);
-
-		// just finish to sew
-		const uint32 nb_x = (n+1);
-		for(uint32 i = 0; i < z; ++i)
-		{
-			const int32 pos = i*nb_x;
-			Dart d = this->vertex_table_[pos].dart;
-			d = this->map_.phi_1(d);
-			Dart e = this->vertex_table_[pos + z].dart;
-			mbuild.phi2_sew(d, e);
-			this->vertex_table_[pos + z] = Vertex();
-		}
-
-		//suppress the last n vertex (in y direction) from the vertex_table_
-		this->vertex_table_.erase(
-					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
-									[&](Vertex v) -> bool { return !v.is_valid(); }),
-								this->vertex_table_.end());
-
-		this->vertex_table_.shrink_to_fit();
-	}
-
-	//! Create a subdivided 2D tore
-	/*! @param[in] n nb of squares around big circumference
-	 *  @param[in] m nb of squares around small circumference
-	 */
-	void tore(uint32 n, uint32 m)
-	{
-		this->nx_ = n;
-		this->ny_ = m;
-		this->nz_ = -1;
-
-		this->cylinder(n,m);
-
-		using MapBuilder = typename MAP::Builder;
-		MapBuilder mbuild(this->map_);
-
-		// just finish to sew
-		const uint32 nb_y = (m-1)*n;
-		for(uint32 i = 0; i < n; ++i)
-		{
-			Dart d = this->vertex_table_[i].dart;
-			Dart e = this->vertex_table_[i+nb_y].dart;
-			e = this->map_.phi_1(this->map_.phi2(this->map_.phi1(e)));
-			mbuild.phi2_sew(d, e);
-			this->vertex_table_[i+nb_y+n] = Vertex();
-		}
-
-		// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
-		this->vertex_table_.erase(
-					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
-									[&](Vertex v) -> bool { return !v.is_valid(); }),
-								this->vertex_table_.end());
-
-		this->vertex_table_.shrink_to_fit();
-	}
 	//@}
 
-	TriangularTiling(MAP& map):
+	SquareGrid(MAP& map):
 		Tiling<MAP>(map)
-	{}
-};
-
-
-template <typename MAP>
-class TriangularGrid : public TriangularTiling<MAP>
-{
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
-
-	TriangularGrid(MAP& map):
-		TriangularTiling<MAP>(map)
 	{}
 
 public:
-	TriangularGrid(MAP& map, uint32 x, uint32 y):
-		TriangularTiling<MAP>(map)
+	SquareGrid(MAP& map, uint32 x, uint32 y):
+		Tiling<MAP>(map, x, y, -1)
 	{
-		this->grid(x,y);
+		grid(x,y);
 
 		//close the hole
 		using MapBuilder = typename MAP::Builder;
@@ -243,8 +151,8 @@ public:
 			for(uint32 j = 0; j <= this->nx_; ++j)
 			{
 				attribute[this->vertex_table_[i*(this->nx_+1)+j]] =
-						T(dx*float32(j)+dx*0.5f*float32(i),
-						  dy*float32(i)*std::sqrt(3.0f) / 2.0f,
+						T(-x/2.0+dx*float32(j),
+						  -y/2.0+dy*float32(i),
 						  z);
 			}
 		}
@@ -322,4 +230,4 @@ public:
 
 } //namespace cgogn
 
-#endif // CGOGN_MODELING_TILING_TRIANGULAR_GRID_H_
+#endif // CGOGN_MODELING_TILING_SQUARE_GRID_H_

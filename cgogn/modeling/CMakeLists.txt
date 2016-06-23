@@ -16,6 +16,12 @@ set(HEADER_FILES
         tiling/triangular_grid.h
         tiling/triangular_cylinder.h
         tiling/triangular_tore.h
+#        tiling/triangular_cube.h
+
+        tiling/square_grid.h
+        tiling/square_cylinder.h
+        tiling/square_tore.h
+#        tiling/square_cube.h
 )
 
 set(SOURCE_FILES

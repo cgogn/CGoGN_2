@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_TILING_TRIANGULAR_CYLINDER_H_
-#define CGOGN_MODELING_TILING_TRIANGULAR_CYLINDER_H_
+#ifndef CGOGN_MODELING_TILING_SQUARE_CYLINDER_H_
+#define CGOGN_MODELING_TILING_SQUARE_CYLINDER_H_
 
 #include <cgogn/core/cmap/cmap2_builder.h>
-#include <cgogn/modeling/tiling/triangular_grid.h>
+#include <cgogn/modeling/tiling/square_grid.h>
 #include <cgogn/modeling/algos/refinements.h>
 
 
@@ -36,7 +36,7 @@ namespace modeling
 {
 
 template <typename MAP>
-class TriangularCylinder : public TriangularTiling<MAP>
+class SquareCylinder : protected SquareGrid<MAP>
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -47,19 +47,57 @@ protected:
 	Vertex top_, bottom_;
 
 protected:
-	TriangularCylinder(MAP& map):
-		TriangularTiling<MAP>(map)
+	//@{
+	//! Create a subdivided 2D cylinder
+	/*! @param[in] n nb of squares around circumference
+	 *  @param[in] z nb of squares in height
+	 */
+	void cylinder(uint32 n, uint32 z)
+	{
+		this->nx_ = n;
+		this->ny_ = z;
+		this->nz_ = -1;
+
+		this->grid(n,z);
+
+		using MapBuilder = typename MAP::Builder;
+		MapBuilder mbuild(this->map_);
+
+		// just finish to sew
+		const uint32 nb_x = (n+1);
+		for(uint32 i = 0; i < z; ++i)
+		{
+			const int32 pos = i*nb_x;
+			Dart d = this->vertex_table_[pos].dart;
+			d = this->map_.phi_1(d);
+			Dart e = this->vertex_table_[pos + z].dart;
+			mbuild.phi2_sew(d, e);
+			this->vertex_table_[pos + z] = Vertex();
+		}
+
+		//suppress the last n vertex (in y direction) from the vertex_table_
+		this->vertex_table_.erase(
+					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
+									[&](Vertex v) -> bool { return !v.is_valid(); }),
+								this->vertex_table_.end());
+
+		this->vertex_table_.shrink_to_fit();
+	}
+	//@}
+
+	SquareCylinder(MAP& map):
+		SquareGrid<MAP>(map)
 	{}
 
 public:
-	TriangularCylinder(MAP& map, uint32 n, uint32 z, bool top_closed, bool bottom_closed):
-		TriangularTiling<MAP>(map),
+	SquareCylinder(MAP& map, uint32 n, uint32 z, bool top_closed, bool bottom_closed):
+		SquareGrid<MAP>(map),
 		top_closed_(top_closed),
 		bottom_closed_(bottom_closed),
 		top_triangulated_(false),
 		bottom_triangulated_(false)
 	{
-		this->cylinder(n,z);
+		cylinder(n,z);
 
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
@@ -73,8 +111,8 @@ public:
 		mbuild.boundary_mark(f);
 	}
 
-	TriangularCylinder(MAP& map, unsigned int n, unsigned int z):
-		TriangularCylinder<MAP>(map, n, z, true, true)
+	SquareCylinder(MAP& map, unsigned int n, unsigned int z):
+		SquareCylinder<MAP>(map, n, z, true, true)
 	{}
 
 	/*! @name Embedding Operators
@@ -248,4 +286,4 @@ public:
 
 } //namespace cgogn
 
-#endif // CGOGN_MODELING_TILING_TRIANGULAR_CYLINDER_H_
+#endif // CGOGN_MODELING_TILING_SQUARE_CYLINDER_H_
