@@ -376,15 +376,16 @@ private:
 				{
 					const uint32 elem_size{att->element_size()};
 					buffer_char.clear();
-					buffer_char.reserve(nbf * elem_size);
+					buffer_char.resize(nbf * elem_size);
+					char* buffer_ptr = &buffer_char[0];
 
 					map.foreach_cell([&](Face f)
 					{
 						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(f)));
-						for(uint32 i = 0u; i < elem_size; ++i)
-							buffer_char.push_back(elem[i]);
-						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
+						std::memcpy(buffer_ptr, elem, elem_size);
+						buffer_ptr += elem_size;
 					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
 				} else {
 					map.foreach_cell([&](Face f)
@@ -1009,6 +1010,8 @@ protected:
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
 										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
+										if (word == "NORMALS" || to_upper(att_name) == "NORMAL" || to_upper(att_name) == "NORMALS")
+											att_name = "normal";
 										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
@@ -1055,6 +1058,8 @@ protected:
 												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
+												if (to_upper(data_name) == "NORMAL" || to_upper(data_name) == "NORMALS")
+													data_name = "normal";
 												cgogn_log_info("parse_vtk_legacy_file") << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components).";
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
 												att->read_n(fp, nb_data, !ascii_file, big_endian);
@@ -1168,7 +1173,9 @@ protected:
 		{
 			std::string data_name("cgogn_unnamed_vertex_data");
 			if (vertex_data->Attribute("Name"))
-				data_name = to_lower(std::string(vertex_data->Attribute("Name")));
+				data_name = std::string(vertex_data->Attribute("Name"));
+			if (to_lower(data_name) == "normal" || to_lower(data_name) == "normals")
+				data_name = "normal";
 			const bool binary =  vertex_data->Attribute("format", nullptr) && (to_lower(std::string(vertex_data->Attribute("format", nullptr))) == "binary");
 			uint32 nb_comp = 1u;
 			vertex_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
@@ -1235,7 +1242,12 @@ protected:
 
 			for (XMLElement* cell_data : cell_nodes)
 			{
-				const std::string& data_name = to_lower(std::string(cell_data->Attribute("Name")));
+				std::string data_name;
+				if (cell_data->Attribute("Name"))
+					 data_name = std::string(cell_data->Attribute("Name"));
+				if (to_lower(data_name) == "normal" || to_lower(data_name) == "normals")
+					data_name = "normal";
+
 				const bool binary = cell_data->Attribute("format", nullptr) && (to_lower(std::string(cell_data->Attribute("format", nullptr))) == "binary");
 				uint32 nb_comp = 1u;
 				cell_data->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);

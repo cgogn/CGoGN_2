@@ -223,11 +223,19 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
+//		switch(d.index%4)
+//		{
+//		case 3: return Dart(d.index-1);break;
+//		case 2: return Dart(d.index-1);break;
+//		case 1: return Dart(d.index-1);break;
+//		}
+//		return Dart(d.index+3);
+
 		switch(d.index%4)
 		{
-		case 3: return Dart(d.index-1);break;
-		case 2: return Dart(d.index-1);break;
 		case 1: return Dart(d.index-1);break;
+		case 2: return Dart(d.index-1);break;
+		case 3: return Dart(d.index-1);break;
 		}
 		return Dart(d.index+3);
 	}
