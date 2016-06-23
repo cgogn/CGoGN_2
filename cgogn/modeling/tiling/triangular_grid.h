@@ -34,12 +34,12 @@ namespace modeling
 {
 
 template <typename MAP>
-class TriangularGrid : public Tiling<MAP>
+class TriangularTiling : public Tiling<MAP>
 {
+protected:
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
-protected:
 	//@{
 	//! Create a 2D grid
 	/*! @param[in] x nb of squares in x
@@ -111,17 +111,101 @@ protected:
 
 		this->dart_ = this->vertex_table_[0].dart;
 	}
+
+	//@{
+	//! Create a subdivided 2D cylinder
+	/*! @param[in] n nb of squares around circumference
+	 *  @param[in] z nb of squares in height
+	 */
+	void cylinder(uint32 n, uint32 z)
+	{
+		this->nx_ = n;
+		this->ny_ = z;
+		this->nz_ = -1;
+
+		this->grid(n,z);
+
+		using MapBuilder = typename MAP::Builder;
+		MapBuilder mbuild(this->map_);
+
+		// just finish to sew
+		const uint32 nb_x = (n+1);
+		for(uint32 i = 0; i < z; ++i)
+		{
+			const int32 pos = i*nb_x;
+			Dart d = this->vertex_table_[pos].dart;
+			d = this->map_.phi_1(d);
+			Dart e = this->vertex_table_[pos + z].dart;
+			mbuild.phi2_sew(d, e);
+			this->vertex_table_[pos + z] = Vertex();
+		}
+
+		//suppress the last n vertex (in y direction) from the vertex_table_
+		this->vertex_table_.erase(
+					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
+									[&](Vertex v) -> bool { return !v.is_valid(); }),
+								this->vertex_table_.end());
+
+		this->vertex_table_.shrink_to_fit();
+	}
+
+	//! Create a subdivided 2D tore
+	/*! @param[in] n nb of squares around big circumference
+	 *  @param[in] m nb of squares around small circumference
+	 */
+	void tore(uint32 n, uint32 m)
+	{
+		this->nx_ = n;
+		this->ny_ = m;
+		this->nz_ = -1;
+
+		this->cylinder(n,m);
+
+		using MapBuilder = typename MAP::Builder;
+		MapBuilder mbuild(this->map_);
+
+		// just finish to sew
+		const uint32 nb_y = (m-1)*n;
+		for(uint32 i = 0; i < n; ++i)
+		{
+			Dart d = this->vertex_table_[i].dart;
+			Dart e = this->vertex_table_[i+nb_y].dart;
+			e = this->map_.phi_1(this->map_.phi2(this->map_.phi1(e)));
+			mbuild.phi2_sew(d, e);
+			this->vertex_table_[i+nb_y+n] = Vertex();
+		}
+
+		// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
+		this->vertex_table_.erase(
+					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
+									[&](Vertex v) -> bool { return !v.is_valid(); }),
+								this->vertex_table_.end());
+
+		this->vertex_table_.shrink_to_fit();
+	}
 	//@}
 
-	TriangularGrid(MAP& map):
+	TriangularTiling(MAP& map):
 		Tiling<MAP>(map)
+	{}
+};
+
+
+template <typename MAP>
+class TriangularGrid : public TriangularTiling<MAP>
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	TriangularGrid(MAP& map):
+		TriangularTiling<MAP>(map)
 	{}
 
 public:
 	TriangularGrid(MAP& map, uint32 x, uint32 y):
-		Tiling<MAP>(map, x, y, -1)
+		TriangularTiling<MAP>(map)
 	{
-		grid(x,y);
+		this->grid(x,y);
 
 		//close the hole
 		using MapBuilder = typename MAP::Builder;
@@ -129,7 +213,7 @@ public:
 		Face f = mbuild.close_hole(this->dart_) ;
 
 		//and mark it as boundary
-		this->map_.boundary_mark(f);
+		mbuild.boundary_mark(f);
 	}
 
 	/*! @name Embedding Operators

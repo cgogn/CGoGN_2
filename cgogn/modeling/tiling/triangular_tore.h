@@ -36,60 +36,23 @@ namespace modeling
 /*! \brief The class of regular tore square tiling
  */
 template <typename MAP>
-class TriangularTore : public TriangularCylinder<MAP>
+class TriangularTore : public TriangularTiling<MAP>
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
 	/*! @name Topological Operators
 	 *************************************************************************/
-	//@{
 protected:
-	//! Create a subdivided 2D tore
-	/*! @param[in] n nb of squares around big circumference
-	 *  @param[in] m nb of squares around small circumference
-	 */
-	void tore(uint32 n, uint32 m)
-	{
-		this->nx_ = n;
-		this->ny_ = m;
-		this->nz_ = -1;
-
-		this->cylinder(n,m);
-
-		using MapBuilder = typename MAP::Builder;
-		MapBuilder mbuild(this->map_);
-
-		// just finish to sew
-		const uint32 nb_y = (m-1)*n;
-		for(uint32 i = 0; i < n; ++i)
-		{
-			Dart d = this->vertex_table_[i].dart;
-			Dart e = this->vertex_table_[i+nb_y].dart;
-			e = this->map_.phi_1(this->map_.phi2(this->map_.phi1(e)));
-			mbuild.phi2_sew(d, e);
-			this->vertex_table_[i+nb_y+n] = Vertex();
-		}
-
-		// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
-		this->vertex_table_.erase(
-					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
-									[&](Vertex v) -> bool { return !v.is_valid(); }),
-								this->vertex_table_.end());
-
-		this->vertex_table_.shrink_to_fit();
-	}
-	//@}
-
 	TriangularTore(MAP& map):
-		TriangularCylinder<MAP>(map)
+		TriangularTiling<MAP>(map)
 	{}
 
 public:
 	TriangularTore(MAP& map, uint32 n, uint32 m):
-		TriangularCylinder<MAP>(map)
+		TriangularTiling<MAP>(map)
 	{
-		tore(n,m);
+		this->tore(n,m);
 	}
 
 	/*! @name Embedding Operators
