@@ -722,12 +722,18 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi1(it);
-		} while (it != d);
+		uint32 first = d.index & 0xfffffffc;
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first));
+
+//		Dart it = d;
+//		do
+//		{
+//			f(it);
+//			it = phi1(it);
+//		} while (it != d);
 	}
 
 	template <typename FUNC>

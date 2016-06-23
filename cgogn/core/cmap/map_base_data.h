@@ -65,6 +65,8 @@ protected:
 	/// vector of Map instances
 	static std::vector<MapGen*>* instances_;
 	static bool init_CA_factory;
+	/// table of tetra phi2 indices
+	static std::array<int,12> tetra_phi2;
 
 public:
 

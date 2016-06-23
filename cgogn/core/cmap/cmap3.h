@@ -46,6 +46,8 @@ public:
 	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap3_T<MAP_TRAITS, MAP_TYPE>;
 
+	using Builder = CMap3Builder_T<MapTraits>;
+
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
@@ -1632,5 +1634,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CM
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn
+
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP3_H_

@@ -116,11 +116,6 @@ public:
 
 	using Self = VolumeImport<MAP_TRAITS>;
 	using Inherit = MeshImportGen;
-	using Map = CMap3<MAP_TRAITS>;
-	using Vertex = typename Map::Vertex;
-	using Volume = typename Map::Volume;
-	using Face = typename Map::Face;
-	using Face2 = typename Map::Face2;
 
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
@@ -130,7 +125,6 @@ public:
 
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
-	using MapBuilder = cgogn::CMap3Builder_T<typename Map::MapTraits>;
 
 	virtual ~VolumeImport() override
 	{}
@@ -205,8 +199,17 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeImport);
 
+	template <typename Map>
 	bool create_map(Map& map)
 	{
+		static_assert(Map::DIMENSION == 3, "must use map of dim 3 in volume import");
+
+		using Vertex = typename Map::Vertex;
+		using Volume = typename Map::Volume;
+		using Face = typename Map::Face;
+		using Face2 = typename Map::Face2;
+		using MapBuilder = typename Map::Builder;
+
 		if (this->nb_vertices_ == 0u || this->volumes_types.size() != this->nb_volumes_)
 			return false;
 
@@ -376,7 +379,7 @@ public:
 
 					if (degD == degGD) // normal case : the two opposite faces have the same degree
 					{
-						mbuild.sew_volumes(Volume(d), Volume(good_dart));
+						mbuild.sew_volumes(d, good_dart);
 						m.unmark_orbit(Face(d));
 					}
 					else
@@ -410,15 +413,15 @@ public:
 								} while (q1_it != d);
 							}
 
-							mbuild.sew_volumes(Volume(d), Volume(map.phi1(map.phi1(d_quad))));
+							mbuild.sew_volumes(d, map.phi1(map.phi1(d_quad)));
 							m.unmark_orbit(Face(d));
 
-							mbuild.sew_volumes(Volume(good_dart), Volume(map.phi2(map.phi1(map.phi1(d_quad)))));
+							mbuild.sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
 							m.unmark_orbit(Face(good_dart));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(Volume(another_good_dart), Volume(map.phi2(d_quad)));
+								mbuild.sew_volumes(another_good_dart, map.phi2(d_quad));
 								m.unmark_orbit(Face(another_good_dart));
 							}
 							else
@@ -454,15 +457,15 @@ public:
 								} while (q1_it != good_dart);
 							}
 
-							mbuild.sew_volumes(Volume(d_quad), Volume(map.phi_1(good_dart)));
+							mbuild.sew_volumes(d_quad, map.phi_1(good_dart));
 							m.unmark_orbit(Face(good_dart));
 
-							mbuild.sew_volumes(Volume(d), Volume(map.phi2(map.phi_1(d_quad))));
+							mbuild.sew_volumes(d, map.phi2(map.phi_1(d_quad)));
 							m.unmark_orbit(Face(d));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(Volume(another_good_dart), Volume(map.phi1(map.phi2(map.phi1(d_quad)))));
+								mbuild.sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
 								m.unmark_orbit(Face(another_good_dart));
 							}
 							else

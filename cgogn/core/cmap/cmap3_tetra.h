@@ -29,7 +29,7 @@
 namespace cgogn
 {
 
-// forward declaration of CMap2Builder_T
+// forward declaration of CMap3TetraBuilder_T
 template <typename MAP_TRAITS> class CMap3TetraBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
@@ -200,12 +200,12 @@ protected:
 	}
 
 	/**
-	 * \brief Remove the phi2 link between the current dart and its linked dart
+	 * \brief Remove the phi3 link between the current dart and its linked dart
 	 * @param d the dart to unlink
 	 * - Before: d->e and e->d
 	 * - After:  d->d and e->e
 	 */
-	inline void phi2_unsew(Dart d)
+	inline void phi3_unsew(Dart d)
 	{
 		Dart e = phi3(d);
 		(*phi3_)[d.index] = d;
@@ -248,10 +248,20 @@ public:
 		return Dart(d.index+2);
 	}
 
-	/**
-	 * \brief phi2
+	/*!
+	 * \brief phi1
 	 * @param d
-	 * @return phi2(d)
+	 * @return phi1(d)
+	 */
+	inline Dart phi2(Dart d) const
+	{
+		return Dart(d.index + MapGen::tetra_phi2[d.index%12]);
+	}
+
+	/**
+	 * \brief phi3
+	 * @param d
+	 * @return phi3(d)
 	 */
 	inline Dart phi3(Dart d) const
 	{
@@ -316,12 +326,24 @@ protected:
 		Dart d = add_tetra_topo_fp();
 		Dart e = add_tetra_topo_fp();
 
-		foreach_dart_of_PHI1(d, [&] (Dart it)
-		{
-			this->set_boundary(e, true);
-			phi2_sew(it, e);
-			e = phi_1(e);
-		});
+		uint32 di = d.index;
+		uint32 ei = e.index;
+
+		phi3_sew(Dart(di),Dart(ei + 0)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 2)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 1)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 3)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 5)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 4)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 9)); ++di;
+		phi3_sew(Dart(di),Dart(ei +11)); ++di;
+		phi3_sew(Dart(di),Dart(ei +10)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 6)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 8)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 7)); ++di;
+
+		for (uint32 k=0; k<12; ++k)
+			this->set_boundary(Dart(ei++), true);
 
 		return d;
 	}
@@ -376,48 +398,6 @@ public:
 		return vol;
 	}
 
-protected:
-
-	/**
-	 * @brief Close the topological hole that contains Dart d (a fixed point for PHI2) with a fan
-	 * @param d : a dart of the hole
-	 * @return a dart of one of the faces that closes the hole
-	 */
-	inline Dart close_hole_topo(Dart d)
-	{
-		cgogn_message_assert(phi3(d) == d, "CMap3Tetra: close hole called on a dart that is not a phi2 fix point");
-
-		Dart first = add_tri_topo_fp();	// First edge of the face that will fill the hole
-		phi2_sew(d, first);				// 2-sew the new edge to the hole
-
-		Dart prec_tri = first;
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
-		do
-		{
-			do
-			{
-				d_phi1 = phi1(d_next); // Search and put in d_next
-				d_next = phi2(d_phi1); // the next dart of the hole
-			} while (d_next != d_phi1 && d_phi1 != d);
-
-			if (d_phi1 != d)
-			{
-				Dart tri = add_tri_topo_fp();
-				phi2_sew(d_next, tri);
-				phi2_sew(phi_1(prec_tri), phi1(tri));
-				prec_tri = tri;
-			}
-		} while (d_phi1 != d);
-
-		phi2_sew(phi_1(prec_tri), phi1(first));
-
-		return first;
-	}
-
-	/*******************************************************************************
-	 * Connectivity information
-	 *******************************************************************************/
 
 public:
 
@@ -476,7 +456,12 @@ public:
 
 	inline uint32 codegree(Face f) const
 	{
-		return codegree(Face2(f.dart));
+		return 3;
+	}
+
+	inline bool has_codegree(Face, uint32 codegree) const
+	{
+		return codegree == 3;
 	}
 
 	inline uint32 degree(Face f) const
@@ -520,12 +505,10 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi1(it);
-		} while (it != d);
+		uint32 first = (d.index/3)*3;
+		f(Dart(first));
+		f(Dart(first+1));
+		f(Dart(first+2));
 	}
 
 	template <typename FUNC>
@@ -538,43 +521,74 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
 	{
+//		uint32 first = (d.index/12)*12;
+//		switch(d.index - first)
+//		{
+//			case 0:
+//			case 4:
+//			case 9:
+//				f(Dart(first+0));
+//				f(Dart(first+4));
+//				f(Dart(first+9));
+//				break;
+//			case 1:
+//			case 3:
+//			case 7:
+//				f(Dart(first+1));
+//				f(Dart(first+3));
+//				f(Dart(first+7));
+//				break;
+//			case 2:
+//			case 6:
+//			case 10:
+//				f(Dart(first+2));
+//				f(Dart(first+6));
+//				f(Dart(first+10));
+//				break;
+//			case 5:
+//			case 8:
+//			case 11:
+//				f(Dart(first+5));
+//				f(Dart(first+8));
+//				f(Dart(first+11));
+//				break;
+//			default:
+//				break;
+//		}
+
 		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi2(phi_1(it));
-		} while (it != d);
+		f(it);
+		it = phi2(phi_1(it));
+		f(it);
+		it = phi2(phi_1(it));
+		f(it);
+
+
+		//		Dart it = d;
+		//		do
+		//		{
+		//			f(it);
+		//			it = phi2(phi_1(it));
+		//		} while (it != d);
+
 	}
 
 	template <typename FUNC>
 	void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this);
-
-		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
-		visited_faces->push_back(d); // Start with the face of d
-
-		// For every face added to the list
-		for(uint32 i = 0; i < visited_faces->size(); ++i)
-		{
-			Dart e = (*visited_faces)[i];
-			if (!marker.is_marked(e))	// Face has not been visited yet
-			{
-				// mark visited darts (current face)
-				// and add non visited adjacent faces to the list of face
-				Dart it = e;
-				do
-				{
-					f(it); // apply the function to the darts of the face
-					marker.mark(it);				// Mark
-					Dart adj = phi2(it);			// Get adjacent face
-					if (!marker.is_marked(adj))
-						visited_faces->push_back(adj);	// Add it
-					it = phi1(it);
-				} while (it != e);
-			}
-		}
-		cgogn::dart_buffers()->release_buffer(visited_faces);
+		uint32 first = (d.index/12)*12;
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
 	}
 
 	// foreach with phi3
@@ -625,7 +639,7 @@ protected:
 		do
 		{
 			f(it);
-			it = phi3(this->phi2(it));
+			it = phi3(phi2(it));
 		} while (it != d);
 	}
 
@@ -644,32 +658,82 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_face2 = cgogn::dart_buffers()->buffer();
-		visited_face2->push_back(d); // Start with the face of d
+		std::vector<Dart>* visited_vols = cgogn::dart_buffers()->buffer();
+		visited_vols->push_back(d); // Start with the face of d
 
-		// For every face added to the list
-		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		// For every vol added to the list
+		for(uint32 i = 0; i < visited_vols->size(); ++i)
 		{
-			Dart e = (*visited_face2)[i];
-			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			uint32 first = (((*visited_vols)[i]).index/12)*12;
+			Dart dv = Dart(first++);
+
+			if (!marker.is_marked(dv)) // is volum not already marked
 			{
-				// mark visited darts (current face2)
-				// and add non visited phi2-adjacent face2 to the list of face2
-				Dart it = e;
-				do
-				{
-					f(it); // apply the function to the darts of the face2
-					marker.mark(it);				// Mark
-					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
-					if (!marker.is_marked(adj2))
-						visited_face2->push_back(adj2);	// Add it
-					it = this->phi1(it);
-				} while (it != e);
-				// add phi3-adjacent face2 to the list
-				visited_face2->push_back(phi3(it));
+				// for dart 0
+				f(dv);
+				marker.mark(dv);
+				Dart ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 1
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				// for dart 2
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+
+				// for dart 3 (second face)
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 4
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				// for dart 5
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+
+				// for dart 6 (third face)
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 7
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				// for dart 8
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+
+				// for dart 9 (fourth face)
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 10
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
+				// for dart 11
+				dv = Dart(first++);
+				f(dv);
+				marker.mark(dv);
 			}
 		}
-		cgogn::dart_buffers()->release_buffer(visited_face2);
+		cgogn::dart_buffers()->release_buffer(visited_vols);
 	}
 
 
@@ -684,7 +748,7 @@ protected:
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
 					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
-					  "Orbit not supported in a CMap3");
+					  "Orbit not supported in a CMap3Tetra");
 
 		switch (ORBIT)
 		{
@@ -697,7 +761,7 @@ protected:
 			case Orbit::PHI1_PHI3:foreach_dart_of_PHI1_PHI3(c.dart, f); break;
 			case Orbit::PHI21_PHI31:foreach_dart_of_PHI21_PHI31(c.dart, f); break;
 			case Orbit::PHI1_PHI2_PHI3:foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Tetra"); break;
 		}
 	}
 
@@ -738,36 +802,19 @@ protected:
 	template <typename FUNC>
 	void foreach_dart_of_PHI1_PHI2_until(Dart d, const FUNC& f) const
 	{
-		DartMarkerStore marker(*this);
-
-		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
-		visited_faces->push_back(d); // Start with the face of d
-
-		// For every face added to the list
-		for(uint32 i = 0; i < visited_faces->size(); ++i)
-		{
-			Dart e = (*visited_faces)[i];
-			if (!marker.is_marked(e))	// Face has not been visited yet
-			{
-				// mark visited darts (current face)
-				// and add non visited adjacent faces to the list of face
-				Dart it = e;
-				do
-				{
-					if (!f(it)) // apply the function to the darts of the face
-					{
-						cgogn::dart_buffers()->release_buffer(visited_faces);
-						return;
-					}
-					marker.mark(it);				// Mark
-					Dart adj = phi2(it);			// Get adjacent face
-					if (!marker.is_marked(adj))
-						visited_faces->push_back(adj);	// Add it
-					it = phi1(it);
-				} while (it != e);
-			}
-		}
-		cgogn::dart_buffers()->release_buffer(visited_faces);
+		uint32 first = (d.index/12)*12;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first))) return;
 	}
 
 
@@ -846,36 +893,82 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_face2 = cgogn::dart_buffers()->buffer();
-		visited_face2->push_back(d); // Start with the face of d
+		std::vector<Dart>* visited_vols = cgogn::dart_buffers()->buffer();
+		visited_vols->push_back(d); // Start with the face of d
 
-		// For every face added to the list
-		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		// For every vol added to the list
+		for(uint32 i = 0; i < visited_vols->size(); ++i)
 		{
-			Dart e = (*visited_face2)[i];
-			if (!marker.is_marked(e))	// Face2 has not been visited yet
+			uint32 first = (((*visited_vols)[i]).index/12)*12;
+			Dart dv = Dart(first++);
+
+			if (!marker.is_marked(dv)) // is volum not already marked
 			{
-				// mark visited darts (current face2)
-				// and add non visited phi2-adjacent face2 to the list of face2
-				Dart it = e;
-				do
-				{
-					if (!f(it)) // apply the function to the darts of the face2
-					{
-						cgogn::dart_buffers()->release_buffer(visited_face2);
-						return;
-					}
-					marker.mark(it);				// Mark
-					Dart adj2 = this->phi2(it);		// Get phi2-adjacent face2
-					if (!marker.is_marked(adj2))
-						visited_face2->push_back(adj2);	// Add it
-					it = this->phi1(it);
-				} while (it != e);
-				// add phi3-adjacent face2 to the list
-				visited_face2->push_back(phi3(it));
+				// for dart 0
+				if (!f(dv)) break;
+				marker.mark(dv);
+				Dart ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 1
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				// for dart 2
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+
+				// for dart 3 (second face)
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 4
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				// for dart 5
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+
+				// for dart 6 (third face)
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 7
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				// for dart 8
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+
+				// for dart 9 (fourth face)
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				ev = phi3(dv);
+				if (!marker.is_marked(ev))
+					visited_vols->push_back(ev);
+				// for dart 10
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
+				// for dart 11
+				dv = Dart(first++);
+				if (!f(dv)) break;
+				marker.mark(dv);
 			}
 		}
-		cgogn::dart_buffers()->release_buffer(visited_face2);
+		cgogn::dart_buffers()->release_buffer(visited_vols);
 	}
 
 
@@ -974,7 +1067,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart d)
 		{
 			func(Vertex2(d));
@@ -1002,45 +1095,35 @@ public:
 	inline void foreach_incident_vertex2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
-		{
-			if (!marker.is_marked(d))
-			{
-				marker.mark_orbit(Vertex2(d));
-				func(Vertex2(d));
-			}
-		});
+		uint32 first = (w.dart.index/12)*12;
+		func(Vertex2(Dart(first)));
+		func(Vertex2(Dart(first+1)));
+		func(Vertex2(Dart(first+2)));
+		func(Vertex2(Dart(first+5)));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
-		{
-			if (!marker.is_marked(d))
-			{
-				marker.mark_orbit(Edge2(d));
-				func(Edge2(d));
-			}
-		});
+		uint32 first = (w.dart.index/12)*12;
+		func(Edge2(Dart(first)));
+		func(Edge2(Dart(first+1)));
+		func(Edge2(Dart(first+2)));
+		func(Edge2(Dart(first+4)));
+		func(Edge2(Dart(first+7)));
+		func(Edge2(Dart(first+10)));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
-		{
-			if (!marker.is_marked(d))
-			{
-				marker.mark_orbit(Face2(d));
-				func(Face2(d));
-			}
-		});
+		uint32 first = (w.dart.index/12)*12;
+		func(Face2(Dart(first)));
+		func(Face2(Dart(first+3)));
+		func(Face2(Dart(first+6)));
+		func(Face2(Dart(first+9)));
 	}
 
 	/*******************************************************************************
@@ -1063,16 +1146,13 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
-			if (!this->is_boundary(vd))
+			Dart vd1 = phi1(vd);
+			foreach_dart_of_orbit(Face2(vd), [&f, vd, vd1] (Dart fd)
 			{
-				Dart vd1 = phi1(vd);
-				foreach_dart_of_orbit(Face2(vd), [&f, vd, vd1] (Dart fd)
-				{
-					// skip Vertex v itself and its first successor around current face
-					if (fd != vd && fd != vd1)
-						f(Vertex2(fd));
-				});
-			}
+				// skip Vertex v itself and its first successor around current face
+				if (fd != vd && fd != vd1)
+					f(Vertex2(fd));
+			});
 		});
 	}
 
@@ -1263,15 +1343,22 @@ public:
 	inline void foreach_incident_face(Volume v, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
-		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(v, [&] (Dart d)
+
+		foreach_incident_face2(v, [&func] (Face2 f)
 		{
-			if (!marker.is_marked(d))
-			{
-				marker.mark_orbit(Face2(d));
-				func(Face(d));
-			}
+			func(Face(f.dart));
 		});
+
+
+//		DartMarkerStore marker(*this);
+//		foreach_dart_of_orbit(v, [&] (Dart d)
+//		{
+//			if (!marker.is_marked(d))
+//			{
+//				marker.mark_orbit(Face2(d));
+//				func(Face(d));
+//			}
+//		});
 	}
 
 
@@ -1591,6 +1678,6 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits
 
 } // namespace cgogn
 
-#include <cgogn/core/cmap/cmap2_tri_builder.h>
+#include <cgogn/core/cmap/cmap3_tetra_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP3_TETRA_H_

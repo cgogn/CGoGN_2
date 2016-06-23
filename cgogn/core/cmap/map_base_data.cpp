@@ -32,6 +32,8 @@ namespace cgogn
 std::vector<MapGen*>* MapGen::instances_ = nullptr;
 bool MapGen::init_CA_factory = true;
 
+std::array<int,12> MapGen::tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7};
+
 MapGen::MapGen()
 {
 	if (instances_ == nullptr)
