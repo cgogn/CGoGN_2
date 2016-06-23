@@ -170,13 +170,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_E:
-		{
-			const cgogn::Orbit orb = Map2::Vertex::ORBIT;
-			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{orb,"position"}},false));
-//			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{cgogn::PHI21,"position"}},false));
-//			WARNING following line do not link with clang
-//			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.off",{{Map2::Vertex::ORBIT,"position"}},false));
-		}
+			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.vtp",{cgogn::Orbit(Map2::Vertex::ORBIT),"position"}));
 			break;
 		default:
 			break;

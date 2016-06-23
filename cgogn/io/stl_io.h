@@ -78,7 +78,7 @@ private:
 		std::ifstream fp(filename, std::ios::in);
 		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
 		{
-			return std::lexicographical_compare(&v1[0], &v1[3], &v2[0], &v2[3]);
+			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
 		};
 		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
 
@@ -143,7 +143,7 @@ private:
 
 		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
 		{
-			return std::lexicographical_compare(&v1[0], &v1[3], &v2[0], &v2[3]);
+			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
 		};
 		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
 

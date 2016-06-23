@@ -74,21 +74,18 @@ private:
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
 		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
 
+		this->position_attribute_ = ver_cac.get_chunk_array(options.position_attribute_.second);
+		if (!this->position_attribute())
+			return;
+
 		for (const auto& pair : options.attributes_to_export_)
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
 				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
-				if (pair.second == "position")
-					this->position_attribute_ = ver_cag;
-				else
-				{
-					if (ver_cag)
-						this->vertex_attributes_.push_back(ver_cag);
-				}
-			}
-			else
-			{
+				if (ver_cag)
+					this->vertex_attributes_.push_back(ver_cag);
+			} else {
 				ChunkArrayGen* face_cag = face_cac.get_chunk_array(pair.second);
 				if (face_cag)
 					face_attributes_.push_back(face_cag);

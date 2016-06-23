@@ -28,8 +28,8 @@
 #include <sstream>
 #include <streambuf>
 
-#include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/io/dll.h>
@@ -37,22 +37,53 @@
 namespace cgogn
 {
 
+// stream insertion / extraction for Attribute_T
+template <typename DATA_TRAITS, typename T>
+inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, T>& att)
+{
+	for(auto it = att.begin(), end = att.end() ; it != end;)
+	{
+		o << (*it);
+		++it;
+		if (it != end)
+			o << " ";
+	}
+	return o;
+}
+
+template <typename DATA_TRAITS, typename T>
+inline std::istream& operator>>(std::istream& in, Attribute_T<DATA_TRAITS, T>& att)
+{
+	for (auto& it : att)
+	{
+		if (in.good())
+			in >> it;
+		else
+			it = std::move(T());
+	}
+	return in;
+}
+
 namespace io
 {
 
 struct ExportOptions
 {
-	inline ExportOptions(const std::string& filename, std::vector<std::pair<Orbit, std::string>> const& attributes, bool binary, bool compress = false) :
-		filename_(filename)
-	  ,attributes_to_export_(attributes)
-	  ,binary_(binary)
-	  ,compress_(compress)
+	inline ExportOptions(const std::string& filename,std::pair<Orbit, std::string> position_attribute, std::vector<std::pair<Orbit, std::string>> const& attributes = {}, bool binary = true, bool compress = false, bool overwrite = true) :
+		filename_(filename),
+		position_attribute_(position_attribute),
+		attributes_to_export_(attributes),
+		binary_(binary),
+		compress_(compress),
+		overwrite_(overwrite)
 	{}
 
 	std::string filename_;
+	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	bool binary_;
 	bool compress_;
+	bool overwrite_;
 
 };
 
@@ -99,7 +130,7 @@ enum VolumeType
 };
 
 CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary);
+CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary, bool overwrite);
 CGOGN_IO_API FileType						file_type(const std::string& filename);
 CGOGN_IO_API DataType						data_type(const std::string& type_name);
 

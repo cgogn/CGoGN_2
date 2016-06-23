@@ -142,16 +142,12 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 	if (!compress)
 	{
 		header.push_back(static_cast<uint32>(size));
-		char* header_ptr = reinterpret_cast<char*>(&header[0]);
+		data.resize(sizeof(uint32) + size);
 
-		data.reserve(sizeof(header) + size);
-
-		for (std::size_t i = 0u ; i < sizeof(uint32) ; ++i)
-			data.push_back(header_ptr[i]);
-		for (std::size_t i = 0u; i < size ; ++i)
-			data.push_back(data_str[i]);
+		std::memcpy(&data[0], reinterpret_cast<const char*>(&header[0]), sizeof(uint32)* header.size());
+		std::memcpy(&data[sizeof(uint32)], data_str, size);
 	} else {
-		const std::size_t uncompressed_chunk_size = std::min(size, std::size_t(262144));
+		const std::size_t uncompressed_chunk_size = std::min(size, std::size_t(1048576));
 		const std::vector<std::vector<unsigned char>>& compressed_blocks = zlib_compress(reinterpret_cast<const unsigned char*>(data_str), size, uncompressed_chunk_size);
 		std::size_t compressed_size{0ul};
 		const std::size_t last_block_size = (compressed_blocks.size() == 1ul) ? uncompressed_chunk_size : size % uncompressed_chunk_size;

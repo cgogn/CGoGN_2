@@ -499,6 +499,8 @@ public:
 			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
 		}
 
+		map.remove_attribute(darts_per_vertex);
+
 		return true;
 	}
 
