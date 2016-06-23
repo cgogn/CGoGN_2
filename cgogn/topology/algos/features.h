@@ -243,10 +243,10 @@ public:
 		scalar_field_B.critical_vertex_analysis();
 		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
 
-		// Set the criteria to stop the features filtering to 1/2 of the maximal diameter
-		Scalar target_distance = max_distance / Scalar(2);
-		// Set the criteria to remove too near features to 1/3 of the target distance
-		Scalar filter_distance = target_distance / Scalar(3);
+		// Set the criteria to stop the features filtering to 1/10 of the maximal diameter
+		Scalar target_distance = max_distance / Scalar(120);
+		// Set the criteria to remove too near features to 1/2 of the target distance
+		Scalar filter_distance = target_distance / Scalar(2);
 
 		// Build a scalar field from the initial set of features = {A, B}
 		// In this scalar field the selected features are sources of the distance field,
