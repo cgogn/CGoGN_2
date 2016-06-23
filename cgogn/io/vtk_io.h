@@ -1237,6 +1237,7 @@ protected:
 				if (to_lower(std::string(cell_data->Attribute("Name"))) == "connectivity" && (cell_data != cell_nodes.back()))
 				{
 					std::swap(cell_data, cell_nodes.back());
+					break;
 				}
 			}
 

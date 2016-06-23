@@ -128,6 +128,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
+
+target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_LITTLE_ENDIAN=1234")
+target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_BIG_ENDIAN=4321")
+if(CGOGN_TEST_BIG_ENDIAN)
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_ENDIANNESS=CGOGN_BIG_ENDIAN")
+else()
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
+endif()
+
 install(FILES "dll.h" DESTINATION "include/cgogn/core/")
 install(DIRECTORY basic cmap container utils
 	DESTINATION "include/cgogn/core/"
