@@ -151,6 +151,18 @@ public:
 		} while (it1 != begin);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	inline void close_hole_topo(Dart d)
 	{
 		cgogn_message_assert(map_.phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
@@ -230,10 +242,7 @@ public:
 			if (map_.phi3(d) == d)
 			{
 				close_hole_topo(d);
-				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
-				{
-					map_.set_boundary(db, true);
-				});
+				map_.boundary_mark(Volume(map_.phi3(d)));
 
 				const Volume new_volume(map_.phi3(d));
 

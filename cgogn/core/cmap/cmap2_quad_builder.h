@@ -95,6 +95,18 @@ public:
 		return map_.add_quad_topo_fp();
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	inline Dart close_hole_topo(Dart d)
 	{
 		return map_.close_hole_topo(d);
@@ -166,11 +178,8 @@ public:
 				Dart df = f.dart;
 				do
 				{
-					map_.foreach_dart_of_orbit(Face(df), [&] (Dart e)
-					{
-						map_.set_boundary(e, true);
-					});
-					 df = map_.template phi<121>(df);
+					map_.boundary_mark(Face(df));
+					df = map_.template phi<121>(df);
 				} while (df != f.dart);
 				++nb_holes;
 			}

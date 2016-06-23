@@ -659,6 +659,7 @@ public:
 		return result;
 	}
 
+protected:
 	template <Orbit ORBIT>
 	void boundary_mark(Cell<ORBIT> c)
 	{

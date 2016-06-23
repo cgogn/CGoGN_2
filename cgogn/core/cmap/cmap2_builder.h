@@ -96,6 +96,18 @@ public:
 		return map_.close_hole_topo(d);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	/*!
 	 * \brief Close a hole with a new face and update the embedding of incident cells.
 	 * \param d : a vertex of the hole
@@ -111,13 +123,13 @@ public:
 	{
 		const Face f(map_.close_hole_topo(d));
 
-//		if (map_.template is_embedded<CDart>())
-//		{
-//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-//			{
-//				map_.new_orbit_embedding(CDart(it));
-//			});
-//		}
+		//		if (map_.template is_embedded<CDart>())
+		//		{
+		//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+		//			{
+		//				map_.new_orbit_embedding(CDart(it));
+		//			});
+		//		}
 
 		if (map_.template is_embedded<Vertex>())
 		{
@@ -135,8 +147,8 @@ public:
 			});
 		}
 
-//		if (map_.template is_embedded<Face>())
-//			map_.new_orbit_embedding(f);
+		//		if (map_.template is_embedded<Face>())
+		//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
@@ -175,10 +187,7 @@ public:
 			if (map_.phi2(d) == d)
 			{
 				Face f = close_hole(d);
-				map_.foreach_dart_of_orbit(f, [&] (Dart e)
-				{
-					map_.set_boundary(e, true);
-				});
+				map_.boundary_mark(f);
 				++nb_holes;
 			}
 		}
