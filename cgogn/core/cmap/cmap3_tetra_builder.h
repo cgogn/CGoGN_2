@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
 
 #include <cgogn/core/cmap/cmap3_tetra.h>
 
@@ -281,7 +281,7 @@ private:
 	CMap3Tetra& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_TETRA_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap3TetraBuilder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_TETRA_BUILDER_CPP_))
 using CMap3TetraBuilder = cgogn::CMap3TetraBuilder_T<DefaultMapTraits>;
@@ -289,5 +289,5 @@ using CMap3TetraBuilder = cgogn::CMap3TetraBuilder_T<DefaultMapTraits>;
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
 

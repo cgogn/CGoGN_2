@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_MAP_MAP2_QUAD_CPP_
+#define CGOGN_CORE_CMAP_CMAP2_QUAD_CPP_
 
 #include <cgogn/core/cmap/cmap2_quad.h>
 

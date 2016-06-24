@@ -1185,7 +1185,7 @@ struct CMap2QuadType
 template <typename MAP_TRAITS>
 using CMap2Quad = CMap2Quad_T<MAP_TRAITS, CMap2QuadType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_QUAD_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_QUAD_CPP_))
 extern template class CGOGN_CORE_API CMap2Quad_T<DefaultMapTraits, CMap2QuadType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Quad<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Quad<DefaultMapTraits>>;

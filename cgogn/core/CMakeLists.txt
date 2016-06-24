@@ -67,6 +67,8 @@ set(SOURCE_FILES
 	cmap/cmap2_tri_builder.cpp
 	cmap/cmap2_quad.cpp
 	cmap/cmap2_quad_builder.cpp
+	cmap/cmap3_tetra.cpp
+	cmap/cmap3_tetra_builder.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp

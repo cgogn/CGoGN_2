@@ -1483,7 +1483,7 @@ struct CMap2TriType
 template <typename MAP_TRAITS>
 using CMap2Tri = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_TRI_CPP_))
 extern template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;

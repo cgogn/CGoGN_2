@@ -1618,7 +1618,7 @@ struct CMap3Type
 template <typename MAP_TRAITS>
 using CMap3 = CMap3_T<MAP_TRAITS, CMap3Type<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_CPP_))
 extern template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;

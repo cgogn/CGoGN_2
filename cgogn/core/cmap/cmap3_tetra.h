@@ -1653,7 +1653,7 @@ struct CMap3TetraType
 template <typename MAP_TRAITS>
 using CMap3Tetra = CMap3Tetra_T<MAP_TRAITS, CMap3TetraType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_TETRA_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_TETRA_CPP_))
 extern template class CGOGN_CORE_API CMap3Tetra_T<DefaultMapTraits, CMap3TetraType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap3Tetra<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra<DefaultMapTraits>>;
