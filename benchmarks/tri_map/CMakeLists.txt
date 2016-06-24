@@ -4,9 +4,11 @@ project(bench_tri_map
 	LANGUAGES CXX
 )
 
-set(CGOGN_TEST_MESHES_PATH "${CMAKE_SOURCE_DIR}/data/meshes/")
-add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
+find_package(cgogn_core REQUIRED)
+find_package(cgogn_io REQUIRED)
+find_package(cgogn_geometry REQUIRED)
+find_package(benchmark REQUIRED)
 
 add_executable(${PROJECT_NAME} bench_tri_map.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/google-benchmark/include)
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_io cgogn_geometry benchmark)
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${benchmark_LIBRARIES})

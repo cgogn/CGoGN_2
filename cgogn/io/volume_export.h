@@ -90,6 +90,10 @@ public:
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
 		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
 
+		this->position_attribute_ = ver_cac.get_chunk_array(options.position_attribute_.second);
+		if (!this->position_attribute())
+			return;
+
 		vertices_of_volumes_ = map.template add_attribute<std::vector<int32>, Volume::ORBIT>("vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
@@ -97,16 +101,9 @@ public:
 			if (pair.first == Vertex::ORBIT)
 			{
 				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
-				if (pair.second == "position")
-					this->position_attribute_ = ver_cag;
-				else
-				{
-					if (ver_cag)
-						this->vertex_attributes_.push_back(ver_cag);
-				}
-			}
-			else
-			{
+				if (ver_cag)
+					this->vertex_attributes_.push_back(ver_cag);
+			} else {
 				ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
 				if (vol_cag)
 					volume_attributes_.push_back(vol_cag);

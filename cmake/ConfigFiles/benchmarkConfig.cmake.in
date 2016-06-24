@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(benchmark_LIBRARIES "benchmark")
+set(benchmark_INCLUDE_DIRS "@PACKAGE_BENCHMARK_INCLUDE_DIRS@")
+
+if(NOT TARGET benchmark)
+	include("${CMAKE_CURRENT_LIST_DIR}/benchmarkTargets.cmake")
+endif()
+
+check_required_components(benchmark)
