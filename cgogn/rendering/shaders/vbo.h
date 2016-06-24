@@ -130,7 +130,7 @@ public:
 	 * @param nb number of bytes to copy
 	 * @param src source pointer
 	 */
-	inline void copy_data(uint32 offset, uint32 nb, void* src)
+	inline void copy_data(uint32 offset, uint32 nb, const void* src)
 	{
 		buffer_.write(offset, src, nb);
 	}
@@ -150,10 +150,45 @@ public:
 };
 
 /**
+  * @brief update vbo from a std::vector of VEC
+  * @param data
+  * @param vbo vbo to update
+  */
+template <typename VEC>
+void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
+{
+	static_assert(std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<VEC>::Scalar, double>::value, "only float or double allowed for vbo");
+
+	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
+	vbo->allocate(vector.size(), vec_dim);
+	const uint32 vbo_bytes =  vector.size() * vec_dim * sizeof(float32);
+	if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value)
+	{
+		// copy
+		vbo->bind();
+		vbo->copy_data(0, vbo_bytes, vector.data());
+		vbo->release();
+	}
+	else if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float64>::value)
+	{
+		// copy (after conversion to float)
+		float32* float_buffer = new float32[vector.size() * vec_dim];
+		// transform double into float
+		float32* fit = float_buffer;
+		const float64* src = reinterpret_cast<const float64*>(vector.data());
+		for (uint32 i = 0; i < vector.size() * vec_dim; ++i)
+			*fit++ = *src++;
+		vbo->bind();
+		vbo->copy_data(0, vbo_bytes, float_buffer);
+		vbo->release();
+		delete[] float_buffer;
+	}
+}
+
+/**
  * @brief update vbo from one Attribute
  * @param attr Attribute (must contain float or vec<float>
  * @param vbo vbo to update
- * @param convert conversion lambda
  */
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO* vbo)
@@ -194,7 +229,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 			for (uint32 j = 0; j < ATTR::CHUNK_SIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo->bind();
-			vbo->copy_data(i* ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), ATTR::CHUNK_SIZE * vec_dim * sizeof(float32), float_buffer);
+			vbo->copy_data(i * vbo_blk_bytes, vbo_blk_bytes, float_buffer);
 			vbo->release();
 		}
 		delete[] float_buffer;
