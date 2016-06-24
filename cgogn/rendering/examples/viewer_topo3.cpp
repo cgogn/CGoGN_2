@@ -28,8 +28,8 @@
 #include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/core/cmap/cmap3_tetra.h>
-//#include <cgogn/core/cmap/cmap3.h>
+//#include <cgogn/core/cmap/cmap3_tetra.h>
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/map_import.h>
 #include <cgogn/geometry/algos/bounding_box.h>
 #include <cgogn/rendering/shaders/vbo.h>
@@ -44,8 +44,8 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using namespace cgogn::numerics;
-using Map3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
-//using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
+//using Map3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
+using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 

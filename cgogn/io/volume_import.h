@@ -234,6 +234,9 @@ public:
 			{
 				const Dart d = mbuild.add_pyramid_topo(3u);
 
+				// check if add ok (special maps)
+				if (d.is_nil()) break;
+
 				const std::array<Dart, 4> vertices_of_tetra = {
 					d,
 					map.phi1(d),
@@ -258,6 +261,9 @@ public:
 			else if (vol_type == VolumeType::Pyramid) //pyramidal case
 			{
 				Dart d = mbuild.add_pyramid_topo(4u);
+
+				// check if add ok (special maps)
+				if (d.is_nil()) break;
 
 				const std::array<Dart, 5> vertices_of_pyramid = {
 					d,
@@ -284,6 +290,10 @@ public:
 			else if (vol_type == VolumeType::TriangularPrism) //prism case
 			{
 				Dart d = mbuild.add_prism_topo(3u);
+
+				// check if add ok (special maps)
+				if (d.is_nil()) break;
+
 				const std::array<Dart, 6> vertices_of_prism = {
 					d,
 					map.phi1(d),
@@ -310,6 +320,10 @@ public:
 			else if (vol_type == VolumeType::Hexa) //hexahedral case
 			{
 				Dart d = mbuild.add_prism_topo(4u);
+
+				// check if add ok (special maps)
+				if (d.is_nil()) break;
+
 				const std::array<Dart, 8> vertices_of_hexa = {
 					d,
 					map.phi1(d),
