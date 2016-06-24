@@ -521,55 +521,47 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
 	{
-//		uint32 first = (d.index/12)*12;
-//		switch(d.index - first)
-//		{
-//			case 0:
-//			case 4:
-//			case 9:
-//				f(Dart(first+0));
-//				f(Dart(first+4));
-//				f(Dart(first+9));
-//				break;
-//			case 1:
-//			case 3:
-//			case 7:
-//				f(Dart(first+1));
-//				f(Dart(first+3));
-//				f(Dart(first+7));
-//				break;
-//			case 2:
-//			case 6:
-//			case 10:
-//				f(Dart(first+2));
-//				f(Dart(first+6));
-//				f(Dart(first+10));
-//				break;
-//			case 5:
-//			case 8:
-//			case 11:
-//				f(Dart(first+5));
-//				f(Dart(first+8));
-//				f(Dart(first+11));
-//				break;
-//			default:
-//				break;
-//		}
+		uint32 first = (d.index/12)*12;
+		switch(d.index - first)
+		{
+			case 0:
+			case 4:
+			case 9:
+				f(Dart(first+0));
+				f(Dart(first+4));
+				f(Dart(first+9));
+				break;
+			case 1:
+			case 3:
+			case 7:
+				f(Dart(first+1));
+				f(Dart(first+3));
+				f(Dart(first+7));
+				break;
+			case 2:
+			case 6:
+			case 10:
+				f(Dart(first+2));
+				f(Dart(first+6));
+				f(Dart(first+10));
+				break;
+			case 5:
+			case 8:
+			case 11:
+				f(Dart(first+5));
+				f(Dart(first+8));
+				f(Dart(first+11));
+				break;
+			default:
+				break;
+		}
 
-		Dart it = d;
-		f(it);
-		it = phi2(phi_1(it));
-		f(it);
-		it = phi2(phi_1(it));
-		f(it);
-
-
-		//		Dart it = d;
-		//		do
-		//		{
-		//			f(it);
-		//			it = phi2(phi_1(it));
-		//		} while (it != d);
+//		Dart it = d;
+//		f(it);
+//		it = phi2(phi_1(it));
+//		f(it);
+//		it = phi2(phi_1(it));
+//		f(it);
 
 	}
 
