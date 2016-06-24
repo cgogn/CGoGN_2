@@ -454,7 +454,7 @@ public:
 	}
 
 
-	inline uint32 codegree(Face f) const
+	inline uint32 codegree(Face) const
 	{
 		return 3;
 	}

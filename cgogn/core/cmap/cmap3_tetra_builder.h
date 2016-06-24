@@ -118,12 +118,14 @@ public:
 	{
 		cgogn_message_assert(false, "Can create only tetra");
 		cgogn_log_warning("add_face") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
+		return Dart();
 	}
 
 	inline Dart add_stamp_volume_topo()
 	{
 		cgogn_message_assert(false, "Can create only tetra");
 		cgogn_log_warning("add_face") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
+		return Dart();
 	}
 
 
