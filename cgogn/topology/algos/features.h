@@ -131,10 +131,9 @@ public:
 	/**
 	 * @brief Extract the basic features of the manifold.
 	 * @param[in] central_vertex a vertex from which the distance are computed
-	 * @param[out] features the two vertices that define the maximal diameter
-	 * Startig from a central vertex, compute the maxima of the distance_field
-	 * build from this single source. Then select the maxima whose distance
-	 * to the central vertex is greater than the average distance.
+	 * @param[out] features found features
+	 * Startig from a central vertex, compute the geodesic distance to this vertex.
+	 * The features are the maxima of this distance field.
 	 */
 	void get_basic_features(Vertex central_vertex, std::vector<Vertex>& features)
 	{
@@ -145,22 +144,13 @@ public:
 		distance_field_.dijkstra_compute_paths({A}, distance_to_A_, paths_);
 
 		// Get the maxima in the scalar field distance_to_A_
-		ScalarField<Scalar, MAP> scalar_field_A(map_, distance_to_A_);
+		ScalarField<Scalar, MAP> scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
 		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
 
-		// Select as features the maxima that are greater than their mean value
-		Scalar mean_value = Scalar(0);
-		uint32 count = 0;
+		// Copy the maxima in the features set
 		for (Vertex v: maxima_A)
-		{
-			mean_value += distance_to_A_[v];
-			++count;
-		}
-		mean_value /= Scalar(count);
-
-		for (Vertex v: maxima_A)
-			if (distance_to_A_[v] > mean_value) features.push_back(v);
+			features.push_back(v);
 	}
 
 private:
@@ -236,7 +226,8 @@ public:
 	 * Then, add in decreasing order of distance, the maxima that are common to these two sets
 	 * and filter out the features that are too near from the already selected ones.
 	 * The filtering distance is a ratio of the diameter : features_proximity * d(A,B).
-	 * Experimentations give good results for a ratio between 0.25f and 0.4f.
+	 * Experimentations give good results for a ratio between 0.25f and 0.4f for long features
+	 * (like arms and legs), smaller ratio allow the detection of smaller features.
 	 */
 	void get_filtered_features(Vertex central_vertex,
 							   Scalar features_proximity,
