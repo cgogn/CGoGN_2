@@ -112,7 +112,7 @@ public:
 		}
 
 		this->export_file_impl(map,*output, options);
-		map.remove_attribute(indices_);
+		this->clean_added_attributes(map);
 	}
 
 	virtual ~MeshExport() {}
@@ -120,6 +120,11 @@ protected:
 	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
 	{
 		return vertex_attributes_;
+	}
+
+	virtual void clean_added_attributes(Map& map)
+	{
+		map.remove_attribute(indices_);
 	}
 
 	ChunkArrayGen const * position_attribute() const

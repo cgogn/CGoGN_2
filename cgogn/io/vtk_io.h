@@ -819,8 +819,8 @@ private:
 						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(w)));
 						for(uint32 i = 0u; i < elem_size; ++i)
 							buffer_char.push_back(elem[i]);
-						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
 				} else {
 					map.foreach_cell([&](Volume w)
@@ -1237,6 +1237,7 @@ protected:
 				if (to_lower(std::string(cell_data->Attribute("Name"))) == "connectivity" && (cell_data != cell_nodes.back()))
 				{
 					std::swap(cell_data, cell_nodes.back());
+					break;
 				}
 			}
 
