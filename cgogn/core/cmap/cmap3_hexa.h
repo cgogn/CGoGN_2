@@ -21,34 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_CMAP_CMAP3_TETRA_H_
-#define CGOGN_CORE_CMAP_CMAP3_TETRA_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_HEXA_H_
+#define CGOGN_CORE_CMAP_CMAP3_HEXA_H_
 
 #include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
 
-// forward declaration of CMap3TetraBuilder_T
-template <typename MAP_TRAITS> class CMap3TetraBuilder_T;
+// forward declaration of CMap3HexaBuilder_T
+template <typename MAP_TRAITS> class CMap3HexaBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap3Tetra_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+class CMap3Hexa_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 	static const uint8 DIMENSION = 3;
-	static const uint8 PRIM_SIZE = 12;
+	static const uint8 PRIM_SIZE = 24;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
 	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
-	using Self = CMap3Tetra_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = CMap3Hexa_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap3TetraBuilder_T<MapTraits>;
+	using Builder = CMap3HexaBuilder_T<MapTraits>;
 
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap3TetraBuilder_T<MapTraits>;
+	friend class CMap3HexaBuilder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -98,14 +98,14 @@ protected:
 
 public:
 
-	CMap3Tetra_T() : Inherit()
+	CMap3Hexa_T() : Inherit()
 	{
 		init();
 	}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Tetra_T);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Hexa_T);
 
-	~CMap3Tetra_T() override
+	~CMap3Hexa_T() override
 	{}
 
 	/*!
@@ -170,9 +170,10 @@ protected:
 				phi2(phi2(d)) == d &&
 				phi2(d) != d);
 		return integrity2d &&
-				phi3(phi3(d)) == d &&
+				((phi3(d) == d && this->is_boundary(d)) ||
+				(phi3(phi3(d)) == d &&
 				phi3(d) != d &&
-				phi3(this->phi1(phi3(this->phi1(d)))) == d;
+				phi3(this->phi1(phi3(this->phi1(d)))) == d));
 
 	}
 
@@ -225,12 +226,13 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		switch(d.index%3)
+		switch(d.index%4)
 		{
 		case 0: return Dart(d.index+1);break;
 		case 1: return Dart(d.index+1);break;
+		case 2: return Dart(d.index+1);break;
 		}
-		return Dart(d.index-2);
+		return Dart(d.index-3);
 	}
 
 	/*!
@@ -240,22 +242,41 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		switch(d.index%3)
+		switch(d.index%4)
 		{
-		case 2: return Dart(d.index-1);break;
 		case 1: return Dart(d.index-1);break;
+		case 2: return Dart(d.index-1);break;
+		case 3: return Dart(d.index-1);break;
 		}
-		return Dart(d.index+2);
+		return Dart(d.index+3);
 	}
 
 	/*!
-	 * \brief phi1
+	 * \brief phi11
 	 * @param d
-	 * @return phi1(d)
+	 * @return phi1(phi1(d))
+	 */
+	inline Dart phi11(Dart d) const
+	{
+		switch(d.index%4)
+		{
+		case 0: return Dart(d.index+2);break;
+		case 1: return Dart(d.index+2);break;
+		case 2: return Dart(d.index-2);break;
+		}
+		return Dart(d.index-2);
+	}
+
+// TODO phi2112 + more ? ( use it in phi<> )
+
+	/*!
+	 * \brief phi2
+	 * @param d
+	 * @return phi2(d)
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		return Dart(d.index + MapGen::tetra_phi2[d.index%12]);
+		return Dart(d.index + MapGen::hexa_phi2[d.index%24]);
 	}
 
 	/**
@@ -296,10 +317,10 @@ public:
 protected:
 
 	/**
-	 * @brief Add a tetrahedron with fixed point phi3
+	 * @brief Add a hexahedron with fixed point phi3
 	 * @return
 	 */
-	inline Dart add_tetra_topo_fp()
+	inline Dart add_hexa_topo_fp()
 	{
 		Dart d = this->add_topology_element(); // in fact insert PRIM_SIZE darts
 		// no need to set phi1 & phi2
@@ -307,42 +328,54 @@ protected:
 	}
 
 	/**
-	 * @brief remove a tetrahedron (12 darts)
+	 * @brief remove a hexahedron (24 darts)
 	 * @param d
 	 */
-	inline void remove_tetra_topo_fp(Dart d)
+	inline void remove_hexa_topo_fp(Dart d)
 	{
 		this->remove_topology_element(d); // in fact remove PRIM_SIZE darts
 	}
 
 	/**
-	 * \brief Add a tetra in the map
-	 * \return A dart of the built tetra.
-	 * Two 2-tetra ( phi3-f.p.) are built. The first one is the returned volume,
+	 * \brief Add a hexa in the map
+	 * \return A dart of the built hexa.
+	 * Two 2-hexa ( phi3-f.p.) are built. The first one is the returned volume,
 	 * the second is a boundary vol that closes the map.
 	 */
-	Dart add_tetra_topo()
+	Dart add_hexa_topo()
 	{
-		Dart d = add_tetra_topo_fp();
-		Dart e = add_tetra_topo_fp();
+		Dart d = add_hexa_topo_fp();
+		Dart e = add_hexa_topo_fp();
 
 		uint32 di = d.index;
 		uint32 ei = e.index;
 
 		phi3_sew(Dart(di),Dart(ei + 0)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 3)); ++di;
 		phi3_sew(Dart(di),Dart(ei + 2)); ++di;
 		phi3_sew(Dart(di),Dart(ei + 1)); ++di;
-		phi3_sew(Dart(di),Dart(ei + 3)); ++di;
-		phi3_sew(Dart(di),Dart(ei + 5)); ++di;
 		phi3_sew(Dart(di),Dart(ei + 4)); ++di;
-		phi3_sew(Dart(di),Dart(ei + 9)); ++di;
-		phi3_sew(Dart(di),Dart(ei +11)); ++di;
-		phi3_sew(Dart(di),Dart(ei +10)); ++di;
-		phi3_sew(Dart(di),Dart(ei + 6)); ++di;
-		phi3_sew(Dart(di),Dart(ei + 8)); ++di;
 		phi3_sew(Dart(di),Dart(ei + 7)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 6)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 5)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 16)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 19)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 18)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 17)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 12)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 15)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 14)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 13)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 8)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 11)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 10)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 9)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 22)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 21)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 20)); ++di;
+		phi3_sew(Dart(di),Dart(ei + 23)); ++di;
 
-		for (uint32 k=0; k<12; ++k)
+		for (uint32 k=0; k<24; ++k)
 			this->set_boundary(Dart(ei++), true);
 
 		return d;
@@ -351,14 +384,14 @@ protected:
 public:
 
 	/**
-	 * \brief Add a tetra in the map.
-	 * \return A dart of the built tetra.
-	 * Two 2-tetra ( phi3-f.p.) are built. The first one is the returned volume,
+	 * \brief Add a hexa in the map.
+	 * \return A dart of the built hexa.
+	 * Two 2-hexa ( phi3-f.p.) are built. The first one is the returned volume,
 	 * the second is a boundary vol that closes the map.
 	 */
-	Volume add_tetra()
+	Volume add_hexa()
 	{
-		Volume vol(add_tetra_topo());
+		Volume vol(add_hexa_topo());
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -440,7 +473,7 @@ public:
 
 	inline uint32 codegree(Face2) const
 	{
-		return 3;
+		return 4;
 	}
 
 	inline uint32 degree(Face2) const
@@ -450,18 +483,18 @@ public:
 
 	inline bool has_codegree(Face2, uint32 codegree) const
 	{
-		return codegree == 3;
+		return codegree == 4;
 	}
 
 
 	inline uint32 codegree(Face) const
 	{
-		return 3;
+		return 4;
 	}
 
 	inline bool has_codegree(Face, uint32 codegree) const
 	{
-		return codegree == 3;
+		return codegree == 4;
 	}
 
 	inline uint32 degree(Face f) const
@@ -474,7 +507,7 @@ public:
 
 	inline uint32 codegree(Volume v) const
 	{
-		return 4;
+		return 6;
 	}
 
 	/*******************************************************************************
@@ -503,10 +536,12 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/3)*3;
+		uint32 first = d.index & 0xfffffffc;
+		f(Dart(first++));
 		f(Dart(first++));
 		f(Dart(first++));
 		f(Dart(first));
+
 	}
 
 	template <typename FUNC>
@@ -519,36 +554,64 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/12)*12;
+		uint32 first = (d.index/24)*24;
 		switch(d.index - first)
 		{
 			case 0:
+			case 5:
+			case 16:
+				f(Dart(first+0));
+				f(Dart(first+5));
+				f(Dart(first+16));
+				break;
+			case 1:
 			case 4:
 			case 9:
-				f(Dart(first+0));
+				f(Dart(first+1));
 				f(Dart(first+4));
 				f(Dart(first+9));
 				break;
-			case 1:
-			case 3:
-			case 7:
-				f(Dart(first+1));
-				f(Dart(first+3));
-				f(Dart(first+7));
-				break;
 			case 2:
-			case 6:
-			case 10:
-				f(Dart(first+2));
-				f(Dart(first+6));
-				f(Dart(first+10));
-				break;
-			case 5:
 			case 8:
-			case 11:
-				f(Dart(first+5));
+			case 13:
+				f(Dart(first+2));
 				f(Dart(first+8));
+				f(Dart(first+13));
+				break;
+			case 3:
+			case 12:
+			case 17:
+				f(Dart(first+3));
+				f(Dart(first+12));
+				f(Dart(first+17));
+				break;
+			case 6:
+			case 19:
+			case 20:
+				f(Dart(first+6));
+				f(Dart(first+19));
+				f(Dart(first+20));
+				break;
+			case 7:
+			case 10:
+			case 23:
+				f(Dart(first+7));
+				f(Dart(first+10));
+				f(Dart(first+23));
+				break;
+			case 11:
+			case 14:
+			case 22:
 				f(Dart(first+11));
+				f(Dart(first+14));
+				f(Dart(first+22));
+				break;
+			case 15:
+			case 18:
+			case 21:
+				f(Dart(first+15));
+				f(Dart(first+18));
+				f(Dart(first+21));
 				break;
 			default:
 				break;
@@ -566,7 +629,7 @@ protected:
 	template <typename FUNC>
 	void foreach_dart_of_PHI1_PHI2(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/12)*12;
+		uint32 first = (d.index/24)*24;
 		f(Dart(first++));
 		f(Dart(first++));
 		f(Dart(first++));
@@ -579,6 +642,18 @@ protected:
 		f(Dart(first++));
 		f(Dart(first++));
 		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first));
 	}
 
 	// foreach with phi3
@@ -654,14 +729,14 @@ protected:
 		// For every vol added to the list
 		for(uint32 i = 0; i < visited_vols->size(); ++i)
 		{
-			uint32 first = (((*visited_vols)[i]).index/12)*12;
+			uint32 first = (((*visited_vols)[i]).index/24)*24;
 			Dart dv = Dart(first);
 
-			if (!marker.is_marked(dv)) // is volum not already marked
+			if (!marker.is_marked(dv)) // is volume not already marked
 			{
-				for(int nf=0; nf<4; ++nf) // foreach face2
+				for(int nf=0; nf<6; ++nf) // foreach face2
 				{
-					// for dart of face
+					// for first dart of face
 					dv = Dart(first++);
 					f(dv);
 					marker.mark(dv);
@@ -670,6 +745,10 @@ protected:
 					f(dv);
 					marker.mark(dv);
 					// for third dart of face
+					dv = Dart(first++);
+					f(dv);
+					marker.mark(dv);
+					// for fourth dart of face
 					dv = Dart(first++);
 					f(dv);
 					marker.mark(dv);
@@ -708,7 +787,7 @@ protected:
 			case Orbit::PHI1_PHI3:foreach_dart_of_PHI1_PHI3(c.dart, f); break;
 			case Orbit::PHI21_PHI31:foreach_dart_of_PHI21_PHI31(c.dart, f); break;
 			case Orbit::PHI1_PHI2_PHI3:foreach_dart_of_PHI1_PHI2_PHI3(c.dart, f); break;
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Tetra"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Hexa"); break;
 		}
 	}
 
@@ -717,11 +796,12 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1_until(Dart d, const FUNC& f) const
 	{
-
-		uint32 first = (d.index/3)*3;
+		uint32 first = d.index & 0xfffffffc;
+		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first))) return;
+
 	}
 
 	template <typename FUNC>
@@ -734,46 +814,96 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_until(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/12)*12;
+		uint32 first = (d.index/24)*24;
 		switch(d.index - first)
 		{
 			case 0:
+			case 5:
+			case 16:
+				if (!f(Dart(first+0))) return;
+				if (!f(Dart(first+5))) return;
+				if (!f(Dart(first+16))) return;
+				break;
+			case 1:
 			case 4:
 			case 9:
-				if (!f(Dart(first+0))) return;
+				if (!f(Dart(first+1))) return;
 				if (!f(Dart(first+4))) return;
 				if (!f(Dart(first+9))) return;
 				break;
-			case 1:
-			case 3:
-			case 7:
-				if (!f(Dart(first+1))) return;
-				if (!f(Dart(first+3))) return;
-				if (!f(Dart(first+7))) return;
-				break;
 			case 2:
-			case 6:
-			case 10:
-				if (!f(Dart(first+2))) return;
-				if (!f(Dart(first+6))) return;
-				if (!f(Dart(first+10))) return;
-				break;
-			case 5:
 			case 8:
-			case 11:
-				if (!f(Dart(first+5))) return;
+			case 13:
+				if (!f(Dart(first+2))) return;
 				if (!f(Dart(first+8))) return;
+				if (!f(Dart(first+13))) return;
+				break;
+			case 3:
+			case 12:
+			case 17:
+				if (!f(Dart(first+3))) return;
+				if (!f(Dart(first+12))) return;
+				if (!f(Dart(first+17))) return;
+				break;
+			case 6:
+			case 19:
+			case 20:
+				if (!f(Dart(first+6))) return;
+				if (!f(Dart(first+19))) return;
+				if (!f(Dart(first+20))) return;
+				break;
+			case 7:
+			case 10:
+			case 23:
+				if (!f(Dart(first+7))) return;
+				if (!f(Dart(first+10))) return;
+				if (!f(Dart(first+23))) return;
+				break;
+			case 11:
+			case 14:
+			case 22:
 				if (!f(Dart(first+11))) return;
+				if (!f(Dart(first+14))) return;
+				if (!f(Dart(first+22))) return;
+				break;
+			case 15:
+			case 18:
+			case 21:
+				if (!f(Dart(first+15))) return;
+				if (!f(Dart(first+18))) return;
+				if (!f(Dart(first+21))) return;
 				break;
 			default:
 				break;
 		}
+
+
+		Dart it = d;
+		do
+		{
+			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
+				if (!f(it))
+					break;
+			it = phi2(phi_1(it));
+		} while (it != d);
 	}
 
 	template <typename FUNC>
 	void foreach_dart_of_PHI1_PHI2_until(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/12)*12;
+		uint32 first = (d.index/24)*24;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
+		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
@@ -870,14 +1000,14 @@ protected:
 		// For every vol added to the list
 		for(uint32 i = 0; i < visited_vols->size(); ++i)
 		{
-			uint32 first = (((*visited_vols)[i]).index/12)*12;
+			uint32 first = (((*visited_vols)[i]).index/24)*24;
 			Dart dv = Dart(first);
 
-			if (!marker.is_marked(dv)) // is volum not already marked
+			if (!marker.is_marked(dv)) // is volume not already marked
 			{
-				for(int nf=0; nf<4; ++nf) // foreach face2
+				for(int nf=0; nf<6; ++nf) // foreach face2
 				{
-					// for dart of face
+					// for first dart of face
 					dv = Dart(first++);
 					if (!f(dv)) break;
 					marker.mark(dv);
@@ -886,6 +1016,10 @@ protected:
 					if (!f(dv)) break;
 					marker.mark(dv);
 					// for third dart of face
+					dv = Dart(first++);
+					if (!f(dv)) break;
+					marker.mark(dv);
+					// for fourth dart of face
 					dv = Dart(first++);
 					if (!f(dv)) break;
 					marker.mark(dv);
@@ -912,7 +1046,7 @@ protected:
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
 					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
-					  "Orbit not supported in a CMap3Tetra");
+					  "Orbit not supported in a CMap3Hexa");
 
 		switch (ORBIT)
 		{
@@ -925,7 +1059,7 @@ protected:
 			case Orbit::PHI1_PHI3:foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
 			case Orbit::PHI21_PHI31:foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
 			case Orbit::PHI1_PHI2_PHI3:foreach_dart_of_PHI1_PHI2_PHI3_until(c.dart, f); break;
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Tetra"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Hexa"); break;
 		}
 	}
 
@@ -1023,38 +1157,60 @@ public:
 	inline void foreach_incident_vertex2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
-		uint32 first = (w.dart.index/12)*12;
-		func(Vertex2(Dart(first)));
-		func(Vertex2(Dart(first+1)));
-		func(Vertex2(Dart(first+2)));
-		func(Vertex2(Dart(first+5)));
+		uint32 first = (w.dart.index/24)*24;
+		func(Vertex2(Dart(first++)));// 0
+		func(Vertex2(Dart(first++)));// 1
+		func(Vertex2(Dart(first++)));// 2
+		func(Vertex2(Dart(first)));  // 3
+
+		first += 17;
+		func(Vertex2(Dart(first++)));// 20
+		func(Vertex2(Dart(first++)));// 21
+		func(Vertex2(Dart(first++)));// 22
+		func(Vertex2(Dart(first)));  // 23
+
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
-		uint32 first = (w.dart.index/12)*12;
-		func(Edge2(Dart(first)));
-		func(Edge2(Dart(first+1)));
-		func(Edge2(Dart(first+2)));
-		func(Edge2(Dart(first+4)));
-		func(Edge2(Dart(first+7)));
-		func(Edge2(Dart(first+10)));
+		uint32 first = (w.dart.index/24)*24;
+		func(Edge2(Dart(first++)));// 0
+		func(Edge2(Dart(first++)));// 1
+		func(Edge2(Dart(first++)));// 2
+		func(Edge2(Dart(first)));  // 3
+		first += 2;
+		func(Edge2(Dart(first)));// 5
+		first += 4;
+		func(Edge2(Dart(first)));// 9
+		first += 4;
+		func(Edge2(Dart(first)));// 13
+		first += 4;
+		func(Edge2(Dart(first)));// 17
+		first += 3;
+		func(Edge2(Dart(first++)));// 20
+		func(Edge2(Dart(first++)));// 21
+		func(Edge2(Dart(first++)));// 22
+		func(Edge2(Dart(first)));  // 23
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face2(Volume w, const FUNC& func) const
 	{
 		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
-		uint32 first = (w.dart.index/12)*12;
-		func(Face2(Dart(first)));// 0
-		first += 3;
-		func(Face2(Dart(first)));// 3
-		first += 3;
-		func(Face2(Dart(first)));// 6
-		first += 3;
-		func(Face2(Dart(first))); // 9
+		uint32 first = (w.dart.index/24)*24;
+		func(Face2(Dart(first))); // 0
+		first += 4;
+		func(Face2(Dart(first)));// 4
+		first += 4;
+		func(Face2(Dart(first)));// 8
+		first += 4;
+		func(Face2(Dart(first)));// 12
+		first += 4;
+		func(Face2(Dart(first))); // 16
+		first += 4;
+		func(Face2(Dart(first))); // 20
 	}
 
 	/*******************************************************************************
@@ -1279,17 +1435,6 @@ public:
 		{
 			func(Face(f.dart));
 		});
-
-
-//		DartMarkerStore marker(*this);
-//		foreach_dart_of_orbit(v, [&] (Dart d)
-//		{
-//			if (!marker.is_marked(d))
-//			{
-//				marker.mark_orbit(Face2(d));
-//				func(Face(d));
-//			}
-//		});
 	}
 
 
@@ -1584,31 +1729,31 @@ protected:
 };
 
 template <typename MAP_TRAITS>
-struct CMap3TetraType
+struct CMap3HexaType
 {
-	using TYPE = CMap3Tetra_T<MAP_TRAITS, CMap3TetraType<MAP_TRAITS>>;
+	using TYPE = CMap3Hexa_T<MAP_TRAITS, CMap3HexaType<MAP_TRAITS>>;
 };
 
 template <typename MAP_TRAITS>
-using CMap3Tetra = CMap3Tetra_T<MAP_TRAITS, CMap3TetraType<MAP_TRAITS>>;
+using CMap3Hexa = CMap3Hexa_T<MAP_TRAITS, CMap3HexaType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_TETRA_CPP_))
-extern template class CGOGN_CORE_API CMap3Tetra_T<DefaultMapTraits, CMap3TetraType<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarker<CMap3Tetra<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_HEXA_CPP_))
+extern template class CGOGN_CORE_API CMap3Hexa_T<DefaultMapTraits, CMap3HexaType<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarker<CMap3Hexa<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap3Hexa<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Hexa<DefaultMapTraits>>;
+extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
 
-#include <cgogn/core/cmap/cmap3_tetra_builder.h>
+#include <cgogn/core/cmap/cmap3_hexa_builder.h>
 
-#endif // CGOGN_CORE_CMAP_CMAP3_TETRA_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_HEXA_H_

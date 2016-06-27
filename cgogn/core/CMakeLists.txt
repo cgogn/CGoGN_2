@@ -26,7 +26,8 @@ set(HEADER_FILES
 	cmap/cmap2_quad_builder.h
 	cmap/cmap3_tetra.h
 	cmap/cmap3_tetra_builder.h
-
+	cmap/cmap3_hexa.h
+	cmap/cmap3_hexa_builder.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -69,6 +70,8 @@ set(SOURCE_FILES
 	cmap/cmap2_quad_builder.cpp
 	cmap/cmap3_tetra.cpp
 	cmap/cmap3_tetra_builder.cpp
+	cmap/cmap3_hexa.cpp
+	cmap/cmap3_hexa_builder.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp

@@ -21,40 +21,40 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
-#define CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP3_HEXA_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP3_HEXA_BUILDER_H_
 
-#include <cgogn/core/cmap/cmap3_tetra.h>
+#include <cgogn/core/cmap/cmap3_hexa.h>
 
 namespace cgogn
 {
 
 template <typename MAP_TRAITS>
-class CMap3TetraBuilder_T
+class CMap3HexaBuilder_T
 {
 public:
 
-	using Self = CMap3TetraBuilder_T<MAP_TRAITS>;
-	using CMap3Tetra = cgogn::CMap3Tetra<MAP_TRAITS>;
-	using CDart = typename CMap3Tetra::CDart;
-	using Vertex = typename CMap3Tetra::Vertex;
-	using Vertex2 = typename CMap3Tetra::Vertex2;
-	using Edge = typename CMap3Tetra::Edge;
-	using Edge2 = typename CMap3Tetra::Edge2;
-	using Face = typename CMap3Tetra::Face;
-	using Face2 = typename CMap3Tetra::Face2;
-	using Volume = typename CMap3Tetra::Volume;
+	using Self = CMap3HexaBuilder_T<MAP_TRAITS>;
+	using CMap3Hexa = cgogn::CMap3Hexa<MAP_TRAITS>;
+	using CDart = typename CMap3Hexa::CDart;
+	using Vertex = typename CMap3Hexa::Vertex;
+	using Vertex2 = typename CMap3Hexa::Vertex2;
+	using Edge = typename CMap3Hexa::Edge;
+	using Edge2 = typename CMap3Hexa::Edge2;
+	using Face = typename CMap3Hexa::Face;
+	using Face2 = typename CMap3Hexa::Face2;
+	using Volume = typename CMap3Hexa::Volume;
 
-	using DartMarkerStore = typename CMap3Tetra::DartMarkerStore;
+	using DartMarkerStore = typename CMap3Hexa::DartMarkerStore;
 	template <typename T>
-	using ChunkArrayContainer = typename CMap3Tetra::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename CMap3Hexa::template ChunkArrayContainer<T>;
 
 
 
-	inline CMap3TetraBuilder_T(CMap3Tetra& map) : map_(map)
+	inline CMap3HexaBuilder_T(CMap3Hexa& map) : map_(map)
 	{}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3TetraBuilder_T);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3HexaBuilder_T);
 
 public:
 
@@ -102,46 +102,52 @@ public:
 
 	inline Dart add_pyramid_topo(uint32 nb_edges)
 	{
-		cgogn_message_assert(nb_edges == 3u, "Can create only tetra");
-		if (nb_edges != 3)
-		{
-			cgogn_log_warning("add_pyramid_topo") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
-			return Dart();
-		}
-		return map_.add_tetra_topo_fp();
+		cgogn_message_assert(false, "Can create only hexa");
+		cgogn_log_warning("add_pyramid_topo") << "Attempt to create a volume which is not a hexahedron in Map3Hexa";
+		return Dart();
+
 	}
 
 	inline Dart add_face_topo(uint32)
 	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_face_topo") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
+		cgogn_message_assert(false, "Can create only hexa");
+		cgogn_log_warning("add_face_topo") << "Attempt to create a volume which is not a hexahedron in Map3Hexa";
 		return Dart();
 	}
 
-	inline Dart add_prism_topo(uint32)
+	inline Dart add_prism_topo(uint32 nb_edges)
 	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_prism_topo") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
-		return Dart();
+		cgogn_message_assert(nb_edges == 4u, "Can create only hexa");
+		if (nb_edges != 4)
+		{
+			cgogn_log_warning("add_prism_topo") << "Attempt to create a volume which is not a hexahedron in Map3Hexa";
+			return Dart();
+		}
+		return map_.add_hexa_topo_fp();
 	}
 
 	inline Dart add_stamp_volume_topo()
 	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_stamp_volume_topo") << "Attempt to create a volume which is not a tetrahedron in Map3Tetra";
+		cgogn_message_assert(false, "Can create only hexa");
+		cgogn_log_warning("add_stamp_volume_topo") << "Attempt to create a volume which is not a hexahedron in Map3Hexa";
 		return Dart();
 	}
 
 
 	/**
-	 * @brief sew two tetrahedra along a face
+	 * @brief sew two hexahedra along a face
 	 * The darts given in the parameters must be part of Face2 that have
 	 * a similar co-degree and whose darts are all phi3 fix points
-	 * @param dv1 dart of first tetrahedron
-	 * @param dv2 dart of second tetrahedron
+	 * @param dv1 dart of first hexahedron
+	 * @param dv2 dart of second hexahedron
 	 */
 	inline void sew_volumes(Dart dv1, Dart dv2)
 	{
+		phi3_sew(dv1, dv2);
+
+		dv1 = map_.phi1(dv1);
+		dv2 = map_.phi_1(dv2);
+
 		phi3_sew(dv1, dv2);
 
 		dv1 = map_.phi1(dv1);
@@ -158,7 +164,7 @@ public:
 
 	void close_hole_topo(Dart d, bool mark_boundary=false)
 	{
-		cgogn_message_assert(map_.phi3(d) == d, "CMap3Tetra: close hole called on a dart that is not a phi3 fix point");
+		cgogn_message_assert(map_.phi3(d) == d, "CMap3Hexa: close hole called on a dart that is not a phi3 fix point");
 
 		DartMarkerStore fmarker(map_);
 		DartMarkerStore boundary_marker(map_);
@@ -197,17 +203,17 @@ public:
 			} while(!found);
 		};
 
-
-
 		// For every face added to the list
 		for(uint32 i = 0u; i < visited_faces.size(); ++i)
 		{
 			Dart f = visited_faces[i];
 
-			const Dart tb = map_.add_tetra_topo_fp();
+			const Dart tb = map_.add_hexa_topo_fp();
 			boundary_marker.mark_orbit(Volume(tb));
 			sew_volumes(tb,f);
 
+			local_func(f);
+			f = map_.phi1(f);
 			local_func(f);
 			f = map_.phi1(f);
 			local_func(f);
@@ -282,16 +288,16 @@ public:
 
 private:
 
-	CMap3Tetra& map_;
+	CMap3Hexa& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap3TetraBuilder_T<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_TETRA_BUILDER_CPP_))
-using CMap3TetraBuilder = cgogn::CMap3TetraBuilder_T<DefaultMapTraits>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_HEXA_BUILDER_CPP_))
+extern template class CGOGN_CORE_API cgogn::CMap3HexaBuilder_T<DefaultMapTraits>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_HEXA_BUILDER_CPP_))
+using CMap3HexaBuilder = cgogn::CMap3HexaBuilder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP3_HEXA_BUILDER_H_
 

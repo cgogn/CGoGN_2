@@ -67,6 +67,9 @@ protected:
 	static bool init_CA_factory;
 	/// table of tetra phi2 indices
 	static std::array<int,12> tetra_phi2;
+	/// table of hexa phi2 indices
+	static std::array<int,24> hexa_phi2;
+
 
 public:
 

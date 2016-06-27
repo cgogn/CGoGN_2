@@ -22,51 +22,14 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_
+#define CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_CPP_
 
-#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/cmap/cmap3_hexa_builder.h>
 
 namespace cgogn
 {
 
-std::vector<MapGen*>* MapGen::instances_ = nullptr;
-bool MapGen::init_CA_factory = true;
-
-std::array<int,12> MapGen::tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7};
-
-std::array<int,24> MapGen::hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17};
-
-
-
-MapGen::MapGen()
-{
-	if (instances_ == nullptr)
-	{
-		cgogn::thread_start();
-		instances_ = new std::vector<MapGen*>;
-	}
-
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
-
-	// register the map in the vector of instances
-	instances_->push_back(this);
-}
-
-MapGen::~MapGen()
-{
-	// remove the map from the vector of instances
-	auto it = std::find(instances_->begin(), instances_->end(), this);
-	*it = instances_->back();
-	instances_->pop_back();
-
-	if (instances_->empty())
-	{
-		cgogn::thread_stop();
-		delete instances_;
-		instances_ = nullptr;
-	}
-}
-
-template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
+	template class CGOGN_CORE_API cgogn::CMap3HexaBuilder_T<DefaultMapTraits>;
 
 } // namespace cgogn
+
