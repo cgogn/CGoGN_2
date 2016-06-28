@@ -397,7 +397,7 @@ static void append_ear_triangulation(
 }
 
 /**
- * @brief apply ear triangulation to a face (face is cut
+ * @brief apply ear triangulation to a face (face is cut)
  * @param map
  * @param f
  * @param position
@@ -414,7 +414,7 @@ static void apply_ear_triangulation(
 }
 
 /**
- * @brief apply ear triangulation to a face (face is cut)
+ * @brief apply ear triangulation to a map
  * @param map
  * @param f
  * @param position
