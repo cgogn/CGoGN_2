@@ -32,6 +32,8 @@
 #include <cgogn/io/surface_export.h>
 
 #include <iomanip>
+#include <map>
+#include <algorithm>
 
 namespace cgogn
 {
@@ -74,11 +76,11 @@ private:
 	bool import_ascii(const std::string& filename, ChunkArray<VEC3>* position, ChunkArray<VEC3>* normal)
 	{
 		std::ifstream fp(filename, std::ios::in);
-
-		std::vector<VEC3> vertices_set;
-		vertices_set.reserve(1024u);
-		std::vector<uint32> indices_set;
-		indices_set.reserve(vertices_set.size());
+		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
+		{
+			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
+		};
+		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
 
 		std::string line;
 		std::getline(fp, line); // 1st line : solid name
@@ -90,7 +92,10 @@ private:
 			VEC3 norm;
 			stream_normal >> line;
 			if (to_lower(line) == "endsolid")
-				break;
+			{
+				std::getline(fp, line); // if there's another solid, 1st line : solid name
+				continue;
+			}
 			stream_normal >> line >> norm[0] >> norm[1] >> norm[2];
 			const uint32 face_id = this->face_attributes_.template insert_lines<1>();
 			(*normal)[face_id] = norm;
@@ -102,20 +107,18 @@ private:
 				std::getline(fp, line);
 				std::stringstream stream_pos(line);
 				stream_pos >> line >> pos[i][0] >> pos[i][1] >> pos[i][2];
-				auto it = std::find(vertices_set.begin(), vertices_set.end(), pos[i]);
+				const auto it =  vertices_set.find(pos[i]);
 				uint32 vertex_id{UINT32_MAX};
 
 				if (it == vertices_set.end())
 				{
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
-					vertices_set.push_back(pos[i]);
-					indices_set.push_back(vertex_id);
+					vertices_set.insert(std::make_pair(pos[i], vertex_id));
+//					indices_set.push_back(vertex_id);
 					this->nb_vertices_++;
-				} else {
-					auto id_it = indices_set.begin();
-					std::advance(id_it, std::distance(vertices_set.begin(), it));
-					vertex_id = *id_it;
-				}
+				} else
+					vertex_id = it->second;
+
 				(*position)[vertex_id] = pos[i];
 				this->faces_vertex_indices_.push_back(vertex_id);
 			}
@@ -137,10 +140,12 @@ private:
 
 		std::array<float32, 3> normal_buffer;
 		std::array<float32, 9> position_buffer;
-		std::vector<VEC3> vertices_set;
-		vertices_set.reserve(2u*this->nb_faces_);
-		std::vector<uint32> indices_set;
-		indices_set.reserve(vertices_set.size());
+
+		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
+		{
+			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
+		};
+		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
 
 		for(uint32 i = 0u; i < this->nb_faces_; ++i)
 		{
@@ -160,21 +165,17 @@ private:
 			for(uint32 vid = 0u; vid < 3u ; ++vid)
 			{
 				const VEC3 pos{Scalar(position_buffer[3u*vid]), Scalar(position_buffer[3u*vid + 1u]), Scalar(position_buffer[3u*vid + 2u])};
-				auto it = std::find(vertices_set.begin(), vertices_set.end(), pos);
+				const auto it =  vertices_set.find(pos);
 				uint32 vertex_id{UINT32_MAX};
 
 				if (it == vertices_set.end())
 				{
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
-					vertices_set.push_back(pos);
-					indices_set.push_back(vertex_id);
-
+					vertices_set.insert(std::make_pair(pos, vertex_id));
 					this->nb_vertices_++;
-				} else {
-					auto id_it = indices_set.begin();
-					std::advance(id_it, std::distance(vertices_set.begin(), it));
-					vertex_id = *id_it;
-				}
+				} else
+					vertex_id = it->second;
+
 				(*position)[vertex_id] = pos;
 				this->faces_vertex_indices_.push_back(vertex_id);
 			}

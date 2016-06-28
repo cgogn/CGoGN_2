@@ -292,8 +292,8 @@ void Viewer::init()
 
 	// map rendering object (primitive creation & sending to GPU)
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES);
+	render_->init_primitives(map_, cgogn::rendering::POINTS);
+	render_->init_primitives(map_, cgogn::rendering::LINES);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	// generation of one parameter set (for this shader) : vbo + uniforms

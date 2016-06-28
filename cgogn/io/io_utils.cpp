@@ -42,7 +42,7 @@ namespace io
 CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
 {
 	chunk_size = std::min(size, chunk_size);
-	std::size_t buffer_size = std::min(chunk_size + 16384ul, 2ul*chunk_size); // has to be large enough to store the compressed data
+	std::size_t buffer_size{0ul};
 	std::vector<std::vector<unsigned char>> res;
 	res.reserve(64);
 
@@ -58,7 +58,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = std::min(static_cast<std::size_t>(deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)))), buffer_size);
+		buffer_size = deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)));
 
 		zstream.avail_in = static_cast<uLong>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
@@ -350,7 +350,7 @@ CGOGN_IO_API bool file_exists(const std::string& filename)
 	return std::ifstream(filename).good();
 }
 
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary)
+CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
 {
 	std::unique_ptr<std::ofstream> output;
 
@@ -361,13 +361,19 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	std::string new_filename(filename);
 	if (file_exists(new_filename))
 	{
-		uint32 i{1u};
-		const std::string base_name = remove_extension(filename);
-		do
+		if (overwrite)
 		{
-			new_filename = base_name + "(" + std::to_string(i++)  + ")." + extension(filename);
-		} while (file_exists(new_filename));
-		cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
+			std::remove(filename.c_str());
+			cgogn_log_info("create_file")  << "The file \"" << new_filename << "\" has been deleted.";
+		} else {
+			uint32 i{1u};
+			const std::string base_name = remove_extension(filename);
+			do
+			{
+				new_filename = base_name + "-" + std::to_string(i++) + std::string(".") + extension(filename);
+			} while (file_exists(new_filename));
+			cgogn_log_warning("create_file")  << "The output filename has been changed to \"" << new_filename << "\"";
+		}
 	}
 	output = cgogn::make_unique<std::ofstream>(new_filename, open_mode);
 	if (!output->good())

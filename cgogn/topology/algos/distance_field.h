@@ -346,6 +346,31 @@ public:
 	}
 
 	/**
+	 * Build a scalar field that represent the sum of the distance of each vertex
+	 * to a given set of features (selected vertices) of the Map.
+	 * @param[in] features the vertices from which the shortest paths are computed
+	 * @param[out] scalar_field : the computed distance field
+	 */
+	void sum_of_distance_to_features(const std::vector<Vertex>& features,
+							  VertexAttribute<Scalar>& scalar_field)
+	{
+		VertexAttribute<Scalar> distance_to_feature =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");
+
+		for (auto& s : scalar_field) s = Scalar(0);
+
+		for (Vertex f : features)
+		{
+			dijkstra_compute_distances({f}, distance_to_feature);
+			map_.foreach_cell([&](Vertex v)
+			{
+				scalar_field[v] += distance_to_feature[v];
+			});
+		}
+		map_.remove_attribute(distance_to_feature);
+	}
+
+	/**
 	 * Build a morse function from the shortest path distance to the boundary.
 	 * @param[out] morse_function : the values of the morse function
 	 */

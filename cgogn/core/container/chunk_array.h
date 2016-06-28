@@ -421,7 +421,7 @@ public:
 
 	inline void set_all_values(const T& v)
 	{
-		for(T* chunk : table_data_)
+		for (T* chunk : table_data_)
 		{
 			for(uint32 i = 0; i < CHUNK_SIZE; ++i)
 				*chunk++ = v;
@@ -441,24 +441,24 @@ public:
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
 	{
-		switch (precision) {
-			case 1ul: serialization::ostream_writer<T, 1ul>(o,this->operator[](idx), binary, little_endian); break;
-			case 2ul: serialization::ostream_writer<T, 2ul>(o,this->operator[](idx), binary, little_endian); break;
-			case 4ul: serialization::ostream_writer<T, 4ul>(o,this->operator[](idx), binary, little_endian); break;
-			case 8ul: serialization::ostream_writer<T, 8ul>(o,this->operator[](idx), binary, little_endian); break;
-			default:
-				serialization::ostream_writer<T, UINT64_MAX>(o,this->operator[](idx), binary, little_endian);
+		switch (precision)
+		{
+			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 8ul: serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
+			default:  serialization::ostream_writer<T, UINT64_MAX>(o, this->operator[](idx), binary, little_endian); break;
 		}
 	}
 
 	virtual const void* element_ptr(uint32 idx) const override
 	{
-		return &(this->operator [](idx));
+		return &(this->operator[](idx));
 	}
 
 	virtual uint32 element_size() const override
 	{
-		return sizeof(this->operator [](0ul));
+		return sizeof(this->operator[](0ul));
 	}
 };
 
@@ -526,11 +526,6 @@ public:
 		table_data_.swap(ca->table_data_);
 		return true;
 	}
-
-//	bool is_boolean_array() const override
-//	{
-//		return true;
-//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNK_SIZE/32])
@@ -821,7 +816,7 @@ public:
 		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
 	}
 
-	virtual const void* element_ptr(uint32) const
+	virtual const void* element_ptr(uint32) const override
 	{
 		return nullptr; // shall not be used with ChunkArrayBool
 	}
