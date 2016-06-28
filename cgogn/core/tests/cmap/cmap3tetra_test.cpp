@@ -236,6 +236,17 @@ TEST_F(CMap3TetraTest, embedded)
 	nb=0;
 	cmap_.foreach_incident_volume(Vertex(p6),[&] (Volume){ ++nb; });
 	EXPECT_EQ(nb,2);
+
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_edge(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,4);
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_face(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,4);
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_volume(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,4);
+
 }
 
 

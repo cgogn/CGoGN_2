@@ -243,6 +243,16 @@ TEST_F(CMap3HexaTest, embedded)
 	cmap_.foreach_incident_face(Edge(p6),[&] (Face){ ++nb; });
 	EXPECT_EQ(nb,2);
 
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_edge(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,3);
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_face(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,6);
+	nb=0;
+	cmap_.foreach_adjacent_vertex_through_volume(Vertex(p6),[&] (Vertex){ ++nb; });
+	EXPECT_EQ(nb,7);
+
 }
 
 

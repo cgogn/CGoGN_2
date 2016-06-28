@@ -279,6 +279,10 @@ public:
 	inline Dart phi(Dart d) const
 	{
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
+
+		if (N%100 == 11)
+			return phi11(phi< N/100 >(d));
+
 		switch(N % 10)
 		{
 			case 1 : return phi1(phi<N / 10>(d)) ;

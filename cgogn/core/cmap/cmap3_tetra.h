@@ -249,6 +249,16 @@ public:
 	}
 
 	/*!
+	 * \brief phi11
+	 * @param d
+	 * @return phi1(phi1(d))
+	 */
+	inline Dart phi11(Dart d) const
+	{
+		return phi_1(d);
+	}
+
+	/*!
 	 * \brief phi1
 	 * @param d
 	 * @return phi1(d)
@@ -280,6 +290,10 @@ public:
 	inline Dart phi(Dart d) const
 	{
 		static_assert((N % 10) <= 3, "Composition of PHI: invalid index");
+
+		if (N%100 == 11)
+			return phi11(phi< N/100 >(d));
+
 		switch(N % 10)
 		{
 			case 1 : return phi1(phi<N / 10>(d)) ;
@@ -628,7 +642,8 @@ protected:
 		Dart it = d;
 		do
 		{
-			f(it);
+			if ( !(this->is_boundary(it) && this->is_boundary(phi3(it))) )
+				f(it);
 			it = phi3(phi2(it));
 		} while (it != d);
 	}
