@@ -24,14 +24,11 @@
 #ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 #define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 
-#include <cgogn/core/utils/numerics.h>
-
 namespace cgogn
 {
 
 namespace topology
 {
-
 
 template <typename MAP>
 class AdjacencyCache
@@ -71,7 +68,6 @@ public:
 		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
 		for (Vertex u : adjacency_[v]) f(u);
 	}
-
 
 private:
 	MAP& map_;
