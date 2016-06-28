@@ -67,6 +67,11 @@ protected:
 	{
 		return face_attributes_;
 	}
+
+	void clean_added_attributes(Map& map) override
+	{
+		Inherit::clean_added_attributes(map);
+	}
 private:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override

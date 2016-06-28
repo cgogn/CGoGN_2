@@ -116,13 +116,6 @@ endif(CGOGN_BUILD_TESTS)
 #### Endianness detection
 include (TestBigEndian)
 test_big_endian(CGOGN_TEST_BIG_ENDIAN)
-add_definitions("-DCGOGN_LITTLE_ENDIAN=1234")
-add_definitions("-DCGOGN_BIG_ENDIAN=4321")
-if(${CGOGN_TEST_BIG_ENDIAN})
-	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_BIG_ENDIAN")
-else()
-	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
-endif()
 
 #### Link time optimisation
 if (CGOGN_ENABLE_LTO AND ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))

@@ -213,6 +213,12 @@ public:
 		}, *(this->cell_cache_));
 	}
 
+	void clean_added_attributes(Map& map) override
+	{
+		Inherit::clean_added_attributes(map);
+		map.remove_attribute(vertices_of_volumes_);
+	}
+
 	inline uint32 nb_tetras() const
 	{
 		return nb_tetras_;
