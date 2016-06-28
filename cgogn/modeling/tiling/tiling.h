@@ -42,7 +42,7 @@ protected:
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
-protected:
+public:
 	/**
 	 * @brief Map in which we are working
 	 */
@@ -69,7 +69,6 @@ protected:
 	 */
 	std::vector<Face> face_table_;
 
-public:
 	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
 		map_(map),
 		nx_(x),

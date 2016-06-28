@@ -36,7 +36,7 @@ namespace modeling
 {
 
 template <typename MAP>
-class TriangularCylinder : public TriangularTiling<MAP>
+class TriangularCylinder : public Tiling<MAP>
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -46,23 +46,65 @@ protected:
 	bool top_triangulated_, bottom_triangulated_;
 	Vertex top_, bottom_;
 
-protected:
+public:
+	//! Create a subdivided 2D cylinder
+	/*! @param[in] n nb of squares around circumference
+	 *  @param[in] z nb of squares in height
+	 */
+	template <typename INNERMAP>
+	class CylinderTopo: public TriangularGrid<INNERMAP>::template GridTopo<INNERMAP>
+	{
+	public:
+		CylinderTopo(Tiling<INNERMAP>* c, uint32 n, uint32 z):
+			TriangularGrid<INNERMAP>::template GridTopo<INNERMAP>(c,n,z)
+		{
+			using MapBuilder = typename MAP::Builder;
+			MapBuilder mbuild(c->map_);
+
+			// just finish to sew
+			const uint32 nb_x = (n+1);
+			for(uint32 i = 0; i < z; ++i)
+			{
+				const int32 pos = i*nb_x;
+				Dart d = c->vertex_table_[pos].dart;
+				d = c->map_.phi_1(d);
+				Dart e = c->vertex_table_[pos + z].dart;
+				mbuild.phi2_sew(d, e);
+				c->vertex_table_[pos + z] = Vertex();
+			}
+
+			//suppress the last n vertex (in y direction) from the vertex_table_
+			c->vertex_table_.erase(
+						std::remove_if(c->vertex_table_.begin(), c->vertex_table_.end(),
+									   [&](Vertex v) -> bool { return !v.is_valid(); }),
+						c->vertex_table_.end());
+
+			c->vertex_table_.shrink_to_fit();
+		}
+	};
+
 	TriangularCylinder(MAP& map):
-		TriangularTiling<MAP>(map)
+		Tiling<MAP>(map)
 	{}
 
 public:
 	TriangularCylinder(MAP& map, uint32 n, uint32 z, bool top_closed, bool bottom_closed):
-		TriangularTiling<MAP>(map),
+		Tiling<MAP>(map),
 		top_closed_(top_closed),
 		bottom_closed_(bottom_closed),
 		top_triangulated_(false),
 		bottom_triangulated_(false)
 	{
-		this->cylinder(n,z);
+		this->nx_ = n;
+		this->ny_ = z;
+		this->nz_ = -1;
+
+		CylinderTopo<MAP>(this,n,z);
 
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
+
+		this->dart_ = this->vertex_table_[0].dart;
 
 		//close top
 		Face f = mbuild.close_hole(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->vertex_table_[(this->nx_)*(this->ny_) - 1].dart)))) ;

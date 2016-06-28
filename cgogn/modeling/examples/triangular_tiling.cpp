@@ -4,7 +4,7 @@
 #include <cgogn/modeling/tiling/triangular_grid.h>
 #include <cgogn/modeling/tiling/triangular_cylinder.h>
 #include <cgogn/modeling/tiling/triangular_tore.h>
-#include <cgogn/modeling/tiling/triangular_cube.h>
+//#include <cgogn/modeling/tiling/triangular_cube.h>
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 
@@ -24,7 +24,6 @@ int main(int , char** )
 	{
 		Map2 map;
 		cgogn::modeling::TriangularGrid<Map2> g(map, x, y);
-
 
 		VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("grid");
 		g.embed_into_grid(vertex_grid, 10.0f, 10.0f, 0.0f);
