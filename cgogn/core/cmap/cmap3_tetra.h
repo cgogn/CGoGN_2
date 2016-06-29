@@ -427,7 +427,7 @@ public:
 		return result;
 	}
 
-	inline uint32 codegree(Edge2 e) const
+	inline uint32 codegree(Edge2) const
 	{
 		return 2;
 	}
@@ -486,7 +486,7 @@ public:
 			return 2;
 	}
 
-	inline uint32 codegree(Volume v) const
+	inline uint32 codegree(Volume) const
 	{
 		return 4;
 	}

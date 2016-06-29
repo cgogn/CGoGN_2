@@ -100,7 +100,7 @@ public:
 		return map_.phi3_unsew(d);
 	}
 
-	inline Dart add_pyramid_topo(uint32 nb_edges)
+	inline Dart add_pyramid_topo(uint32)
 	{
 		cgogn_message_assert(false, "Can create only hexa");
 		cgogn_log_warning("add_pyramid_topo") << "Attempt to create a volume which is not a hexahedron in Map3Hexa";
