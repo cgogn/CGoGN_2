@@ -59,8 +59,20 @@ public:
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
+	/**
+	 * @brief data
+	 * @return a pointer to the first delement stored in the buffer vector
+	 */
 	virtual void* data() = 0;
 	virtual const void* data() const = 0;
+
+	/**
+	 * @brief buffer_vector
+	 * @return return a pointer to the vector used to store the data (WARNING : this is not a pointer to the data contained in the vector)
+	 */
+	virtual void* buffer_vector() = 0;
+	virtual const void* buffer_vector() const = 0;
+
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
 	/**
@@ -244,10 +256,20 @@ public:
 
 	virtual void* data() override
 	{
-		return &data_;
+		return &data_[0];
 	}
 
 	virtual const void* data() const override
+	{
+		return &data_[0];
+	}
+
+	void* buffer_vector() override
+	{
+		return &data_;
+	}
+
+	virtual const void* buffer_vector() const override
 	{
 		return &data_;
 	}
@@ -270,7 +292,7 @@ public:
 	virtual std::unique_ptr<Inherit> simplify() override
 	{
 		std::unique_ptr<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>> res = make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>>();
-		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->data()));
+		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->buffer_vector()));
 		res_vec = std::move(this->data_);
 		this->data_ = std::vector<T>();
 		return std::unique_ptr<Inherit>(res.release());

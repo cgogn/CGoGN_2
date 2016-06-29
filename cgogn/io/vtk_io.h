@@ -954,7 +954,7 @@ protected:
 						sstream >> nb_cells >> size;
 						cells_.read_n(fp, size, !ascii_file, big_endian);
 
-						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.data());
+						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.buffer_vector());
 						cgogn_assert(cell_types_vec != nullptr);
 						if (word == "POLYGONS")
 						{
@@ -1470,8 +1470,8 @@ private:
 		this->nb_vertices_ = uint32(this->positions_.size());
 		this->nb_faces_ = uint32(this->cell_types_.size());
 
-		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.data())->begin();
-		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.data());
+		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
+		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
 		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
 		{
 			const std::size_t nb_vert = *(cells_it++);
