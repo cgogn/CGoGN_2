@@ -37,7 +37,7 @@
 #include <cgogn/rendering/volume_drawer.h>
 #include <cgogn/rendering/topo_drawer.h>
 #include <cgogn/geometry/algos/picking.h>
-
+#include <cgogn/rendering/frame_manipulator.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -65,6 +65,8 @@ public:
 	virtual void init();
 	virtual void keyPressEvent(QKeyEvent*);
 	virtual void mousePressEvent(QMouseEvent*);
+	virtual void mouseReleaseEvent(QMouseEvent*);
+	virtual void mouseMoveEvent(QMouseEvent*);
 
 	void import(const std::string& volumeMesh);
 	virtual ~Viewer();
@@ -88,6 +90,8 @@ private:
 
 	std::unique_ptr<DisplayListDrawer> drawer_;
 	std::unique_ptr<DisplayListDrawer::Renderer> drawer_rend_;
+
+	std::unique_ptr<cgogn::rendering::FrameManipulator> frame_manip_;
 
 	bool vol_rendering_;
 	bool edge_rendering_;
@@ -186,6 +190,10 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->set_explode_volume(expl_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
+
+		case Qt::Key_X:
+			frame_manip_->rotate(cgogn::rendering::FrameManipulator::Xr, 0.1507f);
+			break;
 		default:
 			break;
 	}
@@ -205,6 +213,8 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 		Vec3 A(P[0], P[1], P[2]);
 		Vec3 B(Q[0], Q[1], Q[2]);
+
+		frame_manip_->pick(event->x(), event->y(),P,Q);
 
 		drawer_->new_list();
 
@@ -235,7 +245,32 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	}
 
 	QOGLViewer::mousePressEvent(event);
+	update();
 }
+
+void Viewer::mouseReleaseEvent(QMouseEvent* event)
+{
+	frame_manip_->release();
+	QOGLViewer::mouseReleaseEvent(event);
+	update();
+}
+
+void Viewer::mouseMoveEvent(QMouseEvent* event)
+{
+	frame_manip_->drag(true, event->x(), event->y());
+
+	Vec3 position;
+	Vec3 axis_z;
+
+	frame_manip_->get_position(position);
+	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+//	std::cout<< "position" << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
+//	std::cout<< "axis_z" << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
+
+	QOGLViewer::mouseMoveEvent(event);
+	update();
+}
+
 
 void Viewer::draw()
 {
@@ -259,6 +294,8 @@ void Viewer::draw()
 		topo_drawer_rend_->draw(proj,view,this);
 
 	drawer_rend_->draw(proj, view, this);
+
+	frame_manip_->draw(proj, view, this);
 }
 
 void Viewer::init()
@@ -282,6 +319,9 @@ void Viewer::init()
 
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
+
+	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
+	frame_manip_->set_size(bb_.diag_size()/2);
 }
 
 int main(int argc, char** argv)

@@ -27,6 +27,7 @@ set(HEADER_FILES
 	volume_drawer.h
 	map_render.h
 	wall_paper.h
+	frame_manipulator.h
 )
 
 set(SOURCE_FILES
@@ -48,6 +49,7 @@ set(SOURCE_FILES
 	volume_drawer.cpp
 	map_render.cpp
 	wall_paper.cpp
+	frame_manipulator.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
