@@ -39,8 +39,15 @@ namespace cgogn
 namespace rendering
 {
 
-class CGOGN_RENDERING_API FrameManipulator//: public Pickable
+class CGOGN_RENDERING_API FrameManipulator
 {
+	std::unique_ptr<VBO> vbo_grid_;
+	std::unique_ptr<ShaderSimpleColor::Param> param_grid_;
+
+	static const uint32 nb_grid_ = 10;
+	static const uint32 nb_grid_ind_ = 4*(nb_grid_+1);
+
+
 public:
 	enum AXIS {NONE=0, CENTER, Xt, Yt, Zt, Xr, Yr, Zr, Xs, Ys, Zs, Translations, Rotations, Scales};
 	using Vec3 = cgogn::geometry::Vec_T<std::array<float,3>>;//Eigen::Vector3f;
@@ -67,7 +74,7 @@ protected:
 	/**
 	 * VBO for position
 	 */
-	std::unique_ptr<VBO> vbo_pos_;
+	std::unique_ptr<VBO> vbo_frame_;
 
 	/**
 	 * Shader
@@ -79,6 +86,8 @@ protected:
 	 * the axis to be highlighted
 	 */
 	uint32 highlighted_;
+
+	bool axis_orientation_;
 
 	/**
 	 * Rotation matrices
@@ -150,7 +159,7 @@ public:
 	/**
 	 * draw the frame
 	 */
-	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33);
+	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
 	 * try picking the frame
@@ -241,7 +250,8 @@ public:
 	 * set the position of frame
 	 * @param P the position of origin
 	 */
-	void set_translation(const QVector3D& P);
+	template <typename VEC3>
+	void set_position(const VEC3& P);
 
 	inline QVector3D get_position() { return trans_; }
 
@@ -301,11 +311,20 @@ void FrameManipulator::pick(int x, int y, const VEC& PP, const VEC& QQ)
 }
 
 template <typename VEC3>
+void FrameManipulator::set_position(const VEC3& pos)
+{
+	trans_[0] = pos[0];
+	trans_[1] = pos[1];
+	trans_[2] = pos[2];
+}
+
+
+template <typename VEC3>
 void FrameManipulator::get_position(VEC3& pos)
 {
-	pos[0]= trans_[0];
-	pos[1]= trans_[1];
-	pos[2]= trans_[2];
+	pos[0] = trans_[0];
+	pos[1] = trans_[1];
+	pos[2] = trans_[2];
 }
 
 template <typename VEC3>

@@ -257,15 +257,22 @@ void Viewer::mouseReleaseEvent(QMouseEvent* event)
 
 void Viewer::mouseMoveEvent(QMouseEvent* event)
 {
-	frame_manip_->drag(true, event->x(), event->y());
+	if (event->modifiers() & Qt::ShiftModifier)
+	{
+		bool local_manip = (event->buttons() & Qt::RightButton);
 
-	Vec3 position;
-	Vec3 axis_z;
+		frame_manip_->drag(local_manip, event->x(), event->y());
+		Vec3 position;
+		Vec3 axis_z;
+		frame_manip_->get_position(position);
+		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+		std::cout<< "position " << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
+		std::cout<< "axis_z " << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
 
-	frame_manip_->get_position(position);
-	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
-//	std::cout<< "position" << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
-//	std::cout<< "axis_z" << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
+		float32 d = -(position.dot(axis_z));
+		volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
+	}
+
 
 	QOGLViewer::mouseMoveEvent(event);
 	update();
@@ -295,7 +302,7 @@ void Viewer::draw()
 
 	drawer_rend_->draw(proj, view, this);
 
-	frame_manip_->draw(proj, view, this);
+	frame_manip_->draw(true,true,proj, view, this);
 }
 
 void Viewer::init()
@@ -322,6 +329,7 @@ void Viewer::init()
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/2);
+	frame_manip_->set_position(bb_.center());
 }
 
 int main(int argc, char** argv)
