@@ -59,6 +59,7 @@ protected:
 	// uniform ids
 	GLint unif_color_;
 	GLint unif_width_;
+	GLint unif_plane_clip_;
 
 public:
 
@@ -82,6 +83,12 @@ public:
 	 * @param w width in pixel
 	 */
 	void set_width(float32 w);
+
+	/**
+	 * @brief set_plane_clip
+	 * @param plane
+	 */
+	void set_plane_clip(const QVector4D& plane);
 
 protected:
 
@@ -117,17 +124,20 @@ protected:
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
 		sh->set_color(color_);
 		sh->set_width(width_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
 
 	QColor color_;
 	float32 width_;
+	QVector4D plane_clip_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<false>* sh) :
 		ShaderParam(sh),
 		color_(255, 255, 255),
-		width_(2.0f)
+		width_(2.0f),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
@@ -155,6 +165,7 @@ protected:
 	{
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
 		sh->set_width(width_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
@@ -163,10 +174,12 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
 	float32 width_;
+	QVector4D plane_clip_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<true>* sh) :
 		ShaderParam(sh),
-		width_(2.0f)
+		width_(2.0f),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)

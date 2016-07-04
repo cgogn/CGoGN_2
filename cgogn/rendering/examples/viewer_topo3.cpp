@@ -266,11 +266,12 @@ void Viewer::mouseMoveEvent(QMouseEvent* event)
 		Vec3 axis_z;
 		frame_manip_->get_position(position);
 		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
-		std::cout<< "position " << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
-		std::cout<< "axis_z " << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
+//		std::cout<< "position " << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
+//		std::cout<< "axis_z " << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
 
 		float32 d = -(position.dot(axis_z));
 		volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
+		topo_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
 	}
 
 

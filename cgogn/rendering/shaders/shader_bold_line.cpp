@@ -48,6 +48,7 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 "layout (lines) in;\n"
 "layout (triangle_strip, max_vertices=6) out;\n"
 "out vec4 color_f;\n"
+"out vec4 posi_clip;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 lineWidths;\n"
@@ -65,8 +66,9 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 "			A = B + (A-B)*(nearZ-B.z)/(A.z-B.z);\n"
 "		if (B.z >= nearZ)\n"
 "			B = A + (B-A)*(nearZ-A.z)/(B.z-A.z);\n"
-"		A = projection_matrix*A;\n"
-"		B = projection_matrix*B;\n"
+
+"		vec4 A = projection_matrix*A;\n"
+"		vec4 B = projection_matrix*B;\n"
 "		A = A/A.w;\n"
 "		B = B/B.w;\n"
 "		vec2 U2 = normalize(vec2(lineWidths[1],lineWidths[0])*(B.xy - A.xy));\n"
@@ -75,21 +77,27 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 "		vec3 V = vec3(LWCorr*vec2(U2[1], -U2[0]), 0.0);	\n"
 "		vec3 color3 = lineColor.rgb;\n"
 "		color_f = vec4(color3,0.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color3,0.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color3,1.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-U, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color3,1.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+U, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color3,0.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color3,0.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		EndPrimitive();\n"
@@ -98,10 +106,14 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 
 const char* ShaderBoldLineGen::fragment_shader_source_ =
 "#version 150\n"
+"uniform vec4 plane_clip;\n"
 "in vec4 color_f;\n"
+"in vec4 posi_clip;\n"
 "out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
+"	float d = dot(plane_clip,posi_clip);\n"
+"	if (d>0.0) discard;\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -122,6 +134,7 @@ const char* ShaderBoldLineGen::geometry_shader_source2_ =
 "layout (triangle_strip, max_vertices=6) out;\n"
 "in vec3 color_v[];\n"
 "out vec4 color_f;\n"
+"out vec4 posi_clip;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 lineWidths;\n"
@@ -147,21 +160,27 @@ const char* ShaderBoldLineGen::geometry_shader_source2_ =
 "		vec3 U = vec3(LWCorr*U2,0.0);\n"
 "		vec3 V = vec3(LWCorr*vec2(U2[1], -U2[0]), 0.0);	\n"
 "		color_f = vec4(color_v[0],0.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color_v[1],0.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color_v[0],1.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-U, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color_v[1],1.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+U, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color_v[0],0.0);\n"
+"		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		color_f = vec4(color_v[1],0.0);\n"
+"		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		EndPrimitive();\n"
@@ -170,10 +189,14 @@ const char* ShaderBoldLineGen::geometry_shader_source2_ =
 
 const char* ShaderBoldLineGen::fragment_shader_source2_ =
 "#version 150\n"
+"uniform vec4 plane_clip;\n"
 "in vec4 color_f;\n"
+"in vec4 posi_clip;\n"
 "out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
+"	float d = dot(plane_clip,posi_clip);\n"
+"	if (d>0.0) discard;\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -198,6 +221,7 @@ ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("lineColor");
 	unif_width_ = prg_.uniformLocation("lineWidths");
+	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
 }
 
 void ShaderBoldLineGen::set_color(const QColor& rgb)
@@ -213,6 +237,11 @@ void ShaderBoldLineGen::set_width(float32 w)
 	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(w / float32(viewport[2]), w / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
+}
+
+void ShaderBoldLineGen::set_plane_clip(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
 template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
