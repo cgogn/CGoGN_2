@@ -67,8 +67,8 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 "		if (B.z >= nearZ)\n"
 "			B = A + (B-A)*(nearZ-A.z)/(B.z-A.z);\n"
 
-"		vec4 A = projection_matrix*A;\n"
-"		vec4 B = projection_matrix*B;\n"
+"		A = projection_matrix*A;\n"
+"		B = projection_matrix*B;\n"
 "		A = A/A.w;\n"
 "		B = B/B.w;\n"
 "		vec2 U2 = normalize(vec2(lineWidths[1],lineWidths[0])*(B.xy - A.xy));\n"

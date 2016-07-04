@@ -118,7 +118,7 @@ bool intersection_sphere_segment(
 
 
 template <typename VEC3>
-int intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const VEC3& point_plane, const VEC3& normal_plane, VEC3* inter = nullptr)
+bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const VEC3& point_plane, const VEC3& normal_plane, VEC3* inter = nullptr)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
