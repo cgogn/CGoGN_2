@@ -141,8 +141,37 @@ FrameManipulator::FrameManipulator():
 		points.push_back(Vec3( 1.0f, x, 0.001f));
 	}
 	cgogn::rendering::update_vbo(points, vbo_grid_.get());
-
 }
+
+void FrameManipulator::z_plane_param(const QColor& color, float32 xc, float32 yc, float32 r)
+{
+	std::vector<Vec3> points;
+	points.reserve(nb_grid_ind_);
+
+	param_grid_->color_ = color;
+
+	float32 x_min = xc-r;
+	float32 x_max = xc+r;
+	float32 y_min = yc-r;
+	float32 y_max = yc+r;
+
+	for (uint32 i=0; i<=nb_grid_; ++i)
+	{
+		float32 x = r*float32(2*i)/float32(nb_grid_) + x_min;
+		points.push_back(Vec3(x, y_min, 0.001f));
+		points.push_back(Vec3(x, y_max, 0.001f));
+	}
+	for (uint32 i=0; i<=nb_grid_; ++i)
+	{
+		float32 y = r*float32(2*i)/float32(nb_grid_) + y_min;
+		points.push_back(Vec3(x_min, y, 0.001f));
+		points.push_back(Vec3(x_max, y, 0.001f));
+	}
+	cgogn::rendering::update_vbo(points, vbo_grid_.get());
+}
+
+
+
 
 void FrameManipulator::set_size(float32 radius)
 {

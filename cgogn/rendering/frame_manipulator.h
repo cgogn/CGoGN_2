@@ -39,6 +39,32 @@ namespace cgogn
 namespace rendering
 {
 
+/**
+ * @brief The FrameManipulator class
+ *
+ * Typical usage:
+ *
+ *  std::unique_ptr<cgogn::rendering::FrameManipulator> frame_manip_;
+ *
+ * init:
+ *   frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
+ *   frame_manip_->set_size(...);
+ *   frame_manip_->set_position(...);
+ * draw:
+ *   frame_manip_->draw(true/false, true/false, proj, view, this);
+ * mousePressEvent:
+ *   frame_manip_->pick(event->x(), event->y(),P,Q); // P,Q computed ray
+ * mouseReleaseEvent:
+ *   frame_manip_->release();
+ * mouseMouseEvent:
+ *   frame_manip_->drag(true/false, event->x(), event->y());
+ *   // for Z plane equation:
+ *   Vec3 position;
+ *   Vec3 axis_z;
+ *   frame_manip_->get_position(position);
+ *   frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+ *   float32 d = -(position.dot(axis_z));
+  */
 class CGOGN_RENDERING_API FrameManipulator
 {
 	std::unique_ptr<VBO> vbo_grid_;
@@ -83,25 +109,16 @@ protected:
 	std::unique_ptr<ShaderSimpleColor::Param> param_sc_;
 
 	/**
-	 * the axis to be highlighted
+	 * the selectd axis, highlighted
 	 */
 	uint32 highlighted_;
 
 	bool axis_orientation_;
 
-	/**
-	 * Rotation matrices
-	 */
 	QMatrix4x4 rotations_;
 
-	/**
-	 * scale rendering factor
-	 */
 	float32 scale_rendering_;
 
-	/**
-	 * translation
-	 */
 	QVector3D trans_;
 
 	QVector3D scale_;
@@ -116,12 +133,10 @@ protected:
 	QMatrix4x4 view_mat_;
 	GLint viewport_[4];
 
+	// last mouse position
 	int beg_X_;
 	int beg_Y_;
 
-	/**
-	 * get the matrix transformation with the scale factor for rendering
-	 */
 	QMatrix4x4 transfo_render_frame();
 
 	inline bool axis_pickable(uint32 a) { return (!locked_axis_[a]) && (!locked_picking_axis_[a]);}
@@ -151,18 +166,37 @@ public:
 	 */
 	void set_size(float32 radius);
 
+
+	/**
+	 * @brief set z_plane parameter drawing
+	 * @param color
+	 * @param xc x position [-1/1] (default 0)
+	 * @param yc y position [-1/1] (default 0)
+	 * @param r radius (default 1)
+	 */
+	void z_plane_param(const QColor& color, float32 xc, float32 yc, float32 r);
+
 	/**
 	 * get the size of frame
 	 */
 	float32 get_size();
 
 	/**
-	 * draw the frame
+	 * @brief draw the frame and the Z plane
+	 * @param frame draw frame or not
+	 * @param zplane draw z-plane or not
+	 * @param proj projection matrix
+	 * @param view model-view matrix
+	 * @param ogl33 pointer on widget that inherit from QOpenGLFunctions_3_3_Core
 	 */
 	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
-	 * try picking the frame
+	 * @brief try picking the frame
+	 * @param x mouse x pos
+	 * @param y mouse y pos
+	 * @param PP first point of ray picking
+	 * @param QQ second point of ray picking
 	 */
 	template<typename VEC>
 	void pick(int x, int y, const VEC& PP, const VEC& QQ);
@@ -255,11 +289,18 @@ public:
 
 	inline QVector3D get_position() { return trans_; }
 
+	/**
+	 * @brief get an axis
+	 * @param ax (Xr,Yr,Zr)
+	 * @return the axis
+	 */
 	QVector3D get_axis(uint32 ax);
 
+	/// get position in a non-QVector3 vector
 	template <typename VEC3>
 	void get_position(VEC3& pos);
 
+	/// get axis in a non-QVector3 vector
 	template <typename VEC3>
 	void get_axis(uint32 ax,VEC3& pos);
 

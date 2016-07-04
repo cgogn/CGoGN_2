@@ -205,19 +205,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 void Viewer::mousePressEvent(QMouseEvent* event)
 {
-	if (event->modifiers() & Qt::ShiftModifier)
-	{
-		qoglviewer::Vec P;
-		qoglviewer::Vec Q;
-		rayClick(event, P, Q);
+	qoglviewer::Vec P;
+	qoglviewer::Vec Q;
+	rayClick(event, P, Q);
+	Vec3 A(P[0], P[1], P[2]);
+	Vec3 B(Q[0], Q[1], Q[2]);
 
-		Vec3 A(P[0], P[1], P[2]);
-		Vec3 B(Q[0], Q[1], Q[2]);
 
+	if (event->modifiers() & Qt::ControlModifier)
 		frame_manip_->pick(event->x(), event->y(),P,Q);
 
+	if (event->modifiers() & Qt::ShiftModifier)
+	{
 		drawer_->new_list();
-
 		std::vector<Map3::Volume> selected;
 		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
 		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
@@ -250,26 +250,27 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 void Viewer::mouseReleaseEvent(QMouseEvent* event)
 {
-	frame_manip_->release();
+	if (event->modifiers() & Qt::ControlModifier)
+		frame_manip_->release();
+
 	QOGLViewer::mouseReleaseEvent(event);
 	update();
 }
 
 void Viewer::mouseMoveEvent(QMouseEvent* event)
 {
-	if (event->modifiers() & Qt::ShiftModifier)
+	if (event->modifiers() & Qt::ControlModifier)
 	{
 		bool local_manip = (event->buttons() & Qt::RightButton);
-
 		frame_manip_->drag(local_manip, event->x(), event->y());
+
+		// get/compute Z plane
 		Vec3 position;
 		Vec3 axis_z;
 		frame_manip_->get_position(position);
 		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
-//		std::cout<< "position " << position[0]<< ","<< position[1]<< ","<< position[2]<< std::endl;
-//		std::cout<< "axis_z " << axis_z[0]<< ","<< axis_z[1]<< ","<< axis_z[2]<< std::endl;
-
 		float32 d = -(position.dot(axis_z));
+		// and set clipping
 		volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
 		topo_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
 	}
@@ -328,9 +329,20 @@ void Viewer::init()
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 
+
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
-	frame_manip_->set_size(bb_.diag_size()/2);
-	frame_manip_->set_position(bb_.center());
+	frame_manip_->set_size(bb_.diag_size()/4);
+	frame_manip_->set_position(bb_.max());
+	frame_manip_->z_plane_param(QColor(200,200,200),-1.5f,-1.5f, 2.0f);
+
+	Vec3 position;
+	Vec3 axis_z;
+	frame_manip_->get_position(position);
+	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+	float32 d = -(position.dot(axis_z));
+	volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
+	topo_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
+
 }
 
 int main(int argc, char** argv)
