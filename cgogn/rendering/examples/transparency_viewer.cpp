@@ -151,11 +151,12 @@ void ViewerTransparency::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
+	// begin with opaque objects
 	param_point_sprite_->bind(proj,view);
 	render_->draw(cgogn::rendering::POINTS);
 	param_point_sprite_->release();
 
-	// sorting
+	// sorting transparent objects
 	transp_sort_->pre_sorting(proj,view,this);
 	render_->draw(cgogn::rendering::TRIANGLES);
 	transp_sort_->post_sorting(this);
