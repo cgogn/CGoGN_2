@@ -43,7 +43,7 @@ class TriangularTore : public Tiling<MAP>
 
 	/*! @name Topological Operators
 	 *************************************************************************/
-protected:
+public:
 
 	//! Create a subdivided 2D tore
 	/*! @param[in] n nb of squares around big circumference
@@ -79,10 +79,6 @@ protected:
 			c->vertex_table_.shrink_to_fit();
 		}
 	};
-
-	TriangularTore(MAP& map):
-		Tiling<MAP>(map)
-	{}
 
 public:
 	TriangularTore(MAP& map, uint32 n, uint32 m):

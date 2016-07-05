@@ -36,7 +36,7 @@ namespace modeling
 /*! \brief The class of regular tore square tiling
  */
 template <typename MAP>
-class SquareTore : protected SquareCylinder<MAP>
+class SquareTore : protected Tiling<MAP>
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -44,53 +44,52 @@ class SquareTore : protected SquareCylinder<MAP>
 	/*! @name Topological Operators
 	 *************************************************************************/
 	//@{
-protected:
+public:
 	//! Create a subdivided 2D tore
 	/*! @param[in] n nb of squares around big circumference
 	 *  @param[in] m nb of squares around small circumference
 	 */
-	void tore(uint32 n, uint32 m)
+	template <typename INNERMAP>
+	class ToreTopo: public SquareCylinder<INNERMAP>::template CylinderTopo<INNERMAP>
+	{
+	public:
+		ToreTopo(Tiling<INNERMAP>* c, uint32 n, uint32 m):
+			SquareCylinder<INNERMAP>::template CylinderTopo<INNERMAP>(c,n,m)
+		{
+			using MapBuilder = typename MAP::Builder;
+			MapBuilder mbuild(c->map_);
+
+			// just finish to sew
+			const uint32 nb_y = (m-1)*n;
+			for(uint32 i = 0; i < n; ++i)
+			{
+				Dart d = c->vertex_table_[i].dart;
+				Dart e = c->vertex_table_[i+nb_y].dart;
+				e = c->map_.phi1(c->map_.phi1(e));
+				mbuild.phi2_sew(d, e);
+				c->vertex_table_[i+nb_y+n] = Vertex();
+			}
+
+			// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
+			c->vertex_table_.erase(
+						std::remove_if(c->vertex_table_.begin(), c->vertex_table_.end(),
+										[&](Vertex v) -> bool { return !v.is_valid(); }),
+									c->vertex_table_.end());
+
+			c->vertex_table_.shrink_to_fit();
+		}
+	};
+	//@}
+
+public:
+	SquareTore(MAP& map, uint32 n, uint32 m):
+		Tiling<MAP>(map)
 	{
 		this->nx_ = n;
 		this->ny_ = m;
 		this->nz_ = -1;
 
-		this->cylinder(n,m);
-
-		using MapBuilder = typename MAP::Builder;
-		MapBuilder mbuild(this->map_);
-
-		// just finish to sew
-		const uint32 nb_y = (m-1)*n;
-		for(uint32 i = 0; i < n; ++i)
-		{
-			Dart d = this->vertex_table_[i].dart;
-			Dart e = this->vertex_table_[i+nb_y].dart;
-			e = this->map_.phi1(this->map_.phi1(e));
-			mbuild.phi2_sew(d, e);
-			this->vertex_table_[i+nb_y+n] = Vertex();
-		}
-
-		// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
-		this->vertex_table_.erase(
-					std::remove_if(this->vertex_table_.begin(), this->vertex_table_.end(),
-									[&](Vertex v) -> bool { return !v.is_valid(); }),
-								this->vertex_table_.end());
-
-		this->vertex_table_.shrink_to_fit();
-	}
-	//@}
-
-	SquareTore(MAP& map):
-		SquareCylinder<MAP>(map)
-	{}
-
-public:
-	SquareTore(MAP& map, uint32 n, uint32 m):
-		SquareCylinder<MAP>(map)
-	{
-		tore(n,m);
-	}
+		ToreTopo<MAP>(this, n, m);	}
 
 	/*! @name Embedding Operators
 	 *************************************************************************/

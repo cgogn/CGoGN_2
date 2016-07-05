@@ -83,10 +83,6 @@ public:
 		}
 	};
 
-	TriangularCylinder(MAP& map):
-		Tiling<MAP>(map)
-	{}
-
 public:
 	TriangularCylinder(MAP& map, uint32 n, uint32 z, bool top_closed, bool bottom_closed):
 		Tiling<MAP>(map),

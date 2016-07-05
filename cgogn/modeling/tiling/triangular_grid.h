@@ -115,11 +115,8 @@ public:
 				}
 			}
 		}
+		//@}
 	};
-
-	TriangularGrid(MAP& map):
-		Tiling<MAP>(map)
-	{}
 
 public:
 	TriangularGrid(MAP& map, uint32 x, uint32 y):

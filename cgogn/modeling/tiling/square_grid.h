@@ -39,84 +39,92 @@ class SquareGrid : public Tiling<MAP>
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
-protected:
-	//@{
-	//! Create a 2D grid
-	/*! @param[in] x nb of squares in x
-	 *  @param[in] y nb of squares in y
-	 */
-	void grid(uint32 x, uint32 y)
+public:
+	template <typename INNERMAP>
+	class GridTopo
 	{
-		using MapBuilder = typename MAP::Builder;
-
-		MapBuilder mbuild(this->map_);
-
-		const uint32 nb_vertices = (x+1)*(y+1);
-		const uint32 nb_faces = x*y;
-
-		this->vertex_table_.reserve(nb_vertices);
-		this->face_table_.reserve(nb_faces);
-
-		//creation of triangles and storing vertices
-		for(uint32 i = 0 ; i < y ; ++i)
+	public:
+		//@{
+		//! Create a 2D grid
+		/*! @param[in] x nb of squares in x
+		 *  @param[in] y nb of squares in y
+		 */
+		GridTopo(Tiling<INNERMAP>* g, uint32 x, uint32 y)
 		{
-			for(uint32 j = 1 ; j <= x ; ++j)
+			using Vertex = typename INNERMAP::Vertex;
+			using Face = typename INNERMAP::Face;
+
+			using MapBuilder = typename MAP::Builder;
+
+			MapBuilder mbuild(g->map_);
+
+			const uint32 nb_vertices = (x+1)*(y+1);
+			const uint32 nb_faces = x*y;
+
+			g->vertex_table_.reserve(nb_vertices);
+			g->face_table_.reserve(nb_faces);
+
+			//creation of triangles and storing vertices
+			for(uint32 i = 0 ; i < y ; ++i)
 			{
-				Dart d = mbuild.add_face_topo_parent(4);
-				this->vertex_table_.push_back(Vertex(d));
-				this->face_table_.push_back(Face(d));
-
-				if (j == x)
-					this->vertex_table_.push_back(Vertex(this->map_.phi1(d)));
-			}
-		}
-
-		// store last row of vertices
-		const uint32 idx = (x+1)*(y-1);
-		for (uint32 i = 0; i < x; ++i)
-			this->vertex_table_.push_back(Vertex(this->map_.phi_1(this->vertex_table_[idx+i].dart)));
-
-		this->vertex_table_.push_back(Vertex(this->map_.phi1(this->vertex_table_[idx+x].dart)));
-
-		//sewing pairs of triangles
-		const uint32 nb_x = (x+1);
-		for (uint32 i = 0; i < y; ++i)
-		{
-			for (uint32 j = 0; j < x; ++j)
-			{
-				if (i > 0) // sew with preceeding row
+				for(uint32 j = 1 ; j <= x ; ++j)
 				{
-					const int32 pos = i*nb_x+j;
-					Dart d = this->vertex_table_[pos].dart;
-					Dart e = this->vertex_table_[pos-nb_x].dart;
-					e = this->map_.phi1(this->map_.phi1(e));
-					mbuild.phi2_sew(d, e);
-				}
-				if (j > 0) // sew with preceeding column
-				{
-					const int32 pos = i*nb_x+j;
-					Dart d = this->vertex_table_[pos].dart;
-					d = this->map_.phi_1(d);
-					Dart e = this->vertex_table_[pos-1].dart;
-					e = this->map_.phi1(e);
-					mbuild.phi2_sew(d, e);
+					Dart d = mbuild.add_face_topo_parent(4);
+					g->vertex_table_.push_back(Vertex(d));
+					g->face_table_.push_back(Face(d));
+
+					if (j == x)
+						g->vertex_table_.push_back(Vertex(g->map_.phi1(d)));
 				}
 			}
+
+			// store last row of vertices
+			const uint32 idx = (x+1)*(y-1);
+			for (uint32 i = 0; i < x; ++i)
+				g->vertex_table_.push_back(Vertex(g->map_.phi_1(g->vertex_table_[idx+i].dart)));
+
+			g->vertex_table_.push_back(Vertex(g->map_.phi1(g->vertex_table_[idx+x].dart)));
+
+			//sewing pairs of triangles
+			const uint32 nb_x = (x+1);
+			for (uint32 i = 0; i < y; ++i)
+			{
+				for (uint32 j = 0; j < x; ++j)
+				{
+					if (i > 0) // sew with preceeding row
+					{
+						const int32 pos = i*nb_x+j;
+						Dart d = g->vertex_table_[pos].dart;
+						Dart e = g->vertex_table_[pos-nb_x].dart;
+						e = g->map_.phi1(g->map_.phi1(e));
+						mbuild.phi2_sew(d, e);
+					}
+					if (j > 0) // sew with preceeding column
+					{
+						const int32 pos = i*nb_x+j;
+						Dart d = g->vertex_table_[pos].dart;
+						d = g->map_.phi_1(d);
+						Dart e = g->vertex_table_[pos-1].dart;
+						e = g->map_.phi1(e);
+						mbuild.phi2_sew(d, e);
+					}
+				}
+			}
 		}
-
-		this->dart_ = this->vertex_table_[0].dart;
-	}
-	//@}
-
-	SquareGrid(MAP& map):
-		Tiling<MAP>(map)
-	{}
+		//@}
+	};
 
 public:
 	SquareGrid(MAP& map, uint32 x, uint32 y):
-		Tiling<MAP>(map, x, y, -1)
+		Tiling<MAP>(map)
 	{
-		grid(x,y);
+		this->nx_ = x;
+		this->ny_ = y;
+		this->nz_ = -1;
+
+		GridTopo<MAP>(this,x,y);
+
+		this->dart_ = this->vertex_table_[0].dart;
 
 		//close the hole
 		using MapBuilder = typename MAP::Builder;
