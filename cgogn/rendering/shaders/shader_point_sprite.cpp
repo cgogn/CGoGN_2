@@ -150,7 +150,7 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "#endif\n"
 "in vec2 spriteCoord;\n"
 "in vec3 sphereCenter;\n"
-"out vec3 fragColor;\n"
+"out vec4 fragColor;\n"
 
 "void main()\n"
 "{\n"
@@ -172,12 +172,12 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "	vec3 L = normalize (lightPos - frag_position_eye);\n"
 "	float lambertTerm = dot(N,L);\n"
 "	#if WITH_COLOR == 1\n"
-"	vec4 result = vec4(color_f*lambertTerm,1.0);\n"
+"	vec4 result = vec4(color_f*lambertTerm, 1.0);\n"
 "	#else\n"
-"	vec4 result = color*lambertTerm;\n"
+"	vec4 result = vec4(color.rgb*lambertTerm, color.a);\n"
 "	#endif\n"
-"	result += ambiant;\n"
-"	fragColor = result.rgb;\n"
+"	result += vec4(ambiant.rgb, 0.0);\n"
+"	fragColor = result.rgba;\n"
 "}\n";
 
 ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_vertex)
