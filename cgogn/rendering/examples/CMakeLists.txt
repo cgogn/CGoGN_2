@@ -35,3 +35,7 @@ target_link_libraries(picking_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIE
 
 add_executable(viewer_topo3 viewer_topo3.cpp)
 target_link_libraries(viewer_topo3 ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
+
+add_executable(transparency_viewer transparency_viewer.cpp)
+target_link_libraries(transparency_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})

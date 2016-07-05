@@ -224,6 +224,12 @@ protected:
 
 public:
 
+	inline uint32 nb_indices(DrawingType prim) const
+	{
+		return nb_indices_[prim];
+	}
+
+
 	template <typename VEC3, typename MAP, typename MASK>
 	inline void init_primitives(
 		const MAP& m,

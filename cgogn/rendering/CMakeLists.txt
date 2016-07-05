@@ -28,6 +28,7 @@ set(HEADER_FILES
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
+	transparency_sorting.h
 )
 
 set(SOURCE_FILES
@@ -50,6 +51,7 @@ set(SOURCE_FILES
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
+	transparency_sorting.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

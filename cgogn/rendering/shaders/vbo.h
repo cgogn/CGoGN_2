@@ -147,6 +147,12 @@ public:
 	{
 		return nb_vectors_;
 	}
+
+	GLuint id() const
+	{
+		return buffer_.bufferId();
+	}
+
 };
 
 /**
