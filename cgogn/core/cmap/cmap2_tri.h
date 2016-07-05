@@ -1023,12 +1023,16 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi1(it);
-		} while (it != d);
+		uint32 first = (d.index/3)*3;
+		f(Dart(first));
+		f(Dart(first+1));
+		f(Dart(first+2));
+//		Dart it = d;
+//		do
+//		{
+//			f(it);
+//			it = phi1(it);
+//		} while (it != d);
 	}
 
 	template <typename FUNC>
@@ -1479,7 +1483,7 @@ struct CMap2TriType
 template <typename MAP_TRAITS>
 using CMap2Tri = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_TRI_CPP_))
 extern template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;

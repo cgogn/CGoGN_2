@@ -28,6 +28,8 @@
 #include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/utils/logger.h>
+//#include <cgogn/core/cmap/cmap3_tetra.h>
+//#include <cgogn/core/cmap/cmap3_hexa.h>
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/map_import.h>
 #include <cgogn/geometry/algos/bounding_box.h>
@@ -43,6 +45,8 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using namespace cgogn::numerics;
+//using Map3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
+//using Map3 = cgogn::CMap3Hexa<cgogn::DefaultMapTraits>;
 using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
@@ -123,6 +127,12 @@ void Viewer::import(const std::string& volumeMesh)
 		std::exit(EXIT_FAILURE);
 	}
 
+	if (!map_.check_map_integrity())
+	{
+		cgogn_log_error("Viewer::import") << "Integrity of map not respected. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
+
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -190,7 +200,6 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->set_explode_volume(expl_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
-
 		case Qt::Key_X:
 			frame_manip_->rotate(cgogn::rendering::FrameManipulator::Xr, 0.1507f);
 			break;

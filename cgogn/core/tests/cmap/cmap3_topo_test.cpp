@@ -355,11 +355,11 @@ TEST_F(CMap3TopoTest, merge_incident_volumes_topo)
 
 	Dart p1 = add_prism_topo(3u);
 	Dart p2 = add_prism_topo(3u);
-	mbuild.sew_volumes(Volume(p1), Volume(p2));
+	mbuild.sew_volumes(p1, p2);
 
 	Dart p3 = add_pyramid_topo(4u);
 	Dart p4 = add_pyramid_topo(4u);
-	mbuild.sew_volumes(Volume(p3), Volume(p4));
+	mbuild.sew_volumes(p3, p4);
 
 	mbuild.close_map();
 
@@ -463,11 +463,11 @@ TEST_F(CMap3TopoTest, nb_connected_components)
 
 	Dart p1 = add_prism_topo(3u);
 	Dart p2 = add_prism_topo(3u);
-	mbuild.sew_volumes(Volume(p1), Volume(p2));
+	mbuild.sew_volumes(p1, p2);
 
 	Dart p3 = add_pyramid_topo(4u);
 	Dart p4 = add_pyramid_topo(4u);
-	mbuild.sew_volumes(Volume(p3), Volume(p4));
+	mbuild.sew_volumes(p3, p4);
 
 	add_prism_topo(5u);
 

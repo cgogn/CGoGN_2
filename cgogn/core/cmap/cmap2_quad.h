@@ -279,6 +279,10 @@ public:
 	inline Dart phi(Dart d) const
 	{
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
+
+		if (N%100 == 11)
+			return phi11(phi< N/100 >(d));
+
 		switch(N % 10)
 		{
 			case 1 : return phi1(phi<N / 10>(d)) ;
@@ -722,12 +726,18 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi1(it);
-		} while (it != d);
+		uint32 first = d.index & 0xfffffffc;
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first++));
+		f(Dart(first));
+
+//		Dart it = d;
+//		do
+//		{
+//			f(it);
+//			it = phi1(it);
+//		} while (it != d);
 	}
 
 	template <typename FUNC>
@@ -1179,7 +1189,7 @@ struct CMap2QuadType
 template <typename MAP_TRAITS>
 using CMap2Quad = CMap2Quad_T<MAP_TRAITS, CMap2QuadType<MAP_TRAITS>>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_QUAD_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_QUAD_CPP_))
 extern template class CGOGN_CORE_API CMap2Quad_T<DefaultMapTraits, CMap2QuadType<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Quad<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Quad<DefaultMapTraits>>;
