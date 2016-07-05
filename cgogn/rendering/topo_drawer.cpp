@@ -106,6 +106,13 @@ void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& 
 	ogl33->glDisable(GL_BLEND);
 }
 
+void TopoDrawer::Renderer::set_clipping_plane(const QVector4D& p)
+{
+	param_bl_->plane_clip_ = p;
+	param_bl2_->plane_clip_ = p;
+	param_rp_->plane_clip_ = p;
+}
+
 } // namespace rendering
 
 } // namespace cgogn

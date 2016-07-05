@@ -819,8 +819,8 @@ private:
 						const char* elem =  static_cast<const char*>(att->element_ptr(map.embedding(w)));
 						for(uint32 i = 0u; i < elem_size; ++i)
 							buffer_char.push_back(elem[i]);
-						write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					}, *(this->cell_cache_));
+					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
 				} else {
 					map.foreach_cell([&](Volume w)
@@ -954,7 +954,7 @@ protected:
 						sstream >> nb_cells >> size;
 						cells_.read_n(fp, size, !ascii_file, big_endian);
 
-						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.data());
+						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.buffer_vector());
 						cgogn_assert(cell_types_vec != nullptr);
 						if (word == "POLYGONS")
 						{
@@ -1237,6 +1237,7 @@ protected:
 				if (to_lower(std::string(cell_data->Attribute("Name"))) == "connectivity" && (cell_data != cell_nodes.back()))
 				{
 					std::swap(cell_data, cell_nodes.back());
+					break;
 				}
 			}
 
@@ -1469,8 +1470,8 @@ private:
 		this->nb_vertices_ = uint32(this->positions_.size());
 		this->nb_faces_ = uint32(this->cell_types_.size());
 
-		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.data())->begin();
-		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.data());
+		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
+		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
 		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
 		{
 			const std::size_t nb_vert = *(cells_it++);
