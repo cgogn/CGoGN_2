@@ -80,7 +80,7 @@ private:
 		{
 			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
 		};
-		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
+		std::map<VEC3, uint32, std::function<bool(const VEC3&, const VEC3&)>> vertices_set(comp_fct);
 
 		std::string line;
 		std::getline(fp, line); // 1st line : solid name
@@ -145,7 +145,7 @@ private:
 		{
 			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
 		};
-		std::map<VEC3, uint32, decltype(comp_fct)> vertices_set(comp_fct);
+		std::map<VEC3, uint32, std::function<bool(const VEC3&, const VEC3&)>> vertices_set(comp_fct);
 
 		for(uint32 i = 0u; i < this->nb_faces_; ++i)
 		{
