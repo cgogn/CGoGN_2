@@ -105,6 +105,7 @@ public:
 		void set_explode_volume(float32 x);
 		void set_face_color(const QColor& rgb);
 		void set_edge_color(const QColor& rgb);
+		void set_clipping_plane(const QVector4D& pl);
 	};
 
 	using Self = VolumeDrawerGen;

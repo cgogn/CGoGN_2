@@ -107,6 +107,10 @@ public:
 		 * @param with_blending
 		 */
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+
+		void set_clipping_plane(const QVector4D& p);
+
+
 	};
 
 	using Self = TopoDrawer;
