@@ -56,6 +56,10 @@ class CGOGN_RENDERING_API MapRender
 {
 protected:
 
+	// indices used for sorting
+	std::vector<std::array<uint32,3>> indices_tri_;
+	std::vector<uint32> indices_points_;
+
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
@@ -244,6 +248,7 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
+				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
@@ -253,6 +258,7 @@ public:
 					init_triangles_ear<VEC3>(m, mask, table_indices, position);
 				else
 					init_triangles(m, mask, table_indices);
+				indices_tri_.clear();
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -294,12 +300,14 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
+				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
 				break;
 			case TRIANGLES:
 				init_triangles(m, mask, table_indices);
+				indices_tri_.clear();
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -327,12 +335,128 @@ public:
 		init_primitives(m, CellFilters(), prim);
 	}
 
+
+//	template <typename COMP>
+//	void sort(DrawingType prim, const COMP& comp)
+//	{
+//		std::vector<std::array<uint32,3>> indices_tri;
+//		indices_buffers_[prim]->bind();
+//		uint32 nb = indices_buffers_[prim]->size() / (3*sizeof(uint32));
+//		indices_tri.resize(nb);
+//		indices_buffers_[prim]->read(0,indices_tri.data()->data(), indices_buffers_[prim]->size());
+
+//		std::sort(indices_tri.begin(), indices_tri.end(),comp);
+
+//		indices_buffers_[prim]->write(0,indices_tri.data()->data(), indices_buffers_[prim]->size());
+//		indices_buffers_[prim]->release();
+//	}
+
+
+//	void init_sorting_triangles()
+//	{
+//		indices_buffers_[TRIANGLES]->bind();
+//		uint32 nb = indices_buffers_[TRIANGLES]->size() / (3*sizeof(uint32));
+//		indices_tri_.resize(nb);
+//		indices_buffers_[TRIANGLES]->read(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
+//		indices_buffers_[TRIANGLES]->release();
+//	}
+
+	/**
+	 * @brief sort the triangles
+	 * @param comp comparison function
+	 */
+	template <typename COMP>
+	void sort_triangles(const COMP& comp)
+	{
+		if (indices_tri_.empty())
+		{
+			indices_buffers_[TRIANGLES]->bind();
+			uint32 nb = indices_buffers_[TRIANGLES]->size() / (3*sizeof(uint32));
+			indices_tri_.resize(nb);
+			indices_buffers_[TRIANGLES]->read(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
+			indices_buffers_[TRIANGLES]->release();
+		}
+
+		std::sort(indices_tri_.begin(), indices_tri_.end(),comp);
+		indices_buffers_[TRIANGLES]->bind();
+		indices_buffers_[TRIANGLES]->write(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
+		indices_buffers_[TRIANGLES]->release();
+	}
+
+	/**
+	 * @brief sort the triangles with center's z component
+	 * @param vertex_transfo_ transformed (with modelview matrix) position attribute
+	 */
+	template <typename VERTEX_POSITION_ATTR>
+	void sort_triangles_center_z(const VERTEX_POSITION_ATTR& vertex_transfo_)
+	{
+		sort_triangles([&] (const std::array<uint32,3>& ta, const std::array<uint32,3>& tb)
+		{
+			return vertex_transfo_[ta[0]][2] + vertex_transfo_[ta[1]][2] + vertex_transfo_[ta[2]][2]
+					<  vertex_transfo_[tb[0]][2] + vertex_transfo_[tb[1]][2] + vertex_transfo_[tb[2]][2];
+		});
+	}
+
+
+	/**
+	 * @brief sort the points
+	 * @param comp comparison function
+	 */
+	template <typename COMP>
+	void sort_points(const COMP& comp)
+	{
+		if (indices_points_.empty())
+		{
+			indices_buffers_[POINTS]->bind();
+			uint32 nb = indices_buffers_[POINTS]->size();
+			indices_points_.resize(nb);
+			indices_buffers_[POINTS]->read(0,indices_points_.data(), indices_buffers_[POINTS]->size());
+			indices_buffers_[POINTS]->release();
+		}
+
+		std::sort(indices_tri_.begin(), indices_tri_.end(),comp);
+		indices_buffers_[POINTS]->bind();
+		indices_buffers_[POINTS]->write(0,indices_points_.data(), indices_buffers_[POINTS]->size());
+		indices_buffers_[POINTS]->release();
+	}
+
+
+	/**
+	 * @brief sort the points on z component
+	 * @param vertex_transfo_ transformed (with modelview matrix) position attribute
+	 */
+	template <typename VERTEX_POSITION_ATTR>
+	void sort_points_z(const VERTEX_POSITION_ATTR& vertex_transfo_)
+	{
+		sort_points([&] (const std::array<uint32,3>& pa, const std::array<uint32,3>& pb)
+		{
+			return vertex_transfo_[pa][2] < vertex_transfo_[pb][2];;
+		});
+	}
+
 	void draw(DrawingType prim);
 };
 
 /**
+ * @brief transform position with modelview matrix
+ * @param map
+ * @param pos_in input position
+ * @param pos_out transformed positions
+ * @param view modelview matrix
+ */
+template <typename VEC3, typename MAP>
+void transform_position(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& pos_in, typename MAP::template VertexAttribute<VEC3>& pos_out, const QMatrix4x4& view)
+{
+	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i, uint32)
+	{
+		QVector3D P = view.map(QVector3D(pos_in[i][0],pos_in[i][1],pos_in[i][2]));
+		pos_out[i]= VEC3(P[0],P[1],P[2]);
+	});
+}
+
+/**
  * @brief create embedding indices of vertices and faces for each vertex of each face
- * @param m
+ * @param m the map
  * @param position vertex positions use for ear triangulation
  * @param indices1 embedding indices of vertices
  * @param indices2 embedding indices of faces

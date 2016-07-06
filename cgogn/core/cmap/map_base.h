@@ -1018,13 +1018,13 @@ public:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1129,13 +1129,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1228,13 +1228,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
