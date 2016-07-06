@@ -160,8 +160,9 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 	static_assert(std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<VEC>::Scalar, double>::value, "only float or double allowed for vbo");
 
 	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
-	vbo->allocate(vector.size(), vec_dim);
-	const uint32 vbo_bytes =  vector.size() * vec_dim * sizeof(float32);
+	uint32 vec_sz = uint32(vector.size());
+	vbo->allocate(vec_sz, vec_dim);
+	const uint32 vbo_bytes =  vec_dim * vec_sz * uint32(sizeof(float32));
 	if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value)
 	{
 		// copy

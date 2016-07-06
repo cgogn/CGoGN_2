@@ -73,14 +73,17 @@ protected:
 			return this->import_binary(filename, position, normal);
 	}
 private:
+
+	// put compare function here because lambda version do not compile on VS2013
+	inline static bool comp_fct(const VEC3& v1, const VEC3& v2)
+	{
+		return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
+	}
+
 	bool import_ascii(const std::string& filename, ChunkArray<VEC3>* position, ChunkArray<VEC3>* normal)
 	{
 		std::ifstream fp(filename, std::ios::in);
-		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
-		{
-			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
-		};
-		std::map<VEC3, uint32, std::function<bool(const VEC3&, const VEC3&)>> vertices_set(comp_fct);
+		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
 		std::string line;
 		std::getline(fp, line); // 1st line : solid name
@@ -141,11 +144,7 @@ private:
 		std::array<float32, 3> normal_buffer;
 		std::array<float32, 9> position_buffer;
 
-		auto comp_fct = [](const VEC3& v1, const VEC3& v2)
-		{
-			return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
-		};
-		std::map<VEC3, uint32, std::function<bool(const VEC3&, const VEC3&)>> vertices_set(comp_fct);
+		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
 		for(uint32 i = 0u; i < this->nb_faces_; ++i)
 		{

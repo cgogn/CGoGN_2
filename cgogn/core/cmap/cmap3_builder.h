@@ -138,10 +138,10 @@ public:
 	 * @param v1 first volume
 	 * @param v2 second volume
 	 */
-	inline void sew_volumes(Volume v1, Volume v2)
+	inline void sew_volumes(Dart v1, Dart v2)
 	{
-		Dart it1 = v1.dart;
-		Dart it2 = v2.dart;
+		Dart it1 = v1;
+		Dart it2 = v2;
 		const Dart begin = it1;
 		do
 		{

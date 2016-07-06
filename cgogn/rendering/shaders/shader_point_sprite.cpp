@@ -63,7 +63,7 @@ const char* ShaderPointSpriteGen::geometry_shader_source_ =
 "layout (triangle_strip, max_vertices=4) out;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
-
+"uniform vec4 plane_clip;\n"
 "#if WITH_COLOR == 1\n"
 "in vec3 color_v[];\n"
 "out vec3 color_f;\n"
@@ -121,13 +121,17 @@ const char* ShaderPointSpriteGen::geometry_shader_source_ =
 "#endif\n"
 "void main()\n"
 "{\n"
-"	vec4 posCenter = model_view_matrix * gl_in[0].gl_Position;\n"
-"	sphereCenter = posCenter.xyz;\n"
-"	corner(posCenter, -1.4, 1.4);\n"
-"	corner(posCenter, -1.4,-1.4);\n"
-"	corner(posCenter,  1.4, 1.4);\n"
-"	corner(posCenter,  1.4,-1.4);\n"
-"	EndPrimitive();\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		vec4 posCenter = model_view_matrix * gl_in[0].gl_Position;\n"
+"		sphereCenter = posCenter.xyz;\n"
+"		corner(posCenter, -1.4, 1.4);\n"
+"		corner(posCenter, -1.4,-1.4);\n"
+"		corner(posCenter,  1.4, 1.4);\n"
+"		corner(posCenter,  1.4,-1.4);\n"
+"		EndPrimitive();\n"
+"	}\n"
 "}\n";
 
 const char* ShaderPointSpriteGen::fragment_shader_source_ =
@@ -146,7 +150,7 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "#endif\n"
 "in vec2 spriteCoord;\n"
 "in vec3 sphereCenter;\n"
-"out vec3 fragColor;\n"
+"out vec4 fragColor;\n"
 
 "void main()\n"
 "{\n"
@@ -168,12 +172,12 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "	vec3 L = normalize (lightPos - frag_position_eye);\n"
 "	float lambertTerm = dot(N,L);\n"
 "	#if WITH_COLOR == 1\n"
-"	vec4 result = vec4(color_f*lambertTerm,1.0);\n"
+"	vec4 result = vec4(color_f*lambertTerm, 1.0);\n"
 "	#else\n"
-"	vec4 result = color*lambertTerm;\n"
+"	vec4 result = vec4(color.rgb*lambertTerm, color.a);\n"
 "	#endif\n"
-"	result += ambiant;\n"
-"	fragColor = result.rgb;\n"
+"	result += vec4(ambiant.rgb, 0.0);\n"
+"	fragColor = result.rgba;\n"
 "}\n";
 
 ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_vertex)
@@ -230,6 +234,7 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 	unif_ambiant_ = prg_.uniformLocation("ambiant");
 	unif_light_pos_ = prg_.uniformLocation("lightPos");
 	unif_size_ = prg_.uniformLocation("point_size");
+	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
 
 	if (!color_per_vertex)
 		set_color(QColor(250, 0, 0));
@@ -288,6 +293,12 @@ void ShaderPointSpriteGen::set_size(float32 w)
 	if (unif_size_ >= 0)
 		prg_.setUniformValue(unif_size_, w);
 }
+
+void ShaderPointSpriteGen::set_plane_clip(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
 
 template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, false>;
 template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, false>;

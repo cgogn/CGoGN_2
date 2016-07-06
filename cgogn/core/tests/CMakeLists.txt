@@ -21,6 +21,8 @@ set(SOURCE_FILES
 
 	cmap/cmap2tri_test.cpp
 	cmap/cmap2quad_test.cpp
+	cmap/cmap3tetra_test.cpp
+	cmap/cmap3hexa_test.cpp
 
 	utils/name_types_test.cpp
 

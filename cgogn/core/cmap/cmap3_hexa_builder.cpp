@@ -22,13 +22,14 @@
 *******************************************************************************/
 
 #define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_CPP_
+#define CGOGN_CORE_CMAP_CMAP3_TETRA_BUILDER_CPP_
 
-#include <cgogn/core/cmap/cmap2_tri_builder.h>
+#include <cgogn/core/cmap/cmap3_hexa_builder.h>
 
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
+	template class CGOGN_CORE_API cgogn::CMap3HexaBuilder_T<DefaultMapTraits>;
 
 } // namespace cgogn
+

@@ -241,12 +241,12 @@ public:
 
 	inline uint32 nb_volumes() const
 	{
-		return this->cell_cache_->template size<Volume>();
+		return uint32(this->cell_cache_->template size<Volume>());
 	}
 
 	inline uint32 nb_vertices() const
 	{
-		return this->cell_cache_->template size<Vertex>();
+		return uint32(this->cell_cache_->template size<Vertex>());
 	}
 
 	inline std::vector<int32> const & vertices_of_volumes(Volume w) const
