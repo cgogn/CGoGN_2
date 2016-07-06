@@ -163,46 +163,56 @@ public:
 
 		const VEC3& center_position = position_[center];
 
-		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(this->map_);
-//		typename MAP::DartMarkerStore dm(this->map_);
+		typename MAP::DartMarkerStore dm(this->map_);
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
-		cmv.mark(center);
 
 		uint32 i = 0;
 		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			this->map_.foreach_incident_face(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Face f)
+			Dart vd = this->cells_[Vertex::ORBIT][i];
+			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
 			{
-				bool all_vertices_in = true;
-				bool add_at_least_one_vertex = false;
-				bool previous_in = in_sphere(position_[Vertex(f.dart)], center_position, radius_);
-				this->map_.foreach_incident_vertex(f, [&] (Vertex v)
+				dm.mark(d);
+
+				Edge e(d);
+				bool all_in = true;
+				this->map_.foreach_dart_of_orbit_until(e, [&] (Dart dd) -> bool
 				{
-					if (in_sphere(position_[v], center_position, radius_))
+					if (!dm.is_marked(dd))
 					{
-						if (!cmv.is_marked(v))
-						{
-							add_at_least_one_vertex = true;
-							cmv.mark(v);
-							this->cells_[Vertex::ORBIT].push_back(v.dart);
-							this->cells_[Edge::ORBIT].push_back(v.dart);
-						}
-						previous_in = true;
+						all_in = false;
+						return false;
 					}
-					else
-					{
-						all_vertices_in = false;
-						if (previous_in)
-							this->border_.push_back(this->map_.phi_1(v.dart));
-						previous_in = false;
-					}
+					return true;
 				});
-				if (add_at_least_one_vertex && all_vertices_in)
+				if (all_in)
+					this->cells_[Edge::ORBIT].push_back(d);
+
+				Face f(d);
+				all_in = true;
+				this->map_.foreach_dart_of_orbit_until(f, [&] (Dart dd) -> bool
 				{
-					this->cells_[Face::ORBIT].push_back(f.dart);
+					if (!dm.is_marked(dd))
+					{
+						all_in = false;
+						return false;
+					}
+					return true;
+				});
+				if (all_in)
+					this->cells_[Face::ORBIT].push_back(d);
+
+				Dart d2 = this->map_.phi2(d);
+				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
+				{
+					if (!dm.is_marked(d2))
+						this->cells_[Vertex::ORBIT].push_back(d2);
 				}
+				else
+					this->border_.push_back(d);
 			});
+
 			++i;
 		}
 	}
