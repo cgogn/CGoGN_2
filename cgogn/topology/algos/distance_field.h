@@ -143,8 +143,8 @@ public:
 	 * A path is a sequence of adjacent edges whose weights are summed along the paths
 	 * The method returns the shortest paths and their lengths in two VertexAttributes.
 	 * @param[in] sources the vertices from which the shortest paths are computed
-	 * @param[out] path_to_source : a reference to the previous vertex in the shortest path
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
+	 * @param[out] path_to_source : a reference to the previous vertex in the shortest path
 	 */
 	void dijkstra_compute_paths(
 			const std::vector<Vertex>& sources,
@@ -228,7 +228,7 @@ private:
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
 		// in an sorted array of the distances and n the number of vertices.
-		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
+		Scalar n = Scalar(map_.template nb_cells<Vertex::ORBIT>());
 		uint32 i = 1;
 		while(!vertex_queue.empty())
 		{
@@ -298,23 +298,6 @@ public:
 
 	/**
 	 * @brief Build a scalar field that represent the lenght of a minimal path
-	 * from a vertex to the center of the Map.
-	 */
-	template <typename T>
-	void distance_to_center(const VertexAttribute<T>& attribute,
-							VertexAttribute<Scalar>& scalar_field)
-	{
-		if (!attribute.is_valid())
-			cgogn_log_error("distance_to_center") << "Invalid attribute";
-		else
-		{
-			Vertex center = cgogn::geometry::central_vertex<T, MAP>(map_, attribute);
-			dijkstra_compute_distances({center}, scalar_field);
-		}
-	}
-
-	/**
-	 * @brief Build a scalar field that represent the lenght of a minimal path
 	 * from a vertex to the boundary of the Map.
 	 */
 	void distance_to_boundary(VertexAttribute<Scalar>& scalar_field)
@@ -328,9 +311,20 @@ public:
 		});
 
 		if (boundary_vertices.size() == 0u)
-			cgogn_log_error("distance_to_boundary") << "No boundary found";
+			cgogn_log_warning("distance_to_boundary") << "No boundary found";
 		else
 			dijkstra_compute_distances(boundary_vertices, scalar_field);
+	}
+
+	/**
+	 * @brief Return the vertex that is the furthest from all boundary.
+	 * (i.e. the vertex that maximize the discance to boundary)
+	 * and build a scalar field that represent the distance to that vertex.
+	 */
+	Vertex central_vertex(VertexAttribute<Scalar>& scalar_field)
+	{
+		distance_to_boundary(scalar_field);
+		return find_maximum(scalar_field);
 	}
 
 	/**

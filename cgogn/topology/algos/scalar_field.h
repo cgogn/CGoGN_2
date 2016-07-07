@@ -63,6 +63,7 @@ class ScalarField
 
 	template<typename T>
 	using VertexAttribute = typename MAP::template VertexAttribute<T>;
+	using VertexMarker = typename cgogn::CellMarker<MAP, Vertex::ORBIT>;
 	using VertexMarkerStore = typename cgogn::CellMarkerStore<MAP, Vertex::ORBIT>;
 	using FaceMarkerStore = typename cgogn::CellMarkerStore<MAP, Face::ORBIT>;
 	using VolumeMarkerStore = typename cgogn::CellMarkerStore<MAP, Volume::ORBIT>;
@@ -172,14 +173,15 @@ private:
 	/**
 	 * @brief Count the number of connected components in Link+(v) or Link-(v)
 	 * @param link the set of vertices that belong to the link
-	 * @param vertex_marker a marker that should be set for the initial set of vertices
+	 * @param link_marker a marker that should be set for the initial set of vertices
 	 * @return the number of connected components
 	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
 	 */
-	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarkerStore& vertex_marker)
+	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 2>::type* = nullptr>
+	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& link_marker)
 	{
-		int nb_cc = 0;
+		uint32 nb_cc = 0;
 		while (!link.empty())
 		{
 			// Search a marked vertex in the link
@@ -188,10 +190,10 @@ private:
 			do {
 				d = link.back();
 				link.pop_back();
-			} while (!vertex_marker.is_marked(Vertex(d)) && !link.empty());
+			} while (!link_marker.is_marked(Vertex(d)) && !link.empty());
 
 			// If a marked vertex has been found, its connected component is counted and unmarked
-			if (vertex_marker.is_marked(Vertex(d)))
+			if (link_marker.is_marked(Vertex(d)))
 			{
 				++nb_cc;
 				// Traverse the connected component of d (marked vertices connected to d)
@@ -200,7 +202,54 @@ private:
 				while (!cc.empty())
 				{
 					Dart e = cc.back();
-					vertex_marker.unmark(Vertex(e));
+					link_marker.unmark(Vertex(e));
+					cc.pop_back();
+
+					Dart e1 = map_.phi2(map_.phi1(e));
+					if (link_marker.is_marked(Vertex(e1)))
+						cc.push_back(e1);
+					Dart e2 = map_.phi_1(map_.phi2(e));
+					if (link_marker.is_marked(Vertex(e2)))
+						cc.push_back(e2);
+				}
+			}
+		}
+		return nb_cc;
+	}
+
+	/**
+	 * @brief Count the number of connected components in Link+(v) or Link-(v)
+	 * @param link the set of vertices that belong to the link
+	 * @param link_marker a marker that should be set for the initial set of vertices
+	 * @return the number of connected components
+	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
+	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
+	 */
+	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
+	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& link_marker)
+	{
+		uint32 nb_cc = 0;
+		while (!link.empty())
+		{
+			// Search a marked vertex in the link
+			// Such vertex belong to a not yet traversed connected component
+			Dart d;
+			do {
+				d = link.back();
+				link.pop_back();
+			} while (!link_marker.is_marked(Vertex(d)) && !link.empty());
+
+			// If a marked vertex has been found, its connected component is counted and unmarked
+			if (link_marker.is_marked(Vertex(d)))
+			{
+				++nb_cc;
+				// Traverse the connected component of d (marked vertices connected to d)
+				std::vector<Dart> cc;
+				cc.push_back(d);
+				while (!cc.empty())
+				{
+					Dart e = cc.back();
+					link_marker.unmark(Vertex(e));
 					cc.pop_back();
 
 					map_.foreach_incident_face(Edge(e), [&](Face f)
@@ -208,7 +257,7 @@ private:
 						// The vertex of dart adj is adjacent to the vertex of e through an edge and
 						// the dart phi2(adj) belongs to the central vertex C
 						Dart adj = map_.phi2(map_.phi_1(map_.phi_1(f.dart)));
-						if (vertex_marker.is_marked(Vertex(adj)))
+						if (link_marker.is_marked(Vertex(adj)))
 							cc.push_back(adj);
 					});
 				}
@@ -228,8 +277,8 @@ private:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
-		VertexMarkerStore sup_vertex_marker(map_);
-		VertexMarkerStore inf_vertex_marker(map_);
+		VertexMarker sup_link_marker(map_);
+		VertexMarker inf_link_marker(map_);
 
 		std::vector<Dart> sup_link;
 		std::vector<Dart> inf_link;
@@ -238,22 +287,21 @@ private:
 		Scalar center_value = scalar_field_[v];
 		cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
 		{
-			Scalar value = scalar_field_[u];
-			if (value < center_value)
+			if (scalar_field_[u] < center_value)
 			{
-				inf_vertex_marker.mark(u);
+				inf_link_marker.mark(u);
 				inf_link.push_back(u.dart);
 			}
 			else
 			{
-				sup_vertex_marker.mark(u);
+				sup_link_marker.mark(u);
 				sup_link.push_back(u.dart);
 			}
 		});
 
 		// Count the number of connected components in the inf and sup links
-		int nb_inf = nb_marked_cc_in_link(inf_link, inf_vertex_marker);
-		int nb_sup = nb_marked_cc_in_link(sup_link, sup_vertex_marker);
+		uint32 nb_inf = nb_marked_cc_in_link<CONCRETE_MAP>(inf_link, inf_link_marker);
+		uint32 nb_sup = nb_marked_cc_in_link<CONCRETE_MAP>(sup_link, sup_link_marker);
 
 		// All vertices of the Link are in Link-(v)
 		if (nb_inf == 1 && nb_sup == 0)
@@ -483,7 +531,7 @@ public:
 		extract_level_sets<MAP>(level_lines);
 	}
 
-	void extract_ascending_manifold(std::vector<Edge>& edges_set)
+	void extract_ascending_1_manifold(std::vector<Edge>& edges_set)
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
@@ -563,22 +611,25 @@ public:
 			edges_set.push_back(e);
 
 			// Search for the next vertex in the descending path to the minimum
-			Vertex min_vertex = Vertex(e.dart);
-			Scalar min_value = scalar_field_[min_vertex];
-			cache_.foreach_adjacent_vertex_through_edge(min_vertex, [&](Vertex u)
+			if (vertex_type_[Vertex(e.dart)] == CriticalPoint::REGULAR)
 			{
-				Scalar current_value = scalar_field_[u];
-				if (current_value < min_value)
+				Vertex min_vertex = Vertex(e.dart);
+				Scalar min_value = scalar_field_[min_vertex];
+				cache_.foreach_adjacent_vertex_through_edge(min_vertex, [&](Vertex u)
 				{
-					min_value = current_value;
-					min_vertex = u;
-				}
-			});
-			if (min_vertex.dart != e.dart) saddles_to_minima.push_back(min_vertex.dart);
+					Scalar current_value = scalar_field_[u];
+					if (current_value < min_value)
+					{
+						min_value = current_value;
+						min_vertex = u;
+					}
+				});
+				saddles_to_minima.push_back(min_vertex.dart);
+			}
 		}
 	}
 
-	void extract_descending_manifold(std::vector<Edge>& edges_set)
+	void extract_descending_1_manifold(std::vector<Edge>& edges_set)
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
@@ -658,19 +709,157 @@ public:
 			edges_set.push_back(e);
 
 			// Search for the next vertex in the descending path to the minimum
-			Vertex max_vertex = Vertex(e.dart);
-			Scalar max_value = scalar_field_[max_vertex];
-			cache_.foreach_adjacent_vertex_through_edge(max_vertex, [&](Vertex u)
+			if (vertex_type_[Vertex(e.dart)] == CriticalPoint::REGULAR)
 			{
-				Scalar current_value = scalar_field_[u];
-				if (current_value > max_value)
+				Vertex max_vertex = Vertex(e.dart);
+				Scalar max_value = scalar_field_[max_vertex];
+				cache_.foreach_adjacent_vertex_through_edge(max_vertex, [&](Vertex u)
 				{
-					max_value = current_value;
-					max_vertex = u;
+					Scalar current_value = scalar_field_[u];
+					if (current_value > max_value)
+					{
+						max_value = current_value;
+						max_vertex = u;
+					}
+				});
+				saddles_to_maxima.push_back(max_vertex.dart);
+			}
+		}
+	}
+
+	void extract_ascending_3_manifold(std::vector<Vertex>& boundary)
+	{
+		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
+
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+
+		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
+		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)
+		VertexMarker boundary_vertex(map_);		// Vertex in Boundary(A3)
+
+		using my_pair = std::pair<Scalar, unsigned int>;
+		using my_queue = std::priority_queue<my_pair, std::vector<my_pair>, std::greater<my_pair> >;
+
+		// To classify the vertices in ascending order of the scalar field values
+		// i.e. to sweep the ascending 3-manifold from minima to saddles and from saddles to maxima
+		my_queue vertex_queue;
+
+		// Initialize the manifold id to zero (not set)
+		for (uint32& id : manifold_id)
+			id = 0u;
+
+		// Initialize the manifold id count
+		uint32 manifold_id_count = 1;
+
+		// Put all vertices in the priority queue
+		map_.foreach_cell([&](Vertex v) {
+			vertex_queue.push(std::make_pair(scalar_field_[v], v.dart.index));
+		});
+
+		// While the sweep front is not empty
+		while (!vertex_queue.empty())
+		{
+			Vertex v = Vertex(Dart(vertex_queue.top().second));
+			vertex_queue.pop();
+
+			uint32 min_id = manifold_id_count + 1u;
+			uint32 max_id = 0u;
+
+			// Search the minimal and maximal manifold id present in the link
+			Scalar center_value = scalar_field_[v];
+			cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
+			{
+				if (scalar_field_[u] < center_value && inner_vertex.is_marked(u))
+				{
+					min_id = std::min(min_id, manifold_id[u]);
+					max_id = std::max(max_id, manifold_id[u]);
 				}
 			});
-			if (max_vertex.dart != e.dart) saddles_to_maxima.push_back(max_vertex.dart);
-		}
+
+			if (max_id == 0u) {		// isolated vertex => init new 3-manifold
+				++manifold_id_count;
+				manifold_id[v] = manifold_id_count;
+				inner_vertex.mark(v);
+			}
+			if (min_id == max_id) { // a unique ascending 3-manifold in the link => inner vertex
+				manifold_id[v] = min_id;
+				inner_vertex.mark(v);
+			}
+			else {					// min_id != max_id => at least two 3-manifold in the link => boundary vertex
+				boundary_vertex.mark(v);
+				boundary.push_back(v);
+			}
+		};
+		std::cout << endl;
+		map_.remove_attribute(manifold_id);
+	}
+
+	void extract_descending_3_manifold(std::vector<Vertex>& boundary)
+	{
+		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
+
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+
+		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
+		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)
+		VertexMarker boundary_vertex(map_);		// Vertex in Boundary(A3)
+
+		using my_pair = std::pair<Scalar, unsigned int>;
+		using my_queue = std::priority_queue<my_pair, std::vector<my_pair>>;
+
+		// To classify the vertices in ascending order of the scalar field values
+		// i.e. to sweep the ascending 3-manifold from minima to saddles and from saddles to maxima
+		my_queue vertex_queue;
+
+		// Initialize the manifold id to zero (not set)
+		for (uint32& id : manifold_id)
+			id = 0u;
+
+		// Initialize the manifold id count
+		uint32 manifold_id_count = 1;
+
+		// Put all vertices in the priority queue
+		map_.foreach_cell([&](Vertex v) {
+			vertex_queue.push(std::make_pair(scalar_field_[v], v.dart.index));
+		});
+
+		// While the sweep front is not empty
+		while (!vertex_queue.empty())
+		{
+			Vertex v = Vertex(Dart(vertex_queue.top().second));
+			vertex_queue.pop();
+
+			uint32 min_id = manifold_id_count + 1u;
+			uint32 max_id = 0u;
+
+			// Search the minimal and maximal manifold id present in the link
+			Scalar center_value = scalar_field_[v];
+			cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
+			{
+				if (scalar_field_[u] > center_value && inner_vertex.is_marked(u))
+				{
+					min_id = std::min(min_id, manifold_id[u]);
+					max_id = std::max(max_id, manifold_id[u]);
+				}
+			});
+
+			if (max_id == 0u) {		// isolated vertex => init new 3-manifold
+				std::cout << "+";
+				++manifold_id_count;
+				manifold_id[v] = manifold_id_count;
+				inner_vertex.mark(v);
+			}
+			if (min_id == max_id) { // a unique ascending 3-manifold in the link => inner vertex
+				manifold_id[v] = min_id;
+				inner_vertex.mark(v);
+			}
+			else {					// min_id != max_id => at least two 3-manifold in the link => boundary vertex
+				boundary_vertex.mark(v);
+				boundary.push_back(v);
+			}
+		};
+		std::cout << endl;
+		map_.remove_attribute(manifold_id);
 	}
 
 private:

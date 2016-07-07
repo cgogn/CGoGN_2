@@ -135,7 +135,7 @@ public:
 	 * Startig from a central vertex, compute the geodesic distance to this vertex.
 	 * The features are the maxima of this distance field.
 	 */
-	void get_basic_features(Vertex central_vertex, std::vector<Vertex>& features)
+	void basic_features(Vertex central_vertex, std::vector<Vertex>& features)
 	{
 		// Init A with a vertex near the center of the mesh
 		Vertex A = central_vertex;
@@ -151,6 +151,40 @@ public:
 		// Copy the maxima in the features set
 		for (Vertex v: maxima_A)
 			features.push_back(v);
+	}
+
+	/**
+	 * @brief Select a central vertex of an open 3-manifold
+	 * @return the central vertex
+	 * The method first computes the local maxima of the distance to boundary scalar field.
+	 * Then, it selects the most central one, i.e. the vertex that generates a distance field
+	 * with the lower maximum.
+	 */
+	Vertex central_vertex()
+	{
+		// Search the maxima in the distance to boundary field
+		distance_field_.distance_to_boundary(distance_to_A_);
+		ScalarField<Scalar, MAP> scalar_field(map_, cache_, distance_to_A_);
+		scalar_field.critical_vertex_analysis();
+		std::vector<Vertex> maxima = scalar_field.get_maxima();
+
+		// Search the most central vertices in these maxima,
+		// i.e. whose distance field has a minimal diameter
+		Scalar min = std::numeric_limits<Scalar>::max();
+		Vertex min_vertex = maxima.front();
+
+		for (Vertex v : maxima)
+		{
+			distance_field_.distance_to_features({v}, distance_to_A_);
+			Vertex max_vertex = distance_field_.find_maximum(distance_to_A_);
+			Scalar max = distance_to_A_[max_vertex];
+			if (min > max)
+			{
+				min = max;
+				min_vertex = v;
+			}
+		}
+		return min_vertex;
 	}
 
 private:
@@ -229,10 +263,10 @@ public:
 	 * Experimentations give good results for a ratio between 0.25f and 0.4f for long features
 	 * (like arms and legs), smaller ratio allow the detection of smaller features.
 	 */
-	void get_filtered_features(Vertex central_vertex,
-							   Scalar features_proximity,
-							   VertexAttribute<Scalar>& scalar_field,
-							   std::vector<Vertex>& features)
+	void filtered_features(Vertex central_vertex,
+						   Scalar features_proximity,
+						   VertexAttribute<Scalar>& scalar_field,
+						   std::vector<Vertex>& features)
 	{
 		// Get two Vertices A and B on a maximal diameter
 		// as side effect this build the two scalar field distance_to_A_ and distance_to_B_
