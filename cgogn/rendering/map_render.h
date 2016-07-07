@@ -397,6 +397,57 @@ public:
 		});
 	}
 
+	/**
+	 * @brief sort_triangles_center_z
+	 * @param pos_in
+	 * @param view
+	 */
+	template <typename VEC3, typename ATTR>
+	void sort_triangles_center_z(const ATTR& pos_in, const QMatrix4x4& view)
+	{
+		using Scalar = typename VEC3::Scalar;
+		if (indices_tri_.empty())
+		{
+			indices_buffers_[TRIANGLES]->bind();
+			uint32 nb = indices_buffers_[TRIANGLES]->size() / (3*sizeof(uint32));
+			indices_tri_.resize(nb);
+			indices_buffers_[TRIANGLES]->read(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
+			indices_buffers_[TRIANGLES]->release();
+
+		}
+		std::vector<uint32> tris_sorted;
+		tris_sorted.reserve(indices_tri_.size());
+		std::vector<float> tris_z;
+		tris_z.reserve(indices_tri_.size());
+
+		for (int i=0;i<indices_tri_.size();++i)
+		{
+			tris_sorted.push_back(i);
+			const std::array<uint32,3>& tri = indices_tri_[i];
+			VEC3 C = (pos_in[tri[0]]+pos_in[tri[1]]+pos_in[tri[2]])/3;
+			QVector3D CT = view.map(QVector3D(C[0],C[1],C[2]));
+			tris_z.push_back(CT[2]);
+		}
+
+		std::sort(tris_sorted.begin(), tris_sorted.end(), [&] (uint32 ta, uint32 tb)
+		{
+			return tris_z[ta] < tris_z[tb];
+		});
+
+		std::vector<std::array<uint32,3>> indices_tri2;
+		indices_tri2.reserve(indices_tri_.size());
+
+		for (uint32 t : tris_sorted)
+		{
+			indices_tri2.push_back(indices_tri_[t]);
+		}
+		indices_tri_.swap(indices_tri2);
+
+		indices_buffers_[TRIANGLES]->bind();
+		indices_buffers_[TRIANGLES]->write(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
+		indices_buffers_[TRIANGLES]->release();
+	}
+
 
 	/**
 	 * @brief sort the points

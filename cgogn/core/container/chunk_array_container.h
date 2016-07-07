@@ -979,6 +979,8 @@ public:
 	template <typename FUNC>
 	void foreach_index(const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, uint32), "Wrong function parameter type");
+
 		uint32 it = begin();
 		uint32 it_end = end();
 		while(it != it_end)
@@ -991,6 +993,9 @@ public:
 	template <typename FUNC>
 	void foreach_index_until(const FUNC& f) const
 	{
+		static_assert(check_func_parameter_type(FUNC, uint32), "Wrong function parameter type");
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+
 		uint32 it = begin();
 		uint32 it_end = end();
 		while(it != it_end)

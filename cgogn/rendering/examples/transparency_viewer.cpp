@@ -85,6 +85,7 @@ private:
 	int nb_fps_;
 
 	bool draw_transparent_;
+	bool transparent_method_2_;
 };
 
 
@@ -142,7 +143,10 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 	switch (ev->key())
 	{
 		case Qt::Key_T:
-			draw_transparent_ =!draw_transparent_;
+			draw_transparent_ = !draw_transparent_;
+			break;
+		case Qt::Key_Y:
+			transparent_method_2_ = !transparent_method_2_;
 		default:
 			break;
 	}
@@ -167,22 +171,27 @@ void ViewerTransparency::draw()
 	if (draw_transparent_)
 	{
 
-		cgogn::rendering::transform_position<Vec3>(map_, vertex_position_, vertex_transfo_, view);
-		render_->sort_triangles_center_z(vertex_transfo_);
+		if (transparent_method_2_)
+			render_->sort_triangles_center_z<Vec3>(vertex_position_, view);
+		else
+		{
+			cgogn::rendering::transform_position<Vec3>(map_, vertex_position_, vertex_transfo_, view);
+			//  can be done with custom projection method
+			//	map_.const_attribute_container<Map2::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i, uint32)
+			//	{
+			//		QVector3D P = view.map(QVector3D(vertex_position_[i][0],vertex_position_[i][1],vertex_position_[i][2]));
+			//		vertex_transfo_[i]= Vec3(P[0],P[1],P[2]);
+			//	});
 
-
-	//	map_.const_attribute_container<Map2::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i, uint32)
-	//	{
-	//		QVector3D P = view.map(QVector3D(vertex_position_[i][0],vertex_position_[i][1],vertex_position_[i][2]));
-	//		vertex_transfo_[i]= Vec3(P[0],P[1],P[2]);
-	//	});
-
-	//	render_->sort_triangles([&] (const std::array<uint32,3>& ta, const std::array<uint32,3>& tb)
-	//	{
-	//		auto za = vertex_transfo_[ta[0]][2] + vertex_transfo_[ta[1]][2] + vertex_transfo_[ta[2]][2];
-	//		auto zb = vertex_transfo_[tb[0]][2] + vertex_transfo_[tb[1]][2] + vertex_transfo_[tb[2]][2];
-	//		return za < zb;
-	//	});
+			render_->sort_triangles_center_z(vertex_transfo_);
+			//  can be done with custom compare function
+			//	render_->sort_triangles([&] (const std::array<uint32,3>& ta, const std::array<uint32,3>& tb)
+			//	{
+			//		auto za = vertex_transfo_[ta[0]][2] + vertex_transfo_[ta[1]][2] + vertex_transfo_[ta[2]][2];
+			//		auto zb = vertex_transfo_[tb[0]][2] + vertex_transfo_[tb[1]][2] + vertex_transfo_[tb[2]][2];
+			//		return za < zb;
+			//	});
+		}
 
 		param_flat_->bind(proj,view);
 		glEnable(GL_BLEND);
