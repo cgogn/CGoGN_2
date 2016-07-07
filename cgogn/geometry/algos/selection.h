@@ -173,8 +173,11 @@ public:
 			Dart vd = this->cells_[Vertex::ORBIT][i];
 			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
 			{
+				// mark a dart of the vertex
 				dm.mark(d);
 
+				// check if the edge of d is now completely marked
+				// (which means all the vertices of the edge are in the sphere)
 				Edge e(d);
 				bool all_in = true;
 				this->map_.foreach_dart_of_orbit_until(e, [&] (Dart dd) -> bool
@@ -189,6 +192,8 @@ public:
 				if (all_in)
 					this->cells_[Edge::ORBIT].push_back(d);
 
+				// check if the face of d is now completely marked
+				// (which means all the vertices of the face are in the sphere)
 				Face f(d);
 				all_in = true;
 				this->map_.foreach_dart_of_orbit_until(f, [&] (Dart dd) -> bool
@@ -203,12 +208,15 @@ public:
 				if (all_in)
 					this->cells_[Face::ORBIT].push_back(d);
 
+				// check if the neighbor vertex through the edge is in the sphere
+				// if it is in the sphere and has not been marked yet, put it in the queue
 				Dart d2 = this->map_.phi2(d);
 				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
 				{
 					if (!dm.is_marked(d2))
 						this->cells_[Vertex::ORBIT].push_back(d2);
 				}
+				// if it is not in the sphere, put the dart in the border list
 				else
 					this->border_.push_back(d);
 			});

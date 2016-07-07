@@ -869,7 +869,6 @@ public:
 	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
-
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
@@ -896,6 +895,7 @@ public:
 			  typename std::enable_if<check_func_return_type(FilterFunction, bool) && check_func_parameter_type(FilterFunction, func_parameter_type(FUNC))>::type* = nullptr>
 	void foreach_cell_until(const FUNC& f, const FilterFunction& filter) const
 	{
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		using CellType = func_parameter_type(FUNC);
 
 		switch (STRATEGY)
@@ -947,6 +947,7 @@ public:
 			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
 	inline void foreach_cell_until(const FUNC& f, const Filters& filters) const
 	{
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		using CellType = func_parameter_type(FUNC);
 
 		foreach_cell_until(f, [&filters] (CellType c) { return filters.filter(c); });
@@ -1044,6 +1045,7 @@ public:
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
 	{
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		using CellType = func_parameter_type(FUNC);
 
 		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
@@ -1252,6 +1254,7 @@ protected:
 	template <typename FUNC, typename FilterFunction>
 	inline void foreach_cell_until_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		using CellType = func_parameter_type(FUNC);
 
 		const ConcreteMap* cmap = to_concrete();
@@ -1272,6 +1275,7 @@ protected:
 	template <typename FUNC, typename FilterFunction>
 	inline void foreach_cell_until_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
+		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
 		using CellType = func_parameter_type(FUNC);
 		static const Orbit ORBIT = CellType::ORBIT;
 
