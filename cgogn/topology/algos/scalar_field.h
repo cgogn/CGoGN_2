@@ -839,7 +839,7 @@ public:
 				if (scalar_field_[u] > center_value && inner_vertex.is_marked(u))
 				{
 					min_id = std::min(min_id, manifold_id[u]);
-					max_id = std::max(max_id, manifold_id[u]);
+					max_id = std::max(maxid, manifold_id[u]);
 				}
 			});
 
