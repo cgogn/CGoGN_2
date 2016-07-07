@@ -105,12 +105,17 @@ public:
 		this->dart_ = this->vertex_table_[0].dart;
 
 		//close top
-		Face f = mbuild.close_hole(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->vertex_table_[(this->nx_)*(this->ny_) - 1].dart)))) ;
-		mbuild.boundary_mark(f);
+		Dart f = mbuild.close_hole_topo(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->vertex_table_[(this->nx_)*(this->ny_) - 1].dart)))) ;
+		mbuild.boundary_mark(Face(f));
 
 		//close bottom
-		f = mbuild.close_hole(this->vertex_table_[0].dart) ;
-		mbuild.boundary_mark(f);
+		f = mbuild.close_hole_topo(this->vertex_table_[0].dart) ;
+		mbuild.boundary_mark(Face(f));
+
+		//embed the vertices
+		if(this->map_.template is_embedded<Vertex>())
+			for(Vertex v : this->vertex_table_)
+				mbuild.new_orbit_embedding(v);
 	}
 
 	SquareCylinder(MAP& map, unsigned int n, unsigned int z):

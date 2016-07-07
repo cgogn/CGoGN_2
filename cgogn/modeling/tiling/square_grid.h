@@ -126,13 +126,19 @@ public:
 
 		this->dart_ = this->vertex_table_[0].dart;
 
-		//close the hole
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
-		Face f = mbuild.close_hole(this->dart_) ;
 
-		//and mark it as boundary
-		mbuild.boundary_mark(f);
+		//close the hole
+		Dart f = mbuild.close_hole_topo(this->dart_);
+
+		//mark it as boundary
+		mbuild.boundary_mark(Face(f));
+
+		//and embed the vertices
+		if(this->map_.template is_embedded<Vertex>())
+			for(Vertex v : this->vertex_table_)
+				mbuild.new_orbit_embedding(v);
 	}
 
 	/*! @name Embedding Operators

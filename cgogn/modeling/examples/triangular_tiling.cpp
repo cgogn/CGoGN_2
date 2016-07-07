@@ -23,15 +23,16 @@ int main(int , char** )
 
 	{
 		Map2 map;
+		VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("grid");
+		VertexAttribute<Vec3> vertex_twisted_strip = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("twisted_strip");
+		VertexAttribute<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("helicoid");
+
 		cgogn::modeling::TriangularGrid<Map2> g(map, x, y);
 
-		VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("grid");
+		std::cout << "is good ? " << std::boolalpha << map.check_embedding_integrity() << std::endl;
+
 		g.embed_into_grid(vertex_grid, 10.0f, 10.0f, 0.0f);
-
-		VertexAttribute<Vec3> vertex_twisted_strip = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("twisted_strip");
 		g.embed_into_twisted_strip<Vec3>(vertex_twisted_strip, 10.0f, 5.0f, 3.1f);
-
-		VertexAttribute<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("helicoid");
 		g.embed_into_helicoid<Vec3>(vertex_helicoid, 10.0f, 5.0f, 15.0f, 3.0f, 1);
 
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions("grid.off", {vertorb, "grid"}, {}, false, false));
@@ -41,19 +42,21 @@ int main(int , char** )
 
 	{
 		Map2 map;
+		VertexAttribute<Vec3> vertex_cylinder = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cylinder");
+		VertexAttribute<Vec3> vertex_sphere = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("sphere");
+		VertexAttribute<Vec3> vertex_cone = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cone");
+
 		cgogn::modeling::TriangularCylinder<Map2> g(map, x, y);
+
+		std::cout << "is good ? " << std::boolalpha << map.check_embedding_integrity() << std::endl;
 
 		g.close_top();
 		g.close_bottom();
 		g.triangule_top();
 		g.triangule_bottom();
-		VertexAttribute<Vec3> vertex_cylinder = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cylinder");
+
 		g.embed_into_cylinder(vertex_cylinder, 10.0f, 8.0f, 5.0f);
-
-		VertexAttribute<Vec3> vertex_sphere = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("sphere");
 		g.embed_into_sphere<Vec3>(vertex_sphere, 10.0f);
-
-		VertexAttribute<Vec3> vertex_cone = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cone");
 		g.embed_into_cone<Vec3>(vertex_cone, 10.0f, 5.0f);
 
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions("cylinder.off", {vertorb, "cylinder"}, {}, false, false));
@@ -63,17 +66,18 @@ int main(int , char** )
 
 	{
 		Map2 map;
+		VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("tore");
+
 		cgogn::modeling::TriangularTore<Map2> g(map, x, y);
 
-		g.vertices();
+		std::cout << "is good ? " << std::boolalpha << map.check_embedding_integrity() << std::endl;
 
-		VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("tore");
 		g.embed_into_tore(vertex_tore, 10.0f, 4.0f);
 
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions("tore.off", {vertorb, "tore"}, {}, false, false));
 	}
 
-	/*	{
+/*	{
 		Map2 map;
 		cgogn::modeling::TriangularCube<Map2> g(map, x, y, x);
 

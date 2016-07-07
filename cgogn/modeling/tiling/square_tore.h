@@ -89,7 +89,16 @@ public:
 		this->ny_ = m;
 		this->nz_ = -1;
 
-		ToreTopo<MAP>(this, n, m);	}
+		ToreTopo<MAP>(this, n, m);
+
+		using MapBuilder = typename MAP::Builder;
+		MapBuilder mbuild(this->map_);
+
+		//embed the vertices
+		if(this->map_.template is_embedded<Vertex>())
+			for(Vertex v : this->vertex_table_)
+				mbuild.new_orbit_embedding(v);
+	}
 
 	/*! @name Embedding Operators
 	 *************************************************************************/
