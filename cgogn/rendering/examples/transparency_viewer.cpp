@@ -84,6 +84,7 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
 
+	bool draw_points_;
 	bool draw_transparent_;
 	bool transparent_method_2_;
 };
@@ -135,18 +136,27 @@ ViewerTransparency::ViewerTransparency() :
 	vbo_pos_(nullptr),
 	param_flat_(nullptr),
 	param_point_sprite_(nullptr),
-	draw_transparent_(true)
+	draw_points_(true),
+	draw_transparent_(true),
+	transparent_method_2_(true)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key())
 	{
+		case Qt::Key_P:
+			draw_points_ = !draw_points_;
+			break;
 		case Qt::Key_T:
 			draw_transparent_ = !draw_transparent_;
 			break;
 		case Qt::Key_Y:
 			transparent_method_2_ = !transparent_method_2_;
+			if (transparent_method_2_)
+				cgogn_log_info("transp method") << "threaded";
+			else
+				cgogn_log_info("transp method ") << "simple";
 		default:
 			break;
 	}
@@ -164,9 +174,12 @@ void ViewerTransparency::draw()
 	camera()->getModelViewMatrix(view);
 
 	// begin with opaque objects
-	param_point_sprite_->bind(proj,view);
-	render_->draw(cgogn::rendering::POINTS);
-	param_point_sprite_->release();
+	if (draw_points_)
+	{
+		param_point_sprite_->bind(proj,view);
+		render_->draw(cgogn::rendering::POINTS);
+		param_point_sprite_->release();
+	}
 
 	if (draw_transparent_)
 	{

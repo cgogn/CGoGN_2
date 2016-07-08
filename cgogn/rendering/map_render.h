@@ -429,10 +429,168 @@ public:
 			tris_z.push_back(CT[2]);
 		}
 
-		std::sort(tris_sorted.begin(), tris_sorted.end(), [&] (uint32 ta, uint32 tb)
+		if (std::thread::hardware_concurrency() < 4)
 		{
-			return tris_z[ta] < tris_z[tb];
-		});
+			std::thread th1( [&] ()
+			{
+				std::sort(tris_sorted.begin(), tris_sorted.begin()+tris_sorted.size()/2, [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			std::thread th2( [&] ()
+			{
+				std::sort(tris_sorted.begin()+tris_sorted.size()/2, tris_sorted.end(), [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			th1.join();
+			th2.join();
+
+			std::vector<uint32> tris_sorted2;
+			tris_sorted2.reserve(tris_sorted.size());
+			std::size_t end1=tris_sorted.size()/2;
+			std::size_t end2=tris_sorted.size();
+			std::size_t i=0;
+			std::size_t j=end1;
+
+			while (i<end1 && j<end2)
+			{
+				if (tris_z[tris_sorted[i]]<tris_z[tris_sorted[j]])
+					tris_sorted2.push_back(tris_sorted[i++]);
+				else
+					tris_sorted2.push_back(tris_sorted[j++]);
+			}
+			while (i<end1)
+			{
+				tris_sorted2.push_back(tris_sorted[i++]);
+			}
+			while (j<end2)
+			{
+				tris_sorted2.push_back(tris_sorted[j++]);
+			}
+
+			tris_sorted.swap(tris_sorted2);
+		}
+		else
+		{
+			std::thread th1( [&] ()
+			{
+				std::sort(tris_sorted.begin(), tris_sorted.begin()+tris_sorted.size()/4, [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			std::thread th2( [&] ()
+			{
+				std::sort(tris_sorted.begin()+tris_sorted.size()/4, tris_sorted.begin()+tris_sorted.size()/2, [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			std::thread th3( [&] ()
+			{
+				std::sort(tris_sorted.begin()+tris_sorted.size()/2, tris_sorted.begin()+3*tris_sorted.size()/4, [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			std::thread th4( [&] ()
+			{
+				std::sort(tris_sorted.begin()+3*tris_sorted.size()/4, tris_sorted.end(), [&] (uint32 ta, uint32 tb)
+				{
+					return tris_z[ta] < tris_z[tb];
+				});
+			});
+
+			th1.join();
+			th2.join();
+			th3.join();
+			th4.join();
+
+
+			std::vector<uint32> tris_sorted2;
+			tris_sorted2.resize(tris_sorted.size());
+
+			std::size_t end1=tris_sorted.size()/4;
+			std::size_t end2=tris_sorted.size()/2;
+			std::size_t end3=3*tris_sorted.size()/4;
+			std::size_t end4=tris_sorted.size();
+
+
+			std::thread th5( [&] ()
+			{
+				std::size_t i=0;
+				std::size_t j=end1;
+				std::vector<uint32>::iterator out = tris_sorted2.begin();
+				while (i<end1 && j<end2)
+				{
+					if (tris_z[tris_sorted[i]]<tris_z[tris_sorted[j]])
+						*out++ = (tris_sorted[i++]);
+					else
+						*out++ = (tris_sorted[j++]);
+				}
+				while (i<end1)
+				{
+					*out++ = (tris_sorted[i++]);
+				}
+				while (j<end2)
+				{
+					*out++ = (tris_sorted[j++]);
+				}
+			});
+
+			std::thread th6( [&] ()
+			{
+				std::size_t i = end2;
+				std::size_t j = end3;
+				std::vector<uint32>::iterator out = tris_sorted2.begin() + end2;
+				while (i<end3 && j<end4)
+				{
+					if (tris_z[tris_sorted[i]]<tris_z[tris_sorted[j]])
+						*out++ = (tris_sorted[i++]);
+					else
+						*out++ = (tris_sorted[j++]);
+				}
+				while (i<end3)
+				{
+					*out++ = (tris_sorted[i++]);
+				}
+				while (j<end4)
+				{
+					*out++ = (tris_sorted[j++]);
+				}
+			});
+
+			th5.join();
+			th6.join();
+
+			tris_sorted.clear();
+			std::size_t i=0;
+			std::size_t j=end2;
+
+			while (i<end2 && j<end4)
+			{
+				if (tris_z[tris_sorted2[i]]<tris_z[tris_sorted2[j]])
+					tris_sorted.push_back(tris_sorted2[i++]);
+				else
+					tris_sorted.push_back(tris_sorted2[j++]);
+			}
+			while (i<end2)
+			{
+				tris_sorted.push_back(tris_sorted2[i++]);
+			}
+			while (j<end4)
+			{
+				tris_sorted.push_back(tris_sorted2[j++]);
+			}
+		}
 
 		std::vector<std::array<uint32,3>> indices_tri2;
 		indices_tri2.reserve(indices_tri_.size());
