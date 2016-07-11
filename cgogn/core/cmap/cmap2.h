@@ -970,6 +970,8 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -992,6 +994,8 @@ protected:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI2_until(Dart d, const FUNC& f) const
@@ -1047,6 +1051,8 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -1075,8 +1081,6 @@ protected:
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
-
-public:
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
