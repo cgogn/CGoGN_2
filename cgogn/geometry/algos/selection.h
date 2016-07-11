@@ -54,6 +54,12 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
+	template <typename CellType>
+	inline const std::vector<CellType>& cells() const
+	{
+		return reinterpret_cast<const std::vector<CellType>&>(cells_[CellType::ORBIT]);
+	}
+
 	template <typename FUNC>
 	void foreach_cell(const FUNC& f)
 	{
@@ -165,13 +171,9 @@ public:
 
 		typename MAP::DartMarkerStore dm(this->map_);
 
-		this->cells_[Vertex::ORBIT].push_back(center.dart);
-
-		uint32 i = 0;
-		while (i < this->cells_[Vertex::ORBIT].size())
+		auto mark_vertex = [&] (Vertex v)
 		{
-			Dart vd = this->cells_[Vertex::ORBIT][i];
-			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
+			this->map_.foreach_dart_of_orbit(v, [&] (Dart d)
 			{
 				// mark a dart of the vertex
 				dm.mark(d);
@@ -207,14 +209,28 @@ public:
 				});
 				if (all_in)
 					this->cells_[Face::ORBIT].push_back(d);
+			});
+		};
 
+		this->cells_[Vertex::ORBIT].push_back(center.dart);
+		mark_vertex(center);
+
+		uint32 i = 0;
+		while (i < this->cells_[Vertex::ORBIT].size())
+		{
+			Dart vd = this->cells_[Vertex::ORBIT][i];
+			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
+			{
 				// check if the neighbor vertex through the edge is in the sphere
 				// if it is in the sphere and has not been marked yet, put it in the queue
 				Dart d2 = this->map_.phi2(d);
 				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
 				{
 					if (!dm.is_marked(d2))
+					{
 						this->cells_[Vertex::ORBIT].push_back(d2);
+						mark_vertex(Vertex(d2));
+					}
 				}
 				// if it is not in the sphere, put the dart in the border list
 				else
