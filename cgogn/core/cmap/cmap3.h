@@ -803,11 +803,11 @@ public:
 		return result;
 	}
 
-protected:
-
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_PHI31(Dart d, const FUNC& f) const
@@ -899,6 +899,8 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_face2);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -923,6 +925,8 @@ protected:
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_PHI31_until(Dart d, const FUNC& f) const
@@ -1023,6 +1027,8 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_face2);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -1048,8 +1054,6 @@ protected:
 			default: cgogn_assert_not_reached("This orbit is not handled"); break;
 		}
 	}
-
-public:
 
 	/*******************************************************************************
 	 * Incidence traversal

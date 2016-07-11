@@ -163,8 +163,6 @@ public:
 	 * Orbits traversal
 	 *******************************************************************************/
 
-protected:
-
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{

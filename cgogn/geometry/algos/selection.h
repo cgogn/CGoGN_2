@@ -54,6 +54,12 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
+	template <typename CellType>
+	inline const std::vector<CellType>& cells() const
+	{
+		return reinterpret_cast<const std::vector<CellType>&>(cells_[CellType::ORBIT]);
+	}
+
 	template <typename FUNC>
 	void foreach_cell(const FUNC& f)
 	{
@@ -163,46 +169,74 @@ public:
 
 		const VEC3& center_position = position_[center];
 
-		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(this->map_);
-//		typename MAP::DartMarkerStore dm(this->map_);
+		typename MAP::DartMarkerStore dm(this->map_);
+
+		auto mark_vertex = [&] (Vertex v)
+		{
+			this->map_.foreach_dart_of_orbit(v, [&] (Dart d)
+			{
+				// mark a dart of the vertex
+				dm.mark(d);
+
+				// check if the edge of d is now completely marked
+				// (which means all the vertices of the edge are in the sphere)
+				Edge e(d);
+				bool all_in = true;
+				this->map_.foreach_dart_of_orbit_until(e, [&] (Dart dd) -> bool
+				{
+					if (!dm.is_marked(dd))
+					{
+						all_in = false;
+						return false;
+					}
+					return true;
+				});
+				if (all_in)
+					this->cells_[Edge::ORBIT].push_back(d);
+
+				// check if the face of d is now completely marked
+				// (which means all the vertices of the face are in the sphere)
+				Face f(d);
+				all_in = true;
+				this->map_.foreach_dart_of_orbit_until(f, [&] (Dart dd) -> bool
+				{
+					if (!dm.is_marked(dd))
+					{
+						all_in = false;
+						return false;
+					}
+					return true;
+				});
+				if (all_in)
+					this->cells_[Face::ORBIT].push_back(d);
+			});
+		};
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
-		cmv.mark(center);
+		mark_vertex(center);
 
 		uint32 i = 0;
 		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			this->map_.foreach_incident_face(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Face f)
+			Dart vd = this->cells_[Vertex::ORBIT][i];
+			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
 			{
-				bool all_vertices_in = true;
-				bool add_at_least_one_vertex = false;
-				bool previous_in = in_sphere(position_[Vertex(f.dart)], center_position, radius_);
-				this->map_.foreach_incident_vertex(f, [&] (Vertex v)
+				// check if the neighbor vertex through the edge is in the sphere
+				// if it is in the sphere and has not been marked yet, put it in the queue
+				Dart d2 = this->map_.phi2(d);
+				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
 				{
-					if (in_sphere(position_[v], center_position, radius_))
+					if (!dm.is_marked(d2))
 					{
-						if (!cmv.is_marked(v))
-						{
-							add_at_least_one_vertex = true;
-							cmv.mark(v);
-							this->cells_[Vertex::ORBIT].push_back(v.dart);
-							this->cells_[Edge::ORBIT].push_back(v.dart);
-						}
-						previous_in = true;
+						this->cells_[Vertex::ORBIT].push_back(d2);
+						mark_vertex(Vertex(d2));
 					}
-					else
-					{
-						all_vertices_in = false;
-						if (previous_in)
-							this->border_.push_back(this->map_.phi_1(v.dart));
-						previous_in = false;
-					}
-				});
-				if (add_at_least_one_vertex && all_vertices_in)
-				{
-					this->cells_[Face::ORBIT].push_back(f.dart);
 				}
+				// if it is not in the sphere, put the dart in the border list
+				else
+					this->border_.push_back(d);
 			});
+
 			++i;
 		}
 	}
