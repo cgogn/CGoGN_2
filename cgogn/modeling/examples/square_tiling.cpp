@@ -11,13 +11,15 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
+using int32 = cgogn::numerics::int32;
+
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 int main(int , char** )
 {
-	int x = 4;
-	int y = 4;
+	int32 x = 4;
+	int32 y = 4;
 
 	const cgogn::Orbit vertorb = Map2::Vertex::ORBIT;
 
@@ -26,6 +28,11 @@ int main(int , char** )
 		VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("grid");
 		VertexAttribute<Vec3> vertex_twisted_strip = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("twisted_strip");
 		VertexAttribute<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("helicoid");
+
+		//		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
+		map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
+		map.add_attribute<int32, Map2::Face::ORBIT>("faces");
+		map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
 
 		cgogn::modeling::SquareGrid<Map2> g(map, x, y);
 
@@ -45,6 +52,11 @@ int main(int , char** )
 		VertexAttribute<Vec3> vertex_cylinder = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cylinder");
 		VertexAttribute<Vec3> vertex_sphere = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("sphere");
 		VertexAttribute<Vec3> vertex_cone = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cone");
+
+		//		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
+		map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
+		map.add_attribute<int32, Map2::Face::ORBIT>("faces");
+		map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
 
 		cgogn::modeling::SquareCylinder<Map2> g(map, x, y);
 
@@ -67,6 +79,11 @@ int main(int , char** )
 	{
 		Map2 map;
 		VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("tore");
+
+		//		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
+		map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
+		map.add_attribute<int32, Map2::Face::ORBIT>("faces");
+		map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
 
 		cgogn::modeling::SquareTore<Map2> g(map, x, y);
 

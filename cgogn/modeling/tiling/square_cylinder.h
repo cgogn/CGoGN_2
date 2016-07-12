@@ -38,8 +38,11 @@ namespace modeling
 template <typename MAP>
 class SquareCylinder : protected Tiling<MAP>
 {
+	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
+	using Volume = typename MAP::Volume;
 
 protected:
 	bool top_closed_, bottom_closed_;
@@ -106,16 +109,40 @@ public:
 
 		//close top
 		Dart f = mbuild.close_hole_topo(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->vertex_table_[(this->nx_)*(this->ny_) - 1].dart)))) ;
-		mbuild.boundary_mark(Face(f));
 
 		//close bottom
-		f = mbuild.close_hole_topo(this->vertex_table_[0].dart) ;
-		mbuild.boundary_mark(Face(f));
+		Dart f2 = mbuild.close_hole_topo(this->dart_) ;
 
 		//embed the vertices
 		if(this->map_.template is_embedded<Vertex>())
 			for(Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
+
+		if(this->map_.template is_embedded<Edge>())
+			this->map_.foreach_incident_edge(Volume(this->dart_), [&](Edge e)
+			{
+				mbuild.new_orbit_embedding(e);
+			});
+
+		if(this->map_.template is_embedded<Volume>())
+			mbuild.new_orbit_embedding(Volume(this->dart_));
+
+		mbuild.boundary_mark(Face(f));
+		mbuild.boundary_mark(Face(f2));
+
+		/*
+		if(this->map_.template is_embedded<CDart>())
+			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&](CDart d)
+			{
+				mbuild.new_orbit_embedding(d);
+			});
+		*/
+
+		if(this->map_.template is_embedded<Face>())
+			this->map_.foreach_incident_face(Volume(this->dart_), [&](Face f)
+			{
+				mbuild.new_orbit_embedding(f);
+			});
 	}
 
 	SquareCylinder(MAP& map, unsigned int n, unsigned int z):
@@ -246,6 +273,17 @@ public:
 		Face f(this->map_.phi2(this->map_.phi1(this->map_.phi2(this->vertex_table_[this->nx_ * this->ny_].dart)))) ;
 		mbuild.boundary_unmark(f);
 		top_closed_ = true;
+
+		/*
+		if(this->map_.template is_embedded<CDart>())
+			this->map_.foreach_dart_of_orbit(f, [&](CDart d)
+			{
+				mbuild.new_orbit_embedding(d);
+			});
+		*/
+
+		if(this->map_.template is_embedded<Face>())
+			mbuild.new_orbit_embedding(f);
 	}
 
 	//! Close the bottom with a n-sided face
@@ -256,6 +294,17 @@ public:
 		Face f(this->map_.phi2(this->vertex_table_[0].dart)) ;
 		mbuild.boundary_unmark(f);
 		bottom_closed_ = true;
+
+		/*
+		if(this->map_.template is_embedded<CDart>())
+			this->map_.foreach_dart_of_orbit(f, [&](CDart d)
+			{
+				mbuild.new_orbit_embedding(d);
+			});
+		*/
+
+		if(this->map_.template is_embedded<Face>())
+			mbuild.new_orbit_embedding(f);
 	}
 
 	//! Triangulate the top face with triangles fan

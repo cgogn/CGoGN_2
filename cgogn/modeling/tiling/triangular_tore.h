@@ -38,8 +38,11 @@ namespace modeling
 template <typename MAP>
 class TriangularTore : public Tiling<MAP>
 {
+	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
+	using Volume = typename MAP::Volume;
 
 	/*! @name Topological Operators
 	 *************************************************************************/
@@ -90,13 +93,38 @@ public:
 
 		ToreTopo<MAP>(this, n, m);
 
+		this->dart_ = this->vertex_table_[0].dart;
+
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
+
+		/*
+		if(this->map_.template is_embedded<CDart>())
+			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&](CDart d)
+			{
+				mbuild.new_orbit_embedding(d);
+			});
+		*/
 
 		//embed the vertices
 		if(this->map_.template is_embedded<Vertex>())
 			for(Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
+
+		if(this->map_.template is_embedded<Edge>())
+			this->map_.foreach_incident_edge(Volume(this->dart_), [&](Edge e)
+			{
+				mbuild.new_orbit_embedding(e);
+			});
+
+		if(this->map_.template is_embedded<Face>())
+			this->map_.foreach_incident_face(Volume(this->dart_), [&](Face f)
+			{
+				mbuild.new_orbit_embedding(f);
+			});
+
+		if(this->map_.template is_embedded<Volume>())
+			mbuild.new_orbit_embedding(Volume(this->dart_));
 	}
 
 	/*! @name Embedding Operators

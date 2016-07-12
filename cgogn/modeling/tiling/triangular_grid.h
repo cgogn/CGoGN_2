@@ -36,8 +36,11 @@ namespace modeling
 template <typename MAP>
 class TriangularGrid : public Tiling<MAP>
 {
+	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
+	using Volume = typename MAP::Volume;
 
 public:
 	template <typename INNERMAP>
@@ -136,13 +139,36 @@ public:
 		//close the hole
 		Dart f = mbuild.close_hole_topo(this->dart_);
 
-		//mark it as boundary
-		mbuild.boundary_mark(Face(f));
-
 		//and embed the vertices
 		if(this->map_.template is_embedded<Vertex>())
 			for(Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
+
+		if(this->map_.template is_embedded<Edge>())
+			this->map_.foreach_incident_edge(Volume(this->dart_), [&](Edge e)
+			{
+				mbuild.new_orbit_embedding(e);
+			});
+
+		if(this->map_.template is_embedded<Volume>())
+			mbuild.new_orbit_embedding(Volume(this->dart_));
+
+		//mark it as boundary
+		mbuild.boundary_mark(Face(f));
+
+		/*
+		if(this->map_.template is_embedded<CDart>())
+			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&](CDart d)
+			{
+				mbuild.new_orbit_embedding(d);
+			});
+		*/
+
+		if(this->map_.template is_embedded<Face>())
+			this->map_.foreach_incident_face(Volume(this->dart_), [&](Face f)
+			{
+				mbuild.new_orbit_embedding(f);
+			});
 	}
 
 	/*! @name Embedding Operators
