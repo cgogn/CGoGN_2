@@ -67,7 +67,7 @@ public:
 			g->vertex_table_.reserve(nb_vertices);
 			g->face_table_.reserve(nb_faces);
 
-			//creation of triangles and storing vertices
+			//creation of quads and storing vertices
 			for(uint32 i = 0 ; i < y ; ++i)
 			{
 				for(uint32 j = 1 ; j <= x ; ++j)
@@ -88,7 +88,7 @@ public:
 
 			g->vertex_table_.push_back(Vertex(g->map_.phi1(g->vertex_table_[idx+x].dart)));
 
-			//sewing pairs of triangles
+			//sewing pairs of quads
 			const uint32 nb_x = (x+1);
 			for (uint32 i = 0; i < y; ++i)
 			{

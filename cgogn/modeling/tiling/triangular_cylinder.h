@@ -141,6 +141,12 @@ public:
 			{
 				mbuild.new_orbit_embedding(f);
 			});
+
+		if(top_closed_)
+			close_top();
+
+		if(bottom_closed_)
+			close_bottom();
 	}
 
 	TriangularCylinder(MAP& map, unsigned int n, unsigned int z):
@@ -314,7 +320,7 @@ public:
 			Face f(this->map_.phi2(d));
 			cgogn_assert(this->map_.codegree(f) > 3);
 
-			cgogn::modeling::triangule<MAP>(this->map_, f);
+			cgogn::modeling::triangule(this->map_, f);
 			top_ = Vertex(this->map_.phi_1(f.dart));
 			top_triangulated_ = true;
 		}
@@ -328,7 +334,7 @@ public:
 			Face f(this->map_.phi2(this->vertex_table_[0].dart));
 			cgogn_assert(this->map_.codegree(f) > 3);
 
-			cgogn::modeling::triangule<MAP>(this->map_, f);
+			cgogn::modeling::triangule(this->map_, f);
 			bottom_ = Vertex(this->map_.phi_1(f.dart));
 			bottom_triangulated_ = true;
 		}
