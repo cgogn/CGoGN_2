@@ -76,12 +76,6 @@ TEST_F(SquareTilingTest, SquareGrid)
 	uint32 nb_faces = x_*y_;
 	uint32 nb_volumes = 1;
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), cmap_.nb_cells<Vertex::ORBIT>(CellFilters()));
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), cmap_.nb_cells<Edge::ORBIT>(CellFilters()));
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), cmap_.nb_cells<Face::ORBIT>(CellFilters()));
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), cmap_.nb_cells<Volume::ORBIT>(CellFilters()));
-
-
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
@@ -99,8 +93,6 @@ TEST_F(SquareTilingTest, SquareCylinder)
 	uint32 nb_edges = nb_vertices + (nb_faces-2) - genius;
 	uint32 nb_volumes = 1;
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), cmap_.nb_cells<Vertex::ORBIT>(CellFilters()));
-
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
@@ -117,9 +109,6 @@ TEST_F(SquareTilingTest, SquareTore)
 	uint32 nb_faces = x_*y_;
 	uint32 nb_edges = nb_vertices + nb_faces - genius;
 	uint32 nb_volumes = 1;
-
-
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), cmap_.nb_cells<Edge::ORBIT>(CellFilters()));
 
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
 	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);

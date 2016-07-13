@@ -35,97 +35,86 @@ namespace cgogn
 class TriangularTilingTest : public testing::Test
 {
 public:
-		using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-		using Dart = cgogn::Dart;
-		template <typename T>
-		using VertexAttribute = CMap2::VertexAttribute<T>;
-		using CDart = CMap2::CDart;
-		using Vertex = CMap2::Vertex;
-		using Edge = CMap2::Edge;
-		using Face = CMap2::Face;
-		using Volume = CMap2::Volume;
+	using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+	using Dart = cgogn::Dart;
+	template <typename T>
+	using VertexAttribute = CMap2::VertexAttribute<T>;
+	using CDart = CMap2::CDart;
+	using Vertex = CMap2::Vertex;
+	using Edge = CMap2::Edge;
+	using Face = CMap2::Face;
+	using Volume = CMap2::Volume;
 
 protected:
-		CMap2 cmap_;
-		uint32 x_,y_;
+	CMap2 cmap_;
+	uint32 x_,y_;
 
-		TriangularTilingTest()
-		{
-				std::random_device rd;
-				std::mt19937 rng(rd());
+	TriangularTilingTest()
+	{
+		std::random_device rd;
+		std::mt19937 rng(rd());
 
-				std::uniform_int_distribution<uint32> uni(4,100);
+		std::uniform_int_distribution<uint32> uni(4,100);
 
-				x_ = uni(rng);
-				y_ = uni(rng);
+		x_ = uni(rng);
+		y_ = uni(rng);
 
-				//cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-				cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-				cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-				cmap_.add_attribute<int32, Face::ORBIT>("faces");
-				cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
-		}
+		//cmap_.add_attribute<int32, CDart::ORBIT>("darts");
+		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
+		cmap_.add_attribute<int32, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	}
 };
 
 TEST_F(TriangularTilingTest, TriangularGrid)
 {
-		cgogn::modeling::TriangularGrid<CMap2> g(cmap_, x_, y_);
+	cgogn::modeling::TriangularGrid<CMap2> g(cmap_, x_, y_);
 
-		uint32 nb_vertices = (x_+1)*(y_+1);
-		uint32 nb_edges = (x_+1)*y_+(y_+1)*x_ + (x_*y_);
-		uint32 nb_faces = x_*y_*2;
-		uint32 nb_volumes = 1;
+	uint32 nb_vertices = (x_+1)*(y_+1);
+	uint32 nb_edges = (x_+1)*y_+(y_+1)*x_ + (x_*y_);
+	uint32 nb_faces = x_*y_*2;
+	uint32 nb_volumes = 1;
 
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), cmap_.nb_cells<Vertex::ORBIT>(CellFilters()));
-		EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), cmap_.nb_cells<Edge::ORBIT>(CellFilters()));
-		EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), cmap_.nb_cells<Face::ORBIT>(CellFilters()));
-		EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), cmap_.nb_cells<Volume::ORBIT>(CellFilters()));
-
-
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
-		EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
-		EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
-		EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
-		EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 TEST_F(TriangularTilingTest, TriangularCylinder)
 {
-		cgogn::modeling::TriangularCylinder<CMap2> g(cmap_, x_, y_);
+	cgogn::modeling::TriangularCylinder<CMap2> g(cmap_, x_, y_);
 
-		uint32 nb_vertices = x_*(y_+1);
-		uint32 genius = 0;
-		uint32 nb_faces = x_*y_*2+2;
-		uint32 nb_edges = nb_vertices + (nb_faces-2) - genius;
-		uint32 nb_volumes = 1;
+	uint32 nb_vertices = x_*(y_+1);
+	uint32 genius = 0;
+	uint32 nb_faces = x_*y_*2+2;
+	uint32 nb_edges = nb_vertices + (nb_faces-2) - genius;
+	uint32 nb_volumes = 1;
 
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), cmap_.nb_cells<Vertex::ORBIT>(CellFilters()));
-
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
-		EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
-		EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
-		EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
-		EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 TEST_F(TriangularTilingTest, TriangularTore)
 {
-		cgogn::modeling::TriangularTore<CMap2> g(cmap_, x_, y_);
+	cgogn::modeling::TriangularTore<CMap2> g(cmap_, x_, y_);
 
-		uint32 nb_vertices = (x_-1)*(y_-1)+(x_-1)+y_;
-		uint32 genius = 0;
-		uint32 nb_faces = (x_*y_)*2;
-		uint32 nb_edges = nb_vertices + nb_faces - genius;
-		uint32 nb_volumes = 1;
+	uint32 nb_vertices = (x_-1)*(y_-1)+(x_-1)+y_;
+	uint32 genius = 0;
+	uint32 nb_faces = (x_*y_)*2;
+	uint32 nb_edges = nb_vertices + nb_faces - genius;
+	uint32 nb_volumes = 1;
 
-
-		EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), cmap_.nb_cells<Edge::ORBIT>(CellFilters()));
-
-		EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
-		EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
-		EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
-		EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
-		EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), nb_vertices);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), nb_edges);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), nb_faces);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), nb_volumes);
+	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
 } // namespace cgogn
