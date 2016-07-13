@@ -72,9 +72,9 @@ public:
 				const int32 pos = i*nb_x;
 				Dart d = c->vertex_table_[pos].dart;
 				d = c->map_.phi_1(d);
-				Dart e = c->vertex_table_[pos + z].dart;
+				Dart e = c->vertex_table_[pos + (nb_x-1)].dart;
 				mbuild.phi2_sew(d, e);
-				c->vertex_table_[pos + z] = Vertex();
+				c->vertex_table_[pos + (nb_x-1)] = Vertex();
 			}
 
 			//suppress the last n vertex (in y direction) from the vertex_table_
