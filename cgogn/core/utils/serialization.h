@@ -55,11 +55,11 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
 }
 
-template <typename T, std::size_t Precision = UINT64_MAX>
+template <typename T, std::size_t Precision = 8ul>
 inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-template <typename T, std::size_t Precision = UINT64_MAX>
+template <typename T, std::size_t Precision = 8ul>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-template <typename T, std::size_t Precision = UINT64_MAX>
+template <typename T, std::size_t Precision = 8ul>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 
 template <typename T, std::size_t Precision>

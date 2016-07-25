@@ -446,8 +446,7 @@ public:
 			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
 			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
 			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
-			case 8ul: serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
-			default:  serialization::ostream_writer<T, UINT64_MAX>(o, this->operator[](idx), binary, little_endian); break;
+			default:  serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
 		}
 	}
 

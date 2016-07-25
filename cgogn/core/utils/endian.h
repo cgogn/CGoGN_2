@@ -260,19 +260,19 @@ inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && 
 } // namespace internal
 
 template <typename T>
-inline T swap_endianness(T x)
+inline T swap_endianness(const T& x)
 {
 	return internal::swap_endianness_if<true>(x);
 }
 
 template <typename T>
-inline T swap_endianness_native_big(T x)
+inline T swap_endianness_native_big(const T& x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_little_endian>(x);
 }
 
 template <typename T>
-inline T swap_endianness_native_little(T x)
+inline T swap_endianness_native_little(const T& x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_big_endian>(x);
 }
