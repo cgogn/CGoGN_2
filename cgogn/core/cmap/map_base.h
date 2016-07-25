@@ -659,6 +659,26 @@ public:
 		return result;
 	}
 
+protected:
+	template <Orbit ORBIT>
+	void boundary_mark(Cell<ORBIT> c)
+	{
+		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
+		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
+		{
+			set_boundary(d,true);
+		});
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
+		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
+		{
+			set_boundary(d,false);
+		});
+	}
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
