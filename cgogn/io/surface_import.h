@@ -63,7 +63,6 @@ public:
 protected:
 
 	uint32 nb_vertices_;
-	uint32 nb_edges_;
 	uint32 nb_faces_;
 
 	std::vector<uint32> faces_nb_edges_;
@@ -76,7 +75,6 @@ public:
 
 	inline SurfaceImport() :
 		nb_vertices_(0u)
-	  ,nb_edges_(0u)
 	  ,nb_faces_(0u)
 	  ,faces_nb_edges_()
 	  ,faces_vertex_indices_()
@@ -90,7 +88,6 @@ public:
 	virtual void clear() override
 	{
 		nb_vertices_ = 0;
-		nb_edges_ = 0;
 		nb_faces_ = 0;
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
@@ -216,6 +213,86 @@ public:
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
+	}
+
+	template <typename VEC3>
+	inline ChunkArray<VEC3>* position_attribute()
+	{
+		auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
+		if (res != nullptr)
+			return res;
+		else
+			return this->vertex_attributes_.template get_chunk_array<VEC3>("position");
+	}
+
+	inline uint32 insert_line_vertex_container()
+	{
+		return vertex_attributes_.template insert_lines<1>();
+	}
+
+	inline ChunkArrayContainer& vertex_attributes_container()
+	{
+		return vertex_attributes_;
+	}
+
+	inline ChunkArrayContainer& face_attributes_container()
+	{
+		return face_attributes_;
+	}
+
+	inline void set_nb_vertices(uint32 nbv)
+	{
+		nb_vertices_ = nbv;
+	}
+
+	inline uint32 nb_vertices() const
+	{
+		return nb_vertices_;
+	}
+
+	inline void set_nb_faces(uint32 nbf)
+	{
+		nb_faces_ = nbf;
+		faces_nb_edges_.reserve(nbf);
+		faces_vertex_indices_.reserve(nbf * 4u);
+	}
+
+	inline uint32 nb_faces() const
+	{
+		return nb_faces_;
+	}
+
+	void add_triangle(uint32 p0, uint32 p1, uint32 p2)
+	{
+		++nb_faces_;
+		faces_nb_edges_.push_back(3);
+		faces_vertex_indices_.push_back(p0);
+		faces_vertex_indices_.push_back(p1);
+		faces_vertex_indices_.push_back(p2);
+	}
+
+	void add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3)
+	{
+		++nb_faces_;
+		faces_nb_edges_.push_back(4);
+		faces_vertex_indices_.push_back(p0);
+		faces_vertex_indices_.push_back(p1);
+		faces_vertex_indices_.push_back(p2);
+		faces_vertex_indices_.push_back(p3);
+	}
+
+	void add_face(const std::vector<uint32>& v_ids)
+	{
+		nb_faces_ += 1u;
+		faces_nb_edges_.push_back(v_ids.size());
+		for (uint32 id : v_ids)
+			faces_vertex_indices_.push_back(id);
+	}
+
+protected:
+	virtual bool import_file_impl(const std::string&) override
+	{
+		cgogn_log_warning("SurfaceImport::import_file_impl") << "SurfaceImport::import_file_impl method does nothing and must be overriden.";
 	}
 };
 

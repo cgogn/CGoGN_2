@@ -80,7 +80,6 @@ protected:
 		// read number of vertices, edges, faces
 		this->nb_vertices_ = this->read_uint(fp,line);
 		this->nb_faces_ = this->read_uint(fp,line);
-		this->nb_edges_ = this->read_uint(fp,line);
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
@@ -127,7 +126,6 @@ protected:
 
 		this->nb_vertices_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
 		this->nb_faces_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
-		this->nb_edges_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+8)));
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
