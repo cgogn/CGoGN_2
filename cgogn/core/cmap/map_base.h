@@ -64,6 +64,8 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	using typename Inherit::ChunkArrayBool;
+	template <typename T_REF>
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T_REF>;
 
 	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
 	template <typename T>
@@ -232,6 +234,12 @@ public:
 	 * Attributes management
 	 *******************************************************************************/
 
+	inline bool has_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].has_array(att_name);
+	}
+
 	/**
 	 * \brief add an attribute
 	 * @param attribute_name the name of the attribute to create
@@ -259,6 +267,18 @@ public:
 
 		const ChunkArray<T>* ca = ah.data();
 		return this->attributes_[ORBIT].remove_chunk_array(ca);
+	}
+
+	/**
+	 * \brief remove_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true if remove succeed else false
+	 */
+	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
 	/**
@@ -457,7 +477,7 @@ public:
 		Attribute<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
-		const typename Inherit::template ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];
+		const ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];
 
 		// Check that the indexation of cells is correct
 		foreach_cell<FORCE_DART_MARKING>([&] (CellType c)
