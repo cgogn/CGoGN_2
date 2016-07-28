@@ -74,15 +74,14 @@ public:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class NastranVolumeImport : public NastranIO<VEC3>, public VolumeImport<MAP_TRAITS>
+class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<MAP_TRAITS>
 {
 	using Inherit_Nastran = NastranIO<VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
 	using Self = NastranVolumeImport<MAP_TRAITS, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
-	// MeshImportGen interface
 protected:
 
 	virtual bool import_file_impl(const std::string& filename) override

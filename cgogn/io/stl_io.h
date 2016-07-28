@@ -42,12 +42,12 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class StlSurfaceImport : public SurfaceImport<MAP_TRAITS>
+class StlSurfaceImport : public SurfaceFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = StlSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

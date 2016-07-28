@@ -32,6 +32,7 @@ namespace io
 {
 
 template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
+template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits>;
 
 } // namespace io
 

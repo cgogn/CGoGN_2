@@ -110,13 +110,11 @@ namespace io
 {
 
 template <typename MAP_TRAITS>
-class VolumeImport : public MeshImportGen
+class VolumeImport
 {
 public:
 
 	using Self = VolumeImport<MAP_TRAITS>;
-	using Inherit = MeshImportGen;
-
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
@@ -126,7 +124,7 @@ public:
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
-	virtual ~VolumeImport() override
+	virtual ~VolumeImport()
 	{}
 
 private:
@@ -523,7 +521,7 @@ public:
 
 protected:
 
-	virtual void clear() override
+	virtual void clear()
 	{
 		set_nb_vertices(0u);
 		set_nb_volumes(0u);
@@ -634,8 +632,26 @@ protected:
 	}
 };
 
+template <typename MAP_TRAITS>
+class VolumeFileImport : public VolumeImport<MAP_TRAITS>, public FileImport
+{
+	using Self = VolumeFileImport<MAP_TRAITS>;
+	using Inherit1 = VolumeImport<MAP_TRAITS>;
+	using Inherit2 = FileImport;
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeFileImport);
+
+public:
+	inline VolumeFileImport() : Inherit1(), Inherit2()
+	{}
+
+	virtual ~VolumeFileImport()
+	{}
+};
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
 extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits>;
+extern template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
 
 } // namespace io

@@ -45,13 +45,11 @@ namespace io
 {
 
 template <typename MAP_TRAITS>
-class SurfaceImport : public MeshImportGen
+class SurfaceImport
 {
 public:
 
 	using Self = SurfaceImport<MAP_TRAITS>;
-	using Inherit = MeshImportGen;
-
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
@@ -82,10 +80,10 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
-	virtual ~SurfaceImport() override
+	virtual ~SurfaceImport()
 	{}
 
-	virtual void clear() override
+	virtual void clear()
 	{
 		nb_vertices_ = 0;
 		nb_faces_ = 0;
@@ -288,16 +286,28 @@ public:
 		for (uint32 id : v_ids)
 			faces_vertex_indices_.push_back(id);
 	}
+};
 
-protected:
-	virtual bool import_file_impl(const std::string&) override
-	{
-		cgogn_log_warning("SurfaceImport::import_file_impl") << "SurfaceImport::import_file_impl method does nothing and must be overriden.";
-	}
+template <typename MAP_TRAITS>
+class SurfaceFileImport : public SurfaceImport<MAP_TRAITS>, public FileImport
+{
+	using Self = SurfaceFileImport<MAP_TRAITS>;
+	using Inherit1 = SurfaceImport<MAP_TRAITS>;
+	using Inherit2 = FileImport;
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceFileImport);
+
+public:
+	inline SurfaceFileImport() : Inherit1(), Inherit2()
+	{}
+
+	virtual ~SurfaceFileImport()
+	{}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
 extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
+extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
 
 } // namespace io

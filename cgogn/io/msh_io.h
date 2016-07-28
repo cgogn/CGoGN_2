@@ -131,16 +131,13 @@ private:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class MshVolumeImport : public MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeImport<MAP_TRAITS>
+class MshVolumeImport : public MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = MshVolumeImport<MAP_TRAITS, VEC3>;
 	using Inherit_Msh = MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
-//	using DataInputGen = typename Inherit_Msh::DataInputGen;
-//	template <typename T>
-//	using DataInput = typename Inherit_Msh::template DataInput<T>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -153,8 +150,17 @@ public:
 	virtual ~MshVolumeImport() override
 	{}
 
-	// MeshImportGen interface
 protected:
+
+	inline static std::string skip_empty_lines(std::istream& data_stream)
+	{
+		std::string line;
+		line.reserve(1024ul);
+		while(data_stream.good() && line.empty())
+			std::getline(data_stream,line);
+
+		return line;
+	}
 
 	inline bool import_legacy_msh_file(std::istream& data_stream)
 	{

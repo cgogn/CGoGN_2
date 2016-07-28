@@ -37,35 +37,22 @@ namespace cgogn
 namespace io
 {
 
-class CGOGN_IO_API MeshImportGen
+class CGOGN_IO_API FileImport
 {
 public:
-	using Self = MeshImportGen;
-	inline MeshImportGen() {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshImportGen);
+	using Self = FileImport;
 
-
+	FileImport();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FileImport);
+	/**
+	 * @brief import_file, try to open and read a file (during the operation the C locale is used)
+	 * @param filename
+	 * @return true iff the file is successfully read
+	 */
 	bool import_file(const std::string& filename);
-	virtual ~MeshImportGen();
-	virtual void clear() = 0;
-
+	virtual ~FileImport();
 protected:
 	virtual bool import_file_impl(const std::string& filename) = 0;
-
-	/**
-	 * @brief skip_empty_lines
-	 * @param a valid data_stream
-	 * @return the first non-empty encountered line
-	 */
-	inline static std::string skip_empty_lines(std::istream& data_stream)
-	{
-		std::string line;
-		line.reserve(1024ul);
-		while(data_stream.good() && line.empty())
-			std::getline(data_stream,line);
-
-		return line;
-	}
 };
 
 template<typename MAP>

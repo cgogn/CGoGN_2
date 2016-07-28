@@ -38,9 +38,9 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class TetVolumeImport : public VolumeImport<MAP_TRAITS>
+class TetVolumeImport : public VolumeFileImport<MAP_TRAITS>
 {
-	using Inherit = VolumeImport<MAP_TRAITS>;
+	using Inherit = VolumeFileImport<MAP_TRAITS>;
 	using Self = TetVolumeImport<MAP_TRAITS,VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

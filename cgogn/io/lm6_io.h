@@ -34,14 +34,13 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class LM6VolumeImport : public VolumeImport<MAP_TRAITS>
+class LM6VolumeImport : public VolumeFileImport<MAP_TRAITS>
 {
-	using Inherit = VolumeImport<MAP_TRAITS>;
+	using Inherit = VolumeFileImport<MAP_TRAITS>;
 	using Self = LM6VolumeImport<MAP_TRAITS,VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	// MeshImportGen interface
 public:
 	inline LM6VolumeImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);

@@ -1374,13 +1374,13 @@ protected:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceImport<MAP_TRAITS>
+class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = VtkSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceImport<MAP_TRAITS>;
+	using Inherit_Import = SurfaceFileImport<MAP_TRAITS>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1511,13 +1511,13 @@ private:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeImport<MAP_TRAITS>
+class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;

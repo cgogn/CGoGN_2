@@ -51,10 +51,10 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::string& filename);
+inline std::unique_ptr<SurfaceFileImport<MAP_TRAITS>> newSurfaceImport(const std::string& filename);
 
 template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<VolumeImport<MAP_TRAITS>> newVolumeImport(const std::string& filename);
+inline std::unique_ptr<VolumeFileImport<MAP_TRAITS>> newVolumeImport(const std::string& filename);
 
 template <typename VEC3, typename MAP2>
 inline void import_surface(MAP2& cmap2, const std::string& filename);
@@ -88,7 +88,7 @@ inline void import_volume(MAP3& cmap3, const std::string& filename)
 }
 
 template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::string& filename)
+inline std::unique_ptr<SurfaceFileImport<MAP_TRAITS>> newSurfaceImport(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -102,12 +102,12 @@ inline std::unique_ptr<SurfaceImport<MAP_TRAITS>> newSurfaceImport(const std::st
 		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP_TRAITS, VEC3>>();
 		default:
 			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<SurfaceImport<MAP_TRAITS>> ();
+			return std::unique_ptr<SurfaceFileImport<MAP_TRAITS>> ();
 	}
 }
 
 template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::string& filename)
+inline std::unique_ptr<VolumeFileImport<MAP_TRAITS> > newVolumeImport(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -121,7 +121,7 @@ inline std::unique_ptr<VolumeImport<MAP_TRAITS> > newVolumeImport(const std::str
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP_TRAITS, VEC3>>();
 		default:
 			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<VolumeImport<MAP_TRAITS>> ();
+			return std::unique_ptr<VolumeFileImport<MAP_TRAITS>> ();
 	}
 }
 

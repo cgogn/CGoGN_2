@@ -41,12 +41,12 @@ namespace io
 CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type);
 
 template <typename MAP_TRAITS, typename VEC3>
-class PlySurfaceImport : public SurfaceImport<MAP_TRAITS>
+class PlySurfaceImport : public SurfaceFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = PlySurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;

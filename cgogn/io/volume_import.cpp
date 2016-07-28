@@ -32,6 +32,7 @@ namespace io
 {
 
 template class CGOGN_IO_API VolumeImport<DefaultMapTraits>;
+template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits>;
 
 } // namespace io
 
