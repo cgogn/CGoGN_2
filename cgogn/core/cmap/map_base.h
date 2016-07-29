@@ -246,7 +246,7 @@ public:
 	 * @return a handler to the created attribute
 	 */
 	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name = "")
+	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		if (!this->template is_embedded<ORBIT>())
