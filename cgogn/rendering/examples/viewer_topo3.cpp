@@ -120,7 +120,7 @@ void Viewer::import(const std::string& volumeMesh)
 {
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+	map_.get_attribute(vertex_position_, "position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";

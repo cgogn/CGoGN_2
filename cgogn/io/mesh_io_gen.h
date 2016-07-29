@@ -87,7 +87,7 @@ public:
 		if (!output || !output->good())
 			return;
 
-		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert_export");
+		map.add_attribute(indices_, "indices_vert_export");
 
 		this->prepare_for_export(map, options);
 

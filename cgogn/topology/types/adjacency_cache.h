@@ -55,7 +55,7 @@ public:
 
 	void init()
 	{
-		adjacency_ = map_.template add_attribute<VertexArray, Vertex::ORBIT>("__adjacency__");
+		map_.add_attribute(adjacency_, "__adjacency__");
 		map_.foreach_cell([&](Vertex v)
 		{
 			map_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
