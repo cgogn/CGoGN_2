@@ -256,6 +256,34 @@ public:
 	}
 
 	/**
+	 * @brief add an attribute, given a ref on an existing attribute
+	 * @param result_attribute, a reference to an attribute that will be overwritten
+	 * @param attribute_name the name of the attribute to create
+	 */
+	template <typename T, Orbit ORBIT>
+	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	{
+		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
+	}
+
+	/**
+	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
+	 */
+	template <typename T, Orbit ORBIT>
+	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	{
+		if (attribute_handler.is_valid())
+		{
+			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
+			return;
+		}
+
+		add_attribute(attribute_handler, attribute_name);
+		if (!attribute_handler.is_valid())
+			get_attribute(attribute_handler, attribute_name);
+	}
+
+	/**
 	 * \brief remove an attribute
 	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
@@ -295,6 +323,12 @@ public:
 		return Attribute<T, ORBIT>(this, ca);
 	}
 
+	template <typename T, Orbit ORBIT>
+	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name)
+	{
+		ah = get_attribute<T,ORBIT>(attribute_name);
+	}
+
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name)
 	{
@@ -302,6 +336,12 @@ public:
 
 		ChunkArray<T>* ca = this->attributes_[orbit].template get_chunk_array<T>(attribute_name);
 		return Attribute_T<T>(this, ca, orbit);
+	}
+
+	template <typename T>
+	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name)
+	{
+		ath = get_attribute<T>(orbit, attribute_name);
 	}
 
 	/**
