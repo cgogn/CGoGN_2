@@ -38,31 +38,65 @@ template <class>
 struct sfinae_true : std::true_type {};
 
 template <class T>
-static auto test_operator_brackets(int32 ) -> sfinae_true<decltype(std::declval<T>()[0ul])>;
+static auto test_operator_parenthesis_0(int32) -> sfinae_true<decltype(std::declval<T>()())>;
+template <class>
+static auto test_operator_parenthesis_0(int64) -> std::false_type;
+
+template <class T>
+static auto test_operator_parenthesis_1(int32) -> sfinae_true<decltype(std::declval<T>()(0ul))>;
+template <class>
+static auto test_operator_parenthesis_1(int64) -> std::false_type;
+
+template <class T>
+static auto test_operator_parenthesis_2(int32) -> sfinae_true<decltype(std::declval<T>()(0ul,0ul))>;
+template <class>
+static auto test_operator_parenthesis_2(int64) -> std::false_type;
+
+template <class T>
+static auto test_operator_brackets(int32) -> sfinae_true<decltype(std::declval<T>()[0ul])>;
 template <class>
 static auto test_operator_brackets(int64) -> std::false_type;
 
 template <class T>
-static auto test_size_method(int32 ) -> sfinae_true<decltype(std::declval<T>().size())>;
+static auto test_size_method(int32) -> sfinae_true<decltype(std::declval<T>().size())>;
 template <class>
 static auto test_size_method(int64) -> std::false_type;
 
 template <class T>
-static auto test_begin_method(int32 ) -> sfinae_true<decltype(std::declval<T>().begin())>;
+static auto test_begin_method(int32) -> sfinae_true<decltype(std::declval<T>().begin())>;
 template <class>
 static auto test_begin_method(int64) -> std::false_type;
 
 template <class T>
-static auto test_iterable(int32 ) -> sfinae_true<decltype(std::declval<T>().end() != std::declval<T>().end())>;
+static auto test_iterable(int32) -> sfinae_true<decltype(std::declval<T>().end() != std::declval<T>().end())>;
 template <class>
 static auto test_iterable(int64) -> std::false_type;
 
 template <class T>
-static auto test_name_of_type(int32 ) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
+static auto test_rows_method(int32) -> sfinae_true<decltype(std::declval<T>().rows())>;
+template <class>
+static auto test_rows_method(int64) -> std::false_type;
+
+template <class T>
+static auto test_cols_method(int32) -> sfinae_true<decltype(std::declval<T>().cols())>;
+template <class>
+static auto test_cols_method(int64) -> std::false_type;
+
+template <class T>
+static auto test_name_of_type(int32) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
 template <class>
 static auto test_name_of_type(int64) -> std::false_type;
 
 } // namespace internal
+
+template <class T>
+struct has_operator_parenthesis_0 : decltype(internal::test_operator_parenthesis_0<T>(0)){};
+
+template <class T>
+struct has_operator_parenthesis_1 : decltype(internal::test_operator_parenthesis_1<T>(0)){};
+
+template <class T>
+struct has_operator_parenthesis_2 : decltype(internal::test_operator_parenthesis_2<T>(0)){};
 
 template <class T>
 struct has_operator_brackets : decltype(internal::test_operator_brackets<T>(0)){};
@@ -72,6 +106,12 @@ struct has_size_method : decltype(internal::test_size_method<T>(0)){};
 
 template <class T>
 struct has_begin_method : decltype(internal::test_begin_method<T>(0)){};
+
+template <class T>
+struct has_rows_method : decltype(internal::test_rows_method<T>(0)){};
+
+template <class T>
+struct has_cols_method : decltype(internal::test_cols_method<T>(0)){};
 
 template <class T>
 struct is_iterable : decltype(internal::test_iterable<T>(0)){};
@@ -101,8 +141,9 @@ inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_comp
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val);
 template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type nb_components(const T& val);
-
+inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val);
+template <typename T>
+inline typename std::enable_if<has_rows_method<T>::value && has_cols_method<T>::value, uint32>::type nb_components(const T& val);
 
 template <typename T>
 inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T&)
@@ -117,9 +158,15 @@ inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>:
 }
 
 template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value, uint32>::type nb_components(const T& val)
+inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val)
 {
 	return uint32(val.size()) * nb_components(val[0]);
+}
+
+template <typename T>
+inline typename std::enable_if<has_rows_method<T>::value && has_cols_method<T>::value, uint32>::type nb_components(const T& val)
+{
+	return val.rows() * val.cols();
 }
 
 } // namespace type_traits

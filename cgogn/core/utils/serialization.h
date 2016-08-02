@@ -58,7 +58,9 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 template <typename T, std::size_t Precision = 8ul>
 inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && (!type_traits::has_rows_method<T>::value || !type_traits::has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+template <typename T, std::size_t Precision = 8ul>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && type_traits::has_rows_method<T>::value && type_traits::has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 template <typename T, std::size_t Precision = 8ul>
 inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 
@@ -77,7 +79,7 @@ inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::t
 }
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && (!type_traits::has_rows_method<T>::value || !type_traits::has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
 	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array[0])>::type>::type;
 	const std::size_t size = array.size();
@@ -103,6 +105,19 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && type_tr
 		if ((!binary) && it != end)
 			o << " ";
 	}
+}
+
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && type_traits::has_rows_method<T>::value && type_traits::has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
+{
+	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array(0,0))>::type>::type;
+	for(std::size_t r = 0, rend = array.rows(); r < rend ; ++r)
+		for(std::size_t c = 0, cend = array.cols(); c < cend ; ++c)
+		{
+			ostream_writer<nested_type,Precision>(o, array(r,c), binary, little_endian);
+			if ((!binary) && !((r == rend -1ul) && (c == cend -1ul)))
+				o << " ";
+		}
 }
 
 template <typename T>
