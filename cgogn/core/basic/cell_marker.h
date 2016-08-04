@@ -155,6 +155,13 @@ public:
 		marked_cells_->push_back(this->map_.embedding(c));
 	}
 
+	inline void unmark(Cell<ORBIT> c)
+	{
+		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
+		Inherit::unmark(c);
+		marked_cells_->erase(std::remove(marked_cells_->begin(), marked_cells_->end(), this->map_.embedding(c)), marked_cells_->end());
+	}
+
 	inline void unmark_all()
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
