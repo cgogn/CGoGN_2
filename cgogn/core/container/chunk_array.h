@@ -37,6 +37,7 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/string.h>
 
 namespace cgogn
 {
@@ -450,6 +451,12 @@ public:
 		}
 	}
 
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		serialization::parse(in, this->operator [](idx));
+	}
+
+
 	virtual const void* element_ptr(uint32 idx) const override
 	{
 		return &(this->operator[](idx));
@@ -457,7 +464,7 @@ public:
 
 	virtual uint32 element_size() const override
 	{
-		return sizeof(this->operator[](0ul));
+		return sizeof(std::declval<T>());
 	}
 };
 
@@ -813,6 +820,18 @@ public:
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
 	{
 		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
+	}
+
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		std::string val;
+		in >> val;
+		val = to_lower(val);
+		const bool b = (val == "true") || (std::stoi(val) == 1);
+		if (b)
+			set_true(idx);
+		else
+			set_false(idx);
 	}
 
 	virtual const void* element_ptr(uint32) const override
