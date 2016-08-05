@@ -386,8 +386,8 @@ protected:
 #ifndef	NDEBUG
 		phi2_unsew(d);							// Separate the two 1D-edges of the edge
 #endif
-		Dart nd = this->split_vertex_topo(d);
-		Dart ne = this->split_vertex_topo(e);	// Cut the two adjacent 1D-edges
+		Dart nd = this->Inherit::split_vertex_topo(d);
+		Dart ne = this->Inherit::split_vertex_topo(e);	// Cut the two adjacent 1D-edges
 
 		phi2_sew(d, ne);						// Sew the new 1D-edges
 		phi2_sew(e, nd);						// To build the new 2D-edges
@@ -562,7 +562,53 @@ public:
 		return v;
 	}
 
+	inline void split_vertex(Dart d, Dart e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart dd = phi2(d) ;
+		const Dart ee = phi2(e) ;
+
+		split_vertex_topo(d, e) ;
+
+		if (this->template is_embedded<CDart>())
+		{
+			this->new_orbit_embedding(CDart(this->phi1(dd)));
+			this->new_orbit_embedding(CDart(this->phi1(ee)));
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(e));
+			this->template set_embedding<Vertex>(this->phi1(dd), this->embedding(Vertex(d)));
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->new_orbit_embedding(Edge(this->phi1(dd)));
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->template set_embedding<Vertex>(this->phi1(dd), this->embedding(Face(dd)));
+			this->template set_embedding<Vertex>(this->phi1(ee), this->embedding(Face(ee)));
+		}
+	}
+
 protected:
+
+	inline void split_vertex_topo(Dart d, Dart e)
+	{
+		cgogn_assert(this->same_orbit(Vertex(d), Vertex(e)));
+
+		const Dart d2 = phi2(d);
+		const Dart e2 = phi2(e);
+		cgogn_assert(d != d2);
+		cgogn_assert(e != e2);
+		const Dart nd = Inherit::split_vertex_topo(d2);
+		const Dart ne = Inherit::split_vertex_topo(e2);
+		phi2_sew(nd,ne);
+	}
 
 	void merge_adjacent_edges_topo(Dart d)
 	{
@@ -823,7 +869,7 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart next = this->split_vertex_topo(first);	// Add a vertex into the built face
+				Dart next = this->Inherit::split_vertex_topo(first);	// Add a vertex into the built face
 				phi2_sew(d_next, next);						// and 2-sew the face to the hole
 			}
 		} while (d_phi1 != d);
