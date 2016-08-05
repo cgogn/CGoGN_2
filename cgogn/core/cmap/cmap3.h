@@ -526,6 +526,44 @@ public:
 	}
 
 protected:
+	inline Dart split_vertex_topo(std::vector<Dart>& vd)
+	{
+		Dart prev = vd.front();	//elt 0
+
+		Dart db1;
+		if (this->is_incident_to_boundary(Face(prev)))
+			db1 = this->phi2(phi3(this->phi1(this->phi2(prev))));
+
+		this->Inherit::split_vertex_topo(prev, this->phi2(this->phi_1(this->phi2(this->phi_1(prev)))));
+
+		for(unsigned int i = 1; i < vd.size(); ++i)
+		{
+			prev = vd[i];
+			const Dart fs = this->phi_1(this->phi2(this->phi_1(prev)));	//first side
+			this->Inherit::split_vertex_topo(prev, this->phi2(fs));
+			const Dart d1 = this->phi_1(this->phi2(this->phi_1(vd[i-1])));
+			const Dart d2 = this->phi1(this->phi2(vd[i]));
+
+			phi3_sew(d1, d2);
+		}
+
+		Dart db2;
+		if (this->is_incident_to_boundary(Face(this->phi2(this->phi_1(prev)))))
+			db2 = this->phi2(phi3(this->phi2(this->phi_1(prev))));
+
+		if(!db1.is_nil() && !db2.is_nil())
+		{
+			this->Inherit::split_vertex_topo(db1, db2);
+			phi3_sew(this->phi1(this->phi2(db2)), this->phi_1(phi3(this->phi2(db2))));
+			phi3_sew(this->phi1(this->phi2(db1)), this->phi_1(phi3(this->phi2(db1))));
+		} else {
+			Dart dbegin = this->phi1(this->phi2(vd.front()));
+			Dart dend = this->phi_1(this->phi2(this->phi_1(vd.back())));
+			phi3_sew(dbegin, dend);
+		}
+
+		return this->phi_1(this->phi2(this->phi_1(prev)));
+	}
 
 	/**
 	 * @brief Cut a single volume following a simple closed oriented path
@@ -557,6 +595,61 @@ protected:
 	}
 
 public:
+	inline Dart split_vertex(std::vector<Dart>& vd)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart d1 = vd.front();
+		const Dart d2 = this->phi1(this->phi2(d1));
+		const Dart res = split_vertex_topo(vd);
+
+		if (this->template is_embedded<CDart>())
+		{
+			// TODO ...
+			cgogn_log_debug("CMap3::split_vertex") << "the CDart embeddings are not updated.";
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(d2));
+			const uint32 emb = this->embedding(Vertex(d1));
+			foreach_dart_of_orbit(Vertex(d1), [this,emb] (Dart dit)
+			{
+				this->template set_embedding<Vertex>(dit, emb);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->new_orbit_embedding(Edge(res));
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			// TODO ...
+			cgogn_log_debug("CMap3::split_vertex") << "the Face2 embeddings are not updated.";
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			// TODO ...
+			cgogn_log_debug("CMap3::split_vertex") << "the Face embeddings are not updated.";
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			for(auto dit1 : vd)
+			{
+				const uint32 emb = this->embedding(Volume(dit1));
+				foreach_dart_of_orbit(Volume(dit1), [this,emb] (Dart dit2)
+				{
+					this->template set_embedding<Volume>(dit2, emb);
+				});
+			}
+		}
+
+		return res;
+	}
 
 	/**
 	 * @brief Cut a single volume following a simple closed oriented path
@@ -665,7 +758,63 @@ protected:
 		return true;
 	}
 
+	bool merge_incident_faces_topo(Dart d)
+	{
+		uint32 nb_inc_vols = 0u;
+		foreach_incident_volume(Edge(d), [&](Volume ) { ++nb_inc_vols; });
+		if (nb_inc_vols != 2)
+			return false;
+
+		const Dart dd = phi3(d);
+
+		phi3_unsew(d);
+		phi3_unsew(dd);
+
+		Dart e = this->phi2(d);
+		this->phi2_unsew(d) ;
+
+		this->phi1_sew(this->phi_1(e), d);
+		this->remove_face_topo(d);
+
+		e = this->phi2(dd);
+		this->phi2_unsew(dd);
+
+		this->phi1_sew(this->phi_1(dd), e);
+		this->phi1_sew(this->phi_1(e), dd);
+		this->remove_face_topo(dd);
+
+		return true;
+	}
+
 public:
+
+	void merge_incident_faces(Dart e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart f = this->phi1(e);
+
+		if (merge_incident_faces_topo(e))
+		{
+			if (this->template is_embedded<Face2>())
+			{
+				const uint32 emb = this->embedding(Face2(f));
+				foreach_dart_of_orbit(Face2(f), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Face2>(d, emb);
+				});
+			}
+
+			if (this->template is_embedded<Face>())
+			{
+				const uint32 emb = this->embedding(Face(f));
+				foreach_dart_of_orbit(Face(f), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Face>(d, emb);
+				});
+			}
+		}
+	}
 
 	void merge_incident_volumes(Face f)
 	{
