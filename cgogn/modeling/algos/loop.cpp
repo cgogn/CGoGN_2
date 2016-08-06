@@ -21,11 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_ALGOS_REFINEMENTS_H_
-#define CGOGN_MODELING_ALGOS_REFINEMENTS_H_
+#define CGOGN_MODELING_ALGOS_LOOP_CPP_
 
-#include <cgogn/modeling/dll.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/modeling/algos/loop.h>
 
 namespace cgogn
 {
@@ -33,36 +31,10 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename MAP>
-typename MAP::Vertex triangule(MAP& map, typename MAP::Face f)
-{
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-
-	const Dart d = f.dart;
-	const Dart d1 = map.phi1(d);
-	map.cut_face(d, d1);
-	map.cut_edge(Edge(map.phi_1(d)));
-
-	const Dart x = map.phi2(map.phi_1(d));
-	Dart dd = map.template phi<111>(x);
-	while(dd != x)
-	{
-		Dart next = map.phi1(dd) ;
-		map.cut_face(dd, map.phi1(x)) ;
-		dd = next ;
-	}
-
-	return Vertex(map.phi2(x));
-}
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
-extern template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex triangule<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::Face);
-extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex triangule<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
+template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
-
 } // namespace cgogn
-
-#endif // CGOGN_MODELING_ALGOS_REFINEMENTS_H_

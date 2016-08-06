@@ -11,7 +11,6 @@ set(HEADER_FILES
 	algos/pliant_remeshing.h
 	algos/loop.h
 	algos/refinements.h
-	algos/subdivision.h
 	algos/tetrahedralization.h
 
 	tiling/tiling.h
@@ -27,7 +26,10 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	algos/subdivision.cpp
+	algos/catmull_clark.cpp
+	algos/loop.cpp
+	algos/pliant_remeshing.cpp
+	algos/refinements.cpp
 	algos/tetrahedralization.cpp
 )
 

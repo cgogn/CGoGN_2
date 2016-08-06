@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MODELING_ALGOS_SUBDIVISION_CPP_
+#define CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_
 
-#include <cgogn/modeling/algos/subdivision.h>
+#include <cgogn/modeling/algos/catmull_clark.h>
 
 namespace cgogn
 {
@@ -31,8 +31,10 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex triangule_face<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, Dart);
-template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex triangule_face<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, Dart);
+template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex quadrangule_face<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::Face);
+template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex quadrangule_face<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
+template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
 } // namespace cgogn

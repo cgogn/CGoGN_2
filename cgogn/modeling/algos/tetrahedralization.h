@@ -24,9 +24,7 @@
 #ifndef CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_H_
 #define CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_H_
 
-#include <cgogn/modeling/dll.h>
-#include <cgogn/modeling/algos/subdivision.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/modeling/algos/refinements.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 namespace cgogn
@@ -185,6 +183,9 @@ Dart swap_23(CMap3<MAP_TRAITS>& map, Dart d)
 template <typename MAP_TRAITS>
 typename CMap3<MAP_TRAITS>::Vertex flip_14(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 {
+	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
+	using Face = typename CMap3<MAP_TRAITS>::Face;
+
 	std::vector<Dart> edges;
 
 	// Cut the 1st tetrahedron
@@ -193,7 +194,7 @@ typename CMap3<MAP_TRAITS>::Vertex flip_14(CMap3<MAP_TRAITS>& map, typename CMap
 	edges.push_back(map.phi2(map.phi_1(w.dart)));
 	map.cut_volume(edges);
 
-	const typename CMap3<MAP_TRAITS>::Vertex x = triangule_face(map, map.phi2(w.dart));
+	const Vertex x = triangule(map, Face(map.phi2(w.dart)));
 
 	// Cut the 2nd tetrahedron
 	Dart dit = map.phi2(map.phi3(x.dart));
@@ -226,10 +227,13 @@ typename CMap3<MAP_TRAITS>::Vertex flip_14(CMap3<MAP_TRAITS>& map, typename CMap
 template <typename MAP_TRAITS>
 typename CMap3<MAP_TRAITS>::Vertex flip_13(CMap3<MAP_TRAITS>& map, Dart d)
 {
+	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
+	using Face = typename CMap3<MAP_TRAITS>::Face;
+
 	std::vector<Dart> edges;
 
 	// Triangule one face
-	const typename CMap3<MAP_TRAITS>::Vertex x = triangule_face(map,d);
+	const Vertex x = triangule(map,Face(d));
 
 	// Cut the 1st Tetrahedron
 	Dart dit = x.dart;
