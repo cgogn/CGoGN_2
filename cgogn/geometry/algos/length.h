@@ -28,6 +28,7 @@
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/core/utils/masks.h>
+#include <cgogn/core/utils/thread.h>
 
 namespace cgogn
 {
