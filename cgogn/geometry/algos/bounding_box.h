@@ -26,6 +26,7 @@
 
 #include <cgogn/geometry/types/aabb.h>
 #include <cgogn/geometry/types/obb.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -51,26 +52,30 @@ void pca(const ATTR& attr)
 template <typename ATTR>
 void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 {
+	using Vec = inside_type(ATTR);
+	using Scalar = typename Vec::Scalar;
+	using Mat3 = Eigen::Matrix<Scalar, 3, 3>;
+
 	bb.reset();
 
 	// compute the mean of the dataset (centroid)
-	Eigen::Vector3d mean;
+	Vec mean;
 	mean.setZero();
 	uint32 count = 0;
 	for (const auto& p : attr)
 	{
-		mean += Eigen::Vector3d(p[0], p[1], p[2]);
+		mean += Vec(p[0], p[1], p[2]);
 		++count;
 	}
 	mean /= count;
 
 	// compute covariance matrix
-	Eigen::Matrix<double, 3, 3> covariance;
+	Mat3 covariance;
 	covariance.setZero();
 
 	for (const auto& p : attr)
 	{
-		Eigen::Matrix<double, 4, 1> point;
+		Eigen::Matrix<Scalar, 4, 1> point;
 		point[0] = p[0] - mean[0];
 		point[1] = p[1] - mean[1];
 		point[2] = p[2] - mean[2];
@@ -94,12 +99,12 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	covariance /= count;
 
 	// Extract axes (i.e. eigenvectors) from covariance matrix.
-	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigen_solver(covariance, Eigen::ComputeEigenvectors);
-	Eigen::Matrix3d eivecs = eigen_solver.eigenvectors();
+	Eigen::SelfAdjointEigenSolver<Mat3> eigen_solver(covariance, Eigen::ComputeEigenvectors);
+	auto eivecs = eigen_solver.eigenvectors();
 
 	// Compute the size of the obb
-	Eigen::Vector3d ex;
-	Eigen::Vector3d t;
+	Vec ex;
+	Vec t;
 	for (const auto& p : attr)
 	{
 		t = eivecs.transpose() * (p - mean);
@@ -120,6 +125,18 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	bb.center(mean);
 	bb.extension(ex);
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_CPP_))
+extern template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
+extern template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
+extern template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
+extern template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
+
+extern template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
+extern template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
+extern template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
+extern template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_CPP_))
 
 } // namespace geometry
 

@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_GEOMETRY_TYPES_VEC_CPP_
+#define CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_
 
-#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/algos/angle.h>
 
 namespace cgogn
 {
@@ -31,9 +31,10 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
+template CGOGN_GEOMETRY_API float32 angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_GEOMETRY_API float64 angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, CMap2<DefaultMapTraits>::Attribute<float32, Orbit::PHI2>&);
+template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, CMap2<DefaultMapTraits>::Attribute<float64, Orbit::PHI2>&);
 
 } // namespace geometry
-
 } // namespace cgogn

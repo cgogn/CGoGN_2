@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_GEOMETRY_TYPES_VEC_CPP_
+#define CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_CPP_
 
-#include <cgogn/geometry/types/vec.h>
+#include <cgogn/geometry/algos/bounding_box.h>
 
 namespace cgogn
 {
@@ -31,9 +31,16 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
+template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
+template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
+template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
+template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
+
+
+template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
+template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
+template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
+template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
 
 } // namespace geometry
-
 } // namespace cgogn
