@@ -454,6 +454,8 @@ public:
 	 */
 	inline Edge cut_face(Dart d, Dart e)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		Dart nd = cut_face_topo(d, e);
 		Dart ne = this->phi_1(e);
 		Dart nd3 = phi3(nd);
@@ -525,8 +527,69 @@ public:
 		return Edge(nd);
 	}
 
+	Dart delete_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart res_topo_del = delete_edge_topo(e.dart);
+		if (res_topo_del.is_nil())
+			return res_topo_del;
+
+		if (this->template is_embedded<Volume>())
+		{
+			const uint32 emb = this->embedding(Volume(res_topo_del));
+			foreach_dart_of_orbit(Volume(res_topo_del), [this,emb] (Dart dit)
+			{
+				this->template set_embedding<Volume>(dit, emb);
+			});
+		}
+		return res_topo_del;
+	}
+
 protected:
-	inline Dart split_vertex_topo(std::vector<Dart>& vd)
+	Dart delete_edge_topo(Dart d)
+	{
+		Dart res;
+		if (degree(Vertex(d)) == 2u || degree(Vertex(this->phi1(d))) == 2u || this->is_incident_to_boundary(Edge(d)))
+			return res;
+
+		Dart dit = d;
+		do
+		{
+			Dart fit = dit;
+			Dart end = fit;
+			fit = this->phi1(fit);
+			while (fit != end)
+			{
+				Dart d2 = this->phi2(fit);
+				Dart d3 = phi3(fit);
+				Dart d32 = this->phi2(d3);
+
+				if(res.is_nil())
+					res = d2;
+
+				this->phi2_unsew(d2);
+				this->phi2_unsew(d32);
+				this->phi2_sew(d2, d32);
+				this->phi2_sew(fit, d3);
+
+				fit = this->phi1(fit);
+			}
+			dit = phi3(this->phi2(dit));
+		} while(dit != d);
+
+		{ // removing the darts
+			std::vector<Dart>* darts_to_be_deleted = cgogn::dart_buffers()->buffer();
+			this->foreach_dart_of_orbit(typename Inherit::ConnectedComponent(d), [=](Dart it) {darts_to_be_deleted->push_back(it);});
+			for (Dart it : *darts_to_be_deleted)
+				this->remove_topology_element(it);
+			cgogn::dart_buffers()->release_buffer(darts_to_be_deleted);
+		}
+
+		return res;
+	}
+
+	Dart split_vertex_topo(std::vector<Dart>& vd)
 	{
 		Dart prev = vd.front();	//elt 0
 
