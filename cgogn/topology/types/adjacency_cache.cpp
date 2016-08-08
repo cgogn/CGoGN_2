@@ -21,11 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
-#define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
+#define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_
 
-#include <cgogn/topology/dll.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/topology/types/adjacency_cache.h>
 
 namespace cgogn
 {
@@ -33,62 +31,9 @@ namespace cgogn
 namespace topology
 {
 
-
-template <typename MAP>
-class AdjacencyCache
-{
-	using Vertex = typename MAP::Vertex;
-	using VertexArray = std::vector<Vertex>;
-	template<typename T>
-	using VertexAttribute = typename MAP::template VertexAttribute<T>;
-
-public:
-
-	AdjacencyCache(MAP& map) :
-		map_(map)
-	{
-	}
-
-	~AdjacencyCache()
-	{
-//		map_.remove_attribute(adjacency_);
-	}
-
-//	CGOGN_NOT_COPYABLE_NOR_MOVABLE(AdjacencyCache);
-
-	void init()
-	{
-		map_.add_attribute(adjacency_, "__adjacency__");
-		map_.foreach_cell([&](Vertex v)
-		{
-			map_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
-			{
-				adjacency_[v].push_back(u);
-			});
-		});
-	}
-
-	template <typename FUNC>
-	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
-	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
-		for (Vertex u : adjacency_[v]) f(u);
-	}
-
-
-private:
-	MAP& map_;
-	VertexAttribute<VertexArray> adjacency_;
-};
-
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
-extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
+template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
+template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
 
 } // namespace topology
-
 } // namespace cgogn
 
-#endif // CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_

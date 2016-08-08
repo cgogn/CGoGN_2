@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(cgogn_topology_LIBRARIES "cgogn_topology")
+set(cgogn_topology_INCLUDE_DIRS "@PACKAGE_CGOGN_TOPOLOGY_INCLUDE_DIRS@")
+
+if(NOT TARGET cgogn_topology)
+	include("${CMAKE_CURRENT_LIST_DIR}/cgogn_topologyTargets.cmake")
+endif()
+
+check_required_components(cgogn_topologystd)

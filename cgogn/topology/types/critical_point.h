@@ -25,7 +25,7 @@
 #define CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
 
 #include <cgogn/core/utils/numerics.h>
-
+#include <iostream>
 namespace cgogn
 {
 
@@ -54,6 +54,20 @@ struct CriticalPoint
 
 	inline CriticalPoint(CriticalPoint::Type v, uint32 n) : v_(v), n_(n)
 	{}
+
+	inline friend std::ostream& operator<<(std::ostream& o, CriticalPoint cp)
+	{
+		o << cp.n_ << ' ' << uint32(cp.v_);
+		return o;
+	}
+
+	inline friend std::istream& operator>>(std::istream& is, CriticalPoint cp)
+	{
+		is >> cp.n_;
+		is >> cp.v_;
+		return is;
+	}
+
 };
 
 } // namespace topology

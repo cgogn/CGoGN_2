@@ -26,6 +26,8 @@
 
 #include <cgogn/topology/types/adjacency_cache.h>
 
+#include <cgogn/geometry/algos/centroid.h>
+
 namespace cgogn
 {
 
@@ -406,6 +408,13 @@ private:
 	EdgeAttribute<Scalar> edge_weight_;
 	bool intern_edge_weight_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
 
 } // namespace topology
 
