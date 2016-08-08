@@ -79,6 +79,7 @@ public:
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
+	using DartMarkerNoUnmark = typename cgogn::DartMarkerNoUnmark<Self>;
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
@@ -491,6 +492,22 @@ protected:
 		return false;
 	}
 
+	inline bool flip_back_edge_topo(Dart d)
+	{
+		const Dart e = phi2(d);
+		if (!this->is_boundary(d) && !this->is_boundary(e))
+		{
+			const Dart d_1 = this->phi_1(d);
+			const Dart e_1= this->phi_1(e);
+			this->phi1_sew(d, e_1);				// Detach the two
+			this->phi1_sew(e, d_1);				// vertices of the edge
+			this->phi1_sew(e, this->phi_1(d_1));	// Insert the edge in its
+			this->phi1_sew(d, this->phi_1(e_1));	// new vertices after flip
+			return true;
+		}
+		return false;
+	}
+
 public:
 
 	/**
@@ -501,7 +518,7 @@ public:
 	 */
 	inline void flip_edge(Edge e)
 	{
-		CGOGN_CHECK_CONCRETE_TYPE;
+//		CGOGN_CHECK_CONCRETE_TYPE;
 
 		if (flip_edge_topo(e.dart))
 		{
@@ -518,6 +535,29 @@ public:
 			{
 				this->template copy_embedding<Face>(this->phi_1(d), d);
 				this->template copy_embedding<Face>(this->phi_1(d2), d2);
+			}
+		}
+	}
+
+	inline void flip_back_edge(Edge e)
+	{
+//		CGOGN_CHECK_CONCRETE_TYPE;
+
+		if (flip_back_edge_topo(e.dart))
+		{
+			const Dart d = e.dart;
+			const Dart d2 = phi2(d);
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(d, this->phi1(d2));
+				this->template copy_embedding<Vertex>(d2, this->phi1(d));
+			}
+
+			if (this->template is_embedded<Face>())
+			{
+				this->template copy_embedding<Face>(this->phi1(d), d);
+				this->template copy_embedding<Face>(this->phi1(d2), d2);
 			}
 		}
 	}
