@@ -67,11 +67,11 @@ public:
 	template <typename T_REF>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T_REF>;
 
-	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
+	using AttributeGen = typename Inherit::AttributeGen;
 	template <typename T>
-	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
+	using Attribute_T = typename Inherit::template Attribute_T<T>;
 	template <typename T, Orbit ORBIT>
-	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
+	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
