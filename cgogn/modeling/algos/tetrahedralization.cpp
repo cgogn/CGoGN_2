@@ -38,6 +38,8 @@ template CGOGN_MODELING_API Dart swap_23<DefaultMapTraits>(CMap3<DefaultMapTrait
 //template CGOGN_MODELING_API Dart swap_44<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_14<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_13<DefaultMapTraits>(CMap3<DefaultMapTraits>&, Dart);
+template CGOGN_MODELING_API Dart edge_bisection(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);
+template CGOGN_MODELING_API Dart swap_gen_32(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 
 } // namespace modeling
 } // namespace cgogn
