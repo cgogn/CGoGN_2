@@ -84,13 +84,13 @@ Dart swap_22(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 
 	map.merge_incident_volumes(Face(w.dart));
 	map.merge_incident_faces(map.phi1(d2_1));
-	map.cut_face(d2_1, map.phi1(map.phi1(d2_1)));
+	map.cut_face(d2_1, map.template phi<11>(d2_1));
 
 	const Dart stop = map.phi_1(d2_1);
 	Dart dit = stop;
 	do {
 		edges.push_back(dit);
-		dit = map.phi1(map.phi2(map.phi1(dit)));
+		dit = map.template phi<121>(dit);
 	} while(dit != stop);
 
 	map.cut_volume(edges);
@@ -101,21 +101,22 @@ Dart swap_22(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 template <typename MAP_TRAITS>
 Dart swap_44(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 {
+	using Face = typename CMap3<MAP_TRAITS>::Face;
 	using Volume = typename CMap3<MAP_TRAITS>::Volume;
 
-	const Dart e = map.phi2(map.phi3(w.dart));
+	const Dart e = map.template phi<32>(w.dart);
 	const Dart dd = map.phi2(w.dart);
 
 	//unsew middle crossing darts
-	map.unsew_volumes(w);
-	map.unsew_volumes(map.phi2(map.phi3(dd)));
+	map.unsew_volumes(Face(w.dart));
+	map.unsew_volumes(Face(map.template phi<32>(dd)));
 
 	const Dart d1 = swap_22(map, Volume(dd));
 	const Dart d2 = swap_22(map, Volume(e));
 
 	//sew middle darts so that they do not cross
-	map.sew_volumes(map.phi2(d1),map.phi2(map.phi3(d2)));
-	map.sew_volumes(map.phi2(map.phi3(d1)),map.phi2(d2));
+	map.sew_volumes(Face(map.phi2(d1)),Face(map.template phi<32>(d2)));
+	map.sew_volumes(Face(map.template phi<32>(d1)), Face(map.phi2(d2)));
 	return d1;
 }
 
@@ -376,7 +377,7 @@ extern template CGOGN_MODELING_API Dart split_vertex<DefaultMapTraits>(CMap3<Def
 extern template CGOGN_MODELING_API Dart swap_22<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API Dart swap_32<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API Dart swap_23<DefaultMapTraits>(CMap3<DefaultMapTraits>&,Dart);
-//extern template CGOGN_MODELING_API Dart swap_44<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
+extern template CGOGN_MODELING_API Dart swap_44<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_14<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_13<DefaultMapTraits>(CMap3<DefaultMapTraits>&, Dart);
 extern template CGOGN_MODELING_API Dart edge_bisection(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);
