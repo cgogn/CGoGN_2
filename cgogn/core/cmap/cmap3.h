@@ -635,7 +635,7 @@ protected:
 	 */
 	Dart cut_volume_topo(const std::vector<Dart>& path)
 	{
-		cgogn_message_assert(this->simple_closed_oriented_path(path), "cut_volume_topo: the given path should be a simple closed oriented path");
+//		cgogn_message_assert(this->simple_closed_oriented_path(path), "cut_volume_topo: the given path should be a simple closed oriented path");
 
 		Dart face1 = Inherit::Inherit::add_face_topo(path.size());
 		Dart face2 = Inherit::Inherit::add_face_topo(path.size());
@@ -849,7 +849,205 @@ protected:
 		return true;
 	}
 
+	bool sew_volumes_topo(Dart fa, Dart fb)
+	{
+		if (this->codegree(Face(fa)) != this->codegree(Face(fb)))
+			return false;
+
+		const Dart fa3 = phi3(fa);
+		const Dart fb3 = phi3(fb);
+
+		Dart fa_it = fa3;
+		Dart fb_it = fb3;
+		do
+		{
+			const Dart fa_it2 = this->phi2(fa_it);
+			const Dart fb_it2 = this->phi2(fb_it);
+			if(fa_it2 != fb_it)
+			{
+				this->phi2_unsew(fa_it);
+				this->phi2_unsew(fb_it);
+				this->phi2_sew(fa_it2, fb_it2);
+				this->phi2_sew(fa_it, fb_it);
+			}
+			phi3_unsew(fa_it);
+			phi3_unsew(fb_it);
+			fa_it = this->phi1(fa_it);
+			fb_it = this->phi_1(fb_it);
+		} while(fa_it != fa3);
+
+		{ // removing the darts
+			std::vector<Dart>* darts_to_be_deleted = cgogn::dart_buffers()->buffer();
+			this->foreach_dart_of_orbit(Volume(fa3), [=](Dart it) {darts_to_be_deleted->push_back(it);});
+			for (Dart it : *darts_to_be_deleted)
+				this->remove_topology_element(it);
+			cgogn::dart_buffers()->release_buffer(darts_to_be_deleted);
+		}
+
+		fa_it = fa;
+		fb_it = fb;
+		do
+		{
+			phi3_sew(fa_it, fb_it);
+			fa_it = this->phi1(fa_it);
+			fb_it = this->phi_1(fb_it);
+		} while(fa_it != fa);
+
+		return true;
+	}
+
+	bool unsew_volumes_topo(Face f)
+	{
+		if (this->is_incident_to_boundary(f))
+			return false;
+
+		const uint32 nb_edges = this->codegree(f);
+		const Dart d3 = phi3(f.dart);
+
+		const Dart b1 = Inherit::Inherit::add_face_topo(nb_edges);
+		const Dart b2 = Inherit::Inherit::add_face_topo(nb_edges);
+
+		this->foreach_dart_of_orbit(Face2(b1), [this] (Dart d) {this->set_boundary(d,true);});
+		this->foreach_dart_of_orbit(Face2(b2), [this] (Dart d) {this->set_boundary(d,true);});
+
+		Dart fit1 = f.dart;
+		Dart fit2 = d3;
+		Dart fitB1 = b1;
+		Dart fitB2 = b2;
+		do
+		{
+			const Face boundary_face = boundary_face_of_edge(Edge(fit1));
+			if (boundary_face.is_valid())
+			{
+				const Dart f2 = this->phi2(boundary_face.dart);
+				this->phi2_unsew(boundary_face.dart);
+				this->phi2_sew(fitB1, boundary_face.dart);
+				this->phi2_sew(fitB2, f2);
+			} else
+				this->phi2_sew(fitB1, fitB2);
+
+			phi3_unsew(fit1);
+			phi3_sew(fit1, fitB1);
+			phi3_sew(fit2, fitB2);
+
+			fit1 = this->phi1(fit1);
+			fit2 = this->phi_1(fit2);
+			fitB1 = this->phi_1(fitB1);
+			fitB2 = this->phi1(fitB2);
+		} while (fitB1 != b1);
+
+		return true;
+	}
+
+	void delete_volume_topo(Volume w)
+	{
+		this->Inherit::foreach_incident_face(w, [&](Face2 f)
+		{
+			if (!this->is_incident_to_boundary(Face(f.dart)))
+				this->unsew_volumes_topo(Face(f.dart));
+		});
+
+		{ // removing the darts
+			const Volume w3(phi3(w.dart));
+			std::vector<Dart>* darts_to_be_deleted = cgogn::dart_buffers()->buffer();
+			this->foreach_dart_of_orbit(w, [=](Dart it) {darts_to_be_deleted->push_back(it);});
+			this->foreach_dart_of_orbit(w3, [=](Dart it) {darts_to_be_deleted->push_back(it);});
+			for (Dart it : *darts_to_be_deleted)
+				this->remove_topology_element(it);
+			cgogn::dart_buffers()->release_buffer(darts_to_be_deleted);
+		}
+	}
+
 public:
+
+	void delete_volume(Volume w)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		this->delete_volume_topo(w);
+	}
+
+	void sew_volumes(Face fa, Face fb)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+		if (!sew_volumes_topo(fa.dart, fb.dart))
+			return;
+
+		if (this->template is_embedded<Vertex>())
+		{
+			Dart dit = fa.dart;
+			do {
+				const uint32 emb = this->embedding(Vertex(dit));
+				foreach_dart_of_orbit(Vertex(dit), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Vertex>(d, emb);
+				});
+				dit = this->phi1(dit);
+			} while (dit != fa.dart);
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			Dart dit = fa.dart;
+			do {
+				const uint32 emb = this->embedding(Edge(dit));
+				foreach_dart_of_orbit(Edge(dit), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Edge>(d, emb);
+				});
+				dit = this->phi1(dit);
+			} while (dit != fa.dart);
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			const uint32 emb = this->embedding(fa);
+			foreach_dart_of_orbit(fb, [this, emb] (Dart d)
+			{
+				this->template set_embedding<Face>(d, emb);
+			});
+		}
+	}
+
+	void unsew_volumes(Face f)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart dd = phi3(this->phi_1(f.dart));
+		Dart dit = f.dart;
+
+		if (!this->unsew_volumes_topo(f))
+			return;
+
+		do {
+			if (this->template is_embedded<Vertex>() && !this->same_orbit(Vertex(dit), Vertex(dd)))
+				this->new_orbit_embedding(Vertex(dd));
+
+			dd = this->phi_1(dd);
+
+			if (this->template is_embedded<Edge>() && !this->same_orbit(Edge(dit), Edge(dd)))
+				this->new_orbit_embedding(Edge(dd));
+
+			dit = this->phi1(dit);
+		} while (dit != f.dart);
+
+		if (this->template is_embedded<Face>())
+			this->new_orbit_embedding(Face(dd));
+	}
+
+	inline Face boundary_face_of_edge(Edge e) const
+	{
+		Face res;
+		this->foreach_dart_of_PHI23_until(e.dart, [this,&res](Dart it) -> bool
+		{
+			if (this->is_boundary(it))
+			{
+				res.dart = it;
+				return false;
+			} else
+				return true;
+		});
+		return res;
+	}
 
 	void merge_incident_faces(Dart e)
 	{
