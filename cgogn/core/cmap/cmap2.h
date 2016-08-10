@@ -224,6 +224,7 @@ public:
 	 * @return The result of successive applications of PHI1 and PHI2 on d.
 	 * The template parameter contains a sequence (Base10 encoded) of PHI indeices.
 	 * If N=0 the identity is used.
+	 * The composition of phi is applied in order of declaration : phi<12>(d) = phi2(phi1(d))
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
@@ -231,9 +232,9 @@ public:
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
 		switch(N % 10)
 		{
-			case 1 : return this->phi1(phi<N / 10>(d)) ;
-			case 2 : return this->phi2(phi<N / 10>(d)) ;
-			default : return d ;
+			case 1 : return this->phi1(phi<N / 10>(d));
+			case 2 : return this->phi2(phi<N / 10>(d));
+			default : return d;
 		}
 	}
 
@@ -673,7 +674,7 @@ protected:
 		Dart d2 = phi2(d);
 		this->phi1_sew(this->phi_1(d), d2);
 		this->phi1_sew(this->phi_1(d2), d);
-		this->remove_face_topo(d);
+		this->Inherit::remove_face_topo(d);
 
 		return true;
 	}

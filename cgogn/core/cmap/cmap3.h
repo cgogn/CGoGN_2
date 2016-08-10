@@ -234,7 +234,7 @@ public:
 	/**
 	 * \brief phi composition
 	 * @param d
-	 * @return applied composition of phi in order of declaration
+	 * @return applied composition of phi in order of declaration : phi<123>(d) = phi3(phi2(phi1(d)))
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
@@ -242,10 +242,10 @@ public:
 		static_assert((N%10)<=3,"composition on phi1/phi2/only");
 		switch(N%10)
 		{
-			case 1 : return this->phi1(phi<N/10>(d)) ;
-			case 2 : return this->phi2(phi<N/10>(d)) ;
-			case 3 : return this->phi3(phi<N/10>(d)) ;
-			default : return d ;
+			case 1 : return this->phi1(phi<N/10>(d));
+			case 2 : return this->phi2(phi<N/10>(d));
+			case 3 : return this->phi3(phi<N/10>(d));
+			default : return d;
 		}
 	}
 
