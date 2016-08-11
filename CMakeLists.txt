@@ -36,9 +36,6 @@ set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
-if(${CGOGN_EXTERNAL_TEMPLATES})
-	add_definitions("-DCGOGN_USE_EXTERNAL_TEMPLATES")
-endif()
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
