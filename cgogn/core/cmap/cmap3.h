@@ -284,24 +284,24 @@ protected:
 	inline Dart cut_edge_topo(Dart d)
 	{
 		Dart prev = d;
-		Dart dd = phi3(this->phi2(d));
+		Dart d23 = phi3(this->phi2(d));
 
-		Dart nd = Inherit::cut_edge_topo(d);
+		const Dart nd = Inherit::cut_edge_topo(d);
 
-		while (dd != d)
+		while (d23 != d)
 		{
-			prev = dd;
-			dd = phi3(this->phi2(dd));
+			prev = d23;
+			d23 = phi3(this->phi2(d23));
 
 			Inherit::cut_edge_topo(prev);
 
-			Dart d3 = phi3(prev);
+			const Dart d3 = phi3(prev);
 			phi3_unsew(prev);
 			phi3_sew(prev, this->phi1(d3));
 			phi3_sew(d3, this->phi1(prev));
 		}
 
-		Dart d3 = phi3(d);
+		const Dart d3 = phi3(d);
 		phi3_unsew(d);
 		phi3_sew(d, this->phi1(d3));
 		phi3_sew(d3, this->phi1(d));
@@ -828,23 +828,23 @@ protected:
 		if (nb_inc_vols != 2)
 			return false;
 
-		const Dart dd = phi3(d);
+		const Dart d3 = phi3(d);
 
 		phi3_unsew(d);
-		phi3_unsew(dd);
 
-		Dart e = this->phi2(d);
-		this->phi2_unsew(d) ;
+		Dart d2 = this->phi2(d);
+		this->phi2_unsew(d);
 
-		this->phi1_sew(this->phi_1(e), d);
-		this->remove_face_topo(d);
+		this->phi1_sew(this->phi_1(d), d2);
+		this->phi1_sew(this->phi_1(d2), d);
+		this->Inherit::Inherit::remove_face_topo(d);
 
-		e = this->phi2(dd);
-		this->phi2_unsew(dd);
+		d2 = this->phi2(d3);
+		this->phi2_unsew(d3);
 
-		this->phi1_sew(this->phi_1(dd), e);
-		this->phi1_sew(this->phi_1(e), dd);
-		this->remove_face_topo(dd);
+		this->phi1_sew(this->phi_1(d3), d2);
+		this->phi1_sew(this->phi_1(d2), d3);
+		this->Inherit::Inherit::remove_face_topo(d3);
 
 		return true;
 	}
