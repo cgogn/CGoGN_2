@@ -519,7 +519,7 @@ public:
 	 */
 	inline void flip_edge(Edge e)
 	{
-//		CGOGN_CHECK_CONCRETE_TYPE;
+		CGOGN_CHECK_CONCRETE_TYPE;
 
 		if (flip_edge_topo(e.dart))
 		{
@@ -542,7 +542,7 @@ public:
 
 	inline void flip_back_edge(Edge e)
 	{
-//		CGOGN_CHECK_CONCRETE_TYPE;
+		CGOGN_CHECK_CONCRETE_TYPE;
 
 		if (flip_back_edge_topo(e.dart))
 		{
