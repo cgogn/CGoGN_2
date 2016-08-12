@@ -66,7 +66,7 @@ public:
 		distance_field_(map, cache, weight)
 	{
 		map.add_attribute(distance_to_A_, "__feature_A__");
-		map.template add_attribute(distance_to_B_, "__feature_B__");
+		map.add_attribute(distance_to_B_, "__feature_B__");
 		map.add_attribute(paths_, "__paths__");
 	}
 

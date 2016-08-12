@@ -457,7 +457,7 @@ std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<M
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 	using Volume = typename CMap3<MAP_TRAITS>::Volume;
 
-	std::vector<Dart>& edges = cgogn::dart_buffers()->buffer();
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
 	const Dart stop = map.phi1(map.phi2(map.phi_1(e)));
 	if (map.delete_edge(e).is_nil())
 	{
