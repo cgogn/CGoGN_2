@@ -33,6 +33,87 @@ namespace cgogn
 namespace modeling
 {
 
+template <typename MAP>
+void flip_edge(MAP& map, typename MAP::Edge2 e)
+{
+	static_assert(MAP::DIMENSION == 3u, "Only for Map3");
+	using Vertex2 = typename MAP::Vertex2;
+	using Vertex = typename MAP::Vertex;
+	using Edge2 = typename MAP::Edge2;
+	using Face2 = typename MAP::Face2;
+	using Face = typename MAP::Face;
+
+	if (!map.flip_edge_topo(e.dart))
+		return;
+
+	const Dart e2 = map.phi2(e.dart);
+
+	if (map.is_embedded(Vertex2::ORBIT))
+	{
+		map.template copy_embedding<Vertex2>(e.dart, map.phi1(e2));
+		map.template copy_embedding<Vertex2>(e2, map.phi1(e.dart));
+	}
+
+	if (map.is_embedded(Vertex::ORBIT))
+	{
+		map.template copy_embedding<Vertex>(e.dart, map.phi1(e2));
+		map.template copy_embedding<Vertex>(e2, map.phi1(e.dart));
+	}
+
+	if (map.is_embedded(Face2::ORBIT))
+	{
+		map.template copy_embedding<Face2>(map.phi_1(e.dart), e.dart);
+		map.template copy_embedding<Face2>(map.phi_1(e2), e2);
+	}
+
+	if (map.is_embedded(Face::ORBIT))
+	{
+		map.template copy_embedding<Face>(map.phi_1(e.dart), e.dart);
+		map.template copy_embedding<Face>(map.phi_1(e2), e2);
+	}
+}
+
+template <typename MAP>
+void flip_back_edge(MAP& map, typename MAP::Edge2 e)
+{
+	static_assert(MAP::DIMENSION == 3u, "Only for Map3");
+
+	using Vertex2 = typename MAP::Vertex2;
+	using Vertex = typename MAP::Vertex;
+	using Edge2 = typename MAP::Edge2;
+	using Face2 = typename MAP::Face2;
+	using Face = typename MAP::Face;
+
+	if (!map.flip_back_edge_topo(e.dart))
+		return;
+
+	const Dart e2 = map.phi2(e.dart);
+
+	if (map.is_embedded(Vertex2::ORBIT))
+	{
+		map.template copy_embedding<Vertex2>(e.dart, map.phi1(e2));
+		map.template copy_embedding<Vertex2>(e2, map.phi1(e.dart));
+	}
+
+	if (map.is_embedded(Vertex::ORBIT))
+	{
+		map.template copy_embedding<Vertex>(e.dart, map.phi1(e2));
+		map.template copy_embedding<Vertex>(e2, map.phi1(e.dart));
+	}
+
+	if (map.is_embedded(Face2::ORBIT))
+	{
+		map.template copy_embedding<Face2>(map.phi1(e.dart), e.dart);
+		map.template copy_embedding<Face2>(map.phi1(e2), e2);
+	}
+
+	if (map.is_embedded(Face::ORBIT))
+	{
+		map.template copy_embedding<Face>(map.phi1(e.dart), e.dart);
+		map.template copy_embedding<Face>(map.phi1(e2), e2);
+	}
+}
+
 template <typename MAP_TRAITS>
 inline Dart split_vertex(CMap3<MAP_TRAITS>& map, std::vector<Dart>& vd)
 {
@@ -121,16 +202,20 @@ Dart swap_44(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 }
 
 template <typename MAP_TRAITS>
-Dart swap_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
+Dart swap_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 {
 	using Edge = typename CMap3<MAP_TRAITS>::Edge;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
-	std::vector<Dart> edges;
 
-	Dart stop = map.phi_1(map.phi2(map.phi1(w.dart)));
-	Dart d2 = map.phi2(w.dart);
+	if (map.is_incident_to_boundary(e))
+		return Dart();
+
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
+
+	const Dart stop = map.phi_1(map.phi2(map.phi1(e.dart)));
+	Dart d2 = map.phi2(e.dart);
 	Dart d21 = map.phi1(d2);
-	map.merge_incident_volumes(Face(w.dart));
+	map.merge_incident_volumes(Face(e.dart));
 	map.merge_incident_faces(d2);
 	map.merge_incident_volumes(Face(d21));
 
@@ -138,31 +223,34 @@ Dart swap_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 	do
 	{
 		edges.push_back(dit);
-		dit = map.phi1(map.phi2(map.phi1(dit)));
-	}
-	while(dit != stop);
+		dit = map.template phi<121>(dit);
+	} while(dit != stop);
 	map.cut_volume(edges);
 
+	cgogn::dart_buffers()->release_buffer(&edges);
 	return map.phi2(edges[0]);
 }
 
 template <typename MAP_TRAITS>
-Dart swap_23(CMap3<MAP_TRAITS>& map, Dart d)
+Dart swap_23(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Face f)
 {
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 
-	std::vector<Dart> edges;
+	if (map.is_incident_to_boundary(f))
+		return Dart();
 
-	Dart d2_1 = map.phi_1(map.phi2(d));
-	map.merge_incident_volumes(Face(d));
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
+
+	Dart d2_1 = map.phi_1(map.phi2(f.dart));
+	map.merge_incident_volumes(f);
 
 	// Cut the 1st tetrahedron
 	Dart stop = d2_1;
 	Dart dit = stop;
 	do {
 		edges.push_back(dit);
-		dit = map.phi1(map.phi2(map.phi1(dit)));
-	} while(dit != stop);
+		dit = map.template phi<121>(dit);
+	} while (dit != stop);
 
 	map.cut_volume(edges);
 	map.cut_face(map.phi3(map.phi2(edges[0])), map.phi3(map.phi2(edges[2])));
@@ -173,10 +261,12 @@ Dart swap_23(CMap3<MAP_TRAITS>& map, Dart d)
 	dit = stop;
 	do {
 		edges.push_back(dit);
-		dit = map.phi1(map.phi2(map.phi1(dit)));
+		dit = map.template phi<121>(dit);
 	} while(dit != stop);
 
 	map.cut_volume(edges);
+
+	cgogn::dart_buffers()->release_buffer(&edges);
 
 	return stop;
 }
@@ -187,11 +277,11 @@ typename CMap3<MAP_TRAITS>::Vertex flip_14(CMap3<MAP_TRAITS>& map, typename CMap
 	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 
-	std::vector<Dart> edges;
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
 
 	// Cut the 1st tetrahedron
-	edges.push_back(map.phi2(w.dart));
 	edges.push_back(map.phi2(map.phi1(w.dart)));
+	edges.push_back(map.phi2(w.dart));
 	edges.push_back(map.phi2(map.phi_1(w.dart)));
 	map.cut_volume(edges);
 
@@ -201,49 +291,50 @@ typename CMap3<MAP_TRAITS>::Vertex flip_14(CMap3<MAP_TRAITS>& map, typename CMap
 	Dart dit = map.phi2(map.phi3(x.dart));
 	edges.clear();
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
 	dit = map.phi1(dit);
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
 
 	map.cut_volume(edges);
 	map.cut_face(map.phi1(map.phi2(edges[0])),map.phi1(map.phi2(edges[2])));
 
 	// Cut the 3rd tetrahedron
-	dit = map.phi3(map.phi1(map.phi2(edges[0])));
+	dit = map.template phi<213>(edges[0]);
 	edges.clear();
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
 
 	map.cut_volume(edges);
 
+	cgogn::dart_buffers()->release_buffer(&edges);
 	return x;
 }
 
 template <typename MAP_TRAITS>
-typename CMap3<MAP_TRAITS>::Vertex flip_13(CMap3<MAP_TRAITS>& map, Dart d)
+typename CMap3<MAP_TRAITS>::Vertex flip_13(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Face f)
 {
 	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 
-	std::vector<Dart> edges;
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
 
 	// Triangule one face
-	const Vertex x = triangule(map,Face(d));
+	const Vertex x = triangule(map,Face(f));
 
 	// Cut the 1st Tetrahedron
 	Dart dit = x.dart;
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
 
 	map.cut_volume(edges);
@@ -255,76 +346,69 @@ typename CMap3<MAP_TRAITS>::Vertex flip_13(CMap3<MAP_TRAITS>& map, Dart d)
 	dit = map.phi1(map.phi2(edges[0]));
 	edges.clear();
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
-	dit = map.phi1(map.phi2(map.phi1(dit)));
+	dit = map.template phi<121>(dit);
 	edges.push_back(dit);
 
 	map.cut_volume(edges);
 
+	cgogn::dart_buffers()->release_buffer(&edges);
 	return x;
 }
 
 template <typename MAP_TRAITS>
-Dart edge_bisection(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge d)
+Dart edge_bisection(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 {
-	map.cut_edge(d);
-	const Dart e = map.phi1(d.dart);
+	using Edge = typename CMap3<MAP_TRAITS>::Edge;
+	using Face = typename CMap3<MAP_TRAITS>::Face;
 
-	Dart dit = e;
-	do {
-		map.cut_face(dit, map.phi1(map.phi1(dit)));
-		dit = map.phi3(map.phi2(dit));
-	} while(dit != e);
+	if (!map.is_incident_to_boundary(e))
+		return Dart();
 
-	dit = e;
-	std::vector<Dart> edges;
-	do{
-		if(!map.is_boundary(dit))
+	map.cut_edge(e);
+	const Dart e1 = map.phi1(e.dart);
+
+	map.foreach_incident_face(Edge(e1), [&] (Face f) { map.cut_face(f.dart, map.phi1(map.phi1(f.dart))); });
+
+	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
+	map.foreach_incident_face(Edge(e1), [&](Face f)
+	{
+		if (!map.is_boundary(f.dart))
 		{
-			edges.push_back(map.phi_1(dit));
-			edges.push_back(map.phi_1(map.phi2(map.phi_1(edges[0]))));
-			edges.push_back(map.phi1(map.phi2(dit)));
+			edges.push_back(map.phi_1(f.dart));
+			edges.push_back(map.template phi<121>(edges[0]));
+			edges.push_back(map.template phi<121>(edges[1]));
 			map.cut_volume(edges);
 			edges.clear();
 		}
-		dit = map.phi3(map.phi2(dit));
-	} while (dit != e);
+	});
+	cgogn::dart_buffers()->release_buffer(&edges);
 
-	return e;
+	return e1;
 }
 
 template <typename MAP_TRAITS>
-Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume d)
+Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 {
+	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
 	using Edge = typename CMap3<MAP_TRAITS>::Edge;
 	using Edge2 = typename CMap3<MAP_TRAITS>::Edge2;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
+	using Volume = typename CMap3<MAP_TRAITS>::Volume;
 
 	std::vector<Dart>* edges = cgogn::dart_buffers()->buffer();
-	const Dart stop = map.phi1(map.phi2(map.phi_1(d.dart)));
+	const Dart stop = map.phi1(map.phi2(map.phi_1(e.dart)));
 
-	if (map.delete_edge(Edge(d.dart)).is_nil())
+	if (map.delete_edge(e).is_nil())
 	{
-		Dart d_begin;
-		{
-			//		Dart d_begin = map.findBoundaryFaceOfEdge(d);
-			Dart it = d.dart;
-			do {
-				if (map.is_boundary(it))
-				{
-					d_begin = it;
-					break;
-				}
-				it = map.phi3(map.phi2(it));
-			} while(it != d.dart);
-		}
-
-		map.foreach_incident_edge(d, [edges](Edge e) { edges->push_back(e.dart);});
+		const Face f = map.boundary_face_of_edge(e);
+		map.foreach_incident_volume(e, [edges](Volume w) { edges->push_back(w.dart);});
 		for (Dart it : *edges)
 			map.merge_incident_volumes(Face(it));
-		map.flip_back_edge(Edge2(d_begin));
-		map.flip_edge(Edge2(map.phi3(d_begin)));
+
+		flip_back_edge(map, Edge2(f.dart));
+		flip_edge(map, Edge2(map.phi3(f.dart)));
 	}
 
 	Dart dit = stop;
@@ -366,22 +450,58 @@ Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume d)
 	return stop;
 }
 
-//template <typename MAP_TRAITS>
-//std::vector<Dart> swapGen3To2Optimized(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume d);
+template <typename VEC3, typename MAP_TRAITS>
+std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
+{
+	using Edge2 = typename CMap3<MAP_TRAITS>::Edge2;
+	using Face = typename CMap3<MAP_TRAITS>::Face;
+	using Volume = typename CMap3<MAP_TRAITS>::Volume;
+
+	std::vector<Dart>& edges = cgogn::dart_buffers()->buffer();
+	const Dart stop = map.phi1(map.phi2(map.phi_1(e)));
+	if (map.delete_edge(e).is_nil())
+	{
+		const Dart d_begin = map.boundary_face_of_edge(e);
+		map.foreach_incident_volume(e, [&](Volume w) { edges.push_back(w.dart); });
+
+		for (Dart it : edges)
+			map.merge_incident_volumes(Face(it));
+
+		flip_back_edge(map,Edge2(d_begin));
+		flip_edge(map,Edge2(map.phi3(d_begin)));
+	}
+
+	Dart dit = stop;
+	do
+	{
+		edges.push_back(dit);
+		dit = map.template phi<121>(dit);
+	} while(dit != stop);
+
+	map.cut_volume(edges);
+
+	geometry::EarTriangulation<VEC3,CMap3<MAP_TRAITS>> triangulation(map);
+//	triangulation.trianguleFace(map.phi1(map.phi2(stop)));
+
+	cgogn::dart_buffers()->release_buffer(&edges);
+	return triangulation.getResultingTets();
+}
 
 //template <typename MAP_TRAITS>
 //void swapGen2To3(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume d);
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_CPP_))
+extern template CGOGN_MODELING_API void flip_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
+extern template CGOGN_MODELING_API void flip_back_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
 extern template CGOGN_MODELING_API Dart split_vertex<DefaultMapTraits>(CMap3<DefaultMapTraits>& , std::vector<Dart>&);
 extern template CGOGN_MODELING_API Dart swap_22<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
-extern template CGOGN_MODELING_API Dart swap_32<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
-extern template CGOGN_MODELING_API Dart swap_23<DefaultMapTraits>(CMap3<DefaultMapTraits>&,Dart);
+extern template CGOGN_MODELING_API Dart swap_32<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);
+extern template CGOGN_MODELING_API Dart swap_23<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
 extern template CGOGN_MODELING_API Dart swap_44<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_14<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
-extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_13<DefaultMapTraits>(CMap3<DefaultMapTraits>&, Dart);
+extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex flip_13<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
 extern template CGOGN_MODELING_API Dart edge_bisection(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);
-extern template CGOGN_MODELING_API Dart swap_gen_32(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
+extern template CGOGN_MODELING_API Dart swap_gen_32(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_CPP_))
 
 } // namespace modeling
