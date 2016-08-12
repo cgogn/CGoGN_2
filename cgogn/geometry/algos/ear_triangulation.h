@@ -209,6 +209,7 @@ class EarTriangulation
 
 public:
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(EarTriangulation);
 	/**
 	 * @brief EarTriangulation constructor
 	 * @param map ref on map
@@ -373,8 +374,6 @@ public:
 			}
 		}
 	}
-
-	EarTriangulation& operator=(const EarTriangulation&) = delete;
 };
 
 /**
