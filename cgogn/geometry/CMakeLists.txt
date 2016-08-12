@@ -34,7 +34,6 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	algos/bounding_box.cpp
 	algos/angle.cpp
 	types/aabb.cpp
 	types/obb.cpp

@@ -126,18 +126,6 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	bb.extension(ex);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_CPP_))
-extern template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
-extern template CGOGN_GEOMETRY_API void compute_AABB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
-extern template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, AABB<Eigen::Vector3f>& bb);
-extern template CGOGN_GEOMETRY_API void compute_AABB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, AABB<Eigen::Vector3d>& bb);
-
-extern template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
-extern template CGOGN_GEOMETRY_API void compute_OBB<CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
-extern template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, OBB<Eigen::Vector3f>& bb);
-extern template CGOGN_GEOMETRY_API void compute_OBB<CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>>(const CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, OBB<Eigen::Vector3d>& bb);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_CPP_))
-
 } // namespace geometry
 
 } // namespace cgogn
