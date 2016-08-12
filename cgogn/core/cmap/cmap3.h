@@ -29,6 +29,18 @@
 namespace cgogn
 {
 
+namespace modeling
+{
+
+// forward declaration of flip_edge
+template <typename MAP>
+void flip_edge(MAP& map, typename MAP::Edge2 e);
+// forward declaration of flip_back_edge
+template <typename MAP>
+void flip_back_edge(MAP& map, typename MAP::Edge2 e);
+
+} // namespace modeling
+
 // forward declaration of CMap3Builder_T
 template <typename MAP_TRAITS> class CMap3Builder_T;
 
@@ -89,6 +101,10 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	template<typename MAP>
+	friend void modeling::flip_edge(MAP& map, typename MAP::Edge2 e);
+	template<typename MAP>
+	friend void modeling::flip_back_edge(MAP& map, typename MAP::Edge2 e);
 protected:
 
 	ChunkArray<Dart>* phi3_;
