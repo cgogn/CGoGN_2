@@ -56,55 +56,55 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 }
 
 template<typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, std::size_t>::type size(const T& x);
+inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T& x);
 template<typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value, std::size_t>::type size(const T& x);
+inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size(const T& x);
 
 template<typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, std::size_t>::type size(const T& x)
+inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T& x)
 {
 	return 1;
 }
 
 template<typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value, std::size_t>::type size(const T& x)
+inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size(const T& x)
 {
 	return x.size();
 }
 
 template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
+inline typename std::enable_if<!has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
+inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value && (!type_traits::has_cols_method<T>::value || !type_traits::has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x);
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value && (!has_cols_method<T>::value || !has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x);
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value &&  type_traits::has_cols_method<T>::value && type_traits::has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x);
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value &&  has_cols_method<T>::value && has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x);
 
 
 
 template <typename T>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<!has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
 {
 	iss >> x;
 }
 
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
 {
 	for (auto& elem : x)
 		parse(iss, elem);
 }
 
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value && (!type_traits::has_cols_method<T>::value || !type_traits::has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value && (!has_cols_method<T>::value || !has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t i = 0u , end = size(x); i < end; ++i)
 		parse(iss, x[i]);
 }
 
 template <typename T>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && !std::is_same<T,std::string>::value &&  type_traits::has_cols_method<T>::value && type_traits::has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x)
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value &&  has_cols_method<T>::value && has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x)
 {
 	for (std::size_t r = 0, rend = x.rows(); r < rend ; ++r)
 		for (std::size_t c = 0, cend = x.cols(); c < cend ; ++c)
@@ -113,16 +113,16 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_t
 
 
 template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+inline typename std::enable_if<!has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && (!type_traits::has_rows_method<T>::value || !type_traits::has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && type_traits::has_rows_method<T>::value && type_traits::has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && has_rows_method<T>::value && has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
+inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary, bool little_endian)
+inline typename std::enable_if<!has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary, bool little_endian)
 {
 	using numerical_type = typename fixed_precision<T, Precision>::type;
 	if (binary)
@@ -136,7 +136,7 @@ inline typename std::enable_if<!type_traits::has_size_method<T>::value, void>::t
 }
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && (!type_traits::has_rows_method<T>::value || !type_traits::has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
 	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array[0])>::type>::type;
 	const std::size_t size = array.size();
@@ -150,7 +150,7 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_t
 }
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && type_traits::is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
+inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
 	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(*(array.begin()))>::type>::type;
 	const auto end = array.end();
@@ -165,7 +165,7 @@ inline typename std::enable_if<type_traits::has_size_method<T>::value && type_tr
 }
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<type_traits::has_size_method<T>::value && !type_traits::is_iterable<T>::value && type_traits::has_rows_method<T>::value && type_traits::has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
+inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && has_rows_method<T>::value && has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
 {
 	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array(0,0))>::type>::type;
 	for(std::size_t r = 0, rend = array.rows(); r < rend ; ++r)

@@ -35,7 +35,7 @@ namespace geometry
 {
 
 template <typename ATTR>
-void compute_AABB(const ATTR& attr, AABB<inside_type(ATTR)>& bb)
+void compute_AABB(const ATTR& attr, AABB<array_data_type<ATTR>>& bb)
 {
 	bb.reset();
 	for(const auto& p : attr)
@@ -50,9 +50,9 @@ void pca(const ATTR& attr)
 }
 
 template <typename ATTR>
-void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
+void compute_OBB(const ATTR& attr, OBB<array_data_type<ATTR>>& bb)
 {
-	using Vec = inside_type(ATTR);
+	using Vec = array_data_type<ATTR>;
 	using Scalar = typename Vec::Scalar;
 	using Mat3 = Eigen::Matrix<Scalar, 3, 3>;
 
