@@ -64,7 +64,9 @@ struct CriticalPoint
 	inline friend std::istream& operator>>(std::istream& is, CriticalPoint cp)
 	{
 		is >> cp.n_;
-		is >> cp.v_;
+		uint32 crit_point_type;
+		is >> crit_point_type;
+		cp.v_ = CriticalPoint::Type(crit_point_type);
 		return is;
 	}
 

@@ -52,6 +52,8 @@ class DistanceField
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DistanceField);
+
 	DistanceField(MAP& map,
 				  const AdjacencyCache<MAP>& cache,
 				  const EdgeAttribute<Scalar>& weight) :
@@ -230,7 +232,7 @@ private:
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
 		// in an sorted array of the distances and n the number of vertices.
-		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
+		const Scalar n = Scalar(map_.template nb_cells<Vertex::ORBIT>());
 		uint32 i = 1;
 		while(!vertex_queue.empty())
 		{

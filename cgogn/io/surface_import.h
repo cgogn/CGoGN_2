@@ -281,7 +281,7 @@ public:
 	void add_face(const std::vector<uint32>& v_ids)
 	{
 		nb_faces_ += 1u;
-		faces_nb_edges_.push_back(v_ids.size());
+		faces_nb_edges_.push_back(uint32(v_ids.size()));
 		for (uint32 id : v_ids)
 			faces_vertex_indices_.push_back(id);
 	}

@@ -44,17 +44,28 @@ class AdjacencyCache
 
 public:
 
-	AdjacencyCache(MAP& map) :
+	inline AdjacencyCache(MAP& map) :
 		map_(map)
 	{
 	}
 
-	~AdjacencyCache()
+	inline AdjacencyCache(const AdjacencyCache& other) :
+		map_(other.map_),
+		adjacency_(other.adjacency_)
+	{}
+
+	inline AdjacencyCache(AdjacencyCache&& other) :
+		map_(other.map_),
+		adjacency_(std::move(other.adjacency_))
+	{}
+
+	const AdjacencyCache& operator=(AdjacencyCache&&) = delete;
+	const AdjacencyCache& operator=(const AdjacencyCache& ) = delete;
+
+	inline ~AdjacencyCache()
 	{
 //		map_.remove_attribute(adjacency_);
 	}
-
-//	CGOGN_NOT_COPYABLE_NOR_MOVABLE(AdjacencyCache);
 
 	void init()
 	{

@@ -56,6 +56,8 @@ class FeaturesFinder
 	using ScalarField = cgogn::topology::ScalarField<Scalar,MAP>;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FeaturesFinder);
+
 	FeaturesFinder(MAP& map,
 				   const AdjacencyCache<MAP>& cache,
 				   const EdgeAttribute<Scalar>& weight) :

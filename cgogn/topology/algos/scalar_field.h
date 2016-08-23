@@ -68,6 +68,8 @@ class ScalarField
 	using VolumeMarkerStore = typename cgogn::CellMarkerStore<MAP, Volume::ORBIT>;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ScalarField);
+
 	ScalarField(MAP& map,
 				const AdjacencyCache<MAP>& cache,
 				const VertexAttribute<Scalar>& scalar_field) :
