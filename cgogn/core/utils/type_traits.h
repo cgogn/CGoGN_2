@@ -173,6 +173,15 @@ struct nested_type_helper<T, typename std::enable_if<has_operator_brackets<T>::v
 	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type>::type;
 };
 
+/**
+* This helper is needed because defining the template alias directly leads to a compilation error with MSVC 2013.
+*/
+template<typename T>
+struct array_data_type_helper
+{
+	using type = typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type;
+};
+
 } // namespace type_traits
 } // namespace internal
 
@@ -186,7 +195,7 @@ using nested_type = typename internal::type_traits::nested_type_helper<T>::type;
  * type of the data stored inside an array
  */
 template<typename T>
-using array_data_type = typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type;
+using array_data_type = typename internal::type_traits::array_data_type_helper<T>::type;
 
 template <typename T>
 inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T& );
