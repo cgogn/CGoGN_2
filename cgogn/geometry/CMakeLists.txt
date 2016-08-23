@@ -35,6 +35,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
 	algos/angle.cpp
+	algos/selection.cpp
 	types/aabb.cpp
 	types/obb.cpp
 	types/plane_3d.cpp

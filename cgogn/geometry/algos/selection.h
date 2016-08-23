@@ -24,7 +24,7 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 
-#include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/area.h>
 #include <cgogn/geometry/functions/inclusion.h>
@@ -51,11 +51,10 @@ public:
 	}
 
 	template <typename FUNC>
-	void foreach_cell(const FUNC& f)
+	inline void foreach_cell(const FUNC& f) const
 	{
-		using CellType = func_parameter_type(FUNC);
-		static const Orbit ORBIT = CellType::ORBIT;
-		for (Dart d : this->cells_[ORBIT])
+		using CellType = cgogn::func_parameter_type<FUNC>;
+		for (Dart d : this->cells_[CellType::ORBIT])
 			f(CellType(d));
 	}
 
@@ -71,7 +70,7 @@ public:
 	}
 
 	template <typename FUNC>
-	void foreach_border(const FUNC& f)
+	inline void foreach_border(const FUNC& f) const
 	{
 		for (Dart d : border_)
 			f(d);
@@ -153,7 +152,7 @@ public:
 	void collect(const Vertex center) override
 	{
 		this->clear();
-		this->center_ = center;
+		this->center_ = center.dart;
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
 		this->map_.foreach_adjacent_vertex_through_edge(center, [&] (Vertex nv)
@@ -316,6 +315,17 @@ protected:
 	Scalar radius_;
 	const typename MAP::template VertexAttribute<VEC3>& position_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
 
 } // namespace geometry
 
