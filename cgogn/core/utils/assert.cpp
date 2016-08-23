@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 
 #include <cgogn/core/dll.h>
 #include <cgogn/core/utils/assert.h>

@@ -20,7 +20,6 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_VOLUME_EXPORT_CPP_
 
 #include <cgogn/io/volume_export.h>

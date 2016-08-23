@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_
 
 #include <iostream>

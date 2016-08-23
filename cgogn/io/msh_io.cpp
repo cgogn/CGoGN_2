@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_MSH_IO_CPP_
 
 #include <cgogn/io/msh_io.h>

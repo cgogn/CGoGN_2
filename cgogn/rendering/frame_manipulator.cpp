@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT 1
 
 #include "cgogn/rendering/frame_manipulator.h"
 

@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_NASTRAN_IO_CPP_
 
 #include <cgogn/io/nastran_io.h>
