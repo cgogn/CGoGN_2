@@ -43,6 +43,7 @@ protected:
 	using Face = typename MAP::Face;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
 	/**
 	 * @brief Map in which we are working
 	 */
@@ -77,7 +78,7 @@ public:
 	{}
 
 	Tiling(MAP& map):
-		Tiling(map, -1, -1, 1)
+		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
 	{}
 
 	std::vector<Vertex>& vertices()

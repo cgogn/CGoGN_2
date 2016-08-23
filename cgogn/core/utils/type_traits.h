@@ -227,7 +227,7 @@ inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>
 template <typename T>
 inline typename std::enable_if<has_rows_method<T>::value && has_cols_method<T>::value, uint32>::type nb_components(const T& val)
 {
-	return val.rows() * val.cols();
+	return uint32(val.rows() * val.cols());
 }
 
 

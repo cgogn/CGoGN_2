@@ -123,7 +123,7 @@ public:
 	{
 		this->nx_ = x;
 		this->ny_ = y;
-		this->nz_ = -1;
+		this->nz_ = UINT32_MAX;
 
 		GridTopo<MAP>(this,x,y);
 
