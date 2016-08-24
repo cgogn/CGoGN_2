@@ -199,10 +199,11 @@ public:
 	template <typename VEC3>
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
-		if (res != nullptr)
+		if (!this->vertex_attributes_.has_array("position"))
+		{
+			auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 			return res;
-		else
+		} else
 			return this->vertex_attributes_.template get_chunk_array<VEC3>("position");
 	}
 
