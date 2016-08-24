@@ -56,25 +56,24 @@ protected:
 		line.reserve(512);
 
 		// reading number of vertices
+		uint32 nb_vertices = 0u;
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		uint32 nbv = 0u;
-		iss >> nbv;
-		this->set_nb_vertices(nbv);
+		iss >> nb_vertices;
 		}
 
+		uint32 nb_volumes = 0u;
 		// reading number of tetrahedra
 		{
-		std::getline(fp, line);
-		std::istringstream iss(line);
-		uint32 nbw = 0u;
-		iss >> nbw;
-		this->set_nb_volumes(nbw);
+			std::getline(fp, line);
+			std::istringstream iss(line);
+			iss >> nb_volumes;
 		}
+		this->reserve(nb_volumes);
 
 		//reading vertices
-		for(uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
+		for(uint32 i = 0u; i < nb_vertices; ++i)
 		{
 			do
 			{
@@ -92,7 +91,7 @@ protected:
 
 
 		// reading volumes
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			do
 			{
@@ -111,7 +110,7 @@ protected:
 				iss >> connector >> connector; // the line should be like this: # C id0 id1 id2 id3
 				if (connector == 'C')
 				{
-					this->set_nb_volumes(this->nb_volumes() -1u);
+					this->reserve(nb_volumes -1u);
 					std::array<uint32,4> ids;
 					iss >> ids[0] >> ids[1] >> ids[2] >> ids[3];
 					this->add_connector(ids[0], ids[1], ids[2], ids[3]);

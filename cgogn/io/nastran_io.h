@@ -120,7 +120,6 @@ protected:
 
 			std::getline (file, line);
 			tag = line.substr(0,4);
-			this->set_nb_vertices(this->nb_vertices() + 1u);
 		} while (tag =="GRID");
 
 		// reading volumes
@@ -131,7 +130,6 @@ protected:
 			{
 				if (s_v.compare(0, 5, "CHEXA") == 0)
 				{
-					this->set_nb_volumes(this->nb_volumes() + 1u);
 					std::array<uint32, 8> ids;
 
 					s_v = line.substr(24,8);
@@ -162,7 +160,6 @@ protected:
 				{
 					if (s_v.compare(0, 6,"CTETRA") == 0)
 					{
-						this->set_nb_volumes(this->nb_volumes() + 1u);
 						std::array<uint32, 4> ids;
 
 						s_v = line.substr(24,8);

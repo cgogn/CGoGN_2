@@ -73,6 +73,7 @@ protected:
 
 		//Reading NODE file
 		//First line: [# of points] [dimension (must be 3)] [# of attributes] [# of boundary markers (0 or 1)]
+		uint32 nb_vertices = 0u;
 		{
 			do
 			{
@@ -80,12 +81,11 @@ protected:
 			}while(line.empty());
 
 			std::istringstream iss(line);
-			uint32 nbv = 0u;
-			iss >> nbv;
-			this->set_nb_vertices(nbv);
+			iss >> nb_vertices;
 		}
 
 		//Reading number of tetrahedra in ELE file
+		uint32 nb_volumes = 0u;
 		{
 			do
 			{
@@ -93,15 +93,14 @@ protected:
 			}while(line.empty());
 
 			std::istringstream iss(line);
-			uint32 nbw = 0u;
-			iss >> nbw;
-			this->set_nb_volumes(nbw);
+			iss >> nb_volumes;
 		}
+		this->reserve(nb_volumes);
 
 		//Reading vertices
 		std::map<uint32, uint32> old_new_ids_map;
 
-		for(uint32 i = 0u, end = this->nb_vertices() ; i < end; ++i)
+		for(uint32 i = 0u ; i < nb_vertices; ++i)
 		{
 			do
 			{
@@ -123,7 +122,7 @@ protected:
 		}
 
 		// reading tetrahedra
-		for(uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		for(uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			do
 			{

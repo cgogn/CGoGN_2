@@ -118,7 +118,6 @@ private:
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
 					vertices_set.insert(std::make_pair(pos[i], vertex_id));
 //					indices_set.push_back(vertex_id);
-					this->nb_vertices_++;
 				} else
 					vertex_id = it->second;
 
@@ -126,7 +125,6 @@ private:
 				this->faces_vertex_indices_.push_back(vertex_id);
 			}
 			this->faces_nb_edges_.push_back(3u);
-			this->nb_faces_++;
 			std::getline(fp, line); // endloop
 			std::getline(fp, line); // endfacet
 		}
@@ -139,14 +137,15 @@ private:
 
 		std::array<uint32, 21> header;
 		fp.read(reinterpret_cast<char*>(&header[0]), 21u* sizeof(uint32));
-		this->nb_faces_ = swap_endianness_native_little(*reinterpret_cast<uint32*>(&header[20]));
+		const uint32 nb_faces = swap_endianness_native_little(*reinterpret_cast<uint32*>(&header[20]));
+		this->reserve(nb_faces);
 
 		std::array<float32, 3> normal_buffer;
 		std::array<float32, 9> position_buffer;
 
 		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
-		for(uint32 i = 0u; i < this->nb_faces_; ++i)
+		for(uint32 i = 0u; i < nb_faces; ++i)
 		{
 			fp.read(reinterpret_cast<char*>(&normal_buffer[0]), 3u*sizeof(float32));
 			fp.read(reinterpret_cast<char*>(&position_buffer[0]), 3u*3u*sizeof(float32));
@@ -171,7 +170,6 @@ private:
 				{
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
 					vertices_set.insert(std::make_pair(pos, vertex_id));
-					this->nb_vertices_++;
 				} else
 					vertex_id = it->second;
 

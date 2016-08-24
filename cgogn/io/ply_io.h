@@ -72,14 +72,14 @@ protected:
 		if (pid.has_colors())
 			color = this->vertex_attributes_.template add_chunk_array<VEC3>("color");
 
-		this->nb_vertices_ = pid.nb_vertices();
-		this->nb_faces_ = pid.nb_faces();
+		const uint32 nb_vertices = pid.nb_vertices();
+		const uint32 nb_faces = pid.nb_faces();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
-		vertices_id.reserve(this->nb_vertices_);
+		vertices_id.reserve(nb_vertices);
 
-		for (uint32 i = 0; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0; i < nb_vertices; ++i)
 		{
 			VEC3 pos;
 			pid.vertex_position(i, pos);
@@ -98,9 +98,8 @@ protected:
 		}
 
 		// read faces (vertex indices)
-		this->faces_nb_edges_.reserve(this->nb_faces_);
-		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
-		for (uint32 i = 0; i < this->nb_faces_; ++i)
+		this->reserve(nb_faces);
+		for (uint32 i = 0; i < nb_faces; ++i)
 		{
 			uint32 n = pid.face_valence(i);
 			this->faces_nb_edges_.push_back(n);

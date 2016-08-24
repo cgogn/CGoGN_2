@@ -26,6 +26,7 @@
 
 #include <istream>
 #include <sstream>
+#include <set>
 
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/name_types.h>
@@ -58,35 +59,18 @@ public:
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
 
-protected:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
-	uint32 nb_vertices_;
-	uint32 nb_faces_;
-
-	std::vector<uint32> faces_nb_edges_;
-	std::vector<uint32> faces_vertex_indices_;
-
-	ChunkArrayContainer vertex_attributes_;
-	ChunkArrayContainer face_attributes_;
-
-public:
-
-	inline SurfaceImport() :
-		nb_vertices_(0u)
-	  ,nb_faces_(0u)
-	  ,faces_nb_edges_()
+	inline SurfaceImport():
+		faces_nb_edges_()
 	  ,faces_vertex_indices_()
 	{}
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
 	virtual ~SurfaceImport()
 	{}
 
 	virtual void clear()
 	{
-		nb_vertices_ = 0;
-		nb_faces_ = 0;
 		faces_nb_edges_.clear();
 		faces_vertex_indices_.clear();
 		vertex_attributes_.remove_chunk_arrays();
@@ -103,7 +87,7 @@ public:
 		using Face = typename Map::Face;
 		using MapBuilder = typename Map::Builder;
 
-		if (this->nb_vertices_ == 0u)
+		if (nb_faces() == 0u)
 			return;
 
 		MapBuilder mbuild(map);
@@ -118,7 +102,7 @@ public:
 		std::vector<uint32> vertices_buffer;
 		vertices_buffer.reserve(16);
 
-		for (uint32 i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0, end = nb_faces(); i < end; ++i)
 		{
 			uint32 nbe = this->faces_nb_edges_[i];
 
@@ -237,31 +221,14 @@ public:
 		return face_attributes_;
 	}
 
-	inline void set_nb_vertices(uint32 nbv)
+	inline void reserve(uint32 nb_faces)
 	{
-		nb_vertices_ = nbv;
-	}
-
-	inline uint32 nb_vertices() const
-	{
-		return nb_vertices_;
-	}
-
-	inline void set_nb_faces(uint32 nbf)
-	{
-		nb_faces_ = nbf;
-		faces_nb_edges_.reserve(nbf);
-		faces_vertex_indices_.reserve(nbf * 4u);
-	}
-
-	inline uint32 nb_faces() const
-	{
-		return nb_faces_;
+		faces_nb_edges_.reserve(nb_faces);
+		faces_vertex_indices_.reserve(nb_faces * 4u);
 	}
 
 	void add_triangle(uint32 p0, uint32 p1, uint32 p2)
 	{
-		++nb_faces_;
 		faces_nb_edges_.push_back(3);
 		faces_vertex_indices_.push_back(p0);
 		faces_vertex_indices_.push_back(p1);
@@ -270,7 +237,6 @@ public:
 
 	void add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3)
 	{
-		++nb_faces_;
 		faces_nb_edges_.push_back(4);
 		faces_vertex_indices_.push_back(p0);
 		faces_vertex_indices_.push_back(p1);
@@ -280,11 +246,30 @@ public:
 
 	void add_face(const std::vector<uint32>& v_ids)
 	{
-		nb_faces_ += 1u;
 		faces_nb_edges_.push_back(uint32(v_ids.size()));
 		for (uint32 id : v_ids)
 			faces_vertex_indices_.push_back(id);
 	}
+
+private:
+	inline uint32 nb_faces() const
+	{
+		return uint32(faces_nb_edges_.size());
+	}
+
+	uint32 compute_nb_vertices() const
+	{
+		std::set<uint32> vertices;
+		for (uint32 v : faces_vertex_indices_)
+			vertices.insert(v);
+		return uint32(vertices.size());
+	}
+protected:
+	std::vector<uint32> faces_nb_edges_;
+	std::vector<uint32> faces_vertex_indices_;
+
+	ChunkArrayContainer vertex_attributes_;
+	ChunkArrayContainer face_attributes_;
 };
 
 template <typename MAP_TRAITS>

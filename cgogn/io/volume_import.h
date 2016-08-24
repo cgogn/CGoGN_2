@@ -25,6 +25,7 @@
 #define CGOGN_IO_VOLUME_IMPORT_H_
 
 #include <istream>
+#include <set>
 
 #include <cgogn/core/utils/string.h>
 #include <cgogn/core/container/chunk_array_container.h>
@@ -126,9 +127,8 @@ public:
 
 public:
 
-	VolumeImport() :
-		nb_vertices_(0u)
-	  ,volumes_types()
+	VolumeImport():
+		volumes_types()
 	  ,volumes_vertex_indices_()
 	{}
 
@@ -137,26 +137,10 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeImport);
 
-	inline void set_nb_vertices(uint32 nbv)
+	inline void reserve(uint32 nb_volumes)
 	{
-		nb_vertices_ = nbv;
-	}
-
-	inline uint32 nb_vertices() const
-	{
-		return nb_vertices_;
-	}
-
-	inline void set_nb_volumes(uint32 nbw)
-	{
-		nb_volumes_ = nbw;
-		volumes_types.reserve(nbw);
-		volumes_vertex_indices_.reserve(8u * nbw);
-	}
-
-	inline uint32 nb_volumes() const
-	{
-		return nb_volumes_;
+		volumes_types.reserve(nb_volumes);
+		volumes_vertex_indices_.reserve(8u * nb_volumes);
 	}
 
 	template <typename VEC3>
@@ -195,7 +179,7 @@ public:
 		using Face2 = typename Map::Face2;
 		using MapBuilder = typename Map::Builder;
 
-		if (this->nb_vertices_ == 0u || this->volumes_types.size() != this->nb_volumes_)
+		if (nb_volumes() == 0u)
 			return false;
 
 		MapBuilder mbuild(map);
@@ -210,7 +194,7 @@ public:
 		typename Map::DartMarkerStore m(map);
 
 		//for each volume of table
-		for (uint32 i = 0u; i < this->nb_volumes_; ++i)
+		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
 		{
 			// store volume in buffer, removing degenated faces
 			const VolumeType vol_type = this->volumes_types[i];
@@ -492,7 +476,7 @@ public:
 		uint32 nb_vert_dart_marking = 0u;
 		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex){++nb_vert_dart_marking;});
 
-		if (this->nb_vertices_ != nb_vert_dart_marking)
+		if (this->compute_nb_vertices() != nb_vert_dart_marking)
 			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		if (this->volume_attributes_.nb_chunk_arrays() > 0)
@@ -510,8 +494,6 @@ protected:
 
 	virtual void clear()
 	{
-		set_nb_vertices(0u);
-		set_nb_volumes(0u);
 		volumes_types.clear();
 		volumes_vertex_indices_.clear();
 		vertex_attributes_.remove_chunk_arrays();
@@ -620,10 +602,20 @@ public:
 	}
 
 private:
+	inline uint32 nb_volumes() const
+	{
+		return uint32(volumes_types.size());
+	}
 
-	uint32 nb_vertices_;
-	uint32 nb_volumes_;
+	uint32 compute_nb_vertices() const
+	{
+		std::set<uint32> vertices;
+		for (uint32 v : volumes_vertex_indices_)
+			vertices.insert(v);
+		return uint32(vertices.size());
+	}
 
+private:
 	std::vector<VolumeType>	volumes_types;
 	std::vector<uint32>		volumes_vertex_indices_;
 

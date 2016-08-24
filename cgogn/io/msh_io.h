@@ -171,9 +171,9 @@ protected:
 		line.reserve(512);
 		word.reserve(128);
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
-		for (uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_vertices; ++i)
 		{
 			std::getline(data_stream,line);
 
@@ -193,9 +193,10 @@ protected:
 			return false;
 
 		std::getline(data_stream,line);
-		this->set_nb_volumes(uint32(std::stoul(line)));
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -253,9 +254,9 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
-		for (uint32 i = 0u, end = this->nb_vertices(); i < end ; ++i)
+		for (uint32 i = 0u; i < nb_vertices ; ++i)
 		{
 			std::getline(data_stream,line);
 
@@ -275,9 +276,11 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
+
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -348,10 +351,10 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
 		std::vector<char> buff;
-		buff.resize(this->nb_vertices()*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
+		buff.resize(nb_vertices*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
 		data_stream.read(&buff[0], buff.size());
 
 		for (auto it = buff.begin(), end = buff.end(); it != end ; )
@@ -385,9 +388,11 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end;)
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
+
+		for (uint32 i = 0u; i < nb_volumes;)
 		{
 			std::array<char,12> header_buff;
 			data_stream.read(&header_buff[0], header_buff.size());

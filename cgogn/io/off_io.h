@@ -78,17 +78,19 @@ protected:
 			return this->import_off_bin(fp);
 
 		// read number of vertices, edges, faces
-		this->nb_vertices_ = this->read_uint(fp,line);
-		this->nb_faces_ = this->read_uint(fp,line);
+		const uint32 nb_vertices = this->read_uint(fp,line);
+		const uint32 nb_faces = this->read_uint(fp,line);
 		/*const uint32 nb_edges_ =*/ this->read_uint(fp,line);
+		this->reserve(nb_faces);
+
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
-		vertices_id.reserve(this->nb_vertices_);
+		vertices_id.reserve(nb_vertices);
 
-		for (uint32 i = 0; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0; i < nb_vertices; ++i)
 		{
 
 			float64 x = this->read_double(fp,line);
@@ -104,9 +106,7 @@ protected:
 		}
 
 		// read faces (vertex indices)
-		this->faces_nb_edges_.reserve(this->nb_faces_);
-		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
-		for (uint32 i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0u; i < nb_faces ; ++i)
 		{
 			uint32 n = this->read_uint(fp,line);
 			this->faces_nb_edges_.push_back(n);
@@ -125,35 +125,35 @@ protected:
 		char buffer1[12];
 		fp.read(buffer1,12);
 
-		this->nb_vertices_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
-		this->nb_faces_= swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
+		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
+		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
 		const uint32 BUFFER_SZ = 1024 * 1024;
 		std::vector<float32> buff_pos(3*BUFFER_SZ);
 		std::vector<uint32> vertices_id;
-		vertices_id.reserve(this->nb_vertices_);
+		vertices_id.reserve(nb_vertices);
 
 		{
 			uint32 j = BUFFER_SZ;
-			for (uint32 i = 0; i < this->nb_vertices_; ++i, ++j)
+			for (uint32 i = 0u; i < nb_vertices; ++i, ++j)
 			{
 				if (j == BUFFER_SZ)
 				{
-					j = 0;
+					j = 0u;
 					// read from file into buffer
-					if (i + BUFFER_SZ < this->nb_vertices_)
+					if (i + BUFFER_SZ < nb_vertices)
 						fp.read(reinterpret_cast<char*>(&buff_pos[0]), buff_pos.size() * sizeof(float32));
 					else
-						fp.read(reinterpret_cast<char*>(&buff_pos[0]), 3u * sizeof(float32)*(this->nb_vertices_ - i));
+						fp.read(reinterpret_cast<char*>(&buff_pos[0]), 3u * sizeof(float32)*(nb_vertices - i));
 
 					//endian
 					for (auto& p : buff_pos)
 						p = swap_endianness_native_big(p);
 				}
 
-				VEC3 pos{ buff_pos[3 * j], buff_pos[3 * j + 1], buff_pos[3 * j + 2] };
+				VEC3 pos{ buff_pos[3u * j], buff_pos[3u * j + 1u], buff_pos[3u * j + 2u] };
 
 				uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
 				(*position)[vertex_id] = pos;
@@ -165,12 +165,11 @@ protected:
 		// read faces (vertex indices)
 
 		std::vector<uint32> buff_ind(BUFFER_SZ);
-		this->faces_nb_edges_.reserve(this->nb_faces_);
-		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
+		this->reserve(nb_faces);
 
 		uint32* ptr = &buff_ind[0];
 		uint32 nb_read = BUFFER_SZ;
-		for (uint32 i = 0; i < this->nb_faces_; ++i)
+		for (uint32 i = 0u; i < nb_faces; ++i)
 		{
 			if (nb_read == BUFFER_SZ)
 			{
@@ -189,19 +188,19 @@ protected:
 			nb_read++;
 
 			this->faces_nb_edges_.push_back(n);
-			for (uint32 j = 0; j < n; ++j)
+			for (uint32 j = 0u; j < n; ++j)
 			{
 				if (nb_read == BUFFER_SZ)
 				{
 					fp.read(reinterpret_cast<char*>(&buff_ind[0]),buff_ind.size()*sizeof(uint32));
 					ptr = &buff_ind[0];
-					for (uint32 k=0; k< BUFFER_SZ;++k)
+					for (uint32 k=0u; k< BUFFER_SZ;++k)
 					{
 						*ptr = swap_endianness_native_big(*ptr);
 						++ptr;
 					}
 					ptr = &buff_ind[0];
-					nb_read=0;
+					nb_read=0u;
 				}
 				uint32 index = *ptr++;
 				nb_read++;

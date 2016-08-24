@@ -99,8 +99,6 @@ protected:
 			std::getline(fp, line);
 		} while (!fp.eof());
 
-		this->nb_vertices_ = uint32(vertices_id.size());
-
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
 
@@ -181,7 +179,6 @@ protected:
 					uint32 index = table[j] - 1; // indices start at 1
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
 				}
-				this->nb_faces_++;
 			}
 			fp >> tag;
 			std::getline(fp, line);

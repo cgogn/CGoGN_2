@@ -58,17 +58,16 @@ protected:
 		if (mesh_index == 0)
 			return false;
 
-		const int number_of_vertices = GmfStatKwd(mesh_index, GmfVertices);
-		const int number_of_tetras = GmfStatKwd(mesh_index, GmfTetrahedra);
-		const int number_of_hexas = GmfStatKwd(mesh_index, GmfHexahedra);
-		const int number_of_prisms = GmfStatKwd(mesh_index, GmfPrisms);
-		const int number_of_pyramids = GmfStatKwd(mesh_index, GmfPyramids);
+		const uint32 number_of_vertices = uint32(GmfStatKwd(mesh_index, GmfVertices));
+		const uint32 number_of_tetras = uint32(GmfStatKwd(mesh_index, GmfTetrahedra));
+		const uint32 number_of_hexas = uint32(GmfStatKwd(mesh_index, GmfHexahedra));
+		const uint32 number_of_prisms = uint32(GmfStatKwd(mesh_index, GmfPrisms));
+		const uint32 number_of_pyramids = uint32(GmfStatKwd(mesh_index, GmfPyramids));
 
+		const uint32 nb_volumes = number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids;
+		this->reserve(nb_volumes);
 
-		this->set_nb_vertices(number_of_vertices);
-		this->set_nb_volumes(number_of_tetras + number_of_hexas + number_of_prisms + number_of_pyramids);
-
-		if (this->nb_vertices() == 0 || this->nb_volumes()== 0u)
+		if (number_of_vertices == 0u || nb_volumes == 0u)
 		{
 			cgogn_log_warning("LM6VolumeImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
@@ -80,7 +79,7 @@ protected:
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
-		for (uint32 i = 0u, end = this->nb_vertices() ; i < end; ++i)
+		for (uint32 i = 0u ; i < number_of_vertices; ++i)
 		{
 			uint32 idx = this->insert_line_vertex_container();
 			std::array<float32, 3> v;
