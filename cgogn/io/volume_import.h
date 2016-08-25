@@ -192,7 +192,7 @@ public:
 		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
 
 		uint32 index = 0u;
-		typename Map::DartMarkerStore m(map);
+		typename Map::DartMarker dart_marker(map);
 
 		//for each volume of table
 		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
@@ -222,7 +222,7 @@ public:
 					Dart dd = dv;
 					do
 					{
-						m.mark(dd);
+						dart_marker.mark(dd);
 						darts_per_vertex[emb].push_back(dd);
 						dd = map.phi1(map.phi2(dd));
 					} while(dd != dv);
@@ -251,7 +251,7 @@ public:
 					Dart dd = dv;
 					do
 					{
-						m.mark(dd);
+						dart_marker.mark(dd);
 						darts_per_vertex[emb].push_back(dd);
 						dd = map.phi1(map.phi2(dd));
 					} while(dd != dv);
@@ -281,7 +281,7 @@ public:
 					Dart dd = dv;
 					do
 					{
-						m.mark(dd);
+						dart_marker.mark(dd);
 						darts_per_vertex[emb].push_back(dd);
 						dd = map.phi1(map.phi2(dd));
 					} while(dd != dv);
@@ -313,7 +313,7 @@ public:
 					Dart dd = dv;
 					do
 					{
-						m.mark(dd);
+						dart_marker.mark(dd);
 						darts_per_vertex[emb].push_back(dd);
 						dd = map.phi1(map.phi2(dd));
 					} while(dd != dv);
@@ -333,7 +333,7 @@ public:
 		uint32 nb_boundary_faces = 0u;
 		map.foreach_dart([&] (Dart d)
 		{
-			if (m.is_marked(d))
+			if (dart_marker.is_marked(d))
 			{
 				Dart good_dart;
 
@@ -364,7 +364,7 @@ public:
 					if (degD == degGD) // normal case : the two opposite faces have the same degree
 					{
 						mbuild.sew_volumes(d, good_dart);
-						m.unmark_orbit(Face(d));
+						dart_marker.unmark_orbit(Face(d));
 					}
 					else
 					{
@@ -398,19 +398,19 @@ public:
 							}
 
 							mbuild.sew_volumes(d, map.phi1(map.phi1(d_quad)));
-							m.unmark_orbit(Face(d));
+							dart_marker.unmark_orbit(Face(d));
 
 							mbuild.sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
-							m.unmark_orbit(Face(good_dart));
+							dart_marker.unmark_orbit(Face(good_dart));
 
 							if (!another_good_dart.is_nil())
 							{
 								mbuild.sew_volumes(another_good_dart, map.phi2(d_quad));
-								m.unmark_orbit(Face(another_good_dart));
+								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else
 							{
-								m.unmark_orbit(Face2(map.phi2(d_quad)));
+								dart_marker.unmark_orbit(Face2(map.phi2(d_quad)));
 								++nb_boundary_faces;
 							}
 						}
@@ -442,19 +442,19 @@ public:
 							}
 
 							mbuild.sew_volumes(d_quad, map.phi_1(good_dart));
-							m.unmark_orbit(Face(good_dart));
+							dart_marker.unmark_orbit(Face(good_dart));
 
 							mbuild.sew_volumes(d, map.phi2(map.phi_1(d_quad)));
-							m.unmark_orbit(Face(d));
+							dart_marker.unmark_orbit(Face(d));
 
 							if (!another_good_dart.is_nil())
 							{
 								mbuild.sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
-								m.unmark_orbit(Face(another_good_dart));
+								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else
 							{
-								m.unmark_orbit(Face2(map.phi1(map.phi2(map.phi1(d_quad)))));
+								dart_marker.unmark_orbit(Face2(map.phi1(map.phi2(map.phi1(d_quad)))));
 								++nb_boundary_faces;
 							}
 						}
@@ -462,7 +462,7 @@ public:
 				}
 				else
 				{
-					m.unmark_orbit(Face2(d));
+					dart_marker.unmark_orbit(Face2(d));
 					++nb_boundary_faces;
 				}
 			}
