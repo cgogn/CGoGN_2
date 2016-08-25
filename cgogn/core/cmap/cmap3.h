@@ -839,9 +839,7 @@ protected:
 
 	bool merge_incident_faces_topo(Dart d)
 	{
-		uint32 nb_inc_vols = 0u;
-		foreach_incident_volume(Edge(d), [&](Volume ) { ++nb_inc_vols; });
-		if (nb_inc_vols != 2)
+		if (this->degree(Edge(d)) != 2u)
 			return false;
 
 		const Dart d3 = phi3(d);
