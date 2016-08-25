@@ -79,16 +79,6 @@ public:
 		});
 	}
 
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
-	}
-
 	inline void phi3_sew(Dart d, Dart e)
 	{
 		return map_.phi3_sew(d,e);
@@ -97,11 +87,6 @@ public:
 	inline void phi3_unsew(Dart d)
 	{
 		return map_.phi3_unsew(d);
-	}
-
-	inline Dart add_face_topo(uint32 nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
 	}
 
 	inline Dart add_prism_topo(uint32 nb_edges)
@@ -209,7 +194,7 @@ public:
 						if (boundary_marker.is_marked(e))
 						{
 							found = true;
-							this->phi2_sew(e, bit);
+							map_.phi2_sew(e, bit);
 						}
 						else
 							e = map_.phi3(map_.phi2(e));
