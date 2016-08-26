@@ -33,6 +33,7 @@
 
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/distance.h>
 
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
@@ -75,6 +76,11 @@ protected:
 	float32 shrink_v_;
 	float32 shrink_f_;
 	float32 shrink_e_;
+
+	float32 min_length_dart_;
+
+	std::vector<Vec3f> darts_pos_;
+	std::vector<Dart> darts_id_;
 
 	template <typename VEC3, typename MAP>
 	void update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
@@ -154,7 +160,14 @@ public:
 	{
 		this->update_map3<VEC3, MAP>(m, position);
 	}
+
+	template <typename VEC3>
+	Dart pick(const VEC3& A, const VEC3& B, VEC3& dp1, VEC3& dp2);
+
+
 };
+
+
 
 template <typename VEC3, typename MAP>
 void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
@@ -166,8 +179,13 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 	Scalar opp_shrink_e = 1.0 - shrink_e_;
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 
-	std::vector<Vec3f> out_pos;
-	out_pos.reserve(1024 * 1024);
+	darts_pos_.clear();
+	darts_pos_.reserve(1024 * 1024);
+
+	darts_id_.clear();
+	darts_id_.reserve(1024 * 1024);
+
+	min_length_dart_ = std::numeric_limits<float32>::max();
 
 	std::vector<Vec3f> out_pos2;
 	out_pos2.reserve(1024 * 1024);
@@ -175,15 +193,20 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 	std::vector<VEC3> local_vertices;
 	local_vertices.reserve(256);
 
+	std::vector<Dart> local_darts;
+	local_darts.reserve(256);
+
 	m.foreach_cell([&] (Face f)
 	{
 		local_vertices.clear();
+		local_darts.clear();
 		VEC3 center;
 		center.setZero();
 		uint32 count = 0u;
 		m.foreach_incident_vertex(f, [&] (Vertex v)
 		{
 			local_vertices.push_back(position[v]);
+			local_darts.push_back(v.dart);
 			center += position[v];
 			count++;
 		});
@@ -207,10 +230,16 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 
 		for (uint32 i = 0; i < count; ++i)
 		{
+			darts_id_.push_back(local_darts[i]);
 			const VEC3& P1 = local_vertices[i];
-			out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+			darts_pos_.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
 			const VEC3& P2 = local_vertices[2*count+i];
-			out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+			darts_pos_.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+
+			float32 l = float32((P2-P1).squaredNorm());
+			if ((l>0.0f) && (l < min_length_dart_))
+				min_length_dart_ = l;
+
 			const VEC3& P3 = local_vertices[count+i];
 			out_pos2.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
 			const VEC3& P4 = local_vertices[3*count+i];
@@ -218,11 +247,11 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 		}
 	});
 
-	uint32 nbvec = std::uint32_t(out_pos.size());
+	uint32 nbvec = std::uint32_t(darts_pos_.size());
 
 	vbo_darts_->allocate(nbvec, 3);
 	vbo_darts_->bind();
-	vbo_darts_->copy_data(0, nbvec * 12, out_pos[0].data());
+	vbo_darts_->copy_data(0, nbvec * 12, darts_pos_[0].data());
 	vbo_darts_->release();
 
 	vbo_relations_->allocate(nbvec, 3);
@@ -243,8 +272,13 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 	Scalar opp_shrink_f = 1.0 - shrink_f_;
 	Scalar opp_shrink_v = 1.0 - shrink_v_;
 
-	std::vector<Vec3f> out_pos;
-	out_pos.reserve(1024 * 1024);
+	darts_pos_.clear();
+	darts_pos_.reserve(1024 * 1024);
+
+	darts_id_.clear();
+	darts_id_.reserve(1024 * 1024);
+
+	min_length_dart_ = std::numeric_limits<float32>::max();
 
 	std::vector<Vec3f> out_pos2;
 	out_pos2.reserve(1024 * 1024);
@@ -255,18 +289,23 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 	std::vector<VEC3> local_vertices;
 	local_vertices.reserve(256);
 
+	std::vector<Dart> local_darts;
+	local_darts.reserve(256);
+
 	m.foreach_cell([&] (Volume v)
 	{
 		VEC3 center_vol = geometry::centroid<VEC3>(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			local_vertices.clear();
+			local_darts.clear();
 			VEC3 center;
 			center.setZero();
 			uint32 count = 0u;
 			m.foreach_incident_vertex(f, [&] (Vertex v)
 			{
 				local_vertices.push_back(position[v]);
+				local_darts.push_back(v.dart);
 				center += position[v];
 				count++;
 			});
@@ -294,10 +333,15 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 
 			for (uint32 i = 0; i < count; ++i)
 			{
+				darts_id_.push_back(local_darts[i]);
 				VEC3 P1 = (local_vertices[i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
+				darts_pos_.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
 				VEC3 P2 = (local_vertices[3*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
-				out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+				darts_pos_.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
+
+				float32 l = float32((P2-P1).squaredNorm());
+				if ((l>0.0f) && (l < min_length_dart_))
+					min_length_dart_ = l;
 
 				const VEC3 P3 = (local_vertices[count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos2.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
@@ -310,10 +354,10 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 		});
 	});
 
-	uint32 nbvec = uint32(out_pos.size());
+	uint32 nbvec = uint32(darts_pos_.size());
 	vbo_darts_->allocate(nbvec, 3);
 	vbo_darts_->bind();
-	vbo_darts_->copy_data(0, nbvec * 12, out_pos[0].data());
+	vbo_darts_->copy_data(0, nbvec * 12, darts_pos_[0].data());
 	vbo_darts_->release();
 
 	vbo_relations_->allocate(2 * nbvec, 3);
@@ -323,6 +367,55 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 
 	vbo_relations_->release();
 }
+
+template <typename VEC3>
+Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, VEC3& xdp1, VEC3& xdp2)
+{
+	using LVEC = geometry::Vec_T<Vec3f>;
+
+	VEC3 xAB = xB-xA;
+	LVEC A(xA[0],xA[1],xA[2]);
+	LVEC AB(xAB[0],xAB[1],xAB[2]);
+
+	float32 d_seg_max = float32(min_length_dart_/10.0f);
+	float32 dmax = std::numeric_limits<float32>::max();
+	float32 AB2 = AB.dot(AB);
+
+	std::size_t isel = INVALID_INDEX;
+
+	for(std::size_t i=0, nb_d = darts_id_.size(); i<nb_d; ++i)
+	{
+		const Vec3f& PP = darts_pos_[2*i];
+		const Vec3f& QQ = darts_pos_[2*i+1];
+		const LVEC& P = reinterpret_cast<const LVEC&>(PP);
+		const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
+		float32 d2 =	geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+		if (d2 < d_seg_max)
+		{
+			float32 dp = ((P+Q)/2.0f-A).squaredNorm();
+			if (dp < dmax)
+			{
+				dp = dmax;
+				isel = i;
+			}
+		}
+	}
+
+	if (isel != INVALID_INDEX)
+	{
+		Vec3f dp1 = darts_pos_[2*isel];
+		Vec3f dp2 = darts_pos_[2*isel+1];
+		xdp1 = VEC3(dp1[0],dp1[1],dp1[2]);
+		xdp2 = VEC3(dp2[0],dp2[1],dp2[2]);
+		return darts_id_[isel];
+	}
+
+	return Dart(INVALID_INDEX);
+
+	//TODO PARALLEL: warning min -> 2 passes
+}
+
+
 
 } // namespace rendering
 

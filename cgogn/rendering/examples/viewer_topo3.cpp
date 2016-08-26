@@ -226,31 +226,45 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 	if (event->modifiers() & Qt::ShiftModifier)
 	{
-		drawer_->new_list();
-		std::vector<Map3::Volume> selected;
-		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
-		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
-		if (!selected.empty())
-		{
-			drawer_->line_width(2.0);
-			drawer_->begin(GL_LINES);
-			// closest vol in red
-			drawer_->color3f(1.0, 0.0, 0.0);
-			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
-			// others in yellow
-			drawer_->color3f(1.0, 1.0, 0.0);
-			for (uint32 i = 1u; i < selected.size(); ++i)
-				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
-			drawer_->end();
-		}
-		drawer_->line_width(4.0);
-		drawer_->begin(GL_LINES);
-		drawer_->color3f(1.0, 0.0, 1.0);
-		drawer_->vertex3fv(A);
-		drawer_->vertex3fv(B);
-		drawer_->end();
+//		drawer_->new_list();
+//		std::vector<Map3::Volume> selected;
+//		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
+//		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
+//		if (!selected.empty())
+//		{
+//			drawer_->line_width(2.0);
+//			drawer_->begin(GL_LINES);
+//			// closest vol in red
+//			drawer_->color3f(1.0, 0.0, 0.0);
+//			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+//			// others in yellow
+//			drawer_->color3f(1.0, 1.0, 0.0);
+//			for (uint32 i = 1u; i < selected.size(); ++i)
+//				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+//			drawer_->end();
+//		}
+//		drawer_->line_width(4.0);
+//		drawer_->begin(GL_LINES);
+//		drawer_->color3f(1.0, 0.0, 1.0);
+//		drawer_->vertex3fv(A);
+//		drawer_->vertex3fv(B);
+//		drawer_->end();
 
-		drawer_->end_list();
+//		drawer_->end_list();
+
+		Vec3 dp1,dp2;
+		cgogn::Dart d = topo_drawer_->pick(A,B,dp1,dp2);
+		if (!d.is_nil())
+		{
+			drawer_->new_list();
+			drawer_->line_width(4.0);
+			drawer_->begin(GL_LINES);
+			drawer_->color3f(1.0, 0.0, 0.0);
+			drawer_->vertex3fv(dp1);
+			drawer_->vertex3fv(dp2);
+			drawer_->end();
+
+		}
 	}
 
 	QOGLViewer::mousePressEvent(event);
