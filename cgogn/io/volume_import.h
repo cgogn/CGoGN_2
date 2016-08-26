@@ -474,11 +474,7 @@ public:
 			cgogn_log_info("create_map") << "Map closed with " << nb_boundary_faces << " boundary face(s).";
 		}
 
-		uint32 nb_vert_dart_marking = 0u;
-		map.template foreach_cell<FORCE_DART_MARKING>([&nb_vert_dart_marking](Vertex){++nb_vert_dart_marking;});
-
-		if (this->compute_nb_vertices() != nb_vert_dart_marking)
-			map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
+		map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
 
 		if (this->volume_attributes_.nb_chunk_arrays() > 0)
 		{
@@ -606,14 +602,6 @@ private:
 	inline uint32 nb_volumes() const
 	{
 		return uint32(volumes_types.size());
-	}
-
-	uint32 compute_nb_vertices() const
-	{
-		std::set<uint32> vertices;
-		for (uint32 v : volumes_vertex_indices_)
-			vertices.insert(v);
-		return uint32(vertices.size());
 	}
 
 private:
