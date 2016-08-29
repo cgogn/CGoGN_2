@@ -93,6 +93,11 @@ public:
 	~MapBase()
 	{}
 
+	inline uint8 dimension_concrete_map() const
+	{
+		return ConcreteMap::DIMENSION;
+	}
+
 	/**
 	 * @brief clear : clear the topology (empty the dart attributes including embeddings) leaving the other attributes unmodified
 	 */
