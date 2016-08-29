@@ -68,6 +68,7 @@ public:
 	virtual void draw();
 	virtual void init();
 	virtual void keyPressEvent(QKeyEvent*);
+	void keyReleaseEvent(QKeyEvent*);
 	virtual void mousePressEvent(QMouseEvent*);
 	virtual void mouseReleaseEvent(QMouseEvent*);
 	virtual void mouseMoveEvent(QMouseEvent*);
@@ -176,6 +177,9 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
+	if ((ev->modifiers() & Qt::ShiftModifier) && (ev->modifiers() & Qt::ControlModifier))
+		setCursor(Qt::CrossCursor);
+
 	switch (ev->key())
 	{
 		case Qt::Key_V:
@@ -212,6 +216,11 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 	update();
 }
 
+void Viewer::keyReleaseEvent(QKeyEvent*)
+{
+	unsetCursor();
+}
+
 void Viewer::mousePressEvent(QMouseEvent* event)
 {
 	qoglviewer::Vec P;
@@ -221,49 +230,50 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	Vec3 B(Q[0], Q[1], Q[2]);
 
 
-	if (event->modifiers() & Qt::ControlModifier)
+	if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & Qt::ShiftModifier))
 		frame_manip_->pick(event->x(), event->y(),P,Q);
 
-	if (event->modifiers() & Qt::ShiftModifier)
+	if ((event->modifiers() & Qt::ShiftModifier) && !(event->modifiers() & Qt::ControlModifier))
 	{
-//		drawer_->new_list();
-//		std::vector<Map3::Volume> selected;
-//		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
-//		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
-//		if (!selected.empty())
-//		{
-//			drawer_->line_width(2.0);
-//			drawer_->begin(GL_LINES);
-//			// closest vol in red
-//			drawer_->color3f(1.0, 0.0, 0.0);
-//			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
-//			// others in yellow
-//			drawer_->color3f(1.0, 1.0, 0.0);
-//			for (uint32 i = 1u; i < selected.size(); ++i)
-//				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
-//			drawer_->end();
-//		}
-//		drawer_->line_width(4.0);
-//		drawer_->begin(GL_LINES);
-//		drawer_->color3f(1.0, 0.0, 1.0);
-//		drawer_->vertex3fv(A);
-//		drawer_->vertex3fv(B);
-//		drawer_->end();
-
-//		drawer_->end_list();
-
-		Vec3 dp1,dp2;
-		cgogn::Dart d = topo_drawer_->pick(A,B,dp1,dp2);
-		if (!d.is_nil())
+		drawer_->new_list();
+		std::vector<Map3::Volume> selected;
+		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
+		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
+		if (!selected.empty())
 		{
-			drawer_->new_list();
-			drawer_->line_width(4.0);
+			drawer_->line_width(2.0);
 			drawer_->begin(GL_LINES);
+			// closest vol in red
 			drawer_->color3f(1.0, 0.0, 0.0);
-			drawer_->vertex3fv(dp1);
-			drawer_->vertex3fv(dp2);
+			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+			// others in yellow
+			drawer_->color3f(1.0, 1.0, 0.0);
+			for (uint32 i = 1u; i < selected.size(); ++i)
+				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
 			drawer_->end();
+		}
+		drawer_->line_width(4.0);
+		drawer_->begin(GL_LINES);
+		drawer_->color3f(1.0, 0.0, 1.0);
+		drawer_->vertex3fv(A);
+		drawer_->vertex3fv(B);
+		drawer_->end();
 
+		drawer_->end_list();
+	}
+
+	if ((event->modifiers() & Qt::ShiftModifier) && (event->modifiers() & Qt::ControlModifier))
+	{
+		Vec3 position,axis_z;
+		frame_manip_->get_position(position);
+		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+		float32 d = -(position.dot(axis_z));
+		QVector4D plane(axis_z[0],axis_z[1],axis_z[2],d);
+
+		cgogn::Dart da = topo_drawer_->pick(A,B,plane);
+		if (!da.is_nil())
+		{
+			topo_drawer_->update_color(da, Vec3(1.0,0.0,0.0));
 		}
 	}
 

@@ -68,6 +68,7 @@ protected:
 
 	std::unique_ptr<VBO> vbo_darts_;
 	std::unique_ptr<VBO> vbo_relations_;
+	std::unique_ptr<VBO> vbo_color_darts_;
 
 	QColor dart_color_;
 	QColor phi2_color_;
@@ -76,8 +77,6 @@ protected:
 	float32 shrink_v_;
 	float32 shrink_f_;
 	float32 shrink_e_;
-
-	float32 min_length_dart_;
 
 	std::vector<Vec3f> darts_pos_;
 	std::vector<Dart> darts_id_;
@@ -94,9 +93,9 @@ public:
 	{
 		friend class TopoDrawer;
 
-		std::unique_ptr<ShaderBoldLine::Param> param_bl_;
+		std::unique_ptr<ShaderBoldLineColor::Param> param_bl_;
 		std::unique_ptr<ShaderBoldLine::Param> param_bl2_;
-		std::unique_ptr<ShaderRoundPoint::Param> param_rp_;
+		std::unique_ptr<ShaderRoundPointColor::Param> param_rp_;
 		TopoDrawer* topo_drawer_data_;
 
 		Renderer(TopoDrawer* tr);
@@ -161,8 +160,35 @@ public:
 		this->update_map3<VEC3, MAP>(m, position);
 	}
 
-	template <typename VEC3>
-	Dart pick(const VEC3& A, const VEC3& B, VEC3& dp1, VEC3& dp2);
+	/**
+	 * @brief update colors of darts
+	 * @warning positions must be updated before
+	 * @param color color attribute (of any orbit)
+	 */
+	template <typename ATTR>
+	void update_colors(const ATTR& color);
+
+	/**
+	 * @brief update color of one dart
+	 * @warning O(n) perf.
+	 * @param d the dart
+	 * @param rgb the color
+	 */
+	template <typename RGB>
+	void update_color(Dart d, const RGB& rgb);
+
+
+	/**
+	 * @brief pick the closest dart to a given ray
+	 * @param A ray first point
+	 * @param B ray second point
+	 * @param plane picking plane (use std::array<int,4>{{0,0,0,0}} for none)
+	 * @param dp1 first point of selected dart
+	 * @param dp2 second point of selected dart
+	 * @return the selected dart
+	 */
+	template <typename VEC3, typename VEC4>
+	Dart pick(const VEC3& A, const VEC3& B, const VEC4& plane, VEC3* dp1=nullptr, VEC3* dp2=nullptr);
 
 
 };
@@ -184,8 +210,6 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 
 	darts_id_.clear();
 	darts_id_.reserve(1024 * 1024);
-
-	min_length_dart_ = std::numeric_limits<float32>::max();
 
 	std::vector<Vec3f> out_pos2;
 	out_pos2.reserve(1024 * 1024);
@@ -236,10 +260,6 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 			const VEC3& P2 = local_vertices[2*count+i];
 			darts_pos_.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
 
-			float32 l = float32((P2-P1).squaredNorm());
-			if ((l>0.0f) && (l < min_length_dart_))
-				min_length_dart_ = l;
-
 			const VEC3& P3 = local_vertices[count+i];
 			out_pos2.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
 			const VEC3& P4 = local_vertices[3*count+i];
@@ -247,12 +267,22 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 		}
 	});
 
+	std::vector<Vec3f> darts_col;
+	darts_col.resize(darts_pos_.size());
+	for (auto& c: darts_col)
+		c = {float32(dart_color_.redF()), float32(dart_color_.greenF()), float32(dart_color_.blueF())};
+
 	uint32 nbvec = std::uint32_t(darts_pos_.size());
 
 	vbo_darts_->allocate(nbvec, 3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec * 12, darts_pos_[0].data());
 	vbo_darts_->release();
+
+	vbo_color_darts_->allocate(nbvec, 3);
+	vbo_color_darts_->bind();
+	vbo_color_darts_->copy_data(0, nbvec*12, darts_col[0].data());
+	vbo_color_darts_->release();
 
 	vbo_relations_->allocate(nbvec, 3);
 	vbo_relations_->bind();
@@ -277,8 +307,6 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 
 	darts_id_.clear();
 	darts_id_.reserve(1024 * 1024);
-
-	min_length_dart_ = std::numeric_limits<float32>::max();
 
 	std::vector<Vec3f> out_pos2;
 	out_pos2.reserve(1024 * 1024);
@@ -339,10 +367,6 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 				VEC3 P2 = (local_vertices[3*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				darts_pos_.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
 
-				float32 l = float32((P2-P1).squaredNorm());
-				if ((l>0.0f) && (l < min_length_dart_))
-					min_length_dart_ = l;
-
 				const VEC3 P3 = (local_vertices[count+i] * shrink_v_) + (center_vol * opp_shrink_v);
 				out_pos2.push_back({float32(P3[0]), float32(P3[1]), float32(P3[2])});
 				const VEC3 P4 = (local_vertices[4*count+i] * shrink_v_) + (center_vol * opp_shrink_v);
@@ -354,22 +378,90 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 		});
 	});
 
+	std::vector<Vec3f> darts_col;
+	darts_col.resize(darts_pos_.size());
+	for (auto& c: darts_col)
+		c = {float32(dart_color_.redF()), float32(dart_color_.greenF()), float32(dart_color_.blueF())};
+
 	uint32 nbvec = uint32(darts_pos_.size());
 	vbo_darts_->allocate(nbvec, 3);
 	vbo_darts_->bind();
 	vbo_darts_->copy_data(0, nbvec * 12, darts_pos_[0].data());
 	vbo_darts_->release();
 
+	vbo_color_darts_->allocate(nbvec, 3);
+	vbo_color_darts_->bind();
+	vbo_color_darts_->copy_data(0, nbvec*12, darts_col[0].data());
+	vbo_color_darts_->release();
+
 	vbo_relations_->allocate(2 * nbvec, 3);
 	vbo_relations_->bind();
 	vbo_relations_->copy_data(0, nbvec * 12, out_pos2[0].data());
 	vbo_relations_->copy_data(nbvec * 12, nbvec*12, out_pos3[0].data());
-
 	vbo_relations_->release();
 }
 
-template <typename VEC3>
-Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, VEC3& xdp1, VEC3& xdp2)
+
+
+template <typename ATTR>
+void TopoDrawer::update_colors(const ATTR& color)
+{
+	using VEC3 = inside_type(ATTR);
+
+	std::vector<Vec3f> darts_col;
+	darts_col.reserve(2*darts_id_.size());
+//	darts_col.clear();
+
+	for (Dart d: darts_id_)
+	{
+		const VEC3& col = color[d];
+		darts_col.push_back({float32(col[0]),float32(col[1]),float32(col[2])});
+		darts_col.push_back({float32(col[0]),float32(col[1]),float32(col[2])});
+	}
+
+	uint32 nbvec = darts_col.size();
+	vbo_color_darts_->allocate(nbvec, 3);
+	vbo_color_darts_->bind();
+	vbo_color_darts_->copy_data(0, nbvec*12, darts_col[0].data());
+	vbo_color_darts_->release();
+
+}
+
+template <typename RGB>
+void TopoDrawer::update_color(Dart d, const RGB& rgb)
+{
+	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
+	if (it != darts_id_.end())
+	{
+		std::size_t x = it - darts_id_.begin();
+
+		vbo_color_darts_->bind();
+		float32 rgbf[6] = {float32(rgb[0]),float32(rgb[1]),float32(rgb[2]),
+						  float32(rgb[0]),float32(rgb[1]),float32(rgb[2])};
+		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->release();
+	}
+}
+
+template <>
+void TopoDrawer::update_color(Dart d, const QColor& rgb)
+{
+	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
+	if (it != darts_id_.end())
+	{
+		std::size_t x = it - darts_id_.begin();
+
+		vbo_color_darts_->bind();
+		float32 rgbf[6] = {float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF()),
+						  float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF())};
+		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->release();
+	}
+}
+
+
+template <typename VEC3, typename VEC4>
+Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* xdp1, VEC3* xdp2)
 {
 	using LVEC = geometry::Vec_T<Vec3f>;
 
@@ -377,7 +469,6 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, VEC3& xdp1, VEC3& xdp2)
 	LVEC A(xA[0],xA[1],xA[2]);
 	LVEC AB(xAB[0],xAB[1],xAB[2]);
 
-	float32 d_seg_max = float32(min_length_dart_/10.0f);
 	float32 dmax = std::numeric_limits<float32>::max();
 	float32 AB2 = AB.dot(AB);
 
@@ -387,15 +478,26 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, VEC3& xdp1, VEC3& xdp2)
 	{
 		const Vec3f& PP = darts_pos_[2*i];
 		const Vec3f& QQ = darts_pos_[2*i+1];
-		const LVEC& P = reinterpret_cast<const LVEC&>(PP);
-		const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
-		float32 d2 =	geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
-		if (d2 < d_seg_max)
+
+		float32 prod1 = PP[0]*float32(plane[0]);
+		prod1 += PP[1]*float32(plane[1]);
+		prod1 += PP[2]*float32(plane[2]);
+		prod1 += float32(plane[3]);
+
+
+		float32 prod2 = QQ[0]*float32(plane[0]);
+		prod2 += QQ[1]*float32(plane[1]);
+		prod2 += QQ[2]*float32(plane[2]);
+		prod2 += float32(plane[3]);
+
+		if ((prod2<=0.0f)&&(prod2<=0.0f))
 		{
-			float32 dp = ((P+Q)/2.0f-A).squaredNorm();
-			if (dp < dmax)
+			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
+			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			if (d2 < dmax)
 			{
-				dp = dmax;
+				dmax = d2;
 				isel = i;
 			}
 		}
@@ -403,16 +505,17 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, VEC3& xdp1, VEC3& xdp2)
 
 	if (isel != INVALID_INDEX)
 	{
-		Vec3f dp1 = darts_pos_[2*isel];
-		Vec3f dp2 = darts_pos_[2*isel+1];
-		xdp1 = VEC3(dp1[0],dp1[1],dp1[2]);
-		xdp2 = VEC3(dp2[0],dp2[1],dp2[2]);
+		if (xdp1 && xdp2)
+		{
+			Vec3f dp1 = darts_pos_[2*isel];
+			Vec3f dp2 = darts_pos_[2*isel+1];
+			*xdp1 = VEC3(dp1[0],dp1[1],dp1[2]);
+			*xdp2 = VEC3(dp2[0],dp2[1],dp2[2]);
+		}
 		return darts_id_[isel];
 	}
 
 	return Dart(INVALID_INDEX);
-
-	//TODO PARALLEL: warning min -> 2 passes
 }
 
 

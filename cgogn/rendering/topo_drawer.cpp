@@ -45,6 +45,7 @@ TopoDrawer::TopoDrawer() :
 {
 	vbo_darts_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	vbo_relations_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	vbo_color_darts_ =  cgogn::make_unique<cgogn::rendering::VBO>(3);
 }
 
 TopoDrawer::~TopoDrawer()
@@ -53,17 +54,17 @@ TopoDrawer::~TopoDrawer()
 TopoDrawer::Renderer::Renderer(TopoDrawer* tr) :
 	topo_drawer_data_(tr)
 {
-	param_bl_ = ShaderBoldLine::generate_param();
+	param_bl_ = ShaderBoldLineColor::generate_param();
 	param_bl_->set_position_vbo(tr->vbo_darts_.get());
-	param_bl_->color_= tr->dart_color_;
+	param_bl_->set_color_vbo(tr->vbo_color_darts_.get());
 
 	param_bl2_ = ShaderBoldLine::generate_param();
 	param_bl2_->set_position_vbo(tr->vbo_relations_.get());
 	param_bl2_->color_= tr->phi2_color_;
 
-	param_rp_ = ShaderRoundPoint::generate_param();
+	param_rp_ = ShaderRoundPointColor::generate_param();
 	param_rp_->set_position_vbo(tr->vbo_darts_.get(), 2, 0);
-	param_rp_->color_ = tr->dart_color_;
+	param_rp_->set_color_vbo(tr->vbo_color_darts_.get(),2,0);
 }
 
 TopoDrawer::Renderer::~Renderer()
