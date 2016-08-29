@@ -31,8 +31,6 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API void flip_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
-template CGOGN_MODELING_API void flip_back_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
 template CGOGN_MODELING_API Dart split_vertex<DefaultMapTraits>(CMap3<DefaultMapTraits>& , std::vector<Dart>&);
 template CGOGN_MODELING_API Dart swap_22<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 template CGOGN_MODELING_API Dart swap_32<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);

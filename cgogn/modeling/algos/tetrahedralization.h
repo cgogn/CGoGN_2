@@ -33,87 +33,6 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename MAP>
-void flip_edge(MAP& map, typename MAP::Edge2 e)
-{
-	static_assert(MAP::DIMENSION == 3u, "Only for Map3");
-	using Vertex2 = typename MAP::Vertex2;
-	using Vertex = typename MAP::Vertex;
-	using Edge2 = typename MAP::Edge2;
-	using Face2 = typename MAP::Face2;
-	using Face = typename MAP::Face;
-
-	if (!map.flip_edge_topo(e.dart))
-		return;
-
-	const Dart e2 = map.phi2(e.dart);
-
-	if (map.is_embedded(Vertex2::ORBIT))
-	{
-		map.template copy_embedding<Vertex2>(e.dart, map.phi1(e2));
-		map.template copy_embedding<Vertex2>(e2, map.phi1(e.dart));
-	}
-
-	if (map.is_embedded(Vertex::ORBIT))
-	{
-		map.template copy_embedding<Vertex>(e.dart, map.phi1(e2));
-		map.template copy_embedding<Vertex>(e2, map.phi1(e.dart));
-	}
-
-	if (map.is_embedded(Face2::ORBIT))
-	{
-		map.template copy_embedding<Face2>(map.phi_1(e.dart), e.dart);
-		map.template copy_embedding<Face2>(map.phi_1(e2), e2);
-	}
-
-	if (map.is_embedded(Face::ORBIT))
-	{
-		map.template copy_embedding<Face>(map.phi_1(e.dart), e.dart);
-		map.template copy_embedding<Face>(map.phi_1(e2), e2);
-	}
-}
-
-template <typename MAP>
-void flip_back_edge(MAP& map, typename MAP::Edge2 e)
-{
-	static_assert(MAP::DIMENSION == 3u, "Only for Map3");
-
-	using Vertex2 = typename MAP::Vertex2;
-	using Vertex = typename MAP::Vertex;
-	using Edge2 = typename MAP::Edge2;
-	using Face2 = typename MAP::Face2;
-	using Face = typename MAP::Face;
-
-	if (!map.flip_back_edge_topo(e.dart))
-		return;
-
-	const Dart e2 = map.phi2(e.dart);
-
-	if (map.is_embedded(Vertex2::ORBIT))
-	{
-		map.template copy_embedding<Vertex2>(e.dart, map.phi1(e2));
-		map.template copy_embedding<Vertex2>(e2, map.phi1(e.dart));
-	}
-
-	if (map.is_embedded(Vertex::ORBIT))
-	{
-		map.template copy_embedding<Vertex>(e.dart, map.phi1(e2));
-		map.template copy_embedding<Vertex>(e2, map.phi1(e.dart));
-	}
-
-	if (map.is_embedded(Face2::ORBIT))
-	{
-		map.template copy_embedding<Face2>(map.phi1(e.dart), e.dart);
-		map.template copy_embedding<Face2>(map.phi1(e2), e2);
-	}
-
-	if (map.is_embedded(Face::ORBIT))
-	{
-		map.template copy_embedding<Face>(map.phi1(e.dart), e.dart);
-		map.template copy_embedding<Face>(map.phi1(e2), e2);
-	}
-}
-
 template <typename MAP_TRAITS>
 inline Dart split_vertex(CMap3<MAP_TRAITS>& map, std::vector<Dart>& vd)
 {
@@ -393,7 +312,6 @@ Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 {
 	using Vertex = typename CMap3<MAP_TRAITS>::Vertex;
 	using Edge = typename CMap3<MAP_TRAITS>::Edge;
-	using Edge2 = typename CMap3<MAP_TRAITS>::Edge2;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 	using Volume = typename CMap3<MAP_TRAITS>::Volume;
 
@@ -407,8 +325,7 @@ Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 		for (Dart it : *edges)
 			map.merge_incident_volumes(Face(it));
 
-		flip_back_edge(map, Edge2(f.dart));
-		flip_edge(map, Edge2(map.phi3(f.dart)));
+		map.flip_back_edge(Edge(f.dart));
 	}
 
 	Dart dit = stop;
@@ -453,7 +370,7 @@ Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 template <typename VEC3, typename MAP_TRAITS>
 std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 {
-	using Edge2 = typename CMap3<MAP_TRAITS>::Edge2;
+	using Edge = typename CMap3<MAP_TRAITS>::Edge;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 	using Volume = typename CMap3<MAP_TRAITS>::Volume;
 
@@ -467,8 +384,7 @@ std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<M
 		for (Dart it : edges)
 			map.merge_incident_volumes(Face(it));
 
-		flip_back_edge(map,Edge2(d_begin));
-		flip_edge(map,Edge2(map.phi3(d_begin)));
+		map.flip_back_edge(Edge(d_begin));
 	}
 
 	Dart dit = stop;
@@ -491,8 +407,6 @@ std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<M
 //void swapGen2To3(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume d);
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_CPP_))
-extern template CGOGN_MODELING_API void flip_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
-extern template CGOGN_MODELING_API void flip_back_edge(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge2);
 extern template CGOGN_MODELING_API Dart split_vertex<DefaultMapTraits>(CMap3<DefaultMapTraits>& , std::vector<Dart>&);
 extern template CGOGN_MODELING_API Dart swap_22<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Volume);
 extern template CGOGN_MODELING_API Dart swap_32<DefaultMapTraits>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Edge);

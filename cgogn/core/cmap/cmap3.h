@@ -29,18 +29,6 @@
 namespace cgogn
 {
 
-namespace modeling
-{
-
-// forward declaration of flip_edge
-template <typename MAP>
-void flip_edge(MAP& map, typename MAP::Edge2 e);
-// forward declaration of flip_back_edge
-template <typename MAP>
-void flip_back_edge(MAP& map, typename MAP::Edge2 e);
-
-} // namespace modeling
-
 // forward declaration of CMap3Builder_T
 template <typename MAP_TRAITS> class CMap3Builder_T;
 
@@ -101,10 +89,6 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
-	template<typename MAP>
-	friend void modeling::flip_edge(MAP& map, typename MAP::Edge2 e);
-	template<typename MAP>
-	friend void modeling::flip_back_edge(MAP& map, typename MAP::Edge2 e);
 protected:
 
 	ChunkArray<Dart>* phi3_;
@@ -325,6 +309,38 @@ protected:
 		return nd;
 	}
 
+	/**
+	 * @brief Flip an Edge (rotation in phi1 order)
+	 * @param e : the edge to flip
+	 * @return  true iff the flip operation has been successfull
+	 * The edge has to :
+	 * 1) Be incident to the boundary.
+	 * 2) Be incident to exactly 2 faces.
+	 */
+	inline bool flip_edge_topo(Dart e)
+	{
+		if (this->is_incident_to_boundary(Edge(e)) && this->degree(Edge(e)) == 2u)
+			return Inherit::flip_edge_topo(e) && Inherit::flip_back_edge_topo(phi3(e));
+		else
+			return false;
+	}
+
+	/**
+	 * @brief Flip an Edge (rotation in phi_1 order)
+	 * @param e : the edge to flip
+	 * @return  true iff the flip operation has been successfull
+	 * The edge has to :
+	 * 1) Be incident to the boundary.
+	 * 2) Be incident to exactly 2 faces.
+	 */
+	inline bool flip_back_edge_topo(Dart e)
+	{
+		if (this->is_incident_to_boundary(Edge(e))&& this->degree(Edge(e)) == 2u)
+			return Inherit::flip_back_edge_topo(e) && Inherit::flip_edge_topo(phi3(e));
+		else
+			return false;
+	}
+
 public:
 
 	/**
@@ -419,6 +435,126 @@ public:
 		}
 
 		return Vertex(v);
+	}
+
+	inline void flip_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		if (!flip_edge_topo(e.dart))
+			return;
+
+		const Dart e2 = this->phi2(e.dart);
+		const Dart e3 = phi3(e.dart);
+		const Dart e32 = this->phi2(e3);
+
+		if (this->is_embedded(Vertex2::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Vertex2>(e.dart, this->phi1(e2));
+				this->template copy_embedding<Vertex2>(e2, this->phi1(e.dart));
+			} else {
+				this->template copy_embedding<Vertex2>(e3, this->phi1(e32));
+				this->template copy_embedding<Vertex2>(e32, this->phi1(e3));
+			}
+		}
+
+		if (this->is_embedded(Vertex::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Vertex>(e.dart, this->phi1(e2));
+				this->template copy_embedding<Vertex>(e2, this->phi1(e.dart));
+			} else {
+				this->template copy_embedding<Vertex>(e3, this->phi1(e32));
+				this->template copy_embedding<Vertex>(e32, this->phi1(e3));
+			}
+		}
+
+		if (this->is_embedded(Face2::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Face2>(this->phi_1(e.dart), e.dart);
+				this->template copy_embedding<Face2>(this->phi_1(e2), e2);
+			} else {
+				this->template copy_embedding<Face2>(this->phi1(e3), e3);
+				this->template copy_embedding<Face2>(this->phi1(e32), e32);
+			}
+		}
+
+		if (this->is_embedded(Face::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Face>(this->phi_1(e.dart), e.dart);
+				this->template copy_embedding<Face>(this->phi_1(e2), e2);
+			} else {
+				this->template copy_embedding<Face>(this->phi1(e3), e3);
+				this->template copy_embedding<Face>(this->phi1(e32), e32);
+			}
+		}
+	}
+
+	inline void flip_back_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		if (!flip_back_edge_topo(e.dart))
+			return;
+
+		const Dart e2 = this->phi2(e.dart);
+		const Dart e3 = phi3(e.dart);
+		const Dart e32 = this->phi2(e3);
+
+		if (this->is_embedded(Vertex2::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Vertex2>(e.dart, this->phi1(e2));
+				this->template copy_embedding<Vertex2>(e2, this->phi1(e.dart));
+			} else {
+				this->template copy_embedding<Vertex2>(e3, this->phi1(e32));
+				this->template copy_embedding<Vertex2>(e32, this->phi1(e3));
+			}
+		}
+
+		if (this->is_embedded(Vertex::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Vertex>(e.dart, this->phi1(e2));
+				this->template copy_embedding<Vertex>(e2, this->phi1(e.dart));
+			} else {
+				this->template copy_embedding<Vertex>(e3, this->phi1(e32));
+				this->template copy_embedding<Vertex>(e32, this->phi1(e3));
+			}
+		}
+
+		if (this->is_embedded(Face2::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Face2>(this->phi1(e.dart), e.dart);
+				this->template copy_embedding<Face2>(this->phi1(e2), e2);
+			} else {
+				this->template copy_embedding<Face2>(this->phi_1(e3), e3);
+				this->template copy_embedding<Face2>(this->phi_1(e32), e32);
+			}
+		}
+
+		if (this->is_embedded(Face::ORBIT))
+		{
+			if (!this->is_boundary(e.dart))
+			{
+				this->template copy_embedding<Face>(this->phi1(e.dart), e.dart);
+				this->template copy_embedding<Face>(this->phi1(e2), e2);
+			} else {
+				this->template copy_embedding<Face>(this->phi_1(e3), e3);
+				this->template copy_embedding<Face>(this->phi_1(e32), e32);
+			}
+		}
 	}
 
 protected:
@@ -2011,7 +2147,7 @@ protected:
 		};
 
 		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
-			if (!this->is_embedded(orb) && map.is_embedded(orb))
+			if (!this->is_embedded(orb) && this->is_embedded(orb))
 				create_embedding(this, orb);
 	}
 
