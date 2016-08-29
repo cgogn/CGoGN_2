@@ -469,7 +469,7 @@ protected:
 	inline bool flip_edge_topo(Dart d)
 	{
 		Dart e = phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(e))
+		if ((!this->is_boundary(d) && !this->is_boundary(e)) || MapType::TYPE::DIMENSION == 3u)
 		{
 			Dart d1 = this->phi1(d);
 			Dart d_1 = this->phi_1(d);
@@ -496,7 +496,7 @@ protected:
 	inline bool flip_back_edge_topo(Dart d)
 	{
 		const Dart e = phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(e))
+		if ((!this->is_boundary(d) && !this->is_boundary(e)) || MapType::TYPE::DIMENSION == 3u)
 		{
 			const Dart d_1 = this->phi_1(d);
 			const Dart e_1= this->phi_1(e);
