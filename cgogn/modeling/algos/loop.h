@@ -26,7 +26,9 @@
 
 #include <vector>
 
+#include <cgogn/modeling/dll.h>
 #include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -133,6 +135,13 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	map.swap_attributes(position, position2);
 	map.remove_attribute(position2);
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
+extern template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
 
 } // namespace modeling
 

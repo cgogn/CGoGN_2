@@ -33,6 +33,7 @@
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/geometry/functions/distance.h>
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <tuple>
 

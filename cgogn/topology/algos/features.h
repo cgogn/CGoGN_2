@@ -53,7 +53,11 @@ class FeaturesFinder
 	using VertexMarkerStore = typename cgogn::CellMarkerStore<MAP, Vertex::ORBIT>;
 	using FaceMarkerStore = typename cgogn::CellMarkerStore<MAP, Face::ORBIT>;
 
+	using ScalarField = cgogn::topology::ScalarField<Scalar,MAP>;
+
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FeaturesFinder);
+
 	FeaturesFinder(MAP& map,
 				   const AdjacencyCache<MAP>& cache,
 				   const EdgeAttribute<Scalar>& weight) :
@@ -63,9 +67,9 @@ public:
 		edge_weight_(weight),
 		distance_field_(map, cache, weight)
 	{
-		distance_to_A_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__feature_A__");
-		distance_to_B_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__feature_B__");
-		paths_ = map.template add_attribute<Vertex, Vertex::ORBIT>("__paths__");
+		map.add_attribute(distance_to_A_, "__feature_A__");
+		map.add_attribute(distance_to_B_, "__feature_B__");
+		map.add_attribute(paths_, "__paths__");
 	}
 
 	FeaturesFinder(MAP& map,
@@ -76,9 +80,9 @@ public:
 		distance_field_(map, cache)
 	{
 		edge_weight_ = distance_field_.edge_weight();
-		distance_to_A_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_A__");
-		distance_to_B_ = map.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_B__");
-		paths_ = map.template add_attribute<Vertex, Vertex::ORBIT>("__paths__");
+		map.add_attribute(distance_to_A_, "__distance_to_A__");
+		map.add_attribute(distance_to_B_, "__distance_to_B__");
+		map.add_attribute(paths_, "__paths__");
 	}
 
 	~FeaturesFinder()
@@ -145,7 +149,7 @@ public:
 		distance_field_.dijkstra_compute_paths({A}, distance_to_A_, paths_);
 
 		// Get the maxima in the scalar field distance_to_A_
-		ScalarField<Scalar, MAP> scalar_field_A(map_, distance_to_A_);
+		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
 		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
 
@@ -234,12 +238,12 @@ public:
 		Scalar max_distance = get_maximal_diameter(central_vertex, features);
 
 		// Get the maxima in the scalar field distance_to_A_
-		ScalarField<Scalar, MAP> scalar_field_A(map_, cache_, distance_to_A_);
+		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
 		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
 
 		// Get the maxima in the scalar field distance_to_B_
-		ScalarField<Scalar, MAP> scalar_field_B(map_, cache_, distance_to_B_);
+		ScalarField scalar_field_B(map_, cache_, distance_to_B_);
 		scalar_field_B.critical_vertex_analysis();
 		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
 
@@ -305,6 +309,13 @@ private:
 	bool intern_edge_weight_;
 
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
 
 } // namespace topology
 

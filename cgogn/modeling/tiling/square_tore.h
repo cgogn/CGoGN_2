@@ -90,7 +90,7 @@ public:
 	{
 		this->nx_ = n;
 		this->ny_ = m;
-		this->nz_ = -1;
+		this->nz_ = UINT32_MAX;
 
 		ToreTopo<MAP>(this, n, m);
 
@@ -142,17 +142,17 @@ public:
 					   float32 big_radius,
 					   float32 small_radius)
 	{
-		float32 alpha = 2.0*M_PI/float32(this->nx_);
-		float32 beta = 2.0*M_PI/float32(this->ny_);
+		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
+		const float32 beta = 2.0f * float32(M_PI) / float32(this->ny_);
 
 		for (uint32 i = 0; i < this->ny_; ++i)
 		{
 			for(uint32 j = 0; j < this->nx_; ++j)
 			{
-				float32 z = small_radius*std::sin(beta*float32(i));
-				float32 r = big_radius + small_radius*std::cos(beta*float32(i));
-				float32 x = r*std::cos(alpha*float32(j));
-				float32 y = r*std::sin(alpha*float32(j));
+				const float32 z = small_radius*std::sin(beta*float32(i));
+				const float32 r = big_radius + small_radius*std::cos(beta*float32(i));
+				const float32 x = r*std::cos(alpha*float32(j));
+				const float32 y = r*std::sin(alpha*float32(j));
 				attribute[this->vertex_table_[i*(this->nx_)+j] ] = T(x, y, z);
 			}
 		}

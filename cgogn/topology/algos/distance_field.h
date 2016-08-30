@@ -26,6 +26,8 @@
 
 #include <cgogn/topology/types/adjacency_cache.h>
 
+#include <cgogn/geometry/algos/centroid.h>
+
 namespace cgogn
 {
 
@@ -50,6 +52,8 @@ class DistanceField
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DistanceField);
+
 	DistanceField(MAP& map,
 				  const AdjacencyCache<MAP>& cache,
 				  const EdgeAttribute<Scalar>& weight) :
@@ -66,7 +70,7 @@ public:
 		cache_(cache),
 		intern_edge_weight_(true)
 	{
-		edge_weight_ = map.template add_attribute<Scalar, Edge::ORBIT>("__edge_weight__");
+		map.add_attribute(edge_weight_, "__edge_weight__");
 
 		map.foreach_cell([&](Edge e)
 		{
@@ -228,7 +232,7 @@ private:
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
 		// in an sorted array of the distances and n the number of vertices.
-		Scalar n = map_.template nb_cells<Vertex::ORBIT>();
+		const Scalar n = Scalar(map_.template nb_cells<Vertex::ORBIT>());
 		uint32 i = 1;
 		while(!vertex_queue.empty())
 		{
@@ -406,6 +410,13 @@ private:
 	EdgeAttribute<Scalar> edge_weight_;
 	bool intern_edge_weight_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
 
 } // namespace topology
 

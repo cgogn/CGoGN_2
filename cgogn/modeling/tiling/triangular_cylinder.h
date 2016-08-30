@@ -50,6 +50,8 @@ protected:
 	Vertex top_, bottom_;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TriangularCylinder);
+
 	//! Create a subdivided 2D cylinder
 	/*! @param[in] n nb of squares around circumference
 	 *  @param[in] z nb of squares in height
@@ -96,7 +98,7 @@ public:
 	{
 		this->nx_ = n;
 		this->ny_ = z;
-		this->nz_ = -1;
+		this->nz_ = UINT32_MAX;
 
 		CylinderTopo<MAP>(this,n,z);
 
@@ -169,17 +171,17 @@ public:
 							 float32 top_radius,
 							 float32 height)
 	{
-		float32 alpha = 2.0 * M_PI/float32(this->nx_);
-		float32 dz = height/float32(this->ny_);
+		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
+		const float32 dz = height / float32(this->ny_);
 
 		for(uint32 i = 0; i <= this->ny_; ++i)
 		{
-			float32 a = float32(i) / float32(this->ny_);
-			float32 radius = a*top_radius + (1.0f-a)*bottom_radius;
+			const float32 a = float32(i) / float32(this->ny_);
+			const float32 radius = a*top_radius + (1.0f - a)*bottom_radius;
 			for(uint32 j = 0; j < this->nx_; ++j)
 			{
-				float32 x = radius * std::cos(alpha * float32(j));
-				float32 y = radius * std::sin(alpha * float32(j));
+				const 	float32 x = radius * std::cos(alpha * float32(j));
+				const 	float32 y = radius * std::sin(alpha * float32(j));
 				attribute[this->vertex_table_[i * (this->nx_) + j]] = T(x, y ,-height/2.0f + dz*float32(i));
 			}
 		}
@@ -201,18 +203,18 @@ public:
 	void embed_into_sphere(typename MAP::template VertexAttribute<T>& attribute,
 						   float32 radius)
 	{
-		float32 alpha = 2.0 * M_PI / float32(this->nx_);
-		float32 beta = M_PI / float32(this->ny_+2);
+		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
+		const float32 beta = float32(M_PI) / float32(this->ny_ + 2.0f);
 
 		for(uint32 i = 0; i <= this->ny_; ++i)
 		{
 			for(uint32 j = 0; j < this->nx_; ++j)
 			{
-				float32 h = radius * std::sin(-M_PI / 2.0 + float32(i+1) * beta);
-				float32 rad = radius * std::cos(-M_PI / 2.0 + float32(i+1) * beta);
+				const float32 h = radius * std::sin(-float32(M_PI_2) + float32(i + 1) * beta);
+				const float32 rad = radius * std::cos(-float32(M_PI_2) + float32(i + 1) * beta);
 
-				float32 x = rad * std::cos(alpha * float32(j));
-				float32 y = rad * std::sin(alpha * float32(j));
+				const float32 x = rad * std::cos(alpha * float32(j));
+				const float32 y = rad * std::sin(alpha * float32(j));
 
 				attribute[this->vertex_table_[i * (this->nx_) + j] ] = T(x, y, h);
 			}
@@ -239,16 +241,16 @@ public:
 	{
 		if(top_closed_ && top_triangulated_)
 		{
-			float32 alpha = 2.0 * M_PI / float32(this->nx_);
-			float32 dz = height / float32(this->ny_ + 1);
+			const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
+			const float32 dz = height / float32(this->ny_ + 1);
 			for(uint32 i = 0; i <= this->ny_; ++i)
 			{
 				for(uint32 j = 0; j < this->nx_; ++j)
 				{
-					float32 rad = radius * float32(this->ny_+1-i) / float32(this->ny_+1);
-					float32 h = -height / 2.0 + dz * float32(i);
-					float32 x = rad * std::cos(alpha * float32(j));
-					float32 y = rad * std::sin(alpha * float32(j));
+					const float32 rad = radius * float32(this->ny_ + 1 - i) / float32(this->ny_ + 1);
+					const float32 h = -height / 2.0f + dz * float32(i);
+					const float32 x = rad * std::cos(alpha * float32(j));
+					const float32 y = rad * std::sin(alpha * float32(j));
 
 					attribute[this->vertex_table_[i*(this->nx_)+j] ] = T(x, y, h);
 				}

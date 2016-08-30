@@ -68,7 +68,7 @@ public:
 	/**
 	* constante d'attribut inconnu
 	*/
-	static const uint32 UNKNOWN = UINT_MAX;
+	static const uint32 UNKNOWN = UINT32_MAX;
 
 protected:
 
@@ -185,8 +185,20 @@ public:
 			delete ptr;
 	}
 
-	const std::vector<std::string>& names() const { return names_; }
-	const std::vector<std::string>& type_names() const { return type_names_; }
+	inline const std::vector<std::string>& names() const
+	{
+		return names_;
+	}
+
+	inline const std::vector<std::string>& type_names() const
+	{
+		return type_names_;
+	}
+
+	inline bool has_array(const std::string& array_name) const
+	{
+		return array_index(array_name) != UNKNOWN;
+	}
 
 	/**
 	 * @brief get a chunk array

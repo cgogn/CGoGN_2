@@ -201,6 +201,12 @@ public:
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = 8ul) const = 0;
 	/**
+	 * @brief import_element, read the element "idx" from an ascii istream
+	 * @param idx
+	 * @param i
+	 */
+	virtual void import_element(uint32 idx, std::istream& in) = 0;
+	/**
 	 * @brief element_ptr
 	 * @return a generic pointer to the element of index idx.
 	 * Use with caution. This method can't be used with ChunkArrayBool.

@@ -704,7 +704,7 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
@@ -920,8 +920,8 @@ protected:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
@@ -956,7 +956,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex2 v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
 			func(Edge2(d));
@@ -966,7 +966,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex2 v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &func] (Dart d)
 		{
 			func(Face2(d));
@@ -976,14 +976,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Vertex2 v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(v.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge2 e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&func] (Dart d)
 		{
 			func(Vertex2(d));
@@ -993,7 +993,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge2 e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [this, &func] (Dart d)
 		{
 			func(Face2(d));
@@ -1003,14 +1003,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge2 e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(e.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart d)
 		{
 			func(Vertex2(d));
@@ -1020,7 +1020,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart d)
 		{
 			func(Edge2(d));
@@ -1030,14 +1030,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(f.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex2(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex2>::value, "Wrong function cell parameter type");
 		uint32 first = (w.dart.index/12)*12;
 		func(Vertex2(Dart(first)));
 		func(Vertex2(Dart(first+1)));
@@ -1048,7 +1048,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge2(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge2>::value, "Wrong function cell parameter type");
 		uint32 first = (w.dart.index/12)*12;
 		func(Edge2(Dart(first)));
 		func(Edge2(Dart(first+1)));
@@ -1061,7 +1061,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face2(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		uint32 first = (w.dart.index/12)*12;
 		func(Face2(Dart(first)));// 0
 		first += 3;
@@ -1079,7 +1079,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex2 v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart d)
 		{
 			f(Vertex2(phi2(d)));
@@ -1089,7 +1089,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex2 v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			Dart vd1 = phi1(vd);
@@ -1105,7 +1105,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge2 e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			foreach_dart_of_orbit(Vertex2(ed), [&, ed] (Dart vd)
@@ -1120,7 +1120,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge2 e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			if (!this->is_boundary(ed))
@@ -1138,7 +1138,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = phi2(phi_1(fd));
@@ -1154,7 +1154,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face2 f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face2), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d)
 		{
 			const Dart d2 = phi2(d);
@@ -1170,7 +1170,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
@@ -1185,7 +1185,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
@@ -1201,7 +1201,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(v, [&] (Dart d)
 		{
@@ -1216,7 +1216,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		f(Vertex(e.dart));
 		f(Vertex(this->phi2(e.dart)));
 	}
@@ -1224,14 +1224,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_PHI23(e.dart, [&func] (Dart d) { func(Face(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		foreach_dart_of_PHI23(e.dart, [this, &func] (Dart d)
 		{
 			if (!this->is_boundary(d))
@@ -1242,7 +1242,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { func(Vertex(v)); });
 	}
 
@@ -1250,14 +1250,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart e) { func(Edge(e)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		if (!this->is_boundary(f.dart))
 			func(Volume(f.dart));
 		const Dart d3 = phi3(f.dart);
@@ -1268,7 +1268,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_incident_vertex2(v, [&func] (Vertex2 ve)
 		{
 			func(Vertex(ve.dart));
@@ -1278,7 +1278,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_incident_edge2(v, [&func] (Edge2 e)
 		{
 			func(Edge(e.dart));
@@ -1288,7 +1288,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 
 		foreach_incident_face2(v, [&func] (Face2 f)
 		{
@@ -1316,7 +1316,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_incident_edge(v, [&] (Edge e)
 		{
 			func(Vertex(this->phi2(e.dart)));
@@ -1326,7 +1326,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
 		marker_vertex.mark_orbit(v);
 		foreach_incident_face(v, [&] (Face inc_face)
@@ -1345,7 +1345,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_volume(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		DartMarker marker_vertex(*this);
 		marker_vertex.mark_orbit(v);
 		foreach_incident_volume(v, [&] (Volume inc_vol)
@@ -1364,7 +1364,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_incident_vertex(e, [&] (Vertex iv)
 		{
 			foreach_incident_edge(iv, [&] (Edge ie)
@@ -1378,7 +1378,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
 		marker_edge.mark_orbit(e);
 		foreach_incident_face(e, [&] (Face inc_face)
@@ -1397,7 +1397,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_volume(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
 		marker_edge.mark_orbit(e);
 		foreach_incident_volume(e, [&] (Volume inc_vol)
@@ -1416,7 +1416,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
 		marker_face.mark_orbit(f);
 		foreach_incident_vertex(f, [&] (Vertex v)
@@ -1435,7 +1435,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_incident_edge(f, [&] (Edge ie)
 		{
 			foreach_incident_face(ie, [&] (Face iface)
@@ -1449,7 +1449,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_volume(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
 		marker_face.mark_orbit(f);
 		if (!this->is_boundary(f.dart))
@@ -1480,7 +1480,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_vertex(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_vertex(v, [&] (Vertex inc_vert)
@@ -1499,7 +1499,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_edge(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_edge(v, [&] (Edge inc_edge)
@@ -1518,7 +1518,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_volume_through_face(Volume v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarker marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_face(v, [&] (Edge inc_face)
@@ -1549,26 +1549,31 @@ public:
 
 
 protected:
-
-#define FOR_ALL_ORBITS( CODE) {\
-{static const Orbit orbit_const=DART; CODE }\
-{static const Orbit orbit_const=PHI1; CODE }\
-{static const Orbit orbit_const=PHI2; CODE }\
-{static const Orbit orbit_const=PHI1_PHI2; CODE }\
-{static const Orbit orbit_const=PHI21; CODE }}
-
-
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
 	 */
 	void merge_check_embedding(const Self& map)
 	{
-		FOR_ALL_ORBITS
-		(
-			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
-				this->template create_embedding<orbit_const>();
-		)
+		const static auto create_embedding = [=](Self* map, Orbit orb)
+		{
+			switch (orb) {
+			case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+			case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+			case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
+			case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+			case Orbit::PHI1_PHI3: map->template create_embedding<Orbit::PHI1_PHI3>(); break;
+			case Orbit::PHI2_PHI3: map->template create_embedding<Orbit::PHI2_PHI3>(); break;
+			case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+			case Orbit::PHI21_PHI31: map->template create_embedding<Orbit::PHI21_PHI31>(); break;
+			case Orbit::PHI1_PHI2_PHI3: map->template create_embedding<Orbit::PHI1_PHI2_PHI3>(); break;
+			default: break;
+			}
+		};
+
+		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
+			if (!this->is_embedded(orb) && map.is_embedded(orb))
+				create_embedding(this, orb);
 	}
 
 
@@ -1578,23 +1583,35 @@ protected:
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		FOR_ALL_ORBITS
-		(
-			if (this->template is_embedded<orbit_const>())
+		const static auto new_orbit_embedding = [=](Self* map, Dart d, cgogn::Orbit orb)
+		{
+			switch (orb) {
+			case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+			case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+			case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+			case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
+			case Orbit::PHI1_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI3>(d)); break;
+			case Orbit::PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI2_PHI3>(d)); break;
+			case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+			case Orbit::PHI21_PHI31: map->new_orbit_embedding(Cell<Orbit::PHI21_PHI31>(d)); break;
+			case Orbit::PHI1_PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2_PHI3>(d)); break;
+			default: break;
+			}
+		};
+
+		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
+		{
+			if (this->is_embedded(orb))
 			{
-				for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+				for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 				{
-					if ( ((orbit_const != Boundary::ORBIT) && (orbit_const != DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orbit_const])[j] == INVALID_INDEX)
-						{
-							this->new_orbit_embedding(Cell<orbit_const>(Dart(j)));
-						}
+					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
+						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
+							new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
-		)
+		}
 	}
-
-#undef FOR_ALL_ORBITS
 
 };
 

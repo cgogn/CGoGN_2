@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CMAP_CMAP3_TETRA_CPP_
 
 #include <cgogn/core/cmap/cmap3_tetra.h>

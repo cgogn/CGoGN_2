@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_
 
 #include <cgogn/core/dll.h>

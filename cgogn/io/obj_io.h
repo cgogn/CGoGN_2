@@ -40,12 +40,12 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class ObjSurfaceImport : public SurfaceImport<MAP_TRAITS>
+class ObjSurfaceImport : public SurfaceFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = ObjSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -98,8 +98,6 @@ protected:
 			fp >> tag;
 			std::getline(fp, line);
 		} while (!fp.eof());
-
-		this->nb_vertices_ = uint32(vertices_id.size());
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
@@ -181,7 +179,6 @@ protected:
 					uint32 index = table[j] - 1; // indices start at 1
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
 				}
-				this->nb_faces_++;
 			}
 			fp >> tag;
 			std::getline(fp, line);

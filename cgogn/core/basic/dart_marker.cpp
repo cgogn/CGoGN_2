@@ -21,8 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-
 #include <cgogn/core/basic/dart_marker.h>
 
 namespace cgogn

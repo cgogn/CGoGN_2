@@ -24,7 +24,8 @@
 #ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 #define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 
-#include <cgogn/core/utils/numerics.h>
+#include <cgogn/topology/dll.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -43,19 +44,32 @@ class AdjacencyCache
 
 public:
 
-	AdjacencyCache(MAP& map) :
+	inline AdjacencyCache(MAP& map) :
 		map_(map)
 	{
 	}
 
-	~AdjacencyCache()
+	inline AdjacencyCache(const AdjacencyCache& other) :
+		map_(other.map_),
+		adjacency_(other.adjacency_)
+	{}
+
+	inline AdjacencyCache(AdjacencyCache&& other) :
+		map_(other.map_),
+		adjacency_(std::move(other.adjacency_))
+	{}
+
+	const AdjacencyCache& operator=(AdjacencyCache&&) = delete;
+	const AdjacencyCache& operator=(const AdjacencyCache& ) = delete;
+
+	inline ~AdjacencyCache()
 	{
 //		map_.remove_attribute(adjacency_);
 	}
 
 	void init()
 	{
-		adjacency_ = map_.template add_attribute<VertexArray, Vertex::ORBIT>("__adjacency__");
+		map_.add_attribute(adjacency_, "__adjacency__");
 		map_.foreach_cell([&](Vertex v)
 		{
 			map_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
@@ -68,7 +82,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		for (Vertex u : adjacency_[v]) f(u);
 	}
 
@@ -77,6 +91,12 @@ private:
 	MAP& map_;
 	VertexAttribute<VertexArray> adjacency_;
 };
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
+extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
 
 } // namespace topology
 

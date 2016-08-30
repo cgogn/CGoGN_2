@@ -131,16 +131,13 @@ private:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class MshVolumeImport : public MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeImport<MAP_TRAITS>
+class MshVolumeImport : public MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS>
 {
 public:
 
 	using Self = MshVolumeImport<MAP_TRAITS, VEC3>;
 	using Inherit_Msh = MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
-//	using DataInputGen = typename Inherit_Msh::DataInputGen;
-//	template <typename T>
-//	using DataInput = typename Inherit_Msh::template DataInput<T>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -153,8 +150,17 @@ public:
 	virtual ~MshVolumeImport() override
 	{}
 
-	// MeshImportGen interface
 protected:
+
+	inline static std::string skip_empty_lines(std::istream& data_stream)
+	{
+		std::string line;
+		line.reserve(1024ul);
+		while(data_stream.good() && line.empty())
+			std::getline(data_stream,line);
+
+		return line;
+	}
 
 	inline bool import_legacy_msh_file(std::istream& data_stream)
 	{
@@ -165,9 +171,9 @@ protected:
 		line.reserve(512);
 		word.reserve(128);
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
-		for (uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_vertices; ++i)
 		{
 			std::getline(data_stream,line);
 
@@ -187,9 +193,10 @@ protected:
 			return false;
 
 		std::getline(data_stream,line);
-		this->set_nb_volumes(uint32(std::stoul(line)));
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -247,9 +254,9 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
-		for (uint32 i = 0u, end = this->nb_vertices(); i < end ; ++i)
+		for (uint32 i = 0u; i < nb_vertices ; ++i)
 		{
 			std::getline(data_stream,line);
 
@@ -269,9 +276,11 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
+
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -342,10 +351,10 @@ protected:
 			return false;
 
 		std::getline(data_stream, line);
-		this->set_nb_vertices(uint32(std::stoul(line)));
+		const uint32 nb_vertices = uint32(std::stoul(line));
 
 		std::vector<char> buff;
-		buff.resize(this->nb_vertices()*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
+		buff.resize(nb_vertices*(4u + 3u* /*this->float_size_*/ sizeof(float64)));
 		data_stream.read(&buff[0], buff.size());
 
 		for (auto it = buff.begin(), end = buff.end(); it != end ; )
@@ -379,9 +388,11 @@ protected:
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
-		this->set_nb_volumes(uint32(std::stoul(line)));
 
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end;)
+		const uint32 nb_volumes = uint32(std::stoul(line));
+		this->reserve(nb_volumes);
+
+		for (uint32 i = 0u; i < nb_volumes;)
 		{
 			std::array<char,12> header_buff;
 			data_stream.read(&header_buff[0], header_buff.size());

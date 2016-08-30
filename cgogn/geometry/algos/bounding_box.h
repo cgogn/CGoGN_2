@@ -26,6 +26,7 @@
 
 #include <cgogn/geometry/types/aabb.h>
 #include <cgogn/geometry/types/obb.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -34,7 +35,7 @@ namespace geometry
 {
 
 template <typename ATTR>
-void compute_AABB(const ATTR& attr, AABB<inside_type(ATTR)>& bb)
+void compute_AABB(const ATTR& attr, AABB<array_data_type<ATTR>>& bb)
 {
 	bb.reset();
 	for(const auto& p : attr)
@@ -49,28 +50,32 @@ void pca(const ATTR& attr)
 }
 
 template <typename ATTR>
-void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
+void compute_OBB(const ATTR& attr, OBB<array_data_type<ATTR>>& bb)
 {
+	using Vec = array_data_type<ATTR>;
+	using Scalar = typename Vec::Scalar;
+	using Mat3 = Eigen::Matrix<Scalar, 3, 3>;
+
 	bb.reset();
 
 	// compute the mean of the dataset (centroid)
-	Eigen::Vector3d mean;
+	Vec mean;
 	mean.setZero();
 	uint32 count = 0;
 	for (const auto& p : attr)
 	{
-		mean += Eigen::Vector3d(p[0], p[1], p[2]);
+		mean += Vec(p[0], p[1], p[2]);
 		++count;
 	}
 	mean /= count;
 
 	// compute covariance matrix
-	Eigen::Matrix<double, 3, 3> covariance;
+	Mat3 covariance;
 	covariance.setZero();
 
 	for (const auto& p : attr)
 	{
-		Eigen::Matrix<double, 4, 1> point;
+		Eigen::Matrix<Scalar, 4, 1> point;
 		point[0] = p[0] - mean[0];
 		point[1] = p[1] - mean[1];
 		point[2] = p[2] - mean[2];
@@ -94,12 +99,12 @@ void compute_OBB(const ATTR& attr, OBB<inside_type(ATTR)>& bb)
 	covariance /= count;
 
 	// Extract axes (i.e. eigenvectors) from covariance matrix.
-	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigen_solver(covariance, Eigen::ComputeEigenvectors);
-	Eigen::Matrix3d eivecs = eigen_solver.eigenvectors();
+	Eigen::SelfAdjointEigenSolver<Mat3> eigen_solver(covariance, Eigen::ComputeEigenvectors);
+	auto eivecs = eigen_solver.eigenvectors();
 
 	// Compute the size of the obb
-	Eigen::Vector3d ex;
-	Eigen::Vector3d t;
+	Vec ex;
+	Vec t;
 	for (const auto& p : attr)
 	{
 		t = eivecs.transpose() * (p - mean);

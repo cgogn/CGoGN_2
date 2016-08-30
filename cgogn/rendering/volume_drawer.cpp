@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDERING_VOLUME_RENDER_CPP_
 
 #include <cgogn/rendering/volume_drawer.h>

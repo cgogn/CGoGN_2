@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <cgogn/rendering/topo_drawer.h>
 

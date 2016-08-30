@@ -83,6 +83,10 @@ public:
 	}
 };
 
+// forward declaration of class AttributeGen
+template <typename DATA_TRAITS>
+class AttributeGen;
+
 // forward declaration of class Attribute_T
 template <typename DATA_TRAITS, typename T>
 class Attribute_T;
@@ -116,6 +120,12 @@ public:
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
+
+	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
+	template <typename T>
+	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
+	template <typename T, Orbit ORBIT>
+	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 protected:
 

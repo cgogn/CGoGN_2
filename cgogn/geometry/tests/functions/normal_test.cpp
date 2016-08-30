@@ -47,7 +47,7 @@ TYPED_TEST(Normal_TEST, TriangleNormal)
 	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
 	TypeParam p0(Scalar(1), Scalar(3), Scalar(-5));
 	TypeParam p1(Scalar(7), Scalar(-4), Scalar(0.1f));
-	TypeParam p2(Scalar(-15), Scalar(-2), Scalar(15));;
+	TypeParam p2(Scalar(-15), Scalar(-2), Scalar(15));
 
 	TypeParam n = cgogn::geometry::normal(p0,p1,p2);
 

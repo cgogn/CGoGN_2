@@ -74,15 +74,14 @@ public:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class NastranVolumeImport : public NastranIO<VEC3>, public VolumeImport<MAP_TRAITS>
+class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<MAP_TRAITS>
 {
 	using Inherit_Nastran = NastranIO<VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
 	using Self = NastranVolumeImport<MAP_TRAITS, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
-	// MeshImportGen interface
 protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
@@ -121,7 +120,6 @@ protected:
 
 			std::getline (file, line);
 			tag = line.substr(0,4);
-			this->set_nb_vertices(this->nb_vertices() + 1u);
 		} while (tag =="GRID");
 
 		// reading volumes
@@ -132,7 +130,6 @@ protected:
 			{
 				if (s_v.compare(0, 5, "CHEXA") == 0)
 				{
-					this->set_nb_volumes(this->nb_volumes() + 1u);
 					std::array<uint32, 8> ids;
 
 					s_v = line.substr(24,8);
@@ -163,7 +160,6 @@ protected:
 				{
 					if (s_v.compare(0, 6,"CTETRA") == 0)
 					{
-						this->set_nb_volumes(this->nb_volumes() + 1u);
 						std::array<uint32, 4> ids;
 
 						s_v = line.substr(24,8);

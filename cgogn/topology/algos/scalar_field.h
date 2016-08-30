@@ -63,11 +63,13 @@ class ScalarField
 
 	template<typename T>
 	using VertexAttribute = typename MAP::template VertexAttribute<T>;
-	using VertexMarkerStore = typename cgogn::CellMarkerStore<MAP, Vertex::ORBIT>;
-	using FaceMarkerStore = typename cgogn::CellMarkerStore<MAP, Face::ORBIT>;
-	using VolumeMarkerStore = typename cgogn::CellMarkerStore<MAP, Volume::ORBIT>;
+	using VertexMarker = typename MAP::template CellMarker<Vertex::ORBIT>;
+	using FaceMarker = typename MAP::template CellMarker<Face::ORBIT>;
+	using VolumeMarker = typename MAP::template CellMarker<Volume::ORBIT>;
 
 public:
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ScalarField);
+
 	ScalarField(MAP& map,
 				const AdjacencyCache<MAP>& cache,
 				const VertexAttribute<Scalar>& scalar_field) :
@@ -78,7 +80,7 @@ public:
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
-		vertex_type_ = map.template add_attribute<CriticalPoint::Type, Vertex::ORBIT>(name);
+		map.add_attribute(vertex_type_, name);
 	}
 
 	~ScalarField()
@@ -177,7 +179,7 @@ private:
 	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
 	 */
-	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarkerStore& vertex_marker)
+	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& vertex_marker)
 	{
 		int nb_cc = 0;
 		while (!link.empty())
@@ -228,8 +230,8 @@ private:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
-		VertexMarkerStore sup_vertex_marker(map_);
-		VertexMarkerStore inf_vertex_marker(map_);
+		VertexMarker sup_vertex_marker(map_);
+		VertexMarker inf_vertex_marker(map_);
 
 		std::vector<Dart> sup_link;
 		std::vector<Dart> inf_link;
@@ -317,8 +319,8 @@ private:
 	void extract_level_sets(std::vector<Edge>& level_lines)
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
-		VertexMarkerStore vertex_marker(map_);
-		FaceMarkerStore face_marker(map_);
+		VertexMarker vertex_marker(map_);
+		FaceMarker face_marker(map_);
 		std::vector<Face> level_set_faces;
 
 		using my_pair = std::pair<Scalar, unsigned int>;
@@ -397,8 +399,8 @@ private:
 	void extract_level_sets(std::vector<Edge>& level_lines)
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
-		VertexMarkerStore vertex_marker(map_);
-		VolumeMarkerStore volume_marker(map_);
+		VertexMarker vertex_marker(map_);
+		VolumeMarker volume_marker(map_);
 		std::vector<Volume> level_set_volumes;
 
 		using my_pair = std::pair<Scalar, unsigned int>;
@@ -490,7 +492,7 @@ public:
 		// Search for every 1-saddles the starts of the ascending 1-manifolds
 		// that link the saddles to the minima
 		// These starts are the minima of the connected components of the inf_link of the saddles
-		VertexMarkerStore vertex_marker(map_);
+		VertexMarker vertex_marker(map_);
 		std::vector<Dart> inf_link;
 		std::vector<Dart> saddles_to_minima;
 		for (Vertex v : saddles_)
@@ -585,7 +587,7 @@ public:
 		// Search for every 1-saddles the starts of the descending 1-manifolds
 		// that link the saddles to the maxima
 		// These starts are the maxima of the connected components of the sup_link of the saddles
-		VertexMarkerStore vertex_marker(map_);
+		VertexMarker vertex_marker(map_);
 		std::vector<Dart> sup_link;
 		std::vector<Dart> saddles_to_maxima;
 		for (Vertex v : saddles_)
@@ -685,6 +687,13 @@ private:
 	std::vector<Vertex> saddles_;
 
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
+extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
 
 } // namespace topology
 

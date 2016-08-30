@@ -119,19 +119,19 @@ inline float64 swap_endianness_double(float64 x)
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<type_traits::has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x);
+inline typename std::enable_if<has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x);
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x);
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x);
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x);
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x);
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x);
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x);
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x);
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x);
 
 template <bool COND>
 inline char swap_endianness_if(char x)
@@ -216,7 +216,7 @@ inline float64 swap_endianness_if(float64 x)
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<type_traits::has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x)
+inline typename std::enable_if<has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x)
 {
 	T res;
 	for (std::size_t i = 0ul, size = static_cast<std::size_t>(x.size()); i < size; ++i)
@@ -225,13 +225,13 @@ inline typename std::enable_if<type_traits::has_operator_brackets<T>::value, T>:
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x)
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x)
 {
 	return x;
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x)
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x)
 {
 	uint16 tmp;
 	tmp = reinterpret_cast<const uint16&>(x);
@@ -240,7 +240,7 @@ inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && 
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x)
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x)
 {
 	uint32 tmp;
 	tmp = reinterpret_cast<const uint32&>(x);
@@ -249,7 +249,7 @@ inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && 
 }
 
 template<bool COND, typename T>
-inline typename std::enable_if<!type_traits::has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x)
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x)
 {
 	uint64 tmp;
 	tmp = reinterpret_cast<const uint64&>(x);

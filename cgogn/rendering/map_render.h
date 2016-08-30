@@ -302,6 +302,9 @@ public:
 				break;
 		}
 
+		if (table_indices.empty())
+			return;
+
 		if (!indices_buffers_[prim]->isCreated())
 			indices_buffers_[prim]->create();
 

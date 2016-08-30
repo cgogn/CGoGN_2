@@ -142,17 +142,17 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Vertex::ORBIT>("position");
+	map_.get_attribute(vertex_position_, "position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_position2_ = map_.add_attribute<Vec3, Vertex::ORBIT>("position2");
+	map_.add_attribute(vertex_position2_, "position2");
 	map_.copy_attribute(vertex_position2_, vertex_position_);
 
-	vertex_normal_ = map_.add_attribute<Vec3, Vertex::ORBIT>("normal");
+	map_.add_attribute(vertex_normal_, "normal");
 	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cell_cache_.build<Vertex>();
