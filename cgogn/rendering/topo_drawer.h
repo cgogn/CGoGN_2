@@ -270,7 +270,11 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 	std::vector<Vec3f> darts_col;
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
-		c = {float32(dart_color_.redF()), float32(dart_color_.greenF()), float32(dart_color_.blueF())};
+	{
+		c[0] = float32(dart_color_.redF());
+		c[1] = float32(dart_color_.greenF());
+		c[2] = float32(dart_color_.blueF());
+	}
 
 	uint32 nbvec = std::uint32_t(darts_pos_.size());
 
@@ -381,7 +385,11 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 	std::vector<Vec3f> darts_col;
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
-		c = {float32(dart_color_.redF()), float32(dart_color_.greenF()), float32(dart_color_.blueF())};
+	{
+		c[0] = float32(dart_color_.redF());
+		c[1] = float32(dart_color_.greenF());
+		c[2] = float32(dart_color_.blueF());
+	}
 
 	uint32 nbvec = uint32(darts_pos_.size());
 	vbo_darts_->allocate(nbvec, 3);
