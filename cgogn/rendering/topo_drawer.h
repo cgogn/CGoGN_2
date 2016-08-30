@@ -406,7 +406,7 @@ void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAt
 template <typename ATTR>
 void TopoDrawer::update_colors(const ATTR& color)
 {
-	using VEC3 = inside_type(ATTR);
+	using VEC3 = array_data_type<ATTR>;
 
 	std::vector<Vec3f> darts_col;
 	darts_col.reserve(2*darts_id_.size());
