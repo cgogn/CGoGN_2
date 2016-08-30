@@ -490,7 +490,7 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 		prod2 += QQ[2]*float32(plane[2]);
 		prod2 += float32(plane[3]);
 
-		if ((prod2<=0.0f)&&(prod2<=0.0f))
+		if ((prod1<=0.0f)||(prod2<=0.0f))
 		{
 			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
 			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
