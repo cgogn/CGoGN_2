@@ -113,6 +113,21 @@ void TopoDrawer::Renderer::set_clipping_plane(const QVector4D& p)
 	param_rp_->plane_clip_ = p;
 }
 
+void TopoDrawer::update_color(Dart d, const QColor& rgb)
+{
+	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
+	if (it != darts_id_.end())
+	{
+		std::size_t x = it - darts_id_.begin();
+
+		vbo_color_darts_->bind();
+		float32 rgbf[6] = {float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF()),
+						  float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF())};
+		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->release();
+	}
+}
+
 } // namespace rendering
 
 } // namespace cgogn
