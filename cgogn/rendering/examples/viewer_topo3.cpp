@@ -216,8 +216,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 	update();
 }
 
-void Viewer::keyReleaseEvent(QKeyEvent*)
+void Viewer::keyReleaseEvent(QKeyEvent* ev)
 {
+	QOGLViewer::keyReleaseEvent(ev);
 	unsetCursor();
 }
 
