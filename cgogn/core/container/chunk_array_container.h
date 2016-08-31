@@ -207,7 +207,7 @@ public:
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* get_chunk_array(const std::string& name) const
+	ChunkArray<T>* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
 		uint32 index = array_index(name);
@@ -220,7 +220,13 @@ public:
 		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
-	ChunkArrayGen* get_chunk_array(const std::string& name) const
+	template <typename T>
+	inline const ChunkArray<T>* get_chunk_array(const std::string& name) const
+	{
+		return const_cast<const ChunkArray<T>*>(const_cast<Self*>(this)->get_chunk_array<T>(name));
+	}
+
+	ChunkArrayGen* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
 		uint32 index = array_index(name);
@@ -232,6 +238,12 @@ public:
 
 		return table_arrays_[index];
 	}
+
+	inline const ChunkArrayGen* get_chunk_array(const std::string& name) const
+	{
+		return const_cast<const ChunkArrayGen*>(const_cast<Self*>(this)->get_chunk_array(name));
+	}
+
 
 	/**
 	 * @brief get all chunk arrays (generic pointers)

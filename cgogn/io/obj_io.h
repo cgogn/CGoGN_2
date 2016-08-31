@@ -207,9 +207,9 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& /*option*/) override
 	{
-		ChunkArrayGen* normal_attribute(nullptr);
+		const ChunkArrayGen* normal_attribute(nullptr);
 
-		for (ChunkArrayGen* vatt: this->vertex_attributes())
+		for (const ChunkArrayGen* vatt: this->vertex_attributes())
 			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
 				normal_attribute = vatt;
 
