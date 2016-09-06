@@ -321,31 +321,31 @@ public:
 	* @return an Attribute
 	*/
 	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = this->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(this, ca);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
+		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
 	}
 
 	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name)
+	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
 	{
 		ah = get_attribute<T,ORBIT>(attribute_name);
 	}
 
 	template <typename T>
-	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name)
+	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 
-		ChunkArray<T>* ca = this->attributes_[orbit].template get_chunk_array<T>(attribute_name);
-		return Attribute_T<T>(this, ca, orbit);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[orbit].template get_chunk_array<T>(attribute_name);
+		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
 	}
 
 	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name)
+	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
 	{
 		ath = get_attribute<T>(orbit, attribute_name);
 	}
@@ -356,13 +356,13 @@ public:
 	* @return an Attribute
 	*/
 	template <typename T_ASK, typename T_ATT, Orbit ORBIT>
-	inline Attribute<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name)
+	inline Attribute<T_ASK, ORBIT> get_attribute_force_type(const std::string& attribute_name) const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		static_assert(sizeof(T_ASK) == sizeof(T_ATT), "Incompatible casting operation between attributes, sizes are differents");
 
-		ChunkArray<T_ASK>* ca = reinterpret_cast<ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_chunk_array<T_ATT>(attribute_name));
-		return Attribute<T_ASK, ORBIT>(this, ca);
+		const ChunkArray<T_ASK>* ca = reinterpret_cast<const ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_chunk_array<T_ATT>(attribute_name));
+		return Attribute<T_ASK, ORBIT>(const_cast<Self*>(this), const_cast<ChunkArray<T_ASK>*>(ca));
 	}
 
 	template <typename T, Orbit ORBIT>

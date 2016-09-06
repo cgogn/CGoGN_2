@@ -177,6 +177,13 @@ public:
 	template <typename RGB>
 	void update_color(Dart d, const RGB& rgb);
 
+	/**
+	 * @brief update color of one dart
+	 * @warning O(n) perf.
+	 * @param d the dart
+	 * @param rgb the color
+	 */
+	void update_color(Dart d, const QColor& rgb);
 
 	/**
 	 * @brief pick the closest dart to a given ray
@@ -450,23 +457,6 @@ void TopoDrawer::update_color(Dart d, const RGB& rgb)
 		vbo_color_darts_->release();
 	}
 }
-
-template <>
-void TopoDrawer::update_color(Dart d, const QColor& rgb)
-{
-	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
-	if (it != darts_id_.end())
-	{
-		std::size_t x = it - darts_id_.begin();
-
-		vbo_color_darts_->bind();
-		float32 rgbf[6] = {float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF()),
-						  float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF())};
-		vbo_color_darts_->copy_data(x*24, 24, rgbf);
-		vbo_color_darts_->release();
-	}
-}
-
 
 template <typename VEC3, typename VEC4>
 Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* xdp1, VEC3* xdp2)

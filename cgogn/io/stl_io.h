@@ -201,9 +201,9 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen* normal_attribute(nullptr);
+		const ChunkArrayGen* normal_attribute(nullptr);
 
-		for (ChunkArrayGen* vatt: this->face_attributes())
+		for (const ChunkArrayGen* vatt: this->face_attributes())
 			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
 				normal_attribute = vatt;
 
@@ -220,7 +220,7 @@ protected:
 
 	}
 private:
-	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option, ChunkArrayGen* normal_attribute)
+	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option, const ChunkArrayGen* normal_attribute)
 	{
 		// set precision for float output
 		output << std::setprecision(12);
@@ -250,7 +250,7 @@ private:
 		output << "endsolid " << remove_extension(option.filename_) << std::endl;
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, ChunkArrayGen* normal_attribute)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, const ChunkArrayGen* normal_attribute)
 	{
 		// header + nb triangles
 		std::array<uint32, 21> header;

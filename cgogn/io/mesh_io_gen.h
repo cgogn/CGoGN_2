@@ -103,8 +103,9 @@ public:
 	}
 
 	virtual ~MeshExport() {}
+
 protected:
-	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
+	inline std::vector<const ChunkArrayGen*> const & vertex_attributes() const
 	{
 		return vertex_attributes_;
 	}
@@ -128,10 +129,10 @@ protected:
 		cell_cache_.reset();
 	}
 
-	VertexAttribute<uint32>		indices_;
-	std::vector<ChunkArrayGen*>	vertex_attributes_;
-	ChunkArrayGen*				position_attribute_;
-	std::unique_ptr<CellCache>	cell_cache_;
+	VertexAttribute<uint32>				indices_;
+	std::vector<const ChunkArrayGen*>	vertex_attributes_;
+	const ChunkArrayGen*				position_attribute_;
+	std::unique_ptr<CellCache>			cell_cache_;
 };
 
 
