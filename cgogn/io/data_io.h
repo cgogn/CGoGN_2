@@ -59,8 +59,26 @@ public:
 
 	virtual void read_n(std::istream& fp, std::size_t n, bool binary, bool big_endian) = 0;
 	virtual void skip_n(std::istream& fp, std::size_t n, bool binary) = 0;
+	/**
+	 * @brief data
+	 * @return a pointer to the first delement stored in the buffer vector
+	 */
 	virtual void* data() = 0;
 	virtual const void* data() const = 0;
+
+	/**
+	 * @brief data_size
+	 * @return the size of one data element (i.e. sizeof(T))
+	 */
+	virtual uint8 data_size() const = 0;
+	virtual DataType data_type() const = 0;
+	/**
+	 * @brief buffer_vector
+	 * @return return a pointer to the vector used to store the data (WARNING : this is not a pointer to the data contained in the vector)
+	 */
+	virtual void* buffer_vector() = 0;
+	virtual const void* buffer_vector() const = 0;
+
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
 	/**
@@ -172,12 +190,14 @@ public:
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
 				type buff;
-				bool no_error = static_cast<bool>(internal::parse(line_stream, buff));
+				serialization::parse(line_stream, buff);
+				bool no_error = static_cast<bool>(line_stream);
 				while (i < n && no_error)
 				{
 					data_[i+old_size] = internal::convert<T>(buff);
 					++i;
-					no_error = static_cast<bool>(internal::parse(line_stream, buff));
+					serialization::parse(line_stream, buff);
+					no_error = static_cast<bool>(line_stream);
 				}
 				if (!no_error && (!line_stream.eof()))
 					break;
@@ -244,10 +264,30 @@ public:
 
 	virtual void* data() override
 	{
-		return &data_;
+		return &data_[0];
 	}
 
 	virtual const void* data() const override
+	{
+		return &data_[0];
+	}
+
+	virtual uint8 data_size() const override
+	{
+		return uint8(sizeof(T));
+	}
+
+	virtual DataType data_type() const override
+	{
+		return cgogn::io::data_type(cgogn::name_of_type(T()));
+	}
+
+	void* buffer_vector() override
+	{
+		return &data_;
+	}
+
+	virtual const void* buffer_vector() const override
 	{
 		return &data_;
 	}
@@ -270,7 +310,7 @@ public:
 	virtual std::unique_ptr<Inherit> simplify() override
 	{
 		std::unique_ptr<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>> res = make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, T , T>>();
-		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->data()));
+		std::vector<T>& res_vec = *(static_cast<std::vector<T>*>(res->buffer_vector()));
 		res_vec = std::move(this->data_);
 		this->data_ = std::vector<T>();
 		return std::unique_ptr<Inherit>(res.release());
@@ -285,7 +325,7 @@ template <uint32 CHUNK_SIZE>
 template <uint32 PRIM_SIZE>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
-	const DataType type = data_type(type_name);
+	const DataType type = cgogn::io::data_type(type_name);
 	switch (type)
 	{
 		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float32>>();
@@ -309,7 +349,7 @@ template <uint32 CHUNK_SIZE>
 template <uint32 PRIM_SIZE, typename T>
 std::unique_ptr<DataInputGen<CHUNK_SIZE>> DataInputGen<CHUNK_SIZE>::newDataIO(const std::string type_name)
 {
-	const DataType type = data_type(type_name);
+	const DataType type = cgogn::io::data_type(type_name);
 	switch (type)
 	{
 		case DataType::FLOAT:	return make_unique<DataInput<CHUNK_SIZE, PRIM_SIZE, float32, T>>();

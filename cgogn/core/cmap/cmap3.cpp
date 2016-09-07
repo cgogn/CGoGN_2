@@ -21,8 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_MAP_MAP3_CPP_
+#define CGOGN_CORE_CMAP_CMAP3_CPP_
 
 #include <cgogn/core/cmap/cmap3.h>
 

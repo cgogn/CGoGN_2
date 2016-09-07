@@ -115,6 +115,29 @@ bool intersection_sphere_segment(
 	return false;
 }
 
+
+
+template <typename VEC3>
+bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const VEC3& point_plane, const VEC3& normal_plane, VEC3* inter = nullptr)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
+
+	Scalar b = normal_plane.dot(dir_line);
+
+
+	if (fabs(b) < PRECISION)
+		return false;
+
+	Scalar a = normal_plane.dot(point_plane - point_line);
+	if (inter)
+		*inter = point_line + (a / b) * dir_line;
+
+	return true;
+}
+
+
+
 } // namespace geometry
 
 } // namespace cgogn

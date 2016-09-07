@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_LM6_IO_CPP_
 
 #include <cgogn/io/lm6_io.h>

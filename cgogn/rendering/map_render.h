@@ -302,6 +302,9 @@ public:
 				break;
 		}
 
+		if (table_indices.empty())
+			return;
+
 		if (!indices_buffers_[prim]->isCreated())
 			indices_buffers_[prim]->create();
 
@@ -325,9 +328,9 @@ public:
 };
 
 /**
- * @brief create embedding indices of vertices and faces for arch vertx of each face
+ * @brief create embedding indices of vertices and faces for each vertex of each face
  * @param m
- * @param position vertex positions use for ear triangulation)
+ * @param position vertex positions use for ear triangulation
  * @param indices1 embedding indices of vertices
  * @param indices2 embedding indices of faces
  */

@@ -79,16 +79,6 @@ public:
 		});
 	}
 
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
-	}
-
 	inline void phi3_sew(Dart d, Dart e)
 	{
 		return map_.phi3_sew(d,e);
@@ -97,11 +87,6 @@ public:
 	inline void phi3_unsew(Dart d)
 	{
 		return map_.phi3_unsew(d);
-	}
-
-	inline Dart add_face_topo(uint32 nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
 	}
 
 	inline Dart add_prism_topo(uint32 nb_edges)
@@ -138,10 +123,10 @@ public:
 	 * @param v1 first volume
 	 * @param v2 second volume
 	 */
-	inline void sew_volumes(Volume v1, Volume v2)
+	inline void sew_volumes(Dart v1, Dart v2)
 	{
-		Dart it1 = v1.dart;
-		Dart it2 = v2.dart;
+		Dart it1 = v1;
+		Dart it2 = v2;
 		const Dart begin = it1;
 		do
 		{
@@ -149,6 +134,18 @@ public:
 			it1 = map_.phi1(it1);
 			it2 = map_.phi_1(it2);
 		} while (it1 != begin);
+	}
+
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
 	}
 
 	inline void close_hole_topo(Dart d)
@@ -179,7 +176,7 @@ public:
 			Dart bit = b;
 			do
 			{
-				Dart e = map_.phi3(map_.phi2(f));;
+				Dart e = map_.phi3(map_.phi2(f));
 				bool found = false;
 				do
 				{
@@ -197,7 +194,7 @@ public:
 						if (boundary_marker.is_marked(e))
 						{
 							found = true;
-							this->phi2_sew(e, bit);
+							map_.phi2_sew(e, bit);
 						}
 						else
 							e = map_.phi3(map_.phi2(e));
@@ -230,10 +227,7 @@ public:
 			if (map_.phi3(d) == d)
 			{
 				close_hole_topo(d);
-				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
-				{
-					map_.set_boundary(db, true);
-				});
+				map_.boundary_mark(Volume(map_.phi3(d)));
 
 				const Volume new_volume(map_.phi3(d));
 

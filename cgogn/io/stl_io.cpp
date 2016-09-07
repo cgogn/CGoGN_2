@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_STL_IO_CPP_
 
 #include <cgogn/io/stl_io.h>

@@ -72,7 +72,7 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API ThreadPool
+class CGOGN_CORE_API ThreadPool final
 {
 public:
 
@@ -84,7 +84,7 @@ public:
 	-> std::future<typename std::result_of<F(uint32, Args...)>::type>;
 
 	std::vector<std::thread::id> threads_ids() const;
-	virtual ~ThreadPool();
+	~ThreadPool();
 
 	inline std::size_t nb_threads() const
 	{

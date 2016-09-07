@@ -93,11 +93,11 @@ TEST_F(CMap3Test, cut_edge)
 
 	Dart p1 = mbuild.add_prism_topo(3u);
 	Dart p2 = mbuild.add_prism_topo(3u);
-	mbuild.sew_volumes(Volume(p1), Volume(p2));
+	mbuild.sew_volumes(p1, p2);
 
 	Dart p3 = mbuild.add_pyramid_topo(4u);
 	Dart p4 = mbuild.add_pyramid_topo(4u);
-	mbuild.sew_volumes(Volume(p3), Volume(p4));
+	mbuild.sew_volumes(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	cmap_.foreach_dart([&] (Dart d)
@@ -160,11 +160,11 @@ TEST_F(CMap3Test, cut_face)
 
 	Dart p1 = mbuild.add_prism_topo(3u);
 	Dart p2 = mbuild.add_prism_topo(3u);
-	mbuild.sew_volumes(Volume(p1), Volume(p2));
+	mbuild.sew_volumes(p1, p2);
 
 	Dart p3 = mbuild.add_pyramid_topo(4u);
 	Dart p4 = mbuild.add_pyramid_topo(4u);
-	mbuild.sew_volumes(Volume(p3), Volume(p4));
+	mbuild.sew_volumes(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	cmap_.foreach_dart([&] (Dart d)
@@ -285,11 +285,11 @@ TEST_F(CMap3Test, merge_incident_volumes)
 
 	Dart p1 = mbuild.add_prism_topo(3u);
 	Dart p2 = mbuild.add_prism_topo(3u);
-	mbuild.sew_volumes(Volume(p1), Volume(p2));
+	mbuild.sew_volumes(p1, p2);
 
 	Dart p3 = mbuild.add_pyramid_topo(4u);
 	Dart p4 = mbuild.add_pyramid_topo(4u);
-	mbuild.sew_volumes(Volume(p3), Volume(p4));
+	mbuild.sew_volumes(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	cmap_.foreach_dart([&] (Dart d)

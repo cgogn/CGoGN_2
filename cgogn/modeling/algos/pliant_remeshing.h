@@ -24,6 +24,8 @@
 #ifndef CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
 #define CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
 
+#include <cgogn/modeling/dll.h>
+
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/length.h>
@@ -130,6 +132,11 @@ void pliant_remeshing(
 		}
 	);
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
 
 } // namespace modeling
 

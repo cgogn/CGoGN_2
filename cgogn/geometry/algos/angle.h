@@ -31,6 +31,7 @@
 #include <cgogn/geometry/algos/normal.h>
 
 #include <cgogn/core/utils/masks.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -68,12 +69,12 @@ inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
 	Scalar a(0);
 
 	// the following trick is useful to avoid NaNs (due to floating point errors)
-	if (c > 0.5) a = asin(s);
+	if (c > 0.5) a = std::asin(s);
 	else
 	{
 		if(c < -1) c = -1;
-		if (s >= 0) a = acos(c);
-		else a = -acos(c);
+		if (s >= 0) a = std::acos(c);
+		else a = -std::acos(c);
 	}
 	if(a != a)
 		cgogn_log_warning("angle_between_face_normals") << "NaN computed";
@@ -105,6 +106,14 @@ inline void compute_angle_between_face_normals(
 {
 	compute_angle_between_face_normals<VEC3>(map, CellFilters(), position, edge_angle);
 }
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
+extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, CMap2<DefaultMapTraits>::Attribute<float32, Orbit::PHI2>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, CMap2<DefaultMapTraits>::Attribute<float64, Orbit::PHI2>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
 
 } // namespace geometry
 

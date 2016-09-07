@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDERING_VOLUME_RENDER_CPP_
 
 #include <cgogn/rendering/volume_drawer.h>
@@ -129,6 +128,16 @@ void VolumeDrawerGen::Renderer::set_edge_color(const QColor& rgb)
 {
 	if (param_expl_vol_line_)
 		param_expl_vol_line_->color_=rgb;
+}
+
+void VolumeDrawerGen::Renderer::set_clipping_plane(const QVector4D& pl)
+{
+	if (param_expl_vol_)
+		param_expl_vol_->plane_clip_ = pl;
+	if (param_expl_vol_col_)
+		param_expl_vol_col_->plane_clip_ = pl;
+	if (param_expl_vol_line_)
+		param_expl_vol_line_->plane_clip_ = pl;
 }
 
 template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;

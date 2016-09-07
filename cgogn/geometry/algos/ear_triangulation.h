@@ -209,6 +209,7 @@ class EarTriangulation
 
 public:
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(EarTriangulation);
 	/**
 	 * @brief EarTriangulation constructor
 	 * @param map ref on map
@@ -373,8 +374,6 @@ public:
 			}
 		}
 	}
-
-	EarTriangulation& operator=(const EarTriangulation&) = delete;
 };
 
 /**
@@ -397,7 +396,7 @@ static void append_ear_triangulation(
 }
 
 /**
- * @brief apply ear triangulation to a face (face is cut
+ * @brief apply ear triangulation to a face (face is cut)
  * @param map
  * @param f
  * @param position
@@ -414,7 +413,7 @@ static void apply_ear_triangulation(
 }
 
 /**
- * @brief apply ear triangulation to a face (face is cut)
+ * @brief apply ear triangulation to a map
  * @param map
  * @param f
  * @param position

@@ -169,21 +169,6 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 }
 
 
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
-{
-	iss >> x;
-	return iss;
-}
-
-template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value, std::istream&>::type parse(std::istream& iss, T& x)
-{
-	for (std::size_t i = 0u ; i < geometry::vector_traits<T>::SIZE; ++i)
-		iss >> x[i];
-	return iss;
-}
-
 } // namespace internal
 
 

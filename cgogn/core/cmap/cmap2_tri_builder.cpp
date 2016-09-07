@@ -21,8 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
-#define CGOGN_CORE_MAP_MAP2_TRI_BUILDER_CPP_
+#define CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_CPP_
 
 #include <cgogn/core/cmap/cmap2_tri_builder.h>
 

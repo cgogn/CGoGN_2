@@ -60,6 +60,7 @@ protected:
 	GLint unif_size_;
 	GLint unif_ambiant_;
 	GLint unif_light_pos_;
+	GLint unif_plane_clip_;
 
 public:
 
@@ -100,6 +101,13 @@ public:
 	*/
 	void set_size(float32 w);
 
+	/**
+	 * @brief set_plane_clip
+	 * @param plane
+	 */
+	void set_plane_clip(const QVector4D& plane);
+
+
 protected:
 
 	ShaderPointSpriteGen(bool color_per_vertex, bool size_per_vertex);
@@ -136,6 +144,7 @@ protected:
 		sh->set_size(size_);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
@@ -144,13 +153,16 @@ public:
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
+	QVector4D plane_clip_;
+
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<false,false>* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		ambiant_color_(5, 5, 5),
 		light_pos_(10, 100, 1000),
-		size_(1.0)
+		size_(1.0),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
@@ -178,6 +190,7 @@ protected:
 		sh->set_color(color_);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
@@ -185,12 +198,15 @@ public:
 	QColor color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
+	QVector4D plane_clip_;
+
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<false, true>* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000)
+		light_pos_(10, 100, 1000),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_size)
@@ -250,6 +266,7 @@ protected:
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
 		sh->set_size(size_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
@@ -257,12 +274,15 @@ public:
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
+	QVector4D plane_clip_;
+
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<true, false>* sh) :
 		ShaderParam(sh),
 		ambiant_color_(5, 5, 5),
 		light_pos_(10, 100, 1000),
-		size_(1.0)
+		size_(1.0),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
@@ -321,17 +341,21 @@ protected:
 		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
 
 	QColor ambiant_color_;
 	QVector3D light_pos_;
+	QVector4D plane_clip_;
+
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<true, true>* sh) :
 		ShaderParam(sh),
 		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000)
+		light_pos_(10, 100, 1000),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)

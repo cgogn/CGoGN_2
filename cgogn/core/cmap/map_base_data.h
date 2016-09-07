@@ -65,6 +65,11 @@ protected:
 	/// vector of Map instances
 	static std::vector<MapGen*>* instances_;
 	static bool init_CA_factory;
+	/// table of tetra phi2 indices
+	static std::array<int,12> tetra_phi2;
+	/// table of hexa phi2 indices
+	static std::array<int,24> hexa_phi2;
+
 
 public:
 
@@ -77,6 +82,10 @@ public:
 		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
 	}
 };
+
+// forward declaration of class AttributeGen
+template <typename DATA_TRAITS>
+class AttributeGen;
 
 // forward declaration of class Attribute_T
 template <typename DATA_TRAITS, typename T>
@@ -111,6 +120,12 @@ public:
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
+
+	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
+	template <typename T>
+	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
+	template <typename T, Orbit ORBIT>
+	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 protected:
 

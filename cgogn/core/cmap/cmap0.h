@@ -34,6 +34,8 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const uint8 DIMENSION = 0;
+
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
@@ -162,8 +164,6 @@ public:
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
-
-protected:
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const

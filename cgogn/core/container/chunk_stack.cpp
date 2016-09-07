@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_
 
 #include <cgogn/core/container/chunk_stack.h>

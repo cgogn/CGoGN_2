@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP2_QUAD_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP2_QUAD_BUILDER_H_
 
 #include <cgogn/core/cmap/cmap2_quad.h>
 
@@ -93,6 +93,18 @@ public:
 			cgogn_log_warning("add_face") << "Attempt to create a face which is not a quad";
 
 		return map_.add_quad_topo_fp();
+	}
+
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
 	}
 
 	inline Dart close_hole_topo(Dart d)
@@ -166,11 +178,8 @@ public:
 				Dart df = f.dart;
 				do
 				{
-					map_.foreach_dart_of_orbit(Face(df), [&] (Dart e)
-					{
-						map_.set_boundary(e, true);
-					});
-					 df = map_.template phi<121>(df);
+					map_.boundary_mark(Face(df));
+					df = map_.template phi<121>(df);
 				} while (df != f.dart);
 				++nb_holes;
 			}
@@ -186,7 +195,7 @@ private:
 	CMap2Quad& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_QUAD_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap2QuadBuilder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 using CMap2QuadBuilder = cgogn::CMap2QuadBuilder_T<DefaultMapTraits>;
@@ -194,5 +203,5 @@ using CMap2QuadBuilder = cgogn::CMap2QuadBuilder_T<DefaultMapTraits>;
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_QUAD_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP2_QUAD_BUILDER_H_
 

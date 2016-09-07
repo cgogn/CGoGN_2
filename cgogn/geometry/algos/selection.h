@@ -24,6 +24,7 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 
+#include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/area.h>
 #include <cgogn/geometry/functions/inclusion.h>
@@ -35,18 +36,13 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
-class Collector
+
+template <typename VEC3>
+class CollectorGen
 {
 public:
-
 	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-	using Face = typename MAP::Face;
-
-	inline Collector(const MAP& m) : map_(m)
-	{}
+	virtual void collect(const Dart v_center) = 0;
 
 	template <typename CellType>
 	inline std::size_t size() const
@@ -55,42 +51,83 @@ public:
 	}
 
 	template <typename FUNC>
-	void foreach_cell(const FUNC& f)
+	inline void foreach_cell(const FUNC& f) const
 	{
-		using CellType = func_parameter_type(FUNC);
-		static const Orbit ORBIT = CellType::ORBIT;
-		for (Dart d : cells_[ORBIT])
+		using CellType = cgogn::func_parameter_type<FUNC>;
+		for (Dart d : this->cells_[CellType::ORBIT])
 			f(CellType(d));
 	}
 
+	inline const std::vector<Dart>& cells(cgogn::Orbit orbit) const
+	{
+		return cells_[orbit];
+	}
+
+	template <typename CellType>
+	inline const std::vector<CellType>& cells() const
+	{
+		return reinterpret_cast<const std::vector<CellType>&>(cells_[CellType::ORBIT]);
+	}
+
 	template <typename FUNC>
-	void foreach_border(const FUNC& f)
+	inline void foreach_border(const FUNC& f) const
 	{
 		for (Dart d : border_)
 			f(d);
 	}
-
-	virtual void collect(const Vertex center) = 0;
-
-	virtual Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const = 0;
-
-protected:
+	virtual ~CollectorGen() {}
 
 	void clear()
 	{
-		for (auto& cells_vector : cells_)
+		for (auto& cells_vector : this->cells_)
 		{
 			cells_vector.clear();
 			cells_vector.reserve(256u);
 		}
-		border_.clear();
-		border_.reserve(256u);
+		this->border_.clear();
+		this->border_.reserve(256u);
 	}
 
-	const MAP& map_;
-	Vertex center_;
+	virtual Scalar area(const MapBaseData<DefaultMapTraits>::Attribute_T<VEC3>& position) const = 0;
+
+protected:
+	Dart center_;
 	std::array<std::vector<Dart>, NB_ORBITS> cells_;
 	std::vector<Dart> border_;
+};
+
+template <typename VEC3, typename MAP>
+class Collector : public CollectorGen<VEC3>
+{
+public:
+	using Inherit = CollectorGen<VEC3>;
+	using Scalar = typename Inherit::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
+
+	inline Collector(const MAP& m) : map_(m)
+	{}
+
+	virtual void collect(const Vertex center) = 0;
+	virtual void collect(const Dart v_center) override
+	{
+		this->collect(Vertex(v_center));
+	}
+
+	virtual Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const = 0;
+	virtual Scalar area(const MapBaseData<DefaultMapTraits>::Attribute_T<VEC3>& position) const override
+	{
+		const typename MAP::template VertexAttribute<VEC3>* pos_att = dynamic_cast<const typename MAP::template VertexAttribute<VEC3>*>(&position);
+		if (pos_att && pos_att->is_valid())
+			return this->area(*pos_att);
+		return std::numeric_limits<Scalar>::quiet_NaN();
+	}
+protected:
+
+
+
+	const MAP& map_;
 };
 
 template <typename VEC3, typename MAP>
@@ -98,13 +135,16 @@ class Collector_OneRing : public Collector<VEC3, MAP>
 {
 public:
 
-	using Self = Collector_OneRing<VEC3, MAP>;
 	using Inherit = Collector<VEC3, MAP>;
+	using Self = Collector_OneRing<VEC3, MAP>;
 
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
+
+	using Inherit::collect;
+	using Inherit::area;
 
 	Collector_OneRing(const MAP& map) : Inherit(map)
 	{}
@@ -112,7 +152,7 @@ public:
 	void collect(const Vertex center) override
 	{
 		this->clear();
-		this->center_ = center;
+		this->center_ = center.dart;
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
 		this->map_.foreach_adjacent_vertex_through_edge(center, [&] (Vertex nv)
@@ -147,6 +187,9 @@ public:
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 
+	using Inherit::collect;
+	using Inherit::area;
+
 	Collector_WithinSphere(
 		const MAP& map,
 		const Scalar radius,
@@ -159,50 +202,78 @@ public:
 	void collect(const Vertex center) override
 	{
 		this->clear();
-		this->center_ = center;
+		this->center_ = center.dart;
 
 		const VEC3& center_position = position_[center];
 
-		typename MAP::template CellMarkerStore<Vertex::ORBIT> cmv(this->map_);
-//		typename MAP::DartMarkerStore dm(this->map_);
+		typename MAP::DartMarkerStore dm(this->map_);
+
+		auto mark_vertex = [&] (Vertex v)
+		{
+			this->map_.foreach_dart_of_orbit(v, [&] (Dart d)
+			{
+				// mark a dart of the vertex
+				dm.mark(d);
+
+				// check if the edge of d is now completely marked
+				// (which means all the vertices of the edge are in the sphere)
+				Edge e(d);
+				bool all_in = true;
+				this->map_.foreach_dart_of_orbit_until(e, [&] (Dart dd) -> bool
+				{
+					if (!dm.is_marked(dd))
+					{
+						all_in = false;
+						return false;
+					}
+					return true;
+				});
+				if (all_in)
+					this->cells_[Edge::ORBIT].push_back(d);
+
+				// check if the face of d is now completely marked
+				// (which means all the vertices of the face are in the sphere)
+				Face f(d);
+				all_in = true;
+				this->map_.foreach_dart_of_orbit_until(f, [&] (Dart dd) -> bool
+				{
+					if (!dm.is_marked(dd))
+					{
+						all_in = false;
+						return false;
+					}
+					return true;
+				});
+				if (all_in)
+					this->cells_[Face::ORBIT].push_back(d);
+			});
+		};
 
 		this->cells_[Vertex::ORBIT].push_back(center.dart);
-		cmv.mark(center);
+		mark_vertex(center);
 
 		uint32 i = 0;
 		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			this->map_.foreach_incident_face(Vertex(this->cells_[Vertex::ORBIT][i]), [&] (Face f)
+			Dart vd = this->cells_[Vertex::ORBIT][i];
+			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
 			{
-				bool all_vertices_in = true;
-				bool add_at_least_one_vertex = false;
-				bool previous_in = in_sphere(position_[Vertex(f.dart)], center_position, radius_);
-				this->map_.foreach_incident_vertex(f, [&] (Vertex v)
+				// check if the neighbor vertex through the edge is in the sphere
+				// if it is in the sphere and has not been marked yet, put it in the queue
+				Dart d2 = this->map_.phi2(d);
+				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
 				{
-					if (in_sphere(position_[v], center_position, radius_))
+					if (!dm.is_marked(d2))
 					{
-						if (!cmv.is_marked(v))
-						{
-							add_at_least_one_vertex = true;
-							cmv.mark(v);
-							this->cells_[Vertex::ORBIT].push_back(v.dart);
-							this->cells_[Edge::ORBIT].push_back(v.dart);
-						}
-						previous_in = true;
+						this->cells_[Vertex::ORBIT].push_back(d2);
+						mark_vertex(Vertex(d2));
 					}
-					else
-					{
-						all_vertices_in = false;
-						if (previous_in)
-							this->border_.push_back(this->map_.phi_1(v.dart));
-						previous_in = false;
-					}
-				});
-				if (add_at_least_one_vertex && all_vertices_in)
-				{
-					this->cells_[Face::ORBIT].push_back(f.dart);
 				}
+				// if it is not in the sphere, put the dart in the border list
+				else
+					this->border_.push_back(d);
 			});
+
 			++i;
 		}
 	}
@@ -244,6 +315,17 @@ protected:
 	Scalar radius_;
 	const typename MAP::template VertexAttribute<VEC3>& position_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
 
 } // namespace geometry
 

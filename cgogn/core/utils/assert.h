@@ -208,40 +208,4 @@ do { 																		\
 	#define parano_message_assert(x, msg)
 #endif
 
-
-/**
- * Traits class to inspect function characteristics (return type, arity, parameters types)
- */
-template <typename T>
-struct function_traits : public function_traits<decltype(&T::operator())>
-{};
-
-template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const>
-// we specialize for pointers to member function
-{
-	static const size_t arity = sizeof...(Args);
-	// arity is the number of arguments.
-
-	using result_type = ReturnType;
-
-	template <size_t i>
-	struct arg
-	{
-		static_assert(i < sizeof...(Args), "Trying to access to an argument whose index is higher than the function arity.");
-		using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
-		// the i-th argument is equivalent to the i-th tuple element of a tuple
-		// composed of those arguments.
-	};
-};
-
-#define check_func_parameter_type(F, T) std::is_same<typename function_traits<F>::template arg<0>::type, T>::value
-#define check_func_ith_parameter_type(F, i, T) std::is_same<typename function_traits<F>::template arg<i>::type, T>::value
-#define check_func_return_type(F, T) std::is_same<typename function_traits<F>::result_type, T>::value
-
-#define func_parameter_type(F) typename function_traits<F>::template arg<0>::type
-#define func_ith_parameter_type(F, i) typename function_traits<F>::template arg<i>::type
-
-#define inside_type(ATTR) typename std::remove_cv<typename std::remove_reference<decltype(ATTR()[0ul])>::type>::type
-
 #endif // CGOGN_CORE_UTILS_ASSERT_H_

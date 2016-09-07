@@ -120,7 +120,7 @@ public:
 };
 
 template <typename MAP, Orbit ORBIT>
-class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
+class CellMarkerStore final : protected CellMarker_T<MAP, ORBIT>
 {
 public:
 
@@ -133,6 +133,7 @@ protected:
 	std::vector<uint32>* marked_cells_;
 
 public:
+	using Inherit::is_marked;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerStore);
 
@@ -151,8 +152,11 @@ public:
 	inline void mark(Cell<ORBIT> c)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
-		Inherit::mark(c);
-		marked_cells_->push_back(this->map_.embedding(c));
+		if (!this->is_marked(c))
+		{
+			Inherit::mark(c);
+			marked_cells_->push_back(this->map_.embedding(c));
+		}
 	}
 
 	inline void unmark_all()

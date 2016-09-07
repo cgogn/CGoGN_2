@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_H_
 
 #include <cgogn/core/cmap/cmap2_tri.h>
 
@@ -100,6 +100,18 @@ public:
 		return map_.close_hole_topo(d);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	/**
 	 * @brief Close a hole with a triangle fan
 	 * @return a face of the fan
@@ -165,10 +177,7 @@ public:
 				Vertex fan_center(map_.phi_1(f.dart));
 				map_.foreach_incident_face(fan_center, [&] (Face ff)
 				{
-					map_.foreach_dart_of_orbit(ff, [&] (Dart e)
-					{
-						map_.set_boundary(e, true);
-					});
+					map_.boundary_mark(ff);
 				});
 				++nb_holes;
 			}
@@ -182,7 +191,7 @@ private:
 	CMap2Tri& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_TRI_BUILDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_CPP_))
 extern template class CGOGN_CORE_API cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 using CMap2TriBuilder = cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
@@ -190,5 +199,5 @@ using CMap2TriBuilder = cgogn::CMap2TriBuilder_T<DefaultMapTraits>;
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_TRI_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP2_TRI_BUILDER_H_
 

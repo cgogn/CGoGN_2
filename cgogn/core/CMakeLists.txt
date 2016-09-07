@@ -24,7 +24,10 @@ set(HEADER_FILES
 	cmap/cmap2_tri_builder.h
 	cmap/cmap2_quad.h
 	cmap/cmap2_quad_builder.h
-
+	cmap/cmap3_tetra.h
+	cmap/cmap3_tetra_builder.h
+	cmap/cmap3_hexa.h
+	cmap/cmap3_hexa_builder.h
 
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
@@ -65,6 +68,10 @@ set(SOURCE_FILES
 	cmap/cmap2_tri_builder.cpp
 	cmap/cmap2_quad.cpp
 	cmap/cmap2_quad_builder.cpp
+	cmap/cmap3_tetra.cpp
+	cmap/cmap3_tetra_builder.cpp
+	cmap/cmap3_hexa.cpp
+	cmap/cmap3_hexa_builder.cpp
 
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
@@ -121,6 +128,7 @@ if(MSVC)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_CORE_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
@@ -128,6 +136,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
+if(${CGOGN_EXTERNAL_TEMPLATES})
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_USE_EXTERNAL_TEMPLATES")
+endif()
 
 target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_LITTLE_ENDIAN=1234")
 target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_BIG_ENDIAN=4321")
