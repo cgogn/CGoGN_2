@@ -86,6 +86,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
 protected:
 
@@ -1766,6 +1768,10 @@ extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMa
 extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Volume::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>, CMap3Hexa<DefaultMapTraits>::Face::ORBIT>;

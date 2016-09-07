@@ -25,8 +25,4 @@
 
 namespace cgogn
 {
-
-//DartMarkerGen::~DartMarkerGen()
-//{}
-
 } // namespace cgogn

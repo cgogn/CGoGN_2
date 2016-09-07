@@ -63,6 +63,7 @@ class ScalarField
 
 	template<typename T>
 	using VertexAttribute = typename MAP::template VertexAttribute<T>;
+	using VertexMarkerNoUnmark = typename MAP::template CellMarkerNoUnmark<Vertex::ORBIT>;
 	using VertexMarker = typename MAP::template CellMarker<Vertex::ORBIT>;
 	using FaceMarker = typename MAP::template CellMarker<Face::ORBIT>;
 	using VolumeMarker = typename MAP::template CellMarker<Volume::ORBIT>;
@@ -130,7 +131,7 @@ private:
 			next = map_.phi1(map_.phi2(next));
 		} while (next != v.dart && previous == center);
 
-		// If the whole LINK has been traversed, then all value are equal to the center
+		// If the whole Link(v) has been traversed, then all value are equal to the center
 		if (next == v.dart)
 			return CriticalPoint(CriticalPoint::Type::REGULAR);
 
@@ -179,7 +180,7 @@ private:
 	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
 	 */
-	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& vertex_marker)
+	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarkerNoUnmark& vertex_marker)
 	{
 		int nb_cc = 0;
 		while (!link.empty())
@@ -230,8 +231,8 @@ private:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
-		VertexMarker sup_vertex_marker(map_);
-		VertexMarker inf_vertex_marker(map_);
+		VertexMarkerNoUnmark sup_vertex_marker(map_);
+		VertexMarkerNoUnmark inf_vertex_marker(map_);
 
 		std::vector<Dart> sup_link;
 		std::vector<Dart> inf_link;

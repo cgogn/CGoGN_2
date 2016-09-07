@@ -82,6 +82,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
 protected:
 
@@ -1207,6 +1209,10 @@ extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMa
 extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Volume::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>, CMap2Quad<DefaultMapTraits>::Face::ORBIT>;
