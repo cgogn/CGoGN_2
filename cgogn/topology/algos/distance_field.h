@@ -147,8 +147,8 @@ public:
 	 * A path is a sequence of adjacent edges whose weights are summed along the paths
 	 * The method returns the shortest paths and their lengths in two VertexAttributes.
 	 * @param[in] sources the vertices from which the shortest paths are computed
-	 * @param[out] path_to_source : a reference to the previous vertex in the shortest path
 	 * @param[out] distance_to_source : the sums of the edge weights in the shortest paths
+	 * @param[out] path_to_source : a reference to the previous vertex in the shortest path
 	 */
 	void dijkstra_compute_paths(
 			const std::vector<Vertex>& sources,
@@ -302,23 +302,6 @@ public:
 
 	/**
 	 * @brief Build a scalar field that represent the lenght of a minimal path
-	 * from a vertex to the center of the Map.
-	 */
-	template <typename T>
-	void distance_to_center(const VertexAttribute<T>& attribute,
-							VertexAttribute<Scalar>& scalar_field)
-	{
-		if (!attribute.is_valid())
-			cgogn_log_error("distance_to_center") << "Invalid attribute";
-		else
-		{
-			Vertex center = cgogn::geometry::central_vertex<T, MAP>(map_, attribute);
-			dijkstra_compute_distances({center}, scalar_field);
-		}
-	}
-
-	/**
-	 * @brief Build a scalar field that represent the lenght of a minimal path
 	 * from a vertex to the boundary of the Map.
 	 */
 	void distance_to_boundary(VertexAttribute<Scalar>& scalar_field)
@@ -338,6 +321,17 @@ public:
 	}
 
 	/**
+	 * @brief Return the vertex that is the furthest from all boundary.
+	 * (i.e. the vertex that maximize the discance to boundary)
+	 * and build a scalar field that represent the distance to that vertex.
+	 */
+	Vertex central_vertex(VertexAttribute<Scalar>& scalar_field)
+	{
+		distance_to_boundary(scalar_field);
+		return find_maximum(scalar_field);
+	}
+
+	/**
 	 * Build a scalar field that represent the distance of each vertex
 	 * to a given set of features (selected vertices) of the Map.
 	 * @param[in] features the vertices from which the shortest paths are computed
@@ -347,6 +341,31 @@ public:
 							  VertexAttribute<Scalar>& scalar_field)
 	{
 		dijkstra_compute_distances(features, scalar_field);
+	}
+
+	/**
+		 * Build a scalar field that represent the sum of the distance of each vertex
+		 * to a given set of features (selected vertices) of the Map.
+		 * @param[in] features the vertices from which the shortest paths are computed
+		 * @param[out] scalar_field : the computed distance field
+		 */
+	void sum_of_distance_to_features(const std::vector<Vertex>& features,
+									 VertexAttribute<Scalar>& scalar_field)
+	{
+		VertexAttribute<Scalar> distance_to_feature =
+				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");
+
+		for (auto& s : scalar_field) s = Scalar(0);
+
+		for (Vertex f : features)
+		{
+			dijkstra_compute_distances({f}, distance_to_feature);
+			map_.foreach_cell([&](Vertex v)
+			{
+				scalar_field[v] += distance_to_feature[v];
+			});
+		}
+		map_.remove_attribute(distance_to_feature);
 	}
 
 	/**
@@ -412,10 +431,10 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
+//extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
+//extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
+//extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
+//extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
 
 } // namespace topology

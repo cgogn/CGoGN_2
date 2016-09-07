@@ -31,10 +31,10 @@ namespace cgogn
 namespace topology
 {
 
-template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2<DefaultMapTraits>>;
-template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2<DefaultMapTraits>>;
-template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3<DefaultMapTraits>>;
-template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3<DefaultMapTraits>>;
+//template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2<DefaultMapTraits>>;
+//template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2<DefaultMapTraits>>;
+//template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3<DefaultMapTraits>>;
+//template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3<DefaultMapTraits>>;
 
 } // namespace topology
 } // namespace cgogn
