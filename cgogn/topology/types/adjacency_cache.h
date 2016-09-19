@@ -90,8 +90,8 @@ private:
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
-//extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
-//extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
 
 } // namespace topology
