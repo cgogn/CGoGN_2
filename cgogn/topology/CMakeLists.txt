@@ -35,7 +35,7 @@ target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_L
 
 install(FILES "dll.h" DESTINATION "include/cgogn/topology")
 install(DIRECTORY algos types
-	DESTINATION include/cgogn/topology
+	DESTINATION "include/cgogn/topology"
 	FILES_MATCHING PATTERN "*.h"
 	)
 
