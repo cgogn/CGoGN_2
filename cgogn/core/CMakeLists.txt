@@ -55,8 +55,6 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	basic/dart_marker.cpp
-
 	cmap/map_base_data.cpp
 	cmap/cmap0.cpp
 	cmap/cmap1.cpp
