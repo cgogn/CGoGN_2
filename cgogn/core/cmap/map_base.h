@@ -537,13 +537,18 @@ public:
 				return;
 			}
 			counter[idx].push_back(c);
+			uint32 refs = 1;
 			// check all darts of the cell use the same index (distinct to INVALID_INDEX)
 			cmap->foreach_dart_of_orbit(c, [&] (Dart d)
 			{
 				const uint32 emb_d = this->embedding(CellType(d));
 				if (emb_d != idx)
 					cgogn_log_error("is_well_embedded") << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT);
+				refs++;
 			});
+			if (refs != container.nb_refs(this->embedding(c)))
+				cgogn_log_error("is_well_embedded") << "Wrong reference number of embedding " << this->embedding(c) << " in orbit " << orbit_name(ORBIT);
+
 		});
 		// check that all cells present in the attribute handler are used
 		for (uint32 i = container.begin(), end = container.end(); i != end; container.next(i))
