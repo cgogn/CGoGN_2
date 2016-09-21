@@ -1324,24 +1324,6 @@ public:
 		this->delete_volume_topo(w);
 	}
 
-protected:
-
-	inline Face boundary_face_of_edge(Edge e) const
-	{
-		Face res;
-		this->foreach_dart_of_PHI23_until(e.dart, [this,&res] (Dart it) -> bool
-		{
-			if (this->is_boundary(it))
-			{
-				res.dart = it;
-				return false;
-			}
-			else
-				return true;
-		});
-		return res;
-	}
-
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -1437,6 +1419,22 @@ public:
 			return true;
 		});
 		return result;
+	}
+
+	inline Face boundary_face_of_edge(Edge e) const
+	{
+		Face res;
+		this->foreach_dart_of_PHI23_until(e.dart, [this,&res] (Dart it) -> bool
+		{
+			if (this->is_boundary(it))
+			{
+				res.dart = it;
+				return false;
+			}
+			else
+				return true;
+		});
+		return res;
 	}
 
 	/*******************************************************************************
