@@ -125,6 +125,11 @@ public:
 	 */
 	inline void sew_volumes(Dart v1, Dart v2)
 	{
+		cgogn_message_assert(map_.phi3(v1) == v1 &&
+							 map_.phi3(v2) == v2 &&
+							 map_.codegree(v1) == map_.codegree(v1) &&
+							 !map_.same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
+
 		Dart it1 = v1;
 		Dart it2 = v2;
 		const Dart begin = it1;
@@ -150,7 +155,7 @@ public:
 
 	inline void close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(map_.phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+		cgogn_message_assert(map_.phi3(d) == d, "CMap3Builder: close hole called on a dart that is not a phi3 fix point");
 
 		DartMarkerStore dmarker(map_);
 		DartMarkerStore boundary_marker(map_);

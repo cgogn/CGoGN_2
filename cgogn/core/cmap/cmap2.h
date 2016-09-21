@@ -229,8 +229,8 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
-		switch(N % 10)
+		static_assert((N % 10) <= 2, "Composition of PHI: invalid index (phi1/phi2 only)");
+		switch (N % 10)
 		{
 			case 1 : return this->phi1(phi<N / 10>(d));
 			case 2 : return this->phi2(phi<N / 10>(d));
@@ -363,15 +363,15 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)						// Next quads
 		{
 			Dart next = this->Inherit::add_face_topo(4u);
-			this->phi2_sew(this->phi_1(current), this->phi1(next));
+			phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 
-		this->phi2_sew(this->phi_1(current), this->phi1(first));// Close the quad strip
+		phi2_sew(this->phi_1(current), this->phi1(first)); // Close the quad strip
 
-		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
+		close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
 
-		return this->close_hole_topo(first);					// Add the base face
+		return close_hole_topo(first);					// Add the base face
 	}
 
 	/**
@@ -832,8 +832,8 @@ protected:
 public:
 
 	/**
-	 * @brief Unsew the faces incident to the edge of d
-	 * @param d : dart of the edge
+	 * @brief Unsew the faces incident to the edge e
+	 * @param e : the edge
 	 * @return true if the faces have been unsewn, false otherwise
 	 * The two faces are detached, a 2-sided boundary face is inserted.
 	 * For each of the two end vertices of the edge, if it is already incident to a boundary

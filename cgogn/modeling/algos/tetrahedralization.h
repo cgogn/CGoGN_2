@@ -77,18 +77,20 @@ bool is_tetrahedron(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w
 template <typename MAP_TRAITS>
 Dart swap_22(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Volume w)
 {
+	using Edge = typename CMap3<MAP_TRAITS>::Edge;
 	using Face = typename CMap3<MAP_TRAITS>::Face;
 
 	std::vector<Dart> edges;
 	const Dart d2_1 = map.phi_1(map.phi2(w.dart));
 
 	map.merge_incident_volumes(Face(w.dart));
-	map.merge_incident_faces(map.phi1(d2_1));
+	map.merge_incident_faces(Edge(map.phi1(d2_1)));
 	map.cut_face(d2_1, map.template phi<11>(d2_1));
 
 	const Dart stop = map.phi_1(d2_1);
 	Dart dit = stop;
-	do {
+	do
+	{
 		edges.push_back(dit);
 		dit = map.template phi<121>(dit);
 	} while(dit != stop);
@@ -135,7 +137,7 @@ Dart swap_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 	Dart d2 = map.phi2(e.dart);
 	Dart d21 = map.phi1(d2);
 	map.merge_incident_volumes(Face(e.dart));
-	map.merge_incident_faces(d2);
+	map.merge_incident_faces(Edge(d2));
 	map.merge_incident_volumes(Face(d21));
 
 	Dart dit = stop;
@@ -318,7 +320,7 @@ Dart swap_gen_32(CMap3<MAP_TRAITS>& map, typename CMap3<MAP_TRAITS>::Edge e)
 	std::vector<Dart>* edges = cgogn::dart_buffers()->buffer();
 	const Dart stop = map.phi1(map.phi2(map.phi_1(e.dart)));
 
-	if (map.delete_edge(e).is_nil())
+	if (map.merge_incident_volumes(Edge(e)).is_nil())
 	{
 		const Face f = map.boundary_face_of_edge(e);
 		map.foreach_incident_volume(e, [edges](Volume w) { edges->push_back(w.dart);});
@@ -376,7 +378,7 @@ std::vector<Dart> swap_gen_32_optimized(CMap3<MAP_TRAITS>& map, typename CMap3<M
 
 	std::vector<Dart>& edges = *cgogn::dart_buffers()->buffer();
 	const Dart stop = map.phi1(map.phi2(map.phi_1(e)));
-	if (map.delete_edge(e).is_nil())
+	if (map.merge_incident_volumes(Edge(e)).is_nil())
 	{
 		const Dart d_begin = map.boundary_face_of_edge(e);
 		map.foreach_incident_volume(e, [&](Volume w) { edges.push_back(w.dart); });

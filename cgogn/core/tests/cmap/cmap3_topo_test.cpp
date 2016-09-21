@@ -139,7 +139,7 @@ protected:
 		// Generate NB_MAX random 2-surfaces (without boundary)
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
-			uint32 n = 1u + std::rand() % 10;
+			uint32 n = 3u + std::rand() % 10;
 			uint32 p = std::rand() % 2;
 			switch (p)
 			{
@@ -231,8 +231,8 @@ TEST_F(CMap3TopoTest, phi3_sew_unsew)
 
 /**
  * \brief Cutting an edge increases the size of both incident faces and adds a vertex of degree 2.
- * The test performs NB_MAX edge cutting on edges of randomly generated faces.
  * The number of generated cells is correct and the map integrity is preserved.
+ * The test performs NB_MAX edge cutting on edges of randomly generated volumes.
  */
 TEST_F(CMap3TopoTest, cut_edge_topo)
 {
@@ -261,6 +261,90 @@ TEST_F(CMap3TopoTest, cut_edge_topo)
 
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices + NB_MAX);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges + NB_MAX);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Flipping an edge decreases by 1 the degree of original incident vertices and increases
+ * by 1 the degree of the new incident vertices
+ * The codegree of the 2 incident faces is not modified
+ * The number of generated cells is correct and the map integrity is preserved.
+ * The test performs NB_MAX edge flips on edges of randomly generated volumes.
+ */
+TEST_F(CMap3TopoTest, flip_edge_topo)
+{
+	add_closed_surfaces();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	for (Dart d : darts_)
+	{
+		uint32 fk1 = codegree(Face(d));
+		uint32 fk2 = codegree(Face(phi2(d)));
+		uint32 vk1 = degree(Vertex(d));
+		uint32 vk2 = degree(Vertex(phi2(d)));
+		uint32 vk1n = degree(Vertex(phi<211>(d)));
+		uint32 vk2n = degree(Vertex(phi<11>(d)));
+		if (flip_edge_topo(d))
+		{
+			EXPECT_EQ(codegree(Face(d)), fk1);
+			EXPECT_EQ(codegree(Face(phi2(d))), fk2);
+			EXPECT_EQ(degree(Vertex(phi_1(d))), vk1 - 1u);
+			EXPECT_EQ(degree(Vertex(phi_1(phi2(d)))), vk2 - 1u);
+			EXPECT_EQ(degree(Vertex(d)), vk1n + 1u);
+			EXPECT_EQ(degree(Vertex(phi2(d))), vk2n + 1u);
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Flipping back an edge decreases by 1 the degree of original incident vertices and increases
+ * by 1 the degree of the new incident vertices
+ * The codegree of the 2 incident faces is not modified
+ * The number of generated cells is correct and the map integrity is preserved.
+ * The test performs NB_MAX edge back flips on edges of randomly generated volumes.
+ */
+TEST_F(CMap3TopoTest, flip_back_edge_topo)
+{
+	add_closed_surfaces();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	for (Dart d : darts_)
+	{
+		uint32 fk1 = codegree(Face(d));
+		uint32 fk2 = codegree(Face(phi2(d)));
+		uint32 vk1 = degree(Vertex(d));
+		uint32 vk2 = degree(Vertex(phi2(d)));
+		uint32 vk1n = degree(Vertex(phi_1(d)));
+		uint32 vk2n = degree(Vertex(phi_1(phi2(d))));
+		if (flip_back_edge_topo(d))
+		{
+			EXPECT_EQ(codegree(Face(d)), fk1);
+			EXPECT_EQ(codegree(Face(phi2(d))), fk2);
+			EXPECT_EQ(degree(Vertex(phi<211>(d))), vk1 - 1u);
+			EXPECT_EQ(degree(Vertex(phi<11>(d))), vk2 - 1u);
+			EXPECT_EQ(degree(Vertex(d)), vk1n + 1u);
+			EXPECT_EQ(degree(Vertex(phi2(d))), vk2n + 1u);
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
 	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
 	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 	EXPECT_TRUE(check_map_integrity());
@@ -297,6 +381,145 @@ TEST_F(CMap3TopoTest, cut_face_topo)
 			EXPECT_EQ(codegree(Face(d)) + codegree(Face(e)), k + 2);
 		}
 	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Merging the faces incident to an edge removes an edge and a face.
+ * The codegree of the resulting face is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original faces)
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap3TopoTest, merge_incident_faces)
+{
+	add_closed_surfaces();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	for (Dart d : darts_)
+	{
+		Dart d1 = phi1(d);
+		uint32 k1 = codegree(Face(d));
+		uint32 k2 = codegree(Face(phi2(d)));
+		if (merge_incident_faces_topo(d))
+		{
+			--count_edges;
+			--count_faces;
+			EXPECT_EQ(codegree(Face(d1)), k1 + k2 - 2);
+		}
+	}
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Merging the volumes incident to an edge removes an edge, K faces and K-1 volumes (K being the degree of the edge).
+ * The codegree of the resulting volume is the sum of the codgrees of the original volumes minus 2*K
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap3TopoTest, merge_incident_volumes_of_edge_topo)
+{
+	MapBuilder mbuild(*this);
+
+	Dart p1 = add_prism_topo(6u);
+	Dart p2 = add_prism_topo(6u);
+	mbuild.sew_volumes(phi2(p1), phi2(p2));
+	mbuild.sew_volumes(phi2(phi_1(p1)), phi2(phi1(p2)));
+	Dart e1 = phi<21>(p1);
+
+	Dart c1 = add_prism_topo(4u);
+	Dart c2 = add_prism_topo(4u);
+	Dart c3 = add_prism_topo(4u);
+	mbuild.sew_volumes(phi<12>(c1), phi2(c2));
+	mbuild.sew_volumes(phi<12>(c3), phi2(c1));
+	mbuild.sew_volumes(phi<12>(c2), phi2(c3));
+	Dart e2 = phi_1(phi2(c1));
+
+	mbuild.close_map();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	uint32 ek_1 = degree(Edge(e1));
+	uint32 vk1_1 = codegree(Volume(e1));
+	uint32 vk2_1 = codegree(Volume(phi3(e1)));
+	merge_incident_volumes_of_edge_topo(e1);
+	--count_edges;
+	count_faces -= ek_1;
+	count_volumes -= ek_1 - 1u;
+	EXPECT_EQ(codegree(Volume(p1)), vk1_1 + vk2_1 - 2u*ek_1);
+
+	uint32 ek_2 = degree(Edge(e2));
+	uint32 vk_2 = 0;
+	foreach_incident_volume(Edge(e2), [&] (Volume v)
+	{
+		vk_2 += codegree(v);
+	});
+	merge_incident_volumes_of_edge_topo(e2);
+	--count_edges;
+	count_faces -= ek_2;
+	count_volumes -= ek_2 - 1u;
+	EXPECT_EQ(codegree(Volume(c1)), vk_2 - 2u*ek_2);
+
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	EXPECT_TRUE(check_map_integrity());
+}
+
+/**
+ * \brief Merging the volumes incident to a face removes a face and a volume.
+ * The codegree of the resulting volume is K1 + K2 - 2 (K1 and K2 being the codegrees of the original volumes)
+ * The number of generated cells is correct and the map integrity is preserved.
+ */
+TEST_F(CMap3TopoTest, merge_incident_volumes_of_face_topo)
+{
+	MapBuilder mbuild(*this);
+
+	Dart p1 = add_prism_topo(3u);
+	Dart p2 = add_prism_topo(3u);
+	mbuild.sew_volumes(p1, p2);
+
+	Dart p3 = add_pyramid_topo(4u);
+	Dart p4 = add_pyramid_topo(4u);
+	mbuild.sew_volumes(p3, p4);
+
+	mbuild.close_map();
+
+	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
+	uint32 count_edges = nb_cells<Edge::ORBIT>();
+	uint32 count_faces = nb_cells<Face::ORBIT>();
+	uint32 count_volumes = nb_cells<Volume::ORBIT>();
+
+	uint32 k1 = codegree(Volume(p1));
+	uint32 k2 = codegree(Volume(p2));
+	Dart p12 = phi2(p1);
+	merge_incident_volumes_of_face_topo(p1);
+	--count_faces;
+	--count_volumes;
+	EXPECT_EQ(codegree(Volume(p12)), k1 + k2 - 2);
+
+	uint32 k3 = codegree(Volume(p3));
+	uint32 k4 = codegree(Volume(p4));
+	Dart p32 = phi2(p3);
+	merge_incident_volumes_of_face_topo(p3);
+	--count_faces;
+	--count_volumes;
+	EXPECT_EQ(codegree(Volume(p32)), k3 + k4 - 2);
 
 	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
 	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
@@ -345,21 +568,15 @@ TEST_F(CMap3TopoTest, cut_volume_topo)
 }
 
 /**
- * \brief Merging the volumes incident to a face removes a face and a volume.
- * The codegree of the resulting volume is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original volumes)
+ * \brief Sew two volumes removes a face, K vertices and K edges (K being the codegree of the sewn faces)
  * The number of generated cells is correct and the map integrity is preserved.
  */
-TEST_F(CMap3TopoTest, merge_incident_volumes_topo)
+TEST_F(CMap3TopoTest, sew_volumes_topo)
 {
 	MapBuilder mbuild(*this);
 
-	Dart p1 = add_prism_topo(3u);
-	Dart p2 = add_prism_topo(3u);
-	mbuild.sew_volumes(p1, p2);
-
-	Dart p3 = add_pyramid_topo(4u);
-	Dart p4 = add_pyramid_topo(4u);
-	mbuild.sew_volumes(p3, p4);
+	Dart p1 = add_prism_topo(4u);
+	Dart p2 = add_prism_topo(4u);
 
 	mbuild.close_map();
 
@@ -368,31 +585,24 @@ TEST_F(CMap3TopoTest, merge_incident_volumes_topo)
 	uint32 count_faces = nb_cells<Face::ORBIT>();
 	uint32 count_volumes = nb_cells<Volume::ORBIT>();
 
-	uint32 k1 = codegree(Volume(p1));
-	uint32 k2 = codegree(Volume(p2));
-	Dart p12 = phi2(p1);
-	merge_incident_volumes_topo(p1);
-	--count_faces;
-	--count_volumes;
-	EXPECT_EQ(codegree(Volume(p12)), k1 + k2 - 2);
+	if (sew_volumes_topo(p1, p2))
+	{
+		uint32 k = codegree(Face(p1));
+		count_vertices -= k;
+		count_edges -= k;
+		--count_faces;
 
-	uint32 k3 = codegree(Volume(p3));
-	uint32 k4 = codegree(Volume(p4));
-	Dart p32 = phi2(p3);
-	merge_incident_volumes_topo(p3);
-	--count_faces;
-	--count_volumes;
-	EXPECT_EQ(codegree(Volume(p32)), k3 + k4 - 2);
+		EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
+		EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
+		EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
+		EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
+	}
 
-	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), count_vertices);
-	EXPECT_EQ(nb_cells<Edge::ORBIT>(), count_edges);
-	EXPECT_EQ(nb_cells<Face::ORBIT>(), count_faces);
-	EXPECT_EQ(nb_cells<Volume::ORBIT>(), count_volumes);
 	EXPECT_TRUE(check_map_integrity());
 }
 
 /**
- * \brief Closing a map add one face per holes.
+ * \brief Closing a map add one face per hole.
  * The test closes the holes of a randomly generated open surface.
  * The map integrity is preserved and the cell indexation is soundly completed
  */
