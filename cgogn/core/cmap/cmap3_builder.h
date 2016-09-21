@@ -127,7 +127,7 @@ public:
 	{
 		cgogn_message_assert(map_.phi3(v1) == v1 &&
 							 map_.phi3(v2) == v2 &&
-							 map_.codegree(v1) == map_.codegree(v1) &&
+							 map_.codegree(Face(v1)) == map_.codegree(Face(v1)) &&
 							 !map_.same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
 
 		Dart it1 = v1;
