@@ -30,6 +30,8 @@ namespace cgogn
 namespace io
 {
 
+template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
