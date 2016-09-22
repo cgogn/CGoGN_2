@@ -152,7 +152,7 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
+	virtual std::vector<const void*> chunks_pointers(uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())

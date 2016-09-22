@@ -175,17 +175,17 @@ public:
 	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_chunk_size) const override
+	std::vector<const void*> chunks_pointers(uint32& byte_chunk_size) const override
 	{
+		std::vector<const void*> addr;
 		byte_chunk_size = CHUNK_SIZE * sizeof(T);
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
@@ -595,17 +595,17 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	inline uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const override
+	inline std::vector<const void*> chunks_pointers(uint32& byte_block_size) const override
 	{
+		std::vector<const void*> addr;
 		byte_block_size = CHUNK_SIZE / 8u;
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
