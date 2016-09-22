@@ -38,6 +38,7 @@
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
+#include <cgogn/io/data_io.h>
 
 namespace cgogn
 {
@@ -45,12 +46,12 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS>
+template <typename MAP_TRAITS, typename VEC3>
 class SurfaceImport
 {
 public:
 
-	using Self = SurfaceImport<MAP_TRAITS>;
+	using Self = SurfaceImport<MAP_TRAITS, VEC3>;
 	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
 
 	template <typename T>
@@ -58,12 +59,17 @@ public:
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
+	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
 	inline SurfaceImport():
 		faces_nb_edges_()
 	  ,faces_vertex_indices_()
+	  ,vertex_attributes_()
+	  ,face_attributes_()
+	  ,position_attribute_(nullptr)
 	{}
 
 	virtual ~SurfaceImport()
@@ -75,6 +81,7 @@ public:
 		faces_vertex_indices_.clear();
 		vertex_attributes_.remove_chunk_arrays();
 		face_attributes_.remove_chunk_arrays();
+		position_attribute_ = nullptr;
 	}
 
 	template <typename Map>
@@ -196,15 +203,33 @@ public:
 		this->clear();
 	}
 
-	template <typename VEC3>
+	inline void add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	{
+		ChunkArrayGen* att = in_data.add_attribute(vertex_attributes_, att_name);
+		in_data.to_chunk_array(att);
+		if (att_name == "position")
+			position_attribute_ = dynamic_cast<ChunkArray<VEC3>*>(att);
+	}
+
+	template<typename T>
+	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
+	{
+		return vertex_attributes_.template add_chunk_array<T>(att_name);
+	}
+
+	inline ChunkArray<VEC3>* add_position_attribute()
+	{
+		return (position_attribute_ =  vertex_attributes_.template add_chunk_array<VEC3>("position"));
+	}
+
+	inline void add_face_attribute(const DataInputGen& in_data, const std::string& att_name)
+	{
+		in_data.to_chunk_array(in_data.add_attribute(face_attributes_, att_name));
+	}
+
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		if (!this->vertex_attributes_.has_array("position"))
-		{
-			auto res = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
-			return res;
-		} else
-			return this->vertex_attributes_.template get_chunk_array<VEC3>("position");
+		return position_attribute_;
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -212,14 +237,9 @@ public:
 		return vertex_attributes_.template insert_lines<1>();
 	}
 
-	inline ChunkArrayContainer& vertex_attributes_container()
+	inline uint32 insert_line_face_container()
 	{
-		return vertex_attributes_;
-	}
-
-	inline ChunkArrayContainer& face_attributes_container()
-	{
-		return face_attributes_;
+		return face_attributes_.template insert_lines<1>();
 	}
 
 	inline void reserve(uint32 nb_faces)
@@ -271,13 +291,14 @@ protected:
 
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer face_attributes_;
+	ChunkArray<VEC3>*	position_attribute_;
 };
 
-template <typename MAP_TRAITS>
-class SurfaceFileImport : public SurfaceImport<MAP_TRAITS>, public FileImport
+template <typename MAP_TRAITS, typename VEC3>
+class SurfaceFileImport : public SurfaceImport<MAP_TRAITS, VEC3>, public FileImport
 {
-	using Self = SurfaceFileImport<MAP_TRAITS>;
-	using Inherit1 = SurfaceImport<MAP_TRAITS>;
+	using Self = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Inherit1 = SurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceFileImport);
@@ -291,8 +312,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
-extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
-extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits>;
+extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3d>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
 
 } // namespace io

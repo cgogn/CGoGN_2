@@ -93,6 +93,7 @@ inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTP:		return make_unique<VtkSurfaceExport<MAP>>();
 		case FileType::FileType_PLY:		return make_unique<PlySurfaceExport<MAP>>();
+		case FileType::FileType_MSH:		return make_unique<MshSurfaceExport<MAP>>();
 		default:
 			cgogn_log_warning("new_surface_export") << "SurfaceExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceExport<MAP>>();

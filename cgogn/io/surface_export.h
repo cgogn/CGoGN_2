@@ -72,6 +72,16 @@ protected:
 	{
 		Inherit::clean_added_attributes(map);
 	}
+
+	inline uint32 nb_vertices() const
+	{
+		return uint32(this->cell_cache_->template size<Vertex>());
+	}
+
+	inline uint32 nb_faces() const
+	{
+		return uint32(this->cell_cache_->template size<Face>());
+	}
 private:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override

@@ -40,12 +40,12 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class ObjSurfaceImport : public SurfaceFileImport<MAP_TRAITS>
+class ObjSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = ObjSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceFileImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -60,7 +60,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 
 		std::string line, tag;
 
