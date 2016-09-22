@@ -702,6 +702,7 @@ public:
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
+				refs_[nl]= cac.refs_[ol]; //copy nb refs counter
 				map_old_new[ol] = nl;
 				uint32 nb_att = uint32(cac.table_arrays_.size());
 				for (uint32 k=0; k<nb_att; ++k)
