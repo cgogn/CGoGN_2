@@ -116,6 +116,11 @@ inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& 
 	}
 }
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+extern template CGOGN_IO_API void export_surface(CMap2<DefaultMapTraits>& , const ExportOptions&);
+extern template CGOGN_IO_API void export_volume(CMap3<DefaultMapTraits>& , const ExportOptions&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+
 } // namespace io
 
 } // namespace cgogn

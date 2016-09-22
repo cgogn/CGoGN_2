@@ -125,6 +125,13 @@ inline std::unique_ptr<VolumeFileImport<MAP_TRAITS> > newVolumeImport(const std:
 	}
 }
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
+extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2<DefaultMapTraits>& , const std::string&);
+extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2<DefaultMapTraits>& , const std::string&);
+extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3<DefaultMapTraits>& , const std::string&);
+extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3<DefaultMapTraits>& , const std::string&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
+
 } // namespace io
 
 } // namespace cgogn
