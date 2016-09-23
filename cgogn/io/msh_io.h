@@ -31,6 +31,8 @@
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/volume_export.h>
+#include <cgogn/io/surface_import.h>
+#include <cgogn/io/surface_export.h>
 
 namespace cgogn
 {
@@ -38,10 +40,16 @@ namespace cgogn
 namespace io
 {
 
-template <uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
+template <typename MAP_TRAITS, uint32 PRIM_SIZE, typename VEC3>
 class MshIO
 {
 public :
+	using Self = MshIO<MAP_TRAITS, PRIM_SIZE, VEC3>;
+	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	template<typename T>
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using VolumeImport = cgogn::io::VolumeImport<MAP_TRAITS, VEC3>;
+	using SurfaceImport = cgogn::io::SurfaceImport<MAP_TRAITS, VEC3>;
 
 	enum MSH_CELL_TYPES
 	{
@@ -58,13 +66,14 @@ public :
 		MSH_VERTEX = 15,
 	};
 
-	using Self = MshIO<CHUNK_SIZE, PRIM_SIZE, VEC3>;
 	inline MshIO() :
 		version_number_()
 	  , file_type_(-1)
 	  , float_size_(sizeof(float64))
 	  , swap_endianness_(false)
 	{}
+
+	virtual ~MshIO() {}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshIO);
 
@@ -84,6 +93,56 @@ public :
 	}
 
 protected:
+	bool import_msh_file(const std::string& filename)
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
+
+		bool ok = this->read_header(fp);
+		if (!ok)
+			return false;
+
+		this->msh_add_position_attribute();
+
+		if (this->version_number() == "1.0")
+			return this->import_legacy_msh_file(fp);
+		else
+		{
+			if (this->file_type() == 0)
+				return this->import_ascii_msh_file(fp);
+			else
+			{
+				if (this->file_type() == 1)
+					return this->import_binary_msh_file(fp);
+			}
+		}
+
+		return false;
+	}
+
+	virtual ChunkArray<VEC3>* msh_position_attribute() = 0;
+	virtual void msh_add_position_attribute() = 0;
+	virtual uint32 msh_insert_line_vertex_container() = 0;
+	virtual void msh_clear() = 0;
+	virtual void msh_reserve(uint32 n) = 0;
+	virtual void msh_add_triangle(uint32 p0, uint32 p1, uint32 p2) {}
+	virtual void msh_add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3) {}
+	virtual void msh_add_face(const std::vector<uint32>& v_ids) {}
+	virtual void msh_add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation) {}
+	virtual void msh_add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation) {}
+	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) {}
+	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) {}
+	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) {}
+
+
+	inline static std::string skip_empty_lines(std::istream& data_stream)
+	{
+		std::string line;
+		line.reserve(1024ul);
+		while(data_stream.good() && line.empty())
+			std::getline(data_stream,line);
+
+		return line;
+	}
 
 	bool read_header(std::istream& data_stream)
 	{
@@ -122,49 +181,9 @@ protected:
 		return true;
 	}
 
-private:
-
-	std::string	version_number_;
-	int32		file_type_;
-	int32		float_size_; // sizeof(double) normally since the doc says "currently only data-size = sizeof(double) is supported"
-	bool		swap_endianness_;
-};
-
-template <typename MAP_TRAITS, typename VEC3>
-class MshVolumeImport : public MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS>
-{
-public:
-
-	using Self = MshVolumeImport<MAP_TRAITS, VEC3>;
-	using Inherit_Msh = MshIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
-	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
-	template <typename T>
-	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
-
-	inline MshVolumeImport()
-	{}
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshVolumeImport);
-
-	virtual ~MshVolumeImport() override
-	{}
-
-protected:
-
-	inline static std::string skip_empty_lines(std::istream& data_stream)
+	bool import_legacy_msh_file(std::istream& data_stream)
 	{
-		std::string line;
-		line.reserve(1024ul);
-		while(data_stream.good() && line.empty())
-			std::getline(data_stream,line);
-
-		return line;
-	}
-
-	inline bool import_legacy_msh_file(std::istream& data_stream)
-	{
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -177,7 +196,7 @@ protected:
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->insert_line_vertex_container();
+			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -193,10 +212,10 @@ protected:
 			return false;
 
 		std::getline(data_stream,line);
-		const uint32 nb_volumes = uint32(std::stoul(line));
-		this->reserve(nb_volumes);
+		const uint32 nb_elements = uint32(std::stoul(line));
+		this->msh_reserve(nb_elements);
 
-		for (uint32 i = 0u; i < nb_volumes; ++i)
+		for (uint32 i = 0u; i < nb_elements; ++i)
 		{
 			std::getline(data_stream,line);
 			int32 elem_number;
@@ -215,30 +234,14 @@ protected:
 				node_ids[j] = old_new_indices[node_ids[j]];
 			}
 
-			switch (elem_type)
-			{
-				case MSH_CELL_TYPES::MSH_TETRA:
-					this->add_tetra(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3],true);
-					break;
-				case MSH_CELL_TYPES::MSH_HEXA:
-					this->add_hexa(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], node_ids[6], node_ids[7],true);
-					break;
-				case MSH_CELL_TYPES::MSH_PRISM:
-					this->add_triangular_prism(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], true);
-					break;
-				case MSH_CELL_TYPES::MSH_PYRAMID:
-					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
-				default:
-					cgogn_log_warning("import_legacy_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
-					break;
-			}
+			add_element(elem_type, node_ids);
 		}
 		return true;
 	}
 
 	inline bool import_ascii_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -260,7 +263,7 @@ protected:
 		{
 			std::getline(data_stream,line);
 
-			const uint32 new_index = this->insert_line_vertex_container();
+			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
@@ -278,7 +281,7 @@ protected:
 		line = this->skip_empty_lines(data_stream);
 
 		const uint32 nb_volumes = uint32(std::stoul(line));
-		this->reserve(nb_volumes);
+		this->msh_reserve(nb_volumes);
 
 		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
@@ -293,51 +296,24 @@ protected:
 			for (uint32 j = 0u; j < nb_tags; ++j)
 				iss >> tags_trash;
 
-			uint32 number_of_nodes;
+			const uint32 nb_nodes = number_of_nodes(MSH_CELL_TYPES(elem_type));
 			std::vector<uint32> node_ids;
-			switch(elem_type)
-			{
-				case MSH_CELL_TYPES::MSH_TETRA:		number_of_nodes = 4u; break;
-				case MSH_CELL_TYPES::MSH_PYRAMID:	number_of_nodes = 5u; break;
-				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
-				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
-				default:
-					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
-					number_of_nodes = 0u;
-					break;
-			}
 
-			node_ids.resize(number_of_nodes);
-			for (uint32 j = 0u; j < number_of_nodes; ++j)
+			node_ids.resize(nb_nodes);
+			for (uint32 j = 0u; j < nb_nodes; ++j)
 			{
 				iss >> node_ids[j];
 				node_ids[j] = old_new_indices[node_ids[j]];
 			}
 
-			switch (elem_type)
-			{
-				case MSH_CELL_TYPES::MSH_TETRA:
-					this->add_tetra(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3],true);
-					break;
-				case MSH_CELL_TYPES::MSH_HEXA:
-					this->add_hexa(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], node_ids[6], node_ids[7],true);
-					break;
-				case MSH_CELL_TYPES::MSH_PRISM:
-					this->add_triangular_prism(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], true);
-					break;
-				case MSH_CELL_TYPES::MSH_PYRAMID:
-					this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
-				default:
-					cgogn_log_warning("import_ascii_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
-					break;
-			}
+			add_element(elem_type, node_ids);
 		}
 		return true;
 	}
 
 	inline bool import_binary_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		line.reserve(512);
@@ -359,7 +335,7 @@ protected:
 
 		for (auto it = buff.begin(), end = buff.end(); it != end ; )
 		{
-			const uint32 new_index = this->insert_line_vertex_container();
+			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
 			using Scalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
@@ -390,7 +366,7 @@ protected:
 		line = this->skip_empty_lines(data_stream);
 
 		const uint32 nb_volumes = uint32(std::stoul(line));
-		this->reserve(nb_volumes);
+		this->msh_reserve(nb_volumes);
 
 		for (uint32 i = 0u; i < nb_volumes;)
 		{
@@ -408,52 +384,25 @@ protected:
 				nb_tags		= swap_endianness(nb_tags);
 			}
 
-			uint32 number_of_nodes;
-			switch(elem_type)
-			{
-				case MSH_CELL_TYPES::MSH_TETRA:		number_of_nodes = 4u; break;
-				case MSH_CELL_TYPES::MSH_PYRAMID:	number_of_nodes = 5u; break;
-				case MSH_CELL_TYPES::MSH_PRISM:		number_of_nodes = 6u; break;
-				case MSH_CELL_TYPES::MSH_HEXA:		number_of_nodes = 8u; break;
-				default:
-					cgogn_log_warning("import_binary_msh_file") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
-					number_of_nodes = 0u;
-					break;
-			}
+			const uint32 nb_nodes = number_of_nodes(MSH_CELL_TYPES(elem_type));
 			//std::vector<char> buff;
 			buff.clear();
-			const uint32 elem_size = 4u + nb_tags*4u + 4u*number_of_nodes;
+			const uint32 elem_size = 4u + nb_tags*4u + 4u*nb_nodes;
 			buff.resize(nb_elements*elem_size);
 			data_stream.read(&buff[0], buff.size());
 
-			std::vector<uint32> node_ids(number_of_nodes);
+			std::vector<uint32> node_ids(nb_nodes);
 			for (int32 j = 0u; j < nb_elements; ++j)
 			{
 				const char* const ids = &buff[j* elem_size + 4u + nb_tags*4u];
-				for (uint32 k = 0; k < number_of_nodes; ++k)
+				for (uint32 k = 0; k < nb_nodes; ++k)
 				{
 					node_ids[k] = *reinterpret_cast<const uint32*>(&ids[4u*k]);
 					if (this->need_endianness_swap())
 						node_ids[k] = swap_endianness(node_ids[k]);
 					node_ids[k] = old_new_indices[node_ids[k]];
 				}
-				switch (elem_type)
-				{
-					case MSH_CELL_TYPES::MSH_TETRA:
-						this->add_tetra(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3],true);
-						break;
-					case MSH_CELL_TYPES::MSH_HEXA:
-						this->add_hexa(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], node_ids[6], node_ids[7],true);
-						break;
-					case MSH_CELL_TYPES::MSH_PRISM:
-						this->add_triangular_prism(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], true);
-						break;
-					case MSH_CELL_TYPES::MSH_PYRAMID:
-						this->add_pyramid(*position, node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
-					default:
-						cgogn_log_warning("cgogn_log_warning") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
-						break;
-				}
+				this->add_element(elem_type, node_ids);
 			}
 			i += nb_elements;
 		}
@@ -461,6 +410,150 @@ protected:
 		return true;
 	}
 
+private:
+	void add_element(int32 elem_type, const std::vector<uint32>& node_ids)
+	{
+		switch (elem_type)
+		{
+			case MSH_CELL_TYPES::MSH_TRIANGLE:
+				this->msh_add_triangle(node_ids[0], node_ids[1], node_ids[2]);
+				break;
+			case MSH_CELL_TYPES::MSH_QUAD:
+				this->msh_add_quad(node_ids[0], node_ids[1], node_ids[2], node_ids[3]);
+				break;
+			case MSH_CELL_TYPES::MSH_TETRA:
+				this->msh_add_tetra(node_ids[0], node_ids[1], node_ids[2], node_ids[3],true);
+				break;
+			case MSH_CELL_TYPES::MSH_HEXA:
+				this->msh_add_hexa(node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], node_ids[6], node_ids[7],true);
+				break;
+			case MSH_CELL_TYPES::MSH_PRISM:
+				this->msh_add_triangular_prism(node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], node_ids[5], true);
+				break;
+			case MSH_CELL_TYPES::MSH_PYRAMID:
+				this->msh_add_pyramid(node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
+			default:
+				cgogn_log_warning("add_element") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
+				break;
+		}
+	}
+
+	inline static uint32 number_of_nodes(MSH_CELL_TYPES c)
+	{
+		switch(c)
+		{
+			case MSH_CELL_TYPES::MSH_TRIANGLE:	return 3u;
+			case MSH_CELL_TYPES::MSH_QUAD:
+			case MSH_CELL_TYPES::MSH_TETRA:		return 4u;
+			case MSH_CELL_TYPES::MSH_PYRAMID:	return 5u;
+			case MSH_CELL_TYPES::MSH_PRISM:		return 6u;
+			case MSH_CELL_TYPES::MSH_HEXA:		return 8u;
+			default:
+				cgogn_log_warning("number_of_nodes") << "MSH Element type with index \"" << c << "\" is not supported. Ignoring.";
+				return 0;
+		}
+	}
+
+private:
+
+	std::string	version_number_;
+	int32		file_type_;
+	int32		float_size_; // sizeof(double) normally since the doc says "currently only data-size = sizeof(double) is supported"
+	bool		swap_endianness_;
+};
+
+
+template <typename MAP_TRAITS, typename VEC3>
+class MshSurfaceImport : public MshIO<MAP_TRAITS, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS, VEC3>
+{
+public:
+
+	using Self = MshSurfaceImport<MAP_TRAITS, VEC3>;
+	using Inherit_Msh = MshIO<MAP_TRAITS, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
+	template <typename T>
+	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
+
+	inline MshSurfaceImport()
+	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshSurfaceImport);
+
+	virtual ~MshSurfaceImport() override
+	{}
+
+	// FileImport interface
+protected:
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		return this->import_msh_file(filename);
+	}
+
+
+	// MshIO interface
+	virtual ChunkArray<VEC3>*msh_position_attribute() override
+	{
+		return this->position_attribute();
+	}
+
+	virtual void msh_add_position_attribute() override
+	{
+		(void) this->add_position_attribute();
+	}
+
+	virtual uint32 msh_insert_line_vertex_container() override
+	{
+		return this->insert_line_vertex_container();
+	}
+
+	virtual void msh_clear() override
+	{
+		this->clear();
+	}
+
+	virtual void msh_reserve(uint32 n) override
+	{
+		this->reserve(n);
+	}
+
+	virtual void msh_add_triangle(uint32 p0, uint32 p1, uint32 p2) override
+	{
+		this->add_triangle(p0, p1, p2);
+	}
+
+	virtual void msh_add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3) override
+	{
+		this->add_quad(p0,p1,p2,p3);
+	}
+
+	virtual void msh_add_face(const std::vector<uint32>& v_ids) override
+	{
+		this->add_face(v_ids);
+	}
+};
+
+template <typename MAP_TRAITS, typename VEC3>
+class MshVolumeImport : public MshIO<MAP_TRAITS, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
+{
+public:
+
+	using Self = MshVolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit_Msh = MshIO<MAP_TRAITS, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
+	template <typename T>
+	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
+
+	inline MshVolumeImport()
+	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshVolumeImport);
+
+	virtual ~MshVolumeImport() override
+	{}
+
+protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
@@ -468,6 +561,8 @@ protected:
 		bool ok = this->read_header(fp);
 		if (!ok)
 			return false;
+
+		this->add_position_attribute();
 
 		if (this->version_number() == "1.0")
 			return this->import_legacy_msh_file(fp);
@@ -484,16 +579,68 @@ protected:
 
 		return false;
 	}
+
+	// MshIO interface
+protected:
+	virtual ChunkArray<VEC3>*msh_position_attribute() override
+	{
+		return this->position_attribute();
+	}
+
+	virtual void msh_add_position_attribute() override
+	{
+		(void) this->add_position_attribute();
+	}
+
+	virtual uint32 msh_insert_line_vertex_container() override
+	{
+		return this->insert_line_vertex_container();
+	}
+
+	virtual void msh_clear() override
+	{
+		this->clear();
+	}
+
+	virtual void msh_reserve(uint32 n) override
+	{
+		this->reserve(n);
+	}
+
+	virtual void msh_add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation) override
+	{
+		this->add_tetra(p0,p1,p2,p3,check_orientation);
+	}
+
+	virtual void msh_add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation) override
+	{
+		this->add_hexa(p0,p1,p2,p3,p4,p5,p6,p7,check_orientation);
+	}
+
+	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) override
+	{
+		this->add_pyramid(p0,p1,p2,p3,p4,check_orientation);
+	}
+
+	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) override
+	{
+		this->add_triangular_prism(p0,p1,p2,p3,p4,p5,check_orientation);
+	}
+
+	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) override
+	{
+		this->add_connector(p0,p1,p2,p3);
+	}
 };
 
 template <typename MAP>
 class MshVolumeExport : public VolumeExport<MAP>
 {
 public:
-
 	using Inherit = VolumeExport<MAP>;
 	using Self = MshVolumeExport<MAP>;
 	using Map = typename Inherit::Map;
+	using MSH_CELL_TYPES = typename MshIO<typename Map::MapTraits, Map::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
 	using Vertex = typename Inherit::Vertex;
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
@@ -531,7 +678,7 @@ protected:
 		{
 			const auto& vertices = this->vertices_of_volumes(w);
 			const std::size_t nbv = this->number_of_vertices(w);
-			const uint32 type = (nbv == 4u)?4u:(nbv == 5u)?7u:(nbv == 6u)?6u:5u;
+			const MSH_CELL_TYPES type = (nbv == 4u)?MSH_CELL_TYPES::MSH_TETRA:(nbv == 5u)?MSH_CELL_TYPES::MSH_PYRAMID:(nbv == 6u)?MSH_CELL_TYPES::MSH_PRISM:MSH_CELL_TYPES::MSH_HEXA;
 			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nbv <<" ";
 			for (const auto i : vertices)
 			{
@@ -543,17 +690,83 @@ protected:
 	}
 };
 
+template <typename MAP>
+class MshSurfaceExport : public SurfaceExport<MAP>
+{
+public:
+	using MSH_CELL_TYPES = typename MshIO<typename MAP::MapTraits, MAP::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
+	using Inherit = SurfaceExport<MAP>;
+	using Self = MshSurfaceExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Face = typename Inherit::Face;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+
+protected:
+
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
+		ChunkArrayGen const* pos = this->position_attribute();
+//		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
+//		const std::string format = (option.binary_?"binary" :"ascii");
+//		std::string scalar_type = pos->nested_type_name();
+//		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
+
+		// 1. vertices
+		output << "$NOD" << std::endl;
+		output << this->nb_vertices() << std::endl;
+		uint32 vertices_counter = 1u;
+		map.foreach_cell([&](Vertex v)
+		{
+			output << vertices_counter++ << " ";
+			pos->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+		output << "$ENDNOD" << std::endl;
+
+		// 2. faces
+		output << "$ELM" << std::endl;
+		const uint32 nb_faces = this->nb_faces();
+		output << nb_faces << std::endl;
+
+
+		uint32 cell_counter = 1u;
+		std::vector<uint32> vertices;
+		map.foreach_cell([&](Face f)
+		{
+			vertices.reserve(4u);
+			map.foreach_incident_vertex(f, [&] (Vertex v) {vertices.push_back(this->indices_[v] + 1u);});
+			const std::size_t nbv = vertices.size();
+			const MSH_CELL_TYPES type = (nbv == 3u)? MSH_CELL_TYPES::MSH_TRIANGLE :(nbv == 4u)?MSH_CELL_TYPES::MSH_QUAD: MSH_CELL_TYPES(0);
+			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nbv <<" ";
+			for (const auto i : vertices)
+			{
+				output << i << " ";
+			}
+			output << std::endl;
+			vertices.clear();
+		}, *(this->cell_cache_));
+		output << "$ENDELM" << std::endl;
+	}
+};
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float32,3>>>;
+
+
+extern template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+
 
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
+extern template class CGOGN_IO_API MshSurfaceExport<CMap2<DefaultMapTraits>>;
 extern template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 

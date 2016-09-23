@@ -249,7 +249,17 @@ public:
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return
 	 */
-	inline std::vector<ChunkArrayGen*>& chunk_arrays()
+	inline std::vector<const ChunkArrayGen*> chunk_arrays() const
+	{
+		// NOTE : using reinterpret_cast to change a std::vector<U>& to a std::vector<const U>& is undefined. We need to perform a copy.
+		std::vector<const ChunkArrayGen*> res;
+		res.reserve(table_arrays_.size());
+		for (const auto& ca : table_arrays_)
+			res.push_back(ca);
+		return res;
+	}
+
+	inline const std::vector<ChunkArrayGen*>& chunk_arrays()
 	{
 		return table_arrays_;
 	}

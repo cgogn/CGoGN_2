@@ -74,10 +74,10 @@ public:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<MAP_TRAITS>
+class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
 {
 	using Inherit_Nastran = NastranIO<VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
 	using Self = NastranVolumeImport<MAP_TRAITS, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -87,7 +87,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream file(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 
 		std::string line;
 		line.reserve(512);
@@ -154,7 +154,7 @@ protected:
 					for (uint32& id : ids)
 						id = old_new_ids_map[id];
 
-					this->add_hexa(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5],ids[6], ids[7], true);
+					this->add_hexa(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5],ids[6], ids[7], true);
 				}
 				else
 				{
@@ -174,7 +174,7 @@ protected:
 						for (uint32& id : ids)
 							id = old_new_ids_map[id];
 
-						this->add_tetra(*position, ids[0], ids[1], ids[2], ids[3], true);
+						this->add_tetra(ids[0], ids[1], ids[2], ids[3], true);
 					}
 					else
 					{
