@@ -120,6 +120,30 @@ public:
 };
 
 template <typename MAP, Orbit ORBIT>
+class CellMarkerNoUnmark : public CellMarker_T<MAP, ORBIT>
+{
+public:
+
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarker< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerNoUnmark);
+
+	inline CellMarkerNoUnmark(Map& map) :
+		Inherit(map)
+	{}
+
+	inline CellMarkerNoUnmark(const MAP& map) :
+		Inherit(map)
+	{}
+
+	~CellMarkerNoUnmark() override
+	{
+	}
+};
+
+template <typename MAP, Orbit ORBIT>
 class CellMarkerStore final : protected CellMarker_T<MAP, ORBIT>
 {
 public:

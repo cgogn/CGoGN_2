@@ -63,10 +63,16 @@ class ScalarField
 
 	template<typename T>
 	using VertexAttribute = typename MAP::template VertexAttribute<T>;
-	using VertexMarkerNoUnmark = typename MAP::template CellMarkerNoUnmark<Vertex::ORBIT>;
+<<<<<<< HEAD
+	using VertexMarker = typename cgogn::CellMarker<MAP, Vertex::ORBIT>;
+	using VertexMarkerStore = typename cgogn::CellMarkerStore<MAP, Vertex::ORBIT>;
+	using FaceMarkerStore = typename cgogn::CellMarkerStore<MAP, Face::ORBIT>;
+	using VolumeMarkerStore = typename cgogn::CellMarkerStore<MAP, Volume::ORBIT>;
+=======
 	using VertexMarker = typename MAP::template CellMarker<Vertex::ORBIT>;
 	using FaceMarker = typename MAP::template CellMarker<Face::ORBIT>;
 	using VolumeMarker = typename MAP::template CellMarker<Volume::ORBIT>;
+>>>>>>> 94f50242618438bcf7eb81f13929b6feabc84d43
 
 public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ScalarField);
@@ -131,7 +137,7 @@ private:
 			next = map_.phi1(map_.phi2(next));
 		} while (next != v.dart && previous == center);
 
-		// If the whole Link(v) has been traversed, then all value are equal to the center
+		// If the whole LINK has been traversed, then all value are equal to the center
 		if (next == v.dart)
 			return CriticalPoint(CriticalPoint::Type::REGULAR);
 
@@ -175,15 +181,16 @@ private:
 	/**
 	 * @brief Count the number of connected components in Link+(v) or Link-(v)
 	 * @param link the set of vertices that belong to the link
-+	 * @param link_marker a marker that should be set for the initial set of vertices
+	 * @param link_marker a marker that should be set for the initial set of vertices
 	 * @return the number of connected components
 	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
 	 */
+<<<<<<< HEAD
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 2>::type* = nullptr>
-	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarkerNoUnmark& link_marker)
+	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& link_marker)
 	{
-		uint32 nb_cc = 0u;
+		uint32 nb_cc = 0;
 		while (!link.empty())
 		{
 			// Search a marked vertex in the link
@@ -228,9 +235,12 @@ private:
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
 	 */
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
-	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarkerNoUnmark& link_marker)
+	uint32 nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& link_marker)
+=======
+	int nb_marked_cc_in_link(std::vector<Dart>& link, VertexMarker& vertex_marker)
+>>>>>>> 94f50242618438bcf7eb81f13929b6feabc84d43
 	{
-		uint32 nb_cc = 0u;
+		uint32 nb_cc = 0;
 		while (!link.empty())
 		{
 			// Search a marked vertex in the link
@@ -279,8 +289,13 @@ private:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 3>::type* = nullptr>
 	CriticalPoint critical_vertex_analysis(Vertex v)
 	{
-		VertexMarkerNoUnmark sup_link_marker(map_);
-		VertexMarkerNoUnmark inf_link_marker(map_);
+<<<<<<< HEAD
+		VertexMarker sup_link_marker(map_);
+		VertexMarker inf_link_marker(map_);
+=======
+		VertexMarker sup_vertex_marker(map_);
+		VertexMarker inf_vertex_marker(map_);
+>>>>>>> 94f50242618438bcf7eb81f13929b6feabc84d43
 
 		std::vector<Dart> sup_link;
 		std::vector<Dart> inf_link;
@@ -289,8 +304,7 @@ private:
 		Scalar center_value = scalar_field_[v];
 		cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
 		{
-			Scalar value = scalar_field_[u];
-			if (value < center_value)
+			if (scalar_field_[u] < center_value)
 			{
 				inf_link_marker.mark(u);
 				inf_link.push_back(u.dart);
@@ -541,7 +555,7 @@ public:
 		// Search for every 1-saddles the starts of the ascending 1-manifolds
 		// that link the saddles to the minima
 		// These starts are the minima of the connected components of the inf_link of the saddles
-		VertexMarkerNoUnmark inf_link_marker(map_);
+		VertexMarker vertex_marker(map_);
 		std::vector<Dart> inf_link;
 		std::vector<Dart> saddles_to_minima;
 		for (Vertex v : saddles_)
@@ -556,7 +570,7 @@ public:
 					Scalar value = scalar_field_[u];
 					if (value < center_value)
 					{
-						inf_link_marker.mark(u);
+						vertex_marker.mark(u);
 						inf_link.push_back(u.dart);
 					}
 				});
@@ -568,11 +582,11 @@ public:
 					do {
 						d = inf_link.back();
 						inf_link.pop_back();
-					} while (!inf_link_marker.is_marked(Vertex(d)) && !inf_link.empty());
+					} while (!vertex_marker.is_marked(Vertex(d)) && !inf_link.empty());
 
 					// If a marked vertex has been found, its connected component is searched
 					// for a minima and unmarked
-					if (inf_link_marker.is_marked(Vertex(d)))
+					if (vertex_marker.is_marked(Vertex(d)))
 					{
 						std::vector<Dart> cc;
 						Vertex min_cc = Vertex(d);
@@ -582,7 +596,7 @@ public:
 						{
 							Vertex current(cc.back());
 							cc.pop_back();
-							inf_link_marker.unmark(current);
+							vertex_marker.unmark(current);
 							Scalar current_value = scalar_field_[current];
 							if (current_value < min_value)
 							{
@@ -595,7 +609,7 @@ public:
 								// The vertex of dart adj is adjacent to the vertex of e through an edge and
 								// the dart phi2(adj) belongs to the central vertex C
 								Dart adj = map_.phi2(map_.phi_1(map_.phi_1(f.dart)));
-								if (inf_link_marker.is_marked(Vertex(adj)))
+								if (vertex_marker.is_marked(Vertex(adj)))
 									cc.push_back(adj);
 							});
 						}
@@ -704,7 +718,7 @@ public:
 			}
 		};
 
-		// For each found start ascend its descending 1-manifold
+		// For each found start descend its ascending 1-manifold
 		while (!saddles_to_maxima.empty())
 		{
 			Edge e(saddles_to_maxima.back());
@@ -760,7 +774,6 @@ public:
 		});
 
 		// While the sweep front is not empty
-		std::cout << "extract_ascending_3_manifold: ";
 		while (!vertex_queue.empty())
 		{
 			Vertex v = Vertex(Dart(vertex_queue.top().second));
@@ -769,7 +782,7 @@ public:
 			uint32 min_id = manifold_id_count + 1u;
 			uint32 max_id = 0u;
 
-			// Search the minimal and maximal manifold id present in the intesection Int(A3) /\ link-(v)
+			// Search the minimal and maximal manifold id present in the link
 			Scalar center_value = scalar_field_[v];
 			cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
 			{
@@ -781,7 +794,6 @@ public:
 			});
 
 			if (max_id == 0u) {		// isolated vertex => init new 3-manifold
-				std::cout << "+";
 				++manifold_id_count;
 				manifold_id[v] = manifold_id_count;
 				inner_vertex.mark(v);
@@ -795,7 +807,7 @@ public:
 				boundary.push_back(v);
 			}
 		};
-		std::cout << std::endl;
+		std::cout << endl;
 		map_.remove_attribute(manifold_id);
 	}
 
@@ -829,7 +841,6 @@ public:
 		});
 
 		// While the sweep front is not empty
-		std::cout << "extract_descending_3_manifold: ";
 		while (!vertex_queue.empty())
 		{
 			Vertex v = Vertex(Dart(vertex_queue.top().second));
@@ -838,14 +849,14 @@ public:
 			uint32 min_id = manifold_id_count + 1u;
 			uint32 max_id = 0u;
 
-			// Search the minimal and maximal manifold id present in the intesection Int(A3) /\ link+(v)
+			// Search the minimal and maximal manifold id present in the link
 			Scalar center_value = scalar_field_[v];
 			cache_.foreach_adjacent_vertex_through_edge(v, [&](Vertex u)
 			{
 				if (scalar_field_[u] > center_value && inner_vertex.is_marked(u))
 				{
 					min_id = std::min(min_id, manifold_id[u]);
-					max_id = std::max(max_id, manifold_id[u]);
+					max_id = std::max(maxid, manifold_id[u]);
 				}
 			});
 
@@ -864,7 +875,7 @@ public:
 				boundary.push_back(v);
 			}
 		};
-		std::cout << std::endl;
+		std::cout << endl;
 		map_.remove_attribute(manifold_id);
 	}
 

@@ -21,28 +21,31 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_MAP_MAP2_CPP_
+#include "topogical_analysis.h"
 
-#include <cgogn/core/cmap/cmap2.h>
+using CMap3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
 
-namespace cgogn
+int main(int argc, char** argv)
 {
+	std::string filename;
+	if (argc < 2)
+	{
+		cgogn_log_info("topogical_analysis") << "USAGE: " << argv[0] << " [filename]";
+		filename = std::string(DEFAULT_MESH_PATH) + std::string("/tet/hand.tet");
+		cgogn_log_info("topogical_analysis") << "Using default mesh \"" << filename << "\".";
+	}
+	else
+		filename = std::string(argv[1]);
 
-template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;
-template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
+	QApplication application(argc, argv);
+	qoglviewer::init_ogl_context();
 
-} // namespace cgogn
+	// Instantiate the viewer.
+	TopologicalAnalyser<CMap3> viewer;
+	viewer.setWindowTitle("Topological Analysis");
+	viewer.import(filename);
+	viewer.show();
+
+	// Run main loop.
+	return application.exec();
+}

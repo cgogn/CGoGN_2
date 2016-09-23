@@ -232,7 +232,11 @@ private:
 		// Run dijkstra using distance_to_source in place of the estimated geodesic distances
 		// and fill the morse function with i/n where i is index of distance_to_source
 		// in an sorted array of the distances and n the number of vertices.
+<<<<<<< HEAD
+		Scalar n = Scalar(map_.template nb_cells<Vertex::ORBIT>());
+=======
 		const Scalar n = Scalar(map_.template nb_cells<Vertex::ORBIT>());
+>>>>>>> 94f50242618438bcf7eb81f13929b6feabc84d43
 		uint32 i = 1;
 		while(!vertex_queue.empty())
 		{
@@ -315,7 +319,7 @@ public:
 		});
 
 		if (boundary_vertices.size() == 0u)
-			cgogn_log_error("distance_to_boundary") << "No boundary found";
+			cgogn_log_warning("distance_to_boundary") << "No boundary found";
 		else
 			dijkstra_compute_distances(boundary_vertices, scalar_field);
 	}
@@ -344,13 +348,13 @@ public:
 	}
 
 	/**
-		 * Build a scalar field that represent the sum of the distance of each vertex
-		 * to a given set of features (selected vertices) of the Map.
-		 * @param[in] features the vertices from which the shortest paths are computed
-		 * @param[out] scalar_field : the computed distance field
-		 */
+	 * Build a scalar field that represent the sum of the distance of each vertex
+	 * to a given set of features (selected vertices) of the Map.
+	 * @param[in] features the vertices from which the shortest paths are computed
+	 * @param[out] scalar_field : the computed distance field
+	 */
 	void sum_of_distance_to_features(const std::vector<Vertex>& features,
-									 VertexAttribute<Scalar>& scalar_field)
+							  VertexAttribute<Scalar>& scalar_field)
 	{
 		VertexAttribute<Scalar> distance_to_feature =
 				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");

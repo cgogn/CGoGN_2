@@ -24,9 +24,12 @@
 #ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 #define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 
+<<<<<<< HEAD
+=======
 #include <cgogn/topology/dll.h>
 #include <cgogn/core/cmap/cmap3.h>
 
+>>>>>>> 94f50242618438bcf7eb81f13929b6feabc84d43
 namespace cgogn
 {
 
@@ -62,7 +65,9 @@ public:
 	const AdjacencyCache& operator=(const AdjacencyCache& ) = delete;
 
 	inline ~AdjacencyCache()
-	{}
+	{
+//		map_.remove_attribute(adjacency_);
+	}
 
 	void init()
 	{
