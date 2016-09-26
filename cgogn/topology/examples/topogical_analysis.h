@@ -199,7 +199,7 @@ public:
 	{
 		// Search the maximal and minimal value of the scalar field
 		Scalar min = std::numeric_limits<Scalar>::max();
-		Scalar max = std::numeric_limits<Scalar>::min();
+		Scalar max = std::numeric_limits<Scalar>::lowest();
 		for(auto& v : scalar_field_)
 		{
 			min = std::min(min, v);
@@ -619,7 +619,7 @@ public:
 	void scalar_field_inverse_normalize()
 	{
 		Scalar min = std::numeric_limits<Scalar>::max();
-		Scalar max = std::numeric_limits<Scalar>::min();
+		Scalar max = std::numeric_limits<Scalar>::lowest();
 
 		for(auto& v : scalar_field_)
 		{
@@ -833,7 +833,7 @@ public:
 		VertexAttribute<Scalar> kmean = map_.template add_attribute<Scalar, Vertex::ORBIT>("kmean");
 
 		double min = std::numeric_limits<double>::max();
-		double max = std::numeric_limits<double>::min();
+		double max = std::numeric_limits<double>::lowest();
 
 		map_.foreach_cell([&](Vertex v)
 		{
@@ -846,7 +846,7 @@ public:
 		VertexAttribute<Scalar> kgaussian = map_.template add_attribute<Scalar, Vertex::ORBIT>("kgaussian");
 
 		min = std::numeric_limits<double>::max();
-		max = std::numeric_limits<double>::min();
+		max = std::numeric_limits<double>::lowest();
 
 		map_.foreach_cell([&](Vertex v)
 		{
