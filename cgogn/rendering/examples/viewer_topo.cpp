@@ -23,13 +23,14 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
 #include <QKeyEvent>
+
+#include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/cmap/cmap2.h>
 
 #include <cgogn/io/map_import.h>
+#include <cgogn/io/map_export.h>
 
 #include <cgogn/geometry/algos/bounding_box.h>
 
@@ -47,10 +48,12 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Vertex = Map2::Vertex;
+
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 
@@ -101,7 +104,7 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	map_.get_attribute(vertex_position_, "position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
@@ -140,7 +143,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_F:
 			flat_rendering_ = !flat_rendering_;
 			break;
@@ -164,6 +168,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
+			break;
+		case Qt::Key_E:
+			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.vtp",{cgogn::Orbit(Map2::Vertex::ORBIT),"position"}));
 			break;
 		default:
 			break;
@@ -205,7 +212,7 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES);
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
@@ -235,7 +242,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("viewer_topo");
 	viewer.import(surface_mesh);
 	viewer.show();
 

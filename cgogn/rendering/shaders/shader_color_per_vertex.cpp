@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <iostream>
 
@@ -42,7 +41,8 @@ const char* ShaderColorPerVertex::vertex_shader_source_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "out vec3 color_v;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   color_v = vertex_color;"
 "   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -51,7 +51,8 @@ const char* ShaderColorPerVertex::fragment_shader_source_ =
 "#version 150\n"
 "in vec3 color_v;\n"
 "out vec3 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color_v;\n"
 "}\n";
 

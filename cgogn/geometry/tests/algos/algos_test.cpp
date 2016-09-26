@@ -53,7 +53,7 @@ using Vertex = CMap2::Vertex;
 using Edge = CMap2::Edge;
 using Face = CMap2::Face;
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Algos_TEST : public testing::Test
 {
 protected :
@@ -83,8 +83,8 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 	this->add_polygone(3);
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
-	const Scalar area = cgogn::geometry::triangle_area<TypeParam>(this->map2_, Face(t), vertex_position);
-	const Scalar cf_area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(t), vertex_position);
+	const Scalar area = cgogn::geometry::area<TypeParam>(this->map2_, Face(t), vertex_position);
+	const Scalar cf_area = cgogn::geometry::convex_area<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(0.75*std::sqrt(3.0)));
 	EXPECT_DOUBLE_EQ(cf_area, Scalar(0.75*std::sqrt(3.0)));
 }
@@ -96,7 +96,7 @@ TYPED_TEST(Algos_TEST, QuadArea)
 	this->add_polygone(4);
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
-	const Scalar area = cgogn::geometry::convex_face_area<TypeParam>(this->map2_, Face(q), vertex_position);
+	const Scalar area = cgogn::geometry::convex_area<TypeParam>(this->map2_, Face(q), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(2));
 }
 
@@ -134,8 +134,8 @@ TYPED_TEST(Algos_TEST, TriangleNormal)
 	this->add_polygone(3);
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
-	const TypeParam& n1 = cgogn::geometry::triangle_normal<TypeParam>(this->map2_, Face(t), vertex_position);
-	const TypeParam& n2 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(t), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(t), vertex_position);
+	const TypeParam& n2 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[0], n2[0]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[1], n2[1]));
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[2], n2[2]));
@@ -153,7 +153,7 @@ TYPED_TEST(Algos_TEST, QuadNormal)
 	this->add_polygone(4);
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
-	const TypeParam& n1 = cgogn::geometry::face_normal<TypeParam>(this->map2_, Face(q), vertex_position);
+	const TypeParam& n1 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(q), vertex_position);
 	const TypeParam& cross = n1.cross(TypeParam(Scalar(0), Scalar(0), Scalar(1)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], Scalar(0)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[1], Scalar(0)));
@@ -179,7 +179,7 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 	vertex_position[Vertex(d)] = TypeParam(Scalar(0), Scalar(10), Scalar(0));
 
 	std::vector<uint32> indices;
-	cgogn::geometry::compute_ear_triangulation<TypeParam>(this->map2_, f, vertex_position, indices);
+	cgogn::geometry::append_ear_triangulation<TypeParam>(this->map2_, f, vertex_position, indices);
 	EXPECT_TRUE(indices.size() == 9);
 
 	Scalar area = 0;
@@ -188,7 +188,7 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 		const TypeParam& A = vertex_position[indices[i]];
 		const TypeParam& B = vertex_position[indices[i+1]];
 		const TypeParam& C = vertex_position[indices[i+2]];
-		area += cgogn::geometry::triangle_area(A, B, C);
+		area += cgogn::geometry::area(A, B, C);
 	}
 	EXPECT_DOUBLE_EQ(area, 75.0);
 

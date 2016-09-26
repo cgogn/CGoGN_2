@@ -1,0 +1,14 @@
+set(CGOGN_THIRDPARTY_EIGEN_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Directory for find_package(Eigen3)")
+set(CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Include directory for find_package(Eigen3)")
+
+project(Eigen3
+	LANGUAGES CXX
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Eigen
+	COMPONENT Eigen_headers
+	DESTINATION include/thirdparty
+	PATTERN "*.in" EXCLUDE
+	PATTERN "*.txt" EXCLUDE
+	PATTERN "*.cpp" EXCLUDE
+)

@@ -37,13 +37,12 @@ namespace cgogn
 template <typename DATA_TRAITS>
 class CPHBase
 {
-
 public:
 
 	using Self = CPHBase<DATA_TRAITS>;
 
 	template <typename T>
-	using ChunkArray =  cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
+	using ChunkArray = cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
 	template <typename T>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
 
@@ -64,13 +63,13 @@ protected:
 
 public:
 
-	inline CPHBase(ChunkArrayContainer<unsigned char>& topology):
+	inline CPHBase(ChunkArrayContainer<unsigned char>& topology) :
 		current_level_(0u),
 		maximum_level_(0u)
 	{
 		nb_darts_per_level_.reserve(32u);
 		nb_darts_per_level_.push_back(0);
-		dart_level_ = topology.template add_attribute<uint32>("dartLevel") ;
+		dart_level_ = topology.template add_chunk_array<uint32>("dartLevel") ;
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPHBase);
@@ -130,8 +129,10 @@ public:
 	{
 		cgogn_message_assert(current_level_ > 0u, "dec_current_level : already at minimal resolution level");
 
-		if (current_level_ == maximum_level_) {
-			if (nb_darts_per_level_[current_level_] == 0u) {
+		if (current_level_ == maximum_level_)
+		{
+			if (nb_darts_per_level_[current_level_] == 0u)
+			{
 				maximum_level_--;
 				nb_darts_per_level_.pop_back();
 			}
@@ -143,14 +144,11 @@ public:
 	{
 		nb_darts_per_level_[current_level_]++;
 	}
-
 };
-
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
 extern template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
-
 
 } // namespace cgogn
 

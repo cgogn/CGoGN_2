@@ -8,11 +8,11 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h
-	map_render.h
 	shaders/vbo.h
 	shaders/shader_program.h
 	shaders/shader_simple_color.h
 	shaders/shader_color_per_vertex.h
+	shaders/shader_scalar_per_vertex.h
 	shaders/shader_flat.h
 	shaders/shader_vector_per_vertex.h
 	shaders/shader_phong.h
@@ -25,13 +25,16 @@ set(HEADER_FILES
 	drawer.h
 	topo_drawer.h
 	volume_drawer.h
+	map_render.h
 	wall_paper.h
+	frame_manipulator.h
 )
 
 set(SOURCE_FILES
 	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
+	shaders/shader_scalar_per_vertex.cpp
 	shaders/shader_flat.cpp
 	shaders/shader_vector_per_vertex.cpp
 	shaders/shader_phong.cpp
@@ -46,11 +49,13 @@ set(SOURCE_FILES
 	volume_drawer.cpp
 	map_render.cpp
 	wall_paper.cpp
+	frame_manipulator.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>

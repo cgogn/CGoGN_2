@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <cgogn/rendering/drawer.h>
 
@@ -36,7 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-DisplayListDrawer::DisplayListDrawer():
+DisplayListDrawer::DisplayListDrawer() :
 	current_size_(1.0f),
 	current_aa_(true),
 	current_ball_(true)
@@ -266,16 +265,16 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_cpv_->bind(projection, modelview);
 
-		for (auto& pp : drawer_data_->begins_point_)
+		for (const auto& pp : drawer_data_->begins_point_)
 		{
 			ogl33->glPointSize(pp.width);
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
-		for (auto& pp : drawer_data_->begins_line_)
+		for (const auto& pp : drawer_data_->begins_line_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
-		for (auto& pp : drawer_data_->begins_face_)
+		for (const auto& pp : drawer_data_->begins_face_)
 			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 		param_cpv_->release();
@@ -286,7 +285,7 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_ps_->bind(projection, modelview);
 
-		for (auto& pp : drawer_data_->begins_balls_)
+		for (const auto& pp : drawer_data_->begins_balls_)
 		{
 			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
@@ -303,7 +302,7 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_rp_->bind(projection, modelview);
 
-		for (auto& pp : drawer_data_->begins_round_point_)
+		for (const auto& pp : drawer_data_->begins_round_point_)
 		{
 			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
@@ -329,7 +328,7 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 	{
 		param_bl_->bind(projection, modelview);
 
-		for (auto& pp : drawer_data_->begins_bold_line_)
+		for (const auto& pp : drawer_data_->begins_bold_line_)
 		{
 			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());

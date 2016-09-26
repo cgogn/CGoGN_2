@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 
 #include <cgogn/core/utils/thread_pool.h>
 
@@ -29,7 +28,7 @@ namespace cgogn
 
 {
 
-std::vector<std::thread::id> ThreadPool::get_threads_ids() const
+std::vector<std::thread::id> ThreadPool::threads_ids() const
 {
 	std::vector<std::thread::id> res;
 	res.reserve(workers_.size());
@@ -54,19 +53,21 @@ ThreadPool::~ThreadPool()
 ThreadPool::ThreadPool()
 	: stop_(false)
 {
-	for(uint32 i = 0u; i< cgogn::get_nb_threads() -1u;++i)
+	for(uint32 i = 0u; i< cgogn::nb_threads() -1u;++i)
+	{
 		workers_.emplace_back(
-					[this,i]
+		[this, i]
 		{
 			cgogn::thread_start();
 			for(;;)
 			{
 				std::function<void(uint32)> task;
-
 				{
 					std::unique_lock<std::mutex> lock(this->queue_mutex_);
-					this->condition_.wait(lock,
-										  [this]{ return this->stop_ || !this->tasks_.empty(); });
+					this->condition_.wait(
+						lock,
+						[this] { return this->stop_ || !this->tasks_.empty(); }
+					);
 					if(this->stop_ && this->tasks_.empty())
 					{
 						cgogn::thread_stop();
@@ -78,8 +79,8 @@ ThreadPool::ThreadPool()
 				}
 				task(i);
 			}
-		}
-		);
+		});
+	}
 }
 
 } // namespace cgogn

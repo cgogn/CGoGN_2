@@ -42,9 +42,11 @@ template <typename DATA_TRAITS>
 class AttributeGen
 {
 public:
+
 	using Self = AttributeGen<DATA_TRAITS>;
 	using MapData = MapBaseData<DATA_TRAITS>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<DATA_TRAITS::CHUNK_SIZE>;
+
 protected:
 
 	MapData* map_;
@@ -103,260 +105,113 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string&	get_name() const = 0;
-	virtual const std::string&	get_type_name() const = 0;
+	virtual const std::string&	name() const = 0;
+	virtual const std::string&	type_name() const = 0;
 	virtual bool				is_valid() const = 0;
-	virtual Orbit				get_orbit() const = 0;
 };
 
-
 /**
- * \brief Generic Attribute class with orbit parameter
- * @TPARAM ORBIT the orbit of the attribute to handlde
+ * @brief The Attribute_T class
+ * @TPARAM T the data type of the attribute to handlde
+ * In this class we do not know the orbit of the Attribute.
  */
-template <typename DATA_TRAITS, Orbit ORBIT>
-class AttributeOrbit : public AttributeGen<DATA_TRAITS>
+template <typename DATA_TRAITS, typename T>
+class Attribute_T : public AttributeGen<DATA_TRAITS>
 {
 public:
 
 	using Inherit = AttributeGen<DATA_TRAITS>;
-	using Self = AttributeOrbit<DATA_TRAITS, ORBIT>;
-	using MapData = typename Inherit::MapData;
-
-	static const uint32 CHUNKSIZE = DATA_TRAITS::CHUNK_SIZE;
-	static const Orbit orbit_value = ORBIT;
-
-	template <typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNKSIZE, T>;
-	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNKSIZE, T>;
-
-protected:
-
-	ChunkArrayContainer<uint32>* chunk_array_cont_;
-
-public:
-
-	inline AttributeOrbit(MapData* const map) :
-		Inherit(map),
-		chunk_array_cont_(nullptr)
-	{
-		if (map != nullptr)
-			chunk_array_cont_ = &(map->template get_attribute_container<ORBIT>());
-	}
-
-	/**
-	 * \brief copy constructor
-	 * @param attho
-	 */
-	inline AttributeOrbit(const Self& attho) :
-		Inherit(attho),
-		chunk_array_cont_(attho.chunk_array_cont_)
-	{}
-
-	/**
-	 * \brief move constructor
-	 * @param attho
-	 */
-	inline AttributeOrbit(Self&& attho) CGOGN_NOEXCEPT :
-		Inherit(std::move(attho)),
-		chunk_array_cont_(attho.chunk_array_cont_)
-	{}
-
-	/**
-	 * \brief operator =
-	 * @param attho
-	 * @return
-	 */
-	inline AttributeOrbit& operator=(const Self& attho)
-	{
-		Inherit::operator=(attho);
-		chunk_array_cont_ = attho.chunk_array_cont_;
-		return *this;
-	}
-	/**
-	 * \brief move operator =
-	 * @param attho
-	 * @return
-	 */
-	inline AttributeOrbit& operator=(Self&& attho)
-	{
-		Inherit::operator=(std::move(attho));
-		chunk_array_cont_ = attho.chunk_array_cont_;
-		return *this;
-	}
-
-	virtual Orbit get_orbit() const override
-	{
-		return ORBIT;
-	}
-
-	virtual ~AttributeOrbit() override
-	{}
-};
-
-/**
- * \brief Attribute class
- * @TPARAM T the data type of the attribute to handlde
- */
-template <typename DATA_TRAITS, typename T, Orbit ORBIT>
-class Attribute : public AttributeOrbit<DATA_TRAITS, ORBIT>
-{
-public:
-
-	using Inherit = AttributeOrbit<DATA_TRAITS, ORBIT>;
-	using Self = Attribute<DATA_TRAITS, T, ORBIT>;
+	using Self = Attribute_T<DATA_TRAITS, T>;
 	using value_type = T;
 	using MapData = typename Inherit::MapData;
-	using TChunkArray = typename Inherit::template ChunkArray<T>;
+	static const uint32 CHUNK_SIZE = DATA_TRAITS::CHUNK_SIZE;
+	using TChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
 
-protected:
-
-	TChunkArray* chunk_array_;
-
-public:
-
-	/**
-	 * \brief Default constructor
-	 *
-	 * Construct a non-valid Attribute (i.e. not linked to any attribute)
-	 */
-	Attribute() :
+	inline Attribute_T() :
 		Inherit(nullptr),
-		chunk_array_(nullptr)
+		chunk_array_cont_(nullptr),
+		chunk_array_(nullptr),
+		orbit_(Orbit(NB_ORBITS))
 	{}
 
-	/**
-	 * \brief Constructor
-	 * @param m the map the attribute belongs to
-	 * @param ca TChunkArray pointer
-	 */
-	Attribute(MapData* const m, TChunkArray* const ca) :
-		Inherit(m),
-		chunk_array_(ca)
+	Attribute_T(MapData* const map, TChunkArray* const ca, Orbit orbit) :
+		Inherit(map),
+		chunk_array_(ca),
+		orbit_(orbit)
 	{
+		if (map != nullptr)
+			chunk_array_cont_ = &map->const_attribute_container(orbit);
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
-	/**
-	 * \brief Copy constructor
-	 * @param att
-	 */
-	Attribute(const Self& att) :
+	Attribute_T(const Self& att) :
 		Inherit(att),
-		chunk_array_(att.chunk_array_)
+		chunk_array_cont_(att.chunk_array_cont_),
+		chunk_array_(att.chunk_array_),
+		orbit_(att.orbit_)
 	{
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
-	/**
-	 * \brief Move constructor
-	 * @param att
-	 */
-	Attribute(Self&& att) CGOGN_NOEXCEPT :
+	inline Attribute_T(Self&& att) CGOGN_NOEXCEPT :
 		Inherit(std::move(att)),
-		chunk_array_(att.chunk_array_)
+		chunk_array_cont_(att.chunk_array_cont_),
+		chunk_array_(att.chunk_array_),
+		orbit_(att.orbit_)
 	{
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
-	/**
-	 * \brief operator =
-	 * @param att
-	 * @return
-	 */
-	Attribute& operator=(const Self& att)
+	inline Attribute_T& operator=(const Self& att)
 	{
 		Inherit::operator=(att);
 
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
+		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
+		orbit_ = att.orbit_;
 
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		return *this;
 	}
 
-	/**
-	 * \brief move operator =
-	 * @param att
-	 * @return
-	 */
-	Attribute& operator=(Self&& att)
+	Attribute_T& operator=(Self&& att)
 	{
 		Inherit::operator=(std::move(att));
 
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
+		chunk_array_cont_ = att.chunk_array_cont_;
 		chunk_array_ = att.chunk_array_;
+		orbit_ = att.orbit_;
 
 		if (chunk_array_ != nullptr)
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->add_external_ref(ref);
-		}
+			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 
 		return *this;
 	}
 
-	virtual ~Attribute() override
+	virtual ~Attribute_T() override
 	{
 		if (is_valid())
-		{
-			TChunkArray** tmp = &chunk_array_;
-			typename TChunkArray::Inherit** ref = reinterpret_cast<typename TChunkArray::Inherit**>(tmp);
-			chunk_array_->remove_external_ref(ref);
-		}
-	}
-
-	virtual const std::string& get_name() const override
-	{
-		return chunk_array_->get_name();
-	}
-
-	virtual bool is_valid() const override
-	{
-		return chunk_array_ != nullptr;
+			chunk_array_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
 	/**
 	 * \brief getDataVector
 	 * @return
 	 */
-	TChunkArray const* get_data() const
+	TChunkArray const* data() const
 	{
 		return chunk_array_;
 	}
@@ -365,45 +220,13 @@ public:
 	 * \brief affect a value to all elements of container (even holes)
 	 * @param val value to affect
 	 */
-	inline void set_all_container_values(const T& val)
+	inline void set_all_values(const T& val)
 	{
 		chunk_array_->set_all_values(val);
 	}
 
 	/**
-	 * \brief operator []
-	 * @param c
-	 * @return
-	 */
-	inline T& operator[](Cell<ORBIT> c)
-	{
-		cgogn_message_assert(is_valid(), "Invalid Attribute");
-		return chunk_array_->operator[](this->map_->get_embedding(c));
-	}
-
-	/**
-	 * \brief operator []
-	 * @param c
-	 * @return
-	 */
-	inline const T& operator[](Cell<ORBIT> c) const
-	{
-		cgogn_message_assert(is_valid(), "Invalid Attribute");
-		return chunk_array_->operator[](this->map_->get_embedding(c));
-	}
-
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param c
-	 * @param t
-	 */
-	inline void set_value(Cell<ORBIT> c, const T& t)
-	{
-		chunk_array_->set_value(this->map_->get_embedding(c), t);
-	}
-
-	/**
-	 * \brief operator []
+	 * \brief operator[]
 	 * @param i
 	 * @return
 	 */
@@ -414,7 +237,7 @@ public:
 	}
 
 	/**
-	 * \brief const operator []
+	 * \brief const operator[]
 	 * @param i
 	 * @return
 	 */
@@ -424,24 +247,40 @@ public:
 		return chunk_array_->operator[](i);
 	}
 
-	/**
-	 * @brief set_value method to write in boolean Attributes
-	 * @param i
-	 * @param t
-	 */
-	inline void set_value(uint32 i, const T& t)
+	inline T& operator[](Dart d)
 	{
-		chunk_array_->set_value(i, t);
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(d, orbit_));
 	}
 
+	inline const T& operator[](Dart d) const
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(d, orbit_));
+	}
+
+	virtual const std::string& name() const override
+	{
+		return chunk_array_->name();
+	}
+
+	virtual const std::string& type_name() const override
+	{
+		return chunk_array_->type_name();
+	}
+
+	virtual bool is_valid() const override
+	{
+		return chunk_array_ != nullptr;
+	}
 
 	class const_iterator
 	{
 	public:
-		const Attribute<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+		const Attribute_T<DATA_TRAITS, T>* const ah_ptr_;
 		uint32 index_;
 
-		inline const_iterator(const Attribute<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
+		inline const_iterator(const Attribute_T<DATA_TRAITS, T>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -486,14 +325,13 @@ public:
 		return const_iterator(this, this->chunk_array_cont_->end());
 	}
 
-
 	class iterator
 	{
 	public:
-		Attribute<DATA_TRAITS, T, ORBIT>* const ah_ptr_;
+		Attribute_T<DATA_TRAITS, T>* const ah_ptr_;
 		uint32 index_;
 
-		inline iterator(Attribute<DATA_TRAITS, T, ORBIT>* ah, uint32 i) :
+		inline iterator(Attribute_T<DATA_TRAITS, T>* ah, uint32 i) :
 			ah_ptr_(ah),
 			index_(i)
 		{}
@@ -538,13 +376,109 @@ public:
 		return iterator(this, this->chunk_array_cont_->end());
 	}
 
-	virtual const std::string& get_type_name() const override
-	{
-		return chunk_array_->get_type_name();
-	}
+protected:
+
+	ChunkArrayContainer const*	chunk_array_cont_;
+	TChunkArray*				chunk_array_;
+	Orbit						orbit_;
 };
 
+/**
+ * \brief Attribute class
+ * @TPARAM T the data type of the attribute to handlde
+ */
+template <typename DATA_TRAITS, typename T, Orbit ORBIT>
+class Attribute : public Attribute_T<DATA_TRAITS, T>
+{
+public:
 
+	using Inherit = Attribute_T<DATA_TRAITS, T>;
+	using Self = Attribute<DATA_TRAITS, T, ORBIT>;
+	using MapData = typename Inherit::MapData;
+	using TChunkArray = typename Inherit::TChunkArray;
+	using Inherit::operator[];
+
+	/**
+	 * \brief Default constructor
+	 *
+	 * Construct a non-valid Attribute (i.e. not linked to any attribute)
+	 */
+	inline Attribute() :
+		Inherit(nullptr, nullptr, Orbit())
+	{}
+
+	inline Attribute(MapData* const map, TChunkArray* const ca) :
+		Inherit(map, ca, ORBIT)
+	{}
+
+	/**
+	 * \brief Copy constructor
+	 * @param att
+	 */
+	inline Attribute(const Self& att) :
+		Inherit(att)
+	{}
+
+	/**
+	 * \brief Move constructor
+	 * @param att
+	 */
+	inline Attribute(Self&& att) CGOGN_NOEXCEPT :
+		Inherit(std::move(att))
+	{}
+
+	/**
+	 * \brief operator =
+	 * @param att
+	 * @return
+	 */
+	inline Attribute& operator=(const Self& att)
+	{
+		Inherit::operator=(att);
+		return *this;
+	}
+
+	/**
+	 * \brief move operator =
+	 * @param att
+	 * @return
+	 */
+	Attribute& operator=(Self&& att)
+	{
+		Inherit::operator=(std::move(att));
+		return *this;
+	}
+
+	virtual ~Attribute() override
+	{}
+
+	/**
+	 * \brief operator[]
+	 * @param c
+	 * @return
+	 */
+	inline T& operator[](Cell<ORBIT> c)
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(c));
+	}
+
+	/**
+	 * \brief operator[]
+	 * @param c
+	 * @return
+	 */
+	inline const T& operator[](Cell<ORBIT> c) const
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
+		return this->chunk_array_->operator[](this->map_->embedding(c));
+	}
+
+	inline Orbit orbit() const
+	{
+		return ORBIT;
+	}
+};
 
 } // namespace cgogn
 

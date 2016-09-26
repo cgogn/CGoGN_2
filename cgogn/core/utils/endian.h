@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/type_traits.h>
 
 namespace cgogn
 {
@@ -117,20 +118,34 @@ inline float64 swap_endianness_double(float64 x)
 	return u.as_f64;
 }
 
+template<bool COND, typename T>
+inline typename std::enable_if<has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x);
 
-template< bool COND>
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x);
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x);
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x);
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x);
+
+template <bool COND>
 inline char swap_endianness_if(char x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint8_t swap_endianness_if(std::uint8_t x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint16_t swap_endianness_if(std::uint16_t x)
 {
 	if (COND)
@@ -138,7 +153,7 @@ inline std::uint16_t swap_endianness_if(std::uint16_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint32_t swap_endianness_if(std::uint32_t x)
 {
 	if (COND)
@@ -146,7 +161,7 @@ inline std::uint32_t swap_endianness_if(std::uint32_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::uint64_t swap_endianness_if(std::uint64_t x)
 {
 	if (COND)
@@ -154,13 +169,13 @@ inline std::uint64_t swap_endianness_if(std::uint64_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int8_t swap_endianness_if(std::int8_t x)
 {
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int16_t swap_endianness_if(std::int16_t x)
 {
 	if (COND)
@@ -168,7 +183,7 @@ inline std::int16_t swap_endianness_if(std::int16_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int32_t swap_endianness_if(std::int32_t x)
 {
 	if (COND)
@@ -176,7 +191,7 @@ inline std::int32_t swap_endianness_if(std::int32_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline std::int64_t swap_endianness_if(std::int64_t x)
 {
 	if (COND)
@@ -184,7 +199,7 @@ inline std::int64_t swap_endianness_if(std::int64_t x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline float32 swap_endianness_if(float32 x)
 {
 	if (COND)
@@ -192,7 +207,7 @@ inline float32 swap_endianness_if(float32 x)
 	return x;
 }
 
-template< bool COND>
+template <bool COND>
 inline float64 swap_endianness_if(float64 x)
 {
 	if (COND)
@@ -200,22 +215,64 @@ inline float64 swap_endianness_if(float64 x)
 	return x;
 }
 
+template<bool COND, typename T>
+inline typename std::enable_if<has_operator_brackets<T>::value, T>::type swap_endianness_if(const T& x)
+{
+	T res;
+	for (std::size_t i = 0ul, size = static_cast<std::size_t>(x.size()); i < size; ++i)
+		res[i] = swap_endianness_if<COND>(x[i]);
+	return res;
+}
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 1ul, T>::type swap_endianness_if(const T& x)
+{
+	return x;
+}
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 2ul, T>::type swap_endianness_if(const T& x)
+{
+	uint16 tmp;
+	tmp = reinterpret_cast<const uint16&>(x);
+	tmp = swap_endianness_if<COND>(tmp);
+	return reinterpret_cast<T&>(tmp);
+}
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 4ul, T>::type swap_endianness_if(const T& x)
+{
+	uint32 tmp;
+	tmp = reinterpret_cast<const uint32&>(x);
+	tmp = swap_endianness_if<COND>(tmp);
+	return reinterpret_cast<T&>(tmp);
+}
+
+template<bool COND, typename T>
+inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 8ul, T>::type swap_endianness_if(const T& x)
+{
+	uint64 tmp;
+	tmp = reinterpret_cast<const uint64&>(x);
+	tmp = swap_endianness_if<COND>(tmp);
+	return reinterpret_cast<T&>(tmp);
+}
+
 } // namespace internal
 
-template<typename T>
-inline T swap_endianness(T x)
+template <typename T>
+inline T swap_endianness(const T& x)
 {
 	return internal::swap_endianness_if<true>(x);
 }
 
-template<typename T>
-inline T swap_endianness_native_big(T x)
+template <typename T>
+inline T swap_endianness_native_big(const T& x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_little_endian>(x);
 }
 
-template<typename T>
-inline T swap_endianness_native_little(T x)
+template <typename T>
+inline T swap_endianness_native_little(const T& x)
 {
 	return internal::swap_endianness_if<internal::cgogn_is_big_endian>(x);
 }

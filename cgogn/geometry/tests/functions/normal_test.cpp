@@ -35,11 +35,10 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Normal_TEST : public testing::Test {};
 
 TYPED_TEST_CASE(Normal_TEST, VecTypes );
-
 
 TYPED_TEST(Normal_TEST, TriangleNormal)
 {
@@ -48,9 +47,9 @@ TYPED_TEST(Normal_TEST, TriangleNormal)
 	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
 	TypeParam p0(Scalar(1), Scalar(3), Scalar(-5));
 	TypeParam p1(Scalar(7), Scalar(-4), Scalar(0.1f));
-	TypeParam p2(Scalar(-15), Scalar(-2), Scalar(15));;
+	TypeParam p2(Scalar(-15), Scalar(-2), Scalar(15));
 
-	TypeParam n = cgogn::geometry::triangle_normal(p0,p1,p2);
+	TypeParam n = cgogn::geometry::normal(p0,p1,p2);
 
 	cgogn::almost_equal_relative(n.dot(p1-p0), Scalar(0));
 	//		EXPECT_TRUE(cgogn::almost_equal_relative(n.dot(p1-p0),0.)); // is false !

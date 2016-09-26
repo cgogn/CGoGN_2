@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_UTILS_LOGGER_OUTPUT_CPP_
 
 #include <iostream>
@@ -60,7 +59,7 @@ void ConsoleOutput::process_entry(const LogEntry& e)
 			o << " (file " << termcolor::magenta;
 			o << e.get_fileinfo() << termcolor::reset << ')';
 		}
-		o << '.' << std::endl;
+		o << std::endl;
 	}
 }
 
@@ -82,7 +81,7 @@ void FileOutput::process_entry(const LogEntry& e)
 		out_ << ": " << e.get_message_str();
 		if (!e.get_fileinfo().empty())
 			out_ << " (file " << e.get_fileinfo() << ')';
-		out_ << '.' << std::endl;
+		out_ << std::endl;
 	}
 }
 

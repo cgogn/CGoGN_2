@@ -20,7 +20,6 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_SURFACE_IMPORT_CPP_
 
 #include <cgogn/io/surface_import.h>
@@ -31,7 +30,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API SurfaceImport<DefaultMapTraits>;
+template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3d>;
 
 } // namespace io
 

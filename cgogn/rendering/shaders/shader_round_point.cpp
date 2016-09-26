@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_
 
 #include <iostream>
@@ -38,7 +37,8 @@ namespace rendering
 const char* ShaderRoundPointGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
@@ -49,24 +49,29 @@ const char* ShaderRoundPointGen::geometry_shader_source_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 pointSizes;\n"
+"uniform vec4 plane_clip;\n"
 "out vec2 local;\n"
 "void main()\n"
 "{\n"
-"	vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
-"	A = A/A.w;\n"
-"	local = vec2(-1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(-1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	EndPrimitive();\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
+"		A = A/A.w;\n"
+"		local = vec2(-1.0,-1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(1.0,-1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(-1.0,1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(1.0,1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		EndPrimitive();\n"
+"	}\n"
 "}\n";
 
 const char* ShaderRoundPointGen::fragment_shader_source_ =
@@ -74,7 +79,8 @@ const char* ShaderRoundPointGen::fragment_shader_source_ =
 "uniform vec4 color;\n"
 "in vec2 local;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 
 "	float r2 = dot(local,local);\n"
 "   if (r2 > 1.0) discard;\n"
@@ -86,7 +92,8 @@ const char* ShaderRoundPointGen::vertex_shader_source2_ =
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
 "out vec3 color_v;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   color_v = vertex_color;\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -98,27 +105,32 @@ const char* ShaderRoundPointGen::geometry_shader_source2_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 pointSizes;\n"
+"uniform vec4 plane_clip;\n"
 "in vec3 color_v[];\n"
 "out vec2 local;\n"
 "out vec3 color_f;\n"
 "void main()\n"
 "{\n"
-"	vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
-"	A = A/A.w;\n"
-"	color_f = color_v[0];\n"
-"	local = vec2(-1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,-1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(-1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	local = vec2(1.0,1.0);\n"
-"	gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
-"	EmitVertex();\n"
-"	EndPrimitive();\n"
+"	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if (d<=0.0)\n"
+"	{\n"
+"		vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
+"		A = A/A.w;\n"
+"		color_f = color_v[0];\n"
+"		local = vec2(-1.0,-1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(1.0,-1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(-1.0,1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(-pointSizes[0],pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		local = vec2(1.0,1.0);\n"
+"		gl_Position = vec4(A.xyz-vec3(pointSizes[0],pointSizes[1],0.0), 1.0);\n"
+"		EmitVertex();\n"
+"		EndPrimitive();\n"
+"	}\n"
 "}\n";
 
 const char* ShaderRoundPointGen::fragment_shader_source2_ =
@@ -126,13 +138,12 @@ const char* ShaderRoundPointGen::fragment_shader_source2_ =
 "in vec2 local;\n"
 "in vec3 color_f;\n"
 "out vec4 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "	float r2 = dot(local,local);\n"
 "   if (r2 > 1.0) discard;\n"
 "   fragColor = vec4(color_f,(1.0-r2*r2));\n"
 "}\n";
-
-
 
 ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 {
@@ -157,9 +168,11 @@ ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 	get_matrices_uniforms();
 	unif_color_ = prg_.uniformLocation("color");
 	unif_size_ = prg_.uniformLocation("pointSizes");
+	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
 
 	set_size(3.0f);
 	set_color(QColor(255, 255, 255));
+	set_plane_clip(QVector4D(0,0,0,0));
 }
 
 void ShaderRoundPointGen::set_color(const QColor& rgb)
@@ -176,6 +189,12 @@ void ShaderRoundPointGen::set_size(float32 wpix)
 	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_size_, wd);
 }
+
+void ShaderRoundPointGen::set_plane_clip(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
 
 
 

@@ -56,7 +56,7 @@ static const std::size_t NB_ORBITS = Orbit::PHI1_PHI2_PHI3 + 1;
 
 inline std::string orbit_name(Orbit orbit)
 {
-	switch(orbit)
+	switch (orbit)
 	{
 		case Orbit::DART: return "cgogn::Orbit::DART"; break;
 		case Orbit::PHI1: return "cgogn::Orbit::PHI1"; break;
@@ -71,7 +71,7 @@ inline std::string orbit_name(Orbit orbit)
 	}
 	cgogn_assert_not_reached("This orbit does not exist");
 #ifdef NDEBUG 
-	return "UNKNOWN";  // little trick to  avoid waning on VS
+	return "UNKNOWN";  // little trick to  avoid warning on VS
 #endif
 }
 
@@ -121,7 +121,7 @@ public:
 	 * \retval true if the cell is valid
 	 * \retval false otherwise
 	 */
-	inline bool is_valid() const { return !dart.is_nil(); }
+	inline bool is_valid() const { return !dart.is_nil(); } const
 
 	/**
 	 * \brief Assigns to the left hand side cell the value

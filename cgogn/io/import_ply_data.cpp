@@ -25,14 +25,12 @@
 #pragma warning(disable:4996)
 #endif
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_IMPORT_PLY_DATA_CPP_
 
 #include <cgogn/io/import_ply_data.h>
 #include <cstdlib>
 #include <clocale>
 #include <fstream>
-
 
 namespace cgogn
 {
@@ -41,8 +39,9 @@ namespace io
 {
 
 char* PlyImportData::elem_names[] = { /* list of the elements in the object */
-	(char*) "vertex", (char*) "face"
-	};
+	(char*) "vertex",
+	(char*) "face"
+};
 
 PlyProperty PlyImportData::vert_props[] = { /* list of property information for a vertex */
 	{(char*) "x", PLY_Float32, PLY_Float32, offsetof(VertexPly,x), 0, 0, 0, 0},
@@ -57,43 +56,40 @@ PlyProperty PlyImportData::vert_props[] = { /* list of property information for 
 	{(char*) "nx", PLY_Float32, PLY_Float32, offsetof(VertexPly,nx), 0, 0, 0, 0},
 	{(char*) "ny", PLY_Float32, PLY_Float32, offsetof(VertexPly,ny), 0, 0, 0, 0},
 	{(char*) "nz", PLY_Float32, PLY_Float32, offsetof(VertexPly,nz), 0, 0, 0, 0},
-	};
+};
 
 PlyProperty PlyImportData::face_props[] = { /* list of property information for a face */
-	{(char*) "vertex_indices", PLY_Int32, PLY_Int32, offsetof(FacePly,verts),
-	1, PLY_Uint8, PLY_Uint8, offsetof(FacePly,nverts)},
-	};
+	{(char*) "vertex_indices", PLY_Int32, PLY_Int32, offsetof(FacePly,verts), 1, PLY_Uint8, PLY_Uint8, offsetof(FacePly,nverts)},
+};
 
-
-PlyImportData::PlyImportData():
+PlyImportData::PlyImportData() :
 	nverts(0),nfaces(0),
-	vlist(NULL),
-	flist(NULL),
-	vert_other(NULL),
-	face_other(NULL),
+	vlist(nullptr),
+	flist(nullptr),
+	vert_other(nullptr),
+	face_other(nullptr),
 	per_vertex_color_float32(0),
 	per_vertex_color_uint8(0),
 	has_normals_(0)
-{
-}
+{}
 
 PlyImportData::~PlyImportData()
 {
-// 	if (vlist!= NULL)
+// 	if (vlist!= nullptr)
 // 	{
 // 		for (int32 i=0; i<nverts; ++i)
 // 		{
-// 			if (vlist[i]!=NULL)
+// 			if (vlist[i]!=nullptr)
 // 				free(vlist[i]);
 // 		}
 // 		free(vlist);
 // 	}
 //
-// 	if (flist!= NULL)
+// 	if (flist!= nullptr)
 // 	{
 // 		for (int32 i=0; i<nfaces; ++i)
 // 		{
-// 			if (flist[i]!=NULL)
+// 			if (flist[i]!=nullptr)
 // 				free(flist[i]);
 // 		}
 // 		free(flist);
@@ -103,16 +99,13 @@ PlyImportData::~PlyImportData()
 
 }
 
-
 bool PlyImportData::read_file(const std::string& filename)
 {
-	FILE* fp = NULL;
+	FILE* fp = nullptr;
 
 	std::ifstream fs(filename.c_str());
 	if (!fs.good())
-	{
 		return false;
-	}
 
 	std::string tag;
 	do
@@ -130,11 +123,11 @@ bool PlyImportData::read_file(const std::string& filename)
 
 	/*** Read in the original PLY object ***/
 
-	if (fp==NULL)
+	if (fp == nullptr)
 		return false;
 
-	PlyFile *in_ply  = read_ply (fp);
-	if (in_ply==NULL)
+	PlyFile *in_ply = read_ply (fp);
+	if (in_ply == nullptr)
 		return false;
 
 	for (int32 i = 0; i < in_ply->num_elem_types; i++)
@@ -143,10 +136,10 @@ bool PlyImportData::read_file(const std::string& filename)
 		/* prepare to read the i'th list of elements */
 		char *elem_name = setup_element_read_ply (in_ply, i, &elem_count);
 
-		if (equal_strings ((char*) "vertex", elem_name)) {
-
+		if (equal_strings ((char*) "vertex", elem_name))
+		{
 			/* create a vertex list to hold all the vertices */
-			vlist = (VertexPly **) malloc (sizeof (VertexPly *) * elem_count);
+			vlist = (VertexPly**) malloc (sizeof (VertexPly*) * elem_count);
 			nverts = elem_count;
 
 			/* set up for getting vertex elements */
@@ -159,76 +152,85 @@ bool PlyImportData::read_file(const std::string& filename)
 			{
 				PlyProperty *prop;
 				prop = in_ply->elems[i]->props[j];
-				if (equal_strings ((char*) "red", prop->name)) {
+				if (equal_strings ((char*) "red", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[3]);
 					per_vertex_color_uint8 = 1;
 				}
-				if (equal_strings ((char*) "green", prop->name)) {
+				if (equal_strings ((char*) "green", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[4]);
 					per_vertex_color_uint8 = 1;
 				}
-				if (equal_strings ((char*) "blue", prop->name)) {
+				if (equal_strings ((char*) "blue", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[5]);
 					per_vertex_color_uint8 = 1;
 				}
-				if (equal_strings ((char*) "r", prop->name)) {
+				if (equal_strings ((char*) "r", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[6]);
 					per_vertex_color_float32 = 1;
 				}
-				if (equal_strings ((char*) "g", prop->name)) {
+				if (equal_strings ((char*) "g", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[7]);
 					per_vertex_color_float32 = 1;
 				}
-				if (equal_strings ((char*) "b", prop->name)) {
+				if (equal_strings ((char*) "b", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[8]);
 					per_vertex_color_float32 = 1;
 				}
-				if (equal_strings ((char*) "nx", prop->name)) {
+				if (equal_strings ((char*) "nx", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[9]);
 					has_normals_ = 1;
 				}
-				if (equal_strings ((char*) "ny", prop->name)) {
+				if (equal_strings ((char*) "ny", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[10]);
 					has_normals_ = 1;
 				}
-				if (equal_strings ((char*) "nz", prop->name)) {
+				if (equal_strings ((char*) "nz", prop->name))
+				{
 					setup_property_ply (in_ply, &vert_props[11]);
 					has_normals_ = 1;
 				}
 			}
 
-			vert_other = get_other_properties_ply (in_ply,
-				offsetof(VertexPly,other_props));
+			vert_other = get_other_properties_ply(in_ply, offsetof(VertexPly,other_props));
 
 			/* grab all the vertex elements */
-			for (int32 j = 0; j < elem_count; j++) {
-				vlist[j] = (VertexPly *) malloc (sizeof (VertexPly));
+			for (int32 j = 0; j < elem_count; j++)
+			{
+				vlist[j] = (VertexPly*) malloc (sizeof (VertexPly));
 				vlist[j]->r = 1;
 				vlist[j]->g = 1;
 				vlist[j]->b = 1;
-				get_element_ply (in_ply, (void *) vlist[j]);
+				get_element_ply(in_ply, (void*) vlist[j]);
 			}
 		}
-		else if (equal_strings ((char*) "face", elem_name)) {
-
+		else if (equal_strings ((char*) "face", elem_name))
+		{
 			/* create a list to hold all the face elements */
-			flist = (FacePly **) malloc (sizeof (FacePly *) * elem_count);
+			flist = (FacePly**) malloc (sizeof (FacePly*) * elem_count);
 			nfaces = elem_count;
 
 			/* set up for getting face elements */
 
-			setup_property_ply (in_ply, &face_props[0]);
-			face_other = get_other_properties_ply (in_ply,
-				offsetof(FacePly,other_props));
+			setup_property_ply(in_ply, &face_props[0]);
+			face_other = get_other_properties_ply(in_ply, offsetof(FacePly, other_props));
 
 			/* grab all the face elements */
-			for (int32 j = 0; j < elem_count; j++) {
-				flist[j] = (FacePly *) malloc (sizeof (FacePly));
-				get_element_ply (in_ply, (void *) flist[j]);
+			for (int32 j = 0; j < elem_count; j++)
+			{
+				flist[j] = (FacePly*) malloc (sizeof (FacePly));
+				get_element_ply(in_ply, (void *) flist[j]);
 			}
 		}
 		else
-			get_other_element_ply (in_ply);
+			get_other_element_ply(in_ply);
 	}
 
 	close_ply (in_ply);

@@ -39,7 +39,7 @@ namespace cgogn
 {
 
 // MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
-static const uint32 INVALID_INDEX = UINT_MAX;
+static const uint32 INVALID_INDEX = UINT32_MAX;
 
 /**
  * \brief Dart.

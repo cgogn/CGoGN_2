@@ -105,4 +105,3 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Build the targets
 add_subdirectory(src)
-

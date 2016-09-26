@@ -24,7 +24,12 @@
 #ifndef CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
 #define CGOGN_MODELING_ALGOS_PLIANT_REMESHING_H_
 
+#include <cgogn/modeling/dll.h>
+
 #include <cgogn/geometry/functions/basics.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/algos/length.h>
+
 #include <cgogn/core/cmap/cmap2.h>
 #include <cgogn/core/utils/masks.h>
 
@@ -40,44 +45,32 @@ void pliant_remeshing(
 	typename CMap2<MAP_TRAITS>::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename VEC3::Scalar;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	using Map = CMap2<MAP_TRAITS>;
 	using Vertex = typename Map::Vertex;
 	using Edge = typename Map::Edge;
 
-	Scalar mean_edge_length = 0;
-
 	CellCache<Map> cache(map);
 	cache.template build<Edge>();
 
-	// compute mean edge length
-	map.foreach_cell([&] (Edge e)
-	{
-		std::pair<Vertex,Vertex> v = map.vertices(e);
-		const VEC3& edge = position[v.first] - position[v.second];
-		mean_edge_length += edge.norm();
-	},
-	cache);
-
-	mean_edge_length /= cache.template size<Edge>();
+	Scalar mean_edge_length = geometry::mean_edge_length<VEC3>(map, cache, position);
 
 	const Scalar squared_max_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
 	const Scalar squared_min_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
-
 
 	// cut long edges (and adjacent faces)
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
 		const VEC3& edge = position[v.first] - position[v.second];
-		if(edge.squaredNorm() > squared_max_edge_length)
+		if (edge.squaredNorm() > squared_max_edge_length)
 		{
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
 			position[nv] = Scalar(0.5) * (position[v.first] + position[v.second]);
-			map.cut_face(nv, Vertex(map.phi_1(e.dart)));
+			map.cut_face(nv.dart, map.phi_1(e.dart));
 			if(!map.is_boundary(e2))
-				map.cut_face(Vertex(map.phi1(e2)), Vertex(map.phi_1(e2)));
+				map.cut_face(map.phi1(e2), map.phi_1(e2));
 		}
 	},
 	cache);
@@ -139,6 +132,11 @@ void pliant_remeshing(
 		}
 	);
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
 
 } // namespace modeling
 

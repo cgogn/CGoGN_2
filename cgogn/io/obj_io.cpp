@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_OBJ_IO_CPP_
 
 #include <cgogn/io/obj_io.h>
@@ -35,6 +34,8 @@ template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API ObjSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API ObjSurfaceExport<CMap2<DefaultMapTraits>>;
 
 } // namespace io
 } // namespace cgogn

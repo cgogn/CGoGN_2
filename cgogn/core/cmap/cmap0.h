@@ -34,6 +34,8 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const uint8 DIMENSION = 0;
+
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
@@ -65,6 +67,10 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
 public:
 
@@ -139,7 +145,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex v(this->add_dart());
+		const Vertex v(this->add_topology_element());
 
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
@@ -154,14 +160,12 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		this->remove_dart(v.dart);
+		this->remove_topology_element(v.dart);
 	}
 
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
-
-protected:
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
@@ -223,6 +227,7 @@ extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
 

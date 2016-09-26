@@ -45,6 +45,8 @@ public:
 	using Inherit = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 
+	using Builder = CMap2Builder_T<MapTraits>;
+
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2Builder_T<MapTraits>;
 	friend class DartMarker_T<Self>;
@@ -77,9 +79,14 @@ public:
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
+	using DartMarkerNoUnmark = typename cgogn::DartMarkerNoUnmark<Self>;
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
 protected:
 
@@ -87,7 +94,7 @@ protected:
 
 	inline void init()
 	{
-		phi2_ = this->topology_.template add_attribute<Dart>("phi2");
+		phi2_ = this->topology_.template add_chunk_array<Dart>("phi2");
 	}
 
 public:
@@ -219,16 +226,17 @@ public:
 	 * @return The result of successive applications of PHI1 and PHI2 on d.
 	 * The template parameter contains a sequence (Base10 encoded) of PHI indeices.
 	 * If N=0 the identity is used.
+	 * The composition of phi is applied in order of declaration : phi<12>(d) = phi2(phi1(d))
 	 */
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
-		switch(N % 10)
+		static_assert((N % 10) <= 2, "Composition of PHI: invalid index (phi1/phi2 only)");
+		switch (N % 10)
 		{
-			case 1 : return this->phi1(phi<N / 10>(d)) ;
-			case 2 : return this->phi2(phi<N / 10>(d)) ;
-			default : return d ;
+			case 1 : return this->phi1(phi<N / 10>(d));
+			case 2 : return this->phi2(phi<N / 10>(d));
+			default : return d;
 		}
 	}
 
@@ -245,7 +253,7 @@ protected:
 	 * Two 1-face are built. The first one is the returned face,
 	 * the second is a boundary face that closes the map.
 	 */
-	Dart add_face_topo(uint32 size)
+	Dart add_face_topo(std::size_t size)
 	{
 		Dart d = Inherit::add_face_topo(size);
 		Dart e = Inherit::add_face_topo(size);
@@ -357,15 +365,15 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)						// Next quads
 		{
 			Dart next = this->Inherit::add_face_topo(4u);
-			this->phi2_sew(this->phi_1(current), this->phi1(next));
+			phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 
-		this->phi2_sew(this->phi_1(current), this->phi1(first));// Close the quad strip
+		phi2_sew(this->phi_1(current), this->phi1(first)); // Close the quad strip
 
-		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
+		close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
 
-		return this->close_hole_topo(first);					// Add the base face
+		return close_hole_topo(first);					// Add the base face
 	}
 
 	/**
@@ -379,9 +387,11 @@ protected:
 	{
 		Dart e = phi2(d);						// Get the adjacent 1D-edge
 
+#ifndef	NDEBUG
 		phi2_unsew(d);							// Separate the two 1D-edges of the edge
-		Dart nd = this->split_vertex_topo(d);
-		Dart ne = this->split_vertex_topo(e);	// Cut the two adjacent 1D-edges
+#endif
+		Dart nd = this->Inherit::split_vertex_topo(d);
+		Dart ne = this->Inherit::split_vertex_topo(e);	// Cut the two adjacent 1D-edges
 
 		phi2_sew(d, ne);						// Sew the new 1D-edges
 		phi2_sew(e, nd);						// To build the new 2D-edges
@@ -399,7 +409,7 @@ public:
 	 * \param e : the edge to cut
 	 * \return The inserted vertex
 	 * The edge e is cut by inserting a new vertex.
-	 * The returned vertex is represented by the dart of the inserted vertex that belongs to the face of e.
+	 * The returned vertex is represented by the dart of the inserted vertex that belongs to the face of e.dart
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -417,10 +427,8 @@ public:
 
 		if (this->template is_embedded<CDart>())
 		{
-			if (!this->is_boundary(v))
-				this->new_orbit_embedding(CDart(v));
-			if (!this->is_boundary(nf))
-				this->new_orbit_embedding(CDart(nf));
+			if (!this->is_boundary(v)) this->new_orbit_embedding(CDart(v));
+			if (!this->is_boundary(nf)) this->new_orbit_embedding(CDart(nf));
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -463,17 +471,15 @@ protected:
 	inline bool flip_edge_topo(Dart d)
 	{
 		Dart e = phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(e))
+		if ((!this->is_boundary(d) && !this->is_boundary(e)) || this->dimension_concrete_map() == 3u)
 		{
 			Dart d1 = this->phi1(d);
-			Dart d11 = this->phi1(d1);
 			Dart d_1 = this->phi_1(d);
 			Dart e1 = this->phi1(e);
-			Dart e11 = this->phi1(e1);
 			Dart e_1 = this->phi_1(e);
 
 			// Cannot flip edge whose incident faces have co-degree 1
-			if (d == d1  || e == e1 ) return false;
+			if (d == d1  || e == e1) return false;
 
 			// Both vertices have degree 1 and thus nothing is done // TODO may return true ?
 			if (d == e_1 && e == d_1) return false;
@@ -489,13 +495,29 @@ protected:
 		return false;
 	}
 
+	inline bool flip_back_edge_topo(Dart d)
+	{
+		const Dart e = phi2(d);
+		if ((!this->is_boundary(d) && !this->is_boundary(e)) || this->dimension_concrete_map() == 3u)
+		{
+			const Dart d_1 = this->phi_1(d);
+			const Dart e_1= this->phi_1(e);
+			this->phi1_sew(d, e_1);				// Detach the two
+			this->phi1_sew(e, d_1);				// vertices of the edge
+			this->phi1_sew(e, this->phi_1(d_1));	// Insert the edge in its
+			this->phi1_sew(d, this->phi_1(e_1));	// new vertices after flip
+			return true;
+		}
+		return false;
+	}
+
 public:
 
 	/**
 	 * @brief Flip an edge
 	 * @param e : the edge to flip
 	 * The two endpoints of the given edge are moved to the next vertices
-	 * of their two adjacent faces
+	 * of their two incident faces
 	 */
 	inline void flip_edge(Edge e)
 	{
@@ -516,6 +538,29 @@ public:
 			{
 				this->template copy_embedding<Face>(this->phi_1(d), d);
 				this->template copy_embedding<Face>(this->phi_1(d2), d2);
+			}
+		}
+	}
+
+	inline void flip_back_edge(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		if (flip_back_edge_topo(e.dart))
+		{
+			const Dart d = e.dart;
+			const Dart d2 = phi2(d);
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(d, this->phi1(d2));
+				this->template copy_embedding<Vertex>(d2, this->phi1(d));
+			}
+
+			if (this->template is_embedded<Face>())
+			{
+				this->template copy_embedding<Face>(this->phi1(d), d);
+				this->template copy_embedding<Face>(this->phi1(d2), d2);
 			}
 		}
 	}
@@ -553,14 +598,60 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			uint32 emb = this->get_embedding(v);
+			uint32 emb = this->embedding(v);
 			foreach_dart_of_orbit(v, [this, emb] (Dart d) { this->template set_embedding<Vertex>(d, emb); });
 		}
 
 		return v;
 	}
 
+	inline void split_vertex(Dart d, Dart e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart dd = phi2(d) ;
+		const Dart ee = phi2(e) ;
+
+		split_vertex_topo(d, e) ;
+
+		if (this->template is_embedded<CDart>())
+		{
+			this->new_orbit_embedding(CDart(this->phi1(dd)));
+			this->new_orbit_embedding(CDart(this->phi1(ee)));
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->new_orbit_embedding(Vertex(e));
+			this->template set_embedding<Vertex>(this->phi1(dd), this->embedding(Vertex(d)));
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->new_orbit_embedding(Edge(this->phi1(dd)));
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->template set_embedding<Vertex>(this->phi1(dd), this->embedding(Face(dd)));
+			this->template set_embedding<Vertex>(this->phi1(ee), this->embedding(Face(ee)));
+		}
+	}
+
 protected:
+
+	inline void split_vertex_topo(Dart d, Dart e)
+	{
+		cgogn_assert(this->same_orbit(Vertex(d), Vertex(e)));
+
+		const Dart d2 = phi2(d);
+		const Dart e2 = phi2(e);
+		cgogn_assert(d != d2);
+		cgogn_assert(e != e2);
+		const Dart nd = Inherit::split_vertex_topo(d2);
+		const Dart ne = Inherit::split_vertex_topo(e2);
+		phi2_sew(nd,ne);
+	}
 
 	void merge_adjacent_edges_topo(Dart d)
 	{
@@ -570,20 +661,65 @@ protected:
 		// TODO
 	}
 
-	void merge_adjacent_faces_topo(Dart d)
+	/**
+	 * \brief Merge the two faces incident to the edge of d by removing the edge of d
+	 * \param d : dart of the edge
+	 * \return true if the faces have been merged, false otherwise
+	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
+	 * If the edge of d is incident to the boundary, nothing is done.
+	 */
+	bool merge_incident_faces_topo(Dart d)
 	{
-		Dart e = this->phi2(d);
-		// TODO
+		if (this->is_incident_to_boundary(Edge(d)))
+			return false;
+
+		Dart d2 = phi2(d);
+		this->phi1_sew(this->phi_1(d), d2);
+		this->phi1_sew(this->phi_1(d2), d);
+		this->Inherit::remove_face_topo(d);
+
+		return true;
 	}
+
+public:
+
+	/**
+	 * \brief Merge the two faces incident to the given edge
+	 * \param e : the edge
+	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
+	 * If the map has Face attributes, the attributes of the Face of e.dart are kept on the resulting face.
+	 * If the edge of d is incident to the boundary, nothing is done.
+	 */
+	void merge_incident_faces(Edge e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d1 = this->phi1(e.dart);
+		if (merge_incident_faces_topo(e.dart))
+		{
+			if (this->template is_embedded<Face>())
+			{
+				uint32 emb = this->embedding(Face(d1));
+				foreach_dart_of_orbit(Face(d1), [this, emb] (Dart d)
+				{
+					this->template set_embedding<Face>(d, emb);
+				});
+			}
+		}
+	}
+
+protected:
 
 	/**
 	 * \brief Cut the face of d and e by inserting an edge between the vertices of d and e
 	 * \param d : first vertex
 	 * \param e : second vertex
+	 * \return A dart of the inserted edge
 	 * Darts d and e should belong to the same face and be distinct from each other.
 	 * An edge made of two new darts is inserted between the two given vertices.
+	 * The returned dart is the dart of the inserted edge that belongs to the face of d.
 	 */
-	inline void cut_face_topo(Dart d, Dart e)
+	inline Dart cut_face_topo(Dart d, Dart e)
 	{
 		cgogn_message_assert(d != e, "cut_face_topo: d and e should be distinct");
 		cgogn_message_assert(this->same_cell(Face(d), Face(e)), "cut_face_topo: d and e should belong to the same face");
@@ -597,16 +733,20 @@ protected:
 
 		this->set_boundary(nd, this->is_boundary(dd));
 		this->set_boundary(ne, this->is_boundary(ee));
+
+		return nd;
 	}
 
 public:
 
 	/**
-	 * \brief Cut a face by inserting an edge between the vertices d and e
-	 * \param d : first vertex
-	 * \param e : second vertex
-	 * The vertices d and e should belong to the same face and be distinct from each other.
+	 * \brief Cut a face by inserting an edge between the vertices of d and e
+	 * \param d : a dart of the first vertex
+	 * \param e : a dart of the second vertex
+	 * \return The inserted edge
+	 * The darts d and e should belong to the same Face and be distinct from each other.
 	 * An edge is inserted between the two given vertices.
+	 * The returned edge is represented by the dart of the inserted edge that belongs to the face of d.dart
 	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
 	 * the inserted cells are automatically embedded on new attribute elements.
 	 * More precisely :
@@ -614,14 +754,13 @@ public:
 	 *  - a Face attribute is created, if needed, for the subdivided face that e belongs to.
 	 *  - the Face attribute of the subdivided face that d belongs to is kept unchanged.
 	 */
-	inline void cut_face(Vertex d, Vertex e)
+	inline Edge cut_face(Dart d, Dart e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
+		cgogn_message_assert(!this->is_boundary(d), "cut_face: should not cut a boundary face");
 
-		cgogn_message_assert(!this->is_boundary(d.dart), "cut_face: should not cut a boundary face");
-		cut_face_topo(d.dart, e.dart);
-		Dart nd = this->phi_1(d.dart);
-		Dart ne = this->phi_1(e.dart);
+		Dart nd = cut_face_topo(d, e);
+		Dart ne = this->phi_1(e);
 
 		if (this->template is_embedded<CDart>())
 		{
@@ -631,8 +770,8 @@ public:
 
 		if (this->template is_embedded<Vertex>())
 		{
-			this->template copy_embedding<Vertex>(nd, e.dart);
-			this->template copy_embedding<Vertex>(ne, d.dart);
+			this->template copy_embedding<Vertex>(nd, e);
+			this->template copy_embedding<Vertex>(ne, d);
 		}
 
 		if (this->template is_embedded<Edge>())
@@ -640,25 +779,35 @@ public:
 
 		if (this->template is_embedded<Face>())
 		{
-			this->template copy_embedding<Face>(nd, d.dart);
+			this->template copy_embedding<Face>(nd, d);
 			this->new_orbit_embedding(Face(ne));
 		}
 
 		if (this->template is_embedded<Volume>())
 		{
-			this->template copy_embedding<Volume>(nd, d.dart);
-			this->template copy_embedding<Volume>(ne, d.dart);
+			this->template copy_embedding<Volume>(nd, d);
+			this->template copy_embedding<Volume>(ne, d);
 		}
+
+		return Edge(nd);
 	}
 
 protected:
 
-	inline bool unsew_faces_topo(Edge g)
+	/**
+	 * @brief Unsew the faces incident to the edge of d
+	 * @param d : dart of the edge
+	 * @return true if the faces have been unsewn, false otherwise
+	 * The two faces are detached, a 2-sided boundary face is inserted.
+	 * For each of the two end vertices of the edge, if it is already incident to a boundary
+	 * face, the new boundary face is merged with the existing boundary, resulting in a separation
+	 * of the vertex into two vertices.
+	 */
+	inline bool unsew_faces_topo(Dart d)
 	{
-		if (this->is_incident_to_boundary(g))
+		if (this->is_incident_to_boundary(Edge(d)))
 			return false;
 
-		Dart d = g.dart;
 		Dart dd = phi2(d);
 
 		Dart e = Inherit::add_face_topo(2);
@@ -666,8 +815,8 @@ protected:
 		this->set_boundary(e, true);
 		this->set_boundary(ee, true);
 
-		Dart f = this->get_boundary_dart(Vertex(d));
-		Dart ff = this->get_boundary_dart(Vertex(dd));
+		Dart f = this->boundary_dart(Vertex(d));
+		Dart ff = this->boundary_dart(Vertex(dd));
 
 		if(!f.is_nil())
 			this->phi1_sew(e, this->phi_1(f));
@@ -676,7 +825,6 @@ protected:
 			this->phi1_sew(ee, this->phi_1(ff));
 
 		phi2_unsew(d);
-
 		phi2_sew(d, e);
 		phi2_sew(dd, ee);
 
@@ -685,38 +833,53 @@ protected:
 
 public:
 
-	inline void unsew_faces(Edge d)
+	/**
+	 * @brief Unsew the faces incident to the edge e
+	 * @param e : the edge
+	 * @return true if the faces have been unsewn, false otherwise
+	 * The two faces are detached, a 2-sided boundary face is inserted.
+	 * For each of the two end vertices of the edge, if it is already incident to a boundary
+	 * face, the new boundary face is merged with the existing boundary, resulting in a split
+	 * of the vertex into two vertices.
+	 * If the map has Vertex attributes, in case of vertex split, the attributes of the vertices of e.dart
+	 * and phi2(e.dart) are kept on their side and new attributes are created for the new vertices
+	 * If the map has Edge attributes, a new attribute is created for the edge of phi2(e.dart)
+	 * If the map has Volume attribute, in the case of volume split, a new attribute is created
+	 * for the volume
+	 */
+	inline void unsew_faces(Edge e)
 	{
-		Dart e = phi2(d.dart);
+		Dart d = e.dart;
+		Dart d2 = phi2(d);
 		if (unsew_faces_topo(d))
 		{
 			if (this->template is_embedded<Vertex>())
 			{
-				Dart ee = this->phi1(e);
-				if (this->same_orbit(Vertex(d.dart), Vertex(ee)))
-					this->template copy_embedding<Vertex>(phi2(e), ee);
+				Dart d21 = this->phi1(d2);
+				if (this->same_orbit(Vertex(d), Vertex(d21)))
+					this->template copy_embedding<Vertex>(phi2(d2), d21);
 				else
-					this->new_orbit_embedding(Vertex(ee));
+					this->new_orbit_embedding(Vertex(d21));
 
-				Dart dd = this->phi1(d.dart);
-				if (this->same_orbit(Vertex(e), Vertex(dd)))
-					this->template copy_embedding<Vertex>(phi2(d.dart), dd);
+				Dart d1 = this->phi1(d);
+				if (this->same_orbit(Vertex(d2), Vertex(d1)))
+					this->template copy_embedding<Vertex>(phi2(d), d1);
 				else
-					this->new_orbit_embedding(Vertex(dd));
+					this->new_orbit_embedding(Vertex(d1));
 			}
 
 			if (this->template is_embedded<Edge>())
-				this->new_orbit_embedding(Edge(e));
+				this->new_orbit_embedding(Edge(d2));
 
 			if (this->template is_embedded<Volume>())
 			{
-				if (this->same_orbit(Volume(d.dart), Volume(e)))
+				if (this->same_orbit(Volume(d), Volume(d2)))
 				{
-					this->template copy_embedding<Volume>(phi2(e), e);
-					this->template copy_embedding<Volume>(phi2(d.dart), e);
+					this->template copy_embedding<Volume>(phi2(d2), d);
+					this->template copy_embedding<Volume>(phi2(d), d);
 				}
 				else
-					this->new_orbit_embedding(Volume(e));
+					this->new_orbit_embedding(Volume(d2));
 			}
 		}
 	}
@@ -734,11 +897,11 @@ protected:
 	{
 		cgogn_message_assert(phi2(d) == d, "CMap2: close hole called on a dart that is not a phi2 fix point");
 
-		Dart first = this->add_dart();	// First edge of the face that will fill the hole
-		phi2_sew(d, first);				// 2-sew the new edge to the hole
+		Dart first = this->add_topology_element();	// First edge of the face that will fill the hole
+		phi2_sew(d, first);							// 2-sew the new edge to the hole
 
-		Dart d_next = d;				// Turn around the hole
-		Dart d_phi1;					// to complete the face
+		Dart d_next = d;							// Turn around the hole
+		Dart d_phi1;								// to complete the face
 		do
 		{
 			do
@@ -749,7 +912,7 @@ protected:
 
 			if (d_phi1 != d)
 			{
-				Dart next = this->split_vertex_topo(first);	// Add a vertex into the built face
+				Dart next = this->Inherit::split_vertex_topo(first);	// Add a vertex into the built face
 				phi2_sew(d_next, next);						// and 2-sew the face to the hole
 			}
 		} while (d_phi1 != d);
@@ -801,6 +964,29 @@ public:
 		return result;
 	}
 
+	/**
+	 * @brief Check if the given darts form a simple closed oriented path within a single Volume
+	 * @param path : a vector of darts
+	 * @return
+	 */
+	bool simple_closed_oriented_path(const std::vector<Dart>& path)
+	{
+		DartMarkerStore dm(*this);
+		Dart prev = path.back();
+		for (Dart d : path)
+		{
+			if(dm.is_marked(d))
+				return false;
+			dm.mark_orbit(Vertex(d));
+
+			if(!this->same_cell(Vertex(d), Vertex(this->phi1(prev))))
+				return false;
+
+			prev = d;
+		}
+		return true;
+	}
+
 	/*******************************************************************************
 	 * Boundary information
 	 *******************************************************************************/
@@ -847,7 +1033,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -870,13 +1056,15 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
+
+public:
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap2");
@@ -895,6 +1083,8 @@ protected:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
 		}
 	}
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI2_until(Dart d, const FUNC& f) const
@@ -920,7 +1110,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -936,7 +1126,7 @@ protected:
 				{
 					if (!f(it)) // apply the function to the darts of the face
 					{
-						cgogn::get_dart_buffers()->release_buffer(visited_faces);
+						cgogn::dart_buffers()->release_buffer(visited_faces);
 						return;
 					}
 					marker.mark(it);				// Mark
@@ -947,14 +1137,16 @@ protected:
 				} while (it != e);
 			}
 		}
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
+
+public:
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
@@ -979,19 +1171,17 @@ protected:
 	 * Incidence traversal
 	 *******************************************************************************/
 
-public:
-
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [&func] (Dart d) { func(Edge(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &func] (Dart d)
 		{
 			if (!this->is_boundary(d))
@@ -1002,21 +1192,21 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(v.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&func] (Dart d) { func(Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [this, &func] (Dart d)
 		{
 			if (!this->is_boundary(d))
@@ -1027,35 +1217,35 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_volume(Edge e, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(e.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Edge(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_volume(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Volume), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		func(Volume(f.dart));
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
@@ -1070,7 +1260,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
@@ -1085,7 +1275,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_face(Volume w, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(w, [&] (Dart d)
 		{
@@ -1104,14 +1294,14 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart d) { f(Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
 		{
 			if (!this->is_boundary(vd))
@@ -1130,7 +1320,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			this->foreach_dart_of_orbit(Vertex(ed), [&f, ed] (Dart vd)
@@ -1145,7 +1335,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Edge), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
 			if (!this->is_boundary(ed))
@@ -1163,7 +1353,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
 			Dart fd1 = this->phi2(this->phi_1(fd));
@@ -1179,7 +1369,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Face), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d)
 		{
 			const Dart d2 = this->phi2(d);
@@ -1195,25 +1385,27 @@ public:
 
 protected:
 
-#define FOR_ALL_ORBITS( CODE) {\
-{static const Orbit orbit_const=DART; CODE }\
-{static const Orbit orbit_const=PHI1; CODE }\
-{static const Orbit orbit_const=PHI2; CODE }\
-{static const Orbit orbit_const=PHI1_PHI2; CODE }\
-{static const Orbit orbit_const=PHI21; CODE }}
-
-
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
 	 */
 	void merge_check_embedding(const Self& map)
 	{
-		FOR_ALL_ORBITS
-		(
-			if (!this->template is_embedded<orbit_const>() && map.template is_embedded<orbit_const>())
-				this->template create_embedding<orbit_const>();
-		)
+		const static auto create_embedding = [=] (Self* map, Orbit orb)
+		{
+			switch (orb) {
+				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+				default: break;
+			}
+		};
+
+		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+			if (!this->is_embedded(orb) && map.is_embedded(orb))
+				create_embedding(this, orb);
 	}
 
 
@@ -1223,23 +1415,31 @@ protected:
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		FOR_ALL_ORBITS
-		(
-			if (this->template is_embedded<orbit_const>())
+		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
+		{
+			switch (orb) {
+				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+				case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				default: break;
+			}
+		};
+
+		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		{
+			if (this->is_embedded(orb))
 			{
-				for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+				for (uint32 j=first, end = this->topology_.end(); j!= end; this->topology_.next(j))
 				{
-					if ( ((orbit_const != Boundary::ORBIT) && (orbit_const != DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orbit_const])[j] == INVALID_INDEX)
-						{
-							this->new_orbit_embedding(Cell<orbit_const>(Dart(j)));
-						}
+					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
+						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
+							new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
-		)
+		}
 	}
-
-#undef FOR_ALL_ORBITS
 
 };
 
@@ -1261,6 +1461,10 @@ extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<D
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
@@ -1268,5 +1472,8 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CM
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
+
+
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP2_H_

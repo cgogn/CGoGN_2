@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <cgogn/core/utils/unique_ptr.h>
 #include <cgogn/rendering/shaders/shader_program.h>
@@ -32,7 +31,7 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderParam::ShaderParam(ShaderProgram* prg):
+ShaderParam::ShaderParam(ShaderProgram* prg) :
 	shader_(prg)
 {
 	vao_ = cgogn::make_unique<QOpenGLVertexArrayObject>();

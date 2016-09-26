@@ -73,20 +73,10 @@ public:
 
 	inline void init_parent_vertex_embedding(Dart d, uint32 emb)
 	{
-		map_.foreach_dart_of_PHI21(d, [&] (Dart dit)
+		map_.foreach_dart_of_orbit(Vertex2(d), [&] (Dart dit)
 		{
 			map_.template set_embedding<Vertex>(dit, emb);
 		});
-	}
-
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
 	}
 
 	inline void phi3_sew(Dart d, Dart e)
@@ -97,11 +87,6 @@ public:
 	inline void phi3_unsew(Dart d)
 	{
 		return map_.phi3_unsew(d);
-	}
-
-	inline Dart add_face_topo(uint32 nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
 	}
 
 	inline Dart add_prism_topo(uint32 nb_edges)
@@ -125,6 +110,12 @@ public:
 		map_.template set_embedding<CellType>(d, emb);
 	}
 
+	template <class CellType>
+	inline void new_orbit_embedding(CellType c)
+	{
+		map_.new_orbit_embedding(c);
+	}
+
 	/**
 	 * @brief sew two volumes along a face
 	 * The darts given in the Volume parameters must be part of Face2 that have
@@ -132,10 +123,15 @@ public:
 	 * @param v1 first volume
 	 * @param v2 second volume
 	 */
-	inline void sew_volumes(Volume v1, Volume v2)
+	inline void sew_volumes(Dart v1, Dart v2)
 	{
-		Dart it1 = v1.dart;
-		Dart it2 = v2.dart;
+		cgogn_message_assert(map_.phi3(v1) == v1 &&
+							 map_.phi3(v2) == v2 &&
+							 map_.codegree(Face(v1)) == map_.codegree(Face(v1)) &&
+							 !map_.same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
+
+		Dart it1 = v1;
+		Dart it2 = v2;
 		const Dart begin = it1;
 		do
 		{
@@ -145,9 +141,21 @@ public:
 		} while (it1 != begin);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	inline void close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(map_.phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+		cgogn_message_assert(map_.phi3(d) == d, "CMap3Builder: close hole called on a dart that is not a phi3 fix point");
 
 		DartMarkerStore dmarker(map_);
 		DartMarkerStore boundary_marker(map_);
@@ -173,7 +181,7 @@ public:
 			Dart bit = b;
 			do
 			{
-				Dart e = map_.phi3(map_.phi2(f));;
+				Dart e = map_.phi3(map_.phi2(f));
 				bool found = false;
 				do
 				{
@@ -191,7 +199,7 @@ public:
 						if (boundary_marker.is_marked(e))
 						{
 							found = true;
-							this->phi2_sew(e, bit);
+							map_.phi2_sew(e, bit);
 						}
 						else
 							e = map_.phi3(map_.phi2(e));
@@ -213,7 +221,7 @@ public:
 	inline void close_map()
 	{
 		// Search the map for topological holes (fix points of phi3)
-		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi3(d) == d)
@@ -224,44 +232,9 @@ public:
 			if (map_.phi3(d) == d)
 			{
 				close_hole_topo(d);
-				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
-				{
-					map_.set_boundary(db, true);
-				});
+				map_.boundary_mark(Volume(map_.phi3(d)));
 
 				const Volume new_volume(map_.phi3(d));
-
-//				if (map_.template is_embedded<CDart>())
-//				{
-//					map_.foreach_dart_of_orbit(new_volume, [this] (Dart d)
-//					{
-//						map_.new_orbit_embedding(CDart(d));
-//					});
-//				}
-
-//				if (map_.template is_embedded<Vertex2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_vertex(new_volume, [this] (Vertex2 v)
-//					{
-//						map_.new_orbit_embedding(v);
-//					});
-//				}
-
-//				if (map_.template is_embedded<Edge2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_edge(new_volume, [this] (Edge2 e)
-//					{
-//						map_.new_orbit_embedding(e);
-//					});
-//				}
-
-//				if (map_.template is_embedded<Face2>())
-//				{
-//					map_.CMap3::Inherit::foreach_incident_face(new_volume, [this] (Face2 f)
-//					{
-//						map_.new_orbit_embedding(f);
-//					});
-//				}
 
 				if (map_.template is_embedded<Vertex>())
 				{
@@ -286,14 +259,9 @@ public:
 						map_.template copy_embedding<Face>(wd, map_.phi3(wd));
 					});
 				}
-
-//				if (map_.template is_embedded<Volume>())
-//				{
-//					map_.new_orbit_embedding(new_volume);
-//				}
 			}
 		}
-		get_dart_buffers()->release_buffer(fix_point_darts);
+		dart_buffers()->release_buffer(fix_point_darts);
 	}
 
 private:

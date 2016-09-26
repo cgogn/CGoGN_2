@@ -36,22 +36,24 @@
 #include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
+#include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/string.h>
 
 namespace cgogn
 {
 
 /**
  *	@brief chunk array class storage
- *	@tparam CHUNKSIZE size of each chunk (in T, not in bytes!), must be a power of 2 >=32
+ *	@tparam CHUNK_SIZE size of each chunk (in T, not in bytes!), must be a power of 2 >=32
  *	@tparam T type of stored data
  */
-template <uint32 CHUNKSIZE, typename T>
-class ChunkArray : public ChunkArrayGen<CHUNKSIZE>
+template <uint32 CHUNK_SIZE, typename T>
+class ChunkArray : public ChunkArrayGen<CHUNK_SIZE>
 {
 public:
 
-	using Inherit = ChunkArrayGen<CHUNKSIZE>;
-	using Self = ChunkArray<CHUNKSIZE, T>;
+	using Inherit = ChunkArrayGen<CHUNK_SIZE>;
+	using Self = ChunkArray<CHUNK_SIZE, T>;
 	using value_type = T;
 
 protected:
@@ -84,7 +86,7 @@ public:
 	}
 
 	/**
-	 * @brief create a ChunkArray<CHUNKSIZE,T>
+	 * @brief create a ChunkArray<CHUNK_SIZE,T>
 	 * @return generic pointer
 	 */
 	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
@@ -113,11 +115,11 @@ public:
 //	}
 
 	/**
-	 * @brief add a chunk (T[CHUNKSIZE])
+	 * @brief add a chunk (T[CHUNK_SIZE])
 	 */
 	void add_chunk() override
 	{
-		table_data_.push_back(new T[CHUNKSIZE]());
+		table_data_.push_back(new T[CHUNK_SIZE]());
 	}
 
 	/**
@@ -143,7 +145,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	uint32 get_nb_chunks() const override
+	uint32 nb_chunks() const override
 	{
 		return uint32(table_data_.size());
 	}
@@ -154,7 +156,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return uint32(table_data_.size())*CHUNKSIZE;
+		return uint32(table_data_.size())*CHUNK_SIZE;
 	}
 
 	/**
@@ -170,20 +172,20 @@ public:
 	/**
 	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byte_chunk_size filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_chunk_size) const override
+	std::vector<const void*> chunks_pointers(uint32& byte_chunk_size) const override
 	{
-		byte_chunk_size = CHUNKSIZE * sizeof(T);
+		std::vector<const void*> addr;
+		byte_chunk_size = CHUNK_SIZE * sizeof(T);
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
@@ -192,7 +194,7 @@ public:
 	 */
 	void init_element(uint32 id) override
 	{
-		table_data_[id / CHUNKSIZE][id % CHUNKSIZE] = T();
+		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = T();
 	}
 
 	/**
@@ -202,7 +204,7 @@ public:
 	 */
 	void copy_element(uint32 dst, uint32 src) override
 	{
-		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+		table_data_[dst / CHUNK_SIZE][dst % CHUNK_SIZE] = table_data_[src / CHUNK_SIZE][src % CHUNK_SIZE];
 	}
 
 	/**
@@ -214,7 +216,7 @@ public:
 	void copy_external_element(uint32 dst, Inherit* cag_src, uint32 src) override
 	{
 		Self* ca = static_cast<Self*>(cag_src);
-		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = ca->table_data_[src / CHUNKSIZE][src % CHUNKSIZE];
+		table_data_[dst / CHUNK_SIZE][dst % CHUNK_SIZE] = ca->table_data_[src / CHUNK_SIZE][src % CHUNK_SIZE];
 	}
 
 	/**
@@ -224,7 +226,7 @@ public:
 	 */
 	void move_element(uint32 dst, uint32 src) override
 	{
-		table_data_[dst / CHUNKSIZE][dst % CHUNKSIZE] = std::move(table_data_[src / CHUNKSIZE][src % CHUNKSIZE]);
+		table_data_[dst / CHUNK_SIZE][dst % CHUNK_SIZE] = std::move(table_data_[src / CHUNK_SIZE][src % CHUNK_SIZE]);
 	}
 
 	/**
@@ -236,10 +238,10 @@ public:
 	{
 // small workaround to avoid difficulties with std::swap when _GLIBCXX_DEBUG is defined.
 #ifndef _GLIBCXX_DEBUG
-		std::swap(table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE], table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE] );
+		std::swap(table_data_[idx1 / CHUNK_SIZE][idx1 % CHUNK_SIZE], table_data_[idx2 / CHUNK_SIZE][idx2 % CHUNK_SIZE] );
 #else
-		T& a = table_data_[idx1 / CHUNKSIZE][idx1 % CHUNKSIZE];
-		T& b = table_data_[idx2 / CHUNKSIZE][idx2 % CHUNKSIZE];
+		T& a = table_data_[idx1 / CHUNK_SIZE][idx1 % CHUNK_SIZE];
+		T& b = table_data_[idx2 / CHUNK_SIZE][idx2 % CHUNK_SIZE];
 		T tmp(std::move(a));
 		a = std::move(b);
 		b = std::move(tmp);
@@ -251,10 +253,10 @@ public:
 //		uint32 nbs[3];
 //		nbs[0] = (uint32)(table_data_.size());
 //		nbs[1] = nb_lines;
-//		nbs[2] = CHUNKSIZE*sizeof(T);
+//		nbs[2] = CHUNK_SIZE*sizeof(T);
 
-//		assert(nb_lines/CHUNKSIZE <= table_data_.size());
-//		// TODO: if (nb_lines == 0) nb_lines = CHUNKSIZE*table_data_.size(); ??
+//		assert(nb_lines/CHUNK_SIZE <= table_data_.size());
+//		// TODO: if (nb_lines == 0) nb_lines = CHUNK_SIZE*table_data_.size(); ??
 
 //		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(uint32));
 
@@ -266,11 +268,11 @@ public:
 //		// save data chunks except last
 //		for(uint32 i=0; i<nbca; ++i)
 //		{
-//			fs.write(reinterpret_cast<const char*>(table_data_[i]),CHUNKSIZE*sizeof(T));
+//			fs.write(reinterpret_cast<const char*>(table_data_[i]),CHUNK_SIZE*sizeof(T));
 //		}
 
 //		// save last
-//		unsigned nbl = nb_lines - nbca*CHUNKSIZE;
+//		unsigned nbl = nb_lines - nbca*CHUNK_SIZE;
 //		fs.write(reinterpret_cast<const char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
 //	}
 
@@ -279,9 +281,9 @@ public:
 //		uint32 nbs[3];
 //		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(uint32));
 
-//		if (nbs[2] != CHUNKSIZE*sizeof(T))
+//		if (nbs[2] != CHUNK_SIZE*sizeof(T))
 //		{
-//			std::cerr << "Error loading ChunkArray wrong CHUNKSIZE"<< std::endl;
+//			std::cerr << "Error loading ChunkArray wrong CHUNK_SIZE"<< std::endl;
 //			return false;
 //		}
 
@@ -294,10 +296,10 @@ public:
 //		// load data chunks except last
 //		uint32 nbca = nbs[0]-1;
 //		for(uint32 i = 0; i < nbca; ++i)
-//			fs.read(reinterpret_cast<char*>(table_data_[i]),CHUNKSIZE*sizeof(T));
+//			fs.read(reinterpret_cast<char*>(table_data_[i]),CHUNK_SIZE*sizeof(T));
 
 //		// load last chunk
-//		uint32 nbl = nbs[1] - CHUNKSIZE*nbca;
+//		uint32 nbl = nbs[1] - CHUNK_SIZE*nbca;
 //		fs.read(reinterpret_cast<char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
 
 //		return true;
@@ -306,7 +308,7 @@ public:
 	void save(std::ostream& fs, uint32 nb_lines) const override
 	{
 		cgogn_assert(fs.good());
-		cgogn_assert(nb_lines / CHUNKSIZE <= get_nb_chunks());
+		cgogn_assert(nb_lines / CHUNK_SIZE <= nb_chunks());
 
 		// no data -> finished
 		if (nb_lines == 0)
@@ -317,20 +319,20 @@ public:
 			return;
 		}
 
-		uint32 nbc = get_nb_chunks() - 1u;
+		uint32 nbc = nb_chunks() - 1u;
 		// nb of lines of last chunk
-		const unsigned nb = nb_lines - nbc*CHUNKSIZE;
+		const unsigned nb = nb_lines - nbc*CHUNK_SIZE;
 
 		// compute number of bytes to save
 		std::size_t chunk_bytes = 0;
 		if (serialization::known_size(table_data_[0]))
 		{
-			chunk_bytes += nbc * serialization::data_length(table_data_[0], CHUNKSIZE);
+			chunk_bytes += nbc * serialization::data_length(table_data_[0], CHUNK_SIZE);
 		}
 		else
 		{
 			for(uint32 i = 0u; i < nbc; ++i)
-				chunk_bytes += serialization::data_length(table_data_[i], CHUNKSIZE);
+				chunk_bytes += serialization::data_length(table_data_[i], CHUNK_SIZE);
 		}
 		chunk_bytes +=serialization::data_length(table_data_[nbc], nb);
 		// save it
@@ -343,7 +345,7 @@ public:
 		// save data chunks except last
 		for(uint32 i = 0u; i < nbc; ++i)
 		{
-			serialization::save(fs, table_data_[i], CHUNKSIZE);
+			serialization::save(fs, table_data_[i], CHUNK_SIZE);
 		}
 
 		// save last incomplete chunk
@@ -366,8 +368,8 @@ public:
 			return true;
 
 		// compute number of chunks
-		uint32 nbc = nb_lines / CHUNKSIZE;
-		if (nb_lines % CHUNKSIZE != 0)
+		uint32 nbc = nb_lines / CHUNK_SIZE;
+		if (nb_lines % CHUNK_SIZE != 0)
 			nbc++;
 
 		this->set_nb_chunks(nbc);
@@ -375,10 +377,10 @@ public:
 		// load data chunks except last
 		nbc--;
 		for(uint32 i = 0u; i < nbc; ++i)
-			serialization::load(fs, table_data_[i], CHUNKSIZE);
+			serialization::load(fs, table_data_[i], CHUNK_SIZE);
 
 		// load last incomplete chunk
-		const uint32 nb = nb_lines - nbc*CHUNKSIZE;
+		const uint32 nb = nb_lines - nbc*CHUNK_SIZE;
 		serialization::load(fs, table_data_[nbc], nb);
 		cgogn_assert(fs.good());
 
@@ -386,25 +388,25 @@ public:
 	}
 
 	/**
-	 * @brief ref operator []
+	 * @brief ref operator[]
 	 * @param i index of element to access
 	 * @return ref to the element
 	 */
 	inline T& operator[](uint32 i)
 	{
-		cgogn_assert(i / CHUNKSIZE < table_data_.size());
-		return table_data_[i / CHUNKSIZE][i % CHUNKSIZE];
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		return table_data_[i / CHUNK_SIZE][i % CHUNK_SIZE];
 	}
 
 	/**
-	 * @brief const ref operator []
+	 * @brief const ref operator[]
 	 * @param i index of element to access
 	 * @return const ref to the element
 	 */
 	inline const T& operator[](uint32 i) const
 	{
-		cgogn_assert(i / CHUNKSIZE < table_data_.size());
-		return table_data_[i / CHUNKSIZE][i % CHUNKSIZE];
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		return table_data_[i / CHUNK_SIZE][i % CHUNK_SIZE];
 	}
 
 	/**
@@ -414,52 +416,74 @@ public:
 	 */
 	inline void set_value(uint32 i, const T& v)
 	{
-		cgogn_assert(i / CHUNKSIZE < table_data_.size());
-		table_data_[i / CHUNKSIZE][i % CHUNKSIZE] = v;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][i % CHUNK_SIZE] = v;
 	}
 
 	inline void set_all_values(const T& v)
 	{
-		for(T* chunk : table_data_)
+		for (T* chunk : table_data_)
 		{
-			for(uint32 i = 0; i < CHUNKSIZE; ++i)
+			for(uint32 i = 0; i < CHUNK_SIZE; ++i)
 				*chunk++ = v;
 		}
 	}
 
-	virtual std::string get_nested_type_name() const override
+	virtual std::string nested_type_name() const override
 	{
-		return name_of_type(typename type_traits::nested_type<T>::type());
+		return name_of_type(nested_type<T>());
 	}
 
-	virtual uint32	get_nb_components() const override
+	virtual uint32 nb_components() const override
 	{
 		// Warning : the line 0 might be unused.
-		return type_traits::get_nb_components(this->operator [](0u));
+		return cgogn::nb_components(this->operator[](0u));
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
 	{
-		serialization::ostream_writer(o, binary, this->operator [](idx));
+		switch (precision)
+		{
+			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
+			default:  serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
+		}
+	}
+
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		serialization::parse(in, this->operator [](idx));
+	}
+
+
+	virtual const void* element_ptr(uint32 idx) const override
+	{
+		return &(this->operator[](idx));
+	}
+
+	virtual uint32 element_size() const override
+	{
+		return sizeof(std::declval<T>());
 	}
 };
 
 /**
  * @brief separate version of ChunkArray specialized for bool data. One bit per bool.
  */
-template <uint32 CHUNKSIZE>
-class ChunkArrayBool : public ChunkArrayGen<CHUNKSIZE>
+template <uint32 CHUNK_SIZE>
+class ChunkArrayBool : public ChunkArrayGen<CHUNK_SIZE>
 {
 public:
 
-	using Inherit = ChunkArrayGen<CHUNKSIZE>;
+	using Inherit = ChunkArrayGen<CHUNK_SIZE>;
 	using Self = ChunkArrayBool;
 	using value_type = uint32;
 
 protected:
 
 	// ensure we can use CHUNK_SIZE value < 32
-	const int BOOLS_PER_INT = (CHUNKSIZE<32u) ? CHUNKSIZE : 32u;
+	const int BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
 
 	// vector of block pointers
 	std::vector<uint32*> table_data_;
@@ -486,7 +510,7 @@ public:
 	}
 
 	/**
-	 * @brief create a ChunkArray<CHUNKSIZE,T>
+	 * @brief create a ChunkArray<CHUNK_SIZE,T>
 	 * @return generic pointer
 	 */
 	std::unique_ptr<Inherit> clone(const std::string& clone_name) const override
@@ -509,18 +533,13 @@ public:
 		return true;
 	}
 
-//	bool is_boolean_array() const override
-//	{
-//		return true;
-//	}
-
 	/**
-	 * @brief add a chunk (T[CHUNKSIZE/32])
+	 * @brief add a chunk (T[CHUNK_SIZE/32])
 	 */
 	void add_chunk() override
 	{
 		// adding the empty parentheses for default-initialization
-		table_data_.push_back(new uint32[CHUNKSIZE/BOOLS_PER_INT]());
+		table_data_.push_back(new uint32[CHUNK_SIZE/BOOLS_PER_INT]());
 	}
 
 	/**
@@ -546,7 +565,7 @@ public:
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
 	 */
-	uint32 get_nb_chunks() const override
+	uint32 nb_chunks() const override
 	{
 		return uint32(table_data_.size());
 	}
@@ -557,7 +576,7 @@ public:
 	 */
 	uint32 capacity() const override
 	{
-		return uint32(table_data_.size())*CHUNKSIZE/BOOLS_PER_INT;
+		return uint32(table_data_.size())*CHUNK_SIZE/BOOLS_PER_INT;
 	}
 
 	/**
@@ -573,20 +592,20 @@ public:
 	/**
 	 * @brief fill a vector with pointers to all chunks
 	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNKSIZE*sizeof(T)
+	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	inline uint32 get_chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const override
+	inline std::vector<const void*> chunks_pointers(uint32& byte_block_size) const override
 	{
-		byte_block_size = CHUNKSIZE / 8u;
+		std::vector<const void*> addr;
+		byte_block_size = CHUNK_SIZE / 8u;
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
@@ -647,8 +666,8 @@ public:
 		if (nb_lines % BOOLS_PER_INT)
 			nb_lines = ((nb_lines / BOOLS_PER_INT) + 1u) * BOOLS_PER_INT;
 
-		cgogn_assert(nb_lines / CHUNKSIZE <= table_data_.size());
-		// TODO: if (nb_lines==0) nb_lines = CHUNKSIZE*table_data_.size(); ??
+		cgogn_assert(nb_lines / CHUNK_SIZE <= table_data_.size());
+		// TODO: if (nb_lines==0) nb_lines = CHUNK_SIZE*table_data_.size(); ??
 
 		// save number of bytes
 		std::size_t chunk_bytes = nb_lines / 8u;
@@ -657,13 +676,13 @@ public:
 		// save number of lines
 		serialization::save(fs, &nb_lines, 1);
 
-		const uint32 nbc = get_nb_chunks() - 1u;
+		const uint32 nbc = nb_chunks() - 1u;
 		// save data chunks except last
 		for(uint32 i = 0u; i < nbc; ++i)
-			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNKSIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
+			fs.write(reinterpret_cast<const char*>(table_data_[i]), CHUNK_SIZE / 8u); // /8 because bool = 1 bit & octet = 8 bit
 
 		// save last
-		const uint32 nb = nb_lines - nbc*CHUNKSIZE;
+		const uint32 nb = nb_lines - nbc * CHUNK_SIZE;
 		fs.write(reinterpret_cast<const char*>(table_data_[nbc]), nb / 8u);
 	}
 
@@ -682,8 +701,8 @@ public:
 			return true;
 
 		// compute number of chunks
-		uint32 nbc = nb_lines / CHUNKSIZE;
-		if (nb_lines % CHUNKSIZE != 0u)
+		uint32 nbc = nb_lines / CHUNK_SIZE;
+		if (nb_lines % CHUNK_SIZE != 0u)
 			nbc++;
 
 		this->set_nb_chunks(nbc);
@@ -691,25 +710,25 @@ public:
 		// load data chunks except last
 		nbc--;
 		for(uint32 i = 0u; i < nbc; ++i)
-			fs.read(reinterpret_cast<char*>(table_data_[i]), CHUNKSIZE / 8u);// /8 because bool = 1 bit & octet = 8 bit
+			fs.read(reinterpret_cast<char*>(table_data_[i]), CHUNK_SIZE / 8u);// /8 because bool = 1 bit & octet = 8 bit
 
 		// load last chunk
-		uint32 nb = nb_lines - nbc*CHUNKSIZE;
+		uint32 nb = nb_lines - nbc*CHUNK_SIZE;
 		fs.read(reinterpret_cast<char*>(table_data_[nbc]), nb / 8u);
 
 		return true;
 	}
 
 	/**
-	 * @brief operator []
+	 * @brief operator[]
 	 * @param i index of element to access
 	 * @return value of the element
 	 */
 	inline bool operator[](uint32 i) const
 	{
-		const uint32 jj = i / CHUNKSIZE;
+		const uint32 jj = i / CHUNK_SIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNKSIZE;
+		const uint32 j = i % CHUNK_SIZE;
 		const uint32 x = j / BOOLS_PER_INT;
 		const uint32 y = j % BOOLS_PER_INT;
 
@@ -720,9 +739,9 @@ public:
 
 	inline void set_false(uint32 i)
 	{
-		const uint32 jj = i / CHUNKSIZE;
+		const uint32 jj = i / CHUNK_SIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNKSIZE;
+		const uint32 j = i % CHUNK_SIZE;
 		const uint32 x = j / BOOLS_PER_INT;
 		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
@@ -731,9 +750,9 @@ public:
 
 	inline void set_true(uint32 i)
 	{
-		const uint32 jj = i / CHUNKSIZE;
+		const uint32 jj = i / CHUNK_SIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNKSIZE;
+		const uint32 j = i % CHUNK_SIZE;
 		const uint32 x = j / BOOLS_PER_INT;
 		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
@@ -742,9 +761,9 @@ public:
 
 	inline void set_value(uint32 i, bool b)
 	{
-		const uint32 jj = i / CHUNKSIZE;
+		const uint32 jj = i / CHUNK_SIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNKSIZE;
+		const uint32 j = i % CHUNK_SIZE;
 		const uint32 x = j / BOOLS_PER_INT;
 		const uint32 y = j % BOOLS_PER_INT;
 		const uint32 mask = 1u << y;
@@ -763,9 +782,9 @@ public:
 	 */
 	inline void set_false_byte(uint32 i)
 	{
-		const uint32 jj = i / CHUNKSIZE;
+		const uint32 jj = i / CHUNK_SIZE;
 		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNKSIZE) / BOOLS_PER_INT;
+		const uint32 j = (i % CHUNK_SIZE) / BOOLS_PER_INT;
 		table_data_[jj][j] = 0u;
 	}
 
@@ -774,7 +793,7 @@ public:
 		for (uint32 * const ptr : table_data_)
 		{
 //#pragma omp for
-			for (int32 j = 0; j < int32(CHUNKSIZE / BOOLS_PER_INT); ++j)
+			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
@@ -783,24 +802,46 @@ public:
 //	{
 //		for (auto ptr : table_data_)
 //		{
-//			for (uint32 j = 0u; j < CHUNKSIZE/BOOLS_PER_INT; ++j)
+//			for (uint32 j = 0u; j < CHUNK_SIZE/BOOLS_PER_INT; ++j)
 //				*ptr++ = 0xffffffff;
 //		}
 //	}
 
-	virtual std::string get_nested_type_name() const override
+	virtual std::string nested_type_name() const override
 	{
 		return name_of_type(bool());
 	}
 
-	virtual uint32	get_nb_components() const override
+	virtual uint32 nb_components() const override
 	{
 		return 1u;
 	}
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary) const override
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
 	{
-		serialization::ostream_writer(o,binary, this->operator [](idx));
+		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
+	}
+
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		std::string val;
+		in >> val;
+		val = to_lower(val);
+		const bool b = (val == "true") || (std::stoi(val) == 1);
+		if (b)
+			set_true(idx);
+		else
+			set_false(idx);
+	}
+
+	virtual const void* element_ptr(uint32) const override
+	{
+		return nullptr; // shall not be used with ChunkArrayBool
+	}
+
+	virtual uint32 element_size() const override
+	{
+		return UINT32_MAX;
 	}
 };
 
@@ -810,6 +851,7 @@ extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float32, 3>>;
 extern template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float64, 3>>;
+extern template class CGOGN_CORE_API ChunkArrayBool<DEFAULT_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn

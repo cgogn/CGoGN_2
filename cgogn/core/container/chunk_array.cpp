@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_
 
 #include <cgogn/core/dll.h>
@@ -35,5 +34,6 @@ template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, uint32>;
 template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, unsigned char>;
 template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float32, 3>>;
 template class CGOGN_CORE_API ChunkArray<DEFAULT_CHUNK_SIZE, std::array<float64, 3>>;
+template class CGOGN_CORE_API ChunkArrayBool<DEFAULT_CHUNK_SIZE>;
 
 } // namespace cgogn

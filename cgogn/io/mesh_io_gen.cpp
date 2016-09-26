@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 
 #include <istream>
 #include <iostream>
@@ -35,11 +34,10 @@ namespace cgogn
 namespace io
 {
 
-MeshImportGen::~MeshImportGen() {}
+FileImport::FileImport() {}
 
-bool MeshImportGen::import_file(const std::string& filename)
+bool FileImport::import_file(const std::string& filename)
 {
-	this->clear();
 	Scoped_C_Locale loc;
 
 	if (!filename.empty())
@@ -48,12 +46,17 @@ bool MeshImportGen::import_file(const std::string& filename)
 		std::ifstream fp(filename.c_str(), std::ios::in);
 		if (!fp.good())
 		{
-			cgogn_log_warning("MeshImportGen::import_file") << "Unable to open file \"" << filename << "\"";
+			cgogn_log_warning("FileImport::import_file") << "Unable to open file \"" << filename << "\"";
 			return false;
 		}
 	}
 
 	return this->import_file_impl(filename);
+}
+
+FileImport::~FileImport()
+{
+
 }
 
 } // namespace io

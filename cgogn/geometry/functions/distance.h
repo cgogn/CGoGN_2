@@ -32,7 +32,6 @@ namespace cgogn
 namespace geometry
 {
 
-
 /**
  * @brief squared distance line point (optimized version for testing many points with the same line
  * @param A one point of line
@@ -40,12 +39,12 @@ namespace geometry
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3_T>
-inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3_T& A, const VEC3_T& AB_norm, const VEC3_T& P)
+template <typename VEC3>
+inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
 {
 	// here use const & ? Strange Schmitt optimization proposition ;)
-	const VEC3_T& V = A - P ;
-	const VEC3_T& W = V.cross(AB_norm) ;
+	const VEC3& V = A - P ;
+	const VEC3& W = V.cross(AB_norm) ;
 	return W.squaredNorm() ;
 }
 
@@ -56,17 +55,81 @@ inline typename VEC3_T::Scalar squared_distance_normalized_line_point(const VEC3
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3_T>
-inline typename VEC3_T::Scalar squared_distance_line_point(const VEC3_T& A, const VEC3_T& B, const VEC3_T& P)
+template <typename VEC3>
+inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
 {
-	VEC3_T AB = B - A ;
+	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
 	AB.normalize();
 	return squared_distance_normalized_line_point(A, AB, P) ;
 }
 
+/**
+* compute squared distance from line to segment
+* @param A point of line
+* @param AB vector of line
+* @param AB2 AB*AB (for optimization if call several times with AB
+* @param P first point of segment
+* @param Q second point of segment
+* @return the squared distance
+*/
+template <typename VEC3>
+typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3& P, const VEC3& Q)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+
+	VEC3 PQ = Q - P ;
+	Scalar PQ_n2 = PQ.squaredNorm();
+
+	// if P == Q compute distance to P
+	if (PQ_n2 == 0.0) // P==Q
+	{
+		VEC3 V = AB/AB.norm();
+		return squared_distance_normalized_line_point(A, V, P);
+	}
 
 
+	Scalar X = AB.dot(PQ) ;
+	VEC3 AP = P - A ;
+
+	Scalar beta = ( AB2 * (AP.dot(PQ)) - X * (AP.dot(AB)) ) / ( X*X - AB2 * PQ_n2 ) ;
+
+	if(beta < Scalar(0))
+	{
+		VEC3 W = AB.cross(AP) ;
+		return W.squaredNorm() / AB2 ;
+	}
+
+	if(beta > Scalar(1))
+	{
+		VEC3 AQ = Q - A ;
+		VEC3 W = AB.cross(AQ) ;
+		return W.squaredNorm() / AB2 ;
+	}
+
+	VEC3 temp = AB.cross(PQ) ;
+	Scalar num = AP.dot(temp) ;
+	Scalar den = temp.squaredNorm() ;
+
+	return (num*num) / den ;
+}
+
+
+/**
+* compute squared distance from line to segment
+* @warning if used many times with same line prefer version, with A, AB and AB2 parameter
+* @param A point of line
+* @param B point of line
+* @param P first point of segment
+* @param Q second point of segment
+* @return the squared distance
+*/
+template <typename VEC3>
+typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& P, const VEC3& Q)
+{
+	VEC3 AB = B-A;
+	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
+}
 
 
 

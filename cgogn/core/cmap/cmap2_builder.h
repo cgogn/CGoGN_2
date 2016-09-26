@@ -96,6 +96,18 @@ public:
 		return map_.close_hole_topo(d);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	/*!
 	 * \brief Close a hole with a new face and update the embedding of incident cells.
 	 * \param d : a vertex of the hole
@@ -111,13 +123,13 @@ public:
 	{
 		const Face f(map_.close_hole_topo(d));
 
-//		if (map_.template is_embedded<CDart>())
-//		{
-//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-//			{
-//				map_.new_orbit_embedding(CDart(it));
-//			});
-//		}
+		//		if (map_.template is_embedded<CDart>())
+		//		{
+		//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
+		//			{
+		//				map_.new_orbit_embedding(CDart(it));
+		//			});
+		//		}
 
 		if (map_.template is_embedded<Vertex>())
 		{
@@ -135,12 +147,12 @@ public:
 			});
 		}
 
-//		if (map_.template is_embedded<Face>())
-//			map_.new_orbit_embedding(f);
+		//		if (map_.template is_embedded<Face>())
+		//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
-			const uint32 idx = map_.get_embedding(Volume(d));
+			const uint32 idx = map_.embedding(Volume(d));
 			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
 			{
 				map_.template set_embedding<Volume>(it, idx);
@@ -160,9 +172,11 @@ public:
 	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 * If the indexation of embedding was unique, the closed map is well embedded.
 	 */
-	inline void close_map()
+	inline uint32 close_map()
 	{
-		std::vector<Dart>* fix_point_darts = get_dart_buffers()->get_buffer();
+		uint32 nb_holes=0;
+
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		map_.foreach_dart([&] (Dart d)
 		{
 			if (map_.phi2(d) == d)
@@ -173,13 +187,12 @@ public:
 			if (map_.phi2(d) == d)
 			{
 				Face f = close_hole(d);
-				map_.foreach_dart_of_orbit(f, [&] (Dart e)
-				{
-					map_.set_boundary(e, true);
-				});
+				map_.boundary_mark(f);
+				++nb_holes;
 			}
 		}
-		get_dart_buffers()->release_buffer(fix_point_darts);
+		dart_buffers()->release_buffer(fix_point_darts);
+		return nb_holes;
 	}
 
 private:

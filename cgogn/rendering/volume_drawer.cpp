@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDERING_VOLUME_RENDER_CPP_
 
 #include <cgogn/rendering/volume_drawer.h>
@@ -36,7 +35,7 @@ namespace cgogn
 namespace rendering
 {
 
-VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
+VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face) :
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
 	face_color_(0,150,0),
@@ -54,7 +53,7 @@ VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face):
 VolumeDrawerGen::~VolumeDrawerGen()
 {}
 
-VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr):
+VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr) :
 	param_expl_vol_(nullptr),
 	param_expl_vol_col_(nullptr),
 	param_expl_vol_line_(nullptr),
@@ -129,6 +128,16 @@ void VolumeDrawerGen::Renderer::set_edge_color(const QColor& rgb)
 {
 	if (param_expl_vol_line_)
 		param_expl_vol_line_->color_=rgb;
+}
+
+void VolumeDrawerGen::Renderer::set_clipping_plane(const QVector4D& pl)
+{
+	if (param_expl_vol_)
+		param_expl_vol_->plane_clip_ = pl;
+	if (param_expl_vol_col_)
+		param_expl_vol_col_->plane_clip_ = pl;
+	if (param_expl_vol_line_)
+		param_expl_vol_line_->plane_clip_ = pl;
 }
 
 template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;

@@ -545,7 +545,7 @@ public:
 				Inherit::set_current_level(cur + 1);
 				Dart innerEdge = Inherit::phi1(fit);
 				Inherit::set_current_level(Inherit::get_maximum_level());
-				this->merge_adjacent_faces_topo(innerEdge);
+				this->merge_incident_faces_topo(innerEdge);
 				Inherit::set_current_level(cur);
 				fit = this->phi1(fit);
 			} while(fit != d);

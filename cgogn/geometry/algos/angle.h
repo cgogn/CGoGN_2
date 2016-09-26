@@ -27,7 +27,11 @@
 #include <cmath>
 
 #include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/algos/normal.h>
+
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -35,39 +39,81 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3_T, typename MAP>
-inline typename VEC3_T::Scalar angle_between_face_normals(
-		const MAP& map,
-		const typename MAP::Edge e,
-		const typename MAP::template VertexAttribute<VEC3_T>& position)
+/**
+ * compute and return the angle formed by the normals of the two faces incident to the given edge
+ */
+template <typename VEC3, typename MAP>
+inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
+	const MAP& map,
+	const Cell<Orbit::PHI2> e,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
 {
-	using Scalar = typename VEC3_T::Scalar;
-	using Vertex = typename MAP::Vertex;
-	using Face = typename MAP::Face;
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Vertex2 = Cell<Orbit::PHI21>;
+	using Face2 = Cell<Orbit::PHI1>;
 
-	if(map.is_incident_to_boundary(e))
-		return Scalar(0) ;
+	if (map.is_incident_to_boundary(e))
+		return Scalar(0);
 
-	std::pair<Vertex, Vertex> v = map.vertices(e);
-	const VEC3_T n1 = face_normal<VEC3_T, MAP>(map, Face(v.first.dart), position);
-	const VEC3_T n2 = face_normal<VEC3_T, MAP>(map, Face(v.second.dart), position);
+	const Dart d = e.dart;
+	const Dart d2 = map.phi2(d);
 
-	Scalar a = angle(n1, n2);
+	const VEC3 n1 = normal<VEC3>(map, Face2(d), position);
+	const VEC3 n2 = normal<VEC3>(map, Face2(d2), position);
 
-	return a ;
-}
+	VEC3 edge = position[Vertex2(d2)] - position[Vertex2(d)];
+	edge.normalize();
+	Scalar s = edge.dot(n1.cross(n2));
+	Scalar c = n1.dot(n2);
+	Scalar a(0);
 
-template <typename VEC3_T, typename MAP>
-inline void angle_between_face_normals(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC3_T>& position,
-		typename MAP::template Attribute<typename VEC3_T::Scalar, Orbit::PHI2>& angles)
-{
-	map.foreach_cell([&] (Cell<Orbit::PHI2> e)
+	// the following trick is useful to avoid NaNs (due to floating point errors)
+	if (c > 0.5) a = std::asin(s);
+	else
 	{
-		angles[e] = angle_between_face_normals<VEC3_T, MAP>(map, e, position);
-	});
+		if(c < -1) c = -1;
+		if (s >= 0) a = std::acos(c);
+		else a = -std::acos(c);
+	}
+	if(a != a)
+		cgogn_log_warning("angle_between_face_normals") << "NaN computed";
+
+	return a;
 }
+
+template <typename VEC3, typename MAP, typename MASK>
+inline void compute_angle_between_face_normals(
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
+)
+{
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e, uint32)
+	{
+		edge_angle[e] = angle_between_face_normals<VEC3>(map, e, position);
+	},
+	mask);
+}
+
+template <typename VEC3, typename MAP>
+inline void compute_angle_between_face_normals(
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC3>& position,
+	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
+)
+{
+	compute_angle_between_face_normals<VEC3>(map, CellFilters(), position, edge_angle);
+}
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
+extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const Cell<Orbit::PHI2>,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3f, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&, CMap2<DefaultMapTraits>::Attribute<float32, Orbit::PHI2>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3d, CMap2<DefaultMapTraits>>(const CMap2<DefaultMapTraits>&,const CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&, CMap2<DefaultMapTraits>::Attribute<float64, Orbit::PHI2>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
 
 } // namespace geometry
 

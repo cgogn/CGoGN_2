@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 #define CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_
-#define CGOGN_MULTIRESOLUTION_DLL_EXPORT
 
 #include <cgogn/multiresolution/cph/cph_base.h>
 

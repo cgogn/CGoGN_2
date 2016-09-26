@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 
 #include <cgogn/core/utils/thread.h>
 #include <cgogn/core/utils/buffers.h>
@@ -30,39 +29,39 @@
 namespace cgogn
 {
 
-CGOGN_CORE_API uint32 NB_THREADS = get_nb_threads();
+CGOGN_CORE_API uint32 NB_THREADS = nb_threads();
 
-CGOGN_TLS Buffers<Dart>* dart_buffers_thread = nullptr;
-CGOGN_TLS Buffers<uint32>* uint_buffers_thread = nullptr;
+CGOGN_TLS Buffers<Dart>* dart_buffers_thread_ = nullptr;
+CGOGN_TLS Buffers<uint32>* uint_buffers_thread_ = nullptr;
 
 CGOGN_CORE_API void thread_start()
 {
-	if (dart_buffers_thread == nullptr)
-		dart_buffers_thread = new Buffers<Dart>();
+	if (dart_buffers_thread_ == nullptr)
+		dart_buffers_thread_ = new Buffers<Dart>();
 
-	if (uint_buffers_thread == nullptr)
-		uint_buffers_thread = new Buffers<uint32>();
+	if (uint_buffers_thread_ == nullptr)
+		uint_buffers_thread_ = new Buffers<uint32>();
 }
 
 CGOGN_CORE_API void thread_stop()
 {
-	delete dart_buffers_thread;
-	delete uint_buffers_thread;
-	dart_buffers_thread = nullptr;
-	uint_buffers_thread = nullptr;
+	delete dart_buffers_thread_;
+	delete uint_buffers_thread_;
+	dart_buffers_thread_ = nullptr;
+	uint_buffers_thread_ = nullptr;
 }
 
-CGOGN_CORE_API Buffers<Dart>* get_dart_buffers()
+CGOGN_CORE_API Buffers<Dart>* dart_buffers()
 {
-	return dart_buffers_thread;
+	return dart_buffers_thread_;
 }
 
-CGOGN_CORE_API Buffers<uint32>* get_uint_buffers()
+CGOGN_CORE_API Buffers<uint32>* uint_buffers()
 {
-	return uint_buffers_thread;
+	return uint_buffers_thread_;
 }
 
-CGOGN_CORE_API ThreadPool* get_thread_pool()
+CGOGN_CORE_API ThreadPool* thread_pool()
 {
 	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
 	static ThreadPool pool;

@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_PLY_IO_CPP_
 
 #include <cgogn/io/ply_io.h>
@@ -35,6 +34,29 @@ template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API PlySurfaceExport<CMap2<DefaultMapTraits>>;
+
+CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
+{
+	static const std::map<std::string, std::string> type_map{
+		{name_of_type(int8()), "int8"},
+		{name_of_type(uint8()), "uint8"},
+		{name_of_type(int16()), "int16"},
+		{name_of_type(uint16()), "uint16"},
+		{name_of_type(int32()), "int"},
+		{name_of_type(uint32()), "uint"},
+		{name_of_type(float32()), "float32"},
+		{name_of_type(float64()), "float64"}
+	};
+
+	const auto it = type_map.find(cgogn_type);
+	if ( it != type_map.end())
+		return it->second;
+
+	cgogn_log_error("cgogn_name_of_type_to_ply_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
+	return std::string();
+}
 
 } // namespace io
 } // namespace cgogn

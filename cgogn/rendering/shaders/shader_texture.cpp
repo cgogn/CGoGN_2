@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <cgogn/rendering/shaders/shader_texture.h>
 #include <QOpenGLFunctions>
@@ -36,25 +35,27 @@ namespace rendering
 std::unique_ptr<ShaderTexture> ShaderTexture::instance_ = nullptr;
 
 const char* ShaderTexture::vertex_shader_source_ =
-	"#version 150\n"
-	"in vec3 vertex_pos;\n"
-	"in vec2 vertex_tc;\n"
-	"uniform mat4 projection_matrix;\n"
-	"uniform mat4 model_view_matrix;\n"
-	"out vec2 tc;\n"
-	"void main() {\n"
-	"	tc = vertex_tc;\n"
-	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-	"}\n";
+"#version 150\n"
+"in vec3 vertex_pos;\n"
+"in vec2 vertex_tc;\n"
+"uniform mat4 projection_matrix;\n"
+"uniform mat4 model_view_matrix;\n"
+"out vec2 tc;\n"
+"void main()\n"
+"{\n"
+"	tc = vertex_tc;\n"
+"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+"}\n";
 
 const char* ShaderTexture::fragment_shader_source_ =
-	"#version 150\n"
-	"out vec4 frag_color;\n"
-	"uniform sampler2D texture_unit;\n"
-	"in vec2 tc;\n"
-	"void main() {\n"
-	"		frag_color = texture(texture_unit,tc);\n"
-	"}\n";
+"#version 150\n"
+"out vec4 frag_color;\n"
+"uniform sampler2D texture_unit;\n"
+"in vec2 tc;\n"
+"void main()\n"
+"{\n"
+"	frag_color = texture(texture_unit,tc);\n"
+"}\n";
 
 ShaderTexture::ShaderTexture()
 {
@@ -67,8 +68,7 @@ ShaderTexture::ShaderTexture()
 	prg_.setUniformValue("texture_unit", 0);
 }
 
-
-ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh):
+ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh) :
 	ShaderParam(sh),
 	texture_(nullptr)
 {}
@@ -104,8 +104,6 @@ void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 	vao_->release();
 	shader_->release();
 }
-
-
 
 } // namespace rendering
 

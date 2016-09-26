@@ -62,17 +62,17 @@ public:
 	template <typename T>
 	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
 
-	template<typename T, Orbit ORBIT>
+	template <typename T, Orbit ORBIT>
 	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
-	template<typename T>
+	template <typename T>
 	using DartAttribute = Attribute<T, Self::DART>;
-	template<typename T>
+	template <typename T>
 	using VertexAttribute = Attribute<T, Self::VERTEX>;
-	template<typename T>
+	template <typename T>
 	using EdgeAttribute = Attribute<T, Self::EDGE>;
-	template<typename T>
+	template <typename T>
 	using FaceAttribute = Attribute<T, Self::FACE>;
-	template<typename T>
+	template <typename T>
 	using VolumeAttribute = Attribute<T, Self::VOLUME>;
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -246,7 +246,7 @@ protected:
 	{
 		DartMarkerStore marker(*this);
 
-		std::vector<Dart>* visited_faces = cgogn::get_dart_buffers()->get_buffer();
+		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
@@ -269,14 +269,14 @@ protected:
 			}
 		}
 
-		cgogn::get_dart_buffers()->release_buffer(visited_faces);
+		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_PHI31(Dart d, const FUNC& f) const
 	{
 		DartMarkerStore marker(*this);
-		const std::vector<Dart>* marked_darts = marker.get_marked_darts();
+		const std::vector<Dart>* marked_darts = marker.marked_darts();
 
 		marker.mark(d);
 		for(uint32 i = 0; i < marked_darts->size(); ++i)
@@ -331,7 +331,7 @@ public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 			ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
 			ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 || ORBIT == Orbit::PHI21_PHI31 ||

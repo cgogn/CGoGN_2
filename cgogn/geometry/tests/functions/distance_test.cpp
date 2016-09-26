@@ -35,7 +35,7 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-template<typename Vec_T>
+template <typename Vec_T>
 class Distance_TEST : public testing::Test
 {};
 
@@ -55,11 +55,36 @@ TYPED_TEST(Distance_TEST, PointLineDistance)
 	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_point(A,B,P0), Scalar(0));
 	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_point(A,B,P1), Scalar(0));
 
-//	EXPECT_TRUE(cgogn::almost_equal_relative(cgogn::geometry::squared_distance_line_point(A,B,P2), Scalar(2.0/3.0)));
+	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
+	EXPECT_NEAR(cgogn::geometry::squared_distance_line_point(A,B,P2), Scalar(2.0/3.0), tolerence);
+
+
+
+}
+
+
+TYPED_TEST(Distance_TEST, squared_distance_line_seg)
+{
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+	TypeParam A(Scalar(-4), Scalar(-4), Scalar(-4));
+	TypeParam B(Scalar(3), Scalar(3), Scalar(3));
+
+	TypeParam P0(Scalar(1), Scalar(1), Scalar(2));
+	TypeParam Q0(Scalar(1), Scalar(1), Scalar(0));
+	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_seg(A,B,P0,Q0), Scalar(0));
+
+	TypeParam P1(Scalar(20), Scalar(20), Scalar(20));
+	TypeParam Q1(Scalar(22), Scalar(21), Scalar(23));
+	EXPECT_DOUBLE_EQ(cgogn::geometry::squared_distance_line_seg(A,B,P1,Q1), Scalar(0));
+
+
+	A = TypeParam(Scalar(0), Scalar(0), Scalar(-4));
+	B = TypeParam(Scalar(0), Scalar(0), Scalar(3));
+
+	TypeParam P2(Scalar(0), Scalar(3), Scalar(0));
+	TypeParam Q2(Scalar(0), Scalar(3), Scalar(0));
 
 	const Scalar tolerence = std::is_same<Scalar,double>::value ? Scalar(1e-8) : Scalar(1e-4f);
-EXPECT_NEAR(cgogn::geometry::squared_distance_line_point(A,B,P2), Scalar(2.0/3.0), tolerence);
-
-
+	EXPECT_NEAR(cgogn::geometry::squared_distance_line_seg(A,B,P2,Q2), Scalar(3*3), tolerence);
 
 }

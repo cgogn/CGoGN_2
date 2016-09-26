@@ -65,14 +65,14 @@ CGOGN_CORE_API std::string demangle(const std::string& str);
 
 // implementation for classes which have a static cgogn_name_of_type() function (returning a std::string)
 template <class T>
-inline auto name_of_type_impl(const T&) -> typename std::enable_if<!type_traits::has_cgogn_name_of_type<T>::value, std::string>::type;
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<!has_cgogn_name_of_type<T>::value, std::string>::type;
 
 // implementation for other classes and type
 
 // declarations
 
 template <class T>
-inline auto name_of_type_impl(const T&) -> typename std::enable_if<type_traits::has_cgogn_name_of_type<T>::value, std::string>::type;
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value, std::string>::type;
 
 template <typename T>
 inline std::string name_of_type_impl(const std::list<T>&);
@@ -127,13 +127,13 @@ inline std::string name_of_type_impl(const std::array<T, N>&)
 { return std::string("std::array<") + name_of_type(T()) + std::string(",") + std::to_string(N) + std::string(">"); }
 
 template <class T>
-inline auto name_of_type_impl(const T&) -> typename std::enable_if<type_traits::has_cgogn_name_of_type<T>::value, std::string>::type
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<has_cgogn_name_of_type<T>::value, std::string>::type
 {
 	return T::cgogn_name_of_type();
 }
 
 template <typename T>
-inline auto name_of_type_impl(const T&) -> typename std::enable_if<!type_traits::has_cgogn_name_of_type<T>::value, std::string>::type
+inline auto name_of_type_impl(const T&) -> typename std::enable_if<!has_cgogn_name_of_type<T>::value, std::string>::type
 {
 	std::string type_name = demangle(std::string(typeid(T).name()));
 #ifdef __GNUG__

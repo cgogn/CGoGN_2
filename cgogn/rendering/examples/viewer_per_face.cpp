@@ -23,9 +23,9 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
 #include <QKeyEvent>
+
+#include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/cmap/cmap2.h>
 
@@ -50,10 +50,10 @@ using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
-template<typename T>
+template <typename T>
 using FaceAttribute = Map2::FaceAttribute<T>;
 
 
@@ -99,10 +99,10 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
-	face_normal_ = map_.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
+	map_.get_attribute(vertex_position_, "position");
+	map_.add_attribute(face_normal_, "normal");
 
-	cgogn::geometry::compute_normal_faces<Vec3>(map_, vertex_position_, face_normal_);
+	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, face_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -135,7 +135,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_P:
 			phong_rendering_ = true;
 			flat_rendering_ = false;
@@ -240,7 +241,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("viewer_per_face");
 	viewer.import(surfaceMesh);
 	viewer.show();
 

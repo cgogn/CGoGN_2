@@ -47,10 +47,11 @@ protected:
 	ChunkArrayBool* mark_attribute_;
 
 public:
+
 	DartMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
-		mark_attribute_ = map_.get_topology_mark_attribute();
+		mark_attribute_ = map_.topology_mark_attribute();
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarker_T);
@@ -128,7 +129,7 @@ public:
 };
 
 template <typename MAP>
-class DartMarkerStore : public DartMarker_T<MAP>
+class DartMarkerStore final : protected DartMarker_T<MAP>
 {
 public:
 
@@ -141,11 +142,12 @@ protected:
 	std::vector<Dart>* marked_darts_;
 
 public:
+	using Inherit::is_marked;
 
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
 	{
-		marked_darts_ = cgogn::get_dart_buffers()->get_buffer();
+		marked_darts_ = cgogn::dart_buffers()->buffer();
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarkerStore);
@@ -153,25 +155,23 @@ public:
 	~DartMarkerStore() override
 	{
 		unmark_all();
-		cgogn::get_dart_buffers()->release_buffer(marked_darts_);
+		cgogn::dart_buffers()->release_buffer(marked_darts_);
 	}
 
 	inline void mark(Dart d)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
-		Inherit::mark(d);
-		marked_darts_->push_back(d);
+		if (!this->is_marked(d))
+		{
+			Inherit::mark(d);
+			marked_darts_->push_back(d);
+		}
 	}
 
 	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
-		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)
-		{
-			Inherit::mark(d);
-			marked_darts_->push_back(d);
-		});
+		this->map_.foreach_dart_of_orbit(c, [this] (Dart d) { this->mark(d); });
 	}
 
 	inline void unmark_all()
@@ -182,7 +182,7 @@ public:
 		marked_darts_->clear();
 	}
 
-	inline const std::vector<Dart>* get_marked_darts() const
+	inline const std::vector<Dart>* marked_darts() const
 	{
 		return marked_darts_;
 	}

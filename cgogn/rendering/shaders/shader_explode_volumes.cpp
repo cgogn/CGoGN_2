@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_
 
 #include <iostream>
@@ -39,7 +38,8 @@ namespace rendering
 const char* ShaderExplodeVolumesGen::vertex_shader_source_ =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
@@ -81,7 +81,8 @@ const char* ShaderExplodeVolumesGen::fragment_shader_source_ =
 "#version 150\n"
 "in vec3 color_f;\n"
 "out vec3 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -90,7 +91,8 @@ const char* ShaderExplodeVolumesGen::vertex_shader_source2_ =
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_color;\n"
 "out vec3 color_v;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   color_v = vertex_color;\n"
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
@@ -133,11 +135,10 @@ const char* ShaderExplodeVolumesGen::fragment_shader_source2_ =
 "#version 150\n"
 "in vec3 color_f;\n"
 "out vec3 fragColor;\n"
-"void main() {\n"
+"void main()\n"
+"{\n"
 "   fragColor = color_f;\n"
 "}\n";
-
-
 
 ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 {

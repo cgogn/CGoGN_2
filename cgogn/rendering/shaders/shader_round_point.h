@@ -59,6 +59,7 @@ protected:
 	// uniform ids
 	GLint unif_color_;
 	GLint unif_size_;
+	GLint unif_plane_clip_;
 
 public:
 
@@ -83,14 +84,23 @@ public:
 	 */
 	void set_size(float32 w);
 
+	/**
+	 * @brief set_plane_clip
+	 * @param plane
+	 */
+	void set_plane_clip(const QVector4D& plane);
+
+
 protected:
 
 	ShaderRoundPointGen(bool color_per_vertex);
 };
 
+
+
 template <bool CPV>
 class ShaderRoundPointTpl : public ShaderRoundPointGen
-{
+{	
 public:
 
 	using Param = ShaderParamRoundPoint<CPV>;
@@ -117,17 +127,20 @@ protected:
 		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
 		sh->set_color(color_);
 		sh->set_size(size_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
 
 	QColor color_;
 	float32 size_;
+	QVector4D plane_clip_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh):
+	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
-		size_(1.0)
+		size_(1.0),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
@@ -155,15 +168,18 @@ protected:
 	{
 		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
 		sh->set_size(size_);
+		sh->set_plane_clip(plane_clip_);
 	}
 
 public:
 
 	float32 size_;
+	QVector4D plane_clip_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh):
+	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh) :
 		ShaderParam(sh),
-		size_(1.0)
+		size_(1.0),
+		plane_clip_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, uint32 stride = 0, uint32 first = 0)

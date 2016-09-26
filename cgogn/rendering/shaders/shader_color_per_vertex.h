@@ -50,6 +50,9 @@ protected:
 
 public:
 
+	using Self = ShaderColorPerVertex;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderColorPerVertex);
+
 	enum
 	{
 		ATTRIB_POS = 0,

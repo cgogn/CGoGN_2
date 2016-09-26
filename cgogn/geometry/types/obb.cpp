@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_GEOMETRY_DLL_EXPORT
 #define CGOGN_GEOMETRY_TYPES_OBB_CPP_
 
 #include <cgogn/geometry/types/obb.h>

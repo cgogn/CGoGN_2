@@ -70,6 +70,10 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
 protected:
 
@@ -78,8 +82,8 @@ protected:
 
 	void init()
 	{
-		phi1_ = this->topology_.template add_attribute<Dart>("phi1");
-		phi_1_ = this->topology_.template add_attribute<Dart>("phi_1");
+		phi1_ = this->topology_.template add_chunk_array<Dart>("phi1");
+		phi_1_ = this->topology_.template add_chunk_array<Dart>("phi_1");
 	}
 
 public:
@@ -247,15 +251,15 @@ protected:
 	 * \param size : the number of darts in the built face
 	 * \return A dart of the built face
 	 */
-	inline Dart add_face_topo(uint32 size)
+	inline Dart add_face_topo(std::size_t size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty face");
 
 		if (size == 0)
 			cgogn_log_warning("add_face_topo") << "Attempt to create an empty face results in a single dart.";
 
-		Dart d = this->add_dart();
-		for (uint32 i = 1u; i < size; ++i)
+		Dart d = this->add_topology_element();
+		for (std::size_t i = 1u; i < size; ++i)
 			split_vertex_topo(d);
 		return d;
 	}
@@ -290,17 +294,20 @@ public:
 
 protected:
 
+	/*!
+	 * \brief Remove a face from the map.
+	 * \param d : a dart of the face to remove
+	 */
 	inline void remove_face_topo(Dart d)
 	{
 		Dart it = phi1(d);
 		while(it != d)
 		{
 			Dart next = phi1(it);
-			this->remove_dart(it);
+			this->remove_topology_element(it);
 			it = next;
 		}
-
-		this->remove_dart(d);
+		this->remove_topology_element(d);
 	}
 
 public:
@@ -326,8 +333,8 @@ protected:
 	 */
 	inline Dart split_vertex_topo(Dart d)
 	{
-		Dart e = this->add_dart();	// Create a new dart e
-		phi1_sew(d, e);				// Insert e between d and phi1(d)
+		Dart e = this->add_topology_element();	// Create a new dart e
+		phi1_sew(d, e);							// Insert e between d and phi1(d)
 		return e;
 	}
 
@@ -368,7 +375,7 @@ protected:
 	{
 		Dart e = phi_1(d);
 		if (e != d) phi1_unsew(e);
-		this->remove_dart(d);
+		this->remove_topology_element(d);
 	}
 
 public:
@@ -453,10 +460,12 @@ protected:
 		} while (it != d);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1, "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
@@ -474,6 +483,8 @@ protected:
 		}
 	}
 
+protected:
+
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1_until(Dart d, const FUNC& f) const
 	{
@@ -486,11 +497,13 @@ protected:
 		} while (it != d);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Dart), "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1, "Orbit not supported in a CMap1");
 
 		switch (ORBIT)
@@ -508,8 +521,6 @@ protected:
 		}
 	}
 
-public:
-
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
@@ -517,7 +528,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
-		static_assert(check_func_parameter_type(FUNC, Vertex), "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
 	}
 
@@ -575,6 +586,8 @@ extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))

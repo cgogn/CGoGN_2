@@ -36,9 +36,6 @@ set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
-if(${CGOGN_EXTERNAL_TEMPLATES})
-	add_definitions("-DCGOGN_USE_EXTERNAL_TEMPLATES")
-endif()
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
@@ -62,11 +59,6 @@ if (${CGOGN_USE_PARALLEL_GLIBCXX})
 	set(CGOGN_USE_OPENMP "ON")
 endif()
 option(CGOGN_USE_QT "use Qt (5.4 min) for interface & rendering" ON)
-option(CGOGN_WITH_CGAL_EXAMPLES "Build the examples using cgal for mesh generation." OFF)
-if ((NOT MSVC) AND CGOGN_WITH_CGAL_EXAMPLES)
-	set(CGOGN_USE_GLIBCXX_DEBUG OFF)
-	set(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC OFF)
-endif()
 
 #### Continuous integration options
 option(CGOGN_WITH_GPROF "Builds the project for performance analysis with gprof" OFF)
@@ -121,13 +113,6 @@ endif(CGOGN_BUILD_TESTS)
 #### Endianness detection
 include (TestBigEndian)
 test_big_endian(CGOGN_TEST_BIG_ENDIAN)
-add_definitions("-DCGOGN_LITTLE_ENDIAN=1234")
-add_definitions("-DCGOGN_BIG_ENDIAN=4321")
-if(${CGOGN_TEST_BIG_ENDIAN})
-	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_BIG_ENDIAN")
-else()
-	add_definitions("-DCGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
-endif()
 
 #### Link time optimisation
 if (CGOGN_ENABLE_LTO AND ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
@@ -162,9 +147,9 @@ if(CGOGN_BUILD_EXAMPLES)
 	add_subdirectory(cgogn/core/examples)
 	add_subdirectory(cgogn/geometry/examples)
 	add_subdirectory(cgogn/io/examples)
-	add_subdirectory(cgogn/io/mesh_generation/examples)
 	add_subdirectory(cgogn/modeling/examples)
 	add_subdirectory(cgogn/rendering/examples)
+	add_subdirectory(cgogn/topology/examples)
 endif()
 
 
@@ -175,7 +160,7 @@ ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
 
 # --- CPPCheck ---
 GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR}
-		   ENABLE_IDS all
+	       ENABLE_IDS all
 		   INCLUDES ${CGOGN_SOURCE_DIR}
 		   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
 		   SYSTEM_INCLUDE_WARNING_SUPPRESSION

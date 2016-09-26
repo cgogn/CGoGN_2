@@ -23,11 +23,13 @@
 
 #include <QApplication>
 #include <QMatrix4x4>
-
-#include <qoglviewer.h>
 #include <QKeyEvent>
 
+#include <QOGLViewer/qoglviewer.h>
+
 #include <cgogn/core/cmap/cmap2.h>
+//#include <cgogn/core/cmap/cmap2_tri.h>
+//#include <cgogn/core/cmap/cmap2_quad.h>
 
 #include <cgogn/io/map_import.h>
 
@@ -52,10 +54,14 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+//using Map2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
+//using Map2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
+
+
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
-template<typename T>
+template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 
@@ -117,22 +123,21 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	map_.get_attribute(vertex_position_, "position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_normal_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
+	map_.add_attribute(vertex_normal_, "normal");
 
 // testing merge method
 //	Map2 map2;
 //	cgogn::io::import_surface<Vec3>(map2, std::string(DEFAULT_MESH_PATH) + std::string("off/star_convex.off"));
 //	map_.merge(map2);
 
-	cgogn::geometry::compute_normal_vertices<Vec3>(map_, vertex_position_, vertex_normal_);
-
+	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
@@ -176,7 +181,8 @@ Viewer::Viewer() :
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
-	switch (ev->key()) {
+	switch (ev->key())
+	{
 		case Qt::Key_P:
 			phong_rendering_ = true;
 			flat_rendering_ = false;
@@ -286,8 +292,8 @@ void Viewer::init()
 
 	// map rendering object (primitive creation & sending to GPU)
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::LINES);
+	render_->init_primitives(map_, cgogn::rendering::POINTS);
+	render_->init_primitives(map_, cgogn::rendering::LINES);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	// generation of one parameter set (for this shader) : vbo + uniforms
@@ -362,7 +368,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("simpleViewer");
+	viewer.setWindowTitle("simple_viewer");
 	viewer.import(surface_mesh);
 	viewer.show();
 
