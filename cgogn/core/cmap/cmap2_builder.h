@@ -123,14 +123,6 @@ public:
 	{
 		const Face f(map_.close_hole_topo(d));
 
-		//		if (map_.template is_embedded<CDart>())
-		//		{
-		//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-		//			{
-		//				map_.new_orbit_embedding(CDart(it));
-		//			});
-		//		}
-
 		if (map_.template is_embedded<Vertex>())
 		{
 			map_.foreach_dart_of_orbit(f, [this] (Dart it)
@@ -146,9 +138,6 @@ public:
 				map_.template copy_embedding<Edge>(it, map_.phi2(it));
 			});
 		}
-
-		//		if (map_.template is_embedded<Face>())
-		//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
@@ -174,7 +163,7 @@ public:
 	 */
 	inline uint32 close_map()
 	{
-		uint32 nb_holes=0;
+		uint32 nb_holes = 0;
 
 		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		map_.foreach_dart([&] (Dart d)

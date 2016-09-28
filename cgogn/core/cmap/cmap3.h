@@ -1311,8 +1311,8 @@ protected:
 		{ // removing the darts
 			const Volume w3(phi3(w.dart));
 			std::vector<Dart>* darts_to_be_deleted = cgogn::dart_buffers()->buffer();
-			this->foreach_dart_of_orbit(w, [=](Dart it) {darts_to_be_deleted->push_back(it);});
-			this->foreach_dart_of_orbit(w3, [=](Dart it) {darts_to_be_deleted->push_back(it);});
+			this->foreach_dart_of_orbit(w, [=] (Dart it) { darts_to_be_deleted->push_back(it); });
+			this->foreach_dart_of_orbit(w3, [=] (Dart it) { darts_to_be_deleted->push_back(it); });
 			for (Dart it : *darts_to_be_deleted)
 				this->remove_topology_element(it);
 			cgogn::dart_buffers()->release_buffer(darts_to_be_deleted);
@@ -2310,22 +2310,37 @@ public:
 		std::vector<uint32> old_new_topo = this->topology_.template merge<PRIM_SIZE>(map2.topology_container());
 
 		// change topo relations of copied darts
-		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
+		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 		{
-			ChunkArray<Dart>* cad = dynamic_cast<ChunkArray<Dart>*>(ptr);
-			if (cad)
-			{
-				for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
-				{
-					Dart& d = (*cad)[i];
-					uint32 idx = d.index;
-					if (old_new_topo[idx] != INVALID_INDEX)
-						d = Dart(old_new_topo[idx]);
-				}
-			}
+			Dart& d1 = (*this->phi1_)[i];
+			uint32 idx = d1.index;
+			if (old_new_topo[idx] != INVALID_INDEX)
+				d1 = Dart(old_new_topo[idx]);
+
+			Dart& d_1 = (*this->phi_1_)[i];
+			idx = d_1.index;
+			if (old_new_topo[idx] != INVALID_INDEX)
+				d_1 = Dart(old_new_topo[idx]);
+
+			Dart& d2 = (*this->phi2_)[i];
+			idx = d2.index;
+			if (old_new_topo[idx] != INVALID_INDEX)
+				d2 = Dart(old_new_topo[idx]);
+
+			// set copied Darts in fix point for phi3
+			(*phi3_)[i] = Dart(i);
 		}
 
 		// the boundary marker of the merged Map2 is ignored
+
+		Builder mb(*this);
+		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
+		{
+			if (phi3(Dart(i)) == Dart(i))
+			{
+				mb.close_hole_topo(Dart(i));
+			}
+		}
 
 		// change embedding indices of moved lines
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
@@ -2356,9 +2371,6 @@ public:
 
 		// embed remaining cells
 		merge_finish_embedding(first);
-
-		Builder mb(*this);
-		mb.close_map();
 
 		// ok
 		return true;

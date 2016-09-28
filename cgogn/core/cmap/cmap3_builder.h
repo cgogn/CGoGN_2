@@ -246,17 +246,17 @@ public:
 
 				if (map_.template is_embedded<Edge>())
 				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
 					{
-						map_.template copy_embedding<Edge>(wd, map_.phi3(wd));
+						map_.template copy_embedding<Edge>(it, map_.phi3(it));
 					});
 				}
 
 				if (map_.template is_embedded<Face>())
 				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
 					{
-						map_.template copy_embedding<Face>(wd, map_.phi3(wd));
+						map_.template copy_embedding<Face>(it, map_.phi3(it));
 					});
 				}
 			}
