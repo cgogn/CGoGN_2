@@ -61,6 +61,7 @@ public:
 	using Boundary  = Face;
 	using ConnectedComponent = Volume;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -1393,21 +1394,21 @@ protected:
 	{
 		const static auto create_embedding = [=] (Self* map, Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
 				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-				case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
 				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
 				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
 				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
-
 
 	/**
 	 * @brief ensure all cells (introduced while merging) are embedded.
@@ -1417,30 +1418,29 @@ protected:
 	{
 		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-				case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
 				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
 				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			{
-				for (uint32 j=first, end = this->topology_.end(); j!= end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
 	}
-
 };
 
 template <typename MAP_TRAITS>

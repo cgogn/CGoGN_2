@@ -1456,7 +1456,7 @@ public:
 	 */
 	bool merge(const ConcreteMap& map)
 	{
-		// check attribute compatibility
+		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
@@ -1466,13 +1466,15 @@ public:
 			}
 		}
 
-		// compact and store index of copied darts
+		// compact topology container
 		this->compact_topo();
 		uint32 first = this->topology_.size();
 
-		//
+		// ensure that orbits that are embedded in given map are also embedded in this map
 		ConcreteMap* concrete = to_concrete();
 		concrete->merge_check_embedding(map);
+
+		// store index of copied darts
 		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
 
 		// change topo relations of copied darts
@@ -1497,17 +1499,17 @@ public:
 			if (map.is_boundary(d))
 			{
 				Dart dd = Dart(old_new_topo[d.index]);
-				this->set_boundary(dd,true);
+				this->set_boundary(dd, true);
 			}
 		});
 
 		// change embedding indices of moved lines
-		for(uint32 i = 0; i < NB_ORBITS;++i)
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)
 			{
-				if (map.embeddings_[i] == nullptr) //set embedding to INVALID for further easy detection
+				if (map.embeddings_[i] == nullptr) // set embedding to INVALID for further easy detection
 				{
 					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 						(*emb)[j] = INVALID_INDEX;

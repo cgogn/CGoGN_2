@@ -338,6 +338,47 @@ TEST_F(CMap3Test, merge_incident_volumes)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+TEST_F(CMap3Test, merge)
+{
+	// add some elements in the current map3
+	MapBuilder mbuild(cmap_);
+
+//	Dart p1 = mbuild.add_prism_topo(3u);
+//	Dart p2 = mbuild.add_prism_topo(3u);
+//	mbuild.sew_volumes(p1, p2);
+
+//	Dart p3 = mbuild.add_pyramid_topo(4u);
+//	Dart p4 = mbuild.add_pyramid_topo(4u);
+//	mbuild.sew_volumes(p3, p4);
+
+//	mbuild.add_prism_topo(5u);
+
+//	mbuild.close_map();
+
+	// create an other map3
+//	testCMap3 map3;
+
+//	MapBuilder mbuild2(map3);
+
+//	Dart pp1 = mbuild2.add_prism_topo(3u);
+//	Dart pp2 = mbuild2.add_prism_topo(3u);
+//	mbuild2.sew_volumes(pp1, pp2);
+
+//	Dart pp3 = mbuild2.add_pyramid_topo(4u);
+//	Dart pp4 = mbuild2.add_pyramid_topo(4u);
+//	mbuild2.sew_volumes(pp3, pp4);
+
+//	mbuild2.add_prism_topo(5u);
+
+//	mbuild2.close_map();
+
+	// merge the maps
+//	cmap_.merge(map3);
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_connected_components(), 6u);
+}
+
 #undef NB_MAX
 
 } // namespace cgogn

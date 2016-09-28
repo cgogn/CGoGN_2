@@ -65,6 +65,7 @@ public:
 	using Boundary  = Volume;
 	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -2200,6 +2201,7 @@ public:
 	}
 
 protected:
+
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
@@ -2208,10 +2210,11 @@ protected:
 	{
 		const static auto create_embedding = [=] (Self* map, Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
 				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-				case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
 				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
 				case Orbit::PHI1_PHI3: map->template create_embedding<Orbit::PHI1_PHI3>(); break;
 				case Orbit::PHI2_PHI3: map->template create_embedding<Orbit::PHI2_PHI3>(); break;
@@ -2222,8 +2225,8 @@ protected:
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
-			if (!this->is_embedded(orb) && this->is_embedded(orb))
+		for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3 })
+			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
 
@@ -2235,10 +2238,11 @@ protected:
 	{
 		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-				case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
 				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI1_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI3>(d)); break;
 				case Orbit::PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI2_PHI3>(d)); break;
@@ -2249,18 +2253,115 @@ protected:
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3 })
 			{
-				for (uint32 j=first, end = this->topology_.end(); j!= end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
+	}
+
+public:
+
+	/**
+	 * @brief merge the given CMap2 in the current CMap3
+	 * @param map2
+	 * @return
+	 */
+	bool merge_map2(const CMap2<MAP_TRAITS>& map2)
+	{
+		// check attributes compatibility
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		{
+			if (this->embeddings_[i] != nullptr)
+			{
+				if (!this->attributes_[i].check_before_merge(map2.const_attribute_container(Orbit(i))))
+					return false;
+			}
+		}
+
+		// compact topology container
+		this->compact_topo();
+		uint32 first = this->topology_.size();
+
+		// ensure that orbits that are embedded in given map2 are also embedded in this map
+		const static auto create_embedding = [=] (Self* map, Orbit orb)
+		{
+			switch (orb)
+			{
+				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+				default: break;
+			}
+		};
+		for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
+			if (!this->is_embedded(orb) && map2.is_embedded(orb))
+				create_embedding(this, orb);
+
+		// store index of copied darts
+		std::vector<uint32> old_new_topo = this->topology_.template merge<PRIM_SIZE>(map2.topology_container());
+
+		// change topo relations of copied darts
+		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
+		{
+			ChunkArray<Dart>* cad = dynamic_cast<ChunkArray<Dart>*>(ptr);
+			if (cad)
+			{
+				for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
+				{
+					Dart& d = (*cad)[i];
+					uint32 idx = d.index;
+					if (old_new_topo[idx] != INVALID_INDEX)
+						d = Dart(old_new_topo[idx]);
+				}
+			}
+		}
+
+		// the boundary marker of the merged Map2 is ignored
+
+		// change embedding indices of moved lines
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		{
+			ChunkArray<uint32>* emb = this->embeddings_[i];
+			if (emb != nullptr)
+			{
+				if (!map2.is_embedded(Orbit(i))) // set embedding to INVALID for further easy detection
+				{
+					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
+						(*emb)[j] = INVALID_INDEX;
+				}
+				else
+				{
+					std::vector<uint32> old_new = this->attributes_[i].template merge<1>(map2.const_attribute_container(Orbit(i)));
+					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
+					{
+						uint32& e = (*emb)[j];
+						if (e != INVALID_INDEX)
+						{
+							if (old_new[e] != INVALID_INDEX)
+								e = old_new[e];
+						}
+					}
+				}
+			}
+		}
+
+		// embed remaining cells
+		merge_finish_embedding(first);
+
+		Builder mb(*this);
+		mb.close_map();
+
+		// ok
+		return true;
 	}
 };
 

@@ -36,6 +36,7 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3Hexa_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
+
 	static const uint8 DIMENSION = 3;
 	static const uint8 PRIM_SIZE = 24;
 
@@ -45,7 +46,6 @@ public:
 	using Self = CMap3Hexa_T<MAP_TRAITS, MAP_TYPE>;
 
 	using Builder = CMap3HexaBuilder_T<MapTraits>;
-
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap3HexaBuilder_T<MapTraits>;
@@ -61,10 +61,10 @@ public:
 	using Face		= Cell<Orbit::PHI1_PHI3>;
 	using Volume	= Cell<Orbit::PHI1_PHI2>;
 
-
 	using Boundary  = Face;
 	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -176,7 +176,6 @@ protected:
 				(phi3(phi3(d)) == d &&
 				phi3(d) != d &&
 				phi3(this->phi1(phi3(this->phi1(d)))) == d));
-
 	}
 
 	/**
@@ -228,11 +227,11 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		switch(d.index%4)
+		switch (d.index%4)
 		{
-		case 0: return Dart(d.index+1);break;
-		case 1: return Dart(d.index+1);break;
-		case 2: return Dart(d.index+1);break;
+			case 0: return Dart(d.index+1); break;
+			case 1: return Dart(d.index+1); break;
+			case 2: return Dart(d.index+1); break;
 		}
 		return Dart(d.index-3);
 	}
@@ -244,11 +243,11 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		switch(d.index%4)
+		switch (d.index%4)
 		{
-		case 1: return Dart(d.index-1);break;
-		case 2: return Dart(d.index-1);break;
-		case 3: return Dart(d.index-1);break;
+			case 1: return Dart(d.index-1); break;
+			case 2: return Dart(d.index-1); break;
+			case 3: return Dart(d.index-1); break;
 		}
 		return Dart(d.index+3);
 	}
@@ -260,11 +259,11 @@ public:
 	 */
 	inline Dart phi11(Dart d) const
 	{
-		switch(d.index%4)
+		switch (d.index%4)
 		{
-		case 0: return Dart(d.index+2);break;
-		case 1: return Dart(d.index+2);break;
-		case 2: return Dart(d.index-2);break;
+			case 0: return Dart(d.index+2); break;
+			case 1: return Dart(d.index+2); break;
+			case 2: return Dart(d.index-2); break;
 		}
 		return Dart(d.index-2);
 	}
@@ -288,7 +287,6 @@ public:
 	{
 		return (*phi3_)[d.index];
 	}
-
 
 	/**
 	 * \brief Composition of PHI calls
@@ -434,7 +432,6 @@ public:
 
 		return vol;
 	}
-
 
 public:
 
@@ -627,7 +624,6 @@ protected:
 //		f(it);
 //		it = phi2(phi_1(it));
 //		f(it);
-
 	}
 
 	template <typename FUNC>
@@ -767,9 +763,6 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_vols);
 	}
 
-
-
-
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -796,8 +789,6 @@ protected:
 		}
 	}
 
-
-
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1_until(Dart d, const FUNC& f) const
 	{
@@ -806,7 +797,6 @@ protected:
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first))) return;
-
 	}
 
 	template <typename FUNC>
@@ -882,7 +872,6 @@ protected:
 				break;
 		}
 
-
 		Dart it = d;
 		do
 		{
@@ -922,7 +911,6 @@ protected:
 		if (!f(Dart(first++))) return;
 		if (!f(Dart(first))) return;
 	}
-
 
 	// foreach_until with phi3
 
@@ -1038,9 +1026,6 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_vols);
 	}
 
-
-
-
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -1067,9 +1052,6 @@ protected:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Hexa"); break;
 		}
 	}
-
-
-
 
 	/*******************************************************************************
 	 * Incidence traversal (of dim 2)
@@ -1308,7 +1290,6 @@ public:
 		});
 	}
 
-
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
@@ -1392,7 +1373,6 @@ public:
 		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { func(Vertex(v)); });
 	}
 
-
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
@@ -1441,8 +1421,6 @@ public:
 			func(Face(f.dart));
 		});
 	}
-
-
 
 	/*******************************************************************************
 	 * Adjacence traversal (dim 3)
@@ -1669,8 +1647,6 @@ public:
 		});
 	}
 
-
-
 	inline std::pair<Vertex, Vertex> vertices(Edge e)
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
@@ -1681,9 +1657,8 @@ public:
 		return std::pair<Vertex2, Vertex2>(Vertex2(e.dart), Vertex2(this->phi1(e.dart)));
 	}
 
-
-
 protected:
+
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
@@ -1711,43 +1686,41 @@ protected:
 				create_embedding(this, orb);
 	}
 
-
 	/**
 	 * @brief ensure all cells (introduced while merging) are embedded.
 	 * @param first index of first dart to scan
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		const static auto new_orbit_embedding = [=](Self* map, Dart d, cgogn::Orbit orb)
+		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
-			case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
-			case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-			case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-			case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
-			case Orbit::PHI1_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI3>(d)); break;
-			case Orbit::PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI2_PHI3>(d)); break;
-			case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
-			case Orbit::PHI21_PHI31: map->new_orbit_embedding(Cell<Orbit::PHI21_PHI31>(d)); break;
-			case Orbit::PHI1_PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2_PHI3>(d)); break;
-			default: break;
+			switch (orb)
+			{
+				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
+				case Orbit::PHI1_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI3>(d)); break;
+				case Orbit::PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI2_PHI3>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				case Orbit::PHI21_PHI31: map->new_orbit_embedding(Cell<Orbit::PHI21_PHI31>(d)); break;
+				case Orbit::PHI1_PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2_PHI3>(d)); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3 })
 			{
-				for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
 	}
-
 };
 
 template <typename MAP_TRAITS>

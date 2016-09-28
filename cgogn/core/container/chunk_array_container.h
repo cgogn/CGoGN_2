@@ -644,7 +644,7 @@ public:
 
 	bool check_before_merge(const Self& cac)
 	{
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			// compute indice of ith names of cac in this (size if not found)
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
@@ -652,7 +652,7 @@ public:
 			{
 				if (cac.type_names_[i] != type_names_[j])
 				{
-					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					cgogn_log_warning("check_before_merge") << "same name: " << names_[j] << " but different type: " << cac.type_names_[i] << " / " << type_names_[j];
 					return false;
 				}
 			}

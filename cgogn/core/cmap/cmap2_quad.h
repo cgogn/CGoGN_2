@@ -36,6 +36,7 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2Quad_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
+
 	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 4;
 
@@ -45,7 +46,6 @@ public:
 	using Self = CMap2Quad_T<MAP_TRAITS, MAP_TYPE>;
 
 	using Builder = CMap2QuadBuilder_T<MapTraits>;
-
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2QuadBuilder_T<MapTraits>;
@@ -61,6 +61,7 @@ public:
 	using Boundary  = Face;
 	using ConnectedComponent = Volume;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -182,7 +183,6 @@ protected:
 		(*phi2_)[e.index] = d;
 	}
 
-
 	/**
 	 * \brief Remove the phi2 link between the current dart and its linked dart
 	 * @param d the dart to unlink
@@ -258,7 +258,6 @@ public:
 		return Dart(d.index-2);
 	}
 
-
 	/**
 	 * \brief phi2
 	 * @param d
@@ -268,7 +267,6 @@ public:
 	{
 		return (*phi2_)[d.index];
 	}
-
 
 	/**
 	 * \brief Composition of PHI calls
@@ -318,7 +316,6 @@ protected:
 	{
 		this->remove_topology_element(d); // this remove PRIM_SIZE darts
 	}
-
 
 	/**
 	 * \brief Add a quad in the map.
@@ -407,7 +404,6 @@ protected:
 		Dart f5 = add_quad_topo_fp();
 		Dart f6 = add_quad_topo_fp();
 
-
 		phi2_sew(f1,f2);
 		f1 = phi1(f1);
 		phi2_sew(f1,f3);
@@ -477,7 +473,6 @@ public:
 
 		return vol;
 	}
-
 
 protected:
 
@@ -551,7 +546,6 @@ public:
 					this->new_orbit_embedding(CDart(e));
 				});
 			});
-
 		}
 
 		if (this->template is_embedded<Vertex>())
@@ -609,9 +603,6 @@ public:
 
 		return f;
 	}
-
-
-
 
 protected:
 
@@ -693,7 +684,6 @@ public:
 	{
 		return codegree == 4;
 	}
-
 
 	inline uint32 codegree(Volume v) const
 	{
@@ -1133,6 +1123,7 @@ public:
 	}
 
 protected:
+
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
@@ -1156,39 +1147,37 @@ protected:
 				create_embedding(this, orb);
 	}
 
-
 	/**
 	 * @brief ensure all cells (introduced while merging) are embedded.
 	 * @param first index of first dart to scan
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		const static auto new_orbit_embedding = [=](Self* map, Dart d, cgogn::Orbit orb)
+		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
-			case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
-			case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-			case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-			case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
-			case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
-			default: break;
+			switch (orb)
+			{
+				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			{
-				for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
 	}
-
 };
 
 template <typename MAP_TRAITS>
