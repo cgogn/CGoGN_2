@@ -533,7 +533,7 @@ TEST_F(CMap3Test, merge_map2)
 	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Face::ORBIT>(), 5u);
 
 	// merge the maps
-	cmap_.merge_map2(map2);
+	cmap_.merge(map2);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 

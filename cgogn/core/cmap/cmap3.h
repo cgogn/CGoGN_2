@@ -2268,12 +2268,14 @@ protected:
 
 public:
 
+	using Inherit::Inherit::Inherit::Inherit::merge;
+
 	/**
 	 * @brief merge the given CMap2 in the current CMap3
 	 * @param map2
 	 * @return
 	 */
-	bool merge_map2(const CMap2<MAP_TRAITS>& map2)
+	bool merge(const CMap2<MAP_TRAITS>& map2)
 	{
 		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
