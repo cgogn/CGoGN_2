@@ -1452,9 +1452,10 @@ public:
 	/**
 	 * @brief merge map in this map
 	 * @param map must be of same type than map
-	 * @return
+	 * @param newdarts a DartMarker in which the new imported darts are marked
+	 * @return false if the merge can not be done (incompatible attributes), true otherwise
 	 */
-	bool merge(const ConcreteMap& map)
+	bool merge(const ConcreteMap& map, DartMarker& newdarts)
 	{
 		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
@@ -1477,6 +1478,10 @@ public:
 		// store index of copied darts
 		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
 
+		// mark new darts with the given dartmarker
+		newdarts.unmark_all();
+		map.foreach_dart([&] (Dart d) { newdarts.mark(Dart(old_new_topo[d.index])); });
+
 		// change topo relations of copied darts
 		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
 		{
@@ -1497,10 +1502,7 @@ public:
 		map.foreach_dart([&] (Dart d)
 		{
 			if (map.is_boundary(d))
-			{
-				Dart dd = Dart(old_new_topo[d.index]);
-				this->set_boundary(dd, true);
-			}
+				this->set_boundary(Dart(old_new_topo[d.index]), true);
 		});
 
 		// change embedding indices of moved lines

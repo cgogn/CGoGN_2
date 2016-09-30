@@ -2273,9 +2273,10 @@ public:
 	/**
 	 * @brief merge the given CMap2 in the current CMap3
 	 * @param map2
-	 * @return
+	 * @param newdarts a DartMarker in which the new imported darts are marked
+	 * @return false if the merge can not be done (incompatible attributes), true otherwise
 	 */
-	bool merge(const CMap2<MAP_TRAITS>& map2)
+	bool merge(const CMap2<MAP_TRAITS>& map2, DartMarker& newdarts)
 	{
 		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
@@ -2311,6 +2312,10 @@ public:
 		// store index of copied darts
 		std::vector<uint32> old_new_topo = this->topology_.template merge<PRIM_SIZE>(map2.topology_container());
 
+		// mark new darts with the given dartmarker
+		newdarts.unmark_all();
+		map2.foreach_dart([&] (Dart d) { newdarts.mark(Dart(old_new_topo[d.index])); });
+
 		// change topo relations of copied darts
 		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 		{
@@ -2335,12 +2340,20 @@ public:
 
 		// the boundary marker of the merged Map2 is ignored
 
+		// close the map
+		// and mark new darts with the dartmarker
 		Builder mb(*this);
 		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 		{
-			if (phi3(Dart(i)) == Dart(i))
+			Dart d(i);
+			if (phi3(d) == d)
 			{
-				mb.close_hole_topo(Dart(i));
+				mb.close_hole_topo(d);
+				Dart d3 = phi3(d);
+				this->foreach_dart_of_orbit(Volume(d3), [&newdarts] (Dart v)
+				{
+					newdarts.mark(v);
+				});
 			}
 		}
 

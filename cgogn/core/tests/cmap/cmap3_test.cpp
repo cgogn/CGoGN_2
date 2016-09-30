@@ -430,7 +430,8 @@ TEST_F(CMap3Test, merge)
 	EXPECT_EQ(map3.nb_cells<Face::ORBIT>(), 27u);
 
 	// merge the maps
-	cmap_.merge(map3);
+	testCMap3::DartMarker dm(cmap_);
+	cmap_.merge(map3, dm);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
@@ -533,7 +534,8 @@ TEST_F(CMap3Test, merge_map2)
 	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Face::ORBIT>(), 5u);
 
 	// merge the maps
-	cmap_.merge(map2);
+	testCMap3::DartMarker dm(cmap_);
+	cmap_.merge(map2, dm);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
