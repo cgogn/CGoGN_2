@@ -52,6 +52,7 @@ public:
 	using Boundary = Vertex;  // just for compilation
 	using ConnectedComponent = Vertex;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -201,9 +202,9 @@ protected:
 	{
 		if (this->template is_embedded<Orbit::DART>())
 		{
-			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 			{
-				if ((*this->embeddings_[Orbit::DART])[j] == std::numeric_limits<uint32>::max())
+				if ((*this->embeddings_[Orbit::DART])[j] == INVALID_INDEX)
 					this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
 			}
 		}

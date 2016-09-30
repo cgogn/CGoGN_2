@@ -407,7 +407,8 @@ TEST_F(CMap2Test, merge_map)
 		});
 	}
 
-	map1.merge(map2);
+	testCMap2::DartMarker dm(map1);
+	map1.merge(map2, dm);
 
 	EXPECT_TRUE(map1.check_map_integrity());
 	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35);

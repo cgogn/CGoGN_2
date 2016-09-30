@@ -338,6 +338,214 @@ TEST_F(CMap3Test, merge_incident_volumes)
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 
+TEST_F(CMap3Test, merge)
+{
+	// add some elements in the current map3
+	MapBuilder mbuild(cmap_);
+
+	Dart p1 = mbuild.add_prism_topo(3u);
+	Dart p2 = mbuild.add_prism_topo(3u);
+	mbuild.sew_volumes(p1, p2);
+
+	Dart p3 = mbuild.add_pyramid_topo(4u);
+	Dart p4 = mbuild.add_pyramid_topo(4u);
+	mbuild.sew_volumes(p3, p4);
+
+	mbuild.add_prism_topo(5u);
+
+	// Close the map (remove remaining boundary)
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (cmap_.phi3(d) == d) mbuild.close_hole_topo(d);
+	});
+
+	// Embed the map
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (!cmap_.is_boundary(d))
+			mbuild.new_orbit_embedding(CDart(d));
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex2 v)
+	{
+		mbuild.new_orbit_embedding(v);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
+	{
+		mbuild.new_orbit_embedding(v);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge2 e)
+	{
+		mbuild.new_orbit_embedding(e);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
+	{
+		mbuild.new_orbit_embedding(e);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face2 f)
+	{
+		mbuild.new_orbit_embedding(f);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
+	{
+		mbuild.new_orbit_embedding(f);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
+	{
+		mbuild.new_orbit_embedding(w);
+	});
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 25u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 42u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 25u);
+
+	// create an other map3
+	testCMap3 map3;
+
+	MapBuilder mbuild2(map3);
+
+	Dart pp1 = mbuild2.add_prism_topo(4u);
+	Dart pp2 = mbuild2.add_prism_topo(4u);
+	mbuild2.sew_volumes(pp1, pp2);
+
+	Dart pp3 = mbuild2.add_pyramid_topo(3u);
+	Dart pp4 = mbuild2.add_pyramid_topo(3u);
+	mbuild2.sew_volumes(pp3, pp4);
+
+	mbuild2.add_prism_topo(7u);
+
+	// Close the map (remove remaining boundary)
+	map3.foreach_dart([&] (Dart d)
+	{
+		if (map3.phi3(d) == d) mbuild2.close_hole_topo(d);
+	});
+
+	// Embed the map
+	map3.add_attribute<int32, Vertex::ORBIT>("vertices");
+	map3.add_attribute<int32, Face::ORBIT>("faces");
+
+	EXPECT_TRUE(map3.check_map_integrity());
+	EXPECT_EQ(map3.nb_cells<Vertex::ORBIT>(), 31u);
+	EXPECT_EQ(map3.nb_cells<Edge::ORBIT>(), 50u);
+	EXPECT_EQ(map3.nb_cells<Face::ORBIT>(), 27u);
+
+	// merge the maps
+	testCMap3::DartMarker dm(cmap_);
+	cmap_.merge(map3, dm);
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	EXPECT_EQ(cmap_.nb_connected_components(), 6u);
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 56u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 92u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 52u);
+}
+
+TEST_F(CMap3Test, merge_map2)
+{
+	// add some elements in the current map3
+	MapBuilder mbuild(cmap_);
+
+	Dart p1 = mbuild.add_prism_topo(3u);
+	Dart p2 = mbuild.add_prism_topo(3u);
+	mbuild.sew_volumes(p1, p2);
+
+	Dart p3 = mbuild.add_pyramid_topo(4u);
+	Dart p4 = mbuild.add_pyramid_topo(4u);
+	mbuild.sew_volumes(p3, p4);
+
+	mbuild.add_prism_topo(5u);
+
+	// Close the map (remove remaining boundary)
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (cmap_.phi3(d) == d) mbuild.close_hole_topo(d);
+	});
+
+	// Embed the map
+	cmap_.foreach_dart([&] (Dart d)
+	{
+		if (!cmap_.is_boundary(d))
+			mbuild.new_orbit_embedding(CDart(d));
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex2 v)
+	{
+		mbuild.new_orbit_embedding(v);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
+	{
+		mbuild.new_orbit_embedding(v);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge2 e)
+	{
+		mbuild.new_orbit_embedding(e);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
+	{
+		mbuild.new_orbit_embedding(e);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face2 f)
+	{
+		mbuild.new_orbit_embedding(f);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
+	{
+		mbuild.new_orbit_embedding(f);
+	});
+	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
+	{
+		mbuild.new_orbit_embedding(w);
+	});
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 25u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 42u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 25u);
+
+	// create a map2
+	CMap2<MiniMapTraits> map2;
+
+	CMap2Builder_T<MiniMapTraits> mbuild2(map2);
+
+	Dart f1 = mbuild2.add_face_topo_parent(4u);
+	Dart f2 = mbuild2.add_face_topo_parent(3u);
+	Dart f3 = mbuild2.add_face_topo_parent(3u);
+	Dart f4 = mbuild2.add_face_topo_parent(3u);
+	Dart f5 = mbuild2.add_face_topo_parent(3u);
+	mbuild2.phi2_sew(f1, f2);
+	mbuild2.phi2_sew(map2.phi<1>(f1), f3);
+	mbuild2.phi2_sew(map2.phi<11>(f1), f4);
+	mbuild2.phi2_sew(map2.phi<111>(f1), f5);
+	mbuild2.phi2_sew(map2.phi1(f2), map2.phi_1(f5));
+	mbuild2.phi2_sew(map2.phi1(f3), map2.phi_1(f2));
+	mbuild2.phi2_sew(map2.phi1(f4), map2.phi_1(f3));
+	mbuild2.phi2_sew(map2.phi1(f5), map2.phi_1(f4));
+
+	mbuild2.close_map();
+
+	// Embed the map
+	map2.add_attribute<int32, CMap2<MiniMapTraits>::Vertex::ORBIT>("vertices");
+	map2.add_attribute<int32, CMap2<MiniMapTraits>::Face::ORBIT>("faces");
+
+	EXPECT_TRUE(map2.check_map_integrity());
+	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Vertex::ORBIT>(), 5u);
+	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Edge::ORBIT>(), 8u);
+	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Face::ORBIT>(), 5u);
+
+	// merge the maps
+	testCMap3::DartMarker dm(cmap_);
+	cmap_.merge(map2, dm);
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
+	EXPECT_EQ(cmap_.nb_connected_components(), 4u);
+
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 30u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 50u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 30u);
+}
+
 #undef NB_MAX
 
 } // namespace cgogn

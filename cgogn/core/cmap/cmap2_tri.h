@@ -36,6 +36,7 @@ template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2Tri_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
+
 	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 3;
 
@@ -45,7 +46,6 @@ public:
 	using Self = CMap2Tri_T<MAP_TRAITS, MAP_TYPE>;
 
 	using Builder = CMap2TriBuilder_T<MapTraits>;
-
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
 	friend class CMap2TriBuilder_T<MapTraits>;
@@ -61,6 +61,7 @@ public:
 	using Boundary  = Face;
 	using ConnectedComponent = Volume;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -209,10 +210,10 @@ public:
 	 */
 	inline Dart phi1(Dart d) const
 	{
-		switch(d.index%3)
+		switch (d.index%3)
 		{
-		case 0: return Dart(d.index+1);break;
-		case 1: return Dart(d.index+1);break;
+			case 0: return Dart(d.index+1);break;
+			case 1: return Dart(d.index+1);break;
 		}
 		return Dart(d.index-2);
 	}
@@ -224,10 +225,10 @@ public:
 	 */
 	Dart phi_1(Dart d) const
 	{
-		switch(d.index%3)
+		switch (d.index%3)
 		{
-		case 2: return Dart(d.index-1);break;
-		case 1: return Dart(d.index-1);break;
+			case 2: return Dart(d.index-1);break;
+			case 1: return Dart(d.index-1);break;
 		}
 		return Dart(d.index+2);
 	}
@@ -242,7 +243,6 @@ public:
 		return (*phi2_)[d.index];
 	}
 
-
 	/**
 	 * \brief Composition of PHI calls
 	 * @param d
@@ -254,7 +254,7 @@ public:
 	inline Dart phi(Dart d) const
 	{
 		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
-		switch(N % 10)
+		switch (N % 10)
 		{
 			case 1 : return phi1(phi<N / 10>(d)) ;
 			case 2 : return phi2(phi<N / 10>(d)) ;
@@ -560,7 +560,6 @@ public:
 		Dart d2 = phi2(phi_1(phi2(e.dart)));
 		// dart for edge of other side, and vertex
 		Dart d1 = collapse_edge_topo(e.dart);
-
 
 		Vertex v(d1);
 		if (this->template is_embedded<Vertex>())
@@ -908,8 +907,6 @@ public:
 
 		return vc;
 	}
-
-
 
 protected:
 
@@ -1427,6 +1424,7 @@ public:
 	}
 
 protected:
+
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
 	 * @param map
@@ -1450,39 +1448,37 @@ protected:
 				create_embedding(this, orb);
 	}
 
-
 	/**
 	 * @brief ensure all cells (introduced while merging) are embedded.
 	 * @param first index of first dart to scan
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		const static auto new_orbit_embedding = [=](Self* map, Dart d, cgogn::Orbit orb)
+		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
-			case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
-			case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-			case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-			case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
-			case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
-			default: break;
+			switch (orb)
+			{
+				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			{
-				for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
 	}
-
 };
 
 template <typename MAP_TRAITS>
