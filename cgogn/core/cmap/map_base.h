@@ -739,7 +739,7 @@ protected:
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,true);
+			set_boundary(d, true);
 		});
 	}
 
@@ -749,7 +749,7 @@ protected:
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,false);
+			set_boundary(d, false);
 		});
 	}
 	/*******************************************************************************

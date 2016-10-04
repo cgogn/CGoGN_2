@@ -2352,6 +2352,7 @@ public:
 				Dart d3 = phi3(d);
 				this->foreach_dart_of_orbit(Volume(d3), [&newdarts] (Dart v)
 				{
+					set_boundary(v, true);
 					newdarts.mark(v);
 				});
 			}
