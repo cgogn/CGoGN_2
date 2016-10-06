@@ -49,7 +49,7 @@ public:
 	};
 
 	using testCMap3 = CMap3<MiniMapTraits>;
-	using MapBuilder = CMap3Builder_T<testCMap3>;
+	using MapBuilder = testCMap3::Builder;
 	using CDart = testCMap3::CDart;
 	using Vertex2 = testCMap3::Vertex2;
 	using Vertex = testCMap3::Vertex;
@@ -506,7 +506,7 @@ TEST_F(CMap3Test, merge_map2)
 	// create a map2
 	CMap2<MiniMapTraits> map2;
 
-	CMap2Builder_T<MiniMapTraits> mbuild2(map2);
+	CMap2<MiniMapTraits>::Builder mbuild2(map2);
 
 	Dart f1 = mbuild2.add_face_topo_parent(4u);
 	Dart f2 = mbuild2.add_face_topo_parent(3u);

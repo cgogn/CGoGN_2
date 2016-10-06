@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <cgogn/core/cmap/cmap2_tri_builder.h>
+#include <cgogn/core/cmap/cmap2_tri.h>
 
 namespace cgogn
 {
@@ -50,7 +50,7 @@ public:
 	};
 
 	using testCMap2Tri = CMap2Tri<MiniMapTraits>;
-	using MapBuilder = CMap2TriBuilder_T<MiniMapTraits>;
+	using MapBuilder = testCMap2Tri::Builder;
 	using CDart = testCMap2Tri::CDart;
 	using Vertex = testCMap2Tri::Vertex;
 	using Edge = testCMap2Tri::Edge;

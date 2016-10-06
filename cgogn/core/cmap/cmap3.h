@@ -48,7 +48,7 @@ public:
 	using Builder = CMap3Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class Builder;
+	friend class CMap3Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
