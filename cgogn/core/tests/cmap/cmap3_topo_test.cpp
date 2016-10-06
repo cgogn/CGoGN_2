@@ -44,7 +44,7 @@ class CMap3TopoTest : public CMap3<DefaultMapTraits>, public ::testing::Test
 public:
 
 	using Inherit = CMap3<DefaultMapTraits>;
-	using MapBuilder = CMap3Builder_T<DefaultMapTraits>;
+	using MapBuilder = CMap3Builder_T<CMap3<DefaultMapTraits>>;
 	using Vertex2 = CMap3TopoTest::Vertex2;
 	using Vertex = CMap3TopoTest::Vertex;
 	using Edge2 = CMap3TopoTest::Edge2;

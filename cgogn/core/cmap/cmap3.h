@@ -30,7 +30,7 @@ namespace cgogn
 {
 
 // forward declaration of CMap3Builder_T
-template <typename MAP_TRAITS> class CMap3Builder_T;
+template <typename Map3> class CMap3Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
@@ -45,11 +45,10 @@ public:
 	using MapType = MAP_TYPE;
 	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap3_T<MAP_TRAITS, MAP_TYPE>;
-
-	using Builder = CMap3Builder_T<MapTraits>;
+	using Builder = CMap3Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap3Builder_T<MapTraits>;
+	friend class Builder;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 

@@ -439,7 +439,7 @@ void TopoDrawer::update_color(Dart d, const RGB& rgb)
 		vbo_color_darts_->bind();
 		float32 rgbf[6] = {float32(rgb[0]),float32(rgb[1]),float32(rgb[2]),
 						  float32(rgb[0]),float32(rgb[1]),float32(rgb[2])};
-		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->copy_data(uint32(x)*24u, 24u, rgbf);
 		vbo_color_darts_->release();
 	}
 }

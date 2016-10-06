@@ -49,7 +49,7 @@ public:
 	};
 
 	using testCMap3 = CMap3<MiniMapTraits>;
-	using MapBuilder = CMap3Builder_T<MiniMapTraits>;
+	using MapBuilder = CMap3Builder_T<testCMap3>;
 	using CDart = testCMap3::CDart;
 	using Vertex2 = testCMap3::Vertex2;
 	using Vertex = testCMap3::Vertex;

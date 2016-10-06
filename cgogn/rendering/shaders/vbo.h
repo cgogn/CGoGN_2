@@ -203,7 +203,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 
 	uint32 byte_chunk_size;
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
-	const uint32 nb_chunks = chunk_addr.size();
+	const uint32 nb_chunks = uint32(chunk_addr.size());
 
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
@@ -265,7 +265,7 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	const typename ATTR::TChunkArray* ca = attr.data();
 	uint32 byte_chunk_size;
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
-	const uint32 nb_chunks = chunk_addr.size();
+	const uint32 nb_chunks = uint32(chunk_addr.size());
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value || is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>");

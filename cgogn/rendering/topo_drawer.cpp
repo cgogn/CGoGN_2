@@ -123,7 +123,7 @@ void TopoDrawer::update_color(Dart d, const QColor& rgb)
 		vbo_color_darts_->bind();
 		float32 rgbf[6] = {float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF()),
 						  float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF())};
-		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->copy_data(uint32(x)*24u, 24u, rgbf);
 		vbo_color_darts_->release();
 	}
 }
