@@ -32,6 +32,7 @@ namespace cgogn
 template <typename MAP2>
 class CMap2Builder_T
 {
+	static_assert(MAP2::DIMENSION == 2,"CMap2Builder_T works only with 2D Maps.");
 public:
 
 	using Self = CMap2Builder_T<MAP2>;

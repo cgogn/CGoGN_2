@@ -32,6 +32,7 @@ namespace cgogn
 template <typename MAP3>
 class CMap3Builder_T
 {
+	static_assert(MAP3::DIMENSION == 3,"CMap3Builder_T works only with 3D Maps.");
 public:
 	using Self = CMap3Builder_T<MAP3>;
 	using Map3 = MAP3;
