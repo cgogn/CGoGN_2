@@ -281,7 +281,10 @@ protected:
 	{
 		cgogn_message_assert(size == 3u, "Can create only triangles");
 		if (size != 3)
-			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a triangle";
+		{
+			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a triangle in CMap2Tri";
+			return Dart();
+		}
 		return add_tri_topo_fp();
 	}
 

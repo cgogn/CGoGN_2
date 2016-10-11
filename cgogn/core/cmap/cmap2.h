@@ -337,7 +337,7 @@ protected:
 	 * Each edge is adjacent to a triangular face.
 	 * These triangles are pairwise sewn to build the top of the pyramid.
 	 */
-	inline Dart add_pyramid_topo(uint32 size)
+	inline Dart add_pyramid_topo(std::size_t size)
 	{
 		cgogn_message_assert(size > 0u, "The pyramid cannot be empty");
 
@@ -364,7 +364,7 @@ protected:
 	 * A set of n pairwise linked quads are built.
 	 * These quads are sewn to the base and top faces.
 	 */
-	Dart add_prism_topo(uint32 size)
+	Dart add_prism_topo(std::size_t size)
 	{
 		cgogn_message_assert(size > 0u, "The prism cannot be empty");
 
@@ -896,11 +896,11 @@ public:
 protected:
 
 	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point for PHI2).
-	 * \param d : a vertex of the hole
-	 * \return a vertex of the face that closes the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
+	 * \brief Close the topological hole that contains Dart d (a fixed point of phi2 relation)
+	 * \param d a dart incident to the hole
+	 * \return a dart of the face that closes the hole
+	 * This method is used to close a CMap2 that has been built through the 2-sewing of 1-faces
+	 * A face is inserted on the boundary that begins at dart d
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
@@ -978,7 +978,7 @@ protected:
 	 */
 	inline uint32 close_map()
 	{
-		uint32 nb_holes = 0;
+		uint32 nb_holes = 0u;
 
 		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		this->foreach_dart([&] (Dart d)

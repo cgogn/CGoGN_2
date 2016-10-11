@@ -229,7 +229,7 @@ public:
 
 			if (vol_type == VolumeType::Tetra) //tetrahedral case
 			{
-				const Dart d = mbuild.add_pyramid_topo(3u);
+				const Dart d = mbuild.add_pyramid_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -257,7 +257,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Pyramid) //pyramidal case
 			{
-				Dart d = mbuild.add_pyramid_topo(4u);
+				Dart d = mbuild.add_pyramid_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -286,7 +286,7 @@ public:
 			}
 			else if (vol_type == VolumeType::TriangularPrism) //prism case
 			{
-				Dart d = mbuild.add_prism_topo(3u);
+				Dart d = mbuild.add_prism_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -316,7 +316,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Hexa) //hexahedral case
 			{
-				Dart d = mbuild.add_prism_topo(4u);
+				Dart d = mbuild.add_prism_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -390,7 +390,7 @@ public:
 
 					if (degD == degGD) // normal case : the two opposite faces have the same degree
 					{
-						mbuild.sew_volumes(d, good_dart);
+						mbuild.sew_volumes_fp(d, good_dart);
 						dart_marker.unmark_orbit(Face(d));
 					}
 					else
@@ -412,7 +412,7 @@ public:
 							}
 
 							// we add a stamp volume between the faces
-							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
 								Dart q1_it = d;
 								Dart q2_it = map.phi_1(d_quad);
@@ -424,15 +424,15 @@ public:
 								} while (q1_it != d);
 							}
 
-							mbuild.sew_volumes(d, map.phi1(map.phi1(d_quad)));
+							mbuild.sew_volumes_fp(d, map.phi1(map.phi1(d_quad)));
 							dart_marker.unmark_orbit(Face(d));
 
-							mbuild.sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
+							mbuild.sew_volumes_fp(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
 							dart_marker.unmark_orbit(Face(good_dart));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(another_good_dart, map.phi2(d_quad));
+								mbuild.sew_volumes_fp(another_good_dart, map.phi2(d_quad));
 								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else
@@ -456,7 +456,7 @@ public:
 								}
 							}
 
-							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
 								Dart q1_it = good_dart;
 								Dart q2_it = d_quad;
@@ -468,15 +468,15 @@ public:
 								} while (q1_it != good_dart);
 							}
 
-							mbuild.sew_volumes(d_quad, map.phi_1(good_dart));
+							mbuild.sew_volumes_fp(d_quad, map.phi_1(good_dart));
 							dart_marker.unmark_orbit(Face(good_dart));
 
-							mbuild.sew_volumes(d, map.phi2(map.phi_1(d_quad)));
+							mbuild.sew_volumes_fp(d, map.phi2(map.phi_1(d_quad)));
 							dart_marker.unmark_orbit(Face(d));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
+								mbuild.sew_volumes_fp(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
 								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else

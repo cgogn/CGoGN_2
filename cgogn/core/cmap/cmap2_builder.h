@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
 
 #include <cgogn/core/cmap/map_base.h>
 
@@ -51,6 +51,9 @@ public:
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
+
+	inline ~CMap2Builder_T()
+	{}
 
 public:
 
@@ -132,5 +135,5 @@ private:
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
 

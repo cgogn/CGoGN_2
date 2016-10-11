@@ -25,12 +25,10 @@
 #define CGOGN_CORE_CMAP_CMAP3_H_
 
 #include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
-
-// forward declaration of CMap3Builder_T
-template <typename Map3> class CMap3Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
@@ -38,13 +36,13 @@ class CMap3_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>
 public:
 
 	static const uint8 DIMENSION = 3;
-
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
 	using Inherit = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap3_T<MAP_TRAITS, MAP_TYPE>;
+
 	using Builder = CMap3Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
@@ -258,10 +256,33 @@ public:
 protected:
 
 	/**
-	 * @brief add_stamp_volume_topo : a flat volume with one face composed of two triangles and another compose of one quad
+	 * @brief add_pyramid_topo_fp adds a new pyramid whose base is composed of size sides
+	 * Darts are fixed points of phi3 relation
+	 * @param size number of sides of the base of the pyramid
+	 * @return a dart of the base face
+	 */
+	inline Dart add_pyramid_topo_fp(std::size_t size)
+	{
+		return Inherit::add_pyramid_topo(size);
+	}
+
+	/**
+	 * @brief add_prism_topo_fp adds a new prism whose base is composed of size sides
+	 * Darts are fixed points of phi3 relation
+	 * @param size number of sides of the base of the prism
+	 * @return a dart of the base face
+	 */
+	inline Dart add_prism_topo_fp(std::size_t size)
+	{
+		return Inherit::add_prism_topo(size);
+	}
+
+	/**
+	 * @brief add_stamp_volume_topo_fp : a flat volume with one face composed of two triangles and another composed of one quad
+	 * Darts are fixed points of phi3 relation
 	 * @return a dart of the quad
 	 */
-	Dart add_stamp_volume_topo()
+	inline Dart add_stamp_volume_topo_fp()
 	{
 		const Dart d_quad = Inherit::Inherit::add_face_topo(4u);
 		const Dart d_tri1 = Inherit::Inherit::add_face_topo(3u);
@@ -274,6 +295,31 @@ protected:
 		this->phi2_sew(this->phi_1(d_quad), this->phi_1(d_tri1));
 
 		return d_quad;
+	}
+
+	/**
+	 * @brief sew two volumes along a face
+	 * The darts given in the Volume parameters must be part of Face2 that have
+	 * a similar co-degree and whose darts are all phi3 fix points
+	 * @param v1 first volume
+	 * @param v2 second volume
+	 */
+	inline void sew_volumes_fp(Dart v1, Dart v2)
+	{
+		cgogn_message_assert(phi3(v1) == v1 &&
+							 phi3(v2) == v2 &&
+							 codegree(Face(v1)) == codegree(Face(v1)) &&
+							 !this->same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
+
+		Dart it1 = v1;
+		Dart it2 = v2;
+		const Dart begin = it1;
+		do
+		{
+			phi3_sew(it1, it2);
+			it1 = this->phi1(it1);
+			it2 = this->phi_1(it2);
+		} while (it1 != begin);
 	}
 
 	/**
@@ -1326,6 +1372,138 @@ public:
 		this->delete_volume_topo(w);
 	}
 
+protected:
+
+	/**
+	 * @brief close_hole_topo closes the topological hole that contains Dart d (a fixed point of phi3 relation)
+	 * @param d a dart incident to the hole
+	 * @return a dart of the volume that closes the hole
+	 */
+	inline Dart close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+
+		DartMarkerStore dmarker(*this);
+		DartMarkerStore boundary_marker(*this);
+
+		std::vector<Dart> visitedFaces;	// Faces that are traversed
+		visitedFaces.reserve(1024u);
+
+		visitedFaces.push_back(d);		// Start with the face of d
+		dmarker.mark_orbit(Face2(d));
+
+		uint32 count = 0u;
+
+		// For every face added to the list
+		for(uint32 i = 0u; i < visitedFaces.size(); ++i)
+		{
+			Dart it = visitedFaces[i];
+			Dart f = it;
+
+			const Dart b = this->add_face_topo(codegree(Face(f)));
+			boundary_marker.mark_orbit(Face2(b));
+			++count;
+
+			Dart bit = b;
+			do
+			{
+				Dart e = phi3(this->phi2(f));
+				bool found = false;
+				do
+				{
+					if (phi3(e) == e)
+					{
+						found = true;
+						if (!dmarker.is_marked(e))
+						{
+							visitedFaces.push_back(e);
+							dmarker.mark_orbit(Face2(e));
+						}
+					}
+					else
+					{
+						if (boundary_marker.is_marked(e))
+						{
+							found = true;
+							this->phi2_sew(e, bit);
+						}
+						else
+							e = phi3(this->phi2(e));
+					}
+				} while(!found);
+
+				phi3_sew(f, bit);
+				bit = this->phi_1(bit);
+				f = this->phi1(f);
+			} while(f != it);
+		}
+
+		return phi3(d);
+	}
+
+	inline Volume close_hole(Dart d)
+	{
+		const Volume v(close_hole_topo(d));
+
+		if (this->template is_embedded<Vertex>())
+		{
+			this->foreach_dart_of_orbit(v, [this] (Dart it)
+			{
+				this->template copy_embedding<Vertex>(it, this->phi1(phi3(it)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->foreach_dart_of_orbit(v, [this] (Dart it)
+			{
+				this->template copy_embedding<Edge>(it, phi3(it));
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			this->foreach_dart_of_orbit(v, [this] (Dart it)
+			{
+				this->template copy_embedding<Face>(it, phi3(it));
+			});
+		}
+
+		return v;
+	}
+
+	/**
+	 * @brief close_map closes the map removing topological holes (only for import/creation)
+	 * Add volumes to the map that close every existing hole.
+	 * @return the number of closed holes
+	 */
+	inline uint32 close_map()
+	{
+		uint32 nb_holes = 0;
+
+		// Search the map for topological holes (fix points of phi3)
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi3(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi3(d) == d)
+			{
+				Volume v = close_hole(d);
+				this->boundary_mark(v);
+				++nb_holes;
+			}
+		}
+
+		dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -2347,7 +2525,7 @@ public:
 			Dart d(i);
 			if (phi3(d) == d)
 			{
-				mb.close_hole_topo(d);
+				close_hole_topo(d);
 				Dart d3 = phi3(d);
 				this->foreach_dart_of_orbit(Volume(d3), [this, &newdarts] (Dart v)
 				{
@@ -2421,7 +2599,5 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CM
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn
-
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP3_H_

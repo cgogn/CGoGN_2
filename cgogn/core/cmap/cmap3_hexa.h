@@ -25,12 +25,10 @@
 #define CGOGN_CORE_CMAP_CMAP3_HEXA_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
-
-// forward declaration of CMap3HexaBuilder_T
-template <typename MAP_TRAITS> class CMap3HexaBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap3Hexa_T : public MapBase<MAP_TRAITS, MAP_TYPE>
@@ -45,10 +43,10 @@ public:
 	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap3Hexa_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap3HexaBuilder_T<MapTraits>;
+	using Builder = CMap3Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap3HexaBuilder_T<MapTraits>;
+	friend class CMap3Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -329,6 +327,56 @@ protected:
 		return d;
 	}
 
+	inline Dart add_pyramid_topo_fp(std::size_t size)
+	{
+		cgogn_message_assert(false, "Can create only hexa");
+		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
+		return Dart();
+	}
+
+	inline Dart add_prism_topo_fp(std::size_t size)
+	{
+		cgogn_message_assert(size == 4u, "Can create only tetra");
+		if (size != 4)
+		{
+			cgogn_log_warning("add_pyramid_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
+			return Dart();
+		}
+		return add_hexa_topo_fp();
+	}
+
+	inline Dart add_stamp_volume_topo_fp()
+	{
+		cgogn_message_assert(false, "Can create only tetra");
+		cgogn_log_warning("add_stamp_volume_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
+		return Dart();
+	}
+
+	/**
+	 * @brief sew two volumes along a face
+	 * The darts given in the Volume parameters must be part of Face2 that have
+	 * a similar co-degree and whose darts are all phi3 fix points
+	 * @param v1 first volume
+	 * @param v2 second volume
+	 */
+	inline void sew_volumes_fp(Dart v1, Dart v2)
+	{
+		cgogn_message_assert(phi3(v1) == v1 &&
+							 phi3(v2) == v2 &&
+							 codegree(Face(v1)) == codegree(Face(v1)) &&
+							 !this->same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
+
+		Dart it1 = v1;
+		Dart it2 = v2;
+		const Dart begin = it1;
+		do
+		{
+			phi3_sew(it1, it2);
+			it1 = this->phi1(it1);
+			it2 = this->phi_1(it2);
+		} while (it1 != begin);
+	}
+
 	/**
 	 * @brief remove a hexahedron (24 darts)
 	 * @param d
@@ -377,7 +425,7 @@ protected:
 		phi3_sew(Dart(di),Dart(ei + 20)); ++di;
 		phi3_sew(Dart(di),Dart(ei + 23)); ++di;
 
-		for (uint32 k=0; k<24; ++k)
+		for (uint32 k = 0; k < 24; ++k)
 			this->set_boundary(Dart(ei++), true);
 
 		return d;
@@ -432,6 +480,142 @@ public:
 
 		return vol;
 	}
+
+protected:
+
+	/**
+	 * @brief close_hole_topo closes the topological hole that contains Dart d (a fixed point of phi3 relation)
+	 * @param d a dart incident to the hole
+	 * @return a dart of the volume that closes the hole
+	 */
+	void close_hole_topo(Dart d, bool mark_boundary=false)
+	{
+		cgogn_message_assert(phi3(d) == d, "CMap3Hexa: close hole called on a dart that is not a phi3 fix point");
+
+		DartMarkerStore fmarker(*this);
+		DartMarkerStore boundary_marker(*this);
+
+		std::vector<Dart> visited_faces; // Faces that are traversed
+		visited_faces.reserve(1024u);
+
+		visited_faces.push_back(d);		// Start with the face of d
+		fmarker.mark_orbit(Face2(d));
+
+		auto local_func = [&] (Dart f)
+		{
+			Dart e = phi3(this->phi2(f));
+			bool found = false;
+			do
+			{
+				if (phi3(e) == e)
+				{
+					found = true;
+					if (!fmarker.is_marked(e))
+					{
+						visited_faces.push_back(e);
+						fmarker.mark_orbit(Face2(e));
+					}
+				}
+				else
+				{
+					if (boundary_marker.is_marked(e))
+					{
+						found = true;
+						sew_volumes_fp(phi<32>(f), this->phi2(e));
+					}
+					else
+						e = phi3(this->phi2(e));
+				}
+			} while (!found);
+		};
+
+		// For every face added to the list
+		for(uint32 i = 0u; i < visited_faces.size(); ++i)
+		{
+			Dart f = visited_faces[i];
+
+			const Dart tb = add_hexa_topo_fp();
+			boundary_marker.mark_orbit(Volume(tb));
+			sew_volumes_fp(tb, f);
+
+			local_func(f);
+			f = this->phi1(f);
+			local_func(f);
+			f = this->phi1(f);
+			local_func(f);
+			f = this->phi1(f);
+			local_func(f);
+		}
+
+		if (mark_boundary)
+		{
+			for (Dart d: *(boundary_marker.marked_darts()))
+				this->set_boundary(d, true);
+		}
+	}
+
+	/**
+	 * @brief close_map closes the map removing topological holes (only for import/creation)
+	 * Add volumes to the map that close every existing hole.
+	 * @return the number of closed holes
+	 */
+	inline uint32 close_map()
+	{
+		uint32 nb_holes = 0u;
+
+		// Search the map for topological holes (fix points of phi3)
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi3(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi3(d) == d)
+			{
+				close_hole_topo(d, true);
+				++nb_holes;
+			}
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			for (Dart d : (*fix_point_darts))
+			{
+				Dart e = phi3(d);
+				this->template copy_embedding<Vertex>(this->phi2(e), d);
+				e = this->phi1(e);
+				this->template copy_embedding<Vertex>(e, d);
+				this->template copy_embedding<Vertex>(phi<21>(e), d);
+			}
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			for (Dart d : (*fix_point_darts))
+			{
+				Dart e = phi3(d);
+				this->template copy_embedding<Edge>(e, d);
+				this->template copy_embedding<Edge>(this->phi2(e), d);
+			}
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			for (Dart d : (*fix_point_darts))
+				this->template copy_embedding<Face>(phi3(d), d);
+		}
+
+		dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
+	/*******************************************************************************
+	 * Connectivity information
+	 *******************************************************************************/
 
 public:
 
@@ -1752,7 +1936,5 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa<DefaultMapTraits>
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
-
-#include <cgogn/core/cmap/cmap3_hexa_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP3_HEXA_H_

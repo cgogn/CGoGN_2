@@ -310,7 +310,10 @@ protected:
 	{
 		cgogn_message_assert(size == 4u, "Can create only quads");
 		if (size != 4)
-			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a quad";
+		{
+			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a quad in CMap2Quad";
+			return Dart();
+		}
 		return add_quad_topo_fp();
 	}
 
