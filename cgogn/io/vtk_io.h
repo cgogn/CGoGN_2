@@ -1567,7 +1567,7 @@ protected:
 			}
 		}
 
-		add_vtk_volumes(cells_buffer, *cell_types_vec, *(this->position_attribute()));
+		add_vtk_volumes(cells_buffer, *cell_types_vec);
 
 		return true;
 	}
@@ -1584,7 +1584,7 @@ protected:
 
 		ChunkArray<VEC3>* pos = this->position_attribute();
 		cgogn_assert(pos != nullptr);
-		add_vtk_volumes(*cells_vec,*cell_types_vec, *pos);
+		add_vtk_volumes(*cells_vec,*cell_types_vec);
 
 		return true;
 	}
@@ -1607,7 +1607,7 @@ protected:
 		}
 	}
 
-	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
+	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol)
 	{
 		const uint32 nb_volumes = uint32(type_vol.size());
 		uint32 curr_offset = 0;

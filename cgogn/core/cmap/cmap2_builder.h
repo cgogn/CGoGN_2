@@ -29,23 +29,24 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
+template <typename MAP2>
 class CMap2Builder_T
 {
+	static_assert(MAP2::DIMENSION == 2,"CMap2Builder_T works only with 2D Maps.");
 public:
 
-	using Self = CMap2Builder_T<MAP_TRAITS>;
-	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
-	using CDart = typename CMap2::CDart;
-	using Vertex = typename CMap2::Vertex;
-	using Edge = typename CMap2::Edge;
-	using Face = typename CMap2::Face;
-	using Volume = typename CMap2::Volume;
+	using Self = CMap2Builder_T<MAP2>;
+	using Map2 = MAP2;
+	using CDart = typename Map2::CDart;
+	using Vertex = typename Map2::Vertex;
+	using Edge = typename Map2::Edge;
+	using Face = typename Map2::Face;
+	using Volume = typename Map2::Volume;
 
 	template <typename T>
-	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Map2::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(CMap2& map) : map_(map)
+	inline CMap2Builder_T(Map2& map) : map_(map)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
@@ -88,7 +89,7 @@ public:
 
 	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
-		return map_.CMap2::Inherit::add_face_topo(nb_edges);
+		return map_.Map2::Inherit::add_face_topo(nb_edges);
 	}
 
 	inline Dart close_hole_topo(Dart d)
@@ -186,13 +187,13 @@ public:
 
 private:
 
-	CMap2& map_;
+	Map2& map_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<CMap2<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
+using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn
 

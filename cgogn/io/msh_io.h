@@ -124,14 +124,14 @@ protected:
 	virtual uint32 msh_insert_line_vertex_container() = 0;
 	virtual void msh_clear() = 0;
 	virtual void msh_reserve(uint32 n) = 0;
-	virtual void msh_add_triangle(uint32 p0, uint32 p1, uint32 p2) {}
-	virtual void msh_add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3) {}
-	virtual void msh_add_face(const std::vector<uint32>& v_ids) {}
-	virtual void msh_add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation) {}
-	virtual void msh_add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation) {}
-	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) {}
-	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) {}
-	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) {}
+	virtual void msh_add_triangle(uint32 p0, uint32 p1, uint32 p2) { unused_parameters(p0, p1, p2); }
+	virtual void msh_add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3) { unused_parameters(p0, p1, p2, p3); }
+	virtual void msh_add_face(const std::vector<uint32>& v_ids) { unused_parameters(v_ids); }
+	virtual void msh_add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation) { unused_parameters(p0, p1, p2, p3, check_orientation); }
+	virtual void msh_add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation) { unused_parameters(p0, p1, p2, p3, p4, p5, p6, p7, check_orientation); }
+	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) { unused_parameters(p0, p1, p2, p3, p4, check_orientation); }
+	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) { unused_parameters(p0, p1, p2, p3, p4, p5, check_orientation); }
+	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) { unused_parameters(p0, p1, p2, p3); }
 
 
 	inline static std::string skip_empty_lines(std::istream& data_stream)
@@ -706,6 +706,7 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
+		unused_parameters(option);
 		ChunkArrayGen const* pos = this->position_attribute();
 //		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 //		const std::string format = (option.binary_?"binary" :"ascii");

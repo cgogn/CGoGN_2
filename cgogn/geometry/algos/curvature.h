@@ -57,6 +57,7 @@ void curvature(
 	using Edge2 = Cell<Orbit::PHI2>;
 	using Face = typename MAP::Face;
 
+	unused_parameters(edge_area);
 	// collect the normal cycle tensor
 	geometry::Collector_WithinSphere<VEC3, MAP> neighborhood(map, radius, position);
 	neighborhood.collect(v);

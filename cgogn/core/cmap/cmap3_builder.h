@@ -29,27 +29,27 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
+template <typename MAP3>
 class CMap3Builder_T
 {
+	static_assert(MAP3::DIMENSION == 3,"CMap3Builder_T works only with 3D Maps.");
 public:
+	using Self = CMap3Builder_T<MAP3>;
+	using Map3 = MAP3;
+	using CDart = typename Map3::CDart;
+	using Vertex = typename Map3::Vertex;
+	using Vertex2 = typename Map3::Vertex2;
+	using Edge = typename Map3::Edge;
+	using Edge2 = typename Map3::Edge2;
+	using Face = typename Map3::Face;
+	using Face2 = typename Map3::Face2;
+	using Volume = typename Map3::Volume;
 
-	using Self = CMap3Builder_T<MAP_TRAITS>;
-	using CMap3 = cgogn::CMap3<MAP_TRAITS>;
-	using CDart = typename CMap3::CDart;
-	using Vertex = typename CMap3::Vertex;
-	using Vertex2 = typename CMap3::Vertex2;
-	using Edge = typename CMap3::Edge;
-	using Edge2 = typename CMap3::Edge2;
-	using Face = typename CMap3::Face;
-	using Face2 = typename CMap3::Face2;
-	using Volume = typename CMap3::Volume;
-
-	using DartMarkerStore = typename CMap3::DartMarkerStore;
+	using DartMarkerStore = typename Map3::DartMarkerStore;
 	template <typename T>
-	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Map3::template ChunkArrayContainer<T>;
 
-	inline CMap3Builder_T(CMap3& map) : map_(map)
+	inline CMap3Builder_T(Map3& map) : map_(map)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Builder_T);
@@ -174,7 +174,7 @@ public:
 			Dart it = visitedFaces[i];
 			Dart f = it;
 
-			const Dart b = map_.CMap3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
+			const Dart b = map_.Map3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
 			boundary_marker.mark_orbit(Face2(b));
 			++count;
 
@@ -266,14 +266,14 @@ public:
 
 private:
 
-	CMap3& map_;
+	Map3& map_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<DefaultMapTraits>;
+extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
 
-using CMap3Builder = cgogn::CMap3Builder_T<DefaultMapTraits>;
+using CMap3Builder = cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn
 

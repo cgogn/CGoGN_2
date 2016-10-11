@@ -90,7 +90,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfTetrahedra);
 			std::array<int, 4> ids;
-			for (int i = 0 ; i < number_of_tetras; ++i)
+			for (uint32 i = 0; i < number_of_tetras; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfTetrahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
@@ -104,7 +104,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfHexahedra);
 			std::array<int, 8> ids;
-			for (int i = 0 ; i < number_of_hexas; ++i)
+			for (uint32 i = 0 ; i < number_of_hexas; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfHexahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ids[6], &ids[7], &ref);
 				for (auto& id : ids)
@@ -118,7 +118,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfPrisms);
 			std::array<int, 6> ids;
-			for (int i = 0 ; i < number_of_prisms; ++i)
+			for (uint32 i = 0; i < number_of_prisms; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfPrisms, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ref);
 				for (auto& id : ids)
@@ -131,7 +131,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfPyramids);
 			std::array<int, 5> ids;
-			for (int i = 0 ; i < number_of_pyramids; ++i)
+			for (uint32 i = 0; i < number_of_pyramids; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfPyramids, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ref);
 				for (auto& id : ids)
@@ -199,7 +199,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfTriangles);
 			std::array<int, 3> ids;
-			for (int i = 0 ; i < number_of_triangles; ++i)
+			for (uint32 i = 0; i < number_of_triangles; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfTriangles, &ids[0],&ids[1], &ids[2], &ref);
 				for (auto& id : ids)
@@ -213,7 +213,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfQuadrilaterals);
 			std::array<int, 4> ids;
-			for (int i = 0 ; i < number_of_quads; ++i)
+			for (uint32 i = 0; i < number_of_quads; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfQuadrilaterals, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
