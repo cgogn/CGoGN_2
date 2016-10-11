@@ -131,7 +131,7 @@ public:
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-				Dart d = mbuild.add_face_topo_parent(nbe);
+				Dart d = mbuild.add_face_topo_fp(nbe);
 				for (uint32 j = 0u; j < nbe; ++j)
 				{
 					const uint32 vertex_index = vertices_buffer[j];

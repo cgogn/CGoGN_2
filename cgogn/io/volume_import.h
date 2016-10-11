@@ -201,6 +201,7 @@ public:
 		static_assert(Map::DIMENSION == 3, "must use map of dim 3 in volume import");
 
 		using Vertex = typename Map::Vertex;
+		using Vertex2 = typename Map::Vertex2;
 		using Volume = typename Map::Volume;
 		using Face = typename Map::Face;
 		using Face2 = typename Map::Face2;
@@ -243,7 +244,7 @@ public:
 				for (const Dart dv : vertices_of_tetra)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -272,7 +273,7 @@ public:
 				for (Dart dv : vertices_of_pyramid)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -302,7 +303,7 @@ public:
 				for (Dart dv : vertices_of_prism)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -334,7 +335,7 @@ public:
 				for (Dart dv : vertices_of_hexa)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -417,7 +418,7 @@ public:
 								Dart q2_it = map.phi_1(d_quad);
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
+									mbuild.template set_orbit_embedding<Vertex>(Vertex2(q2_it), map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != d);
@@ -461,7 +462,7 @@ public:
 								Dart q2_it = d_quad;
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
+									mbuild.template set_orbit_embedding<Vertex>(Vertex2(q2_it), map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != good_dart);

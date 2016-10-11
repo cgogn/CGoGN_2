@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
@@ -113,7 +113,7 @@ protected:
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
 			uint32 n = 1u + std::rand() % 10u;
-			Dart d = mbuild.add_face_topo_parent(n);
+			Dart d = mbuild.add_face_topo_fp(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs of edges
@@ -253,8 +253,8 @@ TEST_F(CMap2Test, merge_incident_faces)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart f1 = mbuild.add_face_topo_parent(5u);
-	Dart f2 = mbuild.add_face_topo_parent(3u);
+	Dart f1 = mbuild.add_face_topo_fp(5u);
+	Dart f2 = mbuild.add_face_topo_fp(3u);
 	mbuild.phi2_sew(f1, f2);
 
 	// Close the map (remove remaining boundary)

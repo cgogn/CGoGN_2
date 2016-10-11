@@ -28,6 +28,6 @@
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2<cgogn::DefaultMapTraits>>;
+//	template class CGOGN_CORE_API cgogn::CMap2Builder_T<cgogn::CMap2<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn

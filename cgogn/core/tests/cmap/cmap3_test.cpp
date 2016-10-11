@@ -508,11 +508,11 @@ TEST_F(CMap3Test, merge_map2)
 
 	CMap2<MiniMapTraits>::Builder mbuild2(map2);
 
-	Dart f1 = mbuild2.add_face_topo_parent(4u);
-	Dart f2 = mbuild2.add_face_topo_parent(3u);
-	Dart f3 = mbuild2.add_face_topo_parent(3u);
-	Dart f4 = mbuild2.add_face_topo_parent(3u);
-	Dart f5 = mbuild2.add_face_topo_parent(3u);
+	Dart f1 = mbuild2.add_face_topo_fp(4u);
+	Dart f2 = mbuild2.add_face_topo_fp(3u);
+	Dart f3 = mbuild2.add_face_topo_fp(3u);
+	Dart f4 = mbuild2.add_face_topo_fp(3u);
+	Dart f5 = mbuild2.add_face_topo_fp(3u);
 	mbuild2.phi2_sew(f1, f2);
 	mbuild2.phi2_sew(map2.phi<1>(f1), f3);
 	mbuild2.phi2_sew(map2.phi<11>(f1), f4);

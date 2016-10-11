@@ -25,12 +25,10 @@
 #define CGOGN_CORE_CMAP_CMAP2_QUAD_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
-
-// forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS> class CMap2QuadBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2Quad_T : public MapBase<MAP_TRAITS, MAP_TYPE>
@@ -45,10 +43,10 @@ public:
 	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap2Quad_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap2QuadBuilder_T<MapTraits>;
+	using Builder = CMap2Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap2QuadBuilder_T<MapTraits>;
+	friend class CMap2Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -306,6 +304,14 @@ protected:
 		Dart d = this->add_topology_element(); // this insert PRIM_SIZE darts
 		// no need to set phi1
 		return d;
+	}
+
+	inline Dart add_face_topo_fp(std::size_t size)
+	{
+		cgogn_message_assert(size == 4u, "Can create only quads");
+		if (size != 4)
+			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a quad";
+		return add_quad_topo_fp();
 	}
 
 	/**
@@ -641,6 +647,79 @@ protected:
 		phi2_sew(phi_1(prec_quad), phi1(first));
 
 		return first;
+	}
+
+	/**
+	 * @brief Close (not really) a hole with a set of quad.
+	 * @return a face of the fan
+	 */
+	inline Face close_hole(Dart d)
+	{
+		//	const Face f(map_.close_hole_topo(d));
+		Dart dh = close_hole_topo(d);
+
+		Dart di = dh;
+
+		do
+		{
+			Dart di0 = phi2(di);
+			Dart di1 = phi1(di);
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(di, phi1(di0));
+				this->template copy_embedding<Vertex>(di1, di0);
+			}
+
+			if (this->template is_embedded<Edge>())
+			{
+				this->template copy_embedding<Edge>(di,di0);
+			}
+
+			if (this->template is_embedded<Volume>())
+			{
+				this->template set_orbit_embedding<Volume>(Face(di), this->embedding(Volume(d)));
+			}
+
+			di = phi<21>(di1);
+		} while (di != dh);
+
+		return Face(dh);
+	}
+
+	/**
+	 * @brief close_map
+	 * @return the number of holes (filled)
+	 */
+	inline int32 close_map()
+	{
+		uint32 nb_holes = 0;
+
+		std::vector<Dart>* fix_point_darts = cgogn::dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi2(d) == d)
+			{
+				Face f = close_hole(d);
+				Dart df = f.dart;
+				do
+				{
+					this->boundary_mark(Face(df));
+					df = phi<121>(df);
+				} while (df != f.dart);
+				++nb_holes;
+			}
+		}
+
+		cgogn::dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
 	}
 
 	/*******************************************************************************
@@ -1209,7 +1288,5 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
-
-#include <cgogn/core/cmap/cmap2_quad_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP2_QUAD_H_

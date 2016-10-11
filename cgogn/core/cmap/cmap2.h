@@ -25,19 +25,17 @@
 #define CGOGN_CORE_CMAP_CMAP2_H_
 
 #include <cgogn/core/cmap/cmap1.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
-
-// forward declaration of CMap2Builder_T
-template <typename Map2> class CMap2Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
 {
 public:
-	static const uint8 DIMENSION = 2;
 
+	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
@@ -267,6 +265,16 @@ protected:
 		});
 
 		return d;
+	}
+
+	/**
+	 * \brief Add a face whose darts are in fixed point for phi2 relation
+	 * \param size : the number of darts in the built face
+	 * \return A dart of the built face.
+	 */
+	Dart add_face_topo_fp(std::size_t size)
+	{
+		return Inherit::add_face_topo(size);
 	}
 
 public:
@@ -921,6 +929,79 @@ protected:
 		return first;
 	}
 
+	/*!
+	 * \brief Close a hole with a new face and update the embedding of incident cells.
+	 * \param d : a vertex of the hole
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * A face is inserted on the boundary that begin at dart d.
+	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
+	 * the embedding of the inserted face and incident cells are automatically updated.
+	 * More precisely :
+	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
+	 */
+	inline Face close_hole(Dart d)
+	{
+		const Face f(close_hole_topo(d));
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart it)
+			{
+				this->template copy_embedding<Vertex>(it, this->phi1(phi2(it)));
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_dart_of_orbit(f, [this] (Dart it)
+			{
+				this->template copy_embedding<Edge>(it, phi2(it));
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+		{
+			this->template set_orbit_embedding<Volume>(f, this->embedding(Volume(d)));
+		}
+
+		return f;
+	}
+
+	/*!
+	 * \brief Close the map by inserting faces in its holes and update the embedding of incident cells.
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
+	 * the embedding of the inserted faces and incident cells are automatically updated.
+	 * More precisely :
+	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
+	 * If the indexation of embedding was unique, the closed map is well embedded.
+	 */
+	inline uint32 close_map()
+	{
+		uint32 nb_holes = 0;
+
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi2(d) == d)
+			{
+				Face f = close_hole(d);
+				this->boundary_mark(f);
+				++nb_holes;
+			}
+		}
+
+		dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -1472,8 +1553,5 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CM
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
-
-
-#include <cgogn/core/cmap/cmap2_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP2_H_

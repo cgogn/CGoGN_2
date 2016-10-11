@@ -49,8 +49,6 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename CMap3Hexa::template ChunkArrayContainer<T>;
 
-
-
 	inline CMap3HexaBuilder_T(CMap3Hexa& map) : map_(map)
 	{}
 
@@ -82,6 +80,12 @@ public:
 	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
+	}
+
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.set_orbit_embedding<CellType>(c, emb);
 	}
 
 	template <class CellType>
@@ -133,7 +137,6 @@ public:
 		return Dart();
 	}
 
-
 	/**
 	 * @brief sew two hexahedra along a face
 	 * The darts given in the parameters must be part of Face2 that have
@@ -161,7 +164,6 @@ public:
 		phi3_sew(dv1, dv2);
 	}
 
-
 	void close_hole_topo(Dart d, bool mark_boundary=false)
 	{
 		cgogn_message_assert(map_.phi3(d) == d, "CMap3Hexa: close hole called on a dart that is not a phi3 fix point");
@@ -173,7 +175,6 @@ public:
 		visited_faces.reserve(1024);
 		visited_faces.push_back(d);		// Start with the face of d
 		fmarker.mark_orbit(Face2(d));
-
 
 		auto local_func = [&] (Dart f)
 		{
@@ -228,10 +229,7 @@ public:
 				map_.set_boundary(d,true);
 			}
 		}
-
-
 	}
-
 
 	/**
 	 * @brief close_map : /!\ DO NOT USE /!\ Close the map removing topological holes (only for import/creation)
@@ -298,6 +296,4 @@ using CMap3HexaBuilder = cgogn::CMap3HexaBuilder_T<DefaultMapTraits>;
 
 } // namespace cgogn
 
-
 #endif // CGOGN_CORE_CMAP_CMAP3_HEXA_BUILDER_H_
-

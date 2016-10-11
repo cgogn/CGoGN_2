@@ -71,14 +71,6 @@ public:
 		map_.attributes_[ORBIT].swap(cac);
 	}
 
-	inline void init_parent_vertex_embedding(Dart d, uint32 emb)
-	{
-		map_.foreach_dart_of_orbit(Vertex2(d), [&] (Dart dit)
-		{
-			map_.template set_embedding<Vertex>(dit, emb);
-		});
-	}
-
 	inline void phi3_sew(Dart d, Dart e)
 	{
 		return map_.phi3_sew(d,e);
@@ -108,6 +100,12 @@ public:
 	inline void set_embedding(Dart d, uint32 emb)
 	{
 		map_.template set_embedding<CellType>(d, emb);
+	}
+
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.set_orbit_embedding<CellType>(c, emb);
 	}
 
 	template <class CellType>
