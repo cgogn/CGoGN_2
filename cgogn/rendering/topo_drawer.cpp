@@ -113,6 +113,26 @@ void TopoDrawer::Renderer::set_clipping_plane(const QVector4D& p)
 	param_rp_->plane_clip_ = p;
 }
 
+void TopoDrawer::Renderer::set_clipping_plane2(const QVector4D& p)
+{
+	param_bl_->plane_clip2_ = p;
+	param_bl2_->plane_clip2_ = p;
+	param_rp_->plane_clip2_ = p;
+}
+
+
+void TopoDrawer::Renderer::set_thick_clipping_plane(const QVector4D& p, float32 th)
+{
+	QVector4D p1 = p;
+	p1[3] -= th/2.0f;
+	set_clipping_plane(p1);
+
+	QVector4D p2 = -p;
+	p2[3] -= th/2.0f;
+	set_clipping_plane2(p2);
+}
+
+
 void TopoDrawer::update_color(Dart d, const QColor& rgb)
 {
 	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
