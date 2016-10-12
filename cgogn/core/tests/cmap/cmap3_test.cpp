@@ -101,6 +101,8 @@ TEST_F(CMap3Test, cut_edge)
 	cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 
+	EXPECT_TRUE(cmap_.check_map_integrity());
+
 	cmap_.cut_edge(Edge(p1));
 	cmap_.cut_edge(Edge(cmap_.phi1(p1)));
 	cmap_.cut_edge(Edge(cmap_.phi<21>(p1)));

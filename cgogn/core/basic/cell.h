@@ -44,10 +44,10 @@ enum Orbit: uint32
 	DART = 0,
 	PHI1,
 	PHI2,
+	PHI21,
 	PHI1_PHI2,
 	PHI1_PHI3,
 	PHI2_PHI3,
-	PHI21,
 	PHI21_PHI31,
 	PHI1_PHI2_PHI3
 };
@@ -61,10 +61,10 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::DART: return "cgogn::Orbit::DART"; break;
 		case Orbit::PHI1: return "cgogn::Orbit::PHI1"; break;
 		case Orbit::PHI2: return "cgogn::Orbit::PHI2"; break;
+		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI1_PHI2: return "cgogn::Orbit::PHI1_PHI2"; break;
 		case Orbit::PHI1_PHI3: return "cgogn::Orbit::PHI1_PHI3"; break;
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
-		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
 		case Orbit::PHI1_PHI2_PHI3: return "cgogn::Orbit::PHI1_PHI2_PHI3"; break;
 //		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;

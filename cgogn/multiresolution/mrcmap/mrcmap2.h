@@ -103,8 +103,8 @@ public:
 			case Orbit::DART: foreach_dart_of_orbit(c, f); break;
 			case Orbit::PHI1: foreach_dart_of_orbit(c, f); break;
 			case Orbit::PHI2: //TODO add a foreach_dart_of_edge to cmap2 f(c.dart); f(phi2(c.dart)); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:

@@ -319,15 +319,15 @@ public:
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 ||
-					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
+					  ORBIT == Orbit::PHI2 || ORBIT == Orbit::PHI21 || ORBIT == Orbit::PHI1_PHI2,
 					  "Orbit not supported in a CMap2");
 		switch (ORBIT)
 		{
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI21: this->foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			default: cgogn_assert_not_reached("Cells of this dimension are not handled"); break;

@@ -953,7 +953,7 @@ protected:
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
-					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
+					  ORBIT == Orbit::PHI21 || ORBIT == Orbit::PHI1_PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
 					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3Tetra");
@@ -963,8 +963,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI2_PHI3:foreach_dart_of_PHI2_PHI3(c.dart, f); break;
 			case Orbit::PHI1_PHI3:foreach_dart_of_PHI1_PHI3(c.dart, f); break;
 			case Orbit::PHI21_PHI31:foreach_dart_of_PHI21_PHI31(c.dart, f); break;
@@ -1217,7 +1217,7 @@ protected:
 		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
-					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21 ||
+					  ORBIT == Orbit::PHI21 || ORBIT == Orbit::PHI1_PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI3 || ORBIT == Orbit::PHI2_PHI3 ||
 					  ORBIT == Orbit::PHI21_PHI31 || ORBIT == Orbit::PHI1_PHI2_PHI3,
 					  "Orbit not supported in a CMap3Hexa");
@@ -1227,8 +1227,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI2_PHI3:foreach_dart_of_PHI2_PHI3_until(c.dart, f); break;
 			case Orbit::PHI1_PHI3:foreach_dart_of_PHI1_PHI3_until(c.dart, f); break;
 			case Orbit::PHI21_PHI31:foreach_dart_of_PHI21_PHI31_until(c.dart, f); break;
@@ -1849,23 +1849,23 @@ protected:
 	 */
 	void merge_check_embedding(const Self& map)
 	{
-		const static auto create_embedding = [=](Self* map, Orbit orb)
+		const static auto create_embedding = [=] (Self* map, Orbit orb)
 		{
 			switch (orb) {
-			case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
-			case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-			case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
-			case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
-			case Orbit::PHI1_PHI3: map->template create_embedding<Orbit::PHI1_PHI3>(); break;
-			case Orbit::PHI2_PHI3: map->template create_embedding<Orbit::PHI2_PHI3>(); break;
-			case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
-			case Orbit::PHI21_PHI31: map->template create_embedding<Orbit::PHI21_PHI31>(); break;
-			case Orbit::PHI1_PHI2_PHI3: map->template create_embedding<Orbit::PHI1_PHI2_PHI3>(); break;
-			default: break;
+				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				case Orbit::PHI1_PHI3: map->template create_embedding<Orbit::PHI1_PHI3>(); break;
+				case Orbit::PHI2_PHI3: map->template create_embedding<Orbit::PHI2_PHI3>(); break;
+				case Orbit::PHI21_PHI31: map->template create_embedding<Orbit::PHI21_PHI31>(); break;
+				case Orbit::PHI1_PHI2_PHI3: map->template create_embedding<Orbit::PHI1_PHI2_PHI3>(); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21_PHI31, PHI1_PHI2_PHI3 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
@@ -1883,10 +1883,10 @@ protected:
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
 				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
 				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI1_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI3>(d)); break;
 				case Orbit::PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI2_PHI3>(d)); break;
-				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
 				case Orbit::PHI21_PHI31: map->new_orbit_embedding(Cell<Orbit::PHI21_PHI31>(d)); break;
 				case Orbit::PHI1_PHI2_PHI3: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2_PHI3>(d)); break;
 				default: break;
@@ -1895,7 +1895,7 @@ protected:
 
 		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21, PHI21_PHI31, PHI1_PHI2_PHI3 })
+			for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21_PHI31, PHI1_PHI2_PHI3 })
 			{
 				if (this->is_embedded(orb))
 				{
