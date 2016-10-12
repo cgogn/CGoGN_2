@@ -109,6 +109,9 @@ public:
 	inline Collector(const MAP& m) : map_(m)
 	{}
 
+	Collector& operator=(const Collector&) = delete;
+	Collector& operator=(Collector&&) = delete;
+
 	virtual void collect(const Vertex center) = 0;
 	virtual void collect(const Dart v_center) override
 	{
@@ -148,6 +151,9 @@ public:
 
 	Collector_OneRing(const MAP& map) : Inherit(map)
 	{}
+
+	Collector_OneRing& operator=(const Collector_OneRing&) = delete;
+	Collector_OneRing& operator=(Collector_OneRing&&) = delete;
 
 	void collect(const Vertex center) override
 	{
@@ -198,6 +204,9 @@ public:
 		radius_(radius),
 		position_(position)
 	{}
+
+	Collector_WithinSphere& operator=(const Collector_WithinSphere&) = delete;
+	Collector_WithinSphere& operator=(Collector_WithinSphere&&) = delete;
 
 	void collect(const Vertex center) override
 	{

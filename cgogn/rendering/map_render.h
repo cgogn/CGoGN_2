@@ -217,6 +217,7 @@ protected:
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 		-> typename std::enable_if<MAP::DIMENSION == 3 && !std::is_same<MASK, BoundaryCache<MAP>>::value, void>::type
 	{
+		unused_parameters(mask);
 		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
 		BoundaryCache<MAP> bcache(m);
 		init_boundaries(m, bcache, table_indices);

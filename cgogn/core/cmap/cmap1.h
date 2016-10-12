@@ -53,6 +53,7 @@ public:
 	using Boundary = Vertex;
 	using ConnectedComponent = Face;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -70,6 +71,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
@@ -527,7 +530,7 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func](Dart v) {func(Vertex(v));});
+		foreach_dart_of_orbit(f, [&func] (Dart v) { func(Vertex(v)); });
 	}
 
 protected:
@@ -551,21 +554,21 @@ protected:
 	 */
 	void merge_finish_embedding(uint32 first)
 	{
-		if (this->template is_embedded<Orbit::DART>())
-			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+		for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
+		{
+			if (this->template is_embedded<Orbit::DART>())
 			{
-				if ((*this->embeddings_[Orbit::DART])[j] == std::numeric_limits<uint32>::max())
+				if (!this->is_boundary(Dart(j)) && (*this->embeddings_[Orbit::DART])[j] == INVALID_INDEX)
 					this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
 			}
 
-		if (this->template is_embedded<Orbit::PHI1>())
-			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			if (this->template is_embedded<Orbit::PHI1>())
 			{
-				if ((*this->embeddings_[Orbit::PHI1])[j] == std::numeric_limits<uint32>::max())
+				if (!this->is_boundary(Dart(j)) && (*this->embeddings_[Orbit::PHI1])[j] == INVALID_INDEX)
 					this->new_orbit_embedding(Cell<Orbit::PHI1>(Dart(j)));
 			}
+		}
 	}
-
 };
 
 template <typename MAP_TRAITS>
@@ -584,6 +587,8 @@ extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))

@@ -30,7 +30,7 @@ namespace cgogn
 {
 
 // forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS> class CMap2Builder_T;
+template <typename Map2> class CMap2Builder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
@@ -45,10 +45,10 @@ public:
 	using Inherit = CMap1_T<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap2_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap2Builder_T<MapTraits>;
+	using Builder = CMap2Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap2Builder_T<MapTraits>;
+	friend class CMap2Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -61,6 +61,7 @@ public:
 	using Boundary  = Face;
 	using ConnectedComponent = Volume;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -83,6 +84,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
@@ -229,8 +232,8 @@ public:
 	template <uint64 N>
 	inline Dart phi(Dart d) const
 	{
-		static_assert((N % 10) <= 2, "Composition of PHI: invalid index");
-		switch(N % 10)
+		static_assert((N % 10) <= 2, "Composition of PHI: invalid index (phi1/phi2 only)");
+		switch (N % 10)
 		{
 			case 1 : return this->phi1(phi<N / 10>(d));
 			case 2 : return this->phi2(phi<N / 10>(d));
@@ -363,15 +366,15 @@ protected:
 		for (uint32 i = 1u; i < size; ++i)						// Next quads
 		{
 			Dart next = this->Inherit::add_face_topo(4u);
-			this->phi2_sew(this->phi_1(current), this->phi1(next));
+			phi2_sew(this->phi_1(current), this->phi1(next));
 			current = next;
 		}
 
-		this->phi2_sew(this->phi_1(current), this->phi1(first));// Close the quad strip
+		phi2_sew(this->phi_1(current), this->phi1(first)); // Close the quad strip
 
-		this->close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
+		close_hole_topo(this->phi1(this->phi1(first)));	// Add the top face
 
-		return this->close_hole_topo(first);					// Add the base face
+		return close_hole_topo(first);					// Add the base face
 	}
 
 	/**
@@ -832,8 +835,8 @@ protected:
 public:
 
 	/**
-	 * @brief Unsew the faces incident to the edge of d
-	 * @param d : dart of the edge
+	 * @brief Unsew the faces incident to the edge e
+	 * @param e : the edge
 	 * @return true if the faces have been unsewn, false otherwise
 	 * The two faces are detached, a 2-sided boundary face is inserted.
 	 * For each of the two end vertices of the edge, if it is already incident to a boundary
@@ -1391,21 +1394,21 @@ protected:
 	{
 		const static auto create_embedding = [=] (Self* map, Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
 				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-				case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
 				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
 				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
 				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
-
 
 	/**
 	 * @brief ensure all cells (introduced while merging) are embedded.
@@ -1415,30 +1418,29 @@ protected:
 	{
 		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
-			switch (orb) {
+			switch (orb)
+			{
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-				case Orbit::PHI2:map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
 				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
 				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			if (this->is_embedded(orb))
+			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
 			{
-				for (uint32 j=first, end = this->topology_.end(); j!= end; this->topology_.next(j))
+				if (this->is_embedded(orb))
 				{
-					if (((orb != Boundary::ORBIT) && (orb != Orbit::DART)) || (!this->is_boundary(Dart(j))))
-						if ((*this->embeddings_[orb])[j] == INVALID_INDEX)
-							new_orbit_embedding(this, Dart(j), orb);
+					if (!this->is_boundary(Dart(j)) && (*this->embeddings_[orb])[j] == INVALID_INDEX)
+						new_orbit_embedding(this, Dart(j), orb);
 				}
 			}
 		}
 	}
-
 };
 
 template <typename MAP_TRAITS>
@@ -1459,6 +1461,10 @@ extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<D
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;

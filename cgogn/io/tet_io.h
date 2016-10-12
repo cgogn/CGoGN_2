@@ -38,10 +38,10 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class TetVolumeImport : public VolumeFileImport<MAP_TRAITS>
+class TetVolumeImport : public VolumeFileImport<MAP_TRAITS, VEC3>
 {
-	using Inherit = VolumeFileImport<MAP_TRAITS>;
-	using Self = TetVolumeImport<MAP_TRAITS,VEC3>;
+	using Inherit = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using Self = TetVolumeImport<MAP_TRAITS, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -49,7 +49,7 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -125,10 +125,10 @@ protected:
 
 			switch (nbv)
 			{
-				case 4: this->add_tetra(*position, ids[1], ids[2], ids[3], ids[0], false); break;
-				case 5: this->add_pyramid(*position, ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
-				case 6: this->add_triangular_prism(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;
-				case 8: this->add_hexa(*position, ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2], true); break;
+				case 4: this->add_tetra(ids[1], ids[2], ids[3], ids[0], false); break;
+				case 5: this->add_pyramid(ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
+				case 6: this->add_triangular_prism(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;
+				case 8: this->add_hexa(ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2], true); break;
 				default:
 					cgogn_log_warning("TetVolumeImport") << "Elements with " << nbv << " vertices are not handled. Ignoring.";
 					break;

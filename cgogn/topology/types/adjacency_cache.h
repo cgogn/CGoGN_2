@@ -33,7 +33,6 @@ namespace cgogn
 namespace topology
 {
 
-
 template <typename MAP>
 class AdjacencyCache
 {
@@ -63,9 +62,7 @@ public:
 	const AdjacencyCache& operator=(const AdjacencyCache& ) = delete;
 
 	inline ~AdjacencyCache()
-	{
-//		map_.remove_attribute(adjacency_);
-	}
+	{}
 
 	void init()
 	{
@@ -85,7 +82,6 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		for (Vertex u : adjacency_[v]) f(u);
 	}
-
 
 private:
 	MAP& map_;

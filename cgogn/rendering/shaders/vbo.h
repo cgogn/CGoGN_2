@@ -201,9 +201,10 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	// set vbo name based on attribute name
 	vbo->set_name(attr.name());
 
-	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
+	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
+	const uint32 nb_chunks = uint32(chunk_addr.size());
+
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
@@ -226,7 +227,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 		{
 			// transform double into float
 			float32* fit = float_buffer;
-			float64* src = reinterpret_cast<float64*>(chunk_addr[i]);
+			const float64* src = reinterpret_cast<const float64*>(chunk_addr[i]);
 			for (uint32 j = 0; j < ATTR::CHUNK_SIZE * vec_dim; ++j)
 				*fit++ = *src++;
 			vbo->bind();
@@ -262,9 +263,9 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.data();
-	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
+	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
+	const uint32 nb_chunks = uint32(chunk_addr.size());
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value || is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>");
@@ -279,7 +280,7 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
-		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
+		const InputConvert* typed_chunk = static_cast<const InputConvert*>(chunk_addr[i]);
 		for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
 			*dst++ = convert(typed_chunk[j]);
 	}
@@ -320,13 +321,12 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 
 	// get chunk data pointers
 	const typename ATTR::TChunkArray* ca = attr.data();
-	std::vector<void*> chunk_addr;
 	uint32 byte_chunk_size;
-	uint32 nb_chunks = ca->chunks_pointers(chunk_addr, byte_chunk_size);
+	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
+	const uint32 nb_chunks = chunk_addr.size();
 
 	const typename ATTR::TChunkArray* ca2 = attr2.data();
-	std::vector<void*> chunk_addr2;
-	ca2->chunks_pointers(chunk_addr2, byte_chunk_size);
+	std::vector<const void*> chunk_addr2 = ca2->chunks_pointers(byte_chunk_size);
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value ||is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>" );
@@ -343,8 +343,8 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 	for (uint32 i = 0; i < nb_chunks; ++i)
 	{
-		InputConvert* typed_chunk = static_cast<InputConvert*>(chunk_addr[i]);
-		InputConvert2* typed_chunk2 = static_cast<InputConvert2*>(chunk_addr2[i]);
+		const InputConvert* typed_chunk = static_cast<const InputConvert*>(chunk_addr[i]);
+		const InputConvert2* typed_chunk2 = static_cast<const InputConvert2*>(chunk_addr2[i]);
 		for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
 			*dst++ = convert(typed_chunk[j],typed_chunk2[j]);
 	}

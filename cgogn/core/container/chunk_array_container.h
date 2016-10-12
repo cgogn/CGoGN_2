@@ -249,7 +249,17 @@ public:
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return
 	 */
-	inline std::vector<ChunkArrayGen*>& chunk_arrays()
+	inline std::vector<const ChunkArrayGen*> chunk_arrays() const
+	{
+		// NOTE : using reinterpret_cast to change a std::vector<U>& to a std::vector<const U>& is undefined. We need to perform a copy.
+		std::vector<const ChunkArrayGen*> res;
+		res.reserve(table_arrays_.size());
+		for (const auto& ca : table_arrays_)
+			res.push_back(ca);
+		return res;
+	}
+
+	inline const std::vector<ChunkArrayGen*>& chunk_arrays()
 	{
 		return table_arrays_;
 	}
@@ -634,7 +644,7 @@ public:
 
 	bool check_before_merge(const Self& cac)
 	{
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			// compute indice of ith names of cac in this (size if not found)
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
@@ -642,7 +652,7 @@ public:
 			{
 				if (cac.type_names_[i] != type_names_[j])
 				{
-					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					cgogn_log_warning("check_before_merge") << "same name: " << names_[j] << " but different type: " << cac.type_names_[i] << " / " << type_names_[j];
 					return false;
 				}
 			}
@@ -692,7 +702,8 @@ public:
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
-				refs_[nl]= cac.refs_[ol]; //copy nb refs counter
+				init_markers_of_line(nl); // raz markers of new lines
+				refs_[nl]= cac.refs_[ol]; // copy nb refs counter
 				map_old_new[ol] = nl;
 				uint32 nb_att = uint32(cac.table_arrays_.size());
 				for (uint32 k=0; k<nb_att; ++k)

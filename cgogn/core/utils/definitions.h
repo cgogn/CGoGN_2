@@ -149,4 +149,13 @@
 	CLASSNAME& operator=(const CLASSNAME&) = delete;\
 	CLASSNAME& operator=(CLASSNAME&&) = delete
 
+namespace cgogn
+{
+// this function can be used to avoid warnings when not using function parameters
+template<class... T>
+inline void unused_parameters(T&&...)
+{}
+
+} // namespace cgogn
+
 #endif // CGOGN_CORE_UTILS_DEFINITIONS_H_

@@ -83,6 +83,8 @@ public:
 	using CellMarker = cgogn::CellMarker<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -161,7 +163,7 @@ protected:
 	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		for(uint32 jdx=idx; jdx<idx+ConcreteMap::PRIM_SIZE; ++jdx)
+		for(uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
 		{
 			this->topology_.init_markers_of_line(jdx);
 			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
@@ -737,7 +739,7 @@ protected:
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,true);
+			set_boundary(d, true);
 		});
 	}
 
@@ -747,7 +749,7 @@ protected:
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,false);
+			set_boundary(d, false);
 		});
 	}
 	/*******************************************************************************
@@ -1450,11 +1452,12 @@ public:
 	/**
 	 * @brief merge map in this map
 	 * @param map must be of same type than map
-	 * @return
+	 * @param newdarts a DartMarker in which the new imported darts are marked
+	 * @return false if the merge can not be done (incompatible attributes), true otherwise
 	 */
-	bool merge(const ConcreteMap& map)
+	bool merge(const ConcreteMap& map, DartMarker& newdarts)
 	{
-		// check attribute compatibility
+		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
@@ -1464,14 +1467,20 @@ public:
 			}
 		}
 
-		// compact and store index of copied darts
+		// compact topology container
 		this->compact_topo();
 		uint32 first = this->topology_.size();
 
-		//
+		// ensure that orbits that are embedded in given map are also embedded in this map
 		ConcreteMap* concrete = to_concrete();
 		concrete->merge_check_embedding(map);
+
+		// store index of copied darts
 		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
+
+		// mark new darts with the given dartmarker
+		newdarts.unmark_all();
+		map.foreach_dart([&] (Dart d) { newdarts.mark(Dart(old_new_topo[d.index])); });
 
 		// change topo relations of copied darts
 		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
@@ -1493,19 +1502,16 @@ public:
 		map.foreach_dart([&] (Dart d)
 		{
 			if (map.is_boundary(d))
-			{
-				Dart dd = Dart(old_new_topo[d.index]);
-				this->set_boundary(dd,true);
-			}
+				this->set_boundary(Dart(old_new_topo[d.index]), true);
 		});
 
 		// change embedding indices of moved lines
-		for(uint32 i = 0; i < NB_ORBITS;++i)
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)
 			{
-				if (map.embeddings_[i] == nullptr) //set embedding to INVALID for further easy detection
+				if (map.embeddings_[i] == nullptr) // set embedding to INVALID for further easy detection
 				{
 					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 						(*emb)[j] = INVALID_INDEX;

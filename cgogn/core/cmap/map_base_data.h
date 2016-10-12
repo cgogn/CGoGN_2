@@ -315,7 +315,7 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert(emb != INVALID_INDEX,"cannot set an embedding to INVALID_INDEX.");
+		cgogn_message_assert(emb != INVALID_INDEX, "cannot set an embedding to INVALID_INDEX.");
 
 		const uint32 old = (*embeddings_[ORBIT])[d.index];
 

@@ -727,6 +727,7 @@ bool FrameManipulator::set_orientation(const QVector3D& X, const QVector3D& Y)
 
 void FrameManipulator::set_transformation( const QMatrix4x4& transfo)
 {
+	unused_parameters(transfo);
 	// TODO E.S.: transfo parameter is not used. It seems wrong.
 	QVector4D col = rotations_.column(3);
 	set_position(QVector3D(col[0],col[1],col[2]));

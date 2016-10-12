@@ -76,7 +76,7 @@ public:
 	using VolumeAttribute = Attribute<T, Self::VOLUME>;
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
-
+	using Builder = CMap3Builder_T<Self>;
 	ChunkArray<uint32>* next_level_cell[NB_ORBITS];
 
 

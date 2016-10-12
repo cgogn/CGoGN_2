@@ -35,6 +35,8 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
+	map_export.cpp
+	map_import.cpp
 	surface_import.cpp
 	surface_export.cpp
 	volume_import.cpp

@@ -30,16 +30,20 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
-template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
-template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API MshIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3d>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3f>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
+template class CGOGN_IO_API MshSurfaceExport<CMap2<DefaultMapTraits>>;
 template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
 
 } // namespace io

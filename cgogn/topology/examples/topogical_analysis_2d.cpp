@@ -21,12 +21,31 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/core/basic/dart_marker.h>
+#include "topogical_analysis.h"
 
-namespace cgogn
+using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+
+int main(int argc, char** argv)
 {
+	std::string filename;
+	if (argc < 2)
+	{
+		cgogn_log_info("topogical_analysis") << "USAGE: " << argv[0] << " [filename]";
+		filename = std::string(DEFAULT_MESH_PATH) + std::string("/off/aneurysm_3D.off");
+		cgogn_log_info("topogical_analysis") << "Using default mesh \"" << filename << "\".";
+	}
+	else
+		filename = std::string(argv[1]);
 
-//DartMarkerGen::~DartMarkerGen()
-//{}
+	QApplication application(argc, argv);
+	qoglviewer::init_ogl_context();
 
-} // namespace cgogn
+	// Instantiate the viewer.
+	TopologicalAnalyser<CMap2> viewer;
+	viewer.setWindowTitle("Topological Analysis");
+	viewer.import(filename);
+	viewer.show();
+
+	// Run main loop.
+	return application.exec();
+}

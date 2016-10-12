@@ -81,13 +81,13 @@ protected:
 	std::vector<Vec3f> darts_pos_;
 	std::vector<Dart> darts_id_;
 
-	template <typename VEC3, typename MAP>
-	void update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
-	template <typename VEC3, typename MAP>
-	void update_map3(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
 public:
+	template <typename VEC3, typename MAP>
+	typename std::enable_if<MAP::DIMENSION == 2, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+
+	template <typename VEC3, typename MAP>
+	typename std::enable_if<MAP::DIMENSION == 3, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+
 
 	class CGOGN_RENDERING_API Renderer
 	{
@@ -118,7 +118,6 @@ public:
 		void set_clipping_plane2(const QVector4D& p);
 
 		void set_thick_clipping_plane(const QVector4D& p, float32 th);
-
 	};
 
 	using Self = TopoDrawer;
@@ -150,18 +149,6 @@ public:
 	inline void set_explode_face(float32 x) { shrink_f_ = x; }
 
 	inline void set_explode_edge(float32 x) { shrink_e_ = x; }
-
-	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 2>::type* = nullptr>
-	void update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
-	{
-		this->update_map2<VEC3, MAP>(m, position);
-	}
-
-	template <typename VEC3, typename MAP, typename std::enable_if<MAP::DIMENSION == 3>::type* = nullptr>
-	void update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
-	{
-		this->update_map3<VEC3, MAP>(m, position);
-	}
 
 	/**
 	 * @brief update colors of darts
@@ -211,7 +198,7 @@ public:
 
 
 template <typename VEC3, typename MAP>
-void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -310,7 +297,7 @@ void TopoDrawer::update_map2(const MAP& m, const typename MAP::template VertexAt
 }
 
 template <typename VEC3, typename MAP>
-void TopoDrawer::update_map3(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -461,7 +448,7 @@ void TopoDrawer::update_color(Dart d, const RGB& rgb)
 		vbo_color_darts_->bind();
 		float32 rgbf[6] = {float32(rgb[0]),float32(rgb[1]),float32(rgb[2]),
 						  float32(rgb[0]),float32(rgb[1]),float32(rgb[2])};
-		vbo_color_darts_->copy_data(x*24, 24, rgbf);
+		vbo_color_darts_->copy_data(uint32(x)*24u, 24u, rgbf);
 		vbo_color_darts_->release();
 	}
 }
