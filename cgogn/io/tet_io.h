@@ -38,10 +38,10 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class TetVolumeImport : public VolumeImport<MAP_TRAITS>
+class TetVolumeImport : public VolumeFileImport<MAP_TRAITS, VEC3>
 {
-	using Inherit = VolumeImport<MAP_TRAITS>;
-	using Self = TetVolumeImport<MAP_TRAITS,VEC3>;
+	using Inherit = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using Self = TetVolumeImport<MAP_TRAITS, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -49,32 +49,31 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
 		line.reserve(512);
 
 		// reading number of vertices
+		uint32 nb_vertices = 0u;
 		{
 		std::getline(fp, line);
 		std::istringstream iss(line);
-		uint32 nbv = 0u;
-		iss >> nbv;
-		this->set_nb_vertices(nbv);
+		iss >> nb_vertices;
 		}
 
+		uint32 nb_volumes = 0u;
 		// reading number of tetrahedra
 		{
-		std::getline(fp, line);
-		std::istringstream iss(line);
-		uint32 nbw = 0u;
-		iss >> nbw;
-		this->set_nb_volumes(nbw);
+			std::getline(fp, line);
+			std::istringstream iss(line);
+			iss >> nb_volumes;
 		}
+		this->reserve(nb_volumes);
 
 		//reading vertices
-		for(uint32 i = 0u, end = this->nb_vertices(); i < end; ++i)
+		for(uint32 i = 0u; i < nb_vertices; ++i)
 		{
 			do
 			{
@@ -92,7 +91,7 @@ protected:
 
 
 		// reading volumes
-		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			do
 			{
@@ -111,7 +110,7 @@ protected:
 				iss >> connector >> connector; // the line should be like this: # C id0 id1 id2 id3
 				if (connector == 'C')
 				{
-					this->set_nb_volumes(this->nb_volumes() -1u);
+					this->reserve(nb_volumes -1u);
 					std::array<uint32,4> ids;
 					iss >> ids[0] >> ids[1] >> ids[2] >> ids[3];
 					this->add_connector(ids[0], ids[1], ids[2], ids[3]);
@@ -126,10 +125,10 @@ protected:
 
 			switch (nbv)
 			{
-				case 4: this->add_tetra(*position, ids[1], ids[2], ids[3], ids[0], false); break;
-				case 5: this->add_pyramid(*position, ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
-				case 6: this->add_triangular_prism(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;
-				case 8: this->add_hexa(*position, ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2], true); break;
+				case 4: this->add_tetra(ids[1], ids[2], ids[3], ids[0], false); break;
+				case 5: this->add_pyramid(ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
+				case 6: this->add_triangular_prism(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;
+				case 8: this->add_hexa(ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2], true); break;
 				default:
 					cgogn_log_warning("TetVolumeImport") << "Elements with " << nbv << " vertices are not handled. Ignoring.";
 					break;

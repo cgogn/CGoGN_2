@@ -94,17 +94,17 @@ public:
 		if (!this->position_attribute())
 			return;
 
-		vertices_of_volumes_ = map.template add_attribute<std::vector<int32>, Volume::ORBIT>("vertices_of_volume_volume_export");
+		map.add_attribute(vertices_of_volumes_, "vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
-				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
+				const ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (ver_cag)
 					this->vertex_attributes_.push_back(ver_cag);
 			} else {
-				ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
+				const ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
 				if (vol_cag)
 					volume_attributes_.push_back(vol_cag);
 			}
@@ -259,7 +259,7 @@ public:
 		return vertices_of_volumes_[w].size();
 	}
 
-	inline std::vector<ChunkArrayGen*> const & volume_attributes() const
+	inline std::vector<const ChunkArrayGen*> const & volume_attributes() const
 	{
 		return volume_attributes_;
 	}
@@ -283,7 +283,7 @@ private:
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
 	uint32 nb_hexas_;
-	std::vector<ChunkArrayGen*>	volume_attributes_;
+	std::vector<const ChunkArrayGen*>	volume_attributes_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))

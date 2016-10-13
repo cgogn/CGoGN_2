@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 
 #include <cgogn/core/utils/unique_ptr.h>
 #include <cgogn/rendering/shaders/shader_program.h>

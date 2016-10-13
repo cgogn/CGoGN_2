@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDERING_DLL_EXPORT
 #define CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_
 
 #include <iostream>

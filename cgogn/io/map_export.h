@@ -93,6 +93,7 @@ inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTP:		return make_unique<VtkSurfaceExport<MAP>>();
 		case FileType::FileType_PLY:		return make_unique<PlySurfaceExport<MAP>>();
+		case FileType::FileType_MSH:		return make_unique<MshSurfaceExport<MAP>>();
 		default:
 			cgogn_log_warning("new_surface_export") << "SurfaceExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceExport<MAP>>();
@@ -115,6 +116,11 @@ inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& 
 			return std::unique_ptr<VolumeExport<MAP>>();
 	}
 }
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+extern template CGOGN_IO_API void export_surface(CMap2<DefaultMapTraits>& , const ExportOptions&);
+extern template CGOGN_IO_API void export_volume(CMap3<DefaultMapTraits>& , const ExportOptions&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
 
 } // namespace io
 

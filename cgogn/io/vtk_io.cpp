@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_VTK_IO_CPP_
 
 #include <cgogn/io/vtk_io.h>
@@ -32,13 +31,12 @@ namespace io
 {
 template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
 template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
-template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
 template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;

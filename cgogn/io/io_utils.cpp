@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_DLL_EXPORT
 
 #include <istream>
 #include <iostream>
@@ -82,9 +81,9 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type)
 {
 
-	std::uint64_t nb_blocks = UINT64_MAX;
-	std::uint64_t uncompressed_block_size = UINT64_MAX;
-	std::uint64_t last_block_size = UINT64_MAX;
+	uint64 nb_blocks = UINT64_MAX;
+	uint64 uncompressed_block_size = UINT64_MAX;
+	uint64 last_block_size = UINT64_MAX;
 	std::vector<uint32> compressed_size;
 
 	uint32 word_size = 4u;
@@ -107,8 +106,8 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 		compressed_size.resize(nb_blocks);
 	}
 
-	std::size_t header_end = 4ul * word_size;
-	std::size_t length = (nb_blocks * word_size *4ul + 2ul)/3ul; // round up of 4/3 *( nb_blocks * word_size)
+	uint64 header_end = 4ul * word_size;
+	uint64 length = (nb_blocks * word_size * 4ul + 2ul) / 3ul; // round up of 4/3 *( nb_blocks * word_size)
 	length = ((length + 3ul)/4ul)*4ul; // next multiple of 4
 
 	header_data = base64_decode(input, header_end, length);

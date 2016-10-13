@@ -63,7 +63,7 @@ public:
 	{}
 protected:
 
-	inline std::vector<ChunkArrayGen*> const & face_attributes() const
+	inline std::vector<const ChunkArrayGen*> const & face_attributes() const
 	{
 		return face_attributes_;
 	}
@@ -71,6 +71,16 @@ protected:
 	void clean_added_attributes(Map& map) override
 	{
 		Inherit::clean_added_attributes(map);
+	}
+
+	inline uint32 nb_vertices() const
+	{
+		return uint32(this->cell_cache_->template size<Vertex>());
+	}
+
+	inline uint32 nb_faces() const
+	{
+		return uint32(this->cell_cache_->template size<Face>());
 	}
 private:
 
@@ -87,11 +97,11 @@ private:
 		{
 			if (pair.first == Vertex::ORBIT)
 			{
-				ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
+				const ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (ver_cag)
 					this->vertex_attributes_.push_back(ver_cag);
 			} else {
-				ChunkArrayGen* face_cag = face_cac.get_chunk_array(pair.second);
+				const ChunkArrayGen* face_cag = face_cac.get_chunk_array(pair.second);
 				if (face_cag)
 					face_attributes_.push_back(face_cag);
 			}
@@ -112,7 +122,7 @@ private:
 		face_attributes_.clear();
 	}
 
-	std::vector<ChunkArrayGen*>	face_attributes_;
+	std::vector<const ChunkArrayGen*>	face_attributes_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))

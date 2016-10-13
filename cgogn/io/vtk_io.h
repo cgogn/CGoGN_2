@@ -875,7 +875,6 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) = 0;
 
-
 	/**
 	 * @brief parse_vtk_legacy_file
 	 * @param fp
@@ -1374,13 +1373,13 @@ protected:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceImport<MAP_TRAITS>
+class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = VtkSurfaceImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceImport<MAP_TRAITS>;
+	using Inherit_Import = SurfaceFileImport<MAP_TRAITS, VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1412,9 +1411,6 @@ protected:
 			return false;
 		this->fill_surface_import();
 
-		this->nb_vertices_ = uint32(this->positions_.size());
-		this->nb_faces_ = uint32(this->offsets_.size());
-
 		auto cells_it = this->cells_.vec()->begin();
 		uint32 last_offset = 0u;
 		for(auto offset_it = this->offsets_.vec()->begin(), offset_end = this->offsets_.vec()->end(); offset_it != offset_end; ++offset_it)
@@ -1433,13 +1429,13 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkSurfaceImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_, attribute_name));
+		Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
 	}
 
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkSurfaceImport::add_cell_attribute") << "Adding a face attribute named \"" << attribute_name << "\".";
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->face_attributes_, attribute_name));
+		Inherit_Import::add_face_attribute(attribute_data, attribute_name);
 	}
 
 	virtual bool import_file_impl(const std::string& filename) override
@@ -1467,8 +1463,8 @@ private:
 
 	inline void fill_surface_import()
 	{
-		this->nb_vertices_ = uint32(this->positions_.size());
-		this->nb_faces_ = uint32(this->cell_types_.size());
+		const uint32 nb_faces = uint32(this->cell_types_.size());
+		this->reserve(nb_faces);
 
 		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
 		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
@@ -1496,8 +1492,6 @@ private:
 
 				for (uint32 i = 0u ; i < nb_vert -2u; ++i)
 				{
-					if (i != 0u)
-						++this->nb_faces_;
 					this->faces_nb_edges_.push_back(3);
 					this->faces_vertex_indices_.push_back(vertexIDS[i]);
 					this->faces_vertex_indices_.push_back(vertexIDS[i+1]);
@@ -1511,13 +1505,13 @@ private:
 };
 
 template <typename MAP_TRAITS, typename VEC3>
-class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeImport<MAP_TRAITS>
+class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeImport<MAP_TRAITS>;
+	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1530,13 +1524,14 @@ public:
 
 protected:
 
+
+
 	inline bool read_vtk_legacy_file(std::ifstream& fp)
 	{
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 
-		this->set_nb_vertices(uint32(this->positions_.size()));
-		this->set_nb_volumes(uint32(this->cell_types_.size()));
+		this->reserve(uint32(this->cell_types_.size()));
 
 		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
 		const std::vector<uint32>* cells_vec	= this->cells_.vec();
@@ -1572,7 +1567,7 @@ protected:
 			}
 		}
 
-		add_vtk_volumes(cells_buffer, *cell_types_vec, *(this->template position_attribute<VEC3>()));
+		add_vtk_volumes(cells_buffer, *cell_types_vec);
 
 		return true;
 	}
@@ -1582,28 +1577,16 @@ protected:
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 
-		this->set_nb_vertices(uint32(this->positions_.size()));
-		this->set_nb_volumes(uint32(this->cell_types_.size()));
+		this->reserve(uint32(this->cell_types_.size()));
 
 		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
 		const std::vector<uint32>* cells_vec	= this->cells_.vec();
 
-		ChunkArray<VEC3>* pos = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* pos = this->position_attribute();
 		cgogn_assert(pos != nullptr);
-		add_vtk_volumes(*cells_vec,*cell_types_vec, *pos);
+		add_vtk_volumes(*cells_vec,*cell_types_vec);
 
 		return true;
-	}
-
-	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
-	{
-		cgogn_log_info("VtkVolumeImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->vertex_attributes_container(), attribute_name));
-	}
-	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
-	{
-		cgogn_log_info("VtkVolumeImport::add_cell_attribute") << "Adding a volume attribute named \"" << attribute_name << "\".";
-		attribute_data.to_chunk_array(attribute_data.add_attribute(this->volume_attributes_container(), attribute_name));
 	}
 
 	virtual bool import_file_impl(const std::string& filename) override
@@ -1624,10 +1607,11 @@ protected:
 		}
 	}
 
-	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
+	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol)
 	{
+		const uint32 nb_volumes = uint32(type_vol.size());
 		uint32 curr_offset = 0;
-		for (uint32 i = 0u, end = this->nb_volumes(); i< end; ++i)
+		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
 			if (type_vol[i] == VTK_CELL_TYPES::VTK_HEXAHEDRON || type_vol[i] == VTK_CELL_TYPES::VTK_VOXEL)
 			{
@@ -1636,28 +1620,28 @@ protected:
 					std::swap(ids[curr_offset+2], ids[curr_offset+3]);
 					std::swap(ids[curr_offset+6], ids[curr_offset+7]);
 				}
-				this->add_hexa(pos, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7], true);
+				this->add_hexa(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7], true);
 				curr_offset += 8u;
 			}
 			else
 			{
 				if (type_vol[i] == VTK_CELL_TYPES::VTK_TETRA)
 				{
-					this->add_tetra(pos, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], true);
+					this->add_tetra(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], true);
 					curr_offset += 4u;
 				}
 				else
 				{
 					if (type_vol[i] == VTK_CELL_TYPES::VTK_PYRAMID)
 					{
-						this->add_pyramid(pos, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], true);
+						this->add_pyramid(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], true);
 						curr_offset += 5u;
 					}
 					else
 					{
 						if (type_vol[i] == VTK_CELL_TYPES::VTK_WEDGE)
 						{
-							this->add_triangular_prism(pos, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], true);
+							this->add_triangular_prism(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], true);
 							curr_offset += 6u;
 						}
 					}
@@ -1665,18 +1649,27 @@ protected:
 			}
 		}
 	}
+
+	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
+	{
+		Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+	}
+
+	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
+	{
+		Inherit_Import::add_volume_attribute(attribute_data, attribute_name);
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
 extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
 
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
 extern template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;

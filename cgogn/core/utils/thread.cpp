@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 
 #include <cgogn/core/utils/thread.h>
 #include <cgogn/core/utils/buffers.h>

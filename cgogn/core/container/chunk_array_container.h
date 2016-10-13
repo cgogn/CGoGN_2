@@ -71,7 +71,7 @@ public:
 	/**
 	* constante d'attribut inconnu
 	*/
-	static const uint32 UNKNOWN = UINT_MAX;
+	static const uint32 UNKNOWN = UINT32_MAX;
 
 protected:
 
@@ -188,8 +188,20 @@ public:
 			delete ptr;
 	}
 
-	const std::vector<std::string>& names() const { return names_; }
-	const std::vector<std::string>& type_names() const { return type_names_; }
+	inline const std::vector<std::string>& names() const
+	{
+		return names_;
+	}
+
+	inline const std::vector<std::string>& type_names() const
+	{
+		return type_names_;
+	}
+
+	inline bool has_array(const std::string& array_name) const
+	{
+		return array_index(array_name) != UNKNOWN;
+	}
 
 	/**
 	 * @brief get a chunk array
@@ -198,7 +210,7 @@ public:
 	 * @return pointer on attribute ChunkArray
 	 */
 	template <typename T>
-	ChunkArray<T>* get_chunk_array(const std::string& name) const
+	ChunkArray<T>* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
 		uint32 index = array_index(name);
@@ -211,7 +223,13 @@ public:
 		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
-	ChunkArrayGen* get_chunk_array(const std::string& name) const
+	template <typename T>
+	inline const ChunkArray<T>* get_chunk_array(const std::string& name) const
+	{
+		return const_cast<const ChunkArray<T>*>(const_cast<Self*>(this)->get_chunk_array<T>(name));
+	}
+
+	ChunkArrayGen* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
 		uint32 index = array_index(name);
@@ -224,11 +242,27 @@ public:
 		return table_arrays_[index];
 	}
 
+	inline const ChunkArrayGen* get_chunk_array(const std::string& name) const
+	{
+		return const_cast<const ChunkArrayGen*>(const_cast<Self*>(this)->get_chunk_array(name));
+	}
+
+
 	/**
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return
 	 */
-	inline std::vector<ChunkArrayGen*>& chunk_arrays()
+	inline std::vector<const ChunkArrayGen*> chunk_arrays() const
+	{
+		// NOTE : using reinterpret_cast to change a std::vector<U>& to a std::vector<const U>& is undefined. We need to perform a copy.
+		std::vector<const ChunkArrayGen*> res;
+		res.reserve(table_arrays_.size());
+		for (const auto& ca : table_arrays_)
+			res.push_back(ca);
+		return res;
+	}
+
+	inline const std::vector<ChunkArrayGen*>& chunk_arrays()
 	{
 		return table_arrays_;
 	}
@@ -613,7 +647,7 @@ public:
 
 	bool check_before_merge(const Self& cac)
 	{
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			// compute indice of ith names of cac in this (size if not found)
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
@@ -621,7 +655,7 @@ public:
 			{
 				if (cac.type_names_[i] != type_names_[j])
 				{
-					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					cgogn_log_warning("check_before_merge") << "same name: " << names_[j] << " but different type: " << cac.type_names_[i] << " / " << type_names_[j];
 					return false;
 				}
 			}
@@ -671,6 +705,8 @@ public:
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
+				init_markers_of_line(nl); // raz markers of new lines
+				refs_[nl]= cac.refs_[ol]; // copy nb refs counter
 				map_old_new[ol] = nl;
 				uint32 nb_att = uint32(cac.table_arrays_.size());
 				for (uint32 k=0; k<nb_att; ++k)

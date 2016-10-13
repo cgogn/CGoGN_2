@@ -152,7 +152,7 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	virtual uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const = 0;
+	virtual std::vector<const void*> chunks_pointers(uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())
@@ -199,7 +199,13 @@ public:
 	 */
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
 
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = UINT64_MAX) const = 0;
+	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = 8ul) const = 0;
+	/**
+	 * @brief import_element, read the element "idx" from an ascii istream
+	 * @param idx
+	 * @param i
+	 */
+	virtual void import_element(uint32 idx, std::istream& in) = 0;
 	/**
 	 * @brief element_ptr
 	 * @return a generic pointer to the element of index idx.

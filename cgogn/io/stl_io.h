@@ -42,12 +42,12 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class StlSurfaceImport : public SurfaceImport<MAP_TRAITS>
+class StlSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = StlSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -62,7 +62,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 		ChunkArray<VEC3>* normal = this->face_attributes_.template add_chunk_array<VEC3>("normal");
 		std::string word;
 		fp >> word;
@@ -83,10 +83,6 @@ private:
 	bool import_ascii(const std::string& filename, ChunkArray<VEC3>* position, ChunkArray<VEC3>* normal)
 	{
 		std::ifstream fp(filename, std::ios::in);
-		//auto comp_fct = [](const VEC3& v1, const VEC3& v2)
-		//{
-		//	return std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
-		//};
 		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
 		std::string line;
@@ -122,7 +118,6 @@ private:
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
 					vertices_set.insert(std::make_pair(pos[i], vertex_id));
 //					indices_set.push_back(vertex_id);
-					this->nb_vertices_++;
 				} else
 					vertex_id = it->second;
 
@@ -130,7 +125,6 @@ private:
 				this->faces_vertex_indices_.push_back(vertex_id);
 			}
 			this->faces_nb_edges_.push_back(3u);
-			this->nb_faces_++;
 			std::getline(fp, line); // endloop
 			std::getline(fp, line); // endfacet
 		}
@@ -143,18 +137,15 @@ private:
 
 		std::array<uint32, 21> header;
 		fp.read(reinterpret_cast<char*>(&header[0]), 21u* sizeof(uint32));
-		this->nb_faces_ = swap_endianness_native_little(*reinterpret_cast<uint32*>(&header[20]));
+		const uint32 nb_faces = swap_endianness_native_little(*reinterpret_cast<uint32*>(&header[20]));
+		this->reserve(nb_faces);
 
 		std::array<float32, 3> normal_buffer;
 		std::array<float32, 9> position_buffer;
 
-		//auto comp_fct = [](const VEC3& v1, const VEC3& v2)
-		//{
-		//	std::lexicographical_compare(&v1[0], &v1[0] + 3, &v2[0], &v2[0] + 3);
-		//};
 		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
-		for(uint32 i = 0u; i < this->nb_faces_; ++i)
+		for(uint32 i = 0u; i < nb_faces; ++i)
 		{
 			fp.read(reinterpret_cast<char*>(&normal_buffer[0]), 3u*sizeof(float32));
 			fp.read(reinterpret_cast<char*>(&position_buffer[0]), 3u*3u*sizeof(float32));
@@ -179,7 +170,6 @@ private:
 				{
 					vertex_id = this->vertex_attributes_.template insert_lines<1>();
 					vertices_set.insert(std::make_pair(pos, vertex_id));
-					this->nb_vertices_++;
 				} else
 					vertex_id = it->second;
 
@@ -211,9 +201,9 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen* normal_attribute(nullptr);
+		const ChunkArrayGen* normal_attribute(nullptr);
 
-		for (ChunkArrayGen* vatt: this->face_attributes())
+		for (const ChunkArrayGen* vatt: this->face_attributes())
 			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
 				normal_attribute = vatt;
 
@@ -230,7 +220,7 @@ protected:
 
 	}
 private:
-	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option, ChunkArrayGen* normal_attribute)
+	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option, const ChunkArrayGen* normal_attribute)
 	{
 		// set precision for float output
 		output << std::setprecision(12);
@@ -260,7 +250,7 @@ private:
 		output << "endsolid " << remove_extension(option.filename_) << std::endl;
 	}
 
-	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, ChunkArrayGen* normal_attribute)
+	void export_binary(const Map& map, std::ofstream& output, const ExportOptions& /*option*/, const ChunkArrayGen* normal_attribute)
 	{
 		// header + nb triangles
 		std::array<uint32, 21> header;

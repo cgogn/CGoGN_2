@@ -37,35 +37,22 @@ namespace cgogn
 namespace io
 {
 
-class CGOGN_IO_API MeshImportGen
+class CGOGN_IO_API FileImport
 {
 public:
-	using Self = MeshImportGen;
-	inline MeshImportGen() {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshImportGen);
+	using Self = FileImport;
 
-
+	FileImport();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FileImport);
+	/**
+	 * @brief import_file, try to open and read a file (during the operation the C locale is used)
+	 * @param filename
+	 * @return true iff the file is successfully read
+	 */
 	bool import_file(const std::string& filename);
-	virtual ~MeshImportGen();
-	virtual void clear() = 0;
-
+	virtual ~FileImport();
 protected:
 	virtual bool import_file_impl(const std::string& filename) = 0;
-
-	/**
-	 * @brief skip_empty_lines
-	 * @param a valid data_stream
-	 * @return the first non-empty encountered line
-	 */
-	inline static std::string skip_empty_lines(std::istream& data_stream)
-	{
-		std::string line;
-		line.reserve(1024ul);
-		while(data_stream.good() && line.empty())
-			std::getline(data_stream,line);
-
-		return line;
-	}
 };
 
 template<typename MAP>
@@ -100,7 +87,7 @@ public:
 		if (!output || !output->good())
 			return;
 
-		indices_ = map.template add_attribute<uint32,Vertex::ORBIT>("indices_vert_export");
+		map.add_attribute(indices_, "indices_vert_export");
 
 		this->prepare_for_export(map, options);
 
@@ -116,8 +103,9 @@ public:
 	}
 
 	virtual ~MeshExport() {}
+
 protected:
-	inline std::vector<ChunkArrayGen*> const & vertex_attributes() const
+	inline std::vector<const ChunkArrayGen*> const & vertex_attributes() const
 	{
 		return vertex_attributes_;
 	}
@@ -141,10 +129,10 @@ protected:
 		cell_cache_.reset();
 	}
 
-	VertexAttribute<uint32>		indices_;
-	std::vector<ChunkArrayGen*>	vertex_attributes_;
-	ChunkArrayGen*				position_attribute_;
-	std::unique_ptr<CellCache>	cell_cache_;
+	VertexAttribute<uint32>				indices_;
+	std::vector<const ChunkArrayGen*>	vertex_attributes_;
+	const ChunkArrayGen*				position_attribute_;
+	std::unique_ptr<CellCache>			cell_cache_;
 };
 
 

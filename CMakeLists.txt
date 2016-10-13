@@ -36,9 +36,6 @@ set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
-if(${CGOGN_EXTERNAL_TEMPLATES})
-	add_definitions("-DCGOGN_USE_EXTERNAL_TEMPLATES")
-endif()
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
@@ -152,6 +149,7 @@ if(CGOGN_BUILD_EXAMPLES)
 	add_subdirectory(cgogn/io/examples)
 	add_subdirectory(cgogn/modeling/examples)
 	add_subdirectory(cgogn/rendering/examples)
+	add_subdirectory(cgogn/topology/examples)
 endif()
 
 
@@ -162,7 +160,7 @@ ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
 
 # --- CPPCheck ---
 GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR}
-		   ENABLE_IDS all
+	       ENABLE_IDS all
 		   INCLUDES ${CGOGN_SOURCE_DIR}
 		   PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
 		   SYSTEM_INCLUDE_WARNING_SUPPRESSION

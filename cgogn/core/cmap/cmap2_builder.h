@@ -29,23 +29,24 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
+template <typename MAP2>
 class CMap2Builder_T
 {
+	static_assert(MAP2::DIMENSION == 2,"CMap2Builder_T works only with 2D Maps.");
 public:
 
-	using Self = CMap2Builder_T<MAP_TRAITS>;
-	using CMap2 = cgogn::CMap2<MAP_TRAITS>;
-	using CDart = typename CMap2::CDart;
-	using Vertex = typename CMap2::Vertex;
-	using Edge = typename CMap2::Edge;
-	using Face = typename CMap2::Face;
-	using Volume = typename CMap2::Volume;
+	using Self = CMap2Builder_T<MAP2>;
+	using Map2 = MAP2;
+	using CDart = typename Map2::CDart;
+	using Vertex = typename Map2::Vertex;
+	using Edge = typename Map2::Edge;
+	using Face = typename Map2::Face;
+	using Volume = typename Map2::Volume;
 
 	template <typename T>
-	using ChunkArrayContainer = typename CMap2::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Map2::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(CMap2& map) : map_(map)
+	inline CMap2Builder_T(Map2& map) : map_(map)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
@@ -88,12 +89,24 @@ public:
 
 	inline Dart add_face_topo_parent(uint32 nb_edges)
 	{
-		return map_.CMap2::Inherit::add_face_topo(nb_edges);
+		return map_.Map2::Inherit::add_face_topo(nb_edges);
 	}
 
 	inline Dart close_hole_topo(Dart d)
 	{
 		return map_.close_hole_topo(d);
+	}
+
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
 	}
 
 	/*!
@@ -111,14 +124,6 @@ public:
 	{
 		const Face f(map_.close_hole_topo(d));
 
-//		if (map_.template is_embedded<CDart>())
-//		{
-//			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-//			{
-//				map_.new_orbit_embedding(CDart(it));
-//			});
-//		}
-
 		if (map_.template is_embedded<Vertex>())
 		{
 			map_.foreach_dart_of_orbit(f, [this] (Dart it)
@@ -134,9 +139,6 @@ public:
 				map_.template copy_embedding<Edge>(it, map_.phi2(it));
 			});
 		}
-
-//		if (map_.template is_embedded<Face>())
-//			map_.new_orbit_embedding(f);
 
 		if (map_.template is_embedded<Volume>())
 		{
@@ -162,7 +164,7 @@ public:
 	 */
 	inline uint32 close_map()
 	{
-		uint32 nb_holes=0;
+		uint32 nb_holes = 0;
 
 		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
 		map_.foreach_dart([&] (Dart d)
@@ -175,10 +177,7 @@ public:
 			if (map_.phi2(d) == d)
 			{
 				Face f = close_hole(d);
-				map_.foreach_dart_of_orbit(f, [&] (Dart e)
-				{
-					map_.set_boundary(e, true);
-				});
+				map_.boundary_mark(f);
 				++nb_holes;
 			}
 		}
@@ -188,13 +187,13 @@ public:
 
 private:
 
-	CMap2& map_;
+	Map2& map_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<DefaultMapTraits>;
+extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<CMap2<DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<DefaultMapTraits>;
+using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn
 

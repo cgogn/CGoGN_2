@@ -25,7 +25,6 @@
 #pragma warning(disable:4996)
 #endif
 
-#define CGOGN_IO_DLL_EXPORT
 #define CGOGN_IO_IMPORT_PLY_DATA_CPP_
 
 #include <cgogn/io/import_ply_data.h>

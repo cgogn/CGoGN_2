@@ -8,6 +8,7 @@ find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(cgogn_rendering REQUIRED)
+find_package(cgogn_modeling REQUIRED)
 find_package(QOGLViewer REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
@@ -25,7 +26,7 @@ add_executable(viewer_per_face viewer_per_face.cpp)
 target_link_libraries(viewer_per_face ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
 add_executable(viewer_topo viewer_topo.cpp)
-target_link_libraries(viewer_topo ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(viewer_topo ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
 add_executable(drawing drawing.cpp)
 target_link_libraries(drawing ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})

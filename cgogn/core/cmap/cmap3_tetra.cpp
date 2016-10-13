@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CMAP_CMAP3_TETRA_CPP_
 
 #include <cgogn/core/cmap/cmap3_tetra.h>
@@ -29,17 +28,21 @@
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API CMap3Tetra_T<DefaultMapTraits, CMap3TetraType<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarker<CMap3Tetra<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra<DefaultMapTraits>>;
-	template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>>;
-	template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
-	template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
-	template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
-	template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
-	template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
+template class CGOGN_CORE_API CMap3Tetra_T<DefaultMapTraits, CMap3TetraType<DefaultMapTraits>>;
+template class CGOGN_CORE_API DartMarker<CMap3Tetra<DefaultMapTraits>>;
+template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra<DefaultMapTraits>>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>>;
+template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra<DefaultMapTraits>, CMap3Tetra<DefaultMapTraits>::Volume::ORBIT>;
 
 } // namespace cgogn

@@ -34,6 +34,8 @@ class CMap0_T : public MapBase<MAP_TRAITS, MAP_TYPE>
 {
 public:
 
+	static const uint8 DIMENSION = 0;
+
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapTraits = MAP_TRAITS;
@@ -50,6 +52,7 @@ public:
 	using Boundary = Vertex;  // just for compilation
 	using ConnectedComponent = Vertex;
 
+	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -65,6 +68,8 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+	template <Orbit ORBIT>
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
@@ -163,8 +168,6 @@ public:
 	 * Orbits traversal
 	 *******************************************************************************/
 
-protected:
-
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -199,9 +202,9 @@ protected:
 	{
 		if (this->template is_embedded<Orbit::DART>())
 		{
-			for (uint32 j=first; j!= this->topology_.end(); this->topology_.next(j))
+			for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 			{
-				if ((*this->embeddings_[Orbit::DART])[j] == std::numeric_limits<uint32>::max())
+				if ((*this->embeddings_[Orbit::DART])[j] == INVALID_INDEX)
 					this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
 			}
 		}
@@ -225,6 +228,7 @@ extern template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
 extern template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
 

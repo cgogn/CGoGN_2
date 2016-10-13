@@ -106,7 +106,7 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	vertex_position_ = map_.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	map_.get_attribute(vertex_position_, "position");
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 

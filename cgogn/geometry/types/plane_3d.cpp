@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_GEOMETRY_DLL_EXPORT
 #define CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_
 
 #include <cgogn/geometry/types/plane_3d.h>

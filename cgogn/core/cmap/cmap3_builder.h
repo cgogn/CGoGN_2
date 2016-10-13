@@ -29,27 +29,27 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS>
+template <typename MAP3>
 class CMap3Builder_T
 {
+	static_assert(MAP3::DIMENSION == 3,"CMap3Builder_T works only with 3D Maps.");
 public:
+	using Self = CMap3Builder_T<MAP3>;
+	using Map3 = MAP3;
+	using CDart = typename Map3::CDart;
+	using Vertex = typename Map3::Vertex;
+	using Vertex2 = typename Map3::Vertex2;
+	using Edge = typename Map3::Edge;
+	using Edge2 = typename Map3::Edge2;
+	using Face = typename Map3::Face;
+	using Face2 = typename Map3::Face2;
+	using Volume = typename Map3::Volume;
 
-	using Self = CMap3Builder_T<MAP_TRAITS>;
-	using CMap3 = cgogn::CMap3<MAP_TRAITS>;
-	using CDart = typename CMap3::CDart;
-	using Vertex = typename CMap3::Vertex;
-	using Vertex2 = typename CMap3::Vertex2;
-	using Edge = typename CMap3::Edge;
-	using Edge2 = typename CMap3::Edge2;
-	using Face = typename CMap3::Face;
-	using Face2 = typename CMap3::Face2;
-	using Volume = typename CMap3::Volume;
-
-	using DartMarkerStore = typename CMap3::DartMarkerStore;
+	using DartMarkerStore = typename Map3::DartMarkerStore;
 	template <typename T>
-	using ChunkArrayContainer = typename CMap3::template ChunkArrayContainer<T>;
+	using ChunkArrayContainer = typename Map3::template ChunkArrayContainer<T>;
 
-	inline CMap3Builder_T(CMap3& map) : map_(map)
+	inline CMap3Builder_T(Map3& map) : map_(map)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Builder_T);
@@ -79,16 +79,6 @@ public:
 		});
 	}
 
-	inline void phi2_sew(Dart d, Dart e)
-	{
-		return map_.phi2_sew(d,e);
-	}
-
-	inline void phi2_unsew(Dart d)
-	{
-		map_.phi2_unsew(d);
-	}
-
 	inline void phi3_sew(Dart d, Dart e)
 	{
 		return map_.phi3_sew(d,e);
@@ -97,11 +87,6 @@ public:
 	inline void phi3_unsew(Dart d)
 	{
 		return map_.phi3_unsew(d);
-	}
-
-	inline Dart add_face_topo(uint32 nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
 	}
 
 	inline Dart add_prism_topo(uint32 nb_edges)
@@ -140,6 +125,11 @@ public:
 	 */
 	inline void sew_volumes(Dart v1, Dart v2)
 	{
+		cgogn_message_assert(map_.phi3(v1) == v1 &&
+							 map_.phi3(v2) == v2 &&
+							 map_.codegree(Face(v1)) == map_.codegree(Face(v1)) &&
+							 !map_.same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
+
 		Dart it1 = v1;
 		Dart it2 = v2;
 		const Dart begin = it1;
@@ -151,9 +141,21 @@ public:
 		} while (it1 != begin);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	inline void close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(map_.phi3(d) == d, "CMap3: close hole called on a dart that is not a phi3 fix point");
+		cgogn_message_assert(map_.phi3(d) == d, "CMap3Builder: close hole called on a dart that is not a phi3 fix point");
 
 		DartMarkerStore dmarker(map_);
 		DartMarkerStore boundary_marker(map_);
@@ -172,14 +174,14 @@ public:
 			Dart it = visitedFaces[i];
 			Dart f = it;
 
-			const Dart b = map_.CMap3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
+			const Dart b = map_.Map3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
 			boundary_marker.mark_orbit(Face2(b));
 			++count;
 
 			Dart bit = b;
 			do
 			{
-				Dart e = map_.phi3(map_.phi2(f));;
+				Dart e = map_.phi3(map_.phi2(f));
 				bool found = false;
 				do
 				{
@@ -197,7 +199,7 @@ public:
 						if (boundary_marker.is_marked(e))
 						{
 							found = true;
-							this->phi2_sew(e, bit);
+							map_.phi2_sew(e, bit);
 						}
 						else
 							e = map_.phi3(map_.phi2(e));
@@ -230,10 +232,7 @@ public:
 			if (map_.phi3(d) == d)
 			{
 				close_hole_topo(d);
-				map_.foreach_dart_of_orbit(Volume(map_.phi3(d)), [&] (Dart db)
-				{
-					map_.set_boundary(db, true);
-				});
+				map_.boundary_mark(Volume(map_.phi3(d)));
 
 				const Volume new_volume(map_.phi3(d));
 
@@ -247,17 +246,17 @@ public:
 
 				if (map_.template is_embedded<Edge>())
 				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
 					{
-						map_.template copy_embedding<Edge>(wd, map_.phi3(wd));
+						map_.template copy_embedding<Edge>(it, map_.phi3(it));
 					});
 				}
 
 				if (map_.template is_embedded<Face>())
 				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart wd)
+					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
 					{
-						map_.template copy_embedding<Face>(wd, map_.phi3(wd));
+						map_.template copy_embedding<Face>(it, map_.phi3(it));
 					});
 				}
 			}
@@ -267,13 +266,14 @@ public:
 
 private:
 
-	CMap3& map_;
+	Map3& map_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<DefaultMapTraits>;
+extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-using CMap3Builder = cgogn::CMap3Builder_T<DefaultMapTraits>;
+
+using CMap3Builder = cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn
 

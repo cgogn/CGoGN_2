@@ -41,12 +41,12 @@ namespace io
 CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type);
 
 template <typename MAP_TRAITS, typename VEC3>
-class PlySurfaceImport : public SurfaceImport<MAP_TRAITS>
+class PlySurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = PlySurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -67,19 +67,19 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 		ChunkArray<VEC3>* color = nullptr;
 		if (pid.has_colors())
 			color = this->vertex_attributes_.template add_chunk_array<VEC3>("color");
 
-		this->nb_vertices_ = pid.nb_vertices();
-		this->nb_faces_ = pid.nb_faces();
+		const uint32 nb_vertices = pid.nb_vertices();
+		const uint32 nb_faces = pid.nb_faces();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
-		vertices_id.reserve(this->nb_vertices_);
+		vertices_id.reserve(nb_vertices);
 
-		for (uint32 i = 0; i < this->nb_vertices_; ++i)
+		for (uint32 i = 0; i < nb_vertices; ++i)
 		{
 			VEC3 pos;
 			pid.vertex_position(i, pos);
@@ -98,9 +98,8 @@ protected:
 		}
 
 		// read faces (vertex indices)
-		this->faces_nb_edges_.reserve(this->nb_faces_);
-		this->faces_vertex_indices_.reserve(this->nb_vertices_ * 8);
-		for (uint32 i = 0; i < this->nb_faces_; ++i)
+		this->reserve(nb_faces);
+		for (uint32 i = 0; i < nb_faces; ++i)
 		{
 			uint32 n = pid.face_valence(i);
 			this->faces_nb_edges_.push_back(n);

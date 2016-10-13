@@ -40,12 +40,12 @@ namespace io
 {
 
 template <typename MAP_TRAITS, typename VEC3>
-class ObjSurfaceImport : public SurfaceImport<MAP_TRAITS>
+class ObjSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
 {
 public:
 
 	using Self = ObjSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceImport<MAP_TRAITS>;
+	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -60,7 +60,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
+		ChunkArray<VEC3>* position = this->add_position_attribute();
 
 		std::string line, tag;
 
@@ -98,8 +98,6 @@ protected:
 			fp >> tag;
 			std::getline(fp, line);
 		} while (!fp.eof());
-
-		this->nb_vertices_ = uint32(vertices_id.size());
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
@@ -181,7 +179,6 @@ protected:
 					uint32 index = table[j] - 1; // indices start at 1
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
 				}
-				this->nb_faces_++;
 			}
 			fp >> tag;
 			std::getline(fp, line);
@@ -210,9 +207,9 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& /*option*/) override
 	{
-		ChunkArrayGen* normal_attribute(nullptr);
+		const ChunkArrayGen* normal_attribute(nullptr);
 
-		for (ChunkArrayGen* vatt: this->vertex_attributes())
+		for (const ChunkArrayGen* vatt: this->vertex_attributes())
 			if(to_lower(vatt->name()) == "normal" || to_lower(vatt->name()) == "normals")
 				normal_attribute = vatt;
 

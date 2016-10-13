@@ -35,6 +35,8 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
+	map_export.cpp
+	map_import.cpp
 	surface_import.cpp
 	surface_export.cpp
 	volume_import.cpp
@@ -58,6 +60,7 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_IO_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>

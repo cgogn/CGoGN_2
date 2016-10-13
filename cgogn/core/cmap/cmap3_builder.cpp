@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_DLL_EXPORT
 #define CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_
 
 #include <cgogn/core/cmap/cmap3_builder.h>
@@ -29,6 +28,6 @@
 namespace cgogn
 {
 
-	template class CGOGN_CORE_API cgogn::CMap3Builder_T<DefaultMapTraits>;
+	template class CGOGN_CORE_API cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
 
 } // namespace cgogn

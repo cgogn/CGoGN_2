@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <cgogn/core/cmap/cmap2_quad_builder.h>
+#include <cgogn/core/cmap/cmap2_quad.h>
 
 namespace cgogn
 {
@@ -50,7 +50,7 @@ public:
 	};
 
 	using testCMap2Quad = CMap2Quad<MiniMapTraits>;
-	using MapBuilder = CMap2QuadBuilder_T<MiniMapTraits>;
+	using MapBuilder = testCMap2Quad::Builder;
 	using CDart = testCMap2Quad::CDart;
 	using Vertex = testCMap2Quad::Vertex;
 	using Edge = testCMap2Quad::Edge;

@@ -177,7 +177,7 @@ public:
 
 		auto local_func = [&] (Dart f)
 		{
-			Dart e = map_.phi3(map_.phi2(f));;
+			Dart e = map_.phi3(map_.phi2(f));
 			bool found = false;
 			do
 			{

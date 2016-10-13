@@ -129,7 +129,7 @@ public:
 };
 
 template <typename MAP>
-class DartMarkerStore : public DartMarker_T<MAP>
+class DartMarkerStore final : protected DartMarker_T<MAP>
 {
 public:
 
@@ -142,6 +142,7 @@ protected:
 	std::vector<Dart>* marked_darts_;
 
 public:
+	using Inherit::is_marked;
 
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
@@ -160,19 +161,17 @@ public:
 	inline void mark(Dart d)
 	{
 		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
-		Inherit::mark(d);
-		marked_darts_->push_back(d);
+		if (!this->is_marked(d))
+		{
+			Inherit::mark(d);
+			marked_darts_->push_back(d);
+		}
 	}
 
 	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
-		this->map_.foreach_dart_of_orbit(c, [&] (Dart d)
-		{
-			Inherit::mark(d);
-			marked_darts_->push_back(d);
-		});
+		this->map_.foreach_dart_of_orbit(c, [this] (Dart d) { this->mark(d); });
 	}
 
 	inline void unmark_all()

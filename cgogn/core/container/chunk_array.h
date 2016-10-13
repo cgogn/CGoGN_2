@@ -37,6 +37,7 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/endian.h>
+#include <cgogn/core/utils/string.h>
 
 namespace cgogn
 {
@@ -174,17 +175,17 @@ public:
 	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_chunk_size) const override
+	std::vector<const void*> chunks_pointers(uint32& byte_chunk_size) const override
 	{
+		std::vector<const void*> addr;
 		byte_chunk_size = CHUNK_SIZE * sizeof(T);
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
@@ -430,13 +431,13 @@ public:
 
 	virtual std::string nested_type_name() const override
 	{
-		return name_of_type(typename type_traits::nested_type<T>::type());
+		return name_of_type(nested_type<T>());
 	}
 
 	virtual uint32 nb_components() const override
 	{
 		// Warning : the line 0 might be unused.
-		return type_traits::nb_components(this->operator[](0u));
+		return cgogn::nb_components(this->operator[](0u));
 	}
 
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
@@ -446,10 +447,15 @@ public:
 			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
 			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
 			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
-			case 8ul: serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
-			default:  serialization::ostream_writer<T, UINT64_MAX>(o, this->operator[](idx), binary, little_endian); break;
+			default:  serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
 		}
 	}
+
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		serialization::parse(in, this->operator [](idx));
+	}
+
 
 	virtual const void* element_ptr(uint32 idx) const override
 	{
@@ -458,7 +464,7 @@ public:
 
 	virtual uint32 element_size() const override
 	{
-		return sizeof(this->operator[](0ul));
+		return sizeof(std::declval<T>());
 	}
 };
 
@@ -589,17 +595,17 @@ public:
 	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
 	 * @return addr.size()
 	 */
-	inline uint32 chunks_pointers(std::vector<void*>& addr, uint32& byte_block_size) const override
+	inline std::vector<const void*> chunks_pointers(uint32& byte_block_size) const override
 	{
+		std::vector<const void*> addr;
 		byte_block_size = CHUNK_SIZE / 8u;
 
 		addr.reserve(table_data_.size());
-		addr.clear();
 
 		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
 			addr.push_back(*it);
 
-		return uint32(addr.size());
+		return addr;
 	}
 
 	/**
@@ -814,6 +820,18 @@ public:
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
 	{
 		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
+	}
+
+	virtual void import_element(uint32 idx, std::istream& in) override
+	{
+		std::string val;
+		in >> val;
+		val = to_lower(val);
+		const bool b = (val == "true") || (std::stoi(val) == 1);
+		if (b)
+			set_true(idx);
+		else
+			set_false(idx);
 	}
 
 	virtual const void* element_ptr(uint32) const override

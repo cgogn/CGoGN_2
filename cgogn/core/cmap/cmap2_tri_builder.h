@@ -100,6 +100,18 @@ public:
 		return map_.close_hole_topo(d);
 	}
 
+	template <Orbit ORBIT>
+	inline void boundary_mark(Cell<ORBIT> c)
+	{
+		map_.boundary_mark(c);
+	}
+
+	template <Orbit ORBIT>
+	void boundary_unmark(Cell<ORBIT> c)
+	{
+		map_.boundary_unmark(c);
+	}
+
 	/**
 	 * @brief Close a hole with a triangle fan
 	 * @return a face of the fan
@@ -165,10 +177,7 @@ public:
 				Vertex fan_center(map_.phi_1(f.dart));
 				map_.foreach_incident_face(fan_center, [&] (Face ff)
 				{
-					map_.foreach_dart_of_orbit(ff, [&] (Dart e)
-					{
-						map_.set_boundary(e, true);
-					});
+					map_.boundary_mark(ff);
 				});
 				++nb_holes;
 			}

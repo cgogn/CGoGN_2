@@ -190,12 +190,14 @@ public:
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
 				type buff;
-				bool no_error = static_cast<bool>(internal::parse(line_stream, buff));
+				serialization::parse(line_stream, buff);
+				bool no_error = static_cast<bool>(line_stream);
 				while (i < n && no_error)
 				{
 					data_[i+old_size] = internal::convert<T>(buff);
 					++i;
-					no_error = static_cast<bool>(internal::parse(line_stream, buff));
+					serialization::parse(line_stream, buff);
+					no_error = static_cast<bool>(line_stream);
 				}
 				if (!no_error && (!line_stream.eof()))
 					break;
