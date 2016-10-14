@@ -71,8 +71,8 @@ public:
 			{
 				for(uint32 j = 1 ; j <= x ; ++j)
 				{
-					Dart d = mbuild.add_face_topo_parent(3);
-					Dart d2 = mbuild.add_face_topo_parent(3);
+					Dart d = mbuild.add_face_topo_fp(3);
+					Dart d2 = mbuild.add_face_topo_fp(3);
 					mbuild.phi2_sew(g->map_.phi1(d), g->map_.phi_1(d2));
 
 					g->vertex_table_.push_back(Vertex(d));

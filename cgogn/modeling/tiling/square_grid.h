@@ -72,7 +72,7 @@ public:
 			{
 				for(uint32 j = 1 ; j <= x ; ++j)
 				{
-					Dart d = mbuild.add_face_topo_parent(4);
+					Dart d = mbuild.add_face_topo_fp(4);
 					g->vertex_table_.push_back(Vertex(d));
 					g->face_table_.push_back(Face(d));
 

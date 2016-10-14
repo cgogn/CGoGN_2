@@ -25,12 +25,10 @@
 #define CGOGN_CORE_CMAP_CMAP2_QUAD_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
-
-// forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS> class CMap2QuadBuilder_T;
 
 template <typename MAP_TRAITS, typename MAP_TYPE>
 class CMap2Quad_T : public MapBase<MAP_TRAITS, MAP_TYPE>
@@ -45,10 +43,10 @@ public:
 	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
 	using Self = CMap2Quad_T<MAP_TRAITS, MAP_TYPE>;
 
-	using Builder = CMap2QuadBuilder_T<MapTraits>;
+	using Builder = CMap2Builder_T<Self>;
 
 	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap2QuadBuilder_T<MapTraits>;
+	friend class CMap2Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -306,6 +304,17 @@ protected:
 		Dart d = this->add_topology_element(); // this insert PRIM_SIZE darts
 		// no need to set phi1
 		return d;
+	}
+
+	inline Dart add_face_topo_fp(std::size_t size)
+	{
+		cgogn_message_assert(size == 4u, "Can create only quads");
+		if (size != 4)
+		{
+			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a quad in CMap2Quad";
+			return Dart();
+		}
+		return add_quad_topo_fp();
 	}
 
 	/**
@@ -566,9 +575,9 @@ public:
 			foreach_dart_of_orbit(f, [this] (Dart d)
 			{
 				this->new_orbit_embedding(Edge(d));
-				Dart d1 =phi1(phi2(d));
+				Dart d1 = phi1(phi2(d));
 				this->new_orbit_embedding(Edge(d1));
-				d1 =phi1(d1);
+				d1 = phi1(d1);
 				this->template copy_embedding<Edge>(d1, phi2(d1));
 			});
 		}
@@ -585,19 +594,10 @@ public:
 		if (this->template is_embedded<Volume>())
 		{
 			uint32 emb = this->embedding(Volume(phi<2112>(f.dart)));
-
-			foreach_dart_of_orbit(f, [this,emb] (Dart d)
+			this->template set_orbit_embedding<Volume>(f, emb);
+			foreach_adjacent_face_through_edge(f, [this, emb] (Face fi)
 			{
-				this->template set_embedding<Volume>(d, emb);
-			});
-
-
-			foreach_adjacent_face_through_edge(f, [this,emb] (Face fi)
-			{
-				foreach_dart_of_orbit(fi, [this,emb] (Dart d)
-				{
-					this->template set_embedding<Volume>(d, emb);
-				});
+				this->template set_orbit_embedding<Volume>(fi, emb);
 			});
 		}
 
@@ -613,7 +613,7 @@ protected:
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
-		cgogn_message_assert(phi2(d) == d, "CMap2quad: close hole called on a dart that is not a phi2 fix point");
+		cgogn_message_assert(phi2(d) == d, "CMap2Quad: close hole called on a dart that is not a phi2 fix point");
 
 		Dart first = add_quad_topo_fp();	// First edge of the face that will fill the hole
 		phi2_sew(d, first);				// 2-sew the new edge to the hole
@@ -643,6 +643,75 @@ protected:
 		return first;
 	}
 
+	/**
+	 * @brief Close (not really) a hole with a set of quad.
+	 * @return a face of the fan
+	 */
+	inline Face close_hole(Dart d)
+	{
+		//	const Face f(map_.close_hole_topo(d));
+		Dart dh = close_hole_topo(d);
+
+		Dart di = dh;
+
+		do
+		{
+			Dart di0 = phi2(di);
+			Dart di1 = phi1(di);
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(di, phi1(di0));
+				this->template copy_embedding<Vertex>(di1, di0);
+			}
+
+			if (this->template is_embedded<Edge>())
+				this->template copy_embedding<Edge>(di, di0);
+
+			if (this->template is_embedded<Volume>())
+				this->template set_orbit_embedding<Volume>(Face(di), this->embedding(Volume(d)));
+
+			di = phi<21>(di1);
+		} while (di != dh);
+
+		return Face(dh);
+	}
+
+	/**
+	 * @brief close_map
+	 * @return the number of holes (filled)
+	 */
+	inline int32 close_map()
+	{
+		uint32 nb_holes = 0;
+
+		std::vector<Dart>* fix_point_darts = cgogn::dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi2(d) == d)
+			{
+				Face f = close_hole(d);
+				Dart df = f.dart;
+				do
+				{
+					this->boundary_mark(Face(df));
+					df = phi<121>(df);
+				} while (df != f.dart);
+				++nb_holes;
+			}
+		}
+
+		cgogn::dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -664,7 +733,7 @@ public:
 
 	inline uint32 degree(Edge e) const
 	{
-		if (this->is_boundary(e.dart) || this->is_boundary(phi2(e.dart)))
+		if (this->is_incident_to_boundary(e))
 			return 1;
 		else
 			return 2;
@@ -795,8 +864,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -887,8 +956,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -1133,16 +1202,16 @@ protected:
 		const static auto create_embedding = [=](Self* map, Orbit orb)
 		{
 			switch (orb) {
-			case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
-			case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-			case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
-			case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
-			case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
-			default: break;
+				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
@@ -1160,15 +1229,15 @@ protected:
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
 				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				default: break;
 			}
 		};
 
 		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
+			for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2 })
 			{
 				if (this->is_embedded(orb))
 				{
@@ -1209,7 +1278,5 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad<DefaultMapTraits>
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
-
-#include <cgogn/core/cmap/cmap2_quad_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP2_QUAD_H_

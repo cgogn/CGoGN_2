@@ -77,7 +77,7 @@ TEST_F(CMap3HexaTest, topo_1)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo(4u);
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
 
 	mbuild.close_map();
 
@@ -97,13 +97,13 @@ TEST_F(CMap3HexaTest, topo_4)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo(4u);
-	Dart p2 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
+	Dart p2 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p1, p2);
 
-	Dart p3 = mbuild.add_prism_topo(4u);
-	Dart p4 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p3, p4);
+	Dart p3 = mbuild.add_prism_topo_fp(4u);
+	Dart p4 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	mbuild.close_map();
@@ -117,12 +117,26 @@ TEST_F(CMap3HexaTest, topo_4)
 	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2);
 }
 
-
 /**
  * @brief Cutting edges preserves the cell indexation
  */
 TEST_F(CMap3HexaTest, embedded)
 {
+	MapBuilder mbuild(cmap_);
+
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
+	Dart p2 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p1, p2);
+
+	Dart p3 = mbuild.add_prism_topo_fp(4u);
+	Dart p4 = mbuild.add_prism_topo_fp(4u);
+	Dart p5 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p3, cmap_.phi2(p4));
+	mbuild.sew_volumes_fp(p4, cmap_.phi2(p5));
+	mbuild.sew_volumes_fp(p5, cmap_.phi2(p3));
+
+	mbuild.close_map();
+
 	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
 	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
 	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
@@ -131,60 +145,6 @@ TEST_F(CMap3HexaTest, embedded)
 	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
 	cmap_.add_attribute<int32, Face::ORBIT>("faces");
 	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
-
-	MapBuilder mbuild(cmap_);
-
-	Dart p1 = mbuild.add_prism_topo(4u);
-	Dart p2 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p1, p2);
-
-	Dart p3 = mbuild.add_prism_topo(4u);
-	Dart p4 = mbuild.add_prism_topo(4u);
-	Dart p5 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p3, cmap_.phi2(p4));
-	mbuild.sew_volumes(p4, cmap_.phi2(p5));
-	mbuild.sew_volumes(p5, cmap_.phi2(p3));
-
-	// Close the map (remove remaining boundary)
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (cmap_.phi3(d) == d) mbuild.close_hole_topo(d,true);
-	});
-
-	// Embed the map
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (!cmap_.is_boundary(d))
-			mbuild.new_orbit_embedding(CDart(d));
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex2 v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge2 e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face2 f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
-	{
-		mbuild.new_orbit_embedding(w);
-	});
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 

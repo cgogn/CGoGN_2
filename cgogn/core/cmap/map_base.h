@@ -463,16 +463,27 @@ protected:
 		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
-	template <Orbit ORBIT>
-	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	/**
+	 * \brief the darts of the given cell are indexed for CellType with the given embedding
+	 */
+	template <typename CellType, Orbit ORBIT>
+	void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
 	{
-		using CellType = Cell<ORBIT>;
-
-		const uint32 emb = add_attribute_element<ORBIT>();
 		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d)
 		{
 			this->template set_embedding<CellType>(d, emb);
 		});
+	}
+
+	/**
+	 * \brief creates a new embedding and set it to the darts of the given cell
+	 * \return the new index
+	 */
+	template <Orbit ORBIT>
+	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	{
+		const uint32 emb = add_attribute_element<ORBIT>();
+		set_orbit_embedding<Cell<ORBIT>>(c, emb);
 		return emb;
 	}
 
@@ -638,7 +649,7 @@ public:
 	template <Orbit ORBIT>
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_embedded<ORBIT>())
+		if (this->template is_embedded<ORBIT>() && !is_boundary_cell(c1) && !is_boundary_cell(c2))
 			return this->embedding(c1) == this->embedding(c2);
 		else
 			return same_orbit(c1, c2);
@@ -704,6 +715,12 @@ public:
 	inline void set_boundary(Dart d, bool b)
 	{
 		this->boundary_marker_->set_value(d.index, b);
+	}
+
+	template <Orbit ORBIT>
+	bool is_boundary_cell(Cell<ORBIT> c) const
+	{
+		return to_concrete()->is_boundary_cell(c);
 	}
 
 	template <Orbit ORBIT>

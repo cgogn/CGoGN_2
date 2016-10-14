@@ -209,8 +209,6 @@ protected:
 			}
 		}
 	}
-
-
 };
 
 template <typename MAP_TRAITS>

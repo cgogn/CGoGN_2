@@ -21,10 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP2_BUILDER_H_
-#define CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#ifndef CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
 
-#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -32,7 +32,8 @@ namespace cgogn
 template <typename MAP2>
 class CMap2Builder_T
 {
-	static_assert(MAP2::DIMENSION == 2,"CMap2Builder_T works only with 2D Maps.");
+	static_assert(MAP2::DIMENSION == 2, "CMap2Builder_T works only with 2D Maps.");
+
 public:
 
 	using Self = CMap2Builder_T<MAP2>;
@@ -50,6 +51,9 @@ public:
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
+
+	inline ~CMap2Builder_T()
+	{}
 
 public:
 
@@ -87,9 +91,9 @@ public:
 		map_.phi2_unsew(d);
 	}
 
-	inline Dart add_face_topo_parent(uint32 nb_edges)
+	inline Dart add_face_topo_fp(uint32 nb_edges)
 	{
-		return map_.Map2::Inherit::add_face_topo(nb_edges);
+		return map_.add_face_topo_fp(nb_edges);
 	}
 
 	inline Dart close_hole_topo(Dart d)
@@ -109,80 +113,14 @@ public:
 		map_.boundary_unmark(c);
 	}
 
-	/*!
-	 * \brief Close a hole with a new face and update the embedding of incident cells.
-	 * \param d : a vertex of the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted face and incident cells are automatically updated.
-	 * More precisely :
-	 *  - a Face attribute is created, if needed, for the face that fill the hole.
-	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
-	 */
 	inline Face close_hole(Dart d)
 	{
-		const Face f(map_.close_hole_topo(d));
-
-		if (map_.template is_embedded<Vertex>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.template copy_embedding<Vertex>(it, map_.phi1(map_.phi2(it)));
-			});
-		}
-
-		if (map_.template is_embedded<Edge>())
-		{
-			map_.foreach_dart_of_orbit(f, [this] (Dart it)
-			{
-				map_.template copy_embedding<Edge>(it, map_.phi2(it));
-			});
-		}
-
-		if (map_.template is_embedded<Volume>())
-		{
-			const uint32 idx = map_.embedding(Volume(d));
-			map_.foreach_dart_of_orbit(f, [this, idx] (Dart it)
-			{
-				map_.template set_embedding<Volume>(it, idx);
-			});
-		}
-
-		return f;
+		return map_.close_hole(d);
 	}
 
-	/*!
-	 * \brief Close the map by inserting faces in its holes and update the embedding of incident cells.
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted faces and incident cells are automatically updated.
-	 * More precisely :
-	 *  - Face attributes are created, if needed, for the faces that fill the holes.
-	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
-	 * If the indexation of embedding was unique, the closed map is well embedded.
-	 */
 	inline uint32 close_map()
 	{
-		uint32 nb_holes = 0;
-
-		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
-		map_.foreach_dart([&] (Dart d)
-		{
-			if (map_.phi2(d) == d)
-				fix_point_darts->push_back(d);
-		});
-		for (Dart d : (*fix_point_darts))
-		{
-			if (map_.phi2(d) == d)
-			{
-				Face f = close_hole(d);
-				map_.boundary_mark(f);
-				++nb_holes;
-			}
-		}
-		dart_buffers()->release_buffer(fix_point_darts);
-		return nb_holes;
+		return map_.close_map();
 	}
 
 private:
@@ -190,13 +128,12 @@ private:
 	Map2& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<CMap2<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
-using CMap2Builder = cgogn::CMap2Builder_T<cgogn::CMap2<cgogn::DefaultMapTraits>>;
+//#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
+//extern template class CGOGN_CORE_API cgogn::CMap2Builder_T<CMap2<DefaultMapTraits>>;
+//#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_BUILDER_CPP_))
 
 } // namespace cgogn
 
 
-#endif // CGOGN_CORE_MAP_MAP2_BUILDER_H_
+#endif // CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
 

@@ -107,8 +107,8 @@ TEST_F(CMap2QuadTest, builder)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(4);
-	Dart d2 = builder.add_face_topo_parent(4);
+	Dart d1 = builder.add_face_topo_fp(4);
+	Dart d2 = builder.add_face_topo_fp(4);
 
 	builder.phi2_sew(d1,d2);
 
@@ -143,7 +143,7 @@ TEST_F(CMap2QuadTest, add_hexa)
 TEST_F(CMap2QuadTest, extrude_quad)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(4);
+	Dart d1 = builder.add_face_topo_fp(4);
 	builder.close_map();
 	embed_map();
 

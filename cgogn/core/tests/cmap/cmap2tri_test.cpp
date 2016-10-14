@@ -106,8 +106,8 @@ TEST_F(CMap2TriTest,tris)
 TEST_F(CMap2TriTest, builder)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 
@@ -124,8 +124,8 @@ TEST_F(CMap2TriTest, builder)
 TEST_F(CMap2TriTest, flip)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 	builder.phi2_sew(d1,d2);
 	builder.close_map();
 
@@ -155,8 +155,8 @@ TEST_F(CMap2TriTest, collapse)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 	builder.close_hole(cmap_.phi1(d1));
@@ -207,7 +207,7 @@ TEST_F(CMap2TriTest, split_triangle)
 TEST_F(CMap2TriTest, split_vertex)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
 	builder.close_hole(cmap_.phi1(d1));
 	embed_map();
 
@@ -235,8 +235,8 @@ TEST_F(CMap2TriTest, cut_edge)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 	builder.close_map();
