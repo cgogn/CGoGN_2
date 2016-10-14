@@ -114,6 +114,10 @@ public:
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
 
 		void set_clipping_plane(const QVector4D& p);
+
+		void set_clipping_plane2(const QVector4D& p);
+
+		void set_thick_clipping_plane(const QVector4D& p, float32 th);
 	};
 
 	using Self = TopoDrawer;
@@ -183,6 +187,11 @@ public:
 	template <typename VEC3, typename VEC4>
 	Dart pick(const VEC3& A, const VEC3& B, const VEC4& plane, VEC3* dp1=nullptr, VEC3* dp2=nullptr);
 
+	template <typename VEC3, typename VEC4>
+	Dart pick(const VEC3& A, const VEC3& B, const VEC4& plane1, const VEC4& plane2, VEC3* dp1=nullptr, VEC3* dp2=nullptr);
+
+	template <typename VEC3, typename VEC4>
+	Dart pick(const VEC3& A, const VEC3& B, const VEC4& plane, float32 thickness, VEC3* dp1=nullptr, VEC3* dp2=nullptr);
 
 };
 
@@ -502,6 +511,84 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 	return Dart(INVALID_INDEX);
 }
 
+
+
+template <typename VEC3, typename VEC4>
+Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane1, const VEC4& plane2, VEC3* xdp1, VEC3* xdp2)
+{
+	using LVEC = geometry::Vec_T<Vec3f>;
+
+	VEC3 xAB = xB-xA;
+	LVEC A(xA[0],xA[1],xA[2]);
+	LVEC AB(xAB[0],xAB[1],xAB[2]);
+
+	float32 dmax = std::numeric_limits<float32>::max();
+	float32 AB2 = AB.dot(AB);
+
+	std::size_t isel = INVALID_INDEX;
+
+	for(std::size_t i=0, nb_d = darts_id_.size(); i<nb_d; ++i)
+	{
+		const Vec3f& PP = darts_pos_[2*i];
+		const Vec3f& QQ = darts_pos_[2*i+1];
+
+		float32 prod1 = PP[0]*float32(plane1[0]);
+		prod1 += PP[1]*float32(plane1[1]);
+		prod1 += PP[2]*float32(plane1[2]);
+		prod1 += float32(plane1[3]);
+
+		float32 prod2 = QQ[0]*float32(plane1[0]);
+		prod2 += QQ[1]*float32(plane1[1]);
+		prod2 += QQ[2]*float32(plane1[2]);
+		prod2 += float32(plane1[3]);
+
+		float32 prod3 = PP[0]*float32(plane2[0]);
+		prod3 += PP[1]*float32(plane2[1]);
+		prod3 += PP[2]*float32(plane2[2]);
+		prod3 += float32(plane2[3]);
+
+		float32 prod4 = QQ[0]*float32(plane2[0]);
+		prod4 += QQ[1]*float32(plane2[1]);
+		prod4 += QQ[2]*float32(plane2[2]);
+		prod4 += float32(plane2[3]);
+
+		if (((prod1<=0.0f)||(prod2<=0.0f)) && ((prod3<=0.0f)||(prod4<=0.0f)))
+		{
+			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
+			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			if (d2 < dmax)
+			{
+				dmax = d2;
+				isel = i;
+			}
+		}
+	}
+
+	if (isel != INVALID_INDEX)
+	{
+		if (xdp1 && xdp2)
+		{
+			Vec3f dp1 = darts_pos_[2*isel];
+			Vec3f dp2 = darts_pos_[2*isel+1];
+			*xdp1 = VEC3(dp1[0],dp1[1],dp1[2]);
+			*xdp2 = VEC3(dp2[0],dp2[1],dp2[2]);
+		}
+		return darts_id_[isel];
+	}
+
+	return Dart(INVALID_INDEX);
+}
+
+template <typename VEC3, typename VEC4>
+Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, float32 thickness, VEC3* xdp1, VEC3* xdp2)
+{
+	VEC4 p1 = plane;
+	p1[3] -= thickness/2.0f;
+	VEC4 p2 = -plane;
+	p2[3] -= thickness/2.0f;
+	return pick(xA,xB,p1,p2,xdp1,xdp2);
+}
 
 
 } // namespace rendering

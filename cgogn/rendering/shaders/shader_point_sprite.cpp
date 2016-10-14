@@ -63,6 +63,7 @@ const char* ShaderPointSpriteGen::geometry_shader_source_ =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "#if WITH_COLOR == 1\n"
 "in vec3 color_v[];\n"
 "out vec3 color_f;\n"
@@ -121,7 +122,8 @@ const char* ShaderPointSpriteGen::geometry_shader_source_ =
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip2,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		vec4 posCenter = model_view_matrix * gl_in[0].gl_Position;\n"
 "		sphereCenter = posCenter.xyz;\n"
@@ -234,6 +236,8 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 	unif_light_pos_ = prg_.uniformLocation("lightPos");
 	unif_size_ = prg_.uniformLocation("point_size");
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
+
 
 	if (!color_per_vertex)
 		set_color(QColor(250, 0, 0));
@@ -296,6 +300,11 @@ void ShaderPointSpriteGen::set_size(float32 w)
 void ShaderPointSpriteGen::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+void ShaderPointSpriteGen::set_plane_clip2(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
 

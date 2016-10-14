@@ -106,6 +106,9 @@ public:
 		void set_face_color(const QColor& rgb);
 		void set_edge_color(const QColor& rgb);
 		void set_clipping_plane(const QVector4D& pl);
+		void set_clipping_plane2(const QVector4D& pl);
+		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+
 	};
 
 	using Self = VolumeDrawerGen;

@@ -60,10 +60,12 @@ const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
 "uniform mat4 model_view_matrix;\n"
 "uniform float explode_vol;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip2,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		for (int i=1; i<=2; i++)\n"
 "		{\n"
@@ -94,6 +96,7 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	get_matrices_uniforms();
 	unif_expl_v_ = prg_.uniformLocation("explode_vol");
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 	unif_color_ = prg_.uniformLocation("color");
 
 	// default param
@@ -101,6 +104,7 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	set_explode_volume(0.8f);
 	set_color(QColor(255, 255, 255));
 	set_plane_clip(QVector4D(0, 0, 0, 0));
+	set_plane_clip2(QVector4D(0, 0, 0, 0));
 	release();
 }
 
@@ -118,6 +122,11 @@ void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
 void ShaderExplodeVolumesLine::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+void ShaderExplodeVolumesLine::set_plane_clip2(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
 } // namespace rendering
