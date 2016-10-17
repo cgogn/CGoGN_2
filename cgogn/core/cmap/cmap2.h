@@ -970,6 +970,8 @@ protected:
 	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 * If the indexation of embedding was unique, the closed map is well embedded.
 	 */
+	// The template parameter is a hack needed to compile the class CMap2_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>> with MSVC. Otherwise calling boundary_mark leads to an error.
+	template<typename = std::enable_if<MapType::TYPE::DIMENSION == 2>>
 	inline uint32 close_map()
 	{
 		uint32 nb_holes = 0u;
