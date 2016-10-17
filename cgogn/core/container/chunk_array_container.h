@@ -1015,7 +1015,7 @@ public:
 	template <typename FUNC>
 	void foreach_index(const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, uint32), "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1029,8 +1029,8 @@ public:
 	template <typename FUNC>
 	void foreach_index_until(const FUNC& f) const
 	{
-		static_assert(check_func_parameter_type(FUNC, uint32), "Wrong function parameter type");
-		static_assert(check_func_return_type(FUNC, bool), "Wrong function return type");
+		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
+		static_assert(is_func_return_same<FUNC,bool>::value, "Wrong function return type");
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1046,8 +1046,8 @@ public:
 	template <typename FUNC>
 	void parallel_foreach_index(const FUNC& f) const
 	{
-		static_assert(check_func_ith_parameter_type(FUNC, 0, uint32), "Wrong function first parameter type");
-		static_assert(check_func_ith_parameter_type(FUNC, 0, uint32), "Wrong function second parameter type");
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function second parameter type");
 
 		using VecIndice = std::vector<uint32>;
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;

@@ -339,32 +339,6 @@ public:
 		init_primitives(m, CellFilters(), prim);
 	}
 
-
-//	template <typename COMP>
-//	void sort(DrawingType prim, const COMP& comp)
-//	{
-//		std::vector<std::array<uint32,3>> indices_tri;
-//		indices_buffers_[prim]->bind();
-//		uint32 nb = indices_buffers_[prim]->size() / (3*sizeof(uint32));
-//		indices_tri.resize(nb);
-//		indices_buffers_[prim]->read(0,indices_tri.data()->data(), indices_buffers_[prim]->size());
-
-//		std::sort(indices_tri.begin(), indices_tri.end(),comp);
-
-//		indices_buffers_[prim]->write(0,indices_tri.data()->data(), indices_buffers_[prim]->size());
-//		indices_buffers_[prim]->release();
-//	}
-
-
-//	void init_sorting_triangles()
-//	{
-//		indices_buffers_[TRIANGLES]->bind();
-//		uint32 nb = indices_buffers_[TRIANGLES]->size() / (3*sizeof(uint32));
-//		indices_tri_.resize(nb);
-//		indices_buffers_[TRIANGLES]->read(0,indices_tri_.data()->data(), indices_buffers_[TRIANGLES]->size());
-//		indices_buffers_[TRIANGLES]->release();
-//	}
-
 	/**
 	 * @brief sort the triangles
 	 * @param comp comparison function
