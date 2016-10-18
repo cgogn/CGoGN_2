@@ -45,7 +45,7 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using CMap2 = cgogn::CMap2;
 using Dart = cgogn::Dart;
 template <typename T>
 using VertexAttribute = CMap2::VertexAttribute<T>;
@@ -56,7 +56,8 @@ using Face = CMap2::Face;
 template <typename Vec_T>
 class Algos_TEST : public testing::Test
 {
-protected :
+protected:
+
 	CMap2 map2_;
 
 	void add_polygone(uint32 n)

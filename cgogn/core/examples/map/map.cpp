@@ -9,10 +9,6 @@
 using namespace cgogn;
 using namespace cgogn::numerics;
 
-using Map1 = CMap1<DefaultMapTraits>;
-using Map2 = CMap2<DefaultMapTraits>;
-using Map3 = CMap3<DefaultMapTraits>;
-
 
 template <typename MAP>
 void fonc_const(const typename MAP::template VertexAttribute<float32>& ah);
@@ -133,9 +129,9 @@ int test1(MAP& map)
 
 int main()
 {
-	Map1 map1;
-	Map2 map2;
-//	Map3 map3;
+	CMap1 map1;
+	CMap2 map2;
+//	CMap3 map3;
 //	test1(map1);
 	test1(map2);
 //	test1(map3);

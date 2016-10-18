@@ -30,22 +30,21 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap2_T : public CMap1_T<MAP_TRAITS, MAP_TYPE>
+template <typename MAP_TYPE>
+class CMap2_T : public CMap1_T<MAP_TYPE>
 {
 public:
 
 	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 1;
 
-	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
-	using Inherit = CMap1_T<MAP_TRAITS, MAP_TYPE>;
-	using Self = CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = CMap1_T<MAP_TYPE>;
+	using Self = CMap2_T<MAP_TYPE>;
 
 	using Builder = CMap2Builder_T<Self>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	friend class MapBase<MAP_TYPE>;
 	friend class CMap2Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
@@ -59,14 +58,12 @@ public:
 	using Boundary  = Face;
 	using ConnectedComponent = Volume;
 
+	template <typename T>
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 	using typename Inherit::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
 	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
@@ -1536,32 +1533,30 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct CMap2Type
 {
-	using TYPE = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
+	using TYPE = CMap2_T<CMap2Type>;
 };
 
-template <typename MAP_TRAITS>
-using CMap2 = CMap2_T<MAP_TRAITS, CMap2Type<MAP_TRAITS>>;
+using CMap2 = CMap2_T<CMap2Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
-extern template class CGOGN_CORE_API CMap2_T<DefaultMapTraits, CMap2Type<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarker<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2<DefaultMapTraits>, CMap2<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CMap2Builder_T<CMap2>;
+extern template class CGOGN_CORE_API DartMarker<CMap2>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap2>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2>;
+extern template class CGOGN_CORE_API CellMarker<CMap2, CMap2::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2, CMap2::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2, CMap2::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2, CMap2::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2, CMap2::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2, CMap2::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2, CMap2::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2, CMap2::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn

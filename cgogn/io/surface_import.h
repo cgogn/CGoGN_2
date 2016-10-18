@@ -34,7 +34,6 @@
 #include <cgogn/core/container/chunk_array_container.h>
 #include <cgogn/core/cmap/map_base.h>
 
-
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
@@ -46,23 +45,22 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
+template <typename VEC3>
 class SurfaceImport
 {
 public:
 
-	using Self = SurfaceImport<MAP_TRAITS, VEC3>;
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = SurfaceImport<VEC3>;
 
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CGOGN_CHUNK_SIZE>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
+	using ChunkArray = cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
+	template <typename T, Orbit ORBIT>
+	using Attribute = Attribute<T, ORBIT>;
+
+	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline SurfaceImport():
 		faces_nb_edges_()
@@ -74,6 +72,8 @@ public:
 
 	virtual ~SurfaceImport()
 	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
 	virtual void clear()
 	{
@@ -294,11 +294,11 @@ protected:
 	ChunkArray<VEC3>*	position_attribute_;
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class SurfaceFileImport : public SurfaceImport<MAP_TRAITS, VEC3>, public FileImport
+template <typename VEC3>
+class SurfaceFileImport : public SurfaceImport<VEC3>, public FileImport
 {
-	using Self = SurfaceFileImport<MAP_TRAITS, VEC3>;
-	using Inherit1 = SurfaceImport<MAP_TRAITS, VEC3>;
+	using Self = SurfaceFileImport<VEC3>;
+	using Inherit1 = SurfaceImport<VEC3>;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceFileImport);
@@ -312,10 +312,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
-extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API SurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3d>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
 
 } // namespace io

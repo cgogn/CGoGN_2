@@ -30,23 +30,23 @@
 namespace cgogn
 {
 
-
-
-template <typename DATA_TRAITS, typename MAP_TYPE>
-class IHCMap3_T :public CMap3_T<DATA_TRAITS, MAP_TYPE>, public CPH3<DATA_TRAITS> // Can't use virtual inheritance because of the use of the CRTP
+template <typename MAP_TYPE>
+class IHCMap3_T : public CMap3, public CPH3 // Can't use virtual inheritance because of the use of the CRTP
 {
 public:
 
-	using Inherit_CMAP = CMap3_T<DATA_TRAITS, MAP_TYPE>;
-	using Inherit_CPH = CPH3<DATA_TRAITS>;
-	using Self = IHCMap3_T<DATA_TRAITS, MAP_TYPE>;
+	static const int32 PRIM_SIZE = 1;
 
-	friend typename Self::Inherit_CMAP;
-	//	friend typename Inherit::Inherit;
+	using MapType = MAP_TYPE;
+	using Inherit_CMAP = CMap3;
+	using Inherit_CPH = CPH3;
+	using Self = IHCMap3_T<MAP_TYPE>;
 
+	friend class MapBase<MAP_TYPE>;
 	friend class DartMarker_T<Self>;
+	friend class cgogn::DartMarkerStore<Self>;
 
-	static const Orbit DART = Orbit::DART;
+	static const Orbit DART   = Orbit::DART;
 	static const Orbit VERTEX = Orbit::PHI21;
 	static const Orbit EDGE   = Orbit::PHI2;
 	static const Orbit FACE   = Orbit::PHI1;
@@ -58,12 +58,10 @@ public:
 	using Volume = Cell<Self::VOLUME>;
 
 	template <typename T>
-	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
+	using ChunkArrayContainer = typename Inherit_CMAP::template ChunkArrayContainer<T>;
 	template <typename T>
-	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
+	using ChunkArray = typename Inherit_CMAP::template ChunkArray<T>;
 
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
 	template <typename T>
 	using DartAttribute = Attribute<T, Self::DART>;
 	template <typename T>
@@ -74,11 +72,12 @@ public:
 	using FaceAttribute = Attribute<T, Self::FACE>;
 	template <typename T>
 	using VolumeAttribute = Attribute<T, Self::VOLUME>;
+
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
 	using Builder = CMap3Builder_T<Self>;
-	ChunkArray<uint32>* next_level_cell[NB_ORBITS];
 
+	ChunkArray<uint32>* next_level_cell[NB_ORBITS];
 
 protected:
 
@@ -355,20 +354,13 @@ public:
 
 };
 
-template <typename MAP_TRAITS>
 struct IHCMap3Type
 {
-	using TYPE = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
+	using TYPE = IHCMap3_T<IHCMap3Type>;
 };
 
-template <typename MAP_TRAITS>
-using IHCMap3 = IHCMap3_T<MAP_TRAITS, IHCMap3Type<MAP_TRAITS>>;
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap3_T<DefaultMapTraits, IHCMap3Type<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_CPP_))
+using IHCMap3 = IHCMap3_T<IHCMap3Type>;
 
 } // namespace cgogn
-
 
 #endif // CGOGN_MULTIRESOLUTION_CPH_IHCMAP3_H_

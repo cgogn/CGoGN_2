@@ -13,12 +13,7 @@
 
 using namespace cgogn::numerics;
 
-struct MyMapTraits : public cgogn::DefaultMapTraits
-{
-	static const uint32 CHUNK_SIZE = 8192;
-};
-
-using Map2 = cgogn::CMap2<MyMapTraits>;
+using Map2 = cgogn::CMap2;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;

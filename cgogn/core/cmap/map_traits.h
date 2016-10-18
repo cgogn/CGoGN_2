@@ -21,20 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_MAP_MAP_TRAITS_H_
-#define CGOGN_CORE_MAP_MAP_TRAITS_H_
+#ifndef CGOGN_CORE_CMAP_MAP_TRAITS_H_
+#define CGOGN_CORE_CMAP_MAP_TRAITS_H_
 
-#include <array>
-#include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/numerics.h>
 
-namespace cgogn
-{
+static const cgogn::uint32 CGOGN_CHUNK_SIZE = 4096u;
 
-struct DefaultMapTraits
-{
-	static const uint32 CHUNK_SIZE = DEFAULT_CHUNK_SIZE;
-};
-
-} // namespace cgogn
-
-#endif // CGOGN_CORE_MAP_MAP_TRAITS_H_
+#endif

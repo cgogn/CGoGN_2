@@ -40,13 +40,13 @@ namespace io
 
 CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type);
 
-template <typename MAP_TRAITS, typename VEC3>
-class PlySurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class PlySurfaceImport : public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = PlySurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = PlySurfaceImport<VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -248,12 +248,12 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_PLY_IO_CPP_))
-extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API PlySurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API PlySurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_PLY_IO_CPP_))
 
 } // namespace io

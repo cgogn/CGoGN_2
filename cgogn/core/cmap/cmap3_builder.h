@@ -143,12 +143,6 @@ private:
 	Map3& map_;
 };
 
-//#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-//extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
-//#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-
 } // namespace cgogn
 
-
 #endif // CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
-

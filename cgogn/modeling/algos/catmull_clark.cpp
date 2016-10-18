@@ -31,10 +31,11 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex quadrangule_face<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::Face);
-template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex quadrangule_face<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
-template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
+template CGOGN_MODELING_API CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
+template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
+
 } // namespace cgogn

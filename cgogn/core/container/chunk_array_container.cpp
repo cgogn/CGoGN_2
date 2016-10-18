@@ -24,11 +24,12 @@
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_
 
 #include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/cmap/map_traits.h>
 
 namespace cgogn
 {
 
-template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
-template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
+template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
+template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, unsigned char>;
 
 } // namespace cgogn

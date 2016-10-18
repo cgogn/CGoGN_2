@@ -38,7 +38,7 @@ namespace cgogn
  * but do neither tests the containers (refs_, used_, etc.) or the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap1TopoTest : public CMap1<DefaultMapTraits>, public ::testing::Test
+class CMap1TopoTest : public CMap1, public ::testing::Test
 {
 public:
 

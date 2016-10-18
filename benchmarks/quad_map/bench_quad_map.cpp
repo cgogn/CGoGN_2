@@ -38,7 +38,7 @@
 using namespace cgogn::numerics;
 
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 Map2 bench_map;
 
 using Vertex = Map2::Vertex;
@@ -54,8 +54,7 @@ template <typename T>
 using FaceAttribute = Map2::FaceAttribute<T>;
 
 
-
-using QMap2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
+using QMap2 = cgogn::CMap2Quad;
 QMap2 bench_quad_map;
 
 using QVertex = QMap2::Vertex;
@@ -75,8 +74,6 @@ const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
-
-
 
 
 

@@ -29,13 +29,12 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH2 : public CPHBase<DATA_TRAITS>
+class CPH2 : public CPHBase
 {
 public:
 
-	using Self = CPH2<DATA_TRAITS>;
-	using Inherit = CPHBase<DATA_TRAITS>;
+	using Self = CPH2;
+	using Inherit = CPHBase;
 
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
@@ -104,10 +103,6 @@ public:
 		return 0u;
 	}
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH2<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
 
 } // namespace cgogn
 

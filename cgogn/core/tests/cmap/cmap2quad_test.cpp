@@ -41,29 +41,21 @@ namespace cgogn
  */
 class CMap2QuadTest : public ::testing::Test
 {
-
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap2Quad = CMap2Quad<MiniMapTraits>;
-	using MapBuilder = testCMap2Quad::Builder;
-	using CDart = testCMap2Quad::CDart;
-	using Vertex = testCMap2Quad::Vertex;
-	using Edge = testCMap2Quad::Edge;
-	using Face = testCMap2Quad::Face;
-	using Volume = testCMap2Quad::Volume;
+	using MapBuilder = CMap2Quad::Builder;
+	using CDart = CMap2Quad::CDart;
+	using Vertex = CMap2Quad::Vertex;
+	using Edge = CMap2Quad::Edge;
+	using Face = CMap2Quad::Face;
+	using Volume = CMap2Quad::Volume;
 
 protected:
 
-	testCMap2Quad cmap_;
+	CMap2Quad cmap_;
 
 	CMap2QuadTest()
-	{
-	}
+	{}
 
 	void embed_map()
 	{

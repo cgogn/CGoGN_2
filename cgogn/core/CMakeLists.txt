@@ -56,8 +56,6 @@ set(SOURCE_FILES
 	cmap/cmap1.cpp
 	cmap/cmap2.cpp
 	cmap/cmap3.cpp
-	cmap/cmap2_builder.cpp
-	cmap/cmap3_builder.cpp
 	cmap/cmap2_tri.cpp
 	cmap/cmap2_quad.cpp
 	cmap/cmap3_tetra.cpp

@@ -34,19 +34,21 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class LM6VolumeImport : public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class LM6VolumeImport : public VolumeFileImport<VEC3>
 {
-	using Inherit = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Self = LM6VolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit = VolumeFileImport<VEC3>;
+	using Self = LM6VolumeImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 public:
+
 	inline LM6VolumeImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		int version = -1;
@@ -145,19 +147,21 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class LM6SurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class LM6SurfaceImport : public SurfaceFileImport<VEC3>
 {
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
-	using Self = LM6SurfaceImport<MAP_TRAITS, VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
+	using Self = LM6SurfaceImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 public:
+
 	inline LM6SurfaceImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6SurfaceImport);
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		int version = -1;
@@ -228,16 +232,16 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
-extern template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
 
 } // namespace io
-} // namespace cgogn
 
+} // namespace cgogn
 
 #endif // CGOGN_IO_LM6_IO_H_

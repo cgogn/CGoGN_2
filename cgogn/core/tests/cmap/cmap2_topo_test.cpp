@@ -39,18 +39,20 @@ namespace cgogn
  * but do neither test the containers (refs_, used_, etc.) nor the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
+class CMap2TopoTest : public CMap2, public ::testing::Test
 {
 public:
 
-	using Inherit = CMap2<DefaultMapTraits>;
+	using Inherit = CMap2;
+
 	using MapBuilder = Inherit::Builder;
-	using CDart = CMap2TopoTest::CDart;
-	using Vertex = CMap2TopoTest::Vertex;
-	using Edge   = CMap2TopoTest::Edge;
-	using Face   = CMap2TopoTest::Face;
-	using Volume   = CMap2TopoTest::Volume;
-	using VertexMarker = CMap2TopoTest::CellMarker<Vertex::ORBIT>;
+	using CDart = Inherit::CDart;
+	using Vertex = Inherit::Vertex;
+	using Edge = Inherit::Edge;
+	using Face = Inherit::Face;
+	using Volume = Inherit::Volume;
+
+	using VertexMarker = Inherit::CellMarker<Vertex::ORBIT>;
 
 protected:
 

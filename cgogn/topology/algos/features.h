@@ -32,6 +32,7 @@ namespace cgogn
 
 namespace topology
 {
+
 /**
  * class FeaturesFinder : support the extraction of topological features of manifolds:
  * - extractions of maximal diameter
@@ -56,6 +57,7 @@ class FeaturesFinder
 	using ScalarField = cgogn::topology::ScalarField<Scalar,MAP>;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FeaturesFinder);
 
 	FeaturesFinder(MAP& map,
@@ -349,6 +351,7 @@ public:
 	}
 
 private:
+
 	MAP& map_;
 	AdjacencyCache<MAP> cache_;
 	VertexAttribute<Scalar> distance_to_A_;
@@ -357,14 +360,13 @@ private:
 	EdgeAttribute<Scalar> edge_weight_;
 	DistanceField<Scalar, MAP> distance_field_;
 	bool intern_edge_weight_;
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
 
 } // namespace topology

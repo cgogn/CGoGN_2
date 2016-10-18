@@ -31,8 +31,8 @@ namespace cgogn
 namespace topology
 {
 
-template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2<DefaultMapTraits>>;
-template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3<DefaultMapTraits>>;
+template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2>;
+template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3>;
 
 } // namespace topology
 } // namespace cgogn

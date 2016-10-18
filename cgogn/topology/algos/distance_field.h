@@ -33,6 +33,7 @@ namespace cgogn
 
 namespace topology
 {
+
 /**
  * class DistanceField : build, query and manage distance fields.
  * A distance field is a scalar field that associated each vertex with
@@ -52,6 +53,7 @@ class DistanceField
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DistanceField);
 
 	DistanceField(MAP& map,
@@ -424,6 +426,7 @@ public:
 	}
 
 private:
+
 	MAP& map_;
 	AdjacencyCache<MAP> cache_;
 	EdgeAttribute<Scalar> edge_weight_;
@@ -431,10 +434,10 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
 
 } // namespace topology

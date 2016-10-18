@@ -53,9 +53,9 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
+//using Map2 = cgogn::CMap2Tri;
+//using Map2 = cgogn::CMap2Quad;
 
 
 using Vec3 = Eigen::Vector3d;

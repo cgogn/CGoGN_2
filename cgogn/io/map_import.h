@@ -50,11 +50,11 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<SurfaceFileImport<MAP_TRAITS, VEC3>> newSurfaceImport(const std::string& filename);
+template <typename VEC3>
+inline std::unique_ptr<SurfaceFileImport<VEC3>> newSurfaceImport(const std::string& filename);
 
-template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<VolumeFileImport<MAP_TRAITS, VEC3>> newVolumeImport(const std::string& filename);
+template <typename VEC3>
+inline std::unique_ptr<VolumeFileImport<VEC3>> newVolumeImport(const std::string& filename);
 
 template <typename VEC3, typename MAP2>
 inline void import_surface(MAP2& cmap2, const std::string& filename);
@@ -63,12 +63,10 @@ template <typename VEC3, typename MAP3>
 inline void import_volume(MAP3& cmap3, const std::string& filename);
 
 
-
-
 template <typename VEC3, typename MAP2>
 inline void import_surface(MAP2& cmap2, const std::string& filename)
 {
-	auto si = newSurfaceImport<typename MAP2::Traits, VEC3>(filename);
+	auto si = newSurfaceImport<VEC3>(filename);
 	if (si)
 	{
 		if (si->import_file(filename))
@@ -79,7 +77,7 @@ inline void import_surface(MAP2& cmap2, const std::string& filename)
 template <typename VEC3, typename MAP3>
 inline void import_volume(MAP3& cmap3, const std::string& filename)
 {
-	auto si = newVolumeImport<typename MAP3::Traits, VEC3>(filename);
+	auto si = newVolumeImport<VEC3>(filename);
 	if (si)
 	{
 		if (si->import_file(filename))
@@ -87,51 +85,51 @@ inline void import_volume(MAP3& cmap3, const std::string& filename)
 	}
 }
 
-template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<SurfaceFileImport<MAP_TRAITS, VEC3> > newSurfaceImport(const std::string& filename)
+template <typename VEC3>
+inline std::unique_ptr<SurfaceFileImport<VEC3>> newSurfaceImport(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
-		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<VEC3>>();
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:
-		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<VEC3>>();
+		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<VEC3>>();
+		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<VEC3>>();
+		case FileType::FileType_STL: return make_unique<StlSurfaceImport<VEC3>>();
+		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<VEC3>>();
+		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<VEC3>>();
 		default:
 			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<SurfaceFileImport<MAP_TRAITS, VEC3>> ();
+			return std::unique_ptr<SurfaceFileImport<VEC3>> ();
 	}
 }
 
-template <typename MAP_TRAITS, typename VEC3>
-inline std::unique_ptr<VolumeFileImport<MAP_TRAITS, VEC3> > newVolumeImport(const std::string& filename)
+template <typename VEC3>
+inline std::unique_ptr<VolumeFileImport<VEC3>> newVolumeImport(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
 		case FileType::FileType_VTK_LEGACY:
-		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_MESHB:		return make_unique<LM6VolumeImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP_TRAITS, VEC3>>();
-		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP_TRAITS, VEC3>>();
+		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<VEC3>>();
+		case FileType::FileType_MESHB:		return make_unique<LM6VolumeImport<VEC3>>();
+		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<VEC3>>();
+		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<VEC3>>();
+		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<VEC3>>();
+		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<VEC3>>();
 		default:
 			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<VolumeFileImport<MAP_TRAITS, VEC3>> ();
+			return std::unique_ptr<VolumeFileImport<VEC3>> ();
 	}
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2<DefaultMapTraits>& , const std::string&);
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2<DefaultMapTraits>& , const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3<DefaultMapTraits>& , const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3<DefaultMapTraits>& , const std::string&);
+extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2& , const std::string&);
+extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2& , const std::string&);
+extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3& , const std::string&);
+extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3& , const std::string&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
 
 } // namespace io

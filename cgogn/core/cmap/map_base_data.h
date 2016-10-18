@@ -43,7 +43,7 @@
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
 
 #ifndef _MSC_VER
-#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value,"The concrete map type has to be equal to Self")
+#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value, "The concrete map type has to be equal to Self")
 #else
 #define CGOGN_CHECK_CONCRETE_TYPE CGOGN_CHECK_DYNAMIC_TYPE
 #endif
@@ -84,35 +84,34 @@ public:
 };
 
 // forward declaration of class AttributeGen
-template <typename DATA_TRAITS>
 class AttributeGen;
 
 // forward declaration of class Attribute_T
-template <typename DATA_TRAITS, typename T>
+template <typename T>
 class Attribute_T;
 
 // forward declaration of class Attribute
-template <typename DATA_TRAITS, typename T, Orbit ORBIT>
+template <typename T, Orbit ORBIT>
 class Attribute;
 
 /**
  * @brief The MapBaseData class
  */
-template <typename MAP_TRAITS>
 class MapBaseData : public MapGen
 {
 public:
 
 	using Inherit = MapGen;
-	using Self = MapBaseData<MAP_TRAITS>;
-
-	using Traits = MAP_TRAITS;
-
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = MapBaseData;
 
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, typename T> friend class Attribute_T;
-	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
+	static const uint32 CHUNK_SIZE = CGOGN_CHUNK_SIZE;
+
+	template <typename T> friend class Attribute_T;
+	template <typename T, Orbit ORBIT> friend class Attribute;
+
+	template <typename T>
+	using Attribute_T = cgogn::Attribute_T<T>;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
@@ -120,12 +119,6 @@ public:
 	template <typename T>
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
-
-	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
-	template <typename T>
-	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
 
 protected:
 
@@ -403,10 +396,6 @@ protected:
 
 
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
-extern template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
 
 } // namespace cgogn
 

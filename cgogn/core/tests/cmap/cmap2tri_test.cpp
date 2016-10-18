@@ -41,29 +41,21 @@ namespace cgogn
  */
 class CMap2TriTest : public ::testing::Test
 {
-
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap2Tri = CMap2Tri<MiniMapTraits>;
-	using MapBuilder = testCMap2Tri::Builder;
-	using CDart = testCMap2Tri::CDart;
-	using Vertex = testCMap2Tri::Vertex;
-	using Edge = testCMap2Tri::Edge;
-	using Face = testCMap2Tri::Face;
-	using Volume = testCMap2Tri::Volume;
+	using MapBuilder = CMap2Tri::Builder;
+	using CDart = CMap2Tri::CDart;
+	using Vertex = CMap2Tri::Vertex;
+	using Edge = CMap2Tri::Edge;
+	using Face = CMap2Tri::Face;
+	using Volume = CMap2Tri::Volume;
 
 protected:
 
-	testCMap2Tri cmap_;
+	CMap2Tri cmap_;
 
 	CMap2TriTest()
-	{
-	}
+	{}
 
 	void embed_map()
 	{
@@ -73,7 +65,6 @@ protected:
 		cmap_.add_attribute<int32, Face::ORBIT>("faces");
 		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
 	}
-
 };
 
 TEST_F(CMap2TriTest,tris)

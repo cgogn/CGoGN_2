@@ -31,10 +31,11 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
-template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap3>(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap3>(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
+
 } // namespace cgogn

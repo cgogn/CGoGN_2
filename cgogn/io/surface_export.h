@@ -41,8 +41,6 @@ namespace cgogn
 namespace io
 {
 
-
-
 template <typename MAP>
 class SurfaceExport : public MeshExport<MAP>
 {
@@ -51,8 +49,10 @@ public:
 	using Inherit = MeshExport<MAP>;
 	using Self = SurfaceExport<MAP>;
 	using Map = MAP;
+
 	using Vertex = typename Map::Vertex;
 	using Face = typename Map::Face;
+
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
@@ -61,6 +61,7 @@ public:
 
 	virtual ~SurfaceExport()
 	{}
+
 protected:
 
 	inline std::vector<const ChunkArrayGen*> const & face_attributes() const
@@ -82,6 +83,7 @@ protected:
 	{
 		return uint32(this->cell_cache_->template size<Face>());
 	}
+
 private:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
@@ -126,7 +128,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))
-extern template class CGOGN_IO_API SurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API SurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))
 
 } // namespace io

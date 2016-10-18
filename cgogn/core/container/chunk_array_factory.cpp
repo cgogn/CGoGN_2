@@ -24,10 +24,11 @@
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_
 
 #include <cgogn/core/container/chunk_array_factory.h>
+#include <cgogn/core/cmap/map_traits.h>
 
 namespace cgogn
 {
 
-template class CGOGN_CORE_API ChunkArrayFactory<DEFAULT_CHUNK_SIZE>;
+template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
 
 } // namespace cgogn

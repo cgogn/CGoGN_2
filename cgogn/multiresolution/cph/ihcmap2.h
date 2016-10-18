@@ -30,20 +30,19 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class IHCMap2_T : public CMap2_T<MAP_TRAITS, MAP_TYPE>, public CPH2<MAP_TRAITS>
+template <typename MAP_TYPE>
+class IHCMap2_T : public CMap2, public CPH2
 {
 public:
 
 	static const int32 PRIM_SIZE = 1;
 
-	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
-	using Inherit_CMAP = CMap2_T<MAP_TRAITS, MAP_TYPE>;
-	using Inherit_CPH = CPH2<MAP_TRAITS>;
-	using Self = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Inherit_CMAP = CMap2;
+	using Inherit_CPH = CPH2;
+	using Self = IHCMap2_T<MAP_TYPE>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	friend class MapBase<MAP_TYPE>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -53,14 +52,11 @@ public:
 	using Face		= typename Inherit_CMAP::Face;
 	using Volume	= typename Inherit_CMAP::Volume;
 
-
 	template <typename T>
-	using ChunkArray =  typename Inherit_CMAP::template ChunkArray<T>;
+	using ChunkArrayContainer = typename Inherit_CMAP::template ChunkArrayContainer<T>;
 	template <typename T>
-	using ChunkArrayContainer =  typename Inherit_CMAP::template ChunkArrayContainer<T>;
+	using ChunkArray = typename Inherit_CMAP::template ChunkArray<T>;
 
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit_CMAP::template Attribute<T, ORBIT>;
 	template <typename T>
 	using DartAttribute = Attribute<T, Orbit::DART>;
 	template <typename T>
@@ -315,6 +311,7 @@ protected:
 	}
 
 public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -336,18 +333,12 @@ public:
 
 };
 
-template <typename MAP_TRAITS>
 struct IHCMap2Type
 {
-	using TYPE = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
+	using TYPE = IHCMap2_T<IHCMap2Type>;
 };
 
-template <typename MAP_TRAITS>
-using IHCMap2 = IHCMap2_T<MAP_TRAITS, IHCMap2Type<MAP_TRAITS>>;
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap2_T<DefaultMapTraits, IHCMap2Type<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_CPP_))
+using IHCMap2 = IHCMap2_T<IHCMap2Type>;
 
 } // namespace cgogn
 

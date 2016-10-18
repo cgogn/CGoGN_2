@@ -35,8 +35,6 @@ std::array<int,12> MapGen::tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7};
 
 std::array<int,24> MapGen::hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17};
 
-
-
 MapGen::MapGen()
 {
 	if (instances_ == nullptr)
@@ -65,7 +63,5 @@ MapGen::~MapGen()
 		instances_ = nullptr;
 	}
 }
-
-template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
 
 } // namespace cgogn

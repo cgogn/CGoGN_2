@@ -42,6 +42,7 @@ template <typename MAP>
 class VolumeExport : public MeshExport<MAP>
 {
 public:
+
 	using Inherit = MeshExport<MAP>;
 	using Self = VolumeExport<MAP>;
 	using Map = MAP;
@@ -50,27 +51,25 @@ public:
 	using Face   = typename Map::Face;
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
-	template<typename T, Orbit ORB>
-	using Attribute = typename Map::template Attribute<T, ORB>;
 
 	class ConnectorCellFilter : public cgogn::CellFilters
 	{
 	public:
-		inline ConnectorCellFilter(const Map& map) : map_(map){}
+
+		inline ConnectorCellFilter(const Map& map) : map_(map) {}
 		inline bool filter(Volume w) const
 		{
 			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
 		}
-		inline bool filter(Vertex ) const
+		inline bool filter(Vertex) const
 		{
 			return true;
 		}
 
-
 	private:
+
 		const Map& map_;
 	};
-
 
 	inline VolumeExport() :
 		vertices_of_volumes_()
@@ -84,7 +83,8 @@ public:
 	virtual ~VolumeExport() override
 	{}
 
-	protected:
+protected:
+
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
@@ -114,8 +114,10 @@ public:
 		this->cell_cache_->template build<Volume>(ConnectorCellFilter(map));
 
 		uint32 count{0u};
-		map.foreach_cell([&] (Vertex v) { this->indices_[v] = count++;}
-		, *(this->cell_cache_));
+		map.foreach_cell(
+			[&] (Vertex v) { this->indices_[v] = count++; },
+			*(this->cell_cache_)
+		);
 
 		const auto& ids = this->indices_;
 		map.foreach_cell([&] (Volume w)
@@ -210,7 +212,8 @@ public:
 					}
 				}
 			}
-		}, *(this->cell_cache_));
+		},
+		*(this->cell_cache_));
 	}
 
 	void clean_added_attributes(Map& map) override
@@ -287,7 +290,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
-extern template class CGOGN_IO_API VolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API VolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
 
 } // namespace io
