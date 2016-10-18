@@ -329,6 +329,7 @@ protected:
 
 	inline Dart add_pyramid_topo_fp(std::size_t size)
 	{
+		unused_parameters(size);
 		cgogn_message_assert(false, "Can create only hexa");
 		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
 		return Dart();

@@ -321,6 +321,7 @@ protected:
 
 	inline Dart add_pyramid_topo_fp(std::size_t size)
 	{
+		unused_parameters(size);
 		cgogn_message_assert(size == 3u, "Can create only tetra");
 		if (size != 3)
 		{
