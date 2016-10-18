@@ -24,7 +24,6 @@
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_
 
 #include <cgogn/core/container/chunk_array_gen.h>
-#include <cgogn/core/cmap/map_traits.h>
 
 namespace cgogn
 {

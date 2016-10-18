@@ -25,7 +25,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	mrcmap/mr_base.cpp
+	cph/cph2.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

@@ -29,6 +29,8 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/container/chunk_array.h>
 
+#include <cgogn/core/cmap/map_traits.h>
+
 #include <iostream>
 #include <map>
 #include <memory>
@@ -130,7 +132,6 @@ template <uint32 CHUNK_SIZE>
 typename ChunkArrayFactory<CHUNK_SIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNK_SIZE>::map_CA_ = nullptr;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
-#include <cgogn/core/cmap/map_traits.h>
 extern template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 

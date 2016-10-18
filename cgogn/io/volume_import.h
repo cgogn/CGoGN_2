@@ -28,8 +28,9 @@
 #include <set>
 
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
+
 #include <cgogn/core/cmap/cmap3_builder.h>
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/geometry/functions/orientation.h>
 
@@ -118,10 +119,10 @@ public:
 
 	using Self = VolumeImport<VEC3>;
 
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<T, ORBIT>;

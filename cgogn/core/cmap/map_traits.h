@@ -26,6 +26,11 @@
 
 #include <cgogn/core/utils/numerics.h>
 
+namespace cgogn
+{
+
 static const cgogn::uint32 CGOGN_CHUNK_SIZE = 4096u;
+
+} // namespace cgogn
 
 #endif

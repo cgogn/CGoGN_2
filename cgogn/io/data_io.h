@@ -29,9 +29,8 @@
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/utils/unique_ptr.h>
-#include <cgogn/core/container/chunk_array.h>
-#include <cgogn/core/container/chunk_array_container.h>
-#include <cgogn/core/cmap/map_traits.h>
+
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/io/io_utils.h>
 
@@ -49,8 +48,9 @@ class DataInputGen
 public:
 
 	using Self = DataInputGen;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CGOGN_CHUNK_SIZE>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
+
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 
 	inline DataInputGen() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DataInputGen);
@@ -81,7 +81,7 @@ public:
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
 	/**
-	 * @brief simplify, transform a DataInput<CGOGN_CHUNK_SIZE, PRIM_SIZE, BUFFER_T , T> into a DataInput<CGOGN_CHUNK_SIZE, PRIM_SIZE, T , T>
+	 * @brief simplify, transform a DataInput<PRIM_SIZE, BUFFER_T , T> into a DataInput<PRIM_SIZE, T , T>
 	 * @return a DataInput with T = BUFFER_T
 	 * WARNING : after a call to simplify, the data is moved to the returned DataInputGen, leaving an empty vector.
 	 */
@@ -114,7 +114,7 @@ public:
 	using Self			= DataInput<PRIM_SIZE, BUFFER_T , T> ;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 	using ChunkArrayGen	= typename Inherit::ChunkArrayGen;
-	using ChunkArray	= cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
+	using ChunkArray	= MapBaseData::ChunkArray<T>;
 
 	DataInput()
 	{}

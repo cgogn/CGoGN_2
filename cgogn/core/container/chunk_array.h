@@ -39,6 +39,8 @@
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/string.h>
 
+#include <cgogn/core/cmap/map_traits.h>
+
 namespace cgogn
 {
 
@@ -846,7 +848,6 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-#include <cgogn/core/cmap/map_traits.h>
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, unsigned char>;

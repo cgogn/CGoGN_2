@@ -31,8 +31,8 @@
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
-#include <cgogn/core/cmap/map_base.h>
+
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
@@ -52,10 +52,10 @@ public:
 
 	using Self = SurfaceImport<VEC3>;
 
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
 	template <typename T, Orbit ORBIT>
 	using Attribute = Attribute<T, ORBIT>;
@@ -219,7 +219,7 @@ public:
 
 	inline ChunkArray<VEC3>* add_position_attribute()
 	{
-		return (position_attribute_ =  vertex_attributes_.template add_chunk_array<VEC3>("position"));
+		return (position_attribute_ = vertex_attributes_.template add_chunk_array<VEC3>("position"));
 	}
 
 	inline void add_face_attribute(const DataInputGen& in_data, const std::string& att_name)
@@ -273,6 +273,7 @@ public:
 	}
 
 private:
+
 	inline uint32 nb_faces() const
 	{
 		return uint32(faces_nb_edges_.size());
@@ -285,7 +286,9 @@ private:
 			vertices.insert(v);
 		return uint32(vertices.size());
 	}
+
 protected:
+
 	std::vector<uint32> faces_nb_edges_;
 	std::vector<uint32> faces_vertex_indices_;
 
@@ -304,6 +307,7 @@ class SurfaceFileImport : public SurfaceImport<VEC3>, public FileImport
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceFileImport);
 
 public:
+
 	inline SurfaceFileImport() : Inherit1(), Inherit2()
 	{}
 

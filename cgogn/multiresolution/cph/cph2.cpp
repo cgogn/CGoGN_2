@@ -21,61 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_
-#define CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_
-
-#include <cgogn/multiresolution/cph/cph_base.h>
+#include <cgogn/multiresolution/cph/cph2.h>
 
 namespace cgogn
 {
 
-class CPH2 : public CPHBase
+uint32 CPH2::get_tri_refinement_edge_id(Dart d, Dart e) const
 {
-public:
+	uint32 d_id = get_edge_id(d);
+	uint32 e_id = get_edge_id(e);
 
-	using Self = CPH2;
-	using Inherit = CPHBase;
+	uint32 id = d_id + e_id;
 
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
-	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-
-protected:
-
-	ChunkArray<uint32>* edge_id_;
-
-public:
-
-	CPH2(ChunkArrayContainer<unsigned char>& topology) : Inherit(topology)
+	if (id == 0u)
+		return 1u;
+	else if (id == 1u)
+		return 2u;
+	else if (id == 2u)
 	{
-		edge_id_ = topology.template add_chunk_array<uint32>("edgeId");
+		if (d_id == e_id)
+			return 0u;
+		else
+			return 1u;
 	}
+	// else if (id == 3)
+	return 0u;
+}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CPH2);
+uint32 CPH2::get_quad_refinement_edge_id(Dart d) const
+{
+	uint32 e_id = get_edge_id(d);
 
-	~CPH2() override
-	{}
-
-	/***************************************************
-	 *             EDGE ID MANAGEMENT                  *
-	 ***************************************************/
-
-	inline uint32 get_edge_id(Dart d) const
-	{
-		return (*edge_id_)[d.index] ;
-	}
-
-	inline void set_edge_id(Dart d, uint32 i)
-	{
-		(*edge_id_)[d.index] = i ;
-	}
-
-	uint32 get_tri_refinement_edge_id(Dart d, Dart e) const;
-
-	uint32 get_quad_refinement_edge_id(Dart d) const;
-};
+	if (e_id == 0u)
+		return 1u;
+	// else if (e_id == 1)
+	return 0u;
+}
 
 } // namespace cgogn
-
-#endif // CGOGN_MULTIRESOLUTION_CPH_CPH2_BASE_H_

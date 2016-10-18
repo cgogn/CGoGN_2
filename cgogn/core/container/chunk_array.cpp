@@ -25,7 +25,6 @@
 
 #include <cgogn/core/dll.h>
 #include <cgogn/core/container/chunk_array.h>
-#include <cgogn/core/cmap/map_traits.h>
 
 namespace cgogn
 {
