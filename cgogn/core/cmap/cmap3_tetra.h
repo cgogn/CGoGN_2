@@ -332,6 +332,7 @@ protected:
 
 	inline Dart add_prism_topo_fp(std::size_t size)
 	{
+		unused_parameters(size);
 		cgogn_message_assert(false, "Can create only tetra");
 		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a tetrahedron in CMap3Tetra";
 		return Dart();

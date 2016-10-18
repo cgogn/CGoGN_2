@@ -113,6 +113,8 @@ public:
 	 */
 	inline bool check_embedding_integrity()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		bool result = true;
 
 		if (this->template is_embedded<CDart>())
@@ -853,8 +855,10 @@ public:
 	 */
 	inline void unsew_faces(Edge e)
 	{
-		Dart d = e.dart;
-		Dart d2 = phi2(d);
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart d = e.dart;
+		const Dart d2 = phi2(d);
 
 		if (unsew_faces_topo(d))
 		{
@@ -937,6 +941,8 @@ protected:
 	 */
 	inline Face close_hole(Dart d)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		const Face f(close_hole_topo(d));
 
 		if (this->template is_embedded<Vertex>())
@@ -970,8 +976,12 @@ protected:
 	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
 	 * If the indexation of embedding was unique, the closed map is well embedded.
 	 */
+	// The template parameter is a hack needed to compile the class CMap2_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>> with MSVC. Otherwise calling boundary_mark leads to an error.
+	template<typename = std::enable_if<std::is_same<typename MapType::TYPE, Self>::value>>
 	inline uint32 close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		uint32 nb_holes = 0u;
 
 		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();

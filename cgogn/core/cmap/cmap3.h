@@ -115,6 +115,8 @@ public:
 	 */
 	inline bool check_embedding_integrity()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		bool result = true;
 
 		if (this->template is_embedded<CDart>())
@@ -1449,6 +1451,8 @@ protected:
 
 	inline Volume close_hole(Dart d)
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		const Volume v(close_hole_topo(d));
 
 		if (this->template is_embedded<Vertex>())
@@ -1485,6 +1489,8 @@ protected:
 	 */
 	inline uint32 close_map()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		uint32 nb_holes = 0;
 
 		// Search the map for topological holes (fix points of phi3)
