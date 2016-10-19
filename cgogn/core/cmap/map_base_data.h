@@ -51,57 +51,18 @@
 namespace cgogn
 {
 
-/**
- * @brief Generic Map class
- */
-class CGOGN_CORE_API MapGen
-{
-public:
-
-	using Self = MapGen;
-
-protected:
-
-	/// vector of Map instances
-	static std::vector<MapGen*>* instances_;
-	static bool init_CA_factory;
-	/// table of tetra phi2 indices
-	static std::array<int,12> tetra_phi2;
-	/// table of hexa phi2 indices
-	static std::array<int,24> hexa_phi2;
-
-
-public:
-
-	MapGen();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapGen);
-	virtual ~MapGen();
-
-	static inline bool is_alive(MapGen* map)
-	{
-		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
-	}
-};
-
-// forward declaration of class AttributeGen
+// forward declarations
 class AttributeGen;
-
-// forward declaration of class Attribute_T
-template <typename T>
-class Attribute_T;
-
-// forward declaration of class Attribute
-template <typename T, Orbit ORBIT>
-class Attribute;
+template <typename T> class Attribute_T;
+template <typename T, Orbit ORBIT> class Attribute;
 
 /**
  * @brief The MapBaseData class
  */
-class MapBaseData : public MapGen
+class CGOGN_CORE_API MapBaseData
 {
 public:
 
-	using Inherit = MapGen;
 	using Self = MapBaseData;
 
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
@@ -125,68 +86,50 @@ protected:
 	// topology & embedding indices
 	ChunkArrayContainer<uint8> topology_;
 
-	/// per orbit attributes
+	// per orbit attributes
 	std::array<ChunkArrayContainer<uint32>, NB_ORBITS> attributes_;
 
-	/// embedding indices shortcuts
+	// embedding indices shortcuts
 	std::array<ChunkArray<uint32>*, NB_ORBITS> embeddings_;
 
-	/// boundary marker shortcut
+	// boundary marker shortcut
 	ChunkArrayBool* boundary_marker_;
 
-	/// vector of available mark attributes per thread on the topology container
+	// vector of available mark attributes per thread on the topology container
 	std::vector<std::vector<ChunkArrayBool*>> mark_attributes_topology_;
 	std::mutex mark_attributes_topology_mutex_;
 
-	/// vector of available mark attributes per orbit per thread on attributes containers
+	// vector of available mark attributes per orbit per thread on attributes containers
 	std::array<std::vector<std::vector<ChunkArrayBool*>>, NB_ORBITS> mark_attributes_;
 	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
 
-	/// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
-	/// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
-	/// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
+	// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
+	// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
+	// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
 	mutable std::vector<std::thread::id> thread_ids_;
+
+	// vector of Map instances
+	static std::vector<MapBaseData*>* instances_;
+
+	static bool init_CA_factory;
+
+	// table of tetra phi2 indices
+	static std::array<int, 12> tetra_phi2;
+	// table of hexa phi2 indices
+	static std::array<int, 24> hexa_phi2;
 
 public:
 
-	MapBaseData() : Inherit()
-	{
-		if (init_CA_factory)
-		{
-			ChunkArrayFactory<CHUNK_SIZE>::reset();
-			init_CA_factory = false;
-		}
-		for (uint32 i = 0; i < NB_ORBITS; ++i)
-		{
-			mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
-
-			embeddings_[i] = nullptr;
-			for (uint32 j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
-				mark_attributes_[i][j].reserve(8);
-		}
-
-		mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-		mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
-
-		for (uint32 i = 0; i < MAX_NB_THREADS; ++i)
-			mark_attributes_topology_[i].reserve(8);
-
-		boundary_marker_ = topology_.add_marker_attribute();
-
-		thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-		thread_ids_.resize(NB_UNKNOWN_THREADS);
-
-		this->add_thread(std::this_thread::get_id());
-		const auto& pool_threads_ids = cgogn::thread_pool()->threads_ids();
-		for (const std::thread::id& ids : pool_threads_ids)
-			this->add_thread(ids);
-	}
+	MapBaseData();
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
 
-	~MapBaseData() override
-	{}
+	virtual ~MapBaseData();
+
+	static inline bool is_alive(MapBaseData* map)
+	{
+		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
+	}
 
 	/*******************************************************************************
 	 * Containers management

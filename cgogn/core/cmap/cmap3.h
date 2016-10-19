@@ -49,16 +49,16 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart		= typename Inherit::CDart;
-	using Vertex2	= typename Inherit::Vertex;
-	using Vertex	= Cell<Orbit::PHI21_PHI31>;
-	using Edge2		= typename Inherit::Edge;
-	using Edge		= Cell<Orbit::PHI2_PHI3>;
-	using Face2		= typename Inherit::Face;
-	using Face		= Cell<Orbit::PHI1_PHI3>;
-	using Volume	= typename Inherit::Volume;
+	using CDart   = typename Inherit::CDart;
+	using Vertex2 = typename Inherit::Vertex;
+	using Vertex  = Cell<Orbit::PHI21_PHI31>;
+	using Edge2   = typename Inherit::Edge;
+	using Edge    = Cell<Orbit::PHI2_PHI3>;
+	using Face2   = typename Inherit::Face;
+	using Face    = Cell<Orbit::PHI1_PHI3>;
+	using Volume  = typename Inherit::Volume;
 
-	using Boundary  = Volume;
+	using Boundary = Volume;
 	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
 	template <typename T>

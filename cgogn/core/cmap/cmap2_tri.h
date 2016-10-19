@@ -49,13 +49,13 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart		= Cell<Orbit::DART>;
-	using Vertex	= Cell<Orbit::PHI21>;
-	using Edge		= Cell<Orbit::PHI2>;
-	using Face		= Cell<Orbit::PHI1>;
-	using Volume	= Cell<Orbit::PHI1_PHI2>;
+	using CDart  = Cell<Orbit::DART>;
+	using Vertex = Cell<Orbit::PHI21>;
+	using Edge   = Cell<Orbit::PHI2>;
+	using Face   = Cell<Orbit::PHI1>;
+	using Volume = Cell<Orbit::PHI1_PHI2>;
 
-	using Boundary  = Face;
+	using Boundary = Face;
 	using ConnectedComponent = Volume;
 
 	template <typename T>

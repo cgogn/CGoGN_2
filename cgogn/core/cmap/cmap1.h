@@ -46,8 +46,8 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using Vertex	= typename Inherit::Vertex;
-	using Face		= Cell<Orbit::PHI1>;
+	using Vertex = typename Inherit::Vertex;
+	using Face   = Cell<Orbit::PHI1>;
 
 	using Boundary = Vertex;
 	using ConnectedComponent = Face;

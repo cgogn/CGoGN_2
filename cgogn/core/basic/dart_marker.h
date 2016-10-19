@@ -58,7 +58,7 @@ public:
 
 	virtual ~DartMarker_T()
 	{
-		if (MapGen::is_alive(&map_))
+		if (MapBaseData::is_alive(&map_))
 			map_.release_topology_mark_attribute(mark_attribute_);
 	}
 

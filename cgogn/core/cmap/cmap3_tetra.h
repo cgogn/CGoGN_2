@@ -49,16 +49,16 @@ public:
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart		= Cell<Orbit::DART>;
-	using Vertex2	= Cell<Orbit::PHI21>;
-	using Vertex	= Cell<Orbit::PHI21_PHI31>;
-	using Edge2		= Cell<Orbit::PHI2>;
-	using Edge		= Cell<Orbit::PHI2_PHI3>;
-	using Face2		= Cell<Orbit::PHI1>;
-	using Face		= Cell<Orbit::PHI1_PHI3>;
-	using Volume	= Cell<Orbit::PHI1_PHI2>;
+	using CDart   = Cell<Orbit::DART>;
+	using Vertex2 = Cell<Orbit::PHI21>;
+	using Vertex  = Cell<Orbit::PHI21_PHI31>;
+	using Edge2   = Cell<Orbit::PHI2>;
+	using Edge    = Cell<Orbit::PHI2_PHI3>;
+	using Face2   = Cell<Orbit::PHI1>;
+	using Face    = Cell<Orbit::PHI1_PHI3>;
+	using Volume  = Cell<Orbit::PHI1_PHI2>;
 
-	using Boundary  = Face;
+	using Boundary = Face;
 	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
 	template <typename T>
@@ -262,7 +262,7 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		return Dart(d.index + MapGen::tetra_phi2[d.index%12]);
+		return Dart(d.index + MapBaseData::tetra_phi2[d.index%12]);
 	}
 
 	/**
