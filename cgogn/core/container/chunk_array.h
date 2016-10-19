@@ -49,13 +49,12 @@ namespace cgogn
  *	@tparam CHUNK_SIZE size of each chunk (in T, not in bytes!), must be a power of 2 >=32
  *	@tparam T type of stored data
  */
-template <uint32 CHUNK_SIZE, typename T>
-class ChunkArray : public ChunkArrayGen<CHUNK_SIZE>
+template <typename T>
+class ChunkArray : public ChunkArrayGen
 {
 public:
-
-	using Inherit = ChunkArrayGen<CHUNK_SIZE>;
-	using Self = ChunkArray<CHUNK_SIZE, T>;
+	using Inherit = ChunkArrayGen;
+	using Self = ChunkArray<T>;
 	using value_type = T;
 
 protected:
@@ -473,12 +472,11 @@ public:
 /**
  * @brief separate version of ChunkArray specialized for bool data. One bit per bool.
  */
-template <uint32 CHUNK_SIZE>
-class ChunkArrayBool : public ChunkArrayGen<CHUNK_SIZE>
+class ChunkArrayBool : public ChunkArrayGen
 {
 public:
 
-	using Inherit = ChunkArrayGen<CHUNK_SIZE>;
+	using Inherit = ChunkArrayGen;
 	using Self = ChunkArrayBool;
 	using value_type = uint32;
 
@@ -848,12 +846,11 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, unsigned char>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3>>;
-extern template class CGOGN_CORE_API ChunkArrayBool<CGOGN_CHUNK_SIZE>;
+extern template class CGOGN_CORE_API ChunkArray<bool>;
+extern template class CGOGN_CORE_API ChunkArray<uint32>;
+extern template class CGOGN_CORE_API ChunkArray<unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<std::array<float32, 3>>;
+extern template class CGOGN_CORE_API ChunkArray<std::array<float64, 3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
 
 } // namespace cgogn

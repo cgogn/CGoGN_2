@@ -38,12 +38,12 @@ namespace cgogn
  * @tparam CHUNK_SIZE chunk size of array
  * @tparam T type stored in heap
  */
-template <uint32 CHUNK_SIZE, typename T>
-class ChunkStack : public ChunkArray<CHUNK_SIZE, T>
+template <typename T>
+class ChunkStack : public ChunkArray<T>
 {
 public:
-	using Inherit = ChunkArray<CHUNK_SIZE, T>;
-	using Self = ChunkStack<CHUNK_SIZE, T>;
+	using Inherit = ChunkArray<T>;
+	using Self = ChunkStack<T>;
 	using value_type = T;
 
 protected:
@@ -74,8 +74,8 @@ public:
 	void push(const T& val)
 	{
 		stack_size_++;
-		uint32 offset = stack_size_ % CHUNK_SIZE;
-		uint32 blkId  = stack_size_ / CHUNK_SIZE;
+		uint32 offset = stack_size_ % Self::CHUNK_SIZE;
+		uint32 blkId  = stack_size_ / Self::CHUNK_SIZE;
 
 		if (blkId >= this->table_data_.size())
 			this->add_chunk();
@@ -115,8 +115,8 @@ public:
 	 */
 	inline T head() const
 	{
-		const uint32 offset = stack_size_ % CHUNK_SIZE;
-		const uint32 blkId  = stack_size_ / CHUNK_SIZE;
+		const uint32 offset = stack_size_ % Self::CHUNK_SIZE;
+		const uint32 blkId  = stack_size_ / Self::CHUNK_SIZE;
 
 		return this->table_data_[blkId][offset];
 	}
@@ -126,7 +126,7 @@ public:
 	 */
 	void compact()
 	{
-		const uint32 keep = (stack_size_+CHUNK_SIZE-1u) / CHUNK_SIZE;
+		const uint32 keep = (stack_size_+ Self::CHUNK_SIZE-1u) / Self::CHUNK_SIZE;
 		while (this->table_data_.size() > keep)
 		{
 			delete[] this->table_data_.back();
@@ -143,7 +143,7 @@ public:
 		Inherit::clear();
 	}
 
-	bool swap(ChunkArrayGen<CHUNK_SIZE>* cag) override
+	bool swap(ChunkArrayGen* cag) override
 	{
 		if (Inherit::swap(cag))
 		{
@@ -156,7 +156,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_API ChunkStack<uint32>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn

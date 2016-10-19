@@ -33,8 +33,8 @@ class ChunkArrayContainerTest : public ::testing::Test
 //protected:
 public:
 
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<16u,uint32> ;
-	template <class T> using ChunkArray = cgogn::ChunkArray<16u, T>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<uint32> ;
+	template <class T> using ChunkArray = cgogn::ChunkArray<T>;
 
 	ChunkArrayContainerTest()
 	{}

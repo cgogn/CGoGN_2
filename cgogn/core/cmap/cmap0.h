@@ -57,6 +57,8 @@ public:
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	template<typename T, Orbit ORBIT>
+	using Attribute = Attribute<T, ORBIT>;
 	template <typename T>
 	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 

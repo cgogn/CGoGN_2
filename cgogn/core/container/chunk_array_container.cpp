@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, unsigned char>;
+template class CGOGN_CORE_API ChunkArrayContainer<uint32>;
+template class CGOGN_CORE_API ChunkArrayContainer<unsigned char>;
 
 } // namespace cgogn

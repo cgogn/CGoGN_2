@@ -49,7 +49,7 @@ MapBaseData::MapBaseData()
 
 	if (init_CA_factory)
 	{
-		ChunkArrayFactory<CHUNK_SIZE>::reset();
+		ChunkArrayFactory::reset();
 		init_CA_factory = false;
 	}
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)

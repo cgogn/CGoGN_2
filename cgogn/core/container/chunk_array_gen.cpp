@@ -21,13 +21,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_
-
 #include <cgogn/core/container/chunk_array_gen.h>
+#include <cgogn/core/utils/serialization.h>
 
 namespace cgogn
 {
 
-template class CGOGN_CORE_API ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+void ChunkArrayGen::add_external_ref(ChunkArrayGen** ref)
+{
+	cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
+	external_refs_.push_back(ref);
+}
+
+void ChunkArrayGen::remove_external_ref(ChunkArrayGen** ref)
+{
+	cgogn_message_assert(*ref == this, "ChunkArrayGen remove_external_ref on other ChunkArrayGen");
+	auto it = std::find(external_refs_.begin(), external_refs_.end(), ref);
+	cgogn_message_assert(it != external_refs_.end(), "ChunkArrayGen external ref not found");
+	std::swap(*it, external_refs_.back());
+	external_refs_.pop_back();
+}
+
+void ChunkArrayGen::skip(std::istream& fs)
+{
+	std::size_t chunk_bytes;
+	serialization::load(fs, &chunk_bytes, 1);
+	uint32 nb_lines;
+	serialization::load(fs, &nb_lines, 1);
+	fs.ignore(std::streamsize(chunk_bytes), EOF);
+}
 
 } // namespace cgogn

@@ -41,9 +41,9 @@ public:
 	using Self = CPHBase;
 
 	template <typename T_REF>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, T_REF>;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<T_REF>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
+	using ChunkArray = cgogn::ChunkArray<T>;
 
 protected:
 

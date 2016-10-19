@@ -31,6 +31,7 @@
 #include <string>
 #include <memory>
 #include <climits>
+#include <typeinfo>
 
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/dll.h>
@@ -51,21 +52,22 @@ namespace cgogn
  * @brief class that manage the storage of several ChunkArray
  * @tparam CHUNK_SIZE chunk size for ChunkArray
  */
-template <uint32 CHUNK_SIZE, typename T_REF>
+template <typename T_REF>
 class ChunkArrayContainer
 {
 public:
 
-	using Self = ChunkArrayContainer<CHUNK_SIZE, T_REF>;
+	using Self = ChunkArrayContainer<T_REF>;
 	using ref_type = T_REF;
+	const static uint32 CHUNK_SIZE = CGOGN_CHUNK_SIZE;
 
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen;
 	template <class T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
+	using ChunkArray = cgogn::ChunkArray<T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool;
 	template <class T>
-	using ChunkStack = cgogn::ChunkStack<CHUNK_SIZE, T>;
-	using ChunkArrayFactory = cgogn::ChunkArrayFactory<CHUNK_SIZE>;
+	using ChunkStack = cgogn::ChunkStack<T>;
+	using ChunkArrayFactory = cgogn::ChunkArrayFactory;
 
 	/**
 	* constante d'attribut inconnu
@@ -1016,8 +1018,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<uint32>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<unsigned char>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn
