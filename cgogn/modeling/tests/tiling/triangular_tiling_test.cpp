@@ -35,7 +35,7 @@ namespace cgogn
 class TriangularTilingTest : public testing::Test
 {
 public:
-	using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+
 	using Dart = cgogn::Dart;
 	template <typename T>
 	using VertexAttribute = CMap2::VertexAttribute<T>;
@@ -46,6 +46,7 @@ public:
 	using Volume = CMap2::Volume;
 
 protected:
+
 	CMap2 cmap_;
 	uint32 x_,y_;
 

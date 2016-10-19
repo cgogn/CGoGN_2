@@ -9,8 +9,7 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 using namespace cgogn::numerics;
 
-
-using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
+using Map3 = cgogn::CMap3;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
@@ -19,7 +18,6 @@ template <typename T>
 using VertexAttribute = Map3::VertexAttribute<T>;
 template <typename T>
 using FaceAttribute = Map3::FaceAttribute<T>;
-
 
 int main(int argc, char** argv)
 {

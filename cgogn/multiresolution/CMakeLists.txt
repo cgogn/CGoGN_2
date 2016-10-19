@@ -25,14 +25,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	cph/cph_base.cpp
 	cph/cph2.cpp
-	cph/cph3.cpp
-
-	cph/ihcmap2.cpp
-	cph/ihcmap2_adaptive.cpp
-	cph/ihcmap2_regular.cpp
-	cph/ihcmap3.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

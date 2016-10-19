@@ -38,8 +38,8 @@ namespace cgogn
 {
 
 // stream insertion / extraction for Attribute_T
-template <typename DATA_TRAITS, typename T>
-inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, T>& att)
+template <typename T>
+inline std::ostream& operator<<(std::ostream& o, const Attribute_T<T>& att)
 {
 	for(auto it = att.begin(), end = att.end() ; it != end;)
 	{
@@ -51,8 +51,8 @@ inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, 
 	return o;
 }
 
-template <typename DATA_TRAITS, typename T>
-inline std::istream& operator>>(std::istream& in, Attribute_T<DATA_TRAITS, T>& att)
+template <typename T>
+inline std::istream& operator>>(std::istream& in, Attribute_T<T>& att)
 {
 	for (auto& it : att)
 	{

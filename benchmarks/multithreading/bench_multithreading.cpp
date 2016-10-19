@@ -36,7 +36,7 @@
 using namespace cgogn::numerics;
 
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 Map2 bench_map;
 
 using Vertex = Map2::Vertex;

@@ -36,10 +36,10 @@ namespace geometry
 
 template <typename VEC, typename CellType, typename MAP>
 inline VEC centroid(
-		const MAP& map,
-		const CellType c,
-		const typename MAP::template VertexAttribute<VEC>& attribute
-		)
+	const MAP& map,
+	const CellType c,
+	const typename MAP::template VertexAttribute<VEC>& attribute
+)
 {
 	VEC result;
 	set_zero(result);
@@ -55,11 +55,11 @@ inline VEC centroid(
 
 template <typename VEC, typename CellType, typename MAP, typename MASK>
 inline void compute_centroid(
-		const MAP& map,
-		const MASK& mask,
-		const typename MAP::template VertexAttribute<VEC>& attribute,
-		typename MAP::template Attribute<VEC, CellType::ORBIT>& cell_centroid
-		)
+	const MAP& map,
+	const MASK& mask,
+	const typename MAP::template VertexAttribute<VEC>& attribute,
+	Attribute<VEC, CellType::ORBIT>& cell_centroid
+)
 {
 	map.foreach_cell([&] (CellType c)
 	{
@@ -70,19 +70,19 @@ inline void compute_centroid(
 
 template <typename VEC, typename CellType, typename MAP>
 inline void compute_centroid(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC>& attribute,
-		typename MAP::template Attribute<VEC, CellType::ORBIT>& cell_centroid
-		)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC>& attribute,
+	Attribute<VEC, CellType::ORBIT>& cell_centroid
+)
 {
 	compute_centroid<VEC, CellType>(map, CellFilters(), attribute, cell_centroid);
 }
 
 template <typename VEC, typename MAP>
 inline VEC centroid(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC>& attribute
-		)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC>& attribute
+)
 {
 	VEC result;
 	set_zero(result);
@@ -98,9 +98,9 @@ inline VEC centroid(
 
 template <typename VEC, typename MAP>
 typename MAP::Vertex central_vertex(
-		const MAP& map,
-		const typename MAP::template VertexAttribute<VEC>& attribute
-		)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<VEC>& attribute
+)
 {
 	using Vertex = typename MAP::Vertex;
 	using Scalar = typename vector_traits<VEC>::Scalar;
@@ -110,7 +110,7 @@ typename MAP::Vertex central_vertex(
 	Scalar min_distance = std::numeric_limits<Scalar>::max();
 	Vertex min_vertex;
 
-	map.foreach_cell([&](Vertex v)
+	map.foreach_cell([&] (Vertex v)
 	{
 		Scalar distance = (attribute[v] - center).squaredNorm();
 

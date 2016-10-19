@@ -6,7 +6,7 @@
 #include <cgogn/modeling/tiling/square_tore.h>
 //#include <cgogn/modeling/tiling/square_cube.h>
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;

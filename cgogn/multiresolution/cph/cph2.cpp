@@ -21,13 +21,41 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_
-
 #include <cgogn/multiresolution/cph/cph2.h>
 
 namespace cgogn
 {
 
-template class CGOGN_MULTIRESOLUTION_API CPH2<DefaultMapTraits>;
+uint32 CPH2::get_tri_refinement_edge_id(Dart d, Dart e) const
+{
+	uint32 d_id = get_edge_id(d);
+	uint32 e_id = get_edge_id(e);
+
+	uint32 id = d_id + e_id;
+
+	if (id == 0u)
+		return 1u;
+	else if (id == 1u)
+		return 2u;
+	else if (id == 2u)
+	{
+		if (d_id == e_id)
+			return 0u;
+		else
+			return 1u;
+	}
+	// else if (id == 3)
+	return 0u;
+}
+
+uint32 CPH2::get_quad_refinement_edge_id(Dart d) const
+{
+	uint32 e_id = get_edge_id(d);
+
+	if (e_id == 0u)
+		return 1u;
+	// else if (e_id == 1)
+	return 0u;
+}
 
 } // namespace cgogn

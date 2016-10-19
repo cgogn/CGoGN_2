@@ -27,11 +27,13 @@
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template CGOGN_IO_API void export_surface(CMap2<DefaultMapTraits>& , const ExportOptions&);
-template CGOGN_IO_API void export_volume(CMap3<DefaultMapTraits>& , const ExportOptions&);
+template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
+template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
 
 } // namespace io
+
 } // namespace cgogn

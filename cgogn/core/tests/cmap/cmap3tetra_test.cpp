@@ -38,26 +38,20 @@ class CMap3TetraTest : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap3 = CMap3Tetra<MiniMapTraits>;
-	using MapBuilder = testCMap3::Builder;
-	using CDart = testCMap3::CDart;
-	using Vertex2 = testCMap3::Vertex2;
-	using Vertex = testCMap3::Vertex;
-	using Edge2 = testCMap3::Edge2;
-	using Edge = testCMap3::Edge;
-	using Face2 = testCMap3::Face2;
-	using Face = testCMap3::Face;
-	using Volume = testCMap3::Volume;
-	using ConnectedComponent = testCMap3::ConnectedComponent;
+	using MapBuilder = CMap3Tetra::Builder;
+	using CDart = CMap3Tetra::CDart;
+	using Vertex2 = CMap3Tetra::Vertex2;
+	using Vertex = CMap3Tetra::Vertex;
+	using Edge2 = CMap3Tetra::Edge2;
+	using Edge = CMap3Tetra::Edge;
+	using Face2 = CMap3Tetra::Face2;
+	using Face = CMap3Tetra::Face;
+	using Volume = CMap3Tetra::Volume;
+	using ConnectedComponent = CMap3Tetra::ConnectedComponent;
 
 protected:
 
-	testCMap3 cmap_;
+	CMap3Tetra cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.

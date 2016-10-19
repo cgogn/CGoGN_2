@@ -65,7 +65,7 @@ public:
 
 	virtual ~CellMarker_T() // override
 	{
-		if (MapGen::is_alive(&map_))
+		if (MapBaseData::is_alive(&map_))
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 	}
 

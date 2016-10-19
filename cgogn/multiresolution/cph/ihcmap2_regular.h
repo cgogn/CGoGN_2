@@ -29,15 +29,18 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class IHCMap2Regular_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
+template <typename MAP_TYPE>
+class IHCMap2Regular_T : public IHCMap2_T<MAP_TYPE>
 {
 public:
-	using MapType = MAP_TYPE;
-	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
-	using Self = IHCMap2Regular_T<MAP_TRAITS,MAP_TYPE>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	static const int PRIM_SIZE = 1;
+
+	using MapType = MAP_TYPE;
+	using Inherit = IHCMap2_T<MAP_TYPE>;
+	using Self = IHCMap2Regular_T<MAP_TYPE>;
+
+	friend class MapBase<MAP_TYPE>;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -45,7 +48,9 @@ public:
 	using Volume = typename Inherit::Volume;
 
 	inline IHCMap2Regular_T() : Inherit() {}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Regular_T);
+
 	inline ~IHCMap2Regular_T() {}
 
 	/*******************************************************************************
@@ -276,18 +281,12 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct IHCMap2RegularType
 {
-	using TYPE = IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>>;
+	using TYPE = IHCMap2Regular_T<IHCMap2RegularType>;
 };
 
-template <typename MAP_TRAITS>
-using IHCMap2Regular = IHCMap2Regular_T<MAP_TRAITS, IHCMap2RegularType<MAP_TRAITS>>;
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Regular_T<DefaultMapTraits, IHCMap2RegularType<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_REGULAR_CPP_))
+using IHCMap2Regular = IHCMap2Regular_T<IHCMap2RegularType>;
 
 } // namespace cgogn
 

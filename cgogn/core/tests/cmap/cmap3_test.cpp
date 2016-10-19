@@ -43,25 +43,19 @@ class CMap3Test : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap3 = CMap3<MiniMapTraits>;
-	using MapBuilder = testCMap3::Builder;
-	using CDart = testCMap3::CDart;
-	using Vertex2 = testCMap3::Vertex2;
-	using Vertex = testCMap3::Vertex;
-	using Edge2 = testCMap3::Edge2;
-	using Edge = testCMap3::Edge;
-	using Face2 = testCMap3::Face2;
-	using Face = testCMap3::Face;
-	using Volume = testCMap3::Volume;
+	using MapBuilder = CMap3::Builder;
+	using CDart = CMap3::CDart;
+	using Vertex2 = CMap3::Vertex2;
+	using Vertex = CMap3::Vertex;
+	using Edge2 = CMap3::Edge2;
+	using Edge = CMap3::Edge;
+	using Face2 = CMap3::Face2;
+	using Face = CMap3::Face;
+	using Volume = CMap3::Volume;
 
 protected:
 
-	testCMap3 cmap_;
+	CMap3 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -243,7 +237,7 @@ TEST_F(CMap3Test, merge)
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 25u);
 
 	// create an other map3
-	testCMap3 map3;
+	CMap3 map3;
 
 	MapBuilder mbuild2(map3);
 
@@ -268,7 +262,7 @@ TEST_F(CMap3Test, merge)
 	EXPECT_EQ(map3.nb_cells<Face::ORBIT>(), 27u);
 
 	// merge the maps
-	testCMap3::DartMarker dm(cmap_);
+	CMap3::DartMarker dm(cmap_);
 	cmap_.merge(map3, dm);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
@@ -312,9 +306,9 @@ TEST_F(CMap3Test, merge_map2)
 	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 25u);
 
 	// create a map2
-	CMap2<MiniMapTraits> map2;
+	CMap2 map2;
 
-	CMap2<MiniMapTraits>::Builder mbuild2(map2);
+	CMap2::Builder mbuild2(map2);
 
 	Dart f1 = mbuild2.add_face_topo_fp(4u);
 	Dart f2 = mbuild2.add_face_topo_fp(3u);
@@ -333,16 +327,16 @@ TEST_F(CMap3Test, merge_map2)
 	mbuild2.close_map();
 
 	// Embed the map
-	map2.add_attribute<int32, CMap2<MiniMapTraits>::Vertex::ORBIT>("vertices");
-	map2.add_attribute<int32, CMap2<MiniMapTraits>::Face::ORBIT>("faces");
+	map2.add_attribute<int32, CMap2::Vertex::ORBIT>("vertices");
+	map2.add_attribute<int32, CMap2::Face::ORBIT>("faces");
 
 	EXPECT_TRUE(map2.check_map_integrity());
-	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Vertex::ORBIT>(), 5u);
-	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Edge::ORBIT>(), 8u);
-	EXPECT_EQ(map2.nb_cells<CMap2<MiniMapTraits>::Face::ORBIT>(), 5u);
+	EXPECT_EQ(map2.nb_cells<CMap2::Vertex::ORBIT>(), 5u);
+	EXPECT_EQ(map2.nb_cells<CMap2::Edge::ORBIT>(), 8u);
+	EXPECT_EQ(map2.nb_cells<CMap2::Face::ORBIT>(), 5u);
 
 	// merge the maps
-	testCMap3::DartMarker dm(cmap_);
+	CMap3::DartMarker dm(cmap_);
 	cmap_.merge(map2, dm);
 
 	EXPECT_TRUE(cmap_.check_map_integrity());

@@ -28,8 +28,9 @@
 #include <set>
 
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
+
 #include <cgogn/core/cmap/cmap3_builder.h>
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/geometry/functions/orientation.h>
 
@@ -111,25 +112,22 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
+template <typename VEC3>
 class VolumeImport
 {
 public:
 
-	using Self = VolumeImport<MAP_TRAITS, VEC3>;
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = VolumeImport<VEC3>;
 
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
 	template <typename T, Orbit ORBIT>
-	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
+	using Attribute = Attribute<T, ORBIT>;
 
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
-
-public:
+	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline VolumeImport():
 		volumes_types_()
@@ -562,6 +560,7 @@ protected:
 	}
 
 public:
+
 	void add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
 		if (check_orientation)
@@ -623,12 +622,14 @@ public:
 	}
 
 private:
+
 	inline uint32 nb_volumes() const
 	{
 		return uint32(volumes_types_.size());
 	}
 
 private:
+
 	std::vector<VolumeType>	volumes_types_;
 	std::vector<uint32>		volumes_vertex_indices_;
 
@@ -637,11 +638,11 @@ private:
 	ChunkArray<VEC3>*	position_attribute_;
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VolumeFileImport : public VolumeImport<MAP_TRAITS, VEC3>, public FileImport
+template <typename VEC3>
+class VolumeFileImport : public VolumeImport<VEC3>, public FileImport
 {
-	using Self = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Inherit1 = VolumeImport<MAP_TRAITS, VEC3>;
+	using Self = VolumeFileImport<VEC3>;
+	using Inherit1 = VolumeImport<VEC3>;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeFileImport);
@@ -655,10 +656,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
-extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3f>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
 
 } // namespace io

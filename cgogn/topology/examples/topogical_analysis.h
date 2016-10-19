@@ -827,7 +827,7 @@ public:
 
 		Scalar radius = Scalar(2.0) * meanEdgeLength;
 
-		cgogn::geometry::compute_curvature<Vec3>(map_,radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
+		cgogn::geometry::compute_curvature<Vec3>(map_, radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
 
 		//compute kmean
 		VertexAttribute<Scalar> kmean = map_.template add_attribute<Scalar, Vertex::ORBIT>("kmean");

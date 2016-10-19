@@ -45,9 +45,9 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using namespace cgogn::numerics;
-//using Map3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
-//using Map3 = cgogn::CMap3Hexa<cgogn::DefaultMapTraits>;
-using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
+//using Map3 = cgogn::CMap3Tetra;
+//using Map3 = cgogn::CMap3Hexa;
+using Map3 = cgogn::CMap3;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
@@ -58,6 +58,7 @@ using VertexAttribute = Map3::VertexAttribute<T>;
 class Viewer : public QOGLViewer
 {
 public:
+
 	using TopoDrawer = cgogn::rendering::TopoDrawer;
 	using VolumeDrawer = cgogn::rendering::VolumeDrawer;
 	using DisplayListDrawer = cgogn::rendering::DisplayListDrawer;
@@ -78,6 +79,7 @@ public:
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
+
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
 	void plane_clip_from_frame();
@@ -111,16 +113,15 @@ private:
 	bool thick_plane_mode_;
 };
 
-
 //
 // IMPLEMENTATION
 //
+
 void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
 	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 0.0));
 	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
 }
-
 
 void Viewer::import(const std::string& volumeMesh)
 {
@@ -341,13 +342,11 @@ void Viewer::mouseMoveEvent(QMouseEvent* event)
 			volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
 			topo_drawer_rend_->set_clipping_plane(plane_clipping1_);
 		}
-
 	}
 
 	QOGLViewer::mouseMoveEvent(event);
 	update();
 }
-
 
 void Viewer::draw()
 {
@@ -417,7 +416,6 @@ void Viewer::init()
 		volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
 		topo_drawer_rend_->set_clipping_plane(plane_clipping1_);
 	}
-
 }
 
 void Viewer::plane_clip_from_frame()
@@ -429,7 +427,6 @@ void Viewer::plane_clip_from_frame()
 	float32 d = -(position.dot(axis_z));
 	plane_clipping1_ = QVector4D(axis_z[0],axis_z[1],axis_z[2],d);
 }
-
 
 int main(int argc, char** argv)
 {

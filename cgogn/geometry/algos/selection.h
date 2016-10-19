@@ -36,11 +36,11 @@ namespace cgogn
 namespace geometry
 {
 
-
 template <typename VEC3>
 class CollectorGen
 {
 public:
+
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	virtual void collect(const Dart v_center) = 0;
 
@@ -88,9 +88,10 @@ public:
 		this->border_.reserve(256u);
 	}
 
-	virtual Scalar area(const MapBaseData<DefaultMapTraits>::Attribute_T<VEC3>& position) const = 0;
+	virtual Scalar area(const MapBaseData::Attribute_T<VEC3>& position) const = 0;
 
 protected:
+
 	Dart center_;
 	std::array<std::vector<Dart>, NB_ORBITS> cells_;
 	std::vector<Dart> border_;
@@ -100,6 +101,7 @@ template <typename VEC3, typename MAP>
 class Collector : public CollectorGen<VEC3>
 {
 public:
+
 	using Inherit = CollectorGen<VEC3>;
 	using Scalar = typename Inherit::Scalar;
 	using Vertex = typename MAP::Vertex;
@@ -119,16 +121,15 @@ public:
 	}
 
 	virtual Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const = 0;
-	virtual Scalar area(const MapBaseData<DefaultMapTraits>::Attribute_T<VEC3>& position) const override
+	virtual Scalar area(const MapBaseData::Attribute_T<VEC3>& position) const override
 	{
 		const typename MAP::template VertexAttribute<VEC3>* pos_att = dynamic_cast<const typename MAP::template VertexAttribute<VEC3>*>(&position);
 		if (pos_att && pos_att->is_valid())
 			return this->area(*pos_att);
 		return std::numeric_limits<Scalar>::quiet_NaN();
 	}
+
 protected:
-
-
 
 	const MAP& map_;
 };
@@ -326,14 +327,14 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3>;
+extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3>;
+extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
 
 } // namespace geometry

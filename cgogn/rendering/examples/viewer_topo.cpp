@@ -47,7 +47,7 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 using Vertex = Map2::Vertex;
 
 using Vec3 = Eigen::Vector3d;
@@ -56,10 +56,10 @@ using Vec3 = Eigen::Vector3d;
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
-
 class Viewer : public QOGLViewer
 {
 public:
+
 	using MapRender = cgogn::rendering::MapRender;
 	using TopoDrawer = cgogn::rendering::TopoDrawer;
 
@@ -94,11 +94,9 @@ private:
 	bool topo_drawering_;
 };
 
-
 //
 // IMPLEMENTATION
 //
-
 
 void Viewer::import(const std::string& surface_mesh)
 {

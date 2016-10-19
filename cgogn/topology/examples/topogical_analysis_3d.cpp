@@ -23,8 +23,6 @@
 
 #include "topogical_analysis.h"
 
-using CMap3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
-
 int main(int argc, char** argv)
 {
 	std::string filename;
@@ -41,7 +39,7 @@ int main(int argc, char** argv)
 	qoglviewer::init_ogl_context();
 
 	// Instantiate the viewer.
-	TopologicalAnalyser<CMap3> viewer;
+	TopologicalAnalyser<cgogn::CMap3> viewer;
 	viewer.setWindowTitle("Topological Analysis");
 	viewer.import(filename);
 	viewer.show();

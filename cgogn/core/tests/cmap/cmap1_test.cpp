@@ -43,13 +43,12 @@ class CMap1Test : public ::testing::Test
 {
 public:
 
-	using testCMap1 = CMap1<DefaultMapTraits>;
-	using Vertex = testCMap1::Vertex;
-	using Face = testCMap1::Face;
+	using Vertex = CMap1::Vertex;
+	using Face = CMap1::Face;
 
 protected:
 
-	testCMap1 cmap_;
+	CMap1 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.

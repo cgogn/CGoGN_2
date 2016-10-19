@@ -29,8 +29,8 @@ namespace cgogn
 {
 
 /**
- * \brief The CMap3HexaTest class implements tests on embedded CMap3Hexa
- * It contains a CMap3Hexa to which vertex, edge, face and volume attribute
+ * \brief The CMap3HexaTest class implements tests on embedded CMap3HexaHexa
+ * It contains a CMap3HexaHexa to which vertex, edge, face and volume attribute
  * are added to enforce the indexation mechanism in cell traversals.
  *
  */
@@ -38,26 +38,20 @@ class CMap3HexaTest : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 64;
-	};
-
-	using testCMap3 = CMap3Hexa<MiniMapTraits>;
-	using MapBuilder = testCMap3::Builder;
-	using CDart = testCMap3::CDart;
-	using Vertex2 = testCMap3::Vertex2;
-	using Vertex = testCMap3::Vertex;
-	using Edge2 = testCMap3::Edge2;
-	using Edge = testCMap3::Edge;
-	using Face2 = testCMap3::Face2;
-	using Face = testCMap3::Face;
-	using Volume = testCMap3::Volume;
-	using ConnectedComponent = testCMap3::ConnectedComponent;
+	using MapBuilder = CMap3Hexa::Builder;
+	using CDart = CMap3Hexa::CDart;
+	using Vertex2 = CMap3Hexa::Vertex2;
+	using Vertex = CMap3Hexa::Vertex;
+	using Edge2 = CMap3Hexa::Edge2;
+	using Edge = CMap3Hexa::Edge;
+	using Face2 = CMap3Hexa::Face2;
+	using Face = CMap3Hexa::Face;
+	using Volume = CMap3Hexa::Volume;
+	using ConnectedComponent = CMap3Hexa::ConnectedComponent;
 
 protected:
 
-	testCMap3 cmap_;
+	CMap3Hexa cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -65,9 +59,7 @@ protected:
 //	std::vector<Dart> darts_;
 
 	CMap3HexaTest()
-	{
-
-	}
+	{}
 };
 
 /**

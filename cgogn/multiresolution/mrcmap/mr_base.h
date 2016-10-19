@@ -37,12 +37,14 @@ template <typename MAP>
 class MRBase
 {
 public:
+
 	using Self = MRBase<MAP>;
 
 	template <typename T>
 	using ChunkArray =  typename MAP::template ChunkArray<T>;
 
 protected:
+
 	/**
 	 * pointers to maps (one for each level)
 	 */
@@ -161,10 +163,8 @@ public:
 	{
 		return maps_[get_current_level()];
 	}
-
 };
 
-
-}
+} // namespace cgogn
 
 #endif // CGOGN_MULTIRESOLUTION_MRCMAP_MR_BASE_H_

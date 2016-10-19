@@ -29,13 +29,13 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH3 : public CPH2<DATA_TRAITS>
+class CPH3 : public CPH2
 {
 public:
 
-	using Self =  CPH3<DATA_TRAITS>;
-	using Inherit = CPH2<DATA_TRAITS>;
+	using Self =  CPH3;
+	using Inherit = CPH2;
+
 	template <typename T>
 	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 	template <typename T>
@@ -46,6 +46,7 @@ protected:
 	ChunkArray<uint32>* face_id_;
 
 public:
+
 	CPH3(ChunkArrayContainer<unsigned char>& topology) : Inherit(topology)
 	{
 		face_id_ = topology.template add_chunk_array<uint32>("faceId");
@@ -80,10 +81,6 @@ public:
 		return 0u;
 	}
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH3_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH3<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH3_CPP_))
 
 } // namespace cgogn
 

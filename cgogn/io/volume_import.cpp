@@ -30,10 +30,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API VolumeImport<Eigen::Vector3d>;
+template class CGOGN_IO_API VolumeImport<Eigen::Vector3f>;
+template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3d>;
+template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3f>;
 
 } // namespace io
 

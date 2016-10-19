@@ -39,7 +39,6 @@
 #include <cgogn/core/cmap/map_base_data.h>
 #include <cgogn/core/cmap/attribute.h>
 
-
 namespace cgogn
 {
 
@@ -50,13 +49,13 @@ enum TraversalStrategy
 	FORCE_CELL_MARKING
 };
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class MapBase : public MapBaseData<MAP_TRAITS>
+template <typename MAP_TYPE>
+class MapBase : public MapBaseData
 {
 public:
 
-	using Inherit = MapBaseData<MAP_TRAITS>;
-	using Self = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = MapBaseData;
+	using Self = MapBase<MAP_TYPE>;
 
 	template <typename MAP> friend class DartMarker_T;
 	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;
@@ -67,12 +66,6 @@ public:
 	using typename Inherit::ChunkArrayBool;
 	template <typename T_REF>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T_REF>;
-
-	using AttributeGen = typename Inherit::AttributeGen;
-	template <typename T>
-	using Attribute_T = typename Inherit::template Attribute_T<T>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
@@ -750,6 +743,7 @@ public:
 	}
 
 protected:
+
 	template <Orbit ORBIT>
 	void boundary_mark(Cell<ORBIT> c)
 	{

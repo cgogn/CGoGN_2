@@ -27,13 +27,15 @@
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2<DefaultMapTraits>& , const std::string&);
-template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2<DefaultMapTraits>& , const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3<DefaultMapTraits>& , const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3<DefaultMapTraits>& , const std::string&);
+template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
+template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
+template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
+template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 
 } // namespace io
+
 } // namespace cgogn

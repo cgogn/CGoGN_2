@@ -28,21 +28,21 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API CMap3_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarker<CMap3<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerStore<CMap3<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3<DefaultMapTraits>>;
-template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap3<DefaultMapTraits>, CMap3<DefaultMapTraits>::Volume::ORBIT>;
+template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
+template class CGOGN_CORE_API DartMarker<CMap3>;
+template class CGOGN_CORE_API DartMarkerStore<CMap3>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3>;
+template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
 
 } // namespace cgogn

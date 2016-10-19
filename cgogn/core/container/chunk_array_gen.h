@@ -27,6 +27,8 @@
 #include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/dll.h>
 
+#include <cgogn/core/cmap/map_traits.h>
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -34,8 +36,6 @@
 
 namespace cgogn
 {
-
-static const uint32 DEFAULT_CHUNK_SIZE = 4096;
 
 /**
  * @brief Virtual version of ChunkArray
@@ -235,7 +235,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayGen<DEFAULT_CHUNK_SIZE>;
+extern template class CGOGN_CORE_API ChunkArrayGen<CGOGN_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn

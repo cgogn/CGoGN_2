@@ -12,17 +12,14 @@
 
 using namespace cgogn::numerics;
 
-using MapTraits = cgogn::DefaultMapTraits;
-using Map2 = cgogn::CMap2<MapTraits>;
-using Map3 = cgogn::CMap3<MapTraits>;
+using Map2 = cgogn::CMap2;
+using Map3 = cgogn::CMap3;
 
 using Vec3 = Eigen::Vector3d;
 
 const cgogn::Orbit vertex2 = Map2::Vertex::ORBIT;
 const cgogn::Orbit vertex3 = Map3::Vertex::ORBIT;
 const cgogn::Orbit face2   = Map2::Face::ORBIT;
-
-
 
 bool string_to_bool (const std::string & v)
 {

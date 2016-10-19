@@ -34,17 +34,16 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
 class CPHBase
 {
 public:
 
-	using Self = CPHBase<DATA_TRAITS>;
+	using Self = CPHBase;
 
+	template <typename T_REF>
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CGOGN_CHUNK_SIZE, T_REF>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<DATA_TRAITS::CHUNK_SIZE, T>;
-	template <typename T>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<DATA_TRAITS::CHUNK_SIZE, T>;
+	using ChunkArray = cgogn::ChunkArray<CGOGN_CHUNK_SIZE, T>;
 
 protected:
 
@@ -145,10 +144,6 @@ public:
 		nb_darts_per_level_[current_level_]++;
 	}
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPHBase<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH_BASE_CPP_))
 
 } // namespace cgogn
 

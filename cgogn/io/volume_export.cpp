@@ -30,7 +30,7 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API VolumeExport<CMap3<DefaultMapTraits>>;
+template class CGOGN_IO_API VolumeExport<CMap3>;
 
 } // namespace io
 
