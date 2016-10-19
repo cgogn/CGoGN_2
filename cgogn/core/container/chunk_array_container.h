@@ -277,17 +277,21 @@ public:
 	{
 		cgogn_assert(name.size() != 0);
 
+		ChunkArray<T>* carr = nullptr;
+
 		// first check if attribute already exist
 		uint32 index = array_index(name);
 		if (index != UNKNOWN)
 		{
-			cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists.";
-			return nullptr;
+			carr = dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
+			if (carr == nullptr)
+				cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists with a different type \"" << table_arrays_[index]->type_name() << "\".";
+			return carr;
 		}
 
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
-		ChunkArray<T>* carr = new ChunkArray<T>(name);
+		carr = new ChunkArray<T>(name);
 		ChunkArrayFactory::template register_CA<T>();
 
 		// reserve memory
