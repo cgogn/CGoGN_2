@@ -37,6 +37,9 @@ set(SOURCE_FILES
 	QOGLViewer/vec.cpp
 )
 
+cgogn_reset_warning_level()
+
+
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARY} ${Qt5Widgets_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDE_DIRS})

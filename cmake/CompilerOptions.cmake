@@ -72,18 +72,13 @@ if (NOT MSVC)
 			-Wno-c++98-compat-pedantic
 			# Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
 			-Wno-c++11-extensions
-
-			# # Too many of sign conversion problems (Eigen!!!). Ignore them for the moment.
-			# -Wno-sign-conversion
-			# #
-			# -Wno-deprecated
-			# -Wno-old-style-cast
 			)
 	endif()
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 
-
+	# Compile with full warnings by default
+	add_definitions(${FULL_WARNINGS})
 
 	if(${CGOGN_USE_CXX11_ABI})
 		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
@@ -133,3 +128,9 @@ else() # MSVC
 	add_definitions("/DNOMINMAX")
 	
 endif()
+
+#Reset the warning level for third parties
+function(cgogn_reset_warning_level)
+	remove_definitions(${FULL_WARNINGS})
+	add_definitions(${NORMAL_WARNINGS})
+endfunction()

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project( googletest-distribution )
 
+cgogn_reset_warning_level()
+
+
 enable_testing()
 
 option(BUILD_GTEST "Builds the googletest subproject" OFF)
