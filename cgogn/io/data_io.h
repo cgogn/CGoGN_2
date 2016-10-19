@@ -149,10 +149,10 @@ public:
 		{
 			if (std::is_same<T, BUFFER_T>::value)
 			{ // if BUFFER_T = T we can directly store the data
-				fp.read(reinterpret_cast<char*>(&data_[old_size]), n * sizeof(T));
+				fp.read(reinterpret_cast<char*>(&data_[old_size]), std::streamsize(n * sizeof(T)));
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
-					for (auto it = data_.begin() + old_size, end = data_.end() ; it != end; ++it)
+					for (auto it = data_.begin() + std::vector::difference_type(old_size), end = data_.end() ; it != end; ++it)
 						*it = cgogn::swap_endianness(*it);
 				}
 
@@ -162,10 +162,10 @@ public:
 			else
 			{ // 2nd case : BUFFER_T and T are different.
 				std::vector<BUFFER_T> buffer(old_size+n);
-				fp.read(reinterpret_cast<char*>(&buffer[old_size]), n * sizeof(BUFFER_T));
+				fp.read(reinterpret_cast<char*>(&buffer[old_size]), std::streamsize(n * sizeof(BUFFER_T)));
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
-					for (auto it = buffer.begin() + old_size, end = buffer.end() ; it != end; ++it)
+					for (auto it = buffer.begin() + std::vector::difference_type(old_size), end = buffer.end() ; it != end; ++it)
 						*it = cgogn::swap_endianness(*it);
 				}
 				if (fp.eof() || fp.bad())
@@ -337,6 +337,7 @@ std::unique_ptr<DataInputGen> DataInputGen::newDataIO(const std::string type_nam
 		case DataType::UINT32:	return make_unique<DataInput<PRIM_SIZE, std::uint32_t>>();
 		case DataType::INT64:	return make_unique<DataInput<PRIM_SIZE, std::int64_t>>();
 		case DataType::UINT64:	return make_unique<DataInput<PRIM_SIZE, std::uint64_t>>();
+		case DataType::UNKNOWN:
 		default:
 			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen>();

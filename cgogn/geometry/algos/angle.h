@@ -69,7 +69,7 @@ inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
 	Scalar a(0);
 
 	// the following trick is useful to avoid NaNs (due to floating point errors)
-	if (c > 0.5) a = std::asin(s);
+	if (c > Scalar(0.5)) a = std::asin(s);
 	else
 	{
 		if(c < -1) c = -1;

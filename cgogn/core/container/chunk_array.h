@@ -485,7 +485,7 @@ public:
 protected:
 
 	// ensure we can use CHUNK_SIZE value < 32
-	const int BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
+	const uint32 BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
 
 	// vector of block pointers
 	std::vector<uint32*> table_data_;

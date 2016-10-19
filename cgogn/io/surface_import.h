@@ -89,8 +89,7 @@ public:
 	{
 		static_assert(Map::DIMENSION == 2, "must use map of dim 2 in surface import");
 
-		using Vertex = typename Map::Vertex;
-		using Edge = typename Map::Edge;
+		using Vertex = typename Map::Vertex;		
 		using Face = typename Map::Face;
 		using MapBuilder = typename Map::Builder;
 

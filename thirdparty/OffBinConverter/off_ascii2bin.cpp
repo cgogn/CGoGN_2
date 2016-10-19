@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		ptr++;
 	}
 
-	ofs.write(reinterpret_cast<char*>(&(prim[0])),4*prim.size());
+	ofs.write(reinterpret_cast<char*>(&(prim[0])),std::streamsize(4*prim.size()));
 
 	ofs.close();
 	ifs.close();
