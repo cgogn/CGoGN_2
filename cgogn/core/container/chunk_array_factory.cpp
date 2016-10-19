@@ -57,7 +57,7 @@ void ChunkArrayFactory::register_known_types()
 	known_types_initialized_ = true;
 }
 
-ChunkArrayFactory::ChunkArrayGenPtr ChunkArrayFactory::create(const std::__cxx11::string& type_name, const std::__cxx11::string& name)
+ChunkArrayFactory::ChunkArrayGenPtr ChunkArrayFactory::create(const std::string& type_name, const std::string& name)
 {
 	ChunkArrayGenPtr tmp = nullptr;
 	typename NamePtrMap::const_iterator it = map_CA_->find(type_name);
