@@ -75,11 +75,11 @@ public:
 	using Attribute_T = cgogn::Attribute_T<T>;
 
 	template <typename T_REF>
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<T_REF>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen;
+	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
+	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<T>;
-	using ChunkArrayBool = cgogn::ChunkArrayBool;
+	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
+	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
 protected:
 

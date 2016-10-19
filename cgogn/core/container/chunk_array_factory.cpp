@@ -28,52 +28,6 @@
 namespace cgogn
 {
 
-ChunkArrayFactory::UniqueNamePtrMap ChunkArrayFactory::map_CA_ = nullptr;
-
-void ChunkArrayFactory::register_known_types()
-{
-	static bool known_types_initialized_ = false;
-
-	if (known_types_initialized_)
-		return;
-
-	register_CA<bool>();
-	register_CA<char>();
-	register_CA<int8>();
-	register_CA<int16>();
-	register_CA<int32>();
-	register_CA<int64>();
-	register_CA<uint8>();
-	register_CA<uint16>();
-	register_CA<uint32>();
-	register_CA<uint64>();
-	register_CA<float32>();
-	register_CA<float64>();
-	register_CA<std::string>();
-	register_CA<std::array<float32, 3>>();
-	register_CA<std::array<float64, 3>>();
-	// NOT TODO : add Eigen.
-
-	known_types_initialized_ = true;
-}
-
-ChunkArrayFactory::ChunkArrayGenPtr ChunkArrayFactory::create(const std::__cxx11::string& type_name, const std::__cxx11::string& name)
-{
-	ChunkArrayGenPtr tmp = nullptr;
-	typename NamePtrMap::const_iterator it = map_CA_->find(type_name);
-
-	if(it != map_CA_->end())
-		tmp = (it->second)->clone(name);
-	else
-		cgogn_log_warning("ChunkArrayFactory::create") << "Type \"" << type_name << "\" is not registered in ChunkArrayFactory.";
-
-	return tmp;
-}
-
-void ChunkArrayFactory::reset()
-{
-	ChunkArrayFactory::map_CA_ = make_unique<NamePtrMap>();
-}
-
+template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
 
 } // namespace cgogn

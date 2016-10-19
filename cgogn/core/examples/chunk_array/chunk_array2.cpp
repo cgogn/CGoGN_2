@@ -9,9 +9,9 @@ using namespace cgogn::numerics;
 
 const uint32 SIZE = 32u;
 template <class T>
-using ChunkArray = cgogn::ChunkArray<T>;
-using ChunkArrayContainer = cgogn::ChunkArrayContainer<uint32>;
-using ChunkArrayFactory = cgogn::ChunkArrayFactory;
+using ChunkArray = cgogn::ChunkArray<SIZE, T>;
+using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, uint32>;
+using ChunkArrayFactory = cgogn::ChunkArrayFactory<SIZE>;
 
 using DoubleVecList = std::list< std::vector< float64 > >;
 using StringListVec = std::vector< std::list < std::string > >;

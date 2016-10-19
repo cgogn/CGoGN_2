@@ -24,6 +24,7 @@
 #ifndef CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
+#include <cgogn/core/utils/serialization.h>
 #include <cgogn/core/dll.h>
 
 #include <cgogn/core/cmap/map_traits.h>
@@ -39,12 +40,12 @@ namespace cgogn
 /**
  * @brief Virtual version of ChunkArray
  */
+template <uint32 CHUNK_SIZE>
 class ChunkArrayGen
 {
 public:
 
-	using Self = ChunkArrayGen;
-	const static uint32 CHUNK_SIZE = CGOGN_CHUNK_SIZE;
+	using Self = ChunkArrayGen<CHUNK_SIZE>;
 
 	inline ChunkArrayGen(const std::string& name, const std::string& type_name) :
 		name_(name),
@@ -55,6 +56,16 @@ public:
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayGen);
+
+protected:
+
+	std::vector<ChunkArrayGen**> external_refs_;
+
+	std::string name_;
+
+	std::string type_name_;
+
+public:
 
 	/**
 	 * @brief virtual destructor
@@ -82,9 +93,20 @@ public:
 	 */
 	virtual uint32 element_size() const = 0;
 
-	void add_external_ref(ChunkArrayGen** ref);
+	void add_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
+		external_refs_.push_back(ref);
+	}
 
-	void remove_external_ref(ChunkArrayGen** ref);
+	void remove_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen remove_external_ref on other ChunkArrayGen");
+		auto it = std::find(external_refs_.begin(), external_refs_.end(), ref);
+		cgogn_message_assert(it != external_refs_.end(), "ChunkArrayGen external ref not found");
+		std::swap(*it, external_refs_.back());
+		external_refs_.pop_back();
+	}
 
 	/**
 	 * @brief create a ChunkArray object without knowing type
@@ -202,14 +224,19 @@ public:
 	 * @brief skip the data instead of loading
 	 * @param fs input file stream
 	 */
-	static void skip(std::istream& fs);
-
-protected:
-
-	std::vector<ChunkArrayGen**> external_refs_;
-	std::string name_;
-	std::string type_name_;
+	static void skip(std::istream& fs)
+	{
+		std::size_t chunk_bytes;
+		serialization::load(fs, &chunk_bytes, 1);
+		uint32 nb_lines;
+		serialization::load(fs, &nb_lines, 1);
+		fs.ignore(std::streamsize(chunk_bytes), EOF);
+	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
+extern template class CGOGN_CORE_API ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))
 
 } // namespace cgogn
 

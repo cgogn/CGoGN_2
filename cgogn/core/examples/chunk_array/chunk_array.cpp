@@ -5,10 +5,12 @@
 
 using namespace cgogn::numerics;
 
+
+const uint32 SIZE = 32u;
 template <class T>
-using ChunkArray = cgogn::ChunkArray<T>;
+using ChunkArray = cgogn::ChunkArray<SIZE, T>;
 template <typename T>
-using ChunkArrayContainer = cgogn::ChunkArrayContainer< T>;
+using ChunkArrayContainer = cgogn::ChunkArrayContainer<SIZE, T>;
 
 int test1();
 int test2();

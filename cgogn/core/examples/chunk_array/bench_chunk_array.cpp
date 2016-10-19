@@ -1,6 +1,7 @@
 
 #include <cgogn/core/container/chunk_array_container.h>
 #include <cgogn/core/utils/serialization.h>
+#define BLK_SZ 4096
 
 using namespace cgogn;
 
@@ -56,10 +57,10 @@ int test1()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 1 = ref unsigned char" ;
 
-	ChunkArrayContainer<unsigned char> container;
-	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
-	ChunkArray<float32>* att2 = container.add_chunk_array<float32>("reel");
-	ChunkArray<Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
+	ChunkArrayContainer<BLK_SZ, unsigned char> container;
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_chunk_array<float32>("reel");
+	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -92,10 +93,10 @@ int test2()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 2 = ref bool" ;
 
-	ChunkArrayContainer<bool> container;
-	ChunkArray<int32>* att1 = container.add_chunk_array<int32>("entier");
-	ChunkArray<float32>* att2 = container.add_chunk_array<float32>("reel");
-	ChunkArray<Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
+	ChunkArrayContainer<BLK_SZ, bool> container;
+	ChunkArray<BLK_SZ,int32>* att1 = container.add_chunk_array<int32>("entier");
+	ChunkArray<BLK_SZ,float32>* att2 = container.add_chunk_array<float32>("reel");
+	ChunkArray<BLK_SZ,Vec3f>* att3 = container.add_chunk_array<Vec3f>("Vec3f");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -128,8 +129,8 @@ int test3()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 3 = random bool cleaning" ;
 
-	ChunkArrayContainer<uint8> container;
-	ChunkArrayBool* att1 = container.add_marker_attribute();
+	ChunkArrayContainer<BLK_SZ, uint8> container;
+	ChunkArrayBool<BLK_SZ>* att1 = container.add_marker_attribute();
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -156,8 +157,8 @@ int test4()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 4 = random bool cleaning with set_false_byte" ;
 
-	ChunkArrayContainer<uint8> container;
-	ChunkArrayBool* att1 = container.add_marker_attribute();
+	ChunkArrayContainer<BLK_SZ, uint8> container;
+	ChunkArrayBool<BLK_SZ>* att1 = container.add_marker_attribute();
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
@@ -184,8 +185,8 @@ int test5()
 {
 	cgogn_log_info("bench_chunk_array") << "= TEST 5 = Traversal" ;
 
-	ChunkArrayContainer<uint32> container;
-	ChunkArray<uint32>* att1 = container.add_chunk_array<uint32>("uints");
+	ChunkArrayContainer<BLK_SZ, uint32> container;
+	ChunkArray<BLK_SZ,uint32>* att1 = container.add_chunk_array<uint32>("uints");
 
 	for (uint32 i = 0; i < NB_LINES; ++i)
 		container.insert_lines<1>();
