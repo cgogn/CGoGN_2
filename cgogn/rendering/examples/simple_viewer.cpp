@@ -61,6 +61,8 @@ using Map2 = cgogn::CMap2;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
+using Vertex = Map2::Vertex;
+
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
@@ -123,14 +125,14 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	map_.add_attribute(vertex_normal_, "normal");
+	vertex_normal_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("normal");
 
 // testing merge method
 //	Map2 map2;

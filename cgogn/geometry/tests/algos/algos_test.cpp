@@ -80,7 +80,7 @@ TYPED_TEST_CASE(Algos_TEST, VecTypes);
 TYPED_TEST(Algos_TEST, TriangleArea)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(3);
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
@@ -93,7 +93,7 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 TYPED_TEST(Algos_TEST, QuadArea)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(4);
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
@@ -104,7 +104,7 @@ TYPED_TEST(Algos_TEST, QuadArea)
 TYPED_TEST(Algos_TEST, TriangleCentroid)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(3);
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
@@ -118,7 +118,7 @@ TYPED_TEST(Algos_TEST, TriangleCentroid)
 TYPED_TEST(Algos_TEST, QuadCentroid)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(4);
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
@@ -131,7 +131,7 @@ TYPED_TEST(Algos_TEST, QuadCentroid)
 TYPED_TEST(Algos_TEST, TriangleNormal)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(3);
 	Dart t;
 	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
@@ -150,7 +150,7 @@ TYPED_TEST(Algos_TEST, TriangleNormal)
 TYPED_TEST(Algos_TEST, QuadNormal)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 	this->add_polygone(4);
 	Dart q;
 	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
@@ -164,7 +164,7 @@ TYPED_TEST(Algos_TEST, QuadNormal)
 TYPED_TEST(Algos_TEST, EarTriangulation)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, Vertex::ORBIT>("position");
 
 	Face f = this->map2_.add_face(5);
 	cgogn::Dart d = f.dart;

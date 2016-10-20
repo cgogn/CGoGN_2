@@ -319,10 +319,10 @@ int main(int argc, char** argv)
 
 	cgogn::io::import_surface<Vec3>(bench_map, surfaceMesh);
 
-	bench_map.add_attribute<Vec3, FACE>("normal");
-	bench_map.add_attribute<Vec3, FACE>("normal_mt");
-	bench_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("normal_mt");
+	bench_map.get_attribute<Vec3, FACE>("normal");
+	bench_map.get_attribute<Vec3, FACE>("normal_mt");
+	bench_map.get_attribute<Vec3, VERTEX>("normal");
+	bench_map.get_attribute<Vec3, VERTEX>("normal_mt");
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

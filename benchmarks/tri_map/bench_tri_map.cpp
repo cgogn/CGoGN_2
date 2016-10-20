@@ -202,14 +202,14 @@ int main(int argc, char** argv)
 		surfaceMesh = std::string(argv[1]);
 
 	cgogn::io::import_surface<Vec3>(bench_map, surfaceMesh);
-	bench_map.add_attribute<Vec3, FACE>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("position2");
+	bench_map.get_attribute<Vec3, FACE>("normal");
+	bench_map.get_attribute<Vec3, VERTEX>("normal");
+	bench_map.get_attribute<Vec3, VERTEX>("position2");
 
 	cgogn::io::import_surface<Vec3>(bench_tri_map, surfaceMesh);
-	bench_tri_map.add_attribute<Vec3, FACE>("normal");
-	bench_tri_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_tri_map.add_attribute<Vec3, VERTEX>("position2");
+	bench_tri_map.get_attribute<Vec3, FACE>("normal");
+	bench_tri_map.get_attribute<Vec3, VERTEX>("normal");
+	bench_tri_map.get_attribute<Vec3, VERTEX>("position2");
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

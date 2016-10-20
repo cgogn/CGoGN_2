@@ -72,7 +72,7 @@ public:
 		cache_(cache),
 		intern_edge_weight_(true)
 	{
-		map.add_attribute(edge_weight_, "__edge_weight__");
+		edge_weight_ = map.template get_attribute<Scalar, Edge::ORBIT>("__edge_weight__");
 
 		map.foreach_cell([&](Edge e)
 		{
@@ -355,7 +355,7 @@ public:
 									 VertexAttribute<Scalar>& scalar_field)
 	{
 		VertexAttribute<Scalar> distance_to_feature =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");
+				map_.template get_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");
 
 		for (auto& s : scalar_field) s = Scalar(0);
 
@@ -377,7 +377,7 @@ public:
 	void morse_distance_to_boundary(VertexAttribute<Scalar>& morse_function)
 	{
 		VertexAttribute<Scalar> distance_to_boundary =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_boundary__");
+				map_.template get_attribute<Scalar, Vertex::ORBIT>("__distance_to_boundary__");
 
 		std::vector<Vertex> boundary_vertices;
 
@@ -408,7 +408,7 @@ public:
 									VertexAttribute<Scalar>& morse_function)
 	{
 		VertexAttribute<Scalar> distance_to_features =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_features__");
+				map_.template get_attribute<Scalar, Vertex::ORBIT>("__distance_to_features__");
 
 		// Compute the shortest paths to sources
 		dijkstra_compute_distances(features, distance_to_features);

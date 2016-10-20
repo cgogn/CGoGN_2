@@ -51,6 +51,8 @@ using Map3 = cgogn::CMap3;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
+using Vertex = Map3::Vertex;
+
 template <typename T>
 using VertexAttribute = Map3::VertexAttribute<T>;
 
@@ -127,7 +129,7 @@ void Viewer::import(const std::string& volumeMesh)
 {
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";

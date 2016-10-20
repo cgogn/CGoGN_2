@@ -173,32 +173,32 @@ TEST_F(CMap3TopoTest, random_map_generators)
  * \brief Test attribute management
  *
  */
-TEST_F(CMap3TopoTest, add_attribute)
+TEST_F(CMap3TopoTest, get_attribute)
 {
 	add_closed_surfaces();
 
-	add_attribute<int32, CDart::ORBIT>("darts");
+	get_attribute<int32, CDart::ORBIT>("darts");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex2::ORBIT>("vertices2");
+	get_attribute<int32, Vertex2::ORBIT>("vertices2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	get_attribute<int32, Vertex::ORBIT>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge2::ORBIT>("edges2");
+	get_attribute<int32, Edge2::ORBIT>("edges2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge::ORBIT>("edges");
+	get_attribute<int32, Edge::ORBIT>("edges");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face2::ORBIT>("faces2");
+	get_attribute<int32, Face2::ORBIT>("faces2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	get_attribute<int32, Face::ORBIT>("faces");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Volume::ORBIT>("Volumes");
+	get_attribute<int32, Volume::ORBIT>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -603,11 +603,11 @@ TEST_F(CMap3TopoTest, close_map)
 //	add_closed_surfaces();
 
 //	// add attributes to initialize the indexation
-//	add_attribute<int, CDart::ORBIT>("darts");
-//	add_attribute<int, Vertex::ORBIT>("vertices");
-//	add_attribute<int, Edge::ORBIT>("edges");
-//	add_attribute<int, Face::ORBIT>("faces");
-//	add_attribute<int, Volume::ORBIT>("volumes");
+//	get_attribute<int, CDart::ORBIT>("darts");
+//	get_attribute<int, Vertex::ORBIT>("vertices");
+//	get_attribute<int, Edge::ORBIT>("edges");
+//	get_attribute<int, Face::ORBIT>("faces");
+//	get_attribute<int, Volume::ORBIT>("volumes");
 //	EXPECT_TRUE(check_map_integrity());
 
 //	// create some random holes (full removal or partial unsewing of faces)

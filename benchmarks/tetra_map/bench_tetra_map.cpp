@@ -302,14 +302,14 @@ int main(int argc, char** argv)
 		volumeMesh = std::string(argv[1]);
 
 	cgogn::io::import_volume<Vec3>(bench_map, volumeMesh);
-	bench_map.add_attribute<Vec3, VOLUME>("centroids");
-	bench_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("position2");
+	bench_map.get_attribute<Vec3, VOLUME>("centroids");
+	bench_map.get_attribute<Vec3, VERTEX>("normal");
+	bench_map.get_attribute<Vec3, VERTEX>("position2");
 
 	cgogn::io::import_volume<Vec3>(bench_tetra_map, volumeMesh);
-	bench_tetra_map.add_attribute<Vec3, TVOLUME>("centroids");
-	bench_tetra_map.add_attribute<Vec3, TVERTEX>("normal");
-	bench_tetra_map.add_attribute<Vec3, TVERTEX>("position2");
+	bench_tetra_map.get_attribute<Vec3, TVOLUME>("centroids");
+	bench_tetra_map.get_attribute<Vec3, TVERTEX>("normal");
+	bench_tetra_map.get_attribute<Vec3, TVERTEX>("position2");
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

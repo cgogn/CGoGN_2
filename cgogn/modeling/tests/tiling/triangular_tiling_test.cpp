@@ -60,11 +60,11 @@ protected:
 		x_ = uni(rng);
 		y_ = uni(rng);
 
-		//cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int32, Face::ORBIT>("faces");
-		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+		//cmap_.get_attribute<int32, CDart::ORBIT>("darts");
+		cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.get_attribute<int32, Edge::ORBIT>("edges");
+		cmap_.get_attribute<int32, Face::ORBIT>("faces");
+		cmap_.get_attribute<int32, Volume::ORBIT>("volumes");
 	}
 };
 

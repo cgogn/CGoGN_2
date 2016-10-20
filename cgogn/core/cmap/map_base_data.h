@@ -71,9 +71,6 @@ public:
 	template <typename T> friend class Attribute_T;
 	template <typename T, Orbit ORBIT> friend class Attribute;
 
-	template <typename T>
-	using Attribute_T = cgogn::Attribute_T<T>;
-
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;

@@ -117,10 +117,10 @@ TEST_F(CMap1TopoTest, add_attribute)
 	add_vertices(NB_MAX);
 	add_faces(NB_MAX);
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	get_attribute<int32, Vertex::ORBIT>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	get_attribute<int32, Face::ORBIT>("faces");
 	EXPECT_TRUE(check_map_integrity());
 }
 

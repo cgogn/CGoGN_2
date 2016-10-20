@@ -50,6 +50,9 @@ using Map2 = cgogn::CMap2;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
+using Vertex = Map2::Vertex;
+using Face = Map2::Face;
+
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
@@ -101,8 +104,8 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	map_.get_attribute(vertex_position_, "position");
-	map_.add_attribute(face_normal_, "normal");
+	vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
+	face_normal_ = map_.template get_attribute<Vec3, Face::ORBIT>("normal");
 
 	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, face_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
