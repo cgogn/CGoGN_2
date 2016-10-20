@@ -26,6 +26,7 @@ set(SOURCE_FILES
 	cmap/cmap3tetra_test.cpp
 	cmap/cmap3hexa_test.cpp
 
+	utils/endian_test.cpp
 	utils/name_types_test.cpp
 
 	main.cpp
