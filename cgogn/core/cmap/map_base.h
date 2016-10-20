@@ -242,7 +242,7 @@ public:
 	inline bool has_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		if (!this->attributes_[orbit].has_array(attribute_name))
+		if (!is_embedded(orbit) || !this->attributes_[orbit].has_array(attribute_name))
 			return false;
 		const ChunkArrayGen* cag = this->attributes_[orbit].get_chunk_array(attribute_name);
 		return dynamic_cast<const ChunkArray<T>*>(cag) != nullptr;
@@ -254,6 +254,8 @@ public:
 	inline bool has_attribute(Orbit orbit, const std::string& att_name) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		if (!is_embedded(orbit))
+			return false;
 		return this->attributes_[orbit].has_array(att_name);
 	}
 
