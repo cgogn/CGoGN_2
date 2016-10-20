@@ -32,24 +32,24 @@ TEST(EndianTest, swap16)
 {
 	const uint16 n(0x0401); // n = 1025
 	const uint16 swapped = cgogn::swap_endianness(n);
-
-	EXPECT_EQ(swapped, uint16(0x0104));
+	const uint16 res(0x0104);
+	EXPECT_EQ(swapped, res);
 }
 
 TEST(EndianTest, swap32)
 {
 	const uint32 n(0x00020804 ); // n = 133124
 	const uint32 swapped = cgogn::swap_endianness(n);
-
-	EXPECT_EQ(swapped, uint32(0x04080200 ));
+	const uint32 res(0x04080200);
+	EXPECT_EQ(swapped, res);
 }
 
 TEST(EndianTest, swap64)
 {
 	const uint64 n(0x0000010000040880); // n =  1 099 511 892 096
 	const uint64 swapped = cgogn::swap_endianness(n);
-
-	EXPECT_EQ(swapped, uint64(0x8008040000010000 ));
+	const uint64 res(0x8008040000010000);
+	EXPECT_EQ(swapped, res);
 }
 
 TEST(EndianTest, swap_array)
@@ -65,15 +65,19 @@ TEST(EndianTest, swap_array)
 	const auto& swapped32 = cgogn::swap_endianness(arr32);
 	const auto& swapped64 = cgogn::swap_endianness(arr64);
 
-	EXPECT_EQ(swapped16[0],uint16(0x0104));
-	EXPECT_EQ(swapped16[1],swapped16[0]);
-	EXPECT_EQ(swapped16[2],swapped16[0]);
+	const uint16 res16(0x0104);
+	const uint32 res32(0x04080200);
+	const uint64 res64(0x8008040000010000);
 
-	EXPECT_EQ(swapped32[0],uint32(0x04080200));
-	EXPECT_EQ(swapped32[1],swapped32[0]);
-	EXPECT_EQ(swapped32[2],swapped32[0]);
+	EXPECT_EQ(swapped16[0], res16);
+	EXPECT_EQ(swapped16[1], swapped16[0]);
+	EXPECT_EQ(swapped16[2], swapped16[0]);
 
-	EXPECT_EQ(swapped64[0],uint64(0x8008040000010000));
-	EXPECT_EQ(swapped64[1],swapped64[0]);
-	EXPECT_EQ(swapped64[2],swapped64[0]);
+	EXPECT_EQ(swapped32[0], res32);
+	EXPECT_EQ(swapped32[1], swapped32[0]);
+	EXPECT_EQ(swapped32[2], swapped32[0]);
+
+	EXPECT_EQ(swapped64[0], res64);
+	EXPECT_EQ(swapped64[1], swapped64[0]);
+	EXPECT_EQ(swapped64[2], swapped64[0]);
 }
