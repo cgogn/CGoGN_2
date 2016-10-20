@@ -121,9 +121,9 @@ static void BENCH_vol_centroid_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VolumeAttribute<Vec3> centroids = bench_map.get_attribute<Vec3, VOLUME>("centroids");
+		VolumeAttribute<Vec3> centroids = bench_map.attribute<Vec3, VOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 		state.ResumeTiming();
 
@@ -139,9 +139,9 @@ static void BENCH_vol_centroid_tetra(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVolumeAttribute<Vec3> centroids = bench_tetra_map.get_attribute<Vec3, TVOLUME>("centroids");
+		TVolumeAttribute<Vec3> centroids = bench_tetra_map.attribute<Vec3, TVOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 		state.ResumeTiming();
 
@@ -157,9 +157,9 @@ static void BENCH_vol_centroid_poly_pure_topo(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VolumeAttribute<Vec3> centroids = bench_map.get_attribute<Vec3, VOLUME>("centroids");
+		VolumeAttribute<Vec3> centroids = bench_map.attribute<Vec3, VOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 		state.ResumeTiming();
 
@@ -175,9 +175,9 @@ static void BENCH_vol_centroid_tetra_pure_topo(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVolumeAttribute<Vec3> centroids = bench_tetra_map.get_attribute<Vec3, TVOLUME>("centroids");
+		TVolumeAttribute<Vec3> centroids = bench_tetra_map.attribute<Vec3, TVOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 		state.ResumeTiming();
 
@@ -193,12 +193,12 @@ static void BENCH_vol_centroid_shrink_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttribute<Vec3> vertex_position2 = bench_map.get_attribute<Vec3, VERTEX>("position2");
+		VertexAttribute<Vec3> vertex_position2 = bench_map.attribute<Vec3, VERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
 
-		VolumeAttribute<Vec3> centroids = bench_map.get_attribute<Vec3, VOLUME>("centroids");
+		VolumeAttribute<Vec3> centroids = bench_map.attribute<Vec3, VOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 
 		state.ResumeTiming();
@@ -220,11 +220,11 @@ static void BENCH_vol_centroid_shrink_tetra(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVertexAttribute<Vec3> vertex_position2 = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position2");
+		TVertexAttribute<Vec3> vertex_position2 = bench_tetra_map.attribute<Vec3, TVERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
-		TVolumeAttribute<Vec3> centroids = bench_tetra_map.get_attribute<Vec3, TVOLUME>("centroids");
+		TVolumeAttribute<Vec3> centroids = bench_tetra_map.attribute<Vec3, TVOLUME>("centroids");
 		cgogn_assert(centroids.is_valid());
 		state.ResumeTiming();
 
@@ -245,9 +245,9 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttribute<Vec3> vertex_position2 = bench_map.get_attribute<Vec3, VERTEX>("position2");
+		VertexAttribute<Vec3> vertex_position2 = bench_map.attribute<Vec3, VERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
 
 		state.ResumeTiming();
@@ -261,9 +261,9 @@ static void BENCH_vertices_filter_tetra(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tetra_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVertexAttribute<Vec3> vertex_position2 = bench_tetra_map.get_attribute<Vec3, TVERTEX>("position2");
+		TVertexAttribute<Vec3> vertex_position2 = bench_tetra_map.attribute<Vec3, TVERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
 
 		state.ResumeTiming();
@@ -302,14 +302,14 @@ int main(int argc, char** argv)
 		volumeMesh = std::string(argv[1]);
 
 	cgogn::io::import_volume<Vec3>(bench_map, volumeMesh);
-	bench_map.get_attribute<Vec3, VOLUME>("centroids");
-	bench_map.get_attribute<Vec3, VERTEX>("normal");
-	bench_map.get_attribute<Vec3, VERTEX>("position2");
+	bench_map.attribute<Vec3, VOLUME>("centroids");
+	bench_map.attribute<Vec3, VERTEX>("normal");
+	bench_map.attribute<Vec3, VERTEX>("position2");
 
 	cgogn::io::import_volume<Vec3>(bench_tetra_map, volumeMesh);
-	bench_tetra_map.get_attribute<Vec3, TVOLUME>("centroids");
-	bench_tetra_map.get_attribute<Vec3, TVERTEX>("normal");
-	bench_tetra_map.get_attribute<Vec3, TVERTEX>("position2");
+	bench_tetra_map.attribute<Vec3, TVOLUME>("centroids");
+	bench_tetra_map.attribute<Vec3, TVERTEX>("normal");
+	bench_tetra_map.attribute<Vec3, TVERTEX>("position2");
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

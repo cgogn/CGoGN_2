@@ -215,19 +215,19 @@ TEST_F(CMap2TopoTest, add_attribute)
 	add_faces(NB_MAX);
 	add_closed_surfaces();
 
-	get_attribute<int32, CDart::ORBIT>("darts");
+	attribute<int32, CDart::ORBIT>("darts");
 	EXPECT_TRUE(check_map_integrity());
 
-	get_attribute<int32, Vertex::ORBIT>("vertices");
+	attribute<int32, Vertex::ORBIT>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	get_attribute<int32, Edge::ORBIT>("edges");
+	attribute<int32, Edge::ORBIT>("edges");
 	EXPECT_TRUE(check_map_integrity());
 
-	get_attribute<int32, Face::ORBIT>("faces");
+	attribute<int32, Face::ORBIT>("faces");
 	EXPECT_TRUE(check_map_integrity());
 
-	get_attribute<int32, Volume::ORBIT>("Volumes");
+	attribute<int32, Volume::ORBIT>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -590,11 +590,11 @@ TEST_F(CMap2TopoTest, close_map)
 	add_closed_surfaces();
 
 	// add attributes to initialize the indexation
-	get_attribute<int32, CDart::ORBIT>("darts");
-	get_attribute<int32, Vertex::ORBIT>("vertices");
-	get_attribute<int32, Edge::ORBIT>("edges");
-	get_attribute<int32, Face::ORBIT>("faces");
-	get_attribute<int32, Volume::ORBIT>("volumes");
+	attribute<int32, CDart::ORBIT>("darts");
+	attribute<int32, Vertex::ORBIT>("vertices");
+	attribute<int32, Edge::ORBIT>("edges");
+	attribute<int32, Face::ORBIT>("faces");
+	attribute<int32, Volume::ORBIT>("volumes");
 
 	EXPECT_TRUE(check_map_integrity());
 

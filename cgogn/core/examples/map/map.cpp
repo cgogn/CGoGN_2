@@ -56,9 +56,9 @@ int test1(MAP& map)
 	using Face = typename MAP::Face;
 
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttribute<float32> ah = map.template get_attribute<float32, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttribute<float32> ah = map.template attribute<float32, Vertex::ORBIT>("floats");
 
-	typename MAP::template FaceAttribute<float32> ahf = map.template get_attribute<float32, Face::ORBIT>("floats");
+	typename MAP::template FaceAttribute<float32> ahf = map.template attribute<float32, Face::ORBIT>("floats");
 
 	// get attribute and change type (dangerous!)
 	typename MAP::template VertexAttribute<int32> ahf2 = map.template get_attribute_force_type<int32,float32, Vertex::ORBIT>("floats");
@@ -108,7 +108,7 @@ int test1(MAP& map)
 
 	// get ChunkArrayContainer -> get ChunkArray -> fill
 //	typename MAP::template ChunkArrayContainer<uint32>& container = map.get_attribute_container(MAP::Vertex);
-//	typename MAP::template ChunkArray<float32>* att = container.template get_attribute<float32>("floats");
+//	typename MAP::template ChunkArray<float32>* att = container.template attribute<float32>("floats");
 //	for (uint32 i = 0; i < 10; ++i)
 //		container.template insert_lines<1>();
 	for (auto& v : ah)

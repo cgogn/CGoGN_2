@@ -260,12 +260,12 @@ public:
 	}
 
 	/**
-	 * \brief get an attribute. If there is an existing attribute with the same name, the same orbit and the same type, this functions returns it.
+	 * \brief Return an attribute handler
 	 * @param attribute_name the name of the attribute
 	 * @return a valid attribute (except if there was a previously added attribute on the same orbit with the same name but with a different type of data)
 	 */
 	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		if (!this->template is_embedded<ORBIT>())
@@ -455,7 +455,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		Attribute<uint32, ORBIT> counter = get_attribute<uint32, ORBIT>("__tmp_counter");
+		Attribute<uint32, ORBIT> counter = attribute<uint32, ORBIT>("__tmp_counter");
 		for (uint32& i : counter) i = 0;
 
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
@@ -490,7 +490,7 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		Attribute<std::vector<CellType>, ORBIT> counter = get_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
+		Attribute<std::vector<CellType>, ORBIT> counter = attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];

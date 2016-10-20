@@ -58,7 +58,7 @@ protected:
 	{
 		using Scalar = typename cgogn::geometry::vector_traits<Vec_T>::Scalar;
 
-		VertexAttribute<Vec_T> vertex_position = this->map2_.template get_attribute<Vec_T, CMap2::Vertex::ORBIT>("position");
+		VertexAttribute<Vec_T> vertex_position = this->map2_.template attribute<Vec_T, CMap2::Vertex::ORBIT>("position");
 
 		Scalar alpha = 0;
 		Face f = map2_.add_face(n);
@@ -77,7 +77,7 @@ TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 
 	this->add_polygone(3);
 
@@ -97,7 +97,7 @@ TYPED_TEST(Algos_TEST, QuadCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template get_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
 
 	this->add_polygone(4);
 

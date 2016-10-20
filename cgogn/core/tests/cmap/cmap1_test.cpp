@@ -60,8 +60,8 @@ protected:
 		darts_.reserve(NB_MAX);
 		std::srand(uint32(std::time(0)));
 
-		cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.get_attribute<int32, Face::ORBIT>("faces");
+		cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.attribute<int32, Face::ORBIT>("faces");
 	}
 
 	/**

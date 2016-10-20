@@ -61,18 +61,18 @@ TYPED_TEST_CASE(MapBaseTest, MapTypes);
  * -when we add the exactly same attribute twice we get a valid attribute.
  * -when we add an attribute on the same orbit with the same name but a different type, we get an invalid attribute.
  */
-TYPED_TEST(MapBaseTest, get_attribute)
+TYPED_TEST(MapBaseTest, attribute)
 {
 	using Vertex = typename MapBaseTest<TypeParam>::Vertex;
-	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template get_attribute<int32, Vertex::ORBIT>("cool_attribute");
+	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template attribute<int32, Vertex::ORBIT>("cool_attribute");
 	EXPECT_TRUE(vatt1.is_valid());
 
 
-	Attribute <int32, Vertex::ORBIT> vatt3 = this->cmap_.template get_attribute<int32, Vertex::ORBIT>("cool_attribute");
+	Attribute <int32, Vertex::ORBIT> vatt3 = this->cmap_.template attribute<int32, Vertex::ORBIT>("cool_attribute");
 	EXPECT_TRUE(vatt1.is_valid());
 	EXPECT_TRUE(vatt3.is_valid());
 
-	Attribute <float32, Vertex::ORBIT> vatt4 = this->cmap_.template get_attribute<float32, Vertex::ORBIT>("cool_attribute");
+	Attribute <float32, Vertex::ORBIT> vatt4 = this->cmap_.template attribute<float32, Vertex::ORBIT>("cool_attribute");
 	EXPECT_TRUE(vatt1.is_valid());
 	EXPECT_TRUE(vatt3.is_valid());
 	EXPECT_FALSE(vatt4.is_valid());
@@ -84,7 +84,7 @@ TYPED_TEST(MapBaseTest, has_attribute)
 {
 	using Vertex = typename MapBaseTest<TypeParam>::Vertex;
 	using Face = typename MapBaseTest<TypeParam>::Face;
-	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template get_attribute<int32, Vertex::ORBIT>("cool_attribute");
+	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template attribute<int32, Vertex::ORBIT>("cool_attribute");
 	EXPECT_TRUE(this->cmap_.has_attribute(Vertex::ORBIT,"cool_attribute"));
 	EXPECT_FALSE(this->cmap_.has_attribute(Face::ORBIT,"cool_attribute"));
 
@@ -96,8 +96,8 @@ TYPED_TEST(MapBaseTest, remove_attribute)
 {
 	using Vertex = typename MapBaseTest<TypeParam>::Vertex;
 
-	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template get_attribute<int32, Vertex::ORBIT>("cool_attribute");
-	Attribute <int32, Vertex::ORBIT> vatt2 = this->cmap_.template get_attribute<int32, Vertex::ORBIT>("cool_attribute2");
+	Attribute <int32, Vertex::ORBIT> vatt1 = this->cmap_.template attribute<int32, Vertex::ORBIT>("cool_attribute");
+	Attribute <int32, Vertex::ORBIT> vatt2 = this->cmap_.template attribute<int32, Vertex::ORBIT>("cool_attribute2");
 
 	EXPECT_TRUE(this->cmap_.has_attribute(Vertex::ORBIT,"cool_attribute"));
 	this->cmap_.remove_attribute(vatt1);

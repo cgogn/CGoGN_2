@@ -418,7 +418,7 @@ public:
 	{
 		import_concrete<MAP>(filename);
 
-		vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
+		vertex_position_ = map_.template attribute<Vec3, Vertex::ORBIT>("position");
 		if (!vertex_position_.is_valid())
 		{
 			cgogn_log_error("import") << "Missing attribute position. Aborting.";
@@ -426,8 +426,8 @@ public:
 		}
 
 		adjacency_cache_.init();
-		scalar_field_ = map_.template get_attribute<Scalar, Vertex::ORBIT>("scalar_field_");
-		edge_metric_ = map_.template get_attribute<Scalar, Edge::ORBIT>("edge_metric");
+		scalar_field_ = map_.template attribute<Scalar, Vertex::ORBIT>("scalar_field_");
+		edge_metric_ = map_.template attribute<Scalar, Edge::ORBIT>("edge_metric");
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 		setSceneRadius(bb_.diag_size()/2.0);
@@ -477,7 +477,7 @@ public:
 		});
 
 		VertexAttribute<Scalar> boundary_field;
-		boundary_field = map_.template get_attribute<Scalar, Vertex::ORBIT>("boundary_field");
+		boundary_field = map_.template attribute<Scalar, Vertex::ORBIT>("boundary_field");
 
 		cgogn::topology::DistanceField<Scalar, MAP> distance_field(map_, adjacency_cache_, edge_metric_);
 		distance_field.distance_to_features(boundary_vertices, boundary_field);
@@ -504,7 +504,7 @@ public:
 		cgogn::topology::DistanceField<Scalar, MAP> distance_field(map_, adjacency_cache_, edge_metric_);
 
 		VertexAttribute<Scalar> boundary_field;
-		boundary_field = map_.template get_attribute<Scalar, Vertex::ORBIT>("boundary_field");
+		boundary_field = map_.template attribute<Scalar, Vertex::ORBIT>("boundary_field");
 
 		std::vector<Vertex> boundary_vertices;
 		map_.foreach_cell([&](Vertex v)
@@ -807,16 +807,16 @@ public:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 2>::type* = nullptr>
 	void compute_curvature(EdgeAttribute<Scalar>& edge_metric)
 	{
-		EdgeAttribute<Scalar> length = map_.template get_attribute<Scalar, Edge::ORBIT>("lenght");
-		EdgeAttribute<Scalar> edgeangle = map_.template get_attribute<Scalar, Edge::ORBIT>("edgeangle");
-		EdgeAttribute<Scalar> edgeaera = map_.template get_attribute<Scalar, Edge::ORBIT>("edgeaera");
+		EdgeAttribute<Scalar> length = map_.template attribute<Scalar, Edge::ORBIT>("lenght");
+		EdgeAttribute<Scalar> edgeangle = map_.template attribute<Scalar, Edge::ORBIT>("edgeangle");
+		EdgeAttribute<Scalar> edgeaera = map_.template attribute<Scalar, Edge::ORBIT>("edgeaera");
 
-		VertexAttribute<Scalar> kmax = map_.template get_attribute<Scalar, Vertex::ORBIT>("kmax");
-		VertexAttribute<Scalar> kmin = map_.template get_attribute<Scalar, Vertex::ORBIT>("kmin");
-		VertexAttribute<Vec3> vertex_normal = map_.template get_attribute<Vec3, Vertex::ORBIT>("vertex_normal");
-		VertexAttribute<Vec3> Kmax = map_.template get_attribute<Vec3, Vertex::ORBIT>("Kmax");
-		VertexAttribute<Vec3> Kmin = map_.template get_attribute<Vec3, Vertex::ORBIT>("Kmin");
-		VertexAttribute<Vec3> knormal = map_.template get_attribute<Vec3, Vertex::ORBIT>("knormal");
+		VertexAttribute<Scalar> kmax = map_.template attribute<Scalar, Vertex::ORBIT>("kmax");
+		VertexAttribute<Scalar> kmin = map_.template attribute<Scalar, Vertex::ORBIT>("kmin");
+		VertexAttribute<Vec3> vertex_normal = map_.template attribute<Vec3, Vertex::ORBIT>("vertex_normal");
+		VertexAttribute<Vec3> Kmax = map_.template attribute<Vec3, Vertex::ORBIT>("Kmax");
+		VertexAttribute<Vec3> Kmin = map_.template attribute<Vec3, Vertex::ORBIT>("Kmin");
+		VertexAttribute<Vec3> knormal = map_.template attribute<Vec3, Vertex::ORBIT>("knormal");
 
 		compute_length(length);
 
@@ -830,7 +830,7 @@ public:
 		cgogn::geometry::compute_curvature<Vec3>(map_, radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
 
 		//compute kmean
-		VertexAttribute<Scalar> kmean = map_.template get_attribute<Scalar, Vertex::ORBIT>("kmean");
+		VertexAttribute<Scalar> kmean = map_.template attribute<Scalar, Vertex::ORBIT>("kmean");
 
 		double min = std::numeric_limits<double>::max();
 		double max = std::numeric_limits<double>::lowest();
@@ -843,7 +843,7 @@ public:
 		});
 
 		//compute kgaussian
-		VertexAttribute<Scalar> kgaussian = map_.template get_attribute<Scalar, Vertex::ORBIT>("kgaussian");
+		VertexAttribute<Scalar> kgaussian = map_.template attribute<Scalar, Vertex::ORBIT>("kgaussian");
 
 		min = std::numeric_limits<double>::max();
 		max = std::numeric_limits<double>::lowest();
@@ -856,9 +856,9 @@ public:
 		});
 
 		//compute kindex
-		VertexAttribute<Scalar> k1 = map_.template get_attribute<Scalar, Vertex::ORBIT>("k1");
-		VertexAttribute<Scalar> k2 = map_.template get_attribute<Scalar, Vertex::ORBIT>("k2");
-		VertexAttribute<Scalar> kI = map_.template get_attribute<Scalar, Vertex::ORBIT>("kI");
+		VertexAttribute<Scalar> k1 = map_.template attribute<Scalar, Vertex::ORBIT>("k1");
+		VertexAttribute<Scalar> k2 = map_.template attribute<Scalar, Vertex::ORBIT>("k2");
+		VertexAttribute<Scalar> kI = map_.template attribute<Scalar, Vertex::ORBIT>("kI");
 
 		map_.foreach_cell([&](Vertex v)
 		{

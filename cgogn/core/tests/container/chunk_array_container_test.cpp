@@ -257,7 +257,7 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 	EXPECT_EQ(ca_cont.size(),14);
 
 //	std::cout << "=============================" << std::endl;
-//	ChunkArray<VEC3F>* data_v = ca_cont.get_attribute<VEC3F>("data_v");
+//	ChunkArray<VEC3F>* data_v = ca_cont.attribute<VEC3F>("data_v");
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //	{
 //		std::cout << i << " => ";
@@ -348,7 +348,7 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	ChunkArray<bool>* data_b = ca_cont.get_chunk_array<bool>("booleens");
 
-	//	ChunkArray<VEC3F>* data_v = ca_cont.get_attribute<VEC3F>("data_v");
+	//	ChunkArray<VEC3F>* data_v = ca_cont.attribute<VEC3F>("data_v");
 //	std::cout << "=============================" << std::boolalpha<<std::endl;
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //	{

@@ -69,9 +69,9 @@ public:
 		edge_weight_(weight),
 		distance_field_(map, cache, weight)
 	{
-		distance_to_A_ = map.template get_attribute<Scalar, Vertex::ORBIT>("__feature_A__");
-		distance_to_B_ = map.template get_attribute<Scalar, Vertex::ORBIT>("__feature_B__");
-		paths_ = map.template get_attribute<Vertex, Vertex::ORBIT>("__paths__");
+		distance_to_A_ = map.template attribute<Scalar, Vertex::ORBIT>("__feature_A__");
+		distance_to_B_ = map.template attribute<Scalar, Vertex::ORBIT>("__feature_B__");
+		paths_ = map.template attribute<Vertex, Vertex::ORBIT>("__paths__");
 	}
 
 	FeaturesFinder(MAP& map,
@@ -82,9 +82,9 @@ public:
 		distance_field_(map, cache)
 	{
 		edge_weight_ = distance_field_.edge_weight();
-		distance_to_A_ = map.template get_attribute<Scalar, Vertex::ORBIT>("__distance_to_A__");
-		distance_to_B_ = map.template get_attribute<Scalar, Vertex::ORBIT>("__distance_to_B__");
-		paths_ = map.template get_attribute<Vertex, Vertex::ORBIT>("__paths__");
+		distance_to_A_ = map.template attribute<Scalar, Vertex::ORBIT>("__distance_to_A__");
+		distance_to_B_ = map.template attribute<Scalar, Vertex::ORBIT>("__distance_to_B__");
+		paths_ = map.template attribute<Vertex, Vertex::ORBIT>("__paths__");
 	}
 
 	~FeaturesFinder()

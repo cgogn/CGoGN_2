@@ -64,11 +64,11 @@ protected:
 		darts_.reserve(NB_MAX);
 		std::srand(uint32(std::time(0)));
 
-		cmap_.get_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.get_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.get_attribute<int32, Face::ORBIT>("faces");
-		cmap_.get_attribute<int32, Volume::ORBIT>("volumes");
+		cmap_.attribute<int32, CDart::ORBIT>("darts");
+		cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.attribute<int32, Edge::ORBIT>("edges");
+		cmap_.attribute<int32, Face::ORBIT>("faces");
+		cmap_.attribute<int32, Volume::ORBIT>("volumes");
 	}
 
 	/**
@@ -287,9 +287,9 @@ TEST_F(CMap2Test, merge_incident_faces)
 
 TEST_F(CMap2Test, compact_map)
 {
-	CMap2::VertexAttribute<int32> att_v = cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
-	CMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge::ORBIT>("edges");
-	CMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face::ORBIT>("faces");
+	CMap2::VertexAttribute<int32> att_v = cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	CMap2::EdgeAttribute<int32> att_e = cmap_.attribute<int32, Edge::ORBIT>("edges");
+	CMap2::FaceAttribute<int32> att_f = cmap_.attribute<int32, Face::ORBIT>("faces");
 
 	for (uint32 i = 0; i < 100; ++i)
 	{
@@ -369,14 +369,14 @@ TEST_F(CMap2Test, merge_map)
 	using Volume = CMap2::Volume;
 
 	CMap2 map1;
-	CMap2::VertexAttribute<int32> att1_v = map1.get_attribute<int32, Vertex::ORBIT>("vertices");
-	CMap2::FaceAttribute<int32> att1_f = map1.get_attribute<int32, Face::ORBIT>("faces");
+	CMap2::VertexAttribute<int32> att1_v = map1.attribute<int32, Vertex::ORBIT>("vertices");
+	CMap2::FaceAttribute<int32> att1_f = map1.attribute<int32, Face::ORBIT>("faces");
 
 	CMap2 map2;
-	Attribute<int32, CDart::ORBIT> att2_d = map2.get_attribute<int32, CDart::ORBIT>("darts");
-	CMap2::VertexAttribute<int32> att2_v = map2.get_attribute<int32, Vertex::ORBIT>("vertices");
-	CMap2::EdgeAttribute<int32> att2_e = map2.get_attribute<int32, Edge::ORBIT>("edges");
-	CMap2::VolumeAttribute<int32> att2_w = map2.get_attribute<int32, Volume::ORBIT>("volumes");
+	Attribute<int32, CDart::ORBIT> att2_d = map2.attribute<int32, CDart::ORBIT>("darts");
+	CMap2::VertexAttribute<int32> att2_v = map2.attribute<int32, Vertex::ORBIT>("vertices");
+	CMap2::EdgeAttribute<int32> att2_e = map2.attribute<int32, Edge::ORBIT>("edges");
+	CMap2::VolumeAttribute<int32> att2_w = map2.attribute<int32, Volume::ORBIT>("volumes");
 
 	for (uint32 i = 0; i < 5; ++i)
 	{

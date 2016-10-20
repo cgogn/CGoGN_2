@@ -125,14 +125,14 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
+	vertex_position_ = map_.template attribute<Vec3, Vertex::ORBIT>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_normal_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("normal");
+	vertex_normal_ = map_.template attribute<Vec3, Vertex::ORBIT>("normal");
 
 // testing merge method
 //	Map2 map2;

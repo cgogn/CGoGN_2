@@ -59,11 +59,11 @@ protected:
 
 	void embed_map()
 	{
-		cmap_.get_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.get_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.get_attribute<int32, Face::ORBIT>("faces");
-		cmap_.get_attribute<int32, Volume::ORBIT>("volumes");
+		cmap_.attribute<int32, CDart::ORBIT>("darts");
+		cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.attribute<int32, Edge::ORBIT>("edges");
+		cmap_.attribute<int32, Face::ORBIT>("faces");
+		cmap_.attribute<int32, Volume::ORBIT>("volumes");
 	}
 };
 
