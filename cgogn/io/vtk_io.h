@@ -1582,8 +1582,6 @@ protected:
 		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
 		const std::vector<uint32>* cells_vec	= this->cells_.vec();
 
-		ChunkArray<VEC3>* pos = this->position_attribute();
-		cgogn_assert(pos != nullptr);
 		add_vtk_volumes(*cells_vec,*cell_types_vec);
 
 		return true;

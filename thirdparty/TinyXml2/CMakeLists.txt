@@ -10,6 +10,7 @@ if(MSVC)
 endif(MSVC)
 
 
+cgogn_reset_warning_level()
 
 add_library(${PROJECT_NAME} STATIC tinyxml2.cpp tinyxml2.h)
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS "TINYXML2_EXPORT")
