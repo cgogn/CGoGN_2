@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 #include <cgogn/core/utils/endian.h>
-
+#include <array>
 
 
 using namespace cgogn::numerics;
