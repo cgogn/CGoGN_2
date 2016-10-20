@@ -77,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -230,58 +230,57 @@ protected:
 	}
 
 public:
-
 	/*******************************************************************************
 	 * Attributes management
 	 *******************************************************************************/
 
-	inline bool has_attribute(Orbit orbit, const std::string& att_name)
+	/**
+	 * @brief has_attribute, tells if an attribute of type T  and Orbit orbit and name attribute_name already exists.
+	 * @warning Use carefully and remember that a Map cannot store two attributes whose name and orbit are identical (event if they have not the same type)
+	 */
+	template<typename T>
+	inline bool has_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		if (!is_embedded(orbit) || !this->attributes_[orbit].has_array(attribute_name))
+			return false;
+		const ChunkArrayGen* cag = this->attributes_[orbit].get_chunk_array(attribute_name);
+		return dynamic_cast<const ChunkArray<T>*>(cag) != nullptr;
+	}
+
+	/**
+	 * @brief has_attribute, tells if an attribute of Orbit orbit and name attribute_name already exists.
+	 */
+	inline bool has_attribute(Orbit orbit, const std::string& att_name) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		if (!is_embedded(orbit))
+			return false;
 		return this->attributes_[orbit].has_array(att_name);
 	}
 
 	/**
-	 * \brief add an attribute
-	 * @param attribute_name the name of the attribute to create
-	 * @return a handler to the created attribute
+	 * \brief Return an attribute handler
+	 * @param attribute_name the name of the attribute
+	 * @return a valid attribute (except if there was a previously added attribute on the same orbit with the same name but with a different type of data)
 	 */
 	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> add_attribute(const std::string& attribute_name)
+	inline Attribute<T, ORBIT> attribute(const std::string& attribute_name)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		if (!this->template is_embedded<ORBIT>())
 			create_embedding<ORBIT>();
-		ChunkArray<T>* ca = this->attributes_[ORBIT].template add_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(this, ca);
-	}
 
-	/**
-	 * @brief add an attribute, given a ref on an existing attribute
-	 * @param result_attribute, a reference to an attribute that will be overwritten
-	 * @param attribute_name the name of the attribute to create
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
-	}
-
-	/**
-	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		if (attribute_handler.is_valid())
+		ChunkArray<T>* ca(nullptr);
+		if (this->attributes_[ORBIT].has_array(attribute_name))
 		{
-			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
-			return;
+			ChunkArrayGen* cag = this->attributes_[ORBIT].get_chunk_array(attribute_name);
+			ca = dynamic_cast<ChunkArray<T>*>(cag);
+		} else {
+			ca = this->attributes_[ORBIT].template add_chunk_array<T>(attribute_name);
 		}
 
-		add_attribute(attribute_handler, attribute_name);
-		if (!attribute_handler.is_valid())
-			get_attribute(attribute_handler, attribute_name);
+		return Attribute<T, ORBIT>(this, ca);
 	}
 
 	/**
@@ -308,41 +307,6 @@ public:
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return this->attributes_[orbit].remove_chunk_array(att_name);
-	}
-
-	/**
-	* \brief search an attribute for a given orbit
-	* @param attribute_name attribute name
-	* @return an Attribute
-	*/
-	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
-	}
-
-	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
-	{
-		ah = get_attribute<T,ORBIT>(attribute_name);
-	}
-
-	template <typename T>
-	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
-	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[orbit].template get_chunk_array<T>(attribute_name);
-		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
-	}
-
-	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
-	{
-		ath = get_attribute<T>(orbit, attribute_name);
 	}
 
 	/**
@@ -491,7 +455,7 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		Attribute<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
+		Attribute<uint32, ORBIT> counter = attribute<uint32, ORBIT>("__tmp_counter");
 		for (uint32& i : counter) i = 0;
 
 		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
@@ -526,7 +490,7 @@ public:
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
-		Attribute<std::vector<CellType>, ORBIT> counter = add_attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
+		Attribute<std::vector<CellType>, ORBIT> counter = attribute<std::vector<CellType>, ORBIT>("__tmp_dart_per_emb");
 		bool result = true;
 
 		const ChunkArrayContainer<uint32>& container = this->attributes_[ORBIT];

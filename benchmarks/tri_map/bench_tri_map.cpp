@@ -81,9 +81,9 @@ static void BENCH_faces_normals_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		FaceAttribute<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
+		FaceAttribute<Vec3> face_normal = bench_map.attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 		state.ResumeTiming();
 
@@ -99,9 +99,9 @@ static void BENCH_vertices_normals_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttribute<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
+		VertexAttribute<Vec3> vertices_normal = bench_map.attribute<Vec3, VERTEX>("normal");
 		cgogn_assert(vertices_normal.is_valid());
 		state.ResumeTiming();
 
@@ -117,9 +117,9 @@ static void BENCH_faces_normals_tri(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tri_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tri_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TFaceAttribute<Vec3> face_normal = bench_tri_map.get_attribute<Vec3, TFACE>("normal");
+		TFaceAttribute<Vec3> face_normal = bench_tri_map.attribute<Vec3, TFACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 		state.ResumeTiming();
 
@@ -135,9 +135,9 @@ static void BENCH_vertices_normals_tri(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tri_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tri_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVertexAttribute<Vec3> vertices_normal = bench_tri_map.get_attribute<Vec3, TVERTEX>("normal");
+		TVertexAttribute<Vec3> vertices_normal = bench_tri_map.attribute<Vec3, TVERTEX>("normal");
 		cgogn_assert(vertices_normal.is_valid());
 		state.ResumeTiming();
 
@@ -153,9 +153,9 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
+		VertexAttribute<Vec3> vertex_position = bench_map.attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttribute<Vec3> vertex_position2 = bench_map.get_attribute<Vec3, VERTEX>("position2");
+		VertexAttribute<Vec3> vertex_position2 = bench_map.attribute<Vec3, VERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
 
 		state.ResumeTiming();
@@ -169,9 +169,9 @@ static void BENCH_vertices_filter_tri(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		state.PauseTiming();
-		TVertexAttribute<Vec3> vertex_position = bench_tri_map.get_attribute<Vec3, TVERTEX>("position");
+		TVertexAttribute<Vec3> vertex_position = bench_tri_map.attribute<Vec3, TVERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		TVertexAttribute<Vec3> vertex_position2 = bench_tri_map.get_attribute<Vec3, TVERTEX>("position2");
+		TVertexAttribute<Vec3> vertex_position2 = bench_tri_map.attribute<Vec3, TVERTEX>("position2");
 		cgogn_assert(vertex_position2.is_valid());
 
 		state.ResumeTiming();
@@ -202,14 +202,14 @@ int main(int argc, char** argv)
 		surfaceMesh = std::string(argv[1]);
 
 	cgogn::io::import_surface<Vec3>(bench_map, surfaceMesh);
-	bench_map.add_attribute<Vec3, FACE>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_map.add_attribute<Vec3, VERTEX>("position2");
+	bench_map.attribute<Vec3, FACE>("normal");
+	bench_map.attribute<Vec3, VERTEX>("normal");
+	bench_map.attribute<Vec3, VERTEX>("position2");
 
 	cgogn::io::import_surface<Vec3>(bench_tri_map, surfaceMesh);
-	bench_tri_map.add_attribute<Vec3, FACE>("normal");
-	bench_tri_map.add_attribute<Vec3, VERTEX>("normal");
-	bench_tri_map.add_attribute<Vec3, VERTEX>("position2");
+	bench_tri_map.attribute<Vec3, FACE>("normal");
+	bench_tri_map.attribute<Vec3, VERTEX>("normal");
+	bench_tri_map.attribute<Vec3, VERTEX>("position2");
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

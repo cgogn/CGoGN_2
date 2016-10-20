@@ -246,7 +246,6 @@ public:
 		return const_cast<const ChunkArrayGen*>(const_cast<Self*>(this)->get_chunk_array(name));
 	}
 
-
 	/**
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return

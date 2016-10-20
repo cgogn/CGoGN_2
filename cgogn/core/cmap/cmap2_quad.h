@@ -678,7 +678,7 @@ protected:
 	 * @brief close_map
 	 * @return the number of holes (filled)
 	 */
-	inline int32 close_map()
+	inline uint32 close_map()
 	{
 		uint32 nb_holes = 0;
 

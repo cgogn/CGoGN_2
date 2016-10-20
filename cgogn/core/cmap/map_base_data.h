@@ -71,9 +71,6 @@ public:
 	template <typename T> friend class Attribute_T;
 	template <typename T, Orbit ORBIT> friend class Attribute;
 
-	template <typename T>
-	using Attribute_T = cgogn::Attribute_T<T>;
-
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
 	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
@@ -295,7 +292,7 @@ protected:
 		std::advance(end, NB_UNKNOWN_THREADS);
 		auto res_it = std::find(thread_ids_.begin(), end, thread_id);
 		if (res_it != end)
-			return std::distance(thread_ids_.begin(), res_it);
+			return std::size_t(std::distance(thread_ids_.begin(), res_it));
 
 		return add_unknown_thread();
 	}
@@ -309,7 +306,7 @@ protected:
 		const auto end = thread_ids_.end();
 		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
 		if (it_lower_bound != end)
-			return std::distance(thread_ids_.begin(), it_lower_bound);
+			return std::size_t(std::distance(thread_ids_.begin(), it_lower_bound));
 
 		return unknown_thread_index(std::this_thread::get_id());
 	}

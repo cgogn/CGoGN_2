@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
 
-		VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Map3::Vertex::ORBIT>("position");
+		VertexAttribute<Vec3> vertex_position = map.attribute<Vec3, Map3::Vertex::ORBIT>("position");
 
 //		map.enable_topo_cache<Map3::Volume::ORBIT>();
 //		map.enable_topo_cache<Map3::Face::ORBIT>();

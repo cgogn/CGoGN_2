@@ -86,14 +86,14 @@ TEST_F(CMap3Test, cut_edge)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
@@ -125,14 +125,14 @@ TEST_F(CMap3Test, cut_face)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	cmap_.cut_face(cmap_.phi2(p1), cmap_.phi<211>(p1));
 	cmap_.cut_face(p3, cmap_.phi<11>(p3));
@@ -151,14 +151,14 @@ TEST_F(CMap3Test, cut_volume)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	std::vector<Dart> path;
 	Dart d = p1; path.push_back(d);
@@ -190,14 +190,14 @@ TEST_F(CMap3Test, merge_incident_volumes)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	cmap_.merge_incident_volumes(Face(p1));
 	cmap_.merge_incident_volumes(Face(p3));
@@ -222,14 +222,14 @@ TEST_F(CMap3Test, merge)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 25u);
@@ -253,8 +253,8 @@ TEST_F(CMap3Test, merge)
 
 	mbuild2.close_map();
 
-	map3.add_attribute<int32, Vertex::ORBIT>("vertices");
-	map3.add_attribute<int32, Face::ORBIT>("faces");
+	map3.attribute<int32, Vertex::ORBIT>("vertices");
+	map3.attribute<int32, Face::ORBIT>("faces");
 
 	EXPECT_TRUE(map3.check_map_integrity());
 	EXPECT_EQ(map3.nb_cells<Vertex::ORBIT>(), 31u);
@@ -291,14 +291,14 @@ TEST_F(CMap3Test, merge_map2)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.attribute<int32, CDart::ORBIT>("darts");
+	cmap_.attribute<int32, Vertex2::ORBIT>("vertices2");
+	cmap_.attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.attribute<int32, Edge2::ORBIT>("edges2");
+	cmap_.attribute<int32, Edge::ORBIT>("edges");
+	cmap_.attribute<int32, Face2::ORBIT>("faces2");
+	cmap_.attribute<int32, Face::ORBIT>("faces");
+	cmap_.attribute<int32, Volume::ORBIT>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 25u);
@@ -327,8 +327,8 @@ TEST_F(CMap3Test, merge_map2)
 	mbuild2.close_map();
 
 	// Embed the map
-	map2.add_attribute<int32, CMap2::Vertex::ORBIT>("vertices");
-	map2.add_attribute<int32, CMap2::Face::ORBIT>("faces");
+	map2.attribute<int32, CMap2::Vertex::ORBIT>("vertices");
+	map2.attribute<int32, CMap2::Face::ORBIT>("faces");
 
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(map2.nb_cells<CMap2::Vertex::ORBIT>(), 5u);
