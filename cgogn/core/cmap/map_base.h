@@ -77,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
