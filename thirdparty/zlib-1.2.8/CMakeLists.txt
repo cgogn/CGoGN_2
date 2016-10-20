@@ -7,6 +7,8 @@ project(Zlib
 	VERSION 1.2.8
 	LANGUAGES C)
 
+cgogn_reset_warning_level()
+
 set(VERSION "1.2.8")
 
 option(ASM686 "Enable building i686 assembly implementation")

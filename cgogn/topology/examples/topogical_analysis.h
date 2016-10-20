@@ -80,7 +80,7 @@ public:
 		map_render_(nullptr),
 		features_drawer_(nullptr),
 		features_renderer_(nullptr),
-		features_proximity(0.3f),
+		features_proximity(0.3),
 		nb_(0u),
 		map_rendering_(true),
 		vertices_rendering_(false),

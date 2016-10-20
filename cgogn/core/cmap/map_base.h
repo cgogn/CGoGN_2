@@ -911,7 +911,6 @@ public:
 	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -938,7 +937,6 @@ public:
 	{
 		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{

@@ -6,6 +6,9 @@ option(BENCHMARK_ENABLE_LTO "Enable link time optimisation of the benchmark libr
 # Make sure we can import out CMake functions
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+cgogn_reset_warning_level()
+
+
 ## Read the git tags to determine the project version
 #include(GetGitVersion)
 #get_git_version(GIT_VERSION)
