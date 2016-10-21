@@ -77,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -257,31 +257,17 @@ public:
 	}
 
 	/**
-	 * @brief add an attribute, given a ref on an existing attribute
-	 * @param result_attribute, a reference to an attribute that will be overwritten
-	 * @param attribute_name the name of the attribute to create
-	 */
+	* \brief search an attribute for a given orbit
+	* @param attribute_name attribute name
+	* @return an Attribute
+	*/
 	template <typename T, Orbit ORBIT>
-	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
-	}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-	/**
-	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		if (attribute_handler.is_valid())
-		{
-			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
-			return;
-		}
-
-		add_attribute(attribute_handler, attribute_name);
-		if (!attribute_handler.is_valid())
-			get_attribute(attribute_handler, attribute_name);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
+		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
 	}
 
 	/**
@@ -310,26 +296,6 @@ public:
 		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
-	/**
-	* \brief search an attribute for a given orbit
-	* @param attribute_name attribute name
-	* @return an Attribute
-	*/
-	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
-	}
-
-	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
-	{
-		ah = get_attribute<T,ORBIT>(attribute_name);
-	}
-
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
@@ -339,11 +305,6 @@ public:
 		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
 	}
 
-	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
-	{
-		ath = get_attribute<T>(orbit, attribute_name);
-	}
 
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.

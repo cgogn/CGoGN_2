@@ -83,7 +83,7 @@ public:
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
-		map.add_attribute(vertex_type_, name);
+		vertex_type_ = map.template add_attribute<CriticalPoint::Type, Vertex::ORBIT>(name);
 	}
 
 	~ScalarField()

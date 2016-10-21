@@ -72,7 +72,7 @@ public:
 		cache_(cache),
 		intern_edge_weight_(true)
 	{
-		map.add_attribute(edge_weight_, "__edge_weight__");
+		edge_weight_ = map.template add_attribute<Scalar, Edge::ORBIT>("__edge_weight__");
 
 		map.foreach_cell([&](Edge e)
 		{
