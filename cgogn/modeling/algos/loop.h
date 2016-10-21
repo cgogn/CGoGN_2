@@ -45,7 +45,7 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 
-	typename MAP::template VertexAttribute<VEC3> position2 = map.template add_attribute<VEC3, Vertex::ORBIT>("position_tempo_loop");
+	typename MAP::template VertexAttribute<VEC3> position2 = map.template add_attribute<VEC3, Vertex>("position_tempo_loop");
 
 	DartMarker<MAP> initial_edge_marker(map);
 

@@ -94,7 +94,7 @@ protected:
 		if (!this->position_attribute())
 			return;
 
-		vertices_of_volumes_ = map.template add_attribute<std::vector<uint32>, Volume::ORBIT>("vertices_of_volume_volume_export");
+		vertices_of_volumes_ = map.template add_attribute<std::vector<uint32>, Volume>("vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
 		{

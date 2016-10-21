@@ -296,6 +296,27 @@ public:
 		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
+	/**
+	 * \brief Second version of add_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
+	{
+		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
+	}
+
+	/**
+	 * \brief Second version of get_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> get_attribute(const std::string& attribute_name) const
+	{
+		return this->get_attribute<T, CellType::ORBIT>(attribute_name);
+	}
+
+	/**
+	 * \brief Third version of get_attribute taking a single type template parameter T and returning an Attribute_T<T>
+	 */
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
