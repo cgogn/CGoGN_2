@@ -46,8 +46,8 @@ struct CriticalPoint
 		UNKNOWN
 	};
 
-	unsigned int n_;
 	CriticalPoint::Type v_;
+	unsigned int n_;
 
 	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
 	{}
