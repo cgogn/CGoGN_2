@@ -10,6 +10,7 @@ set(SOURCE_FILES
 
 	container/chunk_array_container_test.cpp
 
+	cmap/mapbase_test.cpp
 	cmap/cmap0_topo_test.cpp
 	cmap/cmap0_test.cpp
 	cmap/cmap1_topo_test.cpp
@@ -24,6 +25,7 @@ set(SOURCE_FILES
 	cmap/cmap3tetra_test.cpp
 	cmap/cmap3hexa_test.cpp
 
+	utils/endian_test.cpp
 	utils/name_types_test.cpp
 
 	main.cpp
