@@ -177,28 +177,28 @@ TEST_F(CMap3TopoTest, add_attribute)
 {
 	add_closed_surfaces();
 
-	add_attribute<int32, CDart::ORBIT>("darts");
+	add_attribute<int32, CDart>("darts");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex2::ORBIT>("vertices2");
+	add_attribute<int32, Vertex2>("vertices2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge2::ORBIT>("edges2");
+	add_attribute<int32, Edge2>("edges2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge::ORBIT>("edges");
+	add_attribute<int32, Edge>("edges");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face2::ORBIT>("faces2");
+	add_attribute<int32, Face2>("faces2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Face>("faces");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Volume::ORBIT>("Volumes");
+	add_attribute<int32, Volume>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -603,11 +603,11 @@ TEST_F(CMap3TopoTest, close_map)
 //	add_closed_surfaces();
 
 //	// add attributes to initialize the indexation
-//	add_attribute<int, CDart::ORBIT>("darts");
-//	add_attribute<int, Vertex::ORBIT>("vertices");
-//	add_attribute<int, Edge::ORBIT>("edges");
-//	add_attribute<int, Face::ORBIT>("faces");
-//	add_attribute<int, Volume::ORBIT>("volumes");
+//	add_attribute<int, CDart>("darts");
+//	add_attribute<int, Vertex>("vertices");
+//	add_attribute<int, Edge>("edges");
+//	add_attribute<int, Face>("faces");
+//	add_attribute<int, Volume>("volumes");
 //	EXPECT_TRUE(check_map_integrity());
 
 //	// create some random holes (full removal or partial unsewing of faces)

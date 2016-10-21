@@ -56,9 +56,9 @@ int test1(MAP& map)
 	using Face = typename MAP::Face;
 
 	// add an attribute on vertex of map with
-	typename MAP::template VertexAttribute<float32> ah = map.template add_attribute<float32, Vertex::ORBIT>("floats");
+	typename MAP::template VertexAttribute<float32> ah = map.template add_attribute<float32, Vertex>("floats");
 
-	typename MAP::template FaceAttribute<float32> ahf = map.template add_attribute<float32, Face::ORBIT>("floats");
+	typename MAP::template FaceAttribute<float32> ahf = map.template add_attribute<float32, Face>("floats");
 
 	// get attribute and change type (dangerous!)
 	typename MAP::template VertexAttribute<int32> ahf2 = map.template get_attribute_force_type<int32,float32, Vertex::ORBIT>("floats");

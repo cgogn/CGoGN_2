@@ -89,7 +89,7 @@ TEST_F(CMap0TopoTest, random_map_generators)
 TEST_F(CMap0TopoTest, add_attribute)
 {
 	add_vertices(NB_MAX);
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

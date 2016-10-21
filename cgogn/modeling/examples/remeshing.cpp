@@ -28,6 +28,6 @@ int main(int argc, char** argv)
 
 	cgogn::io::import_surface<Vec3>(map, surface_mesh);
 
-	VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Vertex::ORBIT>("position");
+	VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Vertex>("position");
 	cgogn::modeling::pliant_remeshing<Vec3>(map, vertex_position);
 }

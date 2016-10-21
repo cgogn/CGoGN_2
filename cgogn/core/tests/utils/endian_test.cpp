@@ -21,59 +21,63 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
-#define CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
+#include <gtest/gtest.h>
+#include <cgogn/core/utils/endian.h>
+#include <array>
 
-#include <cgogn/core/utils/numerics.h>
-#include <iostream>
-namespace cgogn
+
+using namespace cgogn::numerics;
+
+TEST(EndianTest, swap16)
 {
+	const uint16 n(0x0401); // n = 1025
+	const uint16 swapped = cgogn::swap_endianness(n);
+	const uint16 res(0x0104);
+	EXPECT_EQ(swapped, res);
+}
 
-namespace topology
+TEST(EndianTest, swap32)
 {
+	const uint32 n(0x00020804 ); // n = 133124
+	const uint32 swapped = cgogn::swap_endianness(n);
+	const uint32 res(0x04080200);
+	EXPECT_EQ(swapped, res);
+}
 
-
-struct CriticalPoint
+TEST(EndianTest, swap64)
 {
-	enum Type : uint32
-	{
-		REGULAR = 0,
-		MAXIMUM,
-		MINIMUM,
-		SADDLE,		// SADDLE for 2-manifold
-		SADDLE1,	// 1-SADDLE for 3-manifold
-		SADDLE2,	// 2-SADDLE for 3-manifold
-		UNKNOWN
-	};
+	const uint64 n(0x0000010000040880); // n =  1 099 511 892 096
+	const uint64 swapped = cgogn::swap_endianness(n);
+	const uint64 res(0x8008040000010000);
+	EXPECT_EQ(swapped, res);
+}
 
-	CriticalPoint::Type v_;
-	unsigned int n_;
+TEST(EndianTest, swap_array)
+{
+	std::array<uint16, 3> arr16;
+	std::array<uint32, 3> arr32;
+	std::array<uint64, 3> arr64;
+	arr16.fill(0x0401);
+	arr32.fill(0x00020804);
+	arr64.fill(0x0000010000040880);
 
-	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
-	{}
+	const auto& swapped16 = cgogn::swap_endianness(arr16);
+	const auto& swapped32 = cgogn::swap_endianness(arr32);
+	const auto& swapped64 = cgogn::swap_endianness(arr64);
 
-	inline CriticalPoint(CriticalPoint::Type v, uint32 n) : v_(v), n_(n)
-	{}
+	const uint16 res16(0x0104);
+	const uint32 res32(0x04080200);
+	const uint64 res64(0x8008040000010000);
 
-	inline friend std::ostream& operator<<(std::ostream& o, CriticalPoint cp)
-	{
-		o << cp.n_ << ' ' << uint32(cp.v_);
-		return o;
-	}
+	EXPECT_EQ(swapped16[0], res16);
+	EXPECT_EQ(swapped16[1], swapped16[0]);
+	EXPECT_EQ(swapped16[2], swapped16[0]);
 
-	inline friend std::istream& operator>>(std::istream& is, CriticalPoint cp)
-	{
-		is >> cp.n_;
-		uint32 crit_point_type;
-		is >> crit_point_type;
-		cp.v_ = CriticalPoint::Type(crit_point_type);
-		return is;
-	}
+	EXPECT_EQ(swapped32[0], res32);
+	EXPECT_EQ(swapped32[1], swapped32[0]);
+	EXPECT_EQ(swapped32[2], swapped32[0]);
 
-};
-
-} // namespace topology
-
-} // namespace cgogn
-
-#endif // CGOGN_TOPOLOGY_TYPES_CRITICAL_POINT_H_
+	EXPECT_EQ(swapped64[0], res64);
+	EXPECT_EQ(swapped64[1], swapped64[0]);
+	EXPECT_EQ(swapped64[2], swapped64[0]);
+}

@@ -94,7 +94,7 @@ protected:
 		if (!this->position_attribute())
 			return;
 
-		map.add_attribute(vertices_of_volumes_, "vertices_of_volume_volume_export");
+		vertices_of_volumes_ = map.template add_attribute<std::vector<uint32>, Volume>("vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
@@ -122,11 +122,11 @@ protected:
 		const auto& ids = this->indices_;
 		map.foreach_cell([&] (Volume w)
 		{
-			int32 nb_vert{0u};
+			uint32 nb_vert{0u};
 			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
 			Dart it = w.dart;
 
-			std::vector<int32>& vertices = vertices_of_volumes_[w];
+			std::vector<uint32>& vertices = vertices_of_volumes_[w];
 
 			if (nb_vert == 4u)
 			{
@@ -252,7 +252,7 @@ protected:
 		return uint32(this->cell_cache_->template size<Vertex>());
 	}
 
-	inline std::vector<int32> const & vertices_of_volumes(Volume w) const
+	inline std::vector<uint32> const & vertices_of_volumes(Volume w) const
 	{
 		return vertices_of_volumes_[w];
 	}
@@ -273,7 +273,7 @@ private:
 	{
 		Inherit::reset();
 		if (vertices_of_volumes_.is_valid())
-			vertices_of_volumes_.set_all_values(std::vector<int32>());
+			vertices_of_volumes_.set_all_values(std::vector<uint32>());
 		nb_tetras_ = 0u;
 		nb_pyramids_ = 0u;
 		nb_triangular_prisms_ = 0u;
@@ -281,7 +281,7 @@ private:
 		volume_attributes_.clear();
 	}
 
-	Attribute<std::vector<int32>, Volume::ORBIT> vertices_of_volumes_;
+	Attribute<std::vector<uint32>, Volume::ORBIT> vertices_of_volumes_;
 	uint32 nb_tetras_;
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
