@@ -291,9 +291,14 @@ public:
 		return &data_;
 	}
 
-	inline std::vector<T> const * vec() const
+	inline const std::vector<T>& vec() const
 	{
-		return &data_;
+		return data_;
+	}
+
+	inline std::vector<T>&  vec()
+	{
+		return data_;
 	}
 
 	virtual uint32 nb_components() const override
