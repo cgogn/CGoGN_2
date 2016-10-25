@@ -10,8 +10,15 @@ find_package(tinyxml2 REQUIRED)
 find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(SOURCE_FILES
-	import_test.cpp
 	main.cpp
+	vtk_import_test.cpp
+	medit_import_test.cpp
+	msh_import_test.cpp
+	obj_import_test.cpp
+	off_import_test.cpp
+	ply_import_test.cpp
+	tet_import_test.cpp
+	vtk_import_test.cpp
 )
 
 add_definitions("-DCGOGN_TEST_MESHES_PATH=${CMAKE_SOURCE_DIR}/data/meshes/")

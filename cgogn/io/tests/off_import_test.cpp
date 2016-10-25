@@ -35,57 +35,17 @@ using Map3 = cgogn::CMap3;
 
 const std::string mesh_path(DEFAULT_MESH_PATH);
 
-TEST(ImportTest, vtk_legacy_surface_import)
+TEST(ImportTest, off_surface_import)
 {
 	Map2 map2;
-	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl.vtk");
+	cgogn::io::import_surface<Vec3>(map2, mesh_path + "off/socket.off");
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
-	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
 	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
 	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
 
 	EXPECT_TRUE(pos.is_valid());
-	EXPECT_TRUE(normal.is_valid());
 	EXPECT_TRUE(map2.check_map_integrity());
-	EXPECT_TRUE(map2.check_embedding_integrity());
-	EXPECT_EQ(nbv, 706u);
-	EXPECT_EQ(nbf, 1408u);
+	EXPECT_EQ(nbv, 836u);
+	EXPECT_EQ(nbf, 1696u);
 }
-
-TEST(ImportTest, vtk_legacy_bin_surface_import)
-{
-	Map2 map2;
-	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl_bin.vtk");
-
-	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
-	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
-	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
-	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
-
-	EXPECT_TRUE(pos.is_valid());
-	EXPECT_TRUE(normal.is_valid());
-	EXPECT_TRUE(map2.check_map_integrity());
-	EXPECT_TRUE(map2.check_embedding_integrity());
-	EXPECT_EQ(nbv, 706u);
-	EXPECT_EQ(nbf, 1408u);
-}
-
-TEST(ImportTest, vtk_vtp_surface_import)
-{
-	Map2 map2;
-	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl.vtp");
-
-	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
-	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
-	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
-	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
-
-	EXPECT_TRUE(pos.is_valid());
-	EXPECT_TRUE(normal.is_valid());
-	EXPECT_TRUE(map2.check_map_integrity());
-	EXPECT_TRUE(map2.check_embedding_integrity());
-	EXPECT_EQ(nbv, 706u);
-	EXPECT_EQ(nbf, 1408u);
-}
-
