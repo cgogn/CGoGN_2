@@ -103,8 +103,6 @@ protected:
 		if (!ok)
 			return false;
 
-		this->msh_add_position_attribute();
-
 		if (this->version_number() == "1.0")
 			return this->import_legacy_msh_file(fp);
 		else
@@ -122,7 +120,6 @@ protected:
 	}
 
 	virtual ChunkArray<VEC3>* msh_position_attribute() = 0;
-	virtual void msh_add_position_attribute() = 0;
 	virtual uint32 msh_insert_line_vertex_container() = 0;
 	virtual void msh_clear() = 0;
 	virtual void msh_reserve(uint32 n) = 0;
@@ -492,16 +489,10 @@ protected:
 		return this->import_msh_file(filename);
 	}
 
-
 	// MshIO interface
 	virtual ChunkArray<VEC3>*msh_position_attribute() override
 	{
 		return this->position_attribute();
-	}
-
-	virtual void msh_add_position_attribute() override
-	{
-		(void) this->add_position_attribute();
 	}
 
 	virtual uint32 msh_insert_line_vertex_container() override
@@ -564,8 +555,6 @@ protected:
 		if (!ok)
 			return false;
 
-		this->add_position_attribute();
-
 		if (this->version_number() == "1.0")
 			return this->import_legacy_msh_file(fp);
 		else
@@ -587,11 +576,6 @@ protected:
 	virtual ChunkArray<VEC3>*msh_position_attribute() override
 	{
 		return this->position_attribute();
-	}
-
-	virtual void msh_add_position_attribute() override
-	{
-		(void) this->add_position_attribute();
 	}
 
 	virtual uint32 msh_insert_line_vertex_container() override

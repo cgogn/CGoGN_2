@@ -62,7 +62,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		ChunkArray<VEC3>* normal = this->face_attributes_.template add_chunk_array<VEC3>("normal");
 		std::string word;
 		fp >> word;

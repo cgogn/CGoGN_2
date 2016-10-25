@@ -67,7 +67,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		ChunkArray<VEC3>* color = nullptr;
 		if (pid.has_colors())
 			color = this->vertex_attributes_.template add_chunk_array<VEC3>("color");

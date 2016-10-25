@@ -60,7 +60,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		std::string line, tag;
 

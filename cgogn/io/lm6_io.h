@@ -74,7 +74,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
@@ -185,7 +185,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);

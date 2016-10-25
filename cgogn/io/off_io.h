@@ -84,7 +84,7 @@ protected:
 		this->reserve(nb_faces);
 
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
