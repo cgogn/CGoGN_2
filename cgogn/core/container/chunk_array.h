@@ -106,8 +106,11 @@ public:
 			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
 			return false;
 		}
-
+		this->external_refs_.swap(ca->external_refs_);
+		this->name_.swap(ca->name_);
+		this->type_name_.swap(ca->type_name_);
 		table_data_.swap(ca->table_data_);
+
 		return true;
 	}
 
@@ -530,7 +533,9 @@ public:
 			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
 			return false;
 		}
-
+		this->external_refs_.swap(ca->external_refs_);
+		this->name_.swap(ca->name_);
+		this->type_name_.swap(ca->type_name_);
 		table_data_.swap(ca->table_data_);
 		return true;
 	}
