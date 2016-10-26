@@ -32,6 +32,7 @@ namespace cgogn
 
 namespace topology
 {
+
 /**
  * class ScalarField : support topological analysis of scalar fields defined on a manifold.
  *
@@ -69,6 +70,7 @@ class ScalarField
 	using VolumeMarker = typename MAP::template CellMarker<Volume::ORBIT>;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ScalarField);
 
 	ScalarField(MAP& map,
@@ -81,7 +83,7 @@ public:
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
-		map.add_attribute(vertex_type_, name);
+		vertex_type_ = map.template add_attribute<CriticalPoint::Type, Vertex>(name);
 	}
 
 	~ScalarField()
@@ -175,7 +177,7 @@ private:
 	/**
 	 * @brief Count the number of connected components in Link+(v) or Link-(v)
 	 * @param link the set of vertices that belong to the link
-+	 * @param link_marker a marker that should be set for the initial set of vertices
+	 * @param link_marker a marker that should be set for the initial set of vertices
 	 * @return the number of connected components
 	 * The algorithm traverses the connected components of Link(v) through adjacent edges.
 	 * The traversal are restricted to marked vertices (i.e. to Link+ or Link-).
@@ -529,6 +531,7 @@ private:
 	}
 
 public:
+
 	void extract_level_sets(std::vector<Edge>& level_lines)
 	{
 		extract_level_sets<MAP>(level_lines);
@@ -734,7 +737,7 @@ public:
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
-		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex>("manifold_id");
 
 		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
 		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)
@@ -803,7 +806,7 @@ public:
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
-		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex>("manifold_id");
 
 		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
 		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)
@@ -869,6 +872,7 @@ public:
 	}
 
 private:
+
 	MAP& map_;
 	AdjacencyCache<MAP> cache_;
 	VertexAttribute<Scalar> scalar_field_;
@@ -878,14 +882,13 @@ private:
 	std::vector<Vertex> maxima_;
 	std::vector<Vertex> minima_;
 	std::vector<Vertex> saddles_;
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
-extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3>;
+extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
 
 } // namespace topology

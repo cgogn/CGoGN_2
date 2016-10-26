@@ -29,8 +29,8 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap1_T : public CMap0_T<MAP_TRAITS, MAP_TYPE>
+template <typename MAP_TYPE>
+class CMap1_T : public CMap0_T<MAP_TYPE>
 {
 public:
 
@@ -38,29 +38,26 @@ public:
 
 	static const uint8 PRIM_SIZE = 1;
 
-	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE ;
-	using Inherit = CMap0_T<MAP_TRAITS, MAP_TYPE>;
-	using Self = CMap1_T<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = CMap0_T<MAP_TYPE>;
+	using Self = CMap1_T<MAP_TYPE>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	friend class MapBase<MAP_TYPE>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using Vertex	= typename Inherit::Vertex;
-	using Face		= Cell<Orbit::PHI1>;
+	using Vertex = typename Inherit::Vertex;
+	using Face   = Cell<Orbit::PHI1>;
 
 	using Boundary = Vertex;
 	using ConnectedComponent = Face;
 
+	template <typename T>
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 	using typename Inherit::ChunkArrayGen;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
 	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
@@ -147,7 +144,7 @@ protected:
 	/**
 	 * @brief Check the integrity of a boundary dart
 	 * @param d the dart to check
-	 * @return true if the bondary constraints are locally statisfied
+	 * @return true if the boundary constraints are locally statisfied
 	 * No boundary dart is accepted.
 	 */
 	inline bool check_boundary_integrity(Dart d) const
@@ -445,6 +442,28 @@ public:
 	}
 
 	/*******************************************************************************
+	 * Boundary information
+	 *******************************************************************************/
+
+	template <Orbit ORBIT>
+	inline bool is_boundary_cell(Cell<ORBIT> c) const
+	{
+		switch (ORBIT)
+		{
+			case Orbit::DART: return this->is_boundary(c.dart); break;
+			case Orbit::PHI1: return false; break;
+			case Orbit::PHI2:
+			case Orbit::PHI21:
+			case Orbit::PHI1_PHI2:
+			case Orbit::PHI1_PHI3:
+			case Orbit::PHI2_PHI3:
+			case Orbit::PHI21_PHI31:
+			case Orbit::PHI1_PHI2_PHI3:
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
+		}
+	}
+
+	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
 
@@ -474,10 +493,10 @@ public:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2:
+			case Orbit::PHI21:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI2_PHI3:
-			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
 			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
@@ -512,10 +531,10 @@ public:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
 			case Orbit::PHI2:
+			case Orbit::PHI21:
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI2_PHI3:
-			case Orbit::PHI21:
 			case Orbit::PHI21_PHI31:
 			case Orbit::PHI1_PHI2_PHI3:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
@@ -571,26 +590,23 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct CMap1Type
 {
-	using TYPE = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
+	using TYPE = CMap1_T<CMap1Type>;
 };
 
-template <typename MAP_TRAITS>
-using CMap1 = CMap1_T<MAP_TRAITS, CMap1Type<MAP_TRAITS>>;
+using CMap1 = CMap1_T<CMap1Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
-extern template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
+extern template class CGOGN_CORE_API DartMarker<CMap1>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap1>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1>;
+extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
 
 } // namespace cgogn

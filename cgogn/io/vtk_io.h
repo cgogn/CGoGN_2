@@ -841,7 +841,7 @@ private:
 	}
 };
 
-template <uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
+template <uint32 PRIM_SIZE, typename VEC3>
 class VtkIO
 {
 public:
@@ -853,10 +853,10 @@ public:
 		POLYDATA
 	};
 
-	using Self = VtkIO<DEFAULT_CHUNK_SIZE, PRIM_SIZE, VEC3>;
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
+	using Self = VtkIO<PRIM_SIZE, VEC3>;
+	using DataInputGen = cgogn::io::DataInputGen;
 	template <typename T>
-	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
+	using DataInput = cgogn::io::DataInput<PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
 	inline VtkIO() {}
@@ -1372,14 +1372,14 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class VtkSurfaceImport : public VtkIO<CMap2::PRIM_SIZE, VEC3>, public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = VtkSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = VtkSurfaceImport<VEC3>;
+	using Inherit_Vtk = VtkIO<CMap2::PRIM_SIZE, VEC3>;
+	using Inherit_Import = SurfaceFileImport<VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1504,14 +1504,14 @@ private:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class VtkVolumeImport : public VtkIO<CMap3::PRIM_SIZE, VEC3>, public VolumeFileImport<VEC3>
 {
 public:
 
-	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
-	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using Self = VtkVolumeImport<VEC3>;
+	using Inherit_Vtk = VtkIO<CMap3::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeFileImport<VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1582,8 +1582,6 @@ protected:
 		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
 		const std::vector<uint32>* cells_vec	= this->cells_.vec();
 
-		ChunkArray<VEC3>* pos = this->position_attribute();
-		cgogn_assert(pos != nullptr);
 		add_vtk_volumes(*cells_vec,*cell_types_vec);
 
 		return true;
@@ -1662,17 +1660,17 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
-extern template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API VtkVolumeExport<CMap3>;
+extern template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
 
 } // namespace io

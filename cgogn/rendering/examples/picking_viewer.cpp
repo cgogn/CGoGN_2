@@ -46,17 +46,17 @@
 
 using namespace cgogn::numerics;
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
-
 class Viewer : public QOGLViewer
 {
 public:
+
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
@@ -69,9 +69,8 @@ public:
 
 	virtual ~Viewer();
 
-
-
 private:
+
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
 
 	QMatrix4x4 proj_;
@@ -96,17 +95,15 @@ private:
 	int32 cell_picking;
 };
 
-
 //
 // IMPLEMENTATION
 //
-
 
 void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
@@ -192,7 +189,6 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 	}
 	QOGLViewer::keyPressEvent(ev);
 }
-
 
 void Viewer::mousePressEvent(QMouseEvent* event)
 {

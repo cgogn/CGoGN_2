@@ -38,7 +38,7 @@
 using namespace cgogn::numerics;
 
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 Map2 bench_map;
 
 using Vertex = Map2::Vertex;
@@ -54,8 +54,7 @@ template <typename T>
 using FaceAttribute = Map2::FaceAttribute<T>;
 
 
-
-using TMap2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
+using TMap2 = cgogn::CMap2Tri;
 TMap2 bench_tri_map;
 
 using TVertex = TMap2::Vertex;
@@ -75,9 +74,6 @@ const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
-
-
-
 
 
 static void BENCH_faces_normals_poly(benchmark::State& state)
@@ -168,7 +164,6 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 	}
 }
 
-
 static void BENCH_vertices_filter_tri(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -185,14 +180,12 @@ static void BENCH_vertices_filter_tri(benchmark::State& state)
 	}
 }
 
-
 BENCHMARK(BENCH_faces_normals_poly);
 BENCHMARK(BENCH_faces_normals_tri);
 BENCHMARK(BENCH_vertices_normals_poly);
 BENCHMARK(BENCH_vertices_normals_tri);
 BENCHMARK(BENCH_vertices_filter_poly)->UseRealTime();
 BENCHMARK(BENCH_vertices_filter_tri)->UseRealTime();
-
 
 int main(int argc, char** argv)
 {
@@ -217,7 +210,6 @@ int main(int argc, char** argv)
 	bench_tri_map.add_attribute<Vec3, FACE>("normal");
 	bench_tri_map.add_attribute<Vec3, VERTEX>("normal");
 	bench_tri_map.add_attribute<Vec3, VERTEX>("position2");
-
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

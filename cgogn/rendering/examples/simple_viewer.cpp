@@ -53,9 +53,9 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
+//using Map2 = cgogn::CMap2Tri;
+//using Map2 = cgogn::CMap2Quad;
 
 
 using Vec3 = Eigen::Vector3d;
@@ -123,14 +123,14 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	map_.add_attribute(vertex_normal_, "normal");
+	vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
 
 // testing merge method
 //	Map2 map2;

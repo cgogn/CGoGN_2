@@ -46,8 +46,8 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 	res.reserve(64);
 
 	// zlib init
-	int32 ret;
 	z_stream zstream;
+	int32 ret;
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -57,14 +57,14 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)));
+		buffer_size = deflateBound(&zstream, static_cast<std::size_t>(std::min(chunk_size, size)));
 
-		zstream.avail_in = static_cast<uLong>(std::min(chunk_size, size));
+		zstream.avail_in = static_cast<uInt>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
 		zstream.next_in = input;
 		input += zstream.avail_in;
 		res.emplace_back(buffer_size);
-		zstream.avail_out = static_cast<uLong>(res.back().size());
+		zstream.avail_out = static_cast<uInt>(res.back().size());
 		zstream.next_out = &(res.back()[0]);
 		cgogn_assert(zstream.next_out  != nullptr);
 		ret = deflate(&zstream, Z_FINISH);
@@ -125,8 +125,8 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	std::vector<unsigned char> res(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
 
 	// zlib init
-	int ret;
 	z_stream zstream;
+	int32 ret;
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -165,8 +165,8 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 		char_array_3[i++] = *(input_buffer++);
 		if (i == 3) {
 			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[1] = char(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+			char_array_4[2] = char(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
 			char_array_4[3] = char_array_3[2] & 0x3f;
 
 			for(i = 0; i <4 ; ++i)
@@ -181,8 +181,8 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 			char_array_3[j] = '\0';
 
 		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[1] = char(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+		char_array_4[2] = char(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
 		char_array_4[3] = char_array_3[2] & 0x3f;
 
 		for (j = 0; (j < i + 1); j++)

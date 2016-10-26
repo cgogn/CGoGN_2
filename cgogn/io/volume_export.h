@@ -42,6 +42,7 @@ template <typename MAP>
 class VolumeExport : public MeshExport<MAP>
 {
 public:
+
 	using Inherit = MeshExport<MAP>;
 	using Self = VolumeExport<MAP>;
 	using Map = MAP;
@@ -50,27 +51,25 @@ public:
 	using Face   = typename Map::Face;
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
-	template<typename T, Orbit ORB>
-	using Attribute = typename Map::template Attribute<T, ORB>;
 
 	class ConnectorCellFilter : public cgogn::CellFilters
 	{
 	public:
-		inline ConnectorCellFilter(const Map& map) : map_(map){}
+
+		inline ConnectorCellFilter(const Map& map) : map_(map) {}
 		inline bool filter(Volume w) const
 		{
 			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
 		}
-		inline bool filter(Vertex ) const
+		inline bool filter(Vertex) const
 		{
 			return true;
 		}
 
-
 	private:
+
 		const Map& map_;
 	};
-
 
 	inline VolumeExport() :
 		vertices_of_volumes_()
@@ -84,7 +83,8 @@ public:
 	virtual ~VolumeExport() override
 	{}
 
-	protected:
+protected:
+
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
 		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
@@ -94,7 +94,7 @@ public:
 		if (!this->position_attribute())
 			return;
 
-		map.add_attribute(vertices_of_volumes_, "vertices_of_volume_volume_export");
+		vertices_of_volumes_ = map.template add_attribute<std::vector<uint32>, Volume>("vertices_of_volume_volume_export");
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
@@ -114,17 +114,19 @@ public:
 		this->cell_cache_->template build<Volume>(ConnectorCellFilter(map));
 
 		uint32 count{0u};
-		map.foreach_cell([&] (Vertex v) { this->indices_[v] = count++;}
-		, *(this->cell_cache_));
+		map.foreach_cell(
+			[&] (Vertex v) { this->indices_[v] = count++; },
+			*(this->cell_cache_)
+		);
 
 		const auto& ids = this->indices_;
 		map.foreach_cell([&] (Volume w)
 		{
-			int32 nb_vert{0u};
+			uint32 nb_vert{0u};
 			map.foreach_incident_vertex(w, [&nb_vert](Vertex) {++nb_vert;});
 			Dart it = w.dart;
 
-			std::vector<int32>& vertices = vertices_of_volumes_[w];
+			std::vector<uint32>& vertices = vertices_of_volumes_[w];
 
 			if (nb_vert == 4u)
 			{
@@ -210,7 +212,8 @@ public:
 					}
 				}
 			}
-		}, *(this->cell_cache_));
+		},
+		*(this->cell_cache_));
 	}
 
 	void clean_added_attributes(Map& map) override
@@ -249,7 +252,7 @@ public:
 		return uint32(this->cell_cache_->template size<Vertex>());
 	}
 
-	inline std::vector<int32> const & vertices_of_volumes(Volume w) const
+	inline std::vector<uint32> const & vertices_of_volumes(Volume w) const
 	{
 		return vertices_of_volumes_[w];
 	}
@@ -270,7 +273,7 @@ private:
 	{
 		Inherit::reset();
 		if (vertices_of_volumes_.is_valid())
-			vertices_of_volumes_.set_all_values(std::vector<int32>());
+			vertices_of_volumes_.set_all_values(std::vector<uint32>());
 		nb_tetras_ = 0u;
 		nb_pyramids_ = 0u;
 		nb_triangular_prisms_ = 0u;
@@ -278,7 +281,7 @@ private:
 		volume_attributes_.clear();
 	}
 
-	Attribute<std::vector<int32>, Volume::ORBIT> vertices_of_volumes_;
+	Attribute<std::vector<uint32>, Volume::ORBIT> vertices_of_volumes_;
 	uint32 nb_tetras_;
 	uint32 nb_pyramids_;
 	uint32 nb_triangular_prisms_;
@@ -287,7 +290,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
-extern template class CGOGN_IO_API VolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API VolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_EXPORT_CPP_))
 
 } // namespace io

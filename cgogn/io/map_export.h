@@ -66,7 +66,7 @@ inline void export_volume(MAP& map3, const ExportOptions& options);
 template <class MAP>
 inline void export_surface(MAP& map2, const ExportOptions& options)
 {
-	static_assert(MAP::DIMENSION == 2,"export_surface is designed for 2D maps.");
+	static_assert(MAP::DIMENSION == 2, "export_surface is designed for 2D maps.");
 	auto se = new_surface_export<MAP>(options.filename_);
 	if (se)
 		se->export_file(map2,options);
@@ -75,14 +75,14 @@ inline void export_surface(MAP& map2, const ExportOptions& options)
 template <class MAP>
 inline void export_volume(MAP& map3, const ExportOptions& options)
 {
-	static_assert(MAP::DIMENSION == 3,"export_volume is designed for 3D maps.");
+	static_assert(MAP::DIMENSION == 3, "export_volume is designed for 3D maps.");
 	auto ve = new_volume_export<MAP>(options.filename_);
 	if (ve)
 		ve->export_file(map3,options);
 }
 
 template <typename MAP>
-inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string& filename)
+inline std::unique_ptr<SurfaceExport<MAP>> new_surface_export(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -101,7 +101,7 @@ inline std::unique_ptr<SurfaceExport<MAP> > new_surface_export(const std::string
 }
 
 template <typename MAP>
-inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& filename)
+inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -118,8 +118,8 @@ inline std::unique_ptr<VolumeExport<MAP> > new_volume_export(const std::string& 
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
-extern template CGOGN_IO_API void export_surface(CMap2<DefaultMapTraits>& , const ExportOptions&);
-extern template CGOGN_IO_API void export_volume(CMap3<DefaultMapTraits>& , const ExportOptions&);
+extern template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
+extern template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
 
 } // namespace io

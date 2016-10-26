@@ -39,7 +39,7 @@ using EigenVec3f = Eigen::Vector3f;
 using EigenVec3d = Eigen::Vector3d;
 using VecTypes = testing::Types<StdArrayf, EigenVec3f, StdArrayd ,EigenVec3d>;
 
-using CMap2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using CMap2 = cgogn::CMap2;
 using Dart = cgogn::Dart;
 template <typename T>
 using VertexAttribute = CMap2::VertexAttribute<T>;
@@ -50,14 +50,15 @@ using Face = CMap2::Face;
 template <typename Vec_T>
 class Algos_TEST : public testing::Test
 {
-protected :
+protected:
+
 	CMap2 map2_;
 
 	void add_polygone(uint32 n)
 	{
 		using Scalar = typename cgogn::geometry::vector_traits<Vec_T>::Scalar;
 
-		VertexAttribute<Vec_T> vertex_position = this->map2_.template get_attribute<Vec_T, CMap2::Vertex::ORBIT>("position");
+		VertexAttribute<Vec_T> vertex_position = this->map2_.template get_attribute<Vec_T, CMap2::Vertex>("position");
 
 		Scalar alpha = 0;
 		Face f = map2_.add_face(n);
@@ -70,19 +71,18 @@ protected :
 
 };
 
-
 TYPED_TEST_CASE(Algos_TEST, VecTypes);
 
 TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 
 	this->add_polygone(3);
 
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_,vertex_position);
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_,vertex_position);
+	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
 
 	int nb_f2 = 0;
 	this->map2_.foreach_cell([&nb_f2] (Face)
@@ -90,19 +90,19 @@ TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 		nb_f2++;
 	});
 
-	EXPECT_EQ(12,nb_f2);
+	EXPECT_EQ(12, nb_f2);
 }
 
 TYPED_TEST(Algos_TEST, QuadCatmullClark)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex::ORBIT>("position");
+	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 
 	this->add_polygone(4);
 
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_,vertex_position);
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_,vertex_position);
+	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
 
 	int nb_f2 = 0;
 	this->map2_.foreach_cell([&nb_f2] (Face)
@@ -110,7 +110,5 @@ TYPED_TEST(Algos_TEST, QuadCatmullClark)
 		nb_f2++;
 	});
 
-	EXPECT_EQ(16,nb_f2);
-
+	EXPECT_EQ(16, nb_f2);
 }
-

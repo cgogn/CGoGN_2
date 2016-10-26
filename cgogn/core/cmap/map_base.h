@@ -39,7 +39,6 @@
 #include <cgogn/core/cmap/map_base_data.h>
 #include <cgogn/core/cmap/attribute.h>
 
-
 namespace cgogn
 {
 
@@ -50,13 +49,13 @@ enum TraversalStrategy
 	FORCE_CELL_MARKING
 };
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class MapBase : public MapBaseData<MAP_TRAITS>
+template <typename MAP_TYPE>
+class MapBase : public MapBaseData
 {
 public:
 
-	using Inherit = MapBaseData<MAP_TRAITS>;
-	using Self = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = MapBaseData;
+	using Self = MapBase<MAP_TYPE>;
 
 	template <typename MAP> friend class DartMarker_T;
 	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;
@@ -68,12 +67,6 @@ public:
 	template <typename T_REF>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T_REF>;
 
-	using AttributeGen = typename Inherit::AttributeGen;
-	template <typename T>
-	using Attribute_T = typename Inherit::template Attribute_T<T>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
-
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
@@ -84,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -264,31 +257,17 @@ public:
 	}
 
 	/**
-	 * @brief add an attribute, given a ref on an existing attribute
-	 * @param result_attribute, a reference to an attribute that will be overwritten
-	 * @param attribute_name the name of the attribute to create
-	 */
+	* \brief search an attribute for a given orbit
+	* @param attribute_name attribute name
+	* @return an Attribute
+	*/
 	template <typename T, Orbit ORBIT>
-	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
-	}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-	/**
-	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		if (attribute_handler.is_valid())
-		{
-			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
-			return;
-		}
-
-		add_attribute(attribute_handler, attribute_name);
-		if (!attribute_handler.is_valid())
-			get_attribute(attribute_handler, attribute_name);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
+		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
 	}
 
 	/**
@@ -318,25 +297,26 @@ public:
 	}
 
 	/**
-	* \brief search an attribute for a given orbit
-	* @param attribute_name attribute name
-	* @return an Attribute
-	*/
-	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
+	 * \brief Second version of add_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
+		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
-	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
+	/**
+	 * \brief Second version of get_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		ah = get_attribute<T,ORBIT>(attribute_name);
+		return this->get_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
+	/**
+	 * \brief Third version of get_attribute taking a single type template parameter T and returning an Attribute_T<T>
+	 */
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
@@ -346,11 +326,6 @@ public:
 		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
 	}
 
-	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
-	{
-		ath = get_attribute<T>(orbit, attribute_name);
-	}
 
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
@@ -463,16 +438,27 @@ protected:
 		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
-	template <Orbit ORBIT>
-	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	/**
+	 * \brief the darts of the given cell are indexed for CellType with the given embedding
+	 */
+	template <typename CellType, Orbit ORBIT>
+	void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
 	{
-		using CellType = Cell<ORBIT>;
-
-		const uint32 emb = add_attribute_element<ORBIT>();
 		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d)
 		{
 			this->template set_embedding<CellType>(d, emb);
 		});
+	}
+
+	/**
+	 * \brief creates a new embedding and set it to the darts of the given cell
+	 * \return the new index
+	 */
+	template <Orbit ORBIT>
+	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	{
+		const uint32 emb = add_attribute_element<ORBIT>();
+		set_orbit_embedding<Cell<ORBIT>>(c, emb);
 		return emb;
 	}
 
@@ -638,7 +624,7 @@ public:
 	template <Orbit ORBIT>
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_embedded<ORBIT>())
+		if (this->template is_embedded<ORBIT>() && !is_boundary_cell(c1) && !is_boundary_cell(c2))
 			return this->embedding(c1) == this->embedding(c2);
 		else
 			return same_orbit(c1, c2);
@@ -707,6 +693,12 @@ public:
 	}
 
 	template <Orbit ORBIT>
+	bool is_boundary_cell(Cell<ORBIT> c) const
+	{
+		return to_concrete()->is_boundary_cell(c);
+	}
+
+	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
@@ -733,6 +725,7 @@ public:
 	}
 
 protected:
+
 	template <Orbit ORBIT>
 	void boundary_mark(Cell<ORBIT> c)
 	{
@@ -1007,7 +1000,6 @@ public:
 	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -1034,7 +1026,6 @@ public:
 	{
 		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{

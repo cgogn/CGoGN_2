@@ -27,15 +27,17 @@
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API TetVolumeImport<Eigen::Vector3d>;
+template class CGOGN_IO_API TetVolumeImport<Eigen::Vector3f>;
+template class CGOGN_IO_API TetVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API TetVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
+template class CGOGN_IO_API TetVolumeExport<CMap3>;
 
 } // namespace io
+
 } // namespace cgogn

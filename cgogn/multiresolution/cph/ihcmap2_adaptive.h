@@ -29,19 +29,18 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class IHCMap2Adaptive_T : public IHCMap2_T<MAP_TRAITS, MAP_TYPE>
+template <typename MAP_TYPE>
+class IHCMap2Adaptive_T : public IHCMap2_T<MAP_TYPE>
 {
 public:
 
 	static const int PRIM_SIZE = 1;
 
-	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
-	using Inherit = IHCMap2_T<MAP_TRAITS, MAP_TYPE>;
-	using Self = IHCMap2Adaptive_T<MAP_TRAITS,MAP_TYPE>;
+	using Inherit = IHCMap2_T<MAP_TYPE>;
+	using Self = IHCMap2Adaptive_T<MAP_TYPE>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
+	friend class MapBase<MAP_TYPE>;
 
 	using Vertex = typename Inherit::Vertex;
 	using Edge = typename Inherit::Edge;
@@ -49,7 +48,9 @@ public:
 	using Volume = typename Inherit::Volume;
 
 	IHCMap2Adaptive_T() : Inherit() {}
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(IHCMap2Adaptive_T);
+
 	~IHCMap2Adaptive_T() override {}
 
 	/*******************************************************************************
@@ -569,19 +570,12 @@ public:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct IHCMap2AdaptiveType
 {
-	using TYPE = IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>>;
+	using TYPE = IHCMap2Adaptive_T<IHCMap2AdaptiveType>;
 };
 
-template <typename MAP_TRAITS>
-using IHCMap2Adaptive = IHCMap2Adaptive_T<MAP_TRAITS, IHCMap2AdaptiveType<MAP_TRAITS>>;
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API IHCMap2Adaptive_T<DefaultMapTraits, IHCMap2AdaptiveType<DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_IHCMAP2_ADAPTIVE_CPP_))
-
+using IHCMap2Adaptive = IHCMap2Adaptive_T<IHCMap2AdaptiveType>;
 
 } // namespace cgogn
 

@@ -28,6 +28,8 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/dll.h>
 
+#include <cgogn/core/cmap/map_traits.h>
+
 namespace cgogn
 {
 
@@ -154,7 +156,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn

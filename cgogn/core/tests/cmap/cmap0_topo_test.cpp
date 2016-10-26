@@ -42,12 +42,11 @@ class CMap0TopoTest : public ::testing::Test
 {
 public:
 
-	using testCMap0 = CMap0<DefaultMapTraits>;
-	using Vertex = testCMap0::Vertex;
+	using Vertex = CMap0::Vertex;
 
 protected:
 
-	testCMap0 cmap_;
+	CMap0 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -90,7 +89,7 @@ TEST_F(CMap0TopoTest, random_map_generators)
 TEST_F(CMap0TopoTest, add_attribute)
 {
 	add_vertices(NB_MAX);
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+	cmap_.add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(cmap_.check_map_integrity());
 }
 

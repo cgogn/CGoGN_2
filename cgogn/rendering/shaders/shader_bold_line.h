@@ -60,6 +60,7 @@ protected:
 	GLint unif_color_;
 	GLint unif_width_;
 	GLint unif_plane_clip_;
+	GLint unif_plane_clip2_;
 
 public:
 
@@ -89,6 +90,13 @@ public:
 	 * @param plane
 	 */
 	void set_plane_clip(const QVector4D& plane);
+
+	/**
+	 * @brief set_plane_clip2
+	 * @param plane
+	 */
+	void set_plane_clip2(const QVector4D& plane);
+
 
 protected:
 
@@ -125,6 +133,7 @@ protected:
 		sh->set_color(color_);
 		sh->set_width(width_);
 		sh->set_plane_clip(plane_clip_);
+		sh->set_plane_clip2(plane_clip2_);
 	}
 
 public:
@@ -132,12 +141,14 @@ public:
 	QColor color_;
 	float32 width_;
 	QVector4D plane_clip_;
+	QVector4D plane_clip2_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<false>* sh) :
 		ShaderParam(sh),
 		color_(255, 255, 255),
 		width_(2.0f),
-		plane_clip_(0,0,0,0)
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
@@ -166,6 +177,7 @@ protected:
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
 		sh->set_width(width_);
 		sh->set_plane_clip(plane_clip_);
+		sh->set_plane_clip2(plane_clip2_);
 	}
 
 public:
@@ -175,11 +187,13 @@ public:
 
 	float32 width_;
 	QVector4D plane_clip_;
+	QVector4D plane_clip2_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<true>* sh) :
 		ShaderParam(sh),
 		width_(2.0f),
-		plane_clip_(0,0,0,0)
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)

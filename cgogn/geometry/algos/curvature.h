@@ -28,6 +28,7 @@
 #include <cgogn/geometry/algos/selection.h>
 #include <cgogn/geometry/algos/length.h>
 #include <cgogn/geometry/functions/intersection.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -41,15 +42,15 @@ void curvature(
 	const MAP& map,
 	const Cell<Orbit::PHI21> v,
 	typename vector_traits<VEC3>::Scalar radius,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+	const Attribute<VEC3, Orbit::PHI21>& position,
+	const Attribute<VEC3, Orbit::PHI21>& normal,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	Attribute<VEC3, Orbit::PHI21>& Kmax,
+	Attribute<VEC3, Orbit::PHI21>& Kmin,
+	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
@@ -58,6 +59,7 @@ void curvature(
 	using Face = typename MAP::Face;
 
 	unused_parameters(edge_area);
+
 	// collect the normal cycle tensor
 	geometry::Collector_WithinSphere<VEC3, MAP> neighborhood(map, radius, position);
 	neighborhood.collect(v);
@@ -140,15 +142,15 @@ void compute_curvature(
 	const MAP& map,
 	const MASK& mask,
 	typename vector_traits<VEC3>::Scalar radius,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+	const Attribute<VEC3, Orbit::PHI21>& position,
+	const Attribute<VEC3, Orbit::PHI21>& normal,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	Attribute<VEC3, Orbit::PHI21>& Kmax,
+	Attribute<VEC3, Orbit::PHI21>& Kmin,
+	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
@@ -162,15 +164,15 @@ template <typename VEC3, typename MAP>
 void compute_curvature(
 	const MAP& map,
 	typename vector_traits<VEC3>::Scalar radius,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI21>& normal,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmax,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Kmin,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& Knormal
+	const Attribute<VEC3, Orbit::PHI21>& position,
+	const Attribute<VEC3, Orbit::PHI21>& normal,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
+	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
+	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	Attribute<VEC3, Orbit::PHI21>& Kmax,
+	Attribute<VEC3, Orbit::PHI21>& Kmin,
+	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
 	compute_curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);

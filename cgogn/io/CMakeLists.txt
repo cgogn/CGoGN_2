@@ -46,7 +46,6 @@ set(SOURCE_FILES
 	io_utils.cpp
 	vtk_io.cpp
 	lm6_io.cpp
-	data_io.cpp
 	msh_io.cpp
 	obj_io.cpp
 	off_io.cpp

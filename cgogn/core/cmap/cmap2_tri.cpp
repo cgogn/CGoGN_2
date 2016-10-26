@@ -28,21 +28,21 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Tri<DefaultMapTraits>>;
-template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
+template class CGOGN_CORE_API CMap2Builder_T<CMap2Tri>;
+template class CGOGN_CORE_API DartMarker<CMap2Tri>;
+template class CGOGN_CORE_API DartMarkerStore<CMap2Tri>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Tri>;
+template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
 
 } // namespace cgogn

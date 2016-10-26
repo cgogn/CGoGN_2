@@ -40,16 +40,18 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, uint32 PRIM_SIZE, typename VEC3>
+template <uint32 PRIM_SIZE, typename VEC3>
 class MshIO
 {
-public :
-	using Self = MshIO<MAP_TRAITS, PRIM_SIZE, VEC3>;
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+public:
+
+	using Self = MshIO<PRIM_SIZE, VEC3>;
+
+	using VolumeImport = cgogn::io::VolumeImport<VEC3>;
+	using SurfaceImport = cgogn::io::SurfaceImport<VEC3>;
+
 	template<typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using VolumeImport = cgogn::io::VolumeImport<MAP_TRAITS, VEC3>;
-	using SurfaceImport = cgogn::io::SurfaceImport<MAP_TRAITS, VEC3>;
+	using ChunkArray = typename SurfaceImport::template ChunkArray<T>;
 
 	enum MSH_CELL_TYPES
 	{
@@ -463,14 +465,14 @@ private:
 };
 
 
-template <typename MAP_TRAITS, typename VEC3>
-class MshSurfaceImport : public MshIO<MAP_TRAITS, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class MshSurfaceImport : public MshIO<CMap2::PRIM_SIZE, VEC3>, public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = MshSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit_Msh = MshIO<MAP_TRAITS, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = MshSurfaceImport<VEC3>;
+	using Inherit_Msh = MshIO<CMap2::PRIM_SIZE, VEC3>;
+	using Inherit_Import = SurfaceFileImport<VEC3>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -533,14 +535,14 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class MshVolumeImport : public MshIO<MAP_TRAITS, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class MshVolumeImport : public MshIO<CMap3::PRIM_SIZE, VEC3>, public VolumeFileImport<VEC3>
 {
 public:
 
-	using Self = MshVolumeImport<MAP_TRAITS, VEC3>;
-	using Inherit_Msh = MshIO<MAP_TRAITS, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using Self = MshVolumeImport<VEC3>;
+	using Inherit_Msh = MshIO<CMap3::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeFileImport<VEC3>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -637,10 +639,11 @@ template <typename MAP>
 class MshVolumeExport : public VolumeExport<MAP>
 {
 public:
+
 	using Inherit = VolumeExport<MAP>;
 	using Self = MshVolumeExport<MAP>;
 	using Map = typename Inherit::Map;
-	using MSH_CELL_TYPES = typename MshIO<typename Map::MapTraits, Map::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
+	using MSH_CELL_TYPES = typename MshIO<Map::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
 	using Vertex = typename Inherit::Vertex;
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
@@ -694,7 +697,8 @@ template <typename MAP>
 class MshSurfaceExport : public SurfaceExport<MAP>
 {
 public:
-	using MSH_CELL_TYPES = typename MshIO<typename MAP::MapTraits, MAP::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
+
+	using MSH_CELL_TYPES = typename MshIO<MAP::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
 	using Inherit = SurfaceExport<MAP>;
 	using Self = MshSurfaceExport<MAP>;
 	using Map = typename Inherit::Map;
@@ -752,26 +756,25 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshIO<DefaultMapTraits,1, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API MshIO<1, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshIO<1, Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float32,3>>>;
 
+extern template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 
-
-extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-
-extern template class CGOGN_IO_API MshSurfaceExport<CMap2<DefaultMapTraits>>;
-extern template class CGOGN_IO_API MshVolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API MshSurfaceExport<CMap2>;
+extern template class CGOGN_IO_API MshVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
 
-
 } // namespace io
+
 } // namespace cgogn
+
 #endif // CGOGN_IO_MSH_IO_H_

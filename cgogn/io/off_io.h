@@ -41,13 +41,13 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class OffSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class OffSurfaceImport : public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = OffSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = OffSurfaceImport<VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -364,11 +364,11 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-extern template class CGOGN_IO_API OffSurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API OffSurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API OffSurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API OffSurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API OffSurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API OffSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 
 } // namespace io

@@ -41,39 +41,30 @@ namespace cgogn
  */
 class CMap2TriTest : public ::testing::Test
 {
-
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap2Tri = CMap2Tri<MiniMapTraits>;
-	using MapBuilder = testCMap2Tri::Builder;
-	using CDart = testCMap2Tri::CDart;
-	using Vertex = testCMap2Tri::Vertex;
-	using Edge = testCMap2Tri::Edge;
-	using Face = testCMap2Tri::Face;
-	using Volume = testCMap2Tri::Volume;
+	using MapBuilder = CMap2Tri::Builder;
+	using CDart = CMap2Tri::CDart;
+	using Vertex = CMap2Tri::Vertex;
+	using Edge = CMap2Tri::Edge;
+	using Face = CMap2Tri::Face;
+	using Volume = CMap2Tri::Volume;
 
 protected:
 
-	testCMap2Tri cmap_;
+	CMap2Tri cmap_;
 
 	CMap2TriTest()
-	{
-	}
+	{}
 
 	void embed_map()
 	{
-		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int32, Face::ORBIT>("faces");
-		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+		cmap_.add_attribute<int32, CDart>("darts");
+		cmap_.add_attribute<int32, Vertex>("vertices");
+		cmap_.add_attribute<int32, Edge>("edges");
+		cmap_.add_attribute<int32, Face>("faces");
+		cmap_.add_attribute<int32, Volume>("volumes");
 	}
-
 };
 
 TEST_F(CMap2TriTest,tris)
@@ -106,8 +97,8 @@ TEST_F(CMap2TriTest,tris)
 TEST_F(CMap2TriTest, builder)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 
@@ -124,8 +115,8 @@ TEST_F(CMap2TriTest, builder)
 TEST_F(CMap2TriTest, flip)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 	builder.phi2_sew(d1,d2);
 	builder.close_map();
 
@@ -155,8 +146,8 @@ TEST_F(CMap2TriTest, collapse)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 	builder.close_hole(cmap_.phi1(d1));
@@ -207,7 +198,7 @@ TEST_F(CMap2TriTest, split_triangle)
 TEST_F(CMap2TriTest, split_vertex)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
 	builder.close_hole(cmap_.phi1(d1));
 	embed_map();
 
@@ -235,8 +226,8 @@ TEST_F(CMap2TriTest, cut_edge)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(3);
-	Dart d2 = builder.add_face_topo_parent(3);
+	Dart d1 = builder.add_face_topo_fp(3);
+	Dart d2 = builder.add_face_topo_fp(3);
 
 	builder.phi2_sew(d1,d2);
 	builder.close_map();

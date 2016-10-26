@@ -25,9 +25,7 @@
 #define CGOGN_GEOMETRY_TYPES_EIGEN_H_
 
 #include <cgogn/core/utils/definitions.h>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_ON
 #include <Eigen/Dense>
-CGOGN_PRAGMA_EIGEN_REMOVE_WARNINGS_OFF
 
 namespace cgogn
 {

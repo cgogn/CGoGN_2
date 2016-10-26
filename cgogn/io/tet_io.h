@@ -37,11 +37,11 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class TetVolumeImport : public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class TetVolumeImport : public VolumeFileImport<VEC3>
 {
-	using Inherit = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Self = TetVolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit = VolumeFileImport<VEC3>;
+	using Self = TetVolumeImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -185,12 +185,12 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
-extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API TetVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API TetVolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API TetVolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API TetVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API TetVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API TetVolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API TetVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TET_IO_CPP_))
 
 } // namespace io

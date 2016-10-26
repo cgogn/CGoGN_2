@@ -5,13 +5,12 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
+using Vertex = cgogn::CMap2::Vertex;
 template <typename T>
-using VertexAttribute = Map2::VertexAttribute<T>;
+using VertexAttribute = cgogn::CMap2::VertexAttribute<T>;
 
 int main(int argc, char** argv)
 {
@@ -25,10 +24,10 @@ int main(int argc, char** argv)
 	else
 		surface_mesh = std::string(argv[1]);
 
-	Map2 map;
+	cgogn::CMap2 map;
 
 	cgogn::io::import_surface<Vec3>(map, surface_mesh);
 
-	VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
+	VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Vertex>("position");
 	cgogn::modeling::pliant_remeshing<Vec3>(map, vertex_position);
 }

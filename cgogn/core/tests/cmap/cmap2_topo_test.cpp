@@ -39,18 +39,20 @@ namespace cgogn
  * but do neither test the containers (refs_, used_, etc.) nor the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap2TopoTest : public CMap2<DefaultMapTraits>, public ::testing::Test
+class CMap2TopoTest : public CMap2, public ::testing::Test
 {
 public:
 
-	using Inherit = CMap2<DefaultMapTraits>;
+	using Inherit = CMap2;
+
 	using MapBuilder = Inherit::Builder;
-	using CDart = CMap2TopoTest::CDart;
-	using Vertex = CMap2TopoTest::Vertex;
-	using Edge   = CMap2TopoTest::Edge;
-	using Face   = CMap2TopoTest::Face;
-	using Volume   = CMap2TopoTest::Volume;
-	using VertexMarker = CMap2TopoTest::CellMarker<Vertex::ORBIT>;
+	using CDart = Inherit::CDart;
+	using Vertex = Inherit::Vertex;
+	using Edge = Inherit::Edge;
+	using Face = Inherit::Face;
+	using Volume = Inherit::Volume;
+
+	using VertexMarker = Inherit::CellMarker<Vertex::ORBIT>;
 
 protected:
 
@@ -213,19 +215,19 @@ TEST_F(CMap2TopoTest, add_attribute)
 	add_faces(NB_MAX);
 	add_closed_surfaces();
 
-	add_attribute<int32, CDart::ORBIT>("darts");
+	add_attribute<int32, CDart>("darts");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge::ORBIT>("edges");
+	add_attribute<int32, Edge>("edges");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Face>("faces");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Volume::ORBIT>("Volumes");
+	add_attribute<int32, Volume>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -588,11 +590,11 @@ TEST_F(CMap2TopoTest, close_map)
 	add_closed_surfaces();
 
 	// add attributes to initialize the indexation
-	add_attribute<int32, CDart::ORBIT>("darts");
-	add_attribute<int32, Vertex::ORBIT>("vertices");
-	add_attribute<int32, Edge::ORBIT>("edges");
-	add_attribute<int32, Face::ORBIT>("faces");
-	add_attribute<int32, Volume::ORBIT>("volumes");
+	add_attribute<int32, CDart>("darts");
+	add_attribute<int32, Vertex>("vertices");
+	add_attribute<int32, Edge>("edges");
+	add_attribute<int32, Face>("faces");
+	add_attribute<int32, Volume>("volumes");
 
 	EXPECT_TRUE(check_map_integrity());
 

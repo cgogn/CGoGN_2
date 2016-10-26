@@ -61,7 +61,7 @@ template<typename T>
 inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size(const T& x);
 
 template<typename T>
-inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T& x)
+inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T&)
 {
 	return 1;
 }

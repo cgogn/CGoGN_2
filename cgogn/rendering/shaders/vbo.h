@@ -28,6 +28,7 @@
 #include <QOpenGLBuffer>
 
 #include <cgogn/core/cmap/attribute.h>
+#include <cgogn/core/cmap/map_traits.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -215,7 +216,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
-	const uint32 vbo_blk_bytes =  ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
+	const uint32 vbo_blk_bytes = ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
 	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
 	{
@@ -311,16 +312,16 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	// check that convert has 2 param
 	static_assert(func_arity<FUNC>::value == 2, "convert lambda function must have two arguments");
 
-	//check that attr & attr2 are on same orbit
+	// check that attr & attr2 are on same orbit
 	static_assert(ATTR::orbit_value == ATTR2::orbit_value, "attributes must be on same orbit");
 
 	// check that convert param 1 is compatible with attr
 	using InputConvert = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type >::type;
-	static_assert(std::is_same<InputConvert,array_data_type<ATTR> >::value, "wrong parameter 1");
+	static_assert(std::is_same<InputConvert, array_data_type<ATTR>>::value, "wrong parameter 1");
 
 	// check that convert param 2 is compatible with attr2
 	using InputConvert2 = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,1>>::type >::type;
-	static_assert(std::is_same<InputConvert,array_data_type<ATTR2> >::value, "wrong parameter 2");
+	static_assert(std::is_same<InputConvert, array_data_type<ATTR2>>::value, "wrong parameter 2");
 
 	// set vbo name based on first attribute name
 	vbo->set_name(attr.name());
@@ -376,12 +377,11 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	static_assert(func_arity<FUNC>::value == 1, "convert lambda function must have only one arg");
 
 	// check that convert param  is compatible with attr
-	using InputConvert = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type >::type;
+	using InputConvert = typename std::remove_cv<typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type>::type;
 	static_assert(std::is_same<InputConvert,array_data_type<ATTR> >::value, "wrong parameter 1");
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value ||is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>" );
-
 
 	// set vec dimension
 	const uint32 vec_dim = nb_components(func_return_type<FUNC>());
@@ -396,7 +396,7 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	using OutputConvert = func_return_type<FUNC>;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 
-	for (uint32 i: indices)
+	for (uint32 i : indices)
 		 *dst++ = convert(attr[i]);
 
 	vbo->release_pointer();

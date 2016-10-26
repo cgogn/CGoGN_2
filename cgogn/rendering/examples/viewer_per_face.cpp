@@ -46,7 +46,7 @@
 //USING_CGOGN_NUMERICS;
 using namespace cgogn::numerics;
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
@@ -60,6 +60,7 @@ using FaceAttribute = Map2::FaceAttribute<T>;
 class Viewer : public QOGLViewer
 {
 public:
+
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
@@ -72,6 +73,7 @@ public:
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
+
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
 	FaceAttribute<Vec3> face_normal_;
@@ -99,8 +101,8 @@ void Viewer::import(const std::string& surfaceMesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surfaceMesh);
 
-	map_.get_attribute(vertex_position_, "position");
-	map_.add_attribute(face_normal_, "normal");
+	vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
+	face_normal_ = map_.template add_attribute<Vec3, Map2::Face>("normal");
 
 	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, face_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);

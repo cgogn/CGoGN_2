@@ -140,6 +140,29 @@ void VolumeDrawerGen::Renderer::set_clipping_plane(const QVector4D& pl)
 		param_expl_vol_line_->plane_clip_ = pl;
 }
 
+void VolumeDrawerGen::Renderer::set_clipping_plane2(const QVector4D& pl)
+{
+	if (param_expl_vol_)
+		param_expl_vol_->plane_clip2_ = pl;
+	if (param_expl_vol_col_)
+		param_expl_vol_col_->plane_clip2_ = pl;
+	if (param_expl_vol_line_)
+		param_expl_vol_line_->plane_clip2_ = pl;
+}
+
+void VolumeDrawerGen::Renderer::set_thick_clipping_plane(const QVector4D& p, float32 th)
+{
+	QVector4D p1 = p;
+	p1[3] -= th/2.0f;
+	set_clipping_plane(p1);
+
+	QVector4D p2 = -p;
+	p2[3] -= th/2.0f;
+	set_clipping_plane2(p2);
+}
+
+
+
 template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
 template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
 

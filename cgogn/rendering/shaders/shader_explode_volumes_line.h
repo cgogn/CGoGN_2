@@ -55,6 +55,7 @@ protected:
 	// uniform ids
 	GLint unif_expl_v_;
 	GLint unif_plane_clip_;
+	GLint unif_plane_clip2_;
 	GLint unif_color_;
 
 public:
@@ -69,6 +70,7 @@ public:
 
 	void set_explode_volume(float32 x);
 	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip2(const QVector4D& plane);
 	void set_color(const QColor& rgb);
 
 protected:
@@ -87,18 +89,21 @@ protected:
 		sh->set_color(color_);
 		sh->set_explode_volume(explode_factor_);
 		sh->set_plane_clip(plane_clip_);
+		sh->set_plane_clip2(plane_clip2_);
 	}
 
 public:
 
 	QColor color_;
 	QVector4D plane_clip_;
+	QVector4D plane_clip2_;
 	float32 explode_factor_;
 
 	ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh) :
 		ShaderParam(sh),
 		color_(255, 255, 255),
 		plane_clip_(0, 0, 0, 0),
+		plane_clip2_(0, 0, 0, 0),
 		explode_factor_(0.8f)
 	{}
 

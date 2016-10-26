@@ -33,6 +33,7 @@ namespace cgogn
 
 namespace topology
 {
+
 /**
  * class DistanceField : build, query and manage distance fields.
  * A distance field is a scalar field that associated each vertex with
@@ -52,6 +53,7 @@ class DistanceField
 	using EdgeAttribute = typename MAP::template EdgeAttribute<T>;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DistanceField);
 
 	DistanceField(MAP& map,
@@ -70,7 +72,7 @@ public:
 		cache_(cache),
 		intern_edge_weight_(true)
 	{
-		map.add_attribute(edge_weight_, "__edge_weight__");
+		edge_weight_ = map.template add_attribute<Scalar, Edge>("__edge_weight__");
 
 		map.foreach_cell([&](Edge e)
 		{
@@ -353,7 +355,7 @@ public:
 									 VertexAttribute<Scalar>& scalar_field)
 	{
 		VertexAttribute<Scalar> distance_to_feature =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_feature__");
+				map_.template add_attribute<Scalar, Vertex>("__distance_to_feature__");
 
 		for (auto& s : scalar_field) s = Scalar(0);
 
@@ -375,7 +377,7 @@ public:
 	void morse_distance_to_boundary(VertexAttribute<Scalar>& morse_function)
 	{
 		VertexAttribute<Scalar> distance_to_boundary =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_boundary__");
+				map_.template add_attribute<Scalar, Vertex>("__distance_to_boundary__");
 
 		std::vector<Vertex> boundary_vertices;
 
@@ -406,7 +408,7 @@ public:
 									VertexAttribute<Scalar>& morse_function)
 	{
 		VertexAttribute<Scalar> distance_to_features =
-				map_.template add_attribute<Scalar, Vertex::ORBIT>("__distance_to_features__");
+				map_.template add_attribute<Scalar, Vertex>("__distance_to_features__");
 
 		// Compute the shortest paths to sources
 		dijkstra_compute_distances(features, distance_to_features);
@@ -424,6 +426,7 @@ public:
 	}
 
 private:
+
 	MAP& map_;
 	AdjacencyCache<MAP> cache_;
 	EdgeAttribute<Scalar> edge_weight_;
@@ -431,10 +434,10 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap2>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap2>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float32, CMap3>;
+extern template class CGOGN_TOPLOGY_API DistanceField<float64, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_DISTANCE_FIELD_CPP_))
 
 } // namespace topology

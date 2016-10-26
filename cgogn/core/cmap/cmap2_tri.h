@@ -25,50 +25,45 @@
 #define CGOGN_CORE_CMAP_CMAP2_TRI_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {
 
-// forward declaration of CMap2Builder_T
-template <typename MAP_TRAITS> class CMap2TriBuilder_T;
-
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class CMap2Tri_T : public MapBase<MAP_TRAITS, MAP_TYPE>
+template <typename MAP_TYPE>
+class CMap2Tri_T : public MapBase<MAP_TYPE>
 {
 public:
 
 	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 3;
 
-	using MapTraits = MAP_TRAITS;
 	using MapType = MAP_TYPE;
-	using Inherit = MapBase<MAP_TRAITS, MAP_TYPE>;
-	using Self = CMap2Tri_T<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = MapBase<MAP_TYPE>;
+	using Self = CMap2Tri_T<MAP_TYPE>;
 
-	using Builder = CMap2TriBuilder_T<MapTraits>;
+	using Builder = CMap2Builder_T<Self>;
 
-	friend class MapBase<MAP_TRAITS, MAP_TYPE>;
-	friend class CMap2TriBuilder_T<MapTraits>;
+	friend class MapBase<MAP_TYPE>;
+	friend class CMap2Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
-	using CDart		= Cell<Orbit::DART>;
-	using Vertex	= Cell<Orbit::PHI21>;
-	using Edge		= Cell<Orbit::PHI2>;
-	using Face		= Cell<Orbit::PHI1>;
-	using Volume	= Cell<Orbit::PHI1_PHI2>;
+	using CDart  = Cell<Orbit::DART>;
+	using Vertex = Cell<Orbit::PHI21>;
+	using Edge   = Cell<Orbit::PHI2>;
+	using Face   = Cell<Orbit::PHI1>;
+	using Volume = Cell<Orbit::PHI1_PHI2>;
 
-	using Boundary  = Face;
+	using Boundary = Face;
 	using ConnectedComponent = Volume;
 
+	template <typename T>
+	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
 	using typename Inherit::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
-	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
 	template <typename T>
 	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
@@ -279,6 +274,17 @@ protected:
 		return d;
 	}
 
+	inline Dart add_face_topo_fp(std::size_t size)
+	{
+		cgogn_message_assert(size == 3u, "Can create only triangles");
+		if (size != 3)
+		{
+			cgogn_log_warning("add_face_topo_fp") << "Attempt to create a face which is not a triangle in CMap2Tri";
+			return Dart();
+		}
+		return add_tri_topo_fp();
+	}
+
 	/**
 	 * @brief remove a triangle (3 darts)
 	 * @param d
@@ -443,7 +449,7 @@ protected:
 	inline bool flip_edge_topo(Dart d)
 	{
 		Dart e = phi2(d);
-		if (!this->is_boundary(d) && !this->is_boundary(e))
+		if (!this->is_incident_to_boundary(Edge(d)))
 		{
 			Dart d1  = phi1(d);
 			Dart d11 = phi1(d1);
@@ -562,11 +568,9 @@ public:
 		Dart d1 = collapse_edge_topo(e.dart);
 
 		Vertex v(d1);
+
 		if (this->template is_embedded<Vertex>())
-		{
-			uint32 emb = this->embedding(v);
-			foreach_dart_of_orbit(v, [this, emb] (Dart d) { this->template set_embedding<Vertex>(d, emb); });
-		}
+			this->template set_orbit_embedding<Vertex>(v, this->embedding(v));
 
 		if (this->template is_embedded<Edge>())
 		{
@@ -578,6 +582,7 @@ public:
 	}
 
 protected:
+
 	/**
 	 * @brief split a vertex into an edge (2 triangles are inserted) TOPO ONLY
 	 * @param d1 Dart of vertex to split (dart give edge to be replaced by a triangle)
@@ -586,8 +591,8 @@ protected:
 	 */
 	Dart split_vertex_topo(Dart d1, Dart d2)
 	{
-		cgogn_message_assert(this->same_orbit(Vertex(d1),Vertex(d2)), "CMap2Tri::split_vertex_topo:d1 & d2 must be the same vertex");
-		cgogn_message_assert(d1 != d2, "CMap2Tri::split_vertex_topo:d1 & d2 must be different darts ");
+		cgogn_message_assert(this->same_orbit(Vertex(d1), Vertex(d2)), "CMap2Tri::split_vertex_topo: d1 & d2 must be the same vertex");
+		cgogn_message_assert(d1 != d2, "CMap2Tri::split_vertex_topo: d1 & d2 must be different darts ");
 
 		Dart e1  = d1;
 		Dart ee1 = phi2(e1);
@@ -643,15 +648,15 @@ public:
 			this->new_orbit_embedding(Vertex(res_edge.dart));
 			Dart vd1 = phi2(res_edge.dart);
 			Dart d0 = phi2(phi_1(vd1));
-			this->template copy_embedding<Vertex>(vd1,d0);
+			this->template copy_embedding<Vertex>(vd1, d0);
 			Dart vd2 = phi1(res_edge.dart);
-			this->template copy_embedding<Vertex>(vd2,d0);
+			this->template copy_embedding<Vertex>(vd2, d0);
 
 			foreach_incident_face(res_edge, [this] (Face nf)
 			{
 				Dart dv1 = phi_1(nf.dart); // new dart of exiting vertex
 				Dart dv0 = phi2(phi1(nf.dart)); // old dart of exiting vertex
-				this->template copy_embedding<Vertex>(dv1,dv0);
+				this->template copy_embedding<Vertex>(dv1, dv0);
 			});
 		}
 
@@ -663,7 +668,7 @@ public:
 				Dart d = phi1(nf.dart);
 				this->new_orbit_embedding(Edge(d));
 				d = phi1(d);
-				this->template copy_embedding<Edge>(d,phi2(d)); // more efficient to use the old emb
+				this->template copy_embedding<Edge>(d, phi2(d)); // more efficient to use the old emb
 			});
 		}
 
@@ -680,10 +685,7 @@ public:
 			uint32 emb = this->embedding(Volume(this->template phi<12>(res_edge.dart)));
 			foreach_incident_face(res_edge, [this, emb] (Face nf)
 			{
-				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
-				{
-					this->template set_embedding<Volume>(d, emb);
-				});
+				this->template set_orbit_embedding<Volume>(nf, emb);
 			});
 		}
 
@@ -691,6 +693,7 @@ public:
 	}
 
 protected:
+
 	/**
 	 * @brief cut an edge and the two incident triangles
 	 * @param e the edge to cut
@@ -763,9 +766,9 @@ public:
 
 			foreach_incident_edge(nv, [this] (Edge ne)
 			{
-				Dart v1 = phi2(ne.dart); // new dart of exiting vertex
-				Dart v2 = phi1(ne.dart); // new dart of exiting vertex
-				Dart v0 = phi2(phi_1(v1)); // old dart of exiting vertex
+				Dart v1 = phi2(ne.dart); // new dart of existing vertex
+				Dart v2 = phi1(ne.dart); // new dart of existing vertex
+				Dart v0 = phi2(phi_1(v1)); // old dart of existing vertex
 				this->template copy_embedding<Vertex>(v1,v0);
 				this->template copy_embedding<Vertex>(v2,v0);
 			});
@@ -776,7 +779,7 @@ public:
 			foreach_incident_edge(nv, [this] (Edge ne)
 			{
 				this->new_orbit_embedding(ne); // new edge
-				Dart ne2 = phi1(ne.dart); // new dart of existing dart
+				Dart ne2 = phi1(ne.dart); // new dart of existing edge
 				this->template copy_embedding<Edge>(ne2, phi2(ne2));
 			});
 		}
@@ -794,10 +797,7 @@ public:
 			uint32 emb = this->embedding(Volume(phi<12>(nv.dart)));
 			foreach_incident_face(nv, [this, emb] (Face nf)
 			{
-				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
-				{
-					this->template set_embedding<Volume>(d, emb);
-				});
+				this->template set_orbit_embedding<Volume>(nf, emb);
 			});
 		}
 
@@ -898,10 +898,7 @@ public:
 			uint32 emb = this->embedding(Volume(this->template phi<12>(vc.dart)));
 			foreach_incident_face(vc, [this, emb] (Face nf)
 			{
-				foreach_dart_of_orbit(nf, [this, emb] (Dart d)
-				{
-					this->template set_embedding<Volume>(d, emb);
-				});
+				this->template set_orbit_embedding<Volume>(nf, emb);
 			});
 		}
 
@@ -947,6 +944,74 @@ protected:
 		return first;
 	}
 
+	/**
+	 * @brief Close a hole with a triangle fan
+	 * @return a face of the fan
+	 */
+	inline Face close_hole(Dart d)
+	{
+		//	const Face f(map_.close_hole_topo(d));
+		Dart dh = close_hole_topo(d);
+
+		Dart di = dh;
+
+		do
+		{
+			Dart di0 = phi2(di);
+			Dart di1 = phi1(di);
+
+			if (this->template is_embedded<Vertex>())
+			{
+				this->template copy_embedding<Vertex>(di, phi1(di0));
+				this->template copy_embedding<Vertex>(di1, di0);
+			}
+
+			if (this->template is_embedded<Edge>())
+				this->template copy_embedding<Edge>(di, di0);
+
+			if (this->template is_embedded<Volume>())
+				this->template set_orbit_embedding<Volume>(Face(di), this->embedding(Volume(d)));
+
+			di = phi<21>(di1);
+		} while (di != dh);
+
+		return Face(dh);
+	}
+
+	/**
+	 * \brief close_map
+	 * \return the number of holes (filled)
+	 */
+	inline uint32 close_map()
+	{
+		uint32 nb_holes = 0;
+
+		std::vector<Dart>* fix_point_darts = cgogn::dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi2(d) == d)
+				fix_point_darts->push_back(d);
+		});
+
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi2(d) == d)
+			{
+				Face f = close_hole(d);
+				Vertex fan_center(phi_1(f.dart));
+				foreach_incident_face(fan_center, [&] (Face ff)
+				{
+					this->boundary_mark(ff);
+				});
+				++nb_holes;
+			}
+		}
+
+		cgogn::dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -968,7 +1033,7 @@ public:
 
 	inline uint32 degree(Edge e) const
 	{
-		if (this->is_boundary(e.dart) || this->is_boundary(phi2(e.dart)))
+		if (this->is_incident_to_boundary(e))
 			return 1;
 		else
 			return 2;
@@ -1097,8 +1162,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -1189,8 +1254,8 @@ protected:
 			case Orbit::DART: f(c.dart); break;
 			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
 			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -1434,16 +1499,16 @@ protected:
 		const static auto create_embedding = [=](Self* map, Orbit orb)
 		{
 			switch (orb) {
-			case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
-			case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-			case Orbit::PHI2:map->template create_embedding<Orbit::PHI2>(); break;
-			case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
-			case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
-			default: break;
+				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
+				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				default: break;
 			}
 		};
 
-		for (Orbit orb : {DART, PHI1, PHI2, PHI1_PHI2, PHI21})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
@@ -1461,15 +1526,15 @@ protected:
 				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
 				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
 				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				case Orbit::PHI1_PHI2: map->new_orbit_embedding(Cell<Orbit::PHI1_PHI2>(d)); break;
 				default: break;
 			}
 		};
 
 		for (uint32 j = first, end = this->topology_.end(); j != end; this->topology_.next(j))
 		{
-			for (Orbit orb : { DART, PHI1, PHI2, PHI1_PHI2, PHI21 })
+			for (Orbit orb : { DART, PHI1, PHI2, PHI21, PHI1_PHI2 })
 			{
 				if (this->is_embedded(orb))
 				{
@@ -1481,36 +1546,32 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct CMap2TriType
 {
-	using TYPE = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
+	using TYPE = CMap2Tri_T<CMap2TriType>;
 };
 
-template <typename MAP_TRAITS>
-using CMap2Tri = CMap2Tri_T<MAP_TRAITS, CMap2TriType<MAP_TRAITS>>;
+using CMap2Tri = CMap2Tri_T<CMap2TriType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_TRI_CPP_))
-extern template class CGOGN_CORE_API CMap2Tri_T<DefaultMapTraits, CMap2TriType<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarker<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Tri<DefaultMapTraits>>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri<DefaultMapTraits>, CMap2Tri<DefaultMapTraits>::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CMap2Builder_T<CMap2Tri>;
+extern template class CGOGN_CORE_API DartMarker<CMap2Tri>;
+extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri>;
+extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap2Tri>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarker<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
 
 } // namespace cgogn
-
-#include <cgogn/core/cmap/cmap2_tri_builder.h>
 
 #endif // CGOGN_CORE_CMAP_CMAP2_TRI_H_

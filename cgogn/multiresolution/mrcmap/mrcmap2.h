@@ -30,13 +30,13 @@
 namespace cgogn
 {
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class MRCMap2_T : public MRBase<CMap2_T<MAP_TRAITS, MAP_TYPE>>
+template <typename MAP_TYPE>
+class MRCMap2_T : public MRBase<CMap2_T<MAP_TYPE>>
 {
 public:
 
-	using Self = MRCMap2_T<MAP_TRAITS, MAP_TYPE>;
-	using CMap2 = CMap2_T<MAP_TRAITS, MAP_TYPE>;
+	using Self = MRCMap2_T<MAP_TYPE>;
+	using CMap2 = CMap2_T<MAP_TYPE>;
 
 	static const Orbit VERTEX = CMap2::VERTEX;
 	static const Orbit EDGE   = CMap2::EDGE;
@@ -53,8 +53,6 @@ public:
 	inline MRCMap2_T() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MRCMap2_T);
 	inline ~MRCMap2_T() {}
-
-
 
 protected:
 	/*******************************************************************************
@@ -95,6 +93,7 @@ protected:
 	}
 
 public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -103,8 +102,8 @@ public:
 			case Orbit::DART: foreach_dart_of_orbit(c, f); break;
 			case Orbit::PHI1: foreach_dart_of_orbit(c, f); break;
 			case Orbit::PHI2: //TODO add a foreach_dart_of_edge to cmap2 f(c.dart); f(phi2(c.dart)); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI21: foreach_dart_of_vertex(c, f); break;
+			case Orbit::PHI1_PHI2: foreach_dart_of_volume(c, f); break;
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
@@ -113,14 +112,12 @@ public:
 	}
 };
 
-template <typename MAP_TRAITS>
 struct MRCMap2Type
 {
-	using TYPE = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
+	using TYPE = MRCMap2_T<MRCMap2Type>;
 };
 
-template <typename MAP_TRAITS>
-using MRCMap2 = MRCMap2_T<MAP_TRAITS, MRCMap2Type<MAP_TRAITS>>;
+using MRCMap2 = MRCMap2_T<MRCMap2Type>;
 
 } // namespace cgogn
 

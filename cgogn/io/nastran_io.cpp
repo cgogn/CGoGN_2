@@ -27,18 +27,22 @@
 
 namespace cgogn
 {
+
 namespace io
 {
+
 template class CGOGN_IO_API NastranIO<Eigen::Vector3d>;
 template class CGOGN_IO_API NastranIO<Eigen::Vector3f>;
 template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API NastranVolumeImport<Eigen::Vector3d>;
+template class CGOGN_IO_API NastranVolumeImport<Eigen::Vector3f>;
+template class CGOGN_IO_API NastranVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API NastranVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API NastranVolumeExport<CMap3<DefaultMapTraits>>;
+template class CGOGN_IO_API NastranVolumeExport<CMap3>;
+
 } // namespace io
+
 } // namespace cgogn

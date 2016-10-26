@@ -6,7 +6,7 @@
 #include <cgogn/modeling/tiling/triangular_tore.h>
 //#include <cgogn/modeling/tiling/triangular_cube.h>
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
@@ -25,14 +25,14 @@ int main(int , char** )
 
     {
         Map2 map;
-        VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("grid");
-        VertexAttribute<Vec3> vertex_twisted_strip = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("twisted_strip");
-        VertexAttribute<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("helicoid");
+        VertexAttribute<Vec3> vertex_grid = map.add_attribute<Vec3, Map2::Vertex>("grid");
+        VertexAttribute<Vec3> vertex_twisted_strip = map.add_attribute<Vec3, Map2::Vertex>("twisted_strip");
+        VertexAttribute<Vec3> vertex_helicoid = map.add_attribute<Vec3, Map2::Vertex>("helicoid");
 
-        //		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
-        map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
-        map.add_attribute<int32, Map2::Face::ORBIT>("faces");
-        map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
+        //		map.add_attribute<int32, Map2::CDart>("darts");
+        map.add_attribute<int32, Map2::Edge>("edges");
+        map.add_attribute<int32, Map2::Face>("faces");
+        map.add_attribute<int32, Map2::Volume>("volumes");
 
         cgogn::modeling::TriangularGrid<Map2> g(map, x, y);
 
@@ -49,14 +49,14 @@ int main(int , char** )
 
     {
         Map2 map;
-        VertexAttribute<Vec3> vertex_cylinder = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cylinder");
-        VertexAttribute<Vec3> vertex_sphere = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("sphere");
-        VertexAttribute<Vec3> vertex_cone = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cone");
+        VertexAttribute<Vec3> vertex_cylinder = map.add_attribute<Vec3, Map2::Vertex>("cylinder");
+        VertexAttribute<Vec3> vertex_sphere = map.add_attribute<Vec3, Map2::Vertex>("sphere");
+        VertexAttribute<Vec3> vertex_cone = map.add_attribute<Vec3, Map2::Vertex>("cone");
 
-		//		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
-        map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
-        map.add_attribute<int32, Map2::Face::ORBIT>("faces");
-        map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
+		//		map.add_attribute<int32, Map2::CDart>("darts");
+        map.add_attribute<int32, Map2::Edge>("edges");
+        map.add_attribute<int32, Map2::Face>("faces");
+        map.add_attribute<int32, Map2::Volume>("volumes");
 
         cgogn::modeling::TriangularCylinder<Map2> g(map, x, y);
 
@@ -78,12 +78,12 @@ int main(int , char** )
 
     {
         Map2 map;
-        VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("tore");
+        VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex>("tore");
 
-		//		map.add_attribute<int32, Map2::CDart::ORBIT>("darts");
-		map.add_attribute<int32, Map2::Edge::ORBIT>("edges");
-        map.add_attribute<int32, Map2::Face::ORBIT>("faces");
-        map.add_attribute<int32, Map2::Volume::ORBIT>("volumes");
+		//		map.add_attribute<int32, Map2::CDart>("darts");
+		map.add_attribute<int32, Map2::Edge>("edges");
+        map.add_attribute<int32, Map2::Face>("faces");
+        map.add_attribute<int32, Map2::Volume>("volumes");
 
         cgogn::modeling::TriangularTore<Map2> g(map, x, y);
 
@@ -98,7 +98,7 @@ int main(int , char** )
                 Map2 map;
                 cgogn::modeling::TriangularCube<Map2> g(map, x, y, x);
 
-                VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("cube");
+                VertexAttribute<Vec3> vertex_tore = map.add_attribute<Vec3, Map2::Vertex>("cube");
                 g.embed_into_cube(vertex_tore, 10.0f, 4.0f, 5.0f);
 
                 std::vector<std::pair<cgogn::Orbit,std::string>> att_vec;

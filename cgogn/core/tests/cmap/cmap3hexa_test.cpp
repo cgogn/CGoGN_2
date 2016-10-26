@@ -29,8 +29,8 @@ namespace cgogn
 {
 
 /**
- * \brief The CMap3HexaTest class implements tests on embedded CMap3Hexa
- * It contains a CMap3Hexa to which vertex, edge, face and volume attribute
+ * \brief The CMap3HexaTest class implements tests on embedded CMap3HexaHexa
+ * It contains a CMap3HexaHexa to which vertex, edge, face and volume attribute
  * are added to enforce the indexation mechanism in cell traversals.
  *
  */
@@ -38,26 +38,20 @@ class CMap3HexaTest : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 64;
-	};
-
-	using testCMap3 = CMap3Hexa<MiniMapTraits>;
-	using MapBuilder = testCMap3::Builder;
-	using CDart = testCMap3::CDart;
-	using Vertex2 = testCMap3::Vertex2;
-	using Vertex = testCMap3::Vertex;
-	using Edge2 = testCMap3::Edge2;
-	using Edge = testCMap3::Edge;
-	using Face2 = testCMap3::Face2;
-	using Face = testCMap3::Face;
-	using Volume = testCMap3::Volume;
-	using ConnectedComponent = testCMap3::ConnectedComponent;
+	using MapBuilder = CMap3Hexa::Builder;
+	using CDart = CMap3Hexa::CDart;
+	using Vertex2 = CMap3Hexa::Vertex2;
+	using Vertex = CMap3Hexa::Vertex;
+	using Edge2 = CMap3Hexa::Edge2;
+	using Edge = CMap3Hexa::Edge;
+	using Face2 = CMap3Hexa::Face2;
+	using Face = CMap3Hexa::Face;
+	using Volume = CMap3Hexa::Volume;
+	using ConnectedComponent = CMap3Hexa::ConnectedComponent;
 
 protected:
 
-	testCMap3 cmap_;
+	CMap3Hexa cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -65,9 +59,7 @@ protected:
 //	std::vector<Dart> darts_;
 
 	CMap3HexaTest()
-	{
-
-	}
+	{}
 };
 
 /**
@@ -77,7 +69,7 @@ TEST_F(CMap3HexaTest, topo_1)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo(4u);
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
 
 	mbuild.close_map();
 
@@ -97,13 +89,13 @@ TEST_F(CMap3HexaTest, topo_4)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo(4u);
-	Dart p2 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
+	Dart p2 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p1, p2);
 
-	Dart p3 = mbuild.add_prism_topo(4u);
-	Dart p4 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p3, p4);
+	Dart p3 = mbuild.add_prism_topo_fp(4u);
+	Dart p4 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	mbuild.close_map();
@@ -117,74 +109,34 @@ TEST_F(CMap3HexaTest, topo_4)
 	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2);
 }
 
-
 /**
  * @brief Cutting edges preserves the cell indexation
  */
 TEST_F(CMap3HexaTest, embedded)
 {
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
-
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo(4u);
-	Dart p2 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p1 = mbuild.add_prism_topo_fp(4u);
+	Dart p2 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p1, p2);
 
-	Dart p3 = mbuild.add_prism_topo(4u);
-	Dart p4 = mbuild.add_prism_topo(4u);
-	Dart p5 = mbuild.add_prism_topo(4u);
-	mbuild.sew_volumes(p3, cmap_.phi2(p4));
-	mbuild.sew_volumes(p4, cmap_.phi2(p5));
-	mbuild.sew_volumes(p5, cmap_.phi2(p3));
+	Dart p3 = mbuild.add_prism_topo_fp(4u);
+	Dart p4 = mbuild.add_prism_topo_fp(4u);
+	Dart p5 = mbuild.add_prism_topo_fp(4u);
+	mbuild.sew_volumes_fp(p3, cmap_.phi2(p4));
+	mbuild.sew_volumes_fp(p4, cmap_.phi2(p5));
+	mbuild.sew_volumes_fp(p5, cmap_.phi2(p3));
 
-	// Close the map (remove remaining boundary)
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (cmap_.phi3(d) == d) mbuild.close_hole_topo(d,true);
-	});
+	mbuild.close_map();
 
-	// Embed the map
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (!cmap_.is_boundary(d))
-			mbuild.new_orbit_embedding(CDart(d));
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex2 v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge2 e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face2 f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
-	{
-		mbuild.new_orbit_embedding(w);
-	});
+	cmap_.add_attribute<int32, CDart>("darts");
+	cmap_.add_attribute<int32, Vertex2>("vertices2");
+	cmap_.add_attribute<int32, Vertex>("vertices");
+	cmap_.add_attribute<int32, Edge2>("edges2");
+	cmap_.add_attribute<int32, Edge>("edges");
+	cmap_.add_attribute<int32, Face2>("faces2");
+	cmap_.add_attribute<int32, Face>("faces");
+	cmap_.add_attribute<int32, Volume>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 

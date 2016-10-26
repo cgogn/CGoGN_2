@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 
 #include <cgogn/core/cmap/cmap3.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
@@ -39,20 +38,21 @@ namespace cgogn
  * but do neither tests the containers (refs_, used_, etc.) or the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap3TopoTest : public CMap3<DefaultMapTraits>, public ::testing::Test
+class CMap3TopoTest : public CMap3, public ::testing::Test
 {
 public:
 
-	using Inherit = CMap3<DefaultMapTraits>;
-	using MapBuilder = CMap3Builder_T<CMap3<DefaultMapTraits>>;
-	using Vertex2 = CMap3TopoTest::Vertex2;
-	using Vertex = CMap3TopoTest::Vertex;
-	using Edge2 = CMap3TopoTest::Edge2;
-	using Edge = CMap3TopoTest::Edge;
-	using Face2 = CMap3TopoTest::Face2;
-	using Face = CMap3TopoTest::Face;
-	using Volume = CMap3TopoTest::Volume;
-	using VertexMarker = CMap3TopoTest::CellMarker<Vertex::ORBIT>;
+	using Inherit = CMap3;
+
+	using Vertex2 = Inherit::Vertex2;
+	using Vertex = Inherit::Vertex;
+	using Edge2 = Inherit::Edge2;
+	using Edge = Inherit::Edge;
+	using Face2 = Inherit::Face2;
+	using Face = Inherit::Face;
+	using Volume = Inherit::Volume;
+
+	using VertexMarker = Inherit::CellMarker<Vertex::ORBIT>;
 
 protected:
 
@@ -144,10 +144,10 @@ protected:
 			switch (p)
 			{
 				case 0:
-					darts_.push_back(Inherit::add_pyramid_topo(n));
+					darts_.push_back(add_pyramid_topo_fp(n));
 					break;
 				case 1:
-					darts_.push_back(Inherit::add_prism_topo(n));
+					darts_.push_back(add_prism_topo_fp(n));
 					break;
 				default:
 					break;
@@ -155,8 +155,7 @@ protected:
 		}
 
 		// Close the map
-		MapBuilder mbuild(*this);
-		mbuild.close_map();
+		close_map();
 	}
 };
 
@@ -178,28 +177,28 @@ TEST_F(CMap3TopoTest, add_attribute)
 {
 	add_closed_surfaces();
 
-	add_attribute<int32, CDart::ORBIT>("darts");
+	add_attribute<int32, CDart>("darts");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex2::ORBIT>("vertices2");
+	add_attribute<int32, Vertex2>("vertices2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge2::ORBIT>("edges2");
+	add_attribute<int32, Edge2>("edges2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Edge::ORBIT>("edges");
+	add_attribute<int32, Edge>("edges");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face2::ORBIT>("faces2");
+	add_attribute<int32, Face2>("faces2");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Face>("faces");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Volume::ORBIT>("Volumes");
+	add_attribute<int32, Volume>("Volumes");
 	EXPECT_TRUE(check_map_integrity());
 }
 
@@ -430,23 +429,21 @@ TEST_F(CMap3TopoTest, merge_incident_faces)
  */
 TEST_F(CMap3TopoTest, merge_incident_volumes_of_edge_topo)
 {
-	MapBuilder mbuild(*this);
-
-	Dart p1 = add_prism_topo(6u);
-	Dart p2 = add_prism_topo(6u);
-	mbuild.sew_volumes(phi2(p1), phi2(p2));
-	mbuild.sew_volumes(phi2(phi_1(p1)), phi2(phi1(p2)));
+	Dart p1 = add_prism_topo_fp(6u);
+	Dart p2 = add_prism_topo_fp(6u);
+	sew_volumes_fp(phi2(p1), phi2(p2));
+	sew_volumes_fp(phi2(phi_1(p1)), phi2(phi1(p2)));
 	Dart e1 = phi<21>(p1);
 
-	Dart c1 = add_prism_topo(4u);
-	Dart c2 = add_prism_topo(4u);
-	Dart c3 = add_prism_topo(4u);
-	mbuild.sew_volumes(phi<12>(c1), phi2(c2));
-	mbuild.sew_volumes(phi<12>(c3), phi2(c1));
-	mbuild.sew_volumes(phi<12>(c2), phi2(c3));
+	Dart c1 = add_prism_topo_fp(4u);
+	Dart c2 = add_prism_topo_fp(4u);
+	Dart c3 = add_prism_topo_fp(4u);
+	sew_volumes_fp(phi<12>(c1), phi2(c2));
+	sew_volumes_fp(phi<12>(c3), phi2(c1));
+	sew_volumes_fp(phi<12>(c2), phi2(c3));
 	Dart e2 = phi_1(phi2(c1));
 
-	mbuild.close_map();
+	close_map();
 
 	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
 	uint32 count_edges = nb_cells<Edge::ORBIT>();
@@ -488,17 +485,15 @@ TEST_F(CMap3TopoTest, merge_incident_volumes_of_edge_topo)
  */
 TEST_F(CMap3TopoTest, merge_incident_volumes_of_face_topo)
 {
-	MapBuilder mbuild(*this);
+	Dart p1 = add_prism_topo_fp(3u);
+	Dart p2 = add_prism_topo_fp(3u);
+	sew_volumes_fp(p1, p2);
 
-	Dart p1 = add_prism_topo(3u);
-	Dart p2 = add_prism_topo(3u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p3 = add_pyramid_topo_fp(4u);
+	Dart p4 = add_pyramid_topo_fp(4u);
+	sew_volumes_fp(p3, p4);
 
-	Dart p3 = add_pyramid_topo(4u);
-	Dart p4 = add_pyramid_topo(4u);
-	mbuild.sew_volumes(p3, p4);
-
-	mbuild.close_map();
+	close_map();
 
 	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
 	uint32 count_edges = nb_cells<Edge::ORBIT>();
@@ -536,9 +531,8 @@ TEST_F(CMap3TopoTest, merge_incident_volumes_of_face_topo)
  */
 TEST_F(CMap3TopoTest, cut_volume_topo)
 {
-	Dart p1 = add_prism_topo(6u);
-	MapBuilder mbuild(*this);
-	mbuild.close_map();
+	Dart p1 = add_prism_topo_fp(6u);
+	close_map();
 
 	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
 	uint32 count_edges = nb_cells<Edge::ORBIT>();
@@ -573,12 +567,10 @@ TEST_F(CMap3TopoTest, cut_volume_topo)
  */
 TEST_F(CMap3TopoTest, sew_volumes_topo)
 {
-	MapBuilder mbuild(*this);
+	Dart p1 = add_prism_topo_fp(4u);
+	Dart p2 = add_prism_topo_fp(4u);
 
-	Dart p1 = add_prism_topo(4u);
-	Dart p2 = add_prism_topo(4u);
-
-	mbuild.close_map();
+	close_map();
 
 	uint32 count_vertices = nb_cells<Vertex::ORBIT>();
 	uint32 count_edges = nb_cells<Edge::ORBIT>();
@@ -611,11 +603,11 @@ TEST_F(CMap3TopoTest, close_map)
 //	add_closed_surfaces();
 
 //	// add attributes to initialize the indexation
-//	add_attribute<int, CDart::ORBIT>("darts");
-//	add_attribute<int, Vertex::ORBIT>("vertices");
-//	add_attribute<int, Edge::ORBIT>("edges");
-//	add_attribute<int, Face::ORBIT>("faces");
-//	add_attribute<int, Volume::ORBIT>("volumes");
+//	add_attribute<int, CDart>("darts");
+//	add_attribute<int, Vertex>("vertices");
+//	add_attribute<int, Edge>("edges");
+//	add_attribute<int, Face>("faces");
+//	add_attribute<int, Volume>("volumes");
 //	EXPECT_TRUE(check_map_integrity());
 
 //	// create some random holes (full removal or partial unsewing of faces)
@@ -669,19 +661,17 @@ TEST_F(CMap3TopoTest, close_map)
  */
 TEST_F(CMap3TopoTest, nb_connected_components)
 {
-	MapBuilder mbuild(*this);
+	Dart p1 = add_prism_topo_fp(3u);
+	Dart p2 = add_prism_topo_fp(3u);
+	sew_volumes_fp(p1, p2);
 
-	Dart p1 = add_prism_topo(3u);
-	Dart p2 = add_prism_topo(3u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p3 = add_pyramid_topo_fp(4u);
+	Dart p4 = add_pyramid_topo_fp(4u);
+	sew_volumes_fp(p3, p4);
 
-	Dart p3 = add_pyramid_topo(4u);
-	Dart p4 = add_pyramid_topo(4u);
-	mbuild.sew_volumes(p3, p4);
+	add_prism_topo_fp(5u);
 
-	add_prism_topo(5u);
-
-	mbuild.close_map();
+	close_map();
 
 	EXPECT_EQ(nb_connected_components(), 3u);
 }

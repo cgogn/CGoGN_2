@@ -38,7 +38,7 @@ namespace cgogn
  * but do neither tests the containers (refs_, used_, etc.) or the iterators.
  * These last tests are implemented in another test suite.
  */
-class CMap1TopoTest : public CMap1<DefaultMapTraits>, public ::testing::Test
+class CMap1TopoTest : public CMap1, public ::testing::Test
 {
 public:
 
@@ -117,10 +117,10 @@ TEST_F(CMap1TopoTest, add_attribute)
 	add_vertices(NB_MAX);
 	add_faces(NB_MAX);
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Face>("faces");
 	EXPECT_TRUE(check_map_integrity());
 }
 

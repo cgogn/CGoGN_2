@@ -38,26 +38,20 @@ class CMap3TetraTest : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap3 = CMap3Tetra<MiniMapTraits>;
-	using MapBuilder = testCMap3::Builder;
-	using CDart = testCMap3::CDart;
-	using Vertex2 = testCMap3::Vertex2;
-	using Vertex = testCMap3::Vertex;
-	using Edge2 = testCMap3::Edge2;
-	using Edge = testCMap3::Edge;
-	using Face2 = testCMap3::Face2;
-	using Face = testCMap3::Face;
-	using Volume = testCMap3::Volume;
-	using ConnectedComponent = testCMap3::ConnectedComponent;
+	using MapBuilder = CMap3Tetra::Builder;
+	using CDart = CMap3Tetra::CDart;
+	using Vertex2 = CMap3Tetra::Vertex2;
+	using Vertex = CMap3Tetra::Vertex;
+	using Edge2 = CMap3Tetra::Edge2;
+	using Edge = CMap3Tetra::Edge;
+	using Face2 = CMap3Tetra::Face2;
+	using Face = CMap3Tetra::Face;
+	using Volume = CMap3Tetra::Volume;
+	using ConnectedComponent = CMap3Tetra::ConnectedComponent;
 
 protected:
 
-	testCMap3 cmap_;
+	CMap3Tetra cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -69,14 +63,14 @@ protected:
 //		darts_.reserve(NB_MAX);
 //		std::srand(uint32(std::time(0)));
 
-//		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-//		cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-//		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-//		cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-//		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-//		cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-//		cmap_.add_attribute<int32, Face::ORBIT>("faces");
-//		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+//		cmap_.add_attribute<int32, CDart>("darts");
+//		cmap_.add_attribute<int32, Vertex2>("vertices2");
+//		cmap_.add_attribute<int32, Vertex>("vertices");
+//		cmap_.add_attribute<int32, Edge2>("edges2");
+//		cmap_.add_attribute<int32, Edge>("edges");
+//		cmap_.add_attribute<int32, Face2>("faces2");
+//		cmap_.add_attribute<int32, Face>("faces");
+//		cmap_.add_attribute<int32, Volume>("volumes");
 	}
 };
 
@@ -87,7 +81,7 @@ TEST_F(CMap3TetraTest, topo_1)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_pyramid_topo(3u);
+	Dart p1 = mbuild.add_pyramid_topo_fp(3u);
 
 	mbuild.close_map();
 
@@ -107,13 +101,13 @@ TEST_F(CMap3TetraTest, topo_4)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_pyramid_topo(3u);
-	Dart p2 = mbuild.add_pyramid_topo(3u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p1 = mbuild.add_pyramid_topo_fp(3u);
+	Dart p2 = mbuild.add_pyramid_topo_fp(3u);
+	mbuild.sew_volumes_fp(p1, p2);
 
-	Dart p3 = mbuild.add_pyramid_topo(3u);
-	Dart p4 = mbuild.add_pyramid_topo(3u);
-	mbuild.sew_volumes(p3, p4);
+	Dart p3 = mbuild.add_pyramid_topo_fp(3u);
+	Dart p4 = mbuild.add_pyramid_topo_fp(3u);
+	mbuild.sew_volumes_fp(p3, p4);
 
 	// Close the map (remove remaining boundary)
 	mbuild.close_map();
@@ -127,74 +121,34 @@ TEST_F(CMap3TetraTest, topo_4)
 	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2);
 }
 
-
 /**
  * @brief Cutting edges preserves the cell indexation
  */
 TEST_F(CMap3TetraTest, embedded)
 {
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
-
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_pyramid_topo(3u);
-	Dart p2 = mbuild.add_pyramid_topo(3u);
-	mbuild.sew_volumes(p1, p2);
+	Dart p1 = mbuild.add_pyramid_topo_fp(3u);
+	Dart p2 = mbuild.add_pyramid_topo_fp(3u);
+	mbuild.sew_volumes_fp(p1, p2);
 
-	Dart p3 = mbuild.add_pyramid_topo(3u);
-	Dart p4 = mbuild.add_pyramid_topo(3u);
-	Dart p5 = mbuild.add_pyramid_topo(3u);
-	mbuild.sew_volumes(p3, cmap_.phi2(p4));
-	mbuild.sew_volumes(p4, cmap_.phi2(p5));
-	mbuild.sew_volumes(p5, cmap_.phi2(p3));
+	Dart p3 = mbuild.add_pyramid_topo_fp(3u);
+	Dart p4 = mbuild.add_pyramid_topo_fp(3u);
+	Dart p5 = mbuild.add_pyramid_topo_fp(3u);
+	mbuild.sew_volumes_fp(p3, cmap_.phi2(p4));
+	mbuild.sew_volumes_fp(p4, cmap_.phi2(p5));
+	mbuild.sew_volumes_fp(p5, cmap_.phi2(p3));
 
-	// Close the map (remove remaining boundary)
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (cmap_.phi3(d) == d) mbuild.close_hole_topo(d,true);
-	});
+	mbuild.close_map();
 
-	// Embed the map
-	cmap_.foreach_dart([&] (Dart d)
-	{
-		if (!cmap_.is_boundary(d))
-			mbuild.new_orbit_embedding(CDart(d));
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex2 v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Vertex v)
-	{
-		mbuild.new_orbit_embedding(v);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge2 e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Edge e)
-	{
-		mbuild.new_orbit_embedding(e);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face2 f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Face f)
-	{
-		mbuild.new_orbit_embedding(f);
-	});
-	cmap_.foreach_cell<FORCE_DART_MARKING>([&] (Volume w)
-	{
-		mbuild.new_orbit_embedding(w);
-	});
+	cmap_.add_attribute<int32, CDart>("darts");
+	cmap_.add_attribute<int32, Vertex2>("vertices2");
+	cmap_.add_attribute<int32, Vertex>("vertices");
+	cmap_.add_attribute<int32, Edge2>("edges2");
+	cmap_.add_attribute<int32, Edge>("edges");
+	cmap_.add_attribute<int32, Face2>("faces2");
+	cmap_.add_attribute<int32, Face>("faces");
+	cmap_.add_attribute<int32, Volume>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
@@ -221,7 +175,6 @@ TEST_F(CMap3TetraTest, embedded)
 	cmap_.foreach_incident_vertex(Volume(p4),[&] (Vertex){ ++nb; });
 	EXPECT_EQ(nb,4);
 
-
 	nb=0;
 	cmap_.foreach_adjacent_edge_through_vertex(Edge(p3),[&] (Edge){ ++nb; });
 	EXPECT_EQ(nb,6);
@@ -246,8 +199,6 @@ TEST_F(CMap3TetraTest, embedded)
 	nb=0;
 	cmap_.foreach_adjacent_vertex_through_volume(Vertex(p6),[&] (Vertex){ ++nb; });
 	EXPECT_EQ(nb,4);
-
 }
-
 
 } // namespace cgogn

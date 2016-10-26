@@ -49,7 +49,7 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 using Vertex = Map2::Vertex;
 using Edge = Map2::Edge;
 
@@ -142,17 +142,17 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Vertex>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	map_.add_attribute(vertex_position2_, "position2");
+	vertex_position2_ = map_.template add_attribute<Vec3, Vertex>("position2");
 	map_.copy_attribute(vertex_position2_, vertex_position_);
 
-	map_.add_attribute(vertex_normal_, "normal");
+	vertex_normal_ = map_.template add_attribute<Vec3, Vertex>("normal");
 	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cell_cache_.build<Vertex>();

@@ -24,7 +24,7 @@
 #ifndef CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 #define CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
@@ -32,8 +32,10 @@ namespace cgogn
 template <typename MAP3>
 class CMap3Builder_T
 {
-	static_assert(MAP3::DIMENSION == 3,"CMap3Builder_T works only with 3D Maps.");
+	static_assert(MAP3::DIMENSION == 3, "CMap3Builder_T works only with 3D Maps.");
+
 public:
+
 	using Self = CMap3Builder_T<MAP3>;
 	using Map3 = MAP3;
 	using CDart = typename Map3::CDart;
@@ -71,14 +73,6 @@ public:
 		map_.attributes_[ORBIT].swap(cac);
 	}
 
-	inline void init_parent_vertex_embedding(Dart d, uint32 emb)
-	{
-		map_.foreach_dart_of_orbit(Vertex2(d), [&] (Dart dit)
-		{
-			map_.template set_embedding<Vertex>(dit, emb);
-		});
-	}
-
 	inline void phi3_sew(Dart d, Dart e)
 	{
 		return map_.phi3_sew(d,e);
@@ -89,19 +83,19 @@ public:
 		return map_.phi3_unsew(d);
 	}
 
-	inline Dart add_prism_topo(uint32 nb_edges)
+	inline Dart add_prism_topo_fp(std::size_t size)
 	{
-		return map_.add_prism_topo(nb_edges);
+		return map_.add_prism_topo_fp(size);
 	}
 
-	inline Dart add_pyramid_topo(uint32 nb_edges)
+	inline Dart add_pyramid_topo_fp(std::size_t size)
 	{
-		return map_.add_pyramid_topo(nb_edges);
+		return map_.add_pyramid_topo_fp(size);
 	}
 
-	inline Dart add_stamp_volume_topo()
+	inline Dart add_stamp_volume_topo_fp()
 	{
-		return map_.add_stamp_volume_topo();
+		return map_.add_stamp_volume_topo_fp();
 	}
 
 	template <class CellType>
@@ -110,35 +104,21 @@ public:
 		map_.template set_embedding<CellType>(d, emb);
 	}
 
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.template set_orbit_embedding<CellType>(c, emb);
+	}
+
 	template <class CellType>
 	inline void new_orbit_embedding(CellType c)
 	{
 		map_.new_orbit_embedding(c);
 	}
 
-	/**
-	 * @brief sew two volumes along a face
-	 * The darts given in the Volume parameters must be part of Face2 that have
-	 * a similar co-degree and whose darts are all phi3 fix points
-	 * @param v1 first volume
-	 * @param v2 second volume
-	 */
-	inline void sew_volumes(Dart v1, Dart v2)
+	inline void sew_volumes_fp(Dart v1, Dart v2)
 	{
-		cgogn_message_assert(map_.phi3(v1) == v1 &&
-							 map_.phi3(v2) == v2 &&
-							 map_.codegree(Face(v1)) == map_.codegree(Face(v1)) &&
-							 !map_.same_orbit(Face2(v1), Face2(v2)), "CMap3Builder sew_volumes: preconditions not respected");
-
-		Dart it1 = v1;
-		Dart it2 = v2;
-		const Dart begin = it1;
-		do
-		{
-			phi3_sew(it1, it2);
-			it1 = map_.phi1(it1);
-			it2 = map_.phi_1(it2);
-		} while (it1 != begin);
+		map_.sew_volumes_fp(v1, v2);
 	}
 
 	template <Orbit ORBIT>
@@ -153,115 +133,9 @@ public:
 		map_.boundary_unmark(c);
 	}
 
-	inline void close_hole_topo(Dart d)
+	inline uint32 close_map()
 	{
-		cgogn_message_assert(map_.phi3(d) == d, "CMap3Builder: close hole called on a dart that is not a phi3 fix point");
-
-		DartMarkerStore dmarker(map_);
-		DartMarkerStore boundary_marker(map_);
-
-		std::vector<Dart> visitedFaces;	// Faces that are traversed
-		visitedFaces.reserve(1024);
-
-		visitedFaces.push_back(d);		// Start with the face of d
-		dmarker.mark_orbit(Face2(d));
-
-		uint32 count = 0u;
-
-		// For every face added to the list
-		for(uint32 i = 0u; i < visitedFaces.size(); ++i)
-		{
-			Dart it = visitedFaces[i];
-			Dart f = it;
-
-			const Dart b = map_.Map3::Inherit::Inherit::add_face_topo(map_.codegree(Face(f)));
-			boundary_marker.mark_orbit(Face2(b));
-			++count;
-
-			Dart bit = b;
-			do
-			{
-				Dart e = map_.phi3(map_.phi2(f));
-				bool found = false;
-				do
-				{
-					if (map_.phi3(e) == e)
-					{
-						found = true;
-						if (!dmarker.is_marked(e))
-						{
-							visitedFaces.push_back(e);
-							dmarker.mark_orbit(Face2(e));
-						}
-					}
-					else
-					{
-						if (boundary_marker.is_marked(e))
-						{
-							found = true;
-							map_.phi2_sew(e, bit);
-						}
-						else
-							e = map_.phi3(map_.phi2(e));
-					}
-				} while(!found);
-
-				phi3_sew(f, bit);
-				bit = map_.phi_1(bit);
-				f = map_.phi1(f);
-			} while(f != it);
-		}
-	}
-
-	/**
-	 * @brief close_map : /!\ DO NOT USE /!\ Close the map removing topological holes (only for import/creation)
-	 * Add volumes to the map that close every existing hole.
-	 * @return the number of closed holes
-	 */
-	inline void close_map()
-	{
-		// Search the map for topological holes (fix points of phi3)
-		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
-		map_.foreach_dart([&] (Dart d)
-		{
-			if (map_.phi3(d) == d)
-				fix_point_darts->push_back(d);
-		});
-		for (Dart d : (*fix_point_darts))
-		{
-			if (map_.phi3(d) == d)
-			{
-				close_hole_topo(d);
-				map_.boundary_mark(Volume(map_.phi3(d)));
-
-				const Volume new_volume(map_.phi3(d));
-
-				if (map_.template is_embedded<Vertex>())
-				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
-					{
-						map_.template copy_embedding<Vertex>(it, map_.phi1(map_.phi3(it)));
-					});
-				}
-
-				if (map_.template is_embedded<Edge>())
-				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
-					{
-						map_.template copy_embedding<Edge>(it, map_.phi3(it));
-					});
-				}
-
-				if (map_.template is_embedded<Face>())
-				{
-					map_.foreach_dart_of_orbit(new_volume, [this] (Dart it)
-					{
-						map_.template copy_embedding<Face>(it, map_.phi3(it));
-					});
-				}
-			}
-		}
-		dart_buffers()->release_buffer(fix_point_darts);
+		return map_.close_map();
 	}
 
 private:
@@ -269,14 +143,6 @@ private:
 	Map3& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-extern template class CGOGN_CORE_API cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_BUILDER_CPP_))
-
-using CMap3Builder = cgogn::CMap3Builder_T<cgogn::CMap3<cgogn::DefaultMapTraits>>;
-
 } // namespace cgogn
 
-
 #endif // CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
-

@@ -41,37 +41,29 @@ namespace cgogn
  */
 class CMap2QuadTest : public ::testing::Test
 {
-
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap2Quad = CMap2Quad<MiniMapTraits>;
-	using MapBuilder = testCMap2Quad::Builder;
-	using CDart = testCMap2Quad::CDart;
-	using Vertex = testCMap2Quad::Vertex;
-	using Edge = testCMap2Quad::Edge;
-	using Face = testCMap2Quad::Face;
-	using Volume = testCMap2Quad::Volume;
+	using MapBuilder = CMap2Quad::Builder;
+	using CDart = CMap2Quad::CDart;
+	using Vertex = CMap2Quad::Vertex;
+	using Edge = CMap2Quad::Edge;
+	using Face = CMap2Quad::Face;
+	using Volume = CMap2Quad::Volume;
 
 protected:
 
-	testCMap2Quad cmap_;
+	CMap2Quad cmap_;
 
 	CMap2QuadTest()
-	{
-	}
+	{}
 
 	void embed_map()
 	{
-		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int32, Face::ORBIT>("faces");
-		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+		cmap_.add_attribute<int32, CDart>("darts");
+		cmap_.add_attribute<int32, Vertex>("vertices");
+		cmap_.add_attribute<int32, Edge>("edges");
+		cmap_.add_attribute<int32, Face>("faces");
+		cmap_.add_attribute<int32, Volume>("volumes");
 	}
 };
 
@@ -107,8 +99,8 @@ TEST_F(CMap2QuadTest, builder)
 {
 	MapBuilder builder(cmap_);
 
-	Dart d1 = builder.add_face_topo_parent(4);
-	Dart d2 = builder.add_face_topo_parent(4);
+	Dart d1 = builder.add_face_topo_fp(4);
+	Dart d2 = builder.add_face_topo_fp(4);
 
 	builder.phi2_sew(d1,d2);
 
@@ -143,7 +135,7 @@ TEST_F(CMap2QuadTest, add_hexa)
 TEST_F(CMap2QuadTest, extrude_quad)
 {
 	MapBuilder builder(cmap_);
-	Dart d1 = builder.add_face_topo_parent(4);
+	Dart d1 = builder.add_face_topo_fp(4);
 	builder.close_map();
 	embed_map();
 
