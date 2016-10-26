@@ -36,23 +36,24 @@
 #include <cgogn/geometry/algos/normal.h>
 
 #include <cgogn/rendering/map_render.h>
-#include <cgogn/rendering/shaders/shader_flat.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
+
+#include <cgogn/rendering/transparency_drawer.h>
+
+
+
 
 using namespace cgogn::numerics;
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
-
 
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
+
 
 
 class ViewerTransparency : public QOGLViewer
@@ -69,6 +70,7 @@ public:
 	void import(const std::string& surface_mesh);
 	virtual ~ViewerTransparency();
 	virtual void closeEvent(QCloseEvent *e);
+	virtual void resizeGL(int width, int height);
 
 private:
 
@@ -78,15 +80,14 @@ private:
 	cgogn::geometry::AABB<Vec3> bb_;
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
-	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<cgogn::rendering::ShaderPointSprite::Param> param_point_sprite_;
+
+	std::unique_ptr<cgogn::rendering::FlatTransparencyDrawer> transp_drawer_;
 
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
 
 	bool draw_points_;
-	bool draw_transparent_;
-	bool transparent_method_2_;
 };
 
 
@@ -124,7 +125,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 {
 	render_.reset();
 	vbo_pos_.reset();
-	param_flat_.reset();
+	transp_drawer_.reset();
 	param_point_sprite_.reset();
 }
 
@@ -134,11 +135,9 @@ ViewerTransparency::ViewerTransparency() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	param_flat_(nullptr),
+	transp_drawer_(nullptr),
 	param_point_sprite_(nullptr),
-	draw_points_(true),
-	draw_transparent_(true),
-	transparent_method_2_(true)
+	draw_points_(true)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -148,15 +147,6 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_P:
 			draw_points_ = !draw_points_;
 			break;
-		case Qt::Key_T:
-			draw_transparent_ = !draw_transparent_;
-			break;
-		case Qt::Key_Y:
-			transparent_method_2_ = !transparent_method_2_;
-			if (transparent_method_2_)
-				cgogn_log_info("transp method") << "threaded";
-			else
-				cgogn_log_info("transp method ") << "simple";
 		default:
 			break;
 	}
@@ -173,7 +163,6 @@ void ViewerTransparency::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	// begin with opaque objects
 	if (draw_points_)
 	{
 		param_point_sprite_->bind(proj,view);
@@ -181,45 +170,7 @@ void ViewerTransparency::draw()
 		param_point_sprite_->release();
 	}
 
-	if (draw_transparent_)
-	{
-
-		if (transparent_method_2_)
-			render_->sort_triangles_center_z<Vec3>(vertex_position_, view);
-		else
-		{
-			cgogn::rendering::transform_position<Vec3>(map_, vertex_position_, vertex_transfo_, view);
-			//  can be done with custom projection method
-			//	map_.const_attribute_container<Map2::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i, uint32)
-			//	{
-			//		QVector3D P = view.map(QVector3D(vertex_position_[i][0],vertex_position_[i][1],vertex_position_[i][2]));
-			//		vertex_transfo_[i]= Vec3(P[0],P[1],P[2]);
-			//	});
-
-			render_->sort_triangles_center_z(vertex_transfo_);
-			//  can be done with custom compare function
-			//	render_->sort_triangles([&] (const std::array<uint32,3>& ta, const std::array<uint32,3>& tb)
-			//	{
-			//		auto za = vertex_transfo_[ta[0]][2] + vertex_transfo_[ta[1]][2] + vertex_transfo_[ta[2]][2];
-			//		auto zb = vertex_transfo_[tb[0]][2] + vertex_transfo_[tb[1]][2] + vertex_transfo_[tb[2]][2];
-			//		return za < zb;
-			//	});
-		}
-
-		param_flat_->bind(proj,view);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		render_->draw(cgogn::rendering::TRIANGLES);
-		glDisable(GL_BLEND);
-		param_flat_->release();
-	}
-	else
-	{
-		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering::TRIANGLES);
-		param_flat_->release();
-	}
-
+	transp_drawer_->draw(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
@@ -243,21 +194,26 @@ void ViewerTransparency::init()
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
 
-
-	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
-	param_flat_->set_position_vbo(vbo_pos_.get()); // use vbo out from sorting
-	param_flat_->front_color_ = QColor(0,200,0,120);
-	param_flat_->back_color_ = QColor(0,0,200,120);
-	param_flat_->ambiant_color_ = QColor(0,0,0,0);
-
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());
 	param_point_sprite_->size_ = bb_.diag_size()/1000.0f;
 	param_point_sprite_->color_ = QColor(200,0,0);
 
+	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->size().width(),this->size().height(),this);
+	transp_drawer_->set_position_vbo(vbo_pos_.get());
+	transp_drawer_->set_front_color(QColor(0,250,0,120));
+	transp_drawer_->set_back_color(QColor(0,0,250,120));
+
 	start_fps_ = std::chrono::system_clock::now();
 	nb_fps_ = 0;
 }
+
+void ViewerTransparency::resizeGL(int w ,int h)
+{
+	transp_drawer_->resize(w,h);
+	QOGLViewer::resizeGL(w,h);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -270,6 +226,8 @@ int main(int argc, char** argv)
 	}
 	else
 		surface_mesh = std::string(argv[1]);
+
+//	std::string surface_mesh("/home/thery/Data/Cubes.off");
 
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
