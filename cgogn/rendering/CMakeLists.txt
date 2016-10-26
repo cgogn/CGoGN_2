@@ -28,7 +28,6 @@ set(HEADER_FILES
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
-	transparency_sorting.h
 	transparency_drawer.h
 )
 
@@ -52,7 +51,6 @@ set(SOURCE_FILES
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
-	transparency_sorting.cpp
 	transparency_drawer.cpp
 )
 
