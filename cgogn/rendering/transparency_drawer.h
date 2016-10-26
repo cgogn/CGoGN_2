@@ -219,8 +219,8 @@ public:
 
 	/**
 	 * @brief create and init
-	 * @param w
-	 * @param h
+	 * @param w width of GL widget (do not forget to multiply by devicePixelRatio())
+	 * @param h height GL widget (do not forget to multiply by devicePixelRatio())
 	 * @param ogl33
 	 */
 	FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
@@ -228,8 +228,8 @@ public:
 
 	/**
 	 * @brief resize call_back need to be called when resize windows
-	 * @param w
-	 * @param h
+	 * @param w width of GL widget (do not forget to multiply by devicePixelRatio())
+	 * @param h height GL widget (do not forget to multiply by devicePixelRatio())
 	 */
 	void resize(int w, int h);
 

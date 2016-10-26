@@ -235,7 +235,7 @@ const char* ShaderTranspQuad::fragment_shader_source_ =
 "out vec4 fragColor;\n"
 "void main(void)\n"
 "{\n"
-"	gl_FragDepth = texture(depth_texture, tc);"
+"	gl_FragDepth = texture(depth_texture, tc).r;\n"
 "	fragColor = texture(rgba_texture, tc);\n"
 "}\n";
 
@@ -310,11 +310,11 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(w,h,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F);
-	fbo_layer_->addColorAttachment(w,h);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F); // first depth
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 
 	ogl33_->glGenQueries(1, &oq_transp);
 }
@@ -324,11 +324,11 @@ void FlatTransparencyDrawer::resize(int w, int h)
 	width_ = w;
 	height_ = h;
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(w,h,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F);
-	fbo_layer_->addColorAttachment(w,h);
-	fbo_layer_->addColorAttachment(w,h,GL_R32F); // first depth
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 }
 
 

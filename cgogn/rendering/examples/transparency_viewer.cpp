@@ -199,7 +199,7 @@ void ViewerTransparency::init()
 	param_point_sprite_->size_ = bb_.diag_size()/1000.0f;
 	param_point_sprite_->color_ = QColor(200,0,0);
 
-	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->size().width(),this->size().height(),this);
+	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
 	transp_drawer_->set_front_color(QColor(0,250,0,120));
 	transp_drawer_->set_back_color(QColor(0,0,250,120));
@@ -210,7 +210,7 @@ void ViewerTransparency::init()
 
 void ViewerTransparency::resizeGL(int w ,int h)
 {
-	transp_drawer_->resize(w,h);
+	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
 	QOGLViewer::resizeGL(w,h);
 }
 
