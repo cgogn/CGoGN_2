@@ -73,8 +73,6 @@ const char* ShaderFlatTransp::fragment_shader_source_ =
 "	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
 "	vec3 L = normalize(lightPosition-pos);\n"
 "	float lambert = dot(N,L);\n"
-"	vec4 fColor=vec4(1,0,0,0);\n"
-
 "	vec3 color;\n"
 "	float alpha;\n"
 "	if (gl_FrontFacing)\n"
@@ -83,7 +81,7 @@ const char* ShaderFlatTransp::fragment_shader_source_ =
 "		if (cull_back_face) discard;\n"
 "		 else { color = ambiant_color.rgb+lambert*back_color.rgb; alpha = back_color.a;}\n"
 "	vec4 dst = texture(rgba_texture, tc.xy);\n"
-"	color_out = vec4( (dst.a* (alpha * color) + dst.rgb),(1.0-alpha)*dst.a );"
+"	color_out = vec4( (dst.a * (alpha * color) + dst.rgb), (1.0-alpha)*dst.a);"
 "	depth_out = tc.z;\n"
 "}\n";
 
@@ -216,8 +214,6 @@ const char* ShaderTranspQuad::vertex_shader_source_ =
 "void main(void)\n"
 "{\n"
 "	vec4 vertices[4] = vec4[4](vec4(-1.0, -1.0, 0.0, 1.0), vec4(1.0, -1.0, 0.0, 1.0), vec4(-1.0, 1.0, 0.0, 1.0), vec4(1.0, 1.0, 0.0, 1.0));\n"
-//"	vec2 texCoord[4] = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n"
-//"	tc = texCoord[gl_VertexID];\n"
 "	gl_Position = vertices[gl_VertexID];\n"
 "	tc = (gl_Position.xy + vec2(1,1))/2;\n"
 "}\n";
@@ -231,7 +227,7 @@ const char* ShaderTranspQuad::fragment_shader_source_ =
 "void main(void)\n"
 "{\n"
 "	vec4 color = texture(rgba_texture, tc);"
-"	if (color.a <= 0.001) discard;"
+"	if (color.a <= 0.0) discard;"
 "	gl_FragDepth = texture(depth_texture, tc).r;\n"
 "	fragColor = color;\n"
 "}\n";
@@ -307,7 +303,7 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_);
@@ -321,7 +317,7 @@ void FlatTransparencyDrawer::resize(int w, int h)
 	width_ = w;
 	height_ = h;
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth/*,GL_TEXTURE_2D,GL_RGBA32F*/);
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_);

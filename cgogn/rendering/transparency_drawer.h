@@ -284,7 +284,6 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 	ogl33_->glDrawBuffers(1,clear_buff);
 	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
 	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
-	ogl33_->glClearColor(0.0f,0.0f,0.0f,0.0f);
 
 	ogl33_->glDrawBuffers(1,buffs);
 	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -326,7 +325,7 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 
 			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,0,0,width_,height_,0);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,/*GL_RGBA8*/GL_RGBA32F,0,0,width_,height_,0);
 		}
 	}
 
@@ -344,7 +343,6 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
 
 	ogl33_->glEnable(GL_BLEND);
-//	ogl33_->glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
 	param_trq_->bind(proj,view);
 	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

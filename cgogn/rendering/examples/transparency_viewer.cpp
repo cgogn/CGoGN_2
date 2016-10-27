@@ -89,6 +89,8 @@ private:
 	int nb_fps_;
 
 	bool draw_points_;
+
+	int mesh_transparency_;
 };
 
 
@@ -140,7 +142,8 @@ ViewerTransparency::ViewerTransparency() :
 	param_point_sprite_(nullptr),
 	wp_(nullptr),
 	wp_rend_(nullptr),
-	draw_points_(true)
+	draw_points_(true),
+	mesh_transparency_(130)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -149,6 +152,16 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 	{
 		case Qt::Key_P:
 			draw_points_ = !draw_points_;
+			break;
+		case Qt::Key_Plus:
+			if (mesh_transparency_<254) mesh_transparency_++;
+			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
+			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
+			break;
+		case Qt::Key_Minus:
+			if (mesh_transparency_>0) mesh_transparency_--;
+			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
+			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		default:
 			break;
@@ -206,8 +219,8 @@ void ViewerTransparency::init()
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
-	transp_drawer_->set_front_color(QColor(0,250,0,100));
-	transp_drawer_->set_back_color(QColor(0,250,0,100));
+	transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
+	transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
 
 	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
 	wp_rend_ = wp_->generate_renderer();
