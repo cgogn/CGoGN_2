@@ -146,7 +146,6 @@ void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template Ver
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Volume = typename MAP::Volume;
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 	std::vector<Vec3f> out_pos;
 	out_pos.reserve(1024 * 1024);
@@ -195,7 +194,6 @@ public:
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
-		using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 		std::vector<Vec3f> out_pos;
 		out_pos.reserve(1024 * 1024);
@@ -260,7 +258,6 @@ public:
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
-		using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
 		std::vector<Vec3f> out_pos;
 		out_pos.reserve(1024 * 1024);

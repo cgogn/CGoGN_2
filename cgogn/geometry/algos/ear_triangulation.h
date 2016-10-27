@@ -104,7 +104,7 @@ class EarTriangulation
 
 	inline static bool cmp_VP(VertexPoly* lhs, VertexPoly* rhs)
 	{
-		if (std::abs(lhs->value_ - rhs->value_) < 0.2f)
+		if (std::abs(lhs->value_ - rhs->value_) < Scalar(0.2))
 			return lhs->length_ < rhs->length_;
 		return lhs->value_ < rhs->value_;
 	}
@@ -136,26 +136,26 @@ class EarTriangulation
 			VEC3 nv1 = v1.cross(v2);
 			VEC3 nv2 = v1.cross(v3);
 
-			if (nv1.dot(normalPoly_) < 0.0)
-				dotpr1 = 10.0f - dotpr1;// not an ear (concave)
-			if (nv2.dot(normalPoly_) < 0.0)
-				dotpr2 = 10.0f - dotpr2;// not an ear (concave)
+			if (nv1.dot(normalPoly_) < Scalar(0))
+				dotpr1 = Scalar(10) - dotpr1;// not an ear (concave)
+			if (nv2.dot(normalPoly_) < Scalar(0))
+				dotpr2 = Scalar(10) - dotpr2;// not an ear (concave)
 
-			bool finished = (dotpr1 >= 5.0f) && (dotpr2 >= 5.0f);
-			for (auto it = ears_.rbegin(); (!finished) && (it != ears_.rend()) && ((*it)->value_ > 5.0f); ++it)
+			bool finished = (dotpr1 >= Scalar(5)) && (dotpr2 >= Scalar(5));
+			for (auto it = ears_.rbegin(); (!finished) && (it != ears_.rend()) && ((*it)->value_ > Scalar(5)); ++it)
 			{
 				Vertex id = (*it)->vert_;
 				const VEC3& P = positions_[id];
 
-				if ((dotpr1 < 5.0f) && (id.dart != vprev->vert_.dart))
+				if ((dotpr1 < Scalar(5)) && (id.dart != vprev->vert_.dart))
 					if (in_triangle(P, normalPoly_, Tb, Tc, Ta))
-						dotpr1 = 5.0f; // not an ear !
+						dotpr1 = Scalar(5); // not an ear !
 
-				if ((dotpr2 < 5.0f) && (id.dart != vnext->vert_.dart) )
+				if ((dotpr2 < Scalar(5)) && (id.dart != vnext->vert_.dart) )
 					if (in_triangle(P, normalPoly_,Td,Ta,Tb))
-						dotpr2 = 5.0f; // not an ear !
+						dotpr2 = Scalar(5); // not an ear !
 
-				finished = (dotpr1 >= 5.0f) && (dotpr2 >= 5.0f);
+				finished = (dotpr1 >= Scalar(5)) && (dotpr2 >= Scalar(5));
 			}
 		}
 
@@ -167,7 +167,7 @@ class EarTriangulation
 		vp2->ear_ = ears_.insert(vp2);
 
 		// polygon if convex only if all vertices have convex angle (last have ...)
-		convex_ = (*(ears_.rbegin()))->value_ < 5.0f;
+		convex_ = (*(ears_.rbegin()))->value_ < Scalar(5);
 	}
 
 	Scalar ear_angle(const VEC3& P1, const VEC3& P2, const VEC3& P3)
@@ -180,8 +180,8 @@ class EarTriangulation
 		Scalar dotpr = std::acos(v1.dot(v2)) / Scalar(M_PI_2);
 
 		VEC3 vn = v1.cross(v2);
-		if (vn.dot(normalPoly_) > 0.0f)
-			dotpr = 10.0f - dotpr; 	// not an ear (concave, store at the end for optimized use for intersections)
+		if (vn.dot(normalPoly_) > Scalar(0))
+			dotpr = Scalar(10) - dotpr; 	// not an ear (concave, store at the end for optimized use for intersections)
 
 		return dotpr;
 	}
@@ -199,7 +199,7 @@ class EarTriangulation
 		{
 			if (in_triangle(positions_[curr->vert_], normalPoly_, Tb, Tc, Ta))
 			{
-				vp->value_ = 5.0f; // not an ear !
+				vp->value_ = Scalar(5); // not an ear !
 				return false;
 			}
 			curr = curr->next_;
@@ -250,7 +250,7 @@ public:
 			Scalar val = ear_angle(P1, P2, P3);
 			VertexPoly* vp = new VertexPoly(Vertex(b), val, Scalar((P3-P1).squaredNorm()), vpp);
 
-			if (vp->value_ > 5.0f)  // concav angle
+			if (vp->value_ > Scalar(5))  // concav angle
 				convex_ = false;
 
 			if (vpp == nullptr)
@@ -280,7 +280,7 @@ public:
 			vpp = prem;
 			for (uint32 i = 0; i < nb_verts_; ++i)
 			{
-				if (vpp->value_ < 5.0f)
+				if (vpp->value_ < Scalar(5))
 					ear_intersection(vpp);
 				vpp->ear_ = ears_.insert(vpp);
 				vpp = vpp->next_;

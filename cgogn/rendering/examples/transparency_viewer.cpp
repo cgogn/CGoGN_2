@@ -138,9 +138,9 @@ ViewerTransparency::ViewerTransparency() :
 	vbo_pos_(nullptr),
 	transp_drawer_(nullptr),
 	param_point_sprite_(nullptr),
-	draw_points_(true),
 	wp_(nullptr),
-	wp_rend_(nullptr)
+	wp_rend_(nullptr),
+	draw_points_(true)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -201,7 +201,7 @@ void ViewerTransparency::init()
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());
-	param_point_sprite_->size_ = bb_.diag_size()/1000.0f;
+	param_point_sprite_->size_ = bb_.diag_size()/1000;
 	param_point_sprite_->color_ = QColor(200,200,0);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);

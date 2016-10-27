@@ -45,10 +45,10 @@ if (NOT MSVC)
 			${NORMAL_WARNINGS}
 			-pedantic
 			-Wno-long-long
-			-Wconversion
 			-Winline
-			-Wsign-conversion
-			-Wdouble-promotion)
+-Wno-sign-conversion
+-Wno-conversion
+-Wno-double-promotion)
 
 	else()
 		set(FULL_WARNINGS
