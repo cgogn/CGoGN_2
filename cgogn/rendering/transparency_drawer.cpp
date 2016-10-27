@@ -105,12 +105,6 @@ ShaderFlatTransp::ShaderFlatTransp()
 	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
 	unif_rgba_texture_sampler_ =  prg_.uniformLocation("rgba_texture");
 	unif_depth_texture_sampler_ = prg_.uniformLocation("depth_texture");
-
-//	std::cout << "unif_front_color_ " << unif_front_color_<< std::endl;
-//	std::cout << "unif_layer_ " << unif_layer_<< std::endl;
-//	std::cout << "unif_depth_texture_sampler_ " << unif_depth_texture_sampler_<< std::endl;
-//	std::cout << "unif_rgba_texture_sampler_ " << unif_rgba_texture_sampler_<< std::endl;
-
 }
 
 void ShaderFlatTransp::set_light_position(const QVector3D& l)
@@ -173,9 +167,9 @@ ShaderParamFlatTransp::ShaderParamFlatTransp(ShaderFlatTransp* sh) :
 	back_color_(0, 250, 0),
 	ambiant_color_(5, 5, 5),
 	light_pos_(10, 100, 1000),
-	bf_culling_(false),
 	rgba_texture_sampler_(0),
-	depth_texture_sampler_(1)
+	depth_texture_sampler_(1),
+	bf_culling_(false)
 {}
 
 void ShaderParamFlatTransp::set_position_vbo(VBO* vbo_pos)
@@ -222,9 +216,10 @@ const char* ShaderTranspQuad::vertex_shader_source_ =
 "void main(void)\n"
 "{\n"
 "	vec4 vertices[4] = vec4[4](vec4(-1.0, -1.0, 0.0, 1.0), vec4(1.0, -1.0, 0.0, 1.0), vec4(-1.0, 1.0, 0.0, 1.0), vec4(1.0, 1.0, 0.0, 1.0));\n"
-"	vec2 texCoord[4] = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n"
-"	tc = texCoord[gl_VertexID];\n"
+//"	vec2 texCoord[4] = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n"
+//"	tc = texCoord[gl_VertexID];\n"
 "	gl_Position = vertices[gl_VertexID];\n"
+"	tc = (gl_Position.xy + vec2(1,1))/2;\n"
 "}\n";
 
 const char* ShaderTranspQuad::fragment_shader_source_ =
@@ -235,8 +230,10 @@ const char* ShaderTranspQuad::fragment_shader_source_ =
 "out vec4 fragColor;\n"
 "void main(void)\n"
 "{\n"
+"	vec4 color = texture(rgba_texture, tc);"
+"	if (color.a <= 0.001) discard;"
 "	gl_FragDepth = texture(depth_texture, tc).r;\n"
-"	fragColor = texture(rgba_texture, tc);\n"
+"	fragColor = color;\n"
 "}\n";
 
 std::unique_ptr<ShaderTranspQuad> ShaderTranspQuad::instance_ = nullptr;

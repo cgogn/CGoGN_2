@@ -39,15 +39,14 @@
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
 #include <cgogn/rendering/transparency_drawer.h>
-
-
+#include <cgogn/rendering/wall_paper.h>
 
 
 using namespace cgogn::numerics;
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 
 using Vec3 = Eigen::Vector3d;
 
@@ -80,9 +79,11 @@ private:
 	cgogn::geometry::AABB<Vec3> bb_;
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::FlatTransparencyDrawer> transp_drawer_;
 	std::unique_ptr<cgogn::rendering::ShaderPointSprite::Param> param_point_sprite_;
 
-	std::unique_ptr<cgogn::rendering::FlatTransparencyDrawer> transp_drawer_;
+	std::shared_ptr<cgogn::rendering::WallPaper> wp_;
+	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_;
 
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
@@ -137,7 +138,9 @@ ViewerTransparency::ViewerTransparency() :
 	vbo_pos_(nullptr),
 	transp_drawer_(nullptr),
 	param_point_sprite_(nullptr),
-	draw_points_(true)
+	draw_points_(true),
+	wp_(nullptr),
+	wp_rend_(nullptr)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -162,6 +165,8 @@ void ViewerTransparency::draw()
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
+
+	wp_rend_->draw(this);
 
 	if (draw_points_)
 	{
@@ -197,12 +202,15 @@ void ViewerTransparency::init()
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());
 	param_point_sprite_->size_ = bb_.diag_size()/1000.0f;
-	param_point_sprite_->color_ = QColor(200,0,0);
+	param_point_sprite_->color_ = QColor(200,200,0);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
-	transp_drawer_->set_front_color(QColor(0,250,0,120));
-	transp_drawer_->set_back_color(QColor(0,0,250,120));
+	transp_drawer_->set_front_color(QColor(0,250,0,100));
+	transp_drawer_->set_back_color(QColor(0,250,0,100));
+
+	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
+	wp_rend_ = wp_->generate_renderer();
 
 	start_fps_ = std::chrono::system_clock::now();
 	nb_fps_ = 0;

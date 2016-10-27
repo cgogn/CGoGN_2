@@ -344,7 +344,8 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
 
 	ogl33_->glEnable(GL_BLEND);
-	ogl33_->glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+//	ogl33_->glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
 	param_trq_->bind(proj,view);
 	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	param_trq_->release();

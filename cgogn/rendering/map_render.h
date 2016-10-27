@@ -383,7 +383,6 @@ public:
 	template <typename VEC3, typename ATTR>
 	void sort_triangles_center_z(const ATTR& pos_in, const QMatrix4x4& view)
 	{
-		using Scalar = typename VEC3::Scalar;
 		if (indices_tri_.empty())
 		{
 			indices_buffers_[TRIANGLES]->bind();
