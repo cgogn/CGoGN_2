@@ -139,7 +139,6 @@ void filter_taubin(
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
 
 	const Scalar lambda = 0.6307;
 	const Scalar mu = 0.6732;
