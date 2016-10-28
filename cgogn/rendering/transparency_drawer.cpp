@@ -65,14 +65,19 @@ const char* ShaderFlatTransp::fragment_shader_source_ =
 "uniform sampler2D depth_texture ;\n"
 "uniform int layer;\n"
 "uniform bool cull_back_face;\n"
+"uniform bool lighted;\n"
 "in vec3 pos;\n"
 "void main()\n"
 "{\n"
 "	vec3 tc = 0.5*projCoord.xyz/projCoord.w + vec3(0.5,0.5,0.5);\n"
 "	if ((layer>0) && (tc.z <= texture(depth_texture, tc.xy).r)) discard;\n"
-"	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
-"	vec3 L = normalize(lightPosition-pos);\n"
-"	float lambert = dot(N,L);\n"
+"	float lambert = 1.0;\n"
+"	if (lighted)\n"
+"	{\n"
+"		vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
+"		vec3 L = normalize(lightPosition-pos);\n"
+"		lambert = dot(N,L);\n"
+"	}\n"
 "	vec3 color;\n"
 "	float alpha;\n"
 "	if (gl_FrontFacing)\n"
@@ -99,6 +104,7 @@ ShaderFlatTransp::ShaderFlatTransp()
 	unif_back_color_ = prg_.uniformLocation("back_color");
 	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
 	unif_light_position_ = prg_.uniformLocation("lightPosition");
+	unif_lighted_ = prg_.uniformLocation("lighted");
 	unif_layer_ = prg_.uniformLocation("layer");
 	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
 	unif_rgba_texture_sampler_ =  prg_.uniformLocation("rgba_texture");
@@ -131,6 +137,12 @@ void ShaderFlatTransp::set_bf_culling(bool cull)
 {
 	prg_.setUniformValue(unif_bf_culling_, cull);
 }
+
+void ShaderFlatTransp::set_lighted(bool lighted)
+{
+	prg_.setUniformValue(unif_lighted_, lighted);
+}
+
 
 void ShaderFlatTransp::set_layer(int layer)
 {
@@ -167,7 +179,8 @@ ShaderParamFlatTransp::ShaderParamFlatTransp(ShaderFlatTransp* sh) :
 	light_pos_(10, 100, 1000),
 	rgba_texture_sampler_(0),
 	depth_texture_sampler_(1),
-	bf_culling_(false)
+	bf_culling_(false),
+	lighted_(true)
 {}
 
 void ShaderParamFlatTransp::set_position_vbo(VBO* vbo_pos)
@@ -193,6 +206,7 @@ void ShaderParamFlatTransp::set_uniforms()
 	sh->set_light_position(light_pos_);
 	sh->set_layer(layer_);
 	sh->set_bf_culling(bf_culling_);
+	sh->set_lighted(lighted_);
 	sh->set_rgba_sampler(rgba_texture_sampler_);
 	sh->set_depth_sampler(depth_texture_sampler_);
 }

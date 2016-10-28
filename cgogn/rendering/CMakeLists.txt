@@ -4,7 +4,7 @@ project(cgogn_rendering
 
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.6.0 COMPONENTS Widgets REQUIRED)
 
 set(HEADER_FILES
 	dll.h

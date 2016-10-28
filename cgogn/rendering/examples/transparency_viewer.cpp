@@ -89,8 +89,9 @@ private:
 	int nb_fps_;
 
 	bool draw_points_;
-
 	int mesh_transparency_;
+	bool lighted_;
+	bool bfc_;
 };
 
 
@@ -143,7 +144,9 @@ ViewerTransparency::ViewerTransparency() :
 	wp_(nullptr),
 	wp_rend_(nullptr),
 	draw_points_(true),
-	mesh_transparency_(130)
+	mesh_transparency_(130),
+	lighted_(true),
+	bfc_(false)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -162,6 +165,14 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 			if (mesh_transparency_>0) mesh_transparency_--;
 			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
 			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
+			break;
+		case Qt::Key_L:
+			lighted_ = !lighted_;
+			transp_drawer_->set_lighted(lighted_);
+			break;
+		case Qt::Key_C:
+			bfc_ = !bfc_;
+			transp_drawer_->set_back_face_culling(bfc_);
 			break;
 		default:
 			break;

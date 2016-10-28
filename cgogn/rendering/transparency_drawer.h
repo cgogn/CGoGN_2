@@ -61,6 +61,7 @@ public:
 	GLuint rgba_texture_sampler_;
 	GLuint depth_texture_sampler_;
 	bool bf_culling_;
+	bool lighted_;
 
 	ShaderParamFlatTransp(ShaderFlatTransp* sh);
 
@@ -85,7 +86,7 @@ protected:
 	GLint unif_ambiant_color_;
 	GLint unif_light_position_;
 	GLint unif_bf_culling_;
-
+	GLint unif_lighted_;
 	GLint unif_layer_;
 	GLint unif_depth_texture_sampler_;
 	GLint unif_rgba_texture_sampler_;
@@ -125,6 +126,8 @@ public:
 	void set_light_position(const QVector3D& l);
 
 	void set_bf_culling(bool cull);
+
+	void set_lighted(bool lighted);
 
 	void set_layer(int layer);
 
@@ -265,6 +268,17 @@ public:
 	{
 		param_flat_->set_position_vbo(vbo_pos);
 	}
+
+	inline void set_back_face_culling(bool cull)
+	{
+		param_flat_->bf_culling_ = cull;
+	}
+
+	inline void  set_lighted(bool lighted)
+	{
+		param_flat_->lighted_=lighted;
+	}
+
 };
 
 
