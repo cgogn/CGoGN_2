@@ -49,7 +49,6 @@ const char* ShaderFlatTransp::vertex_shader_source_ =
 "	pos = pos4.xyz;"
 "	gl_Position = projection_matrix * pos4;\n"
 "   projCoord = gl_Position;\n"
-
 "}\n";
 
 const char* ShaderFlatTransp::fragment_shader_source_ =

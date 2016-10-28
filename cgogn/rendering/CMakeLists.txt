@@ -29,6 +29,7 @@ set(HEADER_FILES
 	wall_paper.h
 	frame_manipulator.h
 	transparency_drawer.h
+	transparency_volume_drawer.h
 )
 
 set(SOURCE_FILES
@@ -52,6 +53,7 @@ set(SOURCE_FILES
 	wall_paper.cpp
 	frame_manipulator.cpp
 	transparency_drawer.cpp
+	transparency_volume_drawer.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
