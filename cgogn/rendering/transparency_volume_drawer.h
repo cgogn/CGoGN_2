@@ -27,7 +27,8 @@
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
+#include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -44,170 +45,16 @@ namespace rendering
 {
 
 
-
-
-class ShaderTransparentVolumes;
-
-class ShaderParamTransparentVolumes : public ShaderParam
-{
-protected:
-
-	void set_uniforms() override;
-
-public:
-
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
-	QVector3D light_position_;
-	float32 explode_factor_;
-
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
-	bool bf_culling_;
-	bool lighted_;
-
-	ShaderParamTransparentVolumes(ShaderTransparentVolumes* sh);
-
-	void set_position_vbo(VBO* vbo_pos);
-
-};
-
-
-class CGOGN_RENDERING_API ShaderTransparentVolumes : public ShaderProgram
-{
-	friend class ShaderParamTransparentVolumes;
-
-protected:
-
-	static const char* vertex_shader_source_;
-	static const char* geometry_shader_source_;
-	static const char* fragment_shader_source_;
-
-	// uniform ids
-	GLint unif_expl_v_;
-	GLint unif_light_position_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
-	GLint unif_color_;
-	GLint unif_bf_culling_;
-	GLint unif_lighted_;
-	GLint unif_layer_;
-	GLint unif_depth_texture_sampler_;
-	GLint unif_rgba_texture_sampler_;
-
-public:
-
-	using Self = ShaderTransparentVolumes;
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTransparentVolumes);
-
-	enum
-	{
-		ATTRIB_POS = 0,
-	};
-
-	void set_explode_volume(float32 x);
-	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
-
-	void set_bf_culling(bool cull);
-	void set_lighted(bool lighted);
-	void set_layer(int layer);
-	void set_rgba_sampler(GLuint rgba_samp);
-	void set_depth_sampler(GLuint depth_samp);
-
-	using Param = ShaderParamTransparentVolumes;
-
-	static std::unique_ptr<Param> generate_param();
-
-protected:
-
-	ShaderTransparentVolumes();
-
-	static std::unique_ptr<ShaderTransparentVolumes> instance_;
-
-};
-
-
-class ShaderTranspQuad2;
-
-class CGOGN_RENDERING_API ShaderParamTranspQuad2 : public ShaderParam
-{
-protected:
-	void set_uniforms() override;
-public:
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
-	ShaderParamTranspQuad2(ShaderTranspQuad2* sh);
-};
-
-
-class CGOGN_RENDERING_API ShaderTranspQuad2 : public ShaderProgram
-{
-	friend class ShaderParamTranspQuad2;
-
-protected:
-
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-
-	// uniform ids
-	GLint unif_depth_texture_sampler_;
-	GLint unif_rgba_texture_sampler_;
-
-public:
-
-	using Self = ShaderTranspQuad2;
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTranspQuad2);
-
-	void set_rgba_sampler(GLuint rgba_samp);
-
-	void set_depth_sampler(GLuint depth_samp);
-
-	using Param = ShaderParamTranspQuad2;
-
-	static std::unique_ptr<Param> generate_param();
-
-private:
-
-	ShaderTranspQuad2();
-	static std::unique_ptr<ShaderTranspQuad2> instance_;
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class CGOGN_RENDERING_API VolumeTransparencyDrawer
 {
 protected:
 
 	using Vec3f = std::array<float32, 3>;
-
 	std::unique_ptr<VBO> vbo_pos_;
-
 	QColor face_color_;
-
 	float32 shrink_v_;
 
-
-
 public:
-
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class VolumeTransparencyDrawer;
@@ -216,7 +63,7 @@ public:
 		VolumeTransparencyDrawer* volume_drawer_data_;
 
 		/// shader for quad blending  with opaque scene
-		std::unique_ptr<cgogn::rendering::ShaderTranspQuad2::Param> param_trq_;
+		std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
 
 		int max_nb_layers_;
 
@@ -340,4 +187,4 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_VOLUME_DRAWER_H_
+#endif // CGOGN_RENDERING_TRANSP_VOLUME_DRAWER_H_

@@ -28,6 +28,9 @@ set(HEADER_FILES
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
+	transparency_shaders/shader_transparent_quad.h
+	transparency_shaders/shader_transparent_flat.h
+	transparency_shaders/shader_transparent_volumes.h
 	transparency_drawer.h
 	transparency_volume_drawer.h
 )
@@ -52,6 +55,9 @@ set(SOURCE_FILES
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
+	transparency_shaders/shader_transparent_quad.cpp
+	transparency_shaders/shader_transparent_flat.cpp
+	transparency_shaders/shader_transparent_volumes.cpp
 	transparency_drawer.cpp
 	transparency_volume_drawer.cpp
 )

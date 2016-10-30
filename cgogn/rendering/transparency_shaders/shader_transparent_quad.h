@@ -21,8 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
+#ifndef CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
+#define CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
 
-#include <cgogn/rendering/transparency_drawer.h>
+#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
+#include <QOpenGLFunctions>
+#include <QColor>
+#include <QOpenGLFramebufferObject>
 
 namespace cgogn
 {
@@ -30,56 +38,57 @@ namespace cgogn
 namespace rendering
 {
 
-FlatTransparencyDrawer::~FlatTransparencyDrawer()
+// forward
+class ShaderTranspQuad;
+
+
+
+class CGOGN_RENDERING_API ShaderParamTranspQuad : public ShaderParam
 {
-	param_flat_.reset();
-	param_trq_.reset();
-	fbo_layer_.reset();
-	if (ogl33_)
-		ogl33_->glDeleteQueries(1, &oq_transp);
-}
+protected:
+	void set_uniforms() override;
+public:
+	GLuint rgba_texture_sampler_;
+	GLuint depth_texture_sampler_;
+	ShaderParamTranspQuad(ShaderTranspQuad* sh);
+};
 
-FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
-	max_nb_layers_(8),
-	param_flat_(nullptr),
-	param_trq_(nullptr),
-	fbo_layer_(nullptr),
-	oq_transp(0u),
-	ogl33_(ogl33),
-	width_(w),
-	height_(h)
+
+class CGOGN_RENDERING_API ShaderTranspQuad : public ShaderProgram
 {
-	param_flat_ = cgogn::rendering::ShaderFlatTransp::generate_param();
-	param_flat_->front_color_ = QColor(0,250,0,120);
-	param_flat_->back_color_ = QColor(0,0,250,120);
-	param_flat_->ambiant_color_ = QColor(0,0,0,0);
+	friend class ShaderParamTranspQuad;
 
-	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
+protected:
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
-	ogl33_->glGenQueries(1, &oq_transp);
-}
+	// uniform ids
+	GLint unif_depth_texture_sampler_;
+	GLint unif_rgba_texture_sampler_;
 
-void FlatTransparencyDrawer::resize(int w, int h)
-{
-	width_ = w;
-	height_ = h;
+public:
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
-}
+	using Self = ShaderTranspQuad;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTranspQuad);
 
+	void set_rgba_sampler(GLuint rgba_samp);
 
+	void set_depth_sampler(GLuint depth_samp);
 
+	using Param = ShaderParamTranspQuad;
+
+	static std::unique_ptr<Param> generate_param();
+
+private:
+
+	ShaderTranspQuad();
+	static std::unique_ptr<ShaderTranspQuad> instance_;
+
+};
 
 } // namespace rendering
 
 } // namespace cgogn
+
+#endif // CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
