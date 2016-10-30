@@ -547,8 +547,8 @@ protected:
 
 		if (mark_boundary)
 		{
-			for (Dart d: *(boundary_marker.marked_darts()))
-				this->set_boundary(d, true);
+			for (Dart db: *(boundary_marker.marked_darts()))
+				this->set_boundary(db, true);
 		}
 	}
 

@@ -48,7 +48,7 @@ inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 	//split the volumes incident to the new vertex
 	for (unsigned int i = 0; i < vd.size(); ++i)
 	{
-		Dart dit = vd[i];
+		/*Dart*/ dit = vd[i];
 
 		std::vector<Dart> v;
 		v.push_back(map.phi1(map.phi1(map.phi2(dit))));
@@ -60,7 +60,7 @@ inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 	return dres;
 }
 
-bool is_tetrahedron(CMap3& map, typename CMap3::Volume w)
+bool is_tetrahedron(CMap3& /*map*/, typename CMap3::Volume /*w*/)
 {
 	return true;
 }
