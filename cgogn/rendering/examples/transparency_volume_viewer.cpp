@@ -354,7 +354,7 @@ int main(int argc, char** argv)
 	std::string volumeMesh;
 	if (argc < 2)
 	{
-		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
+		cgogn_log_debug("transparency_volume_viewer") << "USAGE: " << argv[0] << " [filename]";
 		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
 		cgogn_log_debug("viewer_topo3") << "Using default mesh \"" << volumeMesh << "\".";
 	}

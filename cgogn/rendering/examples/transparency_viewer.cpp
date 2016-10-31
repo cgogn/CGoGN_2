@@ -252,7 +252,7 @@ int main(int argc, char** argv)
 	std::string surface_mesh;
 	if (argc < 2)
 	{
-		cgogn_log_info("simple_viewer") << "USAGE: " << argv[0] << " [filename]";
+		cgogn_log_info("transparency_viewer") << "USAGE: " << argv[0] << " [filename]";
 		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
 		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
 	}
