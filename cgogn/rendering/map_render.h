@@ -397,7 +397,7 @@ public:
 		std::vector<float> tris_z;
 		tris_z.reserve(indices_tri_.size());
 
-		for (int i=0;i<indices_tri_.size();++i)
+		for (uint32 i=0;i<indices_tri_.size();++i)
 		{
 			tris_sorted.push_back(i);
 			const std::array<uint32,3>& tri = indices_tri_[i];
