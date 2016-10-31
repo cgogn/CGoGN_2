@@ -5,7 +5,6 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/map_import.h>
 
-
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 using namespace cgogn::numerics;
 
@@ -59,6 +58,8 @@ int main(int argc, char** argv)
 			++nbf;
 			Vec3 v1 = vertex_position[Map3::Vertex(map.phi1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
 			Vec3 v2 = vertex_position[Map3::Vertex(map.phi_1(f.dart))] - vertex_position[Map3::Vertex(f.dart)];
+			cgogn::unused_parameters(v1,v2);//remove warnings
+
 		});
 
 		uint32 nbv = 0;
