@@ -35,7 +35,7 @@ namespace modeling
 
 inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd);
 
-bool is_tetrahedron(CMap3& map, typename CMap3::Volume w);
+bool is_tetrahedron(CMap3& map, CMap3::Volume w);
 
 //bool is_tetrahedralization(CMap3& map);
 
