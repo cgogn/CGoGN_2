@@ -19,6 +19,7 @@ set(SOURCE_FILES
 	ply_import_test.cpp
 	tet_import_test.cpp
 	vtk_import_test.cpp
+	nastran_import_test.cpp
 )
 
 add_definitions("-DCGOGN_TEST_MESHES_PATH=${CMAKE_SOURCE_DIR}/data/meshes/")
