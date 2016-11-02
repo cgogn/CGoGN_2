@@ -893,9 +893,9 @@ protected:
 		word.reserve(128);
 
 		// printing the 2 first lines
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
@@ -929,7 +929,7 @@ protected:
 		{
 			while(!fp.eof())
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				word.clear();
 				std::istringstream sstream(line);
 				sstream >> word;
@@ -995,7 +995,7 @@ protected:
 								std::ifstream::pos_type previous_pos;
 								do {
 									previous_pos = fp.tellg();
-									std::getline(fp, line);
+									getline_safe(fp, line);
 									sstream.str(line);
 									sstream.clear();
 									word.clear();
@@ -1014,7 +1014,7 @@ protected:
 										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
-										std::getline(fp,line);
+										getline_safe(fp,line);
 										sstream.str(line);
 										sstream.clear();
 										std::string lookup_table;
@@ -1050,12 +1050,12 @@ protected:
 											for (uint32 i = 0u ; i< num_arrays; ++i)
 											{
 												do {
-													std::getline(fp,line);
+													getline_safe(fp,line);
 												} while (line.empty());
 
-												sstream.str(line);
 												sstream.clear();
-												std::string		data_name;
+												sstream.str(line);
+												std::string data_name;
 												uint32	nb_comp;
 												//uint32	nb_data; already declared
 												std::string	data_type;
@@ -1454,7 +1454,7 @@ protected:
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{
-				std::ifstream fp(filename.c_str(), std::ios::in);
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
 				cgogn_assert(fp.good());
 				return this->read_vtk_legacy_file(fp);
 			}

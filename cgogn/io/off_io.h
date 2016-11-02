@@ -66,7 +66,7 @@ protected:
 		line.reserve(512);
 
 		// read OFF header
-		std::getline(fp, line);
+		getline_safe(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
 			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";

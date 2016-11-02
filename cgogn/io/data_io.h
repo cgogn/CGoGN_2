@@ -184,7 +184,7 @@ public:
 //			BUFFER_T buff;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				std::istringstream line_stream(line);
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
@@ -223,7 +223,7 @@ public:
 			std::size_t i = 0ul;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				std::istringstream line_stream(line);
 				bool no_error = static_cast<bool>(line_stream.ignore(1, ' '));
 				while (i < n && no_error)
