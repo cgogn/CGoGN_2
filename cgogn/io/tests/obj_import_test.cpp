@@ -46,8 +46,8 @@ TEST(ImportTest, obj_surface_import)
 
 	EXPECT_TRUE(pos.is_valid());
 	EXPECT_TRUE(map2.check_map_integrity());
-//	EXPECT_EQ(nbv, 706u);
-//	EXPECT_EQ(nbf, 1408u);
+	EXPECT_EQ(nbv, 2500u);
+	EXPECT_EQ(nbf, 4996u);
 }
 
 TEST(ImportTest, obj_normal_surface_import)
