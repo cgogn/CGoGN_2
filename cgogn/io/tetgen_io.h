@@ -78,7 +78,7 @@ protected:
 		{
 			do
 			{
-				std::getline(node_file,line);
+				getline_safe(node_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -90,7 +90,7 @@ protected:
 		{
 			do
 			{
-				std::getline(ele_file,line);
+				getline_safe(ele_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -105,7 +105,7 @@ protected:
 		{
 			do
 			{
-				std::getline(node_file,line);
+				getline_safe(node_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -127,7 +127,7 @@ protected:
 		{
 			do
 			{
-				std::getline(ele_file,line);
+				getline_safe(ele_file,line);
 			} while(line.empty());
 
 			std::istringstream iss(line);

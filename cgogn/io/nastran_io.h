@@ -94,10 +94,10 @@ protected:
 		std::string tag;
 		tag.reserve(32);
 
-		std::getline (file, line);
+		getline_safe (file, line);
 		do
 		{
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (tag !="GRID");
 
@@ -118,7 +118,7 @@ protected:
 			s_v = line.substr(40,8);
 			v[2] = this->parse_scalar(s_v);
 
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (tag =="GRID");
 
@@ -145,7 +145,7 @@ protected:
 					s_v = line.substr(64,8);
 					ids[5] = uint32(std::stoi(s_v));
 
-					std::getline (file, line);
+					getline_safe (file, line);
 					s_v = line.substr(8,8);
 					ids[6] = uint32(std::stoi(s_v));
 					s_v = line.substr(16,8);
@@ -185,7 +185,7 @@ protected:
 				}
 			}
 
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (!file.eof());
 

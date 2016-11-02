@@ -138,7 +138,7 @@ protected:
 		std::string line;
 		line.reserve(1024ul);
 		while(data_stream.good() && line.empty())
-			std::getline(data_stream,line);
+			getline_safe(data_stream, line);
 
 		return line;
 	}
@@ -149,11 +149,11 @@ protected:
 		std::string word;
 		line.reserve(512);
 		word.reserve(128);
-		std::getline(data_stream, line);
+		getline_safe(data_stream, line);
 
 		if (line == "$MeshFormat")
 		{
-			std::getline(data_stream, line);
+			getline_safe(data_stream, line);
 			std::istringstream iss(line);
 			iss >> version_number_ >> file_type_ >> float_size_;
 			if (file_type_ == 1)
@@ -164,7 +164,7 @@ protected:
 				if (one != 1)
 					swap_endianness_ = true;
 			}
-			std::getline(data_stream, line); // $EndMeshFormat
+			getline_safe(data_stream, line); // $EndMeshFormat
 		}
 		else
 		{
@@ -193,7 +193,7 @@ protected:
 
 		for (uint32 i = 0u; i < nb_vertices; ++i)
 		{
-			std::getline(data_stream,line);
+			getline_safe(data_stream,line);
 
 			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
@@ -203,20 +203,20 @@ protected:
 			old_new_indices[old_index] = new_index;
 		}
 
-		std::getline(data_stream,line);
+		getline_safe(data_stream,line);
 		if (line.compare(0, 7, "$ENDNOD") != 0)
 			return false;
-		std::getline(data_stream,line);
+		getline_safe(data_stream,line);
 		if (line.compare(0, 4, "$ELM") != 0)
 			return false;
 
-		std::getline(data_stream,line);
+		getline_safe(data_stream,line);
 		const uint32 nb_elements = uint32(std::stoul(line));
 		this->msh_reserve(nb_elements);
 
 		for (uint32 i = 0u; i < nb_elements; ++i)
 		{
-			std::getline(data_stream,line);
+			getline_safe(data_stream,line);
 			int32 elem_number;
 			int32 elem_type;
 			uint32 physical_entity; // MSH legacy DOC : If reg-phys is equal to zero, the element is considered not to belong to any physical entity.
@@ -255,12 +255,12 @@ protected:
 		if (data_stream.bad())
 			return false;
 
-		std::getline(data_stream, line);
+		getline_safe(data_stream, line);
 		const uint32 nb_vertices = uint32(std::stoul(line));
 
 		for (uint32 i = 0u; i < nb_vertices ; ++i)
 		{
-			std::getline(data_stream,line);
+			getline_safe(data_stream,line);
 
 			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
@@ -284,7 +284,7 @@ protected:
 
 		for (uint32 i = 0u; i < nb_volumes; ++i)
 		{
-			std::getline(data_stream,line);
+			getline_safe(data_stream,line);
 			int32 elem_number;
 			int32 elem_type;
 			uint32 nb_tags;
@@ -325,7 +325,7 @@ protected:
 		if (data_stream.bad())
 			return false;
 
-		std::getline(data_stream, line);
+		getline_safe(data_stream, line);
 		const uint32 nb_vertices = uint32(std::stoul(line));
 
 		std::vector<char> buff;

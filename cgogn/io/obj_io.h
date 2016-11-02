@@ -67,7 +67,7 @@ protected:
 		do
 		{
 			fp >> tag;
-			std::getline(fp, line);
+			getline_safe(fp, line);
 		} while (tag != std::string("v"));
 
 		// lecture des sommets
@@ -96,7 +96,7 @@ protected:
 			}
 
 			fp >> tag;
-			std::getline(fp, line);
+			getline_safe(fp, line);
 		} while (!fp.eof());
 
 		fp.clear();
@@ -105,7 +105,7 @@ protected:
 		do
 		{
 			fp >> tag;
-			std::getline(fp, line);
+			getline_safe(fp, line);
 		} while (tag != std::string("vn") && (!fp.eof()));
 
 		if (tag == "vn")
@@ -128,7 +128,7 @@ protected:
 				}
 
 				fp >> tag;
-				std::getline(fp, line);
+				getline_safe(fp, line);
 			} while (!fp.eof());
 		}
 
@@ -138,7 +138,7 @@ protected:
 		do
 		{
 			fp >> tag;
-			std::getline(fp, line);
+			getline_safe(fp, line);
 		} while (tag != std::string("f"));
 
 		this->faces_nb_edges_.reserve(vertices_id.size() * 2);
@@ -181,7 +181,7 @@ protected:
 				}
 			}
 			fp >> tag;
-			std::getline(fp, line);
+			getline_safe(fp, line);
 		} while (!fp.eof());
 
 		return true;
