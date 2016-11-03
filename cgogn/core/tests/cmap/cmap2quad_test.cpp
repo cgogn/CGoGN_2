@@ -75,10 +75,10 @@ TEST_F(CMap2QuadTest,quads)
 	}
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 40);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 40);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 10);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 10);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 40u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 40u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 10u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 10u);
 
 	embed_map();
 
@@ -88,10 +88,10 @@ TEST_F(CMap2QuadTest,quads)
 	}
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 80);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 80);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 20);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 20);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 80u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 80u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 20u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 20u);
 
 }
 
@@ -107,10 +107,10 @@ TEST_F(CMap2QuadTest, builder)
 	builder.close_map();
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 6);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 7);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 6u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 7u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 2u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1u);
 }
 
 
@@ -120,14 +120,14 @@ TEST_F(CMap2QuadTest, add_hexa)
 	Volume vol = cmap_.add_hexa();
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1u);
 
 	cmap_.foreach_incident_vertex(vol, [&] (Vertex v)
 	{
-		EXPECT_EQ(cmap_.degree(v), 3);
+		EXPECT_EQ(cmap_.degree(v), 3u);
 	});
 }
 
@@ -144,10 +144,10 @@ TEST_F(CMap2QuadTest, extrude_quad)
 	cmap_.extrude_quad(Face(d1));
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 5);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 5u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1u);
 }
 
 

@@ -22,8 +22,7 @@
 *******************************************************************************/
 
 
-#include <cgogn/core/utils/unique_ptr.h>
-#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/transparency_drawer.h>
 
 namespace cgogn
 {
@@ -31,76 +30,55 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderParam::ShaderParam(ShaderProgram* prg) :
-	shader_(prg)
+FlatTransparencyDrawer::~FlatTransparencyDrawer()
 {
-	vao_ = cgogn::make_unique<QOpenGLVertexArrayObject>();
-	vao_->create();
+	param_flat_.reset();
+	param_trq_.reset();
+	fbo_layer_.reset();
+	if (ogl33_)
+		ogl33_->glDeleteQueries(1, &oq_transp);
 }
 
-ShaderParam::~ShaderParam()
-{}
-
-void ShaderParam::bind_vao_only(bool with_uniforms)
+FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
+	max_nb_layers_(8),
+	param_flat_(nullptr),
+	param_trq_(nullptr),
+	fbo_layer_(nullptr),
+	oq_transp(0u),
+	ogl33_(ogl33),
+	width_(w),
+	height_(h)
 {
-	if (with_uniforms)
-		set_uniforms();
-	vao_->bind();
+	param_flat_ = cgogn::rendering::ShaderFlatTransp::generate_param();
+	param_flat_->front_color_ = QColor(0,250,0,120);
+	param_flat_->back_color_ = QColor(0,0,250,120);
+	param_flat_->ambiant_color_ = QColor(0,0,0,0);
+
+	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
+
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+
+	ogl33_->glGenQueries(1, &oq_transp);
 }
 
-void ShaderParam::release_vao_only()
+void FlatTransparencyDrawer::resize(int w, int h)
 {
-	vao_->release();
+	width_ = w;
+	height_ = h;
+
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
+	fbo_layer_->addColorAttachment(width_,height_);
+	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 }
 
-void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	shader_->bind();
-	shader_->set_matrices(proj,mv);
-	set_uniforms();
-	vao_->bind();
-}
 
-void ShaderParam::release()
-{
-	vao_->release();
-	shader_->release();
-}
 
-ShaderProgram::~ShaderProgram()
-{}
-
-void ShaderProgram::get_matrices_uniforms()
-{
-	unif_mv_matrix_ = prg_.uniformLocation("model_view_matrix");
-	unif_projection_matrix_ = prg_.uniformLocation("projection_matrix");
-	unif_normal_matrix_ = prg_.uniformLocation("normal_matrix");
-}
-
-void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	if (unif_projection_matrix_ >= 0)
-		prg_.setUniformValue(unif_projection_matrix_, proj);
-	if (unif_mv_matrix_ >= 0)
-		prg_.setUniformValue(unif_mv_matrix_, mv);
-
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normal_matrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
-	}
-}
-
-void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_mv_matrix_, mv);
-
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normal_matrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
-	}
-}
 
 } // namespace rendering
 

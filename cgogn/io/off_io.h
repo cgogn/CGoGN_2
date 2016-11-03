@@ -122,11 +122,17 @@ protected:
 
 	inline bool import_off_bin(std::istream& fp)
 	{
-		char buffer1[12];
-		fp.read(buffer1,12);
+//		char buffer1[12];
+//		fp.read(buffer1,12);
+//		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
+//		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
 
-		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
-		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
+		union { char ch[12]; uint32 ui[3];} buffer;
+		fp.read(buffer.ch,12);
+
+		const uint32 nb_vertices = swap_endianness_native_big(buffer.ui[0]);
+		const uint32 nb_faces = swap_endianness_native_big(buffer.ui[1]);
+
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 

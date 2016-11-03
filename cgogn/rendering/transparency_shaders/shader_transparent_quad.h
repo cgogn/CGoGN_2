@@ -21,9 +21,16 @@
 *                                                                              *
 *******************************************************************************/
 
+#ifndef CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
+#define CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
 
-#include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+
+#include <QOpenGLFunctions>
+#include <QColor>
+#include <QOpenGLFramebufferObject>
 
 namespace cgogn
 {
@@ -31,77 +38,57 @@ namespace cgogn
 namespace rendering
 {
 
-ShaderParam::ShaderParam(ShaderProgram* prg) :
-	shader_(prg)
+// forward
+class ShaderTranspQuad;
+
+
+
+class CGOGN_RENDERING_API ShaderParamTranspQuad : public ShaderParam
 {
-	vao_ = cgogn::make_unique<QOpenGLVertexArrayObject>();
-	vao_->create();
-}
+protected:
+	void set_uniforms() override;
+public:
+	GLuint rgba_texture_sampler_;
+	GLuint depth_texture_sampler_;
+	ShaderParamTranspQuad(ShaderTranspQuad* sh);
+};
 
-ShaderParam::~ShaderParam()
-{}
 
-void ShaderParam::bind_vao_only(bool with_uniforms)
+class CGOGN_RENDERING_API ShaderTranspQuad : public ShaderProgram
 {
-	if (with_uniforms)
-		set_uniforms();
-	vao_->bind();
-}
+	friend class ShaderParamTranspQuad;
 
-void ShaderParam::release_vao_only()
-{
-	vao_->release();
-}
+protected:
 
-void ShaderParam::bind(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	shader_->bind();
-	shader_->set_matrices(proj,mv);
-	set_uniforms();
-	vao_->bind();
-}
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
 
-void ShaderParam::release()
-{
-	vao_->release();
-	shader_->release();
-}
+	// uniform ids
+	GLint unif_depth_texture_sampler_;
+	GLint unif_rgba_texture_sampler_;
 
-ShaderProgram::~ShaderProgram()
-{}
+public:
 
-void ShaderProgram::get_matrices_uniforms()
-{
-	unif_mv_matrix_ = prg_.uniformLocation("model_view_matrix");
-	unif_projection_matrix_ = prg_.uniformLocation("projection_matrix");
-	unif_normal_matrix_ = prg_.uniformLocation("normal_matrix");
-}
+	using Self = ShaderTranspQuad;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTranspQuad);
 
-void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
-{
-	if (unif_projection_matrix_ >= 0)
-		prg_.setUniformValue(unif_projection_matrix_, proj);
-	if (unif_mv_matrix_ >= 0)
-		prg_.setUniformValue(unif_mv_matrix_, mv);
+	void set_rgba_sampler(GLuint rgba_samp);
 
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normal_matrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
-	}
-}
+	void set_depth_sampler(GLuint depth_samp);
 
-void ShaderProgram::set_view_matrix(const QMatrix4x4& mv)
-{
-	prg_.setUniformValue(unif_mv_matrix_, mv);
+	using Param = ShaderParamTranspQuad;
 
-	if (unif_normal_matrix_ >= 0)
-	{
-		QMatrix3x3 normal_matrix = mv.normalMatrix();
-		prg_.setUniformValue(unif_normal_matrix_, normal_matrix);
-	}
-}
+	static std::unique_ptr<Param> generate_param();
+
+private:
+
+	ShaderTranspQuad();
+	static std::unique_ptr<ShaderTranspQuad> instance_;
+
+};
 
 } // namespace rendering
 
 } // namespace cgogn
+
+#endif // CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_

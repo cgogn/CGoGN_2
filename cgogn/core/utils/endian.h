@@ -235,7 +235,10 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint16 tmp;
 	tmp = reinterpret_cast<const uint16&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
+
 }
 
 template<bool COND, typename T>
@@ -244,7 +247,10 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint32 tmp;
 	tmp = reinterpret_cast<const uint32&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
+
 }
 
 template<bool COND, typename T>
@@ -253,7 +259,9 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint64 tmp;
 	tmp = reinterpret_cast<const uint64&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
 }
 
 } // namespace internal

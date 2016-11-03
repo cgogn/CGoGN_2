@@ -431,6 +431,7 @@ private:
 				break;
 			case MSH_CELL_TYPES::MSH_PYRAMID:
 				this->msh_add_pyramid(node_ids[0], node_ids[1], node_ids[2], node_ids[3], node_ids[4], true);
+				break;
 			default:
 				cgogn_log_warning("add_element") << "MSH Element type with index \"" << elem_type << "\" is not supported. Ignoring.";
 				break;

@@ -40,40 +40,47 @@ if (NOT MSVC)
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)
 
-	if(NOT (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-		set(FULL_WARNINGS
-			${NORMAL_WARNINGS}
-			-pedantic
-			-Wno-long-long
-			-Wconversion
-			-Winline
-			-Wsign-conversion
-			-Wdouble-promotion)
-
-	else()
-		set(FULL_WARNINGS
-			-Weverything
-			-Wno-unused-macros
-			-Wno-disabled-macro-expansion
-			-Wno-covered-switch-default
-			-Wno-padded
-			-Wno-float-equal
-			# Ignore warnings about global variables ctors and dtors
-			-Wno-global-constructors
-			# Ignore warnings about global destructor
-			-Wno-exit-time-destructors
-			# Turn this on to detect documentation errors (very useful)
-			-Wno-documentation
-			# Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
-			-Wno-documentation-unknown-command
-			# Ignore warnings about C++98 compatibility
-			-Wno-c++98-compat
-			# Ignore warnings about c++98 compat pedantic mode
-			-Wno-c++98-compat-pedantic
-			# Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
-			-Wno-c++11-extensions
-			)
-	endif()
+	if(CGOGN_INSANE_WARN_LEVEL)
+		if(NOT (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+			set(FULL_WARNINGS
+				${NORMAL_WARNINGS}
+				-pedantic
+				-Wno-long-long
+				-Wconversion
+				-Winline
+				-Wsign-conversion
+				-Wdouble-promotion)
+		else()
+			set(FULL_WARNINGS
+				-Weverything
+				-Wno-unused-macros
+				-Wno-disabled-macro-expansion
+				-Wno-covered-switch-default
+				-Wno-padded
+				-Wno-float-equal
+				# Ignore warnings about global variables ctors and dtors
+				-Wno-global-constructors
+				# Ignore warnings about global destructor
+				-Wno-exit-time-destructors
+				# Turn this on to detect documentation errors (very useful)
+				-Wno-documentation
+				# Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
+				-Wno-documentation-unknown-command
+				# Ignore warnings about C++98 compatibility
+				-Wno-c++98-compat
+				# Ignore warnings about c++98 compat pedantic mode
+				-Wno-c++98-compat-pedantic
+				# Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
+				-Wno-c++11-extensions
+				)
+		endif()
+	else(CGOGN_INSANE_WARN_LEVEL)
+		if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+			set(FULL_WARNINGS ${NORMAL_WARNINGS} -Wno-missing-braces)
+		else()
+			set(FULL_WARNINGS ${NORMAL_WARNINGS})
+		endif()
+	endif(CGOGN_INSANE_WARN_LEVEL)
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 

@@ -777,8 +777,8 @@ private:
 		buffer_format.reserve(this->nb_volumes());
 		map.foreach_cell([&](Volume w)
 		{
-			const int32 nbv = static_cast<int32>(this->number_of_vertices(w));
-			switch (nbv) {
+			const int32 nbv_vol = static_cast<int32>(this->number_of_vertices(w));
+			switch (nbv_vol) {
 				case 4: buffer_format.push_back(VTK_TETRA); break;
 				case 5: buffer_format.push_back(VTK_PYRAMID); break;
 				case 6: buffer_format.push_back(VTK_WEDGE); break;

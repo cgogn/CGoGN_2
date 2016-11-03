@@ -97,7 +97,7 @@ public:
 		buffer_.bind();
 		uint32 total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
-			buffer_.allocate(total * sizeof(float32));
+			buffer_.allocate(total * uint32(sizeof(float32)));
 		nb_vectors_ = nb_vectors;
 		if (vector_dimension != vector_dimension_)
 		{
@@ -148,6 +148,12 @@ public:
 	{
 		return nb_vectors_;
 	}
+
+	GLuint id() const
+	{
+		return buffer_.bufferId();
+	}
+
 };
 
 /**

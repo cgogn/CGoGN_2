@@ -45,8 +45,9 @@ void compute_AABB(const ATTR& attr, AABB<array_data_type<ATTR>>& bb)
 template <typename ATTR>
 void pca(const ATTR& attr)
 {
+	unused_parameters(attr);// temporary for warning
 	//mean centering data
-
+	//TODO
 }
 
 template <typename ATTR>

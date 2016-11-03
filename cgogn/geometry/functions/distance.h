@@ -82,7 +82,7 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 	Scalar PQ_n2 = PQ.squaredNorm();
 
 	// if P == Q compute distance to P
-	if (PQ_n2 == 0.0) // P==Q
+	if (PQ_n2 == Scalar(0)) // P==Q
 	{
 		VEC3 V = AB/AB.norm();
 		return squared_distance_normalized_line_point(A, V, P);

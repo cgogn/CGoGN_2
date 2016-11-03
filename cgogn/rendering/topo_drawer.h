@@ -204,8 +204,8 @@ typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(cons
 	using Face = typename MAP::Face;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
-	Scalar opp_shrink_e = 1.0 - shrink_e_;
-	Scalar opp_shrink_f = 1.0 - shrink_f_;
+	Scalar opp_shrink_e = Scalar(1.0f - shrink_e_);
+	Scalar opp_shrink_f = Scalar(1.0f - shrink_f_);
 
 	darts_pos_.clear();
 	darts_pos_.reserve(1024 * 1024);
@@ -304,9 +304,9 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 	using Volume = typename MAP::Volume;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
-	Scalar opp_shrink_e = 1.0 - shrink_e_;
-	Scalar opp_shrink_f = 1.0 - shrink_f_;
-	Scalar opp_shrink_v = 1.0 - shrink_v_;
+	Scalar opp_shrink_e = Scalar(1.0f - shrink_e_);
+	Scalar opp_shrink_f = Scalar(1.0f - shrink_f_);
+	Scalar opp_shrink_v = Scalar(1.0f - shrink_v_);
 
 	darts_pos_.clear();
 	darts_pos_.reserve(1024 * 1024);

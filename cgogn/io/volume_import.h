@@ -245,7 +245,7 @@ public:
 					map.phi_1(map.phi2(map.phi_1(d)))
 				};
 
-				for (const Dart dv : vertices_of_tetra)
+				for (const Dart& dv : vertices_of_tetra)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
 					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);

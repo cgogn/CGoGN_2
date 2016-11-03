@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap2Test class implements tests on embedded CMap2
@@ -380,7 +380,7 @@ TEST_F(CMap2Test, merge_map)
 
 	for (uint32 i = 0; i < 5; ++i)
 	{
-		Face f = map1.add_face(4);
+		Face f = map1.add_face(4u);
 		int32 ec=0;
 		map1.foreach_incident_vertex(f, [&] (Vertex v)
 		{
@@ -392,7 +392,7 @@ TEST_F(CMap2Test, merge_map)
 
 	for (uint32 i = 0; i < 5; ++i)
 	{
-		Face f = map2.add_face(3);
+		Face f = map2.add_face(3u);
 		uint32 ec = 0;
 		map2.foreach_incident_edge(f, [&] (Edge e)
 		{
@@ -405,10 +405,10 @@ TEST_F(CMap2Test, merge_map)
 	map1.merge(map2, dm);
 
 	EXPECT_TRUE(map1.check_map_integrity());
-	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35);
-	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35);
-	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10);
-	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10);
+	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35u);
+	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35u);
+	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10u);
+	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10u);
 }
 
 #undef NB_MAX

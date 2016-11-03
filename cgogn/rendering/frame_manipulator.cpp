@@ -68,10 +68,10 @@ FrameManipulator::FrameManipulator():
 	for (uint32 i=0; i<=nb_segments; ++i)
 	{
 		float32 alpha = float32(M_PI*i)/float32(nb_segments/2);
-		float32 x = (1.0f+ring_half_width) * cos(alpha);
-		float32 y = (1.0f+ring_half_width) * sin(alpha);
-		float32 xx = (1.0f-ring_half_width) * cos(alpha);
-		float32 yy = (1.0f-ring_half_width) * sin(alpha);
+		float32 x = (1.0f+ring_half_width) * std::cos(alpha);
+		float32 y = (1.0f+ring_half_width) * std::sin(alpha);
+		float32 xx = (1.0f-ring_half_width) * std::cos(alpha);
+		float32 yy = (1.0f-ring_half_width) * std::sin(alpha);
 
 		points[2*i] = Vec3(0.0f,x,y);
 		points[2*i+1] = Vec3(0.0f,xx,yy);
@@ -441,9 +441,9 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Xr))
 	{
 		if (inter)
-			dist_target[3] = float32(Qx.norm() - 1.0);
+			dist_target[3] = float32(Qx.norm() - 1.0f);
 
-		if (fabs(dist_target[3]) < ring_half_width )
+		if (std::abs(dist_target[3]) < ring_half_width )
 			dist_cam[3] = (P-Qx).squaredNorm();
 	}
 
@@ -454,9 +454,9 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Yr))
 	{
 		if (inter)
-			dist_target[4] = float32(Qy.norm() - 1.0);
+			dist_target[4] = float32(Qy.norm() - 1.0f);
 
-		if (fabs(dist_target[4]) < ring_half_width )
+		if (std::abs(dist_target[4]) < ring_half_width )
 			dist_cam[4] = (P-Qy).squaredNorm();
 	}
 
@@ -467,9 +467,9 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Zr))
 	{
 		if (inter )
-			dist_target[5] = float32(Qz.norm() - 1.0);
+			dist_target[5] = float32(Qz.norm() - 1.0f);
 
-		if (fabs(dist_target[5]) <  ring_half_width )
+		if (std::abs(dist_target[5]) <  ring_half_width )
 			dist_cam[5] = (P-Qz).squaredNorm();
 	}
 
@@ -478,8 +478,8 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Xt) || axis_pickable(Xs))
 	{
 		Vec3 PX(3.6f*length_axes_[0],0.0f,0.0f);
-		dist_target[0] = sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PX)) ;
-		if (fabs(dist_target[0]) < 0.02f)
+		dist_target[0] = std::sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PX)) ;
+		if (std::abs(dist_target[0]) < 0.02f)
 		{
 			if (axis_pickable(Xt) && !axis_pickable(Xs))
 				dist_cam[0] = (P-PX).squaredNorm();
@@ -496,8 +496,8 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Yt) || axis_pickable(Ys))
 	{
 		Vec3 PY(0.0f,3.6f*length_axes_[1],0.0f);
-		dist_target[1] = sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PY)) ;
-		if (fabs(dist_target[1]) < 0.02f)
+		dist_target[1] = std::sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PY)) ;
+		if (std::abs(dist_target[1]) < 0.02f)
 		{
 			if (axis_pickable(Yt) && !axis_pickable(Ys))
 				dist_cam[1] = (P-PY).squaredNorm();
@@ -514,8 +514,8 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	if (axis_pickable(Zt) || axis_pickable(Zs))
 	{
 		Vec3 PZ(0.0f,0.0f,3.6f*length_axes_[2]);
-		dist_target[2] = sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PZ));
-		if (fabs(dist_target[2]) < 0.02f )
+		dist_target[2] = std::sqrt(cgogn::geometry::squared_distance_line_seg(P, V, V.squaredNorm(), origin, PZ));
+		if (std::abs(dist_target[2]) < 0.02f )
 		{
 			if (axis_pickable(Zt) && !axis_pickable(Zs))
 				dist_cam[2] = (P-PZ).squaredNorm();
@@ -953,9 +953,9 @@ float32 FrameManipulator::distance_from_mouse(int dx, int dy)
 	float32 tr = dV.dot(ax);
 
 	if (tr>0)
-		tr = float32(dV.norm()/100.0);
+		tr = float32(dV.norm()/100.0f);
 	else
-		tr = float32(dV.norm()/-100.0);
+		tr = float32(dV.norm()/-100.0f);
 	return tr;
 }
 

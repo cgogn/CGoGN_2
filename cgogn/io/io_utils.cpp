@@ -48,6 +48,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 	// zlib init
 	z_stream zstream;
 	int32 ret;
+	unused_parameters(ret);// release warning
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -57,7 +58,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = deflateBound(&zstream, static_cast<std::size_t>(std::min(chunk_size, size)));
+		buffer_size = static_cast<std::size_t>(deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size))));
 
 		zstream.avail_in = static_cast<uInt>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
@@ -127,6 +128,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	// zlib init
 	z_stream zstream;
 	int32 ret;
+	unused_parameters(ret);// release warning
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -146,6 +148,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 		in_data_it += compressed_size[i];
 		out_data_it += uint32(uncompressed_block_size);
 	}
+
 	return res;
 }
 
@@ -170,7 +173,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 			char_array_4[3] = char_array_3[2] & 0x3f;
 
 			for(i = 0; i <4 ; ++i)
-				res.push_back(encode_lookup[char_array_4[i]]);
+				res.push_back(encode_lookup[uint32(char_array_4[i])]);
 			i = 0;
 		}
 	}
@@ -186,7 +189,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 		char_array_4[3] = char_array_3[2] & 0x3f;
 
 		for (j = 0; (j < i + 1); j++)
-			res.push_back(encode_lookup[char_array_4[j]]);
+			res.push_back(encode_lookup[uint32(char_array_4[j])]);
 
 		while((i++ < 3))
 			res.push_back('=');

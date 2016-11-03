@@ -547,8 +547,8 @@ protected:
 
 		if (mark_boundary)
 		{
-			for (Dart d: *(boundary_marker.marked_darts()))
-				this->set_boundary(d, true);
+			for (Dart db: *(boundary_marker.marked_darts()))
+				this->set_boundary(db, true);
 		}
 	}
 
@@ -1716,7 +1716,7 @@ public:
 		marker_face.mark_orbit(f);
 		foreach_incident_vertex(f, [&] (Vertex v)
 		{
-			foreach_incident_face(f, [&](Face inc_fac)
+			foreach_incident_face(v, [&](Face inc_fac)
 			{
 				if (!marker_face.is_marked(inc_fac.dart))
 				{
@@ -1847,18 +1847,18 @@ protected:
 	 */
 	void merge_check_embedding(const Self& map)
 	{
-		const static auto create_embedding = [=] (Self* map, Orbit orb)
+		const static auto create_embedding = [=] (Self* map_ptr, Orbit orb)
 		{
 			switch (orb) {
-				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
-				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
-				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
-				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
-				case Orbit::PHI1_PHI3: map->template create_embedding<Orbit::PHI1_PHI3>(); break;
-				case Orbit::PHI2_PHI3: map->template create_embedding<Orbit::PHI2_PHI3>(); break;
-				case Orbit::PHI21_PHI31: map->template create_embedding<Orbit::PHI21_PHI31>(); break;
-				case Orbit::PHI1_PHI2_PHI3: map->template create_embedding<Orbit::PHI1_PHI2_PHI3>(); break;
+				case Orbit::DART: map_ptr->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map_ptr->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map_ptr->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map_ptr->template create_embedding<Orbit::PHI21>(); break;
+				case Orbit::PHI1_PHI2: map_ptr->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				case Orbit::PHI1_PHI3: map_ptr->template create_embedding<Orbit::PHI1_PHI3>(); break;
+				case Orbit::PHI2_PHI3: map_ptr->template create_embedding<Orbit::PHI2_PHI3>(); break;
+				case Orbit::PHI21_PHI31: map_ptr->template create_embedding<Orbit::PHI21_PHI31>(); break;
+				case Orbit::PHI1_PHI2_PHI3: map_ptr->template create_embedding<Orbit::PHI1_PHI2_PHI3>(); break;
 				default: break;
 			}
 		};
