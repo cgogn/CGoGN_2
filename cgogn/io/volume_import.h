@@ -162,11 +162,6 @@ public:
 		return vertex_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	inline ChunkArray<VEC3>* add_position_attribute()
-	{
-		return (position_attribute_ =  vertex_attributes_.template add_chunk_array<VEC3>("position"));
-	}
-
 	inline void add_volume_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		in_data.to_chunk_array(in_data.add_attribute(volume_attributes_, att_name));
@@ -180,7 +175,10 @@ public:
 
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		return position_attribute_;
+		if (position_attribute_ == nullptr)
+			return (position_attribute_ =  add_vertex_attribute<VEC3>("position"));
+		else
+			return position_attribute_;
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -214,10 +212,18 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
+		if (this->volume_attributes_.nb_chunk_arrays() > 0)
+		{
+			mbuild.template create_embedding<Volume::ORBIT>();
+			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
+		}
+
 		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex>("darts_per_vertex");
 
 		uint32 index = 0u;
 		typename Map::DartMarker dart_marker(map);
+		Dart d;
+		uint32 vol_emb = 0u;
 
 		//for each volume of table
 		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
@@ -227,7 +233,7 @@ public:
 
 			if (vol_type == VolumeType::Tetra) //tetrahedral case
 			{
-				const Dart d = mbuild.add_pyramid_topo_fp(3u);
+				d = mbuild.add_pyramid_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -255,7 +261,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Pyramid) //pyramidal case
 			{
-				Dart d = mbuild.add_pyramid_topo_fp(4u);
+				d = mbuild.add_pyramid_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -284,7 +290,7 @@ public:
 			}
 			else if (vol_type == VolumeType::TriangularPrism) //prism case
 			{
-				Dart d = mbuild.add_prism_topo_fp(3u);
+				d = mbuild.add_prism_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -314,7 +320,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Hexa) //hexahedral case
 			{
-				Dart d = mbuild.add_prism_topo_fp(4u);
+				d = mbuild.add_prism_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -352,6 +358,8 @@ public:
 					// The second part of the code generates connectors automatically. We don't have to do anything here.
 				}
 			}
+			if (map.is_embedded(Volume::ORBIT))
+				mbuild. template set_orbit_embedding<Volume>(Volume(d), vol_emb++);
 		}
 
 		//reconstruct neighbourhood
@@ -412,6 +420,8 @@ public:
 							// we add a stamp volume between the faces
 							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
+								if (map.is_embedded(Volume::ORBIT))
+									mbuild. new_orbit_embedding(Volume(d_quad));
 								Dart q1_it = d;
 								Dart q2_it = map.phi_1(d_quad);
 								do
@@ -456,6 +466,8 @@ public:
 
 							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
+								if (map.is_embedded(Volume::ORBIT))
+									mbuild. new_orbit_embedding(Volume(d_quad));
 								Dart q1_it = good_dart;
 								Dart q2_it = d_quad;
 								do
@@ -500,12 +512,6 @@ public:
 		}
 
 		map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
-
-		if (this->volume_attributes_.nb_chunk_arrays() > 0)
-		{
-			mbuild.template create_embedding<Volume::ORBIT>();
-			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
-		}
 
 		map.remove_attribute(darts_per_vertex);
 

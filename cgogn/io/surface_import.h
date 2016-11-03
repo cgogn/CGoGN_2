@@ -102,11 +102,18 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
+		if (this->face_attributes_.nb_chunk_arrays() > 0)
+		{
+			mbuild.template create_embedding<Face::ORBIT>();
+			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
+		}
+
 		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;
 		std::vector<uint32> vertices_buffer;
 		vertices_buffer.reserve(16);
+		uint32 face_emb = 0u;
 
 		for (uint32 i = 0, end = nb_faces(); i < end; ++i)
 		{
@@ -138,6 +145,8 @@ public:
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
+				if (map.is_embedded(Face::ORBIT))
+					mbuild. template set_orbit_embedding<Face>(Face(d), face_emb++);
 			}
 		}
 
@@ -192,11 +201,7 @@ public:
 			cgogn_log_warning("create_map") << "Import Surface: non manifold vertices detected and corrected";
 		}
 
-		if (this->face_attributes_.nb_chunk_arrays() > 0)
-		{
-			mbuild.template create_embedding<Face::ORBIT>();
-			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
-		}
+
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
@@ -216,11 +221,6 @@ public:
 		return vertex_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	inline ChunkArray<VEC3>* add_position_attribute()
-	{
-		return (position_attribute_ = vertex_attributes_.template add_chunk_array<VEC3>("position"));
-	}
-
 	inline void add_face_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		in_data.to_chunk_array(in_data.add_attribute(face_attributes_, att_name));
@@ -228,7 +228,10 @@ public:
 
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		return position_attribute_;
+		if (position_attribute_ == nullptr)
+			return (position_attribute_ =  add_vertex_attribute<VEC3>("position"));
+		else
+			return position_attribute_;
 	}
 
 	inline uint32 insert_line_vertex_container()

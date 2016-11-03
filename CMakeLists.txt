@@ -142,6 +142,7 @@ if(CGOGN_BUILD_TESTS)
 	add_subdirectory(cgogn/core/tests)
 	add_subdirectory(cgogn/geometry/tests)
 	add_subdirectory(cgogn/modeling/tests)
+	add_subdirectory(cgogn/io/tests)
 endif()
 
 if(CGOGN_BUILD_EXAMPLES)

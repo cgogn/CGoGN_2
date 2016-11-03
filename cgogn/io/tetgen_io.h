@@ -54,7 +54,7 @@ protected:
 		const std::string node_filename = filename.substr(0, filename.rfind('.')) + ".node";
 		const std::string ele_filename = filename.substr(0, filename.rfind('.')) + ".ele";
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		std::ifstream node_file(node_filename, std::ios::in);
 		if (!node_file.good())
 		{
@@ -78,7 +78,7 @@ protected:
 		{
 			do
 			{
-				std::getline(node_file,line);
+				getline_safe(node_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -90,7 +90,7 @@ protected:
 		{
 			do
 			{
-				std::getline(ele_file,line);
+				getline_safe(ele_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -105,7 +105,7 @@ protected:
 		{
 			do
 			{
-				std::getline(node_file,line);
+				getline_safe(node_file,line);
 			}while(line.empty());
 
 			std::istringstream iss(line);
@@ -127,7 +127,7 @@ protected:
 		{
 			do
 			{
-				std::getline(ele_file,line);
+				getline_safe(ele_file,line);
 			} while(line.empty());
 
 			std::istringstream iss(line);

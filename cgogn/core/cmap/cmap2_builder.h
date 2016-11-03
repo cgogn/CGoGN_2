@@ -75,6 +75,12 @@ public:
 		map_.template set_embedding<CellType>(d, emb);
 	}
 
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.template set_orbit_embedding<CellType>(c, emb);
+	}
+
 	template <class CellType>
 	inline void new_orbit_embedding(CellType c)
 	{

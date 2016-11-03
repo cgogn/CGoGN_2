@@ -49,7 +49,7 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -58,7 +58,7 @@ protected:
 		// reading number of vertices
 		uint32 nb_vertices = 0u;
 		{
-		std::getline(fp, line);
+		getline_safe(fp, line);
 		std::istringstream iss(line);
 		iss >> nb_vertices;
 		}
@@ -66,7 +66,7 @@ protected:
 		uint32 nb_volumes = 0u;
 		// reading number of tetrahedra
 		{
-			std::getline(fp, line);
+			getline_safe(fp, line);
 			std::istringstream iss(line);
 			iss >> nb_volumes;
 		}
@@ -77,7 +77,7 @@ protected:
 		{
 			do
 			{
-				std::getline(fp, line);
+				getline_safe(fp, line);
 			} while (line.empty());
 
 			const uint32 new_id = this->insert_line_vertex_container();
@@ -95,7 +95,7 @@ protected:
 		{
 			do
 			{
-				std::getline(fp, line);
+				getline_safe(fp, line);
 			} while (line.empty());
 
 			std::istringstream iss(line);

@@ -66,7 +66,7 @@ protected:
 		line.reserve(512);
 
 		// read OFF header
-		std::getline(fp, line);
+		getline_safe(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
 			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
@@ -84,7 +84,7 @@ protected:
 		this->reserve(nb_faces);
 
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;

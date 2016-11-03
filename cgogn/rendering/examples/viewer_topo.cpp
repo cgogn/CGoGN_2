@@ -109,6 +109,12 @@ void Viewer::import(const std::string& surface_mesh)
 		std::exit(EXIT_FAILURE);
 	}
 
+	if (!map_.check_map_integrity())
+	{
+		cgogn_log_error("Viewer::import") << "Integrity of map not respected. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
+
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();
