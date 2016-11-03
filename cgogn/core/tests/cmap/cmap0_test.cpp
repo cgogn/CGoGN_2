@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap0Test class implements tests on embedded CMap0

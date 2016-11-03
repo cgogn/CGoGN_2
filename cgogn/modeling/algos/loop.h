@@ -65,7 +65,7 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	// cut edges
 	for (Edge e : *initial_edges)
 	{
-		std::pair<Vertex, Vertex> ve = map.vertices(e);
+//		std::pair<Vertex, Vertex> ve = map.vertices(e);
 		map.cut_edge(e);
 	}
 

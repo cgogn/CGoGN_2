@@ -38,6 +38,9 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/utils/thread_pool.h>
+#include <cgogn/core/utils/buffers.h>
+
 #include <cgogn/core/container/chunk_array.h>
 #include <cgogn/core/container/chunk_stack.h>
 #include <cgogn/core/container/chunk_array_factory.h>
@@ -1009,6 +1012,107 @@ public:
 
 		return ok;
 	}
+
+
+	template <typename FUNC>
+	void foreach_index(const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
+
+		uint32 it = begin();
+		uint32 it_end = end();
+		while(it != it_end)
+		{
+			f(it);
+			next(it);
+		}
+	}
+
+	template <typename FUNC>
+	void foreach_index_until(const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
+		static_assert(is_func_return_same<FUNC,bool>::value, "Wrong function return type");
+
+		uint32 it = begin();
+		uint32 it_end = end();
+		while(it != it_end)
+		{
+			if (!f(it))
+				break;
+			next(it);
+		}
+	}
+
+
+	template <typename FUNC>
+	void parallel_foreach_index(const FUNC& f) const
+	{
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function second parameter type");
+
+		using VecIndice = std::vector<uint32>;
+		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
+
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+		std::array<std::vector<VecIndice*>, 2> indices_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		indices_buffers[0].reserve(nb_threads_pool);
+		indices_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
+		Buffers<uint32>* buffs = cgogn::uint_buffers();
+
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_threads_pool)
+
+		uint32 it = begin();
+		uint32 it_end = end();
+		while(it != it_end)
+		{
+			// fill buffer
+			indices_buffers[i].push_back(buffs->buffer());
+			VecIndice& indices = *indices_buffers[i].back();
+			indices.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && (it != it_end); ++k)
+			{
+				indices.push_back(it);
+				next(it);
+			}
+			// launch thread
+			futures[i].push_back(thread_pool->enqueue([&indices, &f] (uint32 th_id)
+			{
+				for (auto ind : indices)
+					f(ind, th_id);
+			}));
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
+					fu.wait();
+				for (auto& b : indices_buffers[i])
+					buffs->release_buffer(b);
+				futures[i].clear();
+				indices_buffers[i].clear();
+			}
+		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : indices_buffers[0u])
+			buffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : indices_buffers[1u])
+			buffs->release_buffer(b);
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))

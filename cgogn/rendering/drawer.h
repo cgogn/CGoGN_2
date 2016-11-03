@@ -282,7 +282,7 @@ public:
 	inline void line_width_aa(float32 lw)
 	{
 		current_aa_ = true;
-		current_size_ = 2.0*lw;
+		current_size_ = 2.0f*lw;
 	}
 };
 

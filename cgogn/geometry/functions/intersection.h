@@ -126,7 +126,7 @@ bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const
 	Scalar b = normal_plane.dot(dir_line);
 
 
-	if (fabs(b) < PRECISION)
+	if (std::abs(b) < PRECISION)
 		return false;
 
 	Scalar a = normal_plane.dot(point_plane - point_line);

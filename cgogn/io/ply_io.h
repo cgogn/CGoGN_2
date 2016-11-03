@@ -106,7 +106,7 @@ protected:
 			int* indices = pid.face_indices(i);
 			for (uint32 j = 0; j < n; ++j)
 			{
-				uint32 index = (uint32)(indices[j]);
+				uint32 index = uint32(indices[j]);
 				this->faces_vertex_indices_.push_back(vertices_id[index]);
 			}
 		}

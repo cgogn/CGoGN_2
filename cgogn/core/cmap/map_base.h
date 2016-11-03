@@ -765,6 +765,75 @@ public:
 			f(it);
 	}
 
+//	template <typename FUNC>
+//	inline void parallel_foreach_dart(const FUNC& f) const
+//	{
+//		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
+//		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
+
+//		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
+//		using VecDarts = std::vector<Dart>;
+
+//		ThreadPool* thread_pool = cgogn::thread_pool();
+//		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+//		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+//		std::array<std::vector<Future>, 2> futures;
+//		dart_buffers[0].reserve(nb_threads_pool);
+//		dart_buffers[1].reserve(nb_threads_pool);
+//		futures[0].reserve(nb_threads_pool);
+//		futures[1].reserve(nb_threads_pool);
+
+//		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+
+//		Dart it = Dart(this->topology_.begin());
+//		Dart last = Dart(this->topology_.end());
+
+//		while (it != last)
+//		{
+//			for (uint32 i = 0u; i < 2u; ++i)
+//			{
+//				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
+//				{
+//					dart_buffers[i].push_back(dbuffs->buffer());
+//					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+//					std::vector<Dart>& darts = *dart_buffers[i].back();
+//					darts.reserve(PARALLEL_BUFFER_SIZE);
+//					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
+//					{
+//						darts.push_back(it);
+//						this->topology_.next(it.index);
+//					}
+
+//					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+//					{
+//						for (auto d : darts)
+//							f(d, th_id);
+//					}));
+//				}
+
+//				const uint32 id = (i+1u) % 2u;
+
+//				for (auto& fu : futures[id])
+//					fu.wait();
+//				for (auto& b : dart_buffers[id])
+//					dbuffs->release_buffer(b);
+
+//				futures[id].clear();
+//				dart_buffers[id].clear();
+
+//				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+//				if (it.index >= last.index && i == 1u)
+//				{
+//					for (auto& fu : futures[1u])
+//						fu.wait();
+//					for (auto &b : dart_buffers[1u])
+//						dbuffs->release_buffer(b);
+//				}
+//			}
+//		}
+//	}
+
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
@@ -786,53 +855,55 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_threads_pool)
 		Dart it = Dart(this->topology_.begin());
 		Dart last = Dart(this->topology_.end());
 
 		while (it != last)
 		{
-			for (uint32 i = 0u; i < 2u; ++i)
+			dart_buffers[i].push_back(dbuffs->buffer());
+			cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+			std::vector<Dart>& darts = *dart_buffers[i].back();
+			darts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 			{
-				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
-				{
-					dart_buffers[i].push_back(dbuffs->buffer());
-					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-					std::vector<Dart>& darts = *dart_buffers[i].back();
-					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-					{
-						darts.push_back(it);
-						this->topology_.next(it.index);
-					}
+				darts.push_back(it);
+				this->topology_.next(it.index);
+			}
 
-					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-					{
-						for (auto d : darts)
-							f(d, th_id);
-					}));
-				}
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+			{
+				for (auto d : darts)
+					f(d, th_id);
+			}));
 
-				const uint32 id = (i+1u) % 2u;
-
-				for (auto& fu : futures[id])
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : dart_buffers[id])
+				for (auto& b : dart_buffers[i])
 					dbuffs->release_buffer(b);
-
-				futures[id].clear();
-				dart_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it.index >= last.index && i == 1u)
-				{
-					for (auto& fu : futures[1u])
-						fu.wait();
-					for (auto &b : dart_buffers[1u])
-						dbuffs->release_buffer(b);
-				}
+				futures[i].clear();
+				dart_buffers[i].clear();
 			}
 		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : dart_buffers[0u])
+			dbuffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : dart_buffers[1u])
+			dbuffs->release_buffer(b);
+
 	}
+
 
 	/**
 	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
@@ -1103,13 +1174,13 @@ public:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1215,13 +1286,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1314,13 +1385,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 

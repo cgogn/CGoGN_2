@@ -117,7 +117,7 @@ TEST_F(CMap0TopoTest, add_vertex)
 TEST_F(CMap0TopoTest, remove_vertex)
 {
 	add_vertices(NB_MAX);
-	int32 count_vertices = NB_MAX;
+	uint32 count_vertices = NB_MAX;
 
 	for (Dart d : darts_)
 	{

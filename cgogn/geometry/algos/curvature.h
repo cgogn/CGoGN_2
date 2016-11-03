@@ -56,7 +56,6 @@ void curvature(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Edge2 = Cell<Orbit::PHI2>;
-	using Face = typename MAP::Face;
 
 	unused_parameters(edge_area);
 

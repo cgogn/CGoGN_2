@@ -668,6 +668,7 @@ protected:
 		cgogn_message_assert(d == this->phi_1(this->phi2(e)),
 							 "merge_adjacent_edge: the degree of the vertex of d should be 2");
 		// TODO
+		unused_parameters(e);// fir warning
 	}
 
 	/**
@@ -1101,7 +1102,7 @@ public:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21_PHI31:
 			case Orbit::PHI1_PHI2_PHI3:
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
+			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); return false; break;
 		}
 	}
 
@@ -1492,15 +1493,15 @@ protected:
 	 */
 	void merge_check_embedding(const Self& map)
 	{
-		const static auto create_embedding = [=] (Self* map, Orbit orb)
+		const static auto create_embedding = [=] (Self* map_ptr, Orbit orb)
 		{
 			switch (orb)
 			{
-				case Orbit::DART: map->template create_embedding<Orbit::DART>(); break;
-				case Orbit::PHI1: map->template create_embedding<Orbit::PHI1>(); break;
-				case Orbit::PHI2: map->template create_embedding<Orbit::PHI2>(); break;
-				case Orbit::PHI21: map->template create_embedding<Orbit::PHI21>(); break;
-				case Orbit::PHI1_PHI2: map->template create_embedding<Orbit::PHI1_PHI2>(); break;
+				case Orbit::DART: map_ptr->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map_ptr->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map_ptr->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map_ptr->template create_embedding<Orbit::PHI21>(); break;
+				case Orbit::PHI1_PHI2: map_ptr->template create_embedding<Orbit::PHI1_PHI2>(); break;
 				default: break;
 			}
 		};

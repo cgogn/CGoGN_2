@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap1Test class implements tests on embedded CMap1
@@ -116,7 +116,7 @@ TEST_F(CMap1Test, add_face)
 TEST_F(CMap1Test, remove_face)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
-	int32 count_faces = NB_MAX;
+	uint32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{
