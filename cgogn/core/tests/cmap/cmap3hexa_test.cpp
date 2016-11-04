@@ -75,11 +75,11 @@ TEST_F(CMap3HexaTest, topo_1)
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1);
-	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 1);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 8u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 12u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 6u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 1u);
+	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 1u);
 }
 
 /**
@@ -102,11 +102,11 @@ TEST_F(CMap3HexaTest, topo_4)
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 24);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 40);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 22);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 4);
-	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 24u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 40u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 22u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 4u);
+	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2u);
 }
 
 /**
@@ -129,22 +129,22 @@ TEST_F(CMap3HexaTest, embedded)
 
 	mbuild.close_map();
 
-	cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-	cmap_.add_attribute<int32, Vertex2::ORBIT>("vertices2");
-	cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-	cmap_.add_attribute<int32, Edge2::ORBIT>("edges2");
-	cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-	cmap_.add_attribute<int32, Face2::ORBIT>("faces2");
-	cmap_.add_attribute<int32, Face::ORBIT>("faces");
-	cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+	cmap_.add_attribute<int32, CDart>("darts");
+	cmap_.add_attribute<int32, Vertex2>("vertices2");
+	cmap_.add_attribute<int32, Vertex>("vertices");
+	cmap_.add_attribute<int32, Edge2>("edges2");
+	cmap_.add_attribute<int32, Edge>("edges");
+	cmap_.add_attribute<int32, Face2>("faces2");
+	cmap_.add_attribute<int32, Face>("faces");
+	cmap_.add_attribute<int32, Volume>("volumes");
 
 	EXPECT_TRUE(cmap_.check_map_integrity());
 
-	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 12+14);
-	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 20+25);
-	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 11+15);
-	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 2+3);
-	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2);
+	EXPECT_EQ(cmap_.nb_cells<Vertex::ORBIT>(), 12u+14u);
+	EXPECT_EQ(cmap_.nb_cells<Edge::ORBIT>(), 20u+25u);
+	EXPECT_EQ(cmap_.nb_cells<Face::ORBIT>(), 11u+15u);
+	EXPECT_EQ(cmap_.nb_cells<Volume::ORBIT>(), 2u+3u);
+	EXPECT_EQ(cmap_.nb_cells<ConnectedComponent::ORBIT>(), 2u);
 
 	int nb=0;
 	cmap_.foreach_incident_volume(Edge(p3),[&] (Volume) { ++nb; });

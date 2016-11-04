@@ -66,7 +66,7 @@ protected:
 		line.reserve(512);
 
 		// read OFF header
-		std::getline(fp, line);
+		getline_safe(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
 			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
@@ -84,7 +84,7 @@ protected:
 		this->reserve(nb_faces);
 
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
@@ -122,11 +122,17 @@ protected:
 
 	inline bool import_off_bin(std::istream& fp)
 	{
-		char buffer1[12];
-		fp.read(buffer1,12);
+//		char buffer1[12];
+//		fp.read(buffer1,12);
+//		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
+//		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
 
-		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
-		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
+		union { char ch[12]; uint32 ui[3];} buffer;
+		fp.read(buffer.ch,12);
+
+		const uint32 nb_vertices = swap_endianness_native_big(buffer.ui[0]);
+		const uint32 nb_faces = swap_endianness_native_big(buffer.ui[1]);
+
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 

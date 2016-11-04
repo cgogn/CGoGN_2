@@ -777,8 +777,8 @@ private:
 		buffer_format.reserve(this->nb_volumes());
 		map.foreach_cell([&](Volume w)
 		{
-			const int32 nbv = static_cast<int32>(this->number_of_vertices(w));
-			switch (nbv) {
+			const int32 nbv_vol = static_cast<int32>(this->number_of_vertices(w));
+			switch (nbv_vol) {
 				case 4: buffer_format.push_back(VTK_TETRA); break;
 				case 5: buffer_format.push_back(VTK_PYRAMID); break;
 				case 6: buffer_format.push_back(VTK_WEDGE); break;
@@ -893,9 +893,9 @@ protected:
 		word.reserve(128);
 
 		// printing the 2 first lines
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
@@ -929,7 +929,7 @@ protected:
 		{
 			while(!fp.eof())
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				word.clear();
 				std::istringstream sstream(line);
 				sstream >> word;
@@ -995,7 +995,7 @@ protected:
 								std::ifstream::pos_type previous_pos;
 								do {
 									previous_pos = fp.tellg();
-									std::getline(fp, line);
+									getline_safe(fp, line);
 									sstream.str(line);
 									sstream.clear();
 									word.clear();
@@ -1014,7 +1014,7 @@ protected:
 										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
-										std::getline(fp,line);
+										getline_safe(fp,line);
 										sstream.str(line);
 										sstream.clear();
 										std::string lookup_table;
@@ -1029,7 +1029,11 @@ protected:
 											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
 										}
 
-										std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp));
+										std::unique_ptr<DataInputGen> att;
+										if (att_name == "normal")
+											att = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(att_type, num_comp);
+										else
+											att = DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp);
 										att->read_n(fp, nb_data, !ascii_file, big_endian);
 										if (cell_data)
 											this->add_cell_attribute(*att, att_name);
@@ -1046,12 +1050,12 @@ protected:
 											for (uint32 i = 0u ; i< num_arrays; ++i)
 											{
 												do {
-													std::getline(fp,line);
+													getline_safe(fp,line);
 												} while (line.empty());
 
-												sstream.str(line);
 												sstream.clear();
-												std::string		data_name;
+												sstream.str(line);
+												std::string data_name;
 												uint32	nb_comp;
 												//uint32	nb_data; already declared
 												std::string	data_type;
@@ -1204,7 +1208,11 @@ protected:
 				}
 				else
 				{
-					std::unique_ptr<DataInputGen> vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
+					std::unique_ptr<DataInputGen> vertex_att;
+					if (data_name == "normal")
+						vertex_att = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
+					else
+						vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
 					vertex_att->read_n(*mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*vertex_att, data_name);
 				}
@@ -1212,11 +1220,12 @@ protected:
 		}
 
 		XMLElement* const cell_node = piece_node->FirstChildElement("Cells");
-		if (cell_node != nullptr)
 		{
-			XMLElement* cells_array_node = cell_node->FirstChildElement("DataArray");
-			cgogn_assert(cells_array_node != nullptr);
 			std::vector<XMLElement*> cell_nodes;
+			XMLElement* cells_array_node = nullptr;
+			if (cell_node != nullptr)
+				cells_array_node = cell_node->FirstChildElement("DataArray");
+
 			while (cells_array_node)
 			{
 				cell_nodes.push_back(cells_array_node);
@@ -1269,7 +1278,7 @@ protected:
 						mem_stream = make_unique<IMemoryStream>(ascii_data);
 					if (data_name == "connectivity")
 					{
-						const uint32 last_offset = this->offsets_.vec()->back();
+						const uint32 last_offset = this->offsets_.vec().back();
 						auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
 						cells->read_n(*mem_stream, last_offset,binary,!little_endian);
 						this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
@@ -1349,7 +1358,7 @@ protected:
 						mem_stream = make_unique<IMemoryStream>(ascii_data);
 					if (data_name == "connectivity")
 					{
-						const uint32 last_offset = this->offsets_.vec()->back();
+						const uint32 last_offset = this->offsets_.vec().back();
 						auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
 						cells->read_n(*mem_stream, last_offset,binary,!little_endian);
 						this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
@@ -1411,9 +1420,9 @@ protected:
 			return false;
 		this->fill_surface_import();
 
-		auto cells_it = this->cells_.vec()->begin();
+		auto cells_it = this->cells_.vec().begin();
 		uint32 last_offset = 0u;
-		for(auto offset_it = this->offsets_.vec()->begin(), offset_end = this->offsets_.vec()->end(); offset_it != offset_end; ++offset_it)
+		for(auto offset_it = this->offsets_.vec().begin(), offset_end = this->offsets_.vec().end(); offset_it != offset_end; ++offset_it)
 		{
 			const uint32 curr_offset = *offset_it;
 			const uint32 nb_vertices = curr_offset - last_offset;
@@ -1445,7 +1454,7 @@ protected:
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{
-				std::ifstream fp(filename.c_str(), std::ios::in);
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
 				cgogn_assert(fp.good());
 				return this->read_vtk_legacy_file(fp);
 			}
@@ -1533,14 +1542,14 @@ protected:
 
 		this->reserve(uint32(this->cell_types_.size()));
 
-		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
-		const std::vector<uint32>* cells_vec	= this->cells_.vec();
+		std::vector<int>& cell_types_vec	= this->cell_types_.vec();
+		const std::vector<uint32>& cells_vec	= this->cells_.vec();
 		std::vector<uint32> cells_buffer;
-		cells_buffer.reserve(cells_vec->size());
+		cells_buffer.reserve(cells_vec.size());
 
 		// in the legacy file , the first number of each line is the number of vertices. We need to remove it.
-		auto cells_it = cells_vec->begin();
-		for (std::vector<int>::const_iterator type_it = cell_types_vec->begin(), end = cell_types_vec->end(); type_it != end; ++type_it)
+		auto cells_it = cells_vec.begin();
+		for (auto type_it = cell_types_vec.begin(), end = cell_types_vec.end(); type_it != end; ++type_it)
 		{
 			++cells_it;
 			uint32 vol_nb_verts = 0u;
@@ -1567,7 +1576,7 @@ protected:
 			}
 		}
 
-		add_vtk_volumes(cells_buffer, *cell_types_vec);
+		add_vtk_volumes(cells_buffer, cell_types_vec);
 
 		return true;
 	}
@@ -1579,12 +1588,10 @@ protected:
 
 		this->reserve(uint32(this->cell_types_.size()));
 
-		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
-		const std::vector<uint32>* cells_vec	= this->cells_.vec();
+		std::vector<int>& cell_types_vec	= this->cell_types_.vec();
+		const std::vector<uint32>& cells_vec	= this->cells_.vec();
 
-		ChunkArray<VEC3>* pos = this->position_attribute();
-		cgogn_assert(pos != nullptr);
-		add_vtk_volumes(*cells_vec,*cell_types_vec);
+		add_vtk_volumes(cells_vec,cell_types_vec);
 
 		return true;
 	}
@@ -1607,7 +1614,7 @@ protected:
 		}
 	}
 
-	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol)
+	inline void add_vtk_volumes(std::vector<uint32> ids, std::vector<int>& type_vol)
 	{
 		const uint32 nb_volumes = uint32(type_vol.size());
 		uint32 curr_offset = 0;
@@ -1619,6 +1626,7 @@ protected:
 				{
 					std::swap(ids[curr_offset+2], ids[curr_offset+3]);
 					std::swap(ids[curr_offset+6], ids[curr_offset+7]);
+					type_vol[i] = VTK_CELL_TYPES::VTK_HEXAHEDRON;
 				}
 				this->add_hexa(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7], true);
 				curr_offset += 8u;

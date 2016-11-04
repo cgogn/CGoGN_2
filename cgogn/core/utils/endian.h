@@ -45,7 +45,8 @@ const bool cgogn_is_little_endian = true;
 
 inline std::uint16_t swap_endianness16u(std::uint16_t x)
 {
-	return	((x >> 8) & 0x00FF) | ((x << 8) & 0xFF00);
+	return	std::uint16_t(((x >> 8) & 0x00FF) |
+			((x << 8) & 0xFF00));
 }
 
 inline std::uint32_t swap_endianness32u(std::uint32_t x)
@@ -65,8 +66,7 @@ inline std::uint64_t swap_endianness64u(std::uint64_t x)
 inline std::int16_t swap_endianness16(std::int16_t x)
 {
 // boost/endian/conversion.hpp
-	return	(static_cast<std::uint16_t>(x) << 8) |
-			(static_cast<std::uint16_t>(x) >> 8);
+	return std::int16_t((x << 8) | (x >> 8));
 }
 
 inline std::int32_t swap_endianness32(std::int32_t x)
@@ -76,8 +76,7 @@ inline std::int32_t swap_endianness32(std::int32_t x)
 
 	uint32_t step16;
 	step16 = static_cast<uint32_t>(x) << 16 | static_cast<uint32_t>(x) >> 16;
-	return	((static_cast<uint32_t>(step16) << 8) & 0xff00ff00) |
-			((static_cast<uint32_t>(step16) >> 8) & 0x00ff00ff);
+	return	int32_t(((step16 << 8) & 0xff00ff00) | ((step16 >> 8) & 0x00ff00ff));
 }
 
 inline std::int64_t swap_endianness64(std::int64_t x)
@@ -236,7 +235,10 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint16 tmp;
 	tmp = reinterpret_cast<const uint16&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
+
 }
 
 template<bool COND, typename T>
@@ -245,7 +247,10 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint32 tmp;
 	tmp = reinterpret_cast<const uint32&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
+
 }
 
 template<bool COND, typename T>
@@ -254,7 +259,9 @@ inline typename std::enable_if<!has_operator_brackets<T>::value && sizeof(T) == 
 	uint64 tmp;
 	tmp = reinterpret_cast<const uint64&>(x);
 	tmp = swap_endianness_if<COND>(tmp);
-	return reinterpret_cast<T&>(tmp);
+//	return reinterpret_cast<T&>(tmp);
+	T* ptr = reinterpret_cast<T*>(&tmp); // avoid warning
+	return *ptr;
 }
 
 } // namespace internal

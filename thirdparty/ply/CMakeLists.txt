@@ -4,6 +4,7 @@ project(ply
 	LANGUAGES C
 )
 
+cgogn_reset_warning_level()
 set(HEADER_FILES
 	ply.h
 )
@@ -11,6 +12,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	ply.c
 )
+
 
 add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")

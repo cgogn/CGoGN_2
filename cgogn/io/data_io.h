@@ -149,10 +149,10 @@ public:
 		{
 			if (std::is_same<T, BUFFER_T>::value)
 			{ // if BUFFER_T = T we can directly store the data
-				fp.read(reinterpret_cast<char*>(&data_[old_size]), n * sizeof(T));
+				fp.read(reinterpret_cast<char*>(&data_[old_size]), std::streamsize(n * sizeof(T)));
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
-					for (auto it = data_.begin() + old_size, end = data_.end() ; it != end; ++it)
+					for (auto it = data_.begin() + typename std::vector<T>::difference_type(old_size), end = data_.end() ; it != end; ++it)
 						*it = cgogn::swap_endianness(*it);
 				}
 
@@ -162,10 +162,10 @@ public:
 			else
 			{ // 2nd case : BUFFER_T and T are different.
 				std::vector<BUFFER_T> buffer(old_size+n);
-				fp.read(reinterpret_cast<char*>(&buffer[old_size]), n * sizeof(BUFFER_T));
+				fp.read(reinterpret_cast<char*>(&buffer[old_size]), std::streamsize(n * sizeof(BUFFER_T)));
 				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
 				{
-					for (auto it = buffer.begin() + old_size, end = buffer.end() ; it != end; ++it)
+					for (auto it = buffer.begin() + typename std::vector<BUFFER_T>::difference_type(old_size), end = buffer.end() ; it != end; ++it)
 						*it = cgogn::swap_endianness(*it);
 				}
 				if (fp.eof() || fp.bad())
@@ -184,7 +184,7 @@ public:
 //			BUFFER_T buff;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				std::istringstream line_stream(line);
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
@@ -223,7 +223,7 @@ public:
 			std::size_t i = 0ul;
 			for (; i < n && (!fp.eof()) && (!fp.bad()); )
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				std::istringstream line_stream(line);
 				bool no_error = static_cast<bool>(line_stream.ignore(1, ' '));
 				while (i < n && no_error)
@@ -291,9 +291,14 @@ public:
 		return &data_;
 	}
 
-	inline std::vector<T> const * vec() const
+	inline const std::vector<T>& vec() const
 	{
-		return &data_;
+		return data_;
+	}
+
+	inline std::vector<T>&  vec()
+	{
+		return data_;
 	}
 
 	virtual uint32 nb_components() const override
@@ -337,6 +342,7 @@ std::unique_ptr<DataInputGen> DataInputGen::newDataIO(const std::string type_nam
 		case DataType::UINT32:	return make_unique<DataInput<PRIM_SIZE, std::uint32_t>>();
 		case DataType::INT64:	return make_unique<DataInput<PRIM_SIZE, std::int64_t>>();
 		case DataType::UINT64:	return make_unique<DataInput<PRIM_SIZE, std::uint64_t>>();
+		case DataType::UNKNOWN:
 		default:
 			cgogn_log_error("DataInputGen::newDataIO") << "Couldn't create a DataIO of type \"" << type_name << "\".";
 			return std::unique_ptr<DataInputGen>();

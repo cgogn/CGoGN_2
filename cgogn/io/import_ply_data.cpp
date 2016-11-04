@@ -204,7 +204,7 @@ bool PlyImportData::read_file(const std::string& filename)
 			/* grab all the vertex elements */
 			for (int32 j = 0; j < elem_count; j++)
 			{
-				vlist[j] = (VertexPly*) malloc (sizeof (VertexPly));
+				vlist[j] = reinterpret_cast<VertexPly*>(malloc (sizeof (VertexPly)));
 				vlist[j]->r = 1;
 				vlist[j]->g = 1;
 				vlist[j]->b = 1;

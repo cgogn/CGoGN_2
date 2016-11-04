@@ -83,7 +83,7 @@ public:
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
-		map.add_attribute(vertex_type_, name);
+		vertex_type_ = map.template add_attribute<CriticalPoint::Type, Vertex>(name);
 	}
 
 	~ScalarField()
@@ -737,7 +737,7 @@ public:
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
-		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex>("manifold_id");
 
 		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
 		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)
@@ -806,7 +806,7 @@ public:
 	{
 		cgogn_message_assert(vertex_type_computed_,"Call critical_vertex_analysis() before this function");
 
-		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex::ORBIT>("manifold_id");
+		VertexAttribute<uint32> manifold_id = map_.template add_attribute<uint32, Vertex>("manifold_id");
 
 		// Classify the vertices as inner vertex or boundary vertex of the ascending manifolds A3
 		VertexMarker inner_vertex(map_);		// Vertex in Int(A3)

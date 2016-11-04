@@ -149,9 +149,9 @@ LogEntry& LogEntry::operator=(LogEntry&& other)
 }
 
 LogEntry::LogEntry(LogLevel level, const std::string& sender, const LogEntry::FileInfo& fileinfo) :
-	level_(level),
 	sender_(sender),
-	fileinfo_(fileinfo)
+	fileinfo_(fileinfo),
+	level_(level)
 {
 	message_ = make_unique<std::stringstream>();
 }

@@ -77,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -257,31 +257,17 @@ public:
 	}
 
 	/**
-	 * @brief add an attribute, given a ref on an existing attribute
-	 * @param result_attribute, a reference to an attribute that will be overwritten
-	 * @param attribute_name the name of the attribute to create
-	 */
+	* \brief search an attribute for a given orbit
+	* @param attribute_name attribute name
+	* @return an Attribute
+	*/
 	template <typename T, Orbit ORBIT>
-	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
-	}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-	/**
-	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		if (attribute_handler.is_valid())
-		{
-			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
-			return;
-		}
-
-		add_attribute(attribute_handler, attribute_name);
-		if (!attribute_handler.is_valid())
-			get_attribute(attribute_handler, attribute_name);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
+		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
 	}
 
 	/**
@@ -311,25 +297,26 @@ public:
 	}
 
 	/**
-	* \brief search an attribute for a given orbit
-	* @param attribute_name attribute name
-	* @return an Attribute
-	*/
-	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
+	 * \brief Second version of add_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
+		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
-	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
+	/**
+	 * \brief Second version of get_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		ah = get_attribute<T,ORBIT>(attribute_name);
+		return this->get_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
+	/**
+	 * \brief Third version of get_attribute taking a single type template parameter T and returning an Attribute_T<T>
+	 */
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
@@ -339,11 +326,6 @@ public:
 		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
 	}
 
-	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
-	{
-		ath = get_attribute<T>(orbit, attribute_name);
-	}
 
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
@@ -783,6 +765,75 @@ public:
 			f(it);
 	}
 
+//	template <typename FUNC>
+//	inline void parallel_foreach_dart(const FUNC& f) const
+//	{
+//		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
+//		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
+
+//		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
+//		using VecDarts = std::vector<Dart>;
+
+//		ThreadPool* thread_pool = cgogn::thread_pool();
+//		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+//		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+//		std::array<std::vector<Future>, 2> futures;
+//		dart_buffers[0].reserve(nb_threads_pool);
+//		dart_buffers[1].reserve(nb_threads_pool);
+//		futures[0].reserve(nb_threads_pool);
+//		futures[1].reserve(nb_threads_pool);
+
+//		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+
+//		Dart it = Dart(this->topology_.begin());
+//		Dart last = Dart(this->topology_.end());
+
+//		while (it != last)
+//		{
+//			for (uint32 i = 0u; i < 2u; ++i)
+//			{
+//				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
+//				{
+//					dart_buffers[i].push_back(dbuffs->buffer());
+//					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+//					std::vector<Dart>& darts = *dart_buffers[i].back();
+//					darts.reserve(PARALLEL_BUFFER_SIZE);
+//					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
+//					{
+//						darts.push_back(it);
+//						this->topology_.next(it.index);
+//					}
+
+//					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+//					{
+//						for (auto d : darts)
+//							f(d, th_id);
+//					}));
+//				}
+
+//				const uint32 id = (i+1u) % 2u;
+
+//				for (auto& fu : futures[id])
+//					fu.wait();
+//				for (auto& b : dart_buffers[id])
+//					dbuffs->release_buffer(b);
+
+//				futures[id].clear();
+//				dart_buffers[id].clear();
+
+//				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+//				if (it.index >= last.index && i == 1u)
+//				{
+//					for (auto& fu : futures[1u])
+//						fu.wait();
+//					for (auto &b : dart_buffers[1u])
+//						dbuffs->release_buffer(b);
+//				}
+//			}
+//		}
+//	}
+
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
@@ -804,53 +855,55 @@ public:
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_threads_pool)
 		Dart it = Dart(this->topology_.begin());
 		Dart last = Dart(this->topology_.end());
 
 		while (it != last)
 		{
-			for (uint32 i = 0u; i < 2u; ++i)
+			dart_buffers[i].push_back(dbuffs->buffer());
+			cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+			std::vector<Dart>& darts = *dart_buffers[i].back();
+			darts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 			{
-				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
-				{
-					dart_buffers[i].push_back(dbuffs->buffer());
-					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-					std::vector<Dart>& darts = *dart_buffers[i].back();
-					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-					{
-						darts.push_back(it);
-						this->topology_.next(it.index);
-					}
+				darts.push_back(it);
+				this->topology_.next(it.index);
+			}
 
-					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-					{
-						for (auto d : darts)
-							f(d, th_id);
-					}));
-				}
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+			{
+				for (auto d : darts)
+					f(d, th_id);
+			}));
 
-				const uint32 id = (i+1u) % 2u;
-
-				for (auto& fu : futures[id])
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : dart_buffers[id])
+				for (auto& b : dart_buffers[i])
 					dbuffs->release_buffer(b);
-
-				futures[id].clear();
-				dart_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it.index >= last.index && i == 1u)
-				{
-					for (auto& fu : futures[1u])
-						fu.wait();
-					for (auto &b : dart_buffers[1u])
-						dbuffs->release_buffer(b);
-				}
+				futures[i].clear();
+				dart_buffers[i].clear();
 			}
 		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : dart_buffers[0u])
+			dbuffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : dart_buffers[1u])
+			dbuffs->release_buffer(b);
+
 	}
+
 
 	/**
 	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
@@ -947,7 +1000,6 @@ public:
 	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -974,7 +1026,6 @@ public:
 	{
 		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -1123,13 +1174,13 @@ public:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1235,13 +1286,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1334,13 +1385,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 

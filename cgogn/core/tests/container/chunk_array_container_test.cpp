@@ -64,23 +64,23 @@ TEST_F(ChunkArrayContainerTest, testRemove)
 	for (uint32 i=0; i<40; ++i)
 		ca_cont.insert_lines<1>();
 
-	EXPECT_EQ(ca_cont.size(),40);
+	EXPECT_EQ(ca_cont.size(),40u);
 
 	ca_cont.remove_lines<1>(3);
 	ca_cont.remove_lines<1>(19);
 	ca_cont.remove_lines<1>(37);
 
-	EXPECT_EQ(ca_cont.size(),37);
+	EXPECT_EQ(ca_cont.size(),37u);
 
 	uint32 i1 = ca_cont.insert_lines<1>();
 	uint32 i2 = ca_cont.insert_lines<1>();
 	uint32 i3 = ca_cont.insert_lines<1>();
 
-	EXPECT_EQ(ca_cont.size(),40);
+	EXPECT_EQ(ca_cont.size(),40u);
 
-	EXPECT_EQ(i1,37);
-	EXPECT_EQ(i2,19);
-	EXPECT_EQ(i3,3);
+	EXPECT_EQ(i1,37u);
+	EXPECT_EQ(i2,19u);
+	EXPECT_EQ(i3,3u);
 }
 
 TEST_F(ChunkArrayContainerTest, test_compact)
@@ -110,12 +110,12 @@ TEST_F(ChunkArrayContainerTest, test_compact)
 	ca_cont.remove_lines<1>(13);
 	ca_cont.remove_lines<1>(14);
 
-	EXPECT_EQ(ca_cont.size(),6);
+	EXPECT_EQ(ca_cont.size(),6u);
 
 	std::vector<uint32> old_new = ca_cont.compact<1>();
-	EXPECT_EQ(old_new.size(),20);
+	EXPECT_EQ(old_new.size(),20u);
 
-	EXPECT_EQ(ca_cont.size(),6);
+	EXPECT_EQ(ca_cont.size(),6u);
 
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //		std::cout << i << " => "<<indices->operator[](i)<< std::endl;
@@ -164,12 +164,12 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 	ca_cont.remove_lines<3>(6*3);
 	ca_cont.remove_lines<3>(4*3);
 
-	EXPECT_EQ(ca_cont.size(),15);
+	EXPECT_EQ(ca_cont.size(),15u);
 
 	std::vector<uint32> old_new = ca_cont.compact<3>();
-	EXPECT_EQ(old_new.size(),30);
+	EXPECT_EQ(old_new.size(),30u);
 
-	EXPECT_EQ(ca_cont.size(),15);
+	EXPECT_EQ(ca_cont.size(),15u);
 
 //	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 //		std::cout << i << " => "<<indices->operator[](i)<< std::endl;
@@ -253,8 +253,8 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 		return;
 
 	std::vector<uint32> old_new = ca_cont.merge<1>(ca_cont2);
-	EXPECT_EQ(old_new.size(),9);
-	EXPECT_EQ(ca_cont.size(),14);
+	EXPECT_EQ(old_new.size(),9u);
+	EXPECT_EQ(ca_cont.size(),14u);
 
 //	std::cout << "=============================" << std::endl;
 //	ChunkArray<VEC3F>* data_v = ca_cont.get_attribute<VEC3F>("data_v");
@@ -279,7 +279,7 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 
 	auto contains = [&] (uint32 x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
-	EXPECT_EQ(after.size(),14);
+	EXPECT_EQ(after.size(),14u);
 	EXPECT_TRUE( contains(0) );
 	EXPECT_TRUE( contains(1) );
 	EXPECT_TRUE( contains(3) );
@@ -343,8 +343,8 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	std::vector<uint32> old_new = ca_cont.merge<3>(ca_cont2);
 
-	EXPECT_EQ(old_new.size(),9);
-	EXPECT_EQ(ca_cont.size(),12);
+	EXPECT_EQ(old_new.size(),9u);
+	EXPECT_EQ(ca_cont.size(),12u);
 
 	ChunkArray<bool>* data_b = ca_cont.get_chunk_array<bool>("booleens");
 
@@ -378,8 +378,8 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 	auto contains = [&] (uint32 x) -> bool { return std::find(after.begin(),after.end(),x) != after.end(); };
 
-	EXPECT_EQ(after.size(),12);
-	EXPECT_EQ(nb_true,6);
+	EXPECT_EQ(after.size(),12u);
+	EXPECT_EQ(nb_true,6u);
 	EXPECT_TRUE( contains(0) );
 	EXPECT_TRUE( contains(1) );
 	EXPECT_TRUE( contains(2) );

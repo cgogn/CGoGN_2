@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap1TopoTest class implements topological tests on CMap1
@@ -117,10 +117,10 @@ TEST_F(CMap1TopoTest, add_attribute)
 	add_vertices(NB_MAX);
 	add_faces(NB_MAX);
 
-	add_attribute<int32, Vertex::ORBIT>("vertices");
+	add_attribute<int32, Vertex>("vertices");
 	EXPECT_TRUE(check_map_integrity());
 
-	add_attribute<int32, Face::ORBIT>("faces");
+	add_attribute<int32, Face>("faces");
 	EXPECT_TRUE(check_map_integrity());
 }
 

@@ -48,7 +48,7 @@ inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 	//split the volumes incident to the new vertex
 	for (unsigned int i = 0; i < vd.size(); ++i)
 	{
-		Dart dit = vd[i];
+		dit = vd[i];
 
 		std::vector<Dart> v;
 		v.push_back(map.phi1(map.phi1(map.phi2(dit))));
@@ -60,8 +60,9 @@ inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 	return dres;
 }
 
-bool is_tetrahedron(CMap3& map, typename CMap3::Volume w)
+bool is_tetrahedron(CMap3& map, CMap3::Volume w)
 {
+	unused_parameters(map,w);
 	return true;
 }
 
@@ -70,7 +71,7 @@ bool is_tetrahedron(CMap3& map, typename CMap3::Volume w)
 
 //}
 
-Dart swap_22(CMap3& map, typename CMap3::Volume w)
+Dart swap_22(CMap3& map, CMap3::Volume w)
 {
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
@@ -95,7 +96,7 @@ Dart swap_22(CMap3& map, typename CMap3::Volume w)
 	return map.phi2(stop);
 }
 
-Dart swap_44(CMap3& map, typename CMap3::Volume w)
+Dart swap_44(CMap3& map, CMap3::Volume w)
 {
 	using Face = CMap3::Face;
 	using Volume = CMap3::Volume;
@@ -116,7 +117,7 @@ Dart swap_44(CMap3& map, typename CMap3::Volume w)
 	return d1;
 }
 
-Dart swap_32(CMap3& map, typename CMap3::Edge e)
+Dart swap_32(CMap3& map, CMap3::Edge e)
 {
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
@@ -186,7 +187,7 @@ Dart swap_23(CMap3& map, CMap3::Face f)
 	return stop;
 }
 
-typename CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
+CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
 {
 	using Vertex = CMap3::Vertex;
 	using Face = CMap3::Face;
@@ -230,7 +231,7 @@ typename CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
 	return x;
 }
 
-typename CMap3::Vertex flip_13(CMap3& map, CMap3::Face f)
+CMap3::Vertex flip_13(CMap3& map, CMap3::Face f)
 {
 	using Vertex = CMap3::Vertex;
 	using Face = CMap3::Face;

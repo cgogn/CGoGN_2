@@ -76,7 +76,7 @@ inline bool equal_case_insensitive(const std::basic_string<Char_T>& str1, const 
 {
 	if (str1.size() != str2.size())
 		return false;
-	auto it1 = str1.begin(), it2 = str2.begin(), end = str1.end();
+	auto it1 = str1.begin(), it2 = str2.begin();
 	for(auto end = str1.end(); it1 != end ;)
 	{
 		if (std::tolower(*it1) != std::tolower(*it2))

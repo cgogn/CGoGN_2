@@ -260,8 +260,8 @@ public:
 			for(uint32 j = 0; j <= this->nx_; ++j)
 			{
 				r = radius_min + (radius_max - radius_min) * float32(i) / float32(this->ny_);
-				x = orient * r * sin(alpha * float32(j));
-				y = orient * r * cos(alpha * float32(j));
+				x = orient * r * std::sin(alpha * float32(j));
+				y = orient * r * std::cos(alpha * float32(j));
 
 				attribute[this->vertex_table_[i * (this->nx_ + 1) + j]] = T(x, y, j * hS);
 			}

@@ -321,6 +321,9 @@ private:
 	CharArrayBuffer buffer_;
 };
 
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str);
+
+
 } // namespace io
 
 } // namespace cgogn
