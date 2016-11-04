@@ -1644,6 +1644,22 @@ public:
 		return res;
 	}
 
+	inline Face boundary_face_of_Vertex(Vertex v) const
+	{
+		Face res;
+		this->foreach_dart_of_PHI21_PHI31_until(v.dart, [this,&res] (Dart it) -> bool
+		{
+			if (this->is_boundary(it))
+			{
+				res.dart = it;
+				return false;
+			}
+			else
+				return true;
+		});
+		return res;
+	}
+
 	/*******************************************************************************
 	 * Orbits traversal
 	 *******************************************************************************/
