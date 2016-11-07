@@ -1539,6 +1539,14 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_edge_until(Vertex v, const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(v, [this, &f] (Dart d) { return f(Vertex(this->phi2(d))); });
+	}
+
+	template <typename FUNC>
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
@@ -1546,7 +1554,7 @@ public:
 		{
 			if (!this->is_boundary(vd))
 			{
-				Dart vd1 = this->phi1(vd);
+				const Dart vd1 = this->phi1(vd);
 				this->foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
 				{
 					// skip Vertex v itself and its first successor around current face
@@ -1554,6 +1562,30 @@ public:
 						f(Vertex(fd));
 				});
 			}
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_vertex_through_face_until(Vertex v, const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(v, [this, &f] (Dart vd) -> bool
+		{
+			if (!this->is_boundary(vd))
+			{
+				const Dart vd1 = this->phi1(vd);
+				bool res_nested_lambda = true;
+				this->foreach_dart_of_orbit_until(Face(vd), [&f, &res_nested_lambda, vd, vd1] (Dart fd) -> bool
+				{
+					// skip Vertex v itself and its first successor around current face
+					if (fd != vd && fd != vd1)
+						 res_nested_lambda = f(Vertex(fd));
+					return res_nested_lambda;
+				});
+				return res_nested_lambda;
+			}
+			return true;
 		});
 	}
 
@@ -1569,6 +1601,25 @@ public:
 				if (vd != ed)
 					f(Edge(vd));
 			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_vertex_until(Edge e, const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(e, [&f, this] (Dart ed) -> bool
+		{
+			bool res_nested_lambda = true;
+			this->foreach_dart_of_orbit_until(Vertex(ed), [&f,&res_nested_lambda, ed] (Dart vd) -> bool
+			{
+				// skip Edge e itself
+				if (vd != ed)
+					res_nested_lambda = f(Edge(vd));
+				return res_nested_lambda;
+			});
+			return res_nested_lambda;
 		});
 	}
 
@@ -1591,18 +1642,61 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_adjacent_edge_through_face_until(Edge e, const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(e, [&f, this] (Dart ed) -> bool
+		{
+			if (!this->is_boundary(ed))
+			{
+				bool res_nested_lambda = true;
+				this->foreach_dart_of_orbit_until(Face(ed), [&f,&res_nested_lambda, ed] (Dart fd) -> bool
+				{
+					// skip Edge e itself
+					if (fd != ed)
+						res_nested_lambda = f(Edge(fd));
+					return res_nested_lambda;
+				});
+				return res_nested_lambda;
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
 		{
-			Dart fd1 = this->phi2(this->phi_1(fd));
+			const Dart fd1 = this->phi2(this->phi_1(fd));
 			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
 					func(Face(vd));
 			});
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_vertex_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(f, [this, &func] (Dart fd) -> bool
+		{
+			const Dart fd1 = this->phi2(this->phi_1(fd));
+			bool res_nested_lambda = true;
+			this->foreach_dart_of_orbit_until(Vertex(fd), [this, &func,&res_nested_lambda, fd, fd1] (Dart vd) -> bool
+			{
+				// skip Face f itself and its first successor around current vertex
+				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
+					res_nested_lambda = func(Face(vd));
+				return res_nested_lambda;
+			});
+			return res_nested_lambda;
 		});
 	}
 
@@ -1615,6 +1709,21 @@ public:
 			const Dart d2 = this->phi2(d);
 			if (!this->is_boundary(d2))
 				func(Face(d2));
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_adjacent_face_through_edge_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(f, [this, &func] (Dart d) -> bool
+		{
+			const Dart d2 = this->phi2(d);
+			if (!this->is_boundary(d2))
+				return func(Face(d2));
+			else
+				return true;
 		});
 	}
 
