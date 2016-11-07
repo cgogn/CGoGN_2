@@ -1572,10 +1572,10 @@ public:
 		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		foreach_dart_of_orbit_until(v, [this, &f] (Dart vd) -> bool
 		{
+			bool res_nested_lambda = true;
 			if (!this->is_boundary(vd))
 			{
 				const Dart vd1 = this->phi1(vd);
-				bool res_nested_lambda = true;
 				this->foreach_dart_of_orbit_until(Face(vd), [&f, &res_nested_lambda, vd, vd1] (Dart fd) -> bool
 				{
 					// skip Vertex v itself and its first successor around current face
@@ -1583,9 +1583,8 @@ public:
 						 res_nested_lambda = f(Vertex(fd));
 					return res_nested_lambda;
 				});
-				return res_nested_lambda;
 			}
-			return true;
+			return res_nested_lambda;
 		});
 	}
 
@@ -1648,9 +1647,9 @@ public:
 		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		foreach_dart_of_orbit_until(e, [&f, this] (Dart ed) -> bool
 		{
+			bool res_nested_lambda = true;
 			if (!this->is_boundary(ed))
 			{
-				bool res_nested_lambda = true;
 				this->foreach_dart_of_orbit_until(Face(ed), [&f,&res_nested_lambda, ed] (Dart fd) -> bool
 				{
 					// skip Edge e itself
@@ -1658,9 +1657,8 @@ public:
 						res_nested_lambda = f(Edge(fd));
 					return res_nested_lambda;
 				});
-				return res_nested_lambda;
 			}
-			return true;
+			return res_nested_lambda;
 		});
 	}
 
