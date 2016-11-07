@@ -1281,6 +1281,14 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_edge_until(Vertex v, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(v, [&func] (Dart d) -> bool { return func(Edge(d)); });
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
@@ -1292,9 +1300,31 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_face_until(Vertex v, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(v, [this, &func] (Dart d) -> bool
+		{
+			if (!this->is_boundary(d))
+				return func(Face(d));
+			else
+				return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_volume(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		func(Volume(v.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume_until(Vertex v, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		func(Volume(v.dart));
 	}
 
@@ -1303,6 +1333,14 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&func] (Dart d) { func(Vertex(d)); });
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex_until(Edge e, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(e, [&func] (Dart d) -> bool { return func(Vertex(d)); });
 	}
 
 	template <typename FUNC>
@@ -1317,9 +1355,31 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_face_until(Edge e, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(e, [this, &func] (Dart d)
+		{
+			if (!this->is_boundary(d))
+				return func(Face(d));
+			else
+				return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_volume(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		func(Volume(e.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume_until(Edge e, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		func(Volume(e.dart));
 	}
 
@@ -1331,6 +1391,14 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_vertex_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(f, [&func] (Dart d) { return func(Vertex(d)); });
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
@@ -1338,9 +1406,25 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_edge_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(f, [&func] (Dart d) { return func(Edge(d)); });
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_volume(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		func(Volume(f.dart));
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		func(Volume(f.dart));
 	}
 
@@ -1360,6 +1444,24 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_vertex_until(Volume w, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit_until(w, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				if (!func(Vertex(d)))
+					return false;
+				marker.mark_orbit(Vertex(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_edge(Volume w, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
@@ -1375,6 +1477,24 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_edge_until(Volume w, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit_until(w, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				if (!func(Edge(d)))
+					return false;
+				marker.mark_orbit(Edge(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_face(Volume w, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
@@ -1386,6 +1506,24 @@ public:
 				marker.mark_orbit(Face(d));
 				func(Face(d));
 			}
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face_until(Volume w, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit_until(w, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d) && !this->is_boundary(d))
+			{
+				if (!func(Face(d)))
+					return false;
+				marker.mark_orbit(Face(d));
+			}
+			return true;
 		});
 	}
 
