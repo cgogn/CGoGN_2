@@ -1941,10 +1941,9 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (func(Edge(d)))
-					foreach_dart_of_PHI23(d, [&marker] (Dart dd) { marker.mark(dd); });
-				else
+				if (!func(Edge(d)))
 					return false;
+				foreach_dart_of_PHI23(d, [&marker] (Dart dd) { marker.mark(dd); });
 			}
 			return true;
 		});
@@ -1976,12 +1975,10 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (func(Face(d)))
-				{
-					marker.mark(d);
-					marker.mark(this->phi1(phi3(d)));
-				} else
+				if (!func(Face(d)))
 					return false;
+				marker.mark(d);
+				marker.mark(this->phi1(phi3(d)));
 			}
 			return true;
 		});
@@ -2012,10 +2009,9 @@ public:
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
-				if (func(Volume(d)))
-					marker.mark_orbit(Vertex2(d));
-				else
+				if (!func(Volume(d)))
 					return false;
+				marker.mark_orbit(Vertex2(d));
 			}
 			return true;
 		});
