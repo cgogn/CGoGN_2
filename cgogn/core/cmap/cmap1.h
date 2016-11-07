@@ -552,6 +552,14 @@ public:
 		foreach_dart_of_orbit(f, [&func] (Dart v) { func(Vertex(v)); });
 	}
 
+	template <typename FUNC>
+	inline void foreach_incident_vertex_until(Face f, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
+		foreach_dart_of_orbit_until(f, [&func] (Dart v) { return func(Vertex(v)); });
+	}
+
 protected:
 
 	/**
