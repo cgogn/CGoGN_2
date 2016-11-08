@@ -89,7 +89,7 @@ static void BENCH_mark_cc_poly(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		cgogn::Dart d;
-		bench_map.foreach_cell_until([&] (Volume v)
+		bench_map.foreach_cell([&] (Volume v) -> bool
 		{
 			d = v.dart;
 			return false;
@@ -105,7 +105,7 @@ static void BENCH_mark_cc_tetra(benchmark::State& state)
 	while(state.KeepRunning())
 	{
 		cgogn::Dart d;
-		bench_tetra_map.foreach_cell_until([&] (Volume v)
+		bench_tetra_map.foreach_cell([&] (Volume v) -> bool
 		{
 			d = v.dart;
 			return false;
