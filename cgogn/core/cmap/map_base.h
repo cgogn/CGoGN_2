@@ -566,7 +566,7 @@ public:
 		bool result = true;
 
 		// check the integrity of topological relations or the correct sewing of darts
-		foreach_dart_until([&cmap, &result] (Dart d)
+		foreach_dart([&cmap, &result] (Dart d) -> bool
 		{
 			result = cmap->check_integrity(d);
 			return result;
@@ -602,7 +602,7 @@ public:
 	bool same_orbit(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
+		to_concrete()->foreach_dart_of_orbit(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
 			{
@@ -703,7 +703,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = true; return false; }
 			return true;
@@ -716,7 +716,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = d; return false; }
 			return true;
@@ -750,20 +750,6 @@ protected:
 	 *******************************************************************************/
 
 public:
-
-	/**
-	 * \brief apply a function on each dart of the map (including boundary darts)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC>
-	inline void foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
-			f(it);
-	}
 
 //	template <typename FUNC>
 //	inline void parallel_foreach_dart(const FUNC& f) const
@@ -911,14 +897,13 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart_until(const FUNC& f) const
+	inline void foreach_dart(const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
 		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
 		{
-			if (!f(it))
+			if (!internal::foreach_bool_binder(f, it))
 				break;
 		}
 	}

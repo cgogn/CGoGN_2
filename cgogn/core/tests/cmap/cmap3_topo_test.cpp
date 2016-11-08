@@ -98,7 +98,7 @@ protected:
 	{
 		bool result = false;
 
-		foreach_dart_of_orbit_until(Volume(d), [&](Dart vit)
+		foreach_dart_of_orbit(Volume(d), [&](Dart vit) -> bool
 		{
 			if (vit == e) result = true;
 			return !result;

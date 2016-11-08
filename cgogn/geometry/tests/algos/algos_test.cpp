@@ -83,7 +83,7 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(3);
 	Dart t;
-	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
+	this->map2_.foreach_dart([&t] (Dart d) { t = d; return false; });
 	const Scalar area = cgogn::geometry::area<TypeParam>(this->map2_, Face(t), vertex_position);
 	const Scalar cf_area = cgogn::geometry::convex_area<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(0.75*std::sqrt(3.0)));
@@ -96,7 +96,7 @@ TYPED_TEST(Algos_TEST, QuadArea)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(4);
 	Dart q;
-	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
+	this->map2_.foreach_dart([&q] (Dart d) { q = d; return false; });
 	const Scalar area = cgogn::geometry::convex_area<TypeParam>(this->map2_, Face(q), vertex_position);
 	EXPECT_DOUBLE_EQ(area, Scalar(2));
 }
@@ -107,7 +107,7 @@ TYPED_TEST(Algos_TEST, TriangleCentroid)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(3);
 	Dart t;
-	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
+	this->map2_.foreach_dart([&t] (Dart d) { t = d; return false; });
 	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(t), vertex_position);
 	std::cout << centroid << std::endl;
 	EXPECT_TRUE(cgogn::almost_equal_absolute(centroid[0], Scalar(0)));
@@ -121,7 +121,7 @@ TYPED_TEST(Algos_TEST, QuadCentroid)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(4);
 	Dart q;
-	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
+	this->map2_.foreach_dart([&q] (Dart d) { q = d; return false; });
 	const TypeParam centroid = cgogn::geometry::centroid<TypeParam>(this->map2_, Face(q), vertex_position);
 	EXPECT_TRUE(cgogn::almost_equal_absolute(centroid[0], Scalar(0)));
 	EXPECT_TRUE(cgogn::almost_equal_absolute(centroid[1], Scalar(0)));
@@ -134,7 +134,7 @@ TYPED_TEST(Algos_TEST, TriangleNormal)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(3);
 	Dart t;
-	this->map2_.foreach_dart_until([&t] (Dart d) { t = d; return false; });
+	this->map2_.foreach_dart([&t] (Dart d) { t = d; return false; });
 	const TypeParam& n1 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(t), vertex_position);
 	const TypeParam& n2 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(t), vertex_position);
 	EXPECT_TRUE(cgogn::almost_equal_relative(n1[0], n2[0]));
@@ -153,7 +153,7 @@ TYPED_TEST(Algos_TEST, QuadNormal)
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 	this->add_polygone(4);
 	Dart q;
-	this->map2_.foreach_dart_until([&q] (Dart d) { q = d; return false; });
+	this->map2_.foreach_dart([&q] (Dart d) { q = d; return false; });
 	const TypeParam& n1 = cgogn::geometry::normal<TypeParam>(this->map2_, Face(q), vertex_position);
 	const TypeParam& cross = n1.cross(TypeParam(Scalar(0), Scalar(0), Scalar(1)));
 	EXPECT_TRUE(cgogn::almost_equal_relative(cross[0], Scalar(0)));
