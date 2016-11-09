@@ -1070,7 +1070,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		bool result = false;
-		foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		foreach_dart_of_orbit(c, [this, &result] (Dart d) -> bool
 		{
 			if (this->is_boundary(phi2(d))) { result = true; return false; }
 			return true;
@@ -1087,23 +1087,20 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
-		uint32 first = (d.index/3)*3;
-		f(Dart(first));
-		f(Dart(first+1));
-		f(Dart(first+2));
-//		Dart it = d;
-//		do
-//		{
-//			f(it);
-//			it = phi1(it);
-//		} while (it != d);
+		Dart it = d;
+		do
+		{
+			if (!internal::void_to_true_binder(f, it))
+				break;
+			it = phi1(it);
+		} while (it != d);
 	}
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
 	{
-		f(d);
-		f(phi2(d));
+		if (internal::void_to_true_binder(f, d))
+			f(phi2(d));
 	}
 
 	template <typename FUNC>
@@ -1113,7 +1110,8 @@ protected:
 		do
 		{
 			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
-				f(it);
+				if (!internal::void_to_true_binder(f, it))
+					break;
 			it = phi2(phi_1(it));
 		} while (it != d);
 	}
@@ -1137,7 +1135,11 @@ protected:
 				Dart it = e;
 				do
 				{
-					f(it); // apply the function to the darts of the face
+					if (!internal::void_to_true_binder(f, it)) // apply the function to the darts of the face
+					{
+						cgogn::dart_buffers()->release_buffer(visited_faces);
+						return;
+					}
 					marker.mark(it);				// Mark
 					Dart adj = phi2(it);			// Get adjacent face
 					if (!marker.is_marked(adj))
@@ -1153,6 +1155,7 @@ protected:
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+
 		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
 					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
 					  "Orbit not supported in a CMap2");
@@ -1172,98 +1175,6 @@ protected:
 		}
 	}
 
-	template <typename FUNC>
-	inline void foreach_dart_of_PHI1_until(Dart d, const FUNC& f) const
-	{
-		Dart it = d;
-		do
-		{
-			if (!f(it))
-				break;
-			it = phi1(it);
-		} while (it != d);
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_of_PHI2_until(Dart d, const FUNC& f) const
-	{
-		if (f(d))
-			f(phi2(d));
-	}
-
-	template <typename FUNC>
-	inline void foreach_dart_of_PHI21_until(Dart d, const FUNC& f) const
-	{
-		Dart it = d;
-		do
-		{
-			if ( !(this->is_boundary(it) && this->is_boundary(phi2(it))) )
-				if (!f(it))
-					break;
-			it = phi2(phi_1(it));
-		} while (it != d);
-	}
-
-	template <typename FUNC>
-	void foreach_dart_of_PHI1_PHI2_until(Dart d, const FUNC& f) const
-	{
-		DartMarkerStore marker(*this);
-
-		std::vector<Dart>* visited_faces = cgogn::dart_buffers()->buffer();
-		visited_faces->push_back(d); // Start with the face of d
-
-		// For every face added to the list
-		for(uint32 i = 0; i < visited_faces->size(); ++i)
-		{
-			Dart e = (*visited_faces)[i];
-			if (!marker.is_marked(e))	// Face has not been visited yet
-			{
-				// mark visited darts (current face)
-				// and add non visited adjacent faces to the list of face
-				Dart it = e;
-				do
-				{
-					if (!f(it)) // apply the function to the darts of the face
-					{
-						cgogn::dart_buffers()->release_buffer(visited_faces);
-						return;
-					}
-					marker.mark(it);				// Mark
-					Dart adj = phi2(it);			// Get adjacent face
-					if (!marker.is_marked(adj))
-						visited_faces->push_back(adj);	// Add it
-					it = phi1(it);
-				} while (it != e);
-			}
-		}
-		cgogn::dart_buffers()->release_buffer(visited_faces);
-	}
-
-	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1 || ORBIT == Orbit::PHI2 ||
-					  ORBIT == Orbit::PHI1_PHI2 || ORBIT == Orbit::PHI21,
-					  "Orbit not supported in a CMap2");
-
-		switch (ORBIT)
-		{
-			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1_until(c.dart, f); break;
-			case Orbit::PHI2: foreach_dart_of_PHI2_until(c.dart, f); break;
-			case Orbit::PHI21: foreach_dart_of_PHI21_until(c.dart, f); break;
-			case Orbit::PHI1_PHI2: foreach_dart_of_PHI1_PHI2_until(c.dart, f); break;
-			case Orbit::PHI2_PHI3:
-			case Orbit::PHI1_PHI3:
-			case Orbit::PHI21_PHI31:
-			case Orbit::PHI1_PHI2_PHI3:
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap2"); break;
-		}
-	}
-
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
@@ -1274,9 +1185,9 @@ public:
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [&] (Dart d)
+		foreach_dart_of_orbit(v, [&] (Dart d) -> bool
 		{
-			func(Edge(d));
+			return internal::void_to_true_binder(func, Edge(d));
 		});
 	}
 
@@ -1284,10 +1195,12 @@ public:
 	inline void foreach_incident_face(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &func] (Dart d)
+		foreach_dart_of_orbit(v, [this, &func] (Dart d) -> bool
 		{
 			if (!this->is_boundary(d))
-				func(Face(d));
+				return internal::void_to_true_binder(func, Face(d));
+			else
+				return true;
 		});
 	}
 
@@ -1302,17 +1215,19 @@ public:
 	inline void foreach_incident_vertex(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func] (Dart d){ func(Vertex(d)); });
+		foreach_dart_of_orbit(e, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [this, &func] (Dart d)
+		foreach_dart_of_orbit(e, [this, &func] (Dart d) -> bool
 		{
 			if (!this->is_boundary(d))
-				func(Face(d));
+				return internal::void_to_true_binder(func, Face(d));
+			else
+				return true;
 		});
 	}
 
@@ -1327,14 +1242,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Vertex(d)); });
+		foreach_dart_of_orbit(f, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart d) { func(Edge(d)); });
+		foreach_dart_of_orbit(f, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Edge(d)); });
 	}
 
 	template <typename FUNC>
@@ -1349,13 +1264,14 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
+		foreach_dart_of_orbit(w, [&] (Dart d) -> bool
 		{
 			if (!marker.is_marked(d))
 			{
 				marker.mark_orbit(Vertex(d));
-				func(Vertex(d));
+				return internal::void_to_true_binder(func, Vertex(d));
 			}
+			return true;
 		});
 	}
 
@@ -1364,13 +1280,14 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
+		foreach_dart_of_orbit(w, [&] (Dart d) -> bool
 		{
 			if (!marker.is_marked(d))
 			{
 				marker.mark_orbit(Edge(d));
-				func(Edge(d));
+				return internal::void_to_true_binder(func, Edge(d));
 			}
+			return true;
 		});
 	}
 
@@ -1384,8 +1301,9 @@ public:
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
 				marker.mark_orbit(Face(d));
-				func(Face(d));
+				return internal::void_to_true_binder(func, Face(d));
 			}
+			return true;
 		});
 	}
 
@@ -1397,9 +1315,9 @@ public:
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart d)
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) -> bool
 		{
-			f(Vertex(phi2(d)));
+			return internal::void_to_true_binder(f, Vertex(phi2(d)));
 		});
 	}
 
@@ -1407,18 +1325,21 @@ public:
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart vd)
+		foreach_dart_of_orbit(v, [this, &f] (Dart vd) -> bool
 		{
+			bool res_nested_lambda = true;
 			if (!this->is_boundary(vd))
 			{
-				Dart vd1 = phi1(vd);
-				foreach_dart_of_orbit(Face(vd), [&f, vd, vd1] (Dart fd)
+				const Dart vd1 = phi1(vd);
+				foreach_dart_of_orbit(Face(vd), [&f, &res_nested_lambda, vd, vd1] (Dart fd) -> bool
 				{
 					// skip Vertex v itself and its first successor around current face
 					if (fd != vd && fd != vd1)
-						f(Vertex(fd));
+						res_nested_lambda = internal::void_to_true_binder(f, Vertex(fd));
+					return res_nested_lambda;
 				});
 			}
+			return res_nested_lambda;
 		});
 	}
 
@@ -1426,14 +1347,17 @@ public:
 	inline void foreach_adjacent_edge_through_vertex(Edge e, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed) -> bool
 		{
-			foreach_dart_of_orbit(Vertex(ed), [&, ed] (Dart vd)
+			bool res_nested_lambda = true;
+			foreach_dart_of_orbit(Vertex(ed), [&, ed] (Dart vd) -> bool
 			{
 					// skip Edge e itself
 					if (vd != ed)
-						f(Edge(vd));
+						res_nested_lambda = internal::void_to_true_binder(f, Edge(vd));
+					return res_nested_lambda;
 			});
+			return res_nested_lambda;
 		});
 	}
 
@@ -1443,15 +1367,18 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
 		{
+			bool res_nested_lambda = true;
 			if (!this->is_boundary(ed))
 			{
-				foreach_dart_of_orbit(Face(ed), [&f, ed] (Dart fd)
+				foreach_dart_of_orbit(Face(ed), [&f, &res_nested_lambda, ed] (Dart fd)
 				{
 					// skip Edge e itself
 					if (fd != ed)
-						f(Edge(fd));
+						res_nested_lambda = internal::void_to_true_binder(f, Edge(fd));
+					return res_nested_lambda;
 				});
 			}
+			return res_nested_lambda;
 		});
 	}
 
@@ -1459,15 +1386,18 @@ public:
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [this, &func] (Dart fd)
+		foreach_dart_of_orbit(f, [this, &func] (Dart fd) -> bool
 		{
-			Dart fd1 = phi2(phi_1(fd));
-			foreach_dart_of_orbit(Vertex(fd), [this, &func, fd, fd1] (Dart vd)
+			const Dart fd1 = phi2(phi_1(fd));
+			bool res_nested_lambda = true;
+			foreach_dart_of_orbit(Vertex(fd), [this, &func, &res_nested_lambda, fd, fd1] (Dart vd) -> bool
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
-					func(Face(vd));
+					res_nested_lambda = internal::void_to_true_binder(func, Face(vd));
+				return res_nested_lambda;
 			});
+			return res_nested_lambda;
 		});
 	}
 
@@ -1475,11 +1405,13 @@ public:
 	inline void foreach_adjacent_face_through_edge(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [this, &func] (Dart d)
+		foreach_dart_of_orbit(f, [this, &func] (Dart d) -> bool
 		{
 			const Dart d2 = phi2(d);
 			if (!this->is_boundary(d2))
-				func(Face(d2));
+				return internal::void_to_true_binder(func, Face(d2));
+			else
+				return true;
 		});
 	}
 
