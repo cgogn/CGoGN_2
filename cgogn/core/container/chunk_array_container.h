@@ -1020,25 +1020,10 @@ public:
 		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
 
 		uint32 it = begin();
-		uint32 it_end = end();
+		const uint32 it_end = end();
 		while(it != it_end)
 		{
-			f(it);
-			next(it);
-		}
-	}
-
-	template <typename FUNC>
-	void foreach_index_until(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC,bool>::value, "Wrong function return type");
-
-		uint32 it = begin();
-		uint32 it_end = end();
-		while(it != it_end)
-		{
-			if (!f(it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			next(it);
 		}
