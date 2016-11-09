@@ -1306,11 +1306,10 @@ protected:
 		{
 			if (!dm.is_marked(it))
 			{
-				CellType c(it);
-				if(filter(c))
-					if(!internal::foreach_bool_binder(f, c))
-						break;
+				const CellType c(it);
 				dm.mark_orbit(c);
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
@@ -1324,13 +1323,12 @@ protected:
 		CellMarker<CellType::ORBIT> cm(*cmap);
 		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
-			CellType c(it);
+			const CellType c(it);
 			if (!cm.is_marked(c))
 			{
-				if(filter(c))
-					if(!internal::foreach_bool_binder(f, c))
-						break;
 				cm.mark(c);
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
