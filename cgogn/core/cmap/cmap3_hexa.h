@@ -839,7 +839,7 @@ protected:
 			f(Dart(first));
 	}
 
-	// foreach_until with phi3
+	// foreach with phi3
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_PHI31(Dart d, const FUNC& f) const
