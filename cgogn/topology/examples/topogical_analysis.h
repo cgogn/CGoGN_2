@@ -263,9 +263,9 @@ public:
 		features_drawer_->new_list();
 		cgogn::topology::ScalarField<Scalar, MAP> scalar_field(map_, adjacency_cache_, scalar_field_);
 		scalar_field.critical_vertex_analysis();
-		draw_vertices(scalar_field.get_maxima(), 1.0f, 1.0f, 1.0f, 0.4f, 1u);
-		draw_vertices(scalar_field.get_minima(), 1.0f, 0.0f, 0.0f, 0.4f, 1u);
-		draw_vertices(scalar_field.get_saddles(), 1.0f, 1.0f, 0.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.maxima(), 1.0f, 1.0f, 1.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.minima(), 1.0f, 0.0f, 0.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.saddles(), 1.0f, 1.0f, 0.0f, 0.4f, 1u);
 
 		std::vector<Vertex> MS_complex_boundary;
 		scalar_field.extract_ascending_3_manifold(MS_complex_boundary);
@@ -306,9 +306,9 @@ public:
 		features_drawer_->new_list();
 		cgogn::topology::ScalarField<Scalar, MAP> scalar_field(map_, adjacency_cache_, scalar_field_);
 		scalar_field.critical_vertex_analysis();
-		draw_vertices(scalar_field.get_maxima(), 1.0f, 1.0f, 1.0f, 0.4f);
-		draw_vertices(scalar_field.get_minima(), 1.0f, 0.0f, 0.0f, 0.1f);
-		draw_vertices(scalar_field.get_saddles(), 1.0f, 1.0f, 0.0f, 0.2f);
+		draw_vertices(scalar_field.maxima(), 1.0f, 1.0f, 1.0f, 0.4f);
+		draw_vertices(scalar_field.minima(), 1.0f, 0.0f, 0.0f, 0.1f);
+		draw_vertices(scalar_field.saddles(), 1.0f, 1.0f, 0.0f, 0.2f);
 		draw_vertices(features1, 1.0f, 0.0f, 1.0f, 0.6f, 1);
 		draw_vertices(features2, 0.0f, 1.0f, 1.0f, 0.6f, 2);
 
@@ -486,7 +486,7 @@ public:
 		scalar_field.critical_vertex_analysis();
 
 		std::vector<Vertex> features;
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 			features.push_back(v);
 
 		distance_field.morse_distance_to_features(features, scalar_field_);
@@ -524,7 +524,7 @@ public:
 		std::vector<Vertex> features1;
 		std::vector<Vertex> features2;
 		Scalar min_max = std::numeric_limits<Scalar>::max();
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 		{
 			min_max = std::min(min_max, boundary_field[v]);
 			features.push_back(v);
@@ -535,7 +535,7 @@ public:
 
 		distance_field.distance_to_features(features, boundary_field);
 		scalar_field.critical_vertex_analysis();
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 		{
 			if (boundary_field[v] > target_distance)
 			{
