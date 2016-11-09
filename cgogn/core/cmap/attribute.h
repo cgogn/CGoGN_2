@@ -484,6 +484,11 @@ public:
 	{
 		return ORBIT;
 	}
+
+	inline uint32 size() const
+	{
+		return this->chunk_array_cont_->size();
+	}
 };
 
 } // namespace cgogn
