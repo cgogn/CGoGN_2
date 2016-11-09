@@ -497,7 +497,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = phi1(it);
 		} while (it != d);
@@ -513,7 +513,7 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::foreach_bool_binder(func, Vertex(v)); });
+		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
 	}
 
 protected:

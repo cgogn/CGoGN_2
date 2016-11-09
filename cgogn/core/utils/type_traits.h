@@ -260,14 +260,14 @@ namespace internal
 {
 
 template<typename FUNC, typename... Args>
-inline typename std::enable_if<is_func_return_same<FUNC, void>::value, bool>::type foreach_bool_binder(const FUNC& func, Args... args)
+inline typename std::enable_if<is_func_return_same<FUNC, void>::value, bool>::type void_to_true_binder(const FUNC& func, Args... args)
 {
 	func(std::forward<Args>(args)...);
 	return true;
 }
 
 template<typename FUNC, typename... Args>
-inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::type foreach_bool_binder(const FUNC& func, Args... args)
+inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::type void_to_true_binder(const FUNC& func, Args... args)
 {
 	return func(std::forward<Args>(args)...);
 }

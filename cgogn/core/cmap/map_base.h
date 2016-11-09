@@ -903,7 +903,7 @@ public:
 
 		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
 		{
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 		}
 	}
@@ -1062,7 +1062,7 @@ public:
 		using CellType = func_parameter_type<FUNC>;
 
 		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
-			if (!internal::foreach_bool_binder(f, CellType(*it)))
+			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
 	}
 

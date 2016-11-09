@@ -1703,8 +1703,9 @@ protected:
 		for(uint32 i = 0; i < marked_darts->size(); ++i)
 		{
 			const Dart curr_dart = marked_darts->operator[](i);
-			if (!internal::foreach_bool_binder(f, curr_dart))
-				break;
+			if ( !(this->is_boundary(curr_dart) && this->is_boundary(phi3(curr_dart))) )
+				if (!internal::void_to_true_binder(f, curr_dart))
+					break;
 
 			const Dart d_1 = this->phi_1(curr_dart);
 			const Dart d2_1 = this->phi2(d_1); // turn in volume
@@ -1723,10 +1724,10 @@ protected:
 		Dart it = d;
 		do
 		{
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = this->phi2(it);
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = phi3(it);
 		} while (it != d);
@@ -1738,7 +1739,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = phi3(this->phi2(it));
 		} while (it != d);
@@ -1749,8 +1750,8 @@ protected:
 	{
 		this->foreach_dart_of_PHI1(d, [&] (Dart fd) -> bool
 		{
-			if (internal::foreach_bool_binder(f, fd))
-				return internal::foreach_bool_binder(f, phi3(fd));
+			if (internal::void_to_true_binder(f, fd))
+				return internal::void_to_true_binder(f, phi3(fd));
 			return false;
 		});
 	}
@@ -1774,7 +1775,7 @@ protected:
 				Dart it = e;
 				do
 				{
-					if (!internal::foreach_bool_binder(f, it)) // apply the function to the darts of the face2
+					if (!internal::void_to_true_binder(f, it)) // apply the function to the darts of the face2
 					{
 						cgogn::dart_buffers()->release_buffer(visited_face2);
 						return;
@@ -1806,7 +1807,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::foreach_bool_binder(func, Edge(d)))
+				if (!internal::void_to_true_binder(func, Edge(d)))
 					return false;
 				foreach_dart_of_PHI23(d, [&marker] (Dart dd) { marker.mark(dd); });
 			}
@@ -1823,7 +1824,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::foreach_bool_binder(func, Face(d)))
+				if (!internal::void_to_true_binder(func, Face(d)))
 					return false;
 				marker.mark(d);
 				marker.mark(this->phi1(phi3(d)));
@@ -1841,7 +1842,7 @@ public:
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
-				if (!internal::foreach_bool_binder(func, Volume(d)))
+				if (!internal::void_to_true_binder(func, Volume(d)))
 					return false;
 				marker.mark_orbit(Vertex2(d));
 			}
@@ -1853,7 +1854,7 @@ public:
 	inline void foreach_incident_vertex(Edge e, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		if (internal::foreach_bool_binder(f, Vertex(e.dart)))
+		if (internal::void_to_true_binder(f, Vertex(e.dart)))
 			f(Vertex(this->phi2(e.dart)));
 	}
 
@@ -1861,7 +1862,7 @@ public:
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_PHI23(e.dart, [&func] (Dart d) { return internal::foreach_bool_binder(func, Face(d)); });
+		foreach_dart_of_PHI23(e.dart, [&func] (Dart d) { return internal::void_to_true_binder(func, Face(d)); });
 	}
 
 	template <typename FUNC>
@@ -1871,7 +1872,7 @@ public:
 		foreach_dart_of_PHI23(e.dart, [this, &func] (Dart d) -> bool
 		{
 			if (!this->is_boundary(d))
-				return internal::foreach_bool_binder(func, Volume(d));
+				return internal::void_to_true_binder(func, Volume(d));
 			else
 				return true;
 		});
@@ -1881,14 +1882,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { return internal::foreach_bool_binder(func, Vertex(v)); });
+		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart e) { return internal::foreach_bool_binder(func,Edge(e)); });
+		foreach_dart_of_orbit(Face2(f.dart), [&func] (Dart e) { return internal::void_to_true_binder(func,Edge(e)); });
 	}
 
 	template <typename FUNC>
@@ -1897,7 +1898,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		bool res1 = true;
 		if (!this->is_boundary(f.dart))
-			res1 = internal::foreach_bool_binder(func, Volume(f.dart));
+			res1 = internal::void_to_true_binder(func, Volume(f.dart));
 		const Dart d3 = phi3(f.dart);
 		if (!this->is_boundary(d3) && res1)
 			func(Volume(d3));
@@ -1910,7 +1911,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		Inherit::foreach_incident_vertex(v, [&func] (Vertex2 ve) -> bool
 		{
-			return internal::foreach_bool_binder(func, Vertex(ve.dart));
+			return internal::void_to_true_binder(func, Vertex(ve.dart));
 		});
 	}
 
@@ -1920,7 +1921,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		Inherit::foreach_incident_edge(v, [&func] (Edge2 e) -> bool
 		{
-			return internal::foreach_bool_binder(func, Edge(e.dart));
+			return internal::void_to_true_binder(func, Edge(e.dart));
 		});
 	}
 
@@ -1933,7 +1934,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (internal::foreach_bool_binder(func, Face(d)))
+				if (internal::void_to_true_binder(func, Face(d)))
 					marker.mark_orbit(Face2(d));
 				else
 					return false;
@@ -1956,7 +1957,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(v, [this, &func] (Dart d)
 		{
-			return internal::foreach_bool_binder(func, Face2(d));
+			return internal::void_to_true_binder(func, Face2(d));
 		});
 	}
 
@@ -1978,7 +1979,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(e, [this, &func] (Dart d) -> bool
 		{
-			return internal::foreach_bool_binder(func, Face2(d));
+			return internal::void_to_true_binder(func, Face2(d));
 		});
 	}
 
@@ -2016,7 +2017,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_incident_edge(v, [&] (Edge e) -> bool
 		{
-			return internal::foreach_bool_binder(func, Vertex(this->phi2(e.dart)));
+			return internal::void_to_true_binder(func, Vertex(this->phi2(e.dart)));
 		});
 	}
 
@@ -2033,7 +2034,7 @@ public:
 			{
 				if (!marker_vertex.is_marked(vertex_of_face.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, vertex_of_face);
+					res_nested_lambda = internal::void_to_true_binder(func, vertex_of_face);
 					if (res_nested_lambda)
 						marker_vertex.mark_orbit(vertex_of_face);
 				}
@@ -2056,7 +2057,7 @@ public:
 			{
 				if (!marker_vertex.is_marked(inc_vert.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_vert);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_vert);
 					if (res_nested_lambda)
 						marker_vertex.mark_orbit(inc_vert);
 				}
@@ -2076,7 +2077,7 @@ public:
 			foreach_incident_edge(iv, [&] (Edge ie) -> bool
 			{
 				if (ie.dart != iv.dart)
-					res_nested_lambda = internal::foreach_bool_binder(func, ie);
+					res_nested_lambda = internal::void_to_true_binder(func, ie);
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -2096,7 +2097,7 @@ public:
 			{
 				if (!marker_edge.is_marked(inc_edge.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_edge);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_edge);
 					if (res_nested_lambda)
 						marker_edge.mark_orbit(inc_edge);
 				}
@@ -2119,7 +2120,7 @@ public:
 			{
 				if (!marker_edge.is_marked(inc_edge.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_edge);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_edge);
 					if (res_nested_lambda)
 						marker_edge.mark_orbit(inc_edge);
 				}
@@ -2142,7 +2143,7 @@ public:
 			{
 				if (!marker_face.is_marked(inc_fac.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_fac);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_fac);
 					if (res_nested_lambda)
 						marker_face.mark_orbit(inc_fac);
 				}
@@ -2162,7 +2163,7 @@ public:
 			foreach_incident_face(ie, [&] (Face iface) -> bool
 			{
 				if (iface.dart != ie.dart)
-					res_nested_lambda = internal::foreach_bool_binder(func, iface);
+					res_nested_lambda = internal::void_to_true_binder(func, iface);
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -2183,7 +2184,7 @@ public:
 			{
 				if (!marker_face.is_marked(inc_face.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_face);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_face);
 					if (!res_nested_lambda)
 						return false;
 					marker_face.mark_orbit((inc_face));
@@ -2199,7 +2200,7 @@ public:
 			{
 				if (!marker_face.is_marked(inc_face.dart))
 				{
-					if (!internal::foreach_bool_binder(func, inc_face))
+					if (!internal::void_to_true_binder(func, inc_face))
 						return false;
 					marker_face.mark_orbit((inc_face));
 				}
@@ -2221,7 +2222,7 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_vol);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
 					if (res_nested_lambda)
 						marker_volume.mark_orbit(inc_vol);
 				}
@@ -2244,7 +2245,7 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_vol);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
 					if (res_nested_lambda)
 						marker_volume.mark_orbit(inc_vol);
 				}
@@ -2267,7 +2268,7 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
-					res_nested_lambda = internal::foreach_bool_binder(func, inc_vol);
+					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
 					if (res_nested_lambda)
 						marker_volume.mark_orbit(inc_vol);
 				}
@@ -2297,7 +2298,7 @@ public:
 			{
 				// skip Vertex2 v itself and its first successor around current face
 				if (fd != vd && fd != vd1)
-					res_nested_lambda = internal::foreach_bool_binder(func, Vertex2(fd));
+					res_nested_lambda = internal::void_to_true_binder(func, Vertex2(fd));
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -2321,7 +2322,7 @@ public:
 			{
 				// skip Edge2 e itself
 				if (fd != ed)
-					res_nested_lambda = internal::foreach_bool_binder(func, Edge2(fd));
+					res_nested_lambda = internal::void_to_true_binder(func, Edge2(fd));
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -2340,7 +2341,7 @@ public:
 			{
 				// skip Face2 f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1)
-					res_nested_lambda = internal::foreach_bool_binder(func, Face2(vd));
+					res_nested_lambda = internal::void_to_true_binder(func, Face2(vd));
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -2353,7 +2354,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Face2>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [this, &func] (Dart d) -> bool
 		{
-			return internal::foreach_bool_binder(func, Face2(this->phi2(d)));
+			return internal::void_to_true_binder(func, Face2(this->phi2(d)));
 		});
 	}
 

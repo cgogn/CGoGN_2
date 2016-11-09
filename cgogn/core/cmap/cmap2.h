@@ -1139,7 +1139,7 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI2(Dart d, const FUNC& f) const
 	{
-		if (internal::foreach_bool_binder(f, d))
+		if (internal::void_to_true_binder(f, d))
 			f(phi2(d));
 	}
 
@@ -1149,7 +1149,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			if (!internal::foreach_bool_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = phi2(this->phi_1(it));
 		} while (it != d);
@@ -1166,7 +1166,7 @@ protected:
 		// For every face added to the list
 		for(uint32 i = 0; i < visited_faces->size(); ++i)
 		{
-			Dart e = (*visited_faces)[i];
+			const Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet
 			{
 				// mark visited darts (current face)
@@ -1174,7 +1174,7 @@ protected:
 				Dart it = e;
 				do
 				{
-					if (!internal::foreach_bool_binder(f, it)) // apply the function to the darts of the face
+					if (!internal::void_to_true_binder(f, it)) // apply the function to the darts of the face
 					{
 						cgogn::dart_buffers()->release_buffer(visited_faces);
 						return;
@@ -1200,7 +1200,7 @@ public:
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [&] (Dart d) { return internal::foreach_bool_binder(func, Edge(d)); });
+		foreach_dart_of_orbit(v, [&] (Dart d) -> bool { return internal::void_to_true_binder(func, Edge(d)); });
 	}
 
 	template <typename FUNC>
@@ -1210,7 +1210,7 @@ public:
 		foreach_dart_of_orbit(v, [this, &func] (Dart d) -> bool
 		{
 			if (!this->is_boundary(d))
-				return internal::foreach_bool_binder(func, Face(d));
+				return internal::void_to_true_binder(func, Face(d));
 			else
 				return true;
 		});
@@ -1227,17 +1227,17 @@ public:
 	inline void foreach_incident_vertex(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func] (Dart d) -> bool { return internal::foreach_bool_binder(func, Vertex(d)); });
+		foreach_dart_of_orbit(e, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_face(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [this, &func] (Dart d)
+		foreach_dart_of_orbit(e, [this, &func] (Dart d) -> bool
 		{
 			if (!this->is_boundary(d))
-				return internal::foreach_bool_binder(func, Face(d));
+				return internal::void_to_true_binder(func, Face(d));
 			else
 				return true;
 		});
@@ -1254,14 +1254,14 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart d) { return internal::foreach_bool_binder(func, Vertex(d)); });
+		foreach_dart_of_orbit(f, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Vertex(d)); });
 	}
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart d) { return internal::foreach_bool_binder(func, Edge(d)); });
+		foreach_dart_of_orbit(f, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func, Edge(d)); });
 	}
 
 	template <typename FUNC>
@@ -1280,7 +1280,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::foreach_bool_binder(func, Vertex(d)))
+				if (!internal::void_to_true_binder(func, Vertex(d)))
 					return false;
 				marker.mark_orbit(Vertex(d));
 			}
@@ -1297,7 +1297,7 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::foreach_bool_binder(func, Edge(d)))
+				if (!internal::void_to_true_binder(func, Edge(d)))
 					return false;
 				marker.mark_orbit(Edge(d));
 			}
@@ -1314,7 +1314,7 @@ public:
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
-				if (!internal::foreach_bool_binder(func, Face(d)))
+				if (!internal::void_to_true_binder(func, Face(d)))
 					return false;
 				marker.mark_orbit(Face(d));
 			}
@@ -1330,7 +1330,7 @@ public:
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart d) { return internal::foreach_bool_binder(f, Vertex(this->phi2(d))); });
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) -> bool { return internal::void_to_true_binder(f, Vertex(this->phi2(d))); });
 	}
 
 	template <typename FUNC>
@@ -1347,7 +1347,7 @@ public:
 				{
 					// skip Vertex v itself and its first successor around current face
 					if (fd != vd && fd != vd1)
-						 res_nested_lambda = internal::foreach_bool_binder(f, Vertex(fd));
+						 res_nested_lambda = internal::void_to_true_binder(f, Vertex(fd));
 					return res_nested_lambda;
 				});
 			}
@@ -1367,7 +1367,7 @@ public:
 			{
 				// skip Edge e itself
 				if (vd != ed)
-					res_nested_lambda = internal::foreach_bool_binder(f, Edge(vd));
+					res_nested_lambda = internal::void_to_true_binder(f, Edge(vd));
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -1387,7 +1387,7 @@ public:
 				{
 					// skip Edge e itself
 					if (fd != ed)
-						res_nested_lambda = internal::foreach_bool_binder(f, Edge(fd));
+						res_nested_lambda = internal::void_to_true_binder(f, Edge(fd));
 					return res_nested_lambda;
 				});
 			}
@@ -1407,7 +1407,7 @@ public:
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1 && !this->is_boundary(vd))
-					res_nested_lambda = internal::foreach_bool_binder(func, Face(vd));
+					res_nested_lambda = internal::void_to_true_binder(func, Face(vd));
 				return res_nested_lambda;
 			});
 			return res_nested_lambda;
@@ -1422,7 +1422,7 @@ public:
 		{
 			const Dart d2 = this->phi2(d);
 			if (!this->is_boundary(d2))
-				return internal::foreach_bool_binder(func, Face(d2));
+				return internal::void_to_true_binder(func, Face(d2));
 			else
 				return true;
 		});
