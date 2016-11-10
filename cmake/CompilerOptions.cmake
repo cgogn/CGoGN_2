@@ -1,4 +1,5 @@
 include(cmake/utilities.cmake)
+include(cmake/CheckSIMDFeatures.cmake)
 
 # Profiler compilation flags
 if(CGOGN_WITH_GPROF)
@@ -111,15 +112,12 @@ if (NOT MSVC)
 		endif(${CGOGN_USE_GLIBCXX_DEBUG})
 	endif(${CGOGN_USE_PARALLEL_GLIBCXX})
 
-	# Tellls gcc/clang to generate code specific to our CPU. Enable SSE and AVX when available. 
-	# WARNING: Do not use when compiling with distcc
-	if (NOT CMAKE_CXX_COMPILER MATCHES "distcc")
-		add_flags(CMAKE_CXX_FLAGS "-march=native")
-		add_flags(CMAKE_C_FLAGS "-march=native")
-	else()
-		add_flags(CMAKE_CXX_FLAGS "-msse3")
-		add_flags(CMAKE_C_FLAGS "-msse3")
-	endif()
+
+	CGOGN_CHECK_FOR_SSE()
+	add_flags(CMAKE_CXX_FLAGS ${CGOGN_SSE_FLAGS})
+        message("TEEEEEST : ${CGOGN_SSE_FLAGS}")
+	add_flags(CMAKE_C_FLAGS ${CGOGN_SSE_FLAGS})
+	add_definitions(${CGOGN_SSE_DEFINITIONS})
 
 
 	# Always generate position independant code
