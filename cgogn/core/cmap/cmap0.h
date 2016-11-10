@@ -172,13 +172,6 @@ public:
 		f(c.dart);
 	}
 
-	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
-	{
-		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
-		f(c.dart);
-	}
-
 protected:
 
 	/**

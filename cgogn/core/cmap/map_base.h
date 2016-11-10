@@ -566,7 +566,7 @@ public:
 		bool result = true;
 
 		// check the integrity of topological relations or the correct sewing of darts
-		foreach_dart_until([&cmap, &result] (Dart d)
+		foreach_dart([&cmap, &result] (Dart d) -> bool
 		{
 			result = cmap->check_integrity(d);
 			return result;
@@ -602,7 +602,7 @@ public:
 	bool same_orbit(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
+		to_concrete()->foreach_dart_of_orbit(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
 			{
@@ -703,7 +703,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = true; return false; }
 			return true;
@@ -716,7 +716,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = d; return false; }
 			return true;
@@ -750,20 +750,6 @@ protected:
 	 *******************************************************************************/
 
 public:
-
-	/**
-	 * \brief apply a function on each dart of the map (including boundary darts)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC>
-	inline void foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
-			f(it);
-	}
 
 //	template <typename FUNC>
 //	inline void parallel_foreach_dart(const FUNC& f) const
@@ -911,14 +897,13 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart_until(const FUNC& f) const
+	inline void foreach_dart(const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
 		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
 		{
-			if (!f(it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 		}
 	}
@@ -978,14 +963,6 @@ public:
 		parallel_foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_until(const FUNC& f) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		foreach_cell_until<STRATEGY>(f, [] (CellType) { return true; });
-	}
-
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * that is selected by the given FilterFunction (CellType -> bool)
@@ -996,8 +973,8 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
 			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
+			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
+	void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -1044,32 +1021,6 @@ public:
 		}
 	}
 
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	void foreach_cell_until(const FUNC& f, const FilterFunction& filter) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking(f, filter);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking(f, filter);
-				break;
-			case AUTO :
-				if (this->template is_embedded<CellType>())
-					foreach_cell_until_cell_marking(f, filter);
-				else
-					foreach_cell_until_dart_marking(f, filter);
-				break;
-		}
-	}
-
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * that is selected by the filter function of the corresponding CellType within the given Filters object
@@ -1097,17 +1048,6 @@ public:
 		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
-	template <typename FUNC,
-			  typename Filters,
-			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const Filters& filters) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		foreach_cell_until(f, [&filters] (CellType c) { return filters.filter(c); });
-	}
-
 	/**
 	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
 	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
@@ -1121,8 +1061,9 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; it != end; ++it)
-			f(CellType(*it));
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
+			if (!internal::void_to_true_binder(f, CellType(*it)))
+				break;
 	}
 
 	template <typename FUNC,
@@ -1195,39 +1136,7 @@ public:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
-			if (!f(CellType(*it)))
-				break;
-	}
-
 protected:
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		const ConcreteMap* cmap = to_concrete();
-		DartMarker dm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			if (!dm.is_marked(it))
-			{
-				CellType c(it);
-				dm.mark_orbit(c);
-				if (filter(c))
-					f(c);
-			}
-		}
-	}
 
 	template <typename FUNC, typename FilterFunction>
 	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
@@ -1305,26 +1214,6 @@ protected:
 			fu.wait();
 		for (auto &b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
-	}
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
-
-		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> cm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			CellType c(it);
-			if (!cm.is_marked(c))
-			{
-				cm.mark(c);
-				if (filter(c))
-					f(c);
-			}
-		}
 	}
 
 	template <typename FUNC, typename FilterFunction>
@@ -1407,9 +1296,8 @@ protected:
 	}
 
 	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_until_dart_marking(const FUNC& f, const FilterFunction& filter) const
+	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		using CellType = func_parameter_type<FUNC>;
 
 		const ConcreteMap* cmap = to_concrete();
@@ -1418,33 +1306,29 @@ protected:
 		{
 			if (!dm.is_marked(it))
 			{
-				CellType c(it);
+				const CellType c(it);
 				dm.mark_orbit(c);
-				if(filter(c))
-					if(!f(c))
-						break;
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
 
 	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_until_cell_marking(const FUNC& f, const FilterFunction& filter) const
+	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> cm(*cmap);
+		CellMarker<CellType::ORBIT> cm(*cmap);
 		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
-			CellType c(it);
+			const CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if(filter(c))
-					if(!f(c))
-						break;
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
