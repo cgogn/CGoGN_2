@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
 
 find_package(cgogn_core REQUIRED)
+find_package(OpenNL REQUIRED)
 
 set(cgogn_geometry_LIBRARIES "cgogn_geometry")
 set(cgogn_geometry_INCLUDE_DIRS "@PACKAGE_CGOGN_GEOMETRY_INCLUDE_DIRS@")
