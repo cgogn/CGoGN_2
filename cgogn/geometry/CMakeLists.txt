@@ -3,7 +3,6 @@ project(cgogn_geometry
 )
 
 find_package(cgogn_core REQUIRED)
-find_package(OpenNL REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -53,11 +52,10 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_OPEN_NL_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${OpenNL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES})
 
 install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
 install(DIRECTORY algos functions types

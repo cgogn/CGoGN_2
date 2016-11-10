@@ -4,6 +4,7 @@ project(cgogn_topology
 
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
+find_package(OpenNL REQUIRED)
 
 set(HEADER_FILES
 	dll.h
@@ -27,11 +28,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_TOPLOGY_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>	
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_OPEN_NL_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${OpenNL_LIBRARIES})
 
 install(FILES "dll.h" DESTINATION "include/cgogn/topology")
 install(DIRECTORY algos types
