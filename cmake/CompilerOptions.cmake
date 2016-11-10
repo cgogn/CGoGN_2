@@ -115,7 +115,6 @@ if (NOT MSVC)
 
 	CGOGN_CHECK_FOR_SSE()
 	add_flags(CMAKE_CXX_FLAGS ${CGOGN_SSE_FLAGS})
-        message("TEEEEEST : ${CGOGN_SSE_FLAGS}")
 	add_flags(CMAKE_C_FLAGS ${CGOGN_SSE_FLAGS})
 	add_definitions(${CGOGN_SSE_DEFINITIONS})
 
