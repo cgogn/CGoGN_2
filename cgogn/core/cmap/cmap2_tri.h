@@ -1296,7 +1296,7 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(w, [&] (Dart d)
+		foreach_dart_of_orbit(w, [&] (Dart d) -> bool
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
@@ -1365,12 +1365,12 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed)
+		foreach_dart_of_orbit(e, [&f, this] (Dart ed) -> bool
 		{
 			bool res_nested_lambda = true;
 			if (!this->is_boundary(ed))
 			{
-				foreach_dart_of_orbit(Face(ed), [&f, &res_nested_lambda, ed] (Dart fd)
+				foreach_dart_of_orbit(Face(ed), [&f, &res_nested_lambda, ed] (Dart fd) -> bool
 				{
 					// skip Edge e itself
 					if (fd != ed)

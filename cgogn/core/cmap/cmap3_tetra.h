@@ -1152,9 +1152,8 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::void_to_true_binder(func, Edge(d)))
-					return false;
 				foreach_dart_of_PHI23(d, [&marker] (Dart dd) { marker.mark(dd); });
+				return internal::void_to_true_binder(func, Edge(d));
 			}
 			return true;
 		});
@@ -1169,10 +1168,9 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::void_to_true_binder(func, Face(d)))
-					return false;
 				marker.mark(d);
 				marker.mark(this->phi1(phi3(d)));
+				return internal::void_to_true_binder(func, Face(d));
 			}
 			return true;
 		});
@@ -1187,9 +1185,8 @@ public:
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
-				if (!internal::void_to_true_binder(func, Volume(d)))
-					return false;
 				marker.mark_orbit(Vertex2(d));
+				return internal::void_to_true_binder(func, Volume(d));
 			}
 			return true;
 		});
@@ -1318,9 +1315,8 @@ public:
 			{
 				if (!marker_vertex.is_marked(vertex_of_face.dart))
 				{
+					marker_vertex.mark_orbit(vertex_of_face);
 					res_nested_lambda = internal::void_to_true_binder(func, vertex_of_face);
-					if (res_nested_lambda)
-						marker_vertex.mark_orbit(vertex_of_face);
 				}
 				return res_nested_lambda;
 			});
@@ -1341,9 +1337,8 @@ public:
 			{
 				if (!marker_vertex.is_marked(inc_vert.dart))
 				{
+					marker_vertex.mark_orbit(inc_vert);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_vert);
-					if (res_nested_lambda)
-						marker_vertex.mark_orbit(inc_vert);
 				}
 				return res_nested_lambda;
 			});
@@ -1374,16 +1369,15 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarker marker_edge(*this);
 		marker_edge.mark_orbit(e);
-		foreach_incident_face(e, [&] (Face inc_face)
+		foreach_incident_face(e, [&] (Face inc_face) -> bool
 		{
 			bool res_nested_lambda = true;
-			foreach_incident_edge(inc_face, [&] (Edge inc_edge)
+			foreach_incident_edge(inc_face, [&] (Edge inc_edge) -> bool
 			{
 				if (!marker_edge.is_marked(inc_edge.dart))
 				{
+					marker_edge.mark_orbit(inc_edge);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_edge);
-					if (res_nested_lambda)
-						marker_edge.mark_orbit(inc_edge);
 				}
 				return res_nested_lambda;
 			});
@@ -1404,9 +1398,8 @@ public:
 			{
 				if (!marker_edge.is_marked(inc_edge.dart))
 				{
+					marker_edge.mark_orbit(inc_edge);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_edge);
-					if (res_nested_lambda)
-						marker_edge.mark_orbit(inc_edge);
 				}
 				return res_nested_lambda;
 			});
@@ -1427,9 +1420,8 @@ public:
 			{
 				if (!marker_face.is_marked(inc_fac.dart))
 				{
+					marker_face.mark_orbit(inc_fac);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_fac);
-					if (res_nested_lambda)
-						marker_face.mark_orbit(inc_fac);
 				}
 				return res_nested_lambda;
 			});
@@ -1460,36 +1452,31 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
 		marker_face.mark_orbit(f);
-		bool res_nested_lambda = true;
+		bool res1 = true;
 		if (!this->is_boundary(f.dart))
 		{
 			foreach_incident_face(Volume(f.dart), [&] (Face inc_face) -> bool
 			{
 				if (!marker_face.is_marked(inc_face.dart))
 				{
-					res_nested_lambda = internal::void_to_true_binder(func, inc_face);
-					if (res_nested_lambda)
-						marker_face.mark_orbit((inc_face));
+					marker_face.mark_orbit((inc_face));
+					res1 = internal::void_to_true_binder(func, inc_face);
 				}
-				return res_nested_lambda;
+				return res1;
 			});
 		}
 
-		if (!res_nested_lambda)
-			return;
-
 		const Dart d3 = phi3(f.dart);
-		if (!this->is_boundary(d3))
+		if (!this->is_boundary(d3) && res1)
 		{
 			foreach_incident_face(Volume(d3), [&] (Face inc_face) -> bool
 			{
 				if (!marker_face.is_marked(inc_face.dart))
 				{
-					res_nested_lambda = internal::void_to_true_binder(func, inc_face);
-					if (res_nested_lambda)
-						marker_face.mark_orbit((inc_face));
+					marker_face.mark_orbit((inc_face));
+					return internal::void_to_true_binder(func, inc_face);
 				}
-				return res_nested_lambda;
+				return true;
 			});
 		}
 	}
@@ -1507,9 +1494,8 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
+					marker_volume.mark_orbit(inc_vol);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
-					if (res_nested_lambda)
-						marker_volume.mark_orbit(inc_vol);
 				}
 				return res_nested_lambda;
 			});
@@ -1530,9 +1516,8 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
+					marker_volume.mark_orbit(inc_vol);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
-					if (res_nested_lambda)
-						marker_volume.mark_orbit(inc_vol);
 				}
 				return res_nested_lambda;
 			});
@@ -1553,9 +1538,8 @@ public:
 			{
 				if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
 				{
+					marker_volume.mark_orbit(inc_vol);
 					res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
-					if (res_nested_lambda)
-						marker_volume.mark_orbit(inc_vol);
 				}
 				return res_nested_lambda;
 			});

@@ -1280,9 +1280,8 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::void_to_true_binder(func, Vertex(d)))
-					return false;
 				marker.mark_orbit(Vertex(d));
+				return internal::void_to_true_binder(func, Vertex(d));
 			}
 			return true;
 		});
@@ -1297,9 +1296,8 @@ public:
 		{
 			if (!marker.is_marked(d))
 			{
-				if (!internal::void_to_true_binder(func, Edge(d)))
-					return false;
 				marker.mark_orbit(Edge(d));
+				return internal::void_to_true_binder(func, Edge(d));
 			}
 			return true;
 		});
@@ -1314,9 +1312,8 @@ public:
 		{
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
-				if (!internal::void_to_true_binder(func, Face(d)))
-					return false;
 				marker.mark_orbit(Face(d));
+				return internal::void_to_true_binder(func, Face(d));
 			}
 			return true;
 		});

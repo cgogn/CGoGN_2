@@ -1121,9 +1121,8 @@ public:
 		first += 4;
 		if (!internal::void_to_true_binder(func, Face2(Dart(first)))) return;// 12
 		first += 4;
-		if (!internal::void_to_true_binder(func, Face2(Dart(first)))) return; // 16
-		first += 4;
-		func(Face2(Dart(first))); // 20
+		if (internal::void_to_true_binder(func, Face2(Dart(first)))) // 16
+			func(Face2(Dart(first+4))); // 20
 	}
 
 	/*******************************************************************************
@@ -1528,7 +1527,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
 		DartMarker marker_face(*this);
 		marker_face.mark_orbit(f);
-		bool res_nested_lambda = true;
+		bool res1 = true;
 		if (!this->is_boundary(f.dart))
 		{
 			foreach_incident_face(Volume(f.dart), [&] (Face inc_face) -> bool
@@ -1536,17 +1535,14 @@ public:
 				if (!marker_face.is_marked(inc_face.dart))
 				{
 					marker_face.mark_orbit((inc_face));
-					res_nested_lambda = internal::void_to_true_binder(func, inc_face);
+					res1 = internal::void_to_true_binder(func, inc_face);
 				}
-				return res_nested_lambda;
+				return res1;
 			});
 		}
 
-		if (!res_nested_lambda)
-			return;
 		const Dart d3 = phi3(f.dart);
-
-		if (!this->is_boundary(d3))
+		if (!this->is_boundary(d3) && res1)
 		{
 			foreach_incident_face(Volume(d3), [&] (Face inc_face) -> bool
 			{
