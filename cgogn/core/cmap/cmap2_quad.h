@@ -998,7 +998,7 @@ public:
 			if (!marker.is_marked(d) && !this->is_boundary(d))
 			{
 				marker.mark_orbit(Face(d));
-				internal::void_to_true_binder(func, Face(d));
+				return internal::void_to_true_binder(func, Face(d));
 			} else
 				return true;
 		});
