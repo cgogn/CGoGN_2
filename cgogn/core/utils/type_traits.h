@@ -255,6 +255,24 @@ using func_return_type = typename internal::type_traits::function_traits<F>::res
 template<typename F, typename T>
 using is_func_return_same = std::is_same<func_return_type<F>, T>;
 
+
+namespace internal
+{
+
+template<typename FUNC, typename... Args>
+inline typename std::enable_if<is_func_return_same<FUNC, void>::value, bool>::type void_to_true_binder(const FUNC& func, Args... args)
+{
+	func(std::forward<Args>(args)...);
+	return true;
+}
+
+template<typename FUNC, typename... Args>
+inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::type void_to_true_binder(const FUNC& func, Args... args)
+{
+	return func(std::forward<Args>(args)...);
+}
+
+} // namespace internal
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_TYPE_TRAITS_H_
