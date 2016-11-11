@@ -98,7 +98,7 @@ protected:
 	{
 		bool result = false;
 
-		foreach_dart_of_orbit_until(Volume(d), [&] (Dart vit)
+		foreach_dart_of_orbit(Volume(d), [&] (Dart vit) -> bool
 		{
 			if (vit == e) result = true;
 			return !result;
@@ -606,7 +606,7 @@ TEST_F(CMap2TopoTest, close_map)
 			uint32 n = std::rand() % 10u;
 			uint32 k = codegree(Face(d));
 
-			foreach_dart_of_orbit_until(Face(d), [&] (Dart e)
+			foreach_dart_of_orbit(Face(d), [&] (Dart e) ->bool
 			{
 				Dart e2 = phi2(e);
 				if (!this->is_boundary(e) && !this->is_boundary(e2))

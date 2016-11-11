@@ -229,7 +229,7 @@ public:
 				// (which means all the vertices of the edge are in the sphere)
 				Edge e(d);
 				bool all_in = true;
-				this->map_.foreach_dart_of_orbit_until(e, [&] (Dart dd) -> bool
+				this->map_.foreach_dart_of_orbit(e, [&] (Dart dd) -> bool
 				{
 					if (!dm.is_marked(dd))
 					{
@@ -245,7 +245,7 @@ public:
 				// (which means all the vertices of the face are in the sphere)
 				Face f(d);
 				all_in = true;
-				this->map_.foreach_dart_of_orbit_until(f, [&] (Dart dd) -> bool
+				this->map_.foreach_dart_of_orbit(f, [&] (Dart dd) -> bool
 				{
 					if (!dm.is_marked(dd))
 					{

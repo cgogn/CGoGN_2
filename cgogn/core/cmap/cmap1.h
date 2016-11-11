@@ -463,24 +463,10 @@ public:
 		}
 	}
 
-	/*******************************************************************************
-	 * Orbits traversal
-	 *******************************************************************************/
-
-protected:
-
-	template <typename FUNC>
-	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
-	{
-		Dart it = d;
-		do
-		{
-			f(it);
-			it = phi1(it);
-		} while (it != d);
-	}
-
 public:
+	/*******************************************************************************
+	* Orbits traversal                                                             *
+	*******************************************************************************/
 
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
@@ -506,40 +492,18 @@ public:
 protected:
 
 	template <typename FUNC>
-	inline void foreach_dart_of_PHI1_until(Dart d, const FUNC& f) const
+	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
 		Dart it = d;
 		do
 		{
-			if (!f(it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = phi1(it);
 		} while (it != d);
 	}
 
 public:
-
-	template <Orbit ORBIT, typename FUNC>
-	inline void foreach_dart_of_orbit_until(Cell<ORBIT> c, const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		static_assert(ORBIT == Orbit::DART || ORBIT == Orbit::PHI1, "Orbit not supported in a CMap1");
-
-		switch (ORBIT)
-		{
-			case Orbit::DART: f(c.dart); break;
-			case Orbit::PHI1: foreach_dart_of_PHI1_until(c, f); break;
-			case Orbit::PHI2:
-			case Orbit::PHI21:
-			case Orbit::PHI1_PHI2:
-			case Orbit::PHI1_PHI3:
-			case Orbit::PHI2_PHI3:
-			case Orbit::PHI21_PHI31:
-			case Orbit::PHI1_PHI2_PHI3:
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
-		}
-	}
 
 	/*******************************************************************************
 	 * Incidence traversal
@@ -549,7 +513,7 @@ public:
 	inline void foreach_incident_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart v) { func(Vertex(v)); });
+		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
 	}
 
 protected:
