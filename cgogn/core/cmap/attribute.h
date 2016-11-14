@@ -404,6 +404,8 @@ public:
 	using TChunkArray = typename Inherit::TChunkArray;
 	using Inherit::operator[];
 
+	static const Orbit orb_ = ORBIT;
+
 	/**
 	 * \brief Default constructor
 	 *
