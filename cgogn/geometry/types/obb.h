@@ -181,14 +181,14 @@ public:
 		Matrix covariance;
 		covariance.setZero();
 
-		for(int j = 0; j < dim_; j++){
-			for(int k = 0; k < dim_; k++){
+		for(int j = 0; j < dim_; j++)
+			for(int k = 0; k < dim_; k++)
+			{
 				for (const auto& p : attr)
 					covariance(j,k) += (p[j] - mean[j]) * (p[k] - mean[k]);
 
 				covariance(j,k) /= count - 1;
 			}
-		}
 
 		build_from_covariance_matrix(covariance, attr);
 	}
@@ -223,8 +223,9 @@ public:
 		Matrix covariance;
 		covariance.setZero();
 
-		for(int j = 0; j < dim_; j++){
-			for(int k = 0; k < dim_; k++){
+		for(int j = 0; j < dim_; j++)
+			for(int k = 0; k < dim_; k++)
+			{
 				map.foreach_cell([&] (Vertex v)
 				{
 					covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
@@ -232,7 +233,6 @@ public:
 
 				covariance(j,k) /= count - 1;
 			}
-		}
 
 		build_from_covariance_matrix(covariance, map, attr);
 	}
@@ -241,7 +241,7 @@ public:
 	 * \brief Build an OBB from the vertices of a map of a given connected component
 	 * This method just forms the covariance matrix and hands
 	 * it to the build_from_covariance_matrix() method
-	 * which handles fitting the box to the points	 
+	 * which handles fitting the box to the points
 	 * \param[in] attr An attribut of \p vector
 	 * \param[in] map The map to browse
 	 * \param[in] cc The connected component
@@ -258,9 +258,12 @@ public:
 		Vec mean;
 		cgogn::geometry::set_zero(mean);
 		uint32 count = 0;
+		std::vector<Vertex> incident_to_cc;
+		incident_to_cc.reserve(1024);
 		map.foreach_incident_vertex(cc, [&] (Vertex v)
 		{
 			mean += attr[v];
+			incident_to_cc.push_back(v);
 			++count;
 		});
 		mean /= count;
@@ -269,17 +272,14 @@ public:
 		Matrix covariance;
 		covariance.setZero();
 
-		for(int j = 0; j < dim_; j++){
-			for(int k = 0; k < dim_; k++){
-				map.foreach_incident_vertex(cc, [&] (Vertex v)
-				{
+		for(int j = 0; j < dim_; j++)
+			for(int k = 0; k < dim_; k++)
+			{
+				for(Vertex v : incident_to_cc)
 					covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
-					//(mean[j] - attr[c][j]) * (mean[k] - attr[c][k]);//
-				});
 
 				covariance(j,k) /= count - 1;
 			}
-		}
 
 		build_from_covariance_matrix(covariance, map, attr);
 	}
@@ -453,7 +453,6 @@ private:
 		map.foreach_incident_vertex(cc, [&] (Vertex c)
 		{
 			Vec prime(r.dot(attr[c]), u.dot(attr[c]), f.dot(attr[c]));
-//			Vec prime = eivecs.transpose() * (attr[c] - mean);
 
 			max = Vec(std::max(max[0], prime[0]), std::max(max[1], prime[1]), std::max(max[2], prime[2]));
 			min = Vec(std::min(min[0], prime[0]), std::min(min[1], prime[1]), std::min(min[2], prime[2]));
