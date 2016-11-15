@@ -201,11 +201,11 @@ public:
 	 * \param[in] attr An attribut of \p vector
 	 * \param[in] map The map to browse
 	 */
-	template <typename ATTR, typename MAP>
-	inline void build_from_vertices(const ATTR& attr, const MAP& map)
+	template <typename MAP>
+	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr)
 	{
 		using Vertex = typename MAP::Vertex;
-		static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
+		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
 		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
 
 		// compute the mean of the dataset (centroid)
@@ -234,7 +234,7 @@ public:
 			}
 		}
 
-		build_from_covariance_matrix(covariance, attr, map);
+		build_from_covariance_matrix(covariance, map, attr);
 	}
 
 	/**
@@ -246,11 +246,11 @@ public:
 	 * \param[in] map The map to browse
 	 * \param[in] cc The connected component
 	 */
-	template <typename ATTR, typename MAP>
-	inline void build_from_vertices(const ATTR& attr, const MAP& map, typename MAP::ConnectedComponent cc)
+	template <typename MAP>
+	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
 	{
 		using Vertex = typename MAP::Vertex;
-		static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
+		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
 		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
 
 
@@ -281,7 +281,7 @@ public:
 			}
 		}
 
-		build_from_covariance_matrix(covariance, attr, map);
+		build_from_covariance_matrix(covariance, map, attr);
 	}
 
 	/**
@@ -289,14 +289,14 @@ public:
 	 *  Forms the covariance matrix for the triangles, then uses the
 	 * method build_from_covariance_matrix() method to fit the box.
 	 */
-	template <typename ATTR, typename MAP>
-	inline void build_from_triangles(const ATTR& attr, const MAP& map, typename MAP::ConnectedComponent cc)
+	template <typename MAP>
+	inline void build_from_triangles(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
 	{
 		using Face = typename MAP::Face;
 		using Vertex = typename MAP::Vertex;
 		using Volume = typename MAP::Volume;
 
-		static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
+		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
 		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
 
 		Scalar Ai = 0.0, Am = 0.0;
@@ -347,7 +347,7 @@ public:
 		covariance(1,0)=cxy; covariance(1,1)=cyy; covariance(1,2)=cyz;
 		covariance(2,0)=cxz; covariance(1,2)=cyz; covariance(2,2)=czz;
 
-		build_from_covariance_matrix(covariance, attr, map, cc);
+		build_from_covariance_matrix(covariance, map, attr, cc);
 	}
 
 	static std::string cgogn_name_of_type()
@@ -393,8 +393,8 @@ private:
 		extension_ = Vec(std::abs(max[0] - min[0]) / 2.0 , std::abs(max[1] - min[1]) / 2.0, std::abs(max[2] - min[2]) / 2.0 );
 	}
 
-	template <typename ATTR, typename MAP>
-	void build_from_covariance_matrix(Matrix& C, const ATTR& attr, const MAP& map)
+	template <typename MAP>
+	void build_from_covariance_matrix(Matrix& C, const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr)
 	{
 		using Vertex = typename MAP::Vertex;
 
@@ -431,8 +431,8 @@ private:
 		extension_ = Vec(std::abs(max[0] - min[0]) / 2.0 , std::abs(max[1] - min[1]) / 2.0, std::abs(max[2] - min[2]) / 2.0 );
 	}
 
-	template <typename ATTR, typename MAP>
-	void build_from_covariance_matrix(Matrix& C, const ATTR& attr, const MAP& map, typename MAP::ConnectedComponent cc)
+	template <typename MAP>
+	void build_from_covariance_matrix(Matrix& C, const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
 	{
 		using Vertex = typename MAP::Vertex;
 
