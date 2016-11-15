@@ -46,7 +46,7 @@ template <typename ATTR, typename MAP>
 void compute_AABB(const ATTR& attr, const MAP& map, AABB<array_data_type<ATTR>>& bb)
 {
 	bb.reset();
-	map.parallel_foreach_cell([&] (Cell<ATTR::orb_> c, uint32)
+	map.foreach_cell([&] (Cell<ATTR::orb_> c)
 	{
 		bb.add_point(attr[c]);
 	});

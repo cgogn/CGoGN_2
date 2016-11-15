@@ -198,7 +198,6 @@ public:
 	 * This method just forms the covariance matrix and hands
 	 * it to the build_from_covariance_matrix() method
 	 * which handles fitting the box to the points
-	 * \warning The computation is made in parallel
 	 * \param[in] attr An attribut of \p vector
 	 * \param[in] map The map to browse
 	 */
@@ -213,7 +212,7 @@ public:
 		Vec mean;
 		cgogn::geometry::set_zero(mean);
 		uint32 count = 0;
-		map.parallel_foreach_cell([&] (Vertex v, uint32)
+		map.foreach_cell([&] (Vertex v)
 		{
 			mean += attr[v];
 			++count;
@@ -226,7 +225,7 @@ public:
 
 		for(int j = 0; j < dim_; j++){
 			for(int k = 0; k < dim_; k++){
-				map.parallel_foreach_cell([&] (Vertex v, uint32)
+				map.foreach_cell([&] (Vertex v)
 				{
 					covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
 				});
@@ -242,8 +241,7 @@ public:
 	 * \brief Build an OBB from the vertices of a map of a given connected component
 	 * This method just forms the covariance matrix and hands
 	 * it to the build_from_covariance_matrix() method
-	 * which handles fitting the box to the points
-	 * \warning The computation is made in parallel
+	 * which handles fitting the box to the points	 
 	 * \param[in] attr An attribut of \p vector
 	 * \param[in] map The map to browse
 	 * \param[in] cc The connected component
@@ -414,7 +412,7 @@ private:
 		Vec min = Vec::Constant(dim_, std::numeric_limits<Scalar>::max());
 
 		// now build the bounding box extents in the rotated frame
-		map.parallel_foreach_cell([&] (Vertex v, uint32)
+		map.foreach_cell([&] (Vertex v)
 		{
 			Vec prime(r.dot(attr[v]), u.dot(attr[v]), f.dot(attr[v]));
 
