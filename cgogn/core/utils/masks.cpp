@@ -29,12 +29,6 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API CellCache<CMap2_T<CMap2Type>>;
-template class CGOGN_CORE_API CellCache<CMap3_T<CMap3Type>>;
-template class CGOGN_CORE_API BoundaryCache<CMap2_T<CMap2Type>>;
-template class CGOGN_CORE_API BoundaryCache<CMap3_T<CMap3Type>>;
-
-
 CellFilters::~CellFilters()
 {}
 

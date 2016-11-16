@@ -44,5 +44,7 @@ template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Vertex::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Edge::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Face::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap2, CMap2::Volume::ORBIT>;
+template class CGOGN_CORE_API CellCache<CMap2>;
+template class CGOGN_CORE_API BoundaryCache<CMap2>;
 
 } // namespace cgogn

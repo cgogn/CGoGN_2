@@ -276,21 +276,6 @@ private:
 	std::vector<BoundaryCellType> cells_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_UTILS_MASKS_CPP_))
-// forward declarations
-template <typename>
-class CMap2_T;
-template <typename>
-class CMap3_T;
-struct CMap2Type;
-struct CMap3Type;
-
-extern template class CGOGN_CORE_API CellCache<CMap3<CMap3Type>>;
-extern template class CGOGN_CORE_API CellCache<CMap2<CMap2Type>>;
-extern template class CGOGN_CORE_API BoundaryCache<CMap3<CMap3Type>>;
-extern template class CGOGN_CORE_API BoundaryCache<CMap2<CMap2Type>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_UTILS_MASKS_CPP_))
-
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_MASKS_H_
