@@ -404,6 +404,8 @@ public:
 	using TChunkArray = typename Inherit::TChunkArray;
 	using Inherit::operator[];
 
+	static const Orbit orb_ = ORBIT;
+
 	/**
 	 * \brief Default constructor
 	 *
@@ -483,6 +485,11 @@ public:
 	inline Orbit orbit() const
 	{
 		return ORBIT;
+	}
+
+	inline uint32 size() const
+	{
+		return this->chunk_array_cont_->size();
 	}
 };
 
