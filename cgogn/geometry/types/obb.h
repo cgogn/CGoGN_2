@@ -24,7 +24,6 @@
 #ifndef CGOGN_GEOMETRY_TYPES_OBB_H_
 #define CGOGN_GEOMETRY_TYPES_OBB_H_
 
-#include <type_traits>
 #include <array>
 
 #include <cgogn/core/utils/numerics.h>
