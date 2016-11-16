@@ -38,17 +38,17 @@ namespace cgogn
  * Classes inheriting from CellFilters can be used as a parameter to map.foreach_cell()
  * They can personalize the filtering function used to filter each Orbit traversal
  */
-class CellFilters
+class CGOGN_CORE_API CellFilters
 {
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellFilters);
-	CellFilters() {}
-	virtual ~CellFilters() {}
-	virtual void operator() (uint32) const final {}
+	inline CellFilters() {}
+	virtual ~CellFilters();
+	virtual void operator() (uint32) const final;
 
 	template <typename CellType>
-	bool filter(CellType) const { return true; }
+	inline bool filter(CellType) const { return true; }
 };
 
 /**
@@ -59,16 +59,91 @@ public:
  *  - template <typename CellType> const_iterator begin() const
  *" - template <typename CellType> const_iterator end() const
  */
-class CellTraversor
+class CGOGN_CORE_API CellTraversor
 {
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellTraversor);
 	inline CellTraversor() {}
-	virtual ~CellTraversor() {}
-	virtual void operator() (uint32) const final {}
+	virtual ~CellTraversor();
+	virtual void operator() (uint32) const final;
 };
 
+template<typename MAP, typename CellType>
+class QuickTraversor : public CellTraversor
+{
+public:
+	using Inherit = CellTraversor;
+	using Self = QuickTraversor<MAP,CellType>;
+	using QTAttribute = typename MAP::template Attribute<Dart,CellType::ORBIT>;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(QuickTraversor);
+	using iterator = typename QTAttribute::iterator;
+	using const_iterator = typename QTAttribute::const_iterator;
+
+	inline QuickTraversor(MAP& map) : Inherit(),
+		map_(map),
+		qt_attribute_(map.template add_attribute<Dart, CellType>(std::string("qt_att_orb_") + std::to_string(uint32(CellType::ORBIT))+ std::string("_nb_")+ std::to_string(qt_counter_++)))
+	{
+		cgogn_message_assert(qt_attribute_.is_valid(), "Error : the QuickTraversor attribute is not valid.");
+	}
+
+	template <typename OtherCellType>
+	inline const_iterator begin() const
+	{
+		static_assert(std::is_same<CellType, OtherCellType>::value, "begin() called with wrong cell type.");
+		return qt_attribute_.begin();
+	}
+
+	template <typename OtherCellType>
+	inline iterator begin()
+	{
+		static_assert(std::is_same<CellType, OtherCellType>::value, "begin() called with wrong cell type.");
+		return qt_attribute_.begin();
+	}
+
+	template <typename OtherCellType>
+	inline const_iterator end() const
+	{
+		static_assert(std::is_same<CellType, OtherCellType>::value, "end() called with wrong cell type.");
+		return qt_attribute_.end();
+	}
+
+	template <typename OtherCellType>
+	inline iterator end()
+	{
+		static_assert(std::is_same<CellType, OtherCellType>::value, "end() called with wrong cell type.");
+		return qt_attribute_.end();
+	}
+
+	inline void build()
+	{
+		this->build([] (CellType) { return true; });
+	}
+
+	template <typename FilterFunction>
+	inline void build(const FilterFunction& filter)
+	{
+		map_.foreach_cell([this] (CellType c) { qt_attribute_[c] = c.dart; }, filter);
+	}
+
+	inline void update(CellType c)
+	{
+		qt_attribute_[c] = c.dart;
+	}
+
+	virtual ~QuickTraversor() override
+	{
+		if (qt_attribute_.is_valid())
+			map_.remove_attribute(qt_attribute_);
+	}
+private:
+	MAP& map_;
+	QTAttribute qt_attribute_;
+	static uint32 qt_counter_;
+};
+
+template<typename MAP, typename CellType>
+uint32 QuickTraversor<MAP,CellType>::qt_counter_ = 0u;
 
 template <typename MAP>
 class CellCache : public CellTraversor
@@ -200,6 +275,21 @@ private:
 	const MAP& map_;
 	std::vector<BoundaryCellType> cells_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_UTILS_MASKS_CPP_))
+// forward declarations
+template <typename>
+class CMap2_T;
+template <typename>
+class CMap3_T;
+struct CMap2Type;
+struct CMap3Type;
+
+extern template class CGOGN_CORE_API CellCache<CMap3<CMap3Type>>;
+extern template class CGOGN_CORE_API CellCache<CMap2<CMap2Type>>;
+extern template class CGOGN_CORE_API BoundaryCache<CMap3<CMap3Type>>;
+extern template class CGOGN_CORE_API BoundaryCache<CMap2<CMap2Type>>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_UTILS_MASKS_CPP_))
 
 } // namespace cgogn
 
