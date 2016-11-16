@@ -61,8 +61,8 @@ public:
 				  const EdgeAttribute<Scalar>& weight) :
 		map_(map),
 		cache_(cache),
-		intern_edge_weight_(false),
-		edge_weight_(weight)
+		edge_weight_(weight),
+		intern_edge_weight_(false)
 	{
 	}
 

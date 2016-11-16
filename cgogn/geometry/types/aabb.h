@@ -78,37 +78,37 @@ public:
 	/*                 ACCESSORS                  */
 	/**********************************************/
 
-	Vec& min()
+	inline Vec& min()
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_min_;
 	}
 
-	const Vec& min() const
+	inline const Vec& min() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_min_;
 	}
 
-	Vec& max()
+	inline Vec& max()
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_max_;
 	}
 
-	const Vec& max() const
+	inline const Vec& max() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_max_;
 	}
 
-	Scalar size(uint32 coord) const
+	inline Scalar size(uint32 coord) const
 	{
 		cgogn_assert(initialized_ && coord < dim_);
 		return p_max_[coord] - p_min_[coord];
 	}
 
-	Scalar max_size() const
+	inline Scalar max_size() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		Scalar max = p_max_[0] - p_min_[0];
@@ -121,7 +121,7 @@ public:
 		return max;
 	}
 
-	Scalar min_size() const
+	inline Scalar min_size() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		Scalar min = p_max_[0] - p_min_[0];
@@ -134,39 +134,39 @@ public:
 		return min;
 	}
 
-	Vec diag() const
+	inline Vec diag() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_max_ - p_min_;
 	}
 
-	Scalar diag_size()  const
+	inline Scalar diag_size()  const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
-		return Scalar((p_max_ - p_min_).norm());
+		return Scalar(diag().norm());
 	}
 
-	Vec center() const
+	inline Vec center() const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		Vec center = (p_max_ + p_min_) / Scalar(2);
 		return center;
 	}
 
-	bool is_initialized() const
+	inline bool is_initialized() const
 	{
 		return initialized_;
 
 	}
 
 	// reinitialize the axis-aligned bounding box
-	void reset()
+	inline void reset()
 	{
 		initialized_ = false;
 	}
 
 	// add a point to the axis-aligned bounding box
-	void add_point(const Vec& p)
+	inline void add_point(const Vec& p)
 	{
 		if(!initialized_)
 		{
