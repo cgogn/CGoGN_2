@@ -162,8 +162,11 @@ public:
 	 * which handles fitting the box to the points
 	 * \param[in] attr A container that supports iterators of \p vector
 	 */
-	inline void build(const Attribute_T<Vec>& attr)
+	template <typename ATTR>
+	inline void build(const ATTR& attr)
 	{
+		static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
+
 		// compute the mean of the dataset (centroid)
 		Vec mean;
 		cgogn::geometry::set_zero(mean);
