@@ -1794,6 +1794,7 @@ protected:
 	}
 
 public:
+
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
@@ -1899,7 +1900,6 @@ public:
 		const Dart d3 = phi3(f.dart);
 		if (!this->is_boundary(d3) && res1)
 			func(Volume(d3));
-
 	}
 
 	template <typename FUNC>
@@ -1933,6 +1933,54 @@ public:
 			{
 				marker.mark_orbit(Face2(d));
 				return internal::void_to_true_binder(func, Face(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_vertex(ConnectedComponent cc, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit(Vertex(d));
+				return internal::void_to_true_binder(func, Vertex(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_face(ConnectedComponent cc, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit(Face(d));
+				return internal::void_to_true_binder(func, Face(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
+	inline void foreach_incident_volume(ConnectedComponent cc, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit(Volume(d));
+				return internal::void_to_true_binder(func, Volume(d));
 			}
 			return true;
 		});
