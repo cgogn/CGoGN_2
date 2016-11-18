@@ -113,7 +113,7 @@ auto ThreadPool::enqueue(const F& f, Args&&... args)
 
 	auto task = std::make_shared<std::packaged_task<return_type(uint32)>>([f, &args...] (uint32 i)
 	{
-		std::bind(std::cref(f),i, std::forward<Args>(args)...)();
+		f(i, std::forward<Args>(args)...);
 	});
 
 	std::future<return_type> res = task->get_future();
