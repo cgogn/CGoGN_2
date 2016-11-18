@@ -1955,6 +1955,22 @@ public:
 	}
 
 	template <typename FUNC>
+	inline void foreach_incident_edge(ConnectedComponent cc, const FUNC& func) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		DartMarkerStore marker(*this);
+		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+		{
+			if (!marker.is_marked(d))
+			{
+				marker.mark_orbit(Edge(d));
+				return internal::void_to_true_binder(func, Edge(d));
+			}
+			return true;
+		});
+	}
+
+	template <typename FUNC>
 	inline void foreach_incident_face(ConnectedComponent cc, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
