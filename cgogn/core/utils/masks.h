@@ -82,7 +82,7 @@ public:
 
 	inline QuickTraversor(MAP& map) : Inherit(),
 		map_(map),
-		qt_attribute_(map.template add_attribute<Dart, CellType>(std::string("qt_att_orb_") + std::to_string(uint32(CellType::ORBIT))+ std::string("_nb_")+ std::to_string(qt_counter_++)))
+		qt_attribute_(map.template add_attribute<Dart, CellType>(std::string("qt_att_nb_") + std::to_string(qt_counter_++)))
 	{
 		cgogn_message_assert(qt_attribute_.is_valid(), "Error : the QuickTraversor attribute is not valid.");
 	}
@@ -117,13 +117,7 @@ public:
 
 	inline void build()
 	{
-		this->build([] (CellType) { return true; });
-	}
-
-	template <typename FilterFunction>
-	inline void build(const FilterFunction& filter)
-	{
-		map_.foreach_cell([this] (CellType c) { qt_attribute_[c] = c.dart; }, filter);
+		map_.foreach_cell([this] (CellType c) { qt_attribute_[c] = c.dart; });
 	}
 
 	inline void update(CellType c)
