@@ -74,7 +74,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	inline ChunkArray() : Inherit()
+	inline ChunkArray() : Inherit("",name_of_type(T()))
 	{
 		table_data_.reserve(1024u);
 	}
@@ -501,7 +501,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	inline ChunkArrayBool() : Inherit()
+	inline ChunkArrayBool() : Inherit("", name_of_type(bool()))
 	{
 		table_data_.reserve(1024u);
 	}
