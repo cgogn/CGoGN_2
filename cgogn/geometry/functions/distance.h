@@ -42,10 +42,7 @@ namespace geometry
 template <typename VEC3>
 inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
 {
-	// here use const & ? Strange Schmitt optimization proposition ;)
-	const VEC3& V = A - P ;
-	const VEC3& W = V.cross(AB_norm) ;
-	return W.squaredNorm() ;
+	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
 
 /**
