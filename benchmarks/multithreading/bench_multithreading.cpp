@@ -55,6 +55,17 @@ using VertexAttribute = Map2::VertexAttribute<T>;
 template <typename T>
 using FaceAttribute = Map2::FaceAttribute<T>;
 
+static void BENCH_enqueue(benchmark::State& state)
+{
+	while (state.KeepRunning())
+	{
+		state.PauseTiming();
+		cgogn::ThreadPool* tp = cgogn::thread_pool();
+		state.ResumeTiming();
+		tp->enqueue([](uint32){;});
+	}
+}
+
 static void BENCH_Dart_count_single_threaded(benchmark::State& state)
 {
 	while (state.KeepRunning())
@@ -284,6 +295,8 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		cache);
 	}
 }
+
+BENCHMARK(BENCH_enqueue)->UseRealTime();
 
 BENCHMARK(BENCH_Dart_count_single_threaded);
 BENCHMARK(BENCH_Dart_count_multi_threaded)->UseRealTime();
