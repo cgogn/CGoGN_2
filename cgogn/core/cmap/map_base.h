@@ -667,7 +667,7 @@ public:
 	uint32 nb_boundaries() const
 	{
 		uint32 result = 0u;
-		DartMarker m(*this);
+		DartMarker m(to_concrete());
 		foreach_dart([&m, &result, this] (Dart d)
 		{
 			if (!m.is_marked(d))
