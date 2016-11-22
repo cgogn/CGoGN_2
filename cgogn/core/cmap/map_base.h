@@ -647,7 +647,7 @@ public:
 			return this->attributes_[ORBIT].size();
 		else
 		{
-			uint32 result = 0;
+			uint32 result = 0u;
 			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
@@ -656,8 +656,27 @@ public:
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
-		uint32 result = 0;
+		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
+	}
+
+	/**
+	 * \brief return the number of boundaries of the map
+	 */
+	uint32 nb_boundaries() const
+	{
+		uint32 result = 0u;
+		DartMarker m(*this);
+		foreach_dart([&m, &result, this] (Dart d)
+		{
+			if (!m.is_marked(d))
+			{
+				typename ConcreteMap::Boundary c(d);
+				m.mark_orbit(c);
+				if (this->is_boundary_cell(c)) ++result;
+			}
+		});
 		return result;
 	}
 
@@ -888,7 +907,6 @@ public:
 			dbuffs->release_buffer(b);
 
 	}
-
 
 	/**
 	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
