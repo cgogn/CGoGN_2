@@ -23,26 +23,27 @@
 *******************************************************************************/
 
 #include <cgogn/core/utils/numerics.h>
-#include <OpenNL_psm.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
+#include <OpenNL_psm.h>
 
-namespace cgogn {
-
+namespace cgogn
+{
 
 ///
 /// Variables setup
 ///
+
 template <typename T, typename MAP>
 void setup_variables(
-        const MAP& map,
-        const typename MAP::template VertexAttribute<uint32>& index,
-		const typename MAP::DartMarker& locked_marker,
-        const typename MAP::template VertexAttribute<T>& attr)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<uint32>& index,
+	const typename MAP::DartMarker& locked_marker,
+	const typename MAP::template VertexAttribute<T>& attr)
 {
     using Vertex = typename MAP::Vertex;
 
-    map.foreach_cell([&](Vertex v)
+	map.foreach_cell([&] (Vertex v)
     {
         nlSetVariable(index[v], attr[v]);
 		if(locked_marker.is_marked(v.dart))
@@ -52,15 +53,15 @@ void setup_variables(
 
 template <typename T, typename MAP>
 void setup_variables(
-        MAP& map,
-        const typename MAP::template VertexAttribute<uint32>& index,
-        const typename MAP::template CellMarker<MAP::Vertex::ORBIT>& free_marker,
-        const typename MAP::template VertexAttribute<T>& attr,
-        unsigned int coord)
+	MAP& map,
+	const typename MAP::template VertexAttribute<uint32>& index,
+	const typename MAP::template CellMarker<MAP::Vertex::ORBIT>& free_marker,
+	const typename MAP::template VertexAttribute<T>& attr,
+	unsigned int coord)
 {
     using Vertex = typename MAP::Vertex;
 
-    map.foreach_cell([&](Vertex v)
+	map.foreach_cell([&] (Vertex v)
     {
         nlSetVariable(index[v], attr[v][coord]);
 		if(!free_marker.is_marked(v))
@@ -71,10 +72,11 @@ void setup_variables(
 ///
 /// Matrix setup : laplacian topo
 ///
+
 template <typename Scalar, typename MAP>
 void add_rows_laplacian_topo(
-        const MAP& map,
-        const typename MAP::template VertexAttribute<uint32>& index)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<uint32>& index)
 {
     using Vertex = typename MAP::Vertex;
 
@@ -101,11 +103,12 @@ void add_rows_laplacian_topo(
 ///
 /// Get results
 ///
+
 template <typename T, typename MAP>
 void result(
-        const MAP& map,
-        const typename MAP::template VertexAttribute<uint32>& index,
-		typename MAP::template VertexAttribute<T>& attr)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<uint32>& index,
+	typename MAP::template VertexAttribute<T>& attr)
 {
     using Vertex = typename MAP::Vertex;
 
@@ -117,18 +120,18 @@ void result(
 
 template <typename VEC, typename MAP>
 void result(
-        const MAP& map,
-        const typename MAP::template VertexAttribute<uint32>& index,
-		typename MAP::template VertexAttribute<VEC>& attr,
-        uint32 coord)
+	const MAP& map,
+	const typename MAP::template VertexAttribute<uint32>& index,
+	typename MAP::template VertexAttribute<VEC>& attr,
+	uint32 coord)
 {
     using Vertex = typename MAP::Vertex;
 	using Scalar = typename cgogn::geometry::vector_traits<VEC>::Scalar;
 
-    map.foreach_cell([&](Vertex v)
+	map.foreach_cell([&] (Vertex v)
     {
         (attr[v])[coord] = Scalar(nlGetVariable(index[v]));
     });
 }
 
-} //end namespace cgogn
+} // namespace cgogn

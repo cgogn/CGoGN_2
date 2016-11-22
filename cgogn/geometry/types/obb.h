@@ -24,11 +24,12 @@
 #ifndef CGOGN_GEOMETRY_TYPES_OBB_H_
 #define CGOGN_GEOMETRY_TYPES_OBB_H_
 
-#include <type_traits>
 #include <array>
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/cell.h>
+#include <cgogn/core/cmap/attribute.h>
+#include <cgogn/core/utils/masks.h>
 
 #include <cgogn/geometry/dll.h>
 #include <cgogn/geometry/types/geometry_traits.h>
@@ -52,7 +53,6 @@ public:
 	using Scalar = typename vector_traits<Vec>::Scalar;
 	using Self = OBB<Vec>;
 
-
 	/**
 	 * \brief Dimension of the dataset
 	 */
@@ -61,6 +61,7 @@ public:
 	using Matrix = Eigen::Matrix<Scalar, dim_, dim_>;
 
 private:
+
 	/**
 	 * \brief Translation component of the transformation
 	 */
@@ -155,7 +156,7 @@ public:
 	}
 
 	/**
-	 * \brief Build an OBB from an attribut of points.
+	 * \brief Build an OBB from an attribute of points.
 	 * This method just forms the covariance matrix and hands
 	 * it to the build_from_covariance_matrix() method
 	 * which handles fitting the box to the points
@@ -181,14 +182,16 @@ public:
 		Matrix covariance;
 		covariance.setZero();
 
-		for(int j = 0; j < dim_; j++)
-			for(int k = 0; k < dim_; k++)
+		for (uint32 j = 0; j < dim_; j++)
+		{
+			for (uint32 k = 0; k < dim_; k++)
 			{
 				for (const auto& p : attr)
 					covariance(j,k) += (p[j] - mean[j]) * (p[k] - mean[k]);
 
 				covariance(j,k) /= count - 1;
 			}
+		}
 
 		build_from_covariance_matrix(covariance, attr);
 	}
@@ -205,34 +208,44 @@ public:
 	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr)
 	{
 		using Vertex = typename MAP::Vertex;
-		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
-		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
 
 		// compute the mean of the dataset (centroid)
 		Vec mean;
 		cgogn::geometry::set_zero(mean);
 		uint32 count = 0;
-		map.foreach_cell([&] (Vertex v)
-		{
-			mean += attr[v];
-			++count;
-		});
+
+		CellCache<MAP> cache(map);
+		cache.template build<Vertex>();
+
+		map.foreach_cell(
+			[&] (Vertex v)
+			{
+				mean += attr[v];
+				++count;
+			},
+			cache
+		);
 		mean /= count;
 
 		// compute covariance matrix
 		Matrix covariance;
 		covariance.setZero();
 
-		for(int j = 0; j < dim_; j++)
-			for(int k = 0; k < dim_; k++)
+		for (uint32 j = 0; j < dim_; j++)
+		{
+			for (uint32 k = 0; k < dim_; k++)
 			{
-				map.foreach_cell([&] (Vertex v)
-				{
-					covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
-				});
+				map.foreach_cell(
+					[&] (Vertex v)
+					{
+						covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
+					},
+					cache
+				);
 
 				covariance(j,k) /= count - 1;
 			}
+		}
 
 		build_from_covariance_matrix(covariance, map, attr);
 	}
@@ -250,9 +263,6 @@ public:
 	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
 	{
 		using Vertex = typename MAP::Vertex;
-		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
-		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
-
 
 		// compute the mean of the dataset (centroid)
 		Vec mean;
@@ -292,12 +302,8 @@ public:
 	template <typename MAP>
 	inline void build_from_triangles(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
 	{
-		using Face = typename MAP::Face;
 		using Vertex = typename MAP::Vertex;
-		using Volume = typename MAP::Volume;
-
-		//static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
-		//static_assert(std::is_same<typename ATTR::orb_, Vertex>::value, "Wrong orbit type");
+		using Face = typename MAP::Face;
 
 		Scalar Ai = 0.0, Am = 0.0;
 
@@ -305,11 +311,11 @@ public:
 		cgogn::geometry::set_zero(mu);
 		cgogn::geometry::set_zero(mui);
 
-		Scalar cxx=0.0, cxy=0.0, cxz=0.0, cyy=0.0, cyz=0.0, czz=0.0;
+		Scalar cxx = 0.0, cxy = 0.0, cxz = 0.0, cyy = 0.0, cyz = 0.0, czz = 0.0;
 
 		// loop over the triangles this time to find the
 		// mean location
-		map.foreach_incident_face(Volume(cc.dart), [&] (Face f)
+		map.foreach_incident_face(cc, [&] (Face f)
 		{
 			Vec p = attr[Vertex(f.dart)];
 			Vec q = attr[Vertex(map.phi1(f.dart))];
@@ -356,6 +362,7 @@ public:
 	}
 
 private:
+
 	template <typename ATTR>
 	void build_from_covariance_matrix(Matrix& C, const ATTR& attr)
 	{
@@ -380,7 +387,6 @@ private:
 			max = Vec(std::max(max[0], prime[0]), std::max(max[1], prime[1]), std::max(max[2], prime[2]));
 			min = Vec(std::min(min[0], prime[0]), std::min(min[1], prime[1]), std::min(min[2], prime[2]));
 		}
-
 
 		// set the center of the OBB to be the average of the
 		// minimum and maximum, and the extents be half of the

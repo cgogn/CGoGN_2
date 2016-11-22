@@ -36,6 +36,6 @@ template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3f>;
 //template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32,3>>>;
 //template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
 
-
 } // namespace geometry
+
 } // namespace cgogn

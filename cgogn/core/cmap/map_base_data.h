@@ -336,8 +336,6 @@ protected:
 		if (it == thread_ids_.end() || *it != thread_id)
 			thread_ids_.insert(it, thread_id);
 	}
-
-
 };
 
 } // namespace cgogn
