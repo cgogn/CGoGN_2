@@ -1034,6 +1034,8 @@ public:
 	 */
 	void dual()
 	{
+		cgogn_message_assert(this->nb_boundaries() == 0u, "CMap2::dual can only be used on maps without boundaries");
+
 		ChunkArray<Dart>* new_phi1 = this->topology_.template add_chunk_array<Dart>("new_phi1");
 		ChunkArray<Dart>* new_phi_1 = this->topology_.template add_chunk_array<Dart>("new_phi_1");
 
