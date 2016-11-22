@@ -1005,15 +1005,15 @@ protected:
 	}
 
 public:
-	///
-	/// \brief Computres the reverse orientation of the current cmap
-	///
+
+	/**
+	 * @brief Reverse the orientation of the cmap
+	 */
 	void reverse_orientation()
 	{
-		ChunkArray<uint32>* emb0 = this->embedding_indices(Vertex::ORBIT);
-
-		if(emb0 != nullptr)
+		if(this->template is_embedded<Vertex::ORBIT>())
 		{
+			ChunkArray<uint32>* emb0 = this->embeddings_[Vertex::ORBIT];
 			ChunkArray<uint32>* new_emb0 = this->topology_.template add_chunk_array<uint32>("new_EMB_0");
 
 			this->foreach_dart([this,&emb0, &new_emb0](Dart d)
@@ -1021,17 +1021,17 @@ public:
 				(*new_emb0)[d.index] = (*emb0)[this->phi1(d).index];
 			});
 
-			emb0->swap(new_emb0);
+			emb0->swap_data(new_emb0);
 			this->topology_.remove_chunk_array(new_emb0);
 		}
 
-		this->topology_.swap_data(this->phi1_, this->phi_1_);
+		this->topology_.swap_chunk_arrays(this->phi1_, this->phi_1_);
 	}
 
-	///
-	/// \brief Computes the dual of the map
-	/// \warning works only for cmap without any boundaries
-	///
+	/**
+	 * @brief Transform the map to its dual
+	 * @warning works only for cmap without boundaries
+	 */
 	void dual()
 	{
 		ChunkArray<Dart>* new_phi1 = this->topology_.template add_chunk_array<Dart>("new_phi1");
@@ -1045,8 +1045,8 @@ public:
 			(*new_phi_1)[dd.index] = d;
 		});
 
-		this->topology_.swap_data(this->phi1_, new_phi1);
-		this->topology_.swap_data(this->phi_1_, new_phi_1);
+		this->topology_.swap_chunk_arrays(this->phi1_, new_phi1);
+		this->topology_.swap_chunk_arrays(this->phi_1_, new_phi_1);
 
 		this->topology_.remove_chunk_array(new_phi1);
 		this->topology_.remove_chunk_array(new_phi_1);
@@ -1055,7 +1055,6 @@ public:
 
 		reverse_orientation();
 	}
-
 
 	/*******************************************************************************
 	 * Connectivity information
@@ -1160,6 +1159,7 @@ public:
 	}
 
 public:
+
 	/*******************************************************************************
 	* Orbits traversal                                                             *
 	*******************************************************************************/

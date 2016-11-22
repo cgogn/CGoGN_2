@@ -211,7 +211,6 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
-
 	inline bool is_embedded(Orbit orb) const
 	{
 		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
@@ -249,19 +248,10 @@ public:
 		cgogn_message_assert(orb1 != Orbit::DART && orb2 != Orbit::DART, "Cannot swap the darts container");
 
 		attributes_[orb1].swap(attributes_[orb2]);
-		embeddings_[orb1]->swap(embeddings_[orb2]);
+		embeddings_[orb1]->swap_data(embeddings_[orb2]);
 	}
 
 protected:
-
-	//template <Orbit ORBIT>
-	inline ChunkArray<uint32>* embedding_indices(Orbit orb)
-	{
-		//static_assert(orb < NB_ORBITS, "Unknown orbit parameter");
-		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
-
-		return embeddings_[orb];
-	}
 
 	template <class CellType>
 	inline void set_embedding(Dart d, uint32 emb)
