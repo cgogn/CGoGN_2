@@ -110,9 +110,9 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string&	name() const = 0;
-	virtual const std::string&	type_name() const = 0;
-	virtual bool				is_valid() const = 0;
+	virtual const std::string& name() const = 0;
+	virtual const std::string& type_name() const = 0;
+	virtual bool               is_valid() const = 0;
 };
 
 /**
@@ -454,6 +454,20 @@ public:
 	Attribute& operator=(Self&& att)
 	{
 		Inherit::operator=(std::move(att));
+		return *this;
+	}
+
+	///
+	/// \brief Transmutted affectation
+	/// \details Changes the orbit of the attribut
+	///
+	template <Orbit ORB2>
+	inline Attribute& operator=(const Attribute<T, ORB2>& rhs)
+	{
+		Orbit o = this->orbit_;
+		Inherit::operator=(rhs);
+		this->orbit_ = o;
+
 		return *this;
 	}
 

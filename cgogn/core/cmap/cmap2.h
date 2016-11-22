@@ -1004,6 +1004,59 @@ protected:
 		return nb_holes;
 	}
 
+public:
+	///
+	/// \brief Computres the reverse orientation of the current cmap
+	///
+	void reverse_orientation()
+	{
+		ChunkArray<uint32>* emb0 = this->embedding_indices(Vertex::ORBIT);
+
+		if(emb0 != nullptr)
+		{
+			ChunkArray<uint32>* new_emb0 = this->topology_.template add_chunk_array<uint32>("new_EMB_0");
+
+			this->foreach_dart([this,&emb0, &new_emb0](Dart d)
+			{
+				(*new_emb0)[d.index] = (*emb0)[this->phi1(d).index];
+			});
+
+			emb0->swap(new_emb0);
+			this->topology_.remove_chunk_array(new_emb0);
+		}
+
+		this->topology_.swap_data(this->phi1_, this->phi_1_);
+	}
+
+	///
+	/// \brief Computes the dual of the map
+	/// \warning works only for cmap without any boundaries
+	///
+	void dual()
+	{
+		ChunkArray<Dart>* new_phi1 = this->topology_.template add_chunk_array<Dart>("new_phi1");
+		ChunkArray<Dart>* new_phi_1 = this->topology_.template add_chunk_array<Dart>("new_phi_1");
+
+		this->foreach_dart([this, &new_phi1, &new_phi_1](Dart d)
+		{
+			Dart dd = this->phi1(phi2(d));
+
+			(*new_phi1)[dd.index] = dd;
+			(*new_phi_1)[dd.index] = d;
+		});
+
+		this->topology_.swap_data(this->phi1_, new_phi1);
+		this->topology_.swap_data(this->phi_1_, new_phi_1);
+
+		this->topology_.remove_chunk_array(new_phi1);
+		this->topology_.remove_chunk_array(new_phi_1);
+
+		this->swap_embeddings(Vertex::ORBIT, Face::ORBIT);
+
+		reverse_orientation();
+	}
+
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/

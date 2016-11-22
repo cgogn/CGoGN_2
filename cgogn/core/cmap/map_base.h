@@ -840,11 +840,12 @@ public:
 		futures[1].reserve(nb_threads_pool);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+		const ConcreteMap* cmap = to_concrete();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		Dart it = Dart(this->topology_.begin());
-		Dart last = Dart(this->topology_.end());
+		Dart it = cmap->all_begin();
+		Dart last = cmap->all_end();
 
 		while (it != last)
 		{
@@ -855,7 +856,7 @@ public:
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 			{
 				darts.push_back(it);
-				this->topology_.next(it.index);
+				cmap->all_next(it);
 			}
 
 			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
@@ -901,7 +902,8 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
+		const ConcreteMap* cmap = to_concrete();
+		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
 		{
 			if (!internal::void_to_true_binder(f, it))
 				break;
@@ -935,6 +937,25 @@ protected:
 	}
 
 	inline Dart end() const
+	{
+		return Dart(this->topology_.end());
+	}
+
+	/*!
+	 * \Brief Methods to iterate over darts.
+	 * These functions browses over all darts.
+	 */
+	inline Dart all_begin() const
+	{
+		return Dart(this->topology_.begin());
+	}
+
+	inline void all_next(Dart& d) const
+	{
+		this->topology_.next(d.index);
+	}
+
+	inline Dart all_end() const
 	{
 		return Dart(this->topology_.end());
 	}

@@ -148,8 +148,6 @@ CGOGN_MODELING_API Dart swap_32(CMap3& map, CMap3::Edge e)
 
 CGOGN_MODELING_API Dart swap_23(CMap3& map, CMap3::Face f)
 {
-	using Face = CMap3::Face;
-
 	if (map.is_incident_to_boundary(f))
 		return Dart();
 
@@ -303,7 +301,6 @@ CGOGN_MODELING_API Dart edge_bisection(CMap3& map, CMap3::Edge e)
 
 CGOGN_MODELING_API Dart swap_gen_32(CMap3& map, CMap3::Edge e)
 {
-	using Vertex = CMap3::Vertex;
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
 	using Volume = CMap3::Volume;
