@@ -31,7 +31,7 @@ namespace cgogn
 namespace modeling
 {
 
-inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
+CGOGN_MODELING_API Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 {
 	//split the vertex
 	const Dart dres = map.split_vertex(vd);
@@ -60,7 +60,7 @@ inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd)
 	return dres;
 }
 
-bool is_tetrahedron(CMap3& map, CMap3::Volume w)
+CGOGN_MODELING_API bool is_tetrahedron(CMap3& map, CMap3::Volume w)
 {
 	unused_parameters(map,w);
 	return true;
@@ -71,7 +71,7 @@ bool is_tetrahedron(CMap3& map, CMap3::Volume w)
 
 //}
 
-Dart swap_22(CMap3& map, CMap3::Volume w)
+CGOGN_MODELING_API Dart swap_22(CMap3& map, CMap3::Volume w)
 {
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
@@ -96,7 +96,7 @@ Dart swap_22(CMap3& map, CMap3::Volume w)
 	return map.phi2(stop);
 }
 
-Dart swap_44(CMap3& map, CMap3::Volume w)
+CGOGN_MODELING_API Dart swap_44(CMap3& map, CMap3::Volume w)
 {
 	using Face = CMap3::Face;
 	using Volume = CMap3::Volume;
@@ -117,7 +117,7 @@ Dart swap_44(CMap3& map, CMap3::Volume w)
 	return d1;
 }
 
-Dart swap_32(CMap3& map, CMap3::Edge e)
+CGOGN_MODELING_API Dart swap_32(CMap3& map, CMap3::Edge e)
 {
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
@@ -146,7 +146,7 @@ Dart swap_32(CMap3& map, CMap3::Edge e)
 	return map.phi2(edges[0]);
 }
 
-Dart swap_23(CMap3& map, CMap3::Face f)
+CGOGN_MODELING_API Dart swap_23(CMap3& map, CMap3::Face f)
 {
 	using Face = CMap3::Face;
 
@@ -187,7 +187,7 @@ Dart swap_23(CMap3& map, CMap3::Face f)
 	return stop;
 }
 
-CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
+CGOGN_MODELING_API CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
 {
 	using Vertex = CMap3::Vertex;
 	using Face = CMap3::Face;
@@ -231,7 +231,7 @@ CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w)
 	return x;
 }
 
-CMap3::Vertex flip_13(CMap3& map, CMap3::Face f)
+CGOGN_MODELING_API CMap3::Vertex flip_13(CMap3& map, CMap3::Face f)
 {
 	using Vertex = CMap3::Vertex;
 	using Face = CMap3::Face;
@@ -271,7 +271,7 @@ CMap3::Vertex flip_13(CMap3& map, CMap3::Face f)
 	return x;
 }
 
-Dart edge_bisection(CMap3& map, CMap3::Edge e)
+CGOGN_MODELING_API Dart edge_bisection(CMap3& map, CMap3::Edge e)
 {
 	using Edge = CMap3::Edge;
 	using Face = CMap3::Face;
@@ -301,7 +301,7 @@ Dart edge_bisection(CMap3& map, CMap3::Edge e)
 	return e1;
 }
 
-Dart swap_gen_32(CMap3& map, CMap3::Edge e)
+CGOGN_MODELING_API Dart swap_gen_32(CMap3& map, CMap3::Edge e)
 {
 	using Vertex = CMap3::Vertex;
 	using Edge = CMap3::Edge;
