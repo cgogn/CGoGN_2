@@ -42,6 +42,7 @@ template <uint32 CHUNK_SIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNK_SIZE, T>
 {
 public:
+
 	using Inherit = ChunkArray<CHUNK_SIZE, T>;
 	using Self = ChunkStack<CHUNK_SIZE, T>;
 	using value_type = T;
@@ -51,6 +52,7 @@ protected:
 	uint32 stack_size_;
 
 public:
+
 	/**
 	 * @brief ChunkStack constructor
 	 */
@@ -143,9 +145,9 @@ public:
 		Inherit::clear();
 	}
 
-	bool swap(ChunkArrayGen<CHUNK_SIZE>* cag) override
+	bool swap_data(ChunkArrayGen<CHUNK_SIZE>* cag) override
 	{
-		if (Inherit::swap(cag))
+		if (Inherit::swap_data(cag))
 		{
 			Self* cs = dynamic_cast<Self*>(cag);
 			std::swap(stack_size_, cs->stack_size_);

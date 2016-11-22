@@ -40,6 +40,7 @@ public:
 
 	using Self = CellMarker_T<MAP, ORBIT>;
 	using Map = MAP;
+	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayBool = typename Map::ChunkArrayBool;
 
 protected:
@@ -55,36 +56,46 @@ public:
 		map_(map)
 	{
 		mark_attribute_ = map_.template mark_attribute<ORBIT>();
+		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 	}
 
 	CellMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.template mark_attribute<ORBIT>();
+		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 	}
 
 	virtual ~CellMarker_T() // override
 	{
 		if (MapBaseData::is_alive(&map_))
+		{
+			mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
+		}
 	}
 
 	inline void mark(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid CellMarker");
 		mark_attribute_->set_true(map_.embedding(c));
 	}
 
 	inline void unmark(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid CellMarker");
 		mark_attribute_->set_false(map_.embedding(c));
 	}
 
 	inline bool is_marked(Cell<ORBIT> c) const
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid CellMarker");
 		return (*mark_attribute_)[map_.embedding(c)];
+	}
+
+	bool is_valid() const
+	{
+		return mark_attribute_ != nullptr;
 	}
 };
 
@@ -114,7 +125,7 @@ public:
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarker has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
 		this->mark_attribute_->all_false();
 	}
 };
@@ -175,7 +186,7 @@ public:
 
 	inline void mark(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
 		if (!this->is_marked(c))
 		{
 			Inherit::mark(c);
@@ -185,7 +196,7 @@ public:
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "CellMarkerStore has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
 		for (uint32 i : *(this->marked_cells_))
 			this->mark_attribute_->set_false(i);
 		marked_cells_->clear();

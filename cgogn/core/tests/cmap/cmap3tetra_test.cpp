@@ -81,7 +81,7 @@ TEST_F(CMap3TetraTest, topo_1)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_pyramid_topo_fp(3u);
+	mbuild.add_pyramid_topo_fp(3u);
 
 	mbuild.close_map();
 

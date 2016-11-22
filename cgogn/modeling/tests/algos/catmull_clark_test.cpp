@@ -75,8 +75,6 @@ TYPED_TEST_CASE(Algos_TEST, VecTypes);
 
 TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 {
-	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 
 	this->add_polygone(3);
@@ -95,8 +93,6 @@ TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 
 TYPED_TEST(Algos_TEST, QuadCatmullClark)
 {
-	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
-
 	VertexAttribute<TypeParam> vertex_position = this->map2_.template add_attribute<TypeParam, CMap2::Vertex>("position");
 
 	this->add_polygone(4);
