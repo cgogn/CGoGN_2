@@ -93,7 +93,7 @@ public:
 		return (*mark_attribute_)[map_.embedding(c)];
 	}
 
-	bool is_valid() const
+	inline bool is_valid() const
 	{
 		return mark_attribute_ != nullptr;
 	}
