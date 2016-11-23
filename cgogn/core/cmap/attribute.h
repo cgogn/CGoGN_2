@@ -457,20 +457,6 @@ public:
 		return *this;
 	}
 
-	///
-	/// \brief Transmutted affectation
-	/// \details Changes the orbit of the attribut
-	///
-	template <Orbit ORB2>
-	inline Attribute& operator=(const Attribute<T, ORB2>& rhs)
-	{
-		Orbit o = this->orbit_;
-		Inherit::operator=(rhs);
-		this->orbit_ = o;
-
-		return *this;
-	}
-
 	virtual ~Attribute() override
 	{}
 

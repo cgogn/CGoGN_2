@@ -142,7 +142,6 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
-
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
@@ -279,9 +278,7 @@ public:
 	inline bool remove_attribute(const Attribute<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		const ChunkArray<T>* ca = ah.data();
-		return this->attributes_[ORBIT].remove_chunk_array(ca);
+		return this->attributes_[ORBIT].remove_chunk_array(ah.data());
 	}
 
 	/**
@@ -326,7 +323,6 @@ public:
 		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
 	}
 
-
 	/**
 	* \brief search an attribute for a given orbit and change its type (if size is compatible). First template arg is asked type, second is real type.
 	* @param attribute_name attribute name
@@ -350,7 +346,7 @@ public:
 		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
 		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
 
-		this->attributes_[ORBIT].swap_data(ah1.data(), ah2.data());
+		this->attributes_[ORBIT].swap_chunk_arrays(ah1.data(), ah2.data());
 	}
 
 	template <typename T, Orbit ORBIT>
@@ -361,7 +357,7 @@ public:
 		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
 		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
 
-		this->attributes_[ORBIT].copy_data(dest.data(), src.data());
+		this->attributes_[ORBIT].copy_chunk_array_data(dest.data(), src.data());
 	}
 
 protected:
@@ -649,7 +645,7 @@ public:
 			return this->attributes_[ORBIT].size();
 		else
 		{
-			uint32 result = 0;
+			uint32 result = 0u;
 			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
@@ -658,8 +654,27 @@ public:
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
-		uint32 result = 0;
+		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
+	}
+
+	/**
+	 * \brief return the number of boundaries of the map
+	 */
+	uint32 nb_boundaries() const
+	{
+		uint32 result = 0u;
+		DartMarker m(*to_concrete());
+		foreach_dart([&m, &result, this] (Dart d)
+		{
+			if (!m.is_marked(d))
+			{
+				typename ConcreteMap::Boundary c(d);
+				m.mark_orbit(c);
+				if (this->is_boundary_cell(c)) ++result;
+			}
+		});
 		return result;
 	}
 
@@ -890,7 +905,6 @@ public:
 			dbuffs->release_buffer(b);
 
 	}
-
 
 	/**
 	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false

@@ -249,7 +249,6 @@ public:
 		return const_cast<const ChunkArrayGen*>(const_cast<Self*>(this)->get_chunk_array(name));
 	}
 
-
 	/**
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return
@@ -348,46 +347,50 @@ public:
 	 * @brief swap the data of two chunk arrays of the container
 	 * @param ptr1 pointer to first chunk array
 	 * @param ptr2 pointer to second chunk array
-	 * @return
+	 * @return true if the swap has been executed
 	 */
-	bool swap_data(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	bool swap_chunk_arrays(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
 		uint32 index1 = array_index(ptr1);
 		uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
-			cgogn_log_warning("swap_data_attributes") << "Attribute not found.";
+			cgogn_log_warning("swap_chunk_array") << "Chunk array not found.";
 			return false;
 		}
 
 		if (index1 == index2)
 		{
-			cgogn_log_warning("swap_data_attributes") << "Same attributes.";
-			return false;
+			cgogn_log_warning("swap_chunk_array") << "Same chunk arrays.";
+			return true;
 		}
 
-		table_arrays_[index1]->swap(table_arrays_[index2]);
-
-		return true;
+		return table_arrays_[index1]->swap_data(table_arrays_[index2]);
 	}
 
+	/**
+	 * @brief copy the data of a chunk array of the container into another
+	 * @param dest pointer to the destination chunk array
+	 * @param src pointer to the source chunk array
+	 * @return true if the copy has been executed
+	 */
 	template <typename T>
-	bool copy_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	bool copy_chunk_array_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
 		uint32 dest_index = array_index(dest);
 		uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
-			cgogn_log_warning("copy_data_attributes") << "Attribute not found.";
+			cgogn_log_warning("copy_chunk_array_data") << "Chunk array not found.";
 			return false;
 		}
 
 		if (dest_index == src_index)
 		{
-			cgogn_log_warning("copy_data_attributes") << "Same attributes.";
-			return false;
+			cgogn_log_warning("copy_chunk_array_data") << "Same chunk arrays.";
+			return true;
 		}
 
 		ChunkArray<T>* dest_ca = static_cast<ChunkArray<T>*>(table_arrays_[dest_index]);
@@ -586,10 +589,19 @@ public:
 		names_.swap(container.names_);
 		type_names_.swap(container.type_names_);
 		table_marker_arrays_.swap(container.table_marker_arrays_);
-		refs_.swap(&(container.refs_));
-		holes_stack_.swap(&(container.holes_stack_));
+		refs_.swap_data(&(container.refs_));
+		holes_stack_.swap_data(&(container.holes_stack_));
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
+		// invalidate existing external refs
+		for (auto cagen : table_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : table_marker_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : container.table_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : container.table_marker_arrays_)
+			cagen->invalidate_external_refs();
 	}
 
 	/**
@@ -1013,7 +1025,6 @@ public:
 		return ok;
 	}
 
-
 	template <typename FUNC>
 	void foreach_index(const FUNC& f) const
 	{
@@ -1028,7 +1039,6 @@ public:
 			next(it);
 		}
 	}
-
 
 	template <typename FUNC>
 	void parallel_foreach_index(const FUNC& f) const
@@ -1097,7 +1107,6 @@ public:
 		for (auto& b : indices_buffers[1u])
 			buffs->release_buffer(b);
 	}
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))

@@ -87,6 +87,58 @@ public:
 			delete[] chunk;
 	}
 
+	std::string nested_type_name() const override
+	{
+		return name_of_type(nested_type<T>());
+	}
+
+	uint32 nb_components() const override
+	{
+		// Warning : the line 0 might be unused.
+		return cgogn::nb_components(this->operator[](0u));
+	}
+
+	uint32 element_size() const override
+	{
+		return sizeof(std::declval<T>());
+	}
+
+	/**
+	 * @brief get the number of chunks of the array
+	 * @return the number of chunks
+	 */
+	uint32 nb_chunks() const override
+	{
+		return uint32(table_data_.size());
+	}
+
+	/**
+	 * @brief get the capacity of the array
+	 * @return number of allocated lines
+	 */
+	uint32 capacity() const override
+	{
+		return uint32(table_data_.size())*CHUNK_SIZE;
+	}
+
+	/**
+	 * @brief return a vector with pointers to all chunks
+	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
+	 * @return the vector of pointers
+	 */
+	std::vector<const void*> chunks_pointers(uint32& byte_chunk_size) const override
+	{
+		std::vector<const void*> addr;
+		byte_chunk_size = CHUNK_SIZE * sizeof(T);
+
+		addr.reserve(table_data_.size());
+
+		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
+			addr.push_back(*it);
+
+		return addr;
+	}
+
 	/**
 	 * @brief create a ChunkArray<CHUNK_SIZE,T>
 	 * @return generic pointer
@@ -98,26 +150,18 @@ public:
 		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
-	bool swap(Inherit* cag) override
+	bool swap_data(Inherit* cag) override
 	{
 		Self* ca = dynamic_cast<Self*>(cag);
 		if (!ca)
 		{
-			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			cgogn_log_warning("swap_data") << "Trying to swap attribute of different types";
 			return false;
 		}
 		this->external_refs_.swap(ca->external_refs_);
-		this->name_.swap(ca->name_);
-		this->type_name_.swap(ca->type_name_);
 		table_data_.swap(ca->table_data_);
-
 		return true;
 	}
-
-//	bool is_boolean_array() const override
-//	{
-//		return false;
-//	}
 
 	/**
 	 * @brief add a chunk (T[CHUNK_SIZE])
@@ -147,24 +191,6 @@ public:
 	}
 
 	/**
-	 * @brief get the number of chunks of the array
-	 * @return the number of chunks
-	 */
-	uint32 nb_chunks() const override
-	{
-		return uint32(table_data_.size());
-	}
-
-	/**
-	 * @brief get the capacity of the array
-	 * @return number of allocated lines
-	 */
-	uint32 capacity() const override
-	{
-		return uint32(table_data_.size())*CHUNK_SIZE;
-	}
-
-	/**
 	 * @brief clear the array
 	 */
 	void clear() override
@@ -172,25 +198,6 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
-	}
-
-	/**
-	 * @brief fill a vector with pointers to all chunks
-	 * @param addr vector to fill
-	 * @param byte_chunk_size filled with CHUNK_SIZE*sizeof(T)
-	 * @return addr.size()
-	 */
-	std::vector<const void*> chunks_pointers(uint32& byte_chunk_size) const override
-	{
-		std::vector<const void*> addr;
-		byte_chunk_size = CHUNK_SIZE * sizeof(T);
-
-		addr.reserve(table_data_.size());
-
-		for (typename std::vector<T*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
-			addr.push_back(*it);
-
-		return addr;
 	}
 
 	/**
@@ -392,6 +399,27 @@ public:
 		return true;
 	}
 
+	void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
+	{
+		switch (precision)
+		{
+			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
+			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
+			default:  serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
+		}
+	}
+
+	void import_element(uint32 idx, std::istream& in) override
+	{
+		serialization::parse(in, this->operator [](idx));
+	}
+
+	const void* element_ptr(uint32 idx) const override
+	{
+		return &(this->operator[](idx));
+	}
+
 	/**
 	 * @brief ref operator[]
 	 * @param i index of element to access
@@ -432,44 +460,6 @@ public:
 			for(uint32 i = 0; i < CHUNK_SIZE; ++i)
 				*chunk++ = v;
 		}
-	}
-
-	virtual std::string nested_type_name() const override
-	{
-		return name_of_type(nested_type<T>());
-	}
-
-	virtual uint32 nb_components() const override
-	{
-		// Warning : the line 0 might be unused.
-		return cgogn::nb_components(this->operator[](0u));
-	}
-
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision) const override
-	{
-		switch (precision)
-		{
-			case 1ul: serialization::ostream_writer<T, 1ul>(o, this->operator[](idx), binary, little_endian); break;
-			case 2ul: serialization::ostream_writer<T, 2ul>(o, this->operator[](idx), binary, little_endian); break;
-			case 4ul: serialization::ostream_writer<T, 4ul>(o, this->operator[](idx), binary, little_endian); break;
-			default:  serialization::ostream_writer<T, 8ul>(o, this->operator[](idx), binary, little_endian); break;
-		}
-	}
-
-	virtual void import_element(uint32 idx, std::istream& in) override
-	{
-		serialization::parse(in, this->operator [](idx));
-	}
-
-
-	virtual const void* element_ptr(uint32 idx) const override
-	{
-		return &(this->operator[](idx));
-	}
-
-	virtual uint32 element_size() const override
-	{
-		return sizeof(std::declval<T>());
 	}
 };
 
@@ -514,6 +504,57 @@ public:
 			delete[] chunk;
 	}
 
+	std::string nested_type_name() const override
+	{
+		return name_of_type(bool());
+	}
+
+	uint32 nb_components() const override
+	{
+		return 1u;
+	}
+
+	uint32 element_size() const override
+	{
+		return UINT32_MAX;
+	}
+
+	/**
+	 * @brief get the number of chunks of the array
+	 * @return the number of chunks
+	 */
+	uint32 nb_chunks() const override
+	{
+		return uint32(table_data_.size());
+	}
+
+	/**
+	 * @brief get the capacity of the array
+	 * @return number of allocated lines
+	 */
+	uint32 capacity() const override
+	{
+		return uint32(table_data_.size())*CHUNK_SIZE/BOOLS_PER_INT;
+	}
+
+	/**
+	 * @brief return a vector with pointers to all chunks
+	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
+	 * @return the vector of pointers
+	 */
+	inline std::vector<const void*> chunks_pointers(uint32& byte_block_size) const override
+	{
+		std::vector<const void*> addr;
+		byte_block_size = CHUNK_SIZE / 8u;
+
+		addr.reserve(table_data_.size());
+
+		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
+			addr.push_back(*it);
+
+		return addr;
+	}
+
 	/**
 	 * @brief create a ChunkArray<CHUNK_SIZE,T>
 	 * @return generic pointer
@@ -525,17 +566,15 @@ public:
 		return std::unique_ptr<Inherit>(new Self(clone_name));
 	}
 
-	bool swap(Inherit* cag) override
+	bool swap_data(Inherit* cag) override
 	{
 		Self* ca = dynamic_cast<Self*>(cag);
 		if (!ca)
 		{
-			cgogn_log_warning("swap") << "Warning: trying to swap attribute of different type";
+			cgogn_log_warning("swap_data") << "Trying to swap attribute of different types";
 			return false;
 		}
 		this->external_refs_.swap(ca->external_refs_);
-		this->name_.swap(ca->name_);
-		this->type_name_.swap(ca->type_name_);
 		table_data_.swap(ca->table_data_);
 		return true;
 	}
@@ -569,24 +608,6 @@ public:
 	}
 
 	/**
-	 * @brief get the number of chunks of the array
-	 * @return the number of chunks
-	 */
-	uint32 nb_chunks() const override
-	{
-		return uint32(table_data_.size());
-	}
-
-	/**
-	 * @brief get the capacity of the array
-	 * @return number of allocated lines
-	 */
-	uint32 capacity() const override
-	{
-		return uint32(table_data_.size())*CHUNK_SIZE/BOOLS_PER_INT;
-	}
-
-	/**
 	 * @brief clear the array
 	 */
 	void clear() override
@@ -594,25 +615,6 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
-	}
-
-	/**
-	 * @brief fill a vector with pointers to all chunks
-	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
-	 * @return addr.size()
-	 */
-	inline std::vector<const void*> chunks_pointers(uint32& byte_block_size) const override
-	{
-		std::vector<const void*> addr;
-		byte_block_size = CHUNK_SIZE / 8u;
-
-		addr.reserve(table_data_.size());
-
-		for (typename std::vector<uint32*>::const_iterator it = table_data_.begin(); it != table_data_.end(); ++it)
-			addr.push_back(*it);
-
-		return addr;
 	}
 
 	/**
@@ -726,6 +728,28 @@ public:
 		return true;
 	}
 
+	void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
+	{
+		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
+	}
+
+	void import_element(uint32 idx, std::istream& in) override
+	{
+		std::string val;
+		in >> val;
+		val = to_lower(val);
+		const bool b = (val == "true") || (std::stoi(val) == 1);
+		if (b)
+			set_true(idx);
+		else
+			set_false(idx);
+	}
+
+	const void* element_ptr(uint32) const override
+	{
+		return nullptr; // shall not be used with ChunkArrayBool
+	}
+
 	/**
 	 * @brief operator[]
 	 * @param i index of element to access
@@ -813,43 +837,6 @@ public:
 //				*ptr++ = 0xffffffff;
 //		}
 //	}
-
-	virtual std::string nested_type_name() const override
-	{
-		return name_of_type(bool());
-	}
-
-	virtual uint32 nb_components() const override
-	{
-		return 1u;
-	}
-
-	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t /*precision*/) const override
-	{
-		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
-	}
-
-	virtual void import_element(uint32 idx, std::istream& in) override
-	{
-		std::string val;
-		in >> val;
-		val = to_lower(val);
-		const bool b = (val == "true") || (std::stoi(val) == 1);
-		if (b)
-			set_true(idx);
-		else
-			set_false(idx);
-	}
-
-	virtual const void* element_ptr(uint32) const override
-	{
-		return nullptr; // shall not be used with ChunkArrayBool
-	}
-
-	virtual uint32 element_size() const override
-	{
-		return UINT32_MAX;
-	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
