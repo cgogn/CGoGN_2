@@ -1957,7 +1957,7 @@ public:
 	template <typename FUNC>
 	inline void foreach_incident_edge(ConnectedComponent cc, const FUNC& func) const
 	{
-		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
+		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
 		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 		{
