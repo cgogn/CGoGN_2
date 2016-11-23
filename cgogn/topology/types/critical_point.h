@@ -47,30 +47,29 @@ struct CriticalPoint
 	};
 
 	CriticalPoint::Type v_;
-	unsigned int n_;
+	uint32 n_;
 
 	inline CriticalPoint(CriticalPoint::Type v): v_(v), n_(0)
 	{}
 
 	inline CriticalPoint(CriticalPoint::Type v, uint32 n) : v_(v), n_(n)
 	{}
-
-	inline friend std::ostream& operator<<(std::ostream& o, CriticalPoint cp)
-	{
-		o << cp.n_ << ' ' << uint32(cp.v_);
-		return o;
-	}
-
-	inline friend std::istream& operator>>(std::istream& is, CriticalPoint cp)
-	{
-		is >> cp.n_;
-		uint32 crit_point_type;
-		is >> crit_point_type;
-		cp.v_ = CriticalPoint::Type(crit_point_type);
-		return is;
-	}
-
 };
+
+inline std::ostream& operator<<(std::ostream& o, CriticalPoint cp)
+{
+	o << cp.n_ << ' ' << uint32(cp.v_);
+	return o;
+}
+
+inline std::istream& operator>>(std::istream& is, CriticalPoint cp)
+{
+	is >> cp.n_;
+	uint32 crit_point_type;
+	is >> crit_point_type;
+	cp.v_ = CriticalPoint::Type(crit_point_type);
+	return is;
+}
 
 } // namespace topology
 

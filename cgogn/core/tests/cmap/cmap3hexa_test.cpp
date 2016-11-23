@@ -69,7 +69,7 @@ TEST_F(CMap3HexaTest, topo_1)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart p1 = mbuild.add_prism_topo_fp(4u);
+	mbuild.add_prism_topo_fp(4u);
 
 	mbuild.close_map();
 

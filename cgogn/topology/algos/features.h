@@ -65,9 +65,9 @@ public:
 				   const EdgeAttribute<Scalar>& weight) :
 		map_(map),
 		cache_(cache),
-		intern_edge_weight_(false),
 		edge_weight_(weight),
-		distance_field_(map, cache, weight)
+		distance_field_(map, cache, weight),
+		intern_edge_weight_(false)
 	{
 		distance_to_A_ = map.template add_attribute<Scalar, Vertex>("__feature_A__");
 		distance_to_B_ = map.template add_attribute<Scalar, Vertex>("__feature_B__");
@@ -78,8 +78,8 @@ public:
 				   const AdjacencyCache<MAP>& cache) :
 		map_(map),
 		cache_(cache),
-		intern_edge_weight_(true),
-		distance_field_(map, cache)
+		distance_field_(map, cache),
+		intern_edge_weight_(true)
 	{
 		edge_weight_ = distance_field_.edge_weight();
 		distance_to_A_ = map.template add_attribute<Scalar, Vertex>("__distance_to_A__");
@@ -152,7 +152,7 @@ public:
 		// Get the maxima in the scalar field distance_to_A_
 		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
-		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
+		std::vector<Vertex> maxima_A = scalar_field_A.maxima();
 
 		// Copy the maxima in the features set
 				for (Vertex v: maxima_A)
@@ -188,7 +188,7 @@ public:
 		distance_field_.distance_to_boundary(distance_to_A_);
 		ScalarField scalar_field(map_, cache_, distance_to_A_);
 		scalar_field.critical_vertex_analysis();
-		std::vector<Vertex> maxima = scalar_field.get_maxima();
+		std::vector<Vertex> maxima = scalar_field.maxima();
 
 		// Search the most central vertices in these maxima,
 		// i.e. whose distance field has a minimal diameter
@@ -297,12 +297,12 @@ public:
 		// Get the maxima in the scalar field distance_to_A_
 		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
-		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
+		std::vector<Vertex> maxima_A = scalar_field_A.maxima();
 
 		// Get the maxima in the scalar field distance_to_B_
 		ScalarField scalar_field_B(map_, cache_, distance_to_B_);
 		scalar_field_B.critical_vertex_analysis();
-		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
+		std::vector<Vertex> maxima_B = scalar_field_B.maxima();
 
 		// Set the criteria to filter out near features
 		Scalar filter_distance = features_proximity * max_distance;

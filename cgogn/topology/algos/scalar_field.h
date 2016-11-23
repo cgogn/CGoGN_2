@@ -70,7 +70,10 @@ class ScalarField
 	using VolumeMarker = typename MAP::template CellMarker<Volume::ORBIT>;
 
 public:
+	using ContourPoint = std::pair<Dart, Scalar>;
+	using Contour = std::vector<ContourPoint>;
 
+public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ScalarField);
 
 	ScalarField(MAP& map,
@@ -79,7 +82,8 @@ public:
 		map_(map),
 		cache_(cache),
 		scalar_field_(scalar_field),
-		vertex_type_computed_(false)
+		vertex_type_computed_(false),
+		epsilon_(0.000001)
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
@@ -91,19 +95,74 @@ public:
 		map_.remove_attribute(vertex_type_);
 	}
 
-	const std::vector<Vertex>& get_maxima()
+	/// \brief The set of maxima vertices of the scalar field
+	const std::vector<Vertex>& maxima()
 	{
 		return maxima_;
 	}
 
-	const std::vector<Vertex>& get_minima()
+	/// \brief The set of minima vertices of the scalar field
+	const std::vector<Vertex>& minima()
 	{
 		return minima_;
 	}
 
-	const std::vector<Vertex>& get_saddles()
+	/// \brief The set of saddles vertices of the scalar field
+	const std::vector<Vertex>& saddles()
 	{
 		return saddles_;
+	}
+
+	/// \brief The minimum value of the scalar field
+	inline const Scalar min_value() const
+	{
+		return min_value_;
+	}
+
+	/// \brief The maximum value of the scalar field
+	inline const Scalar max_value() const
+	{
+		return max_value_;
+	}
+
+	/// \brief The number of scalars in the field (vertices)
+	inline int number_of_scalars()
+	{
+		return scalar_field_.size();
+	}
+
+	/// \brief Get the scalar value of a vertex
+	inline Scalar value(const Vertex v)
+	{
+		return scalar_field_[v];
+	}
+
+	/// \brief Change the scalar value of a vertex
+	inline void value(const Vertex v, Scalar s)
+	{
+		scalar_field_[v] = s;
+
+		min_value_ = std::min(min_value_, s);
+		max_value_ = std::max(max_value_, s);
+	}
+
+	/// \brief Get the normalized scalar value of a
+	/// vertex with respect to min/max values
+	inline Scalar normalized_value(const Vertex v)
+	{
+		return (scalar_field_[v] - min_value_) / (max_value_ - min_value_);
+	}
+
+	/// \brief Get the critical point type of this vertex
+	inline CriticalPoint::Type type(const Vertex v)
+	{
+		return vertex_type_[v];
+	}
+
+	/// \brief Get the index of the vertex
+	inline uint32 index(const Vertex v)
+	{
+		return map_.embedding(v);
 	}
 
 private:
@@ -124,6 +183,8 @@ private:
 		Scalar previous;
 		int up = 0;
 		int down = 0;
+		int boundary_up = 0;
+		int boundary_down = 0;
 
 		// Find a vertex whose scalar field value is distinct from the center
 		do
@@ -144,9 +205,18 @@ private:
 		{
 			Scalar current = scalar_field_[Vertex(map_.phi2(next))];
 			if (current < center && previous > center)
-				++down;
+				down++;
 			else if (current > center && previous < center)
-				++up;
+				up++;
+
+			///TODO verify the boundary case
+			if(map_.is_incident_to_boundary(Edge(next)))
+			{
+				if(current < center)
+					boundary_up++;
+				else if(current > center)
+					boundary_down++;
+			}
 			// Skip the vertex whose value is equal to the center
 			// (that alter the detection of variations)
 			if (current != center) previous = current;
@@ -162,13 +232,20 @@ private:
 		if (up == 0 && down == 0 && previous < center)
 			return CriticalPoint(CriticalPoint::Type::MAXIMUM);
 
+		///TODO verify the boundary case
+		if(map_.is_incident_to_boundary(v))
+		{
+			if(boundary_down != boundary_up)
+				return CriticalPoint(CriticalPoint::SADDLE, up + boundary_up + boundary_down + down - 1);
+		}
+
 		// A unique varation in both direction
 		if (up == 1 && down == 1)
 			return CriticalPoint(CriticalPoint::Type::REGULAR);
 
 		// More than one varation in both direction
 		if (up == down)
-			return CriticalPoint(CriticalPoint::Type::SADDLE, up);
+			return CriticalPoint(CriticalPoint::Type::SADDLE, up-1);
 
 		cgogn_log_info("critical_vertex_analysis<dimension 2>") << "UNKNOW Critical Type";
 		return CriticalPoint(CriticalPoint::Type::UNKNOWN);
@@ -335,9 +412,7 @@ private:
 
 public:
 
-	/**
-	 * @brief Find and analyze all critical points of the scalar field
-	 */
+	/// \brief Find and analyze all critical points of the scalar field
 	void critical_vertex_analysis()
 	{
 		maxima_.clear();
@@ -358,6 +433,151 @@ public:
 				saddles_.push_back(v);
 		});
 		vertex_type_computed_ = true;
+	}
+
+	/// \brief edge iso contour normalized
+	/// \param[in] e The edge
+	/// \param[in] iso_value
+	/// \return contour_time
+	inline Scalar iso_contour_time(const Edge e, const Scalar& iso_value) const
+	{
+		std::pair<Vertex,Vertex> v = map_.vertices(e);
+
+		Scalar div = std::fabs(scalar_field_[v.first] - scalar_field_[v.second]);
+		if(div < epsilon_) div = epsilon_;
+
+		return std::fabs(iso_value - scalar_field_[v.first]) / div; //todo ou v.second ?
+	}
+
+	/// \brief Computes the iso contour starting from a vertex
+	inline void iso_contour(const Vertex seed, Contour& c)
+	{
+		//find an edge on the contour
+		map_.foreach_incident_edge(seed, [&](Edge e) -> bool
+		{
+			if(is_on_iso_contour(e, scalar_field_[seed]))
+			{
+				iso_contour(Face(e.dart), scalar_field_[seed], c);
+				return false;
+			}
+			//TODO discuss about assumption
+			//Assumption on the darts used in the foreach
+			else if(is_on_iso_contour(Edge(map_.phi1(e.dart)), scalar_field_[seed]))
+			{
+				iso_contour(Face(e.dart), scalar_field_[seed], c);
+				return false;
+			}
+
+			return true;
+		});
+	}
+
+	/// \brief Computes the iso contour starting from a face and an iso value
+	inline void iso_contour(const Face f, const Scalar iso_value, Contour& c)
+	{
+
+		FaceMarker visited_triangles(map_);
+
+		c.clear();
+		Face next_triangle = f;
+
+		do
+		{
+			visited_triangles.mark(next_triangle);
+
+			//
+			map_.foreach_incident_edge(next_triangle, [&](Edge e)
+			{
+				if(is_on_iso_contour(e, iso_value))
+				{
+					ContourPoint p;
+					p.first = e.dart;
+					p.second = iso_contour_time(e, iso_value);
+					c.push_back(p);
+
+					next_triangle = Face(map_.phi2(e.dart));
+				}
+			});
+		}
+		while(!map_.is_incident_to_boundary(Edge(next_triangle.dart)) && !visited_triangles.is_marked(next_triangle));
+
+		// we hit a boundary, we need to restart from the start triangle f...
+		// then revert other segment and concat the two...
+		if(map_.is_incident_to_boundary(Edge(next_triangle.dart)))
+		{
+			Contour other_part;
+
+			next_triangle = f;
+
+			//retrieve the starting edge
+			//and find the next triangle in the other direction
+			map_.foreach_incident_edge(next_triangle, [&](Edge e)
+			{
+				if(is_on_iso_contour(e, iso_value) && !visited_triangles.is_marked(Face(map_.phi2(e.dart))))
+				{
+					ContourPoint p;
+					p.first = e.dart;
+					p.second = iso_contour_time(e, iso_value);
+					other_part.push_back(p);
+					next_triangle = Face(map_.phi2(e.dart));
+				}
+			});
+
+			//if not another boundary
+			if(!map_.is_incident_to_boundary(Edge(next_triangle.dart)))
+			{
+				do
+				{
+					visited_triangles.mark(next_triangle);
+
+					//
+					map_.foreach_incident_edge(next_triangle, [&](Edge e)
+					{
+						if(is_on_iso_contour(e, iso_value))
+						{
+							ContourPoint p;
+							p.first = e.dart;
+							p.second = iso_contour_time(e, iso_value);
+							other_part.push_back(p);
+
+							next_triangle = Face(map_.phi2(e.dart));
+						}
+					});
+				}
+				while(!map_.is_incident_to_boundary(Edge(next_triangle.dart)) && !visited_triangles.is_marked(next_triangle));
+			}
+
+			// now let's fill the final structure from one boundary to the other
+			std::reverse(c.begin(), c.end());
+			c.insert(
+				 c.end(),
+				 std::make_move_iterator(other_part.begin()),
+				 std::make_move_iterator(other_part.end())
+			   );
+		}
+	}
+
+	/// \brief Test if the Edge e is on the iso contour
+	inline bool is_on_iso_contour(const Edge e, const Scalar& iso_value) const
+	{
+		std::pair<Vertex,Vertex> vertices = map_.vertices(e);
+
+		return (((scalar_field_[vertices.first] < iso_value) && (scalar_field_[vertices.second] >= iso_value))
+				|| ((scalar_field_[vertices.second] < iso_value) && (scalar_field_[vertices.first] >= iso_value)));
+	}
+
+	/// \brief Returns true if Vertex v0 is lower than Vertex v1, false otherwise
+	inline bool is_sos_lower_than(const Vertex v0, const Vertex v1)
+	{
+		return ((scalar_field_[v0] < scalar_field_[v1]) ||
+				((scalar_field_[v0] == scalar_field_[v1]) && (index(v0) < index(v1))));
+	}
+
+	/// \brief Returns true if Vertex v0 is higher than Vertex v1, false otherwise
+	inline bool is_sos_higher_than(const Vertex v0, const Vertex v1)
+	{
+		return ((scalar_field_[v0] > scalar_field_[v1]) ||
+				((scalar_field_[v0] == scalar_field_[v1]) && (index(v0) > index(v1))));
 	}
 
 private:
@@ -797,7 +1017,7 @@ public:
 				boundary_vertex.mark(v);
 				boundary.push_back(v);
 			}
-		};
+		}
 		std::cout << std::endl;
 		map_.remove_attribute(manifold_id);
 	}
@@ -882,6 +1102,11 @@ private:
 	std::vector<Vertex> maxima_;
 	std::vector<Vertex> minima_;
 	std::vector<Vertex> saddles_;
+
+	Scalar min_value_;
+	Scalar max_value_;
+
+	Scalar epsilon_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))

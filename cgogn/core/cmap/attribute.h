@@ -110,9 +110,9 @@ public:
 		return m == map_;
 	}
 
-	virtual const std::string&	name() const = 0;
-	virtual const std::string&	type_name() const = 0;
-	virtual bool				is_valid() const = 0;
+	virtual const std::string& name() const = 0;
+	virtual const std::string& type_name() const = 0;
+	virtual bool               is_valid() const = 0;
 };
 
 /**
@@ -404,6 +404,8 @@ public:
 	using TChunkArray = typename Inherit::TChunkArray;
 	using Inherit::operator[];
 
+	static const Orbit orb_ = ORBIT;
+
 	/**
 	 * \brief Default constructor
 	 *
@@ -483,6 +485,11 @@ public:
 	inline Orbit orbit() const
 	{
 		return ORBIT;
+	}
+
+	inline uint32 size() const
+	{
+		return this->chunk_array_cont_->size();
 	}
 };
 

@@ -142,7 +142,6 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
-
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
@@ -279,9 +278,7 @@ public:
 	inline bool remove_attribute(const Attribute<T, ORBIT>& ah)
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		const ChunkArray<T>* ca = ah.data();
-		return this->attributes_[ORBIT].remove_chunk_array(ca);
+		return this->attributes_[ORBIT].remove_chunk_array(ah.data());
 	}
 
 	/**
@@ -349,7 +346,7 @@ public:
 		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
 		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
 
-		this->attributes_[ORBIT].swap_data(ah1.data(), ah2.data());
+		this->attributes_[ORBIT].swap_chunk_arrays(ah1.data(), ah2.data());
 	}
 
 	template <typename T, Orbit ORBIT>
@@ -360,7 +357,7 @@ public:
 		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
 		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
 
-		this->attributes_[ORBIT].copy_data(dest.data(), src.data());
+		this->attributes_[ORBIT].copy_chunk_array_data(dest.data(), src.data());
 	}
 
 protected:
@@ -648,7 +645,7 @@ public:
 			return this->attributes_[ORBIT].size();
 		else
 		{
-			uint32 result = 0;
+			uint32 result = 0u;
 			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
@@ -657,8 +654,27 @@ public:
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
-		uint32 result = 0;
+		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
+	}
+
+	/**
+	 * \brief return the number of boundaries of the map
+	 */
+	uint32 nb_boundaries() const
+	{
+		uint32 result = 0u;
+		DartMarker m(*to_concrete());
+		foreach_dart([&m, &result, this] (Dart d)
+		{
+			if (!m.is_marked(d))
+			{
+				typename ConcreteMap::Boundary c(d);
+				m.mark_orbit(c);
+				if (this->is_boundary_cell(c)) ++result;
+			}
+		});
 		return result;
 	}
 
@@ -839,11 +855,12 @@ public:
 		futures[1].reserve(nb_threads_pool);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+		const ConcreteMap* cmap = to_concrete();
 
 		uint32 i = 0u; // buffer id (0/1)
 		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		Dart it = Dart(this->topology_.begin());
-		Dart last = Dart(this->topology_.end());
+		Dart it = cmap->all_begin();
+		Dart last = cmap->all_end();
 
 		while (it != last)
 		{
@@ -854,7 +871,7 @@ public:
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 			{
 				darts.push_back(it);
-				this->topology_.next(it.index);
+				cmap->all_next(it);
 			}
 
 			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
@@ -889,7 +906,6 @@ public:
 
 	}
 
-
 	/**
 	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
 	 * @tparam FUNC type of the callable
@@ -900,7 +916,8 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
+		const ConcreteMap* cmap = to_concrete();
+		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
 		{
 			if (!internal::void_to_true_binder(f, it))
 				break;
@@ -934,6 +951,25 @@ protected:
 	}
 
 	inline Dart end() const
+	{
+		return Dart(this->topology_.end());
+	}
+
+	/*!
+	 * \Brief Methods to iterate over darts.
+	 * These functions browses over all darts.
+	 */
+	inline Dart all_begin() const
+	{
+		return Dart(this->topology_.begin());
+	}
+
+	inline void all_next(Dart& d) const
+	{
+		this->topology_.next(d.index);
+	}
+
+	inline Dart all_end() const
 	{
 		return Dart(this->topology_.end());
 	}

@@ -1,35 +1,36 @@
 include(cmake/utilities.cmake)
+include(cmake/CheckSIMDFeatures.cmake)
 
 # Profiler compilation flags
-if(CGOGN_USE_GPROF)
+if(CGOGN_WITH_GPROF)
 	message(STATUS "Building for code profiling")
 	add_flags(CMAKE_CXX_FLAGS -pg -DPROFILER)
 	add_flags(CMAKE_C_FLAGS -pg -DPROFILER)
-endif(CGOGN_USE_GPROF)
+endif(CGOGN_WITH_GPROF)
 
 # Code coverage compilation flags
-if(CGOGN_USE_GCOV)
+if(CGOGN_WITH_GCOV)
 	message(STATUS "Building for coverage analysis")
 	add_flags(CMAKE_CXX_FLAGS --coverage)
 	add_flags(CMAKE_C_FLAGS --coverage)
-endif(CGOGN_USE_GCOV)
+endif(CGOGN_WITH_GCOV)
 
 # Compilation flags for Google's AddressSanitizer
 # These flags can only be specified for dynamic builds
-if(CGOGN_USE_ASAN)
+if(CGOGN_WITH_ASAN)
 	message(STATUS "Building with AddressSanitizer (debug only)")
 	add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
 	add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
-endif(CGOGN_USE_ASAN)
+endif(CGOGN_WITH_ASAN)
 #TODO Use native GCC stack smash Protection and buffer overflow detection in debug when no asan ??
 
 # Compilation flags for Google's ThreadSanitizer
 # Does not work for the moment: cannot figure out how to link with library libtsan
-if(CGOGN_USE_TSAN)
+if(CGOGN_WITH_TSAN)
 	message(STATUS "Building with ThreadSanitizer (debug only)")
 	add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=thread)
 	add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=thread)
-endif(CGOGN_USE_TSAN)
+endif(CGOGN_WITH_TSAN)
 
 if (NOT MSVC)
 # This is the correcty way to activate threads. It should be prefered to "-lpthread"
@@ -111,9 +112,12 @@ if (NOT MSVC)
 		endif(${CGOGN_USE_GLIBCXX_DEBUG})
 	endif(${CGOGN_USE_PARALLEL_GLIBCXX})
 
-	# Enable SSE3 instruction set
-	add_flags(CMAKE_CXX_FLAGS "-msse3")
-	add_flags(CMAKE_C_FLAGS "-msse3")
+
+	CGOGN_CHECK_FOR_SSE()
+	add_flags(CMAKE_CXX_FLAGS ${CGOGN_SSE_FLAGS})
+	add_flags(CMAKE_C_FLAGS ${CGOGN_SSE_FLAGS})
+	add_definitions(${CGOGN_SSE_DEFINITIONS})
+
 
 	# Always generate position independant code
 	# (to allow linking with DLLs)

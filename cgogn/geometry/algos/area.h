@@ -50,7 +50,7 @@ inline typename vector_traits<VEC3>::Scalar convex_area(
 	using Edge = typename MAP::Edge;
 
 	if (map.codegree(f) == 3)
-		return area<VEC3>(position[Vertex(f.dart)], position[Vertex(map.phi1(f.dart))], position[Vertex(map.phi_1(f.dart))]);
+		return area(position[Vertex(f.dart)], position[Vertex(map.phi1(f.dart))], position[Vertex(map.phi_1(f.dart))]);
 	else
 	{
 		Scalar face_area{0};
