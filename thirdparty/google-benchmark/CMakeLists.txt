@@ -28,10 +28,15 @@ include(CXXFeatureCheck)
 
 # Try and enable C++11. Don't use C++14 because it doesn't work in some
 # configurations.
-add_cxx_compiler_flag(-std=c++11)
-if (NOT HAVE_CXX_FLAG_STD_CXX11)
-  add_cxx_compiler_flag(-std=c++0x)
-endif()
+if(NOT MSVC)
+  if (CGOGN_CPP_STD STREQUAL "11")
+    add_cxx_compiler_flag(-std=c++11)
+  elseif(CGOGN_CPP_STD STREQUAL "14")
+    add_cxx_compiler_flag(-std=c++14)
+ else(CGOGN_CPP_STD STREQUAL "11")
+    add_cxx_compiler_flag(-std=c++17)
+  endif(CGOGN_CPP_STD STREQUAL "11")
+endif(NOT MSVC)
 
 # Turn compiler warnings up to 11
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
