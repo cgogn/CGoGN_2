@@ -81,6 +81,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
+	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
+
 protected:
 
 	ChunkArray<Dart>* phi2_;

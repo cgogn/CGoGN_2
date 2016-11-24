@@ -58,7 +58,7 @@ public:
 	using Face    = Cell<Orbit::PHI1_PHI3>;
 	using Volume  = Cell<Orbit::PHI1_PHI2>;
 
-	using Boundary = Face;
+	using Boundary = Volume;
 	using ConnectedComponent = Cell<Orbit::PHI1_PHI2_PHI3>;
 
 	template <typename T>
@@ -83,6 +83,8 @@ public:
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+
+	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
 

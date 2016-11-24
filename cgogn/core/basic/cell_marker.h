@@ -70,7 +70,8 @@ public:
 	{
 		if (MapBaseData::is_alive(&map_))
 		{
-			mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
+			if (is_valid())
+				mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 		}
 	}

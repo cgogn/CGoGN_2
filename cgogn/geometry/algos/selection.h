@@ -25,6 +25,7 @@
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_H_
 
 #include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/area.h>
 #include <cgogn/geometry/functions/inclusion.h>
@@ -88,7 +89,7 @@ public:
 		this->border_.reserve(256u);
 	}
 
-	virtual Scalar area(const MapBaseData::Attribute_T<VEC3>& position) const = 0;
+	virtual Scalar area(const Attribute_T<VEC3>& position) const = 0;
 
 protected:
 
@@ -121,7 +122,7 @@ public:
 	}
 
 	virtual Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const = 0;
-	virtual Scalar area(const MapBaseData::Attribute_T<VEC3>& position) const override
+	virtual Scalar area(const Attribute_T<VEC3>& position) const override
 	{
 		const typename MAP::template VertexAttribute<VEC3>* pos_att = dynamic_cast<const typename MAP::template VertexAttribute<VEC3>*>(&position);
 		if (pos_att && pos_att->is_valid())

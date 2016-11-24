@@ -141,7 +141,7 @@ typename std::enable_if<std::is_same<typename std::result_of<F(uint32, Args...)>
 	auto p = std::make_shared<std::promise<void>>();
 	std::future<void> res = p->get_future();
 
-	std::function<void(uint32)> task = [&, p](uint32 i) -> void
+	std::function<void(uint32)> task = [&, f, p](uint32 i) -> void
 	{
 		f(i, std::forward<Args>(args)...);
 		p->set_value();
@@ -149,7 +149,7 @@ typename std::enable_if<std::is_same<typename std::result_of<F(uint32, Args...)>
 
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-			// don't allow enqueueing after stopping the pool
+		// don't allow enqueueing after stopping the pool
 		if (stop_)
 		{
 			cgogn_log_error("ThreadPool::enqueue") << "Enqueue on stopped ThreadPool.";
@@ -162,7 +162,6 @@ typename std::enable_if<std::is_same<typename std::result_of<F(uint32, Args...)>
 	condition_.notify_one();
 	return res;
 }
-
 
 } // namespace cgogn
 

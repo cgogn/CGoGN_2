@@ -273,6 +273,7 @@ inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::ty
 }
 
 } // namespace internal
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_TYPE_TRAITS_H_

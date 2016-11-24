@@ -285,7 +285,7 @@ public:
 		const typename MAP::template VertexAttribute<VEC3>* position
 	)
 	{
-		init_primitives<VEC3>(m, CellFilters(), prim, position);
+		init_primitives<VEC3>(m, AllCellsFilter(), prim, position);
 	}
 
 	template <typename MAP, typename MASK>
@@ -336,7 +336,7 @@ public:
 		DrawingType prim
 	)
 	{
-		init_primitives(m, CellFilters(), prim);
+		init_primitives(m, AllCellsFilter(), prim);
 	}
 
 	/**

@@ -66,7 +66,7 @@ void filter_average(
 	typename MAP::template VertexAttribute<T>& attribute_out
 )
 {
-	filter_average<T>(map, CellFilters(), attribute_in, attribute_out);
+	filter_average<T>(map, AllCellsFilter(), attribute_in, attribute_out);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -127,7 +127,7 @@ void filter_bilateral(
 	const typename MAP::template VertexAttribute<VEC3>& normal
 )
 {
-	filter_bilateral<VEC3>(map, CellFilters(), position_in, position_out, normal);
+	filter_bilateral<VEC3>(map, AllCellsFilter(), position_in, position_out, normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -183,7 +183,7 @@ void filter_taubin(
 	typename MAP::template VertexAttribute<VEC3>& position_tmp
 )
 {
-	filter_taubin<VEC3>(map, CellFilters(), position, position_tmp);
+	filter_taubin<VEC3>(map, AllCellsFilter(), position, position_tmp);
 }
 
 } // namespace geometry
