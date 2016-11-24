@@ -72,10 +72,30 @@ public:
 	 */
 	virtual ~ChunkArrayGen()
 	{
+		invalidate_external_refs();
+	}
+
+	void invalidate_external_refs()
+	{
 		for (auto ref : external_refs_)
 		{
 			*ref = nullptr;
 		}
+	}
+
+	void add_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
+		external_refs_.push_back(ref);
+	}
+
+	void remove_external_ref(ChunkArrayGen** ref)
+	{
+		cgogn_message_assert(*ref == this, "ChunkArrayGen remove_external_ref on other ChunkArrayGen");
+		auto it = std::find(external_refs_.begin(), external_refs_.end(), ref);
+		cgogn_message_assert(it != external_refs_.end(), "ChunkArrayGen external ref not found");
+		std::swap(*it, external_refs_.back());
+		external_refs_.pop_back();
 	}
 
 	inline const std::string& name() const { return name_; }
@@ -93,42 +113,6 @@ public:
 	 */
 	virtual uint32 element_size() const = 0;
 
-	void add_external_ref(ChunkArrayGen** ref)
-	{
-		cgogn_message_assert(*ref == this, "ChunkArrayGen add_external_ref on other ChunkArrayGen");
-		external_refs_.push_back(ref);
-	}
-
-	void remove_external_ref(ChunkArrayGen** ref)
-	{
-		cgogn_message_assert(*ref == this, "ChunkArrayGen remove_external_ref on other ChunkArrayGen");
-		auto it = std::find(external_refs_.begin(), external_refs_.end(), ref);
-		cgogn_message_assert(it != external_refs_.end(), "ChunkArrayGen external ref not found");
-		std::swap(*it, external_refs_.back());
-		external_refs_.pop_back();
-	}
-
-	/**
-	 * @brief create a ChunkArray object without knowing type
-	 * @return generic pointer
-	 */
-	virtual std::unique_ptr<Self> clone(const std::string& clone_name) const = 0;
-
-	virtual bool swap(Self*) = 0;
-
-//	virtual bool is_boolean_array() const = 0;
-
-	/**
-	 * @brief add a chunk (T[CHUNK_SIZE])
-	 */
-	virtual void add_chunk() = 0;
-
-	/**
-	 * @brief set number of chunks
-	 * @param nbc number of chunks
-	 */
-	virtual void set_nb_chunks(uint32 nbb) = 0;
-
 	/**
 	 * @brief get the number of chunks of the array
 	 * @return the number of chunks
@@ -142,17 +126,35 @@ public:
 	virtual uint32 capacity() const = 0;
 
 	/**
+	 * @brief return a vector with pointers to all chunks
+	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
+	 * @return the vector of pointers
+	 */
+	virtual std::vector<const void*> chunks_pointers(uint32& byte_block_size) const = 0;
+
+	/**
+	 * @brief create a ChunkArray object without knowing type
+	 * @return generic pointer
+	 */
+	virtual std::unique_ptr<Self> clone(const std::string& clone_name) const = 0;
+
+	virtual bool swap_data(Self*) = 0;
+
+	/**
+	 * @brief add a chunk (T[CHUNK_SIZE])
+	 */
+	virtual void add_chunk() = 0;
+
+	/**
+	 * @brief set number of chunks
+	 * @param nbc number of chunks
+	 */
+	virtual void set_nb_chunks(uint32 nbb) = 0;
+
+	/**
 	 * @brief clear the array
 	 */
 	virtual void clear() = 0;
-
-	/**
-	 * @brief fill a vector with pointers to all chunks
-	 * @param addr vector to fill
-	 * @param byte_block_size filled with CHUNK_SIZE*sizeof(T)
-	 * @return addr.size()
-	 */
-	virtual std::vector<const void*> chunks_pointers(uint32& byte_block_size) const = 0;
 
 	/**
 	 * @brief initialize an element of the array (overwrite with T())
@@ -199,6 +201,13 @@ public:
 	 */
 	virtual void save(std::ostream& fs, uint32 nb_lines) const = 0;
 
+	/**
+	 * @brief load
+	 * @param fs file stream
+	 * @return ok
+	 */
+	virtual bool load(std::istream& fs) = 0;
+
 	virtual void export_element(uint32 idx, std::ostream& o, bool binary, bool little_endian, std::size_t precision = 8ul) const = 0;
 	/**
 	 * @brief import_element, read the element "idx" from an ascii istream
@@ -212,13 +221,6 @@ public:
 	 * Use with caution. This method can't be used with ChunkArrayBool.
 	 */
 	virtual const void* element_ptr(uint32 idx) const = 0;
-
-	/**
-	 * @brief load
-	 * @param fs file stream
-	 * @return ok
-	 */
-	virtual bool load(std::istream& fs) = 0;
 
 	/**
 	 * @brief skip the data instead of loading
