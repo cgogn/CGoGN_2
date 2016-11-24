@@ -33,27 +33,27 @@ namespace cgogn
 namespace modeling
 {
 
-inline Dart split_vertex(CMap3& map, std::vector<Dart>& vd);
+CGOGN_MODELING_API Dart split_vertex(CMap3& map, std::vector<Dart>& vd);
 
-bool is_tetrahedron(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_API bool is_tetrahedron(CMap3& map, CMap3::Volume w);
 
 //bool is_tetrahedralization(CMap3& map);
 
-Dart swap_22(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_API Dart swap_22(CMap3& map, CMap3::Volume w);
 
-Dart swap_44(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_API Dart swap_44(CMap3& map, CMap3::Volume w);
 
-Dart swap_32(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_API Dart swap_32(CMap3& map, CMap3::Edge e);
 
-Dart swap_23(CMap3& map, CMap3::Face f);
+CGOGN_MODELING_API Dart swap_23(CMap3& map, CMap3::Face f);
 
-CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_API CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w);
 
-CMap3::Vertex flip_13(CMap3& map, CMap3::Face f);
+CGOGN_MODELING_API CMap3::Vertex flip_13(CMap3& map, CMap3::Face f);
 
-Dart edge_bisection(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_API Dart edge_bisection(CMap3& map, CMap3::Edge e);
 
-Dart swap_gen_32(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_API Dart swap_gen_32(CMap3& map, CMap3::Edge e);
 
 //template <typename VEC3>
 //std::vector<Dart> swap_gen_32_optimized(CMap3& map, CMap3::Edge e)

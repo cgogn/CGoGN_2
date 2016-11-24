@@ -571,6 +571,7 @@ extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::OR
 extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_API QuickTraversor<CMap1, CMap1::Vertex>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
 
 } // namespace cgogn

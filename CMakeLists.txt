@@ -37,6 +37,12 @@ set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
 
+### C++ 11/14/17
+set(CGOGN_CPP_STD "11" CACHE STRING "The version of the c++ standard to use.")
+if (NOT MSVC)
+	set_property(CACHE CGOGN_CPP_STD PROPERTY STRINGS "11" "14" "17") # drop down list with cmake-gui
+endif(NOT MSVC)
+
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)

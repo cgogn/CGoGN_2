@@ -21,19 +21,24 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_CORE_MAP_MAP0_CPP_
+#define CGOGN_CORE_UTILS_MASKS_CPP_
 
-#include <cgogn/core/cmap/cmap0.h>
+#include <cgogn/core/utils/masks.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
 
-template class CGOGN_CORE_API DartMarker<CMap0>;
-template class CGOGN_CORE_API DartMarkerStore<CMap0>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0>;
-template class CGOGN_CORE_API CellMarker<CMap0, CMap0::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
-template class CGOGN_CORE_API QuickTraversor<CMap0, CMap0::Vertex>;
+CellFilters::~CellFilters()
+{}
+
+void CellFilters::operator()(uint32) const
+{}
+
+CellTraversor::~CellTraversor()
+{}
+
+void CellTraversor::operator()(uint32) const
+{}
 
 } // namespace cgogn

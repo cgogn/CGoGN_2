@@ -37,5 +37,6 @@ template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
 template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
+template class CGOGN_CORE_API QuickTraversor<CMap1, CMap1::Vertex>;
 
 } // namespace cgogn

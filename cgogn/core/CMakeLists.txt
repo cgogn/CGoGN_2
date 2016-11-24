@@ -77,6 +77,7 @@ set(SOURCE_FILES
 	utils/log_entry.cpp
 	utils/logger_output.cpp
 	utils/log_stream.cpp
+	utils/masks.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -87,8 +88,16 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 # use of target_compile_options to have transitive flags
 if(NOT MSVC)
-	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
-	remove_flags(CMAKE_CXX_FLAGS "-std=c++11")
+	if (CGOGN_CPP_STD STREQUAL "11")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_CPP_STD=11")
+	elseif(CGOGN_CPP_STD STREQUAL "14")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_CPP_STD=14")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++14")
+	else(CGOGN_CPP_STD STREQUAL "11")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_CPP_STD=17")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++17")
+	endif(CGOGN_CPP_STD STREQUAL "11")
 	if(${CGOGN_USE_CXX11_ABI})
 		target_compile_options(${PROJECT_NAME} PUBLIC "-D_GLIBCXX_USE_CXX11_ABI")
 		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
@@ -108,6 +117,7 @@ if(NOT MSVC)
 endif()
 
 if(MSVC)
+	target_compile_options(${PROJECT_NAME} PUBLIC "-DCGOGN_CPP_STD=11")
 	target_compile_options(${PROJECT_NAME} PUBLIC "-D_USE_MATH_DEFINES")
 	## CGOGN_WIN_VER : has value 61 for windows 7, 62 for windows 8, 63 for windows 8.1, 100 for windows 10
 	set(WIN_VERSION "")

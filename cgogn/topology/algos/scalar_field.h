@@ -83,7 +83,7 @@ public:
 		cache_(cache),
 		scalar_field_(scalar_field),
 		vertex_type_computed_(false),
-		epsilon_(0.000001)
+		epsilon_(Scalar(0.000001))
 	{
 		// To allow multiple ScalarField on a same map
 		std::string name = "vertex_type_for_" + scalar_field.name();
