@@ -79,6 +79,12 @@ public:
 	ThreadPool();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	using PackagedTask = std::shared_ptr<std::packaged_task<void(uint32)>>; // avoiding a MSVC 2013 Bug
+#else
+	using PackagedTask = std::packaged_task<void(uint32)>;
+#endif
+
 	template <class F, class... Args>
 	std::future<void> enqueue(const F& f, Args&&... args);
 
@@ -95,7 +101,7 @@ private:
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
 	// the task queue
-	std::queue<std::packaged_task<void(uint32)>> tasks_;
+	std::queue<PackagedTask> tasks_;
 
 	// synchronization
 	std::mutex queue_mutex_;
@@ -111,12 +117,16 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 {
 	static_assert(std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
 
-	std::packaged_task<void(uint32)> task([&,f](uint32 i) -> void
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	PackagedTask task = std::make_shared<std::packaged_task<void(uint32)>>(std::bind(f, std::placeholders::_1, std::forward<Args>(args)...));
+	std::future<void> res = task->get_future();
+#else
+	PackagedTask task([&, f](uint32 i) -> void
 	{
 		f(i, std::forward<Args>(args)...);
 	});
-
-	std::future<void> res = task.get_future();
+	Future res = task.get_future();
+#endif
 
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
@@ -127,7 +137,7 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
 		}
 		// Push work back on the queue
-		tasks_.emplace(std::move(task));
+		tasks_.push(std::move(task));
 	}
 	// Notify a thread that there is new work to perform
 	condition_.notify_one();

@@ -666,11 +666,16 @@ public:
 	{
 		uint32 result = 0u;
 		DartMarker m(*to_concrete());
+#if defined(_MSC_VER) && _MSC_VER < 1900 // MSVC 2013 fix
+		using Boundary = ConcreteMap::Boundary;
+#else
+		using Boundary = typename ConcreteMap::Boundary;
+#endif
 		foreach_dart([&m, &result, this] (Dart d)
 		{
 			if (!m.is_marked(d))
 			{
-				typename ConcreteMap::Boundary c(d);
+				Boundary c(d);
 				m.mark_orbit(c);
 				if (this->is_boundary_cell(c)) ++result;
 			}
