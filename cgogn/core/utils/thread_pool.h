@@ -125,7 +125,7 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	{
 		f(i, std::forward<Args>(args)...);
 	});
-	Future res = task.get_future();
+	std::future<void> res = task.get_future();
 #endif
 
 	{

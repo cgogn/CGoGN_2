@@ -80,7 +80,7 @@ ThreadPool::ThreadPool()
 #if defined(_MSC_VER) && _MSC_VER < 1900
 				(*task)(i);
 #else
-				task(i)
+				task(i);
 #endif
 			}
 		});
