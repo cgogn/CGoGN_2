@@ -114,7 +114,7 @@ typename std::enable_if<!std::is_same<typename std::result_of<F(uint32, Args...)
 	auto p = std::make_shared<std::promise<return_type>>();
 	auto res = p->get_future();
 
-	std::function<return_type(uint32)> task = [&, p](uint32 i) -> void
+	std::function<void(uint32)> task = [&, p](uint32 i) -> void
 	{
 		p->set_value(f(i, std::forward<Args>(args)...));
 	};
