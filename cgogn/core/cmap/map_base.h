@@ -670,7 +670,7 @@ public:
 		{
 			if (!m.is_marked(d))
 			{
-				typename ConcreteMap::Boundary c(d);
+				ConcreteMap::Boundary c(d);
 				m.mark_orbit(c);
 				if (this->is_boundary_cell(c)) ++result;
 			}
