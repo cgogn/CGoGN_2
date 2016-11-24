@@ -80,9 +80,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 	template <class F, class... Args>
-	typename std::enable_if<std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,std::future<void>>::type enqueue(const F& f, Args&&... args);
-	template <class F, class... Args>
-	typename std::enable_if<!std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,std::future<typename std::result_of<F(uint32, Args...)>::type>>::type enqueue(const F& f, Args&&... args);
+	std::future<void> enqueue(const F& f, Args&&... args);
 
 	std::vector<std::thread::id> threads_ids() const;
 	~ThreadPool();
@@ -97,7 +95,7 @@ private:
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
 	// the task queue
-	std::queue<std::function<void(uint32)>> tasks_;
+	std::queue<std::packaged_task<void(uint32)>> tasks_;
 
 	// synchronization
 	std::mutex queue_mutex_;
@@ -106,46 +104,19 @@ private:
 };
 
 // add new work item to the pool
-template <class F, class... Args>
-typename std::enable_if<!std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,std::future<typename std::result_of<F(uint32, Args...)>::type>>::type ThreadPool::enqueue(const F& f, Args&&... args)
-{
-	using return_type = typename std::result_of<F(uint32, Args...)>::type;
 
-	auto p = std::make_shared<std::promise<return_type>>();
-	auto res = p->get_future();
-
-	std::function<void(uint32)> task = [&, p](uint32 i) -> void
-	{
-		p->set_value(f(i, std::forward<Args>(args)...));
-	};
-
-	{
-		std::unique_lock<std::mutex> lock(queue_mutex_);
-			// don't allow enqueueing after stopping the pool
-		if (stop_)
-		{
-			cgogn_log_error("ThreadPool::enqueue") << "Enqueue on stopped ThreadPool.";
-			cgogn_assert_not_reached("enqueue on stopped ThreadPool");
-		}
-		// Push work back on the queue
-		tasks_.emplace(std::move(task));
-	}
-	// Notify a thread that there is new work to perform
-	condition_.notify_one();
-	return res;
-}
 
 template <class F, class... Args>
-typename std::enable_if<std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,std::future<void>>::type ThreadPool::enqueue(const F& f, Args&&... args)
+std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 {
-	auto p = std::make_shared<std::promise<void>>();
-	std::future<void> res = p->get_future();
+	static_assert(std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
 
-	std::function<void(uint32)> task = [&, p](uint32 i) -> void
+	std::packaged_task<void(uint32)> task([&,f](uint32 i) -> void
 	{
 		f(i, std::forward<Args>(args)...);
-		p->set_value();
-	};
+	});
+
+	std::future<void> res = task.get_future();
 
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);

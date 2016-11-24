@@ -61,7 +61,7 @@ ThreadPool::ThreadPool()
 			cgogn::thread_start();
 			for(;;)
 			{
-				std::function<void(uint32)> task;
+				std::packaged_task<void(uint32)> task;
 				{
 					std::unique_lock<std::mutex> lock(this->queue_mutex_);
 					this->condition_.wait(
