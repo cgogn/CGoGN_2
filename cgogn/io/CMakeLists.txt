@@ -77,4 +77,4 @@ file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/io)
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

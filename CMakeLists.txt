@@ -137,8 +137,6 @@ endif()
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
 
-add_subdirectory(${CGOGN_THIRDPARTY_DIR})
-
 
 subdirlist(CGOGN_CONFIGURED_MODULES ${CGOGN_SOURCE_DIR}/cgogn)
 
