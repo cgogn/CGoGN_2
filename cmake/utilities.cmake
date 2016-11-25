@@ -92,7 +92,7 @@ export(TARGETS ${PROJECT_NAME}
 	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
 )
 
-message(${package_root_dir})
+#message(${package_root_dir})
 
 configure_package_config_file(
 #	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
