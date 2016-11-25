@@ -38,8 +38,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, medit_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "medit/tshirt_tri.mesh");
-
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
 	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
@@ -48,5 +49,6 @@ TEST(ImportTest, medit_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 2180u);
 	EXPECT_EQ(nbf, 4265u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 

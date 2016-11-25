@@ -38,7 +38,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, tetgen_volume_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "tetgen/beam.1.node");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map.get_attribute<Vec3, Map3::Vertex>("position");
 	const uint32 nbv = map.nb_cells<Map3::Vertex::ORBIT>();
@@ -48,5 +50,6 @@ TEST(ImportTest, tetgen_volume_import)
 	EXPECT_TRUE(map.check_map_integrity());
 	EXPECT_EQ(nbv, 213u);
 	EXPECT_EQ(nbw, 724u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 

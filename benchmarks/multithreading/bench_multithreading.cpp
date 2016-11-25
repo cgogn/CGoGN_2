@@ -281,8 +281,8 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		state.PauseTiming();
 		VertexAttribute<Vec3> vertex_position = bench_map.get_attribute<Vec3, VERTEX>("position");
 		cgogn_assert(vertex_position.is_valid());
-		VertexAttribute<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
-		cgogn_assert(vertices_normal.is_valid());
+		VertexAttribute<Vec3> vertices_normal_mt = bench_map.get_attribute<Vec3, VERTEX>("normal_mt");
+		cgogn_assert(vertices_normal_mt.is_valid());
 
 		cgogn::CellCache<Map2> cache(bench_map);
 		cache.template build<Vertex>();
@@ -290,9 +290,27 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 
 		bench_map.parallel_foreach_cell([&] (Vertex v, uint32)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		},
 		cache);
+
+		{
+			state.PauseTiming();
+
+			VertexAttribute<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
+			bench_map.foreach_cell([&] (Vertex v)
+			{
+				Vec3 error = vertices_normal[v] - vertices_normal_mt[v];
+				if (!cgogn::almost_equal_absolute(error.squaredNorm(), 0., 1e-9 ))
+				{
+					cgogn_log_warning("bench_multithreading") << "There was an error during computation of vertices normals.";
+//					std::cerr << "vertices_normal " << vertices_normal[v] << std::endl;
+//					std::cerr << "vertices_normal_mt " << vertices_normal_mt[v] << std::endl;
+				}
+
+			}, cache);
+			state.ResumeTiming();
+		}
 	}
 }
 

@@ -38,7 +38,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, tet_volume_import)
 {
 	Map3 map3;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map3, mesh_path + "tet/hand.tet");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map3.get_attribute<Vec3, Map3::Vertex>("position");
 	const uint32 nbv = map3.nb_cells<Map3::Vertex::ORBIT>();
@@ -48,12 +50,15 @@ TEST(ImportTest, tet_volume_import)
 	EXPECT_TRUE(map3.check_map_integrity());
 	EXPECT_EQ(nbv, 2774u);
 	EXPECT_EQ(nbw, 8343u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, tet_with_connectors_volume_import)
 {
 	Map3 map3;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map3, mesh_path + "tet/liver.tet");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map3.get_attribute<Vec3, Map3::Vertex>("position");
 //	const uint32 nbv = map3.nb_cells<Map2::Vertex::ORBIT>();
@@ -62,5 +67,6 @@ TEST(ImportTest, tet_with_connectors_volume_import)
 	EXPECT_TRUE(pos.is_valid());
 	EXPECT_TRUE(map3.check_map_integrity());
 	EXPECT_EQ(nbw, 4967u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
