@@ -38,7 +38,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, obj_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "obj/hand_remeshed.obj");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
@@ -48,12 +50,15 @@ TEST(ImportTest, obj_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 2500u);
 	EXPECT_EQ(nbf, 4996u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, obj_normal_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "obj/salad_bowl.obj");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
@@ -65,4 +70,5 @@ TEST(ImportTest, obj_normal_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 706u);
 	EXPECT_EQ(nbf, 1408u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }

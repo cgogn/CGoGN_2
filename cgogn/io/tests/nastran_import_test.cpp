@@ -39,7 +39,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, nastran_hexa_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "nastran/simple_beam_hexa.nas");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map.get_attribute<Vec3, Map3::Vertex>("position");
 	const uint32 nbv = map.nb_cells<Map3::Vertex::ORBIT>();
@@ -49,6 +51,7 @@ TEST(ImportTest, nastran_hexa_import)
 	EXPECT_TRUE(map.check_map_integrity());
 	EXPECT_EQ(nbv, 16u);
 	EXPECT_EQ(nbw, 3u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 
