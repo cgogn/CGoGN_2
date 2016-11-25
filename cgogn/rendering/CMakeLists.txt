@@ -97,4 +97,4 @@ install(DIRECTORY shaders
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

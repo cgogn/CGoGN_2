@@ -225,4 +225,4 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 	)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zconf.h" DESTINATION "include/thirdparty/zlib-1.2.8/")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")
