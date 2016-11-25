@@ -2,8 +2,6 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-
 set(HEADER_FILES
 	dll.h
 	algos/bounding_box.h
@@ -55,7 +53,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
 install(DIRECTORY algos functions types

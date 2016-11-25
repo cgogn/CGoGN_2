@@ -2,8 +2,6 @@ project(cgogn_topology
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
 find_package(OpenNL REQUIRED)
 
 set(HEADER_FILES
@@ -34,7 +32,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${OpenNL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${OpenNL_LIBRARIES})
 
 install(FILES "dll.h" DESTINATION "include/cgogn/topology")
 install(DIRECTORY algos types

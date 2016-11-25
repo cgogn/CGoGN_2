@@ -2,9 +2,6 @@ project(cgogn_multiresolution
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
-
 set(HEADER_FILES
 	dll.h
 
@@ -38,7 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/multiresolution")
 install(DIRECTORY cph rcmap
