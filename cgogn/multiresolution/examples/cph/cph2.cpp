@@ -1,9 +1,9 @@
 
-#include <multiresolution/cph/ihcmap2_regular.h>
+#include <cgogn/multiresolution/cph/ihcmap2_regular.h>
 
-#include <multiresolution/mra/lerp_triquad_mra.h>
+#include <cgogn/multiresolution/mra/lerp_triquad_mra.h>
 
-#include <geometry/types/eigen.h>
+#include <cgogn/geometry/types/eigen.h>
 
 
 using namespace cgogn;
@@ -13,13 +13,13 @@ using IHMap2 = IHCMap2Regular<DefaultMapTraits>;
 using Vec3 = Eigen::Vector3d;
 
 template<typename T>
-using VertexAttributeHandler = IHMap2::VertexAttributeHandler<T>;
+using VertexAttributeHandler = IHMap2::VertexAttribute<T>;
 
 
 int main()
 {	
 	IHMap2 map;
-	VertexAttributeHandler<Vec3> position = map.get_attribute<Vec3, IHMap2::VERTEX>("position");
+	VertexAttributeHandler<Vec3> position = map.get_attribute<Vec3, IHMap2::Vertex::ORBIT>("position");
 
 	LerpTriQuadMRAnalysis<IHMap2, Vec3> lerp(map, position);
 
