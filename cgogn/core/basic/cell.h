@@ -75,6 +75,8 @@ inline std::string orbit_name(Orbit orbit)
 #endif
 }
 
+static const uint32 ALL_CELLS_MASK = 0xffffffff;
+
 template <typename CellType>
 inline uint32 orbit_mask()
 {

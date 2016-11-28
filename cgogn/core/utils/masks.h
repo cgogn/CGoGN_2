@@ -61,7 +61,7 @@ public:
 
 	inline uint32 filtered_cells() const
 	{
-		return 0xffffffff;
+		return ALL_CELLS_MASK;
 //		uint32 result = 0u;
 //		for (Orbit o : { DART, PHI1, PHI2, PHI21, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21_PHI31, PHI1_PHI2_PHI3 })
 //			result |= orbit_mask(o);
