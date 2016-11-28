@@ -899,15 +899,15 @@ protected:
 //		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
-		bool ascii_file = to_upper(word) == "ASCII";
-		if (!(ascii_file || to_upper(word) == "BINARY"))
+		const bool ascii_file = i_equals(word, "ascii");
+		if (!(ascii_file || i_equals(word, "binary")))
 		{
 			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
 			return false;
 		}
 
 		fp >> word;
-		if (to_upper(word) != "DATASET")
+		if (!i_equals(word, "dataset"))
 		{
 			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
 			return false;
@@ -1009,7 +1009,7 @@ protected:
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
 										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
-										if (word == "NORMALS" || to_upper(att_name) == "NORMAL" || to_upper(att_name) == "NORMALS")
+										if (word == "NORMALS" || i_equals(att_name,"NORMAL") || i_equals(att_name,"NORMALS"))
 											att_name = "normal";
 										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
@@ -1020,7 +1020,7 @@ protected:
 										std::string lookup_table;
 										std::string lookup_table_name;
 										sstream >> lookup_table >> lookup_table_name;
-										if (to_upper(lookup_table) == "LOOKUP_TABLE")
+										if (i_equals(lookup_table, "LOOKUP_TABLE"))
 										{
 											cgogn_log_debug("parse_vtk_legacy_file") << "Ignoring lookup table named \"" << lookup_table_name << "\".";
 										}
@@ -1061,7 +1061,7 @@ protected:
 												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
-												if (to_upper(data_name) == "NORMAL" || to_upper(data_name) == "NORMALS")
+												if (i_equals(data_name, "NORMAL") || i_equals(data_name, "NORMALS"))
 													data_name = "normal";
 												cgogn_log_info("parse_vtk_legacy_file") << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components).";
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));

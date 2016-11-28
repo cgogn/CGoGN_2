@@ -23,7 +23,7 @@ const cgogn::Orbit face2   = Map2::Face::ORBIT;
 
 bool string_to_bool (const std::string & v)
 {
-	return (!v.empty()) && (cgogn::equal_case_insensitive(v, std::string("true")) || std::atoi(v.c_str()) != 0);
+	return !v.empty() && (std::atoi(v.c_str()) != 0 || cgogn::i_equals(v, "true"));
 }
 
 int main(int argc, char** argv)

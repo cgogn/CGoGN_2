@@ -27,6 +27,7 @@ set(SOURCE_FILES
 
 	utils/endian_test.cpp
 	utils/name_types_test.cpp
+	utils/string_test.cpp
 
 	main.cpp
 )
