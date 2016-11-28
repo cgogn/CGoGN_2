@@ -274,11 +274,10 @@ public:
 	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
 	 */
-	template <typename T, Orbit ORBIT>
-	inline bool remove_attribute(const Attribute<T, ORBIT>& ah)
+	template <typename T>
+	inline bool remove_attribute(const Attribute_T<T>& ah)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return this->attributes_[ORBIT].remove_chunk_array(ah.data());
+		return this->attributes_[ah.orbit()].remove_chunk_array(ah.data());
 	}
 
 	/**
@@ -1075,6 +1074,9 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
+		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
+			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
+
 		foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
@@ -1084,6 +1086,9 @@ public:
 	inline void parallel_foreach_cell(const FUNC& f, const Filters& filters) const
 	{
 		using CellType = func_parameter_type<FUNC>;
+
+		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
+			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
 
 		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
@@ -1101,6 +1106,9 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
+		if (!t.template is_traversed<CellType>())
+			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
+
 		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
 			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
@@ -1117,6 +1125,9 @@ public:
 
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+
+		if (!t.template is_traversed<CellType>())
+			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->nb_threads();

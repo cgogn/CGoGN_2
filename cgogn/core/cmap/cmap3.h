@@ -86,6 +86,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
+
 protected:
 
 	ChunkArray<Dart>* phi3_;
@@ -2635,10 +2637,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
 extern template class CGOGN_CORE_API CellCache<CMap3>;
 extern template class CGOGN_CORE_API BoundaryCache<CMap3>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3, CMap3::Vertex>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3, CMap3::Edge>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3, CMap3::Face>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3, CMap3::Volume>;
+extern template class CGOGN_CORE_API QuickTraversor<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
 
 } // namespace cgogn

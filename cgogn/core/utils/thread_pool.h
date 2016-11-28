@@ -130,7 +130,7 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
-			// don't allow enqueueing after stopping the pool
+		// don't allow enqueueing after stopping the pool
 		if (stop_)
 		{
 			cgogn_log_error("ThreadPool::enqueue") << "Enqueue on stopped ThreadPool.";
@@ -143,7 +143,6 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	condition_.notify_one();
 	return res;
 }
-
 
 } // namespace cgogn
 

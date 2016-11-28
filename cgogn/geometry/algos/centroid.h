@@ -75,7 +75,7 @@ inline void compute_centroid(
 	Attribute<VEC, CellType::ORBIT>& cell_centroid
 )
 {
-	compute_centroid<VEC, CellType>(map, CellFilters(), attribute, cell_centroid);
+	compute_centroid<VEC, CellType>(map, AllCellsFilter(), attribute, cell_centroid);
 }
 
 template <typename VEC, typename MAP>

@@ -75,6 +75,19 @@ inline std::string orbit_name(Orbit orbit)
 #endif
 }
 
+static const uint32 ALL_CELLS_MASK = 0xffffffff;
+
+template <typename CellType>
+inline uint32 orbit_mask()
+{
+	return 1 << CellType::ORBIT;
+}
+
+inline uint32 orbit_mask(Orbit orbit)
+{
+	return 1 << orbit;
+}
+
 /**
  * \brief Cellular typing
  * \tparam ORBIT The type of the orbit used to create the Cell

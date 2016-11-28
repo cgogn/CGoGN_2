@@ -61,9 +61,9 @@ public:
 		{
 			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
 		}
-		inline bool filter(Vertex) const
+		inline uint32 filtered_cells() const
 		{
-			return true;
+			return orbit_mask<Volume>();
 		}
 
 	private:
@@ -110,7 +110,7 @@ protected:
 			}
 		}
 
-		this->cell_cache_->template build<Vertex>(ConnectorCellFilter(map));
+		this->cell_cache_->template build<Vertex>();
 		this->cell_cache_->template build<Volume>(ConnectorCellFilter(map));
 
 		uint32 count{0u};
