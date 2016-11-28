@@ -451,6 +451,14 @@ public:
 			});
 		}
 
+		if (this->template is_embedded<Vertex2>())
+		{
+			foreach_incident_vertex2(vol, [this] (Vertex2 v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
 		if (this->template is_embedded<Vertex>())
 		{
 			foreach_incident_vertex(vol, [this] (Vertex v)
@@ -467,9 +475,25 @@ public:
 			});
 		}
 
+		if (this->template is_embedded<Edge2>())
+		{
+			foreach_incident_edge2(vol, [this] (Edge2 e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
 		if (this->template is_embedded<Face>())
 		{
 			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			foreach_incident_face(vol, [this] (Face2 f)
 			{
 				this->new_orbit_embedding(f);
 			});
