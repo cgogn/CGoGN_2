@@ -526,11 +526,17 @@ public:
 			{
 				const uint32 emb_d = this->embedding(CellType(d));
 				if (emb_d != idx)
+				{
 					cgogn_log_error("is_well_embedded") << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT);
+					result = false;
+				}
 				refs++;
 			});
 			if (refs != container.nb_refs(this->embedding(c)))
+			{
 				cgogn_log_error("is_well_embedded") << "Wrong reference number of embedding " << this->embedding(c) << " in orbit " << orbit_name(ORBIT);
+				result = false;
+			}
 
 		});
 		// check that all cells present in the attribute handler are used
