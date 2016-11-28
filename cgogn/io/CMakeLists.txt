@@ -2,8 +2,6 @@ project(cgogn_io
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
 find_package(ply REQUIRED)
 find_package(lm6 REQUIRED)
 find_package(tinyxml2 REQUIRED)
@@ -71,10 +69,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/io)
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

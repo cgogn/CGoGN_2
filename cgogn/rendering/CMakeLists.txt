@@ -2,8 +2,6 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
 find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
@@ -87,7 +85,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
@@ -97,4 +95,4 @@ install(DIRECTORY shaders
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

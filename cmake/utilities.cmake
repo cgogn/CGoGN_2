@@ -80,7 +80,7 @@ endfunction(deduce_build_type)
 # cmake/<cmake-project-name>_INCLUDE_DIRS                                                    #
 ##############################################################################################
 
-macro(cgogn_create_package include_dirs_build_tree include_dirs_install_tree)
+macro(cgogn_create_package package_root_dir include_dirs_build_tree include_dirs_install_tree)
 
 ######## 1. Build tree
 
@@ -92,8 +92,11 @@ export(TARGETS ${PROJECT_NAME}
 	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
 )
 
+#message(${package_root_dir})
+
 configure_package_config_file(
-	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+#	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${package_root_dir}/${PROJECT_NAME}Config.cmake.in"
 	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
 	PATH_VARS ${UPPER_NAME}_INCLUDE_DIRS 
 	INSTALL_DESTINATION "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}"
@@ -127,7 +130,8 @@ write_basic_package_version_file(
 ## <package_name>Config.cmake
 set(CURRENT_LIBRARY "${PROJECT_NAME}")
 configure_package_config_file(
-	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+#	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
+	"${package_root_dir}/${PROJECT_NAME}Config.cmake.in"
 	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
 	PATH_VARS ${UPPER_NAME}_INCLUDE_DIRS
 	INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
@@ -136,4 +140,18 @@ configure_package_config_file(
 install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
 install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
 
+endmacro()
+
+
+##############################################################################################
+
+macro(subdirlist result curdir)
+  file(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  set(dirlist "")
+  foreach(child ${children})
+    if(IS_DIRECTORY ${curdir}/${child})
+		list(APPEND dirlist ${child})
+    endif()
+  endforeach()
+  set(${result} ${dirlist})
 endmacro()

@@ -137,28 +137,42 @@ endif()
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
 
+
+subdirlist(CGOGN_CONFIGURED_MODULES ${CGOGN_SOURCE_DIR}/cgogn)
+
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
-add_subdirectory(${CGOGN_SOURCE_DIR}/cgogn)
+
+foreach(subdir ${CGOGN_CONFIGURED_MODULES})
+
+    set(enabled_by_default ON)
+  	option( MODULE_${subdir} "Enable CGOGN component ${subdir}" ${enabled_by_default})
+  	# TODO use command CMakeDependentOption
+	if(MODULE_${subdir})
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}")
+	endif()
+endforeach()
+ 
+foreach(subdir ${CGOGN_CONFIGURED_MODULES})
+	if(MODULE_${subdir})
+		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir})
+
+		if(CGOGN_BUILD_TESTS)
+			if(EXISTS cgogn/${subdir}/tests/)
+				add_subdirectory(cgogn/${subdir}/tests)
+			endif()
+		endif()
+		if(CGOGN_BUILD_EXAMPLES)
+			if(EXISTS cgogn/${subdir}/examples/)
+				add_subdirectory(cgogn/${subdir}/examples)
+			endif()
+		endif()
+	endif()
+endforeach()
+
 
 if(${CGOGN_BUILD_BENCHS})
 	add_subdirectory(benchmarks)
 endif(${CGOGN_BUILD_BENCHS})
-
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(cgogn/core/tests)
-	add_subdirectory(cgogn/geometry/tests)
-	add_subdirectory(cgogn/modeling/tests)
-	add_subdirectory(cgogn/io/tests)
-endif()
-
-if(CGOGN_BUILD_EXAMPLES)
-	add_subdirectory(cgogn/core/examples)
-	add_subdirectory(cgogn/geometry/examples)
-	add_subdirectory(cgogn/io/examples)
-	add_subdirectory(cgogn/modeling/examples)
-	add_subdirectory(cgogn/rendering/examples)
-	add_subdirectory(cgogn/topology/examples)
-endif()
 
 
 ##  TODO a mettre dans un fichier cmake particulier
