@@ -488,7 +488,7 @@ protected:
 	 * @param d a dart incident to the hole
 	 * @return a dart of the volume that closes the hole
 	 */
-	void close_hole_topo(Dart d, bool mark_boundary=false)
+	Dart close_hole_topo(Dart d, bool mark_boundary=false)
 	{
 		cgogn_message_assert(phi3(d) == d, "CMap3Hexa: close hole called on a dart that is not a phi3 fix point");
 
@@ -552,6 +552,8 @@ protected:
 			for (Dart db: *(boundary_marker.marked_darts()))
 				this->set_boundary(db, true);
 		}
+
+		return phi3(d);
 	}
 
 	/**
