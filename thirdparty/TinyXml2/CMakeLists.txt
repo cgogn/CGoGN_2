@@ -28,4 +28,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 install(FILES "tinyxml2.h" DESTINATION "include/thirdparty/TinyXml2")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")

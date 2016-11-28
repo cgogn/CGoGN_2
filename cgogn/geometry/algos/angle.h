@@ -104,7 +104,7 @@ inline void compute_angle_between_face_normals(
 	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
 )
 {
-	compute_angle_between_face_normals<VEC3>(map, CellFilters(), position, edge_angle);
+	compute_angle_between_face_normals<VEC3>(map, AllCellsFilter(), position, edge_angle);
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))

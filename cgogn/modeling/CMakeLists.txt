@@ -2,9 +2,6 @@ project(cgogn_modeling
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
-
 set(HEADER_FILES
 	dll.h
 	algos/catmull_clark.h
@@ -44,7 +41,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/modeling")
 install(DIRECTORY algos tiling
@@ -52,4 +49,5 @@ install(DIRECTORY algos tiling
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

@@ -70,6 +70,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
+
 public:
 
 	CMap0_T() : Inherit()
@@ -215,7 +217,7 @@ extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0>;
 extern template class CGOGN_CORE_API CellMarker<CMap0, CMap0::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap0, CMap0::Vertex>;
+extern template class CGOGN_CORE_API QuickTraversor<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
 
 } // namespace cgogn

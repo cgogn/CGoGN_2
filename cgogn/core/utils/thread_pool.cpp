@@ -61,7 +61,7 @@ ThreadPool::ThreadPool()
 			cgogn::thread_start();
 			for(;;)
 			{
-				std::function<void(uint32)> task;
+				PackagedTask task;
 				{
 					std::unique_lock<std::mutex> lock(this->queue_mutex_);
 					this->condition_.wait(
@@ -77,7 +77,11 @@ ThreadPool::ThreadPool()
 					task = std::move(this->tasks_.front());
 					this->tasks_.pop();
 				}
+#if defined(_MSC_VER) && _MSC_VER < 1900
+				(*task)(i);
+#else
 				task(i);
+#endif
 			}
 		});
 	}

@@ -382,6 +382,11 @@ public:
 		return iterator(this, this->chunk_array_cont_->end());
 	}
 
+	inline Orbit orbit() const
+	{
+		return orbit_;
+	}
+
 protected:
 
 	ChunkArrayContainer const*	chunk_array_cont_;

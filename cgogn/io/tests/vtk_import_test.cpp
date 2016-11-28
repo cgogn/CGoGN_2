@@ -40,7 +40,9 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 TEST(ImportTest, vtk_legacy_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl.vtk");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
@@ -52,12 +54,15 @@ TEST(ImportTest, vtk_legacy_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 706u);
 	EXPECT_EQ(nbf, 1408u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_legacy_bin_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl_bin.vtk");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
@@ -69,12 +74,15 @@ TEST(ImportTest, vtk_legacy_bin_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 706u);
 	EXPECT_EQ(nbf, 1408u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_vtp_asci_surface_import)
 {
 	Map2 map2;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + "vtk/salad_bowl.vtp");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
@@ -86,12 +94,15 @@ TEST(ImportTest, vtk_vtp_asci_surface_import)
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 706u);
 	EXPECT_EQ(nbf, 1408u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_vtu_ascii_volume_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "vtk/nine_hexas.vtu");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map.get_attribute<Vec3, Vertex3>("position");
 	const uint32 nbv = map.nb_cells<Vertex3::ORBIT>();
@@ -101,12 +112,15 @@ TEST(ImportTest, vtk_vtu_ascii_volume_import)
 	EXPECT_TRUE(map.check_map_integrity());
 	EXPECT_EQ(nbv, 32u);
 	EXPECT_EQ(nbw, 9u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_vtu_binary_volume_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "vtk/nine_hexas_bin.vtu");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map.get_attribute<Vec3, Vertex3>("position");
 	const uint32 nbv = map.nb_cells<Vertex3::ORBIT>();
@@ -116,12 +130,15 @@ TEST(ImportTest, vtk_vtu_binary_volume_import)
 	EXPECT_TRUE(map.check_map_integrity());
 	EXPECT_EQ(nbv, 32u);
 	EXPECT_EQ(nbw, 9u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_vtu_binary_zlib_volume_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "vtk/nine_hexas_zlib.vtu");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map.get_attribute<Vec3, Vertex3>("position");
 	const uint32 nbv = map.nb_cells<Vertex3::ORBIT>();
@@ -131,12 +148,15 @@ TEST(ImportTest, vtk_vtu_binary_zlib_volume_import)
 	EXPECT_TRUE(map.check_map_integrity());
 	EXPECT_EQ(nbv, 32u);
 	EXPECT_EQ(nbw, 9u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_legacy_ascii_voxel_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "vtk/vox8_ascii.vtk");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto cRamp1 = map.get_attribute<float32, Map3::Volume>("cRamp1");
 	auto cRamp2 = map.get_attribute<float32, Map3::Volume>("cRamp2");
@@ -170,12 +190,15 @@ TEST(ImportTest, vtk_legacy_ascii_voxel_import)
 	EXPECT_TRUE(outVect.is_valid());
 	EXPECT_TRUE(vect2.is_valid());
 	EXPECT_TRUE(mytest.is_valid());
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
 TEST(ImportTest, vtk_legacy_binary_voxel_import)
 {
 	Map3 map;
+	testing::internal::CaptureStderr();
 	cgogn::io::import_volume<Vec3>(map, mesh_path + "vtk/vox8_binary.vtk");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto cRamp1 = map.get_attribute<float32, Map3::Volume>("cRamp1");
 	auto cRamp2 = map.get_attribute<float32, Map3::Volume>("cRamp2");
@@ -209,4 +232,5 @@ TEST(ImportTest, vtk_legacy_binary_voxel_import)
 	EXPECT_TRUE(outVect.is_valid());
 	EXPECT_TRUE(vect2.is_valid());
 	EXPECT_TRUE(mytest.is_valid());
+	EXPECT_TRUE(expected_empty_error_output.empty());
 }

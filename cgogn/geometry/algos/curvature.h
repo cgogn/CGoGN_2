@@ -174,7 +174,7 @@ void compute_curvature(
 	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	compute_curvature<VEC3>(map, CellFilters(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	compute_curvature<VEC3>(map, AllCellsFilter(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry
