@@ -64,5 +64,5 @@ int main(int argc, char** argv)
 	// Compute the dual of the topology
 	map.dual();
 
-	cgogn::io::export_surface(map, cgogn::io::create_export_options().filename("dual.off").position_attribute(Vertex::ORBIT, "position").binary(false));
+	cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("dual.off").position_attribute(Vertex::ORBIT, "position").binary(false));
 }

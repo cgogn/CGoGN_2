@@ -68,11 +68,9 @@ namespace io
 {
 
 
-
 class CGOGN_IO_API ExportOptions final
 {
 private:
-	friend ExportOptions create_export_options();
 	ExportOptions();
 
 public:
@@ -92,9 +90,9 @@ public:
 	bool binary_;
 	bool compress_;
 	bool overwrite_;
-};
 
-CGOGN_IO_API ExportOptions create_export_options();
+	static ExportOptions create();
+};
 
 
 enum FileType

@@ -410,11 +410,6 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 	}
 }
 
-CGOGN_IO_API ExportOptions create_export_options()
-{
-	return ExportOptions();
-}
-
 ExportOptions::ExportOptions() :
 	filename_(),
 	position_attribute_(),
@@ -441,6 +436,11 @@ ExportOptions::ExportOptions(ExportOptions&& eo) :
 	compress_(eo.compress_),
 	overwrite_(eo.overwrite_)
 {}
+
+ExportOptions ExportOptions::create()
+{
+	return ExportOptions();
+}
 
 } // namespace io
 

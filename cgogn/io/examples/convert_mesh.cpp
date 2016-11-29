@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 		cgogn_log_info("convert_mesh") << "binary output : " << output_is_binary;
 		cgogn_log_info("convert_mesh") << "compress output : " << compress_output;
 	}
-	auto export_options = cgogn::io::create_export_options()
+	auto export_options = cgogn::io::ExportOptions::create()
 			.filename(output_filename)
 			.binary(output_is_binary)
 			.compress(compress_output)
