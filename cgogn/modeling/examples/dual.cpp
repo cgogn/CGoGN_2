@@ -64,6 +64,5 @@ int main(int argc, char** argv)
 	// Compute the dual of the topology
 	map.dual();
 
-	const cgogn::Orbit vertorb = Vertex::ORBIT;
-	cgogn::io::export_surface(map, cgogn::io::ExportOptions("dual.off", {vertorb, "position"}, {}, false, false));
+	cgogn::io::export_surface(map, cgogn::io::create_export_options().filename("dual.off").position_attribute(Vertex::ORBIT, "position").binary(false));
 }
