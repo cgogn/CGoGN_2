@@ -96,7 +96,7 @@ public:
 		void set_back_face_culling(bool cull);
 		void set_lighted(bool lighted);
 		void set_max_nb_layers(int nbl);
-
+		void set_ogl(QOpenGLFunctions_3_3_Core* ogl);
 
 	};
 
