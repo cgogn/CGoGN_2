@@ -738,7 +738,7 @@ public:
 		std::string val;
 		in >> val;
 		val = to_lower(val);
-		const bool b = (val == "true") || (std::stoi(val) == 1);
+		const bool b = (val == "true") || (std::stoi(val) != 0);
 		if (b)
 			set_true(idx);
 		else
