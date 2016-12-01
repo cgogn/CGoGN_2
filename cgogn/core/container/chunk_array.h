@@ -260,63 +260,6 @@ public:
 #endif // _GLIBCXX_DEBUG
 	}
 
-//	void save(std::ostream& fs, uint32 nb_lines) const
-//	{
-//		uint32 nbs[3];
-//		nbs[0] = (uint32)(table_data_.size());
-//		nbs[1] = nb_lines;
-//		nbs[2] = CHUNK_SIZE*sizeof(T);
-
-//		assert(nb_lines/CHUNK_SIZE <= table_data_.size());
-//		// TODO: if (nb_lines == 0) nb_lines = CHUNK_SIZE*table_data_.size(); ??
-
-//		fs.write(reinterpret_cast<const char*>(nbs),3*sizeof(uint32));
-
-//		// no data -> finished
-//		if (nbs[0] == 0)
-//			return;
-
-//		uint32 nbca = nbs[0]-1;
-//		// save data chunks except last
-//		for(uint32 i=0; i<nbca; ++i)
-//		{
-//			fs.write(reinterpret_cast<const char*>(table_data_[i]),CHUNK_SIZE*sizeof(T));
-//		}
-
-//		// save last
-//		unsigned nbl = nb_lines - nbca*CHUNK_SIZE;
-//		fs.write(reinterpret_cast<const char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
-//	}
-
-//	bool load(std::istream& fs)
-//	{
-//		uint32 nbs[3];
-//		fs.read(reinterpret_cast<char*>(nbs), 3*sizeof(uint32));
-
-//		if (nbs[2] != CHUNK_SIZE*sizeof(T))
-//		{
-//			std::cerr << "Error loading ChunkArray wrong CHUNK_SIZE"<< std::endl;
-//			return false;
-//		}
-
-//		this->setNbChunks(nbs[0]);
-
-//		// no data -> finished
-//		if (nbs[0] == 0)
-//			return true;
-
-//		// load data chunks except last
-//		uint32 nbca = nbs[0]-1;
-//		for(uint32 i = 0; i < nbca; ++i)
-//			fs.read(reinterpret_cast<char*>(table_data_[i]),CHUNK_SIZE*sizeof(T));
-
-//		// load last chunk
-//		uint32 nbl = nbs[1] - CHUNK_SIZE*nbca;
-//		fs.read(reinterpret_cast<char*>(table_data_[nbca]),std::streamsize(nbl*sizeof(T)));
-
-//		return true;
-//	}
-
 	void save(std::ostream& fs, uint32 nb_lines) const override
 	{
 		cgogn_assert(fs.good());
