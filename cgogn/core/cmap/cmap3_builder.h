@@ -121,6 +121,11 @@ public:
 		map_.sew_volumes_fp(v1, v2);
 	}
 
+	inline Dart close_hole_topo(Dart d)
+	{
+		return map_.close_hole_topo(d);
+	}
+
 	template <Orbit ORBIT>
 	inline void boundary_mark(Cell<ORBIT> c)
 	{

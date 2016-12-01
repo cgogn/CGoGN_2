@@ -451,6 +451,14 @@ public:
 			});
 		}
 
+		if (this->template is_embedded<Vertex2>())
+		{
+			foreach_incident_vertex2(vol, [this] (Vertex2 v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
 		if (this->template is_embedded<Vertex>())
 		{
 			foreach_incident_vertex(vol, [this] (Vertex v)
@@ -459,11 +467,27 @@ public:
 			});
 		}
 
+		if (this->template is_embedded<Edge2>())
+		{
+			foreach_incident_edge2(vol, [this] (Edge2 e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
 		if (this->template is_embedded<Edge>())
 		{
 			foreach_incident_edge(vol, [this] (Edge e)
 			{
 				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face2>())
+		{
+			foreach_incident_face(vol, [this] (Face2 f)
+			{
+				this->new_orbit_embedding(f);
 			});
 		}
 
@@ -488,7 +512,7 @@ protected:
 	 * @param d a dart incident to the hole
 	 * @return a dart of the volume that closes the hole
 	 */
-	void close_hole_topo(Dart d, bool mark_boundary=false)
+	Dart close_hole_topo(Dart d, bool mark_boundary=false)
 	{
 		cgogn_message_assert(phi3(d) == d, "CMap3Hexa: close hole called on a dart that is not a phi3 fix point");
 
@@ -552,6 +576,8 @@ protected:
 			for (Dart db: *(boundary_marker.marked_darts()))
 				this->set_boundary(db, true);
 		}
+
+		return phi3(d);
 	}
 
 	/**
