@@ -468,26 +468,23 @@ public:
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
-		static uint32 counter = 0u;
-		Attribute<uint32, ORBIT> duplicated_cells_counter = add_attribute<uint32, ORBIT>("__duplicated_cells_counter_" + std::to_string(counter++));
-		bool cells_were_duplicated = false;
+		Attribute<uint32, ORBIT> counter = add_attribute<uint32, ORBIT>("__tmp_counter");
+		for (uint32& i : counter) i = 0;
 
-		foreach_cell<FORCE_DART_MARKING>([this, &duplicated_cells_counter, &cells_were_duplicated] (Cell<ORBIT> c)
+		foreach_cell<FORCE_DART_MARKING>([this, &counter] (Cell<ORBIT> c)
 		{
-			if (duplicated_cells_counter[c] > 0)
+			if (counter[c] > 0)
 			{
 				const uint32 old_emb = this->embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
 				cgogn_log_warning("enforce_unique_orbit_embedding") << "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT);
 				this->template attribute_container<ORBIT>().copy_line(new_emb, old_emb, false, false);
-				cells_were_duplicated = true;
 			}
 
-			duplicated_cells_counter[c]++;
+			counter[c]++;
 		});
 
-		if (!cells_were_duplicated)
-			remove_attribute(duplicated_cells_counter);
+		remove_attribute(counter);
 	}
 
 	/**
