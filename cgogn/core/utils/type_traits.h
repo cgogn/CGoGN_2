@@ -221,13 +221,21 @@ inline typename std::enable_if<!(has_size_method<T>::value || has_rows_method<T>
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val)
 {
-	return uint32(val.size()) * nb_components(*(val.begin()));
+	const uint32 size = uint32(val.size());
+	if (size == 0u)
+		return 0u;
+	else
+		return size * nb_components(*(val.begin()));
 }
 
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val)
 {
-	return uint32(val.size()) * nb_components(val[0]);
+	const uint32 size = uint32(val.size());
+	if (size == 0u)
+		return 0u;
+	else
+		return size * nb_components(val[0]);
 }
 
 template <typename T>
