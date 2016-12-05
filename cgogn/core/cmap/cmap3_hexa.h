@@ -272,7 +272,7 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		return Dart(d.index + MapBaseData::hexa_phi2[d.index%24]);
+		return Dart(d.index + MapBaseData::hexa_phi2[d.index%24u]);
 	}
 
 	/**

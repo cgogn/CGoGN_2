@@ -114,9 +114,9 @@ protected:
 	static std::vector<const MapBaseData*>* instances_;
 
 	// table of tetra phi2 indices
-	static std::array<int, 12> tetra_phi2;
+	static const std::array<uint32, 12> tetra_phi2;
 	// table of hexa phi2 indices
-	static std::array<int, 24> hexa_phi2;
+	static const std::array<uint32, 24> hexa_phi2;
 
 public:
 
