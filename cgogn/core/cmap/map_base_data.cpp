@@ -47,11 +47,6 @@ MapBaseData::MapBaseData()
 	// register the map in the vector of instances
 	instances_->push_back(this);
 
-	if (init_CA_factory)
-	{
-		ChunkArrayFactory<CHUNK_SIZE>::reset();
-		init_CA_factory = false;
-	}
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
 		mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
