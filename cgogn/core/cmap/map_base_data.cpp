@@ -39,7 +39,7 @@ MapBaseData::MapBaseData()
 	if (instances_ == nullptr)
 	{
 		cgogn::thread_start();
-		instances_ = new std::vector<MapBaseData*>;
+		instances_ = new std::vector<const MapBaseData*>;
 	}
 
 	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
