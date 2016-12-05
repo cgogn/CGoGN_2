@@ -86,17 +86,46 @@ public:
 		void resize(int w, int h);
 
 		~Renderer();
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+
+		/**
+		 * @brief draw the transparent volumes mixed with opaque (also drawn separatly)
+		 * @param projection projection matrix
+		 * @param modelview modelview matrix
+		 * @param of the func/lambda that draw opaque objects (use to get zbuffer, not drawn on screen)
+		 */
+		template<typename OPAQUE_FUNC>
+		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, const OPAQUE_FUNC& of);
+
+		/**
+		 * @brief draw only the transparent volumes (bad mixing with opaque objects)
+		 * @param projection projection matrix
+		 * @param modelview modelview matrix
+		 * @param of the func/lambda that draw opaque objects (use to get zbuffer, not drawn on screen)
+		 */
+		inline void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+		{
+			draw_faces(projection,modelview,[]{});
+		}
 
 		void set_explode_volume(float32 x);
-		void set_color(const QColor& rgb);
-		void set_clipping_plane(const QVector4D& pl);
-		void set_clipping_plane2(const QVector4D& pl);
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
-		void set_back_face_culling(bool cull);
-		void set_lighted(bool lighted);
-		void set_max_nb_layers(int nbl);
 
+		void set_color(const QColor& rgb);
+
+		void set_clipping_plane(const QVector4D& pl);
+
+		void set_clipping_plane2(const QVector4D& pl);
+
+		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+
+		void set_back_face_culling(bool cull);
+
+		void set_lighted(bool lighted);
+
+		/**
+		 * @brief set the max number of layers (eq drawing passes)
+		 * @param nbl
+		 */
+		void set_max_nb_layers(int nbl);
 
 	};
 
@@ -182,6 +211,100 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 	vbo_pos_->release();
 }
 
+
+template<typename OPAQUE_FUNC>
+void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, const OPAQUE_FUNC& opaque_func)
+{
+	ogl33_->glEnable(GL_TEXTURE_2D);
+	QVector<GLuint> textures = fbo_layer_->textures();
+	GLenum buffs[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2 };
+
+	param_transp_vol_->rgba_texture_sampler_ = 0;
+	param_transp_vol_->depth_texture_sampler_ = 1;
+	fbo_layer_->bind();
+
+	GLenum clear_buff[1] = { GL_COLOR_ATTACHMENT3 };
+	ogl33_->glDrawBuffers(1, clear_buff);
+	ogl33_->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
+
+	ogl33_->glDrawBuffers(1, buffs);
+	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
+
+	for (int p = 0; p<max_nb_layers_; ++p)
+	{
+		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
+
+		if (p > 0)
+		{
+			ogl33_->glDrawBuffers(1, opaq_buff);
+			ogl33_->glClear(GL_COLOR_BUFFER_BIT);
+			opaque_func();
+		}
+
+		ogl33_->glDrawBuffers(2, buffs);
+		param_transp_vol_->layer_ = p;
+		ogl33_->glActiveTexture(GL_TEXTURE0);
+		ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
+		ogl33_->glActiveTexture(GL_TEXTURE1);
+		ogl33_->glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp);
+
+		param_transp_vol_->bind(projection, modelview);
+		ogl33_->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
+		param_transp_vol_->release();
+
+		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
+
+		GLuint nb_samples;
+		ogl33_->glGetQueryObjectuiv(oq_transp, GL_QUERY_RESULT, &nb_samples);
+
+		if (nb_samples == 0) // finished ?
+		{
+			p = max_nb_layers_;
+		}
+		else
+		{
+			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
+			ogl33_->glBindTexture(GL_TEXTURE_2D, textures[1]);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 0, 0, width_, height_, 0);
+
+			if (p == 0)
+			{
+				ogl33_->glBindTexture(GL_TEXTURE_2D, textures[4]);
+				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 0, 0, width_, height_, 0);
+			}
+
+			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
+			ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0,/*GL_RGBA8*/GL_RGBA32F, 0, 0, width_, height_, 0);
+		}
+	}
+
+	fbo_layer_->release();
+
+	// real draw with blending with opaque object
+
+	param_trq_->rgba_texture_sampler_ = 0;
+	param_trq_->depth_texture_sampler_ = 1;
+
+	ogl33_->glActiveTexture(GL_TEXTURE0);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
+
+	ogl33_->glActiveTexture(GL_TEXTURE1);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, textures[4]);
+
+	ogl33_->glEnable(GL_BLEND);
+	ogl33_->glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+	param_trq_->bind(projection, modelview);
+	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	param_trq_->release();
+	ogl33_->glDisable(GL_BLEND);
+
+}
 
 } // namespace rendering
 

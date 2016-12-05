@@ -61,7 +61,7 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
-
+	fbo_layer_->addColorAttachment(width_, height_);
 	ogl33_->glGenQueries(1, &oq_transp);
 }
 
@@ -75,6 +75,7 @@ void FlatTransparencyDrawer::resize(int w, int h)
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+	fbo_layer_->addColorAttachment(width_, height_);
 }
 
 

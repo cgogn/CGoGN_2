@@ -37,6 +37,7 @@
 
 #include <cgogn/rendering/transparency_volume_drawer.h>
 #include <cgogn/rendering/frame_manipulator.h>
+#include <cgogn/rendering/wall_paper.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -92,6 +93,10 @@ private:
 	std::unique_ptr<VolumeDrawer::Renderer> volume_drawer_rend_;
 
 	std::unique_ptr<cgogn::rendering::FrameManipulator> frame_manip_;
+
+	std::shared_ptr<cgogn::rendering::WallPaper> back_screen_color_;
+	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> back_screen_color_rend_;
+
 
 	float32 expl_;
 
@@ -157,6 +162,9 @@ Viewer::Viewer() :
 	vbo_pos_(nullptr),
 	volume_drawer_(nullptr),
 	volume_drawer_rend_(nullptr),
+	frame_manip_(nullptr),
+	back_screen_color_(nullptr),
+	back_screen_color_rend_(nullptr),
 	expl_(0.8f),
 	plane_clipping1_(0,0,0,0),
 	thick_plane_mode_(false),
@@ -207,11 +215,11 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 
 		case Qt::Key_A:
-			if (mesh_transparency_<254) mesh_transparency_++;
+			if (mesh_transparency_ < 247) mesh_transparency_ += 8;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Z:
-			if (mesh_transparency_>0) mesh_transparency_--;
+			if (mesh_transparency_>7) mesh_transparency_-=8;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_L:
@@ -221,6 +229,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_C:
 			bfc_ = !bfc_;
 			volume_drawer_rend_->set_back_face_culling(bfc_);
+			break;
+		case Qt::Key_B:
+			back_screen_color_->change_color(QColor(250,250,250));
 			break;
 		default:
 			break;
@@ -292,9 +303,13 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	frame_manip_->draw(true,true,proj, view, this);
+	back_screen_color_rend_->draw(this);	// replace glClear
 
-	volume_drawer_rend_->draw_faces(proj,view);
+	frame_manip_->draw(true,true,proj, view, this); // draw opaque first
+
+	volume_drawer_rend_->draw_faces(proj, view,
+		[&]() { frame_manip_->draw(true, true, proj, view, this); }); // last parameter is drawing lambda that you want to be mixed with transparent objects
+
 }
 
 void Viewer::init()
@@ -312,6 +327,8 @@ void Viewer::init()
 	volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 	volume_drawer_rend_->set_max_nb_layers(16);
 
+	back_screen_color_ = std::make_shared<cgogn::rendering::WallPaper>(QColor(0, 0, 40));
+	back_screen_color_rend_ = back_screen_color_->generate_renderer();
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);

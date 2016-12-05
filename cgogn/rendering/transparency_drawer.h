@@ -81,9 +81,34 @@ public:
 	 */
 	void resize(int w, int h);
 
-	template<typename FUNC>
-	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const FUNC& draw_func);
+	/**
+	 * @brief draw the transparent objects mixed with opaque (also drawn separatly)
+	 * @param proj projection matrix
+	 * @param view modelview matrix
+	 * @param draw_func the func/lambda that draw transparent objects
+	 * @param opaque_func the func/lambda that draw opaque objects (use to get zbuffer, not drawn on screen)
+	 */
+	template<typename TFUNC, typename OFUNC>
+	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func, const OFUNC& opaque_func);
 
+
+	/**
+	 * @brief draw only the transparent objects (bad mixing with opaque objects)
+	 * @param proj projection matrix
+	 * @param view modelview matrix
+	 * @param draw_func the func/lambda that draw transparent objects
+	 */
+	template<typename TFUNC>
+	inline void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+	{
+		draw(proj,view,draw_func,[]{});
+	}
+
+
+	/**
+	 * @brief set the max number of layers (eq drawing passes)
+	 * @param nbl
+	 */
 	inline void set_max_nb_layers(int nbl)
 	{
 		max_nb_layers_ = nbl;
@@ -128,8 +153,8 @@ public:
 
 
 
-template<typename FUNC>
-void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view, const FUNC& draw_func)
+template<typename TFUNC, typename OFUNC>
+void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func, const OFUNC& opaque_func)
 {
 	ogl33_->glEnable(GL_TEXTURE_2D);
 	QVector<GLuint> textures = fbo_layer_->textures();
@@ -147,10 +172,18 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 	ogl33_->glDrawBuffers(1,buffs);
 	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
+
 	for (int p=0;p<max_nb_layers_;++p)
 	{
-		ogl33_->glDrawBuffers(1,buffs);
 		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
+
+		if (p > 0)
+		{
+			ogl33_->glDrawBuffers(1, opaq_buff);
+			ogl33_->glClear(GL_COLOR_BUFFER_BIT);
+			opaque_func();
+		}
 
 		ogl33_->glDrawBuffers(2,buffs);
 		param_flat_->layer_ = p;
