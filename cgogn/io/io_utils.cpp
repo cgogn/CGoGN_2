@@ -410,6 +410,38 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 	}
 }
 
+ExportOptions::ExportOptions() :
+	filename_(),
+	position_attribute_(),
+	attributes_to_export_(),
+	binary_(false),
+	compress_(false),
+	overwrite_(true)
+{}
+
+ExportOptions::ExportOptions(const ExportOptions& eo) :
+	filename_(eo.filename_),
+	position_attribute_(eo.position_attribute_),
+	attributes_to_export_(eo.attributes_to_export_),
+	binary_(eo.binary_),
+	compress_(eo.compress_),
+	overwrite_(eo.overwrite_)
+{}
+
+ExportOptions::ExportOptions(ExportOptions&& eo) :
+	filename_(std::move(eo.filename_)),
+	position_attribute_(std::move(eo.position_attribute_)),
+	attributes_to_export_(std::move(eo.attributes_to_export_)),
+	binary_(eo.binary_),
+	compress_(eo.compress_),
+	overwrite_(eo.overwrite_)
+{}
+
+ExportOptions ExportOptions::create()
+{
+	return ExportOptions();
+}
+
 } // namespace io
 
 } // namespace cgogn

@@ -72,13 +72,10 @@ VolumeTransparencyDrawer::Renderer::Renderer(VolumeTransparencyDrawer* vr, int w
 	param_transp_vol_->color_ = vr->face_color_;
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+	resize(w,h);
 
-	ogl33_->glGenQueries(1, &oq_transp);
+	if (ogl33_)
+		ogl33_->glGenQueries(1, &oq_transp);
 }
 
 void VolumeTransparencyDrawer::Renderer::resize(int w, int h)
@@ -98,6 +95,9 @@ void VolumeTransparencyDrawer::Renderer::resize(int w, int h)
 
 void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
+	if (ogl33_ == nullptr)
+		return;
+
 	ogl33_->glEnable(GL_TEXTURE_2D);
 	QVector<GLuint> textures = fbo_layer_->textures();
 	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
@@ -232,6 +232,18 @@ void VolumeTransparencyDrawer::Renderer::set_lighted(bool lighted)
 void VolumeTransparencyDrawer::Renderer::set_max_nb_layers(int nbl)
 {
 	max_nb_layers_ = nbl;
+}
+
+void VolumeTransparencyDrawer::Renderer::set_ogl(QOpenGLFunctions_3_3_Core* ogl)
+{
+	if (ogl == ogl33_)
+		return;
+	if (ogl33_)
+		ogl33_->glDeleteQueries(1, &oq_transp);
+	ogl33_ = ogl;
+	oq_transp = 0u;
+	if (ogl33_)
+		ogl33_->glGenQueries(1, &oq_transp);
 }
 
 

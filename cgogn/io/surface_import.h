@@ -281,14 +281,6 @@ private:
 		return uint32(faces_nb_edges_.size());
 	}
 
-	uint32 compute_nb_vertices() const
-	{
-		std::set<uint32> vertices;
-		for (uint32 v : faces_vertex_indices_)
-			vertices.insert(v);
-		return uint32(vertices.size());
-	}
-
 protected:
 
 	std::vector<uint32> faces_nb_edges_;

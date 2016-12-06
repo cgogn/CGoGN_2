@@ -1,14 +1,12 @@
 
 #include <cgogn/multiresolution/cph/ihcmap2_regular.h>
-
 #include <cgogn/multiresolution/mra/lerp_triquad_mra.h>
-
 #include <cgogn/geometry/types/eigen.h>
 
 
 using namespace cgogn;
 
-using IHMap2 = IHCMap2Regular<DefaultMapTraits>;
+using IHMap2 = IHCMap2Regular;
 
 using Vec3 = Eigen::Vector3d;
 

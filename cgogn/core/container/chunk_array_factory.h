@@ -50,11 +50,8 @@ public:
 	using Self = ChunkArrayFactory<CHUNK_SIZE>;
 	using ChunkArrayGenPtr = std::unique_ptr< ChunkArrayGen<CHUNK_SIZE> >;
 	using NamePtrMap = std::map<std::string, ChunkArrayGenPtr>;
-	using UniqueNamePtrMap = std::unique_ptr<NamePtrMap>;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayFactory);
-
-	static UniqueNamePtrMap map_CA_;
 
 	/**
 	 * @brief register a type
@@ -64,13 +61,9 @@ public:
 	template <typename T>
 	static void register_CA()
 	{
-		// could be moved in register_known_types (dangerous) ??
-		if (!map_CA_)
-			reset();
-
 		std::string&& keyType(name_of_type(T()));
-		if(map_CA_->find(keyType) == map_CA_->end())
-			(*map_CA_)[std::move(keyType)] = make_unique<ChunkArray<CHUNK_SIZE, T>>();
+		if(map_CA_.find(keyType) == map_CA_.end())
+			map_CA_[std::move(keyType)] = make_unique<ChunkArray<CHUNK_SIZE, T>>();
 	}
 
 	static void register_known_types()
@@ -108,9 +101,9 @@ public:
 	static ChunkArrayGenPtr create(const std::string& type_name, const std::string& name)
 	{
 		ChunkArrayGenPtr tmp = nullptr;
-		typename NamePtrMap::const_iterator it = map_CA_->find(type_name);
+		typename NamePtrMap::const_iterator it = map_CA_.find(type_name);
 
-		if(it != map_CA_->end())
+		if(it != map_CA_.end())
 			tmp = (it->second)->clone(name);
 		else
 			cgogn_log_warning("ChunkArrayFactory::create") << "Type \"" << type_name << "\" is not registered in ChunkArrayFactory.";
@@ -120,16 +113,17 @@ public:
 
 	static void reset()
 	{
-		ChunkArrayFactory<CHUNK_SIZE>::map_CA_ = make_unique<NamePtrMap>();
+		map_CA_.clear();
 	}
 
 private:
 
+	static NamePtrMap map_CA_;
 	inline ChunkArrayFactory() {}
 };
 
 template <uint32 CHUNK_SIZE>
-typename ChunkArrayFactory<CHUNK_SIZE>::UniqueNamePtrMap ChunkArrayFactory<CHUNK_SIZE>::map_CA_ = nullptr;
+typename ChunkArrayFactory<CHUNK_SIZE>::NamePtrMap ChunkArrayFactory<CHUNK_SIZE>::map_CA_;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;

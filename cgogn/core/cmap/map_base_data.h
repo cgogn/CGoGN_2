@@ -111,14 +111,12 @@ protected:
 	mutable std::vector<std::thread::id> thread_ids_;
 
 	// vector of Map instances
-	static std::vector<MapBaseData*>* instances_;
-
-	static bool init_CA_factory;
+	static std::vector<const MapBaseData*>* instances_;
 
 	// table of tetra phi2 indices
-	static std::array<int, 12> tetra_phi2;
+	static const std::array<uint32, 12> tetra_phi2;
 	// table of hexa phi2 indices
-	static std::array<int, 24> hexa_phi2;
+	static const std::array<uint32, 24> hexa_phi2;
 
 public:
 
@@ -128,7 +126,7 @@ public:
 
 	virtual ~MapBaseData();
 
-	static inline bool is_alive(MapBaseData* map)
+	static inline bool is_alive(const MapBaseData* map)
 	{
 		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
 	}

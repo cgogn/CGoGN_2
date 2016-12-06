@@ -162,9 +162,15 @@ template <typename T, typename Enable = void>
 struct nested_type_helper;
 
 template <typename T>
-struct nested_type_helper<T, typename std::enable_if<!has_operator_brackets<T>::value>::type>
+struct nested_type_helper<T, typename std::enable_if<!has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>
 {
 	using type = typename std::remove_cv< typename std::remove_reference<T>::type>::type;
+};
+
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!has_operator_brackets<T>::value && has_operator_parenthesis_2<T>::value>::type>
+{
+	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()(0ul,0ul))>::type >::type>::type;
 };
 
 template <typename T>
@@ -198,7 +204,7 @@ template<typename T>
 using array_data_type = typename internal::type_traits::array_data_type_helper<T>::type;
 
 template <typename T>
-inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T& );
+inline typename std::enable_if<!(has_size_method<T>::value || has_rows_method<T>::value || has_cols_method<T>::value), uint32>::type nb_components(const T& );
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val);
 template <typename T>
@@ -207,7 +213,7 @@ template <typename T>
 inline typename std::enable_if<has_rows_method<T>::value && has_cols_method<T>::value, uint32>::type nb_components(const T& val);
 
 template <typename T>
-inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_components(const T&)
+inline typename std::enable_if<!(has_size_method<T>::value || has_rows_method<T>::value || has_cols_method<T>::value), uint32>::type nb_components(const T&)
 {
 	return 1u;
 }
@@ -215,13 +221,21 @@ inline typename std::enable_if<!has_size_method<T>::value, uint32>::type nb_comp
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val)
 {
-	return uint32(val.size()) * nb_components(*(val.begin()));
+	const uint32 size = uint32(val.size());
+	if (size == 0u)
+		return 0u;
+	else
+		return size * nb_components(*(val.begin()));
 }
 
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val)
 {
-	return uint32(val.size()) * nb_components(val[0]);
+	const uint32 size = uint32(val.size());
+	if (size == 0u)
+		return 0u;
+	else
+		return size * nb_components(val[0]);
 }
 
 template <typename T>

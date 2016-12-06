@@ -21,28 +21,60 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_UTILS_STRING_H_
-#define CGOGN_CORE_UTILS_STRING_H_
 
-#include <cgogn/core/dll.h>
-#include <string>
-#include <locale>
-#include <iostream>
+#include <cgogn/core/utils/string.h>
+#include <algorithm>
 
 namespace cgogn
 {
 
+CGOGN_CORE_API std::string to_upper(const std::string& str)
+{
+	const std::locale locale;
+	std::string res(str);
+	for (auto& c : res)
+		c = std::string::value_type(std::toupper(c,locale));
+	return res;
+}
 
-CGOGN_CORE_API std::string to_upper(const std::string& str);
+CGOGN_CORE_API std::string to_lower(const std::string& str)
+{
+	const std::locale locale;
+	std::string res(str);
+	for (auto& c : res)
+		c = std::string::value_type(std::tolower(c,locale));
+	return res;
+}
 
-CGOGN_CORE_API std::string to_lower(const std::string& str);
+CGOGN_CORE_API std::string extension(const std::string& str)
+{
+	const std::size_t dot = str.rfind('.');
+	if (dot == std::string::npos || dot == str.size() -1u)
+		return std::string();
+	return str.substr(dot + 1u);
+}
 
-CGOGN_CORE_API std::string extension(const std::string& str);
+CGOGN_CORE_API std::string remove_extension(const std::string& str)
+{
+	const std::size_t dot = str.rfind('.');
+	if (dot == std::string::npos || dot == str.size() -1u)
+		return str;
+	else
+		return str.substr(0,dot);
+}
 
-CGOGN_CORE_API std::string remove_extension(const std::string& str);
+CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2)
+{
+	using char_t = std::string::value_type;
 
-CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2);
+	if (str1.size() != str2.size())
+		return false;
+
+	const std::locale locale;
+	return std::equal(str1.begin(), str1.end(), str2.begin(), [&locale] (char_t c1, char_t c2)
+	{
+		return std::tolower(c1, locale) == std::tolower(c2, locale);
+	});
+}
 
 } // namespace cgogn
-
-#endif // CGOGN_CORE_UTILS_STRING_H_
