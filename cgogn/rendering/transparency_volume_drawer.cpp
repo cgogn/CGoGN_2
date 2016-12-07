@@ -72,6 +72,9 @@ VolumeTransparencyDrawer::Renderer::Renderer(VolumeTransparencyDrawer* vr, int w
 	param_transp_vol_->color_ = vr->face_color_;
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
+	param_copy_depth_ = ShaderCopyDepth::generate_param();
+
+
 	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);

@@ -9,6 +9,7 @@ if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	transparency_shaders/shader_transparent_quad.h
 	transparency_shaders/shader_transparent_flat.h
 	transparency_shaders/shader_transparent_volumes.h
+	transparency_shaders/shader_copy_depth.h
 	transparency_drawer.h
 	transparency_volume_drawer.h
 	)
@@ -17,6 +18,7 @@ if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	transparency_shaders/shader_transparent_quad.cpp
 	transparency_shaders/shader_transparent_flat.cpp
 	transparency_shaders/shader_transparent_volumes.cpp
+	transparency_shaders/shader_copy_depth.cpp
 	transparency_drawer.cpp
 	transparency_volume_drawer.cpp
 	)

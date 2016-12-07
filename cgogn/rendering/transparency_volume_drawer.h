@@ -29,6 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
+#include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -37,6 +38,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QColor>
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLTexture>
 
 namespace cgogn
 {
@@ -64,6 +66,9 @@ public:
 
 		/// shader for quad blending  with opaque scene
 		std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
+
+
+		std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
 
 		int max_nb_layers_;
 
@@ -216,6 +221,15 @@ template<typename OPAQUE_FUNC>
 void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, const OPAQUE_FUNC& opaque_func)
 {
 	ogl33_->glEnable(GL_TEXTURE_2D);
+
+	QOpenGLTexture depth_tex(QOpenGLTexture::Target2D);
+	depth_tex.setFormat(QOpenGLTexture::D24);
+	depth_tex.setSize(width_,height_);
+	depth_tex.allocateStorage(QOpenGLTexture::Depth,QOpenGLTexture::Float32);
+	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
+
+	param_copy_depth_->texture_ = &depth_tex;
+
 	QVector<GLuint> textures = fbo_layer_->textures();
 	GLenum buffs[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2 };
 
@@ -235,13 +249,18 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 
 	for (int p = 0; p<max_nb_layers_; ++p)
 	{
-		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
+		ogl33_->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		if (p > 0)
 		{
 			ogl33_->glDrawBuffers(1, opaq_buff);
-			ogl33_->glClear(GL_COLOR_BUFFER_BIT);
-			opaque_func();
+			ogl33_->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+//			param_copy_depth_->bind(projection, modelview);
+//			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+//			param_copy_depth_->release();
+
+
 		}
 
 		ogl33_->glDrawBuffers(2, buffs);
