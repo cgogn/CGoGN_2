@@ -57,7 +57,9 @@ inline typename std::enable_if<(is_iterable<T>::value || has_size_method<T>::val
 template <typename T>
 inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
 template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+inline typename std::enable_if<has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+template <typename T>
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value && !has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
 
 template <typename T, std::size_t Precision>
 inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
@@ -357,7 +359,13 @@ inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference
 }
 
 template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+inline typename std::enable_if<has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+{
+	x.cgogn_binary_serialize(o,little_endian);
+}
+
+template <typename T>
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value && !has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
 {
 	unused_parameters(o,x,little_endian);
 	cgogn_assert_not_reached("Error : serialize_binary_helper function called with a non-arithmetic type. You need to specialize the cgogn::serialization::serialize_binary function for your type.");

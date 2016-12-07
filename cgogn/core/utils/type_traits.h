@@ -116,6 +116,11 @@ static auto test_name_of_type(int32) -> sfinae_true<decltype(T::cgogn_name_of_ty
 template <class>
 static auto test_name_of_type(int64) -> std::false_type;
 
+template <class T>
+static auto test_cgogn_binary_serialize(int32) -> sfinae_true<decltype(std::declval<T>().cgogn_binary_serialize(std::declval<std::ostream&>(), true))>;
+template <class>
+static auto test_cgogn_binary_serialize(int64) -> std::false_type;
+
 } // namespace type_traits
 } // namespace internal
 
@@ -149,6 +154,8 @@ struct is_iterable : decltype(internal::type_traits::test_iterable<T>(0)){};
 template <class T>
 struct has_cgogn_name_of_type : decltype(internal::type_traits::test_name_of_type<T>(0)){};
 
+template <class T>
+struct has_cgogn_binary_serialize : decltype(internal::type_traits::test_cgogn_binary_serialize<T>(0)){};
 
 namespace internal
 {
