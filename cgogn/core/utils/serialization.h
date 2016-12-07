@@ -55,12 +55,12 @@ template <typename T>
 inline typename std::enable_if<(is_iterable<T>::value || has_size_method<T>::value) && !std::is_same<T,std::string>::value, void>::type parse_helper(std::istream& iss, T& x);
 
 template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
 template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<std::is_arithmetic<T>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
 template <typename T, std::size_t Precision>
 inline typename std::enable_if<is_iterable<T>::value || (has_size_method<T>::value && has_operator_brackets<T>::value) || has_rows_method<T>::value, void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
 
@@ -349,7 +349,7 @@ namespace internal
 {
 
 template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
 {
 	if (little_endian != internal::cgogn_is_little_endian)
 		x = swap_endianness(x);
@@ -357,7 +357,7 @@ inline typename std::enable_if<std::is_arithmetic<T>::value, void>::type seriali
 }
 
 template <typename T>
-inline typename std::enable_if<!std::is_arithmetic<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
 {
 	unused_parameters(o,x,little_endian);
 	cgogn_assert_not_reached("Error : serialize_binary_helper function called with a non-arithmetic type. You need to specialize the cgogn::serialization::serialize_binary function for your type.");
@@ -399,7 +399,7 @@ inline typename std::enable_if<(is_iterable<T>::value || has_size_method<T>::val
 
 
 template <typename T, std::size_t Precision>
-inline typename std::enable_if<std::is_arithmetic<T>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian)
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian)
 {
 	using numerical_type = typename fixed_precision<T, Precision>::type;
 	if (binary)
