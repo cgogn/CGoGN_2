@@ -185,19 +185,17 @@ TEST(TypeTraitsTest, is_iterable)
 TEST(TypeTraitsTest, nb_components)
 {
 	std::vector<int> v;
-	Mat mat;
-	Vec vec;
 	EXPECT_EQ(cgogn::nb_components(v), 0u);
+	Vec vec;
+	EXPECT_EQ(cgogn::nb_components(vec), 4u);
+	Mat mat;
+	EXPECT_EQ(cgogn::nb_components(mat), 16u);
 	v.resize(4);
 	EXPECT_EQ(cgogn::nb_components(v), 4u);
-	EXPECT_EQ(cgogn::nb_components(mat), 16u);
 }
 
 TEST(TypeTraitsTest, nested_type)
 {
-	std::vector<int> v;
-	Mat mat;
-	Vec vec;
 	{
 		const bool expected_true = std::is_same<int, cgogn::nested_type<std::vector<int>>>::value;
 		EXPECT_TRUE(expected_true);
@@ -212,8 +210,6 @@ TEST(TypeTraitsTest, nested_type)
 		const bool expected_true = std::is_same<int, cgogn::nested_type<Mat>>::value;
 		EXPECT_TRUE(expected_true);
 	}
-
-
 }
 
 
