@@ -49,9 +49,11 @@ const char* ShaderCopyDepth::fragment_shader_source_ =
 "#version 330\n"
 "uniform sampler2D depth_texture;\n"
 "in vec2 tc;\n"
+//"out vec4 col;\n"
 "void main(void)\n"
 "{\n"
 "	gl_FragDepth = texture(depth_texture, tc).r;\n"
+//"	col = vec4(0.0,0.0,0.0,1.0);"
 "}\n";
 
 std::unique_ptr<ShaderCopyDepth> ShaderCopyDepth::instance_ = nullptr;

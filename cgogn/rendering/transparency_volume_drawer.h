@@ -225,9 +225,10 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 	QOpenGLTexture depth_tex(QOpenGLTexture::Target2D);
 	depth_tex.setFormat(QOpenGLTexture::D24);
 	depth_tex.setSize(width_,height_);
-	depth_tex.allocateStorage(QOpenGLTexture::Depth,QOpenGLTexture::Float32);
-	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
-
+	depth_tex.bind();
+	ogl33_->glReadBuffer(GL_FRONT);
+	ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT24, 0, 0, width_, height_,0);
+	depth_tex.release();
 	param_copy_depth_->texture_ = &depth_tex;
 
 	QVector<GLuint> textures = fbo_layer_->textures();
@@ -249,18 +250,14 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 
 	for (int p = 0; p<max_nb_layers_; ++p)
 	{
-		ogl33_->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
 
 		if (p > 0)
 		{
 			ogl33_->glDrawBuffers(1, opaq_buff);
-			ogl33_->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-//			param_copy_depth_->bind(projection, modelview);
-//			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-//			param_copy_depth_->release();
-
-
+			param_copy_depth_->bind(projection, modelview);
+			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			param_copy_depth_->release();
 		}
 
 		ogl33_->glDrawBuffers(2, buffs);
