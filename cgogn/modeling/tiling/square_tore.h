@@ -36,7 +36,7 @@ namespace modeling
 /*! \brief The class of regular tore square tiling
  */
 template <typename MAP>
-class SquareTore : protected Tiling<MAP>
+class SquareTore : public Tiling<MAP>
 {
 	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
