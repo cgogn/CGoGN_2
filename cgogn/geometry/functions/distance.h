@@ -138,8 +138,8 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 template <typename VEC3>
 typename vector_traits<VEC3>::Scalar squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
 {
-	using Scalar = typename VEC3::Scalar;
-
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	
 	VEC3 AP = P - A;
 
 	//squared vector length
