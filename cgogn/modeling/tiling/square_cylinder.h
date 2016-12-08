@@ -36,7 +36,7 @@ namespace modeling
 {
 
 template <typename MAP>
-class SquareCylinder : protected Tiling<MAP>
+class SquareCylinder : public Tiling<MAP>
 {
 	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
