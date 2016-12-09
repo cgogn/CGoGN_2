@@ -25,6 +25,7 @@
 #define CGOGN_CORE_UTILS_TYPE_TRAITS_H_
 
 #include <type_traits>
+#include <iterator>
 #include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
@@ -96,7 +97,7 @@ template <class>
 static auto test_begin_method(int64) -> std::false_type;
 
 template <class T>
-static auto test_iterable(int32) -> sfinae_true<decltype(std::declval<T>().end() != std::declval<T>().end())>;
+static auto test_iterable(int32) -> sfinae_true<decltype( std::begin(std::declval<T>()) != std::end(std::declval<T>()))>;
 template <class>
 static auto test_iterable(int64) -> std::false_type;
 
@@ -114,6 +115,11 @@ template <class T>
 static auto test_name_of_type(int32) -> sfinae_true<decltype(T::cgogn_name_of_type())>;
 template <class>
 static auto test_name_of_type(int64) -> std::false_type;
+
+template <class T>
+static auto test_cgogn_binary_serialize(int32) -> sfinae_true<decltype(std::declval<T>().cgogn_binary_serialize(std::declval<std::ostream&>(), true))>;
+template <class>
+static auto test_cgogn_binary_serialize(int64) -> std::false_type;
 
 } // namespace type_traits
 } // namespace internal
@@ -148,6 +154,8 @@ struct is_iterable : decltype(internal::type_traits::test_iterable<T>(0)){};
 template <class T>
 struct has_cgogn_name_of_type : decltype(internal::type_traits::test_name_of_type<T>(0)){};
 
+template <class T>
+struct has_cgogn_binary_serialize : decltype(internal::type_traits::test_cgogn_binary_serialize<T>(0)){};
 
 namespace internal
 {
@@ -160,33 +168,99 @@ namespace type_traits
  */
 template <typename T, typename Enable = void>
 struct nested_type_helper;
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<is_iterable<T>::value>::type>;
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_size_method<T>::value && has_operator_brackets<T>::value && !has_rows_method<T>::value>::type>;
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_operator_parenthesis_2<T>::value>::type>;
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && !has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>;
 
 template <typename T>
-struct nested_type_helper<T, typename std::enable_if<!has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>
+struct nested_type_helper<T, typename std::enable_if<is_iterable<T>::value>::type>
+{
+	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(*std::begin(std::declval<T>()))>::type >::type>::type;
+};
+
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_size_method<T>::value && has_operator_brackets<T>::value && !has_rows_method<T>::value>::type>
+{
+	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0])>::type >::type>::type;
+};
+
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_operator_parenthesis_2<T>::value>::type>
+{
+	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()(0,0))>::type >::type>::type;
+};
+
+template <typename T>
+struct nested_type_helper<T, typename std::enable_if<!is_iterable<T>::value && !has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>
 {
 	using type = typename std::remove_cv< typename std::remove_reference<T>::type>::type;
 };
 
-template <typename T>
-struct nested_type_helper<T, typename std::enable_if<!has_operator_brackets<T>::value && has_operator_parenthesis_2<T>::value>::type>
-{
-	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()(0ul,0ul))>::type >::type>::type;
-};
 
-template <typename T>
-struct nested_type_helper<T, typename std::enable_if<has_operator_brackets<T>::value>::type>
-{
-	using type = typename nested_type_helper<typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type>::type;
-};
 
 /**
 * This helper is needed because defining the template alias directly leads to a compilation error with MSVC 2013.
 */
-template<typename T>
-struct array_data_type_helper
+template <typename T, typename Enable = void>
+struct array_data_type_helper;
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<is_iterable<T>::value>::type>;
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_size_method<T>::value && has_operator_brackets<T>::value && !has_rows_method<T>::value>::type>;
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_operator_parenthesis_2<T>::value>::type>;
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && !has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>;
+
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<is_iterable<T>::value>::type>
 {
-	using type = typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0ul])>::type >::type;
+	using type = typename std::remove_cv< typename std::remove_reference<decltype(*std::begin(std::declval<T>()))>::type >::type;
 };
+
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_size_method<T>::value && has_operator_brackets<T>::value && !has_rows_method<T>::value>::type>
+{
+	using type = typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()[0])>::type >::type;
+};
+
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && has_operator_parenthesis_2<T>::value>::type>
+{
+	using type = typename std::remove_cv< typename std::remove_reference<decltype(std::declval<T>()(0,0))>::type >::type;
+};
+
+template <typename T>
+struct array_data_type_helper<T, typename std::enable_if<!is_iterable<T>::value && !has_operator_brackets<T>::value && !has_operator_parenthesis_2<T>::value>::type>
+{
+	using type = typename std::remove_cv< typename std::remove_reference<T>::type>::type;
+};
+
+template<typename Container, typename FUNC>
+inline typename std::enable_if<is_iterable<Container>::value, void>::type for_each_helper(Container&& c, FUNC&& func)
+{
+	std::for_each(std::begin(c), std::end(c), func);
+}
+
+template<typename Container, typename FUNC>
+inline typename std::enable_if<!is_iterable<Container>::value && has_operator_brackets<Container>::value && has_size_method<Container>::value && !has_operator_parenthesis_2<Container>::value, void>::type for_each_helper(Container&& c, FUNC&& func)
+{
+	for (decltype (c.size()) i = 0, end = c.size(); i < end ; ++i)
+		func(c[i]);
+}
+
+template<typename Container, typename FUNC>
+inline typename std::enable_if<!is_iterable<Container>::value && has_rows_method<Container>::value && has_cols_method<Container>::value, void>::type for_each_helper(Container&& c, FUNC&& func)
+{
+	for (std::size_t row = 0, rend = c.rows(); row < rend ; ++row)
+		for (std::size_t col = 0, cend = c.cols(); col < cend ; ++col)
+			func(c(row, col));
+}
 
 } // namespace type_traits
 } // namespace internal
@@ -269,6 +343,19 @@ using func_return_type = typename internal::type_traits::function_traits<F>::res
 template<typename F, typename T>
 using is_func_return_same = std::is_same<func_return_type<F>, T>;
 
+/**
+ * @brief for_each function, an utility to iterate over a container that meet one of the following conditions :
+ * I.   Is compatible with std::begin() and std::end() (most of the time by providing a begin() and a end() method)
+ * II.  Has a size() method and implement the operator[]
+ * III. Provide rows() and cols() methods. The iteration is done the "row major" way.
+ * @param c
+ * @param func
+ */
+template<typename Container, typename FUNC>
+inline void for_each(Container&& c, FUNC&& func)
+{
+	internal::type_traits::for_each_helper(std::forward<Container>(c), std::forward<FUNC>(func));
+}
 
 namespace internal
 {
@@ -287,7 +374,6 @@ inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::ty
 }
 
 } // namespace internal
-
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_TYPE_TRAITS_H_

@@ -22,9 +22,11 @@
 *******************************************************************************/
 
 #include <gtest/gtest.h>
-#include <cgogn/core/utils/type_traits.h>
 #include <vector>
 #include <string>
+#include <cgogn/core/utils/type_traits.h>
+#include <cgogn/core/utils/serialization.h>
+#include <cgogn/core/basic/cell.h>
 
 namespace // unnamed namespace for internal linkage
 {
@@ -32,26 +34,35 @@ namespace // unnamed namespace for internal linkage
 struct A1
 {
 public:
-	int operator()(int x) const { return x;}
-	static std::string cgogn_name_of_type() { return "A1"; }
+	inline int operator()(int x) const { return x;}
+	inline static std::string cgogn_name_of_type() { return "A1"; }
 };
 
 auto lambda = [](double) -> float { return 0.0f; };
 
 struct Vec
 {
-	const int& operator[](std::size_t i) const { return data[i]; }
-	int& operator[](std::size_t i) { return data[i]; }
+	inline const int& operator[](std::size_t i) const { return data[i]; }
+	inline int& operator[](std::size_t i) { return data[i]; }
+	inline int size() const { return 4; }
+	inline void cgogn_binary_serialize(std::ostream& ) {} // wrong signature
+
 	int data[4];
-	int size() const { return 4; }
 };
 
 struct Mat
 {
-	const int& operator()(std::size_t i, std::size_t j) const { return data[i][j]; }
-	int& operator()(std::size_t i, std::size_t j) { return data[i][j]; }
-	int rows() const { return 4; }
-	int cols() const { return 4; }
+	inline const int& operator()(std::size_t i, std::size_t j) const { return data[i][j]; }
+	inline int& operator()(std::size_t i, std::size_t j) { return data[i][j]; }
+	inline int rows() const { return 4; }
+	inline int cols() const { return 4; }
+	inline void cgogn_binary_serialize(std::ostream& o, bool little_endian)
+	{
+		for (std::size_t r = 0 ; r < 4 ; ++r)
+			for (std::size_t c = 0 ; c < 4 ; ++c)
+				cgogn::serialization::serialize_binary(o, data[r][c], little_endian);
+	}
+
 	int data[4][4];
 };
 
@@ -185,19 +196,17 @@ TEST(TypeTraitsTest, is_iterable)
 TEST(TypeTraitsTest, nb_components)
 {
 	std::vector<int> v;
-	Mat mat;
-	Vec vec;
 	EXPECT_EQ(cgogn::nb_components(v), 0u);
+	Vec vec;
+	EXPECT_EQ(cgogn::nb_components(vec), 4u);
+	Mat mat;
+	EXPECT_EQ(cgogn::nb_components(mat), 16u);
 	v.resize(4);
 	EXPECT_EQ(cgogn::nb_components(v), 4u);
-	EXPECT_EQ(cgogn::nb_components(mat), 16u);
 }
 
 TEST(TypeTraitsTest, nested_type)
 {
-	std::vector<int> v;
-	Mat mat;
-	Vec vec;
 	{
 		const bool expected_true = std::is_same<int, cgogn::nested_type<std::vector<int>>>::value;
 		EXPECT_TRUE(expected_true);
@@ -212,8 +221,6 @@ TEST(TypeTraitsTest, nested_type)
 		const bool expected_true = std::is_same<int, cgogn::nested_type<Mat>>::value;
 		EXPECT_TRUE(expected_true);
 	}
-
-
 }
 
 
@@ -227,6 +234,30 @@ TEST(TypeTraitsTest, has_cgogn_name_of_type)
 	{
 		const bool expected_false = cgogn::has_cgogn_name_of_type<std::vector<float>>::value;
 		EXPECT_FALSE(expected_false);
+	}
+}
+
+TEST(TypeTraitsTest, has_cgogn_binary_serialize)
+{
+	{
+		const bool expected_false = cgogn::has_cgogn_binary_serialize<A1>::value;
+		EXPECT_FALSE(expected_false);
+	}
+
+	{
+		const bool expected_false = cgogn::has_cgogn_binary_serialize<Vec>::value;
+		EXPECT_FALSE(expected_false);
+	}
+
+
+	{
+		const bool expected_true = cgogn::has_cgogn_binary_serialize<cgogn::Dart>::value;
+		EXPECT_TRUE(expected_true);
+	}
+
+	{
+		const bool expected_true = cgogn::has_cgogn_binary_serialize<Mat>::value;
+		EXPECT_TRUE(expected_true);
 	}
 }
 

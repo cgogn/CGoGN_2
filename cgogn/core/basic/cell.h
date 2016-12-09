@@ -126,15 +126,12 @@ public:
 	inline Cell(const Self& c) : dart(c.dart)
 	{}
 
-	//TODO
-	// Cell(Cell<ORBIT>&& ) = delete;
-
 	/**
 	 * \brief Tests the validity of the cell.
 	 * \retval true if the cell is valid
 	 * \retval false otherwise
 	 */
-	inline bool is_valid() const { return !dart.is_nil(); } const
+	inline bool is_valid() const { return !dart.is_nil(); }
 
 	/**
 	 * \brief Assigns to the left hand side cell the value
@@ -163,6 +160,11 @@ public:
 	* \return a string representing the name of the class
 	*/
 	static std::string cgogn_name_of_type() { return std::string("cgogn::Cell<") + orbit_name(ORBIT) +std::string(">"); }
+
+	inline void cgogn_binary_serialize(std::ostream& o, bool little_endian)
+	{
+		serialization::serialize_binary(o, dart.index, little_endian);
+	}
 };
 
 } // namespace cgogn
