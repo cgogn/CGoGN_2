@@ -199,10 +199,7 @@ void ViewerTransparency::draw()
 		param_point_sprite_->release();
 	}
 
-	transp_drawer_->draw(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); },
-					  [&] { param_point_sprite_->bind(proj, view);
-							render_->draw(cgogn::rendering::POINTS);
-							param_point_sprite_->release(); });
+	transp_drawer_->draw(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;

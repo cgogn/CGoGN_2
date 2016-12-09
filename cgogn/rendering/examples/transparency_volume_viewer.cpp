@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
+#include <chrono>
 
 #include <QOGLViewer/qoglviewer.h>
 
@@ -94,10 +95,6 @@ private:
 
 	std::unique_ptr<cgogn::rendering::FrameManipulator> frame_manip_;
 
-	std::shared_ptr<cgogn::rendering::WallPaper> back_screen_color_;
-	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> back_screen_color_rend_;
-
-
 	float32 expl_;
 
 	QVector4D plane_clipping1_;
@@ -106,6 +103,10 @@ private:
 	int mesh_transparency_;
 	bool lighted_;
 	bool bfc_;
+
+	std::chrono::time_point<std::chrono::system_clock> start_fps_;
+	int nb_fps_;
+
 };
 
 //
@@ -163,8 +164,6 @@ Viewer::Viewer() :
 	volume_drawer_(nullptr),
 	volume_drawer_rend_(nullptr),
 	frame_manip_(nullptr),
-	back_screen_color_(nullptr),
-	back_screen_color_rend_(nullptr),
 	expl_(0.8f),
 	plane_clipping1_(0,0,0,0),
 	thick_plane_mode_(false),
@@ -215,11 +214,15 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 
 		case Qt::Key_A:
-			if (mesh_transparency_ < 247) mesh_transparency_ += 8;
+			mesh_transparency_ += 8;
+			if (mesh_transparency_ > 254)
+				mesh_transparency_ = 254;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Z:
-			if (mesh_transparency_>7) mesh_transparency_-=8;
+			mesh_transparency_ -= 8;
+			if (mesh_transparency_ < 0)
+				mesh_transparency_ = 0;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_L:
@@ -229,9 +232,6 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_C:
 			bfc_ = !bfc_;
 			volume_drawer_rend_->set_back_face_culling(bfc_);
-			break;
-		case Qt::Key_B:
-			back_screen_color_->change_color(QColor(250,250,250));
 			break;
 		default:
 			break;
@@ -303,18 +303,24 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	back_screen_color_rend_->draw(this);	// replace glClear
-
 	frame_manip_->draw(true,true,proj, view, this); // draw opaque first
 
-	volume_drawer_rend_->draw_faces(proj, view,
-		[&]() { frame_manip_->draw(true, true, proj, view, this); }); // last parameter is drawing lambda that you want to be mixed with transparent objects
+	volume_drawer_rend_->draw_faces(proj,view);
+
+	nb_fps_++;
+	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
+	if (elapsed_seconds.count()>= 5)
+	{
+		cgogn_log_info("fps") << double(nb_fps_)/elapsed_seconds.count();
+		nb_fps_ = 0;
+		start_fps_ = std::chrono::system_clock::now();
+	}
 
 }
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.1f,0.1f,0.5f,0.0f);
 
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
@@ -326,9 +332,6 @@ void Viewer::init()
 	volume_drawer_rend_->set_explode_volume(expl_);
 	volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 	volume_drawer_rend_->set_max_nb_layers(16);
-
-	back_screen_color_ = std::make_shared<cgogn::rendering::WallPaper>(QColor(0, 0, 40));
-	back_screen_color_rend_ = back_screen_color_->generate_renderer();
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);
@@ -347,6 +350,9 @@ void Viewer::init()
 	{
 		volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
 	}
+
+	start_fps_ = std::chrono::system_clock::now();
+	nb_fps_ = 0;
 }
 
 void Viewer::resizeGL(int w ,int h)

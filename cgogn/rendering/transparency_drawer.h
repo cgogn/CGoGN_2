@@ -27,6 +27,8 @@
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_flat.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
+#include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
+
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
@@ -49,6 +51,8 @@ class CGOGN_RENDERING_API FlatTransparencyDrawer
 	/// shader for quad blending  with opaque scene
 	std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
 
+	std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
+
 	/// FBO
 	std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
 
@@ -60,6 +64,8 @@ class CGOGN_RENDERING_API FlatTransparencyDrawer
 	int width_;
 
 	int height_;
+
+	GLuint depthTexture_;
 
 public:
 
@@ -86,23 +92,9 @@ public:
 	 * @param proj projection matrix
 	 * @param view modelview matrix
 	 * @param draw_func the func/lambda that draw transparent objects
-	 * @param opaque_func the func/lambda that draw opaque objects (use to get zbuffer, not drawn on screen)
-	 */
-	template<typename TFUNC, typename OFUNC>
-	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func, const OFUNC& opaque_func);
-
-
-	/**
-	 * @brief draw only the transparent objects (bad mixing with opaque objects)
-	 * @param proj projection matrix
-	 * @param view modelview matrix
-	 * @param draw_func the func/lambda that draw transparent objects
 	 */
 	template<typename TFUNC>
-	inline void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
-	{
-		draw(proj,view,draw_func,[]{});
-	}
+	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
 
 
 	/**
@@ -153,10 +145,28 @@ public:
 
 
 
-template<typename TFUNC, typename OFUNC>
-void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func, const OFUNC& opaque_func)
+/**
+ * @brief FlatTransparencyDrawer::draw
+ * @param proj projection matrix
+ * @param view modelview matrix
+ * @param draw_func geometry drawing drawing function
+ */
+template<typename TFUNC>
+void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
 {
+	GLfloat bkColor[4];
+	glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
+
+	if (ogl33_ == nullptr)
+		return;
+
 	ogl33_->glEnable(GL_TEXTURE_2D);
+
+	ogl33_->glEnable(GL_TEXTURE_2D);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	ogl33_->glReadBuffer(GL_BACK);
+	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
+
 	QVector<GLuint> textures = fbo_layer_->textures();
 	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
 
@@ -181,8 +191,10 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 		if (p > 0)
 		{
 			ogl33_->glDrawBuffers(1, opaq_buff);
-			ogl33_->glClear(GL_COLOR_BUFFER_BIT);
-			opaque_func();
+			param_copy_depth_->bind(proj, view);
+			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			param_copy_depth_->release();
 		}
 
 		ogl33_->glDrawBuffers(2,buffs);
@@ -217,7 +229,7 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 
 			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,/*GL_RGBA8*/GL_RGBA32F,0,0,width_,height_,0);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
 		}
 	}
 
@@ -240,6 +252,9 @@ void FlatTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view
 	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	param_trq_->release();
 	ogl33_->glDisable(GL_BLEND);
+
+	glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
+
 }
 
 

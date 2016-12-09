@@ -47,7 +47,8 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 	oq_transp(0u),
 	ogl33_(ogl33),
 	width_(w),
-	height_(h)
+	height_(h),
+	depthTexture_(0)
 {
 	param_flat_ = cgogn::rendering::ShaderFlatTransp::generate_param();
 	param_flat_->front_color_ = QColor(0,250,0,120);
@@ -63,10 +64,20 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 	fbo_layer_->addColorAttachment(width_, height_);
 	ogl33_->glGenQueries(1, &oq_transp);
+
+	resize(w,h);
+
+	if (ogl33_)
+		ogl33_->glGenQueries(1, &oq_transp);
+
+	param_copy_depth_ = ShaderCopyDepth::generate_param();
 }
 
 void FlatTransparencyDrawer::resize(int w, int h)
 {
+	if (ogl33_ == nullptr)
+		return;
+
 	width_ = w;
 	height_ = h;
 
@@ -76,6 +87,18 @@ void FlatTransparencyDrawer::resize(int w, int h)
 	fbo_layer_->addColorAttachment(width_,height_);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 	fbo_layer_->addColorAttachment(width_, height_);
+
+	if (depthTexture_ > 0)
+		ogl33_->glDeleteTextures(1, &depthTexture_);
+
+	ogl33_->glGenTextures(1, &depthTexture_);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	ogl33_->glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
 }
 
 
