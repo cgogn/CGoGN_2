@@ -113,7 +113,7 @@ void VolumeTransparencyDrawer::Renderer::resize(int w, int h)
 void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
 	GLfloat bkColor[4];
-	glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
+	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
 
 	if (ogl33_ == nullptr)
 		return;
@@ -213,7 +213,7 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 	param_trq_->release();
 	ogl33_->glDisable(GL_BLEND);
 
-	glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
+	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
 
 }
 

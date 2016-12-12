@@ -30,7 +30,7 @@ namespace cgogn
 namespace rendering
 {
 
-FlatTransparencyDrawer::~FlatTransparencyDrawer()
+SurfaceTransparencyDrawer::~SurfaceTransparencyDrawer()
 {
 	param_flat_.reset();
 	param_trq_.reset();
@@ -39,7 +39,7 @@ FlatTransparencyDrawer::~FlatTransparencyDrawer()
 		ogl33_->glDeleteQueries(1, &oq_transp);
 }
 
-FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
+SurfaceTransparencyDrawer::SurfaceTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
 	max_nb_layers_(8),
 	param_flat_(nullptr),
 	param_trq_(nullptr),
@@ -54,6 +54,13 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 	param_flat_->front_color_ = QColor(0,250,0,120);
 	param_flat_->back_color_ = QColor(0,0,250,120);
 	param_flat_->ambiant_color_ = QColor(0,0,0,0);
+
+	param_phong_ = cgogn::rendering::ShaderPhongTransp::generate_param();
+	param_phong_->front_color_ = QColor(0,250,0,120);
+	param_phong_->back_color_ = QColor(0,0,250,120);
+	param_phong_->ambiant_color_ = QColor(0,0,0,0);
+	param_phong_->specular_color_ = QColor(255,255,255,0);
+	param_phong_->specular_coef_ = 100.0f;
 
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
@@ -73,7 +80,7 @@ FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_
 	param_copy_depth_ = ShaderCopyDepth::generate_param();
 }
 
-void FlatTransparencyDrawer::resize(int w, int h)
+void SurfaceTransparencyDrawer::resize(int w, int h)
 {
 	if (ogl33_ == nullptr)
 		return;

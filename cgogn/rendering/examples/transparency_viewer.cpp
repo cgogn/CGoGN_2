@@ -75,11 +75,13 @@ private:
 
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
-	VertexAttribute<Vec3> vertex_transfo_;
+	VertexAttribute<Vec3> vertex_normal_;
 	cgogn::geometry::AABB<Vec3> bb_;
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
-	std::unique_ptr<cgogn::rendering::FlatTransparencyDrawer> transp_drawer_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
+
+	std::unique_ptr<cgogn::rendering::SurfaceTransparencyDrawer> transp_drawer_;
 	std::unique_ptr<cgogn::rendering::ShaderPointSprite::Param> param_point_sprite_;
 
 	std::shared_ptr<cgogn::rendering::WallPaper> wp_;
@@ -92,6 +94,7 @@ private:
 	int mesh_transparency_;
 	bool lighted_;
 	bool bfc_;
+	bool phong_rendered_;
 };
 
 
@@ -111,7 +114,9 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_transfo_ = map_.add_attribute<Vec3, Map2::Vertex::ORBIT>("pos_tr");
+	vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+
+	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -129,6 +134,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 {
 	render_.reset();
 	vbo_pos_.reset();
+	vbo_norm_.reset();
 	transp_drawer_.reset();
 	param_point_sprite_.reset();
 }
@@ -136,9 +142,11 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 ViewerTransparency::ViewerTransparency() :
 	map_(),
 	vertex_position_(),
+	vertex_normal_(),
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
+	vbo_norm_(nullptr),
 	transp_drawer_(nullptr),
 	param_point_sprite_(nullptr),
 	wp_(nullptr),
@@ -146,7 +154,8 @@ ViewerTransparency::ViewerTransparency() :
 	draw_points_(true),
 	mesh_transparency_(130),
 	lighted_(true),
-	bfc_(false)
+	bfc_(false),
+	phong_rendered_(false)
 {}
 
 void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
@@ -174,6 +183,9 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 			bfc_ = !bfc_;
 			transp_drawer_->set_back_face_culling(bfc_);
 			break;
+		case Qt::Key_R:
+			phong_rendered_ = !phong_rendered_;
+			break;
 		default:
 			break;
 	}
@@ -199,7 +211,10 @@ void ViewerTransparency::draw()
 		param_point_sprite_->release();
 	}
 
-	transp_drawer_->draw(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
+	if (phong_rendered_)
+		transp_drawer_->draw_phong(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
+	else
+		transp_drawer_->draw_flat(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
@@ -219,6 +234,10 @@ void ViewerTransparency::init()
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
+	vbo_norm_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+
+
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
@@ -228,8 +247,9 @@ void ViewerTransparency::init()
 	param_point_sprite_->size_ = bb_.diag_size()/1000;
 	param_point_sprite_->color_ = QColor(200,200,0);
 
-	transp_drawer_ = cgogn::make_unique<cgogn::rendering::FlatTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
+	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
+	transp_drawer_->set_normal_vbo(vbo_norm_.get());
 	transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
 	transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
 
