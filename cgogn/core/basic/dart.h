@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/core/utils/serialization.h>
 
 /**
  * \file cgogn/core/basic/dart.h
@@ -134,6 +135,11 @@ struct Dart
 	{
 		in >> rhs.index;
 		return in;
+	}
+
+	inline void cgogn_binary_serialize(std::ostream& o, bool little_endian)
+	{
+		serialization::serialize_binary(o,index, little_endian);
 	}
 };
 

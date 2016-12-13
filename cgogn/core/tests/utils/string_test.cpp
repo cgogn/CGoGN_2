@@ -21,28 +21,59 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_CORE_UTILS_STRING_H_
-#define CGOGN_CORE_UTILS_STRING_H_
+#include <gtest/gtest.h>
+#include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/dll.h>
-#include <string>
-#include <locale>
-#include <iostream>
 
-namespace cgogn
+
+
+TEST(StringTest, to_upper)
 {
+	const std::string a("a");
+	const std::string foobar("FoObAR");
 
+	EXPECT_EQ(cgogn::to_upper(a), std::string("A"));
+	EXPECT_EQ(cgogn::to_upper(foobar), std::string("FOOBAR"));
+}
 
-CGOGN_CORE_API std::string to_upper(const std::string& str);
+TEST(StringTest, to_lower)
+{
+	const std::string a("A");
+	const std::string foobar("FoObAR");
 
-CGOGN_CORE_API std::string to_lower(const std::string& str);
+	EXPECT_EQ(cgogn::to_lower(a), std::string("a"));
+	EXPECT_EQ(cgogn::to_lower(foobar), std::string("foobar"));
+}
 
-CGOGN_CORE_API std::string extension(const std::string& str);
+TEST(StringTest, extension)
+{
+	const std::string f1("file_with_no_extension");
+	const std::string f2("file_with_one_extension.vtk");
+	const std::string f3("file_with_two_extensions.tar.gz");
+	const std::string f4("tricky_file.");
 
-CGOGN_CORE_API std::string remove_extension(const std::string& str);
+	EXPECT_TRUE(cgogn::extension(f1).empty());
+	EXPECT_EQ(cgogn::extension(f2), std::string("vtk"));
+	EXPECT_EQ(cgogn::extension(f3), std::string("gz"));
+	EXPECT_TRUE(cgogn::extension(f4).empty());
+}
 
-CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2);
+TEST(StringTest, remove_extension)
+{
+	const std::string f1("file_with_no_extension");
+	const std::string f2("file_with_one_extension.vtk");
+	const std::string f3("file_with_two_extensions.tar.gz");
+	const std::string f4("tricky_file.");
 
-} // namespace cgogn
+	EXPECT_EQ(cgogn::remove_extension(f1), f1);
+	EXPECT_EQ(cgogn::remove_extension(f2), std::string("file_with_one_extension"));
+	EXPECT_EQ(cgogn::remove_extension(f3), std::string("file_with_two_extensions.tar"));
+	EXPECT_EQ(cgogn::remove_extension(f4), std::string("tricky_file."));
+}
 
-#endif // CGOGN_CORE_UTILS_STRING_H_
+TEST(StringTest, i_equals)
+{
+	const std::string f1("MyFile.tar.gz");
+	EXPECT_TRUE(cgogn::i_equals(f1, std::string("myfiLE.taR.GZ")));
+	EXPECT_FALSE(cgogn::i_equals(f1, std::string("myfiLE.taR.GZz")));
+}

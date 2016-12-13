@@ -38,8 +38,91 @@
 namespace cgogn
 {
 
+namespace internal
+{
+/**
+ * Here we can find the declarations of several helper functions and classes. Their definition can be found at the end of the file
+ */
+
+template<typename T>
+inline typename std::enable_if<!has_size_method<T>::value && !is_iterable<T>::value, std::size_t>::type size_helper(const T&);
+template<typename T>
+inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size_helper(const T& x);
+
+template <typename T>
+inline typename std::enable_if<(!has_size_method<T>::value && !is_iterable<T>::value) || std::is_same<T,std::string>::value, void>::type parse_helper(std::istream& iss, T& x);
+template <typename T>
+inline typename std::enable_if<(is_iterable<T>::value || has_size_method<T>::value) && !std::is_same<T,std::string>::value, void>::type parse_helper(std::istream& iss, T& x);
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+template <typename T>
+inline typename std::enable_if<has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+template <typename T>
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value && !has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian);
+
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<is_iterable<T>::value || (has_size_method<T>::value && has_operator_brackets<T>::value) || has_rows_method<T>::value, void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian);
+
+} // namespace internal
+
+
 namespace serialization
 {
+
+/**
+ * @brief serialize_binary function, serialize the data contained in x in o in binary mode (and swapping endianness if little_endian != internal::cgogn_is_little_endian)
+ * @param o, the output ostream
+ * @param x, the data to be serialized
+ * @param little_endian, true iff the data has to be written in little_endian order.
+ * @warning This function need to be specialized for any user-defined type.
+ */
+template <typename T>
+inline void serialize_binary(std::ostream& o, T&& x, bool little_endian)
+{
+	internal::serialize_binary_helper(o,std::forward<T>(x),little_endian);
+}
+
+
+/**
+ * @brief size function
+ * @param data
+ * @return return data.size() if data has a size method, 1 otherwise
+ */
+template<typename T>
+inline std::size_t size(const T& data)
+{
+	return internal::size_helper(data);
+}
+
+/**
+ * @brief parse, extract data x from the istream iss
+ * @param iss
+ * @param x
+ */
+template<typename T>
+inline void parse(std::istream& iss, T& x)
+{
+	internal::parse_helper(iss,x);
+}
+
+/**
+ * @brief ostream_writer, write data x to the ostream o
+ * @param o, the destination ostream
+ * @param x, the data
+ * @param binary, true iff writing in binary mode
+ * @param little_endian, if writing in binary mode, true iff writing data in little endian order.
+ */
+template <typename T, std::size_t Precision = 8ul>
+inline void ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian)
+{
+	internal::ostream_writer_helper<T,Precision>(o,x,binary,little_endian);
+}
+
+
+
 
 template <typename T>
 void load(std::istream& istream, T* dest, std::size_t quantity)
@@ -53,128 +136,6 @@ void save(std::ostream& ostream, T const* src, std::size_t quantity)
 {
 	cgogn_assert(src != nullptr);
 	ostream.write(reinterpret_cast<const char*>(src), static_cast<std::streamsize>(quantity*sizeof(T)));
-}
-
-template<typename T>
-inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T& x);
-template<typename T>
-inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size(const T& x);
-
-template<typename T>
-inline typename std::enable_if<!has_size_method<T>::value, std::size_t>::type size(const T&)
-{
-	return 1;
-}
-
-template<typename T>
-inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size(const T& x)
-{
-	return x.size();
-}
-
-template <typename T>
-inline typename std::enable_if<!has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x);
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value && (!has_cols_method<T>::value || !has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x);
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value &&  has_cols_method<T>::value && has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x);
-
-
-
-template <typename T>
-inline typename std::enable_if<!has_size_method<T>::value || std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
-{
-	iss >> x;
-}
-
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value && !std::is_same<T,std::string>::value, void>::type parse(std::istream& iss, T& x)
-{
-	for (auto& elem : x)
-		parse(iss, elem);
-}
-
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value && (!has_cols_method<T>::value || !has_rows_method<T>::value), void>::type parse(std::istream& iss, T& x)
-{
-	for (std::size_t i = 0u , end = size(x); i < end; ++i)
-		parse(iss, x[i]);
-}
-
-template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && !std::is_same<T,std::string>::value &&  has_cols_method<T>::value && has_rows_method<T>::value, void>::type parse(std::istream& iss, T& x)
-{
-	for (std::size_t r = 0, rend = x.rows(); r < rend ; ++r)
-		for (std::size_t c = 0, cend = x.cols(); c < cend ; ++c)
-			parse(iss,x(r,c));
-}
-
-
-template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<!has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && has_rows_method<T>::value && has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-template <typename T, std::size_t Precision = 8ul>
-inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary = false, bool little_endian = internal::cgogn_is_little_endian);
-
-template <typename T, std::size_t Precision>
-inline typename std::enable_if<!has_size_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& x, bool binary, bool little_endian)
-{
-	using numerical_type = typename fixed_precision<T, Precision>::type;
-	if (binary)
-	{
-		numerical_type tmp = static_cast<numerical_type>(x);
-		if (little_endian != internal::cgogn_is_little_endian)
-			tmp = swap_endianness(tmp);
-		save(o,&tmp,1ul);
-	} else
-		o << x;
-}
-
-template <typename T, std::size_t Precision>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
-{
-	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array[0])>::type>::type;
-	const std::size_t size = array.size();
-	for(std::size_t i = 0ul ; i < size -1ul; ++i)
-	{
-		ostream_writer<nested_type, Precision>(o, array[i], binary, little_endian);
-		if (!binary)
-			o << " ";
-	}
-	ostream_writer<nested_type, Precision>(o, array[size-1ul], binary,little_endian);
-}
-
-template <typename T, std::size_t Precision>
-inline typename std::enable_if<has_size_method<T>::value && is_iterable<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
-{
-	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(*(array.begin()))>::type>::type;
-	const auto end = array.end();
-
-	for (auto it = array.begin(); it != end; )
-	{
-		ostream_writer<nested_type,Precision>(o,(*it), binary, little_endian);
-		++it;
-		if ((!binary) && it != end)
-			o << " ";
-	}
-}
-
-template <typename T, std::size_t Precision>
-inline typename std::enable_if<has_size_method<T>::value && !is_iterable<T>::value && has_rows_method<T>::value && has_cols_method<T>::value, void>::type ostream_writer(std::ostream& o, const T& array, bool binary, bool little_endian)
-{
-	using nested_type = typename std::remove_const<typename std::remove_reference<decltype(array(0,0))>::type>::type;
-	for(std::size_t r = 0, rend = array.rows(); r < rend ; ++r)
-		for(std::size_t c = 0, cend = array.cols(); c < cend ; ++c)
-		{
-			ostream_writer<nested_type,Precision>(o, array(r,c), binary, little_endian);
-			if ((!binary) && !((r == rend -1ul) && (c == cend -1ul)))
-				o << " ";
-		}
 }
 
 template <typename T>
@@ -385,6 +346,91 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity)
 }
 
 } // namespace serialization
+
+namespace internal
+{
+
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+{
+	if (little_endian != internal::cgogn_is_little_endian)
+		x = swap_endianness(x);
+	o.write(reinterpret_cast<const char*>(&x), static_cast<std::streamsize>(sizeof(T)));
+}
+
+template <typename T>
+inline typename std::enable_if<has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+{
+	x.cgogn_binary_serialize(o,little_endian);
+}
+
+template <typename T>
+inline typename std::enable_if<!std::is_arithmetic<typename std::remove_reference<T>::type>::value && !has_cgogn_binary_serialize<T>::value, void>::type serialize_binary_helper(std::ostream& o, T&& x, bool little_endian)
+{
+	unused_parameters(o,x,little_endian);
+	cgogn_assert_not_reached("Error : serialize_binary_helper function called with a non-arithmetic type. You need to specialize the cgogn::serialization::serialize_binary function for your type.");
+}
+
+
+
+
+template<typename T>
+inline typename std::enable_if<!has_size_method<T>::value && !is_iterable<T>::value, std::size_t>::type size_helper(const T&)
+{
+	return 1;
+}
+
+template<typename T>
+inline typename std::enable_if<has_size_method<T>::value, std::size_t>::type size_helper(const T& x)
+{
+	return x.size();
+}
+
+
+
+template <typename T>
+inline typename std::enable_if<(!has_size_method<T>::value && !is_iterable<T>::value) || std::is_same<T,std::string>::value, void>::type parse_helper(std::istream& iss, T& x)
+{
+	iss >> x;
+}
+
+template <typename T>
+inline typename std::enable_if<(is_iterable<T>::value || has_size_method<T>::value) && !std::is_same<T,std::string>::value, void>::type parse_helper(std::istream& iss, T& x)
+{
+	using value_type = typename cgogn::array_data_type<T>;
+	cgogn::for_each(x,[&iss,&x](value_type& v)
+	{
+		serialization::parse(iss,v);
+	});
+}
+
+
+
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<std::is_arithmetic<typename std::remove_reference<T>::type>::value || (!is_iterable<T>::value && !has_size_method<T>::value), void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian)
+{
+	using numerical_type = typename fixed_precision<T, Precision>::type;
+	if (binary)
+	{
+		numerical_type tmp = static_cast<numerical_type>(x);
+		serialization::serialize_binary(o, tmp, little_endian);
+	} else
+		o << x;
+}
+
+template <typename T, std::size_t Precision>
+inline typename std::enable_if<is_iterable<T>::value || (has_size_method<T>::value && has_operator_brackets<T>::value) || has_rows_method<T>::value, void>::type ostream_writer_helper(std::ostream& o, const T& x, bool binary, bool little_endian)
+{
+	using value_type = typename cgogn::array_data_type<T>;
+	cgogn::for_each(x,[binary, little_endian, &o](const value_type& val)
+	{
+		serialization::ostream_writer<value_type, Precision>(o, val, binary, little_endian);
+		if (!binary)
+			o << " ";
+	});
+}
+
+} // namespace internal
 
 } // namespace cgogn
 

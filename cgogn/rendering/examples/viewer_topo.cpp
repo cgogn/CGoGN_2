@@ -174,7 +174,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_E:
-			cgogn::io::export_surface(map_,cgogn::io::ExportOptions("/tmp/pipo.vtp",{cgogn::Orbit(Map2::Vertex::ORBIT),"position"}));
+			cgogn::io::export_surface(map_, cgogn::io::ExportOptions::create().filename("/tmp/pipo.vtp").position_attribute(Map2::Vertex::ORBIT, "position"));
 			break;
 		default:
 			break;

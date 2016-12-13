@@ -28,18 +28,18 @@
 namespace cgogn
 {
 
-std::vector<MapBaseData*>* MapBaseData::instances_ = nullptr;
-bool MapBaseData::init_CA_factory = true;
-
-std::array<int, 12> MapBaseData::tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7};
-std::array<int, 24> MapBaseData::hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17};
+std::vector<const MapBaseData*>* MapBaseData::instances_ = nullptr;
+// tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7}
+const std::array<uint32, 12> MapBaseData::tetra_phi2 = {3,5,7,uint32(-3),7,2,uint32(-5),uint32(-2),2,uint32(-7),uint32(-2),uint32(-7)};
+// hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17}
+const std::array<uint32, 24> MapBaseData::hexa_phi2 = {4,7,10,13, uint32(-4),14,17,2, uint32(-7),uint32(-2),12,2, uint32(-10),uint32(-2),7,2, uint32(-13),uint32(-2),2,uint32(-14), uint32(-2),uint32(-7),uint32(-12),uint32(-17)};
 
 MapBaseData::MapBaseData()
 {
 	if (instances_ == nullptr)
 	{
 		cgogn::thread_start();
-		instances_ = new std::vector<MapBaseData*>;
+		instances_ = new std::vector<const MapBaseData*>;
 	}
 
 	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
@@ -47,11 +47,6 @@ MapBaseData::MapBaseData()
 	// register the map in the vector of instances
 	instances_->push_back(this);
 
-	if (init_CA_factory)
-	{
-		ChunkArrayFactory<CHUNK_SIZE>::reset();
-		init_CA_factory = false;
-	}
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
 		mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);

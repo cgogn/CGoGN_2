@@ -42,9 +42,9 @@ int main(int , char** )
 		g.embed_into_twisted_strip<Vec3>(vertex_twisted_strip, 10.0f, 5.0f, 3.1f);
 		g.embed_into_helicoid<Vec3>(vertex_helicoid, 10.0f, 5.0f, 15.0f, 3.0f, 1);
 
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("grid.off", {vertorb, "grid"}, {}, false, false));
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("twisted_strip.off", {vertorb, "twisted_strip"}, {}, false, false));
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("helicoid.off", {vertorb, "helicoid"}, {}, false, false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("grid.off").position_attribute(vertorb, "grid").binary(false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("twisted_strip.off").position_attribute(vertorb, "twisted_strip").binary(false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("helicoid.off").position_attribute(vertorb, "helicoid").binary(false));
 	}
 
 	{
@@ -71,9 +71,9 @@ int main(int , char** )
 		g.embed_into_sphere<Vec3>(vertex_sphere, 10.0f);
 		g.embed_into_cone<Vec3>(vertex_cone, 10.0f, 5.0f);
 
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("cylinder.off", {vertorb, "cylinder"}, {}, false, false));
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("sphere.off", {vertorb, "sphere"}, {}, false, false));
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("cone.off", {vertorb, "cone"}, {}, false, false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("cylinder.off").position_attribute(vertorb, "cylinder").binary(false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("sphere.off").position_attribute(vertorb, "sphere").binary(false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("cone.off").position_attribute(vertorb, "cone").binary(false));
 	}
 
 	{
@@ -91,7 +91,7 @@ int main(int , char** )
 
 		g.embed_into_tore(vertex_tore, 10.0f, 4.0f);
 
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions("tore.off", {vertorb, "tore"}, {}, false, false));
+		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("tore.off").position_attribute(vertorb, "tore").binary(false));
 	}
 
 /*	{

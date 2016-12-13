@@ -264,7 +264,7 @@ public:
 	 */
 	inline Dart phi2(Dart d) const
 	{
-		return Dart(d.index + MapBaseData::tetra_phi2[d.index%12]);
+		return Dart(d.index + MapBaseData::tetra_phi2[d.index%12u]);
 	}
 
 	/**

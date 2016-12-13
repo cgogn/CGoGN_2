@@ -128,7 +128,41 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
 }
 
+/**
+* compute squared distance from segment to point
+* @param A point of segment
+* @param AB vector of segment
+* @param P the point
+* @return the squared distance
+*/
+template <typename VEC3>
+typename vector_traits<VEC3>::Scalar squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	
+	VEC3 AP = P - A;
 
+	//squared vector length
+	Scalar AB2 = AB.dot(AB);
+
+	//position of projection of P on [A,B]
+	Scalar t = AP.dot(AB) / AB2;
+
+	//before A, distance is PA
+	if(t <= Scalar(0.))
+		return AP.squaredNorm();
+
+	//after B, distance is PB
+	if(t >= Scalar(1.))
+	{
+		VEC3 BP = P - (AB + A);
+		return BP.squaredNorm();
+	}
+
+	//between A & B, distance is projection on (AB)
+	VEC3 X = AB.cross(AP);
+	return X.squaredNorm() / AB2;
+}
 
 } // namespace geometry
 

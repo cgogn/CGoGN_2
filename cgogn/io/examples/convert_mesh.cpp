@@ -23,7 +23,7 @@ const cgogn::Orbit face2   = Map2::Face::ORBIT;
 
 bool string_to_bool (const std::string & v)
 {
-	return (!v.empty()) && (cgogn::equal_case_insensitive(v, std::string("true")) || std::atoi(v.c_str()) != 0);
+	return !v.empty() && (std::atoi(v.c_str()) != 0 || cgogn::i_equals(v, "true"));
 }
 
 int main(int argc, char** argv)
@@ -55,16 +55,23 @@ int main(int argc, char** argv)
 		cgogn_log_info("convert_mesh") << "binary output : " << output_is_binary;
 		cgogn_log_info("convert_mesh") << "compress output : " << compress_output;
 	}
-
+	auto export_options = cgogn::io::ExportOptions::create()
+			.filename(output_filename)
+			.binary(output_is_binary)
+			.compress(compress_output)
+			.overwrite(overwrite_output)
+			.position_attribute(is_surface? vertex2:vertex3, "position");;
 	if (is_surface)
 	{
+		export_options.add_attribute(vertex2,"normal")
+				.add_attribute(face2,"normal");
 		Map2 map;
 		cgogn::io::import_surface<Vec3>(map, input_filename);
-		cgogn::io::export_surface(map, cgogn::io::ExportOptions(output_filename, {vertex2, "position"}, {{vertex2, "normal"}, {face2, "normal"}}, output_is_binary, compress_output, overwrite_output));
+		cgogn::io::export_surface(map, export_options);
 	} else {
 		Map3 map;
 		cgogn::io::import_volume<Vec3>(map, input_filename);
-		cgogn::io::export_volume(map, cgogn::io::ExportOptions(output_filename, {vertex3, "position"}, {}, output_is_binary, compress_output, overwrite_output));
+		cgogn::io::export_volume(map, export_options);
 	}
 
 	return 0;

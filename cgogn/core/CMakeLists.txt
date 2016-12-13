@@ -78,6 +78,7 @@ set(SOURCE_FILES
 	utils/logger_output.cpp
 	utils/log_stream.cpp
 	utils/masks.cpp
+	utils/string.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

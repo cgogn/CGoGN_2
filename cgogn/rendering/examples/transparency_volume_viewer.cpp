@@ -233,6 +233,10 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			bfc_ = !bfc_;
 			volume_drawer_rend_->set_back_face_culling(bfc_);
 			break;
+
+//		case Qt::Key_O:
+//			volume_drawer_rend_->set_ogl(this);
+//			break;
 		default:
 			break;
 	}
@@ -328,7 +332,7 @@ void Viewer::init()
 	volume_drawer_ = cgogn::make_unique<VolumeDrawer>();
 	volume_drawer_->update_face<Vec3>(map_,vertex_position_);
 
-	volume_drawer_rend_ = volume_drawer_->generate_renderer(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
+	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
 	volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 	volume_drawer_rend_->set_max_nb_layers(16);
@@ -357,7 +361,7 @@ void Viewer::init()
 
 void Viewer::resizeGL(int w ,int h)
 {
-	volume_drawer_rend_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
+	volume_drawer_rend_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h, this);
 	QOGLViewer::resizeGL(w,h);
 }
 

@@ -74,7 +74,7 @@ public:
 		std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
 
 		/// Occlusion query
-		GLuint oq_transp;
+		GLuint oq_transp_;
 
 		QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -82,12 +82,19 @@ public:
 
 		int height_;
 
-		Renderer(VolumeTransparencyDrawer* tr, int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
-
 		GLuint depthTexture_;
 
+		Renderer(VolumeTransparencyDrawer* tr);
+
 	public:
-		void resize(int w, int h);
+		/**
+		 * @brief resize (call from interface::resizeGL)
+		 * @param w
+		 * @param h
+		 * @param ogl33
+		 */
+		void resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
+
 
 		~Renderer();
 
@@ -118,7 +125,6 @@ public:
 		 * @param nbl
 		 */
 		void set_max_nb_layers(int nbl);
-
 	};
 
 	using Self = VolumeTransparencyDrawer;
@@ -136,9 +142,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline std::unique_ptr<Renderer> generate_renderer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return std::unique_ptr<Renderer>(new Renderer(this,w,h,ogl33));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 	template <typename VEC3, typename MAP>

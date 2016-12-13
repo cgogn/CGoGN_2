@@ -52,61 +52,58 @@ VolumeTransparencyDrawer::Renderer::~Renderer()
 	param_trq_.reset();
 	fbo_layer_.reset();
 	if (ogl33_)
-		ogl33_->glDeleteQueries(1, &oq_transp);
+		ogl33_->glDeleteQueries(1, &oq_transp_);
 }
 
-VolumeTransparencyDrawer::Renderer::Renderer(VolumeTransparencyDrawer* vr, int w, int h, QOpenGLFunctions_3_3_Core* ogl33) :
+
+VolumeTransparencyDrawer::Renderer::Renderer(VolumeTransparencyDrawer* vr) :
 	param_transp_vol_(nullptr),
 	volume_drawer_data_(vr),
 	param_trq_(nullptr),
 	max_nb_layers_(8),
 	fbo_layer_(nullptr),
-	oq_transp(0u),
-	ogl33_(ogl33),
-	width_(w),
-	height_(h),
+	oq_transp_(0u),
+	ogl33_(nullptr),
 	depthTexture_(0)
 {
 	param_transp_vol_ = ShaderTransparentVolumes::generate_param();
 	param_transp_vol_->set_position_vbo(vr->vbo_pos_.get());
 	param_transp_vol_->explode_factor_ = vr->shrink_v_;
 	param_transp_vol_->color_ = vr->face_color_;
-	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	resize(w,h);
-
-	if (ogl33_)
-		ogl33_->glGenQueries(1, &oq_transp);
+	param_trq_ = ShaderTranspQuad::generate_param();
 
 	param_copy_depth_ = ShaderCopyDepth::generate_param();
+
 }
 
 
-void VolumeTransparencyDrawer::Renderer::resize(int w, int h)
+void VolumeTransparencyDrawer::Renderer::resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
 {
-	if (ogl33_ == nullptr)
-		return;
-
 	width_ = w;
 	height_ = h;
+	ogl33_ = ogl33;
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
+	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 	fbo_layer_->addColorAttachment(width_, height_);// for depth render pass
 
-	if (depthTexture_ > 0)
-		ogl33_->glDeleteTextures(1, &depthTexture_);
+	if (! ogl33->glIsQuery(oq_transp_))
+		ogl33->glGenQueries(1, &oq_transp_);
 
-	ogl33_->glGenTextures(1, &depthTexture_);
-	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
-	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	ogl33_->glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	if (ogl33->glIsTexture(depthTexture_))
+		ogl33->glDeleteTextures(1, &depthTexture_);
+
+	ogl33->glGenTextures(1, &depthTexture_);
+	ogl33->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	ogl33->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	ogl33->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	ogl33->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	ogl33->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	ogl33->glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 }
 
 
@@ -114,9 +111,6 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 {
 	GLfloat bkColor[4];
 	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
-
-	if (ogl33_ == nullptr)
-		return;
 
 	ogl33_->glEnable(GL_TEXTURE_2D);
 	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
@@ -159,7 +153,7 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 		ogl33_->glActiveTexture(GL_TEXTURE1);
 		ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
 
-		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp);
+		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
 
 		param_transp_vol_->bind(projection, modelview);
 		ogl33_->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
@@ -168,7 +162,7 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
 
 		GLuint nb_samples;
-		ogl33_->glGetQueryObjectuiv(oq_transp, GL_QUERY_RESULT, &nb_samples);
+		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
 
 		if (nb_samples == 0) // finished ?
 		{
@@ -189,7 +183,6 @@ void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection
 			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D, textures[1]);
 			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA32F, 0, 0, width_, height_, 0);
-
 		}
 	}
 
@@ -269,7 +262,6 @@ void VolumeTransparencyDrawer::Renderer::set_max_nb_layers(int nbl)
 {
 	max_nb_layers_ = nbl;
 }
-
 
 
 

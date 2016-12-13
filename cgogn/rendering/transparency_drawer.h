@@ -60,7 +60,7 @@ class CGOGN_RENDERING_API SurfaceTransparencyDrawer
 	std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
 
 	/// Occlusion query
-	GLuint oq_transp;
+	GLuint oq_transp_;
 
 	QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -76,19 +76,18 @@ public:
 
 	/**
 	 * @brief create and init
-	 * @param w width of GL widget (do not forget to multiply by devicePixelRatio())
-	 * @param h height GL widget (do not forget to multiply by devicePixelRatio())
-	 * @param ogl33
+
 	 */
-	SurfaceTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
+	SurfaceTransparencyDrawer();
 
 
 	/**
 	 * @brief resize call_back need to be called when resize windows
 	 * @param w width of GL widget (do not forget to multiply by devicePixelRatio())
 	 * @param h height GL widget (do not forget to multiply by devicePixelRatio())
+	 * @param ogl33
 	 */
-	void resize(int w, int h);
+	void resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
 
 	/**
 	 * @brief draw the transparent objects mixed with opaque (also drawn separatly)
@@ -228,14 +227,14 @@ void SurfaceTransparencyDrawer::draw_flat(const QMatrix4x4& proj, const QMatrix4
 		ogl33_->glActiveTexture(GL_TEXTURE1);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
 
-		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp);
+		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
 		param_flat_->bind(proj,view);
 		draw_func();
 		param_flat_->release();
 		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
 
 		GLuint nb_samples;
-		ogl33_->glGetQueryObjectuiv(oq_transp, GL_QUERY_RESULT, &nb_samples);
+		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
 
 		if (nb_samples==0) // finished ?
 			p = max_nb_layers_;
@@ -341,14 +340,14 @@ void SurfaceTransparencyDrawer::draw_phong(const QMatrix4x4& proj, const QMatrix
 		ogl33_->glActiveTexture(GL_TEXTURE1);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
 
-		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp);
+		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
 		param_phong_->bind(proj,view);
 		draw_func();
 		param_phong_->release();
 		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
 
 		GLuint nb_samples;
-		ogl33_->glGetQueryObjectuiv(oq_transp, GL_QUERY_RESULT, &nb_samples);
+		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
 
 		if (nb_samples==0) // finished ?
 			p = max_nb_layers_;

@@ -36,18 +36,16 @@ SurfaceTransparencyDrawer::~SurfaceTransparencyDrawer()
 	param_trq_.reset();
 	fbo_layer_.reset();
 	if (ogl33_)
-		ogl33_->glDeleteQueries(1, &oq_transp);
+		ogl33_->glDeleteQueries(1, &oq_transp_);
 }
 
-SurfaceTransparencyDrawer::SurfaceTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
+SurfaceTransparencyDrawer::SurfaceTransparencyDrawer():
 	max_nb_layers_(8),
 	param_flat_(nullptr),
 	param_trq_(nullptr),
 	fbo_layer_(nullptr),
-	oq_transp(0u),
-	ogl33_(ogl33),
-	width_(w),
-	height_(h),
+	oq_transp_(0u),
+	ogl33_(nullptr),
 	depthTexture_(0)
 {
 	param_flat_ = cgogn::rendering::ShaderFlatTransp::generate_param();
@@ -64,29 +62,15 @@ SurfaceTransparencyDrawer::SurfaceTransparencyDrawer(int w, int h, QOpenGLFuncti
 
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
-	fbo_layer_->addColorAttachment(width_, height_);
-	ogl33_->glGenQueries(1, &oq_transp);
-
-	resize(w,h);
-
-	if (ogl33_)
-		ogl33_->glGenQueries(1, &oq_transp);
-
 	param_copy_depth_ = ShaderCopyDepth::generate_param();
+
 }
 
-void SurfaceTransparencyDrawer::resize(int w, int h)
+void SurfaceTransparencyDrawer::resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
 {
-	if (ogl33_ == nullptr)
-		return;
-
 	width_ = w;
 	height_ = h;
+	ogl33_ = ogl33;
 
 	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
@@ -95,8 +79,12 @@ void SurfaceTransparencyDrawer::resize(int w, int h)
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
 	fbo_layer_->addColorAttachment(width_, height_);
 
-	if (depthTexture_ > 0)
-		ogl33_->glDeleteTextures(1, &depthTexture_);
+	if (! ogl33->glIsQuery(oq_transp_))
+		ogl33->glGenQueries(1, &oq_transp_);
+
+	if (ogl33->glIsTexture(depthTexture_))
+		ogl33->glDeleteTextures(1, &depthTexture_);
+
 
 	ogl33_->glGenTextures(1, &depthTexture_);
 	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
