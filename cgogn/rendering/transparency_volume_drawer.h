@@ -29,6 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
+#include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -65,13 +66,15 @@ public:
 		/// shader for quad blending  with opaque scene
 		std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
 
+		std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
+
 		int max_nb_layers_;
 
 		/// FBO
 		std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
 
 		/// Occlusion query
-		GLuint oq_transp;
+		GLuint oq_transp_;
 
 		QOpenGLFunctions_3_3_Core* ogl33_;
 
@@ -79,25 +82,49 @@ public:
 
 		int height_;
 
-		Renderer(VolumeTransparencyDrawer* tr, int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
+		GLuint depthTexture_;
 
+		Renderer(VolumeTransparencyDrawer* tr);
 
 	public:
-		void resize(int w, int h);
+		/**
+		 * @brief resize (call from interface::resizeGL)
+		 * @param w
+		 * @param h
+		 * @param ogl33
+		 */
+		void resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
+
 
 		~Renderer();
+
+		/**
+		 * @brief draw only the transparent volumes (bad mixing with opaque objects)
+		 * @param projection projection matrix
+		 * @param modelview modelview matrix
+		 */
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 
-		void set_explode_volume(float32 x);
-		void set_color(const QColor& rgb);
-		void set_clipping_plane(const QVector4D& pl);
-		void set_clipping_plane2(const QVector4D& pl);
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
-		void set_back_face_culling(bool cull);
-		void set_lighted(bool lighted);
-		void set_max_nb_layers(int nbl);
-		void set_ogl(QOpenGLFunctions_3_3_Core* ogl);
 
+		void set_explode_volume(float32 x);
+
+		void set_color(const QColor& rgb);
+
+		void set_clipping_plane(const QVector4D& pl);
+
+		void set_clipping_plane2(const QVector4D& pl);
+
+		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+
+		void set_back_face_culling(bool cull);
+
+		void set_lighted(bool lighted);
+
+		/**
+		 * @brief set the max number of layers (eq drawing passes)
+		 * @param nbl
+		 */
+		void set_max_nb_layers(int nbl);
 	};
 
 	using Self = VolumeTransparencyDrawer;
@@ -115,9 +142,9 @@ public:
 	 * @brief generate a renderer (one per context)
 	 * @return pointer on renderer
 	 */
-	inline std::unique_ptr<Renderer> generate_renderer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
+	inline std::unique_ptr<Renderer> generate_renderer()
 	{
-		return std::unique_ptr<Renderer>(new Renderer(this,w,h,ogl33));
+		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
 	template <typename VEC3, typename MAP>
@@ -181,6 +208,7 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 	vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
 	vbo_pos_->release();
 }
+
 
 
 } // namespace rendering

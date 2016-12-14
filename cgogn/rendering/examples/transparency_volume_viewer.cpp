@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
+#include <chrono>
 
 #include <QOGLViewer/qoglviewer.h>
 
@@ -37,6 +38,7 @@
 
 #include <cgogn/rendering/transparency_volume_drawer.h>
 #include <cgogn/rendering/frame_manipulator.h>
+#include <cgogn/rendering/wall_paper.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -101,6 +103,10 @@ private:
 	int mesh_transparency_;
 	bool lighted_;
 	bool bfc_;
+
+	std::chrono::time_point<std::chrono::system_clock> start_fps_;
+	int nb_fps_;
+
 };
 
 //
@@ -157,6 +163,7 @@ Viewer::Viewer() :
 	vbo_pos_(nullptr),
 	volume_drawer_(nullptr),
 	volume_drawer_rend_(nullptr),
+	frame_manip_(nullptr),
 	expl_(0.8f),
 	plane_clipping1_(0,0,0,0),
 	thick_plane_mode_(false),
@@ -207,11 +214,15 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 
 		case Qt::Key_A:
-			if (mesh_transparency_<254) mesh_transparency_++;
+			mesh_transparency_ += 8;
+			if (mesh_transparency_ > 254)
+				mesh_transparency_ = 254;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Z:
-			if (mesh_transparency_>0) mesh_transparency_--;
+			mesh_transparency_ -= 8;
+			if (mesh_transparency_ < 0)
+				mesh_transparency_ = 0;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_L:
@@ -222,6 +233,10 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			bfc_ = !bfc_;
 			volume_drawer_rend_->set_back_face_culling(bfc_);
 			break;
+
+//		case Qt::Key_O:
+//			volume_drawer_rend_->set_ogl(this);
+//			break;
 		default:
 			break;
 	}
@@ -292,14 +307,24 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	frame_manip_->draw(true,true,proj, view, this);
+	frame_manip_->draw(true,true,proj, view, this); // draw opaque first
 
 	volume_drawer_rend_->draw_faces(proj,view);
+
+	nb_fps_++;
+	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
+	if (elapsed_seconds.count()>= 5)
+	{
+		cgogn_log_info("fps") << double(nb_fps_)/elapsed_seconds.count();
+		nb_fps_ = 0;
+		start_fps_ = std::chrono::system_clock::now();
+	}
+
 }
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.1f,0.1f,0.5f,0.0f);
 
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
@@ -307,11 +332,10 @@ void Viewer::init()
 	volume_drawer_ = cgogn::make_unique<VolumeDrawer>();
 	volume_drawer_->update_face<Vec3>(map_,vertex_position_);
 
-	volume_drawer_rend_ = volume_drawer_->generate_renderer(this->devicePixelRatio()*this->size().width(),this->devicePixelRatio()*this->size().height(),this);
+	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
 	volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 	volume_drawer_rend_->set_max_nb_layers(16);
-
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);
@@ -330,11 +354,14 @@ void Viewer::init()
 	{
 		volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
 	}
+
+	start_fps_ = std::chrono::system_clock::now();
+	nb_fps_ = 0;
 }
 
 void Viewer::resizeGL(int w ,int h)
 {
-	volume_drawer_rend_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
+	volume_drawer_rend_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h, this);
 	QOGLViewer::resizeGL(w,h);
 }
 

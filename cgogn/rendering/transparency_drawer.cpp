@@ -30,51 +30,70 @@ namespace cgogn
 namespace rendering
 {
 
-FlatTransparencyDrawer::~FlatTransparencyDrawer()
+SurfaceTransparencyDrawer::~SurfaceTransparencyDrawer()
 {
 	param_flat_.reset();
 	param_trq_.reset();
 	fbo_layer_.reset();
 	if (ogl33_)
-		ogl33_->glDeleteQueries(1, &oq_transp);
+		ogl33_->glDeleteQueries(1, &oq_transp_);
 }
 
-FlatTransparencyDrawer::FlatTransparencyDrawer(int w, int h, QOpenGLFunctions_3_3_Core* ogl33):
+SurfaceTransparencyDrawer::SurfaceTransparencyDrawer():
 	max_nb_layers_(8),
 	param_flat_(nullptr),
 	param_trq_(nullptr),
 	fbo_layer_(nullptr),
-	oq_transp(0u),
-	ogl33_(ogl33),
-	width_(w),
-	height_(h)
+	oq_transp_(0u),
+	ogl33_(nullptr),
+	depthTexture_(0)
 {
 	param_flat_ = cgogn::rendering::ShaderFlatTransp::generate_param();
 	param_flat_->front_color_ = QColor(0,250,0,120);
 	param_flat_->back_color_ = QColor(0,0,250,120);
 	param_flat_->ambiant_color_ = QColor(0,0,0,0);
 
+	param_phong_ = cgogn::rendering::ShaderPhongTransp::generate_param();
+	param_phong_->front_color_ = QColor(0,250,0,120);
+	param_phong_->back_color_ = QColor(0,0,250,120);
+	param_phong_->ambiant_color_ = QColor(0,0,0,0);
+	param_phong_->specular_color_ = QColor(255,255,255,0);
+	param_phong_->specular_coef_ = 100.0f;
+
 	param_trq_ = cgogn::rendering::ShaderTranspQuad::generate_param();
 
-	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
-	fbo_layer_->addColorAttachment(width_,height_);
-	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+	param_copy_depth_ = ShaderCopyDepth::generate_param();
 
-	ogl33_->glGenQueries(1, &oq_transp);
 }
 
-void FlatTransparencyDrawer::resize(int w, int h)
+void SurfaceTransparencyDrawer::resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
 {
 	width_ = w;
 	height_ = h;
+	ogl33_ = ogl33;
 
 	fbo_layer_= cgogn::make_unique<QOpenGLFramebufferObject>(width_,height_,QOpenGLFramebufferObject::Depth,GL_TEXTURE_2D,/*GL_RGBA8*/GL_RGBA32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F);
 	fbo_layer_->addColorAttachment(width_,height_);
 	fbo_layer_->addColorAttachment(width_,height_,GL_R32F); // first depth
+	fbo_layer_->addColorAttachment(width_, height_);
+
+	if (! ogl33->glIsQuery(oq_transp_))
+		ogl33->glGenQueries(1, &oq_transp_);
+
+	if (ogl33->glIsTexture(depthTexture_))
+		ogl33->glDeleteTextures(1, &depthTexture_);
+
+
+	ogl33_->glGenTextures(1, &depthTexture_);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	ogl33_->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	ogl33_->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	ogl33_->glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
 }
 
 
