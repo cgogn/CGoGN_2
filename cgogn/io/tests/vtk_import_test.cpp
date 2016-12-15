@@ -151,6 +151,26 @@ TEST(ImportTest, vtk_vtu_binary_zlib_volume_import)
 	EXPECT_TRUE(expected_empty_error_output.empty());
 }
 
+TEST(ImportTest, vtk_import_surface_vtu)
+{
+	Map2 map;
+	testing::internal::CaptureStderr();
+	cgogn::io::import_surface<Vec3>(map, mesh_path + "vtk/Organ.vtu");
+	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
+
+	auto pos = map.get_attribute<Vec3, Vertex2>("position");
+	const uint32 nbv = map.nb_cells<Vertex2::ORBIT>();
+	const uint32 nbe = map.nb_cells<Map2::Edge::ORBIT>();
+	const uint32 nbf = map.nb_cells<Map2::Face::ORBIT>();
+
+	EXPECT_TRUE(pos.is_valid());
+	EXPECT_TRUE(map.check_map_integrity());
+	EXPECT_EQ(nbv, 705u);
+	EXPECT_EQ(nbe, 2109u);
+	EXPECT_EQ(nbf, 1406u);
+	EXPECT_TRUE(expected_empty_error_output.empty());
+}
+
 TEST(ImportTest, vtk_legacy_ascii_voxel_import)
 {
 	Map3 map;
