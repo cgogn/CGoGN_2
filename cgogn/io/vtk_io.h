@@ -853,6 +853,12 @@ public:
 		POLYDATA
 	};
 
+	enum VTK_FILE_TYPE
+	{
+		LEGACY = 0,
+		XML = 1
+	};
+
 	using Self = VtkIO<PRIM_SIZE, VEC3>;
 	using DataInputGen = cgogn::io::DataInputGen;
 	template <typename T>
@@ -864,10 +870,10 @@ public:
 	virtual ~VtkIO() {}
 
 protected:
-
+	VTK_FILE_TYPE		vtk_file_type_;
 	DataInput<VEC3>		positions_;
 	DataInput<uint32>	cells_;
-	DataInput<int>		cell_types_;
+	DataInput<int32>	cell_types_;
 	DataInput<uint32>	offsets_;
 
 protected:
@@ -884,7 +890,7 @@ protected:
 	bool parse_vtk_legacy_file(std::ifstream& fp, bool big_endian = true)
 	{
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
-
+		vtk_file_type_ = VTK_FILE_TYPE::LEGACY;
 		cgogn_log_info("parse_vtk_legacy_file") << "Opening a legacy vtk file";
 
 		std::string line;
@@ -1118,6 +1124,8 @@ protected:
 		using tinyxml2::XMLError;
 		using tinyxml2::XML_NO_ERROR;
 		using tinyxml2::XMLElement;
+
+		vtk_file_type_ = VTK_FILE_TYPE::XML;
 
 		XMLDocument doc;
 		XMLError eResult = doc.LoadFile(filename.c_str());
@@ -1476,11 +1484,20 @@ private:
 		this->reserve(nb_faces);
 
 		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
-		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
+		const std::vector<int32>* cell_types_vec = static_cast<std::vector<int32>*>(this->cell_types_.buffer_vector());
+		const auto offsets_begin = static_cast<std::vector<uint32>*>(this->offsets_.buffer_vector())->begin();
+		auto offset_it = offsets_begin;
 		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
 		{
-			const std::size_t nb_vert = *(cells_it++);
 			const int cell_type = *(cell_types_it++);
+			std::size_t nb_vert(0);
+			if (this->vtk_file_type_ == Inherit_Vtk::VTK_FILE_TYPE::LEGACY)
+				nb_vert = *cells_it++;
+			else {
+				const uint32 previous_offset = (offset_it == offsets_begin)? 0:*(offset_it-1);
+				nb_vert = *offset_it - previous_offset;
+				++offset_it;
+			}
 
 			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 			{
