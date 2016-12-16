@@ -29,5 +29,6 @@ namespace cgogn
 {
 
 template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
+template CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 
 } // namespace cgogn

@@ -204,7 +204,7 @@ TEST_F(ChunkArrayContainerTest, test_compact_tri)
 TEST_F(ChunkArrayContainerTest, test_merge)
 {
 	using VEC3F = std::array<float32,3>;
-	ChunkArrayContainer::ChunkArrayFactory::register_known_types();
+	cgogn::chunk_array_factory<16>().register_known_types();
 
 	ChunkArrayContainer ca_cont;
 	ChunkArray<uint32>* data_i = ca_cont.add_chunk_array<uint32>("indices");
@@ -300,7 +300,7 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 {
 	using VEC3F = std::array<float32,3>;
 
-	ChunkArrayContainer::ChunkArrayFactory::register_known_types();
+	cgogn::chunk_array_factory<16>().register_known_types();
 
 	ChunkArrayContainer ca_cont;
 	ChunkArray<uint32>* data_i = ca_cont.add_chunk_array<uint32>("indices");
