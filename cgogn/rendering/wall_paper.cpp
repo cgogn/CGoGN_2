@@ -25,6 +25,7 @@
 #include <cgogn/rendering/wall_paper.h>
 
 #include <QOpenGLFunctions>
+#include <QColor>
 #include <iostream>
 
 
@@ -74,7 +75,7 @@ WallPaper::WallPaper(const QColor& col) :
 	texture_(nullptr)
 {
 	QImage img(1, 1, QImage::Format_RGB32);
-	img.setPixelColor(0, 0, col);
+	img.setPixel(0, 0, col.rgba());
 	init(img);
 }
 
@@ -84,10 +85,10 @@ WallPaper::WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& c
 	texture_(nullptr)
 {
 	QImage img(2, 2, QImage::Format_RGB32);
-	img.setPixelColor(0, 1, col_bl);
-	img.setPixelColor(1, 1, col_br);
-	img.setPixelColor(1, 0, col_tr);
-	img.setPixelColor(0, 0, col_tl);
+	img.setPixel(0, 1, col_bl.rgba());
+	img.setPixel(1, 1, col_br.rgba());
+	img.setPixel(1, 0, col_tr.rgba());
+	img.setPixel(0, 0, col_tl.rgba());
 	init(img);
 	texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
