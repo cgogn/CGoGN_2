@@ -118,7 +118,8 @@ public:
 
 	~DartMarker() override
 	{
-		unmark_all();
+		if (MapBaseData::is_alive(&(this->map_)))
+			unmark_all();
 	}
 
 	inline void unmark_all()
@@ -154,7 +155,8 @@ public:
 
 	~DartMarkerStore() override
 	{
-		unmark_all();
+		if (MapBaseData::is_alive(&(this->map_)))
+			unmark_all();
 		cgogn::dart_buffers()->release_buffer(marked_darts_);
 	}
 
