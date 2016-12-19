@@ -128,7 +128,7 @@ public:
 
 	static inline bool is_alive(const MapBaseData* map)
 	{
-		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
+		return (instances_ != nullptr) && (std::find(instances_->begin(), instances_->end(), map) != instances_->end());
 	}
 
 	/*******************************************************************************
