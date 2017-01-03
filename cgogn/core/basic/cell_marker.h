@@ -179,7 +179,7 @@ public:
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid CellMarkerStore");
 		auto it = std::find(marked_cells_->begin(), marked_cells_->end(), this->map_.embedding(c));
-		cgogn_message_assert(it != marked_cells_.end(), "Cell not found");
+		cgogn_message_assert(it != marked_cells_->end(), "Cell not found");
 		std::swap(*it, marked_cells_->back());
 		marked_cells_->pop_back();
 	}
