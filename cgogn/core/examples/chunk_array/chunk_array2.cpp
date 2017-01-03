@@ -118,9 +118,9 @@ int test_load(bool with_register)
 
 	if (with_register)
 	{
-		ChunkArrayFactory::register_CA<DoubleVecList>();
-		ChunkArrayFactory::register_CA<StringListVec>();
-		ChunkArrayFactory::register_CA<StringArray>();
+		cgogn::chunk_array_factory<SIZE>().register_CA<DoubleVecList>();
+		cgogn::chunk_array_factory<SIZE>().register_CA<StringListVec>();
+		cgogn::chunk_array_factory<SIZE>().register_CA<StringArray>();
 	}
 
 	std::ifstream ifi("pipo.map", std::ios::binary);

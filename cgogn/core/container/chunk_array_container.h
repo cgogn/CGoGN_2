@@ -290,7 +290,7 @@ public:
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
 		ChunkArray<T>* carr = new ChunkArray<T>(name);
-		ChunkArrayFactory::template register_CA<T>();
+		chunk_array_factory<CHUNK_SIZE>().template register_CA<T>();
 
 		// reserve memory
 		carr->set_nb_chunks(refs_.nb_chunks());
@@ -692,7 +692,7 @@ public:
 				const std::string& name = cac.names_[i];
 				const std::string& type_name = cac.type_names_[i];
 				map_attrib[i] = uint32(table_arrays_.size());
-				auto cag = ChunkArrayFactory::create(type_name,name);
+				auto cag = chunk_array_factory<CHUNK_SIZE>().create(type_name,name);
 				cgogn_assert(cag);
 				cag->set_nb_chunks(refs_.nb_chunks());
 				table_arrays_.push_back(cag.release());
@@ -973,7 +973,7 @@ public:
 		cgogn_assert(fs.good());
 
 		// check and register all known types if necessaey
-		ChunkArrayFactory::register_known_types();
+		chunk_array_factory<CHUNK_SIZE>().register_known_types();
 
 		// read info
 		uint32 buff1[4];
@@ -1005,7 +1005,7 @@ public:
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			auto cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
+			auto cag = chunk_array_factory<CHUNK_SIZE>().create(type_names_[i], names_[i]);
 			if (cag)
 			{
 				table_arrays_.push_back(cag.release());

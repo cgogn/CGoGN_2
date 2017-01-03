@@ -864,10 +864,10 @@ public:
 	virtual ~VtkIO() {}
 
 protected:
-
+	FileType			vtk_file_type_;
 	DataInput<VEC3>		positions_;
 	DataInput<uint32>	cells_;
-	DataInput<int>		cell_types_;
+	DataInput<int32>	cell_types_;
 	DataInput<uint32>	offsets_;
 
 protected:
@@ -884,7 +884,6 @@ protected:
 	bool parse_vtk_legacy_file(std::ifstream& fp, bool big_endian = true)
 	{
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
-
 		cgogn_log_info("parse_vtk_legacy_file") << "Opening a legacy vtk file";
 
 		std::string line;
@@ -1400,6 +1399,7 @@ protected:
 
 	inline bool read_xml_file(const std::string& filename)
 	{
+
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 		this->fill_surface_import();
@@ -1411,27 +1411,6 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 		this->fill_surface_import();
-		return true;
-	}
-
-	inline bool read_vtp_file(const std::string& filename)
-	{
-		if (!Inherit_Vtk::parse_xml_vtu(filename))
-			return false;
-		this->fill_surface_import();
-
-		auto cells_it = this->cells_.vec().begin();
-		uint32 last_offset = 0u;
-		for(auto offset_it = this->offsets_.vec().begin(), offset_end = this->offsets_.vec().end(); offset_it != offset_end; ++offset_it)
-		{
-			const uint32 curr_offset = *offset_it;
-			const uint32 nb_vertices = curr_offset - last_offset;
-			this->faces_nb_edges_.push_back(nb_vertices);
-			for (uint32 i = 0u; i < nb_vertices; ++i)
-				this->faces_vertex_indices_.push_back(*cells_it++);
-			last_offset = *offset_it;
-		}
-
 		return true;
 	}
 
@@ -1449,8 +1428,8 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		const FileType ft = file_type(filename);
-		switch (ft)
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{
@@ -1459,9 +1438,8 @@ protected:
 				return this->read_vtk_legacy_file(fp);
 			}
 			case FileType::FileType_VTU:
-				return this->read_xml_file(filename);
 			case FileType::FileType_VTP:
-				return this->read_vtp_file(filename);
+				return this->read_xml_file(filename);
 			default:
 				cgogn_log_warning("VtkSurfaceImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << extension(filename) << "\".";
 				return false;
@@ -1472,42 +1450,69 @@ private:
 
 	inline void fill_surface_import()
 	{
-		const uint32 nb_faces = uint32(this->cell_types_.size());
-		this->reserve(nb_faces);
-
-		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
-		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
-		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
+		if (this->cell_types_.size() > 0) // .vtk and .vtu files
 		{
-			const std::size_t nb_vert = *(cells_it++);
-			const int cell_type = *(cell_types_it++);
+			const uint32 nb_faces = uint32(this->cell_types_.size());
+			this->reserve(nb_faces);
 
-			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
+			auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
+			const std::vector<int32>* cell_types_vec = static_cast<std::vector<int32>*>(this->cell_types_.buffer_vector());
+			const auto offsets_begin = static_cast<std::vector<uint32>*>(this->offsets_.buffer_vector())->begin();
+			auto offset_it = offsets_begin;
+			std::size_t last_offset(0);
+			for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
 			{
-				this->faces_nb_edges_.push_back(uint32(nb_vert));
-				for (std::size_t i = 0ul ; i < nb_vert;++i)
+				const int cell_type = *(cell_types_it++);
+				std::size_t nb_vert(0);
+				if (this->vtk_file_type_ == FileType::FileType_VTK_LEGACY)
+					nb_vert = *cells_it++;
+				else {
+					const std::size_t curr_offset = *offset_it++;
+					nb_vert = curr_offset - last_offset;
+					last_offset = curr_offset;
+				}
+
+				if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 				{
-					this->faces_vertex_indices_.push_back(*cells_it++);
+					this->faces_nb_edges_.push_back(uint32(nb_vert));
+					for (std::size_t i = 0ul ; i < nb_vert;++i)
+					{
+						this->faces_vertex_indices_.push_back(*cells_it++);
+					}
+				}
+				else
+				{
+					std::vector<uint32> vertexIDS;
+					vertexIDS.reserve(nb_vert);
+					for (std::size_t i = 0ul ; i < nb_vert;++i)
+					{
+						vertexIDS.push_back(*cells_it++);
+					}
+
+					for (uint32 i = 0u ; i < nb_vert -2u; ++i)
+					{
+						this->faces_nb_edges_.push_back(3);
+						this->faces_vertex_indices_.push_back(vertexIDS[i]);
+						this->faces_vertex_indices_.push_back(vertexIDS[i+1]);
+						this->faces_vertex_indices_.push_back(vertexIDS[i+2]);
+						if (i % 2u == 0u)
+							std::swap(this->faces_vertex_indices_.back(), *(this->faces_vertex_indices_.end()-2));
+					}
 				}
 			}
-			else
+		} else { // .vtp files
+			const uint32 nb_faces = uint32(this->offsets_.vec().size());
+			this->reserve(nb_faces);
+			auto cells_it = this->cells_.vec().begin();
+			uint32 last_offset = 0u;
+			for(auto offset_it = this->offsets_.vec().begin(), offset_end = this->offsets_.vec().end(); offset_it != offset_end; ++offset_it)
 			{
-				std::vector<uint32> vertexIDS;
-				vertexIDS.reserve(nb_vert);
-				for (std::size_t i = 0ul ; i < nb_vert;++i)
-				{
-					vertexIDS.push_back(*cells_it++);
-				}
-
-				for (uint32 i = 0u ; i < nb_vert -2u; ++i)
-				{
-					this->faces_nb_edges_.push_back(3);
-					this->faces_vertex_indices_.push_back(vertexIDS[i]);
-					this->faces_vertex_indices_.push_back(vertexIDS[i+1]);
-					this->faces_vertex_indices_.push_back(vertexIDS[i+2]);
-					if (i % 2u == 0u)
-						std::swap(this->faces_vertex_indices_.back(), *(this->faces_vertex_indices_.end()-2));
-				}
+				const uint32 curr_offset = *offset_it;
+				const uint32 nb_vertices = curr_offset - last_offset;
+				this->faces_nb_edges_.push_back(nb_vertices);
+				for (uint32 i = 0u; i < nb_vertices; ++i)
+					this->faces_vertex_indices_.push_back(*cells_it++);
+				last_offset = *offset_it;
 			}
 		}
 	}
@@ -1598,8 +1603,8 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		const FileType ft = file_type(filename);
-		switch (ft)
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{

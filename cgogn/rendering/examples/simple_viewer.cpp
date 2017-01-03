@@ -130,14 +130,20 @@ void Viewer::import(const std::string& surface_mesh)
 		std::exit(EXIT_FAILURE);
 	}
 
-	vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+
+	vertex_normal_ = map_.template get_attribute<Vec3, Map2::Vertex>("normal");
+	if (!vertex_normal_.is_valid())
+	{
+		vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+		cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+	}
+
 
 // testing merge method
 //	Map2 map2;
 //	cgogn::io::import_surface<Vec3>(map2, std::string(DEFAULT_MESH_PATH) + std::string("off/star_convex.off"));
 //	map_.merge(map2);
 
-	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();

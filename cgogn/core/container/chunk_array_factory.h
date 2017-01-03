@@ -38,12 +38,18 @@
 
 namespace cgogn
 {
+template <uint32 CHUNK_SIZE>
+class ChunkArrayFactory; // forward declaration
+
+template <uint32 CHUNK_SIZE>
+ChunkArrayFactory<CHUNK_SIZE>& chunk_array_factory();
 
 template <uint32 CHUNK_SIZE>
 class ChunkArrayFactory
 {
 	static_assert(CHUNK_SIZE >= 1u, "ChunkSize must be at least 1");
 	static_assert(!(CHUNK_SIZE & (CHUNK_SIZE - 1)), "CHUNK_SIZE must be a power of 2");
+	friend ChunkArrayFactory& chunk_array_factory<>();
 
 public:
 
@@ -59,17 +65,15 @@ public:
 	 * @param obj a ptr on object (new ChunkArray<32,int> for example) ptr will be deleted by clean method
 	 */
 	template <typename T>
-	static void register_CA()
+	void register_CA()
 	{
-		std::string&& keyType(name_of_type(T()));
+		std::string keyType(name_of_type(T()));
 		if(map_CA_.find(keyType) == map_CA_.end())
 			map_CA_[std::move(keyType)] = make_unique<ChunkArray<CHUNK_SIZE, T>>();
 	}
 
-	static void register_known_types()
+	void register_known_types()
 	{
-		static bool known_types_initialized_ = false;
-
 		if (known_types_initialized_)
 			return;
 
@@ -98,7 +102,7 @@ public:
 	 * @param keyType typename of type store in ChunkArray
 	 * @return ptr on created ChunkArray
 	 */
-	static ChunkArrayGenPtr create(const std::string& type_name, const std::string& name)
+	ChunkArrayGenPtr create(const std::string& type_name, const std::string& name) const
 	{
 		ChunkArrayGenPtr tmp = nullptr;
 		typename NamePtrMap::const_iterator it = map_CA_.find(type_name);
@@ -111,22 +115,27 @@ public:
 		return tmp;
 	}
 
-	static void reset()
-	{
-		map_CA_.clear();
-	}
 
 private:
+	inline ChunkArrayFactory() :
+		map_CA_(),
+		known_types_initialized_(false)
+	{}
 
-	static NamePtrMap map_CA_;
-	inline ChunkArrayFactory() {}
+	NamePtrMap map_CA_;
+	bool known_types_initialized_;
 };
 
 template <uint32 CHUNK_SIZE>
-typename ChunkArrayFactory<CHUNK_SIZE>::NamePtrMap ChunkArrayFactory<CHUNK_SIZE>::map_CA_;
+ChunkArrayFactory<CHUNK_SIZE>& chunk_array_factory()
+{
+	static ChunkArrayFactory<CHUNK_SIZE> factory;
+	return factory;
+}
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
+extern template CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
 
 } // namespace cgogn
