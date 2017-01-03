@@ -109,7 +109,8 @@ public:
 	{
 		// due to external ref registration and to the fact that mark attributes are only deleted
 		// at map destruction, the only way for the marker pointer to be null is that the map
-		// has been destroyed. The second (less efficient) test is thus unnecessary
+		// has been destroyed. The second (less efficient) test is thus unnecessary, i.e. if
+		// the pointer is non-null then the map is still alive, and conversely
 		return mark_attribute_ != nullptr; // && MapBaseData::is_alive(&map_);
 	}
 };
