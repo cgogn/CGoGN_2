@@ -414,25 +414,25 @@ public:
 		return mca;
 	}
 
-	/**
-	 * @brief remove a marker attribute by its ChunkArray pointer
-	 * @param ptr ChunkArray pointer to the attribute to remove
-	 * @return true if attribute exists and has been removed
-	 */
-	void remove_marker_attribute(const ChunkArrayBool* ptr)
-	{
-		uint32 index = 0u;
-		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
-			++index;
+//	/**
+//	 * @brief remove a marker attribute by its ChunkArray pointer
+//	 * @param ptr ChunkArray pointer to the attribute to remove
+//	 * @return true if attribute exists and has been removed
+//	 */
+//	void remove_marker_attribute(const ChunkArrayBool* ptr)
+//	{
+//		uint32 index = 0u;
+//		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
+//			++index;
 
-		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found.");
+//		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found.");
 
-		if (index != table_marker_arrays_.size() - std::size_t(1u))
-			table_marker_arrays_[index] = table_marker_arrays_.back();
-		table_marker_arrays_.pop_back();
+//		if (index != table_marker_arrays_.size() - std::size_t(1u))
+//			table_marker_arrays_[index] = table_marker_arrays_.back();
+//		table_marker_arrays_.pop_back();
 
-		delete ptr;
-	}
+//		delete ptr;
+//	}
 
 	/**
 	 * @brief Number of chunk arrays of the container

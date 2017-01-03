@@ -217,6 +217,7 @@ public:
 	 */
 	TChunkArray const* data() const
 	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
 		return chunk_array_;
 	}
 
@@ -226,6 +227,7 @@ public:
 	 */
 	inline void set_all_values(const T& val)
 	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
 		chunk_array_->set_all_values(val);
 	}
 
@@ -265,11 +267,13 @@ public:
 
 	virtual const std::string& name() const override
 	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
 		return chunk_array_->name();
 	}
 
 	virtual const std::string& type_name() const override
 	{
+		cgogn_message_assert(this->is_valid(), "Invalid Attribute");
 		return chunk_array_->type_name();
 	}
 

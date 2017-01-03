@@ -1699,12 +1699,12 @@ protected:
 	inline void foreach_dart_of_PHI21_PHI31(Dart d, const FUNC& f) const
 	{
 		DartMarkerStore marker(*this);
-		const std::vector<Dart>* marked_darts = marker.marked_darts();
+		const std::vector<Dart>& marked_darts = marker.marked_darts();
 
 		marker.mark(d);
-		for(uint32 i = 0; i < marked_darts->size(); ++i)
+		for(uint32 i = 0; i < marked_darts.size(); ++i)
 		{
-			const Dart curr_dart = marked_darts->operator[](i);
+			const Dart curr_dart = marked_darts[i];
 			if ( !(this->is_boundary(curr_dart) && this->is_boundary(phi3(curr_dart))) )
 				if (!internal::void_to_true_binder(f, curr_dart))
 					break;

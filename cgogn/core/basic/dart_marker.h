@@ -39,6 +39,7 @@ public:
 
 	using Self = DartMarker_T<MAP>;
 	using Map = MAP;
+	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayBool = typename Map::ChunkArrayBool;
 
 protected:
@@ -52,38 +53,42 @@ public:
 		map_(const_cast<MAP&>(map))
 	{
 		mark_attribute_ = map_.topology_mark_attribute();
+		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DartMarker_T);
 
 	virtual ~DartMarker_T()
 	{
-		if (MapBaseData::is_alive(&map_))
+		if (is_valid())
+		{
+			mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 			map_.release_topology_mark_attribute(mark_attribute_);
+		}
 	}
 
 	inline void mark(Dart d)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid DartMarker");
 		mark_attribute_->set_true(d.index);
 	}
 
 	inline void unmark(Dart d)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid DartMarker");
 		mark_attribute_->set_false(d.index);
 	}
 
 	inline bool is_marked(Dart d) const
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid DartMarker");
 		return (*mark_attribute_)[d.index];
 	}
 
 	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid DartMarker");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
 			mark_attribute_->set_true(d.index);
@@ -93,11 +98,19 @@ public:
 	template <Orbit ORBIT>
 	inline void unmark_orbit(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(is_valid(), "Invalid DartMarker");
 		map_.foreach_dart_of_orbit(c, [&] (Dart d)
 		{
 			mark_attribute_->set_false(d.index);
 		});
+	}
+
+	inline bool is_valid() const
+	{
+		// due to external ref registration and to the fact that mark attributes are only deleted
+		// at map destruction, the only way for the marker pointer to be null is that the map
+		// has been destroyed. The second (less efficient) test is thus unnecessary
+		return mark_attribute_ != nullptr; // && MapBaseData::is_alive(&map_);
 	}
 };
 
@@ -118,18 +131,19 @@ public:
 
 	~DartMarker() override
 	{
-		unmark_all();
+		if (this->is_valid())
+			unmark_all();
 	}
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarker has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarker");
 		this->mark_attribute_->all_false();
 	}
 };
 
 template <typename MAP>
-class DartMarkerStore final : protected DartMarker_T<MAP>
+class DartMarkerStore : public DartMarker_T<MAP>
 {
 public:
 
@@ -142,7 +156,6 @@ protected:
 	std::vector<Dart>* marked_darts_;
 
 public:
-	using Inherit::is_marked;
 
 	DartMarkerStore(const MAP& map) :
 		Inherit(map)
@@ -154,13 +167,14 @@ public:
 
 	~DartMarkerStore() override
 	{
-		unmark_all();
+		if (this->is_valid())
+			unmark_all();
 		cgogn::dart_buffers()->release_buffer(marked_darts_);
 	}
 
 	inline void mark(Dart d)
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
 		if (!this->is_marked(d))
 		{
 			Inherit::mark(d);
@@ -168,23 +182,40 @@ public:
 		}
 	}
 
+	inline void unmark(Dart d)
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
+		auto it = std::find(marked_darts_->begin(), marked_darts_->end(), d);
+		cgogn_message_assert(it != marked_darts_.end(), "Dart not found");
+		std::swap(*it, marked_darts_->back());
+		marked_darts_->pop_back();
+	}
+
 	template <Orbit ORBIT>
 	inline void mark_orbit(Cell<ORBIT> c)
 	{
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
 		this->map_.foreach_dart_of_orbit(c, [this] (Dart d) { this->mark(d); });
+	}
+
+	template <Orbit ORBIT>
+	inline void unmark_orbit(Cell<ORBIT> c)
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
+		this->map_.foreach_dart_of_orbit(c, [this] (Dart d) { this->unmark(d); });
 	}
 
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->mark_attribute_ != nullptr, "DartMarkerStore has null mark attribute");
+		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
 		for (Dart d : *marked_darts_)
 			this->mark_attribute_->set_false_byte(d.index);
 		marked_darts_->clear();
 	}
 
-	inline const std::vector<Dart>* marked_darts() const
+	inline const std::vector<Dart>& marked_darts() const
 	{
-		return marked_darts_;
+		return *marked_darts_;
 	}
 };
 
