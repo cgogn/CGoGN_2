@@ -66,12 +66,11 @@ public:
 		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 	}
 
-	virtual ~CellMarker_T() // override
+	virtual ~CellMarker_T()
 	{
-		if (MapBaseData::is_alive(&map_))
+		if (is_valid())
 		{
-			if (is_valid())
-				mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
+			mark_attribute_->remove_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
 			map_.template release_mark_attribute<ORBIT>(mark_attribute_);
 		}
 	}
@@ -96,7 +95,11 @@ public:
 
 	inline bool is_valid() const
 	{
-		return mark_attribute_ != nullptr;
+		// due to external ref registration and to the fact that mark attributes are only deleted
+		// at map destruction, the only way for the marker pointer to be null is that the map
+		// has been destroyed. The second (less efficient) test is thus unnecessary, i.e. if
+		// the pointer is non-null then the map is still alive, and conversely
+		return mark_attribute_ != nullptr; // && MapBaseData::is_alive(&map_);
 	}
 };
 
@@ -121,7 +124,8 @@ public:
 
 	~CellMarker() override
 	{
-		unmark_all();
+		if (this->is_valid())
+			unmark_all();
 	}
 
 	inline void unmark_all()
@@ -132,31 +136,7 @@ public:
 };
 
 template <typename MAP, Orbit ORBIT>
-class CellMarkerNoUnmark : public CellMarker_T<MAP, ORBIT>
-{
-public:
-
-	using Inherit = CellMarker_T<MAP, ORBIT>;
-	using Self = CellMarker< MAP, ORBIT >;
-	using Map = typename Inherit::Map;
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerNoUnmark);
-
-	inline CellMarkerNoUnmark(Map& map) :
-		Inherit(map)
-	{}
-
-	inline CellMarkerNoUnmark(const MAP& map) :
-		Inherit(map)
-	{}
-
-	~CellMarkerNoUnmark() override
-	{
-	}
-};
-
-template <typename MAP, Orbit ORBIT>
-class CellMarkerStore final : protected CellMarker_T<MAP, ORBIT>
+class CellMarkerStore : public CellMarker_T<MAP, ORBIT>
 {
 public:
 
@@ -169,9 +149,6 @@ protected:
 	std::vector<uint32>* marked_cells_;
 
 public:
-	using Inherit::is_marked;
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerStore);
 
 	inline CellMarkerStore(const MAP& map) :
 		Inherit(map)
@@ -179,15 +156,18 @@ public:
 		marked_cells_ = cgogn::uint_buffers()->buffer();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerStore);
+
 	~CellMarkerStore() override
 	{
-		unmark_all();
+		if (this->is_valid())
+			unmark_all();
 		cgogn::uint_buffers()->release_buffer(marked_cells_);
 	}
 
 	inline void mark(Cell<ORBIT> c)
 	{
-		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarkerStore");
 		if (!this->is_marked(c))
 		{
 			Inherit::mark(c);
@@ -195,9 +175,18 @@ public:
 		}
 	}
 
+	inline void unmark(Cell<ORBIT> c)
+	{
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarkerStore");
+		auto it = std::find(marked_cells_->begin(), marked_cells_->end(), this->map_.embedding(c));
+		cgogn_message_assert(it != marked_cells_->end(), "Cell not found");
+		std::swap(*it, marked_cells_->back());
+		marked_cells_->pop_back();
+	}
+
 	inline void unmark_all()
 	{
-		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
+		cgogn_message_assert(this->is_valid(), "Invalid CellMarkerStore");
 		for (uint32 i : *(this->marked_cells_))
 			this->mark_attribute_->set_false(i);
 		marked_cells_->clear();
@@ -207,6 +196,29 @@ public:
 	{
 		return *marked_cells_;
 	}
+};
+
+template <typename MAP, Orbit ORBIT>
+class CellMarkerNoUnmark : public CellMarker_T<MAP, ORBIT>
+{
+public:
+
+	using Inherit = CellMarker_T<MAP, ORBIT>;
+	using Self = CellMarker< MAP, ORBIT >;
+	using Map = typename Inherit::Map;
+
+	inline CellMarkerNoUnmark(Map& map) :
+		Inherit(map)
+	{}
+
+	inline CellMarkerNoUnmark(const MAP& map) :
+		Inherit(map)
+	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarkerNoUnmark);
+
+	~CellMarkerNoUnmark() override
+	{}
 };
 
 } // namespace cgogn

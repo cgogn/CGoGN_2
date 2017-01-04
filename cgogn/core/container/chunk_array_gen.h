@@ -37,6 +37,8 @@
 namespace cgogn
 {
 
+template <uint32 CHUNK_SIZE, typename T_REF> class ChunkArrayContainer;
+
 /**
  * @brief Virtual version of ChunkArray
  */
@@ -46,6 +48,8 @@ class ChunkArrayGen
 public:
 
 	using Self = ChunkArrayGen<CHUNK_SIZE>;
+
+	template <uint32 CS, typename T_REF> friend class ChunkArrayContainer;
 
 	inline ChunkArrayGen(const std::string& name, const std::string& type_name) :
 		name_(name),
@@ -75,6 +79,8 @@ public:
 		invalidate_external_refs();
 	}
 
+protected:
+
 	void invalidate_external_refs()
 	{
 		for (auto ref : external_refs_)
@@ -82,6 +88,8 @@ public:
 			*ref = nullptr;
 		}
 	}
+
+public:
 
 	void add_external_ref(ChunkArrayGen** ref)
 	{
