@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -111,9 +111,9 @@ public:
 	}
 
 	template <class CellType>
-	inline void new_orbit_embedding(CellType c)
+	inline uint32 new_orbit_embedding(CellType c)
 	{
-		map_.new_orbit_embedding(c);
+		return map_.new_orbit_embedding(c);
 	}
 
 	inline void sew_volumes_fp(Dart v1, Dart v2)
