@@ -130,6 +130,15 @@ inline Scalar scale_to_0_1_around_one_half(const Scalar x, const Scalar min, con
 	return (x - mi) / (ma - mi);
 }
 
+template <typename Scalar>
+inline Scalar clamp(const Scalar x, const Scalar min, const Scalar max)
+{
+	static_assert(std::is_floating_point<Scalar>::value || std::is_integral<Scalar>::value,
+		"'clamp' only accept floating-point or integer inputs");
+
+	return std::min(max, std::max(min, x));
+}
+
 template<typename T, std::size_t bytes, typename enable = void>
 struct fixed_precision {};
 
