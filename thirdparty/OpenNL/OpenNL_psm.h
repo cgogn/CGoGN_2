@@ -156,7 +156,7 @@ typedef double          NLdouble;
 
 typedef void(*NLfunc)();
 
-typedef void* NLContext ; 
+typedef void* NLContext; 
 
 #define NL_FALSE   0x0
 #define NL_TRUE    0x1
@@ -189,6 +189,9 @@ typedef void* NLContext ;
 #define NL_GFLOPS           0x10c
 
 #define NL_NNZ              0x10d    
+
+
+#define NL_NB_SYSTEMS       0x10e
     
 
 #define NL_SOLVER_DEFAULT        0x000
@@ -214,40 +217,32 @@ typedef void* NLContext ;
 #define NL_VERBOSE         0x401
 
 
-#define NL_RIGHT_HAND_SIDE 0x500
+    NLAPI NLContext NLAPIENTRY nlNewContext(void);
+
+    NLAPI void NLAPIENTRY nlDeleteContext(NLContext context);
+
+    NLAPI void NLAPIENTRY nlMakeCurrent(NLContext context);
+
+    NLAPI NLContext NLAPIENTRY nlGetCurrent(void);
+
+    NLAPI NLboolean NLAPIENTRY nlInitExtension(const char* extension);
 
 
-#define NL_ROW_SCALING     0x501
+    NLAPI void NLAPIENTRY nlSolverParameterd(NLenum pname, NLdouble param);
 
+    NLAPI void NLAPIENTRY nlSolverParameteri(NLenum pname, NLint param);
 
-    NLAPI NLContext NLAPIENTRY nlNewContext(void) ;
+    NLAPI void NLAPIENTRY nlGetBooleanv(NLenum pname, NLboolean* params);
 
-    NLAPI void NLAPIENTRY nlDeleteContext(NLContext context) ;
+    NLAPI void NLAPIENTRY nlGetDoublev(NLenum pname, NLdouble* params);
 
-    NLAPI void NLAPIENTRY nlMakeCurrent(NLContext context) ;
+    NLAPI void NLAPIENTRY nlGetIntegerv(NLenum pname, NLint* params);
 
-    NLAPI NLContext NLAPIENTRY nlGetCurrent(void) ;
+    NLAPI void NLAPIENTRY nlEnable(NLenum pname);
 
-    NLAPI NLboolean NLAPIENTRY nlInitExtension(const char* extension) ;
+    NLAPI void NLAPIENTRY nlDisable(NLenum pname);
 
-
-    NLAPI void NLAPIENTRY nlSolverParameterd(NLenum pname, NLdouble param) ;
-
-    NLAPI void NLAPIENTRY nlSolverParameteri(NLenum pname, NLint param) ;
-
-    NL_DEPRECATED(NLAPI void NLAPIENTRY nlRowParameterd(NLenum pname, NLdouble param)) ;
-
-    NLAPI void NLAPIENTRY nlGetBooleanv(NLenum pname, NLboolean* params) ;
-
-    NLAPI void NLAPIENTRY nlGetDoublev(NLenum pname, NLdouble* params) ;
-
-    NLAPI void NLAPIENTRY nlGetIntegerv(NLenum pname, NLint* params) ;
-
-    NLAPI void NLAPIENTRY nlEnable(NLenum pname) ;
-
-    NLAPI void NLAPIENTRY nlDisable(NLenum pname) ;
-
-    NLAPI NLboolean nlIsEnabled(NLenum pname) ;
+    NLAPI NLboolean nlIsEnabled(NLenum pname);
 
 
 #define NL_FUNC_SOLVER         0x600
@@ -258,20 +253,27 @@ typedef void* NLContext ;
 
 #define NL_FUNC_PROGRESS       0x603
 
-    NLAPI void NLAPIENTRY nlSetFunction(NLenum pname, NLfunc param) ;
+    NLAPI void NLAPIENTRY nlSetFunction(NLenum pname, NLfunc param);
 
-    NLAPI void NLAPIENTRY nlGetFunction(NLenum pname, NLfunc* param) ;
+    NLAPI void NLAPIENTRY nlGetFunction(NLenum pname, NLfunc* param);
 
 
-    NLAPI void NLAPIENTRY nlSetVariable(NLuint i, NLdouble value) ;
+    NLAPI void NLAPIENTRY nlSetVariable(NLuint i, NLdouble value);
 
-    NLAPI NLdouble NLAPIENTRY nlGetVariable(NLuint i) ;
 
-    NLAPI void NLAPIENTRY nlLockVariable(NLuint index) ;
+    NLAPI void NLAPIENTRY nlMultiSetVariable(
+	NLuint i, NLuint k, NLdouble value
+    );
+    
+    NLAPI NLdouble NLAPIENTRY nlGetVariable(NLuint i);
 
-    NLAPI void NLAPIENTRY nlUnlockVariable(NLuint index) ;
+    NLAPI NLdouble NLAPIENTRY nlMultiGetVariable(NLuint i, NLuint k);
+    
+    NLAPI void NLAPIENTRY nlLockVariable(NLuint index);
 
-    NLAPI NLboolean NLAPIENTRY nlVariableIsLocked(NLuint index) ;
+    NLAPI void NLAPIENTRY nlUnlockVariable(NLuint index);
+
+    NLAPI NLboolean NLAPIENTRY nlVariableIsLocked(NLuint index);
 
 
 #define NL_SYSTEM  0x0
@@ -280,31 +282,77 @@ typedef void* NLContext ;
 
 #define NL_ROW     0x2
 
-    NLAPI void NLAPIENTRY nlBegin(NLenum primitive) ;
+    NLAPI void NLAPIENTRY nlBegin(NLenum primitive);
 
-    NLAPI void NLAPIENTRY nlEnd(NLenum primitive) ;
+    NLAPI void NLAPIENTRY nlEnd(NLenum primitive);
 
-    NLAPI void NLAPIENTRY nlCoefficient(NLuint i, NLdouble value) ;
+    NLAPI void NLAPIENTRY nlCoefficient(NLuint i, NLdouble value);
 
 
 
     NLAPI void NLAPIENTRY nlAddIJCoefficient(
         NLuint i, NLuint j, NLdouble value
-    ) ;
+    );
 
 
     NLAPI void NLAPIENTRY nlAddIRightHandSide(NLuint i, NLdouble value);
 
+    NLAPI void NLAPIENTRY nlMultiAddIRightHandSide(
+	NLuint i, NLuint k, NLdouble value
+    );
     
-    NLAPI void NLAPIENTRY nlRightHandSide(NLdouble value) ;
+    NLAPI void NLAPIENTRY nlRightHandSide(NLdouble value);
 
-    NLAPI void NLAPIENTRY nlRowScaling(NLdouble value) ;
+
+    NLAPI void NLAPIENTRY nlMultiRightHandSide(NLuint k, NLdouble value);
+    
+    NLAPI void NLAPIENTRY nlRowScaling(NLdouble value);
     
 
-    NLAPI NLboolean NLAPIENTRY nlSolve(void) ;
+    NLAPI NLboolean NLAPIENTRY nlSolve(void);
 
 
     NLAPI void NLAPIENTRY nlUpdateRightHandSide(NLdouble* values);
+
+
+#define NL_VARIABLES_BUFFER 0x1000
+
+    NLAPI void NLAPIENTRY nlBindBuffer(
+	NLenum buffer, NLuint k, void* addr, NLuint stride
+    );
+
+    
+
+#define NL_STIFFNESS_MATRIX 0x3001
+
+#define NL_MASS_MATRIX 0x3002
+
+NLAPI void NLAPIENTRY nlMatrixMode(NLenum matrix);
+    
+#define NL_NB_EIGENS       NL_NB_SYSTEMS
+
+#define NL_EIGEN_MAX_ITERATIONS NL_MAX_ITERATIONS
+    
+#define NL_EIGEN_THRESHOLD NL_THRESHOLD
+
+#define NL_EIGEN_SOLVER 0x2000
+    
+#define NL_EIGEN_SHIFT 0x2001
+
+#define NL_EIGEN_SHIFT_INVERT 0x2002
+    
+    NLAPI void NLAPIENTRY nlEigenSolverParameterd(
+	NLenum pname, NLdouble val
+    );
+
+    NLAPI void NLAPIENTRY nlEigenSolverParameteri(
+	NLenum pname, NLint val
+    );
+
+    NLAPI void NLAPIENTRY nlEigenSolve(void);
+
+
+    NLAPI double NLAPIENTRY nlGetEigenValue(NLuint i);
     
 
 #ifdef __cplusplus
@@ -329,6 +377,7 @@ extern "C" {
 #define NL_SYMMETRIC_SUPERLU_EXT 0x212
 #define NL_SOLVER_USER           0x213
 #define NL_CHOLMOD_EXT           0x214
+#define NL_ARPACK_EXT            0x215
     
 #define NL_CNC_FLOAT_CRS_EXT     0x220
 #define NL_CNC_DOUBLE_CRS_EXT    0x222

@@ -77,6 +77,11 @@
 #define NL_OS_UNIX
 #endif
 
+
+#if defined(WIN32) || defined(_WIN64)
+#define NL_OS_WINDOWS
+#endif
+
 #define nl_arg_used(x) (void)x
 
 
@@ -204,6 +209,41 @@ extern "C" {
 #endif
 
 
+/* Abstract matrix interface */
+
+struct NLMatrixStruct;
+typedef struct NLMatrixStruct* NLMatrix;
+
+typedef void(*NLDestroyMatrixFunc)(NLMatrix M);    
+
+typedef void(*NLMultMatrixVectorFunc)(NLMatrix M, const double* x, double* y);
+
+#define NL_MATRIX_SPARSE_DYNAMIC 0x1001
+#define NL_MATRIX_CRS            0x1002
+#define NL_MATRIX_SUPERLU_EXT    0x1003    
+#define NL_MATRIX_CHOLMOD_EXT    0x1004    
+#define NL_MATRIX_FUNCTION       0x1005
+#define NL_MATRIX_OTHER          0x1006
+    
+struct NLMatrixStruct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+};
+
+NLAPI void NLAPIENTRY nlDeleteMatrix(NLMatrix M);
+
+NLAPI void NLAPIENTRY nlMultMatrixVector(
+    NLMatrix M, const double* x, double* y
+);
+    
+
 /* Dynamic arrays for sparse row/columns */
 
 typedef struct  {
@@ -248,6 +288,12 @@ typedef struct {
     
     NLuint n;
 
+    NLenum type;
+    
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+    
     NLdouble* val;    
 
     NLuint* rowptr;
@@ -256,15 +302,19 @@ typedef struct {
 
     NLuint nslices;
 
-    NLuint* sliceptr; 
+    NLuint* sliceptr;
+
+    NLboolean symmetric_storage;
 } NLCRSMatrix;
 
 NLAPI void NLAPIENTRY nlCRSMatrixConstruct(
     NLCRSMatrix* M, NLuint m, NLuint n, NLuint nnz, NLuint nslices
 );
 
-NLAPI void NLAPIENTRY nlCRSMatrixDestroy(NLCRSMatrix* M);
-
+NLAPI void NLAPIENTRY nlCRSMatrixConstructSymmetric(
+    NLCRSMatrix* M, NLuint n, NLuint nnz
+);
+    
 NLAPI NLboolean NLAPIENTRY nlCRSMatrixLoad(
     NLCRSMatrix* M, const char* filename
 );
@@ -273,6 +323,8 @@ NLAPI NLboolean NLAPIENTRY nlCRSMatrixSave(
     NLCRSMatrix* M, const char* filename
 );
 
+NLAPI NLuint NLAPIENTRY nlCRSMatrixNNZ(NLCRSMatrix* M);
+    
 
 /* SparseMatrix data structure */
 
@@ -281,16 +333,19 @@ NLAPI NLboolean NLAPIENTRY nlCRSMatrixSave(
 #define NL_MATRIX_STORE_COLUMNS       2
 
 #define NL_MATRIX_STORE_SYMMETRIC     4
-
-#define NL_MATRIX_STORE_COMPRESSED    8
-
-#define NL_MATRIX_STORE_DIAG_INV      16
     
 typedef struct {
     NLuint m;
     
     NLuint n;
 
+    NLenum type;
+    
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    
     NLuint diag_size;
 
     NLenum storage;
@@ -301,9 +356,6 @@ typedef struct {
 
     NLdouble*    diag;
 
-    NLdouble*    diag_inv;
-
-    NLCRSMatrix* compressed;  
 } NLSparseMatrix;
 
 
@@ -311,12 +363,16 @@ NLAPI void NLAPIENTRY nlSparseMatrixConstruct(
     NLSparseMatrix* M, NLuint m, NLuint n, NLenum storage
 );
 
-NLAPI void NLAPIENTRY nlSparseMatrixDestroy(NLSparseMatrix* M);
-
+NLAPI void nlSparseMatrixDestroy(NLSparseMatrix* M);
+    
 NLAPI void NLAPIENTRY nlSparseMatrixAdd(
     NLSparseMatrix* M, NLuint i, NLuint j, NLdouble value
 );
 
+NLAPI void NLAPIENTRY nlSparseMatrixAddMatrix(
+    NLSparseMatrix* M, double mul, const NLMatrix N
+);	
+    
 NLAPI void NLAPIENTRY nlSparseMatrixZero( NLSparseMatrix* M);
 
 NLAPI void NLAPIENTRY nlSparseMatrixClear( NLSparseMatrix* M);
@@ -325,17 +381,40 @@ NLAPI NLuint NLAPIENTRY nlSparseMatrixNNZ( NLSparseMatrix* M);
 
 NLAPI void NLAPIENTRY nlSparseMatrixSort( NLSparseMatrix* M);
 
-NLAPI void NLAPIENTRY nlSparseMatrixComputeDiagInv( NLSparseMatrix* M);
 
-NLAPI void NLAPIENTRY nlSparseMatrixCompress( NLSparseMatrix* M);
+
+NLAPI NLMatrix NLAPIENTRY nlCRSMatrixNewFromSparseMatrix(NLSparseMatrix* M);    
+
+NLAPI NLMatrix NLAPIENTRY nlCRSMatrixNewFromSparseMatrixSymmetric(
+    NLSparseMatrix* M
+);    
+
+    
+NLAPI void NLAPIENTRY nlMatrixCompress(NLMatrix* M);
+
+NLAPI NLuint NLAPIENTRY nlMatrixNNZ(NLMatrix M);
+
+NLAPI NLMatrix NLAPIENTRY nlMatrixFactorize(NLMatrix M, NLenum solver);
     
 
-/* SparseMatrix x Vector routine */
 
-NLAPI void NLAPIENTRY nlSparseMatrixMult(
-    NLSparseMatrix* A, const NLdouble* x, NLdouble* y
+    typedef void(*NLMatrixFunc)(const double* x, double* y);
+
+NLAPI NLMatrix NLAPIENTRY nlMatrixNewFromFunction(
+    NLuint m, NLuint n, NLMatrixFunc func
+);	     
+
+NLAPI NLMatrixFunc NLAPIENTRY nlMatrixGetFunction(NLMatrix M);
+
+
+
+NLAPI NLMatrix NLAPIENTRY nlMatrixNewFromProduct(
+    NLMatrix M, NLboolean product_owns_M,
+    NLMatrix N, NLboolean product_owns_N
 );
 
+
+    
 #ifdef __cplusplus
 }
 #endif
@@ -352,19 +431,12 @@ NLAPI void NLAPIENTRY nlSparseMatrixMult(
 
 /* NLContext data structure */
 
-typedef void(*NLMatrixFunc)(const double* x, double* y);
 
 typedef NLboolean(*NLSolverFunc)();
 
 typedef void(*NLProgressFunc)(
     NLuint cur_iter, NLuint max_iter, double cur_err, double max_err
 );
-
-typedef struct {
-    NLdouble  value ;
-    NLboolean locked ;
-    NLuint    index ;
-} NLVariable ;
 
 #define NL_STATE_INITIAL                0
 #define NL_STATE_SYSTEM                 1
@@ -375,104 +447,116 @@ typedef struct {
 #define NL_STATE_SOLVED                 6
 
 typedef struct {
-    NLenum           state ;
+    void* base_address;
+    NLuint stride;
+} NLBufferBinding;
 
-    NLVariable*      variable ;
+#define NL_BUFFER_ITEM(B,i) \
+    *(double*)((void*)((char*)((B).base_address)+((i)*(B).stride)))
 
-    NLuint           n ;
 
-    NLSparseMatrix   M ;
+typedef struct {
+    NLenum           state;
 
-    NLRowColumn      af ;
-
-    NLRowColumn      al ;
-
-    NLRowColumn      xl ;
-
-    NLdouble*        x ;
-
-    NLdouble*        b ;
-
-    NLdouble         right_hand_side ;
-
-    NLboolean        right_hand_side_set ;
+    NLboolean        user_variable_buffers;
     
-    NLdouble         row_scaling ;
+    NLBufferBinding* variable_buffer;
+    
+    NLdouble*        variable_value;
 
-    NLenum           solver ;
+    NLboolean*       variable_is_locked;
 
-    NLenum           preconditioner ;
+    NLuint*          variable_index;
+    
+    NLuint           n;
+
+
+    NLenum           matrix_mode;
+
+    NLMatrix         M;
+
+    NLMatrix         P;
+
+    NLMatrix         B;
+    
+    NLRowColumn      af;
+
+    NLRowColumn      al;
+
+    NLdouble*        x;
+
+    NLdouble*        b;
+
+    NLdouble*        right_hand_side;
+
+    NLdouble         row_scaling;
+
+    NLenum           solver;
+
+    NLenum           preconditioner;
 
     NLboolean        preconditioner_defined;
     
-    NLuint           nb_variables ;
+    NLuint           nb_variables;
 
+    NLuint           nb_systems;
 
     NLboolean        ij_coefficient_called;
     
-    NLuint           current_row ;
+    NLuint           current_row;
 
-    NLboolean        least_squares ;
+    NLboolean        least_squares;
 
-    NLboolean        symmetric ;
+    NLboolean        symmetric;
 
-    NLuint           max_iterations ;
+    NLuint           max_iterations;
 
 
-    NLboolean        max_iterations_defined ;
+    NLboolean        max_iterations_defined;
     
-    NLuint           inner_iterations ;
+    NLuint           inner_iterations;
 
-    NLdouble         threshold ;
+    NLdouble         threshold;
 
-    NLboolean        threshold_defined ;
+    NLboolean        threshold_defined;
     
-    NLdouble         omega ;
+    NLdouble         omega;
 
-    NLboolean        normalize_rows ;
+    NLboolean        normalize_rows;
+    
+    NLuint           used_iterations;
 
-    NLboolean        alloc_M ;
+    NLdouble         error;
 
-    NLboolean        alloc_af ;
+    NLdouble         elapsed_time;
 
-    NLboolean        alloc_al ;
+    NLSolverFunc     solver_func;
 
-    NLboolean        alloc_xl ;
-
-    NLboolean        alloc_variable ;
-
-    NLboolean        alloc_x ;
-
-    NLboolean        alloc_b ;
-
-    NLuint           used_iterations ;
-
-    NLdouble         error ;
-
-    NLdouble         elapsed_time ;
-
-    NLMatrixFunc     matrix_vector_prod ;
-
-    NLMatrixFunc     precond_vector_prod ;
-
-    NLSolverFunc     solver_func ;
-
-    NLProgressFunc   progress_func ;
+    NLProgressFunc   progress_func;
 
     NLboolean        verbose;
 
     NLulong          flops;
-} NLContextStruct ;
 
-extern NLContextStruct* nlCurrentContext ;
+    NLenum           eigen_solver;
 
-void nlCheckState(NLenum state) ;
+    NLdouble         eigen_shift;
 
-void nlTransition(NLenum from_state, NLenum to_state) ;
+    NLboolean        eigen_shift_invert;
 
-void nlMatrixVectorProd_default(const NLdouble* x, NLdouble* y) ;
+    NLdouble*        eigen_value;
 
-NLboolean nlDefaultSolver(void) ;
+    NLdouble*        temp_eigen_value;
+    
+} NLContextStruct;
+
+extern NLContextStruct* nlCurrentContext;
+
+void nlCheckState(NLenum state);
+
+void nlTransition(NLenum from_state, NLenum to_state);
+
+NLboolean nlDefaultSolver(void);
 
 #endif
 
@@ -544,15 +628,11 @@ void dgemv(
 
 
 
-NLuint nlSolve_CG(void);
-
-NLuint nlSolve_CG_precond(void);
-
-NLuint nlSolve_BICGSTAB(void);
-
-NLuint nlSolve_BICGSTAB_precond(void);
-
-NLuint nlSolve_GMRES(void);
+NLAPI NLuint NLAPIENTRY nlSolveSystemIterative(
+    NLMatrix M, NLMatrix P, NLdouble* b, NLdouble* x,
+    NLenum solver,
+    double eps, NLuint max_iter, NLuint inner_iter
+);
 
 #endif
 
@@ -567,18 +647,9 @@ NLuint nlSolve_GMRES(void);
 
 /* preconditioners */
 
-void nlPreconditioner_Jacobi(const NLdouble* x, NLdouble* y) ;
+NLMatrix nlNewJacobiPreconditioner(NLMatrix M);
 
-void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) ;
-
-
-void nlMultDiagonal(NLdouble* x, NLdouble omega) ;
-
-void nlMultDiagonalInverse(NLdouble* x, NLdouble omega) ;
-
-void nlMultLowerInverse(const NLdouble* x, NLdouble* y, NLdouble omega) ;
-
-void nlMultUpperInverse(const NLdouble* x, NLdouble* y, NLdouble omega) ;
+NLMatrix nlNewSSORPreconditioner(NLMatrix M, double omega);
 
 #endif
 
@@ -589,15 +660,11 @@ void nlMultUpperInverse(const NLdouble* x, NLdouble* y, NLdouble omega) ;
 
 
 
-NLAPI NLboolean NLAPIENTRY nlSolve_SUPERLU(void);
-
-NLAPI NLboolean NLAPIENTRY nlSolve_system_with_SUPERLU(
-    NLSparseMatrix* M, double* x, const double* b, NLenum solver,
-    NLboolean clear_M
+NLAPI NLMatrix NLAPIENTRY nlMatrixFactorize_SUPERLU(
+    NLMatrix M, NLenum solver
 );
 
 NLboolean nlInitExtension_SUPERLU(void);
-
 
 #endif
 
@@ -608,15 +675,25 @@ NLboolean nlInitExtension_SUPERLU(void);
 
 
 
-NLAPI NLboolean NLAPIENTRY nlSolve_CHOLMOD(void);
-
-NLAPI NLboolean NLAPIENTRY nlSolve_system_with_CHOLMOD(
-    NLSparseMatrix* M, double* x, const double* b, NLenum solver,
-    NLboolean clear_M
+NLAPI NLMatrix NLAPIENTRY nlMatrixFactorize_CHOLMOD(
+    NLMatrix M, NLenum solver
 );
 
 NLboolean nlInitExtension_CHOLMOD(void);
 
+
+#endif
+
+/******* extracted from nl_arpack.h *******/
+
+#ifndef OPENNL_ARPACK_H
+#define OPENNL_ARPACK_H
+
+
+
+NLboolean nlInitExtension_ARPACK(void);
+
+void nlEigenSolve_ARPACK(void);
 
 #endif
 
@@ -673,7 +750,8 @@ void nl_range_assertion_failed(
 ) {
     fprintf(
         stderr, 
-        "OpenNL range assertion failed: %f in [ %f ... %f ], file:%s, line:%d\n",
+        "OpenNL range assertion failed: "
+	"%f in [ %f ... %f ], file:%s, line:%d\n",
         x, min_val, max_val, file,line
     ) ;
     abort() ;
@@ -708,12 +786,19 @@ double nlCurrentTime() {
 
 /* DLLs/shared objects/dylibs */
 
-#if defined(GEO_DYNAMIC_LIBS) && defined(NL_OS_UNIX)
+#if defined(GEO_DYNAMIC_LIBS) 
+
+#  if defined(NL_OS_UNIX)
 
 NLdll nlOpenDLL(const char* name) {
-    void* result=dlopen(name, RTLD_NOW);
+    void* result = dlopen(name, RTLD_NOW);  
     if(result == NULL) {
-        nlError("nlOpenDLL/dlopen",dlerror());
+        fprintf(stderr,"Did not find %s,\n", name);
+        fprintf(stderr,"Retrying with libgeogram_num_3rdparty.so\n");
+        result=dlopen("libgeogram_num_3rdparty.so", RTLD_NOW);
+        if(result == NULL) {
+            nlError("nlOpenDLL/dlopen",dlerror());
+        }
     }
     return result;
 }
@@ -735,6 +820,28 @@ NLfunc nlFindFunction(void* handle, const char* name) {
     u.ptr = dlsym(handle, name);
     return u.fptr;
 }
+
+#  elif defined(NL_OS_WINDOWS)
+
+NLdll nlOpenDLL(const char* name) {
+    void* result = LoadLibrary(name);
+    if(result == NULL) {
+        fprintf(stderr,"Did not find %s,\n", name);
+        fprintf(stderr,"Retrying with geogram_num_3rdparty\n");
+        result=LoadLibrary("geogram_num_3rdparty.dll");
+    }
+    return result;
+}
+
+void nlCloseDLL(void* handle) {
+    FreeLibrary((HMODULE)handle);
+}
+
+NLfunc nlFindFunction(void* handle, const char* name) {
+    return (NLfunc)GetProcAddress((HMODULE)handle, name);
+}
+
+#  endif
 
 #else
 
@@ -790,89 +897,104 @@ void nlWarning(const char* function, const char* message) {
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 
+
+
+
+void nlDeleteMatrix(NLMatrix M) {
+    if(M == NULL) {
+        return;
+    }
+    M->destroy_func(M);
+    NL_DELETE(M);
+}
+
+void nlMultMatrixVector(
+    NLMatrix M, const double* x, double* y
+) {
+    M->mult_func(M,x,y);
+    if(nlCurrentContext != NULL) {
+	if(M->type == NL_MATRIX_SPARSE_DYNAMIC) {
+	    nlCurrentContext->flops +=
+		(NLulong)(nlSparseMatrixNNZ((NLSparseMatrix*)M)*2);
+	} else if(M->type == NL_MATRIX_CRS) {
+	    nlCurrentContext->flops +=
+		(NLulong)(nlCRSMatrixNNZ((NLCRSMatrix*)M)*2);
+	}
+    }
+}
+
+
+
 void nlRowColumnConstruct(NLRowColumn* c) {
-    c->size     = 0 ;
-    c->capacity = 0 ;
-    c->coeff    = NULL ;
+    c->size     = 0;
+    c->capacity = 0;
+    c->coeff    = NULL;
 }
 
 void nlRowColumnDestroy(NLRowColumn* c) {
-    NL_DELETE_ARRAY(c->coeff) ;
-#ifdef NL_PARANOID
-    NL_CLEAR(NLRowColumn, c) ; 
-#endif
+    NL_DELETE_ARRAY(c->coeff);
+    c->size = 0;
+    c->capacity = 0;
 }
 
 void nlRowColumnGrow(NLRowColumn* c) {
     if(c->capacity != 0) {
-        c->capacity = 2 * c->capacity ;
-        c->coeff = NL_RENEW_ARRAY(NLCoeff, c->coeff, c->capacity) ;
+        c->capacity = 2 * c->capacity;
+        c->coeff = NL_RENEW_ARRAY(NLCoeff, c->coeff, c->capacity);
     } else {
-        c->capacity = 4 ;
-        c->coeff = NL_NEW_ARRAY(NLCoeff, c->capacity) ;
+        c->capacity = 4;
+        c->coeff = NL_NEW_ARRAY(NLCoeff, c->capacity);
     }
 }
 
 void nlRowColumnAdd(NLRowColumn* c, NLuint index, NLdouble value) {
-    NLuint i ;
+    NLuint i;
     for(i=0; i<c->size; i++) {
         if(c->coeff[i].index == index) {
-            c->coeff[i].value += value ;
-            return ;
+            c->coeff[i].value += value;
+            return;
         }
     }
     if(c->size == c->capacity) {
-        nlRowColumnGrow(c) ;
+        nlRowColumnGrow(c);
     }
-    c->coeff[c->size].index = index ;
-    c->coeff[c->size].value = value ;
-    c->size++ ;
+    c->coeff[c->size].index = index;
+    c->coeff[c->size].value = value;
+    c->size++;
 }
 
 /* Does not check whether the index already exists */
 void nlRowColumnAppend(NLRowColumn* c, NLuint index, NLdouble value) {
     if(c->size == c->capacity) {
-        nlRowColumnGrow(c) ;
+        nlRowColumnGrow(c);
     }
-    c->coeff[c->size].index = index ;
-    c->coeff[c->size].value = value ;
-    c->size++ ;
+    c->coeff[c->size].index = index;
+    c->coeff[c->size].value = value;
+    c->size++;
 }
 
 void nlRowColumnZero(NLRowColumn* c) {
-    c->size = 0 ;
+    c->size = 0;
 }
 
 void nlRowColumnClear(NLRowColumn* c) {
-    c->size     = 0 ;
-    c->capacity = 0 ;
-    NL_DELETE_ARRAY(c->coeff) ;
+    c->size     = 0;
+    c->capacity = 0;
+    NL_DELETE_ARRAY(c->coeff);
 }
 
 static int nlCoeffCompare(const void* p1, const void* p2) {
-    return (((NLCoeff*)(p2))->index < ((NLCoeff*)(p1))->index) ;
+    return (((NLCoeff*)(p2))->index < ((NLCoeff*)(p1))->index);
 }
 
 void nlRowColumnSort(NLRowColumn* c) {
-    qsort(c->coeff, c->size, sizeof(NLCoeff), nlCoeffCompare) ;
+    qsort(c->coeff, c->size, sizeof(NLCoeff), nlCoeffCompare);
 }
 
 
 /* CRSMatrix data structure */
 
-void nlCRSMatrixConstruct(
-    NLCRSMatrix* M, NLuint m, NLuint n, NLuint nnz, NLuint nslices
-) {
-    M->m = m;
-    M->n = n;
-    M->nslices = nslices;
-    M->val = NL_NEW_ARRAY(double, nnz);
-    M->rowptr = NL_NEW_ARRAY(NLuint, m+1);
-    M->colind = NL_NEW_ARRAY(NLuint, nnz);
-    M->sliceptr = NL_NEW_ARRAY(NLuint, nslices+1);
-}
-
-void nlCRSMatrixDestroy(NLCRSMatrix* M) {
+static void nlCRSMatrixDestroy(NLCRSMatrix* M) {
     NL_DELETE_ARRAY(M->val);
     NL_DELETE_ARRAY(M->rowptr);
     NL_DELETE_ARRAY(M->colind);
@@ -950,7 +1072,7 @@ NLboolean nlCRSMatrixLoad(NLCRSMatrix* M, const char* filename) {
     return NL_TRUE;
 }
 
-static NLuint nlCRSMatrixNNZ(NLCRSMatrix* M) {
+NLuint nlCRSMatrixNNZ(NLCRSMatrix* M) {
     return M->rowptr[M->m];
 }
 
@@ -967,13 +1089,30 @@ static void nlCRSMatrixMultSlice(
     }
 }
 
-
 static void nlCRSMatrixMult(
     NLCRSMatrix* M, const double* x, double* y
 ) {
-    
     int slice;
     int nslices = (int)(M->nslices);
+    NLuint i,j,jj;
+    NLdouble a;
+    
+    if(M->symmetric_storage) {
+        for(i=0; i<M->m; ++i) {
+            y[i] = 0.0;
+        }
+        for(i=0; i<M->m; ++i) {
+            for(jj=M->rowptr[i]; jj<M->rowptr[i]; ++jj) {
+                a = M->val[jj];
+                j = M->colind[jj];
+                y[i] += a * x[j];
+                if(j != i) {
+                    y[j] += a * x[i];
+                }
+            }
+        }
+    }
+
     
 #if defined(_OPENMP)
 #pragma omp parallel for private(slice)
@@ -986,249 +1125,235 @@ static void nlCRSMatrixMult(
     }
 }
 
+void nlCRSMatrixConstruct(
+    NLCRSMatrix* M, NLuint m, NLuint n, NLuint nnz, NLuint nslices
+) {
+    M->m = m;
+    M->n = n;
+    M->type = NL_MATRIX_CRS;
+    M->destroy_func = (NLDestroyMatrixFunc)nlCRSMatrixDestroy;
+    M->mult_func = (NLMultMatrixVectorFunc)nlCRSMatrixMult;
+    M->nslices = nslices;
+    M->val = NL_NEW_ARRAY(double, nnz);
+    M->rowptr = NL_NEW_ARRAY(NLuint, m+1);
+    M->colind = NL_NEW_ARRAY(NLuint, nnz);
+    M->sliceptr = NL_NEW_ARRAY(NLuint, nslices+1);
+    M->symmetric_storage = NL_FALSE;
+}
+
+void nlCRSMatrixConstructSymmetric(
+    NLCRSMatrix* M, NLuint n, NLuint nnz
+) {
+    M->m = n;
+    M->n = n;
+    M->type = NL_MATRIX_CRS;
+    M->destroy_func = (NLDestroyMatrixFunc)nlCRSMatrixDestroy;
+    M->mult_func = (NLMultMatrixVectorFunc)nlCRSMatrixMult;
+    M->nslices = 0;
+    M->val = NL_NEW_ARRAY(double, nnz);
+    M->rowptr = NL_NEW_ARRAY(NLuint, n+1);
+    M->colind = NL_NEW_ARRAY(NLuint, nnz);
+    M->sliceptr = NULL;
+    M->symmetric_storage = NL_TRUE;
+}
+
 
 /* SparseMatrix data structure */
 
-void nlSparseMatrixConstruct(
-    NLSparseMatrix* M, NLuint m, NLuint n, NLenum storage
-) {
-    NLuint i ;
-    M->m = m ;
-    M->n = n ;
-    M->storage = storage ;
-    if(storage & NL_MATRIX_STORE_ROWS) {
-        M->row = NL_NEW_ARRAY(NLRowColumn, m) ;
-        for(i=0; i<n; i++) {
-            nlRowColumnConstruct(&(M->row[i])) ;
-        }
-    } else {
-        M->row = NULL ;
-    }
-
-    if(storage & NL_MATRIX_STORE_COLUMNS) {
-        M->column = NL_NEW_ARRAY(NLRowColumn, n) ;
-        for(i=0; i<n; i++) {
-            nlRowColumnConstruct(&(M->column[i])) ;
-        }
-    } else {
-        M->column = NULL ;
-    }
-
-    M->diag_size = MIN(m,n) ;
-    M->diag = NL_NEW_ARRAY(NLdouble, M->diag_size) ;
-}
 
 static void nlSparseMatrixDestroyRowColumns(NLSparseMatrix* M) {
-    NLuint i ;
+    NLuint i;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i=0; i<M->m; i++) {
-            nlRowColumnDestroy(&(M->row[i])) ;
+            nlRowColumnDestroy(&(M->row[i]));
         }
-        NL_DELETE_ARRAY(M->row) ;
+        NL_DELETE_ARRAY(M->row);
     }
     M->storage = (NLenum)((int)(M->storage) & ~NL_MATRIX_STORE_ROWS);
     
     if(M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i=0; i<M->n; i++) {
-            nlRowColumnDestroy(&(M->column[i])) ;
+            nlRowColumnDestroy(&(M->column[i]));
         }
-        NL_DELETE_ARRAY(M->column) ;
+        NL_DELETE_ARRAY(M->column);
     }
     M->storage = (NLenum)((int)(M->storage) & ~NL_MATRIX_STORE_COLUMNS);    
 }
 
 void nlSparseMatrixDestroy(NLSparseMatrix* M) {
+    nl_assert(M->type == NL_MATRIX_SPARSE_DYNAMIC);
     nlSparseMatrixDestroyRowColumns(M);
-    NL_DELETE_ARRAY(M->diag) ;
-    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
-        NL_DELETE_ARRAY(M->diag_inv) ;
-        M->storage = (NLenum)((int)(M->storage) & ~NL_MATRIX_STORE_DIAG_INV);
-    }    
-    if(M->storage & NL_MATRIX_STORE_COMPRESSED) {
-        nlCRSMatrixDestroy(M->compressed);
-        NL_DELETE(M->compressed);
-        M->storage = (NLenum)((int)(M->storage) & ~NL_MATRIX_STORE_COMPRESSED);
-    }
+    NL_DELETE_ARRAY(M->diag);
 #ifdef NL_PARANOID
-    NL_CLEAR(NLSparseMatrix,M) ;
+    NL_CLEAR(NLSparseMatrix,M);
 #endif
 }
 
 void nlSparseMatrixAdd(NLSparseMatrix* M, NLuint i, NLuint j, NLdouble value) {
-    nl_parano_range_assert(i, 0, M->m - 1) ;
-    nl_parano_range_assert(j, 0, M->n - 1) ;
-    nl_debug_assert(!(M->storage & NL_MATRIX_STORE_COMPRESSED));
+    nl_parano_range_assert(i, 0, M->m - 1);
+    nl_parano_range_assert(j, 0, M->n - 1);
     if((M->storage & NL_MATRIX_STORE_SYMMETRIC) && (j > i)) {
-        return ;
+        return;
     }
     if(i == j) {
-        M->diag[i] += value ;
+        M->diag[i] += value;
     }
     if(M->storage & NL_MATRIX_STORE_ROWS) {
-        nlRowColumnAdd(&(M->row[i]), j, value) ;
+        nlRowColumnAdd(&(M->row[i]), j, value);
     }
     if(M->storage & NL_MATRIX_STORE_COLUMNS) {
-        nlRowColumnAdd(&(M->column[j]), i, value) ;
+        nlRowColumnAdd(&(M->column[j]), i, value);
     }
 }
 
+static void nlSparseMatrixAddSparseMatrix(
+    NLSparseMatrix* M, double mul, const NLSparseMatrix* N    
+) {
+    NLuint i,j,ii,jj;
+    nl_assert(M->m == N->m);
+    nl_assert(M->n == N->n);
+    if(N->storage & NL_MATRIX_STORE_SYMMETRIC) {
+	nl_assert(M->storage & NL_MATRIX_STORE_SYMMETRIC);
+    }
+    if(N->storage & NL_MATRIX_STORE_ROWS) {
+	for(i=0; i<N->m; ++i) {
+	    for(jj=0; jj<N->row[i].size; ++jj) {
+		nlSparseMatrixAdd(
+		    M,
+		    i, N->row[i].coeff[jj].index,
+		    mul*N->row[i].coeff[jj].value
+		);
+	    }
+	}
+    } else {
+	nl_assert(N->storage & NL_MATRIX_STORE_COLUMNS);	
+	for(j=0; j<N->n; ++j) {
+	    for(ii=0; ii<N->column[j].size; ++ii) {
+		nlSparseMatrixAdd(
+		    M,
+		    N->column[j].coeff[ii].index, j,
+		    mul*N->column[j].coeff[ii].value
+		);
+	    }
+	}
+    }
+}
+
+static void nlSparseMatrixAddCRSMatrix(
+    NLSparseMatrix* M, double mul, const NLCRSMatrix* N    
+) {
+    NLuint i,jj;
+    nl_assert(M->m == N->m);
+    nl_assert(M->n == N->n);
+    for(i=0; i<M->m; ++i) {
+	for(jj=N->rowptr[i]; jj<N->rowptr[i+1]; ++jj) {
+	    nlSparseMatrixAdd(
+		M,
+		i,
+		N->colind[jj],
+		mul*N->val[jj]
+	    );
+	}
+    }
+}
+
+void nlSparseMatrixAddMatrix(
+    NLSparseMatrix* M, double mul, const NLMatrix N
+) {
+    nl_assert(M->m == N->m);
+    nl_assert(M->n == N->n);
+    if(N->type == NL_MATRIX_SPARSE_DYNAMIC) {
+	nlSparseMatrixAddSparseMatrix(M, mul, (const NLSparseMatrix*)N);
+    } else if(N->type == NL_MATRIX_CRS) {
+	nlSparseMatrixAddCRSMatrix(M, mul, (const NLCRSMatrix*)N);	
+    } else {
+	nl_assert_not_reached;
+    }
+}
+    
+
+
 void nlSparseMatrixZero( NLSparseMatrix* M) {
-    NLuint i ;
+    NLuint i;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i=0; i<M->m; i++) {
-            nlRowColumnZero(&(M->row[i])) ;
+            nlRowColumnZero(&(M->row[i]));
         }
     }
     if(M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i=0; i<M->n; i++) {
-            nlRowColumnZero(&(M->column[i])) ;
+            nlRowColumnZero(&(M->column[i]));
         }
     }
-    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;
-    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
-        NL_CLEAR_ARRAY(NLdouble, M->diag_inv, M->diag_size) ;        
-    }
+    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size);
 }
 
 void nlSparseMatrixClear( NLSparseMatrix* M) {
-    NLuint i ;
+    NLuint i;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i=0; i<M->m; i++) {
-            nlRowColumnClear(&(M->row[i])) ;
+            nlRowColumnClear(&(M->row[i]));
         }
     }
     if(M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i=0; i<M->n; i++) {
-            nlRowColumnClear(&(M->column[i])) ;
+            nlRowColumnClear(&(M->column[i]));
         }
     }
-    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;
-    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
-        NL_CLEAR_ARRAY(NLdouble, M->diag_inv, M->diag_size) ;        
-    }
+    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size);
 }
 
 /* Returns the number of non-zero coefficients */
 NLuint nlSparseMatrixNNZ( NLSparseMatrix* M) {
-    NLuint nnz = 0 ;
-    NLuint i ;
-    if (M->storage & NL_MATRIX_STORE_COMPRESSED) {
-        nnz = nlCRSMatrixNNZ(M->compressed);
-    } else if(M->storage & NL_MATRIX_STORE_ROWS) {
+    NLuint nnz = 0;
+    NLuint i;
+    if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i = 0; i<M->m; i++) {
-            nnz += M->row[i].size ;
+            nnz += M->row[i].size;
         }
     } else if (M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i = 0; i<M->n; i++) {
-            nnz += M->column[i].size ;
+            nnz += M->column[i].size;
         }
     } else {
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
-    return nnz ;
+    return nnz;
 }
 
 void nlSparseMatrixSort( NLSparseMatrix* M) {
-    NLuint i ;
+    NLuint i;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i = 0; i<M->m; i++) {
-            nlRowColumnSort(&(M->row[i])) ;                
+            nlRowColumnSort(&(M->row[i]));                
         }
     } 
     if (M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i = 0; i<M->n; i++) {
-            nlRowColumnSort(&(M->column[i])) ;
+            nlRowColumnSort(&(M->column[i]));
         }
     } 
 }
-
-void nlSparseMatrixComputeDiagInv( NLSparseMatrix* M) {
-    NLuint i;
-    NLdouble s;
-    if(!(M->storage & NL_MATRIX_STORE_DIAG_INV)) {
-        M->diag_inv = NL_NEW_ARRAY(double, M->diag_size);
-        M->storage |= NL_MATRIX_STORE_DIAG_INV;
-    }
-    for(i=0; i<M->diag_size; ++i) {
-        s = M->diag[i];
-        if(s != 0.0) {
-            s = 1.0 / s;
-        }
-        M->diag_inv[i] = s;
-    }
-}
-
-void nlSparseMatrixCompress( NLSparseMatrix* M) {
-    NLuint nnz = nlSparseMatrixNNZ(M);
-    NLuint nslices = 8; /* TODO: get number of cores */
-    NLuint slice, cur_bound, cur_NNZ, cur_row;
-    NLuint i,ij,k;
-    NLuint slice_size = nnz / nslices;
-    NLCRSMatrix* CRS = NL_NEW(NLCRSMatrix);
-    
-    nlCRSMatrixConstruct(CRS, M->m, M->n, nnz, nslices);
-    
-    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
-    nl_assert(!(M->storage & NL_MATRIX_STORE_SYMMETRIC));
-    nl_assert(!(M->storage & NL_MATRIX_STORE_COMPRESSED));
-
-    nlSparseMatrixSort(M);
-
-    /* Copy dynamic sparse matrix into compressed row storage */
-    k=0;
-    for(i=0; i<M->m; ++i) {
-        NLRowColumn* Ri = &(M->row[i]) ;
-        CRS->rowptr[i] = k;
-        for(ij=0; ij<Ri->size; ij++) {
-            NLCoeff* c = &(Ri->coeff[ij]) ;
-            CRS->val[k] = c->value;
-            CRS->colind[k] = c->index;
-            ++k;
-        }
-    }
-    CRS->rowptr[M->m] = nnz;
-
-    /* Create "slices" to be used by parallel sparse matrix vector product */
-    cur_bound = slice_size;
-    cur_NNZ = 0;
-    cur_row = 0;
-    CRS->sliceptr[0]=0;
-    for(slice=1; slice<nslices; ++slice) {
-        while(cur_NNZ < cur_bound && cur_row < M->m) {
-            ++cur_row;
-            cur_NNZ += CRS->rowptr[cur_row+1] - CRS->rowptr[cur_row];
-        }
-        CRS->sliceptr[slice] = cur_row;
-        cur_bound += slice_size;
-    }
-    CRS->sliceptr[nslices]=M->m; 
-    
-    M->compressed = CRS;
-    M->storage = (M->storage | NL_MATRIX_STORE_COMPRESSED);
-    nlSparseMatrixDestroyRowColumns(M);
-}
-
-
 
 
 /* SparseMatrix x Vector routines, internal helper routines */
 
 static void nlSparseMatrix_mult_rows_symmetric(
-        NLSparseMatrix* A,
-        const NLdouble* x,
-        NLdouble* y
+    NLSparseMatrix* A,
+    const NLdouble* x,
+    NLdouble* y
 ) {
-    NLuint m = A->m ;
-    NLuint i,ij ;
-    NLCoeff* c = NULL ;
+    NLuint m = A->m;
+    NLuint i,ij;
+    NLCoeff* c = NULL;
     for(i=0; i<m; i++) {
-        NLRowColumn* Ri = &(A->row[i]) ;
-        y[i] = 0 ;
+        NLRowColumn* Ri = &(A->row[i]);
+        y[i] = 0;
         for(ij=0; ij<Ri->size; ij++) {
-            c = &(Ri->coeff[ij]) ;
-            y[i] += c->value * x[c->index] ;
+            c = &(Ri->coeff[ij]);
+            y[i] += c->value * x[c->index];
             if(i != c->index) {
-                y[c->index] += c->value * x[i] ;
+                y[c->index] += c->value * x[i];
             }
         }
     }
@@ -1246,9 +1371,9 @@ static void nlSparseMatrix_mult_rows(
      * indices.
      */
     
-    int m = (int)(A->m) ;
-    int i,ij ;
-    NLCoeff* c = NULL ;
+    int m = (int)(A->m);
+    int i,ij;
+    NLCoeff* c = NULL;
     NLRowColumn* Ri = NULL;
 
 #if defined(_OPENMP)    
@@ -1256,11 +1381,11 @@ static void nlSparseMatrix_mult_rows(
 #endif
     
     for(i=0; i<m; i++) {
-        Ri = &(A->row[i]) ;       
-        y[i] = 0 ;
+        Ri = &(A->row[i]);       
+        y[i] = 0;
         for(ij=0; ij<(int)(Ri->size); ij++) {
-            c = &(Ri->coeff[ij]) ;
-            y[i] += c->value * x[c->index] ;
+            c = &(Ri->coeff[ij]);
+            y[i] += c->value * x[c->index];
         }
     }
 }
@@ -1270,17 +1395,17 @@ static void nlSparseMatrix_mult_cols_symmetric(
         const NLdouble* x,
         NLdouble* y
 ) {
-    NLuint n = A->n ;
-    NLuint j,ii ;
-    NLCoeff* c = NULL ;
+    NLuint n = A->n;
+    NLuint j,ii;
+    NLCoeff* c = NULL;
     for(j=0; j<n; j++) {
-        NLRowColumn* Cj = &(A->column[j]) ;       
-        y[j] = 0 ;
+        NLRowColumn* Cj = &(A->column[j]);       
+        y[j] = 0;
         for(ii=0; ii<Cj->size; ii++) {
-            c = &(Cj->coeff[ii]) ;
-            y[c->index] += c->value * x[j] ;
+            c = &(Cj->coeff[ii]);
+            y[c->index] += c->value * x[j];
             if(j != c->index) {
-                y[j] += c->value * x[c->index] ;
+                y[j] += c->value * x[c->index];
             }
         }
     }
@@ -1291,143 +1416,399 @@ static void nlSparseMatrix_mult_cols(
         const NLdouble* x,
         NLdouble* y
 ) {
-    NLuint n = A->n ;
-    NLuint j,ii ; 
-    NLCoeff* c = NULL ;
-    NL_CLEAR_ARRAY(NLdouble, y, A->m) ;
+    NLuint n = A->n;
+    NLuint j,ii; 
+    NLCoeff* c = NULL;
+    NL_CLEAR_ARRAY(NLdouble, y, A->m);
     for(j=0; j<n; j++) {
-        NLRowColumn* Cj = &(A->column[j]) ;
+        NLRowColumn* Cj = &(A->column[j]);
         for(ii=0; ii<Cj->size; ii++) {
-            c = &(Cj->coeff[ii]) ;
-            y[c->index] += c->value * x[j] ;
+            c = &(Cj->coeff[ii]);
+            y[c->index] += c->value * x[j];
         }
     }
 }
 
-
-/* SparseMatrix x Vector routines, main driver routine */
-
-void nlSparseMatrixMult(NLSparseMatrix* A, const NLdouble* x, NLdouble* y) {
-    if(A->storage & NL_MATRIX_STORE_COMPRESSED) {
-        nlCRSMatrixMult(A->compressed,x,y);
-    } else if(A->storage & NL_MATRIX_STORE_ROWS) {
+static void nlSparseMatrixMult(
+    NLSparseMatrix* A, const NLdouble* x, NLdouble* y
+) {
+    nl_assert(A->type == NL_MATRIX_SPARSE_DYNAMIC);
+    if(A->storage & NL_MATRIX_STORE_ROWS) {
         if(A->storage & NL_MATRIX_STORE_SYMMETRIC) {
-            nlSparseMatrix_mult_rows_symmetric(A, x, y) ;
+            nlSparseMatrix_mult_rows_symmetric(A, x, y);
         } else {
-            nlSparseMatrix_mult_rows(A, x, y) ;
+            nlSparseMatrix_mult_rows(A, x, y);
         }
     } else {
         if(A->storage & NL_MATRIX_STORE_SYMMETRIC) {
-            nlSparseMatrix_mult_cols_symmetric(A, x, y) ;
+            nlSparseMatrix_mult_cols_symmetric(A, x, y);
         } else {
-            nlSparseMatrix_mult_cols(A, x, y) ;
+            nlSparseMatrix_mult_cols(A, x, y);
         }
     }
 }
+
+void nlSparseMatrixConstruct(
+    NLSparseMatrix* M, NLuint m, NLuint n, NLenum storage
+) {
+    NLuint i;
+    M->m = m;
+    M->n = n;
+    M->type = NL_MATRIX_SPARSE_DYNAMIC;
+    M->destroy_func = (NLDestroyMatrixFunc)nlSparseMatrixDestroy;
+    M->mult_func = (NLMultMatrixVectorFunc)nlSparseMatrixMult;
+    M->storage = storage;
+    if(storage & NL_MATRIX_STORE_ROWS) {
+        M->row = NL_NEW_ARRAY(NLRowColumn, m);
+        for(i=0; i<n; i++) {
+            nlRowColumnConstruct(&(M->row[i]));
+        }
+    } else {
+        M->row = NULL;
+    }
+
+    if(storage & NL_MATRIX_STORE_COLUMNS) {
+        M->column = NL_NEW_ARRAY(NLRowColumn, n);
+        for(i=0; i<n; i++) {
+            nlRowColumnConstruct(&(M->column[i]));
+        }
+    } else {
+        M->column = NULL;
+    }
+
+    M->diag_size = MIN(m,n);
+    M->diag = NL_NEW_ARRAY(NLdouble, M->diag_size);
+}
+
+
+
+NLMatrix nlCRSMatrixNewFromSparseMatrix(NLSparseMatrix* M) {
+    NLuint nnz = nlSparseMatrixNNZ(M);
+    NLuint nslices = 8; /* TODO: get number of cores */
+    NLuint slice, cur_bound, cur_NNZ, cur_row;
+    NLuint i,ij,k; 
+    NLuint slice_size = nnz / nslices;
+    NLCRSMatrix* CRS = NL_NEW(NLCRSMatrix);
+
+    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
+
+    if(M->storage & NL_MATRIX_STORE_SYMMETRIC) {
+        nl_assert(M->m == M->n);
+        nlCRSMatrixConstructSymmetric(CRS, M->n, nnz);        
+    } else {
+        nlCRSMatrixConstruct(CRS, M->m, M->n, nnz, nslices);
+    }
+    
+    nlSparseMatrixSort(M);
+    /* Convert matrix to CRS format */
+    k=0;
+    for(i=0; i<M->m; ++i) {
+        NLRowColumn* Ri = &(M->row[i]);
+        CRS->rowptr[i] = k;
+        for(ij=0; ij<Ri->size; ij++) {
+            NLCoeff* c = &(Ri->coeff[ij]);
+            CRS->val[k] = c->value;
+            CRS->colind[k] = c->index;
+            ++k;
+        }
+    }
+    CRS->rowptr[M->m] = k;
+        
+    /* Create "slices" to be used by parallel sparse matrix vector product */
+    if(CRS->sliceptr != NULL) {
+	cur_bound = slice_size;
+	cur_NNZ = 0;
+	cur_row = 0;
+	CRS->sliceptr[0]=0;
+	for(slice=1; slice<nslices; ++slice) {
+	    while(cur_NNZ < cur_bound && cur_row < M->m) {
+		++cur_row;
+		cur_NNZ += CRS->rowptr[cur_row+1] - CRS->rowptr[cur_row];
+	    }
+	    CRS->sliceptr[slice] = cur_row;
+	    cur_bound += slice_size;
+	}
+	CRS->sliceptr[nslices]=M->m;
+    }
+    return (NLMatrix)CRS;
+}
+
+NLMatrix nlCRSMatrixNewFromSparseMatrixSymmetric(NLSparseMatrix* M) {
+    NLuint nnz;
+    NLuint i,j,jj,k;
+    NLCRSMatrix* CRS = NL_NEW(NLCRSMatrix);
+    
+    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
+    nl_assert(M->m == M->n);
+
+    nlSparseMatrixSort(M);
+    
+    if(M->storage & NL_MATRIX_STORE_SYMMETRIC) {
+        nnz = nlSparseMatrixNNZ(M);
+    } else {
+        nnz = 0;
+        for(i=0; i<M->n; ++i) {
+            NLRowColumn* Ri = &M->row[i];
+            for(jj=0; jj<Ri->size; ++jj) {
+                j = Ri->coeff[jj].index;
+                if(j <= i) {
+                    ++nnz;
+                }
+            }
+        }
+    }
+
+    nlCRSMatrixConstructSymmetric(CRS, M->n, nnz);        
+
+    k=0;
+    for(i=0; i<M->m; ++i) {
+        NLRowColumn* Ri = &(M->row[i]);
+        CRS->rowptr[i] = k;
+        for(jj=0; jj<Ri->size; ++jj) {
+            j = Ri->coeff[jj].index;
+            if((M->storage & NL_MATRIX_STORE_SYMMETRIC)) {
+                nl_debug_assert(j <= i);
+            }
+            if(j <= i) {
+                CRS->val[k] = Ri->coeff[jj].value;
+                CRS->colind[k] = j;
+                ++k;
+            }
+        }
+    }
+    CRS->rowptr[M->m] = k;
+
+    return (NLMatrix)CRS;
+}
+
+
+void nlMatrixCompress(NLMatrix* M) {
+    NLMatrix CRS = NULL;
+    if((*M)->type != NL_MATRIX_SPARSE_DYNAMIC) {
+        return;
+    }
+    CRS = nlCRSMatrixNewFromSparseMatrix((NLSparseMatrix*)*M);
+    nlDeleteMatrix(*M);
+    *M = CRS;
+}
+
+NLuint nlMatrixNNZ(NLMatrix M) {
+    if(M->type == NL_MATRIX_SPARSE_DYNAMIC) {
+	return nlSparseMatrixNNZ((NLSparseMatrix*)M);
+    } else if(M->type == NL_MATRIX_CRS) {
+	return nlCRSMatrixNNZ((NLCRSMatrix*)M);	
+    }
+    return M->m * M->n;
+}
+
+NLMatrix nlMatrixFactorize(NLMatrix M, NLenum solver) {
+    NLMatrix result = NULL;
+    switch(solver) {
+	case NL_SUPERLU_EXT:
+	case NL_PERM_SUPERLU_EXT:      
+	case NL_SYMMETRIC_SUPERLU_EXT:
+	    result = nlMatrixFactorize_SUPERLU(M,solver);
+	    break;
+	case NL_CHOLMOD_EXT:
+	    result = nlMatrixFactorize_CHOLMOD(M,solver);	    
+	    break;
+	default:
+	    nlError("nlMatrixFactorize","unknown solver");
+    }
+    return result;
+}
+
+
+
+typedef struct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    NLMatrixFunc matrix_func;
+} NLFunctionMatrix;
+
+static void nlFunctionMatrixDestroy(NLFunctionMatrix* M) {
+    (void)M; /* to avoid 'unused parameter' warning */
+    /* 
+     * Nothing special to do, 
+     * there is no dynamic allocated mem.
+     */
+}
+
+static void nlFunctionMatrixMult(NLFunctionMatrix* M, const NLdouble* x, NLdouble* y) {
+    M->matrix_func(x,y);
+}
+
+NLMatrix nlMatrixNewFromFunction(NLuint m, NLuint n, NLMatrixFunc func) {
+    NLFunctionMatrix* result = NL_NEW(NLFunctionMatrix);
+    result->m = m;
+    result->n = n;
+    result->type = NL_MATRIX_FUNCTION;
+    result->destroy_func = (NLDestroyMatrixFunc)nlFunctionMatrixDestroy;
+    result->mult_func = (NLMultMatrixVectorFunc)nlFunctionMatrixMult;
+    result->matrix_func = func;
+    return (NLMatrix)result;
+}
+
+NLMatrixFunc nlMatrixGetFunction(NLMatrix M) {
+    if(M == NULL) {
+	return NULL;
+    }
+    if(M->type != NL_MATRIX_FUNCTION) {
+	return NULL;
+    }
+    return ((NLFunctionMatrix*)M)->matrix_func;
+}
+
+
+
+typedef struct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    NLMatrixFunc matrix_func;
+
+    NLMatrix M;
+
+    NLboolean owns_M;
+    
+    NLMatrix N;
+
+    NLboolean owns_N;
+    
+    NLdouble* work;
+} NLMatrixProduct;
+
+
+static void nlMatrixProductDestroy(NLMatrixProduct* P) {
+    NL_DELETE_ARRAY(P->work);
+    if(P->owns_M) {
+	nlDeleteMatrix(P->M); P->M = NULL;
+    }
+    if(P->owns_N) {
+	nlDeleteMatrix(P->N); P->N = NULL;
+    }
+}
+
+static void nlMatrixProductMult(NLMatrixProduct* P, const NLdouble* x, NLdouble* y) {
+    nlMultMatrixVector(P->N, x, P->work);
+    nlMultMatrixVector(P->M, P->work, y);
+}
+
+NLMatrix nlMatrixNewFromProduct(NLMatrix M, NLboolean owns_M, NLMatrix N, NLboolean owns_N) {
+    NLMatrixProduct* result = NL_NEW(NLMatrixProduct);
+    nl_assert(M->n == N->m);
+    result->m = M->m;
+    result->n = N->n;
+    result->type = NL_MATRIX_OTHER;
+    result->work = NL_NEW_ARRAY(NLdouble,N->m);
+    result->destroy_func = (NLDestroyMatrixFunc)nlMatrixProductDestroy;
+    result->mult_func = (NLMultMatrixVectorFunc)nlMatrixProductMult;
+    result->M = M;
+    result->owns_M = owns_M;
+    result->N = N;
+    result->owns_N = owns_N;
+    return (NLMatrix)result;
+}
+
 
 
 /******* extracted from nl_context.c *******/
 
 
-NLContextStruct* nlCurrentContext = NULL ;
-
-void nlMatrixVectorProd_default(const NLdouble* x, NLdouble* y) {
-    NLSparseMatrix* M = &(nlCurrentContext->M);
-    nlSparseMatrixMult(M, x, y) ;
-    nlCurrentContext->flops += (NLulong)(nlSparseMatrixNNZ(M)*2);
-}
+NLContextStruct* nlCurrentContext = NULL;
 
 NLContext nlNewContext() {
-    NLContextStruct* result     = NL_NEW(NLContextStruct) ;
-    result->state               = NL_STATE_INITIAL ;
-    result->solver              = NL_SOLVER_DEFAULT ;
-    result->max_iterations      = 100 ;
-    result->threshold           = 1e-6 ;
-    result->omega               = 1.5 ;
-    result->row_scaling         = 1.0 ;
-    result->right_hand_side     = 0.0 ;
-    result->right_hand_side_set = NL_FALSE ;
-    result->inner_iterations    = 5 ;
-    result->matrix_vector_prod  = nlMatrixVectorProd_default ;
-    result->solver_func         = nlDefaultSolver ;
+    NLContextStruct* result     = NL_NEW(NLContextStruct);
+    result->state               = NL_STATE_INITIAL;
+    result->solver              = NL_SOLVER_DEFAULT;
+    result->max_iterations      = 100;
+    result->threshold           = 1e-6;
+    result->omega               = 1.5;
+    result->row_scaling         = 1.0;
+    result->inner_iterations    = 5;
+    result->solver_func         = nlDefaultSolver;
     result->progress_func       = NULL;
     result->verbose             = NL_FALSE;
-    nlMakeCurrent(result) ;
-    return result ;
+    result->nb_systems          = 1;
+    result->matrix_mode         = NL_STIFFNESS_MATRIX;
+    nlMakeCurrent(result);
+    return result;
 }
 
 void nlDeleteContext(NLContext context_in) {
-    NLContextStruct* context = (NLContextStruct*)(context_in) ;
+    NLContextStruct* context = (NLContextStruct*)(context_in);
     if(nlCurrentContext == context) {
-        nlCurrentContext = NULL ;
-    }
-    if(context->alloc_M) {
-        nlSparseMatrixDestroy(&context->M) ;
-    }
-    if(context->alloc_af) {
-        nlRowColumnDestroy(&context->af) ;
-    }
-    if(context->alloc_al) {
-        nlRowColumnDestroy(&context->al) ;
-    }
-    if(context->alloc_xl) {
-        nlRowColumnDestroy(&context->xl) ;
-    }
-    if(context->alloc_variable) {
-        NL_DELETE_ARRAY(context->variable) ;
-    }
-    if(context->alloc_x) {
-        NL_DELETE_ARRAY(context->x) ;
-    }
-    if(context->alloc_b) {
-        NL_DELETE_ARRAY(context->b) ;
+        nlCurrentContext = NULL;
     }
 
+    nlDeleteMatrix(context->M);
+    context->M = NULL;
+
+    nlDeleteMatrix(context->P);
+    context->P = NULL;
+
+    nlDeleteMatrix(context->B);
+    context->B = NULL;
+    
+    nlRowColumnDestroy(&context->af);
+    nlRowColumnDestroy(&context->al);
+
+    NL_DELETE_ARRAY(context->variable_value);
+    NL_DELETE_ARRAY(context->variable_buffer);
+    NL_DELETE_ARRAY(context->variable_is_locked);
+    NL_DELETE_ARRAY(context->variable_index);
+    
+    NL_DELETE_ARRAY(context->x);
+    NL_DELETE_ARRAY(context->b);
+    NL_DELETE_ARRAY(context->right_hand_side);
+
+    NL_DELETE_ARRAY(context->eigen_value);
+    
 #ifdef NL_PARANOID
-    NL_CLEAR(NLContextStruct, context) ;
+    NL_CLEAR(NLContextStruct, context);
 #endif
-    NL_DELETE(context) ;
+    NL_DELETE(context);
 }
 
 void nlMakeCurrent(NLContext context) {
-    nlCurrentContext = (NLContextStruct*)(context) ;
+    nlCurrentContext = (NLContextStruct*)(context);
 }
 
 NLContext nlGetCurrent() {
-    return nlCurrentContext ;
+    return nlCurrentContext;
 }
 
 
 /* Finite state automaton   */
 
 void nlCheckState(NLenum state) {
-    nl_assert(nlCurrentContext->state == state) ;
+    nl_assert(nlCurrentContext->state == state);
 }
 
 void nlTransition(NLenum from_state, NLenum to_state) {
-    nlCheckState(from_state) ;
-    nlCurrentContext->state = to_state ;
+    nlCheckState(from_state);
+    nlCurrentContext->state = to_state;
 }
 
 
 /* Preconditioner setup and default solver */
 
 static void nlSetupPreconditioner() {
-    switch(nlCurrentContext->preconditioner) {
-    case NL_PRECOND_NONE:
-        nlCurrentContext->precond_vector_prod = NULL ;
-        break ;
-    case NL_PRECOND_JACOBI:
-        nlCurrentContext->precond_vector_prod = nlPreconditioner_Jacobi ;
-        break ;
-    case NL_PRECOND_SSOR:
-        nlCurrentContext->precond_vector_prod = nlPreconditioner_SSOR ;
-        break ;
-    case NL_PRECOND_USER:
-        break ;
-    default:
-        nl_assert_not_reached ;
-    }
     /* Check compatibility between solver and preconditioner */
     if(
         nlCurrentContext->solver == NL_BICGSTAB && 
@@ -1435,96 +1816,152 @@ static void nlSetupPreconditioner() {
     ) {
         nlWarning(
             "nlSolve", 
-            "cannot use SSOR preconditioner with non-symmetric matrix, switching to Jacobi"
-        ) ;
-        nlCurrentContext->preconditioner = NL_PRECOND_JACOBI ;        
-        nlCurrentContext->precond_vector_prod = nlPreconditioner_Jacobi ;
+            "cannot use SSOR preconditioner with non-symmetric matrix, "
+	    "switching to Jacobi"
+        );
+        nlCurrentContext->preconditioner = NL_PRECOND_JACOBI;        
     }
     if(
         nlCurrentContext->solver == NL_GMRES && 
         nlCurrentContext->preconditioner != NL_PRECOND_NONE
     ) {
-        nlWarning("nlSolve", "Preconditioner not implemented yet for GMRES") ;
-        nlCurrentContext->preconditioner = NL_PRECOND_NONE ;        
-        nlCurrentContext->precond_vector_prod = NULL ;
+        nlWarning("nlSolve", "Preconditioner not implemented yet for GMRES");
+        nlCurrentContext->preconditioner = NL_PRECOND_NONE;        
     }
     if(
         nlCurrentContext->solver == NL_SUPERLU_EXT && 
         nlCurrentContext->preconditioner != NL_PRECOND_NONE
     ) {
-        nlWarning("nlSolve", "Preconditioner not implemented yet for SUPERLU") ;
-        nlCurrentContext->preconditioner = NL_PRECOND_NONE ;        
-        nlCurrentContext->precond_vector_prod = NULL ;
+        nlWarning("nlSolve", "Preconditioner not implemented yet for SUPERLU");
+        nlCurrentContext->preconditioner = NL_PRECOND_NONE;        
     }
     if(
         nlCurrentContext->solver == NL_CHOLMOD_EXT && 
         nlCurrentContext->preconditioner != NL_PRECOND_NONE
     ) {
-        nlWarning("nlSolve", "Preconditioner not implemented yet for CHOLMOD") ;
-        nlCurrentContext->preconditioner = NL_PRECOND_NONE ;        
-        nlCurrentContext->precond_vector_prod = NULL ;
+        nlWarning("nlSolve", "Preconditioner not implemented yet for CHOLMOD");
+        nlCurrentContext->preconditioner = NL_PRECOND_NONE;        
     }
     if(
         nlCurrentContext->solver == NL_PERM_SUPERLU_EXT && 
         nlCurrentContext->preconditioner != NL_PRECOND_NONE
     ) {
-        nlWarning("nlSolve", "Preconditioner not implemented yet for PERMSUPERLU") ;
-        nlCurrentContext->preconditioner = NL_PRECOND_NONE ;        
-        nlCurrentContext->precond_vector_prod = NULL ;
+        nlWarning(
+	    "nlSolve", "Preconditioner not implemented yet for PERMSUPERLU"
+	);
+        nlCurrentContext->preconditioner = NL_PRECOND_NONE;        
     }
     if(
         nlCurrentContext->solver == NL_SYMMETRIC_SUPERLU_EXT && 
         nlCurrentContext->preconditioner != NL_PRECOND_NONE
     ) {
-        nlWarning("nlSolve", "Preconditioner not implemented yet for PERMSUPERLU") ;
-        nlCurrentContext->preconditioner = NL_PRECOND_NONE ;        
-        nlCurrentContext->precond_vector_prod = NULL ;
+        nlWarning(
+	    "nlSolve", "Preconditioner not implemented yet for PERMSUPERLU"
+	);
+        nlCurrentContext->preconditioner = NL_PRECOND_NONE;        
+    }
+
+    nlDeleteMatrix(nlCurrentContext->P);
+    nlCurrentContext->P = NULL;
+    
+    switch(nlCurrentContext->preconditioner) {
+    case NL_PRECOND_NONE:
+        break;
+    case NL_PRECOND_JACOBI:
+	nlCurrentContext->P = nlNewJacobiPreconditioner(nlCurrentContext->M);
+        break;
+    case NL_PRECOND_SSOR:
+	nlCurrentContext->P = nlNewSSORPreconditioner(
+	    nlCurrentContext->M,nlCurrentContext->omega
+	);	
+        break;
+    case NL_PRECOND_USER:
+        break;
+    default:
+        nl_assert_not_reached;
+    }
+
+    if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {
+        if(getenv("NL_LOW_MEM") == NULL) {
+            nlMatrixCompress(&nlCurrentContext->M);
+        }
     }
 }
 
-NLboolean nlDefaultSolver() {
-    NLboolean result = NL_TRUE ;
-    nlSetupPreconditioner() ;
-    switch(nlCurrentContext->solver) {
-    case NL_CG: {
-        if(nlCurrentContext->preconditioner == NL_PRECOND_NONE) {
-            nlCurrentContext->used_iterations = nlSolve_CG() ;
-        } else {
-            nlCurrentContext->used_iterations = nlSolve_CG_precond() ;
-        }
-    } break ;
-    case NL_BICGSTAB: {
-        if(nlCurrentContext->preconditioner == NL_PRECOND_NONE) {
-            nlCurrentContext->used_iterations = nlSolve_BICGSTAB() ;
-        } else {
-            nlCurrentContext->used_iterations = nlSolve_BICGSTAB_precond() ;
-        }
-    } break ;
-    case NL_GMRES: {
-        nlCurrentContext->used_iterations = nlSolve_GMRES() ;
-    } break ;
-    case NL_CNC_FLOAT_CRS_EXT:
-    case NL_CNC_DOUBLE_CRS_EXT:
-    case NL_CNC_FLOAT_BCRS2_EXT:
-    case NL_CNC_DOUBLE_BCRS2_EXT:
-    case NL_CNC_FLOAT_ELL_EXT:
-    case NL_CNC_DOUBLE_ELL_EXT:
-    case NL_CNC_FLOAT_HYB_EXT:
-    case NL_CNC_DOUBLE_HYB_EXT: {
-        nlCurrentContext->used_iterations = nlSolve_CNC() ;
-    } break ;
-    case NL_SUPERLU_EXT: 
-    case NL_PERM_SUPERLU_EXT: 
-    case NL_SYMMETRIC_SUPERLU_EXT: {
-        result = nlSolve_SUPERLU();
-    } break ;
-    case NL_CHOLMOD_EXT: {
-        result = nlSolve_CHOLMOD();
-    } break;
-    default:
-        nl_assert_not_reached ;
+static NLboolean nlSolveDirect() {
+    NLdouble* b = nlCurrentContext->b;
+    NLdouble* x = nlCurrentContext->x;
+    NLuint n = nlCurrentContext->n;
+    NLuint k;
+    
+    NLMatrix F = nlMatrixFactorize(
+	nlCurrentContext->M, nlCurrentContext->solver
+    );
+    if(F == NULL) {
+	return NL_FALSE;
     }
-    return result ;
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	nlMultMatrixVector(F, b, x);
+	b += n;
+	x += n;
+    }
+    nlDeleteMatrix(F);
+    return NL_TRUE;
+}
+
+static NLboolean nlSolveIterative() {
+    NLdouble* b = nlCurrentContext->b;
+    NLdouble* x = nlCurrentContext->x;
+    NLuint n = nlCurrentContext->n;
+    NLuint k;
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	nlSolveSystemIterative(
+	    nlCurrentContext->M,
+	    nlCurrentContext->P,
+	    b,
+	    x,
+	    nlCurrentContext->solver,
+	    nlCurrentContext->threshold,
+	    nlCurrentContext->max_iterations,
+	    nlCurrentContext->inner_iterations
+	);
+	b += n;
+	x += n;
+    }
+    return NL_TRUE;
+}
+
+
+NLboolean nlDefaultSolver() {
+    NLboolean result = NL_TRUE;
+    nlSetupPreconditioner();
+    switch(nlCurrentContext->solver) {
+	case NL_CG:
+	case NL_BICGSTAB:
+	case NL_GMRES: {
+	    result = nlSolveIterative();
+	} break;
+	case NL_CNC_FLOAT_CRS_EXT:
+	case NL_CNC_DOUBLE_CRS_EXT:
+	case NL_CNC_FLOAT_BCRS2_EXT:
+	case NL_CNC_DOUBLE_BCRS2_EXT:
+	case NL_CNC_FLOAT_ELL_EXT:
+	case NL_CNC_DOUBLE_ELL_EXT:
+	case NL_CNC_FLOAT_HYB_EXT:
+	case NL_CNC_DOUBLE_HYB_EXT: {
+	    nlSolve_CNC();
+	    result = NL_TRUE;
+	} break;
+	case NL_SUPERLU_EXT: 
+	case NL_PERM_SUPERLU_EXT: 
+	case NL_SYMMETRIC_SUPERLU_EXT: 
+	case NL_CHOLMOD_EXT: {
+	    result = nlSolveDirect();
+	} break;
+	default:
+	    nl_assert_not_reached;
+    }
+    return result;
 }
 
 /******* extracted from nl_blas.c *******/
@@ -1598,7 +2035,7 @@ typedef NLint     ftnlen ;
 
 #ifndef NL_USE_BLAS
 
-static int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
+static int NL_FORTRAN_WRAP(lsame)(const char *ca, const char *cb)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -1674,7 +2111,7 @@ static int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
     
 } /* lsame_ */
 
-/* Subroutine */ static int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info)
+/* Subroutine */ static int NL_FORTRAN_WRAP(xerbla)(const char *srname, int *info)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -2150,7 +2587,7 @@ L40:
 #undef DX
 #undef DY
 
-/* Subroutine */ static int NL_FORTRAN_WRAP(dgemv)(char *trans, integer *m, integer *n, doublereal *
+/* Subroutine */ static int NL_FORTRAN_WRAP(dgemv)(const char *trans, integer *m, integer *n, doublereal *
         alpha, doublereal *a, integer *lda, doublereal *x, integer *incx, 
         doublereal *beta, doublereal *y, integer *incy)
 {
@@ -2490,9 +2927,9 @@ extern void NL_FORTRAN_WRAP(dgemv)(
 /* DECK DTPSV */
 /* Subroutine */ 
 static int NL_FORTRAN_WRAP(dtpsv)(
-   char* uplo, 
-   char* trans, 
-   char* diag, 
+   const char* uplo, 
+   const char* trans, 
+   const char* diag, 
    integer* n, 
    doublereal* ap, 
    doublereal* x, 
@@ -2862,7 +3299,9 @@ static int NL_FORTRAN_WRAP(dtpsv)(
 /* x <- a*x */
 void dscal( int n, double alpha, double *x, int incx ) {
     NL_FORTRAN_WRAP(dscal)(&n,&alpha,x,&incx);
-    nlCurrentContext->flops += (NLulong)(n);
+    if(nlCurrentContext != NULL) {
+	nlCurrentContext->flops += (NLulong)(n);
+    }
 }
 
 /* y <- x */
@@ -2878,20 +3317,26 @@ void daxpy(
     int incy 
 ) {
     NL_FORTRAN_WRAP(daxpy)(&n,&alpha,(double*)x,&incx,y,&incy);
-    nlCurrentContext->flops += (NLulong)(2*n);    
+    if(nlCurrentContext != NULL) {    
+	nlCurrentContext->flops += (NLulong)(2*n);
+    }
 }
 
 /* returns x^T*y */
 double ddot( 
     int n, const double *x, int incx, const double *y, int incy 
 ) {
-    nlCurrentContext->flops += (NLulong)(2*n);        
+    if(nlCurrentContext != NULL) {    
+	nlCurrentContext->flops += (NLulong)(2*n);
+    }
     return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
 }
 
 /* returns |x|_2 */
 double dnrm2( int n, const double *x, int incx ) {
-    nlCurrentContext->flops += (NLulong)(2*n);        
+    if(nlCurrentContext != NULL) {    
+	nlCurrentContext->flops += (NLulong)(2*n);
+    }
     return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
 }
 
@@ -2901,11 +3346,13 @@ void dtpsv(
     MatrixUnitTriangular diag, int n, const double *AP,
     double *x, int incx 
 ) {
-    static char *UL[2] = { "U", "L" };
-    static char *T[3]  = { "N", "T", 0 };
-    static char *D[2]  = { "U", "N" };
+    static const char *UL[2] = { "U", "L" };
+    static const char *T[3]  = { "N", "T", 0 };
+    static const char *D[2]  = { "U", "N" };
+    NL_FORTRAN_WRAP(dtpsv)(
+	UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx
+    );
     /* TODO: update flops */
-    NL_FORTRAN_WRAP(dtpsv)(UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx); 
 }
 
 /* y <- alpha*A*x + beta*y,  y <- alpha*A^T*x + beta*y,   A-(m,n) */
@@ -2914,9 +3361,12 @@ void dgemv(
     const double *A, int ldA, const double *x, int incx,
     double beta, double *y, int incy 
 ) {
-    static char *T[3] = { "N", "T", 0 };
+    static const char *T[3] = { "N", "T", 0 };
+    NL_FORTRAN_WRAP(dgemv)(
+	T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,
+	(double*)x,&incx,&beta,y,&incy
+    );
     /* TODO: update flops */    
-    NL_FORTRAN_WRAP(dgemv)(T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,(double*)x,&incx,&beta,y,&incy);
 }
 
 
@@ -2941,38 +3391,38 @@ void dgemv(
  *     SIAM J Numer Anal 27, 1542-1568 (1990)
  */
 
-NLuint nlSolve_CG() {
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLuint    max_iter = nlCurrentContext->max_iterations ;
-    NLint     N        = (NLint)(nlCurrentContext->n) ;
 
-    NLdouble *g = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *r = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *p = NL_NEW_ARRAY(NLdouble, N) ;
+
+static NLuint nlSolveSystem_CG(
+    NLMatrix M, NLdouble* b, NLdouble* x,
+    double eps, NLuint max_iter
+) {
+    NLint N = (NLint)M->m;
+
+    NLdouble *g = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *r = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *p = NL_NEW_ARRAY(NLdouble, N);
     NLuint its=0;
-    NLint i;
     NLdouble t, tau, sig, rho, gam;
     NLdouble b_square=ddot(N,b,1,b,1);
     NLdouble err=eps*eps*b_square;
-    NLdouble accu =0.0;
-    NLdouble * Ax=NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
     NLdouble curr_err;
-    
-    nlCurrentContext->matrix_vector_prod(x,g);
+
+    nlMultMatrixVector(M,x,g);
     daxpy(N,-1.,b,1,g,1);
     dscal(N,-1.,g,1);
     dcopy(N,g,1,r,1);
     curr_err = ddot(N,g,1,g,1);
     while ( curr_err >err && its < max_iter) {
-        if(nlCurrentContext->progress_func != NULL) {
-            nlCurrentContext->progress_func(its, max_iter, curr_err, err);
-        }
-        if(nlCurrentContext->verbose && !(its % 100)) {
-            printf ( "%d : %.10e -- %.10e\n", its, curr_err, err ) ;
-        }
-        nlCurrentContext->matrix_vector_prod(r,p);
+	if(nlCurrentContext != NULL) {
+	    if(nlCurrentContext->progress_func != NULL) {
+		nlCurrentContext->progress_func(its, max_iter, curr_err, err);
+	    }
+	    if(nlCurrentContext->verbose && !(its % 100)) {
+		printf ( "%d : %.10e -- %.10e\n", its, curr_err, err );
+	    }
+	}
+	nlMultMatrixVector(M,r,p);
         rho=ddot(N,p,1,p,1);
         sig=ddot(N,r,1,p,1);
         tau=ddot(N,g,1,r,1);
@@ -2985,129 +3435,78 @@ NLuint nlSolve_CG() {
         ++its;
         curr_err = ddot(N,g,1,g,1);
     }
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i) {
-        accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    }
-    if(b_square == 0.0) {
-        nlCurrentContext->error = sqrt(accu);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
-        }
-    } else {
-        nlCurrentContext->error = sqrt(accu/b_square);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
-        }
-    }
-    
-    NL_DELETE_ARRAY(Ax);
-    NL_DELETE_ARRAY(g) ;
-    NL_DELETE_ARRAY(r) ;
-    NL_DELETE_ARRAY(p) ;
-
-    nlCurrentContext->used_iterations = its;
-    
+    NL_DELETE_ARRAY(g);
+    NL_DELETE_ARRAY(r);
+    NL_DELETE_ARRAY(p);
     return its;
-} 
+}
 
-
-NLuint nlSolve_CG_precond()  {
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLuint    max_iter = nlCurrentContext->max_iterations ;
-    NLint     N        = (NLint)(nlCurrentContext->n) ;
-
-    NLdouble* r = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble* d = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble* h = NL_NEW_ARRAY(NLdouble, N) ;
+static NLuint nlSolveSystem_PRE_CG(
+    NLMatrix M, NLMatrix P, NLdouble* b, NLdouble* x,
+    double eps, NLuint max_iter
+) {
+    NLint     N        = (NLint)M->n;
+    NLdouble* r = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble* d = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble* h = NL_NEW_ARRAY(NLdouble, N);
     NLdouble *Ad = h;
     NLuint its=0;
     NLdouble rh, alpha, beta;
     NLdouble b_square = ddot(N,b,1,b,1);
     NLdouble err=eps*eps*b_square;
-    NLint i;
-    NLdouble * Ax=NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
-    NLdouble accu =0.0;
     NLdouble curr_err;
-    
-    nlCurrentContext->matrix_vector_prod(x,r);
+
+    nlMultMatrixVector(M,x,r);
     daxpy(N,-1.,b,1,r,1);
-    nlCurrentContext->precond_vector_prod(r,d);
+    nlMultMatrixVector(P,r,d);
     dcopy(N,d,1,h,1);
     rh=ddot(N,r,1,h,1);
     curr_err = ddot(N,r,1,r,1);
 
     while ( curr_err >err && its < max_iter) {
-        if(nlCurrentContext->progress_func != NULL) {
-            nlCurrentContext->progress_func(its, max_iter, curr_err, err);
-        }
-        if( nlCurrentContext->verbose && !(its % 100)) {
-           printf ( "%d : %.10e -- %.10e\n", its, curr_err, err ) ;
-        }
-        nlCurrentContext->matrix_vector_prod(d,Ad);
+	if(nlCurrentContext != NULL) {
+	    if(nlCurrentContext->progress_func != NULL) {
+		nlCurrentContext->progress_func(its, max_iter, curr_err, err);
+	    }
+	    if( nlCurrentContext->verbose && !(its % 100)) {
+		printf ( "%d : %.10e -- %.10e\n", its, curr_err, err );
+	    }
+	}
+	nlMultMatrixVector(M,d,Ad);
         alpha=rh/ddot(N,d,1,Ad,1);
         daxpy(N,-alpha,d,1,x,1);
         daxpy(N,-alpha,Ad,1,r,1);
-        nlCurrentContext->precond_vector_prod(r,h);
+	nlMultMatrixVector(P,r,h);
         beta=1./rh; rh=ddot(N,r,1,h,1); beta*=rh;
         dscal(N,beta,d,1);
         daxpy(N,1.,h,1,d,1);
         ++its;
         curr_err = ddot(N,r,1,r,1);
     }
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i) {
-        accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    }
-
-    if(b_square == 0.0) {
-        nlCurrentContext->error = sqrt(accu);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
-        }
-    } else {
-        nlCurrentContext->error = sqrt(accu/b_square);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
-        }
-    }
-    
-    NL_DELETE_ARRAY(Ax);
-    NL_DELETE_ARRAY(r) ;
-    NL_DELETE_ARRAY(d) ;
-    NL_DELETE_ARRAY(h) ;
-
-    nlCurrentContext->used_iterations = its;
-    
+    NL_DELETE_ARRAY(r);
+    NL_DELETE_ARRAY(d);
+    NL_DELETE_ARRAY(h);
     return its;
 }
 
-NLuint nlSolve_BICGSTAB() {
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLuint    max_iter = nlCurrentContext->max_iterations ;
-    NLint     N        = (NLint)(nlCurrentContext->n) ;
-    NLint     i ;
-
-    NLdouble *rT  = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *d   = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *h   = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *u   = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *Ad  = NL_NEW_ARRAY(NLdouble, N) ; 
-    NLdouble *t   = NL_NEW_ARRAY(NLdouble, N) ; 
+static NLuint nlSolveSystem_BICGSTAB(
+    NLMatrix M, NLdouble* b, NLdouble* x,
+    double eps, NLuint max_iter
+) {
+    NLint     N   = (NLint)M->n;
+    NLdouble *rT  = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *d   = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *h   = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *u   = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *Ad  = NL_NEW_ARRAY(NLdouble, N); 
+    NLdouble *t   = NL_NEW_ARRAY(NLdouble, N); 
     NLdouble *s   = h;
-    NLdouble rTh, rTAd, rTr, alpha, beta, omega, st, tt ;
+    NLdouble rTh, rTAd, rTr, alpha, beta, omega, st, tt;
     NLuint its=0;
     NLdouble b_square = ddot(N,b,1,b,1);
     NLdouble err=eps*eps*b_square;
-    NLdouble *r = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble * Ax=NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
-    NLdouble accu =0.0;
-
-    nlCurrentContext->matrix_vector_prod(x,r);
+    NLdouble *r = NL_NEW_ARRAY(NLdouble, N);
+    nlMultMatrixVector(M,x,r);
     daxpy(N,-1.,b,1,r,1);
     dcopy(N,r,1,d,1);
     dcopy(N,d,1,h,1);
@@ -3117,20 +3516,22 @@ NLuint nlSolve_BICGSTAB() {
     rTr=ddot(N,r,1,r,1);
 
     while ( rTr>err && its < max_iter) {
-        if(nlCurrentContext->progress_func != NULL) {
-            nlCurrentContext->progress_func(its, max_iter, rTr, err);
-        }
-        if( (nlCurrentContext->verbose) && !(its % 100)) {
-            printf ( "%d : %.10e -- %.10e\n", its, rTr, err ) ;
-        }
-        nlCurrentContext->matrix_vector_prod(d,Ad);
+	if(nlCurrentContext != NULL) {
+	    if(nlCurrentContext->progress_func != NULL) {
+		nlCurrentContext->progress_func(its, max_iter, rTr, err);
+	    }
+	    if( (nlCurrentContext->verbose) && !(its % 100)) {
+		printf ( "%d : %.10e -- %.10e\n", its, rTr, err );
+	    }
+	}
+	nlMultMatrixVector(M,d,Ad);
         rTAd=ddot(N,rT,1,Ad,1);
         nl_assert( fabs(rTAd)>1e-40 );
         alpha=rTh/rTAd;
         daxpy(N,-alpha,Ad,1,r,1);
         dcopy(N,h,1,s,1);
         daxpy(N,-alpha,Ad,1,s,1);
-        nlCurrentContext->matrix_vector_prod(s,t);
+	nlMultMatrixVector(M,s,t);
         daxpy(N,1.,t,1,u,1);
         dscal(N,alpha,u,1);
         st=ddot(N,s,1,t,1);
@@ -3152,67 +3553,38 @@ NLuint nlSolve_BICGSTAB() {
         rTr=ddot(N,r,1,r,1);
         ++its;
     }
-
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i){
-        accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    }
-
-    if(b_square == 0.0) {
-        nlCurrentContext->error = sqrt(accu);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
-        }
-    } else {
-        nlCurrentContext->error = sqrt(accu/b_square);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
-        }
-    }
-
-    NL_DELETE_ARRAY(Ax);
-    NL_DELETE_ARRAY(r) ;
-    NL_DELETE_ARRAY(rT) ;
-    NL_DELETE_ARRAY(d) ;
-    NL_DELETE_ARRAY(h) ;
-    NL_DELETE_ARRAY(u) ;
-    NL_DELETE_ARRAY(Ad) ;
-    NL_DELETE_ARRAY(t) ;
-
-    nlCurrentContext->used_iterations = its;
-    
+    NL_DELETE_ARRAY(r);
+    NL_DELETE_ARRAY(rT);
+    NL_DELETE_ARRAY(d);
+    NL_DELETE_ARRAY(h);
+    NL_DELETE_ARRAY(u);
+    NL_DELETE_ARRAY(Ad);
+    NL_DELETE_ARRAY(t);
     return its;
 }
 
-
-NLuint nlSolve_BICGSTAB_precond() {
-
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLuint    max_iter = nlCurrentContext->max_iterations ;
-    NLint     N        = (NLint)(nlCurrentContext->n) ;
-    NLint     i;
-
-    NLdouble *rT  = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *d   = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *h   = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *u   = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *Sd  = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *t   = NL_NEW_ARRAY(NLdouble, N) ;
-    NLdouble *aux = NL_NEW_ARRAY(NLdouble, N) ;
+static NLuint nlSolveSystem_PRE_BICGSTAB(
+    NLMatrix M, NLMatrix P, NLdouble* b, NLdouble* x,
+    double eps, NLuint max_iter
+) {
+    NLint     N   = (NLint)M->n;
+    NLdouble *rT  = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *d   = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *h   = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *u   = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *Sd  = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *t   = NL_NEW_ARRAY(NLdouble, N);
+    NLdouble *aux = NL_NEW_ARRAY(NLdouble, N);
     NLdouble *s   = h;
     NLdouble rTh, rTSd, rTr, alpha, beta, omega, st, tt;
     NLuint its=0;
     NLdouble b_square = ddot(N,b,1,b,1);
     NLdouble err  = eps*eps*b_square;
     NLdouble *r   = NL_NEW_ARRAY(NLdouble, N);
-    NLdouble * Ax = NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
-    NLdouble accu =0.0;
 
-    nlCurrentContext->matrix_vector_prod(x,r);
+    nlMultMatrixVector(M,x,r);
     daxpy(N,-1.,b,1,r,1);
-    nlCurrentContext->precond_vector_prod(r,d);
+    nlMultMatrixVector(P,r,d);
     dcopy(N,d,1,h,1);
     dcopy(N,h,1,rT,1);
     nl_assert( ddot(N,rT,1,rT,1)>1e-40 );
@@ -3220,22 +3592,24 @@ NLuint nlSolve_BICGSTAB_precond() {
     rTr=ddot(N,r,1,r,1);
 
     while ( rTr>err && its < max_iter) {
-        if(nlCurrentContext->progress_func != NULL) {
-            nlCurrentContext->progress_func(its, max_iter, rTr, err);
-        }
-        if( (nlCurrentContext->verbose) && !(its % 100)) {
-            printf ( "%d : %.10e -- %.10e\n", its, rTr, err ) ;
-        }
-        nlCurrentContext->matrix_vector_prod(d,aux);
-        nlCurrentContext->precond_vector_prod(aux,Sd);
+	if(nlCurrentContext != NULL) {	
+	    if(nlCurrentContext->progress_func != NULL) {
+		nlCurrentContext->progress_func(its, max_iter, rTr, err);
+	    }
+	    if( (nlCurrentContext->verbose) && !(its % 100)) {
+		printf ( "%d : %.10e -- %.10e\n", its, rTr, err );
+	    }
+	}
+	nlMultMatrixVector(M,d,aux);
+	nlMultMatrixVector(P,aux,Sd);
         rTSd=ddot(N,rT,1,Sd,1);
         nl_assert( fabs(rTSd)>1e-40 );
         alpha=rTh/rTSd;
         daxpy(N,-alpha,aux,1,r,1);
         dcopy(N,h,1,s,1);
         daxpy(N,-alpha,Sd,1,s,1);
-        nlCurrentContext->matrix_vector_prod(s,aux);
-        nlCurrentContext->precond_vector_prod(aux,t);
+	nlMultMatrixVector(M,s,aux);
+	nlMultMatrixVector(P,aux,t);
         daxpy(N,1.,t,1,u,1);
         dscal(N,alpha,u,1);
         st=ddot(N,s,1,t,1);
@@ -3257,25 +3631,6 @@ NLuint nlSolve_BICGSTAB_precond() {
         rTr=ddot(N,r,1,r,1);
         ++its;
     }
-
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i){
-        accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    }
-
-    if(b_square == 0.0) {
-        nlCurrentContext->error = sqrt(accu);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
-        }
-    } else {
-        nlCurrentContext->error = sqrt(accu/b_square);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
-        }
-    }
-
-    NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r);
     NL_DELETE_ARRAY(rT);
     NL_DELETE_ARRAY(d);
@@ -3284,37 +3639,29 @@ NLuint nlSolve_BICGSTAB_precond() {
     NL_DELETE_ARRAY(Sd);
     NL_DELETE_ARRAY(t);
     NL_DELETE_ARRAY(aux);
-
-    nlCurrentContext->used_iterations = its;
-        
     return its;
 }
 
-NLuint nlSolve_GMRES() {
-
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLint    max_iter  = (NLint)(nlCurrentContext->max_iterations) ;
-    NLint    n         = (NLint)(nlCurrentContext->n) ;
-    NLint    m         = (NLint)(nlCurrentContext->inner_iterations) ;
-
-    typedef NLdouble *NLdoubleP;
-    NLdouble *V   = NL_NEW_ARRAY(NLdouble, n*(m+1)   ) ;
-    NLdouble *U   = NL_NEW_ARRAY(NLdouble, m*(m+1)/2 ) ;
-    NLdouble *r   = NL_NEW_ARRAY(NLdouble, n         ) ;
-    NLdouble *y   = NL_NEW_ARRAY(NLdouble, m+1       ) ;
-    NLdouble *c   = NL_NEW_ARRAY(NLdouble, m         ) ;
-    NLdouble *s   = NL_NEW_ARRAY(NLdouble, m         ) ;
-    NLdouble **v  = NL_NEW_ARRAY(NLdoubleP, m+1      ) ;
-    NLdouble * Ax = NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
-    NLdouble accu =0.0;
-    NLint i, j, io, uij, u0j ; 
-    NLint its = -1 ;
-    NLdouble beta, h, rd, dd, nrm2b ;
+static NLuint nlSolveSystem_GMRES(
+    NLMatrix M, NLdouble* b, NLdouble* x,
+    double eps, NLuint max_iter, NLuint inner_iter
+) {
+    NLint    n    = (NLint)M->n;
+    NLint    m    = (NLint)inner_iter;
+    typedef NLdouble *NLdoubleP;     
+    NLdouble *V   = NL_NEW_ARRAY(NLdouble, n*(m+1)   );
+    NLdouble *U   = NL_NEW_ARRAY(NLdouble, m*(m+1)/2 );
+    NLdouble *r   = NL_NEW_ARRAY(NLdouble, n         );
+    NLdouble *y   = NL_NEW_ARRAY(NLdouble, m+1       );
+    NLdouble *c   = NL_NEW_ARRAY(NLdouble, m         );
+    NLdouble *s   = NL_NEW_ARRAY(NLdouble, m         );
+    NLdouble **v  = NL_NEW_ARRAY(NLdoubleP, m+1      );
+    NLint i, j, io, uij, u0j; 
+    NLint its = -1;
+    NLdouble beta, h, rd, dd, nrm2b;
 
     for ( i=0; i<=m; ++i ){
-        v[i]=V+i*n ;
+        v[i]=V+i*n;
     }
     
     nrm2b=dnrm2(n,b,1);
@@ -3322,7 +3669,7 @@ NLuint nlSolve_GMRES() {
 
     do  { /* outer loop */
         ++io;
-        nlCurrentContext->matrix_vector_prod(x,r);
+	nlMultMatrixVector(M,x,r);
         daxpy(n,-1.,b,1,r,1);
         beta=dnrm2(n,r,1);
         dcopy(n,r,1,v[0],1);
@@ -3333,7 +3680,7 @@ NLuint nlSolve_GMRES() {
         uij=0;
         do { /* inner loop: j=0,...,m-1 */
             u0j=uij;
-            nlCurrentContext->matrix_vector_prod(v[j],v[j+1]);
+	    nlMultMatrixVector(M,v[j],v[j+1]);
             dgemv(
                 Transpose,n,j+1,1.,V,n,v[j+1],1,0.,U+u0j,1
             );
@@ -3363,7 +3710,7 @@ NLuint nlSolve_GMRES() {
             ++j;
         } while ( 
             j<m && fabs(y[j])>=eps*nrm2b 
-        ) ;
+        );
         { /* minimiere bzgl Y */
             dtpsv(
                 UpperTriangle,
@@ -3374,44 +3721,80 @@ NLuint nlSolve_GMRES() {
             /* correct X */
             dgemv(NoTranspose,n,j,-1.,V,n,y,1,1.,x,1);
         }
-    } while ( fabs(y[j])>=eps*nrm2b && (m*(io-1)+j) < max_iter);
+    } while ( fabs(y[j])>=eps*nrm2b && (m*(io-1)+j) < (NLint)max_iter);
     
     /* Count the inner iterations */
     its = m*(io-1)+j;
-
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < n ; ++i) {
-        accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    }
-
-    if(nrm2b == 0.0) {
-        nlCurrentContext->error = sqrt(accu);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
-        }
-    } else {
-        nlCurrentContext->error = sqrt(accu/nrm2b);
-        if(nlCurrentContext->verbose) {
-            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
-        }
-    }
-
-    NL_DELETE_ARRAY(Ax);
-    NL_DELETE_ARRAY(V) ;
-    NL_DELETE_ARRAY(U) ;
-    NL_DELETE_ARRAY(r) ;
-    NL_DELETE_ARRAY(y) ;
-    NL_DELETE_ARRAY(c) ;
-    NL_DELETE_ARRAY(s) ;
-    NL_DELETE_ARRAY(v) ;
-
-    nlCurrentContext->used_iterations = (NLuint)its;
-    
+    NL_DELETE_ARRAY(V);
+    NL_DELETE_ARRAY(U);
+    NL_DELETE_ARRAY(r);
+    NL_DELETE_ARRAY(y);
+    NL_DELETE_ARRAY(c);
+    NL_DELETE_ARRAY(s);
+    NL_DELETE_ARRAY(v);
     return (NLuint)its;
 }
 
 
+/* Main driver routine */
 
+NLuint nlSolveSystemIterative(
+    NLMatrix M, NLMatrix P, NLdouble* b, NLdouble* x,
+    NLenum solver,
+    double eps, NLuint max_iter, NLuint inner_iter
+) {
+    NLuint result=0;
+    NLdouble* Ax;
+    NLdouble accu;
+    NLuint i;
+    NLdouble b_square=ddot((NLint)M->n,b,1,b,1);
+    nl_assert(M->m == M->n);
+    switch(solver) {
+	case NL_CG:
+	    if(P == NULL) {
+		result = nlSolveSystem_CG(M,b,x,eps,max_iter);
+	    } else {
+		result = nlSolveSystem_PRE_CG(M,P,b,x,eps,max_iter);		
+	    }
+	    break;
+	case NL_BICGSTAB:
+	    if(P == NULL) {
+		result = nlSolveSystem_BICGSTAB(M,b,x,eps,max_iter);
+	    } else {
+		result = nlSolveSystem_PRE_BICGSTAB(M,P,b,x,eps,max_iter);
+	    }
+	    break;
+	case NL_GMRES:
+	    result = nlSolveSystem_GMRES(M,b,x,eps,max_iter,inner_iter);
+	    break;
+	default:
+	    nl_assert_not_reached;
+    }
+    if(nlCurrentContext != NULL) {
+	Ax = NL_NEW_ARRAY(NLdouble, M->n);
+	nlMultMatrixVector(M,x,Ax);
+	accu = 0.0;
+	for(i = 0; i < M->n; ++i) {
+	    accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
+	}
+	if(b_square == 0.0) {
+	    nlCurrentContext->error = sqrt(accu);
+	    if(nlCurrentContext->verbose) {
+		printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+	    }
+	} else {
+	    nlCurrentContext->error = sqrt(accu/b_square);
+	    if(nlCurrentContext->verbose) {
+		printf("in OpenNL : ||Ax-b||/||b|| = %e\n",
+		       nlCurrentContext->error
+		);
+	    }
+	}
+	NL_DELETE_ARRAY(Ax);
+    }
+    nlCurrentContext->used_iterations = result;
+    return result;
+}
 
 
 
@@ -3419,138 +3802,177 @@ NLuint nlSolve_GMRES() {
 
 
 
-/* preconditioners */
 
-/* Utilities for preconditioners */
+typedef struct {
+    NLuint m;
 
-void nlMultDiagonal(NLdouble* xy, NLdouble omega) {
-    NLuint N = nlCurrentContext->n ;
-    NLuint i ;
-    NLdouble* diag = nlCurrentContext->M.diag ;
-    for(i=0; i<N; i++) {
-        xy[i] *= (diag[i] / omega) ;
-    }
-    nlCurrentContext->flops += (NLulong)(N);
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+    
+    NLdouble* diag_inv;
+    
+} NLJacobiPreconditioner;
+
+
+static void nlJacobiPreconditionerDestroy(NLJacobiPreconditioner* M) {
+    NL_DELETE_ARRAY(M->diag_inv);
 }
 
-void nlMultDiagonalInverse(NLdouble* xy, NLdouble omega) {
-    NLuint N = nlCurrentContext->n ;
-    NLuint i ;
-    NLdouble* diag = nlCurrentContext->M.diag ;
-    for(i=0; i<N; i++) {
-        xy[i] *= ((diag[i] != 0) ? (omega / diag[i]) : omega) ;
+static void nlJacobiPreconditionerMult(NLJacobiPreconditioner* M, const double* x, double* y) {
+    NLuint i;
+    for(i=0; i<M->n; ++i) {
+	y[i] = x[i] * M->diag_inv[i];
     }
-    nlCurrentContext->flops += (NLulong)(N);    
+    nlCurrentContext->flops += (NLulong)(M->n);    
 }
 
-void nlMultLowerInverse(const NLdouble* x, NLdouble* y, double omega) {
-    NLSparseMatrix* A = &(nlCurrentContext->M) ;
-    NLuint n       = A->n ;
-    NLdouble* diag = A->diag ;
-    NLuint i ;
-    NLuint ij ;
-    NLCoeff* c = NULL ;
-    NLdouble S ;
+NLMatrix nlNewJacobiPreconditioner(NLMatrix M_in) {
+    NLSparseMatrix* M = NULL;
+    NLJacobiPreconditioner* result = NULL;
+    NLuint i;
+    nl_assert(M_in->type == NL_MATRIX_SPARSE_DYNAMIC);
+    nl_assert(M_in->m == M_in->n);
+    M = (NLSparseMatrix*)M_in;
+    result = NL_NEW(NLJacobiPreconditioner);
+    result->m = M->m;
+    result->n = M->n;
+    result->type = NL_MATRIX_OTHER;
+    result->destroy_func = (NLDestroyMatrixFunc)nlJacobiPreconditionerDestroy;
+    result->mult_func = (NLMultMatrixVectorFunc)nlJacobiPreconditionerMult;
+    result->diag_inv = NL_NEW_ARRAY(double, M->n);
+    for(i=0; i<M->n; ++i) {
+	result->diag_inv[i] = (M->diag[i] == 0.0) ? 1.0 : 1.0/M->diag[i];
+    }
+    return (NLMatrix)result;
+}
 
-    nl_assert(A->storage & NL_MATRIX_STORE_SYMMETRIC) ;
-    nl_assert(A->storage & NL_MATRIX_STORE_ROWS) ;
+
+
+
+typedef struct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    NLSparseMatrix* M;
+
+    double omega;
+    
+    NLdouble* work;
+    
+} NLSSORPreconditioner;
+
+
+static void nlSSORPreconditionerDestroy(NLSSORPreconditioner* M) {
+    NL_DELETE_ARRAY(M->work);
+}
+
+
+
+static void nlSparseMatrixMultLowerInverse(
+    NLSparseMatrix* A, const NLdouble* x, NLdouble* y, double omega
+) {
+    NLuint n       = A->n;
+    NLdouble* diag = A->diag;
+    NLuint i;
+    NLuint ij;
+    NLCoeff* c = NULL;
+    NLdouble S;
+
+    nl_assert(A->storage & NL_MATRIX_STORE_SYMMETRIC);
+    nl_assert(A->storage & NL_MATRIX_STORE_ROWS);
 
     for(i=0; i<n; i++) {
-        NLRowColumn*  Ri = &(A->row[i]) ;       
-        S = 0 ;
+        NLRowColumn*  Ri = &(A->row[i]);       
+        S = 0;
         for(ij=0; ij < Ri->size; ij++) {
-            c = &(Ri->coeff[ij]) ;
-            nl_parano_assert(c->index <= i) ; 
+            c = &(Ri->coeff[ij]);
+            nl_parano_assert(c->index <= i); 
             if(c->index != i) {
-                S += c->value * y[c->index] ; 
+                S += c->value * y[c->index]; 
             }
         }
         nlCurrentContext->flops += (NLulong)(2*Ri->size);                    
-        y[i] = (x[i] - S) * omega / diag[i] ;
+        y[i] = (x[i] - S) * omega / diag[i];
     }
     nlCurrentContext->flops += (NLulong)(n*3);                
 }
+static void nlSparseMatrixMultUpperInverse(
+    NLSparseMatrix* A, const NLdouble* x, NLdouble* y, NLdouble omega
+) {
+    NLuint n       = A->n;
+    NLdouble* diag = A->diag;
+    NLint i;
+    NLuint ij;
+    NLCoeff* c = NULL;
+    NLdouble S;
 
-void nlMultUpperInverse(const NLdouble* x, NLdouble* y, NLdouble omega) {
-    NLSparseMatrix* A = &(nlCurrentContext->M) ;
-    NLuint n       = A->n ;
-    NLdouble* diag = A->diag ;
-    NLint i ;
-    NLuint ij ;
-    NLCoeff* c = NULL ;
-    NLdouble S ;
-
-    nl_assert(A->storage & NL_MATRIX_STORE_SYMMETRIC) ;
-    nl_assert(A->storage & NL_MATRIX_STORE_COLUMNS) ;
+    nl_assert(A->storage & NL_MATRIX_STORE_SYMMETRIC);
+    nl_assert(A->storage & NL_MATRIX_STORE_COLUMNS);
 
     for(i=(NLint)(n-1); i>=0; i--) {
-        NLRowColumn*  Ci = &(A->column[i]) ;       
-        S = 0 ;
+        NLRowColumn*  Ci = &(A->column[i]);       
+        S = 0;
         for(ij=0; ij < Ci->size; ij++) {
-            c = &(Ci->coeff[ij]) ;
-            nl_parano_assert(c->index >= i) ; 
+            c = &(Ci->coeff[ij]);
+            nl_parano_assert(c->index >= i); 
             if((NLint)(c->index) != i) {
-                S += c->value * y[c->index] ; 
+                S += c->value * y[c->index]; 
             }
         }
         nlCurrentContext->flops += (NLulong)(2*Ci->size);                    
-        y[i] = (x[i] - S) * omega / diag[i] ;
+        y[i] = (x[i] - S) * omega / diag[i];
     }
     nlCurrentContext->flops += (NLulong)(n*3);                
 }
 
 
-void nlPreconditioner_Jacobi(const NLdouble* x, NLdouble* y) {
-    if(nlCurrentContext->M.storage & NL_MATRIX_STORE_DIAG_INV) {
-        NLuint i;
-        for(i=0; i<nlCurrentContext->M.diag_size; ++i) {
-            y[i] = x[i]*nlCurrentContext->M.diag_inv[i];
-        }
-        nlCurrentContext->flops += (NLulong)(nlCurrentContext->M.diag_size*3);                        
-    } else {
-        NLint N = (NLint)(nlCurrentContext->n) ;
-        dcopy(N, x, 1, y, 1) ;
-        nlMultDiagonalInverse(y, 1.0) ;
+static void nlSSORPreconditionerMult(NLSSORPreconditioner* P, const double* x, double* y) {
+    NLdouble* diag = P->M->diag;
+    NLuint i;
+    nlSparseMatrixMultLowerInverse(
+        P->M, x, P->work, P->omega
+    );
+    for(i=0; i<P->n; i++) {
+        P->work[i] *= (diag[i] / P->omega);
     }
+    nlCurrentContext->flops += (NLulong)(P->n);
+    nlSparseMatrixMultUpperInverse(
+        P->M, P->work, y, P->omega
+    );
+    dscal((NLint)P->n, 2.0 - P->omega, y, 1);
+    nlCurrentContext->flops += (NLulong)(P->n);    
 }
 
-
-static double* nlPreconditioner_SSOR_work = NULL;
-static NLuint nlPreconditioner_SSOR_work_size = 0;
-
-static void nlPreconditioner_SSOR_terminate(void) {
-    NL_DELETE_ARRAY(nlPreconditioner_SSOR_work);
+NLMatrix nlNewSSORPreconditioner(NLMatrix M_in, double omega) {
+    NLSparseMatrix* M = NULL;
+    NLSSORPreconditioner* result = NULL;
+    nl_assert(M_in->type == NL_MATRIX_SPARSE_DYNAMIC);
+    nl_assert(M_in->m == M_in->n);
+    M = (NLSparseMatrix*)M_in;
+    result = NL_NEW(NLSSORPreconditioner);
+    result->m = M->m;
+    result->n = M->n;
+    result->type = NL_MATRIX_OTHER;
+    result->destroy_func = (NLDestroyMatrixFunc)nlSSORPreconditionerDestroy;
+    result->mult_func = (NLMultMatrixVectorFunc)nlSSORPreconditionerMult;
+    result->M = M;
+    result->work = NL_NEW_ARRAY(NLdouble, result->n);
+    result->omega = omega;
+    return (NLMatrix)result;
 }
 
-void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) {
-    NLdouble omega = nlCurrentContext->omega ;
-    NLuint n = nlCurrentContext->n ;
-    static NLboolean init = NL_FALSE;
-    if(!init) {
-        atexit(nlPreconditioner_SSOR_terminate);
-        init = NL_TRUE;
-    }
-    if(n != nlPreconditioner_SSOR_work_size) {
-        nlPreconditioner_SSOR_work = NL_RENEW_ARRAY(
-            NLdouble, nlPreconditioner_SSOR_work, n
-        ) ;
-        nlPreconditioner_SSOR_work_size = n ;
-    }
-    
-    nlMultLowerInverse(
-        x, nlPreconditioner_SSOR_work, omega
-    );
-    nlMultDiagonal(
-        nlPreconditioner_SSOR_work, omega
-    );
-    nlMultUpperInverse(
-        nlPreconditioner_SSOR_work, y, omega
-    );
-
-    dscal((NLint)n, 2.0 - omega, y, 1) ;
-
-    nlCurrentContext->flops += (NLulong)(n);    
-}
 
 
 /******* extracted from nl_superlu.c *******/
@@ -3559,7 +3981,7 @@ void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) {
 
 #ifdef NL_OS_UNIX
 #  ifdef NL_OS_APPLE
-#      define SUPERLU_LIB_NAME "libsuperlu_4.dylib"
+#      define SUPERLU_LIB_NAME "libsuperlu_5.dylib"
 #  else
 #      define SUPERLU_LIB_NAME "libsuperlu.so"
 #  endif
@@ -3575,33 +3997,17 @@ void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) {
 
 
 
-/*
- * Important note: 
- * the order of some constants and the size
- * of some structures have changed between
- * SuperLU 3.x and SuperLU 4.x.
- * See documentation of the SuperLU_version() 
- * function in nl_superlu.c for more details.
- */
-
 typedef enum {
-    /* SuperLU 3.x */
-    SLU3_NC  =0,   /* column-wise, no supernode */
-    SLU3_NR  =1,   /* row-wize, no supernode */
-    SLU3_SC  =2,   /* column-wise, supernode */
-    SLU3_SR  =3,   /* row-wise, supernode */
-    SLU3_NCP =4,   /* column-wise, column-permuted, no supernode*/ 
-    SLU3_DN  =5,   /* Fortran style column-wise storage for dense matrix */
-
-    /* SuperLU 4.x */    
-    SLU4_NC     =0, /* column-wise, no supernode */
-    SLU4_NCP    =1, /* column-wise, column-permuted, no supernode */ 
-    SLU4_NR     =2, /* row-wize, no supernode */
-    SLU4_SC     =3, /* column-wise, supernode */
-    SLU4_SCP    =4, /* supernode, column-wise, permuted */
-    SLU4_SR     =5, /* row-wise, supernode */
-    SLU4_DN     =6, /* Fortran style column-wise storage for dense matrix */
-    SLU4_NR_loc =7  /* distributed compressed row format  */
+    SLU_NC,    /* column-wise, no supernode */
+    SLU_NCP,   /* column-wise, column-permuted, no supernode 
+                  (The consecutive columns of nonzeros, after permutation,
+                   may not be stored  contiguously.) */
+    SLU_NR,    /* row-wize, no supernode */
+    SLU_SC,    /* column-wise, supernode */
+    SLU_SCP,   /* supernode, column-wise, permuted */    
+    SLU_SR,    /* row-wise, supernode */
+    SLU_DN,     /* Fortran style column-wise storage for dense matrix */
+    SLU_NR_loc  /* distributed compressed row format  */ 
 } Stype_t;
 
 typedef enum {
@@ -3610,6 +4016,7 @@ typedef enum {
     SLU_C,     /* single complex */
     SLU_Z      /* double complex */
 } Dtype_t;
+
 
 typedef enum {
     SLU_GE,    /* general */
@@ -3626,6 +4033,18 @@ typedef enum {
 typedef int int_t;
 
 typedef struct {
+    int_t  nnz;	    /* number of nonzeros in the matrix */
+    void *nzval;    /* pointer to array of nonzero values, packed by raw */
+    int_t  *colind; /* pointer to array of columns indices of the nonzeros */
+    int_t  *rowptr; /* pointer to array of beginning of rows in nzval[] 
+		       and colind[]  */
+                    /* Note:
+		       Zero-based indexing is used;
+		       rowptr[] has nrow+1 entries, the last one pointing
+		       beyond the last row, so that rowptr[nrow] = nnz. */
+} NRformat;
+
+typedef struct {
         Stype_t Stype; /* Storage type: interprets the storage structure 
                           pointed to by *Store. */
         Dtype_t Dtype; /* Data type. */
@@ -3636,62 +4055,26 @@ typedef struct {
         void *Store;   /* pointer to the actual storage of the matrix */
 } SuperMatrix;
 
+/* Stype == SLU_DN */
 typedef struct {
     int_t lda;    /* leading dimension */
     void *nzval;  /* array of size lda*ncol to represent a dense matrix */
 } DNformat;
 
+
 typedef enum {NO, YES}                                          yes_no_t;
 typedef enum {DOFACT, SamePattern, SamePattern_SameRowPerm, FACTORED} fact_t;
 typedef enum {NOROWPERM, LargeDiag, MY_PERMR}                   rowperm_t;
-
-typedef enum {
-    /* SuperLU 3.x */
-    SLU3_NATURAL       = 0,
-    SLU3_MMD_ATA       = 1,
-    SLU3_MMD_AT_PLUS_A = 2,
-    SLU3_COLAMD        = 3,
-    SLU3_MY_PERMC      = 4,
-
-    /* SuperLU 4.x */
-    SLU4_NATURAL         = 0,
-    SLU4_MMD_ATA         = 1,
-    SLU4_MMD_AT_PLUS_A   = 2,
-    SLU4_COLAMD          = 3,
-    SLU4_METIS_AT_PLUS_A = 4,
-    SLU4_PARMETIS        = 5,
-    SLU4_ZOLTAN          = 6,
-    SLU4_MY_PERMC        = 7
-} colperm_t;
-
-
+typedef enum {NATURAL, MMD_ATA, MMD_AT_PLUS_A, COLAMD,
+              METIS_AT_PLUS_A, PARMETIS, ZOLTAN, MY_PERMC}      colperm_t;
 typedef enum {NOTRANS, TRANS, CONJ}                             trans_t;
 typedef enum {NOEQUIL, ROW, COL, BOTH}                          DiagScale_t;
 typedef enum {NOREFINE, SLU_SINGLE=1, SLU_DOUBLE, SLU_EXTRA}    IterRefine_t;
-typedef enum {LUSUP, UCOL, LSUB, USUB, SLU4_LLVL, SLU4_ULVL}    MemType;
+typedef enum {LUSUP, UCOL, LSUB, USUB, LLVL, ULVL}              MemType;
 typedef enum {HEAD, TAIL}                                       stack_end_t;
 typedef enum {SYSTEM, USER}                                     LU_space_t;
-typedef enum {SLU4_ONE_NORM, SLU4_TWO_NORM, SLU4_INF_NORM}      norm_t;
-typedef enum {
-    SLU4_SILU, SLU4_SMILU_1, SLU4_SMILU_2, SLU4_SMILU_3
-} milu_t;
-
-typedef struct {
-    fact_t        Fact;
-    yes_no_t      Equil;
-    colperm_t     ColPerm;
-    trans_t       Trans;
-    IterRefine_t  IterRefine;
-    yes_no_t      PrintStat;
-    yes_no_t      SymmetricMode;
-    double        DiagPivotThresh;
-    yes_no_t      PivotGrowth;
-    yes_no_t      ConditionNumber;
-    rowperm_t     RowPerm;
-    yes_no_t      ReplaceTinyPivot;
-    yes_no_t      SolveInitialized;
-    yes_no_t      RefineInitialized;
-} superlu3_options_t;
+typedef enum {ONE_NORM, TWO_NORM, INF_NORM}                     norm_t;
+typedef enum {SILU, SMILU_1, SMILU_2, SMILU_3}                  milu_t;
 
 typedef struct {
     fact_t        Fact;
@@ -3721,7 +4104,7 @@ typedef struct {
     yes_no_t      lookahead_etree; /* use etree computed from the
                                       serial symbolic factorization */
     yes_no_t      SymPattern;      /* symmetric factorization          */
-} superlu4_options_t;
+} superlu_options_t;
 
 typedef void* superlu_options_ptr;
 
@@ -3734,8 +4117,43 @@ typedef struct {
     flops_t *ops;            /* operation count at various phases */
     int     TinyPivots;      /* number of tiny pivots */
     int     RefineSteps;     /* number of iterative refinement steps */
-    int     slu4_expansions; /* number of memory expansions (SuperLU4) */
+    int     expansions;      /* number of memory expansions (SuperLU4) */
 } SuperLUStat_t;
+
+/*! \brief Headers for 4 types of dynamatically managed memory */
+typedef struct e_node {
+    int size;      /* length of the memory that has been used */
+    void *mem;     /* pointer to the new malloc'd store */
+} ExpHeader;
+
+typedef struct {
+    int  size;
+    int  used;
+    int  top1;  /* grow upward, relative to &array[0] */
+    int  top2;  /* grow downward */
+    void *array;
+} LU_stack_t;
+
+typedef struct {
+    int     *xsup;    /* supernode and column mapping */
+    int     *supno;   
+    int     *lsub;    /* compressed L subscripts */
+    int	    *xlsub;
+    void    *lusup;   /* L supernodes */
+    int     *xlusup;
+    void    *ucol;    /* U columns */
+    int     *usub;
+    int	    *xusub;
+    int     nzlmax;   /* current max size of lsub */
+    int     nzumax;   /*    "    "    "      ucol */
+    int     nzlumax;  /*    "    "    "     lusup */
+    int     n;        /* number of columns in the matrix */
+    LU_space_t MemModel; /* 0 - system malloc'd; 1 - user provided */
+    int     num_expansions;
+    ExpHeader *expanders; /* Array of pointers to 4 types of memory */
+    LU_stack_t stack;     /* use user supplied memory */
+} GlobalLU_t;
+
 
 
 
@@ -3749,7 +4167,7 @@ typedef struct {
 
 
 typedef void (*FUNPTR_set_default_options)(superlu_options_ptr options);
-
+typedef void (*FUNPTR_ilu_set_default_options)(superlu_options_ptr options);
 typedef void (*FUNPTR_StatInit)(SuperLUStat_t *);
 typedef void (*FUNPTR_StatFree)(SuperLUStat_t *);
 
@@ -3763,6 +4181,7 @@ typedef void (*FUNPTR_dCreate_Dense_Matrix)(
 
 typedef void (*FUNPTR_Destroy_SuperNode_Matrix)(SuperMatrix *);
 typedef void (*FUNPTR_Destroy_CompCol_Matrix)(SuperMatrix *);
+typedef void (*FUNPTR_Destroy_CompCol_Permuted)(SuperMatrix *);
 typedef void (*FUNPTR_Destroy_SuperMatrix_Store)(SuperMatrix *);
 
 typedef void (*FUNPTR_dgssv)(
@@ -3770,20 +4189,46 @@ typedef void (*FUNPTR_dgssv)(
     SuperMatrix *, SuperMatrix *, SuperLUStat_t *, int *
 );
 
+typedef void (*FUNPTR_dgstrs)(
+    trans_t, SuperMatrix *, SuperMatrix *, int *, int *,
+    SuperMatrix *, SuperLUStat_t*, int *    
+);
+
+typedef void (*FUNPTR_get_perm_c)(int, SuperMatrix *, int *);
+typedef void (*FUNPTR_sp_preorder)(
+   superlu_options_t *, SuperMatrix*, int*, int*, SuperMatrix*
+);
+typedef int (*FUNPTR_sp_ienv)(int);
+typedef int (*FUNPTR_input_error)(const char *, int *);
+
+typedef void (*FUNPTR_dgstrf) (superlu_options_t *options, SuperMatrix *A,
+        int relax, int panel_size, int *etree, void *work, int lwork,
+        int *perm_c, int *perm_r, SuperMatrix *L, SuperMatrix *U,
+    	GlobalLU_t *Glu, /* persistent to facilitate multiple factorizations */
+        SuperLUStat_t *stat, int *info
+);
+
+
 typedef struct {
     FUNPTR_set_default_options set_default_options;
+    FUNPTR_ilu_set_default_options ilu_set_default_options;    
     FUNPTR_StatInit StatInit;
     FUNPTR_StatFree StatFree;
     FUNPTR_dCreate_CompCol_Matrix dCreate_CompCol_Matrix;
     FUNPTR_dCreate_Dense_Matrix dCreate_Dense_Matrix;
     FUNPTR_Destroy_SuperNode_Matrix Destroy_SuperNode_Matrix;
     FUNPTR_Destroy_CompCol_Matrix Destroy_CompCol_Matrix;
+    FUNPTR_Destroy_CompCol_Permuted Destroy_CompCol_Permuted;    
     FUNPTR_Destroy_SuperMatrix_Store Destroy_SuperMatrix_Store;
     FUNPTR_dgssv dgssv;
-
+    FUNPTR_dgstrs dgstrs;
+    FUNPTR_get_perm_c get_perm_c;
+    FUNPTR_sp_preorder sp_preorder;
+    FUNPTR_sp_ienv sp_ienv;
+    FUNPTR_dgstrf dgstrf;
+    FUNPTR_input_error input_error;
+    
     NLdll DLL_handle;
-
-    double version;
 } SuperLUContext;
 
 static SuperLUContext* SuperLU() {
@@ -3796,37 +4241,35 @@ static SuperLUContext* SuperLU() {
     return &context;
 }
 
-/*
- * \brief Gets the version of SuperLU that was dynamically loaded.
- * \details It is important to know the version of SuperLU because
- *  the order of some constants and the size of some structures 
- *  have changed between SuperLU 3.x and SuperLU 4.x.
- *  When there is a mismatch between both versions, constants are 
- *  prefixed by SLU3_ or SLU4_ according to the version.
- * This concerns:
- * - enum constants in Stype_t
- * - enum constants in colperm_t
- * - enum constants in norm_t and milu_t (that only exist in version 4.x)
- * - struct superlu_options_t (use instead superlu3_options_t 
- *  or superlu4_options_t according to version)
- */
-static double SuperLU_version() {
-    return SuperLU()->version;
-}
-
 static NLboolean SuperLU_is_initialized() {
     return
         SuperLU()->DLL_handle != NULL &&
         SuperLU()->set_default_options != NULL &&
+        SuperLU()->ilu_set_default_options != NULL &&   
         SuperLU()->StatInit != NULL &&
         SuperLU()->StatFree != NULL &&
         SuperLU()->dCreate_CompCol_Matrix != NULL &&
         SuperLU()->dCreate_Dense_Matrix != NULL &&
         SuperLU()->Destroy_SuperNode_Matrix != NULL &&
         SuperLU()->Destroy_CompCol_Matrix != NULL &&
+        SuperLU()->Destroy_CompCol_Permuted != NULL &&	
         SuperLU()->Destroy_SuperMatrix_Store != NULL &&
-        SuperLU()->dgssv != NULL;
+        SuperLU()->dgssv != NULL &&
+        SuperLU()->dgstrs != NULL &&
+	SuperLU()->get_perm_c != NULL &&
+	SuperLU()->sp_preorder != NULL &&
+	SuperLU()->sp_ienv != NULL &&
+	SuperLU()->dgstrf != NULL &&
+	SuperLU()->input_error != NULL;
 }
+
+static void nlTerminateExtension_SUPERLU(void) {
+    if(SuperLU()->DLL_handle != NULL) {
+        nlCloseDLL(SuperLU()->DLL_handle);
+        SuperLU()->DLL_handle = NULL;
+    }
+}
+
 
 #define find_superlu_func(name)                                   \
     if(                                                           \
@@ -3836,234 +4279,10 @@ static NLboolean SuperLU_is_initialized() {
         ) == NULL                                                 \
     ) {                                                           \
         nlError("nlInitExtension_SUPERLU","function not found");  \
+        nlError("nlInitExtension_SUPERLU",#name);                 \
         return NL_FALSE;                                          \
     }
 
-#define SLU_NR ((SuperLU()->version >= 4.0) ? SLU4_NR : SLU3_NR)
-
-#define SLU_DN ((SuperLU()->version >= 4.0) ? SLU4_DN : SLU3_DN)
-
-
-
-NLboolean nlSolve_system_with_SUPERLU(
-    NLSparseMatrix* M, double* x, const double* b,
-    NLenum solver, NLboolean clear_M
-) {
-    /* Compressed Row Storage matrix representation */
-    NLuint    n      = M->n;
-    NLuint    nnz    = nlSparseMatrixNNZ(M); /* Number of Non-Zero coeffs */
-    NLint*    xa     = NL_NEW_ARRAY(NLint, n+1);
-    NLdouble* rhs    = NL_NEW_ARRAY(NLdouble, n);
-    NLdouble* a      = NL_NEW_ARRAY(NLdouble, nnz);
-    NLint*    asub   = NL_NEW_ARRAY(NLint, nnz);
-
-    /* Permutation vector */
-    NLint*    perm_r  = NL_NEW_ARRAY(NLint, n);
-    NLint*    perm    = NL_NEW_ARRAY(NLint, n);
-
-    /* SuperLU variables */
-    SuperMatrix A, B; /* System       */
-    SuperMatrix L, U; /* Factorization of A */
-    NLint info;       /* status code  */
-    DNformat *vals = NULL; /* access to result */
-    double *rvals  = NULL; /* access to result */
-
-    /* SuperLU options and stats */
-    superlu3_options_t options3;
-    superlu4_options_t options4;
-    SuperLUStat_t     stat;
-
-    /* Temporary variables */
-    NLRowColumn* Ri = NULL;
-    NLuint         i,jj,count;
-    
-    /* Sanity checks */
-    nl_assert(!(M->storage & NL_MATRIX_STORE_SYMMETRIC));
-    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
-    nl_assert(M->m == M->n);
-
-    if(!SuperLU_is_initialized()) {
-        nlError(
-            "nlSolve_SUPERLU",
-            "SuperLU extension not initialized (nlInitExtension(\"SUPERLU\") missing or failed)"
-        );
-        return NL_FALSE;
-    }
-    
-    /*
-     * Step 1: convert matrix M into SuperLU compressed column 
-     *   representation.
-     * -------------------------------------------------------
-     */
-
-    count = 0;
-    for(i=0; i<n; i++) {
-        Ri = &(M->row[i]);
-        xa[i] = (NLint)(count);
-        for(jj=0; jj<Ri->size; jj++) {
-            a[count]    = Ri->coeff[jj].value;
-            asub[count] = (NLint)(Ri->coeff[jj].index);
-            count++;
-        }
-    }
-    xa[n] = (NLint)(nnz);
-
-    /* Save memory for SuperLU */
-    if(clear_M) {
-        nlSparseMatrixClear(M);
-    }
-
-
-    /*
-     * Rem: SuperLU does not support symmetric storage.
-     * In fact, for symmetric matrix, what we need 
-     * is a SuperLLt algorithm (SuperNodal sparse Cholesky),
-     * TODO: interface other solvers from suitesparse.
-     * However, this is not a big problem (SuperLU is just
-     * a superset of what we really need.
-     */
-    SuperLU()->dCreate_CompCol_Matrix(
-        &A, (int)n, (int)n, (int)nnz,
-        a, asub, xa, 
-        SLU_NR,              /* Row_wise, no supernode */
-        SLU_D,               /* doubles                */ 
-        SLU_GE               /* general storage        */
-    );
-
-    /* Step 2: create vector */
-    SuperLU()->dCreate_Dense_Matrix(
-        &B, (int)n, 1, b, (int)n, 
-        SLU_DN, /* Fortran-type column-wise storage */
-        SLU_D,  /* doubles                          */
-        SLU_GE  /* general                          */
-    );
-            
-
-    /* Step 3: set SuperLU options 
-     * ------------------------------
-     */
-
-    if(SuperLU_version() >= 4.0) {
-        SuperLU()->set_default_options(&options4);
-        switch(solver) {
-        case NL_SUPERLU_EXT: {
-            options4.ColPerm = SLU4_NATURAL;
-        } break;
-        case NL_PERM_SUPERLU_EXT: {
-            options4.ColPerm = SLU4_COLAMD;
-        } break;
-        case NL_SYMMETRIC_SUPERLU_EXT: {
-            options4.ColPerm = SLU4_MMD_AT_PLUS_A;
-            options4.SymmetricMode = YES;
-        } break;
-        default: 
-            nl_assert_not_reached;
-        }
-    } else {
-        SuperLU()->set_default_options(&options3);
-        switch(solver) {
-        case NL_SUPERLU_EXT: {
-            options3.ColPerm = SLU3_NATURAL;
-        } break;
-        case NL_PERM_SUPERLU_EXT: {
-            options3.ColPerm = SLU3_COLAMD;
-        } break;
-        case NL_SYMMETRIC_SUPERLU_EXT: {
-            options3.ColPerm = SLU3_MMD_AT_PLUS_A;
-            options3.SymmetricMode = YES;
-        } break;
-        default: 
-            nl_assert_not_reached;
-        }
-    }
-    
-    SuperLU()->StatInit(&stat);
-
-    /* Step 4: call SuperLU main routine
-     * ---------------------------------
-     */
-    
-    if(SuperLU_version() >= 4.0) {
-        SuperLU()->dgssv(
-            &options4, &A, perm, perm_r, &L, &U, &B, &stat, &info
-        );
-    } else {
-        SuperLU()->dgssv(
-            &options3, &A, perm, perm_r, &L, &U, &B, &stat, &info
-        );
-    }
-
-    /* Step 5: get the solution
-     * ------------------------
-     * Fortran-type column-wise storage
-     */
-    vals = (DNformat*)B.Store;
-    rvals = (double*)(vals->nzval);
-    if(info == 0) {
-        for(i = 0; i <  n; i++){
-            x[i] = rvals[i];
-        }
-    } else {
-        nlError("nlSolve", "SuperLU failed");
-    }
-
-    /* Step 6: cleanup
-     * ---------------
-     */
-
-    /*
-     *  For these two ones, only the "store" structure
-     * needs to be deallocated (the arrays have been allocated
-     * by us).
-     */
-    SuperLU()->Destroy_SuperMatrix_Store(&A);
-    SuperLU()->Destroy_SuperMatrix_Store(&B);
-
-    /*
-     *   These ones need to be fully deallocated (they have been
-     * allocated by SuperLU).
-     */
-    SuperLU()->Destroy_SuperNode_Matrix(&L);
-    SuperLU()->Destroy_CompCol_Matrix(&U);
-
-    /* There are some dynamically allocated vectors in the stats */
-    SuperLU()->StatFree(&stat);
-
-    NL_DELETE_ARRAY(xa);
-    NL_DELETE_ARRAY(rhs);
-    NL_DELETE_ARRAY(a);
-    NL_DELETE_ARRAY(asub);
-    NL_DELETE_ARRAY(perm_r);
-    NL_DELETE_ARRAY(perm);
-
-    return (info == 0);
-}
-
-
-
-NLboolean nlSolve_SUPERLU(void) {
-    /* Get current linear system from context */
-    NLSparseMatrix* M  = &(nlCurrentContext->M);
-    NLdouble* b          = nlCurrentContext->b;
-    NLdouble* x          = nlCurrentContext->x;
-
-    /* Sanity checks */
-    nl_assert(!(M->storage & NL_MATRIX_STORE_SYMMETRIC));
-    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
-    nl_assert(M->m == M->n);
-    
-    return nlSolve_system_with_SUPERLU(
-        M, x, b, nlCurrentContext->solver, NL_TRUE
-    );
-}
-
-
-static void nlTerminateExtension_SUPERLU(void) {
-    if(SuperLU()->DLL_handle != NULL) {
-        nlCloseDLL(SuperLU()->DLL_handle);
-        SuperLU()->DLL_handle = NULL;
-    }
-}
 
 NLboolean nlInitExtension_SUPERLU(void) {
     
@@ -4075,29 +4294,24 @@ NLboolean nlInitExtension_SUPERLU(void) {
     if(SuperLU()->DLL_handle == NULL) {
         return NL_FALSE;
     }
-
-    /* 
-     * Check for SuperLU version:
-     * Since ILU (incomplete Cholesky) is only available in 4.x, if
-     * we find one of the ILU-related symbols in there, then we got
-     * a 4.x.
-     * TODO: there may be a finer way to detect version.
-     */
-    if(nlFindFunction(SuperLU()->DLL_handle,"ilu_set_default_options") != NULL) {
-        SuperLU()->version = 4.0;
-    } else {
-        SuperLU()->version = 3.0;
-    }
     
     find_superlu_func(set_default_options);
+    find_superlu_func(ilu_set_default_options);    
     find_superlu_func(StatInit);
     find_superlu_func(StatFree);
     find_superlu_func(dCreate_CompCol_Matrix);
     find_superlu_func(dCreate_Dense_Matrix);
     find_superlu_func(Destroy_SuperNode_Matrix);
-    find_superlu_func(Destroy_CompCol_Matrix);    
+    find_superlu_func(Destroy_CompCol_Matrix);
+    find_superlu_func(Destroy_CompCol_Permuted);        
     find_superlu_func(Destroy_SuperMatrix_Store);
     find_superlu_func(dgssv);
+    find_superlu_func(dgstrs);
+    find_superlu_func(get_perm_c);    
+    find_superlu_func(sp_preorder);
+    find_superlu_func(sp_ienv);
+    find_superlu_func(dgstrf);
+    find_superlu_func(input_error);
 
     atexit(nlTerminateExtension_SUPERLU);
     return NL_TRUE;
@@ -4105,6 +4319,229 @@ NLboolean nlInitExtension_SUPERLU(void) {
 
 
 
+typedef struct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    SuperMatrix L;
+
+    SuperMatrix U;
+
+    int* perm_r;
+
+    int* perm_c;
+
+    trans_t trans;
+    
+} NLSuperLUFactorizedMatrix;
+
+
+static void nlSuperLUFactorizedMatrixDestroy(NLSuperLUFactorizedMatrix* M) {
+    SuperLU()->Destroy_SuperNode_Matrix(&M->L);
+    SuperLU()->Destroy_CompCol_Matrix(&M->U);    
+    NL_DELETE_ARRAY(M->perm_r);
+    NL_DELETE_ARRAY(M->perm_c);
+}
+
+static void nlSuperLUFactorizedMatrixMult(
+    NLSuperLUFactorizedMatrix* M, const double* x, double* y
+) {
+    SuperMatrix B;
+    SuperLUStat_t stat;
+    int info = 0;
+    NLuint i;
+
+    /* Create vector */
+    SuperLU()->dCreate_Dense_Matrix(
+        &B, (int)(M->n), 1, y, (int)(M->n), 
+        SLU_DN, /* Fortran-type column-wise storage */
+        SLU_D,  /* doubles */
+        SLU_GE  /* general */
+    );
+
+    /* copy rhs onto y (superLU matrix-vector product expects it here */
+    for(i = 0; i < M->n; i++){
+        y[i] = x[i];
+    }
+
+    /* Call SuperLU triangular solve */
+    SuperLU()->StatInit(&stat) ;
+
+    SuperLU()->dgstrs(
+       M->trans, &M->L, &M->U, M->perm_c, M->perm_r, &B, &stat, &info
+    );
+
+    SuperLU()->StatFree(&stat) ;
+    
+    /*  Only the "store" structure needs to be 
+     *  deallocated (the array has been allocated
+     * by client code).
+     */
+    SuperLU()->Destroy_SuperMatrix_Store(&B) ;
+}
+
+/*
+ * Copied from SUPERLU/dgssv.c, removed call to linear solve.
+ */
+static void dgssv_factorize_only(
+      superlu_options_t *options, SuperMatrix *A, int *perm_c, int *perm_r,
+      SuperMatrix *L, SuperMatrix *U,
+      SuperLUStat_t *stat, int *info, trans_t *trans
+) {
+    SuperMatrix *AA = NULL;
+        /* A in SLU_NC format used by the factorization routine.*/
+    SuperMatrix AC; /* Matrix postmultiplied by Pc */
+    int      lwork = 0, *etree, i;
+    GlobalLU_t Glu; /* Not needed on return. */
+    
+    /* Set default values for some parameters */
+    int      panel_size;     /* panel size */
+    int      relax;          /* no of columns in a relaxed snodes */
+    int      permc_spec;
+
+    nl_assert(A->Stype == SLU_NR || A->Stype == SLU_NC);
+    
+    *trans = NOTRANS;
+
+    if ( options->Fact != DOFACT ) *info = -1;
+    else if ( A->nrow != A->ncol || A->nrow < 0 ||
+	 (A->Stype != SLU_NC && A->Stype != SLU_NR) ||
+	 A->Dtype != SLU_D || A->Mtype != SLU_GE )
+	*info = -2;
+    if ( *info != 0 ) {
+	i = -(*info);
+	SuperLU()->input_error("SUPERLU/OpenNL dgssv_factorize_only", &i);
+	return;
+    }
+
+    /* Convert A to SLU_NC format when necessary. */
+    if ( A->Stype == SLU_NR ) {
+	NRformat *Astore = (NRformat*)A->Store;
+	AA = NL_NEW(SuperMatrix);
+	SuperLU()->dCreate_CompCol_Matrix(
+	    AA, A->ncol, A->nrow, Astore->nnz, 
+	    (double*)Astore->nzval, Astore->colind, Astore->rowptr,
+	    SLU_NC, A->Dtype, A->Mtype
+	);
+	*trans = TRANS;
+    } else {
+        if ( A->Stype == SLU_NC ) AA = A;
+    }
+
+    nl_assert(AA != NULL);
+    
+    /*
+     * Get column permutation vector perm_c[], according to permc_spec:
+     *   permc_spec = NATURAL:  natural ordering 
+     *   permc_spec = MMD_AT_PLUS_A: minimum degree on structure of A'+A
+     *   permc_spec = MMD_ATA:  minimum degree on structure of A'*A
+     *   permc_spec = COLAMD:   approximate minimum degree column ordering
+     *   permc_spec = MY_PERMC: the ordering already supplied in perm_c[]
+     */
+    permc_spec = options->ColPerm;
+    if ( permc_spec != MY_PERMC && options->Fact == DOFACT )
+	SuperLU()->get_perm_c(permc_spec, AA, perm_c);
+    
+    etree = NL_NEW_ARRAY(int,A->ncol);
+    SuperLU()->sp_preorder(options, AA, perm_c, etree, &AC);
+    panel_size = SuperLU()->sp_ienv(1);
+    relax = SuperLU()->sp_ienv(2);
+    SuperLU()->dgstrf(options, &AC, relax, panel_size, etree,
+            NULL, lwork, perm_c, perm_r, L, U, &Glu, stat, info);
+
+    NL_DELETE_ARRAY(etree);
+    SuperLU()->Destroy_CompCol_Permuted(&AC);
+    if ( A->Stype == SLU_NR ) {
+	SuperLU()->Destroy_SuperMatrix_Store(AA);
+	NL_DELETE(AA);
+    }
+}
+
+
+NLMatrix nlMatrixFactorize_SUPERLU(
+    NLMatrix M, NLenum solver
+) {
+    NLSuperLUFactorizedMatrix* LU = NULL;
+    NLCRSMatrix* CRS = NULL;
+    SuperMatrix superM;
+    NLuint n = M->n;
+    superlu_options_t options;
+    SuperLUStat_t     stat;
+    NLint info = 0;       /* status code  */
+    
+    nl_assert(M->m == M->n);
+
+    if(M->type == NL_MATRIX_CRS) {
+        CRS = (NLCRSMatrix*)M;
+    } else if(M->type == NL_MATRIX_SPARSE_DYNAMIC) {
+        CRS = (NLCRSMatrix*)nlCRSMatrixNewFromSparseMatrix((NLSparseMatrix*)M);
+    }
+
+    LU = NL_NEW(NLSuperLUFactorizedMatrix);
+    LU->m = M->m;
+    LU->n = M->n;
+    LU->type = NL_MATRIX_OTHER;
+    LU->destroy_func = (NLDestroyMatrixFunc)(nlSuperLUFactorizedMatrixDestroy);
+    LU->mult_func = (NLMultMatrixVectorFunc)(nlSuperLUFactorizedMatrixMult);
+    LU->perm_c = NL_NEW_ARRAY(int, n);
+    LU->perm_r = NL_NEW_ARRAY(int, n);    
+
+    SuperLU()->dCreate_CompCol_Matrix(
+        &superM, (int)n, (int)n, (int)nlCRSMatrixNNZ(CRS),
+        CRS->val, (int*)CRS->colind, (int*)CRS->rowptr, 
+        SLU_NR,              /* Row_wise, no supernode */
+        SLU_D,               /* doubles                */ 
+        CRS->symmetric_storage ? SLU_SYL : SLU_GE
+    );
+
+    SuperLU()->set_default_options(&options);
+    switch(solver) {
+    case NL_SUPERLU_EXT: {
+        options.ColPerm = NATURAL;
+    } break;
+    case NL_PERM_SUPERLU_EXT: {
+        options.ColPerm = COLAMD;
+    } break;
+    case NL_SYMMETRIC_SUPERLU_EXT: {
+        options.ColPerm = MMD_AT_PLUS_A;
+        options.SymmetricMode = YES;
+    } break;
+    default: 
+        nl_assert_not_reached;
+    }
+    
+    SuperLU()->StatInit(&stat);
+
+    dgssv_factorize_only(
+	  &options, &superM, LU->perm_c, LU->perm_r,
+	  &LU->L, &LU->U, &stat, &info, &LU->trans
+    );
+
+    SuperLU()->StatFree(&stat);
+    
+    /*
+     * Only the "store" structure needs to be deallocated 
+     * (the arrays have been allocated by us, they are in CRS).
+     */
+    SuperLU()->Destroy_SuperMatrix_Store(&superM);
+    
+    if((NLMatrix)CRS != M) {
+        nlDeleteMatrix((NLMatrix)CRS);
+    }
+
+    if(info != 0) {
+	NL_DELETE(LU);
+	LU = NULL;
+    }
+    return (NLMatrix)LU;
+}
 
 /******* extracted from nl_cholmod.c *******/
 
@@ -4312,123 +4749,6 @@ static NLboolean CHOLMOD_is_initialized() {
         return NL_FALSE;                                               \
     }
 
-NLboolean nlSolve_CHOLMOD(void) {
-    /* Get current linear system from context */
-    NLSparseMatrix* M  = &(nlCurrentContext->M);
-    NLdouble* b          = nlCurrentContext->b;
-    NLdouble* x          = nlCurrentContext->x;
-
-    /* Sanity checks */
-    nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
-    nl_assert(M->m == M->n);
-    
-    return nlSolve_system_with_CHOLMOD(
-        M, x, b, nlCurrentContext->solver, NL_TRUE
-    );
-}
-
-NLboolean nlSolve_system_with_CHOLMOD(
-    NLSparseMatrix* M, double* x_out, const double* b_in, NLenum solver,
-    NLboolean clear_M
-) {
-    NLuint n = M->n;
-    NLuint nnz, i, j, jj;
-    NLRowColumn* Ri=NULL;
-    NLCoeff* C=NULL;
-    cholmod_sparse_ptr A=NULL;
-    cholmod_factor_ptr L=NULL;
-    cholmod_dense_ptr b=NULL, x=NULL;
-    
-    int* colptr = NULL;
-    int* rowind = NULL;
-    double* val = NULL;
-    NLuint count;
-    
-    nl_assert(solver == NL_CHOLMOD_EXT);
-
-    /* Step 1: compute required nnz */
-    
-    
-    nnz = 0;
-    for(i=0; i<n; ++i) {
-        Ri = &M->row[i];
-        for(jj=0; jj<Ri->size; ++jj) {
-            /* Works even if M is not in symmetric storage */
-            if(Ri->coeff[jj].index <= i) {
-                ++nnz;
-            }
-        }
-    }
-
-    /* Step 2: translate sparse matrix into cholmod format */
-    
-
-    A = CHOLMOD()->cholmod_allocate_sparse(
-        n, n, nnz,    /* Dimensions and number of non-zeros */
-        NL_FALSE,     /* Sorted = false */
-        NL_TRUE,      /* Packed = true  */
-        1,            /* stype (-1 = lower triangular, 1 = upper triangular) */
-        CHOLMOD_REAL, /* Entries are real numbers */
-        &CHOLMOD()->cholmod_common
-    );
-
-    colptr = (int*)A->p;
-    rowind = (int*)A->i;
-    val = (double*)A->x;
-    count = 0;
-    for(i=0; i<n; ++i) {
-        colptr[i] = (int)(count);
-        Ri = &M->row[i];
-        for(jj=0; jj<Ri->size; ++jj) {
-            C = &Ri->coeff[jj];
-            j = C->index;
-            if(j <= i) {
-                val[count] = C->value;
-                rowind[count] = (int)(j);
-                ++count;
-            }
-        }
-    }
-    nl_assert(count == nnz);
-    colptr[n] = (int)(nnz);
-
-    /* Save memory for CHOLMOD */
-    if(clear_M) {
-        nlSparseMatrixClear(M);
-    }
-    
-    /* Step 3: factorize */
-    
-    L = CHOLMOD()->cholmod_analyze(A, &CHOLMOD()->cholmod_common);
-        
-    if(!CHOLMOD()->cholmod_factorize(A, L, &CHOLMOD()->cholmod_common)) {
-        CHOLMOD()->cholmod_free_sparse(&A, &CHOLMOD()->cholmod_common);
-        CHOLMOD()->cholmod_free_factor(&L, &CHOLMOD()->cholmod_common);
-        nlError("CHOLMOD","could not factorize matrix");  
-        return NL_FALSE;
-    }
-    
-    /* Step 4: construct right-hand side */
-    
-    b = CHOLMOD()->cholmod_allocate_dense(
-        n, 1, n, CHOLMOD_REAL, &CHOLMOD()->cholmod_common
-    );
-    memcpy(b->x, b_in, n*sizeof(double));
-
-
-    /* Step 5: solve*/
-    
-    x = CHOLMOD()->cholmod_solve(CHOLMOD_A, L, b, &CHOLMOD()->cholmod_common);
-    memcpy(x_out, x->x, n*sizeof(double));
-
-    /* Step 6: cleanup*/
-    
-    CHOLMOD()->cholmod_free_factor(&L, &CHOLMOD()->cholmod_common);
-    CHOLMOD()->cholmod_free_sparse(&A, &CHOLMOD()->cholmod_common);
-    CHOLMOD()->cholmod_free_dense(&x, &CHOLMOD()->cholmod_common);
-    CHOLMOD()->cholmod_free_dense(&b, &CHOLMOD()->cholmod_common);
-    return NL_TRUE;
-}
 
 static void nlTerminateExtension_CHOLMOD(void) {
     if(CHOLMOD()->DLL_handle != NULL) {
@@ -4464,6 +4784,588 @@ NLboolean nlInitExtension_CHOLMOD(void) {
     atexit(nlTerminateExtension_CHOLMOD);
     return NL_TRUE;
 }
+
+
+
+typedef struct {
+    NLuint m;
+
+    NLuint n;
+
+    NLenum type;
+
+    NLDestroyMatrixFunc destroy_func;
+
+    NLMultMatrixVectorFunc mult_func;
+
+    cholmod_factor_ptr L;
+    
+} NLCholmodFactorizedMatrix;
+
+static void nlCholmodFactorizedMatrixDestroy(NLCholmodFactorizedMatrix* M) {
+    CHOLMOD()->cholmod_free_factor(&M->L, &CHOLMOD()->cholmod_common);
+}
+
+static void nlCholmodFactorizedMatrixMult(
+    NLCholmodFactorizedMatrix* M, const double* x, double* y
+) {
+    /* 
+     * TODO: see whether CHOLDMOD can use user-allocated vectors
+     * (and avoid copy)
+     */
+    cholmod_dense_ptr X=CHOLMOD()->cholmod_allocate_dense(
+        M->n, 1, M->n, CHOLMOD_REAL, &CHOLMOD()->cholmod_common
+    );
+    cholmod_dense_ptr Y=NULL;
+
+    memcpy(X->x, x, M->n*sizeof(double));    
+    Y = CHOLMOD()->cholmod_solve(CHOLMOD_A, M->L, X, &CHOLMOD()->cholmod_common);
+    memcpy(y, Y->x, M->n*sizeof(double));    
+    
+    CHOLMOD()->cholmod_free_dense(&X, &CHOLMOD()->cholmod_common);
+    CHOLMOD()->cholmod_free_dense(&Y, &CHOLMOD()->cholmod_common);
+}
+
+NLMatrix nlMatrixFactorize_CHOLMOD(
+    NLMatrix M, NLenum solver
+) {
+    NLCholmodFactorizedMatrix* LLt = NULL;
+    NLCRSMatrix* CRS = NULL;
+    cholmod_sparse_ptr cM= NULL;
+    NLuint nnz, cur, i, j, jj;
+    int* rowptr = NULL;
+    int* colind = NULL;
+    double* val = NULL;
+    NLuint n = M->n;
+
+    nl_assert(solver == NL_CHOLMOD_EXT);
+    nl_assert(M->m == M->n);
+    
+    if(M->type == NL_MATRIX_CRS) {
+        CRS = (NLCRSMatrix*)M;
+    } else if(M->type == NL_MATRIX_SPARSE_DYNAMIC) {
+	/* 
+	 * Note: since we convert once again into symmetric storage,
+	 * we could also directly read the NLSparseMatrix there instead
+	 * of copying once more...
+	 */
+        CRS = (NLCRSMatrix*)nlCRSMatrixNewFromSparseMatrix((NLSparseMatrix*)M);
+    }
+
+    LLt = NL_NEW(NLCholmodFactorizedMatrix);
+    LLt->m = M->m;
+    LLt->n = M->n;
+    LLt->type = NL_MATRIX_OTHER;
+    LLt->destroy_func = (NLDestroyMatrixFunc)(nlCholmodFactorizedMatrixDestroy);
+    LLt->mult_func = (NLMultMatrixVectorFunc)(nlCholmodFactorizedMatrixMult);
+
+    /*
+     * Compute required nnz, if matrix is not already with symmetric storage,
+     * ignore entries in the upper triangular part.
+     */
+    
+    nnz=0;
+    for(i=0; i<n; ++i) {
+	for(jj=CRS->rowptr[i]; jj<CRS->rowptr[i+1]; ++jj) {
+	    j=CRS->colind[jj];
+	    if(j <= i) {
+		++nnz;
+	    }
+	}
+    }
+
+    /*
+     * Copy CRS matrix into CHOLDMOD matrix (and ignore upper trianglar part)
+     */
+    
+    cM = CHOLMOD()->cholmod_allocate_sparse(
+        n, n, nnz,    /* Dimensions and number of non-zeros */
+        NL_FALSE,     /* Sorted = false */
+        NL_TRUE,      /* Packed = true  */
+        1,            /* stype (-1 = lower triangular, 1 = upper triangular) */
+        CHOLMOD_REAL, /* Entries are real numbers */
+        &CHOLMOD()->cholmod_common
+    );
+
+    rowptr = (int*)cM->p;
+    colind = (int*)cM->i;
+    val = (double*)cM->x;
+    cur = 0;
+    for(i=0; i<n; ++i) {
+        rowptr[i] = (int)cur;
+	for(jj=CRS->rowptr[i]; jj<CRS->rowptr[i+1]; ++jj) {
+            j = CRS->colind[jj];
+            if(j <= i) {
+		val[cur] = CRS->val[jj];
+		colind[cur] = (int)j;
+		++cur;
+            }
+        }
+    }
+    rowptr[n] = (int)cur;
+    nl_assert(cur==nnz);
+
+    LLt->L = CHOLMOD()->cholmod_analyze(cM, &CHOLMOD()->cholmod_common);
+    if(!CHOLMOD()->cholmod_factorize(cM, LLt->L, &CHOLMOD()->cholmod_common)) {
+        CHOLMOD()->cholmod_free_factor(&LLt->L, &CHOLMOD()->cholmod_common);
+	NL_DELETE(LLt);
+    }
+    
+    CHOLMOD()->cholmod_free_sparse(&cM, &CHOLMOD()->cholmod_common);
+    
+    if((NLMatrix)CRS != M) {
+        nlDeleteMatrix((NLMatrix)CRS);
+    }
+
+    return (NLMatrix)(LLt);
+}
+
+
+/******* extracted from nl_arpack.c *******/
+
+
+
+#ifdef NL_OS_UNIX
+#  ifdef NL_OS_APPLE
+#      define ARPACK_LIB_NAME "libarpack.dylib"
+#  else
+#      define ARPACK_LIB_NAME "libarpack.so"
+#  endif
+#else
+#  define ARPACK_LIB_NAME "libarpack.dll"
+#endif
+
+
+typedef int ARint;
+typedef int ARlogical;
+
+
+/* double precision symmetric routines */
+
+typedef void (*FUNPTR_dsaupd)(
+    ARint *ido, char *bmat, ARint *n, char *which,
+    ARint *nev, double *tol, double *resid,
+    ARint *ncv, double *V, ARint *ldv,
+    ARint *iparam, ARint *ipntr, double *workd,
+    double *workl, ARint *lworkl, ARint *info
+);
+
+typedef void (*FUNPTR_dseupd)(
+    ARlogical *rvec, char *HowMny, ARlogical *select,
+    double *d, double *Z, ARint *ldz,
+    double *sigma, char *bmat, ARint *n,
+    char *which, ARint *nev, double *tol,
+    double *resid, ARint *ncv, double *V,
+    ARint *ldv, ARint *iparam, ARint *ipntr,
+    double *workd, double *workl,
+    ARint *lworkl, ARint *info
+);
+
+/* double precision nonsymmetric routines */
+    
+typedef void (*FUNPTR_dnaupd)(
+    ARint *ido, char *bmat, ARint *n, char *which,
+    ARint *nev, double *tol, double *resid,
+    ARint *ncv, double *V, ARint *ldv,
+    ARint *iparam, ARint *ipntr, double *workd,
+    double *workl, ARint *lworkl, ARint *info
+);
+
+typedef void (*FUNPTR_dneupd)(
+    ARlogical *rvec, char *HowMny, ARlogical *select,
+    double *dr, double *di, double *Z,
+    ARint *ldz, double *sigmar,
+    double *sigmai, double *workev,
+    char *bmat, ARint *n, char *which,
+    ARint *nev, double *tol, double *resid,
+    ARint *ncv, double *V, ARint *ldv,
+    ARint *iparam, ARint *ipntr,
+    double *workd, double *workl,
+    ARint *lworkl, ARint *info
+);
+
+
+
+typedef struct {
+    FUNPTR_dsaupd dsaupd;
+    FUNPTR_dseupd dseupd;
+    FUNPTR_dnaupd dnaupd;
+    FUNPTR_dneupd dneupd;
+    NLdll DLL_handle;
+} ARPACKContext;
+
+
+static ARPACKContext* ARPACK() {
+    static ARPACKContext context;
+    static NLboolean init = NL_FALSE;
+    if(!init) {
+        init = NL_TRUE;
+        memset(&context, 0, sizeof(context));
+    }
+    return &context;
+}
+
+static NLboolean ARPACK_is_initialized() {
+    return
+        ARPACK()->DLL_handle != NULL &&
+        ARPACK()->dsaupd != NULL &&
+        ARPACK()->dseupd != NULL &&   
+        ARPACK()->dnaupd != NULL &&
+        ARPACK()->dneupd != NULL;
+}
+
+static void nlTerminateExtension_ARPACK(void) {
+    if(ARPACK()->DLL_handle != NULL) {
+        nlCloseDLL(ARPACK()->DLL_handle);
+        ARPACK()->DLL_handle = NULL;
+    }
+}
+
+
+static char* u(const char* str) {
+    static char buff[1000];
+    sprintf(buff, "%s_", str);
+    return buff;
+}
+
+#define find_arpack_func(name)                                             \
+    if(                                                                    \
+        (                                                                  \
+            ARPACK()->name =                                               \
+            (FUNPTR_##name)nlFindFunction(ARPACK()->DLL_handle,u(#name))   \
+        ) == NULL                                                          \
+    ) {                                                                    \
+        nlError("nlInitExtension_ARPACK","function not found");            \
+        nlError("nlInitExtension_ARPACK",u(#name));	   		   \
+        return NL_FALSE;                                                   \
+    }
+
+NLboolean nlInitExtension_ARPACK(void) {
+    if(ARPACK()->DLL_handle != NULL) {
+        return ARPACK_is_initialized();
+    }
+
+    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME);
+    if(ARPACK()->DLL_handle == NULL) {
+        return NL_FALSE;
+    }
+
+    find_arpack_func(dsaupd);
+    find_arpack_func(dseupd);
+    find_arpack_func(dnaupd);
+    find_arpack_func(dneupd);
+
+    atexit(nlTerminateExtension_ARPACK);
+    return NL_TRUE;
+}
+
+
+
+static NLMatrix create_OP(NLboolean symmetric) {
+    NLuint n = nlCurrentContext->M->n;
+    NLuint i;
+    NLMatrix result = NULL;
+    
+	
+    if(nlCurrentContext->eigen_shift != 0.0) {
+	/*
+	 * A = M
+	 */
+	NLSparseMatrix* A = NL_NEW(NLSparseMatrix);
+	nlSparseMatrixConstruct(A, n, n, NL_MATRIX_STORE_ROWS);
+	nlSparseMatrixAddMatrix(A, 1.0, nlCurrentContext->M);
+	if(nlCurrentContext->B == NULL) {
+	    /*
+	     * A = A - shift * Id
+	     */
+	    for(i=0; i<n; ++i) {
+		nlSparseMatrixAdd(A, i, i, -nlCurrentContext->eigen_shift);
+	    }
+	} else {
+	    /*
+	     * A = A - shift * B
+	     */
+	    nlSparseMatrixAddMatrix(A, -nlCurrentContext->eigen_shift, nlCurrentContext->B);
+	}
+
+	/* 
+	 * OP = A^{-1} 
+	 */
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, "Factorizing matrix...\n");
+	}
+	result = nlMatrixFactorize(
+	    (NLMatrix)A, symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
+	);
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, "Matrix factorized\n");
+	}
+	nlDeleteMatrix((NLMatrix)A);
+    } else {
+	/* 
+	 * OP = M^{-1} 
+	 */
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, "Factorizing matrix...\n");
+	}
+	result = nlMatrixFactorize(
+	    nlCurrentContext->M, symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
+	    );
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, "Matrix factorized\n");
+	}
+    }
+    
+    if(nlCurrentContext->B != NULL) {
+	/* 
+	 * OP = OP * B
+	 */	
+	result = nlMatrixNewFromProduct(
+	    result, NL_TRUE, /* mem. ownership transferred */
+	    nlCurrentContext->B, NL_FALSE  /* mem. ownership kept by context */
+	);
+    }
+
+    return result;
+}
+
+static int eigencompare(const void* pi, const void* pj) {
+    NLuint i = *(const NLuint*)pi;
+    NLuint j = *(const NLuint*)pj;
+    double vali = fabs(nlCurrentContext->temp_eigen_value[i]);
+    double valj = fabs(nlCurrentContext->temp_eigen_value[j]);
+    if(vali == valj) {
+	return 0;
+    }
+    return vali < valj ? -1 : 1;
+}
+
+void nlEigenSolve_ARPACK(void) {
+    NLboolean symmetric = nlCurrentContext->symmetric && (nlCurrentContext->B == NULL); 
+    int n = (int)nlCurrentContext->M->n; /* Dimension of the matrix */
+    int nev = /* Number of eigenvectors requested */
+	(int)nlCurrentContext->nb_systems;
+    NLMatrix OP = create_OP(symmetric);
+    int ncv = (int)(nev * 2.5); /* Length of Arnoldi factorization */
+                 /* Rule of thumb in ARPACK documentation: ncv > 2 * nev */
+    int* iparam = NULL;
+    int* ipntr  = NULL;
+    NLdouble* resid = NULL;
+    NLdouble* workev = NULL;
+    NLdouble* workd = NULL;
+    NLdouble* workl = NULL;
+    NLdouble* v = NULL;
+    NLdouble* d = NULL;
+    ARlogical* select = NULL;
+    ARlogical rvec = 1;
+    double sigmar = 0.0;
+    double sigmai = 0.0;
+    int ierr;
+    int i,k,kk;
+    int ldv = (int)n;
+    char* bmat = (char*)"I";   /*Standard problem */
+    char* which = (char*)"LM"; /*Largest eigenvalues, but we invert->smallest */
+    char* howmny = (char*)"A"; /*which eigens should be computed: all */
+    double tol = nlCurrentContext->threshold;
+    int ido = 0;  /* reverse communication variable (which operation ?) */
+    int info = 1; /* start with initial value of resid */
+    int lworkl;   /* size of work array */
+    NLboolean converged = NL_FALSE;
+    NLdouble value;
+    int index;
+    int* sorted; /* indirection array for sorting eigenpairs */
+
+    if(ncv > n) {
+	ncv = n;
+    }
+
+    if(nev > n) {
+	nev = n;
+    }
+
+    if(nev + 2 > ncv) {
+	nev = ncv  - 2;
+    }
+
+    
+    if(symmetric) {
+	lworkl = ncv * (ncv + 8) ;
+    } else {
+	lworkl = 3*ncv*ncv + 6*ncv ; 
+    }
+    iparam = NL_NEW_ARRAY(int, 11);
+    ipntr  = NL_NEW_ARRAY(int, 14);
+
+    iparam[1-1] = 1; /* ARPACK chooses the shifts */
+    iparam[3-1] = (int)nlCurrentContext->max_iterations;
+    iparam[7-1] = 1; /* Normal mode, use 3 dor shift-invert */
+
+    workev = NL_NEW_ARRAY(NLdouble, 3*ncv);
+    workd = NL_NEW_ARRAY(NLdouble, 3*n);
+
+    resid = NL_NEW_ARRAY(NLdouble, n);
+    for(i=0; i<n; ++i) {
+	resid[i] = 1.0; /* (double)i / (double)n; */
+    }
+    v = NL_NEW_ARRAY(NLdouble, ldv*ncv);
+    if(symmetric) {
+	d = NL_NEW_ARRAY(NLdouble, 2*ncv);
+    } else {
+	d = NL_NEW_ARRAY(NLdouble, 3*ncv);	
+    }
+    workl = NL_NEW_ARRAY(NLdouble, lworkl);
+
+    
+
+    if(nlCurrentContext->verbose) {
+	if(symmetric) {
+	    fprintf(stderr, "calling dsaupd()\n");	    
+	} else {
+	    fprintf(stderr, "calling dnaupd()\n");
+	}
+    }
+    while(!converged) {
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, ".");
+	    fflush(stderr);
+	}
+	if(symmetric) {
+	    ARPACK()->dsaupd(
+		&ido, bmat, &n, which, &nev, &tol, resid, &ncv,
+		v, &ldv, iparam, ipntr, workd, workl, &lworkl, &info
+	    );
+	} else {
+	    ARPACK()->dnaupd(
+		&ido, bmat, &n, which, &nev, &tol, resid, &ncv,
+		v, &ldv, iparam, ipntr, workd, workl, &lworkl, &info
+	    );
+	}
+	if(ido == 1) {
+	    nlMultMatrixVector(
+		OP,
+		workd+ipntr[1-1]-1, /*The "-1"'s are for FORTRAN-to-C conversion */
+		workd+ipntr[2-1]-1  /*to keep the same indices as in ARPACK doc */
+	    );
+	} else {
+	    converged = NL_TRUE;
+	}
+    }
+
+    
+
+    if(info < 0) {
+	if(symmetric) {
+	    fprintf(stderr, "\nError with dsaupd(): %d\n", info);	    
+	} else {
+	    fprintf(stderr, "\nError with dnaupd(): %d\n", info);
+	}
+    } else {
+	if(nlCurrentContext->verbose) {
+	    fprintf(stderr, "\nconverged\n");
+	}
+	
+	select = NL_NEW_ARRAY(ARlogical, ncv);
+	for(i=0; i<ncv; ++i) {
+	    select[i] = 1;
+	}
+	
+	if(nlCurrentContext->verbose) {
+	    if(symmetric) {
+		fprintf(stderr, "calling dseupd()\n");		
+	    } else {
+		fprintf(stderr, "calling dneupd()\n");
+	    }
+	}
+	
+        if(symmetric) {
+            ARPACK()->dseupd(
+                &rvec, howmny, select, d, v, 
+                &ldv, &sigmar, bmat, &n, which, &nev, 
+                &tol, resid, &ncv, v, &ldv, 
+                iparam, ipntr, workd,
+		workl, &lworkl, &ierr 
+	    );
+        } else {
+	    ARPACK()->dneupd(
+		&rvec, howmny, select, d, d+ncv,
+                v, &ldv, 
+                &sigmar, &sigmai, workev, bmat, &n,
+		which, &nev, &tol, 
+                resid, &ncv, v, &ldv, iparam, 
+		ipntr, workd, workl, &lworkl, &ierr 
+            ) ;
+	}	
+
+
+	if(nlCurrentContext->verbose) {
+	    if(ierr != 0) {		
+		if(symmetric) {
+		    fprintf(stderr, "Error with dseupd(): %d\n", ierr);		
+		} else {
+		    fprintf(stderr, "Error with dneupd(): %d\n", ierr);
+		}
+	    } else {
+		if(symmetric) {
+		    fprintf(stderr, "dseupd() OK, nconv= %d\n", iparam[3-1]);
+		} else {
+		    fprintf(stderr, "dneupd() OK, nconv= %d\n", iparam[3-1]);
+		}
+	    }
+	}
+	
+	NL_DELETE_ARRAY(select);
+    }
+
+    
+
+    for(i=0; i<nev; ++i) {
+	d[i] = (fabs(d[i]) < 1e-30) ? 1e30 : 1.0 / d[i] ;
+	d[i] += nlCurrentContext->eigen_shift ;
+    }            
+
+    
+    
+    /* Make it visible to the eigen_compare function */
+    nlCurrentContext->temp_eigen_value = d;
+    sorted = NL_NEW_ARRAY(int, nev);
+    for(i=0; i<nev; ++i) {
+	sorted[i] = i;
+    }
+    qsort(sorted, (size_t)nev, sizeof(NLuint), eigencompare);
+    nlCurrentContext->temp_eigen_value = NULL;
+    
+    
+
+    for(k=0; k<nev; ++k) {
+	kk = sorted[k];
+	nlCurrentContext->eigen_value[k] = d[kk];
+	for(i=0; i<(int)nlCurrentContext->nb_variables; ++i) {
+	    if(!nlCurrentContext->variable_is_locked[i]) {
+		index = (int)nlCurrentContext->variable_index[i];
+		nl_assert(index < n);
+		value = v[kk*n+index];
+		NL_BUFFER_ITEM(
+		    nlCurrentContext->variable_buffer[k],(NLuint)i
+		) = value;
+	    }
+	}
+    }
+    
+    
+
+    NL_DELETE_ARRAY(sorted);
+    NL_DELETE_ARRAY(workl);
+    NL_DELETE_ARRAY(d);
+    NL_DELETE_ARRAY(v);
+    NL_DELETE_ARRAY(resid);
+    NL_DELETE_ARRAY(workd);
+    NL_DELETE_ARRAY(workev);
+    nlDeleteMatrix(OP);
+    NL_DELETE_ARRAY(iparam);
+    NL_DELETE_ARRAY(ipntr);
+}
+
+
 
 
 /******* extracted from nl_cnc_gpu_cuda.c *******/
@@ -4528,6 +5430,28 @@ NLuint nlSolve_CNC() {
 
 
 
+static NLSparseMatrix* nlGetCurrentSparseMatrix() {
+    NLSparseMatrix* result = NULL;
+    switch(nlCurrentContext->matrix_mode) {
+	case NL_STIFFNESS_MATRIX: {
+	    nl_assert(nlCurrentContext->M != NULL);	    
+	    nl_assert(nlCurrentContext->M->type == NL_MATRIX_SPARSE_DYNAMIC);
+	    result = (NLSparseMatrix*)(nlCurrentContext->M);
+	} break;
+	case NL_MASS_MATRIX: {
+	    nl_assert(nlCurrentContext->B != NULL);
+	    nl_assert(nlCurrentContext->B->type == NL_MATRIX_SPARSE_DYNAMIC);
+	    result = (NLSparseMatrix*)(nlCurrentContext->B);
+	} break;
+	default:
+	    nl_assert_not_reached;
+    }
+    return result;
+}
+
+
+
+
 NLboolean nlInitExtension(const char* extension) {
 
     nl_arg_used(extension);
@@ -4536,14 +5460,21 @@ NLboolean nlInitExtension(const char* extension) {
         return nlInitExtension_SUPERLU();
     } else if(!strcmp(extension, "CHOLMOD")) {
         return nlInitExtension_CHOLMOD();
+    } else if(!strcmp(extension, "ARPACK")) {
+	/* 
+	 * SUPERLU is needed by OpenNL's ARPACK driver
+	 * (factorizes the matrix for the shift-invert spectral
+	 *  transform).
+	 */
+	return nlInitExtension_SUPERLU() && nlInitExtension_ARPACK();
     }
 
 #ifdef NL_USE_CNC
     if(!strcmp(extension, "CNC")) {
-        return NL_TRUE ;
+        return NL_TRUE;
     }
 #endif
-    return NL_FALSE ;
+    return NL_FALSE;
 }
 
 
@@ -4552,96 +5483,60 @@ NLboolean nlInitExtension(const char* extension) {
 /* Get/Set parameters */
 
 void nlSolverParameterd(NLenum pname, NLdouble param) {
-    nlCheckState(NL_STATE_INITIAL) ;
+    nlCheckState(NL_STATE_INITIAL);
     switch(pname) {
     case NL_THRESHOLD: {
-        nl_assert(param >= 0) ;
-        nlCurrentContext->threshold = (NLdouble)param ;
-        nlCurrentContext->threshold_defined = NL_TRUE ;
-    } break ;
+        nl_assert(param >= 0);
+        nlCurrentContext->threshold = (NLdouble)param;
+        nlCurrentContext->threshold_defined = NL_TRUE;
+    } break;
     case NL_OMEGA: {
-        nl_range_assert(param,1.0,2.0) ;
-        nlCurrentContext->omega = (NLdouble)param ;
-    } break ;
+        nl_range_assert(param,1.0,2.0);
+        nlCurrentContext->omega = (NLdouble)param;
+    } break;
     default: {
         nlError("nlSolverParameterd","Invalid parameter");
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
     }
 }
 
 void nlSolverParameteri(NLenum pname, NLint param) {
-    nlCheckState(NL_STATE_INITIAL) ;
+    nlCheckState(NL_STATE_INITIAL);
     switch(pname) {
     case NL_SOLVER: {
-        nlCurrentContext->solver = (NLenum)param ;
-    } break ;
+        nlCurrentContext->solver = (NLenum)param;
+    } break;
     case NL_NB_VARIABLES: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->nb_variables = (NLuint)param ;
-    } break ;
+        nl_assert(param > 0);
+        nlCurrentContext->nb_variables = (NLuint)param;
+    } break;
+    case NL_NB_SYSTEMS: {
+	nl_assert(param > 0);
+	nlCurrentContext->nb_systems = (NLuint)param;
+    } break;
     case NL_LEAST_SQUARES: {
-        nlCurrentContext->least_squares = (NLboolean)param ;
-    } break ;
+        nlCurrentContext->least_squares = (NLboolean)param;
+    } break;
     case NL_MAX_ITERATIONS: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->max_iterations = (NLuint)param ;
+        nl_assert(param > 0);
+        nlCurrentContext->max_iterations = (NLuint)param;
         nlCurrentContext->max_iterations_defined = NL_TRUE;
-    } break ;
+    } break;
     case NL_SYMMETRIC: {
-        nlCurrentContext->symmetric = (NLboolean)param ;        
-    } break ;
+        nlCurrentContext->symmetric = (NLboolean)param;        
+    } break;
     case NL_INNER_ITERATIONS: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->inner_iterations = (NLuint)param ;
-    } break ;
+        nl_assert(param > 0);
+        nlCurrentContext->inner_iterations = (NLuint)param;
+    } break;
     case NL_PRECONDITIONER: {
-        nlCurrentContext->preconditioner = (NLuint)param ;
+        nlCurrentContext->preconditioner = (NLuint)param;
         nlCurrentContext->preconditioner_defined = NL_TRUE;
-    } break ;
+    } break;
     default: {
         nlError("nlSolverParameteri","Invalid parameter");
-        nl_assert_not_reached ;
-    }
-    }
-}
-
-
-static void nlRowParameterd_obsolete() {
-    static NLboolean first_time = NL_TRUE;
-    if(first_time) {
-        fprintf(stderr,"==== OpenNL warning: called an obsolete function nlRowParameterd() ===========\n");
-        fprintf(stderr,"Now use nlRightHandSide() / nlRowScaling() instead\n");
-        fprintf(stderr,"   PLEASE TAKE NOTE THAT THE SIGN OF THE ARGUMENT CHANGED IN nlRightHandSide()\n");
-        fprintf(stderr,"   AS COMPARED TO nlRowParameterd(NL_RIGHT_HAND_SIDE,.)\n");
-        fprintf(stderr,"   (please refer to the documentation and examples in nl.h\n");
-        fprintf(stderr,"==============================================================================\n");
-        first_time = NL_FALSE;
-    }
-}
-
-void nlRowParameterd(NLenum pname, NLdouble param) {
-    nlRowParameterd_obsolete();    
-    nlCheckState(NL_STATE_MATRIX) ;
-    switch(pname) {
-    case NL_RIGHT_HAND_SIDE: {
-        /*
-         * Argh: -param, because the old API was inversed,
-         * right hand side was b in Ax + b = 0 instead of Ax = b,
-         * it is too stupid.
-         */
-        if(nlCurrentContext->least_squares) {
-            nlCurrentContext->right_hand_side =  param ;            
-        } else {
-            nlCurrentContext->right_hand_side = -param ;
-        }
-    } break ;
-    case NL_ROW_SCALING: {
-        nlCurrentContext->row_scaling = param ;
-    } break ;
-    default: {
-        nlError("nlSolverParameterd","Invalid parameter");
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
     }
 }
@@ -4649,14 +5544,14 @@ void nlRowParameterd(NLenum pname, NLdouble param) {
 void nlGetBooleanv(NLenum pname, NLboolean* params) {
     switch(pname) {
     case NL_LEAST_SQUARES: {
-        *params = nlCurrentContext->least_squares ;
-    } break ;
+        *params = nlCurrentContext->least_squares;
+    } break;
     case NL_SYMMETRIC: {
-        *params = nlCurrentContext->symmetric ;
-    } break ;
+        *params = nlCurrentContext->symmetric;
+    } break;
     default: {
         nlError("nlGetBooleanv","Invalid parameter");
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     } 
     }
 }
@@ -4664,28 +5559,28 @@ void nlGetBooleanv(NLenum pname, NLboolean* params) {
 void nlGetDoublev(NLenum pname, NLdouble* params) {
     switch(pname) {
     case NL_THRESHOLD: {
-        *params = nlCurrentContext->threshold ;
-    } break ;
+        *params = nlCurrentContext->threshold;
+    } break;
     case NL_OMEGA: {
-        *params = nlCurrentContext->omega ;
-    } break ;
+        *params = nlCurrentContext->omega;
+    } break;
     case NL_ERROR: {
-        *params = nlCurrentContext->error ;
-    } break ;
+        *params = nlCurrentContext->error;
+    } break;
     case NL_ELAPSED_TIME: {
-        *params = nlCurrentContext->elapsed_time ;        
-    } break ;
+        *params = nlCurrentContext->elapsed_time;        
+    } break;
     case NL_GFLOPS: {
         if(nlCurrentContext->elapsed_time == 0) {
             *params = 0.0;
         } else {
             *params = (NLdouble)(nlCurrentContext->flops) /
-                (nlCurrentContext->elapsed_time * 1e9) ;
+                (nlCurrentContext->elapsed_time * 1e9);
         }
     } break;
     default: {
         nlError("nlGetDoublev","Invalid parameter");
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     } 
     }
 }
@@ -4693,32 +5588,35 @@ void nlGetDoublev(NLenum pname, NLdouble* params) {
 void nlGetIntegerv(NLenum pname, NLint* params) {
     switch(pname) {
     case NL_SOLVER: {
-        *params = (NLint)(nlCurrentContext->solver) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->solver);
+    } break;
     case NL_NB_VARIABLES: {
-        *params = (NLint)(nlCurrentContext->nb_variables) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->nb_variables);
+    } break;
+    case NL_NB_SYSTEMS: {
+	*params = (NLint)(nlCurrentContext->nb_systems);
+    } break;
     case NL_LEAST_SQUARES: {
-        *params = (NLint)(nlCurrentContext->least_squares) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->least_squares);
+    } break;
     case NL_MAX_ITERATIONS: {
-        *params = (NLint)(nlCurrentContext->max_iterations) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->max_iterations);
+    } break;
     case NL_SYMMETRIC: {
-        *params = (NLint)(nlCurrentContext->symmetric) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->symmetric);
+    } break;
     case NL_USED_ITERATIONS: {
-        *params = (NLint)(nlCurrentContext->used_iterations) ;
-    } break ;
+        *params = (NLint)(nlCurrentContext->used_iterations);
+    } break;
     case NL_PRECONDITIONER: {
-        *params = (NLint)(nlCurrentContext->preconditioner) ;        
-    } break ;
+        *params = (NLint)(nlCurrentContext->preconditioner);        
+    } break;
     case NL_NNZ: {
-        *params = (NLint)(nlSparseMatrixNNZ(&(nlCurrentContext->M)));
+        *params = (NLint)(nlMatrixNNZ(nlCurrentContext->M));
     } break;
     default: {
         nlError("nlGetIntegerv","Invalid parameter");
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     } 
     }
 }
@@ -4728,49 +5626,58 @@ void nlGetIntegerv(NLenum pname, NLint* params) {
 
 void nlEnable(NLenum pname) {
     switch(pname) {
-    case NL_NORMALIZE_ROWS: {
-        nl_assert(nlCurrentContext->state != NL_STATE_ROW) ;
-        nlCurrentContext->normalize_rows = NL_TRUE ;
-    } break ;
-    case NL_VERBOSE: {
-        nlCurrentContext->verbose = NL_TRUE ;
-    } break;
+	case NL_NORMALIZE_ROWS: {
+	    nl_assert(nlCurrentContext->state != NL_STATE_ROW);
+	    nlCurrentContext->normalize_rows = NL_TRUE;
+	} break;
+	case NL_VERBOSE: {
+	    nlCurrentContext->verbose = NL_TRUE;
+	} break;
+	case NL_VARIABLES_BUFFER: {
+	    nlCurrentContext->user_variable_buffers = NL_TRUE;
+	} break;
     default: {
         nlError("nlEnable","Invalid parameter");        
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
     }
 }
 
 void nlDisable(NLenum pname) {
     switch(pname) {
-    case NL_NORMALIZE_ROWS: {
-        nl_assert(nlCurrentContext->state != NL_STATE_ROW) ;
-        nlCurrentContext->normalize_rows = NL_FALSE ;
-    } break ;
-    case NL_VERBOSE: {
-        nlCurrentContext->verbose = NL_FALSE ;
-    } break;
-    default: {
-        nlError("nlDisable","Invalid parameter");                
-        nl_assert_not_reached ;
-    }
+	case NL_NORMALIZE_ROWS: {
+	    nl_assert(nlCurrentContext->state != NL_STATE_ROW);
+	    nlCurrentContext->normalize_rows = NL_FALSE;
+	} break;
+	case NL_VERBOSE: {
+	    nlCurrentContext->verbose = NL_FALSE;
+	} break;
+	case NL_VARIABLES_BUFFER: {
+	    nlCurrentContext->user_variable_buffers = NL_FALSE;
+	} break;
+	default: {
+	    nlError("nlDisable","Invalid parameter");                
+	    nl_assert_not_reached;
+	}
     }
 }
 
 NLboolean nlIsEnabled(NLenum pname) {
     NLboolean result = NL_FALSE;
     switch(pname) {
-    case NL_NORMALIZE_ROWS: {
-        result = nlCurrentContext->normalize_rows ;
-    } break;
-    case NL_VERBOSE: {
-        result = nlCurrentContext->verbose ;
-    } break;
-    default: {
-        nlError("nlIsEnables","Invalid parameter");
-        nl_assert_not_reached ;
-    }
+	case NL_NORMALIZE_ROWS: {
+	    result = nlCurrentContext->normalize_rows;
+	} break;
+	case NL_VERBOSE: {
+	    result = nlCurrentContext->verbose;
+	} break;
+	case NL_VARIABLES_BUFFER: {
+	    result = nlCurrentContext->user_variable_buffers;
+	} break;
+	default: {
+	    nlError("nlIsEnables","Invalid parameter");
+	    nl_assert_not_reached;
+	}
     }
     return result;
 }
@@ -4782,38 +5689,46 @@ void  nlSetFunction(NLenum pname, NLfunc param) {
     switch(pname) {
     case NL_FUNC_SOLVER:
         nlCurrentContext->solver_func = (NLSolverFunc)(param);
-        break ;
+        nlCurrentContext->solver = NL_SOLVER_USER;	
+        break;
     case NL_FUNC_MATRIX:
-        nlCurrentContext->matrix_vector_prod = (NLMatrixFunc)(param) ;
-        nlCurrentContext->solver = NL_SOLVER_USER ;
-        break ;
+	nlDeleteMatrix(nlCurrentContext->M);
+	nlCurrentContext->M = nlMatrixNewFromFunction(
+	    nlCurrentContext->n, nlCurrentContext->n,
+	    (NLMatrixFunc)param
+	);
+        break;
     case NL_FUNC_PRECONDITIONER:
-        nlCurrentContext->precond_vector_prod = (NLMatrixFunc)(param) ;
-        nlCurrentContext->preconditioner = NL_PRECOND_USER ;
-        break ;
+	nlDeleteMatrix(nlCurrentContext->P);
+	nlCurrentContext->P = nlMatrixNewFromFunction(
+	    nlCurrentContext->n, nlCurrentContext->n,
+	    (NLMatrixFunc)param
+	);
+        nlCurrentContext->preconditioner = NL_PRECOND_USER;
+        break;
     case NL_FUNC_PROGRESS:
-        nlCurrentContext->progress_func = (NLProgressFunc)(param) ;
-        break ;
+        nlCurrentContext->progress_func = (NLProgressFunc)(param);
+        break;
     default:
         nlError("nlSetFunction","Invalid parameter");        
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
 }
 
 void nlGetFunction(NLenum pname, NLfunc* param) {
     switch(pname) {
     case NL_FUNC_SOLVER:
-        *param = (NLfunc)(nlCurrentContext->solver_func) ;
-        break ;
+        *param = (NLfunc)(nlCurrentContext->solver_func);
+        break;
     case NL_FUNC_MATRIX:
-        *param = (NLfunc)(nlCurrentContext->matrix_vector_prod) ;
-        break ;
+        *param = (NLfunc)(nlMatrixGetFunction(nlCurrentContext->M));
+        break;
     case NL_FUNC_PRECONDITIONER:
-        *param = (NLfunc)(nlCurrentContext->precond_vector_prod) ;
-        break ;
+        *param = (NLfunc)(nlMatrixGetFunction(nlCurrentContext->P));
+        break;
     default:
         nlError("nlGetFunction","Invalid parameter");                
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
 }
 
@@ -4821,96 +5736,143 @@ void nlGetFunction(NLenum pname, NLfunc* param) {
 /* Get/Set Lock/Unlock variables */
 
 void nlSetVariable(NLuint index, NLdouble value) {
-    nlCheckState(NL_STATE_SYSTEM) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    nlCurrentContext->variable[index].value = value ;    
+    nlCheckState(NL_STATE_SYSTEM);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[0],index) = value;
+}
+
+void nlMultiSetVariable(NLuint index, NLuint system, NLdouble value) {
+    nlCheckState(NL_STATE_SYSTEM);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables-1);
+    nl_debug_range_assert(system, 0, nlCurrentContext->nb_systems-1);    
+    NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[system],index) = value;
 }
 
 NLdouble nlGetVariable(NLuint index) {
-    nl_assert(nlCurrentContext->state != NL_STATE_INITIAL) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    return nlCurrentContext->variable[index].value ;
+    nl_assert(nlCurrentContext->state != NL_STATE_INITIAL);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    return NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[0],index);
 }
 
+NLdouble nlMultiGetVariable(NLuint index, NLuint system) {
+    nl_assert(nlCurrentContext->state != NL_STATE_INITIAL);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables-1);
+    nl_debug_range_assert(system, 0, nlCurrentContext->nb_systems-1);
+    return NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[system],index);    
+}
+
+
 void nlLockVariable(NLuint index) {
-    nlCheckState(NL_STATE_SYSTEM) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    nlCurrentContext->variable[index].locked = NL_TRUE ;
+    nlCheckState(NL_STATE_SYSTEM);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    nlCurrentContext->variable_is_locked[index] = NL_TRUE;
 }
 
 void nlUnlockVariable(NLuint index) {
-    nlCheckState(NL_STATE_SYSTEM) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    nlCurrentContext->variable[index].locked = NL_FALSE ;
+    nlCheckState(NL_STATE_SYSTEM);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    nlCurrentContext->variable_is_locked[index] = NL_FALSE;
 }
 
 NLboolean nlVariableIsLocked(NLuint index) {
-    nl_assert(nlCurrentContext->state != NL_STATE_INITIAL) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    return nlCurrentContext->variable[index].locked  ;
+    nl_assert(nlCurrentContext->state != NL_STATE_INITIAL);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    return nlCurrentContext->variable_is_locked[index];
 }
 
 
 /* System construction */
 
 static void nlVariablesToVector() {
-    NLuint i ;
-    nl_assert(nlCurrentContext->alloc_x) ;
-    nl_assert(nlCurrentContext->alloc_variable) ;
-    for(i=0; i<nlCurrentContext->nb_variables; i++) {
-        NLVariable* v = &(nlCurrentContext->variable[i]) ;
-        if(!v->locked) {
-            nl_assert(v->index < nlCurrentContext->n) ;
-            nlCurrentContext->x[v->index] = v->value ;
-        }
+    NLuint n=nlCurrentContext->n;
+    NLuint k,i,index;
+    NLdouble value;
+    
+    nl_assert(nlCurrentContext->x != NULL);
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	for(i=0; i<nlCurrentContext->nb_variables; ++i) {
+	    if(!nlCurrentContext->variable_is_locked[i]) {
+		index = nlCurrentContext->variable_index[i];
+		nl_assert(index < nlCurrentContext->n);		
+		value = NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[k],i);
+		nlCurrentContext->x[index+k*n] = value;
+	    }
+	}
     }
 }
 
 static void nlVectorToVariables() {
-    NLuint i ;
-    nl_assert(nlCurrentContext->alloc_x) ;
-    nl_assert(nlCurrentContext->alloc_variable) ;
-    for(i=0; i<nlCurrentContext->nb_variables; i++) {
-        NLVariable* v = &(nlCurrentContext->variable[i]) ;
-        if(!v->locked) {
-            nl_assert(v->index < nlCurrentContext->n) ;
-            v->value = nlCurrentContext->x[v->index] ;
-        }
+    NLuint n=nlCurrentContext->n;
+    NLuint k,i,index;
+    NLdouble value;
+
+    nl_assert(nlCurrentContext->x != NULL);
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	for(i=0; i<nlCurrentContext->nb_variables; ++i) {
+	    if(!nlCurrentContext->variable_is_locked[i]) {
+		index = nlCurrentContext->variable_index[i];
+		nl_assert(index < nlCurrentContext->n);
+		value = nlCurrentContext->x[index+k*n];
+		NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[k],i) = value;
+	    }
+	}
     }
 }
 
 
 static void nlBeginSystem() {
-    nlTransition(NL_STATE_INITIAL, NL_STATE_SYSTEM) ;
-    nl_assert(nlCurrentContext->nb_variables > 0) ;
-    nlCurrentContext->variable = NL_NEW_ARRAY(
-        NLVariable, nlCurrentContext->nb_variables
-    ) ;
-    nlCurrentContext->alloc_variable = NL_TRUE ;
+    NLuint k;
+    
+    nlTransition(NL_STATE_INITIAL, NL_STATE_SYSTEM);
+    nl_assert(nlCurrentContext->nb_variables > 0);
+
+    nlCurrentContext->variable_buffer = NL_NEW_ARRAY(
+	NLBufferBinding, nlCurrentContext->nb_systems
+    );
+    
+    if(nlCurrentContext->user_variable_buffers) {
+	nlCurrentContext->variable_value = NULL;
+    } else {
+	nlCurrentContext->variable_value = NL_NEW_ARRAY(
+	    NLdouble,
+	    nlCurrentContext->nb_variables * nlCurrentContext->nb_systems
+	);
+	for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	    nlCurrentContext->variable_buffer[k].base_address =
+		nlCurrentContext->variable_value +
+		k * nlCurrentContext->nb_variables;
+	    nlCurrentContext->variable_buffer[k].stride = sizeof(NLdouble);
+	}
+    }
+    
+    nlCurrentContext->variable_is_locked = NL_NEW_ARRAY(
+	NLboolean, nlCurrentContext->nb_variables
+    );
+    nlCurrentContext->variable_index = NL_NEW_ARRAY(
+	NLuint, nlCurrentContext->nb_variables
+    );
 }
 
 static void nlEndSystem() {
-    nlTransition(NL_STATE_MATRIX_CONSTRUCTED, NL_STATE_SYSTEM_CONSTRUCTED) ;    
+    nlTransition(NL_STATE_MATRIX_CONSTRUCTED, NL_STATE_SYSTEM_CONSTRUCTED);    
 }
 
-static void nlBeginMatrix() {
-    NLuint i ;
-    NLuint n = 0 ;
-    NLenum storage = NL_MATRIX_STORE_ROWS ;
+static void nlInitializeM() {
+    NLuint i;
+    NLuint n = 0;
+    NLenum storage = NL_MATRIX_STORE_ROWS;
 
-    
-    nlTransition(NL_STATE_SYSTEM, NL_STATE_MATRIX) ;
 
     for(i=0; i<nlCurrentContext->nb_variables; i++) {
-        if(!nlCurrentContext->variable[i].locked) {
-            nlCurrentContext->variable[i].index = n ;
-            n++ ;
+        if(!nlCurrentContext->variable_is_locked[i]) {
+            nlCurrentContext->variable_index[i] = n;
+            n++;
         } else {
-            nlCurrentContext->variable[i].index = (NLuint)~0 ;
+            nlCurrentContext->variable_index[i] = (NLuint)~0;
         }
     }
 
-    nlCurrentContext->n = n ;
+    nlCurrentContext->n = n;
 
     /*
      * If the user trusts OpenNL and has left solver as NL_SOLVER_DEFAULT,
@@ -4936,7 +5898,7 @@ static void nlBeginMatrix() {
     
     /* SSOR preconditioner requires rows and columns */
     if(nlCurrentContext->preconditioner == NL_PRECOND_SSOR) {
-        storage = (storage | NL_MATRIX_STORE_COLUMNS) ;
+        storage = (storage | NL_MATRIX_STORE_COLUMNS);
     }
 
     /* a least squares problem results in a symmetric matrix */
@@ -4944,60 +5906,49 @@ static void nlBeginMatrix() {
         nlCurrentContext->least_squares  &&
        !nlSolverIsCNC((NLint)(nlCurrentContext->solver))
     ) {
-        nlCurrentContext->symmetric = NL_TRUE ;
+        nlCurrentContext->symmetric = NL_TRUE;
     }
 
-    if(nlCurrentContext->symmetric) {
-        storage = (storage | NL_MATRIX_STORE_SYMMETRIC) ;
-    }
-
-    /* SuperLU storage does not support symmetric storage */
     if(
-        nlCurrentContext->solver == NL_SUPERLU_EXT       ||
-        nlCurrentContext->solver == NL_PERM_SUPERLU_EXT  ||
-        nlCurrentContext->solver == NL_SYMMETRIC_SUPERLU_EXT 
+	nlCurrentContext->symmetric &&
+	nlCurrentContext->preconditioner == NL_PRECOND_SSOR
     ) {
-        storage = (storage & (NLenum)(~NL_SYMMETRIC)) ;
+	/* 
+	 * For now, only used with SSOR preconditioner, because
+	 * for other modes it is either unsupported (SUPERLU) or
+	 * causes performance loss (non-parallel sparse SpMV)
+	 */
+        storage = (storage | NL_MATRIX_STORE_SYMMETRIC);
     }
 
-    /*
-     * I deactivate symmetric storage, so that the solver
-     * can work in parallel mode (see nlSparseMatrix_mult_rows())
-     */
-    if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {
-        storage = (storage & (NLenum)(~NL_SYMMETRIC)) ;
-    }
-    
-    nlSparseMatrixConstruct(&nlCurrentContext->M, n, n, storage) ;
-    nlCurrentContext->alloc_M = NL_TRUE ;
+    nlCurrentContext->M = (NLMatrix)(NL_NEW(NLSparseMatrix));
+    nlSparseMatrixConstruct(
+	     (NLSparseMatrix*)(nlCurrentContext->M), n, n, storage
+    );
 
-    nlCurrentContext->x = NL_NEW_ARRAY(NLdouble, n) ;
-    nlCurrentContext->alloc_x = NL_TRUE ;
-    
-    nlCurrentContext->b = NL_NEW_ARRAY(NLdouble, n) ;
-    nlCurrentContext->alloc_b = NL_TRUE ;
+    nlCurrentContext->x = NL_NEW_ARRAY(
+	NLdouble, n*nlCurrentContext->nb_systems
+    );
+    nlCurrentContext->b = NL_NEW_ARRAY(
+	NLdouble, n*nlCurrentContext->nb_systems
+    );
 
-    nlVariablesToVector() ;
+    nlVariablesToVector();
 
-    nlRowColumnConstruct(&nlCurrentContext->af) ;
-    nlCurrentContext->alloc_af = NL_TRUE ;
-    nlRowColumnConstruct(&nlCurrentContext->al) ;
-    nlCurrentContext->alloc_al = NL_TRUE ;
-    nlRowColumnConstruct(&nlCurrentContext->xl) ;
-    nlCurrentContext->alloc_xl = NL_TRUE ;
+    nlRowColumnConstruct(&nlCurrentContext->af);
+    nlRowColumnConstruct(&nlCurrentContext->al);
 
-    nlCurrentContext->current_row = 0 ;
+    nlCurrentContext->right_hand_side = NL_NEW_ARRAY(
+	double, nlCurrentContext->nb_systems
+    );
+    nlCurrentContext->current_row = 0;
 }
 
 static void nlEndMatrix() {
-    nlTransition(NL_STATE_MATRIX, NL_STATE_MATRIX_CONSTRUCTED) ;    
-    
-    nlRowColumnDestroy(&nlCurrentContext->af) ;
-    nlCurrentContext->alloc_af = NL_FALSE ;
-    nlRowColumnDestroy(&nlCurrentContext->al) ;
-    nlCurrentContext->alloc_al = NL_FALSE ;
-    nlRowColumnDestroy(&nlCurrentContext->xl) ;
-    nlCurrentContext->alloc_al = NL_FALSE ;
+    nlTransition(NL_STATE_MATRIX, NL_STATE_MATRIX_CONSTRUCTED);    
+
+    nlRowColumnClear(&nlCurrentContext->af);
+    nlRowColumnClear(&nlCurrentContext->al);
     
     if(!nlCurrentContext->least_squares) {
         nl_assert(
@@ -5005,139 +5956,145 @@ static void nlEndMatrix() {
                 nlCurrentContext->current_row == 
                 nlCurrentContext->n
             )
-        ) ;
-    }
-
-    nlSparseMatrixComputeDiagInv(&nlCurrentContext->M);
-    if(
-        nlCurrentContext->preconditioner != NL_PRECOND_SSOR &&
-        nlCurrentContext->solver != NL_SUPERLU_EXT       &&
-        nlCurrentContext->solver != NL_PERM_SUPERLU_EXT  &&
-        nlCurrentContext->solver != NL_SYMMETRIC_SUPERLU_EXT &&
-        nlCurrentContext->solver != NL_CHOLMOD_EXT
-    ) {
-        if(getenv("NL_LOW_MEM") == NULL) {
-            nlSparseMatrixCompress(&nlCurrentContext->M);
-        }
+        );
     }
 }
 
 static void nlBeginRow() {
-    nlTransition(NL_STATE_MATRIX, NL_STATE_ROW) ;
-    nlRowColumnZero(&nlCurrentContext->af) ;
-    nlRowColumnZero(&nlCurrentContext->al) ;
-    nlRowColumnZero(&nlCurrentContext->xl) ;
+    nlTransition(NL_STATE_MATRIX, NL_STATE_ROW);
+    nlRowColumnZero(&nlCurrentContext->af);
+    nlRowColumnZero(&nlCurrentContext->al);
 }
 
 static void nlScaleRow(NLdouble s) {
-    NLRowColumn*    af = &nlCurrentContext->af ;
-    NLRowColumn*    al = &nlCurrentContext->al ;
-    NLuint nf            = af->size ;
-    NLuint nl            = al->size ;
-    NLuint i ;
+    NLRowColumn*    af = &nlCurrentContext->af;
+    NLRowColumn*    al = &nlCurrentContext->al;
+    NLuint nf            = af->size;
+    NLuint nl            = al->size;
+    NLuint i,k;
     for(i=0; i<nf; i++) {
-        af->coeff[i].value *= s ;
+        af->coeff[i].value *= s;
     }
     for(i=0; i<nl; i++) {
-        al->coeff[i].value *= s ;
+        al->coeff[i].value *= s;
     }
-    nlCurrentContext->right_hand_side *= s ;
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	nlCurrentContext->right_hand_side[k] *= s;
+    }
 }
 
 static void nlNormalizeRow(NLdouble weight) {
-    NLRowColumn*    af = &nlCurrentContext->af ;
-    NLRowColumn*    al = &nlCurrentContext->al ;
-    NLuint nf            = af->size ;
-    NLuint nl            = al->size ;
-    NLuint i ;
-    NLdouble norm = 0.0 ;
+    NLRowColumn*    af = &nlCurrentContext->af;
+    NLRowColumn*    al = &nlCurrentContext->al;
+    NLuint nf            = af->size;
+    NLuint nl            = al->size;
+    NLuint i;
+    NLdouble norm = 0.0;
     for(i=0; i<nf; i++) {
-        norm += af->coeff[i].value * af->coeff[i].value ;
+        norm += af->coeff[i].value * af->coeff[i].value;
     }
     for(i=0; i<nl; i++) {
-        norm += al->coeff[i].value * al->coeff[i].value ;
+        norm += al->coeff[i].value * al->coeff[i].value;
     }
-    norm = sqrt(norm) ;
-    nlScaleRow(weight / norm) ;
+    norm = sqrt(norm);
+    nlScaleRow(weight / norm);
 }
 
 static void nlEndRow() {
-    NLRowColumn*    af = &nlCurrentContext->af ;
-    NLRowColumn*    al = &nlCurrentContext->al ;
-    NLRowColumn*    xl = &nlCurrentContext->xl ;
-    NLSparseMatrix* M  = &nlCurrentContext->M  ;
-    NLdouble* b        = nlCurrentContext->b ;
-    NLuint nf          = af->size ;
-    NLuint nl          = al->size ;
-    NLuint current_row = nlCurrentContext->current_row ;
-    NLuint i ;
-    NLuint j ;
-    NLdouble S ;
-    nlTransition(NL_STATE_ROW, NL_STATE_MATRIX) ;
+    NLRowColumn*    af = &nlCurrentContext->af;
+    NLRowColumn*    al = &nlCurrentContext->al;
+    NLSparseMatrix* M  = nlGetCurrentSparseMatrix();
+    NLdouble* b        = nlCurrentContext->b;
+    NLuint nf          = af->size;
+    NLuint nl          = al->size;
+    NLuint n           = nlCurrentContext->n;
+    NLuint current_row = nlCurrentContext->current_row;
+    NLuint i,j,jj;
+    NLdouble S;
+    NLuint k;
+    nlTransition(NL_STATE_ROW, NL_STATE_MATRIX);
 
     if(nlCurrentContext->normalize_rows) {
-        nlNormalizeRow(nlCurrentContext->row_scaling) ;
-    } else {
-        nlScaleRow(nlCurrentContext->row_scaling) ;
+        nlNormalizeRow(nlCurrentContext->row_scaling);
+    } else if(nlCurrentContext->row_scaling != 1.0) {
+        nlScaleRow(nlCurrentContext->row_scaling);
     }
     /*
      * if least_squares : we want to solve
      * A'A x = A'b
      */
+
     if(nlCurrentContext->least_squares) {
         for(i=0; i<nf; i++) {
             for(j=0; j<nf; j++) {
                 nlSparseMatrixAdd(
                     M, af->coeff[i].index, af->coeff[j].index,
                     af->coeff[i].value * af->coeff[j].value
-                ) ;
+                );
             }
         }
-        S = -nlCurrentContext->right_hand_side ;
-        for(j=0; j<nl; j++) {
-            S += al->coeff[j].value * xl->coeff[j].value ;
-        }
-        for(i=0; i<nf; i++) {
-            b[ af->coeff[i].index ] -= af->coeff[i].value * S ;
-        }
+	for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	    S = -nlCurrentContext->right_hand_side[k];
+	    for(jj=0; jj<nl; ++jj) {
+		j = al->coeff[jj].index;
+		S += al->coeff[jj].value *
+		    NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[k],j);
+	    }
+	    for(jj=0; jj<nf; jj++) {
+		b[ k*n+af->coeff[jj].index ] -= af->coeff[jj].value * S;
+	    }
+	}
     } else {
-        for(i=0; i<nf; i++) {
+        for(jj=0; jj<nf; ++jj) {
             nlSparseMatrixAdd(
-                M, current_row, af->coeff[i].index, af->coeff[i].value
-            ) ;
+                M, current_row, af->coeff[jj].index, af->coeff[jj].value
+            );
         }
-        b[current_row] = nlCurrentContext->right_hand_side ;
-        for(i=0; i<nl; i++) {
-            b[current_row] -= al->coeff[i].value * xl->coeff[i].value ;
-        }
+	for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	    b[k*n+current_row] = nlCurrentContext->right_hand_side[k];
+	    for(jj=0; jj<nl; ++jj) {
+		j = al->coeff[jj].index;
+		b[k*n+current_row] -= al->coeff[jj].value *
+		    NL_BUFFER_ITEM(nlCurrentContext->variable_buffer[k],j);
+	    }
+	}
     }
-    nlCurrentContext->current_row++ ;
-    nlCurrentContext->right_hand_side     = 0.0 ;
-    nlCurrentContext->right_hand_side_set = NL_FALSE ;
-    nlCurrentContext->row_scaling         = 1.0 ;
+    nlCurrentContext->current_row++;
+    for(k=0; k<nlCurrentContext->nb_systems; ++k) {
+	nlCurrentContext->right_hand_side[k] = 0.0;
+    }
+    nlCurrentContext->row_scaling = 1.0;
 }
 
 void nlCoefficient(NLuint index, NLdouble value) {
-    NLVariable* v = NULL ;
-    nlCheckState(NL_STATE_ROW) ;
-    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1) ;
-    v = &(nlCurrentContext->variable[index]) ;
-    if(v->locked) {
-        nlRowColumnAppend(&(nlCurrentContext->al), 0, value) ;
-        nlRowColumnAppend(&(nlCurrentContext->xl), 0, v->value) ;
+    nlCheckState(NL_STATE_ROW);
+    nl_debug_range_assert(index, 0, nlCurrentContext->nb_variables - 1);
+    if(nlCurrentContext->variable_is_locked[index]) {
+	/* 
+	 * Note: in al, indices are NLvariable indices, 
+	 * within [0..nb_variables-1]
+	 */
+        nlRowColumnAppend(&(nlCurrentContext->al), index, value);
     } else {
-        nlRowColumnAppend(&(nlCurrentContext->af), v->index, value) ;
+	/*
+	 * Note: in af, indices are system indices, 
+	 * within [0..n-1]
+	 */
+        nlRowColumnAppend(
+	    &(nlCurrentContext->af),
+	    nlCurrentContext->variable_index[index], value
+	);
     }
 }
 
 void nlAddIJCoefficient(NLuint i, NLuint j, NLdouble value) {
-    NLSparseMatrix* M  = &nlCurrentContext->M;    
+    NLSparseMatrix* M  = nlGetCurrentSparseMatrix();    
     nlCheckState(NL_STATE_MATRIX);
     nl_debug_range_assert(i, 0, nlCurrentContext->nb_variables - 1);
     nl_debug_range_assert(j, 0, nlCurrentContext->nb_variables - 1);
 #ifdef NL_DEBUG
     for(NLuint i=0; i<nlCurrentContext->nb_variables; ++i) {
-        nl_debug_assert(!nlCurrentContext->variable[i].is_locked);
+        nl_debug_assert(!nlCurrentContext->variable_is_locked[i]);
     }
 #endif    
     nlSparseMatrixAdd(M, i, j, value);
@@ -5149,18 +6106,34 @@ void nlAddIRightHandSide(NLuint i, NLdouble value) {
     nl_debug_range_assert(i, 0, nlCurrentContext->nb_variables - 1);
 #ifdef NL_DEBUG
     for(NLuint i=0; i<nlCurrentContext->nb_variables; ++i) {
-        nl_debug_assert(!nlCurrentContext->variable[i].is_locked);
+        nl_debug_assert(!nlCurrentContext->variable_is_locked[i]);
     }
 #endif
     nlCurrentContext->b[i] += value;
     nlCurrentContext->ij_coefficient_called = NL_TRUE;
 }
 
+void nlMultiAddIRightHandSide(NLuint i, NLuint k, NLdouble value) {
+    NLuint n = nlCurrentContext->n;
+    nlCheckState(NL_STATE_MATRIX);
+    nl_debug_range_assert(i, 0, nlCurrentContext->nb_variables - 1);
+    nl_debug_range_assert(k, 0, nlCurrentContext->nb_systems - 1);
+#ifdef NL_DEBUG
+    for(NLuint i=0; i<nlCurrentContext->nb_variables; ++i) {
+        nl_debug_assert(!nlCurrentContext->variable_is_locked[i]);
+    }
+#endif
+    nlCurrentContext->b[i + k*n] += value;
+    nlCurrentContext->ij_coefficient_called = NL_TRUE;
+}
 
 void nlRightHandSide(NLdouble value) {
-    nl_assert(!nlCurrentContext->right_hand_side_set);
-    nlCurrentContext->right_hand_side = value;
-    nlCurrentContext->right_hand_side_set = NL_TRUE;
+    nlCurrentContext->right_hand_side[0] = value;
+}
+
+void nlMultiRightHandSide(NLuint k, NLdouble value) {
+    nl_debug_range_assert(k, 0, nlCurrentContext->nb_systems - 1);
+    nlCurrentContext->right_hand_side[k] = value;
 }
 
 void nlRowScaling(NLdouble value) {
@@ -5171,16 +6144,22 @@ void nlRowScaling(NLdouble value) {
 void nlBegin(NLenum prim) {
     switch(prim) {
     case NL_SYSTEM: {
-        nlBeginSystem() ;
-    } break ;
+        nlBeginSystem();
+    } break;
     case NL_MATRIX: {
-        nlBeginMatrix() ;
-    } break ;
+	nlTransition(NL_STATE_SYSTEM, NL_STATE_MATRIX);
+	if(
+	    nlCurrentContext->matrix_mode == NL_STIFFNESS_MATRIX &&
+	    nlCurrentContext->M == NULL
+	) {
+	    nlInitializeM();
+	}
+    } break;
     case NL_ROW: {
-        nlBeginRow() ;
-    } break ;
+        nlBeginRow();
+    } break;
     default: {
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
     }
 }
@@ -5188,16 +6167,16 @@ void nlBegin(NLenum prim) {
 void nlEnd(NLenum prim) {
     switch(prim) {
     case NL_SYSTEM: {
-        nlEndSystem() ;
-    } break ;
+        nlEndSystem();
+    } break;
     case NL_MATRIX: {
-        nlEndMatrix() ;
-    } break ;
+        nlEndMatrix();
+    } break;
     case NL_ROW: {
-        nlEndRow() ;
-    } break ;
+        nlEndRow();
+    } break;
     default: {
-        nl_assert_not_reached ;
+        nl_assert_not_reached;
     }
     }
 }
@@ -5206,16 +6185,16 @@ void nlEnd(NLenum prim) {
 /* nlSolve() driver routine */
 
 NLboolean nlSolve() {
-    NLboolean result ;
-    NLdouble start_time = nlCurrentTime() ; 
-    nlCheckState(NL_STATE_SYSTEM_CONSTRUCTED) ;
-    nlCurrentContext->elapsed_time = 0.0 ;
-    nlCurrentContext->flops = 0 ;    
-    result =  nlCurrentContext->solver_func() ;
-    nlVectorToVariables() ;
-    nlCurrentContext->elapsed_time = nlCurrentTime() - start_time ;
-    nlTransition(NL_STATE_SYSTEM_CONSTRUCTED, NL_STATE_SOLVED) ;
-    return result ;
+    NLboolean result;
+    NLdouble start_time = nlCurrentTime(); 
+    nlCheckState(NL_STATE_SYSTEM_CONSTRUCTED);
+    nlCurrentContext->elapsed_time = 0.0;
+    nlCurrentContext->flops = 0;    
+    result = nlCurrentContext->solver_func();
+    nlVectorToVariables();
+    nlCurrentContext->elapsed_time = nlCurrentTime() - start_time;
+    nlTransition(NL_STATE_SYSTEM_CONSTRUCTED, NL_STATE_SOLVED);
+    return result;
 }
 
 void nlUpdateRightHandSide(NLdouble* values) {
@@ -5223,9 +6202,124 @@ void nlUpdateRightHandSide(NLdouble* values) {
      * If we are in the solved state, get back to the
      * constructed state.
      */
+    nl_assert(nlCurrentContext->nb_systems == 1);
     if(nlCurrentContext->state == NL_STATE_SOLVED) {
         nlTransition(NL_STATE_SOLVED, NL_STATE_SYSTEM_CONSTRUCTED);
     }
     nlCheckState(NL_STATE_SYSTEM_CONSTRUCTED);
     memcpy(nlCurrentContext->x, values, nlCurrentContext->n * sizeof(double));
+}
+
+
+/* Buffers management */
+
+void nlBindBuffer(
+    NLenum buffer, NLuint k, void* addr, NLuint stride
+) {
+    nlCheckState(NL_STATE_SYSTEM);    
+    nl_assert(nlIsEnabled(buffer));
+    nl_assert(buffer == NL_VARIABLES_BUFFER);
+    nl_assert(k<nlCurrentContext->nb_systems);
+    if(stride == 0) {
+	stride = sizeof(NLdouble);
+    }
+    nlCurrentContext->variable_buffer[k].base_address = addr;
+    nlCurrentContext->variable_buffer[k].stride = stride;
+}
+
+
+/* Eigen solver */
+
+void nlMatrixMode(NLenum matrix) {
+    NLuint n = 0;
+    NLuint i;
+    nl_assert(
+	nlCurrentContext->state == NL_STATE_SYSTEM ||
+	nlCurrentContext->state == NL_STATE_MATRIX_CONSTRUCTED
+    );
+    nlCurrentContext->state = NL_STATE_SYSTEM;
+    nlCurrentContext->matrix_mode = matrix;
+    nlCurrentContext->current_row = 0;
+    nlCurrentContext->ij_coefficient_called = NL_FALSE;
+    switch(matrix) {
+	case NL_STIFFNESS_MATRIX: {
+	    /* Stiffness matrix is already constructed. */
+	} break ;
+	case NL_MASS_MATRIX: {
+	    if(nlCurrentContext->B == NULL) {
+		for(i=0; i<nlCurrentContext->nb_variables; ++i) {
+		    if(!nlCurrentContext->variable_is_locked[i]) {
+			++n;
+		    }
+		}
+		nlCurrentContext->B = (NLMatrix)(NL_NEW(NLSparseMatrix));
+		nlSparseMatrixConstruct(
+		    (NLSparseMatrix*)(nlCurrentContext->B),
+		    n, n, NL_MATRIX_STORE_ROWS
+		);
+	    }
+	} break ;
+	default:
+	    nl_assert_not_reached;
+    }
+}
+
+
+void nlEigenSolverParameterd(
+    NLenum pname, NLdouble val
+) {
+    switch(pname) {
+	case NL_EIGEN_SHIFT: {
+	    nlCurrentContext->eigen_shift =  val;
+	} break;
+	case NL_EIGEN_THRESHOLD: {
+	    nlSolverParameterd(pname, val);
+	} break;
+	default:
+	    nl_assert_not_reached;
+    }
+}
+
+void nlEigenSolverParameteri(
+    NLenum pname, NLint val
+) {
+    switch(pname) {
+	case NL_EIGEN_SOLVER: {
+	    nlCurrentContext->eigen_solver = (NLenum)val;
+	} break;
+	case NL_SYMMETRIC:
+	case NL_NB_VARIABLES:	    
+	case NL_NB_EIGENS:
+	case NL_EIGEN_MAX_ITERATIONS: {
+	    nlSolverParameteri(pname, val);
+	} break;
+	default:
+	    nl_assert_not_reached;
+    }
+}
+
+void nlEigenSolve() {
+    if(nlCurrentContext->eigen_value == NULL) {
+	nlCurrentContext->eigen_value = NL_NEW_ARRAY(
+	    NLdouble,nlCurrentContext->nb_systems
+	);
+    }
+    
+    nlMatrixCompress(&nlCurrentContext->M);
+    if(nlCurrentContext->B != NULL) {
+	nlMatrixCompress(&nlCurrentContext->B);
+    }
+    
+    switch(nlCurrentContext->eigen_solver) {
+	case NL_ARPACK_EXT:
+	    nlEigenSolve_ARPACK();
+	    break;
+	default:
+	    nl_assert_not_reached;
+    }
+}
+
+double nlGetEigenValue(NLuint i) {
+    nl_debug_assert(i < nlCurrentContext->nb_variables);
+    return nlCurrentContext->eigen_value[i];
 }
