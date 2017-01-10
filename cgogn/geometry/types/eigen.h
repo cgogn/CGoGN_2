@@ -26,6 +26,7 @@
 
 #include <cgogn/core/utils/definitions.h>
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace cgogn
 {
