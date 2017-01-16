@@ -61,7 +61,7 @@ inline void compute_centroid(
 	Attribute<VEC, CellType::ORBIT>& cell_centroid
 )
 {
-	map.foreach_cell([&] (CellType c)
+	map.parallel_foreach_cell([&] (CellType c, uint32)
 	{
 		cell_centroid[c] = centroid<VEC>(map, c, attribute);
 	},
