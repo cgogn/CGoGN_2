@@ -33,6 +33,8 @@ namespace modeling
 
 template CGOGN_MODELING_API CMap2::Vertex triangule<CMap2>(CMap2&, CMap2::Face);
 template CGOGN_MODELING_API CMap3::Vertex triangule<CMap3>(CMap3&, CMap3::Face);
+template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
 
