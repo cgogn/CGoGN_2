@@ -38,8 +38,6 @@ set(SOURCE_FILES
 	tiling/square_cylinder.cpp
 	tiling/square_tore.cpp
 #	tiling/square_cube.h
-
-	tiling/cubic_grid.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
