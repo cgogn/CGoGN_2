@@ -77,6 +77,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang" OR ${CMAKE_CXX_COMPILER_ID} ST
 	option(CGOGN_WITH_CLANGSA "Builds the project for performance analysis with clang static analyser" OFF)
 endif()
 
+## Position independent code (-fPIC)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 #### RPATH
 if(UNIX)
