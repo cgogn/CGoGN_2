@@ -118,11 +118,6 @@ if (NOT MSVC)
 	add_flags(CMAKE_C_FLAGS ${CGOGN_SSE_FLAGS})
 	add_definitions(${CGOGN_SSE_DEFINITIONS})
 
-
-	# Always generate position independant code
-	# (to allow linking with DLLs)
-	add_flags(CMAKE_CXX_FLAGS "-fPIC")
-	add_flags(CMAKE_C_FLAGS "-fPIC")
 	add_flags(CMAKE_CXX_FLAGS_RELEASE "-D_FORTIFY_SOURCE=2")
 	add_flags(CMAKE_C_FLAGS_RELEASE "-D_FORTIFY_SOURCE=2")
 

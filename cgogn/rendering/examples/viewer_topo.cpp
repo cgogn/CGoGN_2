@@ -50,7 +50,7 @@
 using Map2 = cgogn::CMap2;
 using Vertex = Map2::Vertex;
 
-using Vec3 = Eigen::Vector3d;
+using Vec3 = Eigen::AlignedVector3<float>;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
