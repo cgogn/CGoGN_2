@@ -32,6 +32,7 @@ namespace cgogn
 
 namespace topology
 {
+
 /**
  * class FeaturesFinder : support the extraction of topological features of manifolds:
  * - extractions of maximal diameter
@@ -56,6 +57,7 @@ class FeaturesFinder
 	using ScalarField = cgogn::topology::ScalarField<Scalar,MAP>;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FeaturesFinder);
 
 	FeaturesFinder(MAP& map,
@@ -63,26 +65,26 @@ public:
 				   const EdgeAttribute<Scalar>& weight) :
 		map_(map),
 		cache_(cache),
-		intern_edge_weight_(false),
 		edge_weight_(weight),
-		distance_field_(map, cache, weight)
+		distance_field_(map, cache, weight),
+		intern_edge_weight_(false)
 	{
-		map.add_attribute(distance_to_A_, "__feature_A__");
-		map.add_attribute(distance_to_B_, "__feature_B__");
-		map.add_attribute(paths_, "__paths__");
+		distance_to_A_ = map.template add_attribute<Scalar, Vertex>("__feature_A__");
+		distance_to_B_ = map.template add_attribute<Scalar, Vertex>("__feature_B__");
+		paths_ = map.template add_attribute<Vertex, Vertex>("__paths__");
 	}
 
 	FeaturesFinder(MAP& map,
 				   const AdjacencyCache<MAP>& cache) :
 		map_(map),
 		cache_(cache),
-		intern_edge_weight_(true),
-		distance_field_(map, cache)
+		distance_field_(map, cache),
+		intern_edge_weight_(true)
 	{
 		edge_weight_ = distance_field_.edge_weight();
-		map.add_attribute(distance_to_A_, "__distance_to_A__");
-		map.add_attribute(distance_to_B_, "__distance_to_B__");
-		map.add_attribute(paths_, "__paths__");
+		distance_to_A_ = map.template add_attribute<Scalar, Vertex>("__distance_to_A__");
+		distance_to_B_ = map.template add_attribute<Scalar, Vertex>("__distance_to_B__");
+		paths_ = map.template add_attribute<Vertex, Vertex>("__paths__");
 	}
 
 	~FeaturesFinder()
@@ -150,7 +152,7 @@ public:
 		// Get the maxima in the scalar field distance_to_A_
 		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
-		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
+		std::vector<Vertex> maxima_A = scalar_field_A.maxima();
 
 		// Copy the maxima in the features set
 				for (Vertex v: maxima_A)
@@ -186,7 +188,7 @@ public:
 		distance_field_.distance_to_boundary(distance_to_A_);
 		ScalarField scalar_field(map_, cache_, distance_to_A_);
 		scalar_field.critical_vertex_analysis();
-		std::vector<Vertex> maxima = scalar_field.get_maxima();
+		std::vector<Vertex> maxima = scalar_field.maxima();
 
 		// Search the most central vertices in these maxima,
 		// i.e. whose distance field has a minimal diameter
@@ -295,12 +297,12 @@ public:
 		// Get the maxima in the scalar field distance_to_A_
 		ScalarField scalar_field_A(map_, cache_, distance_to_A_);
 		scalar_field_A.critical_vertex_analysis();
-		std::vector<Vertex> maxima_A = scalar_field_A.get_maxima();
+		std::vector<Vertex> maxima_A = scalar_field_A.maxima();
 
 		// Get the maxima in the scalar field distance_to_B_
 		ScalarField scalar_field_B(map_, cache_, distance_to_B_);
 		scalar_field_B.critical_vertex_analysis();
-		std::vector<Vertex> maxima_B = scalar_field_B.get_maxima();
+		std::vector<Vertex> maxima_B = scalar_field_B.maxima();
 
 		// Set the criteria to filter out near features
 		Scalar filter_distance = features_proximity * max_distance;
@@ -349,6 +351,7 @@ public:
 	}
 
 private:
+
 	MAP& map_;
 	AdjacencyCache<MAP> cache_;
 	VertexAttribute<Scalar> distance_to_A_;
@@ -357,14 +360,13 @@ private:
 	EdgeAttribute<Scalar> edge_weight_;
 	DistanceField<Scalar, MAP> distance_field_;
 	bool intern_edge_weight_;
-
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3<DefaultMapTraits>>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3<DefaultMapTraits>>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3>;
+extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
 
 } // namespace topology

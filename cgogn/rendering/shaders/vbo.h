@@ -1,4 +1,4 @@
-
+﻿
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -28,6 +28,7 @@
 #include <QOpenGLBuffer>
 
 #include <cgogn/core/cmap/attribute.h>
+#include <cgogn/core/cmap/map_traits.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -96,7 +97,7 @@ public:
 		buffer_.bind();
 		uint32 total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
-			buffer_.allocate(total * sizeof(float32));
+			buffer_.allocate(total * uint32(sizeof(float32)));
 		nb_vectors_ = nb_vectors;
 		if (vector_dimension != vector_dimension_)
 		{
@@ -147,6 +148,12 @@ public:
 	{
 		return nb_vectors_;
 	}
+
+	GLuint id() const
+	{
+		return buffer_.bufferId();
+	}
+
 };
 
 /**
@@ -157,20 +164,45 @@ public:
 template <typename VEC>
 void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 {
-	static_assert(std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<VEC>::Scalar, double>::value, "only float or double allowed for vbo");
+	using Scalar = typename geometry::vector_traits<VEC>::Scalar;
+	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
 	uint32 vec_sz = uint32(vector.size());
 	vbo->allocate(vec_sz, vec_dim);
 	const uint32 vbo_bytes =  vec_dim * vec_sz * uint32(sizeof(float32));
-	if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value)
+
+	// handle the case where we want to use SIMD with Eigen::AlignedVector3
+	if (std::is_same<VEC, Eigen::AlignedVector3<Scalar>>::value)
+	{
+		// copy (after conversion to float)
+		float32* float_buffer = new float32[vector.size() * vec_dim];
+		// transform double into float
+		float32* fit = float_buffer;
+		const Scalar* src = reinterpret_cast<const Scalar*>(vector.data());
+		for (uint32 i = 0, size = vector.size(); i < size; ++i)
+		{
+			*fit++ = *src++;
+			*fit++ = *src++;
+			*fit++ = *src++;
+			++src;
+		}
+		vbo->bind();
+		vbo->copy_data(0, vbo_bytes, float_buffer);
+		vbo->release();
+		delete[] float_buffer;
+		return;
+	}
+
+
+	if (std::is_same<Scalar, float32>::value)
 	{
 		// copy
 		vbo->bind();
 		vbo->copy_data(0, vbo_bytes, vector.data());
 		vbo->release();
 	}
-	else if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float64>::value)
+	else if (std::is_same<Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[vector.size() * vec_dim];
@@ -194,7 +226,8 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO* vbo)
 {
-	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
+	using Scalar = typename geometry::vector_traits<typename ATTR::value_type>::Scalar;
+	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.data();
 
@@ -203,15 +236,40 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 
 	uint32 byte_chunk_size;
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
-	const uint32 nb_chunks = chunk_addr.size();
+	const uint32 nb_chunks = uint32(chunk_addr.size());
 
 	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
-	const uint32 vbo_blk_bytes =  ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
+	const uint32 vbo_blk_bytes = ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
-	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
+	// handle the case where we want to use SIMD with Eigen::AlignedVector3
+	if (std::is_same<typename ATTR::value_type, Eigen::AlignedVector3<Scalar>>::value)
+	{
+		// copy (after conversion to float)
+		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];
+		for (uint32 i = 0; i < nb_chunks; ++i)
+		{
+			// transform double into float
+			float32* fit = float_buffer;
+			const Scalar* src = reinterpret_cast<const Scalar*>(chunk_addr[i]);
+			for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
+			{
+				*fit++ = *src++;
+				*fit++ = *src++;
+				*fit++ = *src++;
+				++src;
+			}
+			vbo->bind();
+			vbo->copy_data(i * vbo_blk_bytes, vbo_blk_bytes, float_buffer);
+			vbo->release();
+		}
+		delete[] float_buffer;
+		return;
+	}
+
+	if (std::is_same<Scalar, float32>::value)
 	{
 		// copy
 		vbo->bind();
@@ -219,7 +277,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 			vbo->copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
 		vbo->release();
 	}
-	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
+	else if (std::is_same<Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];
@@ -265,7 +323,7 @@ void update_vbo(const ATTR& attr, VBO* vbo, const FUNC& convert)
 	const typename ATTR::TChunkArray* ca = attr.data();
 	uint32 byte_chunk_size;
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
-	const uint32 nb_chunks = chunk_addr.size();
+	const uint32 nb_chunks = uint32(chunk_addr.size());
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value || is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>");
@@ -305,16 +363,16 @@ void update_vbo(const ATTR& attr, const ATTR2& attr2, VBO* vbo, const FUNC& conv
 	// check that convert has 2 param
 	static_assert(func_arity<FUNC>::value == 2, "convert lambda function must have two arguments");
 
-	//check that attr & attr2 are on same orbit
+	// check that attr & attr2 are on same orbit
 	static_assert(ATTR::orbit_value == ATTR2::orbit_value, "attributes must be on same orbit");
 
 	// check that convert param 1 is compatible with attr
 	using InputConvert = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type >::type;
-	static_assert(std::is_same<InputConvert,array_data_type<ATTR> >::value, "wrong parameter 1");
+	static_assert(std::is_same<InputConvert, array_data_type<ATTR>>::value, "wrong parameter 1");
 
 	// check that convert param 2 is compatible with attr2
 	using InputConvert2 = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,1>>::type >::type;
-	static_assert(std::is_same<InputConvert,array_data_type<ATTR2> >::value, "wrong parameter 2");
+	static_assert(std::is_same<InputConvert, array_data_type<ATTR2>>::value, "wrong parameter 2");
 
 	// set vbo name based on first attribute name
 	vbo->set_name(attr.name());
@@ -370,12 +428,11 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	static_assert(func_arity<FUNC>::value == 1, "convert lambda function must have only one arg");
 
 	// check that convert param  is compatible with attr
-	using InputConvert = typename std::remove_cv< typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type >::type;
+	using InputConvert = typename std::remove_cv<typename std::remove_reference<func_ith_parameter_type<FUNC,0>>::type>::type;
 	static_assert(std::is_same<InputConvert,array_data_type<ATTR> >::value, "wrong parameter 1");
 
 	// check that out of convert is float or std::array<float,2/3/4>
 	static_assert(is_func_return_same<FUNC,float32>::value || is_func_return_same<FUNC,Vec2f>::value || is_func_return_same<FUNC,Vec3f>::value ||is_func_return_same<FUNC,Vec4f>::value, "convert output must be float or std::array<float,2/3/4>" );
-
 
 	// set vec dimension
 	const uint32 vec_dim = nb_components(func_return_type<FUNC>());
@@ -390,7 +447,7 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	using OutputConvert = func_return_type<FUNC>;
 	OutputConvert* dst = reinterpret_cast<OutputConvert*>(vbo->lock_pointer());
 
-	for (uint32 i: indices)
+	for (uint32 i : indices)
 		 *dst++ = convert(attr[i]);
 
 	vbo->release_pointer();

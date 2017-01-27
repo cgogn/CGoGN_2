@@ -45,9 +45,9 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using namespace cgogn::numerics;
-//using Map3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
-//using Map3 = cgogn::CMap3Hexa<cgogn::DefaultMapTraits>;
-using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
+//using Map3 = cgogn::CMap3Tetra;
+//using Map3 = cgogn::CMap3Hexa;
+using Map3 = cgogn::CMap3;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
@@ -58,6 +58,7 @@ using VertexAttribute = Map3::VertexAttribute<T>;
 class Viewer : public QOGLViewer
 {
 public:
+
 	using TopoDrawer = cgogn::rendering::TopoDrawer;
 	using VolumeDrawer = cgogn::rendering::VolumeDrawer;
 	using DisplayListDrawer = cgogn::rendering::DisplayListDrawer;
@@ -78,7 +79,10 @@ public:
 	virtual void closeEvent(QCloseEvent *e);
 
 private:
+
 	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
+
+	void plane_clip_from_frame();
 
 	Map3 map_;
 	VertexAttribute<Vec3> vertex_position_;
@@ -104,24 +108,26 @@ private:
 
 	float32 expl_;
 
+	QVector4D plane_clipping1_;
+	float32 plane_thickness_;
+	bool thick_plane_mode_;
 };
-
 
 //
 // IMPLEMENTATION
 //
+
 void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
 {
 	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 0.0));
 	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
 }
 
-
 void Viewer::import(const std::string& volumeMesh)
 {
 	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Map3::Vertex>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
@@ -172,7 +178,9 @@ Viewer::Viewer() :
 	vol_rendering_(true),
 	edge_rendering_(true),
 	topo_drawering_(true),
-	expl_(0.8f)
+	expl_(0.8f),
+	plane_clipping1_(0,0,0,0),
+	thick_plane_mode_(false)
 {}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
@@ -206,6 +214,32 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_X:
 			frame_manip_->rotate(cgogn::rendering::FrameManipulator::Xr, 0.1507f);
+			break;
+		case Qt::Key_P:
+			if (ev->modifiers() & Qt::ControlModifier)
+			{
+				thick_plane_mode_ = !thick_plane_mode_;
+			}
+			else if (thick_plane_mode_)
+			{
+				if (ev->modifiers() & Qt::ShiftModifier)
+					plane_thickness_ += bb_.diag_size()/200;
+				else
+				{
+					if (plane_thickness_>= bb_.diag_size()/200)
+						plane_thickness_ -= bb_.diag_size()/200;
+				}
+			}
+			if (thick_plane_mode_)
+			{
+				volume_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+				topo_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+			}
+			else
+			{
+				volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
+				topo_drawer_rend_->set_clipping_plane(plane_clipping1_);
+			}
 			break;
 		default:
 			break;
@@ -265,13 +299,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 	if ((event->modifiers() & Qt::ShiftModifier) && (event->modifiers() & Qt::ControlModifier))
 	{
-		Vec3 position,axis_z;
-		frame_manip_->get_position(position);
-		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
-		float32 d = -(position.dot(axis_z));
-		QVector4D plane(axis_z[0],axis_z[1],axis_z[2],d);
-
-		cgogn::Dart da = topo_drawer_->pick(A,B,plane);
+		cgogn::Dart da;
+		if (thick_plane_mode_)
+			da = topo_drawer_->pick(A,B,plane_clipping1_, plane_thickness_);
+		else
+			da = topo_drawer_->pick(A,B,plane_clipping1_);
 		if (!da.is_nil())
 		{
 			topo_drawer_->update_color(da, Vec3(1.0,0.0,0.0));
@@ -298,22 +330,23 @@ void Viewer::mouseMoveEvent(QMouseEvent* event)
 		bool local_manip = (event->buttons() & Qt::RightButton);
 		frame_manip_->drag(local_manip, event->x(), event->y());
 
-		// get/compute Z plane
-		Vec3 position;
-		Vec3 axis_z;
-		frame_manip_->get_position(position);
-		frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
-		float32 d = -(position.dot(axis_z));
-		// and set clipping
-		volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
-		topo_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
-	}
+		plane_clip_from_frame();
 
+		if (thick_plane_mode_)
+		{
+			volume_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+			topo_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+		}
+		else
+		{
+			volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
+			topo_drawer_rend_->set_clipping_plane(plane_clipping1_);
+		}
+	}
 
 	QOGLViewer::mouseMoveEvent(event);
 	update();
 }
-
 
 void Viewer::draw()
 {
@@ -369,14 +402,30 @@ void Viewer::init()
 	frame_manip_->set_position(bb_.max());
 	frame_manip_->z_plane_param(QColor(200,200,200),-1.5f,-1.5f, 2.0f);
 
+	plane_thickness_ = bb_.diag_size()/20;
+
+	plane_clip_from_frame();
+
+	if (thick_plane_mode_)
+	{
+		volume_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+		topo_drawer_rend_->set_thick_clipping_plane(plane_clipping1_,plane_thickness_);
+	}
+	else
+	{
+		volume_drawer_rend_->set_clipping_plane(plane_clipping1_);
+		topo_drawer_rend_->set_clipping_plane(plane_clipping1_);
+	}
+}
+
+void Viewer::plane_clip_from_frame()
+{
 	Vec3 position;
 	Vec3 axis_z;
 	frame_manip_->get_position(position);
 	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
 	float32 d = -(position.dot(axis_z));
-	volume_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
-	topo_drawer_rend_->set_clipping_plane(QVector4D(axis_z[0],axis_z[1],axis_z[2],d));
-
+	plane_clipping1_ = QVector4D(axis_z[0],axis_z[1],axis_z[2],d);
 }
 
 int main(int argc, char** argv)

@@ -28,8 +28,9 @@
 #include <set>
 
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
+
 #include <cgogn/core/cmap/cmap3_builder.h>
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/geometry/functions/orientation.h>
 
@@ -111,25 +112,22 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
+template <typename VEC3>
 class VolumeImport
 {
 public:
 
-	using Self = VolumeImport<MAP_TRAITS, VEC3>;
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = VolumeImport<VEC3>;
 
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
 	template <typename T, Orbit ORBIT>
-	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
+	using Attribute = Attribute<T, ORBIT>;
 
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
-
-public:
+	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline VolumeImport():
 		volumes_types_()
@@ -164,11 +162,6 @@ public:
 		return vertex_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	inline ChunkArray<VEC3>* add_position_attribute()
-	{
-		return (position_attribute_ =  vertex_attributes_.template add_chunk_array<VEC3>("position"));
-	}
-
 	inline void add_volume_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		in_data.to_chunk_array(in_data.add_attribute(volume_attributes_, att_name));
@@ -182,7 +175,10 @@ public:
 
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		return position_attribute_;
+		if (position_attribute_ == nullptr)
+			return (position_attribute_ =  add_vertex_attribute<VEC3>("position"));
+		else
+			return position_attribute_;
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -201,6 +197,7 @@ public:
 		static_assert(Map::DIMENSION == 3, "must use map of dim 3 in volume import");
 
 		using Vertex = typename Map::Vertex;
+		using Vertex2 = typename Map::Vertex2;
 		using Volume = typename Map::Volume;
 		using Face = typename Map::Face;
 		using Face2 = typename Map::Face2;
@@ -215,10 +212,18 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+		if (this->volume_attributes_.nb_chunk_arrays() > 0)
+		{
+			mbuild.template create_embedding<Volume::ORBIT>();
+			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
+		}
+
+		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex>("darts_per_vertex");
 
 		uint32 index = 0u;
 		typename Map::DartMarker dart_marker(map);
+		Dart d;
+		uint32 vol_emb = 0u;
 
 		//for each volume of table
 		for (uint32 i = 0u, end = this->nb_volumes(); i < end; ++i)
@@ -228,7 +233,7 @@ public:
 
 			if (vol_type == VolumeType::Tetra) //tetrahedral case
 			{
-				const Dart d = mbuild.add_pyramid_topo(3u);
+				d = mbuild.add_pyramid_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -240,10 +245,10 @@ public:
 					map.phi_1(map.phi2(map.phi_1(d)))
 				};
 
-				for (const Dart dv : vertices_of_tetra)
+				for (const Dart& dv : vertices_of_tetra)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -256,7 +261,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Pyramid) //pyramidal case
 			{
-				Dart d = mbuild.add_pyramid_topo(4u);
+				d = mbuild.add_pyramid_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -272,7 +277,7 @@ public:
 				for (Dart dv : vertices_of_pyramid)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -285,7 +290,7 @@ public:
 			}
 			else if (vol_type == VolumeType::TriangularPrism) //prism case
 			{
-				Dart d = mbuild.add_prism_topo(3u);
+				d = mbuild.add_prism_topo_fp(3u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -302,7 +307,7 @@ public:
 				for (Dart dv : vertices_of_prism)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -315,7 +320,7 @@ public:
 			}
 			else if (vol_type == VolumeType::Hexa) //hexahedral case
 			{
-				Dart d = mbuild.add_prism_topo(4u);
+				d = mbuild.add_prism_topo_fp(4u);
 
 				// check if add ok (special maps)
 				if (d.is_nil()) break;
@@ -334,7 +339,7 @@ public:
 				for (Dart dv : vertices_of_hexa)
 				{
 					const uint32 emb = this->volumes_vertex_indices_[index++];
-					mbuild.init_parent_vertex_embedding(dv, emb);
+					mbuild.template set_orbit_embedding<Vertex>(Vertex2(dv), emb);
 
 					Dart dd = dv;
 					do
@@ -353,6 +358,8 @@ public:
 					// The second part of the code generates connectors automatically. We don't have to do anything here.
 				}
 			}
+			if (map.is_embedded(Volume::ORBIT))
+				mbuild. template set_orbit_embedding<Volume>(Volume(d), vol_emb++);
 		}
 
 		//reconstruct neighbourhood
@@ -389,7 +396,7 @@ public:
 
 					if (degD == degGD) // normal case : the two opposite faces have the same degree
 					{
-						mbuild.sew_volumes(d, good_dart);
+						mbuild.sew_volumes_fp(d, good_dart);
 						dart_marker.unmark_orbit(Face(d));
 					}
 					else
@@ -411,27 +418,29 @@ public:
 							}
 
 							// we add a stamp volume between the faces
-							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
+								if (map.is_embedded(Volume::ORBIT))
+									mbuild. new_orbit_embedding(Volume(d_quad));
 								Dart q1_it = d;
 								Dart q2_it = map.phi_1(d_quad);
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
+									mbuild.template set_orbit_embedding<Vertex>(Vertex2(q2_it), map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != d);
 							}
 
-							mbuild.sew_volumes(d, map.phi1(map.phi1(d_quad)));
+							mbuild.sew_volumes_fp(d, map.phi1(map.phi1(d_quad)));
 							dart_marker.unmark_orbit(Face(d));
 
-							mbuild.sew_volumes(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
+							mbuild.sew_volumes_fp(good_dart, map.phi2(map.phi1(map.phi1(d_quad))));
 							dart_marker.unmark_orbit(Face(good_dart));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(another_good_dart, map.phi2(d_quad));
+								mbuild.sew_volumes_fp(another_good_dart, map.phi2(d_quad));
 								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else
@@ -455,27 +464,29 @@ public:
 								}
 							}
 
-							const Dart d_quad = mbuild.add_stamp_volume_topo();
+							const Dart d_quad = mbuild.add_stamp_volume_topo_fp();
 							{
+								if (map.is_embedded(Volume::ORBIT))
+									mbuild. new_orbit_embedding(Volume(d_quad));
 								Dart q1_it = good_dart;
 								Dart q2_it = d_quad;
 								do
 								{
-									mbuild.init_parent_vertex_embedding(q2_it, map.embedding(Vertex(q1_it)));
+									mbuild.template set_orbit_embedding<Vertex>(Vertex2(q2_it), map.embedding(Vertex(q1_it)));
 									q1_it = map.phi1(q1_it);
 									q2_it = map.phi_1(q2_it);
 								} while (q1_it != good_dart);
 							}
 
-							mbuild.sew_volumes(d_quad, map.phi_1(good_dart));
+							mbuild.sew_volumes_fp(d_quad, map.phi_1(good_dart));
 							dart_marker.unmark_orbit(Face(good_dart));
 
-							mbuild.sew_volumes(d, map.phi2(map.phi_1(d_quad)));
+							mbuild.sew_volumes_fp(d, map.phi2(map.phi_1(d_quad)));
 							dart_marker.unmark_orbit(Face(d));
 
 							if (!another_good_dart.is_nil())
 							{
-								mbuild.sew_volumes(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
+								mbuild.sew_volumes_fp(another_good_dart, map.phi1(map.phi2(map.phi1(d_quad))));
 								dart_marker.unmark_orbit(Face(another_good_dart));
 							}
 							else
@@ -501,12 +512,6 @@ public:
 		}
 
 		map.template enforce_unique_orbit_embedding<Vertex::ORBIT>();
-
-		if (this->volume_attributes_.nb_chunk_arrays() > 0)
-		{
-			mbuild.template create_embedding<Volume::ORBIT>();
-			mbuild.template swap_chunk_array_container<Volume::ORBIT>(this->volume_attributes_);
-		}
 
 		map.remove_attribute(darts_per_vertex);
 
@@ -561,6 +566,7 @@ protected:
 	}
 
 public:
+
 	void add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
 	{
 		if (check_orientation)
@@ -622,12 +628,14 @@ public:
 	}
 
 private:
+
 	inline uint32 nb_volumes() const
 	{
 		return uint32(volumes_types_.size());
 	}
 
 private:
+
 	std::vector<VolumeType>	volumes_types_;
 	std::vector<uint32>		volumes_vertex_indices_;
 
@@ -636,11 +644,11 @@ private:
 	ChunkArray<VEC3>*	position_attribute_;
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VolumeFileImport : public VolumeImport<MAP_TRAITS, VEC3>, public FileImport
+template <typename VEC3>
+class VolumeFileImport : public VolumeImport<VEC3>, public FileImport
 {
-	using Self = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Inherit1 = VolumeImport<MAP_TRAITS, VEC3>;
+	using Self = VolumeFileImport<VEC3>;
+	using Inherit1 = VolumeImport<VEC3>;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeFileImport);
@@ -654,10 +662,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
-extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeFileImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VolumeFileImport<Eigen::Vector3f>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
 
 } // namespace io

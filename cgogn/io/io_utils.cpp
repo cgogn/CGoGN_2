@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -46,8 +46,9 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 	res.reserve(64);
 
 	// zlib init
-	int32 ret;
 	z_stream zstream;
+	int32 ret;
+	unused_parameters(ret);// release warning
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -57,14 +58,14 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 		ret = deflateInit(&zstream, Z_BEST_COMPRESSION);
 		cgogn_assert(ret == Z_OK);
 
-		buffer_size = deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size)));
+		buffer_size = static_cast<std::size_t>(deflateBound(&zstream, static_cast<uLong>(std::min(chunk_size, size))));
 
-		zstream.avail_in = static_cast<uLong>(std::min(chunk_size, size));
+		zstream.avail_in = static_cast<uInt>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
 		zstream.next_in = input;
 		input += zstream.avail_in;
 		res.emplace_back(buffer_size);
-		zstream.avail_out = static_cast<uLong>(res.back().size());
+		zstream.avail_out = static_cast<uInt>(res.back().size());
 		zstream.next_out = &(res.back()[0]);
 		cgogn_assert(zstream.next_out  != nullptr);
 		ret = deflate(&zstream, Z_FINISH);
@@ -125,8 +126,9 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	std::vector<unsigned char> res(uncompressed_block_size*(nb_blocks-1u) + last_block_size);
 
 	// zlib init
-	int ret;
 	z_stream zstream;
+	int32 ret;
+	unused_parameters(ret);// release warning
 	zstream.zalloc = Z_NULL;
 	zstream.zfree = Z_NULL;
 	zstream.opaque = Z_NULL;
@@ -146,6 +148,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 		in_data_it += compressed_size[i];
 		out_data_it += uint32(uncompressed_block_size);
 	}
+
 	return res;
 }
 
@@ -165,12 +168,12 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 		char_array_3[i++] = *(input_buffer++);
 		if (i == 3) {
 			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[1] = char(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+			char_array_4[2] = char(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
 			char_array_4[3] = char_array_3[2] & 0x3f;
 
 			for(i = 0; i <4 ; ++i)
-				res.push_back(encode_lookup[char_array_4[i]]);
+				res.push_back(encode_lookup[uint32(char_array_4[i])]);
 			i = 0;
 		}
 	}
@@ -181,12 +184,12 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 			char_array_3[j] = '\0';
 
 		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[1] = char(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+		char_array_4[2] = char(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
 		char_array_4[3] = char_array_3[2] & 0x3f;
 
 		for (j = 0; (j < i + 1); j++)
-			res.push_back(encode_lookup[char_array_4[j]]);
+			res.push_back(encode_lookup[uint32(char_array_4[j])]);
 
 		while((i++ < 3))
 			res.push_back('=');
@@ -378,6 +381,67 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	if (!output->good())
 		cgogn_log_warning("create_file")  << "Error while opening the file \"" << filename << "\"";
 	return output;
+}
+
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
+{
+	str.clear();
+	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
+	std::streambuf* sb = is.rdbuf();
+
+	while (true)
+	{
+		const auto c = sb->sbumpc();
+		switch (c)
+		{
+		case '\n':
+			return is;
+		case '\r':
+			if (sb->sgetc() == '\n')
+				sb->sbumpc();
+			return is;
+		case EOF: // Also handle the case when the last line has no line ending
+			if (str.empty())
+				is.setstate(std::ios::eofbit);
+			return is;
+		default:
+			str.push_back(static_cast<char>(c));
+		}
+	}
+}
+
+ExportOptions::ExportOptions() :
+	filename_(),
+	position_attribute_(),
+	attributes_to_export_(),
+	binary_(false),
+	compress_(false),
+	overwrite_(true)
+{}
+
+ExportOptions::ExportOptions(const ExportOptions& eo) :
+	filename_(eo.filename_),
+	position_attribute_(eo.position_attribute_),
+	attributes_to_export_(eo.attributes_to_export_),
+	cell_filter_(eo.cell_filter_),
+	binary_(eo.binary_),
+	compress_(eo.compress_),
+	overwrite_(eo.overwrite_)
+{}
+
+ExportOptions::ExportOptions(ExportOptions&& eo) :
+	filename_(std::move(eo.filename_)),
+	position_attribute_(std::move(eo.position_attribute_)),
+	attributes_to_export_(std::move(eo.attributes_to_export_)),
+	cell_filter_(std::move(eo.cell_filter_)),
+	binary_(eo.binary_),
+	compress_(eo.compress_),
+	overwrite_(eo.overwrite_)
+{}
+
+ExportOptions ExportOptions::create()
+{
+	return ExportOptions();
 }
 
 } // namespace io

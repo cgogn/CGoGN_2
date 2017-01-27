@@ -44,10 +44,10 @@ enum Orbit: uint32
 	DART = 0,
 	PHI1,
 	PHI2,
+	PHI21,
 	PHI1_PHI2,
 	PHI1_PHI3,
 	PHI2_PHI3,
-	PHI21,
 	PHI21_PHI31,
 	PHI1_PHI2_PHI3
 };
@@ -61,10 +61,10 @@ inline std::string orbit_name(Orbit orbit)
 		case Orbit::DART: return "cgogn::Orbit::DART"; break;
 		case Orbit::PHI1: return "cgogn::Orbit::PHI1"; break;
 		case Orbit::PHI2: return "cgogn::Orbit::PHI2"; break;
+		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI1_PHI2: return "cgogn::Orbit::PHI1_PHI2"; break;
 		case Orbit::PHI1_PHI3: return "cgogn::Orbit::PHI1_PHI3"; break;
 		case Orbit::PHI2_PHI3: return "cgogn::Orbit::PHI2_PHI3"; break;
-		case Orbit::PHI21: return "cgogn::Orbit::PHI21"; break;
 		case Orbit::PHI21_PHI31: return "cgogn::Orbit::PHI21_PHI31"; break;
 		case Orbit::PHI1_PHI2_PHI3: return "cgogn::Orbit::PHI1_PHI2_PHI3"; break;
 //		default: cgogn_assert_not_reached("This orbit does not exist"); return "UNKNOWN"; break;
@@ -73,6 +73,19 @@ inline std::string orbit_name(Orbit orbit)
 #ifdef NDEBUG 
 	return "UNKNOWN";  // little trick to  avoid warning on VS
 #endif
+}
+
+static const uint32 ALL_CELLS_MASK = 0xffffffff;
+
+template <typename CellType>
+inline uint32 orbit_mask()
+{
+	return 1 << CellType::ORBIT;
+}
+
+inline uint32 orbit_mask(Orbit orbit)
+{
+	return 1 << orbit;
 }
 
 /**
@@ -113,15 +126,12 @@ public:
 	inline Cell(const Self& c) : dart(c.dart)
 	{}
 
-	//TODO
-	// Cell(Cell<ORBIT>&& ) = delete;
-
 	/**
 	 * \brief Tests the validity of the cell.
 	 * \retval true if the cell is valid
 	 * \retval false otherwise
 	 */
-	inline bool is_valid() const { return !dart.is_nil(); } const
+	inline bool is_valid() const { return !dart.is_nil(); }
 
 	/**
 	 * \brief Assigns to the left hand side cell the value
@@ -150,6 +160,11 @@ public:
 	* \return a string representing the name of the class
 	*/
 	static std::string cgogn_name_of_type() { return std::string("cgogn::Cell<") + orbit_name(ORBIT) +std::string(">"); }
+
+	inline void cgogn_binary_serialize(std::ostream& o, bool little_endian)
+	{
+		serialization::serialize_binary(o, dart.index, little_endian);
+	}
 };
 
 } // namespace cgogn

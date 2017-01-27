@@ -4,6 +4,8 @@ project(lm6
 	LANGUAGES C
 	)
 
+cgogn_reset_warning_level()
+
 set(HEADER_FILES
 	libmesh6.h
 	)
@@ -11,6 +13,9 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	libmesh6.c
 	)
+
+
+
 
 add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -25,4 +30,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 install(FILES "libmesh6.h" DESTINATION "include/thirdparty/lm6")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")

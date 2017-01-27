@@ -36,7 +36,7 @@ namespace modeling
 /*! \brief The class of regular tore square tiling
  */
 template <typename MAP>
-class SquareTore : protected Tiling<MAP>
+class SquareTore : public Tiling<MAP>
 {
 	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
@@ -159,6 +159,10 @@ public:
 	}
 	//@}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_TORE_CPP_))
+extern template class CGOGN_MODELING_API SquareTore<CMap2>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_TORE_CPP_))
 
 } //namespace modeling
 

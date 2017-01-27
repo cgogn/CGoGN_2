@@ -38,7 +38,7 @@
 using namespace cgogn::numerics;
 
 
-using Map3 = cgogn::CMap3<cgogn::DefaultMapTraits>;
+using Map3 = cgogn::CMap3;
 Map3 bench_map;
 
 using Vertex = Map3::Vertex;
@@ -58,7 +58,7 @@ using VolumeAttribute = Map3::VolumeAttribute<T>;
 
 
 
-using TMap3 = cgogn::CMap3Tetra<cgogn::DefaultMapTraits>;
+using TMap3 = cgogn::CMap3Tetra;
 TMap3 bench_tetra_map;
 
 using TVertex = TMap3::Vertex;
@@ -84,14 +84,12 @@ using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 
 
-
-
 static void BENCH_mark_cc_poly(benchmark::State& state)
 {
 	while(state.KeepRunning())
 	{
 		cgogn::Dart d;
-		bench_map.foreach_cell_until([&] (Volume v)
+		bench_map.foreach_cell([&] (Volume v) -> bool
 		{
 			d = v.dart;
 			return false;
@@ -102,14 +100,12 @@ static void BENCH_mark_cc_poly(benchmark::State& state)
 	}
 }
 
-
-
 static void BENCH_mark_cc_tetra(benchmark::State& state)
 {
 	while(state.KeepRunning())
 	{
 		cgogn::Dart d;
-		bench_tetra_map.foreach_cell_until([&] (Volume v)
+		bench_tetra_map.foreach_cell([&] (Volume v) -> bool
 		{
 			d = v.dart;
 			return false;
@@ -119,8 +115,6 @@ static void BENCH_mark_cc_tetra(benchmark::State& state)
 		ccm.mark_orbit(TMap3::ConnectedComponent(d));
 	}
 }
-
-
 
 static void BENCH_vol_centroid_poly(benchmark::State& state)
 {
@@ -139,8 +133,6 @@ static void BENCH_vol_centroid_poly(benchmark::State& state)
 		});
 	}
 }
-
-
 
 static void BENCH_vol_centroid_tetra(benchmark::State& state)
 {
@@ -178,8 +170,6 @@ static void BENCH_vol_centroid_poly_pure_topo(benchmark::State& state)
 	}
 }
 
-
-
 static void BENCH_vol_centroid_tetra_pure_topo(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -197,8 +187,6 @@ static void BENCH_vol_centroid_tetra_pure_topo(benchmark::State& state)
 		});
 	}
 }
-
-
 
 static void BENCH_vol_centroid_shrink_poly(benchmark::State& state)
 {
@@ -227,8 +215,6 @@ static void BENCH_vol_centroid_shrink_poly(benchmark::State& state)
 	}
 }
 
-
-
 static void BENCH_vol_centroid_shrink_tetra(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -254,9 +240,6 @@ static void BENCH_vol_centroid_shrink_tetra(benchmark::State& state)
 	}
 }
 
-
-
-
 static void BENCH_vertices_filter_poly(benchmark::State& state)
 {
 	while(state.KeepRunning())
@@ -272,7 +255,6 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 		cgogn::geometry::filter_average<Vec3>(bench_map, vertex_position, vertex_position2);
 	}
 }
-
 
 static void BENCH_vertices_filter_tetra(benchmark::State& state)
 {
@@ -290,7 +272,6 @@ static void BENCH_vertices_filter_tetra(benchmark::State& state)
 	}
 }
 
-
 BENCHMARK(BENCH_mark_cc_poly);
 BENCHMARK(BENCH_mark_cc_tetra);
 
@@ -305,7 +286,6 @@ BENCHMARK(BENCH_vol_centroid_shrink_tetra);
 
 BENCHMARK(BENCH_vertices_filter_poly)->UseRealTime();
 BENCHMARK(BENCH_vertices_filter_tetra)->UseRealTime();
-
 
 int main(int argc, char** argv)
 {
@@ -330,7 +310,6 @@ int main(int argc, char** argv)
 	bench_tetra_map.add_attribute<Vec3, TVOLUME>("centroids");
 	bench_tetra_map.add_attribute<Vec3, TVERTEX>("normal");
 	bench_tetra_map.add_attribute<Vec3, TVERTEX>("position2");
-
 
 	::benchmark::RunSpecifiedBenchmarks();
 	return 0;

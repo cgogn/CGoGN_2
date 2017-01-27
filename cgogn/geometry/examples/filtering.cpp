@@ -49,7 +49,7 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
 using Vertex = Map2::Vertex;
 using Edge = Map2::Edge;
 
@@ -66,9 +66,14 @@ public:
 
 	CustomFilter(const VertexAttribute<Vec3>& p) : position_(p) {}
 
-	bool filter(Vertex v) const
+	inline bool filter(Vertex v) const
 	{
 		return position_[v][0] > 0;
+	}
+
+	inline cgogn::uint32 filtered_cells() const
+	{
+		return cgogn::orbit_mask<Vertex>();
 	}
 
 protected:
@@ -142,17 +147,17 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Vertex>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	map_.add_attribute(vertex_position2_, "position2");
+	vertex_position2_ = map_.template add_attribute<Vec3, Vertex>("position2");
 	map_.copy_attribute(vertex_position2_, vertex_position_);
 
-	map_.add_attribute(vertex_normal_, "normal");
+	vertex_normal_ = map_.template add_attribute<Vec3, Vertex>("normal");
 	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 
 	cell_cache_.build<Vertex>();
@@ -189,12 +194,12 @@ Viewer::Viewer() :
 	cell_cache_(map_),
 	bb_(),
 	render_(nullptr),
-	drawer_rend_(nullptr),
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
 	vbo_color_(nullptr),
 	vbo_sphere_sz_(nullptr),
 	drawer_(nullptr),
+	drawer_rend_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false),
 	vertices_rendering_(false),

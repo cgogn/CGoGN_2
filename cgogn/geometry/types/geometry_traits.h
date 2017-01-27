@@ -56,6 +56,14 @@ struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 	using Scalar = Scalar_;
 };
 
+// specialization 3 : Eigen::AlignedVector3
+template <typename Scalar_>
+struct vector_traits<Eigen::AlignedVector3<Scalar_>>
+{
+	static const std::size_t SIZE = 3;
+	using Scalar = Scalar_;
+};
+
 // specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
 // specialization 3 : float
 template <>
@@ -95,6 +103,11 @@ struct nb_components_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 	const static uint32 value = Rows;
 };
 
+template <typename Scalar_>
+struct nb_components_traits<Eigen::AlignedVector3<Scalar_>>
+{
+	const static uint32 value = 3;
+};
 
 template <typename T, typename std::enable_if<(nb_components_traits<T>::value > 1)>::type* = nullptr>
 void set_zero(T& t) { t.setZero(); }

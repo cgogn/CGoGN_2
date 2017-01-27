@@ -31,9 +31,8 @@
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
-#include <cgogn/core/container/chunk_array_container.h>
-#include <cgogn/core/cmap/map_base.h>
 
+#include <cgogn/core/cmap/map_base_data.h>
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
@@ -46,23 +45,22 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
+template <typename VEC3>
 class SurfaceImport
 {
 public:
 
-	using Self = SurfaceImport<MAP_TRAITS, VEC3>;
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = SurfaceImport<VEC3>;
 
+	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
+	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
 	template <typename T>
-	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
-	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, uint32>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = Attribute<MAP_TRAITS, T, ORBIT>;
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
-	using ChunkArrayGen = cgogn::ChunkArrayGen<CHUNK_SIZE>;
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
+	template <typename T, Orbit ORBIT>
+	using Attribute = Attribute<T, ORBIT>;
+
+	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline SurfaceImport():
 		faces_nb_edges_()
@@ -74,6 +72,8 @@ public:
 
 	virtual ~SurfaceImport()
 	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceImport);
 
 	virtual void clear()
 	{
@@ -89,8 +89,7 @@ public:
 	{
 		static_assert(Map::DIMENSION == 2, "must use map of dim 2 in surface import");
 
-		using Vertex = typename Map::Vertex;
-		using Edge = typename Map::Edge;
+		using Vertex = typename Map::Vertex;		
 		using Face = typename Map::Face;
 		using MapBuilder = typename Map::Builder;
 
@@ -103,11 +102,18 @@ public:
 		mbuild.template create_embedding<Vertex::ORBIT>();
 		mbuild.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
 
-		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex::ORBIT>("darts_per_vertex");
+		if (this->face_attributes_.nb_chunk_arrays() > 0)
+		{
+			mbuild.template create_embedding<Face::ORBIT>();
+			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
+		}
+
+		auto darts_per_vertex = map.template add_attribute<std::vector<Dart>, Vertex>("darts_per_vertex");
 
 		uint32 faces_vertex_index = 0;
 		std::vector<uint32> vertices_buffer;
 		vertices_buffer.reserve(16);
+		uint32 face_emb = 0u;
 
 		for (uint32 i = 0, end = nb_faces(); i < end; ++i)
 		{
@@ -131,7 +137,7 @@ public:
 			nbe = static_cast<unsigned short>(vertices_buffer.size());
 			if (nbe > 2)
 			{
-				Dart d = mbuild.add_face_topo_parent(nbe);
+				Dart d = mbuild.add_face_topo_fp(nbe);
 				for (uint32 j = 0u; j < nbe; ++j)
 				{
 					const uint32 vertex_index = vertices_buffer[j];
@@ -139,6 +145,8 @@ public:
 					darts_per_vertex[vertex_index].push_back(d);
 					d = map.phi1(d);
 				}
+				if (map.is_embedded(Face::ORBIT))
+					mbuild. template set_orbit_embedding<Face>(Face(d), face_emb++);
 			}
 		}
 
@@ -193,11 +201,7 @@ public:
 			cgogn_log_warning("create_map") << "Import Surface: non manifold vertices detected and corrected";
 		}
 
-		if (this->face_attributes_.nb_chunk_arrays() > 0)
-		{
-			mbuild.template create_embedding<Face::ORBIT>();
-			mbuild.template swap_chunk_array_container<Face::ORBIT>(this->face_attributes_);
-		}
+
 
 		map.remove_attribute(darts_per_vertex);
 		this->clear();
@@ -217,11 +221,6 @@ public:
 		return vertex_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	inline ChunkArray<VEC3>* add_position_attribute()
-	{
-		return (position_attribute_ =  vertex_attributes_.template add_chunk_array<VEC3>("position"));
-	}
-
 	inline void add_face_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		in_data.to_chunk_array(in_data.add_attribute(face_attributes_, att_name));
@@ -229,7 +228,10 @@ public:
 
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		return position_attribute_;
+		if (position_attribute_ == nullptr)
+			return (position_attribute_ =  add_vertex_attribute<VEC3>("position"));
+		else
+			return position_attribute_;
 	}
 
 	inline uint32 insert_line_vertex_container()
@@ -273,19 +275,14 @@ public:
 	}
 
 private:
+
 	inline uint32 nb_faces() const
 	{
 		return uint32(faces_nb_edges_.size());
 	}
 
-	uint32 compute_nb_vertices() const
-	{
-		std::set<uint32> vertices;
-		for (uint32 v : faces_vertex_indices_)
-			vertices.insert(v);
-		return uint32(vertices.size());
-	}
 protected:
+
 	std::vector<uint32> faces_nb_edges_;
 	std::vector<uint32> faces_vertex_indices_;
 
@@ -294,16 +291,17 @@ protected:
 	ChunkArray<VEC3>*	position_attribute_;
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class SurfaceFileImport : public SurfaceImport<MAP_TRAITS, VEC3>, public FileImport
+template <typename VEC3>
+class SurfaceFileImport : public SurfaceImport<VEC3>, public FileImport
 {
-	using Self = SurfaceFileImport<MAP_TRAITS, VEC3>;
-	using Inherit1 = SurfaceImport<MAP_TRAITS, VEC3>;
+	using Self = SurfaceFileImport<VEC3>;
+	using Inherit1 = SurfaceImport<VEC3>;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SurfaceFileImport);
 
 public:
+
 	inline SurfaceFileImport() : Inherit1(), Inherit2()
 	{}
 
@@ -312,10 +310,10 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
-extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API SurfaceFileImport<DefaultMapTraits, Eigen::Vector3d>;
+extern template class CGOGN_IO_API SurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3d>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
 
 } // namespace io

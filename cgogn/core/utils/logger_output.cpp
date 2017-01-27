@@ -36,6 +36,9 @@ namespace cgogn
 namespace logger
 {
 
+LoggerOutput::~LoggerOutput()
+{}
+
 void NullOutput::process_entry(const LogEntry&)
 {}
 

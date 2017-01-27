@@ -41,13 +41,13 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class StlSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class StlSurfaceImport : public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = StlSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = StlSurfaceImport<VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -62,7 +62,7 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		ChunkArray<VEC3>* normal = this->face_attributes_.template add_chunk_array<VEC3>("normal");
 		std::string word;
 		fp >> word;
@@ -86,28 +86,28 @@ private:
 		std::map<VEC3, uint32, bool(*)(const VEC3&, const VEC3&)> vertices_set(comp_fct);
 
 		std::string line;
-		std::getline(fp, line); // 1st line : solid name
+		getline_safe(fp, line); // 1st line : solid name
 
 		while (fp.good())
 		{
-			std::getline(fp, line); // facet normal ni nj nk
+			getline_safe(fp, line); // facet normal ni nj nk
 			std::stringstream stream_normal(line);
 			VEC3 norm;
 			stream_normal >> line;
 			if (to_lower(line) == "endsolid")
 			{
-				std::getline(fp, line); // if there's another solid, 1st line : solid name
+				getline_safe(fp, line); // if there's another solid, 1st line : solid name
 				continue;
 			}
 			stream_normal >> line >> norm[0] >> norm[1] >> norm[2];
 			const uint32 face_id = this->face_attributes_.template insert_lines<1>();
 			(*normal)[face_id] = norm;
-			std::getline(fp, line); // outer loop
+			getline_safe(fp, line); // outer loop
 
 			std::array<VEC3, 3> pos;
 			for (uint32 i = 0u; i < 3; ++i)
 			{
-				std::getline(fp, line);
+				getline_safe(fp, line);
 				std::stringstream stream_pos(line);
 				stream_pos >> line >> pos[i][0] >> pos[i][1] >> pos[i][2];
 				const auto it =  vertices_set.find(pos[i]);
@@ -125,8 +125,8 @@ private:
 				this->faces_vertex_indices_.push_back(vertex_id);
 			}
 			this->faces_nb_edges_.push_back(3u);
-			std::getline(fp, line); // endloop
-			std::getline(fp, line); // endfacet
+			getline_safe(fp, line); // endloop
+			getline_safe(fp, line); // endfacet
 		}
 
 		return true;
@@ -289,7 +289,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
-extern template class CGOGN_IO_API StlSurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API StlSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
 
 } // namespace io

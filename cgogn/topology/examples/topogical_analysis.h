@@ -80,7 +80,7 @@ public:
 		map_render_(nullptr),
 		features_drawer_(nullptr),
 		features_renderer_(nullptr),
-		features_proximity(0.3f),
+		features_proximity(0.3),
 		nb_(0u),
 		map_rendering_(true),
 		vertices_rendering_(false),
@@ -199,7 +199,7 @@ public:
 	{
 		// Search the maximal and minimal value of the scalar field
 		Scalar min = std::numeric_limits<Scalar>::max();
-		Scalar max = std::numeric_limits<Scalar>::min();
+		Scalar max = std::numeric_limits<Scalar>::lowest();
 		for(auto& v : scalar_field_)
 		{
 			min = std::min(min, v);
@@ -263,9 +263,9 @@ public:
 		features_drawer_->new_list();
 		cgogn::topology::ScalarField<Scalar, MAP> scalar_field(map_, adjacency_cache_, scalar_field_);
 		scalar_field.critical_vertex_analysis();
-		draw_vertices(scalar_field.get_maxima(), 1.0f, 1.0f, 1.0f, 0.4f, 1u);
-		draw_vertices(scalar_field.get_minima(), 1.0f, 0.0f, 0.0f, 0.4f, 1u);
-		draw_vertices(scalar_field.get_saddles(), 1.0f, 1.0f, 0.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.maxima(), 1.0f, 1.0f, 1.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.minima(), 1.0f, 0.0f, 0.0f, 0.4f, 1u);
+		draw_vertices(scalar_field.saddles(), 1.0f, 1.0f, 0.0f, 0.4f, 1u);
 
 		std::vector<Vertex> MS_complex_boundary;
 		scalar_field.extract_ascending_3_manifold(MS_complex_boundary);
@@ -306,9 +306,9 @@ public:
 		features_drawer_->new_list();
 		cgogn::topology::ScalarField<Scalar, MAP> scalar_field(map_, adjacency_cache_, scalar_field_);
 		scalar_field.critical_vertex_analysis();
-		draw_vertices(scalar_field.get_maxima(), 1.0f, 1.0f, 1.0f, 0.4f);
-		draw_vertices(scalar_field.get_minima(), 1.0f, 0.0f, 0.0f, 0.1f);
-		draw_vertices(scalar_field.get_saddles(), 1.0f, 1.0f, 0.0f, 0.2f);
+		draw_vertices(scalar_field.maxima(), 1.0f, 1.0f, 1.0f, 0.4f);
+		draw_vertices(scalar_field.minima(), 1.0f, 0.0f, 0.0f, 0.1f);
+		draw_vertices(scalar_field.saddles(), 1.0f, 1.0f, 0.0f, 0.2f);
 		draw_vertices(features1, 1.0f, 0.0f, 1.0f, 0.6f, 1);
 		draw_vertices(features2, 0.0f, 1.0f, 1.0f, 0.6f, 2);
 
@@ -418,7 +418,7 @@ public:
 	{
 		import_concrete<MAP>(filename);
 
-		vertex_position_ = map_.template get_attribute<Vec3, Vertex::ORBIT>("position");
+		vertex_position_ = map_.template get_attribute<Vec3, Vertex>("position");
 		if (!vertex_position_.is_valid())
 		{
 			cgogn_log_error("import") << "Missing attribute position. Aborting.";
@@ -426,8 +426,8 @@ public:
 		}
 
 		adjacency_cache_.init();
-		scalar_field_ = map_.template add_attribute<Scalar, Vertex::ORBIT>("scalar_field_");
-		edge_metric_ = map_.template add_attribute<Scalar, Edge::ORBIT>("edge_metric");
+		scalar_field_ = map_.template add_attribute<Scalar, Vertex>("scalar_field_");
+		edge_metric_ = map_.template add_attribute<Scalar, Edge>("edge_metric");
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 		setSceneRadius(bb_.diag_size()/2.0);
@@ -477,7 +477,7 @@ public:
 		});
 
 		VertexAttribute<Scalar> boundary_field;
-		boundary_field = map_.template add_attribute<Scalar, Vertex::ORBIT>("boundary_field");
+		boundary_field = map_.template add_attribute<Scalar, Vertex>("boundary_field");
 
 		cgogn::topology::DistanceField<Scalar, MAP> distance_field(map_, adjacency_cache_, edge_metric_);
 		distance_field.distance_to_features(boundary_vertices, boundary_field);
@@ -486,7 +486,7 @@ public:
 		scalar_field.critical_vertex_analysis();
 
 		std::vector<Vertex> features;
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 			features.push_back(v);
 
 		distance_field.morse_distance_to_features(features, scalar_field_);
@@ -504,7 +504,7 @@ public:
 		cgogn::topology::DistanceField<Scalar, MAP> distance_field(map_, adjacency_cache_, edge_metric_);
 
 		VertexAttribute<Scalar> boundary_field;
-		boundary_field = map_.template add_attribute<Scalar, Vertex::ORBIT>("boundary_field");
+		boundary_field = map_.template add_attribute<Scalar, Vertex>("boundary_field");
 
 		std::vector<Vertex> boundary_vertices;
 		map_.foreach_cell([&](Vertex v)
@@ -524,7 +524,7 @@ public:
 		std::vector<Vertex> features1;
 		std::vector<Vertex> features2;
 		Scalar min_max = std::numeric_limits<Scalar>::max();
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 		{
 			min_max = std::min(min_max, boundary_field[v]);
 			features.push_back(v);
@@ -535,7 +535,7 @@ public:
 
 		distance_field.distance_to_features(features, boundary_field);
 		scalar_field.critical_vertex_analysis();
-		for (Vertex v : scalar_field.get_maxima())
+		for (Vertex v : scalar_field.maxima())
 		{
 			if (boundary_field[v] > target_distance)
 			{
@@ -619,7 +619,7 @@ public:
 	void scalar_field_inverse_normalize()
 	{
 		Scalar min = std::numeric_limits<Scalar>::max();
-		Scalar max = std::numeric_limits<Scalar>::min();
+		Scalar max = std::numeric_limits<Scalar>::lowest();
 
 		for(auto& v : scalar_field_)
 		{
@@ -807,16 +807,16 @@ public:
 	template <typename CONCRETE_MAP, typename std::enable_if<CONCRETE_MAP::DIMENSION == 2>::type* = nullptr>
 	void compute_curvature(EdgeAttribute<Scalar>& edge_metric)
 	{
-		EdgeAttribute<Scalar> length = map_.template add_attribute<Scalar, Edge::ORBIT>("lenght");
-		EdgeAttribute<Scalar> edgeangle = map_.template add_attribute<Scalar, Edge::ORBIT>("edgeangle");
-		EdgeAttribute<Scalar> edgeaera = map_.template add_attribute<Scalar, Edge::ORBIT>("edgeaera");
+		EdgeAttribute<Scalar> length = map_.template add_attribute<Scalar, Edge>("lenght");
+		EdgeAttribute<Scalar> edgeangle = map_.template add_attribute<Scalar, Edge>("edgeangle");
+		EdgeAttribute<Scalar> edgeaera = map_.template add_attribute<Scalar, Edge>("edgeaera");
 
-		VertexAttribute<Scalar> kmax = map_.template add_attribute<Scalar, Vertex::ORBIT>("kmax");
-		VertexAttribute<Scalar> kmin = map_.template add_attribute<Scalar, Vertex::ORBIT>("kmin");
-		VertexAttribute<Vec3> vertex_normal = map_.template add_attribute<Vec3, Vertex::ORBIT>("vertex_normal");
-		VertexAttribute<Vec3> Kmax = map_.template add_attribute<Vec3, Vertex::ORBIT>("Kmax");
-		VertexAttribute<Vec3> Kmin = map_.template add_attribute<Vec3, Vertex::ORBIT>("Kmin");
-		VertexAttribute<Vec3> knormal = map_.template add_attribute<Vec3, Vertex::ORBIT>("knormal");
+		VertexAttribute<Scalar> kmax = map_.template add_attribute<Scalar, Vertex>("kmax");
+		VertexAttribute<Scalar> kmin = map_.template add_attribute<Scalar, Vertex>("kmin");
+		VertexAttribute<Vec3> vertex_normal = map_.template add_attribute<Vec3, Vertex>("vertex_normal");
+		VertexAttribute<Vec3> Kmax = map_.template add_attribute<Vec3, Vertex>("Kmax");
+		VertexAttribute<Vec3> Kmin = map_.template add_attribute<Vec3, Vertex>("Kmin");
+		VertexAttribute<Vec3> knormal = map_.template add_attribute<Vec3, Vertex>("knormal");
 
 		compute_length(length);
 
@@ -827,13 +827,13 @@ public:
 
 		Scalar radius = Scalar(2.0) * meanEdgeLength;
 
-		cgogn::geometry::compute_curvature<Vec3>(map_,radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
+		cgogn::geometry::compute_curvature<Vec3>(map_, radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
 
 		//compute kmean
-		VertexAttribute<Scalar> kmean = map_.template add_attribute<Scalar, Vertex::ORBIT>("kmean");
+		VertexAttribute<Scalar> kmean = map_.template add_attribute<Scalar, Vertex>("kmean");
 
 		double min = std::numeric_limits<double>::max();
-		double max = std::numeric_limits<double>::min();
+		double max = std::numeric_limits<double>::lowest();
 
 		map_.foreach_cell([&](Vertex v)
 		{
@@ -843,10 +843,10 @@ public:
 		});
 
 		//compute kgaussian
-		VertexAttribute<Scalar> kgaussian = map_.template add_attribute<Scalar, Vertex::ORBIT>("kgaussian");
+		VertexAttribute<Scalar> kgaussian = map_.template add_attribute<Scalar, Vertex>("kgaussian");
 
 		min = std::numeric_limits<double>::max();
-		max = std::numeric_limits<double>::min();
+		max = std::numeric_limits<double>::lowest();
 
 		map_.foreach_cell([&](Vertex v)
 		{
@@ -856,9 +856,9 @@ public:
 		});
 
 		//compute kindex
-		VertexAttribute<Scalar> k1 = map_.template add_attribute<Scalar, Vertex::ORBIT>("k1");
-		VertexAttribute<Scalar> k2 = map_.template add_attribute<Scalar, Vertex::ORBIT>("k2");
-		VertexAttribute<Scalar> kI = map_.template add_attribute<Scalar, Vertex::ORBIT>("kI");
+		VertexAttribute<Scalar> k1 = map_.template add_attribute<Scalar, Vertex>("k1");
+		VertexAttribute<Scalar> k2 = map_.template add_attribute<Scalar, Vertex>("k2");
+		VertexAttribute<Scalar> kI = map_.template add_attribute<Scalar, Vertex>("kI");
 
 		map_.foreach_cell([&](Vertex v)
 		{

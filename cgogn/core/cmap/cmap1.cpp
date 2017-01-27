@@ -28,15 +28,15 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API CMap1_T<DefaultMapTraits, CMap1Type<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarker<CMap1<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerStore<CMap1<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1<DefaultMapTraits>>;
-template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarker<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap1<DefaultMapTraits>, CMap1<DefaultMapTraits>::Face::ORBIT>;
+template class CGOGN_CORE_API DartMarker<CMap1>;
+template class CGOGN_CORE_API DartMarkerStore<CMap1>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1>;
+template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
+template class CGOGN_CORE_API QuickTraversor<CMap1>;
 
 } // namespace cgogn

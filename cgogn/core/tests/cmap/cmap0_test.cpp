@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap0Test class implements tests on embedded CMap0
@@ -43,13 +43,12 @@ class CMap0Test : public ::testing::Test
 {
 public:
 
-	using testCMap0 = CMap0<DefaultMapTraits>;
-	using VertexAttribute = testCMap0::VertexAttribute<int32>;
-	using Vertex = testCMap0::Vertex;
+	using VertexAttribute = CMap0::VertexAttribute<int32>;
+	using Vertex = CMap0::Vertex;
 
 protected:
 
-	testCMap0 cmap_;
+	CMap0 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -63,7 +62,7 @@ protected:
 	{
 		darts_.reserve(NB_MAX);
 		std::srand(uint32(std::time(0)));
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
+		cmap_.add_attribute<int32, Vertex>("vertices");
 	}
 
 	/**

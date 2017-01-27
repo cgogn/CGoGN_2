@@ -25,6 +25,7 @@
 #include <cgogn/rendering/wall_paper.h>
 
 #include <QOpenGLFunctions>
+#include <QColor>
 #include <iostream>
 
 
@@ -34,31 +35,104 @@ namespace cgogn
 namespace rendering
 {
 
-WallPaper::WallPaper(const QImage& img)
+void WallPaper::init(const QImage& img)
 {
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
-	vbo_pos_->allocate(4,3);
-	vbo_tc_ = cgogn::make_unique<cgogn::rendering::VBO>(2);
-	vbo_tc_->allocate(4,2);
-
-	texture_ = cgogn::make_unique<QOpenGLTexture>(img);
-
+	if (vbo_pos_ == nullptr)
+	{
+		vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+		vbo_pos_->allocate(4, 3);
+	}
+	if (vbo_tc_ == nullptr)
+	{
+		vbo_tc_ = cgogn::make_unique<cgogn::rendering::VBO>(2);
+		vbo_tc_->allocate(4, 2);
+		float32* ptr_tc = vbo_tc_->lock_pointer();
+		*ptr_tc++ = 0.0f;
+		*ptr_tc++ = 0.0f;
+		*ptr_tc++ = 1.0f;
+		*ptr_tc++ = 0.0f;
+		*ptr_tc++ = 1.0f;
+		*ptr_tc++ = 1.0f;
+		*ptr_tc++ = 0.0f;
+		*ptr_tc++ = 1.0f;
+		vbo_tc_->release_pointer();
+	}
+	texture_ = cgogn::make_unique<QOpenGLTexture>(img,QOpenGLTexture::DontGenerateMipMaps);
 	set_full_screen(false);
-
-	float32* ptr_tc = vbo_tc_->lock_pointer();
-	*ptr_tc++ = 0.0f;
-	*ptr_tc++ = 0.0f;
-	*ptr_tc++ = 1.0f;
-	*ptr_tc++ = 0.0f;
-	*ptr_tc++ = 1.0f;
-	*ptr_tc++ = 1.0f;
-	*ptr_tc++ = 0.0f;
-	*ptr_tc++ = 1.0f;
-	vbo_tc_->release_pointer();
 }
 
+WallPaper::WallPaper(const QImage& img):
+	vbo_pos_(nullptr),
+	vbo_tc_(nullptr),
+	texture_(nullptr)
+{
+	init(img);
+}
+
+WallPaper::WallPaper(const QColor& col) :
+	vbo_pos_(nullptr),
+	vbo_tc_(nullptr),
+	texture_(nullptr)
+{
+	QImage img(1, 1, QImage::Format_RGB32);
+	img.setPixel(0, 0, col.rgba());
+	init(img);
+}
+
+WallPaper::WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br) :
+	vbo_pos_(nullptr),
+	vbo_tc_(nullptr),
+	texture_(nullptr)
+{
+	QImage img(2, 2, QImage::Format_RGB32);
+	img.setPixel(0, 1, col_bl.rgba());
+	img.setPixel(1, 1, col_br.rgba());
+	img.setPixel(1, 0, col_tr.rgba());
+	img.setPixel(0, 0, col_tl.rgba());
+	init(img);
+	texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
+}
+
+
 WallPaper::~WallPaper()
-{}
+{
+}
+
+
+void WallPaper::change_color(const QColor& col)
+{
+	if ((texture_->width()==1)&&(texture_->height()==1))
+	{
+		float32 color[3] = {float32(col.red()), float32(col.green()), float32(col.blue())};
+		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, color);
+	}
+	else
+	{
+		cgogn_log_warning("change colors")<< "Attemping to change color with a wall paper initialized with more than one color";
+	}
+}
+
+void WallPaper::change_colors(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br)
+{
+	if ((texture_->width()==2)&&(texture_->height()==2))
+	{
+		float32 colors[12] =
+		{float32(col_tl.red()), float32(col_tl.green()), float32(col_tl.blue()),
+		 float32(col_tr.red()), float32(col_tr.green()), float32(col_tr.blue()),
+		 float32(col_bl.red()), float32(col_bl.green()), float32(col_bl.blue()),
+		 float32(col_br.red()), float32(col_br.green()), float32(col_br.blue())
+		 };
+
+		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, colors);
+		texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
+	}
+	else
+	{
+		cgogn_log_warning("change colors")<< "Attemping to change colors with a wall paper not initialized with 4 colors";
+	}
+}
+
+
 
 void WallPaper::set_full_screen(bool front)
 {

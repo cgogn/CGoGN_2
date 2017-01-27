@@ -50,11 +50,13 @@ const char* ShaderRoundPointGen::geometry_shader_source_ =
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 pointSizes;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "out vec2 local;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip2,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
 "		A = A/A.w;\n"
@@ -106,13 +108,15 @@ const char* ShaderRoundPointGen::geometry_shader_source2_ =
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 pointSizes;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "in vec3 color_v[];\n"
 "out vec2 local;\n"
 "out vec3 color_f;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip2,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
 "		A = A/A.w;\n"
@@ -169,10 +173,12 @@ ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 	unif_color_ = prg_.uniformLocation("color");
 	unif_size_ = prg_.uniformLocation("pointSizes");
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 
 	set_size(3.0f);
 	set_color(QColor(255, 255, 255));
 	set_plane_clip(QVector4D(0,0,0,0));
+	set_plane_clip2(QVector4D(0,0,0,0));
 }
 
 void ShaderRoundPointGen::set_color(const QColor& rgb)
@@ -190,9 +196,15 @@ void ShaderRoundPointGen::set_size(float32 wpix)
 	prg_.setUniformValue(unif_size_, wd);
 }
 
+
 void ShaderRoundPointGen::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+void ShaderRoundPointGen::set_plane_clip2(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
 

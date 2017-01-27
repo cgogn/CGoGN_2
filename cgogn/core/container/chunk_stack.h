@@ -28,6 +28,8 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/dll.h>
 
+#include <cgogn/core/cmap/map_traits.h>
+
 namespace cgogn
 {
 
@@ -40,6 +42,7 @@ template <uint32 CHUNK_SIZE, typename T>
 class ChunkStack : public ChunkArray<CHUNK_SIZE, T>
 {
 public:
+
 	using Inherit = ChunkArray<CHUNK_SIZE, T>;
 	using Self = ChunkStack<CHUNK_SIZE, T>;
 	using value_type = T;
@@ -49,6 +52,7 @@ protected:
 	uint32 stack_size_;
 
 public:
+
 	/**
 	 * @brief ChunkStack constructor
 	 */
@@ -141,9 +145,9 @@ public:
 		Inherit::clear();
 	}
 
-	bool swap(ChunkArrayGen<CHUNK_SIZE>* cag) override
+	bool swap_data(ChunkArrayGen<CHUNK_SIZE>* cag) override
 	{
-		if (Inherit::swap(cag))
+		if (Inherit::swap_data(cag))
 		{
 			Self* cs = dynamic_cast<Self*>(cag);
 			std::swap(stack_size_, cs->stack_size_);
@@ -154,7 +158,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<DEFAULT_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))
 
 } // namespace cgogn

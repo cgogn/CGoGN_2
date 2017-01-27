@@ -10,15 +10,22 @@ if(MSVC)
 endif(MSVC)
 
 
+cgogn_reset_warning_level()
 
 add_library(${PROJECT_NAME} STATIC tinyxml2.cpp tinyxml2.h)
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS "TINYXML2_EXPORT")
 
 if(NOT MSVC)
-	target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
-endif()
+	if (CGOGN_CPP_STD STREQUAL "11")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
+	elseif(CGOGN_CPP_STD STREQUAL "14")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++14")
+	else(CGOGN_CPP_STD STREQUAL "11")
+		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++17")
+	endif(CGOGN_CPP_STD STREQUAL "11")
+endif(NOT MSVC)
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 install(FILES "tinyxml2.h" DESTINATION "include/thirdparty/TinyXml2")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")

@@ -2,9 +2,32 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
+
+if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
+	set(HEADER_W_QT56
+	transparency_shaders/shader_transparent_quad.h
+	transparency_shaders/shader_transparent_flat.h
+	transparency_shaders/shader_transparent_phong.h
+	transparency_shaders/shader_transparent_volumes.h
+	transparency_shaders/shader_copy_depth.h
+	transparency_drawer.h
+	transparency_volume_drawer.h
+	)
+
+	set(SOURCE_W_QT56
+	transparency_shaders/shader_transparent_quad.cpp
+	transparency_shaders/shader_transparent_flat.cpp
+	transparency_shaders/shader_transparent_phong.cpp
+	transparency_shaders/shader_transparent_volumes.cpp
+	transparency_shaders/shader_copy_depth.cpp
+	transparency_drawer.cpp
+	transparency_volume_drawer.cpp
+	)
+else()
+	message(WARNING "Qt version < 5.6 : not compiling transparency rendering (need MRT FBO)")
+endif()
+
 
 set(HEADER_FILES
 	dll.h
@@ -28,6 +51,7 @@ set(HEADER_FILES
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
+	${HEADER_W_QT56}
 )
 
 set(SOURCE_FILES
@@ -50,6 +74,7 @@ set(SOURCE_FILES
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
+	${SOURCE_W_QT56}
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -64,7 +89,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
@@ -74,4 +99,4 @@ install(DIRECTORY shaders
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

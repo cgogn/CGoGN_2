@@ -28,12 +28,12 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_API CMap0_T<DefaultMapTraits, CMap0Type<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarker<CMap0<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerStore<CMap0<DefaultMapTraits>>;
-template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0<DefaultMapTraits>>;
-template class CGOGN_CORE_API CellMarker<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
-template class CGOGN_CORE_API CellMarkerStore<CMap0<DefaultMapTraits>, CMap0<DefaultMapTraits>::Vertex::ORBIT>;
+template class CGOGN_CORE_API DartMarker<CMap0>;
+template class CGOGN_CORE_API DartMarkerStore<CMap0>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0>;
+template class CGOGN_CORE_API CellMarker<CMap0, CMap0::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
+template class CGOGN_CORE_API QuickTraversor<CMap0>;
 
 } // namespace cgogn

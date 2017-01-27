@@ -28,30 +28,53 @@
 namespace cgogn
 {
 
-std::vector<MapGen*>* MapGen::instances_ = nullptr;
-bool MapGen::init_CA_factory = true;
+std::vector<const MapBaseData*>* MapBaseData::instances_ = nullptr;
+// tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7}
+const std::array<uint32, 12> MapBaseData::tetra_phi2 = {3,5,7,uint32(-3),7,2,uint32(-5),uint32(-2),2,uint32(-7),uint32(-2),uint32(-7)};
+// hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17}
+const std::array<uint32, 24> MapBaseData::hexa_phi2 = {4,7,10,13, uint32(-4),14,17,2, uint32(-7),uint32(-2),12,2, uint32(-10),uint32(-2),7,2, uint32(-13),uint32(-2),2,uint32(-14), uint32(-2),uint32(-7),uint32(-12),uint32(-17)};
 
-std::array<int,12> MapGen::tetra_phi2 = {3,5,7,-3,7,2,-5,-2,2,-7,-2,-7};
-
-std::array<int,24> MapGen::hexa_phi2 = {4,7,10,13, -4,14,17,2, -7,-2,12,2, -10,-2,7,2, -13,-2,2,-14, -2,-7,-12,-17};
-
-
-
-MapGen::MapGen()
+MapBaseData::MapBaseData()
 {
 	if (instances_ == nullptr)
 	{
 		cgogn::thread_start();
-		instances_ = new std::vector<MapGen*>;
+		instances_ = new std::vector<const MapBaseData*>;
 	}
 
 	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
 
 	// register the map in the vector of instances
 	instances_->push_back(this);
+
+	for (uint32 i = 0u; i < NB_ORBITS; ++i)
+	{
+		mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+		mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+
+		embeddings_[i] = nullptr;
+		for (uint32 j = 0u; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
+			mark_attributes_[i][j].reserve(8u);
+	}
+
+	mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+	mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+
+	for (uint32 i = 0u; i < MAX_NB_THREADS; ++i)
+		mark_attributes_topology_[i].reserve(8u);
+
+	boundary_marker_ = topology_.add_marker_attribute();
+
+	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+	thread_ids_.resize(NB_UNKNOWN_THREADS);
+
+	this->add_thread(std::this_thread::get_id());
+	const auto& pool_threads_ids = cgogn::thread_pool()->threads_ids();
+	for (const std::thread::id& ids : pool_threads_ids)
+		this->add_thread(ids);
 }
 
-MapGen::~MapGen()
+MapBaseData::~MapBaseData()
 {
 	// remove the map from the vector of instances
 	auto it = std::find(instances_->begin(), instances_->end(), this);
@@ -65,7 +88,5 @@ MapGen::~MapGen()
 		instances_ = nullptr;
 	}
 }
-
-template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
 
 } // namespace cgogn

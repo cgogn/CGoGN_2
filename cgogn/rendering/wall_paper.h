@@ -59,6 +59,7 @@ protected:
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_tc_;
 	std::unique_ptr<QOpenGLTexture> texture_;
+	void init(const QImage& img);
 
 public:
 
@@ -81,10 +82,41 @@ public:
 	using Self = WallPaper;
 
 	/**
-	 * constructor, init all buffers (data and OpenGL) and shader
-	 * @Warning need OpenGL context
+	 * @brief constructor, init all buffers (data and OpenGL) and shader
+	 * @param img image
+	 * @warning need OpenGL context
 	 */
 	WallPaper(const QImage& img);
+
+	/**
+	 * @brief constructor, init all buffers (data and OpenGL) and shader
+	 * @param col color unique color of wallPaper
+	 */
+	WallPaper(const QColor& col);
+
+	/**
+	 * @brief  constructor, init all buffers (data and OpenGL) and shader
+	 * @param col_tl top left color
+	 * @param col_tr top right color
+	 * @param col_bl bottom left color
+	 * @param col_br botton right color
+	 */
+	WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br);
+
+	/**
+	 * @brief change color for unique color image
+	 * @param col color
+	 */
+	void change_color(const QColor& col);
+
+	/**
+	 * @brief change colors for 4 colors image only
+	 * @param col_tl top left color
+	 * @param col_tr top right color
+	 * @param col_bl bottom left color
+	 * @param col_br botton right color
+	 */
+	void change_colors(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br);
 
 	/**
 	 * release buffers and shader

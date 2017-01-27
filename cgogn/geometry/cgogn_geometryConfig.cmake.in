@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+find_package(cgogn_core REQUIRED)
+
+set(cgogn_geometry_LIBRARIES "cgogn_geometry")
+set(cgogn_geometry_INCLUDE_DIRS "@PACKAGE_CGOGN_GEOMETRY_INCLUDE_DIRS@")
+
+if(NOT TARGET cgogn_geometry)
+	include("${CMAKE_CURRENT_LIST_DIR}/cgogn_geometryTargets.cmake")
+endif()
+
+check_required_components(cgogn_core cgogn_geometry)

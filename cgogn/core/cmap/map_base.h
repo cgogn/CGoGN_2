@@ -39,7 +39,6 @@
 #include <cgogn/core/cmap/map_base_data.h>
 #include <cgogn/core/cmap/attribute.h>
 
-
 namespace cgogn
 {
 
@@ -50,13 +49,13 @@ enum TraversalStrategy
 	FORCE_CELL_MARKING
 };
 
-template <typename MAP_TRAITS, typename MAP_TYPE>
-class MapBase : public MapBaseData<MAP_TRAITS>
+template <typename MAP_TYPE>
+class MapBase : public MapBaseData
 {
 public:
 
-	using Inherit = MapBaseData<MAP_TRAITS>;
-	using Self = MapBase<MAP_TRAITS, MAP_TYPE>;
+	using Inherit = MapBaseData;
+	using Self = MapBase<MAP_TYPE>;
 
 	template <typename MAP> friend class DartMarker_T;
 	template <typename MAP, Orbit ORBIT> friend class CellMarker_T;
@@ -68,12 +67,6 @@ public:
 	template <typename T_REF>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T_REF>;
 
-	using AttributeGen = typename Inherit::AttributeGen;
-	template <typename T>
-	using Attribute_T = typename Inherit::template Attribute_T<T>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = typename Inherit::template Attribute<T, ORBIT>;
-
 	using ConcreteMap = typename MAP_TYPE::TYPE;
 
 	using DartMarker = cgogn::DartMarker<ConcreteMap>;
@@ -84,7 +77,7 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = cgogn::CellMarkerStore<ConcreteMap, ORBIT>;
 	template <Orbit ORBIT>
-	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
 	MapBase() :
 		Inherit()
@@ -149,7 +142,6 @@ protected:
 		return static_cast<const ConcreteMap*>(this);
 	}
 
-
 	/*******************************************************************************
 	 * Container elements management
 	 *******************************************************************************/
@@ -163,7 +155,7 @@ protected:
 	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		for(uint32 jdx=idx; jdx<idx+ConcreteMap::PRIM_SIZE; ++jdx)
+		for(uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
 		{
 			this->topology_.init_markers_of_line(jdx);
 			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
@@ -264,31 +256,17 @@ public:
 	}
 
 	/**
-	 * @brief add an attribute, given a ref on an existing attribute
-	 * @param result_attribute, a reference to an attribute that will be overwritten
-	 * @param attribute_name the name of the attribute to create
-	 */
+	* \brief search an attribute for a given orbit
+	* @param attribute_name attribute name
+	* @return an Attribute
+	*/
 	template <typename T, Orbit ORBIT>
-	inline void add_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
+	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		attribute_handler = add_attribute<T,ORBIT>(attribute_name);
-	}
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-	/**
-	 * @brief init_attribute, init an uninitialized Attribute<T,ORBIT> object (does nothing if the attribute_handler param is already valid)
-	 */
-	template <typename T, Orbit ORBIT>
-	inline void init_attribute(Attribute<T, ORBIT>& attribute_handler, const std::string& attribute_name)
-	{
-		if (attribute_handler.is_valid())
-		{
-			cgogn_log_debug("init_attribute(Attribute<T, ORBIT>&,const std::string&)") << "The attribute \"" << attribute_handler.name() << "\" is already initialized.";
-			return;
-		}
-
-		add_attribute(attribute_handler, attribute_name);
-		if (!attribute_handler.is_valid())
-			get_attribute(attribute_handler, attribute_name);
+		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
+		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
 	}
 
 	/**
@@ -296,13 +274,10 @@ public:
 	 * @param ah a handler to the attribute to remove
 	 * @return true if remove succeed else false
 	 */
-	template <typename T, Orbit ORBIT>
-	inline bool remove_attribute(const Attribute<T, ORBIT>& ah)
+	template <typename T>
+	inline bool remove_attribute(const Attribute_T<T>& ah)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		const ChunkArray<T>* ca = ah.data();
-		return this->attributes_[ORBIT].remove_chunk_array(ca);
+		return this->attributes_[ah.orbit()].remove_chunk_array(ah.data());
 	}
 
 	/**
@@ -318,25 +293,26 @@ public:
 	}
 
 	/**
-	* \brief search an attribute for a given orbit
-	* @param attribute_name attribute name
-	* @return an Attribute
-	*/
-	template <typename T, Orbit ORBIT>
-	inline Attribute<T, ORBIT> get_attribute(const std::string& attribute_name) const
+	 * \brief Second version of add_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
 	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[ORBIT].template get_chunk_array<T>(attribute_name);
-		return Attribute<T, ORBIT>(const_cast<Self*>(this), ca);
+		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
-	template <typename T, Orbit ORBIT>
-	inline void get_attribute(Attribute<T, ORBIT>& ah, const std::string& attribute_name) const
+	/**
+	 * \brief Second version of get_attribute taking a Cell as template paramter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> get_attribute(const std::string& attribute_name) const
 	{
-		ah = get_attribute<T,ORBIT>(attribute_name);
+		return this->get_attribute<T, CellType::ORBIT>(attribute_name);
 	}
 
+	/**
+	 * \brief Third version of get_attribute taking a single type template parameter T and returning an Attribute_T<T>
+	 */
 	template <typename T>
 	inline Attribute_T<T> get_attribute(Orbit orbit, const std::string& attribute_name) const
 	{
@@ -344,12 +320,6 @@ public:
 
 		ChunkArray<T>* ca = const_cast<Self*>(this)->attributes_[orbit].template get_chunk_array<T>(attribute_name);
 		return Attribute_T<T>(const_cast<Self*>(this), ca, orbit);
-	}
-
-	template <typename T>
-	inline void get_attribute(Attribute_T<T>& ath, Orbit orbit, const std::string& attribute_name) const
-	{
-		ath = get_attribute<T>(orbit, attribute_name);
 	}
 
 	/**
@@ -375,7 +345,7 @@ public:
 		cgogn_message_assert(ah1.is_linked_to(this), "swap_attributes: wrong map");
 		cgogn_message_assert(ah2.is_linked_to(this), "swap_attributes: wrong map");
 
-		this->attributes_[ORBIT].swap_data(ah1.data(), ah2.data());
+		this->attributes_[ORBIT].swap_chunk_arrays(ah1.data(), ah2.data());
 	}
 
 	template <typename T, Orbit ORBIT>
@@ -386,7 +356,7 @@ public:
 		cgogn_message_assert(dest.is_linked_to(this), "copy_attribute: wrong map");
 		cgogn_message_assert(src.is_linked_to(this), "copy_attribute: wrong map");
 
-		this->attributes_[ORBIT].copy_data(dest.data(), src.data());
+		this->attributes_[ORBIT].copy_chunk_array_data(dest.data(), src.data());
 	}
 
 protected:
@@ -463,16 +433,27 @@ protected:
 		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
-	template <Orbit ORBIT>
-	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	/**
+	 * \brief the darts of the given cell are indexed for CellType with the given embedding
+	 */
+	template <typename CellType, Orbit ORBIT>
+	void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
 	{
-		using CellType = Cell<ORBIT>;
-
-		const uint32 emb = add_attribute_element<ORBIT>();
 		to_concrete()->foreach_dart_of_orbit(c, [this, emb] (Dart d)
 		{
 			this->template set_embedding<CellType>(d, emb);
 		});
+	}
+
+	/**
+	 * \brief creates a new embedding and set it to the darts of the given cell
+	 * \return the new index
+	 */
+	template <Orbit ORBIT>
+	inline uint32 new_orbit_embedding(Cell<ORBIT> c)
+	{
+		const uint32 emb = add_attribute_element<ORBIT>();
+		set_orbit_embedding<Cell<ORBIT>>(c, emb);
 		return emb;
 	}
 
@@ -545,11 +526,17 @@ public:
 			{
 				const uint32 emb_d = this->embedding(CellType(d));
 				if (emb_d != idx)
+				{
 					cgogn_log_error("is_well_embedded") << "Different indices (" << idx << " and " << emb_d << ") in orbit " << orbit_name(ORBIT);
+					result = false;
+				}
 				refs++;
 			});
 			if (refs != container.nb_refs(this->embedding(c)))
+			{
 				cgogn_log_error("is_well_embedded") << "Wrong reference number of embedding " << this->embedding(c) << " in orbit " << orbit_name(ORBIT);
+				result = false;
+			}
 
 		});
 		// check that all cells present in the attribute handler are used
@@ -580,7 +567,7 @@ public:
 		bool result = true;
 
 		// check the integrity of topological relations or the correct sewing of darts
-		foreach_dart_until([&cmap, &result] (Dart d)
+		foreach_dart([&cmap, &result] (Dart d) -> bool
 		{
 			result = cmap->check_integrity(d);
 			return result;
@@ -616,7 +603,7 @@ public:
 	bool same_orbit(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c1, [&] (Dart d) -> bool
+		to_concrete()->foreach_dart_of_orbit(c1, [&] (Dart d) -> bool
 		{
 			if (d == c2.dart)
 			{
@@ -638,7 +625,7 @@ public:
 	template <Orbit ORBIT>
 	bool same_cell(Cell<ORBIT> c1, Cell<ORBIT> c2) const
 	{
-		if (this->template is_embedded<ORBIT>())
+		if (this->template is_embedded<ORBIT>() && !is_boundary_cell(c1) && !is_boundary_cell(c2))
 			return this->embedding(c1) == this->embedding(c2);
 		else
 			return same_orbit(c1, c2);
@@ -663,7 +650,7 @@ public:
 			return this->attributes_[ORBIT].size();
 		else
 		{
-			uint32 result = 0;
+			uint32 result = 0u;
 			foreach_cell([&result] (Cell<ORBIT>) { ++result; });
 			return result;
 		}
@@ -672,8 +659,32 @@ public:
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
-		uint32 result = 0;
+		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
+		return result;
+	}
+
+	/**
+	 * \brief return the number of boundaries of the map
+	 */
+	uint32 nb_boundaries() const
+	{
+		uint32 result = 0u;
+		DartMarker m(*to_concrete());
+#if defined(_MSC_VER) && _MSC_VER < 1900 // MSVC 2013 fix
+		using Boundary = ConcreteMap::Boundary;
+#else
+		using Boundary = typename ConcreteMap::Boundary;
+#endif
+		foreach_dart([&m, &result, this] (Dart d)
+		{
+			if (!m.is_marked(d))
+			{
+				Boundary c(d);
+				m.mark_orbit(c);
+				if (this->is_boundary_cell(c)) ++result;
+			}
+		});
 		return result;
 	}
 
@@ -707,11 +718,17 @@ public:
 	}
 
 	template <Orbit ORBIT>
+	bool is_boundary_cell(Cell<ORBIT> c) const
+	{
+		return to_concrete()->is_boundary_cell(c);
+	}
+
+	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = true; return false; }
 			return true;
@@ -724,7 +741,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
-		to_concrete()->foreach_dart_of_orbit_until(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
 		{
 			if (is_boundary(d)) { result = d; return false; }
 			return true;
@@ -733,13 +750,14 @@ public:
 	}
 
 protected:
+
 	template <Orbit ORBIT>
 	void boundary_mark(Cell<ORBIT> c)
 	{
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,true);
+			set_boundary(d, true);
 		});
 	}
 
@@ -749,7 +767,7 @@ protected:
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
 		to_concrete()->foreach_dart_of_orbit(c, [this] (Dart d)
 		{
-			set_boundary(d,false);
+			set_boundary(d, false);
 		});
 	}
 	/*******************************************************************************
@@ -758,19 +776,74 @@ protected:
 
 public:
 
-	/**
-	 * \brief apply a function on each dart of the map (including boundary darts)
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC>
-	inline void foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+//	template <typename FUNC>
+//	inline void parallel_foreach_dart(const FUNC& f) const
+//	{
+//		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
+//		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
-			f(it);
-	}
+//		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
+//		using VecDarts = std::vector<Dart>;
+
+//		ThreadPool* thread_pool = cgogn::thread_pool();
+//		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+//		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+//		std::array<std::vector<Future>, 2> futures;
+//		dart_buffers[0].reserve(nb_threads_pool);
+//		dart_buffers[1].reserve(nb_threads_pool);
+//		futures[0].reserve(nb_threads_pool);
+//		futures[1].reserve(nb_threads_pool);
+
+//		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+
+//		Dart it = Dart(this->topology_.begin());
+//		Dart last = Dart(this->topology_.end());
+
+//		while (it != last)
+//		{
+//			for (uint32 i = 0u; i < 2u; ++i)
+//			{
+//				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
+//				{
+//					dart_buffers[i].push_back(dbuffs->buffer());
+//					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+//					std::vector<Dart>& darts = *dart_buffers[i].back();
+//					darts.reserve(PARALLEL_BUFFER_SIZE);
+//					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
+//					{
+//						darts.push_back(it);
+//						this->topology_.next(it.index);
+//					}
+
+//					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+//					{
+//						for (auto d : darts)
+//							f(d, th_id);
+//					}));
+//				}
+
+//				const uint32 id = (i+1u) % 2u;
+
+//				for (auto& fu : futures[id])
+//					fu.wait();
+//				for (auto& b : dart_buffers[id])
+//					dbuffs->release_buffer(b);
+
+//				futures[id].clear();
+//				dart_buffers[id].clear();
+
+//				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
+//				if (it.index >= last.index && i == 1u)
+//				{
+//					for (auto& fu : futures[1u])
+//						fu.wait();
+//					for (auto &b : dart_buffers[1u])
+//						dbuffs->release_buffer(b);
+//				}
+//			}
+//		}
+//	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
@@ -792,53 +865,55 @@ public:
 		futures[1].reserve(nb_threads_pool);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+		const ConcreteMap* cmap = to_concrete();
 
-		Dart it = Dart(this->topology_.begin());
-		Dart last = Dart(this->topology_.end());
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		Dart it = cmap->all_begin();
+		Dart last = cmap->all_end();
 
 		while (it != last)
 		{
-			for (uint32 i = 0u; i < 2u; ++i)
+			dart_buffers[i].push_back(dbuffs->buffer());
+			cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+			std::vector<Dart>& darts = *dart_buffers[i].back();
+			darts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
 			{
-				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
-				{
-					dart_buffers[i].push_back(dbuffs->buffer());
-					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-					std::vector<Dart>& darts = *dart_buffers[i].back();
-					darts.reserve(PARALLEL_BUFFER_SIZE);
-					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-					{
-						darts.push_back(it);
-						this->topology_.next(it.index);
-					}
+				darts.push_back(it);
+				cmap->all_next(it);
+			}
 
-					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-					{
-						for (auto d : darts)
-							f(d, th_id);
-					}));
-				}
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+			{
+				for (auto d : darts)
+					f(d, th_id);
+			}));
 
-				const uint32 id = (i+1u) % 2u;
-
-				for (auto& fu : futures[id])
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : dart_buffers[id])
+				for (auto& b : dart_buffers[i])
 					dbuffs->release_buffer(b);
-
-				futures[id].clear();
-				dart_buffers[id].clear();
-
-				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-				if (it.index >= last.index && i == 1u)
-				{
-					for (auto& fu : futures[1u])
-						fu.wait();
-					for (auto &b : dart_buffers[1u])
-						dbuffs->release_buffer(b);
-				}
+				futures[i].clear();
+				dart_buffers[i].clear();
 			}
 		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : dart_buffers[0u])
+			dbuffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : dart_buffers[1u])
+			dbuffs->release_buffer(b);
+
 	}
 
 	/**
@@ -847,14 +922,14 @@ public:
 	 * @param f a callable
 	 */
 	template <typename FUNC>
-	inline void foreach_dart_until(const FUNC& f) const
+	inline void foreach_dart(const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 
-		for (Dart it = Dart(this->topology_.begin()), last = Dart(this->topology_.end()); it != last; this->topology_.next(it.index))
+		const ConcreteMap* cmap = to_concrete();
+		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
 		{
-			if (!f(it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 		}
 	}
@@ -890,6 +965,25 @@ protected:
 		return Dart(this->topology_.end());
 	}
 
+	/*!
+	 * \Brief Methods to iterate over darts.
+	 * These functions browses over all darts.
+	 */
+	inline Dart all_begin() const
+	{
+		return Dart(this->topology_.begin());
+	}
+
+	inline void all_next(Dart& d) const
+	{
+		this->topology_.next(d.index);
+	}
+
+	inline Dart all_end() const
+	{
+		return Dart(this->topology_.end());
+	}
+
 public:
 
 	/**
@@ -914,14 +1008,6 @@ public:
 		parallel_foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
-	inline void foreach_cell_until(const FUNC& f) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		foreach_cell_until<STRATEGY>(f, [] (CellType) { return true; });
-	}
-
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * that is selected by the given FilterFunction (CellType -> bool)
@@ -932,11 +1018,10 @@ public:
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
 			  typename FUNC,
 			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const FilterFunction& filter) const
+			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
+	void foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -963,7 +1048,6 @@ public:
 	{
 		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		switch (STRATEGY)
 		{
@@ -982,32 +1066,6 @@ public:
 		}
 	}
 
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	void foreach_cell_until(const FUNC& f, const FilterFunction& filter) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		switch (STRATEGY)
-		{
-			case FORCE_DART_MARKING :
-				foreach_cell_until_dart_marking(f, filter);
-				break;
-			case FORCE_CELL_MARKING :
-				foreach_cell_until_cell_marking(f, filter);
-				break;
-			case AUTO :
-				if (this->template is_embedded<CellType>())
-					foreach_cell_until_cell_marking(f, filter);
-				else
-					foreach_cell_until_dart_marking(f, filter);
-				break;
-		}
-	}
-
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * that is selected by the filter function of the corresponding CellType within the given Filters object
@@ -1022,6 +1080,9 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
+		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
+			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
+
 		foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
@@ -1032,18 +1093,10 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
+		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
+			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
+
 		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
-	}
-
-	template <typename FUNC,
-			  typename Filters,
-			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const Filters& filters) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		foreach_cell_until(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
 	/**
@@ -1059,8 +1112,12 @@ public:
 	{
 		using CellType = func_parameter_type<FUNC>;
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ; it != end; ++it)
-			f(CellType(*it));
+		if (!t.template is_traversed<CellType>())
+			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
+
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
+			if (!internal::void_to_true_binder(f, CellType(*it)))
+				break;
 	}
 
 	template <typename FUNC,
@@ -1074,6 +1131,9 @@ public:
 
 		using VecCell = std::vector<CellType>;
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+
+		if (!t.template is_traversed<CellType>())
+			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		const std::size_t nb_threads_pool = thread_pool->nb_threads();
@@ -1112,13 +1172,13 @@ public:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1133,39 +1193,7 @@ public:
 			dbuffs->release_cell_buffer(b);
 	}
 
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void foreach_cell_until(const FUNC& f, const Traversor& t) const
-	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		using CellType = func_parameter_type<FUNC>;
-
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
-			if (!f(CellType(*it)))
-				break;
-	}
-
 protected:
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		const ConcreteMap* cmap = to_concrete();
-		DartMarker dm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			if (!dm.is_marked(it))
-			{
-				CellType c(it);
-				dm.mark_orbit(c);
-				if (filter(c))
-					f(c);
-			}
-		}
-	}
 
 	template <typename FUNC, typename FilterFunction>
 	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
@@ -1224,13 +1252,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1243,26 +1271,6 @@ protected:
 			fu.wait();
 		for (auto &b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
-	}
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
-
-		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> cm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			CellType c(it);
-			if (!cm.is_marked(c))
-			{
-				cm.mark(c);
-				if (filter(c))
-					f(c);
-			}
-		}
 	}
 
 	template <typename FUNC, typename FilterFunction>
@@ -1323,13 +1331,13 @@ protected:
 			if (++j == nb_threads_pool)
 			{	// again from 0 & change buffer
 				j = 0;
-				const uint32 id = (i+1u) % 2u;
-				for (auto& fu : futures[id])
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
 					fu.wait();
-				for (auto& b : cells_buffers[id])
+				for (auto& b : cells_buffers[i])
 					dbuffs->release_cell_buffer(b);
-				futures[id].clear();
-				cells_buffers[id].clear();
+				futures[i].clear();
+				cells_buffers[i].clear();
 			}
 		}
 
@@ -1345,9 +1353,8 @@ protected:
 	}
 
 	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_until_dart_marking(const FUNC& f, const FilterFunction& filter) const
+	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		using CellType = func_parameter_type<FUNC>;
 
 		const ConcreteMap* cmap = to_concrete();
@@ -1356,33 +1363,29 @@ protected:
 		{
 			if (!dm.is_marked(it))
 			{
-				CellType c(it);
+				const CellType c(it);
 				dm.mark_orbit(c);
-				if(filter(c))
-					if(!f(c))
-						break;
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
 
 	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_until_cell_marking(const FUNC& f, const FilterFunction& filter) const
+	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
 		using CellType = func_parameter_type<FUNC>;
-		static const Orbit ORBIT = CellType::ORBIT;
 
 		const ConcreteMap* cmap = to_concrete();
-		CellMarker<ORBIT> cm(*cmap);
+		CellMarker<CellType::ORBIT> cm(*cmap);
 		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
 		{
-			CellType c(it);
+			const CellType c(it);
 			if (!cm.is_marked(c))
 			{
 				cm.mark(c);
-				if(filter(c))
-					if(!f(c))
-						break;
+				if(filter(c) && !internal::void_to_true_binder(f, c))
+					break;
 			}
 		}
 	}
@@ -1452,11 +1455,12 @@ public:
 	/**
 	 * @brief merge map in this map
 	 * @param map must be of same type than map
-	 * @return
+	 * @param newdarts a DartMarker in which the new imported darts are marked
+	 * @return false if the merge can not be done (incompatible attributes), true otherwise
 	 */
-	bool merge(const ConcreteMap& map)
+	bool merge(const ConcreteMap& map, DartMarker& newdarts)
 	{
-		// check attribute compatibility
+		// check attributes compatibility
 		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
@@ -1466,14 +1470,20 @@ public:
 			}
 		}
 
-		// compact and store index of copied darts
+		// compact topology container
 		this->compact_topo();
 		uint32 first = this->topology_.size();
 
-		//
+		// ensure that orbits that are embedded in given map are also embedded in this map
 		ConcreteMap* concrete = to_concrete();
 		concrete->merge_check_embedding(map);
+
+		// store index of copied darts
 		std::vector<uint32> old_new_topo = this->topology_.template merge<ConcreteMap::PRIM_SIZE>(map.topology_);
+
+		// mark new darts with the given dartmarker
+		newdarts.unmark_all();
+		map.foreach_dart([&] (Dart d) { newdarts.mark(Dart(old_new_topo[d.index])); });
 
 		// change topo relations of copied darts
 		for (ChunkArrayGen* ptr : this->topology_.chunk_arrays())
@@ -1495,19 +1505,16 @@ public:
 		map.foreach_dart([&] (Dart d)
 		{
 			if (map.is_boundary(d))
-			{
-				Dart dd = Dart(old_new_topo[d.index]);
-				this->set_boundary(dd,true);
-			}
+				this->set_boundary(Dart(old_new_topo[d.index]), true);
 		});
 
 		// change embedding indices of moved lines
-		for(uint32 i = 0; i < NB_ORBITS;++i)
+		for(uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)
 			{
-				if (map.embeddings_[i] == nullptr) //set embedding to INVALID for further easy detection
+				if (map.embeddings_[i] == nullptr) // set embedding to INVALID for further easy detection
 				{
 					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 						(*emb)[j] = INVALID_INDEX;

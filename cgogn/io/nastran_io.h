@@ -73,12 +73,12 @@ public:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class NastranVolumeImport : public NastranIO<VEC3>, public VolumeFileImport<VEC3>
 {
 	using Inherit_Nastran = NastranIO<VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Self = NastranVolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit_Import = VolumeFileImport<VEC3>;
+	using Self = NastranVolumeImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
@@ -87,17 +87,17 @@ protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream file(filename, std::ios::in);
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		std::string line;
 		line.reserve(512);
 		std::string tag;
 		tag.reserve(32);
 
-		std::getline (file, line);
+		getline_safe (file, line);
 		do
 		{
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (tag !="GRID");
 
@@ -118,7 +118,7 @@ protected:
 			s_v = line.substr(40,8);
 			v[2] = this->parse_scalar(s_v);
 
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (tag =="GRID");
 
@@ -145,7 +145,7 @@ protected:
 					s_v = line.substr(64,8);
 					ids[5] = uint32(std::stoi(s_v));
 
-					std::getline (file, line);
+					getline_safe (file, line);
 					s_v = line.substr(8,8);
 					ids[6] = uint32(std::stoi(s_v));
 					s_v = line.substr(16,8);
@@ -185,7 +185,7 @@ protected:
 				}
 			}
 
-			std::getline (file, line);
+			getline_safe (file, line);
 			tag = line.substr(0,4);
 		} while (!file.eof());
 
@@ -321,12 +321,12 @@ extern template class CGOGN_IO_API NastranIO<Eigen::Vector3f>;
 extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API NastranVolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API NastranVolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API NastranVolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API NastranVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API NastranVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API NastranVolumeExport<CMap3<DefaultMapTraits>>;
+extern template class CGOGN_IO_API NastranVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_NASTRAN_IO_CPP_))
 
 } // namespace io

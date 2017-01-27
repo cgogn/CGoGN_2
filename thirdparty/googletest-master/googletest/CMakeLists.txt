@@ -91,8 +91,14 @@ cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
 cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
 # use of target_compile_options to have a transitive c++11 flag
 if(NOT MSVC)
-	target_compile_options(gtest PUBLIC "-std=c++11")
-endif()
+  if (CGOGN_CPP_STD STREQUAL "11")
+    target_compile_options(gtest PUBLIC "-std=c++11")
+  elseif(CGOGN_CPP_STD STREQUAL "14")
+    target_compile_options(gtest PUBLIC "-std=c++14")
+ else(CGOGN_CPP_STD STREQUAL "11")
+    target_compile_options(gtest PUBLIC "-std=c++17")
+  endif(CGOGN_CPP_STD STREQUAL "11")
+endif(NOT MSVC)
 target_link_libraries(gtest_main gtest)
 
 # If the CMake version supports it, attach header directory information

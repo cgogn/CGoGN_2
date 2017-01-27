@@ -777,8 +777,8 @@ private:
 		buffer_format.reserve(this->nb_volumes());
 		map.foreach_cell([&](Volume w)
 		{
-			const int32 nbv = static_cast<int32>(this->number_of_vertices(w));
-			switch (nbv) {
+			const int32 nbv_vol = static_cast<int32>(this->number_of_vertices(w));
+			switch (nbv_vol) {
 				case 4: buffer_format.push_back(VTK_TETRA); break;
 				case 5: buffer_format.push_back(VTK_PYRAMID); break;
 				case 6: buffer_format.push_back(VTK_WEDGE); break;
@@ -841,7 +841,7 @@ private:
 	}
 };
 
-template <uint32 CHUNK_SIZE, uint32 PRIM_SIZE, typename VEC3>
+template <uint32 PRIM_SIZE, typename VEC3>
 class VtkIO
 {
 public:
@@ -853,10 +853,10 @@ public:
 		POLYDATA
 	};
 
-	using Self = VtkIO<DEFAULT_CHUNK_SIZE, PRIM_SIZE, VEC3>;
-	using DataInputGen = cgogn::io::DataInputGen<CHUNK_SIZE>;
+	using Self = VtkIO<PRIM_SIZE, VEC3>;
+	using DataInputGen = cgogn::io::DataInputGen;
 	template <typename T>
-	using DataInput = cgogn::io::DataInput<CHUNK_SIZE, PRIM_SIZE, T>;
+	using DataInput = cgogn::io::DataInput<PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
 
 	inline VtkIO() {}
@@ -864,10 +864,10 @@ public:
 	virtual ~VtkIO() {}
 
 protected:
-
+	FileType			vtk_file_type_;
 	DataInput<VEC3>		positions_;
 	DataInput<uint32>	cells_;
-	DataInput<int>		cell_types_;
+	DataInput<int32>	cell_types_;
 	DataInput<uint32>	offsets_;
 
 protected:
@@ -884,7 +884,6 @@ protected:
 	bool parse_vtk_legacy_file(std::ifstream& fp, bool big_endian = true)
 	{
 		VTK_MESH_TYPE vtk_type(VTK_MESH_TYPE::UNKNOWN);
-
 		cgogn_log_info("parse_vtk_legacy_file") << "Opening a legacy vtk file";
 
 		std::string line;
@@ -893,21 +892,21 @@ protected:
 		word.reserve(128);
 
 		// printing the 2 first lines
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
-		std::getline(fp, line);
+		getline_safe(fp, line);
 //		cgogn_log_info("vtk_io") << line;
 
 		fp >> word;
-		bool ascii_file = to_upper(word) == "ASCII";
-		if (!(ascii_file || to_upper(word) == "BINARY"))
+		const bool ascii_file = i_equals(word, "ascii");
+		if (!(ascii_file || i_equals(word, "binary")))
 		{
 			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
 			return false;
 		}
 
 		fp >> word;
-		if (to_upper(word) != "DATASET")
+		if (!i_equals(word, "dataset"))
 		{
 			cgogn_log_warning("parse_vtk_legacy_file") << "Could not read the mesh file properly.";
 			return false;
@@ -929,7 +928,7 @@ protected:
 		{
 			while(!fp.eof())
 			{
-				std::getline(fp,line);
+				getline_safe(fp,line);
 				word.clear();
 				std::istringstream sstream(line);
 				sstream >> word;
@@ -995,7 +994,7 @@ protected:
 								std::ifstream::pos_type previous_pos;
 								do {
 									previous_pos = fp.tellg();
-									std::getline(fp, line);
+									getline_safe(fp, line);
 									sstream.str(line);
 									sstream.clear();
 									word.clear();
@@ -1009,18 +1008,18 @@ protected:
 										uint32 num_comp = is_vector? 3u : 1u;
 										sstream >> att_name >> att_type >> num_comp;
 										att_type = vtk_data_type_to_cgogn_name_of_type(att_type);
-										if (word == "NORMALS" || to_upper(att_name) == "NORMAL" || to_upper(att_name) == "NORMALS")
+										if (word == "NORMALS" || i_equals(att_name,"NORMAL") || i_equals(att_name,"NORMALS"))
 											att_name = "normal";
 										cgogn_log_info("parse_vtk_legacy_file") << "reading attribute \"" << att_name << "\" of type " << att_type << " (" << num_comp << " components).";
 
 										const auto pos_before_lookup_table = fp.tellg(); // the lookup table might (or might not) be defined
-										std::getline(fp,line);
+										getline_safe(fp,line);
 										sstream.str(line);
 										sstream.clear();
 										std::string lookup_table;
 										std::string lookup_table_name;
 										sstream >> lookup_table >> lookup_table_name;
-										if (to_upper(lookup_table) == "LOOKUP_TABLE")
+										if (i_equals(lookup_table, "LOOKUP_TABLE"))
 										{
 											cgogn_log_debug("parse_vtk_legacy_file") << "Ignoring lookup table named \"" << lookup_table_name << "\".";
 										}
@@ -1029,7 +1028,11 @@ protected:
 											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
 										}
 
-										std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp));
+										std::unique_ptr<DataInputGen> att;
+										if (att_name == "normal")
+											att = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(att_type, num_comp);
+										else
+											att = DataInputGen::template newDataIO<PRIM_SIZE>(att_type, num_comp);
 										att->read_n(fp, nb_data, !ascii_file, big_endian);
 										if (cell_data)
 											this->add_cell_attribute(*att, att_name);
@@ -1046,18 +1049,18 @@ protected:
 											for (uint32 i = 0u ; i< num_arrays; ++i)
 											{
 												do {
-													std::getline(fp,line);
+													getline_safe(fp,line);
 												} while (line.empty());
 
-												sstream.str(line);
 												sstream.clear();
-												std::string		data_name;
+												sstream.str(line);
+												std::string data_name;
 												uint32	nb_comp;
 												//uint32	nb_data; already declared
 												std::string	data_type;
 												sstream >> data_name >> nb_comp >> nb_data >> data_type;
 												data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
-												if (to_upper(data_name) == "NORMAL" || to_upper(data_name) == "NORMALS")
+												if (i_equals(data_name, "NORMAL") || i_equals(data_name, "NORMALS"))
 													data_name = "normal";
 												cgogn_log_info("parse_vtk_legacy_file") << "reading field \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components).";
 												std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
@@ -1204,7 +1207,11 @@ protected:
 				}
 				else
 				{
-					std::unique_ptr<DataInputGen> vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
+					std::unique_ptr<DataInputGen> vertex_att;
+					if (data_name == "normal")
+						vertex_att = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
+					else
+						vertex_att = DataInputGen::template newDataIO<PRIM_SIZE>(type, nb_comp);
 					vertex_att->read_n(*mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*vertex_att, data_name);
 				}
@@ -1212,11 +1219,12 @@ protected:
 		}
 
 		XMLElement* const cell_node = piece_node->FirstChildElement("Cells");
-		if (cell_node != nullptr)
 		{
-			XMLElement* cells_array_node = cell_node->FirstChildElement("DataArray");
-			cgogn_assert(cells_array_node != nullptr);
 			std::vector<XMLElement*> cell_nodes;
+			XMLElement* cells_array_node = nullptr;
+			if (cell_node != nullptr)
+				cells_array_node = cell_node->FirstChildElement("DataArray");
+
 			while (cells_array_node)
 			{
 				cell_nodes.push_back(cells_array_node);
@@ -1269,7 +1277,7 @@ protected:
 						mem_stream = make_unique<IMemoryStream>(ascii_data);
 					if (data_name == "connectivity")
 					{
-						const uint32 last_offset = this->offsets_.vec()->back();
+						const uint32 last_offset = this->offsets_.vec().back();
 						auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
 						cells->read_n(*mem_stream, last_offset,binary,!little_endian);
 						this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
@@ -1349,7 +1357,7 @@ protected:
 						mem_stream = make_unique<IMemoryStream>(ascii_data);
 					if (data_name == "connectivity")
 					{
-						const uint32 last_offset = this->offsets_.vec()->back();
+						const uint32 last_offset = this->offsets_.vec().back();
 						auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
 						cells->read_n(*mem_stream, last_offset,binary,!little_endian);
 						this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
@@ -1372,14 +1380,14 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VtkSurfaceImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class VtkSurfaceImport : public VtkIO<CMap2::PRIM_SIZE, VEC3>, public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = VtkSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap2<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = VtkSurfaceImport<VEC3>;
+	using Inherit_Vtk = VtkIO<CMap2::PRIM_SIZE, VEC3>;
+	using Inherit_Import = SurfaceFileImport<VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1391,6 +1399,7 @@ protected:
 
 	inline bool read_xml_file(const std::string& filename)
 	{
+
 		if (!Inherit_Vtk::parse_xml_vtu(filename))
 			return false;
 		this->fill_surface_import();
@@ -1402,27 +1411,6 @@ protected:
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
 			return false;
 		this->fill_surface_import();
-		return true;
-	}
-
-	inline bool read_vtp_file(const std::string& filename)
-	{
-		if (!Inherit_Vtk::parse_xml_vtu(filename))
-			return false;
-		this->fill_surface_import();
-
-		auto cells_it = this->cells_.vec()->begin();
-		uint32 last_offset = 0u;
-		for(auto offset_it = this->offsets_.vec()->begin(), offset_end = this->offsets_.vec()->end(); offset_it != offset_end; ++offset_it)
-		{
-			const uint32 curr_offset = *offset_it;
-			const uint32 nb_vertices = curr_offset - last_offset;
-			this->faces_nb_edges_.push_back(nb_vertices);
-			for (uint32 i = 0u; i < nb_vertices; ++i)
-				this->faces_vertex_indices_.push_back(*cells_it++);
-			last_offset = *offset_it;
-		}
-
 		return true;
 	}
 
@@ -1440,19 +1428,18 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		const FileType ft = file_type(filename);
-		switch (ft)
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{
-				std::ifstream fp(filename.c_str(), std::ios::in);
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
 				cgogn_assert(fp.good());
 				return this->read_vtk_legacy_file(fp);
 			}
 			case FileType::FileType_VTU:
-				return this->read_xml_file(filename);
 			case FileType::FileType_VTP:
-				return this->read_vtp_file(filename);
+				return this->read_xml_file(filename);
 			default:
 				cgogn_log_warning("VtkSurfaceImport::import_file_impl")<< "VtkSurfaceImport does not handle the files of type \"" << extension(filename) << "\".";
 				return false;
@@ -1463,55 +1450,82 @@ private:
 
 	inline void fill_surface_import()
 	{
-		const uint32 nb_faces = uint32(this->cell_types_.size());
-		this->reserve(nb_faces);
-
-		auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
-		const std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(this->cell_types_.buffer_vector());
-		for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
+		if (this->cell_types_.size() > 0) // .vtk and .vtu files
 		{
-			const std::size_t nb_vert = *(cells_it++);
-			const int cell_type = *(cell_types_it++);
+			const uint32 nb_faces = uint32(this->cell_types_.size());
+			this->reserve(nb_faces);
 
-			if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
+			auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
+			const std::vector<int32>* cell_types_vec = static_cast<std::vector<int32>*>(this->cell_types_.buffer_vector());
+			const auto offsets_begin = static_cast<std::vector<uint32>*>(this->offsets_.buffer_vector())->begin();
+			auto offset_it = offsets_begin;
+			std::size_t last_offset(0);
+			for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
 			{
-				this->faces_nb_edges_.push_back(uint32(nb_vert));
-				for (std::size_t i = 0ul ; i < nb_vert;++i)
+				const int cell_type = *(cell_types_it++);
+				std::size_t nb_vert(0);
+				if (this->vtk_file_type_ == FileType::FileType_VTK_LEGACY)
+					nb_vert = *cells_it++;
+				else {
+					const std::size_t curr_offset = *offset_it++;
+					nb_vert = curr_offset - last_offset;
+					last_offset = curr_offset;
+				}
+
+				if (cell_type != VTK_CELL_TYPES::VTK_TRIANGLE_STRIP)
 				{
-					this->faces_vertex_indices_.push_back(*cells_it++);
+					this->faces_nb_edges_.push_back(uint32(nb_vert));
+					for (std::size_t i = 0ul ; i < nb_vert;++i)
+					{
+						this->faces_vertex_indices_.push_back(*cells_it++);
+					}
+				}
+				else
+				{
+					std::vector<uint32> vertexIDS;
+					vertexIDS.reserve(nb_vert);
+					for (std::size_t i = 0ul ; i < nb_vert;++i)
+					{
+						vertexIDS.push_back(*cells_it++);
+					}
+
+					for (uint32 i = 0u ; i < nb_vert -2u; ++i)
+					{
+						this->faces_nb_edges_.push_back(3);
+						this->faces_vertex_indices_.push_back(vertexIDS[i]);
+						this->faces_vertex_indices_.push_back(vertexIDS[i+1]);
+						this->faces_vertex_indices_.push_back(vertexIDS[i+2]);
+						if (i % 2u == 0u)
+							std::swap(this->faces_vertex_indices_.back(), *(this->faces_vertex_indices_.end()-2));
+					}
 				}
 			}
-			else
+		} else { // .vtp files
+			const uint32 nb_faces = uint32(this->offsets_.vec().size());
+			this->reserve(nb_faces);
+			auto cells_it = this->cells_.vec().begin();
+			uint32 last_offset = 0u;
+			for(auto offset_it = this->offsets_.vec().begin(), offset_end = this->offsets_.vec().end(); offset_it != offset_end; ++offset_it)
 			{
-				std::vector<uint32> vertexIDS;
-				vertexIDS.reserve(nb_vert);
-				for (std::size_t i = 0ul ; i < nb_vert;++i)
-				{
-					vertexIDS.push_back(*cells_it++);
-				}
-
-				for (uint32 i = 0u ; i < nb_vert -2u; ++i)
-				{
-					this->faces_nb_edges_.push_back(3);
-					this->faces_vertex_indices_.push_back(vertexIDS[i]);
-					this->faces_vertex_indices_.push_back(vertexIDS[i+1]);
-					this->faces_vertex_indices_.push_back(vertexIDS[i+2]);
-					if (i % 2u == 0u)
-						std::swap(this->faces_vertex_indices_.back(), *(this->faces_vertex_indices_.end()-2));
-				}
+				const uint32 curr_offset = *offset_it;
+				const uint32 nb_vertices = curr_offset - last_offset;
+				this->faces_nb_edges_.push_back(nb_vertices);
+				for (uint32 i = 0u; i < nb_vertices; ++i)
+					this->faces_vertex_indices_.push_back(*cells_it++);
+				last_offset = *offset_it;
 			}
 		}
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class VtkVolumeImport : public VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class VtkVolumeImport : public VtkIO<CMap3::PRIM_SIZE, VEC3>, public VolumeFileImport<VEC3>
 {
 public:
 
-	using Self = VtkVolumeImport<MAP_TRAITS, VEC3>;
-	using Inherit_Vtk = VtkIO<MAP_TRAITS::CHUNK_SIZE, CMap3<MAP_TRAITS>::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP_TRAITS, VEC3>;
+	using Self = VtkVolumeImport<VEC3>;
+	using Inherit_Vtk = VtkIO<CMap3::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeFileImport<VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1533,14 +1547,14 @@ protected:
 
 		this->reserve(uint32(this->cell_types_.size()));
 
-		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
-		const std::vector<uint32>* cells_vec	= this->cells_.vec();
+		std::vector<int>& cell_types_vec	= this->cell_types_.vec();
+		const std::vector<uint32>& cells_vec	= this->cells_.vec();
 		std::vector<uint32> cells_buffer;
-		cells_buffer.reserve(cells_vec->size());
+		cells_buffer.reserve(cells_vec.size());
 
 		// in the legacy file , the first number of each line is the number of vertices. We need to remove it.
-		auto cells_it = cells_vec->begin();
-		for (std::vector<int>::const_iterator type_it = cell_types_vec->begin(), end = cell_types_vec->end(); type_it != end; ++type_it)
+		auto cells_it = cells_vec.begin();
+		for (auto type_it = cell_types_vec.begin(), end = cell_types_vec.end(); type_it != end; ++type_it)
 		{
 			++cells_it;
 			uint32 vol_nb_verts = 0u;
@@ -1567,7 +1581,7 @@ protected:
 			}
 		}
 
-		add_vtk_volumes(cells_buffer, *cell_types_vec, *(this->position_attribute()));
+		add_vtk_volumes(cells_buffer, cell_types_vec);
 
 		return true;
 	}
@@ -1579,20 +1593,18 @@ protected:
 
 		this->reserve(uint32(this->cell_types_.size()));
 
-		const std::vector<int>* cell_types_vec	= this->cell_types_.vec();
-		const std::vector<uint32>* cells_vec	= this->cells_.vec();
+		std::vector<int>& cell_types_vec	= this->cell_types_.vec();
+		const std::vector<uint32>& cells_vec	= this->cells_.vec();
 
-		ChunkArray<VEC3>* pos = this->position_attribute();
-		cgogn_assert(pos != nullptr);
-		add_vtk_volumes(*cells_vec,*cell_types_vec, *pos);
+		add_vtk_volumes(cells_vec,cell_types_vec);
 
 		return true;
 	}
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		const FileType ft = file_type(filename);
-		switch (ft)
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
 		{
 			case FileType::FileType_VTK_LEGACY:
 			{
@@ -1607,7 +1619,7 @@ protected:
 		}
 	}
 
-	inline void add_vtk_volumes(std::vector<uint32> ids, const std::vector<int>& type_vol, ChunkArray<VEC3> const& pos)
+	inline void add_vtk_volumes(std::vector<uint32> ids, std::vector<int>& type_vol)
 	{
 		const uint32 nb_volumes = uint32(type_vol.size());
 		uint32 curr_offset = 0;
@@ -1619,6 +1631,7 @@ protected:
 				{
 					std::swap(ids[curr_offset+2], ids[curr_offset+3]);
 					std::swap(ids[curr_offset+6], ids[curr_offset+7]);
+					type_vol[i] = VTK_CELL_TYPES::VTK_HEXAHEDRON;
 				}
 				this->add_hexa(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7], true);
 				curr_offset += 8u;
@@ -1662,17 +1675,17 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
-extern template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API VtkVolumeExport<CMap3>;
+extern template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
 
 } // namespace io

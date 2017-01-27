@@ -106,13 +106,15 @@ const char* ShaderBoldLineGen::geometry_shader_source_ =
 const char* ShaderBoldLineGen::fragment_shader_source_ =
 "#version 150\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "in vec4 color_f;\n"
 "in vec4 posi_clip;\n"
 "out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,posi_clip);\n"
-"	if (d>0.0) discard;\n"
+"	float d2 = dot(plane_clip2,posi_clip);\n"
+"	if ((d>0.0)||(d2>0.0))  discard;\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -189,13 +191,15 @@ const char* ShaderBoldLineGen::geometry_shader_source2_ =
 const char* ShaderBoldLineGen::fragment_shader_source2_ =
 "#version 150\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "in vec4 color_f;\n"
 "in vec4 posi_clip;\n"
 "out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,posi_clip);\n"
-"	if (d>0.0) discard;\n"
+"	float d2 = dot(plane_clip2,posi_clip);\n"
+"	if ((d>0.0)||(d2>0.0))  discard;\n"
 "   fragColor = color_f;\n"
 "}\n";
 
@@ -221,6 +225,7 @@ ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 	unif_color_ = prg_.uniformLocation("lineColor");
 	unif_width_ = prg_.uniformLocation("lineWidths");
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 }
 
 void ShaderBoldLineGen::set_color(const QColor& rgb)
@@ -242,6 +247,12 @@ void ShaderBoldLineGen::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
+
+void ShaderBoldLineGen::set_plane_clip2(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip2_, plane);
+}
+
 
 template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
 template class CGOGN_RENDERING_API ShaderBoldLineTpl<true>;

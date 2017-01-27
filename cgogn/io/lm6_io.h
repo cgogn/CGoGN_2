@@ -34,19 +34,21 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class LM6VolumeImport : public VolumeFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class LM6VolumeImport : public VolumeFileImport<VEC3>
 {
-	using Inherit = VolumeFileImport<MAP_TRAITS, VEC3>;
-	using Self = LM6VolumeImport<MAP_TRAITS, VEC3>;
+	using Inherit = VolumeFileImport<VEC3>;
+	using Self = LM6VolumeImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 public:
+
 	inline LM6VolumeImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		int version = -1;
@@ -72,7 +74,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
@@ -90,7 +92,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfTetrahedra);
 			std::array<int, 4> ids;
-			for (int i = 0 ; i < number_of_tetras; ++i)
+			for (uint32 i = 0; i < number_of_tetras; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfTetrahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
@@ -104,7 +106,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfHexahedra);
 			std::array<int, 8> ids;
-			for (int i = 0 ; i < number_of_hexas; ++i)
+			for (uint32 i = 0 ; i < number_of_hexas; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfHexahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ids[6], &ids[7], &ref);
 				for (auto& id : ids)
@@ -118,7 +120,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfPrisms);
 			std::array<int, 6> ids;
-			for (int i = 0 ; i < number_of_prisms; ++i)
+			for (uint32 i = 0; i < number_of_prisms; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfPrisms, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ref);
 				for (auto& id : ids)
@@ -131,7 +133,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfPyramids);
 			std::array<int, 5> ids;
-			for (int i = 0 ; i < number_of_pyramids; ++i)
+			for (uint32 i = 0; i < number_of_pyramids; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfPyramids, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ref);
 				for (auto& id : ids)
@@ -145,19 +147,21 @@ protected:
 	}
 };
 
-template <typename MAP_TRAITS, typename VEC3>
-class LM6SurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class LM6SurfaceImport : public SurfaceFileImport<VEC3>
 {
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
-	using Self = LM6SurfaceImport<MAP_TRAITS, VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
+	using Self = LM6SurfaceImport<VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 public:
+
 	inline LM6SurfaceImport() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6SurfaceImport);
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		int version = -1;
@@ -181,7 +185,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
@@ -199,7 +203,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfTriangles);
 			std::array<int, 3> ids;
-			for (int i = 0 ; i < number_of_triangles; ++i)
+			for (uint32 i = 0; i < number_of_triangles; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfTriangles, &ids[0],&ids[1], &ids[2], &ref);
 				for (auto& id : ids)
@@ -213,7 +217,7 @@ protected:
 		{
 			GmfGotoKwd(mesh_index, GmfQuadrilaterals);
 			std::array<int, 4> ids;
-			for (int i = 0 ; i < number_of_quads; ++i)
+			for (uint32 i = 0; i < number_of_quads; ++i)
 			{
 				(void) GmfGetLin(mesh_index, GmfQuadrilaterals, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
@@ -228,16 +232,16 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
-extern template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6SurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API LM6VolumeImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float32,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
 
 } // namespace io
-} // namespace cgogn
 
+} // namespace cgogn
 
 #endif // CGOGN_IO_LM6_IO_H_

@@ -27,10 +27,12 @@
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template class CGOGN_IO_API StlSurfaceExport<CMap2<DefaultMapTraits>>;
+template class CGOGN_IO_API StlSurfaceExport<CMap2>;
 
 } // namespace io
+
 } // namespace cgogn

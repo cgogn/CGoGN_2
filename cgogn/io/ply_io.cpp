@@ -27,15 +27,16 @@
 
 namespace cgogn
 {
+
 namespace io
 {
 
-template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API PlySurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3d>;
+template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3f>;
+template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API PlySurfaceExport<CMap2<DefaultMapTraits>>;
+template class CGOGN_IO_API PlySurfaceExport<CMap2>;
 
 CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
 {
@@ -59,4 +60,5 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& 
 }
 
 } // namespace io
+
 } // namespace cgogn

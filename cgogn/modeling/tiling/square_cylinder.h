@@ -36,7 +36,7 @@ namespace modeling
 {
 
 template <typename MAP>
-class SquareCylinder : protected Tiling<MAP>
+class SquareCylinder : public Tiling<MAP>
 {
 	using CDart = typename MAP::CDart;
 	using Vertex = typename MAP::Vertex;
@@ -344,6 +344,10 @@ public:
 	}
 	//@}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
+extern template class CGOGN_MODELING_API SquareCylinder<CMap2>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
 
 } //namespace modeling
 

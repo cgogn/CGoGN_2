@@ -39,18 +39,17 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3, typename MAP_TRAITS>
+template <typename VEC3>
 void pliant_remeshing(
-	CMap2<MAP_TRAITS>& map,
-	typename CMap2<MAP_TRAITS>::template VertexAttribute<VEC3>& position
+	CMap2& map,
+	typename CMap2::template VertexAttribute<VEC3>& position
 )
 {
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-	using Map = CMap2<MAP_TRAITS>;
-	using Vertex = typename Map::Vertex;
-	using Edge = typename Map::Edge;
+	using Vertex = typename CMap2::Vertex;
+	using Edge = typename CMap2::Edge;
 
-	CellCache<Map> cache(map);
+	CellCache<CMap2> cache(map);
 	cache.template build<Edge>();
 
 	Scalar mean_edge_length = geometry::mean_edge_length<VEC3>(map, cache, position);
@@ -100,7 +99,7 @@ void pliant_remeshing(
 	});
 
 	// equalize valences with edge flips
-	typename Map::DartMarker dm(map);
+	typename CMap2::DartMarker dm(map);
 	map.foreach_cell(
 		[&] (Edge e)
 		{
@@ -134,8 +133,8 @@ void pliant_remeshing(
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d, DefaultMapTraits>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
 
 } // namespace modeling

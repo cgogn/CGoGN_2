@@ -24,7 +24,7 @@
 #ifndef CGOGN_CORE_UTILS_STRING_H_
 #define CGOGN_CORE_UTILS_STRING_H_
 
-
+#include <cgogn/core/dll.h>
 #include <string>
 #include <locale>
 #include <iostream>
@@ -32,60 +32,16 @@
 namespace cgogn
 {
 
-template <typename Char_T>
-inline std::basic_string<Char_T> to_upper(const std::basic_string<Char_T>& str)
-{
-	const std::locale locale;
-	std::basic_string<Char_T> res(str);
-	for (auto& c : res)
-		c = Char_T(std::toupper(c,locale));
-	return res;
-}
 
-template <typename Char_T>
-inline std::basic_string<Char_T> to_lower(const std::basic_string<Char_T>& str)
-{
-	const std::locale locale;
-	std::basic_string<Char_T> res(str);
-	for (auto& c : res)
-		c = Char_T(std::tolower(c,locale));
-	return res;
-}
+CGOGN_CORE_API std::string to_upper(const std::string& str);
 
-template <typename Char_T>
-inline std::basic_string<Char_T> extension(const std::basic_string<Char_T>& str)
-{
-	std::size_t dot = str.rfind('.');
-	if (dot == std::basic_string<Char_T>::npos || dot == str.size() -1u)
-		return std::basic_string<Char_T>();
-	return str.substr(dot + 1u);
-}
+CGOGN_CORE_API std::string to_lower(const std::string& str);
 
-template <typename Char_T>
-inline std::basic_string<Char_T> remove_extension(const std::basic_string<Char_T>& str)
-{
-	std::size_t dot = str.rfind('.');
-	if (dot == std::basic_string<Char_T>::npos)
-		return str;
-	else
-		return str.substr(0,dot);
-}
+CGOGN_CORE_API std::string extension(const std::string& str);
 
-template <typename Char_T>
-inline bool equal_case_insensitive(const std::basic_string<Char_T>& str1, const std::basic_string<Char_T>& str2)
-{
-	if (str1.size() != str2.size())
-		return false;
-	auto it1 = str1.begin(), it2 = str2.begin(), end = str1.end();
-	for(auto end = str1.end(); it1 != end ;)
-	{
-		if (std::tolower(*it1) != std::tolower(*it2))
-			return false;
-		++it1;
-		++it2;
-	}
-	return true;
-}
+CGOGN_CORE_API std::string remove_extension(const std::string& str);
+
+CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2);
 
 } // namespace cgogn
 

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -38,8 +38,8 @@ namespace cgogn
 {
 
 // stream insertion / extraction for Attribute_T
-template <typename DATA_TRAITS, typename T>
-inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, T>& att)
+template <typename T>
+inline std::ostream& operator<<(std::ostream& o, const Attribute_T<T>& att)
 {
 	for(auto it = att.begin(), end = att.end() ; it != end;)
 	{
@@ -51,8 +51,8 @@ inline std::ostream& operator<<(std::ostream& o, const Attribute_T<DATA_TRAITS, 
 	return o;
 }
 
-template <typename DATA_TRAITS, typename T>
-inline std::istream& operator>>(std::istream& in, Attribute_T<DATA_TRAITS, T>& att)
+template <typename T>
+inline std::istream& operator>>(std::istream& in, Attribute_T<T>& att)
 {
 	for (auto& it : att)
 	{
@@ -67,25 +67,35 @@ inline std::istream& operator>>(std::istream& in, Attribute_T<DATA_TRAITS, T>& a
 namespace io
 {
 
-struct ExportOptions
+
+class CGOGN_IO_API ExportOptions final
 {
-	inline ExportOptions(const std::string& filename,std::pair<Orbit, std::string> position_attribute, std::vector<std::pair<Orbit, std::string>> const& attributes = {}, bool binary = true, bool compress = false, bool overwrite = true) :
-		filename_(filename),
-		position_attribute_(position_attribute),
-		attributes_to_export_(attributes),
-		binary_(binary),
-		compress_(compress),
-		overwrite_(overwrite)
-	{}
+private:
+	ExportOptions();
+
+public:
+	ExportOptions(const ExportOptions& eo);
+	ExportOptions(ExportOptions&& eo);
+	inline ~ExportOptions() {}
+	inline ExportOptions& filename(const std::string & filename) { filename_ = filename; return *this; }
+	inline ExportOptions& position_attribute(Orbit orb, const std::string & filename) { position_attribute_ = std::make_pair(orb,filename); return *this; }
+	inline ExportOptions& add_attribute(Orbit orb, const std::string & filename) { attributes_to_export_.push_back(std::make_pair(orb,filename)); return *this; }
+	inline ExportOptions& binary(bool b) { binary_ = b; return *this; }
+	inline ExportOptions& compress(bool b) { compress_ = b; return *this; }
+	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
+	inline ExportOptions& cell_filter(const std::function<bool(Dart)>& func) { cell_filter_ = func; return *this; }
 
 	std::string filename_;
 	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
+	std::function<bool(Dart)> cell_filter_;
 	bool binary_;
 	bool compress_;
 	bool overwrite_;
 
+	static ExportOptions create();
 };
+
 
 enum FileType
 {
@@ -320,6 +330,9 @@ private:
 
 	CharArrayBuffer buffer_;
 };
+
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str);
+
 
 } // namespace io
 

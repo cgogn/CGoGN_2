@@ -31,8 +31,11 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex triangule<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::Face);
-template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex triangule<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
+template CGOGN_MODELING_API CMap2::Vertex triangule<CMap2>(CMap2&, CMap2::Face);
+template CGOGN_MODELING_API CMap3::Vertex triangule<CMap3>(CMap3&, CMap3::Face);
+template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
+
 } // namespace cgogn

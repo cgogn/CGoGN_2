@@ -79,8 +79,10 @@ void ShaderProgram::get_matrices_uniforms()
 
 void ShaderProgram::set_matrices(const QMatrix4x4& proj, const QMatrix4x4& mv)
 {
-	prg_.setUniformValue(unif_projection_matrix_, proj);
-	prg_.setUniformValue(unif_mv_matrix_, mv);
+	if (unif_projection_matrix_ >= 0)
+		prg_.setUniformValue(unif_projection_matrix_, proj);
+	if (unif_mv_matrix_ >= 0)
+		prg_.setUniformValue(unif_mv_matrix_, mv);
 
 	if (unif_normal_matrix_ >= 0)
 	{

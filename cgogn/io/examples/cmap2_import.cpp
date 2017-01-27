@@ -13,12 +13,7 @@
 
 using namespace cgogn::numerics;
 
-struct MyMapTraits : public cgogn::DefaultMapTraits
-{
-	static const uint32 CHUNK_SIZE = 8192;
-};
-
-using Map2 = cgogn::CMap2<MyMapTraits>;
+using Map2 = cgogn::CMap2;
 
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
@@ -62,9 +57,9 @@ int main(int argc, char** argv)
 			nb_darts_2 += n;
 		cgogn_log_info("cmap2_import")<< "nb darts // -> " << nb_darts_2;
 
-		VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex::ORBIT>("position");
-		VertexAttribute<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex::ORBIT>("normal");
-		FaceAttribute<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face::ORBIT>("normal");
+		VertexAttribute<Vec3> vertex_position = map.get_attribute<Vec3, Map2::Vertex>("position");
+		VertexAttribute<Vec3> vertex_normal = map.add_attribute<Vec3, Map2::Vertex>("normal");
+		FaceAttribute<Vec3> face_normal = map.add_attribute<Vec3, Map2::Face>("normal");
 
 		cgogn_log_info("cmap2_import")  << "Map integrity : " << std::boolalpha << map.check_map_integrity();
 

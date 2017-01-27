@@ -2,9 +2,6 @@ project(cgogn_multiresolution
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-find_package(cgogn_geometry REQUIRED)
-
 set(HEADER_FILES
 	dll.h
 
@@ -25,14 +22,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	cph/cph_base.cpp
 	cph/cph2.cpp
-	cph/cph3.cpp
-
-	cph/ihcmap2.cpp
-	cph/ihcmap2_adaptive.cpp
-	cph/ihcmap2_regular.cpp
-	cph/ihcmap3.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -45,7 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_geometry_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/multiresolution")
 install(DIRECTORY cph rcmap
@@ -53,4 +43,4 @@ install(DIRECTORY cph rcmap
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")

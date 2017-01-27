@@ -21,3 +21,6 @@ target_link_libraries(triangular_tiling ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRA
 
 add_executable(square_tiling square_tiling.cpp)
 target_link_libraries(square_tiling ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES})
+
+add_executable(dual dual.cpp)
+target_link_libraries(dual ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES})

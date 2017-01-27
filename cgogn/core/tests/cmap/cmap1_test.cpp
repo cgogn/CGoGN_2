@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap1Test class implements tests on embedded CMap1
@@ -43,13 +43,12 @@ class CMap1Test : public ::testing::Test
 {
 public:
 
-	using testCMap1 = CMap1<DefaultMapTraits>;
-	using Vertex = testCMap1::Vertex;
-	using Face = testCMap1::Face;
+	using Vertex = CMap1::Vertex;
+	using Face = CMap1::Face;
 
 protected:
 
-	testCMap1 cmap_;
+	CMap1 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -61,8 +60,8 @@ protected:
 		darts_.reserve(NB_MAX);
 		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int32, Face::ORBIT>("faces");
+		cmap_.add_attribute<int32, Vertex>("vertices");
+		cmap_.add_attribute<int32, Face>("faces");
 	}
 
 	/**
@@ -77,11 +76,11 @@ protected:
 		uint32 count = 0u;
 		for (uint32 i = 0u; i < n; ++i)
 		{
-			uint32 m = 1u + std::rand() % 10;
+			uint32 m = 1u + uint32(std::rand()) % 10;
 			Dart d = cmap_.add_face(m).dart;
 			count += m;
 
-			m = std::rand() % 10u;
+			m = uint32(std::rand()) % 10u;
 			while (m-- > 0u) d = cmap_.phi1(d);
 
 			darts_.push_back(d);
@@ -117,7 +116,7 @@ TEST_F(CMap1Test, add_face)
 TEST_F(CMap1Test, remove_face)
 {
 	uint32 count_vertices = add_faces(NB_MAX);
-	int32 count_faces = NB_MAX;
+	uint32 count_faces = NB_MAX;
 
 	for (Dart d : darts_)
 	{

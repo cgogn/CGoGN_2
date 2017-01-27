@@ -62,9 +62,11 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "	vec3 L = normalize(lightPosition-pos);\n"
 "	float lambert = dot(N,L);\n"
 "	if (gl_FrontFacing)\n"
-"		fragColor = ambiant_color+lambert*front_color;\n"
+"		fragColor = vec4(ambiant_color.rgb+lambert*front_color.rgb, front_color.a);\n"
+//"		fragColor = ambiant_color+lambert*front_color;\n"
 "	else\n"
-"		fragColor = ambiant_color+lambert*back_color;\n"
+//"		fragColor = ambiant_color+lambert*back_color;\n"
+"		fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
 "}\n";
 
 const char* ShaderFlatGen::vertex_shader_source2_ =
@@ -86,8 +88,6 @@ const char* ShaderFlatGen::vertex_shader_source2_ =
 const char* ShaderFlatGen::fragment_shader_source2_ =
 "#version 150\n"
 "out vec4 fragColor;\n"
-"uniform vec4 front_color;\n"
-"uniform vec4 back_color;\n"
 "uniform vec4 ambiant_color;\n"
 "uniform vec3 lightPosition;\n"
 "in vec3 pos;\n"

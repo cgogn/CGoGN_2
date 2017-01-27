@@ -161,12 +161,11 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
-extern template CGOGN_MODELING_API CMap2<DefaultMapTraits>::Vertex quadrangule_face<CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::Face);
-extern template CGOGN_MODELING_API CMap3<DefaultMapTraits>::Vertex quadrangule_face<CMap3<DefaultMapTraits>>(CMap3<DefaultMapTraits>&, CMap3<DefaultMapTraits>::Face);
-extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2<DefaultMapTraits>>(CMap2<DefaultMapTraits>&, CMap2<DefaultMapTraits>::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
+extern template CGOGN_MODELING_API CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
+extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
-
 
 } // namespace modeling
 

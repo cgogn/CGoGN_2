@@ -27,19 +27,21 @@
 
 namespace cgogn
 {
+
 namespace io
 {
-template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkIO<DefaultMapTraits::CHUNK_SIZE,1, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkVolumeImport<DefaultMapTraits, Eigen::Vector3f>;
+template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
+template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkVolumeExport<CMap3<DefaultMapTraits>>;
-template class CGOGN_IO_API VtkSurfaceExport<CMap2<DefaultMapTraits>>;
+template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
+template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
+
+template class CGOGN_IO_API VtkVolumeExport<CMap3>;
+template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
 
 CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
 {
@@ -177,4 +179,5 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 }
 
 } // namespace io
+
 } // namespace cgogn

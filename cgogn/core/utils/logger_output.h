@@ -42,7 +42,7 @@ public:
 
 	inline LoggerOutput() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LoggerOutput);
-	virtual ~LoggerOutput() {}
+	virtual ~LoggerOutput();
 
 	virtual void process_entry(const LogEntry& entry) = 0;
 };

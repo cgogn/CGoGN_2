@@ -24,8 +24,8 @@
 #ifndef MULTIRESOLUTION_MRA_LERP_TRI_QUAD_MRANALYSIS_H_
 #define MULTIRESOLUTION_MRA_LERP_TRI_QUAD_MRANALYSIS_H_
 
-#include <core/basic/dart.h>
-#include <multiresolution/mra/mr_analysis.h>
+#include <cgogn/core/basic/dart.h>
+#include <cgogn/multiresolution/mra/mr_analysis.h>
 
 namespace cgogn {
 
@@ -37,7 +37,7 @@ public:
 	typedef LerpTriQuadMRAnalysis<MRMAP, VEC3> Self;
 	typedef MRAnalysis<MRMAP> Inherit;
 
-	using VertexAttributeHandler = typename MRMAP::template VertexAttributeHandler<VEC3>;
+	using VertexAttributeHandler = typename MRMAP::template VertexAttribute<VEC3>;
 
 protected:
 	VertexAttributeHandler& va_;
@@ -62,45 +62,45 @@ protected:
 
 	std::function<void()> lerp_tri_quad_odd_synthesis_ = [this] ()
 	{
-		this->map_.foreach_cell([&] (typename MRMAP::Face f)
-		{
-			if(this->map_.degree(f) != 3)
-			{
-				VEC3 vf(0.0);
-				VEC3 ef(0.0);
+		// this->map_.foreach_cell([&] (typename MRMAP::Face f)
+		// {
+		// 	if(this->map_.degree(f) != 3)
+		// 	{
+		// 		VEC3 vf(0.0);
+		// 		VEC3 ef(0.0);
 
-				unsigned int count = 0;
+		// 		unsigned int count = 0;
 
-				this->map_.foreach_incident_edge(f, [&] (typename MRMAP::Edge e)
-				{
-					vf += va_[e.dart];
-					this->map_.inc_current_level();
-					ef += va_[this->map_.phi1(e.dart)];
-					this->map_.dec_current_level();
-					++count;
-				});
+		// 		this->map_.foreach_incident_edge(f, [&] (typename MRMAP::Edge e)
+		// 		{
+		// 			vf += va_[e.dart];
+		// 			this->map_.inc_current_level();
+		// 			ef += va_[this->map_.phi1(e.dart)];
+		// 			this->map_.dec_current_level();
+		// 			++count;
+		// 		});
 
-				ef /= count;
-				ef *= 2.0;
+		// 		ef /= count;
+		// 		ef *= 2.0;
 
-				vf /= count;
+		// 		vf /= count;
 
-				this->map_.inc_current_level() ;
-				Dart midF = this->map_.phi1(this->map_.phi1(f.dart));
-				va_[midF] += vf + ef ;
-				this->map_.dec_current_level() ;
-			}
-		});
+		// 		this->map_.inc_current_level() ;
+		// 		Dart midF = this->map_.phi1(this->map_.phi1(f.dart));
+		// 		va_[midF] += vf + ef ;
+		// 		this->map_.dec_current_level() ;
+		// 	}
+		// });
 
-		this->map_.foreach_cell([&] (typename MRMAP::Edge e)
-		{
-			VEC3 ve = (va_[e.dart] + va_[this->map_.phi1(e)]) * 0.5;
+		// this->map_.foreach_cell([&] (typename MRMAP::Edge e)
+		// {
+		// 	VEC3 ve = (va_[e.dart] + va_[this->map_.phi1(e)]) * 0.5;
 
-			this->map_.inc_current_level() ;
-			Dart midV = this->map_.phi1(e) ;
-			va_[midV] += ve ;
-			this->map_.dec_current_level() ;
-		});
+		// 	this->map_.inc_current_level() ;
+		// 	Dart midV = this->map_.phi1(e) ;
+		// 	va_[midV] += ve ;
+		// 	this->map_.dec_current_level() ;
+		// });
 	};
 
 public:

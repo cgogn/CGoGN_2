@@ -26,6 +26,7 @@
 
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/cell.h>
+#include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/utils/masks.h>
 
 #include <cgogn/geometry/algos/area.h>
@@ -51,7 +52,7 @@ inline VEC3 normal(
 
 	if (map.codegree(f) == 3)
 	{
-		VEC3 n = normal<VEC3>(
+		VEC3 n = normal(
 			position[Vertex(f.dart)],
 			position[Vertex(map.phi1(f.dart))],
 			position[Vertex(map.phi_1(f.dart))]
@@ -106,7 +107,7 @@ inline VEC3 normal(
 	const MAP& map,
 	Cell<Orbit::PHI21> v,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
+	const Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
@@ -133,7 +134,7 @@ inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
+	Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f, uint32)
@@ -147,10 +148,10 @@ template <typename VEC3, typename MAP>
 inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal
+	Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	compute_normal<VEC3>(map, CellFilters(), position, face_normal);
+	compute_normal<VEC3>(map, AllCellsFilter(), position, face_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -158,7 +159,7 @@ inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
@@ -172,10 +173,10 @@ template <typename VEC3, typename MAP>
 inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal<VEC3>(map, CellFilters(), position, vertex_normal);
+	compute_normal<VEC3>(map, AllCellsFilter(), position, vertex_normal);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -183,8 +184,8 @@ inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const Attribute<VEC3, Orbit::PHI1>& face_normal,
+	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
@@ -198,11 +199,11 @@ template <typename VEC3, typename MAP>
 inline void compute_normal(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	const typename MAP::template Attribute<VEC3, Orbit::PHI1>& face_normal,
-	typename MAP::template Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const Attribute<VEC3, Orbit::PHI1>& face_normal,
+	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal<VEC3>(map, CellFilters(), position, face_normal, vertex_normal);
+	compute_normal<VEC3>(map, AllCellsFilter(), position, face_normal, vertex_normal);
 }
 
 } // namespace geometry

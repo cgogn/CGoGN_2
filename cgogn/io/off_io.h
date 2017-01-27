@@ -41,13 +41,13 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP_TRAITS, typename VEC3>
-class OffSurfaceImport : public SurfaceFileImport<MAP_TRAITS, VEC3>
+template <typename VEC3>
+class OffSurfaceImport : public SurfaceFileImport<VEC3>
 {
 public:
 
-	using Self = OffSurfaceImport<MAP_TRAITS, VEC3>;
-	using Inherit = SurfaceFileImport<MAP_TRAITS, VEC3>;
+	using Self = OffSurfaceImport<VEC3>;
+	using Inherit = SurfaceFileImport<VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -66,7 +66,7 @@ protected:
 		line.reserve(512);
 
 		// read OFF header
-		std::getline(fp, line);
+		getline_safe(fp, line);
 		if (line.rfind("OFF") == std::string::npos)
 		{
 			cgogn_log_error("OffSurfaceImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
@@ -84,7 +84,7 @@ protected:
 		this->reserve(nb_faces);
 
 
-		ChunkArray<VEC3>* position = this->add_position_attribute();
+		ChunkArray<VEC3>* position = this->position_attribute();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
@@ -122,11 +122,17 @@ protected:
 
 	inline bool import_off_bin(std::istream& fp)
 	{
-		char buffer1[12];
-		fp.read(buffer1,12);
+//		char buffer1[12];
+//		fp.read(buffer1,12);
+//		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
+//		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
 
-		const uint32 nb_vertices = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1)));
-		const uint32 nb_faces = swap_endianness_native_big(*(reinterpret_cast<uint32*>(buffer1+4)));
+		union { char ch[12]; uint32 ui[3];} buffer;
+		fp.read(buffer.ch,12);
+
+		const uint32 nb_vertices = swap_endianness_native_big(buffer.ui[0]);
+		const uint32 nb_faces = swap_endianness_native_big(buffer.ui[1]);
+
 
 		ChunkArray<VEC3>* position = this->vertex_attributes_.template add_chunk_array<VEC3>("position");
 
@@ -364,11 +370,11 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3d>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, Eigen::Vector3f>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API OffSurfaceImport<DefaultMapTraits, geometry::Vec_T<std::array<float32,3>>>;
-extern template class CGOGN_IO_API OffSurfaceExport<CMap2<DefaultMapTraits>>;
+extern template class CGOGN_IO_API OffSurfaceImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_API OffSurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API OffSurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API OffSurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API OffSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
 
 } // namespace io

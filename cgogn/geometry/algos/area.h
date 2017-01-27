@@ -28,6 +28,8 @@
 #include <cgogn/geometry/functions/area.h>
 #include <cgogn/geometry/algos/centroid.h>
 
+#include <cgogn/core/cmap/attribute.h>
+
 #include <cgogn/core/utils/masks.h>
 
 namespace cgogn
@@ -48,7 +50,7 @@ inline typename vector_traits<VEC3>::Scalar convex_area(
 	using Edge = typename MAP::Edge;
 
 	if (map.codegree(f) == 3)
-		return area<VEC3>(position[Vertex(f.dart)], position[Vertex(map.phi1(f.dart))], position[Vertex(map.phi_1(f.dart))]);
+		return area(position[Vertex(f.dart)], position[Vertex(map.phi1(f.dart))], position[Vertex(map.phi_1(f.dart))]);
 	else
 	{
 		Scalar face_area{0};
@@ -94,7 +96,7 @@ inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
+	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c, uint32)
@@ -108,10 +110,10 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void compute_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
+	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
-	compute_area<VEC3, CellType>(map, CellFilters(), position, cell_area);
+	compute_area<VEC3, CellType>(map, AllCellsFilter(), position, cell_area);
 }
 
 template <typename VEC3, typename CellType, typename MAP>
@@ -137,7 +139,7 @@ inline void compute_incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
+	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c, uint32)
@@ -151,10 +153,10 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void compute_incident_faces_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
+	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
-	compute_incident_faces_area<VEC3, CellType>(map, CellFilters(), position, area);
+	compute_incident_faces_area<VEC3, CellType>(map, AllCellsFilter(), position, area);
 }
 
 } // namespace geometry

@@ -23,12 +23,12 @@
 
 #include <gtest/gtest.h>
 
-#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-#define NB_MAX 100
+#define NB_MAX 100u
 
 /**
  * \brief The CMap2Test class implements tests on embedded CMap2
@@ -43,22 +43,16 @@ class CMap2Test : public ::testing::Test
 {
 public:
 
-	struct MiniMapTraits
-	{
-		static const uint32 CHUNK_SIZE = 16;
-	};
-
-	using testCMap2 = CMap2<MiniMapTraits>;
-	using MapBuilder = CMap2Builder_T<MiniMapTraits>;
-	using CDart = testCMap2::CDart;
-	using Vertex = testCMap2::Vertex;
-	using Edge = testCMap2::Edge;
-	using Face = testCMap2::Face;
-	using Volume = testCMap2::Volume;
+	using MapBuilder = CMap2::Builder;
+	using CDart = CMap2::CDart;
+	using Vertex = CMap2::Vertex;
+	using Edge = CMap2::Edge;
+	using Face = CMap2::Face;
+	using Volume = CMap2::Volume;
 
 protected:
 
-	testCMap2 cmap_;
+	CMap2 cmap_;
 
 	/**
 	 * \brief A vector of darts on which the methods are tested.
@@ -70,11 +64,11 @@ protected:
 		darts_.reserve(NB_MAX);
 		std::srand(uint32(std::time(0)));
 
-		cmap_.add_attribute<int32, CDart::ORBIT>("darts");
-		cmap_.add_attribute<int32, Vertex::ORBIT>("vertices");
-		cmap_.add_attribute<int32, Edge::ORBIT>("edges");
-		cmap_.add_attribute<int32, Face::ORBIT>("faces");
-		cmap_.add_attribute<int32, Volume::ORBIT>("volumes");
+		cmap_.add_attribute<int32, CDart>("darts");
+		cmap_.add_attribute<int32, Vertex>("vertices");
+		cmap_.add_attribute<int32, Edge>("edges");
+		cmap_.add_attribute<int32, Face>("faces");
+		cmap_.add_attribute<int32, Volume>("volumes");
 	}
 
 	/**
@@ -113,7 +107,7 @@ protected:
 		for (uint32 i = 0u; i < NB_MAX; ++i)
 		{
 			uint32 n = 1u + std::rand() % 10u;
-			Dart d = mbuild.add_face_topo_parent(n);
+			Dart d = mbuild.add_face_topo_fp(n);
 			darts_.push_back(d);
 		}
 		// Sew some pairs of edges
@@ -253,8 +247,8 @@ TEST_F(CMap2Test, merge_incident_faces)
 {
 	MapBuilder mbuild(cmap_);
 
-	Dart f1 = mbuild.add_face_topo_parent(5u);
-	Dart f2 = mbuild.add_face_topo_parent(3u);
+	Dart f1 = mbuild.add_face_topo_fp(5u);
+	Dart f2 = mbuild.add_face_topo_fp(3u);
 	mbuild.phi2_sew(f1, f2);
 
 	// Close the map (remove remaining boundary)
@@ -293,9 +287,9 @@ TEST_F(CMap2Test, merge_incident_faces)
 
 TEST_F(CMap2Test, compact_map)
 {
-	testCMap2::VertexAttribute<int32> att_v = cmap_.get_attribute<int32, Vertex::ORBIT>("vertices");
-	testCMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge::ORBIT>("edges");
-	testCMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face::ORBIT>("faces");
+	CMap2::VertexAttribute<int32> att_v = cmap_.get_attribute<int32, Vertex>("vertices");
+	CMap2::EdgeAttribute<int32> att_e = cmap_.get_attribute<int32, Edge>("edges");
+	CMap2::FaceAttribute<int32> att_f = cmap_.get_attribute<int32, Face>("faces");
 
 	for (uint32 i = 0; i < 100; ++i)
 	{
@@ -368,25 +362,25 @@ TEST_F(CMap2Test, compact_map)
 
 TEST_F(CMap2Test, merge_map)
 {
-	using CDart = testCMap2::CDart;
-	using Vertex = testCMap2::Vertex;
-	using Edge = testCMap2::Edge;
-	using Face = testCMap2::Face;
-	using Volume = testCMap2::Volume;
+	using CDart = CMap2::CDart;
+	using Vertex = CMap2::Vertex;
+	using Edge = CMap2::Edge;
+	using Face = CMap2::Face;
+	using Volume = CMap2::Volume;
 
-	testCMap2 map1;
-	testCMap2::VertexAttribute<int32> att1_v = map1.add_attribute<int32, Vertex::ORBIT>("vertices");
-	testCMap2::FaceAttribute<int32> att1_f = map1.add_attribute<int32, Face::ORBIT>("faces");
+	CMap2 map1;
+	CMap2::VertexAttribute<int32> att1_v = map1.add_attribute<int32, Vertex>("vertices");
+	CMap2::FaceAttribute<int32> att1_f = map1.add_attribute<int32, Face>("faces");
 
-	testCMap2 map2;
-	testCMap2::Attribute<int32,CDart::ORBIT> att2_d = map2.add_attribute<int32, CDart::ORBIT>("darts");
-	testCMap2::VertexAttribute<int32> att2_v = map2.add_attribute<int32, Vertex::ORBIT>("vertices");
-	testCMap2::EdgeAttribute<int32> att2_e = map2.add_attribute<int32, Edge::ORBIT>("edges");
-	testCMap2::VolumeAttribute<int32> att2_w = map2.add_attribute<int32, Volume::ORBIT>("volumes");
+	CMap2 map2;
+	Attribute<int32, CDart::ORBIT> att2_d = map2.add_attribute<int32, CDart>("darts");
+	CMap2::VertexAttribute<int32> att2_v = map2.add_attribute<int32, Vertex>("vertices");
+	CMap2::EdgeAttribute<int32> att2_e = map2.add_attribute<int32, Edge>("edges");
+	CMap2::VolumeAttribute<int32> att2_w = map2.add_attribute<int32, Volume>("volumes");
 
 	for (uint32 i = 0; i < 5; ++i)
 	{
-		Face f = map1.add_face(4);
+		Face f = map1.add_face(4u);
 		int32 ec=0;
 		map1.foreach_incident_vertex(f, [&] (Vertex v)
 		{
@@ -398,7 +392,7 @@ TEST_F(CMap2Test, merge_map)
 
 	for (uint32 i = 0; i < 5; ++i)
 	{
-		Face f = map2.add_face(3);
+		Face f = map2.add_face(3u);
 		uint32 ec = 0;
 		map2.foreach_incident_edge(f, [&] (Edge e)
 		{
@@ -407,13 +401,14 @@ TEST_F(CMap2Test, merge_map)
 		});
 	}
 
-	map1.merge(map2);
+	CMap2::DartMarker dm(map1);
+	map1.merge(map2, dm);
 
 	EXPECT_TRUE(map1.check_map_integrity());
-	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35);
-	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35);
-	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10);
-	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10);
+	EXPECT_EQ(map1.nb_cells<Vertex::ORBIT>(),35u);
+	EXPECT_EQ(map1.nb_cells<Edge::ORBIT>(),35u);
+	EXPECT_EQ(map1.nb_cells<Face::ORBIT>(),10u);
+	EXPECT_EQ(map1.nb_cells<Volume::ORBIT>(),10u);
 }
 
 #undef NB_MAX

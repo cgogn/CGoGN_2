@@ -1,5 +1,5 @@
 if(CGOGN_PROVIDE_EIGEN)
-	add_subdirectory(eigen-3.2.9)
+	add_subdirectory(eigen)
 endif(CGOGN_PROVIDE_EIGEN)
 
 if(CGOGN_PROVIDE_TINYXML2)
@@ -23,3 +23,4 @@ add_subdirectory(OffBinConverter)
 add_subdirectory(lm6)
 add_subdirectory(termcolor)
 add_subdirectory(zlib-1.2.8)
+add_subdirectory(OpenNL)

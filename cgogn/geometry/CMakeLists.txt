@@ -2,8 +2,6 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
-find_package(cgogn_core REQUIRED)
-
 set(HEADER_FILES
 	dll.h
 	algos/bounding_box.h
@@ -47,7 +45,7 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>	
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -55,7 +53,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
 install(DIRECTORY algos functions types
@@ -63,4 +61,4 @@ install(DIRECTORY algos functions types
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include")

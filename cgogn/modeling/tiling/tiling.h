@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -24,9 +24,9 @@
 #ifndef CGOGN_MODELING_TILING_TILING_H_
 #define CGOGN_MODELING_TILING_TILING_H_
 
-#include <vector>
+#include <cgogn/modeling/dll.h>
 #include <cgogn/core/utils/numerics.h>
-#include <cgogn/core/basic/dart.h>
+#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
@@ -44,6 +44,18 @@ protected:
 
 public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
+
+	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
+		map_(map),
+		nx_(x),
+		ny_(y),
+		nz_(z)
+	{}
+
+	Tiling(MAP& map):
+		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
+	{}
+
 	/**
 	 * @brief Map in which we are working
 	 */
@@ -69,28 +81,12 @@ public:
 	 * @brief Table of faces
 	 */
 	std::vector<Face> face_table_;
-
-	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
-		map_(map),
-		nx_(x),
-		ny_(y),
-		nz_(z)
-	{}
-
-	Tiling(MAP& map):
-		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
-	{}
-
-	std::vector<Vertex>& vertices()
-	{
-		return vertex_table_;
-	}
-
-	std::vector<Face>& faces()
-	{
-		return face_table_;
-	}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
+extern template class CGOGN_MODELING_API Tiling<CMap2>;
+extern template class CGOGN_MODELING_API Tiling<CMap3>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
 
 } //namespace modeling
 

@@ -29,18 +29,17 @@
 namespace cgogn
 {
 
-template <typename DATA_TRAITS>
-class CPH2 : public CPHBase<DATA_TRAITS>
+class CPH2 : public CPHBase
 {
 public:
 
-	using Self = CPH2<DATA_TRAITS>;
-	using Inherit = CPHBase<DATA_TRAITS>;
+	using Self = CPH2;
+	using Inherit = CPHBase;
 
 	template <typename T>
-	using ChunkArray =  typename Inherit::template ChunkArray<T>;
-	template <typename T>
 	using ChunkArrayContainer =  typename Inherit::template ChunkArrayContainer<T>;
+	template <typename T>
+	using ChunkArray =  typename Inherit::template ChunkArray<T>;
 
 protected:
 
@@ -72,42 +71,10 @@ public:
 		(*edge_id_)[d.index] = i ;
 	}
 
-	inline uint32 get_tri_refinement_edge_id(Dart d, Dart e) const
-	{
-		uint32 d_id = get_edge_id(d);
-		uint32 e_id = get_edge_id(e);
+	uint32 get_tri_refinement_edge_id(Dart d, Dart e) const;
 
-		uint32 id = d_id + e_id;
-
-		if (id == 0u)
-			return 1u;
-		else if (id == 1u)
-			return 2u;
-		else if (id == 2u)
-		{
-			if (d_id == e_id)
-				return 0u;
-			else
-				return 1u;
-		}
-		// else if (id == 3)
-		return 0u;
-	}
-
-	inline uint32 get_quad_refinement_edge_id(Dart d) const
-	{
-		uint32 e_id = get_edge_id(d);
-
-		if (e_id == 0u)
-			return 1u;
-		// else if (e_id == 1)
-		return 0u;
-	}
+	uint32 get_quad_refinement_edge_id(Dart d) const;
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
-extern template class CGOGN_MULTIRESOLUTION_API CPH2<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MULTIRESOLUTION_CPH_CPH2_CPP_))
 
 } // namespace cgogn
 

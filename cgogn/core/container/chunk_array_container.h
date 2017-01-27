@@ -38,9 +38,14 @@
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/unique_ptr.h>
+#include <cgogn/core/utils/thread_pool.h>
+#include <cgogn/core/utils/buffers.h>
+
 #include <cgogn/core/container/chunk_array.h>
 #include <cgogn/core/container/chunk_stack.h>
 #include <cgogn/core/container/chunk_array_factory.h>
+
+#include <cgogn/core/cmap/map_traits.h>
 
 namespace cgogn
 {
@@ -244,7 +249,6 @@ public:
 		return const_cast<const ChunkArrayGen*>(const_cast<Self*>(this)->get_chunk_array(name));
 	}
 
-
 	/**
 	 * @brief get all chunk arrays (generic pointers)
 	 * @return
@@ -286,7 +290,7 @@ public:
 		// create the new attribute
 		const std::string& type_name = name_of_type(T());
 		ChunkArray<T>* carr = new ChunkArray<T>(name);
-		ChunkArrayFactory::template register_CA<T>();
+		chunk_array_factory<CHUNK_SIZE>().template register_CA<T>();
 
 		// reserve memory
 		carr->set_nb_chunks(refs_.nb_chunks());
@@ -343,46 +347,50 @@ public:
 	 * @brief swap the data of two chunk arrays of the container
 	 * @param ptr1 pointer to first chunk array
 	 * @param ptr2 pointer to second chunk array
-	 * @return
+	 * @return true if the swap has been executed
 	 */
-	bool swap_data(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
+	bool swap_chunk_arrays(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
 		uint32 index1 = array_index(ptr1);
 		uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
-			cgogn_log_warning("swap_data_attributes") << "Attribute not found.";
+			cgogn_log_warning("swap_chunk_array") << "Chunk array not found.";
 			return false;
 		}
 
 		if (index1 == index2)
 		{
-			cgogn_log_warning("swap_data_attributes") << "Same attributes.";
-			return false;
+			cgogn_log_warning("swap_chunk_array") << "Same chunk arrays.";
+			return true;
 		}
 
-		table_arrays_[index1]->swap(table_arrays_[index2]);
-
-		return true;
+		return table_arrays_[index1]->swap_data(table_arrays_[index2]);
 	}
 
+	/**
+	 * @brief copy the data of a chunk array of the container into another
+	 * @param dest pointer to the destination chunk array
+	 * @param src pointer to the source chunk array
+	 * @return true if the copy has been executed
+	 */
 	template <typename T>
-	bool copy_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
+	bool copy_chunk_array_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
 		uint32 dest_index = array_index(dest);
 		uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
-			cgogn_log_warning("copy_data_attributes") << "Attribute not found.";
+			cgogn_log_warning("copy_chunk_array_data") << "Chunk array not found.";
 			return false;
 		}
 
 		if (dest_index == src_index)
 		{
-			cgogn_log_warning("copy_data_attributes") << "Same attributes.";
-			return false;
+			cgogn_log_warning("copy_chunk_array_data") << "Same chunk arrays.";
+			return true;
 		}
 
 		ChunkArray<T>* dest_ca = static_cast<ChunkArray<T>*>(table_arrays_[dest_index]);
@@ -406,25 +414,25 @@ public:
 		return mca;
 	}
 
-	/**
-	 * @brief remove a marker attribute by its ChunkArray pointer
-	 * @param ptr ChunkArray pointer to the attribute to remove
-	 * @return true if attribute exists and has been removed
-	 */
-	void remove_marker_attribute(const ChunkArrayBool* ptr)
-	{
-		uint32 index = 0u;
-		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
-			++index;
+//	/**
+//	 * @brief remove a marker attribute by its ChunkArray pointer
+//	 * @param ptr ChunkArray pointer to the attribute to remove
+//	 * @return true if attribute exists and has been removed
+//	 */
+//	void remove_marker_attribute(const ChunkArrayBool* ptr)
+//	{
+//		uint32 index = 0u;
+//		while (index < table_marker_arrays_.size() && table_marker_arrays_[index] != ptr)
+//			++index;
 
-		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found.");
+//		cgogn_message_assert(index != table_marker_arrays_.size(), "remove_marker_attribute by ptr: attribute not found.");
 
-		if (index != table_marker_arrays_.size() - std::size_t(1u))
-			table_marker_arrays_[index] = table_marker_arrays_.back();
-		table_marker_arrays_.pop_back();
+//		if (index != table_marker_arrays_.size() - std::size_t(1u))
+//			table_marker_arrays_[index] = table_marker_arrays_.back();
+//		table_marker_arrays_.pop_back();
 
-		delete ptr;
-	}
+//		delete ptr;
+//	}
 
 	/**
 	 * @brief Number of chunk arrays of the container
@@ -581,10 +589,19 @@ public:
 		names_.swap(container.names_);
 		type_names_.swap(container.type_names_);
 		table_marker_arrays_.swap(container.table_marker_arrays_);
-		refs_.swap(&(container.refs_));
-		holes_stack_.swap(&(container.holes_stack_));
+		refs_.swap_data(&(container.refs_));
+		holes_stack_.swap_data(&(container.holes_stack_));
 		std::swap(nb_used_lines_, container.nb_used_lines_);
 		std::swap(nb_max_lines_, container.nb_max_lines_);
+		// invalidate existing external refs
+		for (auto cagen : table_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : table_marker_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : container.table_arrays_)
+			cagen->invalidate_external_refs();
+		for (auto cagen : container.table_marker_arrays_)
+			cagen->invalidate_external_refs();
 	}
 
 	/**
@@ -644,7 +661,7 @@ public:
 
 	bool check_before_merge(const Self& cac)
 	{
-		for (uint32 i=0; i<cac.names_.size(); ++i)
+		for (uint32 i = 0; i < cac.names_.size(); ++i)
 		{
 			// compute indice of ith names of cac in this (size if not found)
 			std::size_t j = std::find(names_.begin(), names_.end(), cac.names_[i]) - names_.begin();
@@ -652,7 +669,7 @@ public:
 			{
 				if (cac.type_names_[i] != type_names_[j])
 				{
-					cgogn_log_warning("check_before_merge") << "same name: "<<names_[j]<< " but different type: "<< cac.type_names_[i] <<" / " << type_names_[j];
+					cgogn_log_warning("check_before_merge") << "same name: " << names_[j] << " but different type: " << cac.type_names_[i] << " / " << type_names_[j];
 					return false;
 				}
 			}
@@ -675,7 +692,7 @@ public:
 				const std::string& name = cac.names_[i];
 				const std::string& type_name = cac.type_names_[i];
 				map_attrib[i] = uint32(table_arrays_.size());
-				auto cag = ChunkArrayFactory::create(type_name,name);
+				auto cag = chunk_array_factory<CHUNK_SIZE>().create(type_name,name);
 				cgogn_assert(cag);
 				cag->set_nb_chunks(refs_.nb_chunks());
 				table_arrays_.push_back(cag.release());
@@ -702,7 +719,8 @@ public:
 			{
 				uint32 ol = it+j;
 				uint32 nl = new_lines+j;
-				refs_[nl]= cac.refs_[ol]; //copy nb refs counter
+				init_markers_of_line(nl); // raz markers of new lines
+				refs_[nl]= cac.refs_[ol]; // copy nb refs counter
 				map_old_new[ol] = nl;
 				uint32 nb_att = uint32(cac.table_arrays_.size());
 				for (uint32 k=0; k<nb_att; ++k)
@@ -955,7 +973,7 @@ public:
 		cgogn_assert(fs.good());
 
 		// check and register all known types if necessaey
-		ChunkArrayFactory::register_known_types();
+		chunk_array_factory<CHUNK_SIZE>().register_known_types();
 
 		// read info
 		uint32 buff1[4];
@@ -987,7 +1005,7 @@ public:
 		bool ok = true;
 		for (uint32 i = 0u; i < names_.size();)
 		{
-			auto cag = ChunkArrayFactory::create(type_names_[i], names_[i]);
+			auto cag = chunk_array_factory<CHUNK_SIZE>().create(type_names_[i], names_[i]);
 			if (cag)
 			{
 				table_arrays_.push_back(cag.release());
@@ -1006,11 +1024,94 @@ public:
 
 		return ok;
 	}
+
+	template <typename FUNC>
+	void foreach_index(const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC,uint32>::value, "Wrong function parameter type");
+
+		uint32 it = begin();
+		const uint32 it_end = end();
+		while(it != it_end)
+		{
+			if (!internal::void_to_true_binder(f, it))
+				break;
+			next(it);
+		}
+	}
+
+	template <typename FUNC>
+	void parallel_foreach_index(const FUNC& f) const
+	{
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
+		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function second parameter type");
+
+		using VecIndice = std::vector<uint32>;
+		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
+
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+		std::array<std::vector<VecIndice*>, 2> indices_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		indices_buffers[0].reserve(nb_threads_pool);
+		indices_buffers[1].reserve(nb_threads_pool);
+		futures[0].reserve(nb_threads_pool);
+		futures[1].reserve(nb_threads_pool);
+
+		Buffers<uint32>* buffs = cgogn::uint_buffers();
+
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_threads_pool)
+
+		uint32 it = begin();
+		uint32 it_end = end();
+		while(it != it_end)
+		{
+			// fill buffer
+			indices_buffers[i].push_back(buffs->buffer());
+			VecIndice& indices = *indices_buffers[i].back();
+			indices.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && (it != it_end); ++k)
+			{
+				indices.push_back(it);
+				next(it);
+			}
+			// launch thread
+			futures[i].push_back(thread_pool->enqueue([&indices, &f] (uint32 th_id)
+			{
+				for (auto ind : indices)
+					f(ind, th_id);
+			}));
+			// next thread
+			if (++j == nb_threads_pool)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
+					fu.wait();
+				for (auto& b : indices_buffers[i])
+					buffs->release_buffer(b);
+				futures[i].clear();
+				indices_buffers[i].clear();
+			}
+		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : indices_buffers[0u])
+			buffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : indices_buffers[1u])
+			buffs->release_buffer(b);
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArrayContainer<DEFAULT_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, unsigned char>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn

@@ -53,9 +53,9 @@
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-using Map2 = cgogn::CMap2<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Tri<cgogn::DefaultMapTraits>;
-//using Map2 = cgogn::CMap2Quad<cgogn::DefaultMapTraits>;
+using Map2 = cgogn::CMap2;
+//using Map2 = cgogn::CMap2Tri;
+//using Map2 = cgogn::CMap2Quad;
 
 
 using Vec3 = Eigen::Vector3d;
@@ -123,21 +123,27 @@ void Viewer::import(const std::string& surface_mesh)
 {
 	cgogn::io::import_surface<Vec3>(map_, surface_mesh);
 
-	map_.get_attribute(vertex_position_, "position");
+	vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 	if (!vertex_position_.is_valid())
 	{
 		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 		std::exit(EXIT_FAILURE);
 	}
 
-	map_.add_attribute(vertex_normal_, "normal");
+
+	vertex_normal_ = map_.template get_attribute<Vec3, Map2::Vertex>("normal");
+	if (!vertex_normal_.is_valid())
+	{
+		vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+		cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+	}
+
 
 // testing merge method
 //	Map2 map2;
 //	cgogn::io::import_surface<Vec3>(map2, std::string(DEFAULT_MESH_PATH) + std::string("off/star_convex.off"));
 //	map_.merge(map2);
 
-	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
 	Vec3 center = bb_.center();

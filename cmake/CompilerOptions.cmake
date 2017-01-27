@@ -1,35 +1,36 @@
 include(cmake/utilities.cmake)
+include(cmake/CheckSIMDFeatures.cmake)
 
 # Profiler compilation flags
-if(CGOGN_USE_GPROF)
+if(CGOGN_WITH_GPROF)
 	message(STATUS "Building for code profiling")
 	add_flags(CMAKE_CXX_FLAGS -pg -DPROFILER)
 	add_flags(CMAKE_C_FLAGS -pg -DPROFILER)
-endif(CGOGN_USE_GPROF)
+endif(CGOGN_WITH_GPROF)
 
 # Code coverage compilation flags
-if(CGOGN_USE_GCOV)
+if(CGOGN_WITH_GCOV)
 	message(STATUS "Building for coverage analysis")
 	add_flags(CMAKE_CXX_FLAGS --coverage)
 	add_flags(CMAKE_C_FLAGS --coverage)
-endif(CGOGN_USE_GCOV)
+endif(CGOGN_WITH_GCOV)
 
 # Compilation flags for Google's AddressSanitizer
 # These flags can only be specified for dynamic builds
-if(CGOGN_USE_ASAN)
+if(CGOGN_WITH_ASAN)
 	message(STATUS "Building with AddressSanitizer (debug only)")
 	add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
 	add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=address -fno-omit-frame-pointer -O1)
-endif(CGOGN_USE_ASAN)
+endif(CGOGN_WITH_ASAN)
 #TODO Use native GCC stack smash Protection and buffer overflow detection in debug when no asan ??
 
 # Compilation flags for Google's ThreadSanitizer
 # Does not work for the moment: cannot figure out how to link with library libtsan
-if(CGOGN_USE_TSAN)
+if(CGOGN_WITH_TSAN)
 	message(STATUS "Building with ThreadSanitizer (debug only)")
 	add_flags(CMAKE_CXX_FLAGS_DEBUG -fsanitize=thread)
 	add_flags(CMAKE_C_FLAGS_DEBUG -fsanitize=thread)
-endif(CGOGN_USE_TSAN)
+endif(CGOGN_WITH_TSAN)
 
 if (NOT MSVC)
 # This is the correcty way to activate threads. It should be prefered to "-lpthread"
@@ -40,50 +41,52 @@ if (NOT MSVC)
 	# Warning flags
 	set(NORMAL_WARNINGS -Wall -Wextra)
 
-	if(NOT (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-		set(FULL_WARNINGS
-			${NORMAL_WARNINGS}
-			-pedantic
-			-Wno-long-long
-			-Wconversion
-			-Winline
-			-Wsign-conversion
-			-Wdouble-promotion)
-
-	else()
-		set(FULL_WARNINGS
-			-Weverything
-			-Wno-unused-macros
-			-Wno-disabled-macro-expansion
-			-Wno-covered-switch-default
-			-Wno-padded
-			-Wno-float-equal
-			# Ignore warnings about global variables ctors and dtors
-			-Wno-global-constructors
-			# Ignore warnings about global destructor
-			-Wno-exit-time-destructors
-			# Turn this on to detect documentation errors (very useful)
-			-Wno-documentation
-			# Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
-			-Wno-documentation-unknown-command
-			# Ignore warnings about C++98 compatibility
-			-Wno-c++98-compat
-			# Ignore warnings about c++98 compat pedantic mode
-			-Wno-c++98-compat-pedantic
-			# Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
-			-Wno-c++11-extensions
-
-			# # Too many of sign conversion problems (Eigen!!!). Ignore them for the moment.
-			# -Wno-sign-conversion
-			# #
-			# -Wno-deprecated
-			# -Wno-old-style-cast
-			)
-	endif()
+	if(CGOGN_INSANE_WARN_LEVEL)
+		if(NOT (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+			set(FULL_WARNINGS
+				${NORMAL_WARNINGS}
+				-pedantic
+				-Wno-long-long
+				-Wconversion
+				-Winline
+				-Wsign-conversion
+				-Wdouble-promotion)
+		else()
+			set(FULL_WARNINGS
+				-Weverything
+				-Wno-unused-macros
+				-Wno-disabled-macro-expansion
+				-Wno-covered-switch-default
+				-Wno-padded
+				-Wno-float-equal
+				# Ignore warnings about global variables ctors and dtors
+				-Wno-global-constructors
+				# Ignore warnings about global destructor
+				-Wno-exit-time-destructors
+				# Turn this on to detect documentation errors (very useful)
+				-Wno-documentation
+				# Ignore unknown documentation command (There are nrecognized but valid doxygen commands !)
+				-Wno-documentation-unknown-command
+				# Ignore warnings about C++98 compatibility
+				-Wno-c++98-compat
+				# Ignore warnings about c++98 compat pedantic mode
+				-Wno-c++98-compat-pedantic
+				# Ignore warnings about C++11 extensions (cgogn is promoting c++11 )
+				-Wno-c++11-extensions
+				)
+		endif()
+	else(CGOGN_INSANE_WARN_LEVEL)
+		if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+			set(FULL_WARNINGS ${NORMAL_WARNINGS} -Wno-missing-braces)
+		else()
+			set(FULL_WARNINGS ${NORMAL_WARNINGS})
+		endif()
+	endif(CGOGN_INSANE_WARN_LEVEL)
 
 	add_flags(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor")
 
-
+	# Compile with full warnings by default
+	add_definitions(${FULL_WARNINGS})
 
 	if(${CGOGN_USE_CXX11_ABI})
 		add_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI")
@@ -109,18 +112,10 @@ if (NOT MSVC)
 		endif(${CGOGN_USE_GLIBCXX_DEBUG})
 	endif(${CGOGN_USE_PARALLEL_GLIBCXX})
 
-	# Enable SSE3 instruction set
-	add_flags(CMAKE_CXX_FLAGS "-msse3")
-	add_flags(CMAKE_C_FLAGS "-msse3")
-
-	# Always generate position independant code
-	# (to allow linking with DLLs)
-	add_flags(CMAKE_CXX_FLAGS "-fPIC")
-	add_flags(CMAKE_C_FLAGS "-fPIC")
 	add_flags(CMAKE_CXX_FLAGS_RELEASE "-D_FORTIFY_SOURCE=2")
 	add_flags(CMAKE_C_FLAGS_RELEASE "-D_FORTIFY_SOURCE=2")
 
-else() # MSVC
+else(NOT MSVC) # MSVC
 	#Specifies the level of warning to be generated by the compiler. Valid warning levels for n range from 0 to 4.
 	string(REGEX REPLACE "/W[0-9]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
@@ -131,5 +126,14 @@ else() # MSVC
 	# C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 	add_flags(CMAKE_CXX_FLAGS "/EHsc /wd4127 /wd4505 /wd4714 /wd4910 /wd4251 /bigobj")
 	add_definitions("/DNOMINMAX")
-	
-endif()
+endif(NOT MSVC)
+
+if(CGOGN_USE_SIMD)
+	CGOGN_CHECK_FOR_SSE()
+endif(CGOGN_USE_SIMD)
+
+#Reset the warning level for third parties
+function(cgogn_reset_warning_level)
+	remove_definitions(${FULL_WARNINGS})
+	add_definitions(${NORMAL_WARNINGS})
+endfunction()

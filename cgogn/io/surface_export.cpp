@@ -30,7 +30,7 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API SurfaceExport<CMap2<DefaultMapTraits>>;
+template class CGOGN_IO_API SurfaceExport<CMap2>;
 
 } // namespace io
 

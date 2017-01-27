@@ -43,7 +43,7 @@
 	std::string("dynamic type of current object : ") + cgogn::internal::demangle(std::string(typeid(*this).name())) + std::string(",\nwhereas Self = ") + cgogn::name_of_type(Self()))
 
 #ifndef _MSC_VER
-#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value,"The concrete map type has to be equal to Self")
+#define CGOGN_CHECK_CONCRETE_TYPE static_assert(std::is_same<typename MapType::TYPE, Self>::value, "The concrete map type has to be equal to Self")
 #else
 #define CGOGN_CHECK_CONCRETE_TYPE CGOGN_CHECK_DYNAMIC_TYPE
 #endif
@@ -51,68 +51,25 @@
 namespace cgogn
 {
 
-/**
- * @brief Generic Map class
- */
-class CGOGN_CORE_API MapGen
-{
-public:
-
-	using Self = MapGen;
-
-protected:
-
-	/// vector of Map instances
-	static std::vector<MapGen*>* instances_;
-	static bool init_CA_factory;
-	/// table of tetra phi2 indices
-	static std::array<int,12> tetra_phi2;
-	/// table of hexa phi2 indices
-	static std::array<int,24> hexa_phi2;
-
-
-public:
-
-	MapGen();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapGen);
-	virtual ~MapGen();
-
-	static inline bool is_alive(MapGen* map)
-	{
-		return std::find(instances_->begin(), instances_->end(), map) != instances_->end();
-	}
-};
-
-// forward declaration of class AttributeGen
-template <typename DATA_TRAITS>
+// forward declarations
 class AttributeGen;
-
-// forward declaration of class Attribute_T
-template <typename DATA_TRAITS, typename T>
-class Attribute_T;
-
-// forward declaration of class Attribute
-template <typename DATA_TRAITS, typename T, Orbit ORBIT>
-class Attribute;
+template <typename T> class Attribute_T;
+template <typename T, Orbit ORBIT> class Attribute;
 
 /**
  * @brief The MapBaseData class
  */
-template <typename MAP_TRAITS>
-class MapBaseData : public MapGen
+class CGOGN_CORE_API MapBaseData
 {
 public:
 
-	using Inherit = MapGen;
-	using Self = MapBaseData<MAP_TRAITS>;
-
-	using Traits = MAP_TRAITS;
-
-	static const uint32 CHUNK_SIZE = MAP_TRAITS::CHUNK_SIZE;
+	using Self = MapBaseData;
 
 	static const uint32 NB_UNKNOWN_THREADS = 4u;
-	template <typename DT, typename T> friend class Attribute_T;
-	template <typename DT, typename T, Orbit ORBIT> friend class Attribute;
+	static const uint32 CHUNK_SIZE = CGOGN_CHUNK_SIZE;
+
+	template <typename T> friend class Attribute_T;
+	template <typename T, Orbit ORBIT> friend class Attribute;
 
 	template <typename T_REF>
 	using ChunkArrayContainer = cgogn::ChunkArrayContainer<CHUNK_SIZE, T_REF>;
@@ -121,79 +78,53 @@ public:
 	using ChunkArray = cgogn::ChunkArray<CHUNK_SIZE, T>;
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
-	using AttributeGen = cgogn::AttributeGen<MAP_TRAITS>;
-	template <typename T>
-	using Attribute_T = cgogn::Attribute_T<MAP_TRAITS, T>;
-	template <typename T, Orbit ORBIT>
-	using Attribute = cgogn::Attribute<MAP_TRAITS, T, ORBIT>;
-
 protected:
 
 	// topology & embedding indices
 	ChunkArrayContainer<uint8> topology_;
 
-	/// per orbit attributes
+	// per orbit attributes
 	std::array<ChunkArrayContainer<uint32>, NB_ORBITS> attributes_;
 
-	/// embedding indices shortcuts
+	// embedding indices shortcuts
 	std::array<ChunkArray<uint32>*, NB_ORBITS> embeddings_;
 
-	/// boundary marker shortcut
+	// boundary marker shortcut
 	ChunkArrayBool* boundary_marker_;
 
-	/// vector of available mark attributes per thread on the topology container
+	// vector of available mark attributes per thread on the topology container
 	std::vector<std::vector<ChunkArrayBool*>> mark_attributes_topology_;
 	std::mutex mark_attributes_topology_mutex_;
 
-	/// vector of available mark attributes per orbit per thread on attributes containers
+	// vector of available mark attributes per orbit per thread on attributes containers
 	std::array<std::vector<std::vector<ChunkArrayBool*>>, NB_ORBITS> mark_attributes_;
 	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
 
-	/// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
-	/// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
-	/// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
+	// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
+	// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
+	// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
 	mutable std::vector<std::thread::id> thread_ids_;
+
+	// vector of Map instances
+	static std::vector<const MapBaseData*>* instances_;
+
+	// table of tetra phi2 indices
+	static const std::array<uint32, 12> tetra_phi2;
+	// table of hexa phi2 indices
+	static const std::array<uint32, 24> hexa_phi2;
 
 public:
 
-	MapBaseData() : Inherit()
-	{
-		if (init_CA_factory)
-		{
-			ChunkArrayFactory<CHUNK_SIZE>::reset();
-			init_CA_factory = false;
-		}
-		for (uint32 i = 0; i < NB_ORBITS; ++i)
-		{
-			mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-			mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
-
-			embeddings_[i] = nullptr;
-			for (uint32 j = 0; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
-				mark_attributes_[i][j].reserve(8);
-		}
-
-		mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-		mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
-
-		for (uint32 i = 0; i < MAX_NB_THREADS; ++i)
-			mark_attributes_topology_[i].reserve(8);
-
-		boundary_marker_ = topology_.add_marker_attribute();
-
-		thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-		thread_ids_.resize(NB_UNKNOWN_THREADS);
-
-		this->add_thread(std::this_thread::get_id());
-		const auto& pool_threads_ids = cgogn::thread_pool()->threads_ids();
-		for (const std::thread::id& ids : pool_threads_ids)
-			this->add_thread(ids);
-	}
+	MapBaseData();
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
 
-	~MapBaseData() override
-	{}
+	virtual ~MapBaseData();
+
+	static inline bool is_alive(const MapBaseData* map)
+	{
+		return (instances_ != nullptr) && (std::find(instances_->begin(), instances_->end(), map) != instances_->end());
+	}
 
 	/*******************************************************************************
 	 * Containers management
@@ -275,7 +206,6 @@ public:
 		return embeddings_[ORBIT] != nullptr;
 	}
 
-
 	inline bool is_embedded(Orbit orb) const
 	{
 		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
@@ -307,6 +237,15 @@ public:
 		return (*embeddings_[orb])[d.index];
 	}
 
+	inline void swap_embeddings(Orbit orb1, Orbit orb2)
+	{
+		cgogn_message_assert(orb1 != orb2, "Cannot swap a container with itself");
+		cgogn_message_assert(orb1 != Orbit::DART && orb2 != Orbit::DART, "Cannot swap the darts container");
+
+		attributes_[orb1].swap(attributes_[orb2]);
+		embeddings_[orb1]->swap_data(embeddings_[orb2]);
+	}
+
 protected:
 
 	template <class CellType>
@@ -315,7 +254,7 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_message_assert(emb != INVALID_INDEX,"cannot set an embedding to INVALID_INDEX.");
+		cgogn_message_assert(emb != INVALID_INDEX, "cannot set an embedding to INVALID_INDEX.");
 
 		const uint32 old = (*embeddings_[ORBIT])[d.index];
 
@@ -359,7 +298,7 @@ protected:
 		std::advance(end, NB_UNKNOWN_THREADS);
 		auto res_it = std::find(thread_ids_.begin(), end, thread_id);
 		if (res_it != end)
-			return std::distance(thread_ids_.begin(), res_it);
+			return std::size_t(std::distance(thread_ids_.begin(), res_it));
 
 		return add_unknown_thread();
 	}
@@ -373,7 +312,7 @@ protected:
 		const auto end = thread_ids_.end();
 		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
 		if (it_lower_bound != end)
-			return std::distance(thread_ids_.begin(), it_lower_bound);
+			return std::size_t(std::distance(thread_ids_.begin(), it_lower_bound));
 
 		return unknown_thread_index(std::this_thread::get_id());
 	}
@@ -400,13 +339,7 @@ protected:
 		if (it == thread_ids_.end() || *it != thread_id)
 			thread_ids_.insert(it, thread_id);
 	}
-
-
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
-extern template class CGOGN_CORE_API MapBaseData<DefaultMapTraits>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP_BASE_DATA_CPP_))
 
 } // namespace cgogn
 

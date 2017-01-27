@@ -55,10 +55,12 @@ const char* ShaderExplodeVolumesGen::geometry_shader_source_ =
 "uniform vec3 light_position;\n"
 "uniform vec4 color;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip2,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		vec3 v1 = gl_in[2].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
 "		vec3 v2 = gl_in[3].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
@@ -109,10 +111,12 @@ const char* ShaderExplodeVolumesGen::geometry_shader_source2_ =
 "uniform float explode_vol;\n"
 "uniform vec3 light_position;\n"
 "uniform vec4 plane_clip;\n"
+"uniform vec4 plane_clip2;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
-"	if (d<=0.0)\n"
+"	float d2 = dot(plane_clip,gl_in[0].gl_Position);\n"
+"	if ((d<=0.0)&&(d2<=0.0))\n"
 "	{\n"
 "		vec3 v1 = gl_in[2].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
 "		vec3 v2 = gl_in[3].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
@@ -161,6 +165,7 @@ ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 	get_matrices_uniforms();
 	unif_expl_v_ = prg_.uniformLocation("explode_vol");
 	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
+	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 	unif_light_position_ = prg_.uniformLocation("light_position");
 	unif_color_ = prg_.uniformLocation("color");
 
@@ -170,6 +175,7 @@ ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 	set_explode_volume(0.8f);
 	set_color(QColor(255,0,0));
 	set_plane_clip(QVector4D(0,0,0,0));
+	set_plane_clip2(QVector4D(0,0,0,0));
 	release();
 }
 
@@ -192,6 +198,12 @@ void ShaderExplodeVolumesGen::set_explode_volume(float32 x)
 void ShaderExplodeVolumesGen::set_plane_clip(const QVector4D& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
+}
+
+
+void ShaderExplodeVolumesGen::set_plane_clip2(const QVector4D& plane)
+{
+	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
 

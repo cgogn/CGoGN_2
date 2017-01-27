@@ -31,14 +31,14 @@ namespace cgogn
 namespace geometry
 {
 
-template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3<DefaultMapTraits>>;
-template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3<DefaultMapTraits>>;
+template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2>;
+template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2>;
+template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3>;
+template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3>;
+template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2>;
+template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2>;
+template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3>;
+template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3>;
 
 } // namespace geometry
 } // namespace cgogn
