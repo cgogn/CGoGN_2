@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_
+#define CGOGN_MODELING_TILING_TRIANGULAR_TORE_CPP_
 
-#include <cgogn/modeling/algos/refinements.h>
+#include <cgogn/modeling/tiling/triangular_tore.h>
 
 namespace cgogn
 {
@@ -31,10 +31,7 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API CMap2::Vertex triangule<CMap2>(CMap2&, CMap2::Face);
-template CGOGN_MODELING_API CMap3::Vertex triangule<CMap3>(CMap3&, CMap3::Face);
-template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+template class CGOGN_MODELING_API TriangularTore<CMap2>;
 
 } // namespace modeling
 

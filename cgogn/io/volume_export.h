@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -52,25 +52,6 @@ public:
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
-	class ConnectorCellFilter : public cgogn::CellFilters
-	{
-	public:
-
-		inline ConnectorCellFilter(const Map& map) : map_(map) {}
-		inline bool filter(Volume w) const
-		{
-			return map_.codegree(w) != 3u; // we want to ignore the "connector" cells that are sometime added
-		}
-		inline uint32 filtered_cells() const
-		{
-			return orbit_mask<Volume>();
-		}
-
-	private:
-
-		const Map& map_;
-	};
-
 	inline VolumeExport() :
 		vertices_of_volumes_()
 	  ,nb_tetras_(0u)
@@ -110,8 +91,24 @@ protected:
 			}
 		}
 
-		this->cell_cache_->template build<Vertex>();
-		this->cell_cache_->template build<Volume>(ConnectorCellFilter(map));
+
+		std::function<bool(Volume)> volume_validator = [&](Volume w) -> bool
+		{
+			// we want to ignore the "connector" cells that are sometime added. Their codegree is 3.
+			return map.codegree(w) != 3u && (!options.cell_filter_ || options.cell_filter_(w.dart));
+		};
+
+		this->cell_cache_->template build<Volume>(volume_validator);
+		this->cell_cache_->template build<Vertex>([&map, &volume_validator](Vertex v)
+		{
+			bool use_vertex = false;
+			map.foreach_incident_volume(v, [&map, &use_vertex, &volume_validator](Volume w) -> bool
+			{
+				use_vertex = volume_validator(w);
+				return !use_vertex; // stop when use_vertex == true
+			});
+			return use_vertex;
+		});
 
 		uint32 count{0u};
 		map.foreach_cell(

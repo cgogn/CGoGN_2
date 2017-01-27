@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -423,6 +423,7 @@ ExportOptions::ExportOptions(const ExportOptions& eo) :
 	filename_(eo.filename_),
 	position_attribute_(eo.position_attribute_),
 	attributes_to_export_(eo.attributes_to_export_),
+	cell_filter_(eo.cell_filter_),
 	binary_(eo.binary_),
 	compress_(eo.compress_),
 	overwrite_(eo.overwrite_)
@@ -432,6 +433,7 @@ ExportOptions::ExportOptions(ExportOptions&& eo) :
 	filename_(std::move(eo.filename_)),
 	position_attribute_(std::move(eo.position_attribute_)),
 	attributes_to_export_(std::move(eo.attributes_to_export_)),
+	cell_filter_(std::move(eo.cell_filter_)),
 	binary_(eo.binary_),
 	compress_(eo.compress_),
 	overwrite_(eo.overwrite_)

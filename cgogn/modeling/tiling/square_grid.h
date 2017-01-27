@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -183,8 +183,8 @@ public:
 						 float32 y,
 						 float32 z)
 	{
-		float32 dx = x / float32(this->nx_);
-		float32 dy = y / float32(this->ny_);
+		const float32 dx = x / float32(this->nx_);
+		const float32 dy = y / float32(this->ny_);
 
 		for(uint32 i = 0; i <= this->ny_; ++i)
 		{
@@ -210,18 +210,18 @@ public:
 								  float32 radius_max,
 								  float32 turns)
 	{
-		float32 alpha = float32(2.0 * M_PI / this->ny_);
-		float32 beta = turns / float32(this->ny_);
+		const float32 alpha = 2.0f * float32(M_PI) / this->ny_;
+		const float32 beta = turns / float32(this->ny_);
 
-		float32 radius = (radius_max + radius_min) / 2.0f;
-		float32 rdiff = (radius_max - radius_min) / 2.0f;
+		const float32 radius = (radius_max + radius_min) / 2.0f;
+		const float32 rdiff = (radius_max - radius_min) / 2.0f;
 
 		for(uint32 i = 0; i <= this->ny_; ++i)
 		{
 			for(uint32 j = 0; j <= this->nx_; ++j)
 			{
-				float32 rw = -rdiff + float32(j) * 2.0f * rdiff / float32(this->nx_);
-				float32 r = radius + rw * std::cos(beta * float32(i));
+				const float32 rw = -rdiff + float32(j) * 2.0f * rdiff / float32(this->nx_);
+				const float32 r = radius + rw * std::cos(beta * float32(i));
 
 				attribute[this->vertex_table_[i * (this->nx_ + 1) + j]] =
 						T(r * std::cos(alpha * float32(i)),
@@ -247,8 +247,8 @@ public:
 							 float32 nbTurn,
 							 int32 orient)
 	{
-		float32 alpha = float32(2.0 * M_PI / this->nx_) * nbTurn;
-		float32 hS = maxHeight / float32(this->nx_);
+		const float32 alpha = 2.0f * float32(M_PI) * nbTurn / this->nx_ ;
+		const float32 hS = maxHeight / float32(this->nx_);
 
 		float32 r,x,y;
 		for(uint32 i = 0; i <= this->ny_; ++i)
@@ -256,8 +256,8 @@ public:
 			for(uint32 j = 0; j <= this->nx_; ++j)
 			{
 				r = radius_min + (radius_max - radius_min) * float32(i) / float32(this->ny_);
-				x = orient * r * sin(alpha * float32(j));
-				y = orient * r * cos(alpha * float32(j));
+				x = orient * r * std::sin(alpha * float32(j));
+				y = orient * r * std::cos(alpha * float32(j));
 
 				attribute[this->vertex_table_[i * (this->nx_ + 1) + j]] = T(x, y, j * hS);
 			}
@@ -265,6 +265,10 @@ public:
 	}
 	//@}
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_GRID_CPP_))
+extern template class CGOGN_MODELING_API SquareGrid<CMap2>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_GRID_CPP_))
 
 } //namespace modeling
 

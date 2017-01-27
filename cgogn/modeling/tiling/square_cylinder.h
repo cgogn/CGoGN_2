@@ -345,6 +345,10 @@ public:
 	//@}
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
+extern template class CGOGN_MODELING_API SquareCylinder<CMap2>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
+
 } //namespace modeling
 
 } //namespace cgogn

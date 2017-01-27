@@ -56,7 +56,6 @@ else()
 			target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++17")
 		endif(CGOGN_CPP_STD STREQUAL "11")
 	endif(NOT MSVC)
-	add_definitions("-fPIC")
 endif()
 
 # for glu warning on mac

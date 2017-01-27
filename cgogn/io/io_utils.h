@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -83,10 +83,12 @@ public:
 	inline ExportOptions& binary(bool b) { binary_ = b; return *this; }
 	inline ExportOptions& compress(bool b) { compress_ = b; return *this; }
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
+	inline ExportOptions& cell_filter(const std::function<bool(Dart)>& func) { cell_filter_ = func; return *this; }
 
 	std::string filename_;
 	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
+	std::function<bool(Dart)> cell_filter_;
 	bool binary_;
 	bool compress_;
 	bool overwrite_;

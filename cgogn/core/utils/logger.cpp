@@ -32,7 +32,7 @@ namespace cgogn
 namespace logger
 {
 
-const Logger& Logger::get_logger()
+Logger& Logger::get_logger()
 {
 	static Logger logger_instance;
 	return logger_instance;
@@ -44,6 +44,8 @@ void Logger::process(const LogEntry& entry) const
 	if (console_out_)
 		console_out_->process_entry(entry);
 	for (auto& o : file_out_)
+		o->process_entry(entry);
+	for (auto& o : other_outputs_)
 		o->process_entry(entry);
 }
 
@@ -119,6 +121,19 @@ void Logger::remove_file_output(const std::string& filename)
 	}
 	if (!found)
 		std::cerr << "Logger::remove_file_output: The file \"" << filename <<  "\" was not used by the logger." << std::endl;
+}
+
+void Logger::add_output(LoggerOutput* output)
+{
+	bool already_added = false;
+	std::lock_guard<std::mutex> guard(process_mutex_);
+	for (auto& out : other_outputs_)
+		if (out == output)
+			already_added = true;
+	if (!already_added)
+		other_outputs_.push_back(output);
+	else
+		std::cerr << "Logger::add_output : the specified output is already added. Ignoring." << std::endl;
 }
 
 Logger::Logger()

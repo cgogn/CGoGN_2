@@ -1,4 +1,4 @@
-project(cgogn_modeling
+﻿project(cgogn_modeling
 	LANGUAGES CXX
 )
 
@@ -28,6 +28,16 @@ set(SOURCE_FILES
 	algos/pliant_remeshing.cpp
 	algos/refinements.cpp
 	algos/tetrahedralization.cpp
+	tiling/tiling.cpp
+	tiling/triangular_grid.cpp
+	tiling/triangular_cylinder.cpp
+	tiling/triangular_tore.cpp
+#	tiling/triangular_cube.cpp
+
+	tiling/square_grid.cpp
+	tiling/square_cylinder.cpp
+	tiling/square_tore.cpp
+#	tiling/square_cube.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
