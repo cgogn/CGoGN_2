@@ -1,4 +1,4 @@
-
+﻿
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -164,20 +164,45 @@ public:
 template <typename VEC>
 void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 {
-	static_assert(std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<VEC>::Scalar, double>::value, "only float or double allowed for vbo");
+	using Scalar = typename geometry::vector_traits<VEC>::Scalar;
+	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
 	uint32 vec_sz = uint32(vector.size());
 	vbo->allocate(vec_sz, vec_dim);
 	const uint32 vbo_bytes =  vec_dim * vec_sz * uint32(sizeof(float32));
-	if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float32>::value)
+
+	// handle the case where we want to use SIMD with Eigen::AlignedVector3
+	if (std::is_same<VEC, Eigen::AlignedVector3<Scalar>>::value)
+	{
+		// copy (after conversion to float)
+		float32* float_buffer = new float32[vector.size() * vec_dim];
+		// transform double into float
+		float32* fit = float_buffer;
+		const Scalar* src = reinterpret_cast<const Scalar*>(vector.data());
+		for (uint32 i = 0, size = vector.size(); i < size; ++i)
+		{
+			*fit++ = *src++;
+			*fit++ = *src++;
+			*fit++ = *src++;
+			++src;
+		}
+		vbo->bind();
+		vbo->copy_data(0, vbo_bytes, float_buffer);
+		vbo->release();
+		delete[] float_buffer;
+		return;
+	}
+
+
+	if (std::is_same<Scalar, float32>::value)
 	{
 		// copy
 		vbo->bind();
 		vbo->copy_data(0, vbo_bytes, vector.data());
 		vbo->release();
 	}
-	else if (std::is_same<typename geometry::vector_traits<VEC>::Scalar, float64>::value)
+	else if (std::is_same<Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[vector.size() * vec_dim];
@@ -201,7 +226,8 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO* vbo)
 {
-	static_assert(std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value || std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, double>::value, "only float or double allowed for vbo");
+	using Scalar = typename geometry::vector_traits<typename ATTR::value_type>::Scalar;
+	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.data();
 
@@ -218,7 +244,32 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 
 	const uint32 vbo_blk_bytes = ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
-	if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float32>::value)
+	// handle the case where we want to use SIMD with Eigen::AlignedVector3
+	if (std::is_same<typename ATTR::value_type, Eigen::AlignedVector3<Scalar>>::value)
+	{
+		// copy (after conversion to float)
+		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];
+		for (uint32 i = 0; i < nb_chunks; ++i)
+		{
+			// transform double into float
+			float32* fit = float_buffer;
+			const Scalar* src = reinterpret_cast<const Scalar*>(chunk_addr[i]);
+			for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
+			{
+				*fit++ = *src++;
+				*fit++ = *src++;
+				*fit++ = *src++;
+				++src;
+			}
+			vbo->bind();
+			vbo->copy_data(i * vbo_blk_bytes, vbo_blk_bytes, float_buffer);
+			vbo->release();
+		}
+		delete[] float_buffer;
+		return;
+	}
+
+	if (std::is_same<Scalar, float32>::value)
 	{
 		// copy
 		vbo->bind();
@@ -226,7 +277,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 			vbo->copy_data(i* vbo_blk_bytes, vbo_blk_bytes, chunk_addr[i]);
 		vbo->release();
 	}
-	else if (std::is_same<typename geometry::vector_traits<typename ATTR::value_type>::Scalar, float64>::value)
+	else if (std::is_same<Scalar, float64>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];
