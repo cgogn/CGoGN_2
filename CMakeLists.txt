@@ -51,6 +51,7 @@ option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." O
 option(CGOGN_BUILD_EXAMPLES "Build some example apps." ON)
 option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." ON)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
+option(CGOGN_USE_SIMD "Enable SIMD instructions (sse,avx...)" ON)
 option(CGOGN_ENABLE_LTO "Enable link-time optimizations (only with gcc)" ON)
 option(CGOGN_INSANE_WARN_LEVEL "Set very very high warning compilation level." OFF)
 if (NOT MSVC)
