@@ -29,9 +29,85 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/core/cmap/cmap3_tetra.h>
 #include <cgogn/core/cmap/cmap3_hexa.h>
-#include <memory>
 
 using namespace cgogn;
+
+using MapTypes = ::testing::Types<CMap2, CMap2Tri, CMap2Quad, CMap3, CMap3Tetra, CMap3Hexa>;
+
+template<typename Builder>
+void setup(Builder& builder)
+{
+	cgogn_assert_not_reached("The setup() function has to be specialized.");
+}
+
+template<>
+void setup(cgogn::CMap2Builder_T<CMap2> & builder)
+{
+	Dart d1 = builder.add_face_topo_fp(4u);
+	Dart d2 = builder.add_face_topo_fp(3u);
+	builder.phi2_sew(d1,d2);
+	builder.close_map();
+}
+
+template<>
+void setup(cgogn::CMap2Builder_T<CMap2Tri>& builder)
+{
+	Dart d1 = builder.add_face_topo_fp(3u);
+	Dart d2 = builder.add_face_topo_fp(3u);
+	builder.phi2_sew(d1,d2);
+	builder.close_map();
+}
+
+template<>
+void setup(cgogn::CMap2Builder_T<CMap2Quad>& builder)
+{
+	Dart d1 = builder.add_face_topo_fp(4u);
+	Dart d2 = builder.add_face_topo_fp(4u);
+	builder.phi2_sew(d1,d2);
+	builder.close_map();
+}
+
+template<>
+void setup(cgogn::CMap3Builder_T<CMap3>& builder)
+{
+	Dart p1 = builder.add_prism_topo_fp(3u);
+	Dart p2 = builder.add_prism_topo_fp(3u);
+	builder.sew_volumes_fp(p1, p2);
+
+	Dart p3 = builder.add_pyramid_topo_fp(4u);
+	Dart p4 = builder.add_pyramid_topo_fp(4u);
+	builder.sew_volumes_fp(p3, p4);
+
+	builder.close_map();
+}
+
+template<>
+void setup(cgogn::CMap3Builder_T<CMap3Tetra>& builder)
+{
+	Dart p1 = builder.add_pyramid_topo_fp(3u);
+	Dart p2 = builder.add_pyramid_topo_fp(3u);
+	builder.sew_volumes_fp(p1, p2);
+
+	Dart p3 = builder.add_pyramid_topo_fp(3u);
+	Dart p4 = builder.add_pyramid_topo_fp(3u);
+	builder.sew_volumes_fp(p3, p4);
+
+	builder.close_map();
+}
+
+template<>
+void setup(cgogn::CMap3Builder_T<CMap3Hexa>& builder)
+{
+	Dart p1 = builder.add_prism_topo_fp(4u);
+	Dart p2 = builder.add_prism_topo_fp(4u);
+	builder.sew_volumes_fp(p1, p2);
+
+	Dart p3 = builder.add_prism_topo_fp(4u);
+	Dart p4 = builder.add_prism_topo_fp(4u);
+	builder.sew_volumes_fp(p3, p4);
+
+	builder.close_map();
+}
 
 
 template<typename Map>
@@ -53,8 +129,18 @@ public:
 	template<Orbit ORB>
 	using CellMarkerStore = typename Map::template CellMarkerStore<ORB>;
 
-	inline CellMarkerTest() : Inherit()
+	using MapBuilder = typename std::conditional<Map::DIMENSION == 2, cgogn::CMap2Builder_T<Map>, cgogn::CMap3Builder_T<Map>>::type;
+
+	inline CellMarkerTest() : Inherit(),
+		builder(map)
 	{}
+
+	virtual void SetUp() override
+	{
+		setup(builder);
+		init_markers();
+	}
+
 
 	void init_markers()
 	{
@@ -75,6 +161,7 @@ public:
 	}
 
 	Map map;
+	MapBuilder builder;
 	std::unique_ptr<CellMarker<Vertex::ORBIT>> vmarker;
 	std::unique_ptr<CellMarker<Edge::ORBIT>> emarker;
 	std::unique_ptr<CellMarker<Face::ORBIT>> fmarker;
@@ -91,85 +178,9 @@ public:
 	std::unique_ptr<CellMarkerStore<Volume::ORBIT>> wmarkerstore;
 };
 
-template<typename Map>
-class CellMarkerTriMapTest : public CellMarkerTest<Map>
-{
-public:
-	using Inherit = CellMarkerTest<Map>;
-	using MapBuilder = cgogn::CMap2Builder_T<Map>;
+TYPED_TEST_CASE(CellMarkerTest, MapTypes);
 
-	CellMarkerTriMapTest() : Inherit(), builder(this->map) {}
-
-	virtual void SetUp() override
-	{
-		std::cout << this->map.nb_darts() << std::endl;
-		Dart d1 = builder.add_face_topo_fp(3u);
-		Dart d2 = builder.add_face_topo_fp(3u);
-		builder.phi2_sew(d1,d2);
-		builder.close_map();
-		this->init_markers();
-	}
-
-
-	MapBuilder builder;
-};
-
-template<typename Map>
-class CellMarkerQuadMapTest : public CellMarkerTest<Map>
-{
-public:
-	using Inherit = CellMarkerTest<Map>;
-	using MapBuilder = cgogn::CMap2Builder_T<Map>;
-	CellMarkerQuadMapTest() : Inherit(), builder(this->map) {
-
-	}
-
-	virtual void SetUp() override
-	{
-		Dart d1 = builder.add_face_topo_fp(4u);
-		Dart d2 = builder.add_face_topo_fp(4u);
-		builder.phi2_sew(d1,d2);
-		builder.close_map();
-		this->init_markers();
-	}
-	MapBuilder builder;
-};
-
-template<typename Map>
-class CellMarkerTetraMapTest : public CellMarkerTest<Map>
-{
-public:
-	using Inherit = CellMarkerTest<Map>;
-	using MapBuilder = cgogn::CMap3Builder_T<Map>;
-	CellMarkerTetraMapTest() : Inherit(), builder(this->map) {}
-	MapBuilder builder;
-};
-
-
-template<typename Map>
-class CellMarkerHexaMapTest : public CellMarkerTest<Map>
-{
-public:
-	using Inherit = CellMarkerTest<Map>;
-	using MapBuilder = cgogn::CMap3Builder_T<Map>;
-	CellMarkerHexaMapTest() : Inherit(), builder(this->map) {}
-	MapBuilder builder;
-};
-
-
-using TriMapTypes = ::testing::Types<CMap2, CMap2Tri>;
-using QuadMapTypes = ::testing::Types<CMap2, CMap2Quad>;
-using TetraMapType = ::testing::Types<CMap3, CMap3Tetra>;
-using HexaMapType = ::testing::Types<CMap3, CMap3Hexa>;
-
-
-TYPED_TEST_CASE(CellMarkerTriMapTest, TriMapTypes);
-
-//TYPED_TEST_CASE(CellMarkerQuadMapTest, QuadMapTypes);
-//TYPED_TEST_CASE(CellMarkerTetraMapTest, TetraMapType);
-//TYPED_TEST_CASE(CellMarkerHexaMapTest, HexaMapType);
-
-TYPED_TEST(CellMarkerTriMapTest, default_unmarked)
+TYPED_TEST(CellMarkerTest, default_unmarked)
 {
 	using Vertex = typename TypeParam::Vertex;
 	using Edge = typename TypeParam::Edge;
@@ -198,7 +209,7 @@ TYPED_TEST(CellMarkerTriMapTest, default_unmarked)
 	});
 }
 
-TYPED_TEST(CellMarkerTriMapTest, marking)
+TYPED_TEST(CellMarkerTest, marking)
 {
 	using Vertex = typename TypeParam::Vertex;
 	using Edge = typename TypeParam::Edge;
@@ -256,7 +267,7 @@ TYPED_TEST(CellMarkerTriMapTest, marking)
 	});
 }
 
-TYPED_TEST(CellMarkerTriMapTest, unmarking)
+TYPED_TEST(CellMarkerTest, unmarking)
 {
 	using Vertex = typename TypeParam::Vertex;
 	using Edge = typename TypeParam::Edge;
@@ -314,7 +325,7 @@ TYPED_TEST(CellMarkerTriMapTest, unmarking)
 	});
 }
 
-TYPED_TEST(CellMarkerTriMapTest, unmark_all)
+TYPED_TEST(CellMarkerTest, unmark_all)
 {
 	using Vertex = typename TypeParam::Vertex;
 	using Edge = typename TypeParam::Edge;
