@@ -30,6 +30,9 @@
 #include <cgogn/core/cmap/cmap3_tetra.h>
 #include <cgogn/core/cmap/cmap3_hexa.h>
 
+namespace cell_marker_test
+{
+
 using namespace cgogn;
 
 using MapTypes = ::testing::Types<CMap2, CMap2Tri, CMap2Quad, CMap3, CMap3Tetra, CMap3Hexa>;
@@ -378,3 +381,5 @@ TYPED_TEST(CellMarkerTest, unmark_all)
 		}
 	});
 }
+
+} // namespace cell_marker_test
