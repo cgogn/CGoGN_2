@@ -187,7 +187,6 @@ public:
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
 		auto it = std::find(marked_darts_->begin(), marked_darts_->end(), d);
-		cgogn_message_assert(it != marked_darts_->end(), "Dart not found");
 		if (it != marked_darts_->end())
 		{
 			Inherit::unmark(d);
