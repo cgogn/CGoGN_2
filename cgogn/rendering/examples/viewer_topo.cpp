@@ -50,7 +50,7 @@
 using Map2 = cgogn::CMap2;
 using Vertex = Map2::Vertex;
 
-using Vec3 = Eigen::AlignedVector3<float>;
+using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
@@ -168,7 +168,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->update<Vec3>(map_, vertex_position_);
 			break;
 		case Qt::Key_R:
-			cgogn::modeling::pliant_remeshing<Vec3>(map_,vertex_position_);
+			cgogn::modeling::pliant_remeshing<Vec3>(map_, vertex_position_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);

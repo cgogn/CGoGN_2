@@ -218,6 +218,18 @@ TEST_F(CMap2Test, flip_edge)
 }
 
 /**
+ * \brief Collapse edges preserves the cell indexation
+ */
+TEST_F(CMap2Test, collapse_edge)
+{
+	Volume v = cmap_.add_prism(3u);
+
+	cmap_.collapse_edge(Edge(v.dart));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/**
  * \brief Cutting faces preserves the cell indexation
  */
 TEST_F(CMap2Test, cut_face)

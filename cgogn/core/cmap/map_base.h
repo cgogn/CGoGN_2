@@ -155,7 +155,7 @@ protected:
 	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		for(uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
+		for (uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
 		{
 			this->topology_.init_markers_of_line(jdx);
 			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
@@ -196,11 +196,11 @@ protected:
 		uint32 index = d.index;
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
 
-		for(uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
-			if(this->embeddings_[orbit])
+			if (this->embeddings_[orbit])
 			{
-				for(uint32 jdx=index; jdx<index+ConcreteMap::PRIM_SIZE; ++jdx)
+				for (uint32 jdx = index; jdx < index + ConcreteMap::PRIM_SIZE; ++jdx)
 				{
 					uint32 emb = (*this->embeddings_[orbit])[jdx];
 					if (emb != INVALID_INDEX)

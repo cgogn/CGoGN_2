@@ -428,7 +428,6 @@ public:
 		return this->nb_darts_of_orbit(f);
 	}
 
-
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		if (codegree < 1u) return false;
