@@ -7,6 +7,8 @@ find_package(cgogn_core REQUIRED)
 set(SOURCE_FILES
 	basic/dart_test.cpp
 	basic/cell_test.cpp
+	basic/dart_marker_test.cpp
+	basic/cell_marker_test.cpp
 
 	container/chunk_array_container_test.cpp
 
