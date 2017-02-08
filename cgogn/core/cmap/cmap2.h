@@ -702,25 +702,25 @@ public:
 				return false;
 		}
 
-		auto alpha1 = [this] (Dart d) { return phi2(this->phi_1(d)); };
+		auto next_edge = [this] (Dart d) { return phi2(this->phi_1(d)); };
 
 		// Check vertex sharing condition
 		std::vector<uint32>* vn1 = uint_buffers()->buffer();
-		Dart it = alpha1(alpha1(e1));
+		Dart it = next_edge(next_edge(e1));
 		Dart end = this->phi1(e2);
 		do
 		{
 			vn1->push_back(this->embedding(Vertex(this->phi1(it))));
-			it = alpha1(it);
+			it = next_edge(it);
 		} while(it != end);
-		it = alpha1(alpha1(e2));
+		it = next_edge(next_edge(e2));
 		end = this->phi1(e1);
 		do
 		{
 			auto vn1it = std::find(vn1->begin(), vn1->end(), this->embedding(Vertex(this->phi1(it))));
 			if(vn1it != vn1->end())
 				return false;
-			it = alpha1(it);
+			it = next_edge(it);
 		} while(it != end);
 		uint_buffers()->release_buffer(vn1);
 
