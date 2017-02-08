@@ -217,7 +217,7 @@ public:
 		cgogn::geometry::set_zero(mean);
 		uint32 count = 0;
 
-		CellCache<MAP> cache(map);
+		typename MAP::CellCache cache(map);
 		cache.template build<Vertex>();
 
 		map.foreach_cell(

@@ -84,6 +84,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -672,7 +674,7 @@ protected:
 
 public:
 
-	bool edge_can_collapse(Edge e)
+	bool edge_can_collapse(Edge e) const
 	{
 		std::pair<Vertex,Vertex> v = vertices(e);
 
@@ -722,7 +724,7 @@ public:
 		} while(it != end);
 		uint_buffers()->release_buffer(vn1);
 
-		return true ;
+		return true;
 	}
 
 	/**
@@ -744,8 +746,8 @@ public:
 
 		if (this->template is_embedded<Edge>())
 		{
-			this->template copy_embedding<Edge>(e1, phi2(e1));
-			this->template copy_embedding<Edge>(e2, phi2(e2));
+			this->template copy_embedding<Edge>(phi2(e1), e1);
+			this->template copy_embedding<Edge>(phi2(e2), e2);
 		}
 
 		return v;

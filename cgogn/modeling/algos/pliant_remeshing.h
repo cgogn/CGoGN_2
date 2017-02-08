@@ -49,7 +49,7 @@ void pliant_remeshing(
 	using Vertex = typename CMap2::Vertex;
 	using Edge = typename CMap2::Edge;
 
-	CellCache<CMap2> cache(map);
+	CMap2::CellCache cache(map);
 	cache.template build<Edge>();
 
 	Scalar mean_edge_length = geometry::mean_edge_length<VEC3>(map, cache, position);

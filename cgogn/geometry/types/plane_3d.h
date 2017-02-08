@@ -97,6 +97,17 @@ public:
 		return normal_*d_;
 	}
 
+	// get the normal of the plane
+	inline const Vec& normal() const
+	{
+		return normal_;
+	}
+
+	inline Scalar d() const
+	{
+		return d_;
+	}
+
 	// compute the distance between the plane and point p
 	inline Scalar distance(const Vec& p) const
 	{

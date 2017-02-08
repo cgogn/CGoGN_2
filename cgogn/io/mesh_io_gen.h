@@ -66,7 +66,7 @@ public:
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 	template<typename T>
 	using VertexAttribute = typename Map::template VertexAttribute<T>;
-	using CellCache = cgogn::CellCache<Map>;
+	using CellCache = typename Map::CellCache;
 
 	inline MeshExport() :
 		position_attribute_(nullptr),

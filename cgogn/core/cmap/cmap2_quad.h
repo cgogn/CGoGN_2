@@ -81,6 +81,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
