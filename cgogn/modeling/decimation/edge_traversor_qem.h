@@ -26,6 +26,7 @@
 
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/geometry/types/quadric.h>
+#include <cgogn/modeling/decimation/edge_approximator.h>
 
 namespace cgogn
 {
@@ -60,10 +61,12 @@ public:
 
 	inline EdgeTraversor_QEM(
 		MAP& m,
-		const typename MAP::template VertexAttribute<VEC3>& position
+		const typename MAP::template VertexAttribute<VEC3>& position,
+		const EdgeApproximator<MAP, VEC3>& approx
 	) : Inherit(),
 		map_(m),
-		position_(position)
+		position_(position),
+		approx_(approx)
 	{
 		einfo_ = map_.template add_attribute<EdgeInfo, Edge>("EdgeTraversor_QEM_EdgeInfo");
 		quadric_ = map_.template add_attribute<geometry::Quadric<Scalar>, Vertex>("EdgeTraversor_QEM_Quadric");
@@ -155,11 +158,10 @@ public:
 		if (map_.edge_can_collapse(e))
 		{
 			std::pair<Vertex,Vertex> vertices = map_.vertices(e);
-			VEC3 newpos = 0.5 * (position_[vertices.first] + position_[vertices.second]);
 			geometry::Quadric<Scalar> q;
 			q += quadric_[vertices.first];
 			q += quadric_[vertices.second];
-			Scalar cost = q(newpos);
+			Scalar cost = q(approx_(e));
 			if (ei.valid_)
 			{
 				edges_.erase(ei.it_);
@@ -241,6 +243,8 @@ private:
 
 	MAP& map_;
 	const typename MAP::template VertexAttribute<VEC3>& position_;
+	const EdgeApproximator<MAP, VEC3>& approx_;
+
 	typename MAP::template EdgeAttribute<EdgeInfo> einfo_;
 	typename MAP::template VertexAttribute<geometry::Quadric<Scalar>> quadric_;
 	std::multimap<Scalar, Edge> edges_;

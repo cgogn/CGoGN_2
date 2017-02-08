@@ -21,21 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_ALGOS_DECIMATION_H_
-#define CGOGN_MODELING_ALGOS_DECIMATION_H_
+#ifndef CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_
+#define CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_
 
-#include <cgogn/modeling/dll.h>
-
-#include <cgogn/geometry/functions/basics.h>
-#include <cgogn/geometry/types/geometry_traits.h>
-
-#include <cgogn/core/cmap/cmap2.h>
-
-#include <cgogn/modeling/decimation/edge_traversor_map_order.h>
-#include <cgogn/modeling/decimation/edge_traversor_edge_length.h>
-#include <cgogn/modeling/decimation/edge_traversor_qem.h>
-
-#include <cgogn/modeling/decimation/edge_approximator_mid_edge.h>
+#include <cgogn/modeling/decimation/edge_approximator.h>
 
 namespace cgogn
 {
@@ -43,43 +32,42 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3>
-void decimate(
-	CMap2& map,
-	typename CMap2::template VertexAttribute<VEC3>& position,
-	uint32 nb
-)
+template <typename MAP, typename VEC3>
+class EdgeApproximator_MidEdge : public EdgeApproximator<MAP, VEC3>
 {
-	using Vertex = CMap2::Vertex;
-	using Edge = CMap2::Edge;
+public:
 
-	EdgeApproximator_MidEdge<CMap2, VEC3> approx(map, position);
-	EdgeTraversor_QEM<CMap2, VEC3> trav(map, position, approx);
+	using Inherit = EdgeApproximator<MAP, VEC3>;
+	using Self = EdgeApproximator_MidEdge<MAP, VEC3>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 
-	uint32 count = 0;
-	map.foreach_cell([&] (Edge e) -> bool
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(EdgeApproximator_MidEdge);
+
+	inline EdgeApproximator_MidEdge(
+		const MAP& m,
+		const typename MAP::template VertexAttribute<VEC3>& position
+	) : Inherit(m),
+		position_(position)
+	{}
+
+	virtual ~EdgeApproximator_MidEdge()
+	{}
+
+	VEC3 operator()(Edge e) const
 	{
-		VEC3 newpos = approx(e);
+		std::pair<Vertex,Vertex> vertices = this->map_.vertices(e);
+		return Scalar(0.5) * (position_[vertices.first] + position_[vertices.second]);
+	}
 
-		trav.pre_collapse(e);
+private:
 
-		Vertex v = map.collapse_edge(e);
-		position[v] = newpos;
-
-		trav.post_collapse();
-
-		++count;
-		return count < nb;
-	}, trav);
-}
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, uint32);
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, uint32);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
+	const typename MAP::template VertexAttribute<VEC3>& position_;
+};
 
 } // namespace modeling
 
 } // namespace cgogn
 
-#endif // CGOGN_MODELING_ALGOS_DECIMATION_H_
+#endif // CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_
