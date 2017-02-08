@@ -41,10 +41,11 @@ class Quadric
 {
 public:
 
+	using Self = Quadric<Scalar>;
 	using Vec3 = Eigen::Matrix<Scalar, 3, 1>;
 	using Vec4 = Eigen::Matrix<Scalar, 4, 1>;
 	using Vec4d = Eigen::Vector4d;
-	using Self = Quadric<Scalar>;
+	using Matrix4d = Eigen::Matrix4d;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -103,6 +104,36 @@ public:
 		return Scalar(res);
 	}
 
+	bool optimized(Vec3& v)
+	{
+		Vec4 hv;
+		bool b = optimized(hv);
+		if (b)
+		{
+			v[0] = hv[0];
+			v[1] = hv[1];
+			v[2] = hv[2];
+		}
+		return b;
+	}
+
+	bool optimized(Vec4& v)
+	{
+		Matrix4d m(matrix_);
+		for (uint32 i = 0; i < 3; ++i) m(3,i) = Matrix4d::Scalar(0);
+		m(3,3) = Matrix4d::Scalar(1);
+		Matrix4d inverse;
+		Matrix4d::Scalar determinant;
+		bool invertible;
+		m.computeInverseAndDetWithCheck(inverse, determinant, invertible);
+		if (invertible)
+		{
+			Vec4d vd = inverse * Vec4d(0,0,0,1);
+			v = vd.template cast<Scalar>();
+		}
+		return invertible;
+	}
+
 	static std::string cgogn_name_of_type()
 	{
 		return std::string("cgogn::geometry::Quadric<") + name_of_type(Scalar()) + std::string(">");
@@ -120,7 +151,7 @@ public:
 
 private:
 
-	Eigen::Matrix4d matrix_;
+	Matrix4d matrix_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_QUADRIC_CPP_))

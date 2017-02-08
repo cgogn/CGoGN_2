@@ -22,6 +22,7 @@ set(HEADER_FILES
 
 	decimation/edge_approximator.h
 	decimation/edge_approximator_mid_edge.h
+	decimation/edge_approximator_qem.h
 	decimation/edge_traversor_map_order.h
 	decimation/edge_traversor_edge_length.h
 	decimation/edge_traversor_qem.h

@@ -36,6 +36,7 @@
 #include <cgogn/modeling/decimation/edge_traversor_qem.h>
 
 #include <cgogn/modeling/decimation/edge_approximator_mid_edge.h>
+#include <cgogn/modeling/decimation/edge_approximator_qem.h>
 
 namespace cgogn
 {
@@ -53,7 +54,7 @@ void decimate(
 	using Vertex = CMap2::Vertex;
 	using Edge = CMap2::Edge;
 
-	EdgeApproximator_MidEdge<CMap2, VEC3> approx(map, position);
+	EdgeApproximator_QEM<CMap2, VEC3> approx(map, position);
 	EdgeTraversor_QEM<CMap2, VEC3> trav(map, position, approx);
 
 	uint32 count = 0;
