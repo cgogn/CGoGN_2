@@ -447,7 +447,8 @@ protected:
 	{
 		Dart e = phi2(d);						// Get the adjacent 1D-edge
 
-#ifndef	NDEBUG
+// unnecessary unsewing only done in debug mode to comply to assertions in phi2_sew
+#ifdef CGOGN_DEBUG
 		phi2_unsew(d);							// Separate the two 1D-edges of the edge
 #endif
 		Dart nd = this->Inherit::split_vertex_topo(d);
@@ -648,7 +649,8 @@ protected:
 			Dart d1 = this->phi1(d_1);
 			Dart d12 = phi2(d1);
 			Dart d_12 = phi2(d_1);
-#ifndef	NDEBUG
+// unnecessary unsewing only done in debug mode to comply to assertions in phi2_sew
+#ifdef CGOGN_DEBUG
 			phi2_unsew(d1);
 			phi2_unsew(d_1);
 #endif
@@ -661,7 +663,8 @@ protected:
 			Dart e1 = this->phi1(e_1);
 			Dart e12 = phi2(e1);
 			Dart e_12 = phi2(e_1);
-#ifndef	NDEBUG
+// unnecessary unsewing only done in debug mode to comply to assertions in phi2_sew
+#ifdef CGOGN_DEBUG
 			phi2_unsew(e1);
 			phi2_unsew(e_1);
 #endif
