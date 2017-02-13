@@ -31,8 +31,7 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API Quadric<float32>;
-template class CGOGN_GEOMETRY_API Quadric<float64>;
+
 
 } // namespace geometry
 

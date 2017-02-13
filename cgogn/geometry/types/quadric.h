@@ -36,14 +36,12 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename Scalar>
 class Quadric
 {
 public:
 
-	using Self = Quadric<Scalar>;
-	using Vec3 = Eigen::Matrix<Scalar, 3, 1>;
-	using Vec4 = Eigen::Matrix<Scalar, 4, 1>;
+	using Self = Quadric;
+
 	using Vec4d = Eigen::Vector4d;
 	using Matrix4d = Eigen::Matrix4d;
 
@@ -54,10 +52,11 @@ public:
 		matrix_.setZero();
 	}
 
-	inline Quadric(const Vec3& p1, const Vec3& p2, const Vec3& p3)
+	template <typename VEC3>
+	inline Quadric(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 	{
-		Plane3D<Vec3> plane(p1, p2, p3);
-		const Vec3& n = plane.normal();
+		Plane3D<VEC3> plane(p1, p2, p3);
+		const VEC3& n = plane.normal();
 		Vec4d p = Vec4d(n[0], n[1], n[2], plane.d());
 		matrix_ = p * p.transpose();
 	}
@@ -84,29 +83,55 @@ public:
 		return *this;
 	}
 
-	Scalar operator()(const Vec3& v)
+	template <
+		typename VEC3,
+		typename std::enable_if<nb_components_traits<VEC3>::value == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value>::type* = nullptr
+	>
+	typename vector_traits<VEC3>::Scalar operator()(const VEC3& v)
 	{
-		return (*this)(Vec4(v[0], v[1], v[2], Scalar(1)));
+		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}
 
-//	Scalar operator()(const Vec4& v)
-//	{
-//		Vec4 Av = matrix_ * v;
-//		Scalar res = v.transpose() * Av;
-//		return res;
-//	}
-
-	Scalar operator()(const Vec4& v)
+	template <
+		typename VEC3,
+		typename std::enable_if<nb_components_traits<VEC3>::value == 3 && !std::is_same<typename vector_traits<VEC3>::Scalar, double>::value>::type* = nullptr
+	>
+	typename vector_traits<VEC3>::Scalar operator()(const VEC3& v)
 	{
-		Vec4d vd = v.template cast<Vec4d::Scalar>();
-		Vec4d Av = matrix_ * vd;
-		Vec4d::Scalar res = vd.transpose() * Av;
+		using Scalar = typename vector_traits<VEC3>::Scalar;
+
+		return Scalar((*this)(Vec4d(v[0], v[1], v[2], 1.)));
+	}
+
+	template <
+		typename VEC4,
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<typename vector_traits<VEC4>::Scalar, double>::value>::type* = nullptr
+	>
+	double operator()(const VEC4& v)
+	{
+		return v.transpose() * matrix_ * v;
+	}
+
+	template <
+		typename VEC4,
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<typename vector_traits<VEC4>::Scalar, double>::value>::type* = nullptr
+	>
+	typename vector_traits<VEC4>::Scalar operator()(const VEC4& v)
+	{
+		using Scalar = typename vector_traits<VEC4>::Scalar;
+
+		Vec4d vd = v.template cast<double>();
+		double res = vd.transpose() * matrix_ * vd;
 		return Scalar(res);
 	}
 
-	bool optimized(Vec3& v)
+	template <
+		typename VEC3,
+		typename std::enable_if<nb_components_traits<VEC3>::value == 3>::type* = nullptr
+	>
+	bool optimized(VEC3& v)
 	{
-		Vec4 hv;
+		Vec4d hv;
 		bool b = optimized(hv);
 		if (b)
 		{
@@ -117,18 +142,24 @@ public:
 		return b;
 	}
 
-	bool optimized(Vec4& v)
+	template <
+		typename VEC4,
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4>::type* = nullptr
+	>
+	bool optimized(VEC4& v)
 	{
+		using Scalar = typename vector_traits<VEC4>::Scalar;
+
 		Matrix4d m(matrix_);
-		for (uint32 i = 0; i < 3; ++i) m(3,i) = Matrix4d::Scalar(0);
-		m(3,3) = Matrix4d::Scalar(1);
+		for (uint32 i = 0; i < 3; ++i) m(3,i) = 0.;
+		m(3,3) = 1.;
 		Matrix4d inverse;
-		Matrix4d::Scalar determinant;
+		double determinant;
 		bool invertible;
 		m.computeInverseAndDetWithCheck(inverse, determinant, invertible);
 		if (invertible)
 		{
-			Vec4d vd = inverse * Vec4d(0,0,0,1);
+			Vec4d vd = inverse * Vec4d(0.,0.,0.,1.);
 			v = vd.template cast<Scalar>();
 		}
 		return invertible;
@@ -136,7 +167,7 @@ public:
 
 	static std::string cgogn_name_of_type()
 	{
-		return std::string("cgogn::geometry::Quadric<") + name_of_type(Scalar()) + std::string(">");
+		return std::string("cgogn::geometry::Quadric");
 	}
 
 	inline friend std::ostream& operator<<(std::ostream& out, const Self&)
@@ -153,11 +184,6 @@ private:
 
 	Matrix4d matrix_;
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_QUADRIC_CPP_))
-extern template class CGOGN_GEOMETRY_API Quadric<float32>;
-extern template class CGOGN_GEOMETRY_API Quadric<float64>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_QUADRIC_CPP_))
 
 } // namespace geometry
 

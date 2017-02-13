@@ -61,25 +61,25 @@ public:
 	{
 		std::pair<Vertex,Vertex> vertices = this->map_.vertices(e);
 
-		geometry::Quadric<Scalar> q1;
+		geometry::Quadric q1;
 		this->map_.foreach_incident_face(vertices.first, [&] (Face f)
 		{
 			Dart d = f.dart;
 			Dart d1 = this->map_.phi1(d);
 			Dart d_1 = this->map_.phi_1(d);
-			q1 += geometry::Quadric<Scalar>(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
+			q1 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
 		});
 
-		geometry::Quadric<Scalar> q2;
+		geometry::Quadric q2;
 		this->map_.foreach_incident_face(vertices.second, [&] (Face f)
 		{
 			Dart d = f.dart;
 			Dart d1 = this->map_.phi1(d);
 			Dart d_1 = this->map_.phi_1(d);
-			q2 += geometry::Quadric<Scalar>(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
+			q2 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
 		});
 
-		geometry::Quadric<Scalar> q;
+		geometry::Quadric q;
 		q += q1;
 		q += q2;
 

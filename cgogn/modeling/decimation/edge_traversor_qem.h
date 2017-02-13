@@ -69,7 +69,7 @@ public:
 		approx_(approx)
 	{
 		einfo_ = map_.template add_attribute<EdgeInfo, Edge>("EdgeTraversor_QEM_EdgeInfo");
-		quadric_ = map_.template add_attribute<geometry::Quadric<Scalar>, Vertex>("EdgeTraversor_QEM_Quadric");
+		quadric_ = map_.template add_attribute<geometry::Quadric, Vertex>("EdgeTraversor_QEM_Quadric");
 
 		map_.foreach_cell([&] (Vertex v)
 		{
@@ -81,7 +81,7 @@ public:
 			Dart d = f.dart;
 			Dart d1 = map_.phi1(d);
 			Dart d_1 = map_.phi_1(d);
-			geometry::Quadric<Scalar> q(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
+			geometry::Quadric q(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
 			quadric_[d] += q;
 			quadric_[d1] += q;
 			quadric_[d_1] += q;
@@ -158,7 +158,7 @@ public:
 		if (map_.edge_can_collapse(e))
 		{
 			std::pair<Vertex,Vertex> vertices = map_.vertices(e);
-			geometry::Quadric<Scalar> q;
+			geometry::Quadric q;
 			q += quadric_[vertices.first];
 			q += quadric_[vertices.second];
 			Scalar cost = q(approx_(e));
@@ -246,7 +246,7 @@ private:
 	const EdgeApproximator<MAP, VEC3>& approx_;
 
 	typename MAP::template EdgeAttribute<EdgeInfo> einfo_;
-	typename MAP::template VertexAttribute<geometry::Quadric<Scalar>> quadric_;
+	typename MAP::template VertexAttribute<geometry::Quadric> quadric_;
 	std::multimap<Scalar, Edge> edges_;
 	Edge e1_, e2_;
 };
