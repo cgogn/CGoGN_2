@@ -48,6 +48,7 @@ set(HEADER_FILES
 	utils/log_stream.h
 	utils/numerics.h
 	utils/type_traits.h
+	utils/timer.h
 )
 
 set(SOURCE_FILES
@@ -79,13 +80,10 @@ set(SOURCE_FILES
 	utils/log_stream.cpp
 	utils/masks.cpp
 	utils/string.cpp
+	utils/timer.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-# generate_export_header(${PROJECT_NAME}
-#   EXPORT_MACRO_NAME "CGOGN_CORE_API"
-#   EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/exports/${PROJECT_NAME}_export.h"
-# )
 
 # use of target_compile_options to have transitive flags
 if(CGOGN_USE_SIMD)
