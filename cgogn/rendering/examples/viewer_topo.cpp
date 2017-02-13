@@ -175,7 +175,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_D:
-			cgogn::modeling::decimate<Vec3>(map_, vertex_position_, 1000);
+			cgogn::modeling::decimate<Vec3>(map_, vertex_position_, cgogn::modeling::EdgeTraversor_QEM_T, cgogn::modeling::EdgeApproximator_QEM_T, 1000u);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_,vertex_position_);

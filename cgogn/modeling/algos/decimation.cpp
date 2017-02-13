@@ -31,8 +31,8 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, uint32);
-template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, uint32);
+template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
 
 } // namespace modeling
 

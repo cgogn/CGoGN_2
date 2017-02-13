@@ -47,6 +47,8 @@ public:
 	virtual ~EdgeApproximator()
 	{}
 
+	virtual void init() = 0;
+
 	virtual VEC3 operator()(Edge e) const = 0;
 
 protected:

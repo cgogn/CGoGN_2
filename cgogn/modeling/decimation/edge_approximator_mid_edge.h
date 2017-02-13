@@ -55,6 +55,9 @@ public:
 	virtual ~EdgeApproximator_MidEdge()
 	{}
 
+	void init()
+	{}
+
 	VEC3 operator()(Edge e) const
 	{
 		std::pair<Vertex,Vertex> vertices = this->map_.vertices(e);

@@ -57,31 +57,45 @@ public:
 	virtual ~EdgeApproximator_QEM()
 	{}
 
+	void init()
+	{
+		// attribute is valid only if the used EdgeTraversor is a EdgeTraversor_QEM
+		quadric_ = this->map_.template get_attribute<geometry::Quadric, Vertex>("EdgeTraversor_QEM_Quadric");
+	}
+
 	VEC3 operator()(Edge e) const
 	{
+		geometry::Quadric q;
 		std::pair<Vertex,Vertex> vertices = this->map_.vertices(e);
 
-		geometry::Quadric q1;
-		this->map_.foreach_incident_face(vertices.first, [&] (Face f)
+		if (quadric_.is_valid())
 		{
-			Dart d = f.dart;
-			Dart d1 = this->map_.phi1(d);
-			Dart d_1 = this->map_.phi_1(d);
-			q1 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
-		});
-
-		geometry::Quadric q2;
-		this->map_.foreach_incident_face(vertices.second, [&] (Face f)
+			q += quadric_[vertices.first];
+			q += quadric_[vertices.second];
+		}
+		else
 		{
-			Dart d = f.dart;
-			Dart d1 = this->map_.phi1(d);
-			Dart d_1 = this->map_.phi_1(d);
-			q2 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
-		});
+			geometry::Quadric q1;
+			this->map_.foreach_incident_face(vertices.first, [&] (Face f)
+			{
+				Dart d = f.dart;
+				Dart d1 = this->map_.phi1(d);
+				Dart d_1 = this->map_.phi_1(d);
+				q1 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
+			});
 
-		geometry::Quadric q;
-		q += q1;
-		q += q2;
+			geometry::Quadric q2;
+			this->map_.foreach_incident_face(vertices.second, [&] (Face f)
+			{
+				Dart d = f.dart;
+				Dart d1 = this->map_.phi1(d);
+				Dart d_1 = this->map_.phi_1(d);
+				q2 += geometry::Quadric(position_[Vertex(d)], position_[Vertex(d1)], position_[Vertex(d_1)]);
+			});
+
+			q += q1;
+			q += q2;
+		}
 
 		VEC3 res;
 		bool opt = q.optimized(res);
@@ -94,6 +108,7 @@ public:
 private:
 
 	const typename MAP::template VertexAttribute<VEC3>& position_;
+	typename MAP::template VertexAttribute<geometry::Quadric> quadric_;
 };
 
 } // namespace modeling

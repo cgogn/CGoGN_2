@@ -44,18 +44,30 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3>
+enum EdgeTraversorType
+{
+	EdgeTraversor_MapOrder_T = 0,
+	EdgeTraversor_EdgeLength_T,
+	EdgeTraversor_QEM_T
+};
+
+enum EdgeApproximatorType
+{
+	EdgeApproximator_MidEdge_T = 0,
+	EdgeApproximator_QEM_T
+};
+
+template <typename VEC3, typename EdgeTraversor>
 void decimate(
 	CMap2& map,
 	typename CMap2::template VertexAttribute<VEC3>& position,
+	EdgeTraversor& trav,
+	EdgeApproximator<CMap2, VEC3>& approx,
 	uint32 nb
 )
 {
 	using Vertex = CMap2::Vertex;
 	using Edge = CMap2::Edge;
-
-	EdgeApproximator_QEM<CMap2, VEC3> approx(map, position);
-	EdgeTraversor_QEM<CMap2, VEC3> trav(map, position, approx);
 
 	uint32 count = 0;
 	map.foreach_cell([&] (Edge e) -> bool
@@ -74,9 +86,52 @@ void decimate(
 	}, trav);
 }
 
+template <typename VEC3>
+void decimate(
+	CMap2& map,
+	typename CMap2::template VertexAttribute<VEC3>& position,
+	EdgeTraversorType trav_type,
+	EdgeApproximatorType approx_type,
+	uint32 nb
+)
+{
+	EdgeApproximator<CMap2, VEC3>* approx;
+
+	switch (approx_type)
+	{
+		case EdgeApproximator_MidEdge_T:
+			approx = new EdgeApproximator_MidEdge<CMap2, VEC3>(map, position);
+			break;
+		case EdgeApproximator_QEM_T:
+			approx = new EdgeApproximator_QEM<CMap2, VEC3>(map, position);
+			break;
+	}
+
+	switch (trav_type)
+	{
+		case EdgeTraversor_MapOrder_T: {
+			EdgeTraversor_MapOrder<CMap2> trav(map);
+			decimate(map, position, trav, *approx, nb);
+			break;
+		}
+		case EdgeTraversor_EdgeLength_T: {
+			EdgeTraversor_EdgeLength<CMap2, VEC3> trav(map, position);
+			decimate(map, position, trav, *approx, nb);
+			break;
+		}
+		case EdgeTraversor_QEM_T: {
+			EdgeTraversor_QEM<CMap2, VEC3> trav(map, position, *approx);
+			decimate(map, position, trav, *approx, nb);
+			break;
+		}
+	}
+
+	delete approx;
+}
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, uint32);
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, uint32);
+extern template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+extern template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
 
 } // namespace modeling
