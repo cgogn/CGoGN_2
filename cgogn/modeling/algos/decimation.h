@@ -69,6 +69,8 @@ void decimate(
 	using Vertex = CMap2::Vertex;
 	using Edge = CMap2::Edge;
 
+	approx.init();
+
 	uint32 count = 0;
 	map.foreach_cell([&] (Edge e) -> bool
 	{

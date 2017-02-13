@@ -124,10 +124,17 @@ public:
 
 		EdgeInfo& ei4 = einfo_[Edge(map_.phi_1(ed2))];
 		if (ei4.valid_) { edges_.erase(ei4.it_); ei4.valid_ = false; }
+
+		std::pair<Vertex,Vertex> vertices = map_.vertices(e);
+		q_.zero();
+		q_ += quadric_[vertices.first];
+		q_ += quadric_[vertices.second];
 	}
 
 	void post_collapse()
 	{
+		quadric_[Vertex(e1_.dart)] = q_;
+
 		Dart vit = e1_.dart;
 		do
 		{
@@ -249,6 +256,7 @@ private:
 	typename MAP::template VertexAttribute<geometry::Quadric> quadric_;
 	std::multimap<Scalar, Edge> edges_;
 	Edge e1_, e2_;
+	geometry::Quadric q_;
 };
 
 } // namespace modeling
