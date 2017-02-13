@@ -104,7 +104,7 @@ public:
 	{
 		using Scalar = typename vector_traits<VEC3>::Scalar;
 
-		return Scalar((*this)(Vec4d(v[0], v[1], v[2], 1.)));
+		return Scalar((*this)(Vec4d(double(v[0]), double(v[1]), double(v[2]), 1.)));
 	}
 
 	template <
