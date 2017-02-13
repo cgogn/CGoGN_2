@@ -87,7 +87,7 @@ public:
 		typename VEC3,
 		typename std::enable_if<nb_components_traits<VEC3>::value == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value>::type* = nullptr
 	>
-	typename vector_traits<VEC3>::Scalar operator()(const VEC3& v)
+	double operator()(const VEC3& v)
 	{
 		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}

@@ -359,6 +359,52 @@ protected:
 		return this->close_hole_topo(first);			// Add the base face
 	}
 
+public:
+
+	Volume add_pyramid(std::size_t size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Volume vol(add_pyramid_topo(size));
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(vol, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_incident_vertex(vol, [this] (Vertex v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vol, [this] (Edge e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(vol);
+
+		return vol;
+	}
+
 	/**
 	 * \brief Add a prism with n sides.
 	 * \param size : the number of sides of the prism
