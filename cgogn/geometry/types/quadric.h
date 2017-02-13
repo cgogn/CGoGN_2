@@ -42,7 +42,11 @@ public:
 
 	using Self = Quadric;
 
+	using Vec3f = Eigen::Vector3f;
+	using Vec3d = Eigen::Vector3d;
+	using Vec4f = Eigen::Vector4f;
 	using Vec4d = Eigen::Vector4d;
+
 	using Matrix4d = Eigen::Matrix4d;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -105,7 +109,7 @@ public:
 
 	template <
 		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<typename vector_traits<VEC4>::Scalar, double>::value>::type* = nullptr
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<VEC4, Vec4d>::value>::type* = nullptr
 	>
 	double operator()(const VEC4& v)
 	{
@@ -114,13 +118,17 @@ public:
 
 	template <
 		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<typename vector_traits<VEC4>::Scalar, double>::value>::type* = nullptr
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<VEC4, Vec4d>::value>::type* = nullptr
 	>
 	typename vector_traits<VEC4>::Scalar operator()(const VEC4& v)
 	{
 		using Scalar = typename vector_traits<VEC4>::Scalar;
 
-		Vec4d vd = v.template cast<double>();
+		Vec4d vd;
+		vd[0] = double(v[0]);
+		vd[1] = double(v[1]);
+		vd[2] = double(v[2]);
+		vd[3] = double(v[3]);
 		double res = vd.transpose() * matrix_ * vd;
 		return Scalar(res);
 	}
@@ -131,20 +139,40 @@ public:
 	>
 	bool optimized(VEC3& v)
 	{
+		using Scalar = typename vector_traits<VEC3>::Scalar;
+
 		Vec4d hv;
 		bool b = optimized(hv);
 		if (b)
 		{
-			v[0] = hv[0];
-			v[1] = hv[1];
-			v[2] = hv[2];
+			v[0] = Scalar(hv[0]);
+			v[1] = Scalar(hv[1]);
+			v[2] = Scalar(hv[2]);
 		}
 		return b;
 	}
 
 	template <
 		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4>::type* = nullptr
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<VEC4, Vec4d>::value>::type* = nullptr
+	>
+	bool optimized(VEC4& v)
+	{
+		Matrix4d m(matrix_);
+		for (uint32 i = 0; i < 3; ++i) m(3,i) = 0.;
+		m(3,3) = 1.;
+		Matrix4d inverse;
+		double determinant;
+		bool invertible;
+		m.computeInverseAndDetWithCheck(inverse, determinant, invertible);
+		if (invertible)
+			v = inverse * Vec4d(0.,0.,0.,1.);
+		return invertible;
+	}
+
+	template <
+		typename VEC4,
+		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<VEC4, Vec4d>::value>::type* = nullptr
 	>
 	bool optimized(VEC4& v)
 	{
@@ -160,7 +188,10 @@ public:
 		if (invertible)
 		{
 			Vec4d vd = inverse * Vec4d(0.,0.,0.,1.);
-			v = vd.template cast<Scalar>();
+			v[0] = Scalar(vd[0]);
+			v[1] = Scalar(vd[1]);
+			v[2] = Scalar(vd[2]);
+			v[3] = Scalar(vd[3]);
 		}
 		return invertible;
 	}
