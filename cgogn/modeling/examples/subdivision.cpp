@@ -41,7 +41,8 @@
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
-#include <cgogn/modeling/algos/pliant_remeshing.h>
+#include <cgogn/modeling/algos/loop.h>
+#include <cgogn/modeling/algos/catmull_clark.h>
 #include <cgogn/geometry/algos/length.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -150,12 +151,34 @@ public:
 			case Qt::Key_V:
 				vertices_rendering_ = !vertices_rendering_;
 				break;
-			case Qt::Key_R:
-				cgogn::modeling::pliant_remeshing<Vec3>(map_, vertex_position_);
+			case Qt::Key_L: {
+				cgogn::modeling::loop<Vec3>(map_, vertex_position_);
+
+				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				param_point_sprite_->size_ = mel / 6.0;
+
 				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+
 				render_->init_primitives(map_, cgogn::rendering::POINTS);
 				render_->init_primitives(map_, cgogn::rendering::LINES);
 				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+
+				break;
+			}
+			case Qt::Key_C: {
+				cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
+
+				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				param_point_sprite_->size_ = mel / 6.0;
+
+				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+
+				render_->init_primitives(map_, cgogn::rendering::POINTS);
+				render_->init_primitives(map_, cgogn::rendering::LINES);
+				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+
+				break;
+			}
 			default:
 				break;
 		}

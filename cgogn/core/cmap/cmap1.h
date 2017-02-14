@@ -73,6 +73,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -428,7 +430,6 @@ public:
 		return this->nb_darts_of_orbit(f);
 	}
 
-
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		if (codegree < 1u) return false;
@@ -466,6 +467,7 @@ public:
 	}
 
 public:
+
 	/*******************************************************************************
 	* Orbits traversal                                                             *
 	*******************************************************************************/

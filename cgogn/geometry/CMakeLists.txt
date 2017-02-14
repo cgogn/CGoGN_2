@@ -28,6 +28,7 @@ set(HEADER_FILES
 	types/eigen.h
 	types/geometry_traits.h
 	types/plane_3d.h
+	types/quadric.h
 	types/vec.h
 )
 
@@ -37,6 +38,7 @@ set(SOURCE_FILES
 	types/aabb.cpp
 	types/obb.cpp
 	types/plane_3d.cpp
+	types/quadric.cpp
 	types/vec.cpp
 )
 

@@ -222,10 +222,12 @@ public:
 		positions_(position),
 		ears_(cmp_VP)
 	{
-		if (map_.codegree(f) == 3)
+		uint32 codegree = map_.codegree(f);
+
+		if (codegree <= 3)
 		{
 			face_ = f;
-			nb_verts_ = 3;
+			nb_verts_ = codegree;
 			return;
 		}
 
@@ -294,6 +296,9 @@ public:
 	 */
 	void append_indices(std::vector<uint32>& table_indices)
 	{
+		if (nb_verts_ < 3)
+			return;
+
 		table_indices.reserve((nb_verts_ - 2) * 3);
 
 		if (nb_verts_ == 3)

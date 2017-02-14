@@ -5,29 +5,37 @@
 set(HEADER_FILES
 	dll.h
 	algos/catmull_clark.h
-	algos/pliant_remeshing.h
 	algos/loop.h
 	algos/refinements.h
+	algos/pliant_remeshing.h
+	algos/decimation.h
 	algos/tetrahedralization.h
 
 	tiling/tiling.h
 	tiling/triangular_grid.h
 	tiling/triangular_cylinder.h
 	tiling/triangular_tore.h
-#	tiling/triangular_cube.h
 
 	tiling/square_grid.h
 	tiling/square_cylinder.h
 	tiling/square_tore.h
-#	tiling/square_cube.h
+
+	decimation/edge_approximator.h
+	decimation/edge_approximator_mid_edge.h
+	decimation/edge_approximator_qem.h
+	decimation/edge_traversor_map_order.h
+	decimation/edge_traversor_edge_length.h
+	decimation/edge_traversor_qem.h
 )
 
 set(SOURCE_FILES
 	algos/catmull_clark.cpp
 	algos/loop.cpp
-	algos/pliant_remeshing.cpp
 	algos/refinements.cpp
+	algos/pliant_remeshing.cpp
+	algos/decimation.cpp
 	algos/tetrahedralization.cpp
+
 	tiling/tiling.cpp
 	tiling/triangular_grid.cpp
 	tiling/triangular_cylinder.cpp

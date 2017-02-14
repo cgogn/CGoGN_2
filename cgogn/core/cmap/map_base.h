@@ -155,7 +155,7 @@ protected:
 	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		for(uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
+		for (uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
 		{
 			this->topology_.init_markers_of_line(jdx);
 			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
@@ -196,11 +196,11 @@ protected:
 		uint32 index = d.index;
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
 
-		for(uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
-			if(this->embeddings_[orbit])
+			if (this->embeddings_[orbit])
 			{
-				for(uint32 jdx=index; jdx<index+ConcreteMap::PRIM_SIZE; ++jdx)
+				for (uint32 jdx = index; jdx < index + ConcreteMap::PRIM_SIZE; ++jdx)
 				{
 					uint32 emb = (*this->embeddings_[orbit])[jdx];
 					if (emb != INVALID_INDEX)
@@ -770,80 +770,80 @@ protected:
 			set_boundary(d, false);
 		});
 	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
 
+protected:
+
+	/*!
+	 * \Brief Methods to iterate over darts.
+	 * These functions skip boundary darts.
+	 */
+	inline Dart begin() const
+	{
+		Dart d = Dart(this->topology_.begin());
+		Dart end = Dart(this->topology_.end());
+
+		while (d != end && is_boundary(d))
+			this->topology_.next(d.index);
+
+		return d;
+	}
+
+	inline void next(Dart& d) const
+	{
+		Dart end = Dart(this->topology_.end());
+
+		do {
+			this->topology_.next(d.index);
+		} while (d != end && is_boundary(d));
+	}
+
+	inline Dart end() const
+	{
+		return Dart(this->topology_.end());
+	}
+
+	/*!
+	 * \Brief Methods to iterate over darts.
+	 * These functions traverse all darts.
+	 */
+	inline Dart all_begin() const
+	{
+		return Dart(this->topology_.begin());
+	}
+
+	inline void all_next(Dart& d) const
+	{
+		this->topology_.next(d.index);
+	}
+
+	inline Dart all_end() const
+	{
+		return Dart(this->topology_.end());
+	}
+
 public:
 
-//	template <typename FUNC>
-//	inline void parallel_foreach_dart(const FUNC& f) const
-//	{
-//		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
-//		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
+	/**
+	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC>
+	inline void foreach_dart(const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
 
-//		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
-//		using VecDarts = std::vector<Dart>;
-
-//		ThreadPool* thread_pool = cgogn::thread_pool();
-//		const std::size_t nb_threads_pool = thread_pool->nb_threads();
-
-//		std::array<std::vector<VecDarts*>, 2> dart_buffers;
-//		std::array<std::vector<Future>, 2> futures;
-//		dart_buffers[0].reserve(nb_threads_pool);
-//		dart_buffers[1].reserve(nb_threads_pool);
-//		futures[0].reserve(nb_threads_pool);
-//		futures[1].reserve(nb_threads_pool);
-
-//		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
-
-//		Dart it = Dart(this->topology_.begin());
-//		Dart last = Dart(this->topology_.end());
-
-//		while (it != last)
-//		{
-//			for (uint32 i = 0u; i < 2u; ++i)
-//			{
-//				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
-//				{
-//					dart_buffers[i].push_back(dbuffs->buffer());
-//					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-//					std::vector<Dart>& darts = *dart_buffers[i].back();
-//					darts.reserve(PARALLEL_BUFFER_SIZE);
-//					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-//					{
-//						darts.push_back(it);
-//						this->topology_.next(it.index);
-//					}
-
-//					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-//					{
-//						for (auto d : darts)
-//							f(d, th_id);
-//					}));
-//				}
-
-//				const uint32 id = (i+1u) % 2u;
-
-//				for (auto& fu : futures[id])
-//					fu.wait();
-//				for (auto& b : dart_buffers[id])
-//					dbuffs->release_buffer(b);
-
-//				futures[id].clear();
-//				dart_buffers[id].clear();
-
-//				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-//				if (it.index >= last.index && i == 1u)
-//				{
-//					for (auto& fu : futures[1u])
-//						fu.wait();
-//					for (auto &b : dart_buffers[1u])
-//						dbuffs->release_buffer(b);
-//				}
-//			}
-//		}
-//	}
+		const ConcreteMap* cmap = to_concrete();
+		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
+		{
+			if (!internal::void_to_true_binder(f, it))
+				break;
+		}
+	}
 
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
@@ -915,76 +915,6 @@ public:
 			dbuffs->release_buffer(b);
 
 	}
-
-	/**
-	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC>
-	inline void foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-
-		const ConcreteMap* cmap = to_concrete();
-		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
-		{
-			if (!internal::void_to_true_binder(f, it))
-				break;
-		}
-	}
-
-protected:
-
-	/*!
-	 * \Brief Methods to iterate over darts.
-	 * These functions skip boundary darts.
-	 */
-	inline Dart begin() const
-	{
-		Dart d = Dart(this->topology_.begin());
-		Dart end = Dart(this->topology_.end());
-
-		while (d != end && is_boundary(d))
-			this->topology_.next(d.index);
-
-		return d;
-	}
-
-	inline void next(Dart& d) const
-	{
-		Dart end = Dart(this->topology_.end());
-
-		do {
-			this->topology_.next(d.index);
-		} while (d != end && is_boundary(d));
-	}
-
-	inline Dart end() const
-	{
-		return Dart(this->topology_.end());
-	}
-
-	/*!
-	 * \Brief Methods to iterate over darts.
-	 * These functions browses over all darts.
-	 */
-	inline Dart all_begin() const
-	{
-		return Dart(this->topology_.begin());
-	}
-
-	inline void all_next(Dart& d) const
-	{
-		this->topology_.next(d.index);
-	}
-
-	inline Dart all_end() const
-	{
-		return Dart(this->topology_.end());
-	}
-
-public:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
@@ -1115,7 +1045,22 @@ public:
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
+			if (!internal::void_to_true_binder(f, CellType(*it)))
+				break;
+	}
+
+	template <typename FUNC,
+			  typename Traversor,
+			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
+	inline void foreach_cell(const FUNC& f, Traversor& t) const
+	{
+		using CellType = func_parameter_type<FUNC>;
+
+		if (!t.template is_traversed<CellType>())
+			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
+
+		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
 			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
 	}

@@ -380,6 +380,25 @@ TEST_F(CMap2TopoTest, cut_edge_topo)
 	EXPECT_TRUE(check_map_integrity());
 }
 
+TEST_F(CMap2TopoTest, collapse_edge_topo)
+{
+	Dart d = add_prism_topo(3u);
+
+	EXPECT_EQ(nb_darts(), 18u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 6u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 9u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 5u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+
+	collapse_edge_topo(d);
+
+	EXPECT_EQ(nb_darts(), 14u);
+	EXPECT_EQ(nb_cells<Vertex::ORBIT>(), 5u);
+	EXPECT_EQ(nb_cells<Edge::ORBIT>(), 7u);
+	EXPECT_EQ(nb_cells<Face::ORBIT>(), 4u);
+	EXPECT_EQ(nb_cells<Volume::ORBIT>(), 1u);
+}
+
 /**
  * \brief Fliping an edge changes the degree of its vertices.
  * The test performs NB_MAX edge flips on randomly generated faces.

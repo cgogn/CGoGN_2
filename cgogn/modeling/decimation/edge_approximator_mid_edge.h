@@ -21,13 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_ALGOS_REFINEMENTS_H_
-#define CGOGN_MODELING_ALGOS_REFINEMENTS_H_
+#ifndef CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_
+#define CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_
 
-#include <cgogn/modeling/dll.h>
-#include <cgogn/core/cmap/cmap3.h>
-#include <cgogn/core/utils/masks.h>
-#include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/modeling/decimation/edge_approximator.h>
 
 namespace cgogn
 {
@@ -35,52 +32,45 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename MAP>
-typename MAP::Vertex triangule(MAP& map, typename MAP::Face f)
+template <typename MAP, typename VEC3>
+class EdgeApproximator_MidEdge : public EdgeApproximator<MAP, VEC3>
 {
+public:
+
+	using Inherit = EdgeApproximator<MAP, VEC3>;
+	using Self = EdgeApproximator_MidEdge<MAP, VEC3>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
-	const Dart d = f.dart;
-	const Dart d1 = map.phi1(d);
-	map.cut_face(d, d1);
-	map.cut_edge(Edge(map.phi_1(d)));
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(EdgeApproximator_MidEdge);
 
-	const Dart x = map.phi2(map.phi_1(d));
-	Dart dd = map.template phi<111>(x);
-	while(dd != x)
+	inline EdgeApproximator_MidEdge(
+		const MAP& m,
+		const typename MAP::template VertexAttribute<VEC3>& position
+	) : Inherit(m),
+		position_(position)
+	{}
+
+	virtual ~EdgeApproximator_MidEdge()
+	{}
+
+	void init()
+	{}
+
+	VEC3 operator()(Edge e) const
 	{
-		Dart next = map.phi1(dd) ;
-		map.cut_face(dd, map.phi1(x)) ;
-		dd = next ;
+		std::pair<Vertex,Vertex> vertices = this->map_.vertices(e);
+		return Scalar(0.5) * (position_[vertices.first] + position_[vertices.second]);
 	}
 
-	return Vertex(map.phi2(x));
-}
+private:
 
-template<typename MAP, typename VEC3>
-void triangule(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
-{
-	using Face = typename MAP::Face;
-	typename MAP::CellCache cache(map);
-	cache.template build<Face>();
-	map.parallel_foreach_cell([&map, &position](Face f, uint32)
-	{
-		const VEC3& center = geometry::centroid<VEC3>(map, f, position);
-		const auto central_vertex = triangule(map, f);
-		position[central_vertex] = center;
-	}, cache);
-}
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
-extern template CGOGN_MODELING_API CMap2::Vertex triangule<CMap2>(CMap2&, CMap2::Face);
-extern template CGOGN_MODELING_API CMap3::Vertex triangule<CMap3>(CMap3&, CMap3::Face);
-extern template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
+	const typename MAP::template VertexAttribute<VEC3>& position_;
+};
 
 } // namespace modeling
 
 } // namespace cgogn
 
-#endif // CGOGN_MODELING_ALGOS_REFINEMENTS_H_
+#endif // CGOGN_MODELING_DECIMATION_EDGE_APPROXIMATOR_MID_EDGE_H_

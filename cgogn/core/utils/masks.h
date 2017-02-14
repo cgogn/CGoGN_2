@@ -98,7 +98,7 @@ protected:
 	uint32 traversed_cells_;
 };
 
-template<typename MAP>
+template <typename MAP>
 class QuickTraversor : public CellTraversor
 {
 public:
@@ -177,7 +177,7 @@ private:
 	static uint32 qt_counter_;
 };
 
-template<typename MAP>
+template <typename MAP>
 uint32 QuickTraversor<MAP>::qt_counter_ = 0u;
 
 template <typename MAP>
@@ -185,11 +185,16 @@ class CellCache : public CellTraversor
 {
 public:
 
+	using Inherit = CellTraversor;
+	using Self = CellCache<MAP>;
+
 	using iterator = std::vector<Dart>::iterator;
 	using const_iterator = std::vector<Dart>::const_iterator;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
-	inline CellCache(const MAP& m) : map_(m)
+
+	inline CellCache(const MAP& m) : Inherit(),
+		map_(m)
 	{}
 
 	template <typename CellType>
@@ -249,12 +254,17 @@ class BoundaryCache : public CellTraversor
 {
 public:
 
+	using Inherit = CellTraversor;
+	using Self = BoundaryCache<MAP>;
+
 	using BoundaryCellType = typename MAP::Boundary;
 	using iterator = typename std::vector<BoundaryCellType>::iterator;
 	using const_iterator = typename std::vector<BoundaryCellType>::const_iterator;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(BoundaryCache);
-	inline BoundaryCache(const MAP& m) : map_(m)
+
+	inline BoundaryCache(const MAP& m) : Inherit(),
+		map_(m)
 	{
 		cells_.reserve(4096u);
 		build();

@@ -49,6 +49,7 @@ namespace logger
 class CGOGN_CORE_API Logger final
 {
 public:
+
 	using Self = Logger;
 	using FileInfo = internal::FileInfo;
 	using LogLevel = internal::LogLevel;
@@ -73,7 +74,9 @@ public:
 	 * @param output : the logger doesn't take the ownership of the output
 	 */
 	void add_output(LoggerOutput* output);
+
 private:
+
 	Logger();
 	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo) const;
 
@@ -83,7 +86,8 @@ private:
 	mutable std::mutex							process_mutex_;
 };
 
-
 } // namespace logger
+
 } // namespace cgogn
+
 #endif // CGOGN_CORE_UTILS_LOGGER_H_

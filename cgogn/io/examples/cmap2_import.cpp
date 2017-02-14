@@ -64,13 +64,13 @@ int main(int argc, char** argv)
 		cgogn_log_info("cmap2_import")  << "Map integrity : " << std::boolalpha << map.check_map_integrity();
 
 		uint32 nb_vertices = 0;
-		cgogn::CellCache<Map2> cache(map);
+		Map2::CellCache cache(map);
 		cache.build<Map2::Vertex>();
 		map.foreach_cell([&nb_vertices] (Map2::Vertex) { nb_vertices++; }, cache);
 		cgogn_log_info("cmap2_import") << "nb vertices -> " << nb_vertices;
 
 		uint32 nb_boundary_faces = 0;
-		cgogn::BoundaryCache<Map2> bcache(map);
+		Map2::BoundaryCache bcache(map);
 		map.foreach_cell([&nb_boundary_faces] (Map2::Boundary) { nb_boundary_faces++; }, bcache);
 		cgogn_log_info("cmap2_import") << "nb boundary faces -> " << nb_boundary_faces;
 

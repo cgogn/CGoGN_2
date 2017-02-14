@@ -84,6 +84,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -357,6 +359,52 @@ protected:
 		return this->close_hole_topo(first);			// Add the base face
 	}
 
+public:
+
+	Volume add_pyramid(std::size_t size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Volume vol(add_pyramid_topo(size));
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(vol, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_incident_vertex(vol, [this] (Vertex v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vol, [this] (Edge e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(vol);
+
+		return vol;
+	}
+
 	/**
 	 * \brief Add a prism with n sides.
 	 * \param size : the number of sides of the prism
@@ -386,6 +434,54 @@ protected:
 		return close_hole_topo(first);					// Add the base face
 	}
 
+public:
+
+	Volume add_prism(std::size_t size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Volume vol(add_prism_topo(size));
+
+		if (this->template is_embedded<CDart>())
+		{
+			foreach_dart_of_orbit(vol, [this] (Dart d)
+			{
+				this->new_orbit_embedding(CDart(d));
+			});
+		}
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_incident_vertex(vol, [this] (Vertex v)
+			{
+				this->new_orbit_embedding(v);
+			});
+		}
+
+		if (this->template is_embedded<Edge>())
+		{
+			foreach_incident_edge(vol, [this] (Edge e)
+			{
+				this->new_orbit_embedding(e);
+			});
+		}
+
+		if (this->template is_embedded<Face>())
+		{
+			foreach_incident_face(vol, [this] (Face f)
+			{
+				this->new_orbit_embedding(f);
+			});
+		}
+
+		if (this->template is_embedded<Volume>())
+			this->new_orbit_embedding(vol);
+
+		return vol;
+	}
+
+protected:
+
 	/**
 	 * \brief Cut an edge.
 	 * \param d : A dart that represents the edge to cut
@@ -397,9 +493,8 @@ protected:
 	{
 		Dart e = phi2(d);						// Get the adjacent 1D-edge
 
-#ifndef	NDEBUG
 		phi2_unsew(d);							// Separate the two 1D-edges of the edge
-#endif
+
 		Dart nd = this->Inherit::split_vertex_topo(d);
 		Dart ne = this->Inherit::split_vertex_topo(e);	// Cut the two adjacent 1D-edges
 
@@ -584,16 +679,98 @@ protected:
 	 */
 	inline Dart collapse_edge_topo(Dart d)
 	{
-		Dart res = phi2(this->phi_1(d));
-
+		Dart d_1 = this->phi_1(d);
 		Dart e = phi2(d);
+		Dart e_1 = this->phi_1(e);
+
+		Dart res = phi2(d_1);
+
 		this->remove_vertex_topo(d);
 		this->remove_vertex_topo(e);
+
+		if (codegree(Face(d_1)) == 2u)
+		{
+			Dart d1 = this->phi1(d_1);
+			Dart d12 = phi2(d1);
+			Dart d_12 = phi2(d_1);
+
+			phi2_unsew(d1);
+			phi2_unsew(d_1);
+
+			phi2_sew(d12, d_12);
+			this->Inherit::remove_face_topo(d1);
+		}
+
+		if (codegree(Face(e_1)) == 2u)
+		{
+			Dart e1 = this->phi1(e_1);
+			Dart e12 = phi2(e1);
+			Dart e_12 = phi2(e_1);
+
+			phi2_unsew(e1);
+			phi2_unsew(e_1);
+
+			phi2_sew(e12, e_12);
+			this->Inherit::remove_face_topo(e1);
+		}
 
 		return res;
 	}
 
 public:
+
+	bool edge_can_collapse(Edge e) const
+	{
+		std::pair<Vertex,Vertex> v = vertices(e);
+
+		if (this->is_incident_to_boundary(v.first) || this->is_incident_to_boundary(v.second))
+			return false;
+
+		uint32 val_v1 = degree(v.first);
+		uint32 val_v2 = degree(v.second);
+
+		if(val_v1 + val_v2 < 8 || val_v1 + val_v2 > 14)
+			return false;
+
+		Dart e1 = e.dart;
+		Dart e2 = phi2(e.dart);
+
+		if(codegree(Face(e1)) == 3)
+		{
+			if (degree(Vertex(this->phi_1(e1))) < 4)
+				return false;
+		}
+
+		if(codegree(Face(e2)) == 3)
+		{
+			if (degree(Vertex(this->phi_1(e2))) < 4)
+				return false;
+		}
+
+		auto next_edge = [this] (Dart d) { return phi2(this->phi_1(d)); };
+
+		// Check vertex sharing condition
+		std::vector<uint32>* vn1 = uint_buffers()->buffer();
+		Dart it = next_edge(next_edge(e1));
+		Dart end = this->phi1(e2);
+		do
+		{
+			vn1->push_back(this->embedding(Vertex(this->phi1(it))));
+			it = next_edge(it);
+		} while(it != end);
+		it = next_edge(next_edge(e2));
+		end = this->phi1(e1);
+		do
+		{
+			auto vn1it = std::find(vn1->begin(), vn1->end(), this->embedding(Vertex(this->phi1(it))));
+			if(vn1it != vn1->end())
+				return false;
+			it = next_edge(it);
+		} while(it != end);
+		uint_buffers()->release_buffer(vn1);
+
+		return true;
+	}
 
 	/**
 	 * @brief Collapse an edge
@@ -604,10 +781,19 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
+		Dart e1 = phi2(this->phi_1(e.dart));
+		Dart e2 = phi2(this->phi_1(phi2(e.dart)));
+
 		Vertex v(collapse_edge_topo(e.dart));
 
 		if (this->template is_embedded<Vertex>())
 			this->template set_orbit_embedding<Vertex>(v, this->embedding(v));
+
+		if (this->template is_embedded<Edge>())
+		{
+			this->template copy_embedding<Edge>(phi2(e1), e1);
+			this->template copy_embedding<Edge>(phi2(e2), e2);
+		}
 
 		return v;
 	}

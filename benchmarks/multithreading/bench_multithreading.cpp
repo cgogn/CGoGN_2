@@ -124,7 +124,7 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 		FaceAttribute<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 
-		cgogn::CellCache<Map2> cache(bench_map);
+		Map2::CellCache cache(bench_map);
 		cache.template build<Face>();
 		state.ResumeTiming();
 
@@ -183,7 +183,7 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 		FaceAttribute<Vec3> face_normal = bench_map.get_attribute<Vec3, FACE>("normal");
 		cgogn_assert(face_normal.is_valid());
 
-		cgogn::CellCache<Map2> cache(bench_map);
+		Map2::CellCache cache(bench_map);
 		cache.template build<Face>();
 		state.ResumeTiming();
 
@@ -225,7 +225,7 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 		VertexAttribute<Vec3> vertices_normal = bench_map.get_attribute<Vec3, VERTEX>("normal");
 		cgogn_assert(vertices_normal.is_valid());
 
-		cgogn::CellCache<Map2> cache(bench_map);
+		Map2::CellCache cache(bench_map);
 		cache.template build<Vertex>();
 		state.ResumeTiming();
 
@@ -284,7 +284,7 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		VertexAttribute<Vec3> vertices_normal_mt = bench_map.get_attribute<Vec3, VERTEX>("normal_mt");
 		cgogn_assert(vertices_normal_mt.is_valid());
 
-		cgogn::CellCache<Map2> cache(bench_map);
+		Map2::CellCache cache(bench_map);
 		cache.template build<Vertex>();
 		state.ResumeTiming();
 
