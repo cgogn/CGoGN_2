@@ -21,6 +21,9 @@ target_link_libraries(remeshing ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${
 add_executable(decimation decimation.cpp)
 target_link_libraries(decimation ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
+add_executable(subdivision subdivision.cpp)
+target_link_libraries(subdivision ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
 add_executable(triangular_tiling triangular_tiling.cpp)
 target_link_libraries(triangular_tiling ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES})
 
