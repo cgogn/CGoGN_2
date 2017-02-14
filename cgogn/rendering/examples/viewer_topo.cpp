@@ -43,8 +43,6 @@
 
 #include <cgogn/modeling/algos/catmull_clark.h>
 #include <cgogn/modeling/algos/loop.h>
-#include <cgogn/modeling/algos/pliant_remeshing.h>
-#include <cgogn/modeling/algos/decimation.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -167,18 +165,6 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 			topo_drawer_->update<Vec3>(map_, vertex_position_);
-			break;
-		case Qt::Key_R:
-			cgogn::modeling::pliant_remeshing<Vec3>(map_, vertex_position_);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
-			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-			topo_drawer_->update<Vec3>(map_,vertex_position_);
-			break;
-		case Qt::Key_D:
-			cgogn::modeling::decimate<Vec3>(map_, vertex_position_, cgogn::modeling::EdgeTraversor_QEM_T, cgogn::modeling::EdgeApproximator_QEM_T, 1000u);
-			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
-			render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-			topo_drawer_->update<Vec3>(map_,vertex_position_);
 			break;
 		case Qt::Key_E:
 			cgogn::io::export_surface(map_, cgogn::io::ExportOptions::create().filename("/tmp/pipo.vtp").position_attribute(Map2::Vertex::ORBIT, "position"));
