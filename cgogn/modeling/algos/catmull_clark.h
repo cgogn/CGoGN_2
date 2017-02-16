@@ -73,25 +73,20 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 
 	DartMarker<MAP> initial_edge_marker(map);
 
-	std::vector<Edge>* initial_edges = cgogn::dart_buffers()->cell_buffer<Edge>();
+	CellCache<MAP> initial_cache(map);
+	initial_cache.template build<Vertex>();
+	initial_cache.template build<Edge>();
+	initial_cache.template build<Face>();
+
+	map.foreach_cell([&] (Edge e) {	initial_edge_marker.mark_orbit(e); }, initial_cache);
+
 	map.foreach_cell([&] (Edge e)
-	{
-		initial_edges->push_back(e);
-		initial_edge_marker.mark_orbit(e);
-	});
-
-	std::vector<Vertex>* initial_vertices = cgogn::dart_buffers()->cell_buffer<Vertex>();
-	map.foreach_cell([&] (Vertex v)
-	{
-		initial_vertices->push_back(v);
-	});
-
-	for (Edge e : *initial_edges)
 	{
 		std::pair<Vertex,Vertex> ve = map.vertices(e);
 		Vertex middle = map.cut_edge(e);
 		position[middle] = (position[ve.first] + position[ve.second]) / Scalar(2);
 	}
+	, initial_cache);
 
 	map.foreach_cell([&] (Face f)
 	{
@@ -104,9 +99,10 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 		VEC3 center = geometry::centroid<VEC3>(map, ff, position);
 		Vertex vc = quadrangule_face(map, ff);
 		position[vc] = center;
-	});
+	}
+	, initial_cache);
 
-	for (Edge e : *initial_edges)
+	map.foreach_cell([&] (Edge e)
 	{
 		Dart e2 = map.phi2(e.dart);
 		if (!map.is_boundary(e.dart) && !map.is_boundary(e2))
@@ -117,8 +113,9 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 			position[m] = (Scalar(2) * position[m] + position[f1] + position[f2]) / Scalar(4);
 		}
 	}
+	, initial_cache);
 
-	for (Vertex v : *initial_vertices)
+	map.foreach_cell([&] (Vertex v)
 	{
 		VEC3 sum_face; // Sum_F
 		sum_face.setZero();
@@ -155,9 +152,7 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 			position[v] += delta;
 		}
 	}
-
-	cgogn::dart_buffers()->release_cell_buffer(initial_edges);
-	cgogn::dart_buffers()->release_cell_buffer(initial_vertices);
+	, initial_cache);
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
