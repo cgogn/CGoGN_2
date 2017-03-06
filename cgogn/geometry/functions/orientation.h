@@ -50,7 +50,7 @@ enum Orientation2D
 template <typename VEC2>
 Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
 {
-	cgogn_assert(typename vector_traits<VEC2>::SIZE == 2);
+	cgogn_assert(vector_traits<VEC2>::SIZE == 2ul);
 
 	using Scalar = typename vector_traits<VEC2>::Scalar;
 	const Scalar zero(0.000001);
