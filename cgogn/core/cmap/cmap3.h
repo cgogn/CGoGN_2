@@ -75,6 +75,8 @@ public:
 	using FaceAttribute = Attribute<T, Face::ORBIT>;
 	template <typename T>
 	using VolumeAttribute = Attribute<T, Volume::ORBIT>;
+	template <typename T>
+	using CCAttribute = Attribute<T, ConnectedComponent::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
