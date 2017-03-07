@@ -102,6 +102,11 @@ public:
 		return map_.add_face_topo_fp(nb_edges);
 	}
 
+	inline Dart collapse_edge_topo(Dart d)
+	{
+		return map_.collapse_edge_topo(d);
+	}
+
 	inline Dart close_hole_topo(Dart d)
 	{
 		return map_.close_hole_topo(d);
