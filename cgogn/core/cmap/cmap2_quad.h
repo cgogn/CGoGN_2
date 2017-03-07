@@ -486,6 +486,12 @@ public:
 
 protected:
 
+	inline Dart collapse_edge_topo(Dart d)
+	{
+		cgogn_log_warning("collapse_edge_topo") << "This operator is not available in CMap2Quad";
+		return d;
+	}
+
 	/**
 	 * @brief extrude a quad: replace by 5 faces. (topo version)
 	 * @param f the quad face to extrude
