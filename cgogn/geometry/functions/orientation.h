@@ -57,12 +57,12 @@ Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
 
 	Scalar p = (P[0] - Pa[0]) * (Pb[1] - Pa[1]) - (Pb[0] - Pa[0]) * (P[1] - Pa[1]) ;
 
-	if(p > zero)
-		return Orientation2D::RIGHT;
-	else if(-p > zero)
-		return Orientation2D::LEFT;
-	else
+	if (numerics::almost_equal_absolute(p, Scalar(0))
 		return Orientation2D::ALIGNED;
+	else if (p > Scalar(0))
+		return Orientation2D::RIGHT;
+	else
+		return Orientation2D::LEFT;
 }
 
 /**
