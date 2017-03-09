@@ -109,8 +109,10 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
+		this->topology_.remove_marker_attributes();
 		this->topology_.clear_chunk_arrays();
 
+		boundary_marker_ = topology_.add_marker_attribute();
 		for (auto& mark_att_topo : this->mark_attributes_topology_)
 			mark_att_topo.clear();
 
