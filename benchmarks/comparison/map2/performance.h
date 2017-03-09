@@ -36,7 +36,7 @@ public:
 	using Real = double;
 	virtual void clear_mesh() = 0;
 	virtual bool read_mesh(const std::string& filename) = 0;
-	void SetUp(benchmark::State& /*state*/) override;
+	void SetUp() override;
 };
 
 #endif // BENCHMARK_COMPARISON_PERFORMANCE2_H

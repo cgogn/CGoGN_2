@@ -237,7 +237,7 @@ BENCHMARK_F(Performance2_LCC, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		state.ResumeTiming();
 		int nv = lcc->number_of_vertex_attributes();
 
@@ -315,7 +315,7 @@ BENCHMARK_F(Performance2_LCC, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		state.ResumeTiming();
 
 		LCC::Attribute_range<0>::type::iterator vit, vend = lcc->attributes<0>().end();

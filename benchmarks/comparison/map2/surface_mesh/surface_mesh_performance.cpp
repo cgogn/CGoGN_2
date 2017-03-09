@@ -155,7 +155,7 @@ BENCHMARK_F(Performance2_SurfaceMesh, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		state.ResumeTiming();
 		// reserve memory
 		int nv = mesh->n_vertices();

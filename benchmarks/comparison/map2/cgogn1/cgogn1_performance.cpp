@@ -172,7 +172,7 @@ BENCHMARK_F(Performance2_CGoGN1	, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		VertexAutoAttribute<Vec3, Map> new_position(*map);
 		state.ResumeTiming();
 
@@ -237,7 +237,7 @@ BENCHMARK_F(Performance2_CGoGN1, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		map->updateQuickTraversal<Map, FACE>();
 		state.ResumeTiming();
 
@@ -273,7 +273,7 @@ BENCHMARK_F(Performance2_CGoGN1, remesh)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		map->updateQuickTraversal<Map, FACE>();
 		state.ResumeTiming();
 

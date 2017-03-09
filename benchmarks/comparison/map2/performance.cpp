@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 }
 
 
-void Performance2::SetUp(benchmark::State&)
+void Performance2::SetUp()
 {
 	this->clear_mesh();
 	this->read_mesh(filename);

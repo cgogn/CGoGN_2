@@ -133,7 +133,7 @@ BENCHMARK_F(Performance2_OpenMesh, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		state.ResumeTiming();
 
 		// reserve memory
@@ -198,7 +198,7 @@ BENCHMARK_F(Performance2_OpenMesh, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp(state);
+		this->SetUp();
 		state.ResumeTiming();
 
 		// reserve memory
