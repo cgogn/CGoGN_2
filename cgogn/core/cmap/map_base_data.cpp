@@ -42,10 +42,9 @@ MapBaseData::MapBaseData()
 		instances_ = new std::vector<const MapBaseData*>;
 	}
 
-	cgogn_message_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end(), "This map is already present in the instances vector");
-
 	// register the map in the vector of instances
-	instances_->push_back(this);
+	if (std::find(instances_->begin(), instances_->end(), this) == instances_->end())
+		instances_->push_back(this);
 
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
@@ -87,6 +86,65 @@ MapBaseData::~MapBaseData()
 		delete instances_;
 		instances_ = nullptr;
 	}
+}
+
+uint32 MapBaseData::add_unknown_thread() const
+{
+	static uint32 index = 0u;
+	const std::thread::id& th_id = std::this_thread::get_id();
+	cgogn_log_warning("add_unknown_thread") << "Registration of an unknown thread (id :" << th_id << ") in the map. Data can be lost. Please use add_thread and remove_thread interface.";
+	thread_ids_[index] = th_id;
+	const unsigned old_index = index;
+	index = (index+1u) % NB_UNKNOWN_THREADS;
+	return old_index;
+}
+
+std::size_t MapBaseData::unknown_thread_index(std::thread::id thread_id) const
+{
+	auto end = thread_ids_.begin();
+	std::advance(end, NB_UNKNOWN_THREADS);
+	auto res_it = std::find(thread_ids_.begin(), end, thread_id);
+	if (res_it != end)
+		return std::size_t(std::distance(thread_ids_.begin(), res_it));
+
+	return add_unknown_thread();
+}
+
+std::size_t MapBaseData::current_thread_index() const
+{
+	// avoid the unknown threads stored at the beginning of the vector
+	auto real_begin = thread_ids_.begin();
+	std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+	const auto end = thread_ids_.end();
+	auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
+	if (it_lower_bound != end)
+		return std::size_t(std::distance(thread_ids_.begin(), it_lower_bound));
+
+	return unknown_thread_index(std::this_thread::get_id());
+}
+
+void MapBaseData::remove_thread(std::thread::id thread_id) const
+{
+	// avoid the unknown threads stored at the beginning of the vector
+	auto real_begin = thread_ids_.begin();
+	std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+	cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id), "Unable to find the thread.");
+	auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
+	cgogn_message_assert(*it == thread_id, "Unable to find the thread.");
+	thread_ids_.erase(it);
+}
+
+void MapBaseData::add_thread(std::thread::id thread_id) const
+{
+	// avoid the unknown threads stored at the beginning of the vector
+	auto real_begin =thread_ids_.begin();
+	std::advance(real_begin, NB_UNKNOWN_THREADS);
+
+	auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
+	if (it == thread_ids_.end() || *it != thread_id)
+		thread_ids_.insert(it, thread_id);
 }
 
 } // namespace cgogn
