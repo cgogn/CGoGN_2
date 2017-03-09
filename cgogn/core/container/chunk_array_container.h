@@ -174,7 +174,12 @@ public:
 	ChunkArrayContainer() :
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
-	{}
+	{
+		table_arrays_.reserve(16);
+		names_.reserve(16);
+		type_names_.reserve(16);
+		table_marker_arrays_.reserve(16);
+	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayContainer);
 
@@ -569,14 +574,26 @@ public:
 		holes_stack_.clear();
 
 		for (auto cagen : table_arrays_)
+		{
+			cagen->invalidate_external_refs();
 			delete cagen;
-		for (auto ca_bool : table_marker_arrays_)
-			delete ca_bool;
+		}
 
 		table_arrays_.clear();
-		table_marker_arrays_.clear();
 		names_.clear();
 		type_names_.clear();
+		this->remove_marker_attributes();
+	}
+
+	void remove_marker_attributes()
+	{
+		for (ChunkArrayBool* cab : table_marker_arrays_)
+			{
+				cab->invalidate_external_refs();
+				delete cab;
+			}
+		table_marker_arrays_.clear();
+
 	}
 
 	/**
