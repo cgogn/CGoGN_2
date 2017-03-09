@@ -52,14 +52,25 @@ add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/thirdparty/google-benchmark/include
-	${OPENMESH_INCLUDE_DIR}
-	${CGOGN1_INCLUDE_DIRS}
 	)
 
 target_link_libraries(${PROJECT_NAME}
-			${CGOGN1_LIBRARIES}
-			${OPENMESH_LIBRARIES}
 			${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES}
 			surface_mesh
 			${benchmark_LIBRARIES}
 			)
+
+if (CGOGN1_PATH)
+	target_link_libraries(${PROJECT_NAME} ${CGOGN1_LIBRARIES})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${CGOGN1_INCLUDE_DIRS})
+endif()
+
+if(CGAL_FOUND)
+	target_link_libraries(${PROJECT_NAME} ${CGAL_LIBRARIES})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${CGAL_INCLUDE_DIRS})
+endif()
+
+if(OPENMESH_FOUND)
+	target_link_libraries(${PROJECT_NAME} ${OPENMESH_LIBRARIES})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${OPENMESH_INCLUDE_DIR})
+endif()
