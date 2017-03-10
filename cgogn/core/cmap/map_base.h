@@ -109,12 +109,7 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
-		this->topology_.remove_marker_attributes();
 		this->topology_.clear_chunk_arrays();
-
-		boundary_marker_ = topology_.add_marker_attribute();
-		for (auto& mark_att_topo : this->mark_attributes_topology_)
-			mark_att_topo.clear();
 
 		for (auto& att : this->attributes_)
 			att.remove_chunk_arrays();
@@ -127,8 +122,11 @@ public:
 				this->embeddings_[i] = nullptr;
 			}
 
-			for (auto& mark_attr : this->mark_attributes_[i])
-				mark_attr.clear();
+				std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
+				std::vector<std::vector<ChunkArrayBool*>>& mark_attributes_orbit_i = this->mark_attributes_[i];
+				for (std::vector<ChunkArrayBool*>& mark_att_orb_i_thread_j : mark_attributes_orbit_i)
+					for(ChunkArrayBool* cab : mark_att_orb_i_thread_j)
+						cab->clear();
 		}
 	}
 
@@ -376,7 +374,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_[ORBIT].size());
+
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_[ORBIT][thread].back();
@@ -402,6 +402,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_assert(this->current_thread_index() < mark_attributes_[ORBIT].size());
 
 		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
 	}
