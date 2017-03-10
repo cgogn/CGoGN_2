@@ -582,18 +582,6 @@ public:
 		table_arrays_.clear();
 		names_.clear();
 		type_names_.clear();
-		this->remove_marker_attributes();
-	}
-
-	void remove_marker_attributes()
-	{
-		for (ChunkArrayBool* cab : table_marker_arrays_)
-			{
-				cab->invalidate_external_refs();
-				delete cab;
-			}
-		table_marker_arrays_.clear();
-
 	}
 
 	/**
