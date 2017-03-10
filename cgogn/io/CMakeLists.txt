@@ -28,6 +28,7 @@ set(HEADER_FILES
 	tetgen_io.h
 	nastran_io.h
 	tet_io.h
+	openvolumemesh_io.h
 	surface_export.h
 	volume_export.h
 )
@@ -52,6 +53,7 @@ set(SOURCE_FILES
 	tetgen_io.cpp
 	nastran_io.cpp
 	tet_io.cpp
+	openvolumemesh_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

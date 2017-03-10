@@ -310,7 +310,8 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		{"ele", FileType_TETGEN},
 		{"nas", FileType_NASTRAN},
 		{"bdf", FileType_NASTRAN},
-		{"tet", FileType_AIMATSHAPE}
+		{"tet", FileType_AIMATSHAPE},
+		{"ovm", FileType_OVM}
 	};
 
 	const auto it = file_type_map.find(ext);
