@@ -35,9 +35,9 @@ int main(int argc, char** argv)
 
 	if (argc < 2)
 	{
-		cgogn_log_info("bench_comparison2") << "USAGE: " << argv[0] << " [filename]";
-		filename = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
-		cgogn_log_info("bench_comparison2") << "Using default mesh : \"" << filename << "\".";
+		cgogn_log_info("bench_comparison3") << "USAGE: " << argv[0] << " [filename]";
+		filename = std::string(DEFAULT_MESH_PATH) + std::string("vtk/armadillo_tetra_4406.vtu");
+		cgogn_log_info("bench_comparison3") << "Using default mesh : \"" << filename << "\".";
 	}
 	else
 		filename = std::string(argv[1]);
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 }
 
 
-void Performance2::SetUp()
+void Performance3::SetUp()
 {
 	this->clear_mesh();
 	this->read_mesh(filename);

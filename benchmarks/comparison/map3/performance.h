@@ -21,33 +21,29 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/core/utils/definitions.h>
-#include <cgogn/core/utils/logger.h>
-#include <performance.h>
+#ifndef BENCHMARK_COMPARISON_PERFORMANCE3_H
+#define BENCHMARK_COMPARISON_PERFORMANCE3_H
 
-#define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
+#include <benchmark/benchmark.h>
+#include <string>
+#include <iostream>
 
-std::string filename;
+extern std::string filename;
 
-int main(int argc, char** argv)
+class Performance3 : public ::benchmark::Fixture
 {
-	::benchmark::Initialize(&argc, argv);
+public:
+	using Real = double;
 
-	if (argc < 2)
-	{
-		cgogn_log_info("bench_comparison2") << "USAGE: " << argv[0] << " [filename]";
-		filename = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
-		cgogn_log_info("bench_comparison2") << "Using default mesh : \"" << filename << "\".";
-	}
-	else
-		filename = std::string(argv[1]);
-	::benchmark::RunSpecifiedBenchmarks();
-	return 0;
-}
+	inline Performance3() : ::benchmark::Fixture(),
+		collapse_nb_it_(7)
+	{}
 
+	virtual void clear_mesh() = 0;
+	virtual bool read_mesh(const std::string& filename) = 0;
+	void SetUp() override;
+protected:
+	unsigned int collapse_nb_it_;
+};
 
-void Performance2::SetUp()
-{
-	this->clear_mesh();
-	this->read_mesh(filename);
-}
+#endif // BENCHMARK_COMPARISON_PERFORMANCE3_H

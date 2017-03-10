@@ -21,33 +21,46 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/core/utils/definitions.h>
-#include <cgogn/core/utils/logger.h>
-#include <performance.h>
+#ifndef BENCHMARK_COMPARISON_OPENVOLUMEMESH_H
+#define BENCHMARK_COMPARISON_OPENVOLUMEMESH_H
 
-#define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
+#define INCLUDE_TEMPLATES
 
-std::string filename;
+#include <iostream>
+#include <vector>
+#include <limits>
 
-int main(int argc, char** argv)
+#include "performance.h"
+#include <OpenVolumeMesh/Geometry/VectorT.hh>
+#include <OpenVolumeMesh/Mesh/PolyhedralMesh.hh>
+#include <OpenVolumeMesh/Attribs/StatusAttrib.hh>
+#include <OpenVolumeMesh/FileManager/FileManager.hh>
+
+class Performance3_OpenVolumeMesh : public Performance3
 {
-	::benchmark::Initialize(&argc, argv);
 
-	if (argc < 2)
-	{
-		cgogn_log_info("bench_comparison2") << "USAGE: " << argv[0] << " [filename]";
-		filename = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
-		cgogn_log_info("bench_comparison2") << "Using default mesh : \"" << filename << "\".";
-	}
-	else
-		filename = std::string(argv[1]);
-	::benchmark::RunSpecifiedBenchmarks();
-	return 0;
-}
+public:
+	using Vec3 =  OpenVolumeMesh::Geometry::VectorT<Real,3>;
+	using Mesh = OpenVolumeMesh::GeometryKernel<Vec3>;
 
+	using HalfEdgeHandle = OpenVolumeMesh::HalfEdgeHandle;
+	using HalfFaceHandle = OpenVolumeMesh::HalfFaceHandle;
 
-void Performance2::SetUp()
-{
-	this->clear_mesh();
-	this->read_mesh(filename);
-}
+	using VertexHandle = OpenVolumeMesh::VertexHandle;
+	using EdgeHandle = OpenVolumeMesh::EdgeHandle;
+	using CellHandle = OpenVolumeMesh::CellHandle;
+
+	inline Performance3_OpenVolumeMesh() : Performance3() {}
+
+protected:
+	bool read_mesh(const std::string& filename) override;
+	void clear_mesh() override;
+	void edge_collapse(const EdgeHandle& _eh);
+	EdgeHandle getShortestEdge();
+	CellHandle createTet(const std::vector<OpenVolumeMesh::VertexHandle>& _vs);
+
+	OpenVolumeMesh::VertexPropertyT<int>* boundary_vertex;
+	std::unique_ptr<Mesh> mesh;
+};
+
+#endif // BENCHMARK_COMPARISON_OPENVOLUMEMESH_H

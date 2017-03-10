@@ -4,6 +4,8 @@ project(bench_comparison2
 	LANGUAGES CXX
 	)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(cgogn_geometry REQUIRED)
@@ -33,7 +35,6 @@ if(CGAL_FOUND)
 	list(APPEND HEADER_FILES cgal/polyhedron_performance.h)
 	list(APPEND CPP_FILES cgal/lcc_performance_2.cpp)
 	list(APPEND CPP_FILES cgal/polyhedron_performance.cpp)
-
 endif()
 
 
