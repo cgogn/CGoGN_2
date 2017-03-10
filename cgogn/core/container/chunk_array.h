@@ -697,7 +697,7 @@ public:
 	 * @param i index of element to access
 	 * @return value of the element
 	 */
-	inline const bool operator[](uint32 i) const
+	inline bool operator[](uint32 i) const
 	{
 		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
 		return (table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/BOOLS_PER_INT] & (1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT))) != 0u;
