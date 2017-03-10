@@ -109,11 +109,14 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
+		// 1st step : some cleaning
 		this->topology_.clear_chunk_arrays();
 
 		for (auto& att : this->attributes_)
 			att.remove_chunk_arrays();
 
+
+		// 2nd step : updating internal data structures.
 		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
@@ -122,11 +125,15 @@ public:
 				this->embeddings_[i] = nullptr;
 			}
 
-				std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
-				std::vector<std::vector<ChunkArrayBool*>>& mark_attributes_orbit_i = this->mark_attributes_[i];
-				for (std::vector<ChunkArrayBool*>& mark_att_orb_i_thread_j : mark_attributes_orbit_i)
-					for(ChunkArrayBool* cab : mark_att_orb_i_thread_j)
-						cab->clear();
+			{
+				std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+				for (ChunkArrayBool* cab : this->topology_.marker_arrays())
+					cab->clear();
+			}
+
+			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
+			for (ChunkArrayBool* cab : this->attributes_[i].marker_arrays())
+				cab->clear();
 		}
 	}
 
