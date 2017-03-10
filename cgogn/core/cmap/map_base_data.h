@@ -158,6 +158,38 @@ protected:
 		return attributes_[ORBIT];
 	}
 
+	/**
+	 * @brief swap_chunk_array_container
+	 * @param cac, a ChunkArrayContainer
+	 * This method swap the ChunkArrayContainer related to the orbit "ORBIT" and the provided one.
+	 * It also updates the internal data structures of the map related to the markers.
+	 */
+	template <Orbit ORBIT, typename T>
+	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
+		// 1st step : perform the swap.
+		attributes_[ORBIT].swap(cac);
+
+		// 2nd step:  update the mark attributes
+		const std::vector<ChunkArrayBool*>& markers = attributes_[ORBIT].marker_arrays();
+		std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
+		std::vector<std::vector<ChunkArrayBool*>>& mark_attributes_ORB = this->mark_attributes_[ORBIT];
+		for (std::vector<ChunkArrayBool*>& mark_att_ORB_thread_i : mark_attributes_ORB)
+		{
+			mark_att_ORB_thread_i.clear();
+		}
+
+		// we don't know which thread created the marker
+		std::size_t i = 0u;
+		for (ChunkArrayBool* cab : markers)
+		{
+			mark_attributes_ORB[i].push_back(cab);
+			i = (i+1) % mark_attributes_ORB.size();
+		}
+	}
+
 	/*******************************************************************************
 	 * Marking attributes management
 	 *******************************************************************************/
@@ -168,7 +200,8 @@ protected:
 	*/
 	inline ChunkArrayBool* topology_mark_attribute()
 	{
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_topology_.size());
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_topology_[thread].back();
@@ -189,7 +222,8 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_topology_.size());
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 

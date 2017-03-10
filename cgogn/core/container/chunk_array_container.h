@@ -273,6 +273,11 @@ public:
 		return table_arrays_;
 	}
 
+	inline const std::vector<ChunkArrayBool*>& marker_arrays()
+	{
+		return table_marker_arrays_;
+	}
+
 	/**
 	 * @brief add an attribute
 	 * @param name name of chunk array
