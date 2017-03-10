@@ -30,7 +30,10 @@ find_package(CGAL)
 if(CGAL_FOUND)
 	include(${CGAL_USE_FILE})
 	list(APPEND HEADER_FILES cgal/lcc_performance_2.h)
+	list(APPEND HEADER_FILES cgal/polyhedron_performance.h)
 	list(APPEND CPP_FILES cgal/lcc_performance_2.cpp)
+	list(APPEND CPP_FILES cgal/polyhedron_performance.cpp)
+
 endif()
 
 

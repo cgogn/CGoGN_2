@@ -345,6 +345,3 @@ BENCHMARK_F(Performance2_LCC, collapse)(benchmark::State& state)
 		assert( lcc->is_valid());
 	}
 }
-
-
-
