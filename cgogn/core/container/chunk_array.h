@@ -685,10 +685,6 @@ public:
 		val = to_lower(val);
 		const bool b = (val == "true") || (std::stoi(val) != 0);
 		set_value(idx,b);
-		if (b)
-			set_true(idx);
-		else
-			set_false(idx);
 	}
 
 	const void* element_ptr(uint32) const override
