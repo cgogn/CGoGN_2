@@ -43,8 +43,8 @@ MapBaseData::MapBaseData()
 	}
 
 	// register the map in the vector of instances
-	if (std::find(instances_->begin(), instances_->end(), this) == instances_->end())
-		instances_->push_back(this);
+	cgogn_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end());
+	instances_->push_back(this);
 
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
