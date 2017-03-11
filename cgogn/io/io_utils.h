@@ -111,8 +111,7 @@ enum FileType
 	FileType_MSH,
 	FileType_TETGEN,
 	FileType_NASTRAN,
-	FileType_AIMATSHAPE,
-	FileType_OVM // OpenVolumeMesh
+	FileType_AIMATSHAPE
 };
 
 enum DataType

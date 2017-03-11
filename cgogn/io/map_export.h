@@ -44,7 +44,6 @@
 #include <cgogn/io/obj_io.h>
 #include <cgogn/io/stl_io.h>
 #include <cgogn/io/ply_io.h>
-#include <cgogn/io/openvolumemesh_io.h>
 
 namespace cgogn
 {
@@ -112,7 +111,6 @@ inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& f
 		case FileType::FileType_MSH:		return make_unique<MshVolumeExport<MAP>>();
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
-		case FileType::FileType_OVM:		return make_unique<OVMVolumeExport<MAP>>();
 		default:
 			cgogn_log_warning("new_volume_export") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeExport<MAP>>();

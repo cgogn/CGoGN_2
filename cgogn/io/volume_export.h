@@ -47,9 +47,8 @@ public:
 	using Self = VolumeExport<MAP>;
 	using Map = MAP;
 	using Vertex = typename Map::Vertex;
-	using Edge = typename Map::Edge;
-	using Face   = typename Map::Face;
 	using Volume = typename Map::Volume;
+	using Face   = typename Map::Face;
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
