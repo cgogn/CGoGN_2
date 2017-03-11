@@ -18,7 +18,7 @@ else()
 	)
 endif()
 
-if(DEFINED OPENMESH_INCLUDE_DIR)
+if(OPENMESH_INCLUDE_DIR)
 	message(STATUS "Found OpenMesh: " ${OPENMESH_INCLUDE_DIR})
 	set(OPENMESH_FOUND true)
 	if(WIN32)
