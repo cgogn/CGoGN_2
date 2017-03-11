@@ -117,18 +117,18 @@ public:
 
 
 		// 2nd step : updating internal data structures.
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+			for (ChunkArrayBool* cab : this->topology_.marker_arrays())
+				cab->clear();
+		}
+
 		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
 				this->topology_.remove_chunk_array(this->embeddings_[i]);
 				this->embeddings_[i] = nullptr;
-			}
-
-			{
-				std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
-				for (ChunkArrayBool* cab : this->topology_.marker_arrays())
-					cab->clear();
 			}
 
 			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
