@@ -358,7 +358,7 @@ BENCHMARK_F(Performance3_OpenVolumeMesh, split_tet)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 		mesh->enable_edge_bottom_up_incidences(false);
 
@@ -481,7 +481,7 @@ BENCHMARK_F(Performance3_OpenVolumeMesh, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 		OpenVolumeMesh::VertexPropertyT<int> tmp= mesh->request_vertex_property<int>("boundaryVertex");
 		boundary_vertex = &tmp;

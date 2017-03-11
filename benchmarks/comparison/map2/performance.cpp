@@ -46,8 +46,10 @@ int main(int argc, char** argv)
 }
 
 
-void Performance2::SetUp()
+void Performance2::SetUp(State& state)
 {
 	this->clear_mesh();
-	this->read_mesh(filename);
+	if (!this->read_mesh(filename))
+		state.SkipWithError("Unable to read the provided mesh.");
+
 }

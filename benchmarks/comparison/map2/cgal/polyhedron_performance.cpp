@@ -201,7 +201,7 @@ BENCHMARK_F(Performance2_Polyhedron, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 
 		int nv = P->size_of_vertices();
@@ -297,7 +297,7 @@ BENCHMARK_F(Performance2_Polyhedron, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 
 		// reserve memory

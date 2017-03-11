@@ -21,36 +21,47 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef BENCHMARK_COMPARISON_CGOGN2_H
-#define BENCHMARK_COMPARISON_CGOGN2_H
-
-#include "performance.h"
+#include <performance.h>
 #include <iostream>
 
-#include <cgogn/core/cmap/cmap2.h>
-#include <cgogn/geometry/types/eigen.h>
+#include "Topology/generic/parameters.h"
+#include "Topology/map/embeddedMap3.h"
 
-class Performance2_CGoGN2 : public Performance2
+class Performance3_CGoGN1 : public Performance3
 {
 
 public:
-	using Map = cgogn::CMap2;
-	using Vertex = Map::Vertex;
-	using Edge = Map::Edge;
-	using Face = Map::Face;
-	using Vec3 = Eigen::Matrix<Real,3,1,0,3,1>;
+	struct PFP
+	{
+		using MAP = CGoGN::EmbeddedMap3;
+		using REAL = Real;
+		using VEC3 = CGoGN::Geom::Vector<3,Real> ;
+	};
 
-	std::unique_ptr<Map> map;
-	Map::VertexAttribute<Vec3> position;
-	Map::VertexAttribute<Vec3> normalV;
-	Map::FaceAttribute<Vec3> normalF;
-	std::unique_ptr<cgogn::CellCache<Map>> cache;
+	using Dart = CGoGN::Dart;
+	using Map = PFP::MAP;
+	using Vertex = CGoGN::Vertex;
+	using Edge = CGoGN::Edge;
+	using Face = CGoGN::Face;
+	using Volume = CGoGN::Vol;
+	using Vec3 = PFP::VEC3;
 
+	template<typename T>
+	using VertexAttribute = CGoGN::VertexAttribute<T, Map>;
 
-	inline Performance2_CGoGN2() : Performance2() {}
+	template<typename T>
+	using FaceAttribute = CGoGN::FaceAttribute<T, Map>;
+
+	inline Performance3_CGoGN1() : Performance3() {}
+
 protected:
 	bool read_mesh(const std::string& filename) override;
 	void clear_mesh() override;
-};
 
-#endif // BENCHMARK_COMPARISON_CGOGN2_H
+protected:
+	std::unique_ptr<Map> map;
+	VertexAttribute<Vec3> position;
+	VertexAttribute<Vec3> position_smoothing;
+	VertexAttribute<int> boundary_vertex;
+	Dart getShortestEdge();
+};

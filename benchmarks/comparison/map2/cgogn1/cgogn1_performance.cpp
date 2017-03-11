@@ -57,7 +57,7 @@ bool Performance2_CGoGN1::read_mesh(const std::string& filename)
 	std::cout.rdbuf(buffer.rdbuf());
 
 	std::vector<std::string> attribute_names;
-	Algo::Surface::Import::importMesh<PFP>(*map, filename, attribute_names);
+	const bool res = Algo::Surface::Import::importMesh<PFP>(*map, filename, attribute_names);
 
 	position = map->getAttribute<Vec3, VERTEX, Map>(attribute_names[0]);
 
@@ -69,7 +69,7 @@ bool Performance2_CGoGN1::read_mesh(const std::string& filename)
 
 	std::cout.rdbuf(sbuf);
 
-	return position.isValid();
+	return res && position.isValid();
 }
 
 BENCHMARK_F(Performance2_CGoGN1, circulator)(benchmark::State& state)
@@ -172,7 +172,7 @@ BENCHMARK_F(Performance2_CGoGN1	, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		VertexAutoAttribute<Vec3, Map> new_position(*map);
 		state.ResumeTiming();
 
@@ -237,7 +237,7 @@ BENCHMARK_F(Performance2_CGoGN1, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		map->updateQuickTraversal<Map, FACE>();
 		state.ResumeTiming();
 
@@ -273,7 +273,7 @@ BENCHMARK_F(Performance2_CGoGN1, remesh)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		map->updateQuickTraversal<Map, FACE>();
 		state.ResumeTiming();
 

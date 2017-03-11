@@ -41,7 +41,7 @@ bool Performance2_LCC::read_mesh(const std::string& filename)
 		if ( lcc->attribute<2>(dit)==NULL )
 			lcc->set_attribute<2>(dit, lcc->create_attribute<2>());
 	}
-	return lcc->is_valid();
+	return lcc->is_valid() && lcc->number_of_darts() > 0;
 }
 
 
@@ -237,7 +237,7 @@ BENCHMARK_F(Performance2_LCC, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 		int nv = lcc->number_of_vertex_attributes();
 
@@ -315,7 +315,7 @@ BENCHMARK_F(Performance2_LCC, collapse)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 
 		LCC::Attribute_range<0>::type::iterator vit, vend = lcc->attributes<0>().end();

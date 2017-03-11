@@ -33,10 +33,11 @@ extern std::string filename;
 class Performance2 : public ::benchmark::Fixture
 {
 public:
+	using State = ::benchmark::State;
 	using Real = double;
 	virtual void clear_mesh() = 0;
 	virtual bool read_mesh(const std::string& filename) = 0;
-	void SetUp() override;
+	void SetUp(State& state) override;
 };
 
 #endif // BENCHMARK_COMPARISON_PERFORMANCE2_H

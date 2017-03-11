@@ -148,7 +148,7 @@ BENCHMARK_F(Performance2_CGoGN2, subdivision)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		Map::VertexAttribute<Vec3> new_position = map->add_attribute<Vec3,Vertex>("new_position");
 		state.ResumeTiming();
 
@@ -225,7 +225,7 @@ BENCHMARK_F(Performance2_CGoGN2, remesh)(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		state.PauseTiming();
-		this->SetUp();
+		this->SetUp(state);
 		state.ResumeTiming();
 
 		unsigned int nbOps = 1000;
