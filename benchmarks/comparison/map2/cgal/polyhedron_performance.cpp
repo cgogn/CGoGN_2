@@ -8,7 +8,10 @@ void Performance2_Polyhedron::clear_mesh()
 bool Performance2_Polyhedron::read_mesh(const std::string& filename)
 {
 	std::ifstream ifs(filename);
+	if (!ifs.good())
+		return false;
 	ifs >> (*P);
+	return true;
 }
 
 void Performance2_Polyhedron::halfedge_collapse(Polyhedron::Halfedge_handle pq)

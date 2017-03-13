@@ -613,8 +613,11 @@ BENCHMARK_F(Performance3_LCC, collapse)(benchmark::State& state)
 			// 0=not known; 1=boundary; 2=no boundary
 			lcc->info<0>(dart).m = 0;
 			lcc->info<0>(lcc->other_extremity(dart)).m = 0;
-
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,9,0)
 			CGAL::contract_cell<LCC_3,1>(*lcc, dart, true);
+#else
+			CGAL::contract_cell<LCC_3,1>(*lcc, dart);
+#endif
 		}
 
 		for (LCC_3::Vertex_attribute_range::iterator vit = lcc->vertex_attributes().begin(),
