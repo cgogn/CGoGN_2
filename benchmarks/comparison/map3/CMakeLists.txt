@@ -31,9 +31,9 @@ endif()
 set(CGAL_DONT_OVERRIDE_CMAKE_FLAGS TRUE CACHE BOOL "preserve cmake flags" FORCE)
 find_package(CGAL)
 if(CGAL_FOUND)
-#	include(${CGAL_USE_FILE})
-#	list(APPEND HEADER_FILES cgal/lcc_performance_3.h)
-#	list(APPEND CPP_FILES cgal/lcc_performance_3.cpp)
+	include(${CGAL_USE_FILE})
+	list(APPEND HEADER_FILES cgal/lcc_performance_3.h)
+	list(APPEND CPP_FILES cgal/lcc_performance_3.cpp)
 endif()
 
 
@@ -45,8 +45,8 @@ endif()
 
 list(APPEND CPP_FILES performance.cpp)
 list(APPEND HEADER_FILES performance.h)
-# list(APPEND CPP_FILES cgogn2/cgogn2_performance.cpp)
-# list(APPEND HEADER_FILES cgogn2/cgogn2_performance.h)
+list(APPEND CPP_FILES cgogn2/cgogn2_performance_3.cpp)
+list(APPEND HEADER_FILES cgogn2/cgogn2_performance_3.h)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HEADER_FILES})
 

@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		cgogn_log_info("bench_comparison3") << "USAGE: " << argv[0] << " [filename]";
-		filename = std::string(DEFAULT_MESH_PATH) + std::string("vtk/armadillo_tetra_4406.vtu");
+		filename = std::string(DEFAULT_MESH_PATH) + std::string("tetmesh/aneurysm_3D.tetmesh");
 		cgogn_log_info("bench_comparison3") << "Using default mesh : \"" << filename << "\".";
 	}
 	else
@@ -49,6 +49,11 @@ int main(int argc, char** argv)
 void Performance3::SetUp(State& state)
 {
 	this->clear_mesh();
-	if (!this->read_mesh(filename))
+	bool read_mesh_ok = false;
+	{
+		OStreamBlocker blocker;
+		read_mesh_ok = this->read_mesh(filename);
+	}
+	if (!read_mesh_ok)
 		state.SkipWithError("Unable to read the provided mesh.");
 }

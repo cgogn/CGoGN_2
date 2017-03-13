@@ -48,10 +48,6 @@ void Performance3_CGoGN1::clear_mesh()
 
 bool Performance3_CGoGN1::read_mesh(const std::string& filename)
 {
-	std::stringstream buffer;
-	std::streambuf *sbuf = std::cout.rdbuf();
-	std::cout.rdbuf(buffer.rdbuf());
-
 	std::vector<std::string> attribute_names;
 	const bool res = Algo::Volume::Import::importMesh<PFP>(*map, filename, attribute_names);
 	position = map->getAttribute<Vec3, VERTEX, Map>(attribute_names[0]);
@@ -63,8 +59,6 @@ bool Performance3_CGoGN1::read_mesh(const std::string& filename)
 
 	map->enableQuickTraversal<Map, VERTEX>();
 	map->enableQuickTraversal<Map, FACE>();
-
-	std::cout.rdbuf(sbuf);
 
 	return res && position.isValid();
 }

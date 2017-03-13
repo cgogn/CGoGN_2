@@ -27,8 +27,33 @@
 #include <benchmark/benchmark.h>
 #include <string>
 #include <iostream>
+#include <array>
+#include <sstream>
 
 extern std::string filename;
+
+
+class OStreamBlocker final
+{
+public:
+	inline OStreamBlocker()
+	{
+		sbufs[0] =  std::cout.rdbuf();
+		sbufs[1] =  std::cerr.rdbuf();
+		std::cout.rdbuf(buffers[0].rdbuf());
+		std::cerr.rdbuf(buffers[1].rdbuf());
+	}
+
+	inline ~OStreamBlocker()
+	{
+		std::cout.rdbuf(sbufs[0]);
+		std::cerr.rdbuf(sbufs[1]);
+	}
+
+private:
+	std::array<std::stringstream, 2> buffers;
+	std::array<std::streambuf*, 2> sbufs;
+};
 
 class Performance3 : public ::benchmark::Fixture
 {

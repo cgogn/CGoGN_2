@@ -21,39 +21,39 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/core/utils/definitions.h>
-#include <cgogn/core/utils/logger.h>
+#ifndef BENCHMARK_COMPARISON_CGOGN2_PERFORMANCE3_H
+#define BENCHMARK_COMPARISON_CGOGN2_PERFORMANCE3_H
+
 #include <performance.h>
 
-#define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/geometry/types/eigen.h>
 
-std::string filename;
-
-int main(int argc, char** argv)
+class Performance3_CGoGN2 : public Performance3
 {
-	::benchmark::Initialize(&argc, argv);
 
-	if (argc < 2)
-	{
-		cgogn_log_info("bench_comparison2") << "USAGE: " << argv[0] << " [filename]";
-		filename = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
-		cgogn_log_info("bench_comparison2") << "Using default mesh : \"" << filename << "\".";
-	}
-	else
-		filename = std::string(argv[1]);
-	::benchmark::RunSpecifiedBenchmarks();
-	return 0;
-}
+public:
+	using Dart = cgogn::Dart;
+	using Map = cgogn::CMap3;
+	using Vertex = Map::Vertex;
+	using Edge = Map::Edge;
+	using Face = Map::Face;
+	using Volume = Map::Volume;
+	using Vec3 = Eigen::Matrix<Real,3,1,0,3,1>;
+
+	std::unique_ptr<Map> map;
+	Map::VertexAttribute<Vec3> position;
+	Map::VertexAttribute<Vec3> position_smoothing;
+	Map::VertexAttribute<int> boundary_vertex;
+	std::unique_ptr<cgogn::CellCache<Map>> cache;
 
 
-void Performance2::SetUp(State& state)
-{
-	this->clear_mesh();
-	bool read_mesh_ok = false;
-	{
-		OStreamBlocker blocker;
-		read_mesh_ok = this->read_mesh(filename);
-	}
-	if (!read_mesh_ok)
-		state.SkipWithError("Unable to read the provided mesh.");
-}
+	inline Performance3_CGoGN2() : Performance3() {}
+
+protected:
+	bool read_mesh(const std::string& filename) override;
+	void clear_mesh() override;
+	Dart getShortestEdge();
+};
+
+#endif // BENCHMARK_COMPARISON_CGOGN2_PERFORMANCE3_H

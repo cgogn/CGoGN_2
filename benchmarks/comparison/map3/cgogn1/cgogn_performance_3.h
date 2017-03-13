@@ -21,6 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
+#ifndef BENCHMARK_COMPARISON_CGOGN1_PERFORMANCE3_H
+#define BENCHMARK_COMPARISON_CGOGN1_PERFORMANCE3_H
+
 #include <performance.h>
 #include <iostream>
 
@@ -65,3 +68,5 @@ protected:
 	VertexAttribute<int> boundary_vertex;
 	Dart getShortestEdge();
 };
+
+#endif // BENCHMARK_COMPARISON_CGOGN1_PERFORMANCE3_H

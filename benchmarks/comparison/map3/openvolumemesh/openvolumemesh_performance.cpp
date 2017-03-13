@@ -22,16 +22,18 @@
 *******************************************************************************/
 
 #include "openvolumemesh_performance.h"
+#include <cgogn/core/utils/string.h>
 
 using namespace OpenVolumeMesh;
 
 bool Performance3_OpenVolumeMesh::read_mesh(const std::string& filename)
 {
+	const std::string new_name = cgogn::remove_extension(filename) + std::string(".ovm");
 	const bool checkTopo = false;
 	const bool computeBottomUpIncidences = true; //  Incidence Dependent Iterators need bottom-up incidences to be computed before they can be used.
 
 	OpenVolumeMesh::IO::FileManager fileManager;
-	const bool res = fileManager.readFile(filename, *mesh, checkTopo, computeBottomUpIncidences);
+	const bool res = fileManager.readFile(new_name, *mesh, checkTopo, computeBottomUpIncidences);
 
 	return res;
 }
