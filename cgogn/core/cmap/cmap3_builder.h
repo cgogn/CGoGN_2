@@ -70,7 +70,7 @@ public:
 	template <Orbit ORBIT, typename T>
 	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
 	{
-		map_.attributes_[ORBIT].swap(cac);
+		map_.template swap_chunk_array_container<ORBIT>(cac);
 	}
 
 	inline void phi3_sew(Dart d, Dart e)

@@ -197,6 +197,8 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
+		table_data_.shrink_to_fit();
+		table_data_.reserve(1024u);
 	}
 
 	/**
@@ -420,7 +422,7 @@ public:
 protected:
 
 	// ensure we can use CHUNK_SIZE value < 32
-	const uint32 BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
+	static const uint32 BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
 
 	// vector of block pointers
 	std::vector<uint32*> table_data_;
@@ -556,6 +558,8 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
+		table_data_.shrink_to_fit();
+		table_data_.reserve(1024u);
 	}
 
 	/**
@@ -596,7 +600,7 @@ public:
 	 */
 	inline void swap_elements(uint32 idx1, uint32 idx2) override
 	{
-		bool data = this->operator[](idx1);
+		const bool data = this->operator[](idx1);
 		set_value(idx1, this->operator[](idx2));
 		set_value(idx2, data);
 	}
@@ -663,7 +667,7 @@ public:
 			fs.read(reinterpret_cast<char*>(table_data_[i]), CHUNK_SIZE / 8u);// /8 because bool = 1 bit & octet = 8 bit
 
 		// load last chunk
-		uint32 nb = nb_lines - nbc*CHUNK_SIZE;
+		const uint32 nb = nb_lines - nbc*CHUNK_SIZE;
 		fs.read(reinterpret_cast<char*>(table_data_[nbc]), nb / 8u);
 
 		return true;
@@ -680,10 +684,7 @@ public:
 		in >> val;
 		val = to_lower(val);
 		const bool b = (val == "true") || (std::stoi(val) != 0);
-		if (b)
-			set_true(idx);
-		else
-			set_false(idx);
+		set_value(idx,b);
 	}
 
 	const void* element_ptr(uint32) const override
@@ -698,51 +699,28 @@ public:
 	 */
 	inline bool operator[](uint32 i) const
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-
-		const uint32 mask = 1u << y;
-
-		return (table_data_[jj][x] & mask) != 0u;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		return (table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/BOOLS_PER_INT] & (1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT))) != 0u;
 	}
 
 	inline void set_false(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
-		table_data_[jj][x] &= ~mask;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/ BOOLS_PER_INT] &= ~(1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT));
 	}
 
 	inline void set_true(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
-		table_data_[jj][x] |= mask;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/ BOOLS_PER_INT] |= 1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT);
 	}
 
 	inline void set_value(uint32 i, bool b)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
 		if (b)
-			table_data_[jj][x] |= mask;
+			set_true(i);
 		else
-			table_data_[jj][x] &= ~mask;
+			set_false(i);
 	}
 
 	/**
@@ -754,30 +732,18 @@ public:
 	 */
 	inline void set_false_byte(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNK_SIZE) / BOOLS_PER_INT;
-		table_data_[jj][j] = 0u;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE) / BOOLS_PER_INT] = 0u;
 	}
 
 	inline void all_false()
 	{
 		for (uint32 * const ptr : table_data_)
 		{
-//#pragma omp for
 			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
-
-//	inline void all_true()
-//	{
-//		for (auto ptr : table_data_)
-//		{
-//			for (uint32 j = 0u; j < CHUNK_SIZE/BOOLS_PER_INT; ++j)
-//				*ptr++ = 0xffffffff;
-//		}
-//	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))

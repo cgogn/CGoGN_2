@@ -1,0 +1,38 @@
+# Find OPENVOLUMEMESH. If found, this will define
+#
+# OPENVOLUMEMESH_FOUND       - Successfully found OPENVOLUMEMESH
+# OPENVOLUMEMESH_INCLUDE_DIR - OPENVOLUMEMESH include directory
+# OPENVOLUMEMESH_LIBRARIES   - OPENVOLUMEMESH libraries
+# OPENVOLUMEMESH_LIBRARY_DIR - OPENVOLUMEMESH library directory
+#
+
+if(DEFINED OPENVOLUMEMESH_INCLUDE_DIR)
+	set(OPENVOLUMEMESH_FIND_QUIETLY TRUE)
+else()
+	find_path(OPENVOLUMEMESH_INCLUDE_DIR OpenVolumeMesh/Core/BaseProperty.hh
+	PATHS
+	/usr/local/include
+	/usr/include
+	$ENV{OPENVOLUMEMESH_DIR}/include
+	${OPENVOLUMEMESH_DIR}/include
+	)
+	mark_as_advanced(OPENVOLUMEMESH_INCLUDE_DIR)
+endif()
+
+if(OPENVOLUMEMESH_INCLUDE_DIR)
+	message(STATUS "Found OpenVolumeMesh: " ${OPENVOLUMEMESH_INCLUDE_DIR})
+	set(OPENVOLUMEMESH_FOUND 1)
+
+	if(WIN32)
+		set(OPENVOLUMEMESH_LIBRARY_DIR "${OPENVOLUMEMESH_INCLUDE_DIR}/../lib"
+		CACHE PATH "OpenVolumeMesh library directory")
+	else()
+		set(OPENVOLUMEMESH_LIBRARY_DIR "${OPENVOLUMEMESH_INCLUDE_DIR}/../lib/OpenVolumeMesh"
+		CACHE PATH "OpenVolumeMesh library directory")
+	endif()
+	find_library(OPENVOLUMEMESH_LIBRARIES
+	NAMES OpenVolumeMesh
+	PATHS ${OPENVOLUMEMESH_LIBRARY_DIR})
+else()
+	set(OPENVOLUMEMESH_FOUND 0)
+endif()
