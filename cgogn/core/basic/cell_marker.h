@@ -52,13 +52,6 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker_T);
 
-	CellMarker_T(Map& map) :
-		map_(map)
-	{
-		mark_attribute_ = map_.template mark_attribute<ORBIT>();
-		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
-	}
-
 	CellMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
@@ -113,10 +106,6 @@ public:
 	using Map = typename Inherit::Map;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker);
-
-	inline CellMarker(Map& map) :
-		Inherit(map)
-	{}
 
 	inline CellMarker(const MAP& map) :
 		Inherit(map)
@@ -209,10 +198,6 @@ public:
 	using Inherit = CellMarker_T<MAP, ORBIT>;
 	using Self = CellMarker< MAP, ORBIT >;
 	using Map = typename Inherit::Map;
-
-	inline CellMarkerNoUnmark(Map& map) :
-		Inherit(map)
-	{}
 
 	inline CellMarkerNoUnmark(const MAP& map) :
 		Inherit(map)

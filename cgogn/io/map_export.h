@@ -30,20 +30,15 @@
 #include <iostream>
 #include <climits>
 
-#include <cgogn/core/utils/logger.h>
-#include <cgogn/core/utils/endian.h>
-#include <cgogn/core/cmap/cmap3.h>
-#include <cgogn/geometry/types/geometry_traits.h>
-#include <cgogn/geometry/algos/normal.h>
-#include <cgogn/geometry/algos/ear_triangulation.h>
 #include <cgogn/io/vtk_io.h>
-#include <cgogn/io/msh_io.h>
-#include <cgogn/io/nastran_io.h>
-#include <cgogn/io/tet_io.h>
 #include <cgogn/io/off_io.h>
 #include <cgogn/io/obj_io.h>
 #include <cgogn/io/stl_io.h>
 #include <cgogn/io/ply_io.h>
+#include <cgogn/io/tet_io.h>
+#include <cgogn/io/msh_io.h>
+#include <cgogn/io/nastran_io.h>
+#include <cgogn/io/tetmesh_io.h>
 
 namespace cgogn
 {
@@ -111,6 +106,7 @@ inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& f
 		case FileType::FileType_MSH:		return make_unique<MshVolumeExport<MAP>>();
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeExport<MAP>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeExport<MAP>>();
+		case FileType::FileType_TETMESH:	return make_unique<TetMeshVolumeExport<MAP>>();
 		default:
 			cgogn_log_warning("new_volume_export") << "VolumeExport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeExport<MAP>>();

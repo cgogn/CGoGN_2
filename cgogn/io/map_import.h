@@ -43,6 +43,7 @@
 #include <cgogn/io/nastran_io.h>
 #include <cgogn/io/tet_io.h>
 #include <cgogn/io/stl_io.h>
+#include <cgogn/io/tetmesh_io.h>
 
 namespace cgogn
 {
@@ -119,6 +120,7 @@ inline std::unique_ptr<VolumeFileImport<VEC3>> newVolumeImport(const std::string
 		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<VEC3>>();
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<VEC3>>();
 		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<VEC3>>();
+		case FileType::FileType_TETMESH:	return make_unique<TetMeshVolumeImport<VEC3>>();
 		default:
 			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<VolumeFileImport<VEC3>> ();

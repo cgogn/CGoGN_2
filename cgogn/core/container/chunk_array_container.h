@@ -174,7 +174,12 @@ public:
 	ChunkArrayContainer() :
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
-	{}
+	{
+		table_arrays_.reserve(16);
+		names_.reserve(16);
+		type_names_.reserve(16);
+		table_marker_arrays_.reserve(16);
+	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayContainer);
 
@@ -215,7 +220,7 @@ public:
 	ChunkArray<T>* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
@@ -234,7 +239,7 @@ public:
 	ChunkArrayGen* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
@@ -268,6 +273,11 @@ public:
 		return table_arrays_;
 	}
 
+	inline const std::vector<ChunkArrayBool*>& marker_arrays()
+	{
+		return table_marker_arrays_;
+	}
+
 	/**
 	 * @brief add an attribute
 	 * @param name name of chunk array
@@ -280,7 +290,7 @@ public:
 		cgogn_assert(name.size() != 0);
 
 		// first check if attribute already exist
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index != UNKNOWN)
 		{
 			cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists.";
@@ -288,7 +298,7 @@ public:
 		}
 
 		// create the new attribute
-		const std::string& type_name = name_of_type(T());
+		std::string type_name = name_of_type(T());
 		ChunkArray<T>* carr = new ChunkArray<T>(name);
 		chunk_array_factory<CHUNK_SIZE>().template register_CA<T>();
 
@@ -298,7 +308,7 @@ public:
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
 		names_.push_back(name);
-		type_names_.push_back(type_name);
+		type_names_.push_back(std::move(type_name));
 
 		return carr;
 	}
@@ -310,7 +320,7 @@ public:
 	 */
 	bool remove_chunk_array(const std::string& name)
 	{
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 
 		if (index == UNKNOWN)
 		{
@@ -330,7 +340,7 @@ public:
 	 */
 	bool remove_chunk_array(const ChunkArrayGen* ptr)
 	{
-		uint32 index = array_index(ptr);
+		const uint32 index = array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
@@ -351,8 +361,8 @@ public:
 	 */
 	bool swap_chunk_arrays(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
-		uint32 index1 = array_index(ptr1);
-		uint32 index2 = array_index(ptr2);
+		const uint32 index1 = array_index(ptr1);
+		const uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
@@ -378,8 +388,8 @@ public:
 	template <typename T>
 	bool copy_chunk_array_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
-		uint32 dest_index = array_index(dest);
-		uint32 src_index = array_index(src);
+		const uint32 dest_index = array_index(dest);
+		const uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
@@ -569,12 +579,12 @@ public:
 		holes_stack_.clear();
 
 		for (auto cagen : table_arrays_)
+		{
+			cagen->invalidate_external_refs();
 			delete cagen;
-		for (auto ca_bool : table_marker_arrays_)
-			delete ca_bool;
+		}
 
 		table_arrays_.clear();
-		table_marker_arrays_.clear();
 		names_.clear();
 		type_names_.clear();
 	}
@@ -582,6 +592,7 @@ public:
 	/**
 	 * @brief swap
 	 * @param container
+	 * @warning When called on a ChunkArrayContainer stored in a map, this method invalidates the internal data related to the markers.
 	 */
 	void swap(Self& container)
 	{
