@@ -30,6 +30,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>	
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_OPEN_NL_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/thirdparty/OpenNL>
 )
 
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${OpenNL_LIBRARIES})

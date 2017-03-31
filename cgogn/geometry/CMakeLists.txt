@@ -48,6 +48,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:include/thirdparty/eigen>
+	$<INSTALL_INTERFACE:include/thirdparty/eigen/unsupported>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

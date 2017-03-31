@@ -69,6 +69,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/thirdparty/lm6>
+	$<INSTALL_INTERFACE:include/thirdparty/ply>
+	$<INSTALL_INTERFACE:include/thirdparty/TinyXml2>
+	$<INSTALL_INTERFACE:include/thirdparty/zlib-1.2.8>
 )
 
 target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
