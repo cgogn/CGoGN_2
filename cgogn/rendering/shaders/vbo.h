@@ -180,7 +180,7 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 		// transform double into float
 		float32* fit = float_buffer;
 		const Scalar* src = reinterpret_cast<const Scalar*>(vector.data());
-		for (uint32 i = 0, size = vector.size(); i < size; ++i)
+		for (std::size_t i = 0, size = vector.size(); i < size; ++i)
 		{
 			*fit++ = *src++;
 			*fit++ = *src++;

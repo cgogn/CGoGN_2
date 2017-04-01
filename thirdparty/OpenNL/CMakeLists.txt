@@ -19,6 +19,8 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC "_CRT_SECURE_NO_WARNINGS")
+
 install(FILES "OpenNL_psm.h" DESTINATION "include/thirdparty/OpenNL")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/thirdparty/OpenNL")
