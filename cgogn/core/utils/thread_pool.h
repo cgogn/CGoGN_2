@@ -97,7 +97,8 @@ public:
 	}
 
 private:
-
+#pragma warning(push)
+#pragma warning(disable:4251)
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
 	// the task queue
@@ -107,6 +108,7 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
+#pragma warning(pop)
 };
 
 // add new work item to the pool
