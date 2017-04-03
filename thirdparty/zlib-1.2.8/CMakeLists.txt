@@ -219,10 +219,10 @@ elseif(BUILD_SHARED_LIBS AND WIN32)
 	#set_target_properties(Zlib PROPERTIES SUFFIX "1.dll")
 endif()
 
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-	DESTINATION "include/thirdparty/"
-	FILES_MATCHING PATTERN "*.h"
-	)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zconf.h" DESTINATION "include/thirdparty/zlib-1.2.8/")
+#install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+#	DESTINATION "include/cgogn/thirdparty/"
+#	FILES_MATCHING PATTERN "zlib.h"
+#	)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/zlib.h" "${CMAKE_CURRENT_BINARY_DIR}/zconf.h" DESTINATION "include/cgogn/thirdparty")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/thirdparty/")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty/")

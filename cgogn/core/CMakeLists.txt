@@ -119,6 +119,7 @@ if(NOT MSVC)
 		target_compile_definitions(${PROJECT_NAME} PUBLIC "_GLIBCXX_PARALLEL")
 		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_PARALLEL")
 	endif()
+	target_compile_options(${PROJECT_NAME} PUBLIC "-Wno-unknown-pragmas")
 endif()
 
 if(MSVC)
@@ -137,7 +138,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
-	$<INSTALL_INTERFACE:include/thirdparty/termcolor>
+	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
@@ -160,4 +161,4 @@ install(DIRECTORY basic cmap container utils
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
