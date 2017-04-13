@@ -79,11 +79,13 @@ private:
 
 	Logger();
 	LogStream log(LogLevel lvl, const std::string& sender, FileInfo fileinfo) const;
-
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::unique_ptr<ConsoleOutput>				console_out_;
 	std::vector<std::unique_ptr<FileOutput>>	file_out_;
 	std::vector<LoggerOutput*>					other_outputs_;
 	mutable std::mutex							process_mutex_;
+#pragma warning(pop)
 };
 
 } // namespace logger

@@ -87,10 +87,13 @@ public:
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
 	inline ExportOptions& cell_filter(const std::function<bool(Dart)>& func) { cell_filter_ = func; return *this; }
 
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::string filename_;
 	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	std::function<bool(Dart)> cell_filter_;
+#pragma warning(pop)
 	bool binary_;
 	bool compress_;
 	bool overwrite_;
