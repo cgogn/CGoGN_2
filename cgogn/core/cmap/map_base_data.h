@@ -79,7 +79,8 @@ public:
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
 protected:
-
+#pragma warning(push)
+#pragma warning(disable:4251)
 	// topology & embedding indices
 	ChunkArrayContainer<uint8> topology_;
 
@@ -112,6 +113,7 @@ protected:
 	static const std::array<uint32, 12> tetra_phi2;
 	// table of hexa phi2 indices
 	static const std::array<uint32, 24> hexa_phi2;
+#pragma warning(pop)
 
 public:
 

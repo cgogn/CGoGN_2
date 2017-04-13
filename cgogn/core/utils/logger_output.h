@@ -88,8 +88,11 @@ public:
 	}
 
 private:
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::ofstream	out_;
 	std::string		filename_;
+#pragma warning(pop)
 };
 
 } // namespace logger

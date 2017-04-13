@@ -62,7 +62,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry)
 
 install(FILES "dll.h" DESTINATION "include/cgogn/modeling")
-install(DIRECTORY algos tiling
+install(DIRECTORY algos tiling decimation
 	DESTINATION "include/cgogn/modeling"
 	FILES_MATCHING PATTERN "*.h"
 )

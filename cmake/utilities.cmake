@@ -112,9 +112,16 @@ write_basic_package_version_file(
 
 set(${UPPER_NAME}_INCLUDE_DIRS ${include_dirs_install_tree})
 
+
+if (WIN32)
+	set (INST_BIN_PATH bin/$<CONFIG>)
+else()
+	set (INST_BIN_PATH bin)
+endif()
+
 install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION bin
+	RUNTIME DESTINATION ${INST_BIN_PATH}
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )

@@ -97,7 +97,7 @@ void decimate(
 	uint32 nb
 )
 {
-	EdgeApproximator<CMap2, VEC3>* approx;
+	EdgeApproximator<CMap2, VEC3>* approx=nullptr;
 
 	switch (approx_type)
 	{
