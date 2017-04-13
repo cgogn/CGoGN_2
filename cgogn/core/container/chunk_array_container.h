@@ -592,7 +592,7 @@ public:
 	/**
 	 * @brief swap
 	 * @param container
-	 * @warning When called on a ChunkArrayContainer stored in a map, this method invalidates the internal data related to the markers.
+	 * @warning When called on a ChunkArrayContainer stored in a map, this method invalidates the map internal data related to the markers.
 	 */
 	void swap(Self& container)
 	{

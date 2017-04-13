@@ -37,13 +37,19 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class TetMeshVolumeImport : public VolumeFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class TetMeshVolumeImport : public VolumeFileImport<MAP, VEC3>
 {
-	using Inherit = VolumeFileImport<VEC3>;
-	using Self = TetMeshVolumeImport<VEC3>;
+public:
+
+	using Self = TetMeshVolumeImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	inline TetMeshVolumeImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TetMeshVolumeImport);
+	virtual ~TetMeshVolumeImport() override {}
 
 protected:
 
@@ -85,7 +91,6 @@ protected:
 			iss >> v[1];
 			iss >> v[2];
 		}
-
 
 		uint32 nb_tetras = 0u;
 		{
@@ -129,14 +134,15 @@ class TetMeshVolumeExport : public VolumeExport<MAP>
 {
 public:
 
-	using Inherit = VolumeExport<MAP>;
 	using Self = TetMeshVolumeExport<MAP>;
+	using Inherit = VolumeExport<MAP>;
 	using Map = typename Inherit::Map;
 	using Vertex = typename Inherit::Vertex;
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
 protected:
+
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
 	{
 		ChunkArrayGen const* pos = this->position_attribute();
@@ -171,10 +177,10 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETMESH_IO_CPP_))
-extern template class CGOGN_IO_API TetMeshVolumeImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API TetMeshVolumeImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API TetMeshVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API TetMeshVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API TetMeshVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API TetMeshVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API TetMeshVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API TetMeshVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 
 extern template class CGOGN_IO_API TetMeshVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETMESH_IO_CPP_))

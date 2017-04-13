@@ -116,9 +116,7 @@ protected:
 public:
 
 	MapBaseData();
-
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
-
 	virtual ~MapBaseData();
 
 	static inline bool is_alive(const MapBaseData* map)
@@ -131,18 +129,17 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& const_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
 	}
 
-	inline const ChunkArrayContainer<uint32>& const_attribute_container(Orbit orbit) const
+	inline const ChunkArrayContainer<uint32>& attribute_container(Orbit orbit) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
-
 
 	inline const ChunkArrayContainer<uint8>& topology_container() const
 	{
@@ -152,42 +149,10 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline ChunkArrayContainer<uint32>& attribute_container()
+	inline ChunkArrayContainer<uint32>& non_const_attribute_container()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
-	}
-
-	/**
-	 * @brief swap_chunk_array_container
-	 * @param cac, a ChunkArrayContainer
-	 * This method swap the ChunkArrayContainer related to the orbit "ORBIT" and the provided one.
-	 * It also updates the internal data structures of the map related to the markers.
-	 */
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-
-		// 1st step : perform the swap.
-		attributes_[ORBIT].swap(cac);
-
-		// 2nd step:  update the mark attributes
-		const std::vector<ChunkArrayBool*>& markers = attributes_[ORBIT].marker_arrays();
-		std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[ORBIT]);
-		std::vector<std::vector<ChunkArrayBool*>>& mark_attributes_ORB = this->mark_attributes_[ORBIT];
-		for (std::vector<ChunkArrayBool*>& mark_att_ORB_thread_i : mark_attributes_ORB)
-		{
-			mark_att_ORB_thread_i.clear();
-		}
-
-		// we don't know which thread created the marker
-		std::size_t i = 0u;
-		for (ChunkArrayBool* cab : markers)
-		{
-			mark_attributes_ORB[i].push_back(cab);
-			i = (i+1) % mark_attributes_ORB.size();
-		}
 	}
 
 	/*******************************************************************************
@@ -271,15 +236,6 @@ public:
 		return (*embeddings_[orb])[d.index];
 	}
 
-	inline void swap_embeddings(Orbit orb1, Orbit orb2)
-	{
-		cgogn_message_assert(orb1 != orb2, "Cannot swap a container with itself");
-		cgogn_message_assert(orb1 != Orbit::DART && orb2 != Orbit::DART, "Cannot swap the darts container");
-
-		attributes_[orb1].swap(attributes_[orb2]);
-		embeddings_[orb1]->swap_data(embeddings_[orb2]);
-	}
-
 protected:
 
 	template <class CellType>
@@ -309,8 +265,6 @@ protected:
 		this->template set_embedding<CellType>(dest, embedding(CellType(src)));
 	}
 
-protected:
-
 	/*******************************************************************************
 	 * Thread management
 	 *******************************************************************************/
@@ -324,7 +278,6 @@ protected:
 	void remove_thread(std::thread::id thread_id) const;
 
 	void add_thread(std::thread::id thread_id) const;
-
 };
 
 } // namespace cgogn

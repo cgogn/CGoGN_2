@@ -31,10 +31,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API ObjSurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API ObjSurfaceImport<Eigen::Vector3f>;
-template class CGOGN_IO_API ObjSurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API ObjSurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 
 template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
 
