@@ -91,12 +91,17 @@ public:
 
 	/**
 	 * @brief draw the transparent objects mixed with opaque (also drawn separatly)
+	 * @param param a a
 	 * @param proj projection matrix
 	 * @param view modelview matrix
 	 * @param draw_func the func/lambda that draw transparent objects
 	 */
+	template<typename PARAM, typename TFUNC>
+	void draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
+
 	template<typename TFUNC>
-	void draw_flat(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
+	void draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
+
 
 	/**
 	 * @brief draw the transparent objects mixed with opaque (also drawn separatly)
@@ -105,7 +110,22 @@ public:
 	 * @param draw_func the func/lambda that draw transparent objects
 	 */
 	template<typename TFUNC>
-	void draw_phong(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
+	void draw_flat(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+	{
+		draw(*param_flat_, proj, view, draw_func);
+	}
+
+	/**
+	 * @brief draw the transparent objects mixed with opaque (also drawn separatly)
+	 * @param proj projection matrix
+	 * @param view modelview matrix
+	 * @param draw_func the func/lambda that draw transparent objects
+	 */
+	template<typename TFUNC>
+	void draw_phong(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+	{
+		draw(*param_phong_, proj, view, draw_func);
+	}
 
 
 	/**
@@ -174,8 +194,8 @@ public:
  * @param view modelview matrix
  * @param draw_func geometry drawing drawing function
  */
-template<typename TFUNC>
-void SurfaceTransparencyDrawer::draw_flat(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+template<typename PARAM, typename TFUNC>
+void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
 {
 	if (ogl33_ == nullptr)
 		return;
@@ -193,8 +213,13 @@ void SurfaceTransparencyDrawer::draw_flat(const QMatrix4x4& proj, const QMatrix4
 	QVector<GLuint> textures = fbo_layer_->textures();
 	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
 
-	param_flat_->rgba_texture_sampler_ = 0;
-	param_flat_->depth_texture_sampler_ = 1;
+//	param.rgba_texture_sampler_ = 0;
+//	param.depth_texture_sampler_ = 1;
+	ShaderFlatTransp::get_instance()->set_rgba_sampler(0);
+	ShaderFlatTransp::get_instance()->set_depth_sampler(1);
+	ShaderPhongTransp::get_instance()->set_rgba_sampler(0);
+	ShaderPhongTransp::get_instance()->set_depth_sampler(1);
+
 	fbo_layer_->bind();
 
 	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
@@ -221,16 +246,134 @@ void SurfaceTransparencyDrawer::draw_flat(const QMatrix4x4& proj, const QMatrix4
 		}
 
 		ogl33_->glDrawBuffers(2,buffs);
-		param_flat_->layer_ = p;
+//		param.layer_ = p;
+		ShaderFlatTransp::get_instance()->set_layer(p);
+		ShaderPhongTransp::get_instance()->set_layer(p);
+
 		ogl33_->glActiveTexture(GL_TEXTURE0);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
 		ogl33_->glActiveTexture(GL_TEXTURE1);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
 
 		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
-		param_flat_->bind(proj,view);
+		param.bind(proj,view);
 		draw_func();
-		param_flat_->release();
+		param.release();
+		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
+
+		GLuint nb_samples;
+		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
+
+		if (nb_samples==0) // finished ?
+			p = max_nb_layers_;
+		else
+		{
+			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
+			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+
+			if (p==0)
+			{
+				ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
+				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+			}
+
+			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
+			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
+		}
+	}
+
+	fbo_layer_->release();
+
+	// real draw with blending with opaque object
+
+	param_trq_->rgba_texture_sampler_ = 0;
+	param_trq_->depth_texture_sampler_ = 1;
+
+	ogl33_->glActiveTexture(GL_TEXTURE0);
+	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+
+	ogl33_->glActiveTexture(GL_TEXTURE1);
+	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
+
+	ogl33_->glEnable(GL_BLEND);
+	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
+	param_trq_->bind(proj,view);
+	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	param_trq_->release();
+	ogl33_->glDisable(GL_BLEND);
+
+	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
+
+}
+
+
+
+template<typename TFUNC>
+void SurfaceTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+{
+	if (ogl33_ == nullptr)
+		return;
+
+	GLfloat bkColor[4];
+	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
+
+	ogl33_->glEnable(GL_TEXTURE_2D);
+
+	ogl33_->glEnable(GL_TEXTURE_2D);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	ogl33_->glReadBuffer(GL_BACK);
+	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
+
+	QVector<GLuint> textures = fbo_layer_->textures();
+	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
+
+//	param.rgba_texture_sampler_ = 0;
+//	param.depth_texture_sampler_ = 1;
+	ShaderFlatTransp::get_instance()->set_rgba_sampler(0);
+	ShaderFlatTransp::get_instance()->set_depth_sampler(1);
+	ShaderPhongTransp::get_instance()->set_rgba_sampler(0);
+	ShaderPhongTransp::get_instance()->set_depth_sampler(1);
+
+	fbo_layer_->bind();
+
+	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
+	ogl33_->glDrawBuffers(1,clear_buff);
+	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
+	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
+
+	ogl33_->glDrawBuffers(1,buffs);
+	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
+
+	for (int p=0;p<max_nb_layers_;++p)
+	{
+		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
+
+		if (p > 0)
+		{
+			ogl33_->glDrawBuffers(1, opaq_buff);
+			param_copy_depth_->bind(proj, view);
+			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			param_copy_depth_->release();
+		}
+
+		ogl33_->glDrawBuffers(2,buffs);
+		ShaderFlatTransp::get_instance()->set_layer(p);
+		ShaderPhongTransp::get_instance()->set_layer(p);
+
+		ogl33_->glActiveTexture(GL_TEXTURE0);
+		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+		ogl33_->glActiveTexture(GL_TEXTURE1);
+		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
+
+		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
+//		param.bind(proj,view);
+		draw_func();
+//		param.release();
 		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
 
 		GLuint nb_samples;
@@ -287,112 +430,111 @@ void SurfaceTransparencyDrawer::draw_flat(const QMatrix4x4& proj, const QMatrix4
  * @param view modelview matrix
  * @param draw_func geometry drawing drawing function
  */
-template<typename TFUNC>
-void SurfaceTransparencyDrawer::draw_phong(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
-{
-	if (ogl33_ == nullptr)
-		return;
+//template<typename TFUNC>
+//void SurfaceTransparencyDrawer::draw_phong(ShaderPhongTransp::Param* param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
+//{
+//	if (ogl33_ == nullptr)
+//		return;
 
-	GLfloat bkColor[4];
-	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
+//	GLfloat bkColor[4];
+//	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
 
-	ogl33_->glEnable(GL_TEXTURE_2D);
+//	ogl33_->glEnable(GL_TEXTURE_2D);
 
-	ogl33_->glEnable(GL_TEXTURE_2D);
-	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
-	ogl33_->glReadBuffer(GL_BACK);
-	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
+//	ogl33_->glEnable(GL_TEXTURE_2D);
+//	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+//	ogl33_->glReadBuffer(GL_BACK);
+//	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
 
-	QVector<GLuint> textures = fbo_layer_->textures();
-	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
+//	QVector<GLuint> textures = fbo_layer_->textures();
+//	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
 
-	param_phong_->rgba_texture_sampler_ = 0;
-	param_phong_->depth_texture_sampler_ = 1;
-	fbo_layer_->bind();
+//	param->rgba_texture_sampler_ = 0;
+//	param->depth_texture_sampler_ = 1;
+//	fbo_layer_->bind();
 
-	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
-	ogl33_->glDrawBuffers(1,clear_buff);
-	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
-	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
+//	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
+//	ogl33_->glDrawBuffers(1,clear_buff);
+//	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
+//	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
 
-	ogl33_->glDrawBuffers(1,buffs);
-	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	ogl33_->glDrawBuffers(1,buffs);
+//	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
+//	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
 
-	for (int p=0;p<max_nb_layers_;++p)
-	{
-		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
+//	for (int p=0;p<max_nb_layers_;++p)
+//	{
+//		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
 
-		if (p > 0)
-		{
-			ogl33_->glDrawBuffers(1, opaq_buff);
-			param_copy_depth_->bind(proj, view);
-			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
-			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			param_copy_depth_->release();
-		}
+//		if (p > 0)
+//		{
+//			ogl33_->glDrawBuffers(1, opaq_buff);
+//			param_copy_depth_->bind(proj, view);
+//			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+//			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+//			param_copy_depth_->release();
+//		}
 
-		ogl33_->glDrawBuffers(2,buffs);
-		param_phong_->layer_ = p;
-		ogl33_->glActiveTexture(GL_TEXTURE0);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-		ogl33_->glActiveTexture(GL_TEXTURE1);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
+//		ogl33_->glDrawBuffers(2,buffs);
+//		param->layer_ = p;
+//		ogl33_->glActiveTexture(GL_TEXTURE0);
+//		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+//		ogl33_->glActiveTexture(GL_TEXTURE1);
+//		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
 
-		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
-		param_phong_->bind(proj,view);
-		draw_func();
-		param_phong_->release();
-		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
+//		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
+//		param->bind(proj,view);
+//		draw_func();
+//		param->release();
+//		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
 
-		GLuint nb_samples;
-		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
+//		GLuint nb_samples;
+//		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
 
-		if (nb_samples==0) // finished ?
-			p = max_nb_layers_;
-		else
-		{
-			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
-			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+//		if (nb_samples==0) // finished ?
+//			p = max_nb_layers_;
+//		else
+//		{
+//			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
+//			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
+//			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
 
-			if (p==0)
-			{
-				ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
-				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
-			}
+//			if (p==0)
+//			{
+//				ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
+//				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+//			}
 
-			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
-			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
-		}
-	}
+//			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
+//			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+//			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
+//		}
+//	}
 
-	fbo_layer_->release();
+//	fbo_layer_->release();
 
-	// real draw with blending with opaque object
+//	// real draw with blending with opaque object
 
-	param_trq_->rgba_texture_sampler_ = 0;
-	param_trq_->depth_texture_sampler_ = 1;
+//	param_trq_->rgba_texture_sampler_ = 0;
+//	param_trq_->depth_texture_sampler_ = 1;
 
-	ogl33_->glActiveTexture(GL_TEXTURE0);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+//	ogl33_->glActiveTexture(GL_TEXTURE0);
+//	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
 
-	ogl33_->glActiveTexture(GL_TEXTURE1);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
+//	ogl33_->glActiveTexture(GL_TEXTURE1);
+//	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
 
-	ogl33_->glEnable(GL_BLEND);
-	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
-	param_trq_->bind(proj,view);
-	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	param_trq_->release();
-	ogl33_->glDisable(GL_BLEND);
+//	ogl33_->glEnable(GL_BLEND);
+//	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
+//	param_trq_->bind(proj,view);
+//	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+//	param_trq_->release();
+//	ogl33_->glDisable(GL_BLEND);
 
-	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
+//	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
 
-}
-
+//}
 
 
 } // namespace rendering

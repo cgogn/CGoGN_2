@@ -53,9 +53,6 @@ public:
 	QColor back_color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 	bool lighted_;
 
@@ -134,6 +131,9 @@ public:
 	using Param = ShaderParamFlatTransp;
 
 	static std::unique_ptr<Param> generate_param();
+
+	static ShaderFlatTransp* get_instance();
+
 
 private:
 

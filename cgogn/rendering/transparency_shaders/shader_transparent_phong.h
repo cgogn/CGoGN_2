@@ -55,9 +55,9 @@ public:
 	QColor specular_color_;
 	GLfloat specular_coef_;
 	QVector3D light_pos_;
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
+//	GLint layer_;
+//	GLuint rgba_texture_sampler_;
+//	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 
 	ShaderParamPhongTransp(ShaderPhongTransp* sh);
@@ -149,6 +149,8 @@ public:
 	using Param = ShaderParamPhongTransp;
 
 	static std::unique_ptr<Param> generate_param();
+
+	static ShaderPhongTransp* get_instance();
 
 private:
 
