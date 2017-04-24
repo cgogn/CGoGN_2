@@ -48,6 +48,7 @@ protected:
 	void set_uniforms() override;
 
 public:
+	using ShaderType = ShaderPhongTransp;
 
 	QColor front_color_;
 	QColor back_color_;
@@ -55,9 +56,6 @@ public:
 	QColor specular_color_;
 	GLfloat specular_coef_;
 	QVector3D light_pos_;
-//	GLint layer_;
-//	GLuint rgba_texture_sampler_;
-//	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 
 	ShaderParamPhongTransp(ShaderPhongTransp* sh);

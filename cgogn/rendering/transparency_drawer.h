@@ -200,6 +200,8 @@ void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const
 	if (ogl33_ == nullptr)
 		return;
 
+	typename PARAM::ShaderType* shader_tr = reinterpret_cast<typename PARAM::ShaderType*>(param.get_shader());
+
 	GLfloat bkColor[4];
 	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
 
@@ -215,10 +217,10 @@ void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const
 
 //	param.rgba_texture_sampler_ = 0;
 //	param.depth_texture_sampler_ = 1;
-	ShaderFlatTransp::get_instance()->set_rgba_sampler(0);
-	ShaderFlatTransp::get_instance()->set_depth_sampler(1);
-	ShaderPhongTransp::get_instance()->set_rgba_sampler(0);
-	ShaderPhongTransp::get_instance()->set_depth_sampler(1);
+	shader_tr->bind();
+	shader_tr->set_rgba_sampler(0);
+	shader_tr->set_depth_sampler(1);
+	shader_tr->release();
 
 	fbo_layer_->bind();
 
@@ -247,8 +249,9 @@ void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const
 
 		ogl33_->glDrawBuffers(2,buffs);
 //		param.layer_ = p;
-		ShaderFlatTransp::get_instance()->set_layer(p);
-		ShaderPhongTransp::get_instance()->set_layer(p);
+		shader_tr->bind();
+		shader_tr->set_layer(p);
+		shader_tr->release();
 
 		ogl33_->glActiveTexture(GL_TEXTURE0);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
@@ -316,6 +319,9 @@ void SurfaceTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& v
 	if (ogl33_ == nullptr)
 		return;
 
+	ShaderFlatTransp* sh_flat = ShaderFlatTransp::get_instance();
+	ShaderPhongTransp* sh_phong = ShaderPhongTransp::get_instance();
+
 	GLfloat bkColor[4];
 	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
 
@@ -331,10 +337,10 @@ void SurfaceTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& v
 
 //	param.rgba_texture_sampler_ = 0;
 //	param.depth_texture_sampler_ = 1;
-	ShaderFlatTransp::get_instance()->set_rgba_sampler(0);
-	ShaderFlatTransp::get_instance()->set_depth_sampler(1);
-	ShaderPhongTransp::get_instance()->set_rgba_sampler(0);
-	ShaderPhongTransp::get_instance()->set_depth_sampler(1);
+	sh_flat->set_rgba_sampler(0);
+	sh_flat->set_depth_sampler(1);
+	sh_phong->set_rgba_sampler(0);
+	sh_phong->set_depth_sampler(1);
 
 	fbo_layer_->bind();
 
@@ -362,8 +368,8 @@ void SurfaceTransparencyDrawer::draw(const QMatrix4x4& proj, const QMatrix4x4& v
 		}
 
 		ogl33_->glDrawBuffers(2,buffs);
-		ShaderFlatTransp::get_instance()->set_layer(p);
-		ShaderPhongTransp::get_instance()->set_layer(p);
+		sh_flat->set_layer(p);
+		sh_phong->set_layer(p);
 
 		ogl33_->glActiveTexture(GL_TEXTURE0);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);

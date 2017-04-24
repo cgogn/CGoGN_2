@@ -48,6 +48,7 @@ protected:
 	void set_uniforms() override;
 
 public:
+	using ShaderType = ShaderFlatTransp;
 
 	QColor front_color_;
 	QColor back_color_;
