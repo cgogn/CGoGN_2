@@ -87,6 +87,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
@@ -94,9 +95,9 @@ target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIB
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/rendering)
-install(DIRECTORY shaders
+install(DIRECTORY shaders transparency_shaders
 	DESTINATION include/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")

@@ -28,6 +28,6 @@ target_include_directories(transmesh PRIVATE
 target_link_libraries(transmesh ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
-install(FILES "libmesh6.h" DESTINATION "include/thirdparty/lm6")
+install(FILES "libmesh6.h" DESTINATION "include/cgogn/thirdparty")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")

@@ -79,7 +79,8 @@ public:
 	using ChunkArrayBool = cgogn::ChunkArrayBool<CHUNK_SIZE>;
 
 protected:
-
+#pragma warning(push)
+#pragma warning(disable:4251)
 	// topology & embedding indices
 	ChunkArrayContainer<uint8> topology_;
 
@@ -112,13 +113,12 @@ protected:
 	static const std::array<uint32, 12> tetra_phi2;
 	// table of hexa phi2 indices
 	static const std::array<uint32, 24> hexa_phi2;
+#pragma warning(pop)
 
 public:
 
 	MapBaseData();
-
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBaseData);
-
 	virtual ~MapBaseData();
 
 	static inline bool is_alive(const MapBaseData* map)
@@ -131,18 +131,17 @@ public:
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& const_attribute_container() const
+	inline const ChunkArrayContainer<uint32>& attribute_container() const
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
 	}
 
-	inline const ChunkArrayContainer<uint32>& const_attribute_container(Orbit orbit) const
+	inline const ChunkArrayContainer<uint32>& attribute_container(Orbit orbit) const
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
 	}
-
 
 	inline const ChunkArrayContainer<uint8>& topology_container() const
 	{
@@ -152,7 +151,7 @@ public:
 protected:
 
 	template <Orbit ORBIT>
-	inline ChunkArrayContainer<uint32>& attribute_container()
+	inline ChunkArrayContainer<uint32>& non_const_attribute_container()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
@@ -168,7 +167,8 @@ protected:
 	*/
 	inline ChunkArrayBool* topology_mark_attribute()
 	{
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_topology_.size());
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_topology_[thread].back();
@@ -189,7 +189,8 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_topology_.size());
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
 
@@ -237,15 +238,6 @@ public:
 		return (*embeddings_[orb])[d.index];
 	}
 
-	inline void swap_embeddings(Orbit orb1, Orbit orb2)
-	{
-		cgogn_message_assert(orb1 != orb2, "Cannot swap a container with itself");
-		cgogn_message_assert(orb1 != Orbit::DART && orb2 != Orbit::DART, "Cannot swap the darts container");
-
-		attributes_[orb1].swap(attributes_[orb2]);
-		embeddings_[orb1]->swap_data(embeddings_[orb2]);
-	}
-
 protected:
 
 	template <class CellType>
@@ -275,70 +267,19 @@ protected:
 		this->template set_embedding<CellType>(dest, embedding(CellType(src)));
 	}
 
-protected:
-
 	/*******************************************************************************
 	 * Thread management
 	 *******************************************************************************/
 
-	inline uint32 add_unknown_thread() const
-	{
-		static uint32 index = 0u;
-		const std::thread::id& th_id = std::this_thread::get_id();
-		cgogn_log_warning("add_unknown_thread") << "Registration of an unknown thread (id :" << th_id << ") in the map. Data can be lost. Please use add_thread and remove_thread interface.";
-		thread_ids_[index] = th_id;
-		const unsigned old_index = index;
-		index = (index+1u) % NB_UNKNOWN_THREADS;
-		return old_index;
-	}
+	uint32 add_unknown_thread() const;
 
-	inline std::size_t unknown_thread_index(std::thread::id thread_id) const
-	{
-		auto end = thread_ids_.begin();
-		std::advance(end, NB_UNKNOWN_THREADS);
-		auto res_it = std::find(thread_ids_.begin(), end, thread_id);
-		if (res_it != end)
-			return std::size_t(std::distance(thread_ids_.begin(), res_it));
+	std::size_t unknown_thread_index(std::thread::id thread_id) const;
 
-		return add_unknown_thread();
-	}
+	std::size_t current_thread_index() const;
 
-	inline std::size_t current_thread_index() const
-	{
-		// avoid the unknown threads stored at the beginning of the vector
-		auto real_begin = thread_ids_.begin();
-		std::advance(real_begin, NB_UNKNOWN_THREADS);
+	void remove_thread(std::thread::id thread_id) const;
 
-		const auto end = thread_ids_.end();
-		auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
-		if (it_lower_bound != end)
-			return std::size_t(std::distance(thread_ids_.begin(), it_lower_bound));
-
-		return unknown_thread_index(std::this_thread::get_id());
-	}
-
-	inline void remove_thread(std::thread::id thread_id) const
-	{
-		// avoid the unknown threads stored at the beginning of the vector
-		auto real_begin = thread_ids_.begin();
-		std::advance(real_begin, NB_UNKNOWN_THREADS);
-
-		cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id), "Unable to find the thread.");
-		auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
-		cgogn_message_assert(*it == thread_id, "Unable to find the thread.");
-		thread_ids_.erase(it);
-	}
-
-	inline void add_thread(std::thread::id thread_id) const
-	{
-		// avoid the unknown threads stored at the beginning of the vector
-		auto real_begin =thread_ids_.begin();
-		std::advance(real_begin, NB_UNKNOWN_THREADS);
-
-		auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
-		if (it == thread_ids_.end() || *it != thread_id)
-			thread_ids_.insert(it, thread_id);
-	}
+	void add_thread(std::thread::id thread_id) const;
 };
 
 } // namespace cgogn

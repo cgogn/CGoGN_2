@@ -53,23 +53,22 @@ public:
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
 	inline VolumeExport() :
-		vertices_of_volumes_()
-	  ,nb_tetras_(0u)
-	  ,nb_pyramids_(0u)
-	  ,nb_triangular_prisms_(0u)
-	  ,nb_hexas_(0u)
-	  ,volume_attributes_()
+		vertices_of_volumes_(),
+		nb_tetras_(0u),
+		nb_pyramids_(0u),
+		nb_triangular_prisms_(0u),
+		nb_hexas_(0u),
+		volume_attributes_()
 	{}
 
-	virtual ~VolumeExport() override
-	{}
+	virtual ~VolumeExport() override {}
 
 protected:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
-		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& vol_cac = map.template const_attribute_container<Volume::ORBIT>();
+		const ChunkArrayContainer& ver_cac = map.template attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& vol_cac = map.template attribute_container<Volume::ORBIT>();
 
 		this->position_attribute_ = ver_cac.get_chunk_array(options.position_attribute_.second);
 		if (!this->position_attribute())
@@ -84,13 +83,14 @@ protected:
 				const ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (ver_cag)
 					this->vertex_attributes_.push_back(ver_cag);
-			} else {
+			}
+			else
+			{
 				const ChunkArrayGen* vol_cag = vol_cac.get_chunk_array(pair.second);
 				if (vol_cag)
 					volume_attributes_.push_back(vol_cag);
 			}
 		}
-
 
 		std::function<bool(Volume)> volume_validator = [&](Volume w) -> bool
 		{

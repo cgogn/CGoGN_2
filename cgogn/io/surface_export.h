@@ -56,11 +56,8 @@ public:
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 
-	inline SurfaceExport()
-	{}
-
-	virtual ~SurfaceExport()
-	{}
+	inline SurfaceExport() {}
+	virtual ~SurfaceExport() {}
 
 protected:
 
@@ -88,8 +85,8 @@ private:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
-		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
+		const ChunkArrayContainer& ver_cac = map.template attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& face_cac = map.template attribute_container<Face::ORBIT>();
 
 		this->position_attribute_ = ver_cac.get_chunk_array(options.position_attribute_.second);
 		if (!this->position_attribute())
@@ -102,7 +99,9 @@ private:
 				const ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (ver_cag)
 					this->vertex_attributes_.push_back(ver_cag);
-			} else {
+			}
+			else
+			{
 				const ChunkArrayGen* face_cag = face_cac.get_chunk_array(pair.second);
 				if (face_cag)
 					face_attributes_.push_back(face_cag);
@@ -112,10 +111,10 @@ private:
 		this->cell_cache_->template build<Vertex>();
 		this->cell_cache_->template build<Face>();
 		uint32 count{0u};
-		map.foreach_cell([&] (Vertex v)
-		{
-			this->indices_[v] = count++;
-		}, *(this->cell_cache_));
+		map.foreach_cell(
+			[&] (Vertex v) { this->indices_[v] = count++; },
+			*(this->cell_cache_)
+		);
 	}
 
 	virtual void reset() override

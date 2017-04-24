@@ -1199,6 +1199,8 @@ public:
 	 */
 	void reverse_orientation()
 	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
 		if(this->template is_embedded<Vertex::ORBIT>())
 		{
 			ChunkArray<uint32>* emb0 = this->embeddings_[Vertex::ORBIT];
@@ -1216,35 +1218,35 @@ public:
 		this->topology_.swap_chunk_arrays(this->phi1_, this->phi_1_);
 	}
 
-	/**
-	 * @brief Transform the map to its dual
-	 * @warning works only for cmap without boundaries
-	 */
-	void dual()
-	{
-		cgogn_message_assert(this->nb_boundaries() == 0u, "CMap2::dual can only be used on maps without boundaries");
+//	/**
+//	 * @brief Transform the map to its dual
+//	 * @warning works only for cmap without boundaries
+//	 */
+//	void dual()
+//	{
+//		cgogn_message_assert(this->nb_boundaries() == 0u, "CMap2::dual can only be used on maps without boundaries");
 
-		ChunkArray<Dart>* new_phi1 = this->topology_.template add_chunk_array<Dart>("new_phi1");
-		ChunkArray<Dart>* new_phi_1 = this->topology_.template add_chunk_array<Dart>("new_phi_1");
+//		ChunkArray<Dart>* new_phi1 = this->topology_.template add_chunk_array<Dart>("new_phi1");
+//		ChunkArray<Dart>* new_phi_1 = this->topology_.template add_chunk_array<Dart>("new_phi_1");
 
-		this->foreach_dart([this, &new_phi1, &new_phi_1](Dart d)
-		{
-			Dart dd = this->phi1(phi2(d));
+//		this->foreach_dart([this, &new_phi1, &new_phi_1](Dart d)
+//		{
+//			Dart dd = this->phi1(phi2(d));
 
-			(*new_phi1)[dd.index] = dd;
-			(*new_phi_1)[dd.index] = d;
-		});
+//			(*new_phi1)[dd.index] = dd;
+//			(*new_phi_1)[dd.index] = d;
+//		});
 
-		this->topology_.swap_chunk_arrays(this->phi1_, new_phi1);
-		this->topology_.swap_chunk_arrays(this->phi_1_, new_phi_1);
+//		this->topology_.swap_chunk_arrays(this->phi1_, new_phi1);
+//		this->topology_.swap_chunk_arrays(this->phi_1_, new_phi_1);
 
-		this->topology_.remove_chunk_array(new_phi1);
-		this->topology_.remove_chunk_array(new_phi_1);
+//		this->topology_.remove_chunk_array(new_phi1);
+//		this->topology_.remove_chunk_array(new_phi_1);
 
-		this->swap_embeddings(Vertex::ORBIT, Face::ORBIT);
+//		this->swap_embeddings(Vertex::ORBIT, Face::ORBIT);
 
-		reverse_orientation();
-	}
+//		reverse_orientation();
+//	}
 
 	/*******************************************************************************
 	 * Connectivity information
@@ -1600,10 +1602,10 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
 		static_assert(is_func_return_same<FUNC, bool>::value, "Wrong function return type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed) -> bool
+		foreach_dart_of_orbit(e, [this, &f] (Dart ed) -> bool
 		{
 			bool res_nested_lambda = true;
-			this->foreach_dart_of_orbit(Vertex(ed), [&f,&res_nested_lambda, ed] (Dart vd) -> bool
+			this->foreach_dart_of_orbit(Vertex(ed), [&f, &res_nested_lambda, ed] (Dart vd) -> bool
 			{
 				// skip Edge e itself
 				if (vd != ed)
@@ -1618,12 +1620,12 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&f, this] (Dart ed) -> bool
+		foreach_dart_of_orbit(e, [this, &f] (Dart ed) -> bool
 		{
 			bool res_nested_lambda = true;
 			if (!this->is_boundary(ed))
 			{
-				this->foreach_dart_of_orbit(Face(ed), [&f,&res_nested_lambda, ed] (Dart fd) -> bool
+				this->foreach_dart_of_orbit(Face(ed), [&f, &res_nested_lambda, ed] (Dart fd) -> bool
 				{
 					// skip Edge e itself
 					if (fd != ed)
@@ -1643,7 +1645,7 @@ public:
 		{
 			const Dart fd1 = this->phi2(this->phi_1(fd));
 			bool res_nested_lambda = true;
-			this->foreach_dart_of_orbit(Vertex(fd), [this, &func,&res_nested_lambda, fd, fd1] (Dart vd) -> bool
+			this->foreach_dart_of_orbit(Vertex(fd), [this, &func, &res_nested_lambda, fd, fd1] (Dart vd) -> bool
 			{
 				// skip Face f itself and its first successor around current vertex
 				if (vd != fd && vd != fd1 && !this->is_boundary(vd))

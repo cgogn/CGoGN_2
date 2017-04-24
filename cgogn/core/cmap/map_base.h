@@ -79,14 +79,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
-	MapBase() :
-		Inherit()
-	{}
-
+	MapBase() :	Inherit() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBase);
-
-	~MapBase()
-	{}
+	~MapBase() {}
 
 	inline uint8 dimension_concrete_map() const
 	{
@@ -109,13 +104,19 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
+		// 1st step : some cleaning
 		this->topology_.clear_chunk_arrays();
-
-		for (auto& mark_att_topo : this->mark_attributes_topology_)
-			mark_att_topo.clear();
 
 		for (auto& att : this->attributes_)
 			att.remove_chunk_arrays();
+
+
+		// 2nd step : updating internal data structures.
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+			for (ChunkArrayBool* cab : this->topology_.marker_arrays())
+				cab->clear();
+		}
 
 		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
@@ -125,8 +126,9 @@ public:
 				this->embeddings_[i] = nullptr;
 			}
 
-			for (auto& mark_attr : this->mark_attributes_[i])
-				mark_attr.clear();
+			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
+			for (ChunkArrayBool* cab : this->attributes_[i].marker_arrays())
+				cab->clear();
 		}
 	}
 
@@ -163,27 +165,10 @@ protected:
 				if (this->embeddings_[orbit])
 					(*this->embeddings_[orbit])[jdx] = INVALID_INDEX;
 			}
-			to_concrete()->init_dart(/*d*/Dart(jdx));
+			to_concrete()->init_dart(Dart(jdx));
 		}
 		return Dart(idx);
 	}
-
-//	template <Orbit ORBIT>
-//	inline void compact_orbit_container()
-//	{
-//		if (!this->template is_embedded<ORBIT>())
-//			return;
-
-//		auto& cac = this->template attribute_container<ORBIT>();
-//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
-//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
-//		{
-//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
-//			const uint32 new_idx = map_old_new[old_idx];
-//			if (new_idx != UINT32_MAX)
-//				old_idx = new_idx;
-//		});
-//	}
 
 	/**
 	 * \brief Removes a topological element of PRIM_SIZE from the topology container
@@ -227,6 +212,23 @@ protected:
 
 		this->attributes_[ORBIT].template remove_lines<1>(index);
 	}
+
+	//	template <Orbit ORBIT>
+	//	inline void compact_orbit_container()
+	//	{
+	//		if (!this->template is_embedded<ORBIT>())
+	//			return;
+
+	//		auto& cac = this->template attribute_container<ORBIT>();
+	//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
+	//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
+	//		{
+	//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
+	//			const uint32 new_idx = map_old_new[old_idx];
+	//			if (new_idx != UINT32_MAX)
+	//				old_idx = new_idx;
+	//		});
+	//	}
 
 public:
 
@@ -374,7 +376,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = this->current_thread_index();
+		cgogn_assert(thread < mark_attributes_[ORBIT].size());
+
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_[ORBIT][thread].back();
@@ -400,6 +404,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_assert(this->current_thread_index() < mark_attributes_[ORBIT].size());
 
 		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
 	}
@@ -430,7 +435,7 @@ protected:
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
-		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
+//		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
 	/**
@@ -478,7 +483,7 @@ public:
 				const uint32 old_emb = this->embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
 				cgogn_log_warning("enforce_unique_orbit_embedding") << "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT);
-				this->template attribute_container<ORBIT>().copy_line(new_emb, old_emb, false, false);
+				this->attributes_[ORBIT].copy_line(new_emb, old_emb, false, false);
 			}
 
 			counter[c]++;
@@ -500,6 +505,7 @@ public:
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
@@ -728,7 +734,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d) -> bool
 		{
 			if (is_boundary(d)) { result = true; return false; }
 			return true;
@@ -741,7 +747,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
-		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d) -> bool
 		{
 			if (is_boundary(d)) { result = d; return false; }
 			return true;

@@ -40,18 +40,24 @@ namespace io
 class CGOGN_IO_API FileImport
 {
 public:
+
 	using Self = FileImport;
 
 	FileImport();
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FileImport);
+
+	virtual ~FileImport();
+
 	/**
 	 * @brief import_file, try to open and read a file (during the operation the C locale is used)
 	 * @param filename
 	 * @return true iff the file is successfully read
 	 */
 	bool import_file(const std::string& filename);
-	virtual ~FileImport();
+
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) = 0;
 };
 
@@ -59,6 +65,7 @@ template<typename MAP>
 class MeshExport
 {
 public:
+
 	using Map = MAP;
 	using Self = MeshExport<Map>;
 	using Vertex = typename Map::Vertex;
@@ -74,6 +81,8 @@ public:
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshExport);
+
+	virtual ~MeshExport() {}
 
 	void export_file(Map& map, const ExportOptions& options)
 	{
@@ -102,9 +111,8 @@ public:
 		this->clean_added_attributes(map);
 	}
 
-	virtual ~MeshExport() {}
-
 protected:
+
 	inline std::vector<const ChunkArrayGen*> const & vertex_attributes() const
 	{
 		return vertex_attributes_;
@@ -129,12 +137,11 @@ protected:
 		cell_cache_.reset();
 	}
 
-	VertexAttribute<uint32>				indices_;
-	std::vector<const ChunkArrayGen*>	vertex_attributes_;
-	const ChunkArrayGen*				position_attribute_;
-	std::unique_ptr<CellCache>			cell_cache_;
+	VertexAttribute<uint32>           indices_;
+	std::vector<const ChunkArrayGen*> vertex_attributes_;
+	const ChunkArrayGen*              position_attribute_;
+	std::unique_ptr<CellCache>        cell_cache_;
 };
-
 
 } // namespace io
 

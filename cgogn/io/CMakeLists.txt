@@ -28,6 +28,7 @@ set(HEADER_FILES
 	tetgen_io.h
 	nastran_io.h
 	tet_io.h
+	tetmesh_io.h
 	surface_export.h
 	volume_export.h
 )
@@ -52,6 +53,7 @@ set(SOURCE_FILES
 	tetgen_io.cpp
 	nastran_io.cpp
 	tet_io.cpp
+	tetmesh_io.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -65,8 +67,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LM6_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${ZLIB_INCLUDE_DIRS}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
 target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
@@ -75,4 +77,4 @@ file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/io)
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")

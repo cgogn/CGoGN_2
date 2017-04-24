@@ -38,17 +38,22 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class TetgenVolumeImport : public VolumeFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class TetgenVolumeImport : public VolumeFileImport<MAP, VEC3>
 {
 public:
 
-	using Inherit = VolumeFileImport<VEC3>;
-	using Self = TetgenVolumeImport<VEC3>;
+	using Self = TetgenVolumeImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
+	inline TetgenVolumeImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TetgenVolumeImport);
+	virtual ~TetgenVolumeImport() override {}
+
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		const std::string node_filename = filename.substr(0, filename.rfind('.')) + ".node";
@@ -79,7 +84,7 @@ protected:
 			do
 			{
 				getline_safe(node_file,line);
-			}while(line.empty());
+			} while(line.empty());
 
 			std::istringstream iss(line);
 			iss >> nb_vertices;
@@ -91,7 +96,7 @@ protected:
 			do
 			{
 				getline_safe(ele_file,line);
-			}while(line.empty());
+			} while(line.empty());
 
 			std::istringstream iss(line);
 			iss >> nb_volumes;
@@ -106,7 +111,7 @@ protected:
 			do
 			{
 				getline_safe(node_file,line);
-			}while(line.empty());
+			} while(line.empty());
 
 			std::istringstream iss(line);
 
@@ -147,12 +152,14 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
-extern template class CGOGN_IO_API TetgenVolumeImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API TetgenVolumeImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API TetgenVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API TetgenVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
 
 } // namespace io
+
 } // namespace cgogn
+
 #endif // CGOGN_IO_TETGEN_IO_H_

@@ -31,12 +31,13 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3f>;
-template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3d>;
-template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3f>;
-template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3f>;
 
 } // namespace io
 

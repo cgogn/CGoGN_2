@@ -113,7 +113,7 @@ class DataInput : public DataInputGen
 public:
 
 	using Inherit		= DataInputGen;
-	using Self			= DataInput<PRIM_SIZE, BUFFER_T , T> ;
+	using Self			= DataInput<PRIM_SIZE, BUFFER_T, T> ;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 	using ChunkArrayGen	= typename Inherit::ChunkArrayGen;
 	using ChunkArray	= MapBaseData::ChunkArray<T>;

@@ -31,18 +31,18 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API MshIO<1, Eigen::Vector3d>;
-template class CGOGN_IO_API MshIO<1, Eigen::Vector3f>;
-template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API MshIO<Eigen::Vector3d>;
+template class CGOGN_IO_API MshIO<Eigen::Vector3f>;
+template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3f>;
+template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3f>;
 
-template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3d>;
-template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3f>;
-template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
 
 template class CGOGN_IO_API MshSurfaceExport<CMap2>;
 template class CGOGN_IO_API MshVolumeExport<CMap3>;

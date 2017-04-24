@@ -71,9 +71,11 @@ namespace io
 class CGOGN_IO_API ExportOptions final
 {
 private:
+
 	ExportOptions();
 
 public:
+
 	ExportOptions(const ExportOptions& eo);
 	ExportOptions(ExportOptions&& eo);
 	inline ~ExportOptions() {}
@@ -85,17 +87,19 @@ public:
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
 	inline ExportOptions& cell_filter(const std::function<bool(Dart)>& func) { cell_filter_ = func; return *this; }
 
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::string filename_;
 	std::pair<Orbit, std::string> position_attribute_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	std::function<bool(Dart)> cell_filter_;
+#pragma warning(pop)
 	bool binary_;
 	bool compress_;
 	bool overwrite_;
 
 	static ExportOptions create();
 };
-
 
 enum FileType
 {
@@ -111,7 +115,8 @@ enum FileType
 	FileType_MSH,
 	FileType_TETGEN,
 	FileType_NASTRAN,
-	FileType_AIMATSHAPE
+	FileType_AIMATSHAPE,
+	FileType_TETMESH
 };
 
 enum DataType
@@ -139,16 +144,16 @@ enum VolumeType
 	Connector
 };
 
-CGOGN_IO_API bool							file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream>	create_file(const std::string& filename, bool binary, bool overwrite);
-CGOGN_IO_API FileType						file_type(const std::string& filename);
-CGOGN_IO_API DataType						data_type(const std::string& type_name);
+CGOGN_IO_API bool                           file_exists(const std::string& filename);
+CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite);
+CGOGN_IO_API FileType                       file_type(const std::string& filename);
+CGOGN_IO_API DataType                       data_type(const std::string& type_name);
 
-CGOGN_IO_API std::vector<char>				base64_encode(const char* input_buffer, std::size_t buffer_size);
-CGOGN_IO_API std::vector<unsigned char>		base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
+CGOGN_IO_API std::vector<char>          base64_encode(const char* input_buffer, std::size_t buffer_size);
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
-CGOGN_IO_API std::vector<unsigned char>					zlib_decompress(const char* input, DataType header_type);
-CGOGN_IO_API std::vector<std::vector<unsigned char>>	zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size = std::numeric_limits<std::size_t>::max());
+CGOGN_IO_API std::vector<unsigned char>              zlib_decompress(const char* input, DataType header_type);
+CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size = std::numeric_limits<std::size_t>::max());
 
 namespace internal
 {
@@ -178,7 +183,6 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 	return res;
 }
 
-
 } // namespace internal
 
 
@@ -190,27 +194,31 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
 class CGOGN_IO_API CharArrayBuffer : public std::streambuf
 {
 public:
+
 	using Inherit = std::streambuf;
 	using Self = CharArrayBuffer;
 	using char_type		= Inherit::char_type;
 	using traits_type	= Inherit::traits_type; // = char_traits<char_type>
 
-	inline CharArrayBuffer() : Inherit(),
-		begin_(nullptr)
-	  ,end_(nullptr)
-	  ,current_(nullptr)
+	inline CharArrayBuffer() :
+		Inherit(),
+		begin_(nullptr),
+		end_(nullptr),
+		current_(nullptr)
 	{}
 
-	inline explicit CharArrayBuffer(const char* str) : Inherit(),
-		begin_(str)
-	  ,end_(str + std::strlen(str))
-	  ,current_(str)
+	inline explicit CharArrayBuffer(const char* str) :
+		Inherit(),
+		begin_(str),
+		end_(str + std::strlen(str)),
+		current_(str)
 	{}
 
-	inline CharArrayBuffer(const char* begin, std::size_t size) :Inherit(),
-		begin_(begin)
-	  ,end_(begin+size)
-	  ,current_(begin)
+	inline CharArrayBuffer(const char* begin, std::size_t size) :
+		Inherit(),
+		begin_(begin),
+		end_(begin+size),
+		current_(begin)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CharArrayBuffer);
