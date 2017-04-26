@@ -208,6 +208,13 @@ void ShaderParamFlatTransp::set_uniforms()
 	sh->set_lighted(lighted_);
 }
 
+void ShaderParamFlatTransp::set_alpha(int alpha)
+{
+	front_color_.setAlpha(alpha);
+	back_color_.setAlpha(alpha);
+}
+
+
 } // namespace rendering
 
 } // namespace cgogn

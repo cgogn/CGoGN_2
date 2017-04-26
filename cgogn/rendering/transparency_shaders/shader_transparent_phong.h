@@ -64,6 +64,8 @@ public:
 
 	void set_normal_vbo(VBO* vbo_normal);
 
+	void set_alpha(int alpha);
+
 };
 
 

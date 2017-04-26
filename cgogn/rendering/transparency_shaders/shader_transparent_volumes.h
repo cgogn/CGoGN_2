@@ -53,6 +53,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderTransparentVolumes;
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;

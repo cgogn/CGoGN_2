@@ -47,6 +47,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderTexture;
+
 	QOpenGLTexture* texture_;
 
 	ShaderParamTexture(ShaderTexture* sh);

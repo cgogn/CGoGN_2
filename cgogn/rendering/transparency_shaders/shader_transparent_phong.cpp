@@ -200,8 +200,6 @@ ShaderParamPhongTransp::ShaderParamPhongTransp(ShaderPhongTransp* sh) :
 	specular_color_(255, 255, 255),
 	specular_coef_(100),
 	light_pos_(10, 100, 1000),
-//	rgba_texture_sampler_(0),
-//	depth_texture_sampler_(1),
 	bf_culling_(false)
 {}
 
@@ -244,9 +242,12 @@ void ShaderParamPhongTransp::set_uniforms()
 	sh->set_specular_coef(specular_coef_);
 	sh->set_light_position(light_pos_);
 	sh->set_bf_culling(bf_culling_);
-//	sh->set_layer(layer_);
-//	sh->set_rgba_sampler(rgba_texture_sampler_);
-//	sh->set_depth_sampler(depth_texture_sampler_);
+}
+
+void ShaderParamPhongTransp::set_alpha(int alpha)
+{
+	front_color_.setAlpha(alpha);
+	back_color_.setAlpha(alpha);
 }
 
 } // namespace rendering

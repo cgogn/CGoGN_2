@@ -94,6 +94,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderExplodeVolumesLine;
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;

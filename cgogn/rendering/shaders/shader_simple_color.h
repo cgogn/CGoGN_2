@@ -85,6 +85,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderSimpleColor;
+
 	QColor color_;
 
 	ShaderParamSimpleColor(ShaderSimpleColor* sh) :

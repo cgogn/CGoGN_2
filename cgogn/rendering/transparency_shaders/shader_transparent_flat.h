@@ -60,6 +60,8 @@ public:
 	ShaderParamFlatTransp(ShaderFlatTransp* sh);
 
 	void set_position_vbo(VBO* vbo_pos);
+
+	void set_alpha(int alpha);
 };
 
 

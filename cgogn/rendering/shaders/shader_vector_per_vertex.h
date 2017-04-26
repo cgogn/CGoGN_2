@@ -93,6 +93,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderVectorPerVertex;
+
 	QColor color_;
 	float32 length_;
 

@@ -157,6 +157,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderPointSpriteTpl<false, false>;
+
 	QColor color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
@@ -205,6 +207,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderPointSpriteTpl<false, true>;
 
 	QColor color_;
 	QColor ambiant_color_;
@@ -285,6 +289,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderPointSpriteTpl<true, false>;
+
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
@@ -362,6 +368,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderPointSpriteTpl<true, true>;
 
 	QColor ambiant_color_;
 	QVector3D light_pos_;
