@@ -54,7 +54,7 @@ class CGOGN_RENDERING_API SurfaceTransparencyDrawer
 	/// shader for quad blending  with opaque scene
 	std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
 
-	std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
+	std::unique_ptr<cgogn::rendering::ShaderCopyDepth::Param> param_copy_depth_;
 
 	/// FBO
 	std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
@@ -238,8 +238,10 @@ void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const
 		if (p > 0)
 		{
 			ogl33_->glDrawBuffers(1, opaq_buff);
-			param_copy_depth_->bind(proj, view);
+			ogl33_->glActiveTexture(GL_TEXTURE0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+			param_copy_depth_->depth_texture_sampler_ = 0;
+			param_copy_depth_->bind(proj, view);
 			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			param_copy_depth_->release();
 		}
@@ -358,8 +360,10 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 		if (p > 0)
 		{
 			ogl33_->glDrawBuffers(1, opaq_buff);
-			param_copy_depth_->bind(fake_mat, fake_mat);
+			ogl33_->glActiveTexture(GL_TEXTURE0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
+			param_copy_depth_->depth_texture_sampler_ = 0;
+			param_copy_depth_->bind(fake_mat, fake_mat);
 			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			param_copy_depth_->release();
 		}
