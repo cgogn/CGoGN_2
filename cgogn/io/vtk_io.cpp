@@ -34,11 +34,11 @@ namespace io
 template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
 template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
+template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
+template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3f>;
 
 template class CGOGN_IO_API VtkVolumeExport<CMap3>;
 template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
@@ -146,7 +146,9 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 
 		std::memcpy(&data[0], reinterpret_cast<const char*>(&header[0]), sizeof(uint32)* header.size());
 		std::memcpy(&data[sizeof(uint32)], data_str, size);
-	} else {
+	}
+	else
+	{
 		const std::size_t uncompressed_chunk_size = std::min(size, std::size_t(1048576));
 		const std::vector<std::vector<unsigned char>>& compressed_blocks = zlib_compress(reinterpret_cast<const unsigned char*>(data_str), size, uncompressed_chunk_size);
 		std::size_t compressed_size{0ul};

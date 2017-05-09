@@ -47,13 +47,9 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename Map2::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(Map2& map) : map_(map)
-	{}
-
+	inline CMap2Builder_T(Map2& map) : map_(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
-
-	inline ~CMap2Builder_T()
-	{}
+	inline ~CMap2Builder_T() {}
 
 public:
 
@@ -63,10 +59,10 @@ public:
 		map_.template create_embedding<ORBIT>();
 	}
 
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
-		map_.template swap_chunk_array_container<ORBIT>(cac);
+		return map_.template non_const_attribute_container<ORBIT>();
 	}
 
 	template <class CellType>
@@ -100,6 +96,11 @@ public:
 	inline Dart add_face_topo_fp(uint32 nb_edges)
 	{
 		return map_.add_face_topo_fp(nb_edges);
+	}
+
+	inline Dart collapse_edge_topo(Dart d)
+	{
+		return map_.collapse_edge_topo(d);
 	}
 
 	inline Dart close_hole_topo(Dart d)

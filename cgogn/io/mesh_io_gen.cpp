@@ -54,10 +54,7 @@ bool FileImport::import_file(const std::string& filename)
 	return this->import_file_impl(filename);
 }
 
-FileImport::~FileImport()
-{
-
-}
+FileImport::~FileImport() {}
 
 } // namespace io
 

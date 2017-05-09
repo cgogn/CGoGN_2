@@ -31,10 +31,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API TetMeshVolumeImport<Eigen::Vector3d>;
-template class CGOGN_IO_API TetMeshVolumeImport<Eigen::Vector3f>;
-template class CGOGN_IO_API TetMeshVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API TetMeshVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API TetMeshVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API TetMeshVolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API TetMeshVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+template class CGOGN_IO_API TetMeshVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 
 template class CGOGN_IO_API TetMeshVolumeExport<CMap3>;
 

@@ -30,10 +30,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API SurfaceImport<Eigen::Vector3f>;
-template class CGOGN_IO_API SurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3f>;
-template class CGOGN_IO_API SurfaceFileImport<Eigen::Vector3d>;
+template class CGOGN_IO_API SurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API SurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API SurfaceFileImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API SurfaceFileImport<CMap2, Eigen::Vector3d>;
 
 } // namespace io
 

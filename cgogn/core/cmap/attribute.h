@@ -126,7 +126,7 @@ public:
 		orbit_(orbit)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = &map->const_attribute_container(orbit);
+			chunk_array_cont_ = &map->attribute_container(orbit);
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
@@ -349,9 +349,9 @@ public:
 
 protected:
 
-	ChunkArrayContainer const*	chunk_array_cont_;
-	TChunkArray*				chunk_array_;
-	Orbit						orbit_;
+	ChunkArrayContainer const* chunk_array_cont_;
+	TChunkArray*               chunk_array_;
+	Orbit                      orbit_;
 };
 
 /**

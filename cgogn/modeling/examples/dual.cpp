@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 	cgogn::geometry::compute_centroid<Vec3, Face>(map, position, positionF);
 
 	// Compute the dual of the topology
-	map.dual();
+//	map.dual();
 
 	cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("dual.off").position_attribute(Vertex::ORBIT, "position").binary(false));
 }

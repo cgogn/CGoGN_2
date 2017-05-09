@@ -51,13 +51,9 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename Map3::template ChunkArrayContainer<T>;
 
-	inline CMap3Builder_T(Map3& map) : map_(map)
-	{}
-
+	inline CMap3Builder_T(Map3& map) : map_(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap3Builder_T);
-
-	inline ~CMap3Builder_T()
-	{}
+	inline ~CMap3Builder_T() {}
 
 public:
 
@@ -67,10 +63,10 @@ public:
 		map_.template create_embedding<ORBIT>();
 	}
 
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
-		map_.template swap_chunk_array_container<ORBIT>(cac);
+		return map_.template non_const_attribute_container<ORBIT>();
 	}
 
 	inline void phi3_sew(Dart d, Dart e)
