@@ -27,6 +27,7 @@
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_flat.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_phong.h>
+#include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
 #include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
 
@@ -96,8 +97,8 @@ public:
 	 * @param view modelview matrix
 	 * @param draw_func the func/lambda that draw transparent objects
 	 */
-	template<typename PARAM, typename TFUNC>
-	void draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
+	//template<typename PARAM, typename TFUNC>
+	//void draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
 
 
 	/**
@@ -117,7 +118,13 @@ public:
 	template<typename TFUNC>
 	void draw_flat(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
 	{
-		draw(*param_flat_, proj, view, draw_func);
+		//draw(*param_flat_, proj, view, draw_func);
+		draw([&]() -> void
+		{
+			param_flat_->bind(proj, view);
+			draw_func();
+			param_flat_->release();
+		});
 	}
 
 	/**
@@ -129,7 +136,14 @@ public:
 	template<typename TFUNC>
 	void draw_phong(const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
 	{
-		draw(*param_phong_, proj, view, draw_func);
+//		draw(*param_phong_, proj, view, draw_func);
+		draw([&]() -> void
+		{
+			param_phong_->bind(proj, view);
+			draw_func();
+			param_phong_->release();
+		});
+
 	}
 
 
@@ -193,123 +207,6 @@ public:
 
 
 
-template<typename PARAM, typename TFUNC>
-void SurfaceTransparencyDrawer::draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func)
-{
-	if (ogl33_ == nullptr)
-		return;
-
-	typename PARAM::ShaderType* shader_tr = reinterpret_cast<typename PARAM::ShaderType*>(param.get_shader());
-
-	GLfloat bkColor[4];
-	ogl33_->glGetFloatv(GL_COLOR_CLEAR_VALUE, bkColor);
-
-	ogl33_->glEnable(GL_TEXTURE_2D);
-
-	ogl33_->glEnable(GL_TEXTURE_2D);
-	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
-	ogl33_->glReadBuffer(GL_BACK);
-	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
-
-	QVector<GLuint> textures = fbo_layer_->textures();
-	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
-
-	shader_tr->bind();
-	shader_tr->set_rgba_sampler(0);
-	shader_tr->set_depth_sampler(1);
-	shader_tr->release();
-
-	fbo_layer_->bind();
-
-	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
-	ogl33_->glDrawBuffers(1,clear_buff);
-	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
-	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
-
-	ogl33_->glDrawBuffers(1,buffs);
-	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
-
-	for (int p=0;p<max_nb_layers_;++p)
-	{
-		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
-
-		if (p > 0)
-		{
-			ogl33_->glDrawBuffers(1, opaq_buff);
-			ogl33_->glActiveTexture(GL_TEXTURE0);
-			ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
-			param_copy_depth_->depth_texture_sampler_ = 0;
-			param_copy_depth_->bind(proj, view);
-			ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			param_copy_depth_->release();
-		}
-
-		ogl33_->glDrawBuffers(2,buffs);
-		shader_tr->bind();
-		shader_tr->set_layer(p);
-		shader_tr->release();
-
-		ogl33_->glActiveTexture(GL_TEXTURE0);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-		ogl33_->glActiveTexture(GL_TEXTURE1);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
-
-		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
-		param.bind(proj,view);
-		draw_func();
-		param.release();
-		ogl33_->glEndQuery(GL_SAMPLES_PASSED);
-
-		GLuint nb_samples;
-		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
-
-		if (nb_samples==0) // finished ?
-			p = max_nb_layers_;
-		else
-		{
-			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
-			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
-
-			if (p==0)
-			{
-				ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
-				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
-			}
-
-			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
-			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
-		}
-	}
-
-	fbo_layer_->release();
-
-	// real draw with blending with opaque object
-
-	param_trq_->rgba_texture_sampler_ = 0;
-	param_trq_->depth_texture_sampler_ = 1;
-
-	ogl33_->glActiveTexture(GL_TEXTURE0);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-
-	ogl33_->glActiveTexture(GL_TEXTURE1);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
-
-	ogl33_->glEnable(GL_BLEND);
-	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
-	param_trq_->bind(proj,view);
-	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	param_trq_->release();
-	ogl33_->glDisable(GL_BLEND);
-
-	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
-
-}
-
-
 
 template<typename TFUNC>
 void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
@@ -319,6 +216,7 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 
 	ShaderFlatTransp* sh_flat = ShaderFlatTransp::get_instance();
 	ShaderPhongTransp* sh_phong = ShaderPhongTransp::get_instance();
+	ShaderTransparentVolumes* sh_vol = ShaderTransparentVolumes::get_instance();
 	QMatrix4x4 fake_mat;
 
 	GLfloat bkColor[4];
@@ -340,6 +238,10 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 	sh_phong->set_rgba_sampler(0);
 	sh_phong->set_depth_sampler(1);
 	sh_phong->release();
+	sh_vol->bind();
+	sh_vol->set_rgba_sampler(0);
+	sh_vol->set_depth_sampler(1);
+	sh_vol->release();
 
 	fbo_layer_->bind();
 
@@ -375,6 +277,10 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 		sh_phong->bind();
 		sh_phong->set_layer(p);
 		sh_phong->release();
+		sh_vol->bind();
+		sh_vol->set_layer(p);
+		sh_vol->release();
+
 
 		ogl33_->glActiveTexture(GL_TEXTURE0);
 		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
