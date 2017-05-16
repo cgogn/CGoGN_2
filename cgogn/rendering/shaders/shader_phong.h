@@ -168,6 +168,7 @@ protected:
 	}
 
 public:
+	using ShaderType = ShaderPhongTpl<false>;
 
 	QVector3D light_position_;
 	QColor front_color_;
@@ -251,6 +252,7 @@ protected:
 	}
 
 public:
+	using ShaderType = ShaderPhongTpl<true>;
 
 	QVector3D light_position_;
 	QColor ambiant_color_;

@@ -76,6 +76,7 @@ protected:
 	{}
 
 public:
+	using ShaderType = ShaderColorPerVertex;
 
 	ShaderParamColorPerVertex(ShaderColorPerVertex* prg) : ShaderParam(prg)
 	{}

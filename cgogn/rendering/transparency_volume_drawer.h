@@ -28,8 +28,6 @@
 
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
-#include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
-#include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -59,52 +57,15 @@ public:
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class VolumeTransparencyDrawer;
-
 		std::unique_ptr<ShaderTransparentVolumes::Param> param_transp_vol_;
 		VolumeTransparencyDrawer* volume_drawer_data_;
-
-		/// shader for quad blending  with opaque scene
-		std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
-
-		std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
-
-		int max_nb_layers_;
-
-		/// FBO
-		std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
-
-		/// Occlusion query
-		GLuint oq_transp_;
-
-		QOpenGLFunctions_3_3_Core* ogl33_;
-
-		int width_;
-
-		int height_;
-
-		GLuint depthTexture_;
 
 		Renderer(VolumeTransparencyDrawer* tr);
 
 	public:
-		/**
-		 * @brief resize (call from interface::resizeGL)
-		 * @param w
-		 * @param h
-		 * @param ogl33
-		 */
-		void resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
-
-
 		~Renderer();
 
-		/**
-		 * @brief draw only the transparent volumes (bad mixing with opaque objects)
-		 * @param projection projection matrix
-		 * @param modelview modelview matrix
-		 */
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
-
+		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
 
 		void set_explode_volume(float32 x);
 
@@ -120,11 +81,6 @@ public:
 
 		void set_lighted(bool lighted);
 
-		/**
-		 * @brief set the max number of layers (eq drawing passes)
-		 * @param nbl
-		 */
-		void set_max_nb_layers(int nbl);
 	};
 
 	using Self = VolumeTransparencyDrawer;

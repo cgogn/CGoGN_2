@@ -48,20 +48,20 @@ protected:
 	void set_uniforms() override;
 
 public:
+	using ShaderType = ShaderFlatTransp;
 
 	QColor front_color_;
 	QColor back_color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 	bool lighted_;
 
 	ShaderParamFlatTransp(ShaderFlatTransp* sh);
 
 	void set_position_vbo(VBO* vbo_pos);
+
+	void set_alpha(int alpha);
 };
 
 
@@ -134,6 +134,9 @@ public:
 	using Param = ShaderParamFlatTransp;
 
 	static std::unique_ptr<Param> generate_param();
+
+	static ShaderFlatTransp* get_instance();
+
 
 private:
 
