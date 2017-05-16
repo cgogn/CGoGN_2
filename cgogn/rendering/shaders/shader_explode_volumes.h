@@ -123,6 +123,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderExplodeVolumesTpl<false>;
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
@@ -168,6 +170,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderExplodeVolumesTpl<true>;
 
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;

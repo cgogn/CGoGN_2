@@ -747,9 +747,9 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
+//extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint8>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3>>;
 extern template class CGOGN_CORE_API ChunkArrayBool<CGOGN_CHUNK_SIZE>;

@@ -36,10 +36,10 @@
 #include <cgogn/geometry/algos/normal.h>
 
 #include <cgogn/rendering/map_render.h>
-#include <cgogn/rendering/shaders/shader_point_sprite.h>
-
+#include <cgogn/rendering/shaders/shader_flat.h>
 #include <cgogn/rendering/transparency_drawer.h>
-#include <cgogn/rendering/wall_paper.h>
+
+#include <cgogn/rendering/drawer.h>
 
 
 using namespace cgogn::numerics;
@@ -65,7 +65,6 @@ public:
 	virtual void draw();
 	virtual void init();
 
-	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surface_mesh);
 	virtual ~ViewerTransparency();
 	virtual void closeEvent(QCloseEvent *e);
@@ -82,15 +81,19 @@ private:
 	std::unique_ptr<cgogn::rendering::VBO> vbo_norm_;
 
 	std::unique_ptr<cgogn::rendering::SurfaceTransparencyDrawer> transp_drawer_;
-	std::unique_ptr<cgogn::rendering::ShaderPointSprite::Param> param_point_sprite_;
 
-	std::shared_ptr<cgogn::rendering::WallPaper> wp_;
-	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_;
+	std::unique_ptr<cgogn::rendering::ShaderFlatTransp::Param> tr_flat_param_;
+	std::unique_ptr<cgogn::rendering::ShaderPhongTransp::Param> tr_phong_param_;
+
+	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
+
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
+	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
+
 
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
 
-	bool draw_points_;
 	int mesh_transparency_;
 	bool lighted_;
 	bool bfc_;
@@ -123,7 +126,7 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size()/2.0);
+	setSceneRadius(bb_.diag_size());
 	Vec3 center = bb_.center();
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
@@ -140,7 +143,6 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	vbo_norm_.reset();
 	transp_drawer_.reset();
-	param_point_sprite_.reset();
 }
 
 ViewerTransparency::ViewerTransparency() :
@@ -152,54 +154,11 @@ ViewerTransparency::ViewerTransparency() :
 	vbo_pos_(nullptr),
 	vbo_norm_(nullptr),
 	transp_drawer_(nullptr),
-	param_point_sprite_(nullptr),
-	wp_(nullptr),
-	wp_rend_(nullptr),
-	draw_points_(true),
-	mesh_transparency_(130),
-	lighted_(true),
-	bfc_(false),
-	phong_rendered_(false)
+	tr_flat_param_(nullptr),
+	tr_phong_param_(nullptr),
+	param_flat_(nullptr)
 {}
 
-void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
-{
-	switch (ev->key())
-	{
-		case Qt::Key_P:
-			draw_points_ = !draw_points_;
-			break;
-		case Qt::Key_Plus:
-			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
-			if (mesh_transparency_<254) mesh_transparency_++;
-			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
-			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
-			break;
-		case Qt::Key_Minus:
-			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
-			if (mesh_transparency_>0) mesh_transparency_--;
-			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
-			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
-			break;
-		case Qt::Key_L:
-			lighted_ = !lighted_;
-			transp_drawer_->set_lighted(lighted_);
-			break;
-		case Qt::Key_C:
-			bfc_ = !bfc_;
-			transp_drawer_->set_back_face_culling(bfc_);
-			break;
-		case Qt::Key_R:
-			phong_rendered_ = !phong_rendered_;
-			break;
-		default:
-			break;
-	}
-	// enable QGLViewer keys
-	QOGLViewer::keyPressEvent(ev);
-	//update drawing
-	update();
-}
 
 void ViewerTransparency::draw()
 {
@@ -208,19 +167,43 @@ void ViewerTransparency::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	wp_rend_->draw(this);
+	// draw opaque first
+	param_flat_->bind(proj,view);
+	render_->draw(cgogn::rendering::TRIANGLES);
+	param_flat_->release();
 
-	if (draw_points_)
+	drawer_rend_->draw(proj,view,this);
+
+	// the the transparents objects.
+
+	QMatrix4x4 tr1;
+	tr1.translate(-0.25*bb_.diag_size(),0,0);
+	QMatrix4x4 tr2;
+	tr2.translate(0.25*bb_.diag_size(),0,0);
+
+	transp_drawer_->draw( [&] ()
 	{
-		param_point_sprite_->bind(proj,view);
-		render_->draw(cgogn::rendering::POINTS);
-		param_point_sprite_->release();
-	}
+		tr_flat_param_->set_alpha(150);
+		tr_flat_param_->bind(proj,view*tr1);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		tr_flat_param_->release();
 
-	if (phong_rendered_)
-		transp_drawer_->draw_phong(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
-	else
-		transp_drawer_->draw_flat(proj,view, [&] { render_->draw(cgogn::rendering::TRIANGLES); });
+		tr_phong_param_->set_alpha(170);
+		tr_phong_param_->bind(proj,view*tr2);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		tr_phong_param_->release();
+
+		tr_flat_param_->set_alpha(100);
+		tr_flat_param_->bind(proj,view*tr1*tr1);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		tr_flat_param_->release();
+
+		tr_phong_param_->set_alpha(90);
+		tr_phong_param_->bind(proj,view*tr2*tr2);
+		render_->draw(cgogn::rendering::TRIANGLES);
+		tr_phong_param_->release();
+	});
+
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
@@ -243,25 +226,51 @@ void ViewerTransparency::init()
 	vbo_norm_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 
-
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
 
-	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
-	param_point_sprite_->set_position_vbo(vbo_pos_.get());
-	param_point_sprite_->size_ = bb_.diag_size()/1000;
-	param_point_sprite_->color_ = QColor(200,200,0);
+
+	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
+	param_flat_->set_position_vbo(vbo_pos_.get());
+	param_flat_->front_color_ = QColor(0,50,200);
+	param_flat_->back_color_ = QColor(0,50,200);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
-	transp_drawer_->set_position_vbo(vbo_pos_.get());
-	transp_drawer_->set_normal_vbo(vbo_norm_.get());
-	std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
-	transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
-	transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
+//	transp_drawer_->set_max_nb_layers(16);
 
-	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
-	wp_rend_ = wp_->generate_renderer();
+	tr_flat_param_ = cgogn::rendering::ShaderFlatTransp::generate_param();
+	tr_flat_param_->set_position_vbo(vbo_pos_.get());
+	tr_flat_param_->front_color_ = QColor(0,250,0,100);
+	tr_flat_param_->back_color_ = QColor(0,250,0,100);
+
+	tr_phong_param_ = cgogn::rendering::ShaderPhongTransp::generate_param();
+	tr_phong_param_->set_position_vbo(vbo_pos_.get());
+	tr_phong_param_->set_normal_vbo(vbo_norm_.get());
+	tr_phong_param_->front_color_ = QColor(250,0,0,120);
+	tr_phong_param_->back_color_ = QColor(250,0,0,120);
+
+
+	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+	drawer_rend_= drawer_->generate_renderer();
+	drawer_->new_list();
+
+	drawer_->ball_size(bb_.diag_size()/50);
+	drawer_->begin(GL_POINTS);
+		drawer_->color3f(1,1,0);
+		Vec3 P = bb_.center();
+		drawer_->vertex3fv(P);
+		P[0] -= 0.25*bb_.diag_size();
+		drawer_->vertex3fv(P);
+		P[0] -= 0.25*bb_.diag_size();
+		drawer_->vertex3fv(P);
+		P[0] += 0.75*bb_.diag_size();
+		drawer_->vertex3fv(P);
+		P[0] += 0.25*bb_.diag_size();
+		drawer_->vertex3fv(P);
+	drawer_->end();
+	drawer_->end_list();
+
 
 	start_fps_ = std::chrono::system_clock::now();
 	nb_fps_ = 0;
@@ -280,7 +289,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		cgogn_log_info("transparency_viewer") << "USAGE: " << argv[0] << " [filename]";
-		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
 		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
 	}
 	else
@@ -291,7 +300,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	ViewerTransparency viewer;
-	viewer.setWindowTitle("transparency_viewer");
+	viewer.setWindowTitle("transparencies_viewer");
 	viewer.import(surface_mesh);
 	viewer.show();
 

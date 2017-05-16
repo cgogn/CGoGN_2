@@ -137,6 +137,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderScalarPerVertex;
+
 	ShaderScalarPerVertex::ColorMap color_map_;
 	int32 expansion_;
 	float32 min_value_;

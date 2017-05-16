@@ -142,6 +142,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderFlatTpl<false>;
+
 	QColor front_color_;
 	QColor back_color_;
 	QColor ambiant_color_;
@@ -185,6 +187,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderFlatTpl<true>;
 
 	QColor ambiant_color_;
 	QVector3D light_pos_;
