@@ -136,39 +136,44 @@ public:
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
 
-		//close the hole
+		// close the hole
 		Dart f = mbuild.close_hole_topo(this->dart_);
 
-		//and embed the vertices
+		// embed the cells
+
+		if(this->map_.template is_embedded<CDart>())
+		{
+			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&] (Dart d)
+			{
+				mbuild.new_orbit_embedding(CDart(d));
+			});
+		}
+
 		if(this->map_.template is_embedded<Vertex>())
 			for(Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
 
 		if(this->map_.template is_embedded<Edge>())
-			this->map_.foreach_incident_edge(Volume(this->dart_), [&](Edge e)
+		{
+			this->map_.foreach_incident_edge(Volume(this->dart_), [&] (Edge e)
 			{
 				mbuild.new_orbit_embedding(e);
 			});
+		}
+
+		if(this->map_.template is_embedded<Face>())
+		{
+			this->map_.foreach_incident_face(Volume(this->dart_), [&] (Face f)
+			{
+				mbuild.new_orbit_embedding(f);
+			});
+		}
 
 		if(this->map_.template is_embedded<Volume>())
 			mbuild.new_orbit_embedding(Volume(this->dart_));
 
-		//mark it as boundary
+		// mark boundary
 		mbuild.boundary_mark(Face(f));
-
-		/*
-		if(this->map_.template is_embedded<CDart>())
-			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&](CDart d)
-			{
-				mbuild.new_orbit_embedding(d);
-			});
-		*/
-
-		if(this->map_.template is_embedded<Face>())
-			this->map_.foreach_incident_face(Volume(this->dart_), [&](Face f)
-			{
-				mbuild.new_orbit_embedding(f);
-			});
 	}
 
 	/*! @name Embedding Operators
@@ -201,6 +206,7 @@ public:
 			}
 		}
 	}
+
 	//! Embed a topological grid into a twister open ribbon
 	/*! @details with turns=PI it is a Moebius strip, needs only to be closed (if model allows it)
 	 *  @param[in] attribute Attribute used to store vertices positions

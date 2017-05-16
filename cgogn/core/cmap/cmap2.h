@@ -65,6 +65,8 @@ public:
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	template <typename T>
+	using CDartAttribute = Attribute<T, CDart::ORBIT>;
+	template <typename T>
 	using VertexAttribute = Attribute<T, Vertex::ORBIT>;
 	template <typename T>
 	using EdgeAttribute = Attribute<T, Edge::ORBIT>;
@@ -221,12 +223,11 @@ public:
 		return (*phi2_)[d.index];
 	}
 
-
 	/**
 	 * \brief Composition of PHI calls
 	 * @param d
 	 * @return The result of successive applications of PHI1 and PHI2 on d.
-	 * The template parameter contains a sequence (Base10 encoded) of PHI indeices.
+	 * The template parameter contains a sequence (Base10 encoded) of PHI indices.
 	 * If N=0 the identity is used.
 	 * The composition of phi is applied in order of declaration : phi<12>(d) = phi2(phi1(d))
 	 */
