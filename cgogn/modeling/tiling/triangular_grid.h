@@ -43,10 +43,12 @@ class TriangularGrid : public Tiling<MAP>
 	using Volume = typename MAP::Volume;
 
 public:
+
 	template <typename INNERMAP>
 	class GridTopo
 	{
 	public:
+
 		//@{
 		//! Create a 2D grid
 		/*! @param[in] x nb of squares in x
@@ -121,15 +123,14 @@ public:
 		//@}
 	};
 
-public:
-	TriangularGrid(MAP& map, uint32 x, uint32 y):
+	TriangularGrid(MAP& map, uint32 x, uint32 y) :
 		Tiling<MAP>(map)
 	{
 		this->nx_ = x;
 		this->ny_ = y;
 		this->nz_ = UINT32_MAX;
 
-		GridTopo<MAP>(this,x,y);
+		GridTopo<MAP>(this, x, y);
 
 		this->dart_ = this->vertex_table_[0].dart;
 
@@ -142,19 +143,22 @@ public:
 
 		// embed the cells
 
-		if(this->map_.template is_embedded<CDart>())
+		if (this->map_.template is_embedded<CDart>())
 		{
 			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&] (Dart d)
 			{
-				mbuild.new_orbit_embedding(CDart(d));
+				if (!this->map_.is_boundary(d))
+					mbuild.new_orbit_embedding(CDart(d));
 			});
 		}
 
-		if(this->map_.template is_embedded<Vertex>())
-			for(Vertex v : this->vertex_table_)
+		if (this->map_.template is_embedded<Vertex>())
+		{
+			for (Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
+		}
 
-		if(this->map_.template is_embedded<Edge>())
+		if (this->map_.template is_embedded<Edge>())
 		{
 			this->map_.foreach_incident_edge(Volume(this->dart_), [&] (Edge e)
 			{
@@ -162,7 +166,7 @@ public:
 			});
 		}
 
-		if(this->map_.template is_embedded<Face>())
+		if (this->map_.template is_embedded<Face>())
 		{
 			this->map_.foreach_incident_face(Volume(this->dart_), [&] (Face f)
 			{
@@ -170,7 +174,7 @@ public:
 			});
 		}
 
-		if(this->map_.template is_embedded<Volume>())
+		if (this->map_.template is_embedded<Volume>())
 			mbuild.new_orbit_embedding(Volume(this->dart_));
 	}
 
@@ -278,8 +282,8 @@ public:
 extern template class CGOGN_MODELING_API TriangularGrid<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TRIANGULAR_GRID_CPP_))
 
-} //namespace modeling
+} // namespace modeling
 
-} //namespace cgogn
+} // namespace cgogn
 
 #endif // CGOGN_MODELING_TILING_TRIANGULAR_GRID_H_

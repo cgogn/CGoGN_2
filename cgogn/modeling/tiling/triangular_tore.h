@@ -46,18 +46,22 @@ class TriangularTore : public Tiling<MAP>
 
 	/*! @name Topological Operators
 	 *************************************************************************/
+
 public:
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TriangularTore);
 
 	//! Create a subdivided 2D tore
 	/*! @param[in] n nb of squares around big circumference
 	 *  @param[in] m nb of squares around small circumference
 	 */
 	template <typename INNERMAP>
-	class ToreTopo: public TriangularCylinder<INNERMAP>::template CylinderTopo<INNERMAP>
+	class ToreTopo : public TriangularCylinder<INNERMAP>::template CylinderTopo<INNERMAP>
 	{
 	public:
-		ToreTopo(Tiling<INNERMAP>* c, uint32 n, uint32 m):
-			TriangularCylinder<INNERMAP>::template CylinderTopo<INNERMAP>(c,n,m)
+
+		ToreTopo(Tiling<INNERMAP>* c, uint32 n, uint32 m) :
+			TriangularCylinder<INNERMAP>::template CylinderTopo<INNERMAP>(c, n, m)
 		{
 			using MapBuilder = typename MAP::Builder;
 			MapBuilder mbuild(c->map_);
@@ -75,16 +79,19 @@ public:
 
 			// remove the last row of n vertex (in x direction) that are no more necessary (sewed with n first)
 			c->vertex_table_.erase(
-						std::remove_if(c->vertex_table_.begin(), c->vertex_table_.end(),
-									   [&](Vertex v) -> bool { return !v.is_valid(); }),
-						c->vertex_table_.end());
+				std::remove_if(
+					c->vertex_table_.begin(),
+					c->vertex_table_.end(),
+					[&] (Vertex v) -> bool { return !v.is_valid(); }
+				),
+				c->vertex_table_.end()
+			);
 
 			c->vertex_table_.shrink_to_fit();
 		}
 	};
 
-public:
-	TriangularTore(MAP& map, uint32 n, uint32 m):
+	TriangularTore(MAP& map, uint32 n, uint32 m) :
 		Tiling<MAP>(map)
 	{
 		this->nx_ = n;
@@ -98,32 +105,40 @@ public:
 		using MapBuilder = typename MAP::Builder;
 		MapBuilder mbuild(this->map_);
 
-		/*
-		if(this->map_.template is_embedded<CDart>())
-			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&](CDart d)
+		// embed the cells
+
+		if (this->map_.template is_embedded<CDart>())
+		{
+			this->map_.foreach_dart_of_orbit(Volume(this->dart_), [&] (Dart d)
 			{
-				mbuild.new_orbit_embedding(d);
+				if (!this->map_.is_boundary(d))
+					mbuild.new_orbit_embedding(CDart(d));
 			});
-		*/
+		}
 
-		//embed the vertices
-		if(this->map_.template is_embedded<Vertex>())
-			for(Vertex v : this->vertex_table_)
+		if (this->map_.template is_embedded<Vertex>())
+		{
+			for (Vertex v : this->vertex_table_)
 				mbuild.new_orbit_embedding(v);
+		}
 
-		if(this->map_.template is_embedded<Edge>())
-			this->map_.foreach_incident_edge(Volume(this->dart_), [&](Edge e)
+		if (this->map_.template is_embedded<Edge>())
+		{
+			this->map_.foreach_incident_edge(Volume(this->dart_), [&] (Edge e)
 			{
 				mbuild.new_orbit_embedding(e);
 			});
+		}
 
-		if(this->map_.template is_embedded<Face>())
-			this->map_.foreach_incident_face(Volume(this->dart_), [&](Face f)
+		if (this->map_.template is_embedded<Face>())
+		{
+			this->map_.foreach_incident_face(Volume(this->dart_), [&] (Face f)
 			{
 				mbuild.new_orbit_embedding(f);
 			});
+		}
 
-		if(this->map_.template is_embedded<Volume>())
+		if (this->map_.template is_embedded<Volume>())
 			mbuild.new_orbit_embedding(Volume(this->dart_));
 	}
 
@@ -163,8 +178,8 @@ public:
 extern template class CGOGN_MODELING_API TriangularTore<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TRIANGULAR_TORE_CPP_))
 
-} //namespace modeling
+} // namespace modeling
 
-} //namespace cgogn
+} // namespace cgogn
 
 #endif // CGOGN_MODELING_TILING_TRIANGULAR_TORE_H_
