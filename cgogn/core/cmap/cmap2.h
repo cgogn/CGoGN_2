@@ -851,14 +851,36 @@ public:
 
 protected:
 
-	void merge_adjacent_edges_topo(Dart d)
+	bool merge_incident_edges_topo(Dart d)
 	{
-		Dart e = this->phi_1(this->phi2(d));
-		cgogn_message_assert(d == this->phi_1(this->phi2(e)),
-							 "merge_adjacent_edge: the degree of the vertex of d should be 2");
-		// TODO
-		unused_parameters(e);// fir warning
+		Dart e = this->phi2(this->phi1(d));
+
+		if (d != this->phi2(this->phi1(e))) // the degree of the vertex of d should be 2
+			return false;
+
+		phi2_unsew(d);
+		phi2_unsew(e);
+		this->remove_vertex_topo(this->phi1(d));
+		this->remove_vertex_topo(this->phi1(e));
+		phi2_sew(d, e);
+		return true;;
 	}
+
+public:
+
+	void merge_incident_edges(Vertex v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d = this->phi_1(v.dart);
+		if (merge_incident_faces_topo(v.dart))
+		{
+			if (this->template is_embedded<Edge>())
+				this->template copy_embedding<Edge>(phi2(d), d);
+		}
+	}
+
+protected:
 
 	/**
 	 * \brief Merge the two faces incident to the edge of d by removing the edge of d
@@ -1164,7 +1186,7 @@ protected:
 	 * If the indexation of embedding was unique, the closed map is well embedded.
 	 */
 	// The template parameter is a hack needed to compile the class CMap2_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>> with MSVC. Otherwise calling boundary_mark leads to an error.
-	template<typename = std::enable_if<std::is_same<typename MapType::TYPE, Self>::value>>
+	template <typename = std::enable_if<std::is_same<typename MapType::TYPE, Self>::value>>
 	inline uint32 close_map()
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
