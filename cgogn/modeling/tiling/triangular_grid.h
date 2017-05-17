@@ -138,6 +138,7 @@ public:
 
 		// close the hole
 		Dart f = mbuild.close_hole_topo(this->dart_);
+		mbuild.boundary_mark(Face(f));
 
 		// embed the cells
 
@@ -171,9 +172,6 @@ public:
 
 		if(this->map_.template is_embedded<Volume>())
 			mbuild.new_orbit_embedding(Volume(this->dart_));
-
-		// mark boundary
-		mbuild.boundary_mark(Face(f));
 	}
 
 	/*! @name Embedding Operators
