@@ -55,6 +55,7 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "uniform vec4 back_color;\n"
 "uniform vec4 ambiant_color;\n"
 "uniform vec3 lightPosition;\n"
+"uniform bool cull_back_face;\n"
 "in vec3 pos;\n"
 "void main()\n"
 "{\n"
@@ -65,8 +66,9 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "		fragColor = vec4(ambiant_color.rgb+lambert*front_color.rgb, front_color.a);\n"
 //"		fragColor = ambiant_color+lambert*front_color;\n"
 "	else\n"
-//"		fragColor = ambiant_color+lambert*back_color;\n"
-"		fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
+"		if (cull_back_face) discard;\n"
+//"		else fragColor = ambiant_color+lambert*back_color;\n"
+"		else fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
 "}\n";
 
 const char* ShaderFlatGen::vertex_shader_source2_ =
@@ -90,6 +92,7 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "out vec4 fragColor;\n"
 "uniform vec4 ambiant_color;\n"
 "uniform vec3 lightPosition;\n"
+"uniform bool cull_back_face;\n"
 "in vec3 pos;\n"
 "in vec3 col;\n"
 "void main()\n"
@@ -100,7 +103,8 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "	if (gl_FrontFacing)\n"
 "		fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
 "	else\n"
-"		fragColor = ambiant_color-vec4(lambert*col,1.0);\n"
+"		if (cull_back_face) discard;\n"
+"		else fragColor = ambiant_color-vec4(lambert*col,1.0);\n"
 "}\n";
 
 ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
@@ -126,6 +130,7 @@ ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
 	unif_back_color_ = prg_.uniformLocation("back_color");
 	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
 	unif_light_position_ = prg_.uniformLocation("lightPosition");
+	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
 }
 
 void ShaderFlatGen::set_light_position(const QVector3D& l)
@@ -154,6 +159,11 @@ void ShaderFlatGen::set_back_color(const QColor& rgb)
 void ShaderFlatGen::set_ambiant_color(const QColor& rgb)
 {
 	prg_.setUniformValue(unif_ambiant_color_, rgb);
+}
+
+void ShaderFlatGen::set_bf_culling(bool cull)
+{
+	prg_.setUniformValue(unif_bf_culling_, cull);
 }
 
 template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
