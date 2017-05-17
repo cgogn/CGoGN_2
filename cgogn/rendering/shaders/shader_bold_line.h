@@ -137,6 +137,7 @@ protected:
 	}
 
 public:
+	using ShaderType = ShaderBoldLineTpl<false>;
 
 	QColor color_;
 	float32 width_;
@@ -182,6 +183,7 @@ protected:
 
 public:
 
+	using ShaderType = ShaderBoldLineTpl<true>;
 	using Self = ShaderParamBoldLine<true>;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 

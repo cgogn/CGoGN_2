@@ -141,6 +141,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderRoundPointTpl<false>;
+
 	QColor color_;
 	float32 size_;
 	QVector4D plane_clip_;
@@ -184,6 +186,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderRoundPointTpl<true>;
 
 	float32 size_;
 	QVector4D plane_clip_;

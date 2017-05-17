@@ -53,15 +53,14 @@ protected:
 
 public:
 
+	using ShaderType = ShaderTransparentVolumes;
+
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 	bool lighted_;
 
@@ -119,6 +118,8 @@ public:
 	using Param = ShaderParamTransparentVolumes;
 
 	static std::unique_ptr<Param> generate_param();
+
+	static ShaderTransparentVolumes* get_instance();
 
 protected:
 
