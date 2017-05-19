@@ -37,12 +37,13 @@ namespace modeling
 template <typename MAP>
 class Tiling
 {
-
 protected:
+
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
 public:
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
 
 	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
@@ -88,8 +89,8 @@ extern template class CGOGN_MODELING_API Tiling<CMap2>;
 extern template class CGOGN_MODELING_API Tiling<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
 
-} //namespace modeling
+} // namespace modeling
 
-} //namespace cgogn
+} // namespace cgogn
 
 #endif // CGOGN_MODELING_TILING_TILING_H_
