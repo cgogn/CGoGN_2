@@ -1765,6 +1765,7 @@ struct CMap2Type
 using CMap2 = CMap2_T<CMap2Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
+extern template class CGOGN_CORE_API CMap2_T<CMap2Type>;
 extern template class CGOGN_CORE_API CMap2Builder_T<CMap2>;
 extern template class CGOGN_CORE_API DartMarker<CMap2>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2>;
