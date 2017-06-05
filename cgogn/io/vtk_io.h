@@ -1203,10 +1203,17 @@ protected:
 				cgogn_log_debug("parse_xml_vtu") << "Skipping a vertex DataArray without \"Name\" attribute.";
 			else
 			{
-				const char*					ascii_data = vertex_data->GetText();
-				std::vector<unsigned char>	binary_data;
+				const char* ascii_data = vertex_data->GetText();
+				std::vector<unsigned char> binary_data;
 				if (binary)
+				{
 					binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+					if (binary_data.empty())
+					{
+						cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						continue;
+					}
+				}
 
 				std::unique_ptr<IMemoryStream> mem_stream;
 				if (binary)
@@ -1284,7 +1291,14 @@ protected:
 					const char*					ascii_data = cell_data->GetText();
 					std::vector<unsigned char>	binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -1364,7 +1378,14 @@ protected:
 					const char* ascii_data = poly_data_array->GetText();
 					std::vector<unsigned char> binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
