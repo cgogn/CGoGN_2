@@ -73,12 +73,6 @@ public:
 	 */
 	virtual uint8 data_size() const = 0;
 	virtual DataType data_type() const = 0;
-	/**
-	 * @brief buffer_vector
-	 * @return return a pointer to the vector used to store the data (WARNING : this is not a pointer to the data contained in the vector)
-	 */
-	virtual void* buffer_vector() = 0;
-	virtual const void* buffer_vector() const = 0;
 
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
@@ -298,16 +292,6 @@ public:
 		return cgogn::io::data_type(cgogn::name_of_type(T()));
 	}
 
-	void* buffer_vector() override
-	{
-		return &data_;
-	}
-
-	virtual const void* buffer_vector() const override
-	{
-		return &data_;
-	}
-
 	inline const VecT& vec() const
 	{
 		return data_;
@@ -331,8 +315,7 @@ public:
 	virtual std::unique_ptr<Inherit> simplify() override
 	{
 		std::unique_ptr<DataInput<PRIM_SIZE, T , T>> res = make_unique<DataInput<PRIM_SIZE, T , T>>();
-		VecT& res_vec = *(static_cast<VecT*>(res->buffer_vector()));
-		std::swap(this->data_, res_vec);
+		std::swap(this->data_, res->vec());
 		return std::unique_ptr<Inherit>(res.release());
 	}
 
