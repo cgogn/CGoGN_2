@@ -172,19 +172,31 @@ public:
 			}
 			else
 			{ // 2nd case : BUFFER_T and T are different.
-				VecBufferT buffer(old_size+n);
-				fp.read(reinterpret_cast<char*>(&buffer[old_size]), std::streamsize(n * sizeof(BUFFER_T)));
-				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
-				{
-					for (auto it = buffer.begin() + typename VecBufferT::difference_type(old_size), end = buffer.end() ; it != end; ++it)
-						*it = cgogn::swap_endianness(*it);
-				}
-				if (fp.eof() || fp.bad())
-					this->reset();
-				// copy
 				auto dest_it = data_.begin();
-				for (auto & x : buffer)
-					*dest_it++ = internal::convert<T>(x);
+				std::advance(dest_it, old_size);
+				const std::size_t buffer_size = std::min(n,std::size_t(16384));
+				VecBufferT buffer(buffer_size);
+				std::size_t already_read = 0;
+				while (already_read != n)
+				{
+					const std::size_t nb_to_read = std::min(buffer_size, n-already_read);
+					buffer.resize(nb_to_read);
+					fp.read(reinterpret_cast<char*>(&buffer[0]), std::streamsize(nb_to_read * sizeof(BUFFER_T)));
+					already_read += nb_to_read;
+
+					if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
+						for (auto& it : buffer)
+							it = cgogn::swap_endianness(it);
+
+					if (fp.eof() || fp.bad())
+					{
+						this->reset();
+						return;
+					}
+					// copy
+					for (const auto & x : buffer)
+						*dest_it++ = internal::convert<T>(x);
+				}
 			}
 		}
 		else
