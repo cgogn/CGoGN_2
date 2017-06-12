@@ -106,6 +106,7 @@ enum FileType
 	FileType_UNKNOWN = 0,
 	FileType_OFF,
 	FileType_OBJ,
+	FileType_2DM,
 	FileType_PLY,
 	FileType_STL,
 	FileType_VTK_LEGACY,

@@ -102,7 +102,7 @@ class CellMarker : public CellMarker_T<MAP, ORBIT>
 public:
 
 	using Inherit = CellMarker_T<MAP, ORBIT>;
-	using Self = CellMarker< MAP, ORBIT >;
+	using Self = CellMarker<MAP, ORBIT>;
 	using Map = typename Inherit::Map;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker);
