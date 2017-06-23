@@ -170,7 +170,9 @@ public:
 	{
 		if (this->is_valid())
 			unmark_all();
-		cgogn::dart_buffers()->release_buffer(marked_darts_);
+		auto* db = cgogn::dart_buffers();
+		if (db)
+			db->release_buffer(marked_darts_);
 	}
 
 	inline void mark(Dart d)
