@@ -332,14 +332,14 @@ protected:
 		{
 			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
-			using Scalar = decltype(v[0]);
+			using LocScalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
-			v[0] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[0] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[1] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[1] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[2] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[2] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
 			if (this->need_endianness_swap())
 			{
