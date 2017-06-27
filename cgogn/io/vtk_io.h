@@ -973,22 +973,21 @@ protected:
 						sstream >> nb_cells >> size;
 						cells_.read_n(fp, size, !ascii_file, big_endian);
 
-						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.buffer_vector());
-						cgogn_assert(cell_types_vec != nullptr);
+						std::vector<int>& cell_types_vec = cell_types_.vec();
 						if (word == "POLYGONS")
 						{
-							cell_types_vec->reserve(nb_cells);
+							cell_types_vec.reserve(nb_cells);
 							for (unsigned i = 0u; i < nb_cells ;++i)
 							{
-								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_POLYGON);
+								cell_types_vec.push_back(VTK_CELL_TYPES::VTK_POLYGON);
 							}
 						}
 						else if (word == "TRIANGLE_STRIPS")
 						{
-							cell_types_vec->reserve(nb_cells);
+							cell_types_vec.reserve(nb_cells);
 							for (unsigned i = 0u; i < nb_cells ;++i)
 							{
-								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_TRIANGLE_STRIP);
+								cell_types_vec.push_back(VTK_CELL_TYPES::VTK_TRIANGLE_STRIP);
 							}
 						}
 					}
@@ -1204,10 +1203,17 @@ protected:
 				cgogn_log_debug("parse_xml_vtu") << "Skipping a vertex DataArray without \"Name\" attribute.";
 			else
 			{
-				const char*					ascii_data = vertex_data->GetText();
-				std::vector<unsigned char>	binary_data;
+				const char* ascii_data = vertex_data->GetText();
+				std::vector<unsigned char> binary_data;
 				if (binary)
+				{
 					binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+					if (binary_data.empty())
+					{
+						cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						continue;
+					}
+				}
 
 				std::unique_ptr<IMemoryStream> mem_stream;
 				if (binary)
@@ -1285,7 +1291,14 @@ protected:
 					const char*					ascii_data = cell_data->GetText();
 					std::vector<unsigned char>	binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -1365,7 +1378,14 @@ protected:
 					const char* ascii_data = poly_data_array->GetText();
 					std::vector<unsigned char> binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -1473,12 +1493,12 @@ private:
 			const uint32 nb_faces = uint32(this->cell_types_.size());
 			this->reserve(nb_faces);
 
-			auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
-			const std::vector<int32>* cell_types_vec = static_cast<std::vector<int32>*>(this->cell_types_.buffer_vector());
-			const auto offsets_begin = static_cast<std::vector<uint32>*>(this->offsets_.buffer_vector())->begin();
+			auto cells_it = this->cells_.vec().begin();
+			const std::vector<int32>& cell_types_vec = this->cell_types_.vec();
+			const auto offsets_begin = this->offsets_.vec().begin();
 			auto offset_it = offsets_begin;
 			std::size_t last_offset(0);
-			for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
+			for(auto cell_types_it = cell_types_vec.begin(); cell_types_it != cell_types_vec.end(); )
 			{
 				const int cell_type = *(cell_types_it++);
 				std::size_t nb_vert(0);

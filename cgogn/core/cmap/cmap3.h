@@ -2623,6 +2623,7 @@ struct CMap3Type
 using CMap3 = CMap3_T<CMap3Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_CPP_))
+extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
 extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
 extern template class CGOGN_CORE_API DartMarker<CMap3>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3>;

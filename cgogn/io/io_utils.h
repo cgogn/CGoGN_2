@@ -150,11 +150,39 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 CGOGN_IO_API FileType                       file_type(const std::string& filename);
 CGOGN_IO_API DataType                       data_type(const std::string& type_name);
 
+/**
+ * @brief base64_encode
+ * @param input_buffer, the data we want to encode
+ * @param buffer_size, the number of bytes we want to encode ( with buffer_size <= strlen(input_buffer) )
+ * @return a vector containing the encoded data.
+ */
 CGOGN_IO_API std::vector<char>          base64_encode(const char* input_buffer, std::size_t buffer_size);
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t begin, std::size_t length = std::numeric_limits<std::size_t>::max());
 
-CGOGN_IO_API std::vector<unsigned char>              zlib_decompress(const char* input, DataType header_type);
-CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size = std::numeric_limits<std::size_t>::max());
+/**
+ * @brief base64_decode
+ * @param input, the data we want to decode
+ * @param length, the number of bytes we want to process
+ * @return an empty vector if the process failed. The decoded data if successful.
+ */
+CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* const input, std::size_t length);
+
+/**
+ * @brief zlib_decompress
+ * @param input, the data we want to decompress
+ * @param header_type, either UINT64 or UINT32
+ * @param length, the length of the data we want to decompress.
+ * @return  the decompressed data if successful, otherwise an empty vector.
+ */
+CGOGN_IO_API std::vector<unsigned char>              zlib_decompress(const char* input, DataType header_type, std::size_t length);
+
+/**
+ * @brief zlib_compress
+ * @param input, the data we want to compress
+ * @param size, the number of bytes we want to compress
+ * @param chunk_size, the maximum compressed size of a chunk
+ * @return a vector of compressed chunk. The size of the chunks is equal to chunk_size except for the last one that can be smaller.
+ */
+CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size);
 
 namespace internal
 {

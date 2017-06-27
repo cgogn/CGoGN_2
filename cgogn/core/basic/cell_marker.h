@@ -151,7 +151,9 @@ public:
 	{
 		if (this->is_valid())
 			unmark_all();
-		cgogn::uint_buffers()->release_buffer(marked_cells_);
+		auto* ub = cgogn::uint_buffers();
+		if (ub)
+			ub->release_buffer(marked_cells_);
 	}
 
 	inline void mark(Cell<ORBIT> c)

@@ -53,7 +53,8 @@ ThreadPool::~ThreadPool()
 ThreadPool::ThreadPool()
 	: stop_(false)
 {
-	for(uint32 i = 0u; i< cgogn::nb_threads() -1u;++i)
+	uint32 nbt = std::max(1u,cgogn::nb_threads()-1u); // for mono-thread case
+	for(uint32 i = 0u; i< nbt; ++i)
 	{
 		workers_.emplace_back(
 		[this, i]

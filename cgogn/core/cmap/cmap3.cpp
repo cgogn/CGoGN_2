@@ -28,6 +28,7 @@
 namespace cgogn
 {
 
+template class CGOGN_CORE_API CMap3_T<CMap3Type>;
 template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
 template class CGOGN_CORE_API DartMarker<CMap3>;
 template class CGOGN_CORE_API DartMarkerStore<CMap3>;
