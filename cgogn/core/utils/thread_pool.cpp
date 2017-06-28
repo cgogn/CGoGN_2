@@ -53,8 +53,8 @@ ThreadPool::~ThreadPool()
 ThreadPool::ThreadPool()
 	: stop_(false)
 {
-	uint32 nbt = cgogn::nb_threads(); // possible to do -1 only if nbt==8 ?
-	for(uint32 i = 0u; i< nbt; ++i)
+	uint32 nb_working_threads = std::min(std::thread::hardware_concurrency(),MAX_NB_THREADS); // possible to do -1 only if nbt==8 ?
+	for(uint32 i = 0u; i< nb_working_threads; ++i)
 	{
 		workers_.emplace_back(
 		[this, i]

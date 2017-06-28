@@ -207,7 +207,9 @@ public:
 	 */
 	void init_element(uint32 id) override
 	{
-		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = T();
+		T x;
+		x = T();
+		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = x;
 	}
 
 	/**

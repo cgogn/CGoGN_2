@@ -29,7 +29,7 @@
 namespace cgogn
 {
 
-CGOGN_CORE_API uint32 NB_THREADS = nb_threads();
+CGOGN_CORE_API uint32 NB_THREADS = thread_pool()->nb_threads();
 
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread_ = nullptr;
 CGOGN_TLS Buffers<uint32>* uint_buffers_thread_ = nullptr;

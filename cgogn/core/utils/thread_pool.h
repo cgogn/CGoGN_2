@@ -72,6 +72,9 @@
 namespace cgogn
 {
 
+const uint32 MAX_NB_THREADS = 8u;
+
+
 class CGOGN_CORE_API ThreadPool final
 {
 public:

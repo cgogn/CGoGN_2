@@ -43,18 +43,11 @@ template <typename T>
 class Buffers;
 
 /**
- * \brief The maximum nunmber of threads created by the API.
+ * \brief The number of threads created by the API.
  */
-const uint32 MAX_NB_THREADS = 8u;
 CGOGN_CORE_API extern uint32 NB_THREADS;
 
 CGOGN_CORE_API ThreadPool* thread_pool();
-
-inline uint32 nb_threads()
-{
-	uint32 c = std::thread::hardware_concurrency();
-	return c < MAX_NB_THREADS ? c : MAX_NB_THREADS;
-}
 
 const uint32 PARALLEL_BUFFER_SIZE = 1024u;
 
