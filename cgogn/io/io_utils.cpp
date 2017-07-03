@@ -292,6 +292,7 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 	static const std::map<std::string, FileType> file_type_map{
 		{"off", FileType_OFF},
 		{"obj", FileType_OBJ},
+		{"2dm", FileType_2DM},
 		{"stl", FileType_STL},
 		{"ply", FileType_PLY},
 		{"vtk", FileType_VTK_LEGACY},

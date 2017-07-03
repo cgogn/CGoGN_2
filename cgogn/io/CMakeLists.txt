@@ -20,6 +20,7 @@ set(HEADER_FILES
 	vtk_io.h
 	off_io.h
 	obj_io.h
+	2dm_io.h
 	ply_io.h
 	lm6_io.h
 	stl_io.h
@@ -47,6 +48,7 @@ set(SOURCE_FILES
 	lm6_io.cpp
 	msh_io.cpp
 	obj_io.cpp
+	2dm_io.cpp
 	off_io.cpp
 	ply_io.cpp
 	stl_io.cpp
