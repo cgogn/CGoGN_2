@@ -1,6 +1,6 @@
 This is a "partial" copy of original TinyXML-2 library.
-http://www.grinninglizard.com/tinyxml2/
-
+https://github.com/leethomason/tinyxml2
+current version: 5.0.1
 
 Packaged version is not usable on all Linux distribution
 Git version is not locally installabe on mac.
