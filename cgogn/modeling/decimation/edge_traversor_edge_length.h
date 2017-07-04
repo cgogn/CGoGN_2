@@ -161,10 +161,10 @@ public:
 	{
 	public:
 
-		Self* const trav_ptr_;
+		const Self* const trav_ptr_;
 		typename std::multimap<Scalar, Edge>::const_iterator edge_it_;
 
-		inline const_iterator(Self* trav, typename std::multimap<Scalar, Edge>::const_iterator it) :
+		inline const_iterator(const Self* trav, typename std::multimap<Scalar, Edge>::const_iterator it) :
 			trav_ptr_(trav),
 			edge_it_(it)
 		{}
@@ -201,14 +201,14 @@ public:
 
 	template <typename CellType,
 			  typename std::enable_if<std::is_same<CellType, typename MAP::Edge>::value>::type* = nullptr>
-	inline const_iterator begin()
+	inline const_iterator begin() const
 	{
 		return const_iterator(this, edges_.begin());
 	}
 
 	template <typename CellType,
 			  typename std::enable_if<std::is_same<CellType, typename MAP::Edge>::value>::type* = nullptr>
-	inline const_iterator end()
+	inline const_iterator end() const
 	{
 		return const_iterator(this, edges_.end());
 	}

@@ -1051,22 +1051,7 @@ public:
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
-			if (!internal::void_to_true_binder(f, CellType(*it)))
-				break;
-	}
-
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, Traversor& t) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		if (!t.template is_traversed<CellType>())
-			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
-
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
+		for (typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
 			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
 	}

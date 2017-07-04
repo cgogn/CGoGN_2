@@ -72,20 +72,23 @@ void decimate(
 	approx.init();
 
 	uint32 count = 0;
-	map.foreach_cell([&] (Edge e) -> bool
-	{
-		VEC3 newpos = approx(e);
+	map.foreach_cell(
+		[&] (Edge e) -> bool
+		{
+			VEC3 newpos = approx(e);
 
-		trav.pre_collapse(e);
+			trav.pre_collapse(e);
 
-		Vertex v = map.collapse_edge(e);
-		position[v] = newpos;
+			Vertex v = map.collapse_edge(e);
+			position[v] = newpos;
 
-		trav.post_collapse();
+			trav.post_collapse();
 
-		++count;
-		return count < nb;
-	}, trav);
+			++count;
+			return count < nb;
+		},
+		trav
+	);
 }
 
 template <typename VEC3>
