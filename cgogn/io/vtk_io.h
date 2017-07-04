@@ -1131,12 +1131,12 @@ protected:
 	{
 		using tinyxml2::XMLDocument;
 		using tinyxml2::XMLError;
-		using tinyxml2::XML_NO_ERROR;
+		using tinyxml2::XML_SUCCESS;
 		using tinyxml2::XMLElement;
 
 		XMLDocument doc;
 		XMLError eResult = doc.LoadFile(filename.c_str());
-		if (eResult != XML_NO_ERROR)
+		if (eResult != XML_SUCCESS)
 		{
 			cgogn_log_warning("parse_xml_vtu")<< "Unable to load file \"" << filename << "\".";
 			return false;
