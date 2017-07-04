@@ -192,11 +192,13 @@ private:
 					it = map.phi1(it);
 				} while (it != f.dart);
 
-				do {
-					buffer_cells.push_back(this->eindices_[Edge(it)]);
-					++codegree;
-					it = map.phi1(it);
-				} while(it != f.dart);
+				if(mesh_order == 2) {
+					do {
+						buffer_cells.push_back(this->eindices_[Edge(it)]);
+						++codegree;
+						it = map.phi1(it);
+					} while(it != f.dart);
+				}
 
 				buffer_type_cells.push_back(codegree);
 				cell_section_size += codegree;
@@ -1009,7 +1011,7 @@ protected:
 					type_str = vtk_data_type_to_cgogn_name_of_type(type_str);
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					pos->read_n(fp, nb_vertices, !ascii_file, big_endian);
-					//this->add_vertex_attribute(*pos,"position");
+					this->add_vertex_attribute(*pos,"position");
 					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
 				}
 				else

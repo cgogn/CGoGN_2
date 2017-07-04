@@ -74,8 +74,10 @@ protected:
 	void clean_added_attributes(Map& map) override
 	{
 		Inherit::clean_added_attributes(map);
-		map.remove_attribute(eindices_);
-		map.remove_attribute(findices_);
+		if(eindices_.is_valid())
+			map.remove_attribute(eindices_);
+		if(findices_.is_valid())
+			map.remove_attribute(findices_);
 	}
 
 	inline uint32 nb_vertices() const
