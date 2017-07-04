@@ -485,7 +485,7 @@ protected:
 	}
 
 	// MshIO interface
-	virtual ChunkArray<VEC3>*msh_position_attribute() override
+	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
 		return this->position_attribute();
 	}
@@ -629,7 +629,7 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
@@ -688,7 +688,7 @@ protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		unused_parameters(option);
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 //		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 //		const std::string format = (option.binary_?"binary" :"ascii");
 //		std::string scalar_type = pos->nested_type_name();
@@ -716,7 +716,7 @@ protected:
 		map.foreach_cell([&](Face f)
 		{
 			vertices.reserve(4u);
-			map.foreach_incident_vertex(f, [&] (Vertex v) {vertices.push_back(this->indices_[v] + 1u);});
+			map.foreach_incident_vertex(f, [&] (Vertex v) {vertices.push_back(this->vindices_[v] + 1u);});
 			const std::size_t nbv = vertices.size();
 			const MSH_CELL_TYPES type = (nbv == 3u)? MSH_CELL_TYPES::MSH_TRIANGLE :(nbv == 4u)?MSH_CELL_TYPES::MSH_QUAD: MSH_CELL_TYPES(0);
 			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nbv <<" ";
