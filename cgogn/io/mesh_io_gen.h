@@ -133,14 +133,10 @@ protected:
 		map.remove_attribute(vindices_);
 	}
 
-	inline std::map<Orbit, const ChunkArrayGen*> const & position_attribute() const
-	{
-		return position_attributes_;
-	}
-
 	inline const ChunkArrayGen* position_attribute(const Orbit orb) const
 	{
-		return position_attributes_.at(orb);
+		auto it = position_attributes_.find(orb);
+		return it == position_attributes_.end() ? nullptr : it->second;
 	}
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
