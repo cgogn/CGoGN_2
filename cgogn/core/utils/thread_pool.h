@@ -94,9 +94,9 @@ public:
 	std::vector<std::thread::id> threads_ids() const;
 	~ThreadPool();
 
-	inline std::size_t nb_threads() const
+	inline uint32 nb_threads() const
 	{
-		return workers_.size();
+		return uint32(workers_.size());
 	}
 
 private:

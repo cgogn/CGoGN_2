@@ -62,8 +62,8 @@ inline void picking_internal_face(
 
 	// thread data
 	using Triplet = typename std::vector<std::tuple<Face, VEC3, Scalar>>;
-	std::vector<Triplet> selected_th(NB_THREADS);
-	std::vector<std::vector<uint32>> ear_indices_th(NB_THREADS);
+	std::vector<Triplet> selected_th(thread_pool->nb_threads());
+	std::vector<std::vector<uint32>> ear_indices_th(thread_pool->nb_threads());
 
 	m.parallel_foreach_cell([&] (Face f, uint32 th)
 	{
@@ -96,7 +96,7 @@ inline void picking_internal_face(
 	});
 
 	// merging thread result
-	for (uint32 i = 0; i < NB_THREADS; ++i)
+	for (uint32 i = 0; i < thread_pool->nb_threads(); ++i)
 	{
 		for (auto x : selected_th[i])
 			selected.push_back(x);

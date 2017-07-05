@@ -42,11 +42,6 @@ class ThreadPool;
 template <typename T>
 class Buffers;
 
-/**
- * \brief The number of threads created by the API.
- */
-CGOGN_CORE_API extern uint32 NB_THREADS;
-
 CGOGN_CORE_API ThreadPool* thread_pool();
 
 const uint32 PARALLEL_BUFFER_SIZE = 1024u;

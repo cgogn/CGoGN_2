@@ -56,7 +56,7 @@ MapBaseData::MapBaseData()
 			mark_attributes_[i][j].reserve(8u);
 	}
 
-	mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+	mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u* MAX_NB_THREADS);
 	mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
 
 	for (uint32 i = 0u; i < MAX_NB_THREADS; ++i)
@@ -64,7 +64,7 @@ MapBaseData::MapBaseData()
 
 	boundary_marker_ = topology_.add_marker_attribute();
 
-	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
+	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u* MAX_NB_THREADS);
 	thread_ids_.resize(NB_UNKNOWN_THREADS);
 
 	this->add_thread(std::this_thread::get_id());

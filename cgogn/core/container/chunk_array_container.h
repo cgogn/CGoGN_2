@@ -1064,15 +1064,15 @@ public:
 
 		std::array<std::vector<VecIndice*>, 2> indices_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		indices_buffers[0].reserve(NB_THREADS);
-		indices_buffers[1].reserve(NB_THREADS);
-		futures[0].reserve(NB_THREADS);
-		futures[1].reserve(NB_THREADS);
+		indices_buffers[0].reserve(thread_pool->nb_threads());
+		indices_buffers[1].reserve(thread_pool->nb_threads());
+		futures[0].reserve(thread_pool->nb_threads());
+		futures[1].reserve(thread_pool->nb_threads());
 
 		Buffers<uint32>* buffs = cgogn::uint_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..NB_THREADS)
+		uint32 j = 0u; // thread id (0..uint32(thread_pool()->nb_threads()))
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1094,7 +1094,7 @@ public:
 					f(ind, th_id);
 			}));
 			// next thread
-			if (++j == NB_THREADS)
+			if (++j == thread_pool->nb_threads())
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
