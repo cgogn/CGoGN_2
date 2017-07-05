@@ -96,10 +96,22 @@ public:
 
 	inline uint32 nb_threads() const
 	{
-		return uint32(workers_.size());
+		return std::max(1u,uint32(workers_.size()*cpu_usage_));
 	}
 
+	/**
+	 * @brief set processor usage
+	 * @param use use of proc 1=100%  0.5 = 50%
+	 */
+	inline void set_cpu_usage(float use)
+	{
+		cpu_usage_ = use;
+	}
+
+
 private:
+	void init_pool(uint32 nb_workers);
+
 #pragma warning(push)
 #pragma warning(disable:4251)
 	// need to keep track of threads so we can join them
@@ -111,6 +123,7 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
+	float cpu_usage_;
 #pragma warning(pop)
 };
 

@@ -50,11 +50,27 @@ ThreadPool::~ThreadPool()
 		worker.join();
 }
 
-ThreadPool::ThreadPool()
-	: stop_(false)
+void ThreadPool::init_pool(uint32 nb_workers)
 {
-	uint32 nb_working_threads = std::min(std::thread::hardware_concurrency(),MAX_NB_THREADS); // possible to do -1 only if nbt==8 ?
-	for(uint32 i = 0u; i< nb_working_threads; ++i)
+
+	// wait tasks to finish
+	{
+		std::unique_lock<std::mutex> lock(queue_mutex_);
+		stop_ = true;
+	}
+#if !(defined(CGOGN_WIN_VER) && (CGOGN_WIN_VER <= 61))
+	condition_.notify_all();
+#endif
+	for(std::thread &worker: workers_)
+		worker.join();
+	{
+		std::unique_lock<std::mutex> lock(queue_mutex_);
+		stop_ = false;
+	}
+
+
+
+	for(uint32 i = 0u; i< nb_workers; ++i)
 	{
 		workers_.emplace_back(
 		[this, i]
@@ -86,6 +102,13 @@ ThreadPool::ThreadPool()
 			}
 		});
 	}
+}
+
+ThreadPool::ThreadPool()
+	: stop_(false), cpu_usage_(1.0f)
+{
+	uint32 nb_working_threads = std::min(std::thread::hardware_concurrency(),MAX_NB_THREADS); // possible to do -1 only if nbt==8 ?
+	init_pool(nb_working_threads);
 }
 
 } // namespace cgogn
