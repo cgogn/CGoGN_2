@@ -828,17 +828,6 @@ public:
 		nb_used_lines_ -= PRIM_SIZE;
 	}
 
-	/**
-	 * @brief initialize a line of the container (an element of each attribute)
-	 * @param index line index
-	 */
-	void init_line(uint32 index)
-	{
-		cgogn_message_assert(used(index), "init_line only with allocated lines");
-
-		for (auto ptr : table_arrays_)
-			ptr->init_element(index);
-	}
 
 	/**
 	 * @brief initialize the markers of a line of the container
@@ -1072,7 +1061,7 @@ public:
 		Buffers<uint32>* buffs = cgogn::uint_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..uint32(thread_pool()->nb_threads()))
+		uint32 j = 0u; // thread id (0..uint32(thread_pool->nb_threads()))
 
 		uint32 it = begin();
 		uint32 it_end = end();

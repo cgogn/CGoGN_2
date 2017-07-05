@@ -873,7 +873,7 @@ public:
 		const ConcreteMap* cmap = to_concrete();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..uint32(thread_pool()->nb_threads()))
+		uint32 j = 0u; // thread id (0..uint32(thread_pool->nb_threads()))
 		Dart it = cmap->all_begin();
 		Dart last = cmap->all_end();
 

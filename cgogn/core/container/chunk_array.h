@@ -201,14 +201,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	void init_element(uint32 id) override
-	{
-		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = T();
-	}
+
 
 	/**
 	 * @brief copy an element to another one
@@ -562,14 +555,6 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	inline void init_element(uint32 id) override
-	{
-		set_false(id);
-	}
 
 	/**
 	 * @brief copy an element to another one
