@@ -107,9 +107,12 @@ public:
 	 */
 	inline void set_nb_workers(uint32 nb)
 	{
-		nb_working_workers_ = std::max(1u,std::min(uint32(workers_.size()), nb));
+		nb_working_workers_ = std::min(uint32(workers_.size()), nb);
 		cgogn_log_info("ThreadPool") << "using "<< nb_working_workers_ << " thread-workers";
 	}
+
+
+	uint32 workers_per_core_;
 
 private:
 #pragma warning(push)

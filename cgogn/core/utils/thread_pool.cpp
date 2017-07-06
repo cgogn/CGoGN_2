@@ -51,9 +51,9 @@ ThreadPool::~ThreadPool()
 }
 
 ThreadPool::ThreadPool()
-	: stop_(false)
+	: workers_per_core_(4), stop_(false)
 {
-	nb_working_workers_ = std::thread::hardware_concurrency();
+	nb_working_workers_ = workers_per_core_*std::thread::hardware_concurrency();
 
 	for(uint32 i = 0u; i< nb_working_workers_; ++i)
 	{

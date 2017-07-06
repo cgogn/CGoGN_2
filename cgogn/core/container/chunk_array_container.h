@@ -1050,18 +1050,21 @@ public:
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
+		uint nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_index([&] (uint32 i) {f(i,0);});
 
 		std::array<std::vector<VecIndice*>, 2> indices_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		indices_buffers[0].reserve(thread_pool->nb_workers());
-		indices_buffers[1].reserve(thread_pool->nb_workers());
-		futures[0].reserve(thread_pool->nb_workers());
-		futures[1].reserve(thread_pool->nb_workers());
+		indices_buffers[0].reserve(nb_workers);
+		indices_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<uint32>* buffs = cgogn::uint_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..uint32(thread_pool->nb_workers()))
+		uint32 j = 0u; // thread id (0..nb_workers)
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1083,7 +1086,7 @@ public:
 					f(ind, th_id);
 			}));
 			// next thread
-			if (++j == thread_pool->nb_workers())
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
