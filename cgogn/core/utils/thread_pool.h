@@ -102,17 +102,19 @@ public:
 	}
 
 	/**
-	 * @brief set nb working threads for parallel algos
+	 * @brief set nb working threads for parallel algos ( no param = full power)
 	 * @param nb [1-hardware_concurrency]
 	 */
-	inline void set_nb_workers(uint32 nb)
+	inline void set_nb_workers(uint32 nb=0xffffffff)
 	{
-		nb_working_workers_ = std::min(uint32(workers_.size()), nb);
+		if (nb == 0xffffffff)
+			nb_working_workers_ = uint32(workers_.size());
+		else
+			nb_working_workers_ = std::min(uint32(workers_.size()), nb);
 		cgogn_log_info("ThreadPool") << "using "<< nb_working_workers_ << " thread-workers";
 	}
 
-
-	uint32 workers_per_core_;
+	uint32 workers_per_thread_;
 
 private:
 #pragma warning(push)

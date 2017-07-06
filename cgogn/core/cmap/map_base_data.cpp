@@ -46,7 +46,7 @@ MapBaseData::MapBaseData()
 	cgogn_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end());
 	instances_->push_back(this);
 
-	uint32 used_nb_workers = thread_pool()->workers_per_core_*std::thread::hardware_concurrency() + 1; // +1 for main thread
+	uint32 used_nb_workers = thread_pool()->workers_per_thread_*std::thread::hardware_concurrency() + 1; // +1 for main thread
 
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
