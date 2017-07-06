@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 		cgogn_log_info("cmap2_import") << "nb darts -> " << nb_darts;
 
 		uint32 nb_darts_2 = 0;
-		std::vector<uint32> nb_darts_per_thread(cgogn::thread_pool()->nb_threads());
+		std::vector<uint32> nb_darts_per_thread(cgogn::thread_pool()->nb_workers());
 		for (uint32& n : nb_darts_per_thread)
 			n = 0;
 		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 		cgogn_log_info("cmap2_import") << "nb faces -> " << nb_faces;
 
 		uint32 nb_faces_2 = 0;
-		std::vector<uint32> nb_faces_per_thread(cgogn::thread_pool()->nb_threads());
+		std::vector<uint32> nb_faces_per_thread(cgogn::thread_pool()->nb_workers());
 		for (uint32& n : nb_faces_per_thread)
 			n = 0;
 		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face, uint32 thread_index)

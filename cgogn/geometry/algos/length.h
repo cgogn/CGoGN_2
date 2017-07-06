@@ -93,8 +93,8 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Edge = typename MAP::Edge;
 
-	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_threads());
-	std::vector<uint32> nb_edges_per_thread(thread_pool()->nb_threads());
+	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_workers());
+	std::vector<uint32> nb_edges_per_thread(thread_pool()->nb_workers());
 	for (Scalar& l : edge_length_per_thread) l = 0;
 	for (uint32& n : nb_edges_per_thread) n = 0;
 

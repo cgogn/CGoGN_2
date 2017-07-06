@@ -72,9 +72,6 @@
 namespace cgogn
 {
 
-const uint32 MAX_NB_THREADS = 8u;
-
-
 class CGOGN_CORE_API ThreadPool final
 {
 public:
@@ -92,26 +89,29 @@ public:
 	std::future<void> enqueue(const F& f, Args&&... args);
 
 	std::vector<std::thread::id> threads_ids() const;
+
 	~ThreadPool();
 
-	inline uint32 nb_threads() const
+	/**
+	 * @brief get nb working thread for parallel algos
+	 * @param use use of proc 1=100%  0.5 = 50%
+	 */
+	inline uint32 nb_workers() const
 	{
-		return std::max(1u,uint32(workers_.size()*cpu_usage_));
+		return nb_working_workers_;
 	}
 
 	/**
-	 * @brief set processor usage
-	 * @param use use of proc 1=100%  0.5 = 50%
+	 * @brief set nb working threads for parallel algos
+	 * @param nb [1-hardware_concurrency]
 	 */
-	inline void set_cpu_usage(float use)
+	inline void set_nb_workers(uint32 nb)
 	{
-		cpu_usage_ = use;
+		nb_working_workers_ = std::max(1u,std::min(uint32(workers_.size()), nb));
+		cgogn_log_info("ThreadPool") << "using "<< nb_working_workers_ << " thread-workers";
 	}
 
-
 private:
-	void init_pool(uint32 nb_workers);
-
 #pragma warning(push)
 #pragma warning(disable:4251)
 	// need to keep track of threads so we can join them
@@ -123,7 +123,7 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
-	float cpu_usage_;
+	uint32 nb_working_workers_;
 #pragma warning(pop)
 };
 

@@ -864,23 +864,23 @@ public:
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		dart_buffers[0].reserve(thread_pool->nb_threads());
-		dart_buffers[1].reserve(thread_pool->nb_threads());
-		futures[0].reserve(thread_pool->nb_threads());
-		futures[1].reserve(thread_pool->nb_threads());
+		dart_buffers[0].reserve(thread_pool->nb_workers());
+		dart_buffers[1].reserve(thread_pool->nb_workers());
+		futures[0].reserve(thread_pool->nb_workers());
+		futures[1].reserve(thread_pool->nb_workers());
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 		const ConcreteMap* cmap = to_concrete();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..uint32(thread_pool->nb_threads()))
+		uint32 j = 0u; // thread id (0..uint32(thread_pool->nb_workers()))
 		Dart it = cmap->all_begin();
 		Dart last = cmap->all_end();
 
 		while (it != last)
 		{
 			dart_buffers[i].push_back(dbuffs->buffer());
-			cgogn_assert(dart_buffers[i].size() <= thread_pool->nb_threads());
+			cgogn_assert(dart_buffers[i].size() <= thread_pool->nb_workers());
 			std::vector<Dart>& darts = *dart_buffers[i].back();
 			darts.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
@@ -896,7 +896,7 @@ public:
 			}));
 
 			// next thread
-			if (++j == thread_pool->nb_threads())
+			if (++j == thread_pool->nb_workers())
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1089,15 +1089,15 @@ public:
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(thread_pool->nb_threads());
-		cells_buffers[1].reserve(thread_pool->nb_threads());
-		futures[0].reserve(thread_pool->nb_threads());
-		futures[1].reserve(thread_pool->nb_threads());
+		cells_buffers[0].reserve(thread_pool->nb_workers());
+		cells_buffers[1].reserve(thread_pool->nb_workers());
+		futures[0].reserve(thread_pool->nb_workers());
+		futures[1].reserve(thread_pool->nb_workers());
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..thread_pool->nb_threads())
+		uint32 j = 0u; // thread id (0..thread_pool->nb_workers())
 		auto it = t.template begin<CellType>();
 		const auto it_end = t.template end<CellType>();
 		while(it != it_end)
@@ -1118,7 +1118,7 @@ public:
 					f(c, th_id);
 			}));
 			// next thread
-			if (++j == thread_pool->nb_threads())
+			if (++j == thread_pool->nb_workers())
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1156,10 +1156,10 @@ protected:
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(thread_pool->nb_threads());
-		cells_buffers[1].reserve(thread_pool->nb_threads());
-		futures[0].reserve(thread_pool->nb_threads());
-		futures[1].reserve(thread_pool->nb_threads());
+		cells_buffers[0].reserve(thread_pool->nb_workers());
+		cells_buffers[1].reserve(thread_pool->nb_workers());
+		futures[0].reserve(thread_pool->nb_workers());
+		futures[1].reserve(thread_pool->nb_workers());
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1169,7 +1169,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..thread_pool->nb_threads())
+		uint32 j = 0u; // thread id (0..thread_pool->nb_workers())
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1197,7 +1197,7 @@ protected:
 					f(c, th_id);
 			}));
 			// next thread
-			if (++j == thread_pool->nb_threads())
+			if (++j == thread_pool->nb_workers())
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1234,10 +1234,10 @@ protected:
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(thread_pool->nb_threads());
-		cells_buffers[1].reserve(thread_pool->nb_threads());
-		futures[0].reserve(thread_pool->nb_threads());
-		futures[1].reserve(thread_pool->nb_threads());
+		cells_buffers[0].reserve(thread_pool->nb_workers());
+		cells_buffers[1].reserve(thread_pool->nb_workers());
+		futures[0].reserve(thread_pool->nb_workers());
+		futures[1].reserve(thread_pool->nb_workers());
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1247,7 +1247,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..thread_pool->nb_threads())
+		uint32 j = 0u; // thread id (0..thread_pool->nb_workers())
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1275,7 +1275,7 @@ protected:
 					f(c, th_id);
 			}));
 			// next thread
-			if (++j == thread_pool->nb_threads())
+			if (++j == thread_pool->nb_workers())
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;

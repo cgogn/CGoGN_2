@@ -62,7 +62,7 @@ inline void picking_internal_face(
 
 	// thread data
 	using Triplet = typename std::vector<std::tuple<Face, VEC3, Scalar>>;
-	uint32 nb_threads = thread_pool()->nb_threads();
+	uint32 nb_threads = thread_pool()->nb_workers();
 
 	std::vector<Triplet> selected_th(nb_threads);
 	std::vector<std::vector<uint32>> ear_indices_th(nb_threads);
