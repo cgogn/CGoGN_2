@@ -1050,7 +1050,7 @@ public:
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		uint nb_workers = thread_pool->nb_workers();
+		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
 			return foreach_index([&] (uint32 i) {f(i,0);});
 

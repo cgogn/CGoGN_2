@@ -862,7 +862,7 @@ public:
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 
-		uint nb_workers = thread_pool->nb_workers();
+		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
 			return foreach_dart([&] (Dart d) {f(d,0);});
 
@@ -1090,7 +1090,7 @@ public:
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		uint nb_workers = thread_pool->nb_workers();
+		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
 			return foreach_cell([&] (CellType c) {f(c,0);},t);
 
@@ -1160,7 +1160,7 @@ protected:
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		uint nb_workers = thread_pool->nb_workers();
+		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
 			return foreach_cell_dart_marking([&] (CellType c) {f(c,0);},filter);
 
@@ -1241,7 +1241,7 @@ protected:
 		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		uint nb_workers = thread_pool->nb_workers();
+		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
 			return foreach_cell_cell_marking([&] (CellType c) {f(c,0);},filter);
 
