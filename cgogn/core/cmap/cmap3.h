@@ -1630,7 +1630,7 @@ public:
 			case Orbit::PHI2_PHI3: return false; break;
 			case Orbit::PHI21_PHI31: return false; break;
 			case Orbit::PHI1_PHI2_PHI3: return false; break;
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap3"); return false; break;
+			default: cgogn_assert_not_reached_false("Orbit not supported in a CMap3"); break;
 		}
 	}
 
