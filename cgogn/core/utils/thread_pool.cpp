@@ -78,7 +78,6 @@ ThreadPool::ThreadPool()
 						cgogn::thread_stop();
 						return;
 					}
-
 					task = std::move(this->tasks_.front());
 					this->tasks_.pop();
 				}
@@ -92,5 +91,14 @@ ThreadPool::ThreadPool()
 	}
 }
 
+
+void ThreadPool::set_nb_workers(uint32 nb )
+{
+	if (nb == 0xffffffff)
+		nb_working_workers_ = uint32(workers_.size());
+	else
+		nb_working_workers_ = std::min(uint32(workers_.size()), nb);
+	cgogn_log_info("ThreadPool") << "using " << nb_working_workers_ << " thread-workers";
+}
 } // namespace cgogn
 
