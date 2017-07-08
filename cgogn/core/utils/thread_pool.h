@@ -93,8 +93,7 @@ public:
 	~ThreadPool();
 
 	/**
-	 * @brief get nb working thread for parallel algos
-	 * @param use use of proc 1=100%  0.5 = 50%
+	 * @brief get the number of currently working thread for parallel algos
 	 */
 	inline uint32 nb_workers() const
 	{
@@ -102,12 +101,18 @@ public:
 	}
 
 	/**
+	* @brief get the number of threads that could be used for parallel algos
+	*/
+	inline uint32 max_nb_workers() const
+	{
+		return uint32(workers_.size());
+	}
+
+	/**
 	 * @brief set nb working threads for parallel algos ( no param = full power)
-	 * @param nb [1-hardware_concurrency]
+	 * @param nb [0,nb_max_workers()] (for 0 parallel algo are replaced by normal version)
 	 */
 	void set_nb_workers(uint32 nb = 0xffffffff);
-
-	uint32 workers_per_thread_;
 
 private:
 #pragma warning(push)
@@ -121,7 +126,11 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
+
+	// limit usage to the n-th first workers
 	uint32 nb_working_workers_;
+	std::mutex running_mutex_;
+	std::condition_variable condition_running_;
 
 #pragma warning(pop)
 };

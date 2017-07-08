@@ -46,25 +46,25 @@ MapBaseData::MapBaseData()
 	cgogn_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end());
 	instances_->push_back(this);
 
-	uint32 used_nb_workers = thread_pool()->workers_per_thread_*std::thread::hardware_concurrency() + 1; // +1 for main thread
+	uint32 nb_known_threads = thread_pool()->max_nb_workers() + 1; // +1 for main thread
 
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
-		mark_attributes_[i].resize(NB_UNKNOWN_THREADS + used_nb_workers);
+		mark_attributes_[i].resize(NB_UNKNOWN_THREADS + nb_known_threads);
 
 		embeddings_[i] = nullptr;
-		for (uint32 j = 0u; j < NB_UNKNOWN_THREADS + used_nb_workers; ++j)
+		for (uint32 j = 0u; j < NB_UNKNOWN_THREADS + nb_known_threads; ++j)
 			mark_attributes_[i][j].reserve(8u);
 	}
 
-	mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + used_nb_workers);
+	mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + nb_known_threads);
 
-	for (uint32 i = 0u; i < used_nb_workers; ++i)
+	for (uint32 i = 0u; i < nb_known_threads; ++i)
 		mark_attributes_topology_[i].reserve(8u);
 
 	boundary_marker_ = topology_.add_marker_attribute();
 
-	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u* used_nb_workers);
+	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u* nb_known_threads);
 	thread_ids_.resize(NB_UNKNOWN_THREADS);
 
 	this->add_thread(std::this_thread::get_id());

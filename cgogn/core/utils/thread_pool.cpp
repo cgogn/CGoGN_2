@@ -50,46 +50,60 @@ ThreadPool::~ThreadPool()
 		worker.join();
 }
 
-ThreadPool::ThreadPool()
-	: workers_per_thread_(2), stop_(false)
-{
-	uint32 hc = std::thread::hardware_concurrency();
-	if (hc <=4)
-		workers_per_thread_ = 4;
-	nb_working_workers_ = workers_per_thread_*hc;
 
-	for(uint32 i = 0u; i< nb_working_workers_; ++i)
+
+ThreadPool::ThreadPool()
+	:  stop_(false)
+{
+	uint32 nb_ww = std::thread::hardware_concurrency();
+	this->nb_working_workers_ = nb_ww;
+	for(uint32 i = 0u; i< nb_ww; ++i)
 	{
 		workers_.emplace_back(
-		[this, i]
+		[this, i] () -> void
 		{
 			cgogn::thread_start();
 			for(;;)
 			{
-				PackagedTask task;
+				while (i >= this->nb_working_workers_)
 				{
-					std::unique_lock<std::mutex> lock(this->queue_mutex_);
-					this->condition_.wait(
-						lock,
-						[this] { return this->stop_ || !this->tasks_.empty(); }
-					);
-					if(this->stop_ && this->tasks_.empty())
-					{
-						cgogn::thread_stop();
-						return;
-					}
-					task = std::move(this->tasks_.front());
-					this->tasks_.pop();
+					std::unique_lock<std::mutex> lock(this->running_mutex_);
+					this->condition_running_.wait(lock);
 				}
+
+				std::unique_lock<std::mutex> lock(this->queue_mutex_);
+				this->condition_.wait(
+					lock,
+					[this] { return this->stop_ || !this->tasks_.empty(); }
+				);
+
+				if (this->stop_ && this->tasks_.empty())
+				{
+					cgogn::thread_stop();
+					return;
+				}
+
+				if (i < this->nb_working_workers_)
+				{
+					PackagedTask task = std::move(this->tasks_.front());
+					this->tasks_.pop();
+					lock.unlock();
 #if defined(_MSC_VER) && _MSC_VER < 1900
-				(*task)(i);
+					(*task)(i);
 #else
-				task(i);
+					task(i);
 #endif
+				}
+				else
+				{
+					lock.unlock();
+					condition_.notify_one();
+				}
 			}
 		});
 	}
 }
+
 
 
 void ThreadPool::set_nb_workers(uint32 nb )
@@ -98,7 +112,11 @@ void ThreadPool::set_nb_workers(uint32 nb )
 		nb_working_workers_ = uint32(workers_.size());
 	else
 		nb_working_workers_ = std::min(uint32(workers_.size()), nb);
+
+	condition_running_.notify_all();
+
 	cgogn_log_info("ThreadPool") << "using " << nb_working_workers_ << " thread-workers";
 }
+
 } // namespace cgogn
 
