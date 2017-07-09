@@ -44,16 +44,21 @@ class Buffers;
 
 CGOGN_CORE_API ThreadPool* thread_pool();
 
+CGOGN_CORE_API ThreadPool* external_thread_pool();
+
+
 const uint32 PARALLEL_BUFFER_SIZE = 1024u;
 
 /// buffers of pre-allocated vectors of dart or uint32
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread_;
 extern CGOGN_TLS Buffers<uint32>* uint_buffers_thread_;
 
+extern CGOGN_TLS uint32 thread_index_;
+
 /**
  * @brief function to call at begin of each thread which use a map
  */
-CGOGN_CORE_API void thread_start();
+CGOGN_CORE_API void thread_start(uint32 ind);
 
 /**
  * @brief function to call at end of each thread which use a map
@@ -62,6 +67,7 @@ CGOGN_CORE_API void thread_stop();
 
 CGOGN_CORE_API Buffers<Dart>*   dart_buffers();
 CGOGN_CORE_API Buffers<uint32>* uint_buffers();
+CGOGN_CORE_API uint32 current_thread_index();
 
 } // namespace cgogn
 

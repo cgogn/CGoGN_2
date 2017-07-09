@@ -376,7 +376,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		const std::size_t thread = this->current_thread_index();
+		const std::size_t thread = cgogn::current_thread_index();
 		cgogn_assert(thread < mark_attributes_[ORBIT].size());
 
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -404,9 +404,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_assert(this->current_thread_index() < mark_attributes_[ORBIT].size());
+		cgogn_assert(cgogn::current_thread_index() < mark_attributes_[ORBIT].size());
 
-		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
+		this->mark_attributes_[ORBIT][cgogn::current_thread_index()].push_back(ca);
 	}
 
 	/*******************************************************************************

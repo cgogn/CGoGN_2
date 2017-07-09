@@ -52,8 +52,8 @@ ThreadPool::~ThreadPool()
 
 
 
-ThreadPool::ThreadPool()
-	:  stop_(false)
+ThreadPool::ThreadPool(uint32 shift_index)
+	:  stop_(false), shift_index_(shift_index)
 {
 	uint32 nb_ww = std::thread::hardware_concurrency();
 	this->nb_working_workers_ = nb_ww;
@@ -62,7 +62,7 @@ ThreadPool::ThreadPool()
 		workers_.emplace_back(
 		[this, i] () -> void
 		{
-			cgogn::thread_start();
+			cgogn::thread_start(this->shift_index_+i);
 			for(;;)
 			{
 				while (i >= this->nb_working_workers_)

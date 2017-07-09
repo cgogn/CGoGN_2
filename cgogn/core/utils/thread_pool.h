@@ -76,7 +76,7 @@ class CGOGN_CORE_API ThreadPool final
 {
 public:
 
-	ThreadPool();
+	ThreadPool(uint32 shift_index);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -131,6 +131,8 @@ private:
 	uint32 nb_working_workers_;
 	std::mutex running_mutex_;
 	std::condition_variable condition_running_;
+
+	uint32 shift_index_;
 
 #pragma warning(pop)
 };
