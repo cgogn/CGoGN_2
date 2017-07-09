@@ -222,7 +222,7 @@ protected:
 		map.foreach_cell([&] (Vertex v)
 		{
 			output << "v ";
-			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 
@@ -247,7 +247,7 @@ protected:
 			output << "f";
 			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
-				output << " " << (this->indices_[v]+1u);
+				output << " " << (this->vindices_[v]+1u);
 			});
 			output << std::endl;
 		}, *(this->cell_cache_));

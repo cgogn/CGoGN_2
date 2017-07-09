@@ -216,7 +216,7 @@ protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& /*option*/) override
 	{
 
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		std::string scalar_type = pos->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
