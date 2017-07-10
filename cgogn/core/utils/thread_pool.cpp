@@ -39,11 +39,13 @@ std::vector<std::thread::id> ThreadPool::threads_ids() const
 
 ThreadPool::~ThreadPool()
 {
+	set_nb_workers();
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		stop_ = true;
 	}
 #if !(defined(CGOGN_WIN_VER) && (CGOGN_WIN_VER <= 61))
+	condition_running_.notify_all();
 	condition_.notify_all();
 #endif
 	for(std::thread &worker: workers_)
@@ -52,8 +54,8 @@ ThreadPool::~ThreadPool()
 
 
 
-ThreadPool::ThreadPool(uint32 shift_index)
-	:  stop_(false), shift_index_(shift_index)
+ThreadPool::ThreadPool(const std::string& name, uint32 shift_index)
+	:  name_(name), stop_(false), shift_index_(shift_index)
 {
 	uint32 nb_ww = std::thread::hardware_concurrency();
 	this->nb_working_workers_ = nb_ww;
@@ -115,7 +117,7 @@ void ThreadPool::set_nb_workers(uint32 nb )
 
 	condition_running_.notify_all();
 
-	cgogn_log_info("ThreadPool") << "using " << nb_working_workers_ << " thread-workers";
+	cgogn_log_info("ThreadPool") << name_ << " using " << nb_working_workers_ << " thread-workers";
 }
 
 } // namespace cgogn

@@ -76,7 +76,7 @@ class CGOGN_CORE_API ThreadPool final
 {
 public:
 
-	ThreadPool(uint32 shift_index);
+	ThreadPool(const std::string& name, uint32 shift_index);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -117,6 +117,10 @@ public:
 private:
 #pragma warning(push)
 #pragma warning(disable:4251)
+
+	// just info log
+	std::string name_;
+
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
 	// the task queue
@@ -171,6 +175,19 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	condition_.notify_one();
 	return res;
 }
+
+
+
+/**
+ * launch an external thread
+ */
+template <class F, class... Args>
+std::future<void> launch_thread(const F& f, Args&&... args)
+{
+	return external_thread_pool()->enqueue(f,args...);
+}
+
+
 
 } // namespace cgogn
 

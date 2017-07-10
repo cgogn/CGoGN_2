@@ -71,14 +71,14 @@ CGOGN_CORE_API uint32 current_thread_index()
 CGOGN_CORE_API ThreadPool* thread_pool()
 {
 	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
-	static ThreadPool pool(1);
+	static ThreadPool pool("internal",1);
 	return &pool;
 }
 
 CGOGN_CORE_API ThreadPool* external_thread_pool()
 {
 	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
-	static ThreadPool u_pool(1+ std::thread::hardware_concurrency());
+	static ThreadPool u_pool("external",1+ std::thread::hardware_concurrency());
 	return &u_pool;
 }
 
