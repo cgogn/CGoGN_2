@@ -1044,7 +1044,6 @@ public:
 	void parallel_foreach_index(const FUNC& f) const
 	{
 		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
-		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function second parameter type");
 
 		using VecIndice = std::vector<uint32>;
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
@@ -1052,7 +1051,7 @@ public:
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
-			return foreach_index([&] (uint32 i) {f(i,0);});
+			return foreach_index(f);
 
 		std::array<std::vector<VecIndice*>, 2> indices_buffers;
 		std::array<std::vector<Future>, 2> futures;

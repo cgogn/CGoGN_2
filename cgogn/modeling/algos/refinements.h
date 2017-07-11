@@ -64,7 +64,7 @@ void triangule(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	using Face = typename MAP::Face;
 	typename MAP::CellCache cache(map);
 	cache.template build<Face>();
-	map.parallel_foreach_cell([&map, &position](Face f, uint32)
+	map.parallel_foreach_cell([&map, &position](Face f)
 	{
 		const VEC3& center = geometry::centroid<VEC3>(map, f, position);
 		const auto central_vertex = triangule(map, f);

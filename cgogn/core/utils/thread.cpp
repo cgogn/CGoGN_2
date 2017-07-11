@@ -30,10 +30,11 @@ namespace cgogn
 {
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread_ = nullptr;
 CGOGN_TLS Buffers<uint32>* uint_buffers_thread_ = nullptr;
+CGOGN_TLS uint32 thread_marker_index_;
 CGOGN_TLS uint32 thread_index_;
 
 
-CGOGN_CORE_API void thread_start(uint32 ind)
+CGOGN_CORE_API void thread_start(uint32 ind, uint32 shift_marker_index)
 {
 	if (dart_buffers_thread_ == nullptr)
 		dart_buffers_thread_ = new Buffers<Dart>();
@@ -42,6 +43,7 @@ CGOGN_CORE_API void thread_start(uint32 ind)
 		uint_buffers_thread_ = new Buffers<uint32>();
 
 	thread_index_ = ind;
+	thread_marker_index_ = ind + shift_marker_index;
 }
 
 CGOGN_CORE_API void thread_stop()
@@ -61,6 +63,12 @@ CGOGN_CORE_API Buffers<uint32>* uint_buffers()
 {
 	return uint_buffers_thread_;
 }
+
+CGOGN_CORE_API uint32 current_thread_marker_index()
+{
+	return thread_marker_index_;
+}
+
 
 CGOGN_CORE_API uint32 current_thread_index()
 {

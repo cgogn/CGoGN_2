@@ -99,7 +99,7 @@ inline void compute_area(
 	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
-	map.parallel_foreach_cell([&] (CellType c, uint32)
+	map.parallel_foreach_cell([&] (CellType c)
 	{
 		cell_area[c] = area<VEC3>(map, c, position);
 	},
@@ -142,7 +142,7 @@ inline void compute_incident_faces_area(
 	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
-	map.parallel_foreach_cell([&] (CellType c, uint32)
+	map.parallel_foreach_cell([&] (CellType c)
 	{
 		area[c] = incident_faces_area<VEC3>(map, c, position);
 	},
