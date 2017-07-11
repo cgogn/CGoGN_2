@@ -164,11 +164,6 @@ public:
 	 */
 	virtual void clear() = 0;
 
-	/**
-	 * @brief initialize an element of the array (overwrite with T())
-	 * @param id index of the element
-	 */
-	virtual void init_element(uint32 id) = 0;
 
 	/**
 	 * @brief copy an element to another one

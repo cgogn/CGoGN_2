@@ -828,17 +828,6 @@ public:
 		nb_used_lines_ -= PRIM_SIZE;
 	}
 
-	/**
-	 * @brief initialize a line of the container (an element of each attribute)
-	 * @param index line index
-	 */
-	void init_line(uint32 index)
-	{
-		cgogn_message_assert(used(index), "init_line only with allocated lines");
-
-		for (auto ptr : table_arrays_)
-			ptr->init_element(index);
-	}
 
 	/**
 	 * @brief initialize the markers of a line of the container
@@ -1061,19 +1050,21 @@ public:
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_index([&] (uint32 i) {f(i,0);});
 
 		std::array<std::vector<VecIndice*>, 2> indices_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		indices_buffers[0].reserve(nb_threads_pool);
-		indices_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		indices_buffers[0].reserve(nb_workers);
+		indices_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<uint32>* buffs = cgogn::uint_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1095,7 +1086,7 @@ public:
 					f(ind, th_id);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;

@@ -76,7 +76,7 @@ class CGOGN_CORE_API ThreadPool final
 {
 public:
 
-	ThreadPool();
+	ThreadPool(const std::string& name, uint32 shift_index);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -88,17 +88,37 @@ public:
 	template <class F, class... Args>
 	std::future<void> enqueue(const F& f, Args&&... args);
 
-	std::vector<std::thread::id> threads_ids() const;
 	~ThreadPool();
 
-	inline std::size_t nb_threads() const
+	/**
+	 * @brief get the number of currently working thread for parallel algos
+	 */
+	inline uint32 nb_workers() const
 	{
-		return workers_.size();
+		return nb_working_workers_;
 	}
+
+	/**
+	* @brief get the number of threads that could be used for parallel algos
+	*/
+	inline uint32 max_nb_workers() const
+	{
+		return uint32(workers_.size());
+	}
+
+	/**
+	 * @brief set nb working threads for parallel algos ( no param = full power)
+	 * @param nb [0,nb_max_workers()] (for 0 parallel algo are replaced by normal version)
+	 */
+	void set_nb_workers(uint32 nb = 0xffffffff);
 
 private:
 #pragma warning(push)
 #pragma warning(disable:4251)
+
+	// just info log
+	std::string name_;
+
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
 	// the task queue
@@ -108,6 +128,14 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
+
+	// limit usage to the n-th first workers
+	uint32 nb_working_workers_;
+	std::mutex running_mutex_;
+	std::condition_variable condition_running_;
+
+	uint32 shift_index_;
+
 #pragma warning(pop)
 };
 
@@ -145,6 +173,19 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	condition_.notify_one();
 	return res;
 }
+
+
+
+/**
+ * launch an external thread
+ */
+template <class F, class... Args>
+std::future<void> launch_thread(const F& f, Args&&... args)
+{
+	return external_thread_pool()->enqueue(f,args...);
+}
+
+
 
 } // namespace cgogn
 
