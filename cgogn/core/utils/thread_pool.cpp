@@ -28,18 +28,11 @@ namespace cgogn
 
 {
 
-std::vector<std::thread::id> ThreadPool::threads_ids() const
-{
-	std::vector<std::thread::id> res;
-	res.reserve(workers_.size());
-	for (const std::thread& w : workers_)
-		res.push_back(w.get_id());
-	return res;
-}
-
 ThreadPool::~ThreadPool()
 {
-	set_nb_workers();
+	nb_working_workers_ = uint32(workers_.size());
+	condition_running_.notify_all();
+
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		stop_ = true;

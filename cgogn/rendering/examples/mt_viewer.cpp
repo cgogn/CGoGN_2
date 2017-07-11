@@ -95,11 +95,11 @@ private:
 	bool flat_rendering_;
 
 	std::mutex mut_update_;
-	bool need_update_;
+	bool need_vbo_update_;
 
 	std::future<void> future_;
 
-	std::atomic_bool ab_;
+	std::atomic_bool to_stop_;
 };
 
 
@@ -142,7 +142,7 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	ab_.store(true);
+	to_stop_=true;
 	if (future_.valid())
 		future_.wait();
 	render_.reset();
@@ -156,9 +156,9 @@ Viewer::Viewer() :
 	render_(nullptr),
 	vbo_pos_(nullptr),
 	flat_rendering_(true),
-	need_update_(false)
+	need_vbo_update_(false)
 {
-	ab_.store(false);
+	to_stop_=false;
 }
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
@@ -187,7 +187,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 		case Qt::Key_A:
 		{
-			cgogn_log_info("Asyncrone")<< "let's go for 10 s";
+			if (future_.valid())
+			{
+				std::future_status status = future_.wait_for(std::chrono::nanoseconds::min());
+				if (status == std::future_status::timeout)
+				break;
+			}
+			cgogn_log_info("Asyncrone")<< "let's go forever";
 
 			future_ = cgogn::launch_thread([&] (uint32 /*th*/)
 			{
@@ -213,7 +219,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 							P += 0.0001*N;
 						});
 						mut_update_.lock();
-						need_update_=true;
+						need_vbo_update_=true;
+						update();
 						mut_update_.unlock();
 					}
 					for(int i=0;i<250;++i)
@@ -225,12 +232,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 							P -= 0.0001*N;
 							});
 						mut_update_.lock();
-						need_update_=true;
+						need_vbo_update_=true;
+						update();
 						mut_update_.unlock();
 					}
 					end = std::chrono::system_clock::now();
 
-				}while (! ab_.load());
+				}while (! to_stop_);
 				//	(std::chrono::duration<float>(end - start).count()<20);
 
 			cgogn_log_info("Asyncrone")<< "finished";
@@ -256,10 +264,10 @@ void Viewer::draw()
 	camera()->getModelViewMatrix(view);
 
 	mut_update_.lock();
-	if ( need_update_)
+	if ( need_vbo_update_)
 	{
 		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
-		need_update_ = false;
+		need_vbo_update_ = false;
 	}
 	mut_update_.unlock();
 

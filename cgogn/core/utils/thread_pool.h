@@ -88,8 +88,6 @@ public:
 	template <class F, class... Args>
 	std::future<void> enqueue(const F& f, Args&&... args);
 
-	std::vector<std::thread::id> threads_ids() const;
-
 	~ThreadPool();
 
 	/**
