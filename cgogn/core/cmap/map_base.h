@@ -863,7 +863,7 @@ public:
 
 		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
-			return foreach_dart([&] (Dart d) {f(d,0);});
+			return foreach_dart(f);
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -892,10 +892,10 @@ public:
 				cmap->all_next(it);
 			}
 
-			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] ()
 			{
 				for (auto d : darts)
-					f(d, th_id);
+					f(d);
 			}));
 
 			// next thread
@@ -1088,7 +1088,7 @@ public:
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
 		if (nb_workers==0)
-			return foreach_cell(f,t);
+			return foreach_cell(f);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;

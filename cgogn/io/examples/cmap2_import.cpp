@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 			n = 0;
 		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face)
 		{
-			nb_faces_per_thread[current_thread_index()]++;
+			nb_faces_per_thread[cgogn::current_thread_index()]++;
 		});
 		for (uint32 n : nb_faces_per_thread)
 			nb_faces_2 += n;

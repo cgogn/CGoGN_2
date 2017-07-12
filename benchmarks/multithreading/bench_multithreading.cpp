@@ -62,7 +62,7 @@ static void BENCH_enqueue(benchmark::State& state)
 		state.PauseTiming();
 		cgogn::ThreadPool* tp = cgogn::thread_pool();
 		state.ResumeTiming();
-		tp->enqueue([](uint32){;});
+		tp->enqueue([](){;});
 	}
 }
 
