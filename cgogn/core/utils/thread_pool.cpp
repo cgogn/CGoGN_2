@@ -57,7 +57,7 @@ ThreadPool::ThreadPool(const std::string& name, uint32 shift_index)
 		workers_.emplace_back(
 		[this, i] () -> void
 		{
-			cgogn::thread_start(this->shift_index_+i);
+			cgogn::thread_start(i,this->shift_index_);
 			for(;;)
 			{
 				while (i >= this->nb_working_workers_)
@@ -84,9 +84,9 @@ ThreadPool::ThreadPool(const std::string& name, uint32 shift_index)
 					this->tasks_.pop();
 					lock.unlock();
 #if defined(_MSC_VER) && _MSC_VER < 1900
-					(*task)(i);
+					(*task)();
 #else
-					task(i);
+					task();
 #endif
 				}
 				else

@@ -80,9 +80,9 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-	using PackagedTask = std::shared_ptr<std::packaged_task<void(uint32)>>; // avoiding a MSVC 2013 Bug
+	using PackagedTask = std::shared_ptr<std::packaged_task<void()>>; // avoiding a MSVC 2013 Bug
 #else
-	using PackagedTask = std::packaged_task<void(uint32)>;
+	using PackagedTask = std::packaged_task<void()>;
 #endif
 
 	template <class F, class... Args>
@@ -145,15 +145,15 @@ private:
 template <class F, class... Args>
 std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 {
-	static_assert(std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
+	static_assert(std::is_same<typename std::result_of<F(Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-	PackagedTask task = std::make_shared<std::packaged_task<void(uint32)>>(std::bind(f, std::placeholders::_1, std::forward<Args>(args)...));
+	PackagedTask task = std::make_shared<std::packaged_task<void()>>(std::bind(f, std::forward<Args>(args)...));
 	std::future<void> res = task->get_future();
 #else
-	PackagedTask task([&, f](uint32 i) -> void
+	PackagedTask task([&, f]() -> void
 	{
-		f(i, std::forward<Args>(args)...);
+		f(std::forward<Args>(args)...);
 	});
 	std::future<void> res = task.get_future();
 #endif

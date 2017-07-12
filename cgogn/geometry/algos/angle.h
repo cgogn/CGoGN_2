@@ -90,7 +90,7 @@ inline void compute_angle_between_face_normals(
 	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e)
 	{
 		edge_angle[e] = angle_between_face_normals<VEC3>(map, e, position);
 	},

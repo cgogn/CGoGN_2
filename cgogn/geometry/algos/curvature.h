@@ -152,7 +152,7 @@ void compute_curvature(
 	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
 		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 	},

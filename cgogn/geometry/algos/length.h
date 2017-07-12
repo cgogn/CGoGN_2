@@ -66,7 +66,7 @@ inline void compute_length(
 	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
-	map.parallel_foreach_cell([&] (typename MAP::Edge e, uint32)
+	map.parallel_foreach_cell([&] (typename MAP::Edge e)
 	{
 		edge_length[e] = length<VEC3>(map, e, position);
 	},
@@ -98,8 +98,9 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	for (Scalar& l : edge_length_per_thread) l = 0;
 	for (uint32& n : nb_edges_per_thread) n = 0;
 
-	map.parallel_foreach_cell([&] (Edge e, uint32 thread_index)
+	map.parallel_foreach_cell([&] (Edge e)
 	{
+		uint32 thread_index =cgogn::current_thread_index();
 		edge_length_per_thread[thread_index] += ::cgogn::geometry::length<VEC3>(map, e, position);
 		nb_edges_per_thread[thread_index]++;
 	},

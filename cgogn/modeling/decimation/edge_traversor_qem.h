@@ -71,12 +71,12 @@ public:
 		einfo_ = map_.template add_attribute<EdgeInfo, Edge>("EdgeTraversor_QEM_EdgeInfo");
 		quadric_ = map_.template add_attribute<geometry::Quadric, Vertex>("EdgeTraversor_QEM_Quadric");
 
-		map_.parallel_foreach_cell([&] (Vertex v, uint32)
+		map_.parallel_foreach_cell([&] (Vertex v)
 		{
 			quadric_[v].zero();
 		});
 
-		map_.parallel_foreach_cell([&] (Face f, uint32)
+		map_.parallel_foreach_cell([&] (Face f)
 		{
 			Dart d = f.dart;
 			Dart d1 = map_.phi1(d);

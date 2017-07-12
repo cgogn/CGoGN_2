@@ -49,9 +49,9 @@ int main(int argc, char** argv)
 		std::vector<uint32> nb_darts_per_thread(cgogn::thread_pool()->nb_workers());
 		for (uint32& n : nb_darts_per_thread)
 			n = 0;
-		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
+		map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart)
 		{
-			nb_darts_per_thread[thread_index]++;
+			nb_darts_per_thread[cgogn::current_thread_index()]++;
 		});
 		for (uint32 n : nb_darts_per_thread)
 			nb_darts_2 += n;
@@ -82,9 +82,9 @@ int main(int argc, char** argv)
 		std::vector<uint32> nb_faces_per_thread(cgogn::thread_pool()->nb_workers());
 		for (uint32& n : nb_faces_per_thread)
 			n = 0;
-		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face, uint32 thread_index)
+		map.parallel_foreach_cell([&nb_faces_per_thread] (Map2::Face)
 		{
-			nb_faces_per_thread[thread_index]++;
+			nb_faces_per_thread[cgogn::current_thread_index()]++;
 		});
 		for (uint32 n : nb_faces_per_thread)
 			nb_faces_2 += n;
