@@ -1151,6 +1151,114 @@ public:
 
 protected:
 
+	/**
+	 * @brief merge incident volumes along the given faces
+	 * @param d dart of the first face
+	 * @param e dart of the second face
+	 */
+	void merge_volumes_topo(Dart d, Dart e)
+	{
+		//Traversal of both faces to check their sizes
+		//and store their edges to efficiently access them further
+		cgogn_assert(codegree(Face(d)) == codegree(Face(e)));
+
+		std::vector<Dart>* d_darts = dart_buffers()->buffer();
+		std::vector<Dart>* e_darts = dart_buffers()->buffer();
+
+		Dart d_fit = d;
+		Dart e_fit = e;
+		do
+		{
+			d_darts->push_back(d_fit);
+			d_fit = this->phi1(d_fit);
+
+			e_darts->push_back(e_fit);
+			e_fit = this->phi_1(e_fit);
+		}while(d_fit != d);
+
+		std::vector<Dart>::iterator d_it, e_it;
+
+		for (d_it = d_darts->begin(), e_it = e_darts->begin();
+			 d_it != d_darts->end(); ++d_it, ++e_it)
+		{
+			// Search the faces adjacent to d_it and e_it
+			Dart d2 = phi2(*d_it);
+			Dart e2 = phi2(*e_it);
+			// Unlink the two adjacent faces from d_it and e_it
+			phi2_unsew(d2);
+			phi2_unsew(e2);
+			// Link the two adjacent faces together
+			phi2_sew(d2, e2);
+		}
+
+		dart_buffers()->release_buffer(d_darts);
+		dart_buffers()->release_buffer(e_darts);
+
+		// Delete the two alone faces
+		this->Inherit::remove_face_topo(d);
+		this->Inherit::remove_face_topo(e);
+	}
+
+public:
+	/**
+	 * @brief Merges two volumes along the given faces
+	 * @pre The two faces must have same codegree
+	 * @param f1 the face of the first volume
+	 * @param f2 the face of the second volume
+	 */
+	void merge_volumes(Dart d, Dart e)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		std::vector<Dart>* darts = dart_buffers()->buffer();
+		std::vector<uint32>* v_emb = uint_buffers()->buffer();
+		std::vector<uint32>* e_emb = uint_buffers()->buffer();
+
+		Dart f_it = d ;
+		do
+		{
+			darts->push_back(phi2(f_it)) ;
+
+			if (this->template is_embedded<Vertex>())
+			{
+				v_emb->push_back(this->embedding(Vertex(phi2(f_it))));
+			}
+
+			if(this->template is_embedded<Edge>())
+			{
+				e_emb->push_back(this->embedding(Edge(f_it)));
+			}
+
+			f_it = this->phi1(f_it);
+		}while(f_it != d);
+
+		if(this->template is_embedded<Volume>())
+		{
+			this->template set_orbit_embedding<Volume>(Volume(e), this->embedding(Volume(d)));
+		}
+
+		merge_volumes_topo(d, e);
+
+		for(uint32 i = 0 ; i < darts->size() ; ++i)
+		{
+			if(this->template is_embedded<Vertex>())
+			{
+				this->template set_orbit_embedding<Vertex>(Vertex((*darts)[i]), (*v_emb)[i]);
+			}
+
+			if(this->template is_embedded<Edge>())
+			{
+				this->template set_orbit_embedding<Edge>(Edge((*darts)[i]), (*e_emb)[i]);
+			}
+		}
+
+		dart_buffers()->release_buffer(darts);
+		uint_buffers()->release_buffer(v_emb);
+		uint_buffers()->release_buffer(e_emb);
+}
+
+protected:
+
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point of phi2 relation)
 	 * \param d a dart incident to the hole
