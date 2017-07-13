@@ -295,7 +295,7 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 /// \brief Test if a ray intersectes an axis-aligned box
 /// \tparam VEC3 the domain of the box. Has to be of dimension 3
 template <typename VEC3, typename std::enable_if<(nb_components_traits<VEC3>::value == 3)>::type* = nullptr>
-inline bool ray_intersect(const AABB<VEC3>& aabb, const VEC3& P, const VEC3& V) const
+inline bool ray_intersect(const AABB<VEC3>& aabb, const VEC3& P, const VEC3& V)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 
@@ -350,7 +350,7 @@ inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VE
 	for(uint32 i = 0; i < b1.dim_; ++i)
 	{
 		target.min(i, std::min(b1.min()[i], b2.min()[i]));
-		targer.max(i, std::max(b1.max()[i], b2.max()[i]));
+		target.max(i, std::max(b1.max()[i], b2.max()[i]));
 	}
 }
 
