@@ -40,6 +40,7 @@ class Tiling
 protected:
 
 	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 
 public:
@@ -77,6 +78,11 @@ public:
 	 * Order depends on the tiling kind
 	 */
 	std::vector<Vertex> vertex_table_;
+
+	/**
+	 * @brief Table of edges
+	 */
+	std::vector<Edge> edge_table_;
 
 	/**
 	 * @brief Table of faces
