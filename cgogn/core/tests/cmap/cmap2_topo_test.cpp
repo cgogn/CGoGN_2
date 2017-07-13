@@ -544,7 +544,7 @@ TEST_F(CMap2TopoTest, cut_face_topo)
  * The codegree of the resulting face is K1 + K2 - 2 (K1 and K2 being the codegrees fo the original faces)
  * The number of generated cells is correct and the map integrity is preserved.
  */
-TEST_F(CMap2TopoTest, merge_incident_faces_topo)
+TEST_F(CMap2TopoTest, merge_incident_faces_of_edge_topo)
 {
 //	add_closed_surfaces();
 
@@ -564,7 +564,7 @@ TEST_F(CMap2TopoTest, merge_incident_faces_topo)
 	uint32 k1 = codegree(Face(f1));
 	uint32 k2 = codegree(Face(f2));
 	Dart f11 = phi1(f1);
-	merge_incident_faces_topo(f1);
+	merge_incident_faces_of_edge_topo(f1);
 	--count_edges;
 	--count_faces;
 	EXPECT_EQ(codegree(Face(f11)), k1 + k2 - 2);
@@ -582,7 +582,7 @@ TEST_F(CMap2TopoTest, merge_incident_faces_topo)
 //			uint32 k1 = codegree(Face(d));
 //			uint32 k2 = codegree(Face(d2));
 
-//			if (merge_incident_faces_topo(d))
+//			if (merge_incident_faces_of_edge_topo(d))
 //			{
 //				--count_edges;
 //				--count_faces;
