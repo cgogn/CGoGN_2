@@ -28,9 +28,7 @@ else()
 	message(WARNING "Qt version < 5.6 : not compiling transparency rendering (need MRT FBO)")
 endif()
 
-
-set(HEADER_FILES
-	dll.h
+set(HEADER_SHADERS
 	shaders/vbo.h
 	shaders/shader_program.h
 	shaders/shader_simple_color.h
@@ -45,16 +43,21 @@ set(HEADER_FILES
 	shaders/shader_explode_volumes.h
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
+)
+
+set(HEADER_FILES
+	dll.h
 	drawer.h
 	topo_drawer.h
 	volume_drawer.h
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
+	${HEADER_SHADERS}
 	${HEADER_W_QT56}
 )
 
-set(SOURCE_FILES
+set(SOURCE_SHADERS
 	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
@@ -68,14 +71,21 @@ set(SOURCE_FILES
 	shaders/shader_explode_volumes.cpp
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
+)
+
+set(SOURCE_FILES
 	drawer.cpp
 	topo_drawer.cpp
 	volume_drawer.cpp
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
+	${SOURCE_SHADERS}
 	${SOURCE_W_QT56}
 )
+
+source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
+source_group("SHADERS_TRANSPARENT" FILES ${HEADER_W_QT56} ${SOURCE_W_QT56})
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

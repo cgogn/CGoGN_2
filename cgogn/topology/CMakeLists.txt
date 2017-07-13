@@ -4,22 +4,32 @@ project(cgogn_topology
 
 find_package(OpenNL REQUIRED)
 
-set(HEADER_FILES
-	dll.h
+set(HEADER_TYPES
 	types/adjacency_cache.h
 	types/critical_point.h
+)
+set(HEADER_ALGOS
 	algos/distance_field.h
 	algos/features.h
 	algos/scalar_field.h
 	algos/linear_solving.h
 )
 
-set(SOURCE_FILES
+set(HEADER_FILES dll.h ${HEADER_TYPES} ${HEADER_ALGOS})
+
+
+set(SOURCE_ALGOS
 	algos/distance_field.cpp
 	algos/features.cpp
 	algos/scalar_field.cpp
+)
+set(SOURCE_TYPES
 	types/adjacency_cache.cpp
 )
+set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TYPES})
+
+source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS}) 
+source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
