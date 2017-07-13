@@ -92,6 +92,13 @@ public:
 		return p_min_;
 	}
 
+	inline void min(uint32 d, Scalar v)
+	{
+		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_assert(d < dim_);
+		p_min_[d] = v;
+	}
+
 	inline Vec& max()
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
@@ -102,6 +109,13 @@ public:
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		return p_max_;
+	}
+
+	inline void max(uint32 d, Scalar v)
+	{
+		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_assert(d < dim_);
+		p_max_[d] = v;
 	}
 
 	inline Scalar size(uint32 coord) const
@@ -258,42 +272,6 @@ public:
 		p_max_ = ((p_max_ - center) * size) + center;
 	}
 
-//	// test if bb is intersected by a ray
-//	bool ray_intersect(const Vec& P, const Vec& V) const
-//	{
-//		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
-//		{
-//			Vec Q = P + ((p_min_[2] - P[2]) / V[2]) * V;
-//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-//				return true;
-//			Q = P + ((p_max_[2] - P[2]) / V[2]) * V;
-//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-//				return true;
-//		}
-
-//		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
-//		{
-//			Vec Q = P + ((p_min_[1] - P[1]) / V[1]) * V;
-//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-//				return true;
-//			Q = P + ((p_max_[1] - P[1]) / V[1]) * V;
-//			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-//				return true;
-//		}
-
-//		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
-//		{
-//			Vec Q = P + ((p_min_[0] - P[0]) / V[0]) * V;
-//			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-//				return true;
-//			Q = P + ((p_max_[0] - P[0]) / V[0]) * V;
-//			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-//				return true;
-//		}
-
-//		return false;
-//	}
-
 	static std::string cgogn_name_of_type()
 	{
 		return std::string("cgogn::geometry::AABB<") + name_of_type(Vec()) + std::string(">");
@@ -312,6 +290,63 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 {
 	in >> bb.min() >> bb.max();
 	return in;
+}
+
+/// \brief Test if a ray intersectes an axis-aligned box
+/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+template <typename VEC3, typename std::enable_if<(nb_components_traits<VEC3>::value == 3)>::type* = nullptr>
+inline bool ray_intersect(const AABB<VEC3>& aabb, const Vec& P, const Vec& V) const
+{
+	if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
+	{
+		Vec Q = P + ((aabb.min()[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]))
+			return true;
+		Q = P + ((aabb.max()[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]))
+			return true;
+	}
+
+	if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
+	{
+		Vec Q = P + ((aabb.min()[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+			return true;
+		Q = P + ((aabb.max()[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+			return true;
+	}
+
+	if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
+	{
+		Vec Q = P + ((aabb.min()[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+			return true;
+		Q = P + ((aabb.max()[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+			return true;
+	}
+
+	return false;
+}
+
+
+/// \brief Computes the smallest axis-aligned box that encloses two AABBs.
+/// \tparam VEC_T the domain of the box
+/// \param[out] target the smallest axis-aligned box that encloses \p b1 and \p b2
+/// \param[in] b1 first box
+/// \param[in] b2 second box
+template <typename VEC_T>
+inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VEC_T>& b2)
+{
+	cgogn_assert(target.dim_ == b1.dim_);
+	cgogn_assert(b1.dim_ == b2.dim_);
+
+	for(uint32 i = 0; i < b1.dim_; ++i)
+	{
+		target.min(i, std::min(b1.min()[i], b2.min()[i]));
+		targer.max(i, std::max(b1.max()[i], b2.max()[i]));
+	}
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_AABB_CPP_))
