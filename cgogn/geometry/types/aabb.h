@@ -297,33 +297,35 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 template <typename VEC3, typename std::enable_if<(nb_components_traits<VEC3>::value == 3)>::type* = nullptr>
 inline bool ray_intersect(const AABB<VEC3>& aabb, const Vec& P, const Vec& V) const
 {
+	VEC3 aabb_min = aabb.min();
+	VEC3 aabb_max = aabb.max();
 	if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 	{
-		Vec Q = P + ((aabb.min()[2] - P[2]) / V[2]) * V;
-		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]))
+		VEC3 Q = P + ((aabb_min[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
 			return true;
-		Q = P + ((aabb.max()[2] - P[2]) / V[2]) * V;
-		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]))
+		Q = P + ((aabb_max[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
 			return true;
 	}
 
 	if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
 	{
-		Vec Q = P + ((aabb.min()[1] - P[1]) / V[1]) * V;
-		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+		VEC3 Q = P + ((aabb_min[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
 			return true;
-		Q = P + ((aabb.max()[1] - P[1]) / V[1]) * V;
-		if ((Q[0] < aabb.max()[0]) && (Q[0] > aabb.min()[0]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+		Q = P + ((aabb_max[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
 			return true;
 	}
 
 	if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
 	{
-		Vec Q = P + ((aabb.min()[0] - P[0]) / V[0]) * V;
-		if ((Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+		VEC3 Q = P + ((aabb_min[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
 			return true;
-		Q = P + ((aabb.max()[0] - P[0]) / V[0]) * V;
-		if ((Q[1] < aabb.max()[1]) && (Q[1] > aabb.min()[1]) && (Q[2] < aabb.max()[2]) && (Q[2] > aabb.min()[2]))
+		Q = P + ((aabb_max[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
 			return true;
 	}
 
