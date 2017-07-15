@@ -50,12 +50,6 @@ set(SOURCE_TYPES
 )
 set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TYPES})
 
-source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
-source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
-source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
-
-
-
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
@@ -80,3 +74,9 @@ install(DIRECTORY algos functions types
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
+source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
+source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

@@ -2,6 +2,8 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
+
+
 set(HEADER_BASIC
 	basic/dart.h
 	basic/dart_marker.h
@@ -92,13 +94,8 @@ set(SOURCE_UTILS
 
 set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_UTILS})
 
-source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
-source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
-source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
-source_group("BASIC" FILES ${HEADER_BASIC})
-
-
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+
 
 # use of target_compile_options to have transitive flags
 if(CGOGN_USE_SIMD)
@@ -177,3 +174,10 @@ install(DIRECTORY basic cmap container utils
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
+source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
+source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
+source_group("BASIC" FILES ${HEADER_BASIC})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

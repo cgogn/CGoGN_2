@@ -34,7 +34,7 @@ bool read_mesh(Surface_mesh& mesh, const std::string& filename)
     std::string::size_type dot(filename.rfind("."));
     if (dot == std::string::npos) return false;
     std::string ext = filename.substr(dot+1, filename.length()-dot-1);
-    std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+    std::transform(ext.begin(), ext.end(), ext.begin(), /* tolower */[] (char c) -> char { return char(tolower(c)); }); // just to avoid some warnings
 
     // extension determines reader
     if (ext == "off")
@@ -56,7 +56,7 @@ bool write_mesh(const Surface_mesh& mesh, const std::string& filename)
     std::string::size_type dot(filename.rfind("."));
     if (dot == std::string::npos) return false;
     std::string ext = filename.substr(dot+1, filename.length()-dot-1);
-    std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+	std::transform(ext.begin(), ext.end(), ext.begin(),  /* tolower */[](char c) -> char { return char(tolower(c)); }); // just to avoid some warnings
 
 
     // extension determines reader

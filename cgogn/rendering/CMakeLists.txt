@@ -5,7 +5,7 @@ project(cgogn_rendering
 find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
-	set(HEADER_W_QT56
+	set(HEADER_TRANSP_SHADER
 	transparency_shaders/shader_transparent_quad.h
 	transparency_shaders/shader_transparent_flat.h
 	transparency_shaders/shader_transparent_phong.h
@@ -15,7 +15,7 @@ if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	transparency_volume_drawer.h
 	)
 
-	set(SOURCE_W_QT56
+	set(SOURCE_TRANSP_SHADER
 	transparency_shaders/shader_transparent_quad.cpp
 	transparency_shaders/shader_transparent_flat.cpp
 	transparency_shaders/shader_transparent_phong.cpp
@@ -54,7 +54,7 @@ set(HEADER_FILES
 	wall_paper.h
 	frame_manipulator.h
 	${HEADER_SHADERS}
-	${HEADER_W_QT56}
+	${HEADER_TRANSP_SHADER}
 )
 
 set(SOURCE_SHADERS
@@ -81,11 +81,8 @@ set(SOURCE_FILES
 	wall_paper.cpp
 	frame_manipulator.cpp
 	${SOURCE_SHADERS}
-	${SOURCE_W_QT56}
+	${SOURCE_TRANSP_SHADER}
 )
-
-source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
-source_group("SHADERS_TRANSPARENT" FILES ${HEADER_W_QT56} ${SOURCE_W_QT56})
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -111,3 +108,8 @@ install(DIRECTORY shaders transparency_shaders
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
+source_group("SHADERS_TRANSPARENT" FILES ${HEADER_TRANSP_SHADER} ${SOURCE_TRANSP_SHADER})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

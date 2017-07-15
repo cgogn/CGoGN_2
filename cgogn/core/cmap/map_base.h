@@ -723,11 +723,14 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
+#pragma warning(push)
+#pragma warning(disable:4717)
 	template <Orbit ORBIT>
 	bool is_boundary_cell(Cell<ORBIT> c) const
 	{
 		return to_concrete()->is_boundary_cell(c);
 	}
+#pragma warning(pop)
 
 	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const

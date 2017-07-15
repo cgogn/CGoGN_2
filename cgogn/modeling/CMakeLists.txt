@@ -51,9 +51,6 @@ set(SOURCE_TILING
 )
 set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TILING})
 
-source_group("ALGOS" FILES ${HEADER_ALGOS}  ${SOURCE_ALGOS})
-source_group("TILING" FILES ${HEADER_TILING} ${SOURCE_TILING})
-source_group("DECIMATION" FILES ${HEADER_DECIMATION})
 
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -77,3 +74,10 @@ install(DIRECTORY algos tiling decimation
 
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")
+
+
+source_group("ALGOS" FILES ${HEADER_ALGOS}  ${SOURCE_ALGOS})
+source_group("TILING" FILES ${HEADER_TILING} ${SOURCE_TILING})
+source_group("DECIMATION" FILES ${HEADER_DECIMATION})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)
+

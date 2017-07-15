@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 2.8.12)
-project (benchmark)
+
+ cmake_policy(SET CMP0048 NEW)
+
+project (benchmark VERSION 0.0.0)
 
 foreach(p
     CMP0054 # CMake 3.1
