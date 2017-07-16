@@ -197,6 +197,7 @@ public:
 	{
 		render_.reset();
 		vbo_pos_.reset();
+		cgogn::rendering::ShaderProgram::cleaning_all();
 	}
 
 private:
