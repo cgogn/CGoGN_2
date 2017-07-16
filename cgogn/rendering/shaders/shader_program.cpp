@@ -67,6 +67,35 @@ void ShaderParam::release()
 	shader_->release();
 }
 
+
+std::vector<ShaderProgram*>* ShaderProgram::instances_ = nullptr;
+
+void ShaderProgram::registering(ShaderProgram* sh)
+{
+	if (instances_ == nullptr)
+	{
+		instances_ = new std::vector<ShaderProgram*>;
+		instances_->reserve(256);
+	}
+	
+	auto it = std::find(instances_->begin(), instances_->end(), sh);
+	if (it != instances_->end())
+		instances_->push_back(sh);
+}
+
+void ShaderProgram::cleaning_all()
+{
+	if (instances_ != nullptr)
+	{
+		for (auto* ptr : *instances_)
+			delete ptr;
+		delete instances_;
+		instances_ = nullptr;
+
+	}
+}
+
+
 ShaderProgram::~ShaderProgram()
 {}
 

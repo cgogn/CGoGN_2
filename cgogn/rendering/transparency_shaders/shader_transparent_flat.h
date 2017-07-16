@@ -141,7 +141,7 @@ public:
 private:
 
 	ShaderFlatTransp();
-	static std::unique_ptr<ShaderFlatTransp> instance_;
+	static ShaderFlatTransp* instance_;
 
 };
 
