@@ -42,7 +42,7 @@ void mark_feature_edges(
 {
 	feature_edge.unmark_all();
 
-	map.parallel_foreach_cell([&] (typename MAP::Edge e, uint32)
+	map.parallel_foreach_cell([&] (typename MAP::Edge e)
 	{
 		if (angle(normal[e.dart], normal[map.phi2(e.dart)] > M_PI / 6.))
 			feature_edge.mark(e);

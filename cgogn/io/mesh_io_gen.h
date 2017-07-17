@@ -76,7 +76,6 @@ public:
 	using CellCache = typename Map::CellCache;
 
 	inline MeshExport() :
-		position_attribute_(nullptr),
 		cell_cache_(nullptr)
 	{}
 
@@ -96,16 +95,27 @@ public:
 		if (!output || !output->good())
 			return;
 
-		indices_ = map.template add_attribute<uint32, Vertex>("indices_vert_export");
-
-		this->prepare_for_export(map, options);
-
-		if (position_attribute_ == nullptr)
+		if(options.position_attributes_.empty())
 		{
-			cgogn_log_warning("MeshExport::export_file") << "The position attribute is invalid.";
-			map.remove_attribute(indices_);
+			cgogn_log_warning("MeshExport::export_file") << "The position attribute is empty.";
 			return;
 		}
+
+		const Orbit orb = Vertex::ORBIT;
+		if(options.position_attributes_.find(orb) == options.position_attributes_.end())
+		{
+			cgogn_log_warning("MeshExport::export_file") << "The VERTEX ORBIT position attribute do not exist.";
+			return;
+		}
+		else
+			position_attributes_.insert(std::make_pair(
+					orb,
+					map.template attribute_container<Vertex::ORBIT>().get_chunk_array(options.position_attributes_.at(orb)))
+				);
+
+		vindices_ = map.template add_attribute<uint32, Vertex>("indices_vert_export");
+
+		this->prepare_for_export(map, options);
 
 		this->export_file_impl(map,*output, options);
 		this->clean_added_attributes(map);
@@ -120,26 +130,27 @@ protected:
 
 	virtual void clean_added_attributes(Map& map)
 	{
-		map.remove_attribute(indices_);
+		map.remove_attribute(vindices_);
 	}
 
-	ChunkArrayGen const * position_attribute() const
+	inline const ChunkArrayGen* position_attribute(const Orbit orb) const
 	{
-		return position_attribute_;
+		auto it = position_attributes_.find(orb);
+		return it == position_attributes_.end() ? nullptr : it->second;
 	}
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) = 0;
 	virtual void reset()
 	{
-		position_attribute_ = nullptr;
+		position_attributes_.clear();
 		vertex_attributes_.clear();
 		cell_cache_.reset();
 	}
 
-	VertexAttribute<uint32>           indices_;
+	VertexAttribute<uint32> vindices_;
+	std::map<Orbit, const ChunkArrayGen*> position_attributes_;
 	std::vector<const ChunkArrayGen*> vertex_attributes_;
-	const ChunkArrayGen*              position_attribute_;
 	std::unique_ptr<CellCache>        cell_cache_;
 };
 

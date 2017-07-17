@@ -292,6 +292,7 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 	static const std::map<std::string, FileType> file_type_map{
 		{"off", FileType_OFF},
 		{"obj", FileType_OBJ},
+		{"2dm", FileType_2DM},
 		{"stl", FileType_STL},
 		{"ply", FileType_PLY},
 		{"vtk", FileType_VTK_LEGACY},
@@ -407,7 +408,7 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 
 ExportOptions::ExportOptions() :
 	filename_(),
-	position_attribute_(),
+	position_attributes_(),
 	attributes_to_export_(),
 	binary_(false),
 	compress_(false),
@@ -416,7 +417,7 @@ ExportOptions::ExportOptions() :
 
 ExportOptions::ExportOptions(const ExportOptions& eo) :
 	filename_(eo.filename_),
-	position_attribute_(eo.position_attribute_),
+	position_attributes_(eo.position_attributes_),
 	attributes_to_export_(eo.attributes_to_export_),
 	cell_filter_(eo.cell_filter_),
 	binary_(eo.binary_),
@@ -426,7 +427,7 @@ ExportOptions::ExportOptions(const ExportOptions& eo) :
 
 ExportOptions::ExportOptions(ExportOptions&& eo) :
 	filename_(std::move(eo.filename_)),
-	position_attribute_(std::move(eo.position_attribute_)),
+	position_attributes_(std::move(eo.position_attributes_)),
 	attributes_to_export_(std::move(eo.attributes_to_export_)),
 	cell_filter_(std::move(eo.cell_filter_)),
 	binary_(eo.binary_),

@@ -145,7 +145,7 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const uint32 nb_vols = this->nb_volumes();
 		const uint32 nb_vert = this->nb_vertices();
 

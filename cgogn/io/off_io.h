@@ -278,13 +278,13 @@ private:
 		map.foreach_cell(
 			[&] (Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, false, false);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 				output << std::endl;
 			},
 			*(this->cell_cache_)
 		);
 
-		const auto& ids = this->indices_;
+		const auto& ids = this->vindices_;
 		// second pass to save primitives
 		std::vector<uint32> prim;
 		prim.reserve(20);
@@ -328,7 +328,7 @@ private:
 		map.foreach_cell(
 			[&] (Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, true, false,4ul);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, true, false, 4ul);
 			},
 			*(this->cell_cache_)
 		);
@@ -340,7 +340,7 @@ private:
 		std::vector<uint32> prim;
 		prim.reserve(20);
 
-		const auto& ids = this->indices_;
+		const auto& ids = this->vindices_;
 
 		map.foreach_cell([&] (Face f)
 		{

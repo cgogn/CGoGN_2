@@ -113,6 +113,7 @@ public:
 	using Self = VtkSurfaceExport<MAP>;
 	using Map = typename Inherit::Map;
 	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
 	using Face = typename Inherit::Face;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 	template<typename T>
@@ -133,8 +134,12 @@ private:
 	{
 		const bool bin = option.binary_;
 		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
+		uint32 nbe = 0;
 		const uint32 nbf = map.template nb_cells<Face::ORBIT>();
-		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name());
+
+		if(this->eindices_.is_valid())
+			nbe = map.template nb_cells<Edge::ORBIT>();
 
 		output << "# vtk DataFile Version 2.0" << std::endl;
 		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
@@ -145,29 +150,59 @@ private:
 		output << "DATASET UNSTRUCTURED_GRID" << std::endl;
 
 		{// point section
-			output << "POINTS " << nbv << " " << scalar_type << std::endl;
+
+			output << "POINTS " << nbv + nbe << " " << scalar_type << std::endl;
 			map.foreach_cell([&](Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, bin, false);
 				if (!bin)
 					output << std::endl;
 			}, *(this->cell_cache_));
+
+			map.foreach_cell([&](Edge e)
+			{
+				this->position_attribute(Edge::ORBIT)->export_element(map.embedding(e), output, bin, false);
+				if (!bin)
+					output << std::endl;
+			}, *(this->cell_cache_));
+
 			output << std::endl;
 		} // end point section
 
 		{ // cell section
 			std::vector<uint32> buffer_cells;
 			buffer_cells.reserve(4u*nbf);
+			std::vector<uint32> buffer_type_cells;
+			buffer_type_cells.reserve(nbf);
+
+			//todo mesh order should not be global
+			//vtk files can handle multiple dimensions simultaneously
+			uint32 mesh_order = 1;
+			if(this->eindices_.is_valid())
+				mesh_order = 2;
+
 			uint32 cell_section_size{0u};
 			map.foreach_cell([&](Face f)
 			{
-				buffer_cells.push_back(map.codegree(f));
-				cell_section_size += buffer_cells.back();
+				uint32 codegree = 0;
 				Dart it = f.dart;
 				do {
-					buffer_cells.push_back(this->indices_[Vertex(it)]);
+					buffer_cells.push_back(this->vindices_[Vertex(it)]);
+					++codegree;
 					it = map.phi1(it);
 				} while (it != f.dart);
+
+				if(mesh_order == 2) {
+					do {
+						buffer_cells.push_back(this->eindices_[Edge(it)]);
+						++codegree;
+						it = map.phi1(it);
+					} while(it != f.dart);
+				}
+
+				buffer_type_cells.push_back(codegree);
+				cell_section_size += codegree;
+
 			}, *(this->cell_cache_));
 
 			cell_section_size += nbf; // we add an integer for each face (the nb of vertices)
@@ -183,9 +218,10 @@ private:
 					i = swap_endianness_native_big(i);
 				output << std::endl;
 			} else {
+					std::size_t k = 0;
 					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
 					{
-						const uint32 nb_vert = buffer_cells[i++];
+						const uint32 nb_vert = buffer_type_cells[k++];
 						output << nb_vert << " ";
 						for (uint32 j = 0u; j < nb_vert; ++j)
 						{
@@ -200,31 +236,44 @@ private:
 			{
 				std::vector<int32> buffer_cell_type;
 				buffer_cell_type.reserve(nbf);
-				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				for (auto it = buffer_type_cells.begin(), end = buffer_type_cells.end() ; it != end ;)
 				{
 					const uint32 nb_vert = *it;
-					switch (nb_vert) {
-						case 3u: buffer_cell_type.push_back(VTK_TRIANGLE); break;
-						case 4u: buffer_cell_type.push_back(VTK_QUAD); break;
-						default: buffer_cell_type.push_back(VTK_POLYGON); break;
+					if(mesh_order == 1) {
+						switch (nb_vert) {
+							case 3u: buffer_cell_type.push_back(VTK_TRIANGLE); break;
+							case 4u: buffer_cell_type.push_back(VTK_QUAD); break;
+							default: buffer_cell_type.push_back(VTK_POLYGON); break;
+						}						
+					} else if(mesh_order == 2) {
+						switch(nb_vert) {
+							case 6u: buffer_cell_type.push_back(VTK_QUADRATIC_TRIANGLE); break;
+						}
+
 					}
-					it += nb_vert + 1u;
+					it += 1u;
 				}
 				for (auto& i : buffer_cell_type)
 					i = swap_endianness_native_big(i);
 				output.write(reinterpret_cast<char*>(&buffer_cell_type[0]), buffer_cell_type.size() * sizeof(int32));
 				output << std::endl;
 			} else {
-				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				for (auto it = buffer_type_cells.begin(), end = buffer_type_cells.end() ; it != end ;)
 				{
 					const uint32 nb_vert = *it;
-					switch (nb_vert) {
-						case 3u: output << VTK_TRIANGLE; break;
-						case 4u: output << VTK_QUAD; break;
-						default: output << VTK_POLYGON; break;
+					if(mesh_order == 1) {
+						switch (nb_vert) {
+							case 3u: output << VTK_TRIANGLE; break;
+							case 4u: output << VTK_QUAD; break;
+							default: output << VTK_POLYGON; break;
+						}
+					} else if(mesh_order == 2) {
+						switch(nb_vert) {
+							case 6u: output << VTK_QUADRATIC_TRIANGLE; break;
+						}
 					}
 					output << std::endl;
-					it += nb_vert + 1u;
+					it += 1u;
 				}
 			}
 		} // end cell section
@@ -274,7 +323,7 @@ private:
 
 	void export_vtp_xml(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
@@ -420,7 +469,7 @@ private:
 			{
 				Dart it = f.dart;
 				do {
-					buffer_vertices.push_back(this->indices_[Vertex(it)]);
+					buffer_vertices.push_back(this->vindices_[Vertex(it)]);
 					it = map.phi1(it);
 				} while (it != f.dart);
 			}, *(this->cell_cache_));
@@ -433,7 +482,7 @@ private:
 			{
 				Dart it = f.dart;
 				do {
-					output << this->indices_[Vertex(it)] << " ";
+					output << this->vindices_[Vertex(it)] << " ";
 					it = map.phi1(it);
 				} while (it != f.dart);
 				output << std::endl;
@@ -499,7 +548,7 @@ private:
 		const bool bin = option.binary_;
 		const uint32 nbv = this->nb_vertices();
 		const uint32 nbw = this->nb_volumes();
-		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name());
 
 		output << "# vtk DataFile Version 2.0" << std::endl;
 		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
@@ -513,7 +562,7 @@ private:
 			output << "POINTS " << nbv << " " << scalar_type << std::endl;
 			map.foreach_cell([&](Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, bin, false);
 				if (!bin)
 					output << std::endl;
 			}, *(this->cell_cache_));
@@ -642,7 +691,7 @@ private:
 
 	void export_vtu(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_ ? "binary" : "ascii");
 		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
@@ -1131,12 +1180,12 @@ protected:
 	{
 		using tinyxml2::XMLDocument;
 		using tinyxml2::XMLError;
-		using tinyxml2::XML_NO_ERROR;
+		using tinyxml2::XML_SUCCESS;
 		using tinyxml2::XMLElement;
 
 		XMLDocument doc;
 		XMLError eResult = doc.LoadFile(filename.c_str());
-		if (eResult != XML_NO_ERROR)
+		if (eResult != XML_SUCCESS)
 		{
 			cgogn_log_warning("parse_xml_vtu")<< "Unable to load file \"" << filename << "\".";
 			return false;

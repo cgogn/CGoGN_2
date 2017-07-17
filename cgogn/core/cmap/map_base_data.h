@@ -161,7 +161,7 @@ protected:
 	*/
 	inline ChunkArrayBool* topology_mark_attribute()
 	{
-		const std::size_t thread = cgogn::current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
 		cgogn_assert(thread < mark_attributes_topology_.size());
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
@@ -183,7 +183,7 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
-		const std::size_t thread = cgogn::current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
 		cgogn_assert(thread < mark_attributes_topology_.size());
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}

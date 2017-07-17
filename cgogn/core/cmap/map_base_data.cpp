@@ -38,7 +38,7 @@ MapBaseData::MapBaseData()
 {
 	if (instances_ == nullptr)
 	{
-		cgogn::thread_start(0);
+		cgogn::thread_start(0,0);
 		instances_ = new std::vector<const MapBaseData*>;
 	}
 
