@@ -36,8 +36,18 @@ namespace cgogn
 namespace modeling
 {
 
+/**
+ * @brief compute the topological dual of a CMap2
+ * @param src source mesh
+ * @param dst dual mesh (will be cleared)
+ * @param embed_vertices vertex attribute (of Face) "FaceOfSrc" must be computed
+ * @param embed_edges edge attribute (of Edge) "EdgeOfSrc" must be computed
+ * @param embed_faces face attribute (of Vertex) "VertexOfSrc" must be computed
+ * @return true of dual has been computed
+ */
 template <typename MAP>
-bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed_edges = false, bool embed_faces = false)
+auto dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed_edges = false, bool embed_faces = false)
+-> typename std::enable_if<MAP::DIMENSION == 2, bool>::type
 {
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -48,7 +58,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 	const auto& tc = src.topology_container();
 	uint32 nb = tc.end();
 
-	std::vector<Dart> corr(nb);
+	std::vector<Dart> corresp(nb);
 	typename MAP::Builder build(dst);
 
 	// create a face in dst for each vertex in src and keep a table src -> dst
@@ -58,7 +68,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 		Dart df = build.add_face_topo_fp(nb);
 		src.foreach_incident_edge(v, [&](Edge e)
 		{
-			corr[e.dart.index] = df;
+			corresp[e.dart.index] = df;
 			df = dst.phi1(df);
 		});
 	});
@@ -67,8 +77,8 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 	bool open = false;
 	src.foreach_cell([&](Edge e) -> bool
 	{
-		Dart d1 = corr[e.dart.index];
-		Dart d2 = corr[(src.phi2(e.dart)).index];
+		Dart d1 = corresp[e.dart.index];
+		Dart d2 = corresp[(src.phi2(e.dart)).index];
 		if (src.is_boundary(d1) || src.is_boundary(d1))
 		{
 			cgogn_log_error("dual") << " can not compute dual of open map";
@@ -87,7 +97,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 		auto face_of_src = dst.template add_attribute<Face, Vertex>("FaceOfSrc");
 		src.foreach_cell([&](Face f)
 		{
-			Vertex v(dst.phi2(corr[f.dart.index]));
+			Vertex v(dst.phi2(corresp[f.dart.index]));
 			face_of_src[v] = f;
 		});
 	}
@@ -97,7 +107,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 		auto edge_of_src = dst.template add_attribute<Edge, Edge>("EdgeOfSrc");
 		src.foreach_cell([&](Edge e)
 		{
-			Edge ee(corr[e.dart.index]);
+			Edge ee(corresp[e.dart.index]);
 			edge_of_src[ee] = e;
 		});
 	}
@@ -107,15 +117,22 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 		auto vertex_of_src = dst.template add_attribute<Vertex, Face>("VertexOfSrc");
 		src.foreach_cell([&](Vertex v)
 		{
-			Face f(corr[v.dart.index]);
+			Face f(corresp[v.dart.index]);
 			vertex_of_src[f] = v;
 		});
 	}
 	return true;
 }
 
+/**
+ * @brief compute vertices of the dual mesh (centers of faces)
+ * @param src source mesh
+ * @param dst destination dual mesh ( topo already computed)
+ * @param position_src source position attributee
+ */
 template <typename VEC, typename MAP>
-void compute_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::template VertexAttribute<VEC>& position_src)
+auto compute_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::template VertexAttribute<VEC>& position_src)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
