@@ -8,6 +8,7 @@ find_package(cgogn_modeling REQUIRED)
 
 set(SOURCE_FILES
 	algos/catmull_clark_test.cpp
+	algos/dual_test.cpp
 	tiling/square_tiling_test.cpp
 	tiling/triangular_tiling_test.cpp
 	main.cpp

@@ -10,6 +10,7 @@ set(HEADER_FILES
 	algos/pliant_remeshing.h
 	algos/decimation.h
 	algos/tetrahedralization.h
+	algos/dual.h
 
 	tiling/tiling.h
 	tiling/triangular_grid.h
@@ -26,6 +27,7 @@ set(HEADER_FILES
 	decimation/edge_traversor_map_order.h
 	decimation/edge_traversor_edge_length.h
 	decimation/edge_traversor_qem.h
+
 )
 
 set(SOURCE_FILES
