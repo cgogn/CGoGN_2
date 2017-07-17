@@ -39,9 +39,9 @@ namespace modeling
 template <typename MAP>
 bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed_edges = false, bool embed_faces = false)
 {
-	using Vertex = MAP::Vertex;
-	using Edge = MAP::Edge;
-	using Face = MAP::Face;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+	using Face = typename MAP::Face;
 
 	dst.clear_and_remove_attributes();
 
@@ -49,7 +49,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 	uint32 nb = tc.end();
 
 	std::vector<Dart> corr(nb);
-	MAP::Builder build(dst);
+	typename MAP::Builder build(dst);
 
 	// create a face in dst for each vertex in src and keep a table src -> dst
 	src.foreach_cell([&](Vertex v)
@@ -65,7 +65,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 
 	// sew new faces using table
 	bool open = false;
-	src.foreach_cell([&](MAP::Edge e) -> bool
+	src.foreach_cell([&](Edge e) -> bool
 	{
 		Dart d1 = corr[e.dart.index];
 		Dart d2 = corr[(src.phi2(e.dart)).index];
@@ -84,7 +84,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 
 	if (embed_vertices)
 	{
-		auto face_of_src = dst.add_attribute<Face, Vertex>("FaceOfSrc");
+		auto face_of_src = dst.template add_attribute<Face, Vertex>("FaceOfSrc");
 		src.foreach_cell([&](Face f)
 		{
 			Vertex v(dst.phi2(corr[f.dart.index]));
@@ -94,7 +94,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 
 	if (embed_edges)
 	{
-		auto edge_of_src = dst.add_attribute<Edge, Edge>("EdgeOfSrc");
+		auto edge_of_src = dst.template add_attribute<Edge, Edge>("EdgeOfSrc");
 		src.foreach_cell([&](Edge e)
 		{
 			Edge ee(corr[e.dart.index]);
@@ -104,7 +104,7 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 
 	if (embed_faces)
 	{
-		auto vertex_of_src = dst.add_attribute<Vertex, Face>("VertexOfSrc");
+		auto vertex_of_src = dst.template add_attribute<Vertex, Face>("VertexOfSrc");
 		src.foreach_cell([&](Vertex v)
 		{
 			Face f(corr[v.dart.index]);
@@ -117,24 +117,24 @@ bool dual2_topo(const MAP& src, MAP& dst, bool embed_vertices = true, bool embed
 template <typename VEC, typename MAP>
 void compute_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::template VertexAttribute<VEC>& position_src)
 {
-	using Vertex = MAP::Vertex;
-	using Face = MAP::Face;
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
 
-	auto face_of_src = dst.get_attribute<Face, Vertex>("FaceOfSrc");
+	auto face_of_src = dst.template get_attribute<Face, Vertex>("FaceOfSrc");
 	if (!face_of_src.is_valid())
 	{
 		cgogn_log_error("compute_dual_vertices") << "attribute FaceOfSrc not found";
 		return;
 	}
 
-	auto position = dst.get_attribute<Vec3, Vertex>("position");
+	auto position = dst.template get_attribute<VEC, Vertex>("position");
 	if (!position.is_valid())
-		position = dst.add_attribute<Vec3, Vertex>("position");
+		position = dst.template add_attribute<VEC, Vertex>("position");
 
 	dst.foreach_cell([&](Vertex v)
 	{
 		Face f = Face(face_of_src[v]);
-		position[v] = cgogn::geometry::centroid<Vec3>(src, f, position_src);
+		position[v] = cgogn::geometry::centroid<VEC>(src, f, position_src);
 	});
 }
 

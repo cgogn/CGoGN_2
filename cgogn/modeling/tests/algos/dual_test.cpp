@@ -37,9 +37,7 @@ const std::string mesh_path(DEFAULT_MESH_PATH);
 void dual_test(const std::string& filename)
 {
 	Map2 map2;
-	testing::internal::CaptureStderr();
 	cgogn::io::import_surface<Vec3>(map2, mesh_path + filename);
-	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
 	uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
