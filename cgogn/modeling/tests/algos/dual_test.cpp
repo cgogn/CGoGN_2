@@ -24,6 +24,7 @@
 #include <string>
 #include <cgogn/io/map_import.h>
 #include <cgogn/modeling/algos/dual.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -58,9 +59,16 @@ void dual_test(const std::string& filename)
 	});
 	
 	Map2 map2_dual;
-	cgogn::modeling::dual2_topo(map2, map2_dual,true, true, true);
-	cgogn::modeling::compute_dual2_vertices<Vec3>(map2, map2_dual, pos);
-	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
+
+	cgogn::modeling::dual2_topo(map2, map2_dual);
+
+	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
+
+	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+	{
+		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+	});
+
 
 	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();
 	uint32 nbfd = map2_dual.nb_cells<Map2::Face::ORBIT>();
@@ -79,22 +87,11 @@ void dual_test(const std::string& filename)
 	});
 
 
-	auto face_of_src = map2_dual.get_attribute<Map2::Face, Map2::Vertex>("FaceOfSrc");
-	auto vert_of_src = map2_dual.get_attribute<Map2::Vertex, Map2::Face>("VertexOfSrc");
-	auto edge_of_src = map2_dual.get_attribute<Map2::Edge, Map2::Edge>("EdgeOfSrc");
-
 	EXPECT_TRUE(pos_dual.is_valid());
-	EXPECT_TRUE(face_of_src.is_valid());
-	EXPECT_TRUE(vert_of_src.is_valid());
-	EXPECT_TRUE(edge_of_src.is_valid());
 	EXPECT_TRUE(map2_dual.check_map_integrity());
 	EXPECT_EQ(nbvd, nbf );
 	EXPECT_EQ(nbfd, nbv);
 	EXPECT_EQ(nbed, nbe);
-
-	EXPECT_EQ(nbvd, face_of_src.size());
-	EXPECT_EQ(nbfd, vert_of_src.size());
-	EXPECT_EQ(nbed, edge_of_src.size());
 
 	for (uint32 i = 0; i < HISTO_SZ; ++i)
 	{

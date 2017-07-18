@@ -37,6 +37,7 @@
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
 #include <cgogn/modeling/algos/dual.h>
+#include <cgogn/geometry/algos/centroid.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -194,12 +195,18 @@ public:
 	{
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 		if (cgogn::modeling::dual2_topo(view.map_, map_))
-			cgogn::modeling::compute_dual2_vertices<Vec3>(view.map_, map_, view.vertex_position_);
+		{
+			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
+			//view.map_, view.vertex_position_
+			cgogn::modeling::compute_dual2_vertices<Vec3>(map_, vertex_position_, [&] (Map2::Face f )
+			{
+				return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+			});
+		}
 		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
 		std::chrono::duration<float> elapsed_seconds = end - start;
-		cgogn_log_info("compute_dual") << " done in " << elapsed_seconds.count() << " s";
+		cgogn_log_info("compute_dual") << " done ... in " << elapsed_seconds.count() << " s";
 
-		vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 		if (!vertex_position_.is_valid())
 		{
 			cgogn_log_error("ViewerDual::compute_dual") << "Missing attribute position. Aborting.";

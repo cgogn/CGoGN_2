@@ -26,8 +26,6 @@
 
 #include <vector>
 #include <cgogn/modeling/dll.h>
-#include <cgogn/core/basic/dart_marker.h>
-#include <cgogn/geometry/algos/centroid.h>
 
 
 namespace cgogn
@@ -35,6 +33,8 @@ namespace cgogn
 
 namespace modeling
 {
+
+#ifdef GENERIC_VERSION
 
 /**
  * @brief compute the topological dual of a CMap2
@@ -152,6 +152,108 @@ auto compute_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::templa
 	{
 		Face f = Face(face_of_src[v]);
 		position[v] = cgogn::geometry::centroid<VEC>(src, f, position_src);
+	});
+}
+
+#endif
+
+
+
+/**
+ * @brief dual2_topo (work only with closed and compacted map2)
+ * @param src source mesh
+ * @param dst dual result mesh (overwriten)
+ * @return true if computed
+ */
+template <typename MAP>
+auto dual2_topo(const MAP& src, MAP& dst)
+-> typename std::enable_if<MAP::DIMENSION == 2, bool>::type
+{
+	cgogn_message_assert(src.nb_boundaries() == 0u, "dual2_topo can only be used on maps without boundaries");
+	cgogn_message_assert(src.topology_container().end() == src.topology_container().size(), "dual2_topo can only be used on compacted maps");
+
+	// first to be sure to add in an empty map
+	dst.clear_and_remove_attributes();
+
+	// access to low level topo
+	typename MAP::Builder build_dst(dst);
+	typename MAP::template ChunkArray<Dart>& phi1_dst  = build_dst.ca_phi1();
+	typename MAP::template ChunkArray<Dart>& phi_1_dst = build_dst.ca_phi_1();
+	typename MAP::template ChunkArray<Dart>& phi2_dst  = build_dst.ca_phi2();
+
+	src.foreach_dart([&](Dart d)
+	{
+		Dart e = build_dst.add_topology_element();
+		phi1_dst[e.index] = src.phi2(src.phi_1(d));
+		phi2_dst[e.index] = src.phi2(d);
+	});
+
+	// second pass for phi_1, because we can not affect phi_1 on a dart which does not exist
+	dst.foreach_dart([&] (Dart d)
+	{
+		Dart dd = dst.phi1(d);
+		phi_1_dst[dd.index] = d;
+	});
+
+	return true;
+}
+
+
+/**
+ * @brief compute_dual2_vertices (Face of source = phi2(v.dart) of dual)
+ * @param dst dual mesh (topo only)
+ * @param position_dst dual vertex positions
+ * @param compute lambda (Face f) -> VEC
+ */
+template <typename VEC, typename MAP, typename FUNC>
+auto compute_dual2_vertices(MAP& dst, typename MAP::template VertexAttribute<VEC>& position_dst, const FUNC& compute)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	dst.parallel_foreach_cell([&](Vertex v)
+	{
+		position_dst[v] = compute(Face(dst.phi2(v.dart)));
+	});
+}
+
+
+/**
+ * @brief compute_dual2_faces (Vertex of source = (f.dart) of dual)
+ * @param dst dual mesh (topo only)
+ * @param att_dst dual face attribute
+ * @param compute lambda (Vertex v) -> ATT
+ */
+template <typename ATT, typename MAP, typename FUNC>
+auto compute_dual2_faces(MAP& dst, typename MAP::template FaceAttribute<ATT>& att_dst, const FUNC& compute)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
+{
+	using Vertex = typename MAP::Vertex;
+	using Face = typename MAP::Face;
+
+	dst.parallel_foreach_cell([&](Face f)
+	{
+		att_dst[f] = compute(Vertex(f.dart));
+	});
+}
+
+
+/**
+ * @brief compute_dual2_edges (Edge of source = edge of dual)
+ * @param dst dual mesh (topo only)
+ * @param att_dst dual edge attribute
+ * @param compute lambda (Edge v) -> ATT
+ */
+template <typename ATT, typename MAP, typename FUNC>
+auto compute_dual2_edges(MAP& dst, typename MAP::template EdgeAttribute<ATT>& att_dst, const FUNC& compute)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
+{
+	using Edge = typename MAP::Edge;
+
+	dst.parallel_foreach_cell([&]( Edge e)
+	{
+		att_dst[e] = compute(e);
 	});
 }
 
