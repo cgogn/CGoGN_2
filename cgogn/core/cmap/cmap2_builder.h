@@ -156,6 +156,10 @@ public:
 		return *(map_.phi2_);
 	}
 
+	inline ChunkArrayContainer<uint8>& cac_topology()
+	{
+		return map_.topology_;
+	}
 
 private:
 

@@ -155,16 +155,8 @@ auto compute_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::templa
 	});
 }
 
-#endif
 
 
-
-/**
- * @brief dual2_topo (work only with closed and compacted map2)
- * @param src source mesh
- * @param dst dual result mesh (overwriten)
- * @return true if computed
- */
 template <typename MAP>
 auto dual2_topo(const MAP& src, MAP& dst)
 -> typename std::enable_if<MAP::DIMENSION == 2, bool>::type
@@ -195,6 +187,52 @@ auto dual2_topo(const MAP& src, MAP& dst)
 		phi_1_dst[dd.index] = d;
 	});
 
+	return true;
+}
+
+
+#endif
+
+
+
+/**
+ * @brief dual2_topo (work only with closed map2)
+ * @param src source mesh
+ * @param dst dual result mesh (overwriten)
+ * @return true if computed
+ */
+template <typename MAP>
+auto dual2_topo(const MAP& src, MAP& dst)
+-> typename std::enable_if<MAP::DIMENSION == 2, bool>::type
+{
+	cgogn_message_assert(src.nb_boundaries() == 0u, "dual2_topo can only be used on maps without boundaries");
+
+	// first to be sure to add in an empty map
+	dst.clear_and_remove_attributes();
+
+	// access to low level topo
+	typename MAP::Builder build_dst(dst);
+	auto& topo_dst = build_dst.cac_topology();
+	auto& phi1_dst  = build_dst.ca_phi1();
+	auto& phi_1_dst = build_dst.ca_phi_1();
+	auto& phi2_dst  = build_dst.ca_phi2();
+
+	typename MAP::Builder build_src(const_cast<MAP&>(src));
+	const auto& phi2_src  = build_src.ca_phi2();
+	const auto& topo_src = build_src.cac_topology();
+
+	// init topo with same number of dart and holes ...
+	topo_dst.copy_all_but_data(&topo_src);
+	// copy phi2
+	phi2_dst.copy_data(phi2_src);
+
+	// set phi1/phi_1 (//)
+	src.parallel_foreach_dart([&](Dart d)
+	{
+		Dart dd = src.phi2(src.phi_1(d));
+		phi1_dst[d.index] = dd;
+		phi_1_dst[dd.index] = d;
+	});
 	return true;
 }
 

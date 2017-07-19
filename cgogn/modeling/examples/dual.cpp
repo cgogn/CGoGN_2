@@ -194,18 +194,27 @@ public:
 	void compute_dual(Viewer& view)
 	{
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
-		if (cgogn::modeling::dual2_topo(view.map_, map_))
+
+		bool dual_topo_ok = cgogn::modeling::dual2_topo(view.map_, map_);
+
+		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+		std::chrono::duration<float> elapsed_seconds = end - start;
+		cgogn_log_info("compute_dual") << "topo done in " << elapsed_seconds.count() << " s";
+		if (dual_topo_ok)
 		{
+			start = std::chrono::system_clock::now();
+
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
-			//view.map_, view.vertex_position_
+			
 			cgogn::modeling::compute_dual2_vertices<Vec3>(map_, vertex_position_, [&] (Map2::Face f )
 			{
 				return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
 			});
+
+			end = std::chrono::system_clock::now();
+			elapsed_seconds = end - start;
+			cgogn_log_info("compute_dual") << "embedding done in " << elapsed_seconds.count() << " s";
 		}
-		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
-		std::chrono::duration<float> elapsed_seconds = end - start;
-		cgogn_log_info("compute_dual") << " done ... in " << elapsed_seconds.count() << " s";
 
 		if (!vertex_position_.is_valid())
 		{

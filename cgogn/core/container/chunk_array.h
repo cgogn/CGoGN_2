@@ -398,6 +398,29 @@ public:
 				*chunk++ = v;
 		}
 	}
+
+	inline void copy(const Inherit& cag_src)
+	{
+		clear();
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		for (T* chunk : ca->table_data_)
+		{
+			add_chunk();
+			mempcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(T));
+		}
+	}
+
+	inline void copy_data(const Inherit& cag_src)
+	{
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (T* chunk : ca->table_data_)
+		{
+			mempcpy(*td++, chunk, CHUNK_SIZE*sizeof(T));
+		}
+	}
 };
 
 /**
@@ -729,6 +752,30 @@ public:
 				ptr[j] = 0u;
 		}
 	}
+
+	inline void copy(const Inherit& cag_src)
+	{
+		clear();
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		for (uint32* chunk : ca->table_data_)
+		{
+			add_chunk();
+			mempcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+		}
+	}
+
+	inline void copy_data(const Inherit& cag_src)
+	{
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (uint32* chunk : ca->table_data_)
+		{
+			mempcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+		}
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))

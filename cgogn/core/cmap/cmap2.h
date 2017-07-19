@@ -481,6 +481,39 @@ public:
 		return vol;
 	}
 
+
+protected:
+
+	/*!
+	 * \brief Remove a volume from the map.
+	 * \param d : a dart of the volume to remove
+	 */
+	inline void remove_volume_topo(Dart d)
+	{
+		std::vector<Dart>* darts = dart_buffers()->buffer();
+
+		foreach_dart_of_orbit(Volume(d),[&] (Dart e)
+		{
+			darts->push_back(e);
+		});
+
+		for(Dart e: *darts)
+			this->remove_topology_element(e);
+	}
+
+public:
+
+	/*!
+	 * \brief Remove a volume from the map.
+	 * \param v : the volume to remove
+	 */
+	inline void remove_volume(Volume v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		remove_volume_topo(v.dart);
+	}
+
 protected:
 
 	/**

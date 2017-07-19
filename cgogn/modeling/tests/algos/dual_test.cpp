@@ -45,6 +45,7 @@ void dual_test(const std::string& filename)
 	uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
 	uint32 nbe = map2.nb_cells<Map2::Edge::ORBIT>();
 
+	// compute histo of valences
 	const uint32 HISTO_SZ = 48;
 	std::vector<uint32> histo_vertices(HISTO_SZ, 0);
 	map2.foreach_cell([&histo_vertices,&map2](Map2::Vertex v)
@@ -58,6 +59,9 @@ void dual_test(const std::string& filename)
 		histo_faces[map2.codegree(f)]++;
 	});
 	
+
+	//DUAL
+
 	Map2 map2_dual;
 
 	cgogn::modeling::dual2_topo(map2, map2_dual);
@@ -74,6 +78,7 @@ void dual_test(const std::string& filename)
 	uint32 nbfd = map2_dual.nb_cells<Map2::Face::ORBIT>();
 	uint32 nbed = map2_dual.nb_cells<Map2::Edge::ORBIT>();
 
+	// compute histo of valences of dual
 	std::vector<uint32> dual_histo_vertices(HISTO_SZ, 0);
 	map2_dual.foreach_cell([&dual_histo_vertices, &map2_dual](Map2::Vertex v)
 	{
@@ -86,6 +91,7 @@ void dual_test(const std::string& filename)
 		dual_histo_faces[map2_dual.codegree(f)]++;
 	});
 
+	// CHECK
 
 	EXPECT_TRUE(pos_dual.is_valid());
 	EXPECT_TRUE(map2_dual.check_map_integrity());
@@ -101,6 +107,97 @@ void dual_test(const std::string& filename)
 }
 
 
+void dual_test2(const std::string& filename, const std::string& filename2)
+{
+	Map2 map2;
+
+	Map2::Face f = map2.add_face(12);
+
+	Map2 map_a;
+	cgogn::io::import_surface<Vec3>(map_a, mesh_path + filename);
+
+	Map2::DartMarker dm(map2);
+	map2.merge(map_a,dm);
+
+	Map2::Face ff = map2.add_face(12);
+
+	Map2 map_b;
+	cgogn::io::import_surface<Vec3>(map_b, mesh_path + filename2);
+	map2.merge(map_b,dm);
+
+	map2.remove_volume(Map2::Volume(f.dart));
+	map2.remove_volume(Map2::Volume(ff.dart));
+
+	// now ...salad_bowl...horse
+
+	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
+	uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
+	uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
+	uint32 nbe = map2.nb_cells<Map2::Edge::ORBIT>();
+
+	// compute histo of valences
+	const uint32 HISTO_SZ = 48;
+	std::vector<uint32> histo_vertices(HISTO_SZ, 0);
+	map2.foreach_cell([&histo_vertices,&map2](Map2::Vertex v)
+	{
+		histo_vertices[map2.degree(v)]++;
+	});
+
+	std::vector<uint32> histo_faces(HISTO_SZ, 0);
+	map2.foreach_cell([&histo_faces,&map2](Map2::Face f)
+	{
+		histo_faces[map2.codegree(f)]++;
+	});
+
+
+	// DUAL
+	Map2 map2_dual;
+
+	cgogn::modeling::dual2_topo(map2, map2_dual);
+
+	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
+
+	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+	{
+		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+	});
+
+
+	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();
+	uint32 nbfd = map2_dual.nb_cells<Map2::Face::ORBIT>();
+	uint32 nbed = map2_dual.nb_cells<Map2::Edge::ORBIT>();
+
+	// compute histo of valences of dual
+	std::vector<uint32> dual_histo_vertices(HISTO_SZ, 0);
+	map2_dual.foreach_cell([&dual_histo_vertices, &map2_dual](Map2::Vertex v)
+	{
+		dual_histo_vertices[map2_dual.degree(v)]++;
+	});
+
+	std::vector<uint32> dual_histo_faces(HISTO_SZ, 0);
+	map2_dual.foreach_cell([&dual_histo_faces,&map2_dual](Map2::Face f)
+	{
+		dual_histo_faces[map2_dual.codegree(f)]++;
+	});
+
+	// CHECK
+
+	EXPECT_TRUE(pos_dual.is_valid());
+	EXPECT_TRUE(map2_dual.check_map_integrity());
+	EXPECT_EQ(nbvd, nbf );
+	EXPECT_EQ(nbfd, nbv);
+	EXPECT_EQ(nbed, nbe);
+
+	for (uint32 i = 0; i < HISTO_SZ; ++i)
+	{
+		EXPECT_EQ(histo_vertices[i], dual_histo_faces[i]);
+		EXPECT_EQ(histo_faces[i], dual_histo_vertices[i]);
+	}
+}
+
+
+
+
 TEST(DualTest, salad_bowl)
 {
 	dual_test("obj/salad_bowl.obj");
@@ -109,4 +206,9 @@ TEST(DualTest, salad_bowl)
 TEST(DualTest, star_convex)
 {
 	dual_test("off/star_convex.off");
+}
+
+TEST(DualTest, not_compact)
+{
+	dual_test2("obj/salad_bowl.obj","off/horse.off");
 }
