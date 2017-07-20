@@ -195,27 +195,43 @@ public:
 	{
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
-		bool dual_topo_ok = cgogn::modeling::dual2_topo(view.map_, map_);
+		cgogn::modeling::dual(view.map_, map_,nullptr,{"position"},
+		[&] (Map2::Face f )
+		{
+			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+		});
 
 		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
 		std::chrono::duration<float> elapsed_seconds = end - start;
-		cgogn_log_info("compute_dual") << "topo done in " << elapsed_seconds.count() << " s";
-		if (dual_topo_ok)
-		{
-			start = std::chrono::system_clock::now();
+		cgogn_log_info("compute_dual") << "done in " << elapsed_seconds.count() << " s";
 
-			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
-			
-			cgogn::modeling::compute_dual2_vertices<Vec3>(map_, vertex_position_, [&] (Map2::Face f )
-			{
-				return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
-			});
+//		cgogn::modeling::dual(view.map_, map_,nullptr,{"position","face_centroid"},
+//		[&] (Map2::Face f )
+//		{
+//			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+//		},
+//		[&] (Map2::Vertex f )
+//		{
+//			return view.vertex_position_[f];
+//		});
 
-			end = std::chrono::system_clock::now();
-			elapsed_seconds = end - start;
-			cgogn_log_info("compute_dual") << "embedding done in " << elapsed_seconds.count() << " s";
-		}
+//		cgogn::modeling::dual(view.map_, map_,nullptr,{"face_centroid","position","edge_middle"},
+//		[&] (Map2::Vertex f )
+//		{
+//			return view.vertex_position_[f];
+//		},
+//		[&] (Map2::Face f )
+//		{
+//			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+//		},
+//		[&] (Map2::Edge e )
+//		{
+//			return view.vertex_position_[Map2::Vertex(e.dart)+Map2::Vertex(src.phi2(e.dart)])]);
+//		});
 
+
+
+		vertex_position_ = map_.get_attribute<Vec3, Vertex>("position");
 		if (!vertex_position_.is_valid())
 		{
 			cgogn_log_error("ViewerDual::compute_dual") << "Missing attribute position. Aborting.";

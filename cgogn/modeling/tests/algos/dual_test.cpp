@@ -63,15 +63,20 @@ void dual_test(const std::string& filename)
 	//DUAL
 
 	Map2 map2_dual;
+//	cgogn::modeling::dual2_topo(map2, map2_dual);
+//	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
+//	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+//	{
+//		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+//	});
 
-	cgogn::modeling::dual2_topo(map2, map2_dual);
-
-	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
-
-	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
+	[&] (Map2::Face f )
 	{
 		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
 	});
+
+	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
 
 
 	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();
@@ -152,15 +157,19 @@ void dual_test2(const std::string& filename, const std::string& filename2)
 
 	// DUAL
 	Map2 map2_dual;
-
-	cgogn::modeling::dual2_topo(map2, map2_dual);
-
-	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
-
-	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+//	cgogn::modeling::dual2_topo(map2, map2_dual);
+//	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
+//	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
+//	{
+//		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+//	});
+	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
+	[&] (Map2::Face f )
 	{
 		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
 	});
+
+	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
 
 
 	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();

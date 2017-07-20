@@ -746,7 +746,7 @@ public:
 
 	inline void all_false()
 	{
-		for (uint32 * const ptr : table_data_)
+		for (uint32* const ptr : table_data_)
 		{
 			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
@@ -774,6 +774,24 @@ public:
 		{
 			mempcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
 		}
+	}
+
+	inline uint32 count_true()
+	{
+		uint32 nb=0;
+		for (uint32* ptr : table_data_)
+		{
+			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
+			{
+				uint32 word = ptr[j];
+				while (word != 0)
+				{
+					nb += (word & 1u);
+					word >>= 1; // /=2 ?
+				}
+			}
+		}
+		return nb;
 	}
 
 };
