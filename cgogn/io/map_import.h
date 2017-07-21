@@ -36,6 +36,7 @@
 #include <cgogn/io/vtk_io.h>
 #include <cgogn/io/off_io.h>
 #include <cgogn/io/obj_io.h>
+#include <cgogn/io/2dm_io.h>
 #include <cgogn/io/ply_io.h>
 #include <cgogn/io/lm6_io.h>
 #include <cgogn/io/msh_io.h>
@@ -91,6 +92,7 @@ inline std::unique_ptr<SurfaceFileImport<MAP, VEC3>> newSurfaceImport(MAP& map, 
 		case FileType::FileType_VTU:
 		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_2DM: return make_unique<SMS2DMSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);

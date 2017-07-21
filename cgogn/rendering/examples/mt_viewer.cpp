@@ -197,7 +197,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			}
 			cgogn_log_info("Asyncrone")<< "let's go forever";
 
-			future_ = cgogn::launch_thread([&] (uint32 /*th*/)
+			future_ = cgogn::launch_thread([&] () -> void
 			{
 				std::chrono::time_point<std::chrono::system_clock> start, end;
 				start = std::chrono::system_clock::now();
@@ -205,16 +205,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				VertexAttribute<Vec3> vertex_normal = map_.template get_attribute<Vec3, Map2::Vertex>("normal");
 					if (!vertex_normal.is_valid())
 						vertex_normal = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
-//				VertexAttribute<Vec3> vert_pos_comp = map_.template get_attribute<Vec3, Map2::Vertex>("pos_comp");
-//				if (!vert_pos_comp.is_valid())
-//					vert_pos_comp = map_.template add_attribute<Vec3, Map2::Vertex>("pos_comp");
-
 				do
 				{
-					cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
+					for(int i=0;i<50;++i)
+						cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
 					for(int i=0;i<250;++i)
 					{
-						map_.parallel_foreach_cell([&] (Map2::Vertex v, uint32 /*th*/)
+						map_.parallel_foreach_cell([&] (Map2::Vertex v)
 						{
 							Vec3& P = vertex_position_[v];
 							Vec3 N = vertex_normal[v];
@@ -227,7 +224,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 					}
 					for(int i=0;i<250;++i)
 					{
-						map_.parallel_foreach_cell([&] (Map2::Vertex v, uint32 /*th*/)
+						map_.parallel_foreach_cell([&] (Map2::Vertex v)
 						{
 							Vec3& P = vertex_position_[v];
 							Vec3 N = vertex_normal[v];

@@ -67,8 +67,9 @@ inline void picking_internal_face(
 	std::vector<Triplet> selected_th(nb_threads);
 	std::vector<std::vector<uint32>> ear_indices_th(nb_threads);
 
-	m.parallel_foreach_cell([&] (Face f, uint32 th)
+	m.parallel_foreach_cell([&] (Face f)
 	{
+		uint32 th =cgogn::current_thread_index();
 		VEC3 inter;
 		if (m.codegree(f) == 3)
 		{

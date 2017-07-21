@@ -9,8 +9,8 @@ set(HEADER_ALGOS
 	algos/pliant_remeshing.h
 	algos/decimation.h
 	algos/tetrahedralization.h
-)
-set(HEADER_TILING
+	algos/dual.h
+
 	tiling/tiling.h
 	tiling/triangular_grid.h
 	tiling/triangular_cylinder.h
@@ -26,6 +26,7 @@ set(HEADER_DECIMATION
 	decimation/edge_traversor_map_order.h
 	decimation/edge_traversor_edge_length.h
 	decimation/edge_traversor_qem.h
+
 )
 
 set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_TILING} ${HEADER_DECIMATION})

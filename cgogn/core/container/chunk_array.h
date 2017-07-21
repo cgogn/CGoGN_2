@@ -398,6 +398,29 @@ public:
 				*chunk++ = v;
 		}
 	}
+
+	inline void copy(const Inherit& cag_src)
+	{
+		clear();
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		for (T* chunk : ca->table_data_)
+		{
+			add_chunk();
+			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(T));
+		}
+	}
+
+	inline void copy_data(const Inherit& cag_src)
+	{
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (T* chunk : ca->table_data_)
+		{
+			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(T));
+		}
+	}
 };
 
 /**
@@ -723,12 +746,54 @@ public:
 
 	inline void all_false()
 	{
-		for (uint32 * const ptr : table_data_)
+		for (uint32* const ptr : table_data_)
 		{
 			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
+
+	inline void copy(const Inherit& cag_src)
+	{
+		clear();
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		for (uint32* chunk : ca->table_data_)
+		{
+			add_chunk();
+			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+		}
+	}
+
+	inline void copy_data(const Inherit& cag_src)
+	{
+		const Self* ca = static_cast<const Self*>(&cag_src);
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (uint32* chunk : ca->table_data_)
+		{
+			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+		}
+	}
+
+	inline uint32 count_true()
+	{
+		uint32 nb=0;
+		for (uint32* ptr : table_data_)
+		{
+			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
+			{
+				uint32 word = ptr[j];
+				while (word != 0)
+				{
+					nb += (word & 1u);
+					word >>= 1; // /=2 ?
+				}
+			}
+		}
+		return nb;
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))

@@ -53,12 +53,19 @@ const uint32 PARALLEL_BUFFER_SIZE = 1024u;
 extern CGOGN_TLS Buffers<Dart>* dart_buffers_thread_;
 extern CGOGN_TLS Buffers<uint32>* uint_buffers_thread_;
 
+extern CGOGN_TLS uint32 thread_marker_index_;
 extern CGOGN_TLS uint32 thread_index_;
 
 /**
- * @brief function to call at begin of each thread which use a map
+ * @brief
+ *
  */
-CGOGN_CORE_API void thread_start(uint32 ind);
+/**
+ * @brief function to call at begin of each thread which use a map
+ * @param ind index of thread in the pool: 0,1,2,3,....
+ * @param shift_marker_index 0 for main thread / 1 for internal thread_pool / 1+max_nb_workers for external thread
+ */
+CGOGN_CORE_API void thread_start(uint32 ind, uint32 shift_marker_index);
 
 /**
  * @brief function to call at end of each thread which use a map
@@ -67,7 +74,17 @@ CGOGN_CORE_API void thread_stop();
 
 CGOGN_CORE_API Buffers<Dart>*   dart_buffers();
 CGOGN_CORE_API Buffers<uint32>* uint_buffers();
+/**
+ * @brief thread index in marker table (internal use only)
+ */
+CGOGN_CORE_API uint32 current_thread_marker_index();
+
+/**
+ * @brief thread index [0..nb_workers] for use in code of lambdas
+ */
 CGOGN_CORE_API uint32 current_thread_index();
+
+
 
 } // namespace cgogn
 

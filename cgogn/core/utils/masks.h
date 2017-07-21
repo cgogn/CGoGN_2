@@ -153,21 +153,36 @@ public:
 		return qt_attributes_[ORBIT].end();
 	}
 
+	template <typename CellType, typename DartSelectionFunction>
+	inline void build(const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		if (!qt_attributes_[ORBIT].is_valid())
+			qt_attributes_[ORBIT] = map_.template add_attribute<Dart, ORBIT>(std::string("qt_att_nb_") + std::to_string(qt_counter_++));
+		map_.foreach_cell([&] (CellType c) { qt_attributes_[ORBIT][c.dart] = dart_select(c); });
+		traversed_cells_ |= orbit_mask<CellType>();
+	}
+
 	template <typename CellType>
 	inline void build()
 	{
+		build<CellType>([] (CellType c) -> Dart { return c.dart; });
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void update(CellType c, const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		if (!qt_attributes_[ORBIT].is_valid())
-			map_.template add_attribute<Dart, ORBIT>(std::string("qt_att_nb_") + std::to_string(qt_counter_++));
-		map_.foreach_cell([this] (CellType c) { qt_attributes_[ORBIT][c.dart] = c.dart; });
-		traversed_cells_ |= orbit_mask<CellType>();
+		cgogn_message_assert(qt_attributes_[ORBIT].is_valid(), "Try to update a cell on a QuickTraversor that has not been built");
+		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 
 	template <typename CellType>
 	inline void update(CellType c)
 	{
-		static const Orbit ORBIT = CellType::ORBIT;
-		qt_attributes_[ORBIT][c.dart] = c.dart;
+		update(c, [] (CellType c) -> Dart { return c.dart; });
 	}
 
 private:
@@ -233,13 +248,13 @@ public:
 		this->build<CellType>([] (CellType) { return true; });
 	}
 
-	template <typename CellType, typename FilterFunction>
-	inline void build(const FilterFunction& filter)
+	template <typename CellType, typename MASK>
+	inline void build(const MASK& mask)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		cells_[ORBIT].clear();
 		cells_[ORBIT].reserve(4096u);
-		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, filter);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, mask);
 		traversed_cells_ |= orbit_mask<CellType>();
 	}
 

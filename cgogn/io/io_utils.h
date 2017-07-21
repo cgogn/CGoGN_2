@@ -80,8 +80,9 @@ public:
 	ExportOptions(ExportOptions&& eo);
 	inline ~ExportOptions() {}
 	inline ExportOptions& filename(const std::string & filename) { filename_ = filename; return *this; }
-	inline ExportOptions& position_attribute(Orbit orb, const std::string & filename) { position_attribute_ = std::make_pair(orb,filename); return *this; }
-	inline ExportOptions& add_attribute(Orbit orb, const std::string & filename) { attributes_to_export_.push_back(std::make_pair(orb,filename)); return *this; }
+	inline ExportOptions& position_attribute(Orbit orb, const std::string & name) {
+		position_attributes_.insert(std::make_pair(orb, name)); return *this;}
+	inline ExportOptions& add_attribute(Orbit orb, const std::string & name) { attributes_to_export_.push_back(std::make_pair(orb,name)); return *this; }
 	inline ExportOptions& binary(bool b) { binary_ = b; return *this; }
 	inline ExportOptions& compress(bool b) { compress_ = b; return *this; }
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
@@ -90,7 +91,7 @@ public:
 #pragma warning(push)
 #pragma warning(disable:4251)
 	std::string filename_;
-	std::pair<Orbit, std::string> position_attribute_;
+	std::map<Orbit, std::string> position_attributes_;
 	std::vector<std::pair<Orbit, std::string>> attributes_to_export_;
 	std::function<bool(Dart)> cell_filter_;
 #pragma warning(pop)
@@ -106,6 +107,7 @@ enum FileType
 	FileType_UNKNOWN = 0,
 	FileType_OFF,
 	FileType_OBJ,
+	FileType_2DM,
 	FileType_PLY,
 	FileType_STL,
 	FileType_VTK_LEGACY,

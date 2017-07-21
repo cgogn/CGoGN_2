@@ -481,6 +481,39 @@ public:
 		return vol;
 	}
 
+
+protected:
+
+	/*!
+	 * \brief Remove a volume from the map.
+	 * \param d : a dart of the volume to remove
+	 */
+	inline void remove_volume_topo(Dart d)
+	{
+		std::vector<Dart>* darts = dart_buffers()->buffer();
+
+		foreach_dart_of_orbit(Volume(d),[&] (Dart e)
+		{
+			darts->push_back(e);
+		});
+
+		for(Dart e: *darts)
+			this->remove_topology_element(e);
+	}
+
+public:
+
+	/*!
+	 * \brief Remove a volume from the map.
+	 * \param v : the volume to remove
+	 */
+	inline void remove_volume(Volume v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		remove_volume_topo(v.dart);
+	}
+
 protected:
 
 	/**
@@ -873,7 +906,7 @@ public:
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		Dart d = this->phi_1(v.dart);
-		if (merge_incident_faces_topo(v.dart))
+		if (merge_incident_edges_topo(v.dart))
 		{
 			if (this->template is_embedded<Edge>())
 				this->template copy_embedding<Edge>(phi2(d), d);
@@ -889,7 +922,7 @@ protected:
 	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
 	 * If the edge of d is incident to the boundary, nothing is done.
 	 */
-	bool merge_incident_faces_topo(Dart d)
+	bool merge_incident_faces_of_edge_topo(Dart d)
 	{
 		if (this->is_incident_to_boundary(Edge(d)))
 			return false;
@@ -907,16 +940,63 @@ public:
 	/**
 	 * \brief Merge the two faces incident to the given edge
 	 * \param e : the edge
-	 * The endpoints of the edge of d are detached from their vertex and then the edge is removed.
+	 * The endpoints of the edge e are detached from their vertex and then the edge is removed.
 	 * If the map has Face attributes, the attributes of the Face of e.dart are kept on the resulting face.
-	 * If the edge of d is incident to the boundary, nothing is done.
+	 * If the edge e is incident to the boundary, nothing is done.
 	 */
 	void merge_incident_faces(Edge e)
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
 		Dart d1 = this->phi1(e.dart);
-		if (merge_incident_faces_topo(e.dart))
+		if (merge_incident_faces_of_edge_topo(e.dart))
+		{
+			if (this->template is_embedded<Face>())
+				this->template set_orbit_embedding<Face>(Face(d1), this->embedding(Face(d1)));
+		}
+	}
+
+protected:
+
+	/**
+	 * \brief Merge the faces incident to the vertex of d
+	 * \param d : dart of the edge
+	 * \return true if the faces have been merged, false otherwise
+	 * The opposite endpoints of the edges of the vertex are detached from their vertex and then the so constructed face is removed.
+	 * If the vertex of d is incident to the boundary, nothing is done.
+	 */
+	bool merge_incident_faces_of_vertex_topo(Dart d)
+	{
+		if (this->is_incident_to_boundary(Vertex(d)))
+			return false;
+
+		Dart it = d;
+		do
+		{
+			Dart f = this->phi_1(phi2(it));
+			this->phi1_sew(it, f);
+			it = phi2(this->phi_1(it));
+		} while (it != d);
+		Inherit::remove_face_topo(d);
+
+		return true;
+	}
+
+public:
+
+	/**
+	 * \brief Merge the faces incident to the given vertex
+	 * \param v : the vertex
+	 * The opposite endpoints of the edges of v are detached from their vertex and then the so constructed face is removed.
+	 * If the map has Face attributes, the attributes of the Face of v.dart are kept on the resulting face.
+	 * If the vertex v is incident to the boundary, nothing is done.
+	 */
+	void merge_incident_faces(Vertex v)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart d1 = this->phi1(v.dart);
+		if (merge_incident_faces_of_vertex_topo(v.dart))
 		{
 			if (this->template is_embedded<Face>())
 				this->template set_orbit_embedding<Face>(Face(d1), this->embedding(Face(d1)));

@@ -158,7 +158,7 @@ public:
 protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
