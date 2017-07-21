@@ -39,6 +39,9 @@
 #include <cgogn/modeling/algos/dual.h>
 #include <cgogn/geometry/algos/centroid.h>
 
+#include <cgogn/modeling/tiling/square_tore.h>
+using namespace cgogn::numerics;
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2   = cgogn::CMap2;
@@ -47,6 +50,11 @@ using Scalar = cgogn::geometry::vector_traits<Vec3>::Scalar;
 using Vertex = Map2::Vertex;
 template <typename T> using VertexAttribute = Map2::VertexAttribute<T>;
 
+
+class Viewer;
+
+Viewer* viewer1;
+Viewer* viewer2;
 
 class Viewer : public QOGLViewer
 {
@@ -106,11 +114,18 @@ public:
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
 		param_point_sprite_->size_ = bb_.diag_size() / 500.0;
 		param_point_sprite_->color_ = QColor(200, 20, 20);
+
+		if (this == viewer2)
+		{
+			cam_ = this->camera();
+			this->setCamera(viewer1->camera());
+		}
 	}
 
 	virtual void draw()
 	{
 		makeCurrent();
+
 		QMatrix4x4 proj;
 		QMatrix4x4 view;
 		camera()->getProjectionMatrix(proj);
@@ -144,6 +159,7 @@ public:
 			glDisable(GL_BLEND);
 			param_edge_->release();
 		}
+
 	}
 
 	virtual void keyPressEvent(QKeyEvent* ev)
@@ -167,15 +183,41 @@ public:
 
 	void import(const std::string& surface_mesh)
 	{
-		cgogn::io::import_surface<Vec3>(map_, surface_mesh);
+		if (surface_mesh == "tore")
+		{
+			Map2::Builder mb(map_);
 
-		vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
+			vertex_position_ = map_.template add_attribute<Vec3, Map2::Vertex>("position");
+			cgogn::modeling::SquareTore<Map2> g(map_, 16, 16);
+			g.embed_into_tore(vertex_position_, 10.0f, 4.0f);
+
+			map_.merge_incident_faces(Map2::Edge(cgogn::Dart(64)));
+			map_.merge_incident_faces(Map2::Edge(cgogn::Dart(66)));
+
+			map_.merge_incident_faces(Map2::Edge(cgogn::Dart(136)));
+			mb.boundary_mark(Map2::Face(cgogn::Dart(137)));
+
+
+			for(uint32 j=2; j<8; ++j)
+			{
+				for(uint32 i=0; i<8; ++i)
+				{
+					Map2::Face f = Map2::Face(cgogn::Dart(i*8+j*128));
+					mb.boundary_mark(f);
+				}
+			}
+		}
+		else
+		{
+			cgogn::io::import_surface<Vec3>(map_, surface_mesh);
+			vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
+		}
+
 		if (!vertex_position_.is_valid())
 		{
 			cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
 			std::exit(EXIT_FAILURE);
 		}
-
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 		setSceneRadius(bb_.diag_size() / 2.0);
@@ -186,6 +228,9 @@ public:
 
 	virtual void closeEvent(QCloseEvent*)
 	{
+		if (this == viewer2)
+			this->setCamera(cam_);
+
 		render_.reset();
 		vbo_pos_.reset();
 //		cgogn::rendering::ShaderProgram::cleaning_all(); 
@@ -195,7 +240,8 @@ public:
 	{
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
-		cgogn::modeling::dual(view.map_, map_,nullptr,{"position"},
+		Map2::CellMarker<Map2::Vertex::ORBIT> cm(map_);
+		cgogn::modeling::dual(view.map_, map_,&cm,{"position"},
 		[&] (Map2::Face f )
 		{
 			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
@@ -226,7 +272,7 @@ public:
 //		},
 //		[&] (Map2::Edge e )
 //		{
-//			return view.vertex_position_[Map2::Vertex(e.dart)+Map2::Vertex(src.phi2(e.dart)])]);
+//			return view.vertex_position_[Map2::Vertex(e.dart)];//+view.vertex_position_[Map2::Vertex(view.map_.phi2(e.dart))];
 //		});
 
 
@@ -259,6 +305,7 @@ private:
 
 	bool vertices_rendering_;
 	bool edge_rendering_;
+	qoglviewer::Camera* cam_;
 };
 
 int main(int argc, char** argv)
@@ -278,15 +325,15 @@ int main(int argc, char** argv)
 	qoglviewer::init_ogl_context();
 
 	// Instantiate the viewer.
-	Viewer viewer;
-	viewer.setWindowTitle("dual: original");
-	viewer.import(surface_mesh);
-	viewer.show();
+	viewer1 = new Viewer();
+	viewer1->setWindowTitle("dual: original");
+	viewer1->import(surface_mesh);
+	viewer1->show();
 
-	Viewer viewer_dual(&viewer);
-	viewer_dual.setWindowTitle("dual: dual");
-	viewer_dual.compute_dual(viewer);
-	viewer_dual.show();
+	viewer2 = new Viewer(viewer1);
+	viewer2->setWindowTitle("dual: dual");
+	viewer2->compute_dual(*viewer1);
+	viewer2->show();
 
 
 	// Run main loop.

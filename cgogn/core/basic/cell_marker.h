@@ -94,6 +94,12 @@ public:
 		// the pointer is non-null then the map is still alive, and conversely
 		return mark_attribute_ != nullptr; // && MapBaseData::is_alive(&map_);
 	}
+
+	inline uint32 nb_marked()
+	{
+		return this->mark_attribute_->count_true();
+	}
+
 };
 
 template <typename MAP, Orbit ORBIT>
@@ -122,6 +128,7 @@ public:
 		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
 		this->mark_attribute_->all_false();
 	}
+
 };
 
 template <typename MAP, Orbit ORBIT>

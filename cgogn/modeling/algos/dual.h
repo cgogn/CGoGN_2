@@ -163,7 +163,7 @@ auto compute_gen_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::te
 #ifdef SECOND_VERSION
 
 /**
- * @brief dual2_topo (work only with closed CMap22)
+ * @brief dual2_topo (work only with closed CMap2)
  * @param src source mesh
  * @param dst dual result mesh (overwriten)
  * @return true if computed
@@ -330,12 +330,16 @@ void dual(const CMap2& src, CMap2& dst, CMap2::CellMarker<CMap2::Vertex::ORBIT>*
 	if  (N==0)
 	{
 		dual2_topo(src, dst);
-		if (marker != nullptr)
-			src.foreach_cell([&](CMap2::Face f)
+		if ((marker != nullptr) && (marker->is_valid()))
+		{
+			// at this point dst is pure topo
+			CMap2::Builder(dst).create_embedding<CMap2::Vertex::ORBIT>();
+			dst.foreach_cell([&](CMap2::Vertex v)
 			{
-				if (src.is_boundary(f.dart))
-					marker->mark(CMap2::Vertex(f.dart));
+				if (src.is_boundary(v.dart))
+					marker->mark(v);
 			});
+		}
 	}
 
 	using CELL_SRC = func_ith_parameter_type<F,0>;

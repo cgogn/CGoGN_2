@@ -25,6 +25,7 @@
 #include <cgogn/io/map_import.h>
 #include <cgogn/modeling/algos/dual.h>
 #include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/modeling/tiling/square_tore.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -59,16 +60,9 @@ void dual_test(const std::string& filename)
 		histo_faces[map2.codegree(f)]++;
 	});
 	
-
 	//DUAL
 
 	Map2 map2_dual;
-//	cgogn::modeling::dual2_topo(map2, map2_dual);
-//	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
-//	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
-//	{
-//		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
-//	});
 
 	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
 	[&] (Map2::Face f )
@@ -157,12 +151,6 @@ void dual_test2(const std::string& filename, const std::string& filename2)
 
 	// DUAL
 	Map2 map2_dual;
-//	cgogn::modeling::dual2_topo(map2, map2_dual);
-//	auto pos_dual = map2_dual.add_attribute<Vec3, Map2::Vertex>("position");
-//	cgogn::modeling::compute_dual2_vertices<Vec3>(map2_dual, pos_dual, [&] (Map2::Face f)
-//	{
-//		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
-//	});
 	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
 	[&] (Map2::Face f )
 	{
@@ -170,7 +158,6 @@ void dual_test2(const std::string& filename, const std::string& filename2)
 	});
 
 	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
-
 
 	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();
 	uint32 nbfd = map2_dual.nb_cells<Map2::Face::ORBIT>();
@@ -204,6 +191,65 @@ void dual_test2(const std::string& filename, const std::string& filename2)
 	}
 }
 
+
+TEST(DualTest, with_boundaries)
+{
+	Map2 map2;
+	auto pos = map2.add_attribute<Vec3, Map2::Vertex>("position");
+	cgogn::modeling::SquareTore<Map2> g(map2, 16, 16);
+	g.embed_into_tore(pos, 10.0f, 4.0f);
+
+	Map2::Builder mb(map2);
+
+	map2.merge_incident_faces(Map2::Edge(cgogn::Dart(64)));
+	map2.merge_incident_faces(Map2::Edge(cgogn::Dart(66)));
+
+	map2.merge_incident_faces(Map2::Edge(cgogn::Dart(136)));
+	mb.boundary_mark(Map2::Face(cgogn::Dart(137)));
+
+	uint32 nb_holes = 1;
+
+	for(uint32 j=4; j<7; ++j)
+	{
+		for(uint32 i=0; i<8; ++i)
+		{
+			mb.boundary_mark(Map2::Face(cgogn::Dart(i*8+j*128)));
+			nb_holes++;
+		}
+	}
+
+	// now we have a tore with nb_holes holes
+
+	uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
+	uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
+	uint32 nbe = map2.nb_cells<Map2::Edge::ORBIT>();
+
+	//DUAL
+	Map2 map2_dual;
+	Map2::CellMarker<Map2::Vertex::ORBIT> cm(map2_dual);
+	cgogn::modeling::dual(map2, map2_dual,&cm,{"position"},
+	[&] (Map2::Face f )
+	{
+		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+	});
+
+	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
+
+	uint32 nbvd = map2_dual.nb_cells<Map2::Vertex::ORBIT>();
+	uint32 nbfd = map2_dual.nb_cells<Map2::Face::ORBIT>();
+	uint32 nbed = map2_dual.nb_cells<Map2::Edge::ORBIT>();
+
+	// CHECK
+
+	EXPECT_TRUE(pos_dual.is_valid());
+	EXPECT_TRUE(map2_dual.check_map_integrity());
+	EXPECT_EQ(nbvd, nbf + nb_holes );
+	EXPECT_EQ(nbfd, nbv);
+	EXPECT_EQ(nbed, nbe);
+
+	EXPECT_EQ(cm.nb_marked(), nb_holes);
+
+}
 
 
 
