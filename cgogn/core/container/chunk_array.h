@@ -406,7 +406,7 @@ public:
 		for (T* chunk : ca->table_data_)
 		{
 			add_chunk();
-			mempcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(T));
+			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(T));
 		}
 	}
 
@@ -418,7 +418,7 @@ public:
 		auto td = table_data_.begin();
 		for (T* chunk : ca->table_data_)
 		{
-			mempcpy(*td++, chunk, CHUNK_SIZE*sizeof(T));
+			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(T));
 		}
 	}
 };
@@ -760,7 +760,7 @@ public:
 		for (uint32* chunk : ca->table_data_)
 		{
 			add_chunk();
-			mempcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
 		}
 	}
 
@@ -772,7 +772,7 @@ public:
 		auto td = table_data_.begin();
 		for (uint32* chunk : ca->table_data_)
 		{
-			mempcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
 		}
 	}
 
