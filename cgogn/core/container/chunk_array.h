@@ -399,18 +399,20 @@ public:
 		}
 	}
 
-	inline void copy(const Inherit& cag_src)
+	void copy(const Inherit& cag_src) override
 	{
 		clear();
 		const Self* ca = static_cast<const Self*>(&cag_src);
 		for (T* chunk : ca->table_data_)
 		{
 			add_chunk();
-			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(T));
+			T* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
 		}
 	}
 
-	inline void copy_data(const Inherit& cag_src)
+	void copy_data(const Inherit& cag_src) override
 	{
 		const Self* ca = static_cast<const Self*>(&cag_src);
 		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
@@ -418,7 +420,9 @@ public:
 		auto td = table_data_.begin();
 		for (T* chunk : ca->table_data_)
 		{
-			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(T));
+			T* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
 		}
 	}
 };
@@ -753,18 +757,20 @@ public:
 		}
 	}
 
-	inline void copy(const Inherit& cag_src)
+	void copy(const Inherit& cag_src) override
 	{
 		clear();
 		const Self* ca = static_cast<const Self*>(&cag_src);
 		for (uint32* chunk : ca->table_data_)
 		{
 			add_chunk();
-			std::memcpy(table_data_.back(), chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+			uint32* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE/BOOLS_PER_INT; ++i)
+				*ptr++ = *chunk++;
 		}
 	}
 
-	inline void copy_data(const Inherit& cag_src)
+	void copy_data(const Inherit& cag_src) override
 	{
 		const Self* ca = static_cast<const Self*>(&cag_src);
 		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
@@ -772,7 +778,9 @@ public:
 		auto td = table_data_.begin();
 		for (uint32* chunk : ca->table_data_)
 		{
-			std::memcpy(*td++, chunk, CHUNK_SIZE*sizeof(uint32)/BOOLS_PER_INT);
+			uint32* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
 		}
 	}
 
