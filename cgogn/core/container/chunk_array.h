@@ -402,7 +402,12 @@ public:
 	void copy(const Inherit& cag_src) override
 	{
 		clear();
-		const Self* ca = static_cast<const Self*>(&cag_src);
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
 		for (T* chunk : ca->table_data_)
 		{
 			add_chunk();
@@ -414,7 +419,13 @@ public:
 
 	void copy_data(const Inherit& cag_src) override
 	{
-		const Self* ca = static_cast<const Self*>(&cag_src);
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+
 		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
 
 		auto td = table_data_.begin();
@@ -760,7 +771,12 @@ public:
 	void copy(const Inherit& cag_src) override
 	{
 		clear();
-		const Self* ca = static_cast<const Self*>(&cag_src);
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
 		for (uint32* chunk : ca->table_data_)
 		{
 			add_chunk();
@@ -772,7 +788,12 @@ public:
 
 	void copy_data(const Inherit& cag_src) override
 	{
-		const Self* ca = static_cast<const Self*>(&cag_src);
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
 		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
 
 		auto td = table_data_.begin();
