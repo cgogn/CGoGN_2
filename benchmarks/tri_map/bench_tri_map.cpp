@@ -70,7 +70,7 @@ template <typename T>
 using TFaceAttribute = TMap2::FaceAttribute<T>;
 
 
-const uint32 ITERATIONS = 1u;
+//const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;

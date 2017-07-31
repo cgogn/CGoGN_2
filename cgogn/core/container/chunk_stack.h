@@ -160,11 +160,18 @@ public:
 	 * @brief copy the stack into this
 	 * @param from source of copy
 	 */
-	inline void copy(const Self& from)
+	void copy(const typename Inherit::Inherit& cag_src) override
 	{
+		const Self* from = dynamic_cast<const Self*>(&cag_src);
+		if (from == nullptr)
+		{
+			cgogn_log_error("ChunkStack") << "trying to copy from a different types";
+			return;
+		}
+
 		clear();
-		Inherit::copy(from);
-		stack_size_ = from.stack_size_;
+		Inherit::copy(*from);
+		stack_size_ = from->stack_size_;
 	}
 
 };

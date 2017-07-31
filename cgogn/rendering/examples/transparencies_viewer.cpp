@@ -94,10 +94,6 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
 
-	int mesh_transparency_;
-	bool lighted_;
-	bool bfc_;
-	bool phong_rendered_;
 };
 
 
