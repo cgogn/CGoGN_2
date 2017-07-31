@@ -155,6 +155,18 @@ public:
 		}
 		return false;
 	}
+
+	/**
+	 * @brief copy the stack into this
+	 * @param from source of copy
+	 */
+	inline void copy(const Self& from)
+	{
+		clear();
+		Inherit::copy(from);
+		stack_size_ = from.stack_size_;
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))

@@ -316,7 +316,7 @@ public:
 
 	/*!
 	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
+	 * \param f : the face to remove
 	 */
 	inline void remove_face(Face f)
 	{

@@ -237,6 +237,19 @@ public:
 		serialization::load(fs, &nb_lines, 1);
 		fs.ignore(std::streamsize(chunk_bytes), EOF);
 	}
+
+	/**
+	 * @brief copy the chunk array source into this, allocation is done
+	 * @param cag_src
+	 */
+	virtual void copy(const Self& cag_src) = 0;
+
+	/**
+	 * @brief copy the data of chunk array source into this. The allocation must have been done before.
+	 * @param cag_src
+	 */
+	virtual void copy_data(const Self& cag_src) = 0;
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_))

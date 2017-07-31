@@ -927,6 +927,25 @@ public:
 		return refs_[index];
 	}
 
+	/**
+	 * @brief copy management section, and allocate data (no copy), use carefully
+	 * @param from source for copy into this
+	 */
+	void copy_all_but_data(const Self* from)
+	{
+		refs_.copy(from->refs_);
+		holes_stack_.copy(from->holes_stack_);
+		nb_used_lines_ = from->nb_used_lines_;
+		nb_max_lines_ = from->nb_max_lines_;
+
+		for (auto* ca : table_arrays_)
+			ca->set_nb_chunks(refs_.nb_chunks());
+
+		for (auto* cab : table_marker_arrays_)
+			cab->set_nb_chunks(refs_.nb_chunks());
+	}
+
+
 	void save(std::ostream& fs)
 	{
 		cgogn_assert(fs.good());
