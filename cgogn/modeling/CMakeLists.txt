@@ -10,7 +10,8 @@ set(HEADER_ALGOS
 	algos/decimation.h
 	algos/tetrahedralization.h
 	algos/dual.h
-
+)
+set(HEADER_TILING
 	tiling/tiling.h
 	tiling/triangular_grid.h
 	tiling/triangular_cylinder.h
