@@ -80,7 +80,7 @@ public:
 		if (!instance_)
 		{
 			instance_ = new ShaderTexture();
-			ShaderProgram::registering(instance_);
+			ShaderProgram::register_instance(instance_);
 		}
 		return cgogn::make_unique<Param>(instance_);
 	}

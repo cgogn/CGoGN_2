@@ -185,7 +185,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_color_.reset();
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
-	cgogn::rendering::ShaderProgram::cleaning_all();
+	cgogn::rendering::ShaderProgram::clean_all();
 
 }
 

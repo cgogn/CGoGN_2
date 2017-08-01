@@ -253,7 +253,7 @@ std::unique_ptr<typename ShaderRoundPointTpl<CPV>::Param> ShaderRoundPointTpl<CP
 	if (!instance_)
 	{
 		instance_ = new ShaderRoundPointTpl<CPV>();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

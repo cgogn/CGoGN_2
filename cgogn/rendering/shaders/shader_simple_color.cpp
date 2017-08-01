@@ -41,7 +41,7 @@ std::unique_ptr<ShaderSimpleColor::Param> ShaderSimpleColor::generate_param()
 	if (!instance_)
 	{
 		instance_ = new ShaderSimpleColor();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

@@ -139,7 +139,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	vbo_norm_.reset();
 	transp_drawer_.reset();
-	cgogn::rendering::ShaderProgram::cleaning_all();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 ViewerTransparency::ViewerTransparency() :

@@ -76,7 +76,7 @@ std::unique_ptr< ShaderCopyDepth::Param> ShaderCopyDepth::generate_param()
 	if (!instance_)
 	{
 		instance_ = new ShaderCopyDepth();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

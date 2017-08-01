@@ -71,7 +71,7 @@ std::unique_ptr<ShaderColorPerVertex::Param> ShaderColorPerVertex::generate_para
 	if (!instance_)
 	{
 		instance_ = new ShaderColorPerVertex;
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

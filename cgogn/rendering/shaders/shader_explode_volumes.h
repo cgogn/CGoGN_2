@@ -239,7 +239,7 @@ std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolum
 	if (!instance_)
 	{
 		instance_ = new ShaderExplodeVolumesTpl<CPV>();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

@@ -42,7 +42,7 @@ std::unique_ptr<ShaderExplodeVolumesLine::Param> ShaderExplodeVolumesLine::gener
 	if (!instance_)
 	{
 		instance_ = new ShaderExplodeVolumesLine();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

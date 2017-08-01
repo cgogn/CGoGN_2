@@ -251,7 +251,7 @@ std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::
 	if (!instance_)
 	{
 		instance_ = new ShaderBoldLineTpl<CPV>;
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

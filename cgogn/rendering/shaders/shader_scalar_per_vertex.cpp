@@ -223,7 +223,7 @@ std::unique_ptr<ShaderScalarPerVertex::Param> ShaderScalarPerVertex::generate_pa
 	if (!instance_)
 	{
 		instance_ = new ShaderScalarPerVertex();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

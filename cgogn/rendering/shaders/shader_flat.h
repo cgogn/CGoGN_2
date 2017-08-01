@@ -260,7 +260,7 @@ std::unique_ptr<typename ShaderFlatTpl<CPV>::Param> ShaderFlatTpl<CPV>::generate
 	if (!instance_)
 	{
 		instance_ = new ShaderFlatTpl<CPV>();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

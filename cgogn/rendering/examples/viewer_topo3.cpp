@@ -162,7 +162,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	volume_drawer_rend_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::cleaning_all();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :

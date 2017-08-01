@@ -456,7 +456,7 @@ std::unique_ptr<typename ShaderPointSpriteTpl<CPV, SPV>::Param> ShaderPointSprit
 	if (!instance_)
 	{
 		instance_ = new ShaderPointSpriteTpl<CPV, SPV>;
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

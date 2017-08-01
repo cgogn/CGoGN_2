@@ -205,7 +205,7 @@ std::unique_ptr< ShaderTransparentVolumes::Param> ShaderTransparentVolumes::gene
 	if (!instance_)
 	{
 		instance_ = new ShaderTransparentVolumes();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<ShaderTransparentVolumes::Param>(instance_);
 }
@@ -215,7 +215,7 @@ ShaderTransparentVolumes* ShaderTransparentVolumes::get_instance()
 	if (!instance_)
 	{
 		instance_ = new ShaderTransparentVolumes();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return instance_;
 }

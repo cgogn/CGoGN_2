@@ -161,7 +161,7 @@ std::unique_ptr< ShaderFlatTransp::Param> ShaderFlatTransp::generate_param()
 	if (!instance_)
 	{
 		instance_ = new ShaderFlatTransp();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }
@@ -171,7 +171,7 @@ ShaderFlatTransp* ShaderFlatTransp::get_instance()
 	if (!instance_)
 	{
 		instance_ = new ShaderFlatTransp();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return instance_;
 }

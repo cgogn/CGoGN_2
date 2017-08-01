@@ -80,7 +80,7 @@ void Drawing::closeEvent(QCloseEvent*)
 	drawer2_.reset();
 	wp_.reset();
 	button_.reset();
-	cgogn::rendering::ShaderProgram::cleaning_all();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 Drawing::Drawing() :

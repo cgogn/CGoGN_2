@@ -86,7 +86,7 @@ std::unique_ptr< ShaderTranspQuad::Param> ShaderTranspQuad::generate_param()
 	if (!instance_)
 	{
 		instance_ = new ShaderTranspQuad();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

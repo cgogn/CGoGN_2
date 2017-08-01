@@ -41,7 +41,7 @@ std::unique_ptr<ShaderVectorPerVertex::Param> ShaderVectorPerVertex::generate_pa
 	if (!instance_)
 	{
 		instance_ = new ShaderVectorPerVertex();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }

@@ -109,9 +109,9 @@ protected:
 
 public:
 
-	static void registering(ShaderProgram* sh);
+	static void register_instance(ShaderProgram* sh);
 
-	static void cleaning_all();
+	static void clean_all();
 
 	~ShaderProgram();
 

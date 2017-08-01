@@ -70,7 +70,7 @@ void ShaderParam::release()
 
 std::vector<ShaderProgram*>* ShaderProgram::instances_ = nullptr;
 
-void ShaderProgram::registering(ShaderProgram* sh)
+void ShaderProgram::register_instance(ShaderProgram* sh)
 {
 	if (instances_ == nullptr)
 	{
@@ -83,7 +83,7 @@ void ShaderProgram::registering(ShaderProgram* sh)
 		instances_->push_back(sh);
 }
 
-void ShaderProgram::cleaning_all()
+void ShaderProgram::clean_all()
 {
 	if (instances_ != nullptr)
 	{

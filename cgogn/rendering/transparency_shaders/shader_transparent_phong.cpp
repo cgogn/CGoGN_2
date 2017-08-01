@@ -180,7 +180,7 @@ std::unique_ptr< ShaderPhongTransp::Param> ShaderPhongTransp::generate_param()
 	if (!instance_)
 	{
 		instance_ = new ShaderPhongTransp();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }
@@ -190,7 +190,7 @@ ShaderPhongTransp* ShaderPhongTransp::get_instance()
 	if (!instance_)
 	{
 		instance_ = new ShaderPhongTransp();
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return instance_;
 }

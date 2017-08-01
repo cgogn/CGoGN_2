@@ -340,7 +340,7 @@ std::unique_ptr<typename ShaderPhongTpl<CPV>::Param> ShaderPhongTpl<CPV>::genera
 	if (!instance_)
 	{
 		instance_ = new ShaderPhongTpl<CPV>;
-		ShaderProgram::registering(instance_);
+		ShaderProgram::register_instance(instance_);
 	}
 	return cgogn::make_unique<Param>(instance_);
 }
