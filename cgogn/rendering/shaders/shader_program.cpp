@@ -79,7 +79,7 @@ void ShaderProgram::register_instance(ShaderProgram* sh)
 	}
 	
 	auto it = std::find(instances_->begin(), instances_->end(), sh);
-	if (it != instances_->end())
+	if (it == instances_->end())
 		instances_->push_back(sh);
 }
 
@@ -91,7 +91,6 @@ void ShaderProgram::clean_all()
 			delete ptr;
 		delete instances_;
 		instances_ = nullptr;
-
 	}
 }
 
