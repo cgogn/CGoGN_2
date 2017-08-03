@@ -2,14 +2,15 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
-set(HEADER_FILES
-	dll.h
 
+
+set(HEADER_BASIC
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
 	basic/cell_marker.h
-
+)
+set(HEADER_CMAP
 	cmap/map_traits.h
 	cmap/map_base_data.h
 	cmap/map_base.h
@@ -24,13 +25,16 @@ set(HEADER_FILES
 	cmap/cmap2_quad.h
 	cmap/cmap3_tetra.h
 	cmap/cmap3_hexa.h
-
+)
+set(HEADER_CONTAINER
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
 	container/chunk_array.h
 	container/chunk_stack.h
+)
 
+set(HEADER_UTILS
 	utils/assert.h
 	utils/buffers.h
 	utils/definitions.h
@@ -51,7 +55,10 @@ set(HEADER_FILES
 	utils/timer.h
 )
 
-set(SOURCE_FILES
+set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_UTILS})
+
+
+set(SOURCE_CMAP
 	cmap/map_base_data.cpp
 	cmap/cmap0.cpp
 	cmap/cmap1.cpp
@@ -61,14 +68,16 @@ set(SOURCE_FILES
 	cmap/cmap2_quad.cpp
 	cmap/cmap3_tetra.cpp
 	cmap/cmap3_hexa.cpp
-
+)
+set(SOURCE_CONTAINER
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
 	container/chunk_array.cpp
 	container/chunk_stack.cpp
 	container/chunk_array_container.cpp
 	container/chunk_array_factory.cpp
-
+)
+set(SOURCE_UTILS
 	utils/assert.cpp
 	utils/name_types.cpp
 	utils/thread.cpp
@@ -83,7 +92,10 @@ set(SOURCE_FILES
 	utils/timer.cpp
 )
 
+set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_UTILS})
+
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+
 
 # use of target_compile_options to have transitive flags
 if(CGOGN_USE_SIMD)
@@ -162,3 +174,10 @@ install(DIRECTORY basic cmap container utils
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
+source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
+source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
+source_group("BASIC" FILES ${HEADER_BASIC})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

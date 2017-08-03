@@ -163,6 +163,8 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
+
 }
 
 Viewer::Viewer() :

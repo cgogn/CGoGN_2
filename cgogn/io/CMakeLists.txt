@@ -80,3 +80,7 @@ install(FILES ${HEADERS}
 	DESTINATION include/cgogn/io)
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("IO" FILES ${HEADER_FILES} ${SOURCE_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

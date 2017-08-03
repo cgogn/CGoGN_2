@@ -9,6 +9,15 @@ project(CGoGN
 	LANGUAGES CXX C
 )
 
+foreach(p
+    CMP0048 # version
+    CMP0054 # CMake 3.1
+    )
+  if(POLICY ${p})
+    cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
 enable_testing()
 
 #### Default build type
@@ -139,6 +148,8 @@ endif()
 
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
 subdirlist(CGOGN_CONFIGURED_MODULES ${CGOGN_SOURCE_DIR}/cgogn)

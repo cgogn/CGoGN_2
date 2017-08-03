@@ -32,7 +32,7 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderColorPerVertex> ShaderColorPerVertex::instance_ = nullptr;
+ShaderColorPerVertex* ShaderColorPerVertex::instance_ = nullptr;
 
 const char* ShaderColorPerVertex::vertex_shader_source_ =
 "#version 150\n"
@@ -69,8 +69,11 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 std::unique_ptr<ShaderColorPerVertex::Param> ShaderColorPerVertex::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderColorPerVertex>(new ShaderColorPerVertex);
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderColorPerVertex;
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 } // namespace rendering

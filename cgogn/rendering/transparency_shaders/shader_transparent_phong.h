@@ -155,7 +155,7 @@ public:
 private:
 
 	ShaderPhongTransp();
-	static std::unique_ptr<ShaderPhongTransp> instance_;
+	static ShaderPhongTransp* instance_;
 
 };
 

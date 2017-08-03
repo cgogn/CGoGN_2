@@ -94,10 +94,6 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
 
-	int mesh_transparency_;
-	bool lighted_;
-	bool bfc_;
-	bool phong_rendered_;
 };
 
 
@@ -143,6 +139,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	vbo_norm_.reset();
 	transp_drawer_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 ViewerTransparency::ViewerTransparency() :

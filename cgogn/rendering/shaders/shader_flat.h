@@ -121,11 +121,11 @@ public:
 private:
 
 	ShaderFlatTpl() : ShaderFlatGen(CPV) {}
-	static std::unique_ptr<ShaderFlatTpl> instance_;
+	static ShaderFlatTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderFlatTpl<CPV>> ShaderFlatTpl<CPV>::instance_ = nullptr;
+ShaderFlatTpl<CPV>* ShaderFlatTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -258,8 +258,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderFlatTpl<CPV>::Param> ShaderFlatTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderFlatTpl<CPV>>(new ShaderFlatTpl<CPV>());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderFlatTpl<CPV>();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 using ShaderFlat = ShaderFlatTpl<false>;

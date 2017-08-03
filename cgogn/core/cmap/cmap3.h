@@ -1616,6 +1616,8 @@ public:
 		return result;
 	}
 
+#pragma warning(push)
+#pragma warning(disable:4702)
 	template <Orbit ORBIT>
 	inline bool is_boundary_cell(Cell<ORBIT> c) const
 	{
@@ -1633,6 +1635,8 @@ public:
 			default: cgogn_assert_not_reached_false("Orbit not supported in a CMap3"); break;
 		}
 	}
+#pragma warning(push)
+
 
 	inline Face boundary_face_of_edge(Edge e) const
 	{
