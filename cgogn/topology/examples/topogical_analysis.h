@@ -398,6 +398,7 @@ public:
 
 	virtual void closeEvent(QCloseEvent*)
 	{
+		cgogn::rendering::ShaderProgram::clean_all();
 	}
 
 	template <typename T, typename std::enable_if<T::DIMENSION == 2>::type* = nullptr>

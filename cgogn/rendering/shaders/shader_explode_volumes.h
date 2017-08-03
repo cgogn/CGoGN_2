@@ -98,11 +98,11 @@ public:
 private:
 
 	ShaderExplodeVolumesTpl() : ShaderExplodeVolumesGen(CPV) {}
-	static std::unique_ptr<ShaderExplodeVolumesTpl> instance_;
+	static ShaderExplodeVolumesTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderExplodeVolumesTpl<CPV>> ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
+ShaderExplodeVolumesTpl<CPV>* ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -237,8 +237,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolumesTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderExplodeVolumesTpl>(new ShaderExplodeVolumesTpl<CPV>());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderExplodeVolumesTpl<CPV>();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

@@ -127,6 +127,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	topo_drawer_.reset();
 	topo_drawer_rend_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :

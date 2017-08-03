@@ -24,3 +24,8 @@ add_subdirectory(lm6)
 add_subdirectory(termcolor)
 add_subdirectory(zlib-1.2.8)
 add_subdirectory(OpenNL)
+
+
+set_target_properties(tinyxml2 benchmark QOGLViewer lm6 off_ascii2bin transmesh ply Zlib OpenNL 
+gmock gmock_main gtest gtest_main PROPERTIES FOLDER thirdparty)
+

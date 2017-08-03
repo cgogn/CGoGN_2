@@ -97,7 +97,7 @@ const char* ShaderPhongTransp::fragment_shader_source_ =
 "	depth_out = tc.z;\n"
 "}\n";
 
-std::unique_ptr<ShaderPhongTransp> ShaderPhongTransp::instance_ = nullptr;
+ShaderPhongTransp* ShaderPhongTransp::instance_ = nullptr;
 
 ShaderPhongTransp::ShaderPhongTransp()
 {
@@ -178,15 +178,21 @@ void ShaderPhongTransp::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderPhongTransp::Param> ShaderPhongTransp::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderPhongTransp>(new ShaderPhongTransp());
-	return cgogn::make_unique<ShaderPhongTransp::Param>(instance_.get());
+	{
+		instance_ = new ShaderPhongTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 ShaderPhongTransp* ShaderPhongTransp::get_instance()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderPhongTransp>(new ShaderPhongTransp());
-	return instance_.get();
+	{
+		instance_ = new ShaderPhongTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
 }
 
 

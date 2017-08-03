@@ -32,7 +32,7 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderScalarPerVertex> ShaderScalarPerVertex::instance_ = nullptr;
+ShaderScalarPerVertex* ShaderScalarPerVertex::instance_ = nullptr;
 
 const char* ShaderScalarPerVertex::vertex_shader_source_ =
 "#version 150\n"
@@ -221,8 +221,11 @@ void ShaderScalarPerVertex::set_nb_iso_levels(int32 nb)
 std::unique_ptr<ShaderScalarPerVertex::Param> ShaderScalarPerVertex::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderScalarPerVertex>(new ShaderScalarPerVertex);
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderScalarPerVertex();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 } // namespace rendering

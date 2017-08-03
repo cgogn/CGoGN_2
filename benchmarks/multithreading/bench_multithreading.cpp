@@ -45,7 +45,7 @@ const cgogn::Orbit VERTEX = Vertex::ORBIT;
 using Face = Map2::Face;
 const cgogn::Orbit FACE = Face::ORBIT;
 
-const uint32 ITERATIONS = 1u;
+//const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;

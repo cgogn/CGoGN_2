@@ -84,7 +84,7 @@ public:
 private:
 
 	ShaderTranspQuad();
-	static std::unique_ptr<ShaderTranspQuad> instance_;
+	static ShaderTranspQuad* instance_;
 
 };
 

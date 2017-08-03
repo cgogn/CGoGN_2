@@ -86,7 +86,7 @@ const char* ShaderFlatTransp::fragment_shader_source_ =
 "	depth_out = tc.z;\n"
 "}\n";
 
-std::unique_ptr<ShaderFlatTransp> ShaderFlatTransp::instance_ = nullptr;
+ShaderFlatTransp* ShaderFlatTransp::instance_ = nullptr;
 
 ShaderFlatTransp::ShaderFlatTransp()
 {
@@ -159,15 +159,21 @@ void ShaderFlatTransp::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderFlatTransp::Param> ShaderFlatTransp::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderFlatTransp>(new ShaderFlatTransp());
-	return cgogn::make_unique<ShaderFlatTransp::Param>(instance_.get());
+	{
+		instance_ = new ShaderFlatTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 ShaderFlatTransp* ShaderFlatTransp::get_instance()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderFlatTransp>(new ShaderFlatTransp());
-	return instance_.get();
+	{
+		instance_ = new ShaderFlatTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
 }
 
 

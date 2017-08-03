@@ -80,7 +80,7 @@ public:
 private:
 
 	ShaderCopyDepth();
-	static std::unique_ptr<ShaderCopyDepth> instance_;
+	static ShaderCopyDepth* instance_;
 
 };
 

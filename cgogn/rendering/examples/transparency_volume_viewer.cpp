@@ -155,6 +155,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	volume_drawer_.reset();
 	volume_drawer_rend_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :

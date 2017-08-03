@@ -76,7 +76,7 @@ public:
 protected:
 
 	ShaderExplodeVolumesLine();
-	static std::unique_ptr<ShaderExplodeVolumesLine> instance_;
+	static ShaderExplodeVolumesLine* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamExplodeVolumesLine : public ShaderParam
