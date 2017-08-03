@@ -886,17 +886,19 @@ protected:
 
 	bool merge_incident_edges_topo(Dart d)
 	{
-		Dart e = this->phi2(this->phi1(d));
+		Dart d2 = phi2(d);
+		Dart e = this->phi1(d2);
+		Dart e2 = phi2(e);
 
-		if (d != this->phi2(this->phi1(e))) // the degree of the vertex of d should be 2
+		if (d != this->phi1(e2)) // the degree of the vertex of d should be 2
 			return false;
 
 		phi2_unsew(d);
 		phi2_unsew(e);
-		this->remove_vertex_topo(this->phi1(d));
-		this->remove_vertex_topo(this->phi1(e));
-		phi2_sew(d, e);
-		return true;;
+		this->remove_vertex_topo(d);
+		this->remove_vertex_topo(e);
+		phi2_sew(d2, e2);
+		return true;
 	}
 
 public:
