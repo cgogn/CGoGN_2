@@ -125,7 +125,7 @@ protected:
 
 	ShaderTransparentVolumes();
 
-	static std::unique_ptr<ShaderTransparentVolumes> instance_;
+	static ShaderTransparentVolumes* instance_;
 
 };
 

@@ -47,6 +47,9 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename Map2::template ChunkArrayContainer<T>;
 
+	template <typename T>
+	using ChunkArray = typename Map2::template ChunkArray<T>;
+
 	inline CMap2Builder_T(Map2& map) : map_(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
 	inline ~CMap2Builder_T() {}
@@ -128,6 +131,34 @@ public:
 	inline uint32 close_map()
 	{
 		return map_.close_map();
+	}
+
+	inline Dart add_topology_element()
+	{
+		return map_.add_topology_element();
+	}
+
+
+	template <bool B=true>
+	inline auto ca_phi1() -> typename std::enable_if<B && MAP2::PRIM_SIZE==1,ChunkArray<Dart>&>::type
+	{
+		return *(map_.Map2::Inherit::phi1_);
+	}
+
+	template <bool B=true>
+	inline auto ca_phi_1() -> typename std::enable_if< B &&MAP2::PRIM_SIZE==1,ChunkArray<Dart>&>::type
+	{
+		return *(map_.Map2::Inherit::phi_1_);
+	}
+
+	inline ChunkArray<Dart>& ca_phi2()
+	{
+		return *(map_.phi2_);
+	}
+
+	inline ChunkArrayContainer<uint8>& cac_topology()
+	{
+		return map_.topology_;
 	}
 
 private:

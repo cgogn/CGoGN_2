@@ -248,13 +248,13 @@ public:
 		this->build<CellType>([] (CellType) { return true; });
 	}
 
-	template <typename CellType, typename FilterFunction>
-	inline void build(const FilterFunction& filter)
+	template <typename CellType, typename MASK>
+	inline void build(const MASK& mask)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		cells_[ORBIT].clear();
 		cells_[ORBIT].reserve(4096u);
-		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, filter);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, mask);
 		traversed_cells_ |= orbit_mask<CellType>();
 	}
 

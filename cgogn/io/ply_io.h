@@ -161,7 +161,7 @@ private:
 
 		map.foreach_cell([&] (Vertex v)
 		{
-			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 
@@ -174,7 +174,7 @@ private:
 
 			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
-				prim.push_back(this->indices_[v]);
+				prim.push_back(this->vindices_[v]);
 				++valence;
 			});
 			output << valence;
@@ -197,9 +197,9 @@ private:
 		output << "comment See : http://cgogn.unistra.fr/" << std::endl ;
 		output << "comment or contact : cgogn@unistra.fr" << std::endl ;
 		output << "element vertex " << map.template nb_cells<Vertex::ORBIT>() << std::endl ;
-		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute_->nested_type_name()) << " x" << std::endl ;
-		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute_->nested_type_name()) << " y" << std::endl ;
-		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute_->nested_type_name()) << " z" << std::endl ;
+		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name()) << " x" << std::endl ;
+		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name()) << " y" << std::endl ;
+		output << "property " << cgogn_name_of_type_to_ply_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name()) << " z" << std::endl ;
 		output << "element face " << map.template nb_cells<Face::ORBIT>() << std::endl ;
 		output << "property list uint uint vertex_indices" << std::endl ;
 		output << "end_header" << std::endl ;
@@ -209,7 +209,7 @@ private:
 
 		map.foreach_cell([&] (Vertex v)
 		{
-			this->position_attribute_->export_element(map.embedding(v), output, true, cgogn::internal::cgogn_is_little_endian);
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, true, cgogn::internal::cgogn_is_little_endian);
 		}, *(this->cell_cache_));
 
 		// second pass to save primitives
@@ -225,7 +225,7 @@ private:
 
 			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
-				prim.push_back(this->indices_[v]);
+				prim.push_back(this->vindices_[v]);
 				++valence;
 			});
 

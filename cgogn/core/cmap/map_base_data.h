@@ -65,7 +65,6 @@ public:
 
 	using Self = MapBaseData;
 
-	static const uint32 NB_UNKNOWN_THREADS = 4u;
 	static const uint32 CHUNK_SIZE = CGOGN_CHUNK_SIZE;
 
 	template <typename T> friend class Attribute_T;
@@ -100,11 +99,6 @@ protected:
 	// vector of available mark attributes per orbit per thread on attributes containers
 	std::array<std::vector<std::vector<ChunkArrayBool*>>, NB_ORBITS> mark_attributes_;
 	std::array<std::mutex, NB_ORBITS> mark_attributes_mutex_;
-
-	// Before accessing the map, a thread should call map.add_thread(std::this_thread::get_id()) (and do a map.remove_thread(std::this_thread::get_id() before it terminates)
-	// The first part of the vector ( 0 to NB_UNKNOWN_THREADS -1) stores threads that want to access the map without using this interface. They might be deleted if we have too many of them.
-	// The second part (NB_UNKNOWN_THREADS to infinity) of the vector stores threads IDs added using this interface and they are guaranteed not to be deleted.
-	mutable std::vector<std::thread::id> thread_ids_;
 
 	// vector of Map instances
 	static std::vector<const MapBaseData*>* instances_;
@@ -167,7 +161,7 @@ protected:
 	*/
 	inline ChunkArrayBool* topology_mark_attribute()
 	{
-		const std::size_t thread = this->current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
 		cgogn_assert(thread < mark_attributes_topology_.size());
 		if (!this->mark_attributes_topology_[thread].empty())
 		{
@@ -189,7 +183,7 @@ protected:
 	*/
 	inline void release_topology_mark_attribute(ChunkArrayBool* ca)
 	{
-		const std::size_t thread = this->current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
 		cgogn_assert(thread < mark_attributes_topology_.size());
 		this->mark_attributes_topology_[thread].push_back(ca);
 	}
@@ -267,19 +261,6 @@ protected:
 		this->template set_embedding<CellType>(dest, embedding(CellType(src)));
 	}
 
-	/*******************************************************************************
-	 * Thread management
-	 *******************************************************************************/
-
-	uint32 add_unknown_thread() const;
-
-	std::size_t unknown_thread_index(std::thread::id thread_id) const;
-
-	std::size_t current_thread_index() const;
-
-	void remove_thread(std::thread::id thread_id) const;
-
-	void add_thread(std::thread::id thread_id) const;
 };
 
 } // namespace cgogn

@@ -352,7 +352,7 @@ public:
 template <typename VEC3, typename MAP>
 void transform_position(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& pos_in, typename MAP::template VertexAttribute<VEC3>& pos_out, const QMatrix4x4& view)
 {
-	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i, uint32)
+	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i)
 	{
 		QVector3D P = view.map(QVector3D(pos_in[i][0],pos_in[i][1],pos_in[i][2]));
 		pos_out[i]= VEC3(P[0],P[1],P[2]);

@@ -38,7 +38,7 @@ MapBaseData::MapBaseData()
 {
 	if (instances_ == nullptr)
 	{
-		cgogn::thread_start();
+		cgogn::thread_start(0,0);
 		instances_ = new std::vector<const MapBaseData*>;
 	}
 
@@ -46,31 +46,23 @@ MapBaseData::MapBaseData()
 	cgogn_assert(std::find(instances_->begin(), instances_->end(), this) == instances_->end());
 	instances_->push_back(this);
 
+	uint32 nb_mark_threads = thread_pool()->max_nb_workers() + external_thread_pool()->max_nb_workers() + 1; // +1 for main thread
+
 	for (uint32 i = 0u; i < NB_ORBITS; ++i)
 	{
-		mark_attributes_[i].reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-		mark_attributes_[i].resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+		mark_attributes_[i].resize(nb_mark_threads);
 
 		embeddings_[i] = nullptr;
-		for (uint32 j = 0u; j < NB_UNKNOWN_THREADS + MAX_NB_THREADS; ++j)
+		for (uint32 j = 0u; j < nb_mark_threads; ++j)
 			mark_attributes_[i][j].reserve(8u);
 	}
 
-	mark_attributes_topology_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-	mark_attributes_topology_.resize(NB_UNKNOWN_THREADS + MAX_NB_THREADS);
+	mark_attributes_topology_.resize(nb_mark_threads);
 
-	for (uint32 i = 0u; i < MAX_NB_THREADS; ++i)
+	for (uint32 i = 0u; i < nb_mark_threads; ++i)
 		mark_attributes_topology_[i].reserve(8u);
 
 	boundary_marker_ = topology_.add_marker_attribute();
-
-	thread_ids_.reserve(NB_UNKNOWN_THREADS + 2u*MAX_NB_THREADS);
-	thread_ids_.resize(NB_UNKNOWN_THREADS);
-
-	this->add_thread(std::this_thread::get_id());
-	const auto& pool_threads_ids = cgogn::thread_pool()->threads_ids();
-	for (const std::thread::id& ids : pool_threads_ids)
-		this->add_thread(ids);
 }
 
 MapBaseData::~MapBaseData()
@@ -86,65 +78,6 @@ MapBaseData::~MapBaseData()
 		delete instances_;
 		instances_ = nullptr;
 	}
-}
-
-uint32 MapBaseData::add_unknown_thread() const
-{
-	static uint32 index = 0u;
-	const std::thread::id& th_id = std::this_thread::get_id();
-	cgogn_log_warning("add_unknown_thread") << "Registration of an unknown thread (id :" << th_id << ") in the map. Data can be lost. Please use add_thread and remove_thread interface.";
-	thread_ids_[index] = th_id;
-	const unsigned old_index = index;
-	index = (index+1u) % NB_UNKNOWN_THREADS;
-	return old_index;
-}
-
-std::size_t MapBaseData::unknown_thread_index(std::thread::id thread_id) const
-{
-	auto end = thread_ids_.begin();
-	std::advance(end, NB_UNKNOWN_THREADS);
-	auto res_it = std::find(thread_ids_.begin(), end, thread_id);
-	if (res_it != end)
-		return std::size_t(std::distance(thread_ids_.begin(), res_it));
-
-	return add_unknown_thread();
-}
-
-std::size_t MapBaseData::current_thread_index() const
-{
-	// avoid the unknown threads stored at the beginning of the vector
-	auto real_begin = thread_ids_.begin();
-	std::advance(real_begin, NB_UNKNOWN_THREADS);
-
-	const auto end = thread_ids_.end();
-	auto it_lower_bound = std::lower_bound(real_begin, end, std::this_thread::get_id());
-	if (it_lower_bound != end)
-		return std::size_t(std::distance(thread_ids_.begin(), it_lower_bound));
-
-	return unknown_thread_index(std::this_thread::get_id());
-}
-
-void MapBaseData::remove_thread(std::thread::id thread_id) const
-{
-	// avoid the unknown threads stored at the beginning of the vector
-	auto real_begin = thread_ids_.begin();
-	std::advance(real_begin, NB_UNKNOWN_THREADS);
-
-	cgogn_message_assert(std::binary_search(real_begin, thread_ids_.end(), thread_id), "Unable to find the thread.");
-	auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
-	cgogn_message_assert(*it == thread_id, "Unable to find the thread.");
-	thread_ids_.erase(it);
-}
-
-void MapBaseData::add_thread(std::thread::id thread_id) const
-{
-	// avoid the unknown threads stored at the beginning of the vector
-	auto real_begin =thread_ids_.begin();
-	std::advance(real_begin, NB_UNKNOWN_THREADS);
-
-	auto it = std::lower_bound(real_begin, thread_ids_.end(), thread_id);
-	if (it == thread_ids_.end() || *it != thread_id)
-		thread_ids_.insert(it, thread_id);
 }
 
 } // namespace cgogn

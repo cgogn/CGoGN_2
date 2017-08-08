@@ -316,7 +316,7 @@ public:
 
 	/*!
 	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
+	 * \param f : the face to remove
 	 */
 	inline void remove_face(Face f)
 	{
@@ -448,6 +448,8 @@ public:
 	 * Boundary information
 	 *******************************************************************************/
 
+#pragma warning(push)
+#pragma warning(disable:4702)
 	template <Orbit ORBIT>
 	inline bool is_boundary_cell(Cell<ORBIT> c) const
 	{
@@ -461,10 +463,11 @@ public:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21_PHI31:
-			case Orbit::PHI1_PHI2_PHI3:
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
+			case Orbit::PHI1_PHI2_PHI3: 
+			default: cgogn_assert_not_reached_false("Orbit not supported in a CMap1"); break;
 		}
 	}
+#pragma warning(pop)
 
 public:
 

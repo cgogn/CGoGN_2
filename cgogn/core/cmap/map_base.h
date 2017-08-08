@@ -376,7 +376,7 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		const std::size_t thread = this->current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
 		cgogn_assert(thread < mark_attributes_[ORBIT].size());
 
 		if (!this->mark_attributes_[ORBIT][thread].empty())
@@ -404,9 +404,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
-		cgogn_assert(this->current_thread_index() < mark_attributes_[ORBIT].size());
+		cgogn_assert(cgogn::current_thread_marker_index() < mark_attributes_[ORBIT].size());
 
-		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
+		this->mark_attributes_[ORBIT][cgogn::current_thread_marker_index()].push_back(ca);
 	}
 
 	/*******************************************************************************
@@ -723,11 +723,14 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
+#pragma warning(push)
+#pragma warning(disable:4717)
 	template <Orbit ORBIT>
 	bool is_boundary_cell(Cell<ORBIT> c) const
 	{
 		return to_concrete()->is_boundary_cell(c);
 	}
+#pragma warning(pop)
 
 	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const
@@ -855,33 +858,35 @@ public:
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
 		static_assert(is_ith_func_parameter_same<FUNC, 0, Dart>::value, "Wrong function first parameter type");
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 
-		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(Dart)>::type>;
 		using VecDarts = std::vector<Dart>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_dart(f);
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		dart_buffers[0].reserve(nb_threads_pool);
-		dart_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		dart_buffers[0].reserve(nb_workers);
+		dart_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 		const ConcreteMap* cmap = to_concrete();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		Dart it = cmap->all_begin();
 		Dart last = cmap->all_end();
 
 		while (it != last)
 		{
 			dart_buffers[i].push_back(dbuffs->buffer());
-			cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
+			cgogn_assert(dart_buffers[i].size() <= nb_workers);
 			std::vector<Dart>& darts = *dart_buffers[i].back();
 			darts.reserve(PARALLEL_BUFFER_SIZE);
 			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
@@ -890,14 +895,14 @@ public:
 				cmap->all_next(it);
 			}
 
-			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] ()
 			{
 				for (auto d : darts)
-					f(d, th_id);
+					f(d);
 			}));
 
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -982,7 +987,6 @@ public:
 			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
 
 		switch (STRATEGY)
@@ -1051,22 +1055,7 @@ public:
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
-			if (!internal::void_to_true_binder(f, CellType(*it)))
-				break;
-	}
-
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, Traversor& t) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		if (!t.template is_traversed<CellType>())
-			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
-
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
+		for (typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
 			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
 	}
@@ -1076,30 +1065,30 @@ public:
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
-
 		using CellType = func_parameter_type<FUNC>;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell(f);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		auto it = t.template begin<CellType>();
 		const auto it_end = t.template end<CellType>();
 		while(it != it_end)
@@ -1114,13 +1103,13 @@ public:
 				++it;
 			}
 			// launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1152,17 +1141,19 @@ protected:
 		using CellType = func_parameter_type<FUNC>;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell_dart_marking(f,filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1172,7 +1163,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1194,13 +1185,13 @@ protected:
 				cmap->next(it);
 			}
 			//launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1231,17 +1222,19 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell_cell_marking(f,filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1251,7 +1244,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1273,13 +1266,13 @@ protected:
 				cmap->next(it);
 			}
 			// launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;

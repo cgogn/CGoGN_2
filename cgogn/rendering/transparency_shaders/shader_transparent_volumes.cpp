@@ -114,7 +114,7 @@ const char* ShaderTransparentVolumes::fragment_shader_source_ =
 
 
 
-std::unique_ptr<ShaderTransparentVolumes> ShaderTransparentVolumes::instance_ = nullptr;
+ShaderTransparentVolumes* ShaderTransparentVolumes::instance_ = nullptr;
 
 
 ShaderTransparentVolumes::ShaderTransparentVolumes()
@@ -203,15 +203,21 @@ void ShaderTransparentVolumes::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderTransparentVolumes::Param> ShaderTransparentVolumes::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderTransparentVolumes>(new ShaderTransparentVolumes());
-	return cgogn::make_unique<ShaderTransparentVolumes::Param>(instance_.get());
+	{
+		instance_ = new ShaderTransparentVolumes();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<ShaderTransparentVolumes::Param>(instance_);
 }
 
 ShaderTransparentVolumes* ShaderTransparentVolumes::get_instance()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderTransparentVolumes>(new ShaderTransparentVolumes());
-	return instance_.get();
+	{
+		instance_ = new ShaderTransparentVolumes();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
 }
 
 

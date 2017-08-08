@@ -30,3 +30,5 @@ target_include_directories(cgogn_geometry_test PRIVATE ${CMAKE_SOURCE_DIR}/third
 link_directories(${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googletest/lib)
 
 add_test(NAME "${PROJECT_NAME}" WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COMMAND ${PROJECT_NAME})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER tests)

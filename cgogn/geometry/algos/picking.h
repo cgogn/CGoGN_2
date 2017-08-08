@@ -62,11 +62,14 @@ inline void picking_internal_face(
 
 	// thread data
 	using Triplet = typename std::vector<std::tuple<Face, VEC3, Scalar>>;
-	std::vector<Triplet> selected_th(cgogn::nb_threads());
-	std::vector<std::vector<uint32>> ear_indices_th(cgogn::nb_threads());
+	uint32 nb_threads = thread_pool()->nb_workers();
 
-	m.parallel_foreach_cell([&] (Face f, uint32 th)
+	std::vector<Triplet> selected_th(nb_threads);
+	std::vector<std::vector<uint32>> ear_indices_th(nb_threads);
+
+	m.parallel_foreach_cell([&] (Face f)
 	{
+		uint32 th =cgogn::current_thread_index();
 		VEC3 inter;
 		if (m.codegree(f) == 3)
 		{
@@ -96,7 +99,7 @@ inline void picking_internal_face(
 	});
 
 	// merging thread result
-	for (uint32 i = 0; i < cgogn::nb_threads(); ++i)
+	for (uint32 i = 0; i < nb_threads; ++i)
 	{
 		for (auto x : selected_th[i])
 			selected.push_back(x);

@@ -77,7 +77,7 @@ public:
 protected:
 
 	ShaderVectorPerVertex();
-	static std::unique_ptr<ShaderVectorPerVertex> instance_;
+	static ShaderVectorPerVertex* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamVectorPerVertex : public ShaderParam

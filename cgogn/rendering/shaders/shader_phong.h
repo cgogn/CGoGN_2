@@ -142,11 +142,11 @@ public:
 private:
 
 	ShaderPhongTpl() : ShaderPhongGen(CPV) {}
-	static std::unique_ptr<ShaderPhongTpl> instance_;
+	static ShaderPhongTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderPhongTpl<CPV>> ShaderPhongTpl<CPV>::instance_ = nullptr;
+ShaderPhongTpl<CPV>* ShaderPhongTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -338,8 +338,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderPhongTpl<CPV>::Param> ShaderPhongTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderPhongTpl<CPV>>(new ShaderPhongTpl<CPV>);
-	return (cgogn::make_unique<Param>(instance_.get()));
+	{
+		instance_ = new ShaderPhongTpl<CPV>;
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

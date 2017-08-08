@@ -241,7 +241,7 @@ private:
 				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
 					output << "vertex ";
-					this->position_attribute_->export_element(map.embedding(v), output, false, false);
+					this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 					output << std::endl;
 				});
 				output << "endloop" << std::endl;
@@ -273,7 +273,7 @@ private:
 				normal_attribute->export_element(map.embedding(f), output, true, true, 4ul);
 				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
-					this->position_attribute_->export_element(map.embedding(v), output, true, true, 4ul);
+					this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, true, true, 4ul);
 				});
 				output.write(reinterpret_cast<char*>(&attribute_byte_count),sizeof(uint16));
 				++nb_tri;

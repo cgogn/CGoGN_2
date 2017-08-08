@@ -12,7 +12,12 @@ file(GLOB
     ${PROJECT_SOURCE_DIR}/include/benchmark/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
-add_library(benchmark ${SOURCE_FILES})
+if (WIN32)
+  add_library(benchmark STATIC ${SOURCE_FILES})
+else()
+  add_library(benchmark ${SOURCE_FILES})
+endif()
+
 set_target_properties(benchmark PROPERTIES
   OUTPUT_NAME "benchmark"
   VERSION ${GENERIC_LIB_VERSION}

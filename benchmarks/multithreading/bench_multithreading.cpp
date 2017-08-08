@@ -45,7 +45,7 @@ const cgogn::Orbit VERTEX = Vertex::ORBIT;
 using Face = Map2::Face;
 const cgogn::Orbit FACE = Face::ORBIT;
 
-const uint32 ITERATIONS = 1u;
+//const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
@@ -62,7 +62,7 @@ static void BENCH_enqueue(benchmark::State& state)
 		state.PauseTiming();
 		cgogn::ThreadPool* tp = cgogn::thread_pool();
 		state.ResumeTiming();
-		tp->enqueue([](uint32){;});
+		tp->enqueue([](){;});
 	}
 }
 
@@ -80,13 +80,13 @@ static void BENCH_Dart_count_multi_threaded(benchmark::State& state)
 	while (state.KeepRunning())
 	{
 		uint32 nb_darts_2 = 0u;
-		std::vector<uint32> nb_darts_per_thread(cgogn::nb_threads() + 2);
+		std::vector<uint32> nb_darts_per_thread(cgogn::thread_pool()->nb_workers()/* + 2 ??? */);
 		for (auto& n : nb_darts_per_thread)
 			n = 0u;
 		nb_darts_2 = 0u;
-		bench_map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart, uint32 thread_index)
+		bench_map.parallel_foreach_dart([&nb_darts_per_thread] (cgogn::Dart)
 		{
-			nb_darts_per_thread[thread_index]++;
+			nb_darts_per_thread[cgogn::current_thread_index()]++;
 		});
 		for (uint32 n : nb_darts_per_thread)
 			nb_darts_2 += n;
@@ -148,7 +148,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(face_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f, uint32)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f)
 		{
 			face_normal_mt[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		});
@@ -187,7 +187,7 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 		cache.template build<Face>();
 		state.ResumeTiming();
 
-		bench_map.parallel_foreach_cell([&] (Face f, uint32)
+		bench_map.parallel_foreach_cell([&] (Face f)
 		{
 			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
 		},
@@ -249,7 +249,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 		cgogn_assert(vertices_normal_mt.is_valid());
 		state.ResumeTiming();
 
-		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v, uint32)
+		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v)
 		{
 			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		});
@@ -288,7 +288,7 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 		cache.template build<Vertex>();
 		state.ResumeTiming();
 
-		bench_map.parallel_foreach_cell([&] (Vertex v, uint32)
+		bench_map.parallel_foreach_cell([&] (Vertex v)
 		{
 			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
 		},

@@ -20,7 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
+#include <chrono>
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -28,36 +28,45 @@
 #include <QOGLViewer/qoglviewer.h>
 
 #include <cgogn/core/cmap/cmap2.h>
+//#include <cgogn/core/cmap/cmap2_tri.h>
+//#include <cgogn/core/cmap/cmap2_quad.h>
+
+#include <cgogn/core/utils/masks.h>
+
 
 #include <cgogn/io/map_import.h>
-#include <cgogn/io/map_export.h>
 
 #include <cgogn/geometry/algos/bounding_box.h>
+#include <cgogn/geometry/algos/normal.h>
+
+#include <cgogn/rendering/map_render.h>
+#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/shaders/shader_bold_line.h>
+#include <cgogn/rendering/shaders/shader_point_sprite.h>
+
+#include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <cgogn/rendering/drawer.h>
-#include <cgogn/rendering/map_render.h>
-#include <cgogn/rendering/topo_drawer.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/shaders/shader_flat.h>
-#include <cgogn/rendering/shaders/shader_simple_color.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
+using namespace cgogn::numerics;
+
 using Map2 = cgogn::CMap2;
-using Vertex = Map2::Vertex;
+
 
 using Vec3 = Eigen::Vector3d;
-//using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
+
 class Viewer : public QOGLViewer
 {
 public:
-
-	using MapRender = cgogn::rendering::MapRender;
-	using TopoDrawer = cgogn::rendering::TopoDrawer;
 
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
@@ -74,25 +83,30 @@ private:
 
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
+	VertexAttribute<Vec3> vertex_pos2_;
+
 
 	cgogn::geometry::AABB<Vec3> bb_;
 
-	std::unique_ptr<MapRender> render_;
-
+	std::unique_ptr<cgogn::rendering::MapRender> render_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
-
 	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
 
-	std::unique_ptr<TopoDrawer> topo_drawer_;
-	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
-
 	bool flat_rendering_;
-	bool topo_drawing_;
+
+	std::mutex mut_update_;
+	bool need_vbo_update_;
+
+	std::future<void> future_;
+
+	std::atomic_bool to_stop_;
 };
+
 
 //
 // IMPLEMENTATION
 //
+
 
 void Viewer::import(const std::string& surface_mesh)
 {
@@ -105,11 +119,16 @@ void Viewer::import(const std::string& surface_mesh)
 		std::exit(EXIT_FAILURE);
 	}
 
-	if (!map_.check_map_integrity())
+	vertex_pos2_ = map_.template add_attribute<Vec3, Map2::Vertex>("position2");
+
+	map_.foreach_cell([&] (Map2::Vertex v)
 	{
-		cgogn_log_error("Viewer::import") << "Integrity of map not respected. Aborting.";
-		std::exit(EXIT_FAILURE);
-	}
+		vertex_pos2_[v] = vertex_position_[v];
+	});
+
+
+	cgogn::external_thread_pool()->set_nb_workers(1);
+
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -123,11 +142,13 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
+	to_stop_=true;
+	if (future_.valid())
+		future_.wait();
 	render_.reset();
 	vbo_pos_.reset();
-	topo_drawer_.reset();
-	topo_drawer_rend_.reset();
 	cgogn::rendering::ShaderProgram::clean_all();
+
 }
 
 Viewer::Viewer() :
@@ -136,32 +157,102 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	topo_drawer_(nullptr),
-	topo_drawer_rend_(nullptr),
 	flat_rendering_(true),
-	topo_drawing_(true)
-{}
+	need_vbo_update_(false)
+{
+	to_stop_=false;
+}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key())
 	{
-		case Qt::Key_F:
-			flat_rendering_ = !flat_rendering_;
+		case Qt::Key_0:
+		case Qt::Key_1:
+		case Qt::Key_2:
+		case Qt::Key_3:
+		case Qt::Key_4:
+		case Qt::Key_5:
+		case Qt::Key_6:
+		case Qt::Key_7:
+		case Qt::Key_8:
+			cgogn::thread_pool()->set_nb_workers(uint32(ev->key()-Qt::Key_0));
 			break;
-		case Qt::Key_T:
-			topo_drawing_ = !topo_drawing_;
+
+		case Qt::Key_R:
+			map_.foreach_cell([&] (Map2::Vertex v)
+			{
+				vertex_position_[v] = vertex_pos2_[v];
+			});
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			break;
-		case Qt::Key_E:
-			cgogn::io::export_surface(map_, cgogn::io::ExportOptions::create().filename("/tmp/pipo.vtp").position_attribute(Map2::Vertex::ORBIT, "position"));
-			break;
+
+		case Qt::Key_A:
+		{
+			if (future_.valid())
+			{
+				std::future_status status = future_.wait_for(std::chrono::nanoseconds::min());
+				if (status == std::future_status::timeout)
+				break;
+			}
+			cgogn_log_info("Asyncrone")<< "let's go forever";
+
+			future_ = cgogn::launch_thread([&] () -> void
+			{
+				std::chrono::time_point<std::chrono::system_clock> start, end;
+				start = std::chrono::system_clock::now();
+
+				VertexAttribute<Vec3> vertex_normal = map_.template get_attribute<Vec3, Map2::Vertex>("normal");
+					if (!vertex_normal.is_valid())
+						vertex_normal = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+				do
+				{
+					for(int i=0;i<50;++i)
+						cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
+					for(int i=0;i<250;++i)
+					{
+						map_.parallel_foreach_cell([&] (Map2::Vertex v)
+						{
+							Vec3& P = vertex_position_[v];
+							Vec3 N = vertex_normal[v];
+							P += 0.0001*N;
+						});
+						mut_update_.lock();
+						need_vbo_update_=true;
+						update();
+						mut_update_.unlock();
+					}
+					for(int i=0;i<250;++i)
+					{
+						map_.parallel_foreach_cell([&] (Map2::Vertex v)
+						{
+							Vec3& P = vertex_position_[v];
+							Vec3 N = vertex_normal[v];
+							P -= 0.0001*N;
+							});
+						mut_update_.lock();
+						need_vbo_update_=true;
+						update();
+						mut_update_.unlock();
+					}
+					end = std::chrono::system_clock::now();
+
+				}while (! to_stop_);
+				//	(std::chrono::duration<float>(end - start).count()<20);
+
+			cgogn_log_info("Asyncrone")<< "finished";
+			});
+		}
+		break;
+
+
+
 		default:
 			break;
 	}
 	// enable QGLViewer keys
 	QOGLViewer::keyPressEvent(ev);
-	//update drawing
-	update();
+
 }
 
 void Viewer::draw()
@@ -171,41 +262,40 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	if (flat_rendering_)
+	mut_update_.lock();
+	if ( need_vbo_update_)
 	{
-		glEnable(GL_POLYGON_OFFSET_FILL);
-		glPolygonOffset(1.0f, 1.0f);
-		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering::TRIANGLES);
-		param_flat_->release();
-		glDisable(GL_POLYGON_OFFSET_FILL);
+		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+		need_vbo_update_ = false;
 	}
+	mut_update_.unlock();
 
-	if (topo_drawing_)
-	{
-		topo_drawer_rend_->draw(proj,view,this);
-	}
+	param_flat_->bind(proj,view);
+	render_->draw(cgogn::rendering::TRIANGLES);
+	param_flat_->release();
+
 }
 
 void Viewer::init()
 {
-	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
+	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
+	// create and fill VBO for positions
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
+	// create and fill VBO for normals
+// map rendering object (primitive creation & sending to GPU)
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives(map_, cgogn::rendering::TRIANGLES);
+	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,150,0);
-	param_flat_->back_color_ = QColor(0,0,150);
+	param_flat_->front_color_ = QColor(0,200,0);
+	param_flat_->back_color_ = QColor(0,0,200);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	topo_drawer_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
-	topo_drawer_rend_ = topo_drawer_->generate_renderer();
-	topo_drawer_->update<Vec3>(map_,vertex_position_);
 }
 
 int main(int argc, char** argv)
@@ -213,9 +303,9 @@ int main(int argc, char** argv)
 	std::string surface_mesh;
 	if (argc < 2)
 	{
-		cgogn_log_info("viewer_topo")<< "USAGE: " << argv[0] << " [filename]";
-		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		cgogn_log_info("viewer_topo") << "Using default mesh \"" << surface_mesh << "\".";
+		cgogn_log_info("simple_viewer") << "USAGE: " << argv[0] << " [filename]";
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
+		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
 	}
 	else
 		surface_mesh = std::string(argv[1]);
@@ -225,7 +315,7 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer viewer;
-	viewer.setWindowTitle("viewer_topo");
+	viewer.setWindowTitle("simple_viewer");
 	viewer.import(surface_mesh);
 	viewer.show();
 

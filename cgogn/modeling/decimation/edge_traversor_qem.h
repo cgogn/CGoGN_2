@@ -71,12 +71,12 @@ public:
 		einfo_ = map_.template add_attribute<EdgeInfo, Edge>("EdgeTraversor_QEM_EdgeInfo");
 		quadric_ = map_.template add_attribute<geometry::Quadric, Vertex>("EdgeTraversor_QEM_Quadric");
 
-		map_.parallel_foreach_cell([&] (Vertex v, uint32)
+		map_.parallel_foreach_cell([&] (Vertex v)
 		{
 			quadric_[v].zero();
 		});
 
-		map_.parallel_foreach_cell([&] (Face f, uint32)
+		map_.parallel_foreach_cell([&] (Face f)
 		{
 			Dart d = f.dart;
 			Dart d1 = map_.phi1(d);
@@ -194,10 +194,10 @@ public:
 	{
 	public:
 
-		Self* const trav_ptr_;
+		const Self* const trav_ptr_;
 		typename std::multimap<Scalar, Edge>::const_iterator edge_it_;
 
-		inline const_iterator(Self* trav, typename std::multimap<Scalar, Edge>::const_iterator it) :
+		inline const_iterator(const Self* trav, typename std::multimap<Scalar, Edge>::const_iterator it) :
 			trav_ptr_(trav),
 			edge_it_(it)
 		{}
@@ -234,14 +234,14 @@ public:
 
 	template <typename CellType,
 			  typename std::enable_if<std::is_same<CellType, typename MAP::Edge>::value>::type* = nullptr>
-	inline const_iterator begin()
+	inline const_iterator begin() const
 	{
 		return const_iterator(this, edges_.begin());
 	}
 
 	template <typename CellType,
 			  typename std::enable_if<std::is_same<CellType, typename MAP::Edge>::value>::type* = nullptr>
-	inline const_iterator end()
+	inline const_iterator end() const
 	{
 		return const_iterator(this, edges_.end());
 	}

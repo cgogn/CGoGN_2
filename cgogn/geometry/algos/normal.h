@@ -137,7 +137,7 @@ inline void compute_normal(
 	Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f)
 	{
 		face_normal[f] = normal<VEC3>(map, f, position);
 	},
@@ -162,7 +162,7 @@ inline void compute_normal(
 	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
 		vertex_normal[v] = normal<VEC3>(map, v, position);
 	},
@@ -188,7 +188,7 @@ inline void compute_normal(
 	Attribute<VEC3, Orbit::PHI21>& vertex_normal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
 		vertex_normal[v] = normal<VEC3>(map, v, position, face_normal);
 	},

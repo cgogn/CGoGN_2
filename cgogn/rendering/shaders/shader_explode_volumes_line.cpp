@@ -35,13 +35,16 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderExplodeVolumesLine> ShaderExplodeVolumesLine::instance_ = nullptr;
+ShaderExplodeVolumesLine* ShaderExplodeVolumesLine::instance_ = nullptr;
 
 std::unique_ptr<ShaderExplodeVolumesLine::Param> ShaderExplodeVolumesLine::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderExplodeVolumesLine>(new ShaderExplodeVolumesLine());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderExplodeVolumesLine();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 const char* ShaderExplodeVolumesLine::vertex_shader_source_ =

@@ -44,7 +44,7 @@ void filter_average(
 	using Scalar = typename vector_traits<T>::Scalar;
 	using Vertex = typename MAP::Vertex;
 
-	map.parallel_foreach_cell([&] (Vertex v, uint32)
+	map.parallel_foreach_cell([&] (Vertex v)
 	{
 		T sum;
 		set_zero(sum);
@@ -99,7 +99,7 @@ void filter_bilateral(
 	Scalar sigmaC = 1.0 * (length_sum / Scalar(nb_edges));
 	Scalar sigmaS = 2.5 * (angle_sum / Scalar(nb_edges));
 
-	map.parallel_foreach_cell([&] (Vertex v, uint32)
+	map.parallel_foreach_cell([&] (Vertex v)
 	{
 		const VEC3& n = normal[v];
 
@@ -143,7 +143,7 @@ void filter_taubin(
 	const Scalar lambda = 0.6307;
 	const Scalar mu = 0.6732;
 
-	map.parallel_foreach_cell([&] (Vertex v, uint32)
+	map.parallel_foreach_cell([&] (Vertex v)
 	{
 		VEC3 avg;
 		set_zero(avg);
@@ -159,7 +159,7 @@ void filter_taubin(
 	},
 	mask);
 
-	map.parallel_foreach_cell([&] (Vertex v, uint32)
+	map.parallel_foreach_cell([&] (Vertex v)
 	{
 		VEC3 avg;
 		set_zero(avg);

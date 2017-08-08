@@ -29,11 +29,13 @@ if (CGOGN1_PATH)
 endif()
 
 set(CGAL_DONT_OVERRIDE_CMAKE_FLAGS TRUE CACHE BOOL "preserve cmake flags" FORCE)
-find_package(CGAL)
+find_package(CGAL QUIET)
 if(CGAL_FOUND)
 	include(${CGAL_USE_FILE})
 	list(APPEND HEADER_FILES cgal/lcc_performance_3.h)
 	list(APPEND CPP_FILES cgal/lcc_performance_3.cpp)
+else()
+	message(STATUS "bench_comparison3: not using CGAL (not found)")
 endif()
 
 
@@ -41,6 +43,8 @@ find_package(OpenVolumeMesh)
 if(OPENVOLUMEMESH_FOUND)
 	list(APPEND HEADER_FILES openvolumemesh/openvolumemesh_performance.h)
 	list(APPEND CPP_FILES openvolumemesh/openvolumemesh_performance.cpp)
+else()
+	message(STATUS "bench_comparison3: not using OpenVolumeMesh (not found)")
 endif()
 
 list(APPEND CPP_FILES performance.cpp)
@@ -74,3 +78,6 @@ if(OPENVOLUMEMESH_FOUND)
 	target_link_libraries(${PROJECT_NAME} ${OPENVOLUMEMESH_LIBRARIES})
 	target_include_directories(${PROJECT_NAME} PRIVATE ${OPENVOLUMEMESH_INCLUDE_DIR})
 endif()
+
+
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER benchmarks)

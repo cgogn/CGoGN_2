@@ -34,13 +34,16 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderVectorPerVertex> ShaderVectorPerVertex::instance_ = nullptr;
+ShaderVectorPerVertex* ShaderVectorPerVertex::instance_ = nullptr;
 
 std::unique_ptr<ShaderVectorPerVertex::Param> ShaderVectorPerVertex::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderVectorPerVertex>(new ShaderVectorPerVertex());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderVectorPerVertex();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 const char* ShaderVectorPerVertex::vertex_shader_source_ =

@@ -30,7 +30,7 @@
 #include <array>
 #include <sstream>
 
-extern std::string filename;
+//extern std::string filename;
 
 class OStreamBlocker final
 {

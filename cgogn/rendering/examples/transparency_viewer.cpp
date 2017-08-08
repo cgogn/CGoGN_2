@@ -141,6 +141,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_norm_.reset();
 	transp_drawer_.reset();
 	param_point_sprite_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 ViewerTransparency::ViewerTransparency() :

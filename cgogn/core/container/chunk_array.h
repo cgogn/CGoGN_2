@@ -201,14 +201,7 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	void init_element(uint32 id) override
-	{
-		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = T();
-	}
+
 
 	/**
 	 * @brief copy an element to another one
@@ -405,6 +398,44 @@ public:
 				*chunk++ = v;
 		}
 	}
+
+	void copy(const Inherit& cag_src) override
+	{
+		clear();
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		for (T* chunk : ca->table_data_)
+		{
+			add_chunk();
+			T* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	void copy_data(const Inherit& cag_src) override
+	{
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (T* chunk : ca->table_data_)
+		{
+			T* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
 };
 
 /**
@@ -562,14 +593,6 @@ public:
 		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	inline void init_element(uint32 id) override
-	{
-		set_false(id);
-	}
 
 	/**
 	 * @brief copy an element to another one
@@ -738,12 +761,68 @@ public:
 
 	inline void all_false()
 	{
-		for (uint32 * const ptr : table_data_)
+		for (uint32* const ptr : table_data_)
 		{
 			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
+
+	void copy(const Inherit& cag_src) override
+	{
+		clear();
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		for (uint32* chunk : ca->table_data_)
+		{
+			add_chunk();
+			uint32* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE/BOOLS_PER_INT; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	void copy_data(const Inherit& cag_src) override
+	{
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (uint32* chunk : ca->table_data_)
+		{
+			uint32* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	inline uint32 count_true()
+	{
+		uint32 nb=0;
+		for (uint32* ptr : table_data_)
+		{
+			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
+			{
+				uint32 word = ptr[j];
+				while (word != 0)
+				{
+					nb += (word & 1u);
+					word >>= 1; // /=2 ?
+				}
+			}
+		}
+		return nb;
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))

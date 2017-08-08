@@ -16,7 +16,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
 
-
+#define _CRT_SECURE_NO_WARNINGS
 //== INCLUDES =================================================================
 
 #include "IO.h"
@@ -29,8 +29,9 @@
 // helper function
 template <typename T> void read(FILE* in, T& t)
 {
-    int err = 0;
-    err = fread(&t, 1, sizeof(t), in);
+    size_t err = fread(&t, 1, sizeof(t), in);
+	if (err != 0)
+		std::cerr << "surface_mesh: Error while reading off " << std::endl;
 }
 
 
@@ -93,7 +94,7 @@ bool read_off_ascii(Surface_mesh& mesh,
         {
             if (sscanf(lp, "%f %f %f%n", &c[0], &c[1], &c[2], &nc) == 3)
             {
-                if (c[0]>1.0f || c[1]>1.0f || c[2]>1.0f) c *= (1.0/255.0);
+                if (c[0]>1.0f || c[1]>1.0f || c[2]>1.0f) c *= (1.0f/255.0f);
                 colors[v] = c;
             }
             lp += nc;

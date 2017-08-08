@@ -32,7 +32,7 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderTexture> ShaderTexture::instance_ = nullptr;
+ShaderTexture* ShaderTexture::instance_ = nullptr;
 
 const char* ShaderTexture::vertex_shader_source_ =
 "#version 150\n"
