@@ -51,6 +51,7 @@ set(HEADER_FILES
 	topo_drawer.h
 	volume_drawer.h
 	map_render.h
+	map_quad_render.h
 	wall_paper.h
 	frame_manipulator.h
 	${HEADER_SHADERS}
@@ -78,6 +79,7 @@ set(SOURCE_FILES
 	topo_drawer.cpp
 	volume_drawer.cpp
 	map_render.cpp
+	map_quad_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
 	${SOURCE_SHADERS}
