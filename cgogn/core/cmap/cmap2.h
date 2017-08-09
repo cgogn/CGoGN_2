@@ -1186,6 +1186,92 @@ public:
 
 protected:
 
+	inline void sew_faces_topo(Dart d, Dart e)
+	{
+		Dart d2 = phi2(d);
+		Dart e2 = phi2(e);
+
+		phi2_unsew(d);
+		phi2_unsew(e);
+
+		if (this->phi1(e2) != d2)
+		{
+			cgogn_assert(!same_orbit(Vertex(e), Vertex(d2)));
+			// two different boundary vertices: merge boundary faces
+			this->phi1_sew(e2, this->phi_1(d2));
+		}
+		if (this->phi1(d2) != e2)
+		{
+			cgogn_assert(!same_orbit(Vertex(d), Vertex(e2)));
+			// two different boundary vertices: merge boundary faces
+			this->phi1_sew(d2, this->phi_1(e2));
+		}
+
+		Inherit::remove_face_topo(d2); // remove 2-sided boundary face
+		phi2_sew(d, e);
+	}
+
+public:
+
+	/**
+	 * @brief Sew the given boundary incident faces
+	 * @param e1: a boundary edge of the first face
+	 * @param e2: a boundary edge of the second face
+	 * The two faces are sewn by their given boundary edges.
+	 * For each of the two end vertices of the resulting edge, if it was two separate vertices,
+	 * they are merged into one vertex and the boundary faces are merged.
+	 * If the map has Vertex attributes, in case of vertex merge, the attributes of the vertices
+	 * of e1.dart and e2.dart are kept.
+	 * If the map has Edge attributes, the attributes of e1 are kept on the resulting edge.
+	 * If the map has Volume attribute, in the case of volume merge, the attributes of the volume
+	 * of e1.dart are kept on the resulting volume.
+	 */
+	inline void sew_faces(Edge e1, Edge e2)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		Dart e1bd = this->boundary_dart(e1);
+		Dart e2bd = this->boundary_dart(e2);
+
+		// e1 & e2 should be incident to boundary
+		if (e1bd.is_nil() || e2bd.is_nil())
+			return;
+
+		Dart e1d = phi2(e1bd);
+		Dart e2d = phi2(e2bd);
+
+		bool v1_merged = this->phi1(e1bd) != e2bd;
+		bool v2_merged = this->phi1(e2bd) != e1bd;
+
+		bool volume_merged = false;
+		if (this->template is_embedded<Volume>())
+		{
+			if (!this->same_orbit(Volume(e1d), Volume(e2d)))
+				volume_merged = true;
+		}
+
+		sew_faces_topo(e1d, e2d);
+
+		if (this->template is_embedded<Vertex>())
+		{
+			if (v1_merged)
+				this->template set_orbit_embedding<Vertex>(Vertex(e1d), this->embedding(Vertex(e1d)));
+			if (v2_merged)
+				this->template set_orbit_embedding<Vertex>(Vertex(e2d), this->embedding(Vertex(e2d)));
+		}
+
+		if (this->template is_embedded<Edge>())
+			this->template copy_embedding<Edge>(e2d, e1d);
+
+		if (this->template is_embedded<Volume>())
+		{
+			if (volume_merged)
+				this->template set_orbit_embedding<Volume>(Volume(e1d), this->embedding(Volume(e1d)));
+		}
+	}
+
+protected:
+
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point of phi2 relation)
 	 * \param d a dart incident to the hole
