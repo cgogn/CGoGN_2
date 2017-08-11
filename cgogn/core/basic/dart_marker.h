@@ -170,7 +170,9 @@ public:
 	{
 		if (this->is_valid())
 			unmark_all();
-		cgogn::dart_buffers()->release_buffer(marked_darts_);
+		auto* db = cgogn::dart_buffers();
+		if (db)
+			db->release_buffer(marked_darts_);
 	}
 
 	inline void mark(Dart d)
@@ -187,9 +189,13 @@ public:
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid DartMarkerStore");
 		auto it = std::find(marked_darts_->begin(), marked_darts_->end(), d);
-		cgogn_message_assert(it != marked_darts_->end(), "Dart not found");
-		std::swap(*it, marked_darts_->back());
-		marked_darts_->pop_back();
+		if (it != marked_darts_->end())
+		{
+			Inherit::unmark(d);
+			std::swap(*it, marked_darts_->back());
+			marked_darts_->pop_back();
+		}
+
 	}
 
 	template <Orbit ORBIT>

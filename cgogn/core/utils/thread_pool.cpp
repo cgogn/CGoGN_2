@@ -28,63 +28,89 @@ namespace cgogn
 
 {
 
-std::vector<std::thread::id> ThreadPool::threads_ids() const
-{
-	std::vector<std::thread::id> res;
-	res.reserve(workers_.size());
-	for (const std::thread& w : workers_)
-		res.push_back(w.get_id());
-	return res;
-}
-
 ThreadPool::~ThreadPool()
 {
+	nb_working_workers_ = uint32(workers_.size());
+	condition_running_.notify_all();
+
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex_);
 		stop_ = true;
 	}
 #if !(defined(CGOGN_WIN_VER) && (CGOGN_WIN_VER <= 61))
+	condition_running_.notify_all();
 	condition_.notify_all();
 #endif
 	for(std::thread &worker: workers_)
 		worker.join();
 }
 
-ThreadPool::ThreadPool()
-	: stop_(false)
+
+
+ThreadPool::ThreadPool(const std::string& name, uint32 shift_index)
+	:  name_(name), stop_(false), shift_index_(shift_index)
 {
-	for(uint32 i = 0u; i< cgogn::nb_threads() -1u;++i)
+	uint32 nb_ww = std::thread::hardware_concurrency();
+	this->nb_working_workers_ = nb_ww;
+	for(uint32 i = 0u; i< nb_ww; ++i)
 	{
 		workers_.emplace_back(
-		[this, i]
+		[this, i] () -> void
 		{
-			cgogn::thread_start();
+			cgogn::thread_start(i,this->shift_index_);
 			for(;;)
 			{
-				PackagedTask task;
+				while (i >= this->nb_working_workers_)
 				{
-					std::unique_lock<std::mutex> lock(this->queue_mutex_);
-					this->condition_.wait(
-						lock,
-						[this] { return this->stop_ || !this->tasks_.empty(); }
-					);
-					if(this->stop_ && this->tasks_.empty())
-					{
-						cgogn::thread_stop();
-						return;
-					}
-
-					task = std::move(this->tasks_.front());
-					this->tasks_.pop();
+					std::unique_lock<std::mutex> lock(this->running_mutex_);
+					this->condition_running_.wait(lock);
 				}
+
+				std::unique_lock<std::mutex> lock(this->queue_mutex_);
+				this->condition_.wait(
+					lock,
+					[this] { return this->stop_ || !this->tasks_.empty(); }
+				);
+
+				if (this->stop_ && this->tasks_.empty())
+				{
+					cgogn::thread_stop();
+					return;
+				}
+
+				if (i < this->nb_working_workers_)
+				{
+					PackagedTask task = std::move(this->tasks_.front());
+					this->tasks_.pop();
+					lock.unlock();
 #if defined(_MSC_VER) && _MSC_VER < 1900
-				(*task)(i);
+					(*task)();
 #else
-				task(i);
+					task();
 #endif
+				}
+				else
+				{
+					lock.unlock();
+					condition_.notify_one();
+				}
 			}
 		});
 	}
+}
+
+
+
+void ThreadPool::set_nb_workers(uint32 nb )
+{
+	if (nb == 0xffffffff)
+		nb_working_workers_ = uint32(workers_.size());
+	else
+		nb_working_workers_ = std::min(uint32(workers_.size()), nb);
+
+	condition_running_.notify_all();
+
+	cgogn_log_info("ThreadPool") << name_ << " using " << nb_working_workers_ << " thread-workers";
 }
 
 } // namespace cgogn

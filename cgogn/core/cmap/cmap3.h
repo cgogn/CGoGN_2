@@ -75,6 +75,8 @@ public:
 	using FaceAttribute = Attribute<T, Face::ORBIT>;
 	template <typename T>
 	using VolumeAttribute = Attribute<T, Volume::ORBIT>;
+	template <typename T>
+	using CCAttribute = Attribute<T, ConnectedComponent::ORBIT>;
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
@@ -86,6 +88,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -1612,6 +1616,8 @@ public:
 		return result;
 	}
 
+#pragma warning(push)
+#pragma warning(disable:4702)
 	template <Orbit ORBIT>
 	inline bool is_boundary_cell(Cell<ORBIT> c) const
 	{
@@ -1626,9 +1632,11 @@ public:
 			case Orbit::PHI2_PHI3: return false; break;
 			case Orbit::PHI21_PHI31: return false; break;
 			case Orbit::PHI1_PHI2_PHI3: return false; break;
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap3"); return false; break;
+			default: cgogn_assert_not_reached_false("Orbit not supported in a CMap3"); break;
 		}
 	}
+#pragma warning(push)
+
 
 	inline Face boundary_face_of_edge(Edge e) const
 	{
@@ -2086,7 +2094,7 @@ public:
 	inline void foreach_adjacent_vertex_through_face(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		DartMarker marker_vertex(*this);
+		DartMarkerStore marker_vertex(*this);
 		marker_vertex.mark_orbit(v);
 		foreach_incident_face(v, [&] (Face inc_face) -> bool
 		{
@@ -2108,7 +2116,7 @@ public:
 	inline void foreach_adjacent_vertex_through_volume(Vertex v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		DartMarker marker_vertex(*this);
+		DartMarkerStore marker_vertex(*this);
 		marker_vertex.mark_orbit(v);
 		foreach_incident_volume(v, [&] (Volume inc_vol) -> bool
 		{
@@ -2147,7 +2155,7 @@ public:
 	inline void foreach_adjacent_edge_through_face(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		DartMarker marker_edge(*this);
+		DartMarkerStore marker_edge(*this);
 		marker_edge.mark_orbit(e);
 		foreach_incident_face(e, [&] (Face inc_face) -> bool
 		{
@@ -2169,7 +2177,7 @@ public:
 	inline void foreach_adjacent_edge_through_volume(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Edge>::value, "Wrong function cell parameter type");
-		DartMarker marker_edge(*this);
+		DartMarkerStore marker_edge(*this);
 		marker_edge.mark_orbit(e);
 		foreach_incident_volume(e, [&] (Volume inc_vol) -> bool
 		{
@@ -2191,7 +2199,7 @@ public:
 	inline void foreach_adjacent_face_through_vertex(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		DartMarker marker_face(*this);
+		DartMarkerStore marker_face(*this);
 		marker_face.mark_orbit(f);
 		foreach_incident_vertex(f, [&] (Vertex v) -> bool
 		{
@@ -2230,7 +2238,7 @@ public:
 	inline void foreach_adjacent_face_through_volume(Face f, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Face>::value, "Wrong function cell parameter type");
-		DartMarker marker_face(*this);
+		DartMarkerStore marker_face(*this);
 		marker_face.mark_orbit(f);
 		bool res1 = true;
 
@@ -2266,7 +2274,7 @@ public:
 	inline void foreach_adjacent_volume_through_vertex(Volume v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
-		DartMarker marker_volume(*this);
+		DartMarkerStore marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_vertex(v, [&] (Vertex inc_vert)
 		{
@@ -2288,7 +2296,7 @@ public:
 	inline void foreach_adjacent_volume_through_edge(Volume v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
-		DartMarker marker_volume(*this);
+		DartMarkerStore marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_edge(v, [&] (Edge inc_edge) -> bool
 		{
@@ -2310,7 +2318,7 @@ public:
 	inline void foreach_adjacent_volume_through_face(Volume v, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
-		DartMarker marker_volume(*this);
+		DartMarkerStore marker_volume(*this);
 		marker_volume.mark_orbit(v);
 		foreach_incident_face(v, [&] (Edge inc_face) -> bool
 		{
@@ -2501,7 +2509,7 @@ public:
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
-				if (!this->attributes_[i].check_before_merge(map2.const_attribute_container(Orbit(i))))
+				if (!this->attributes_[i].check_before_merge(map2.attribute_container(Orbit(i))))
 					return false;
 			}
 		}
@@ -2589,7 +2597,7 @@ public:
 				}
 				else
 				{
-					std::vector<uint32> old_new = this->attributes_[i].template merge<1>(map2.const_attribute_container(Orbit(i)));
+					std::vector<uint32> old_new = this->attributes_[i].template merge<1>(map2.attribute_container(Orbit(i)));
 					for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
 					{
 						uint32& e = (*emb)[j];
@@ -2619,6 +2627,7 @@ struct CMap3Type
 using CMap3 = CMap3_T<CMap3Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_CPP_))
+extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
 extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
 extern template class CGOGN_CORE_API DartMarker<CMap3>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3>;

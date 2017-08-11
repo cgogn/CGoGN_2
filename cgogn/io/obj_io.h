@@ -39,27 +39,27 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class ObjSurfaceImport : public SurfaceFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class ObjSurfaceImport : public SurfaceFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = ObjSurfaceImport<VEC3>;
-	using Inherit = SurfaceFileImport<VEC3>;
+	using Self = ObjSurfaceImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline ObjSurfaceImport() {}
+	inline ObjSurfaceImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjSurfaceImport);
-	virtual ~ObjSurfaceImport() override
-	{}
+	virtual ~ObjSurfaceImport() override {}
 
 protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
+
 		ChunkArray<VEC3>* position = this->position_attribute();
 
 		std::string line, tag;
@@ -88,7 +88,7 @@ protected:
 
 				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-				uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
+				uint32 vertex_id = this->insert_line_vertex_container();
 				(*position)[vertex_id] = pos;
 
 				vertices_id.push_back(vertex_id);
@@ -111,7 +111,7 @@ protected:
 		if (tag == "vn")
 		{
 			uint32 counter{0u};
-			ChunkArray<VEC3>* normal = this->vertex_attributes_.template add_chunk_array<VEC3>("normal");
+			ChunkArray<VEC3>* normal = this->vertex_container().template add_chunk_array<VEC3>("normal");
 			do
 			{
 				if (tag == std::string("vn"))
@@ -222,7 +222,7 @@ protected:
 		map.foreach_cell([&] (Vertex v)
 		{
 			output << "v ";
-			this->position_attribute_->export_element(map.embedding(v), output, false, false);
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 
@@ -247,7 +247,7 @@ protected:
 			output << "f";
 			map.foreach_incident_vertex(f, [&] (Vertex v)
 			{
-				output << " " << (this->indices_[v]+1u);
+				output << " " << (this->vindices_[v]+1u);
 			});
 			output << std::endl;
 		}, *(this->cell_cache_));
@@ -255,10 +255,10 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OBJ_IO_CPP_))
-extern template class CGOGN_IO_API ObjSurfaceImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API ObjSurfaceImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API ObjSurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API ObjSurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 
 extern template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OBJ_IO_CPP_))

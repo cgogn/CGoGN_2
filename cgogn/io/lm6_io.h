@@ -34,18 +34,19 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class LM6VolumeImport : public VolumeFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class LM6VolumeImport : public VolumeFileImport<MAP, VEC3>
 {
-	using Inherit = VolumeFileImport<VEC3>;
-	using Self = LM6VolumeImport<VEC3>;
+public:
+
+	using Self = LM6VolumeImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-public:
-
-	inline LM6VolumeImport() {}
+	inline LM6VolumeImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
+	virtual ~LM6VolumeImport() override {}
 
 protected:
 
@@ -70,7 +71,6 @@ protected:
 		{
 			cgogn_log_warning("LM6VolumeImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
-			this->clear();
 			return false;
 		}
 
@@ -101,7 +101,6 @@ protected:
 			}
 		}
 
-
 		if (number_of_hexas > 0)
 		{
 			GmfGotoKwd(mesh_index, GmfHexahedra);
@@ -114,7 +113,6 @@ protected:
 				this->add_hexa(ids[0],ids[1], ids[5], ids[4], ids[3],ids[2], ids[6], ids[7], false);
 			}
 		}
-
 
 		if (number_of_prisms > 0)
 		{
@@ -147,18 +145,19 @@ protected:
 	}
 };
 
-template <typename VEC3>
-class LM6SurfaceImport : public SurfaceFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class LM6SurfaceImport : public SurfaceFileImport<MAP, VEC3>
 {
-	using Inherit = SurfaceFileImport<VEC3>;
-	using Self = LM6SurfaceImport<VEC3>;
+public:
+
+	using Self = LM6SurfaceImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP, VEC3>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-public:
-
-	inline LM6SurfaceImport() {}
+	inline LM6SurfaceImport(MAP& map): Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6SurfaceImport);
+	virtual ~LM6SurfaceImport() override {}
 
 protected:
 
@@ -181,7 +180,6 @@ protected:
 		{
 			cgogn_log_warning("LM6SurfaceImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
-			this->clear();
 			return false;
 		}
 
@@ -212,7 +210,6 @@ protected:
 			}
 		}
 
-
 		if (number_of_quads > 0)
 		{
 			GmfGotoKwd(mesh_index, GmfQuadrilaterals);
@@ -232,12 +229,13 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
-extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6SurfaceImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6VolumeImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API LM6VolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
+
+extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3f>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
 
 } // namespace io

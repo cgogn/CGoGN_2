@@ -117,7 +117,7 @@ public:
 protected:
 
 	ShaderScalarPerVertex();
-	static std::unique_ptr<ShaderScalarPerVertex> instance_;
+	static ShaderScalarPerVertex* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamScalarPerVertex : public ShaderParam
@@ -136,6 +136,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderScalarPerVertex;
 
 	ShaderScalarPerVertex::ColorMap color_map_;
 	int32 expansion_;

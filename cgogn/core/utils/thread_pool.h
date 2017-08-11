@@ -76,27 +76,48 @@ class CGOGN_CORE_API ThreadPool final
 {
 public:
 
-	ThreadPool();
+	ThreadPool(const std::string& name, uint32 shift_index);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ThreadPool);
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-	using PackagedTask = std::shared_ptr<std::packaged_task<void(uint32)>>; // avoiding a MSVC 2013 Bug
+	using PackagedTask = std::shared_ptr<std::packaged_task<void()>>; // avoiding a MSVC 2013 Bug
 #else
-	using PackagedTask = std::packaged_task<void(uint32)>;
+	using PackagedTask = std::packaged_task<void()>;
 #endif
 
 	template <class F, class... Args>
 	std::future<void> enqueue(const F& f, Args&&... args);
 
-	std::vector<std::thread::id> threads_ids() const;
 	~ThreadPool();
 
-	inline std::size_t nb_threads() const
+	/**
+	 * @brief get the number of currently working thread for parallel algos
+	 */
+	inline uint32 nb_workers() const
 	{
-		return workers_.size();
+		return nb_working_workers_;
 	}
 
+	/**
+	* @brief get the number of threads that could be used for parallel algos
+	*/
+	inline uint32 max_nb_workers() const
+	{
+		return uint32(workers_.size());
+	}
+
+	/**
+	 * @brief set nb working threads for parallel algos ( no param = full power)
+	 * @param nb [0,nb_max_workers()] (for 0 parallel algo are replaced by normal version)
+	 */
+	void set_nb_workers(uint32 nb = 0xffffffff);
+
 private:
+#pragma warning(push)
+#pragma warning(disable:4251)
+
+	// just info log
+	std::string name_;
 
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers_;
@@ -107,6 +128,15 @@ private:
 	std::mutex queue_mutex_;
 	std::condition_variable condition_;
 	bool stop_;
+
+	// limit usage to the n-th first workers
+	uint32 nb_working_workers_;
+	std::mutex running_mutex_;
+	std::condition_variable condition_running_;
+
+	uint32 shift_index_;
+
+#pragma warning(pop)
 };
 
 // add new work item to the pool
@@ -115,15 +145,15 @@ private:
 template <class F, class... Args>
 std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 {
-	static_assert(std::is_same<typename std::result_of<F(uint32, Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
+	static_assert(std::is_same<typename std::result_of<F(Args...)>::type,void>::value,"The thread pool only accept non-returning functions.");
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-	PackagedTask task = std::make_shared<std::packaged_task<void(uint32)>>(std::bind(f, std::placeholders::_1, std::forward<Args>(args)...));
+	PackagedTask task = std::make_shared<std::packaged_task<void()>>(std::bind(f, std::forward<Args>(args)...));
 	std::future<void> res = task->get_future();
 #else
-	PackagedTask task([&, f](uint32 i) -> void
+	PackagedTask task([&, f]() -> void
 	{
-		f(i, std::forward<Args>(args)...);
+		f(std::forward<Args>(args)...);
 	});
 	std::future<void> res = task.get_future();
 #endif
@@ -143,6 +173,19 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	condition_.notify_one();
 	return res;
 }
+
+
+
+/**
+ * launch an external thread
+ */
+template <class F, class... Args>
+std::future<void> launch_thread(const F& f, Args&&... args)
+{
+	return external_thread_pool()->enqueue(f,args...);
+}
+
+
 
 } // namespace cgogn
 

@@ -71,7 +71,7 @@ inline std::string orbit_name(Orbit orbit)
 	}
 	cgogn_assert_not_reached("This orbit does not exist");
 #ifdef NDEBUG 
-	return "UNKNOWN";  // little trick to  avoid warning on VS
+	return "UNKNOWN"; // little trick to avoid warning on VS
 #endif
 }
 

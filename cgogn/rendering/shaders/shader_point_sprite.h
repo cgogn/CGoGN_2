@@ -131,12 +131,12 @@ public:
 private:
 
 	ShaderPointSpriteTpl() : ShaderPointSpriteGen(CPV, SPV) {}
-	static std::unique_ptr<ShaderPointSpriteTpl> instance_;
+	static ShaderPointSpriteTpl* instance_;
 };
 
 
 template <bool CPV, bool SPV>
-std::unique_ptr<ShaderPointSpriteTpl<CPV,SPV>> ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullptr;
+ShaderPointSpriteTpl<CPV,SPV>* ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullptr;
 
 
 template <>
@@ -156,6 +156,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderPointSpriteTpl<false, false>;
 
 	QColor color_;
 	QColor ambiant_color_;
@@ -205,6 +207,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderPointSpriteTpl<false, true>;
 
 	QColor color_;
 	QColor ambiant_color_;
@@ -285,6 +289,8 @@ protected:
 
 public:
 
+	using ShaderType = ShaderPointSpriteTpl<true, false>;
+
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
@@ -362,6 +368,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderPointSpriteTpl<true, true>;
 
 	QColor ambiant_color_;
 	QVector3D light_pos_;
@@ -446,8 +454,11 @@ template <bool CPV, bool SPV>
 std::unique_ptr<typename ShaderPointSpriteTpl<CPV, SPV>::Param> ShaderPointSpriteTpl<CPV, SPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderPointSpriteTpl<CPV, SPV>>(new ShaderPointSpriteTpl<CPV, SPV>);
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderPointSpriteTpl<CPV, SPV>;
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

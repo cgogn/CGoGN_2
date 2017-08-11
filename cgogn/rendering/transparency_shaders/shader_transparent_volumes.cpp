@@ -114,7 +114,7 @@ const char* ShaderTransparentVolumes::fragment_shader_source_ =
 
 
 
-std::unique_ptr<ShaderTransparentVolumes> ShaderTransparentVolumes::instance_ = nullptr;
+ShaderTransparentVolumes* ShaderTransparentVolumes::instance_ = nullptr;
 
 
 ShaderTransparentVolumes::ShaderTransparentVolumes()
@@ -203,11 +203,22 @@ void ShaderTransparentVolumes::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderTransparentVolumes::Param> ShaderTransparentVolumes::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderTransparentVolumes>(new ShaderTransparentVolumes());
-	return cgogn::make_unique<ShaderTransparentVolumes::Param>(instance_.get());
+	{
+		instance_ = new ShaderTransparentVolumes();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<ShaderTransparentVolumes::Param>(instance_);
 }
 
-
+ShaderTransparentVolumes* ShaderTransparentVolumes::get_instance()
+{
+	if (!instance_)
+	{
+		instance_ = new ShaderTransparentVolumes();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
+}
 
 
 
@@ -218,9 +229,6 @@ ShaderParamTransparentVolumes::ShaderParamTransparentVolumes(ShaderTransparentVo
 	plane_clip2_(0, 0, 0, 0),
 	light_position_(10.0f, 100.0f, 1000.0f),
 	explode_factor_(0.8f),
-	layer_(0),
-	rgba_texture_sampler_(0),
-	depth_texture_sampler_(1),
 	bf_culling_(false),
 	lighted_(true)
 {}
@@ -247,12 +255,8 @@ void ShaderParamTransparentVolumes::set_uniforms()
 	sh->set_light_position(light_position_);
 	sh->set_plane_clip(plane_clip_);
 	sh->set_plane_clip2(plane_clip2_);
-
-	sh->set_layer(layer_);
 	sh->set_bf_culling(bf_culling_);
 	sh->set_lighted(lighted_);
-	sh->set_rgba_sampler(rgba_texture_sampler_);
-	sh->set_depth_sampler(depth_texture_sampler_);
 }
 
 

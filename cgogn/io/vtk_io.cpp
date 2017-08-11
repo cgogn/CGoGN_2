@@ -24,6 +24,7 @@
 #define CGOGN_IO_VTK_IO_CPP_
 
 #include <cgogn/io/vtk_io.h>
+#include <cctype>
 
 namespace cgogn
 {
@@ -34,11 +35,11 @@ namespace io
 template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
 template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
+template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3f>;
 
-template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
+template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3f>;
 
 template class CGOGN_IO_API VtkVolumeExport<CMap3>;
 template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
@@ -125,14 +126,36 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::s
 
 CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_str, bool is_compressed, DataType header_type)
 {
+	const char* begin = data_str;
+
+	// remove spaces at the beginning
+	while(std::isspace(*begin))
+		++begin;
+
+
+	// remove spaces at the end
+	std::size_t len = std::strlen(begin);
+	const char* end = begin + len -1u;
+	while(std::isspace(*end))
+	{
+		--end;
+		--len;
+	}
+
 	if (!is_compressed)
 	{
-		std::vector<unsigned char> decode = base64_decode(data_str, 0);
-		decode.erase(decode.begin(), decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u));
-		return decode;
+		std::vector<unsigned char> decode = base64_decode(begin, len);
+
+		if (!decode.empty())
+		{
+			auto vec_begin = decode.begin() + (header_type == DataType::UINT32 ? 4u : 8u);
+			auto vec_end = decode.end();
+			return std::vector<unsigned char>(vec_begin, vec_end);
+		} else
+			return std::vector<unsigned char>();
 	}
 	else
-		return zlib_decompress(data_str, header_type);
+		return zlib_decompress(begin, header_type, len);
 }
 
 CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress)
@@ -146,7 +169,9 @@ CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_s
 
 		std::memcpy(&data[0], reinterpret_cast<const char*>(&header[0]), sizeof(uint32)* header.size());
 		std::memcpy(&data[sizeof(uint32)], data_str, size);
-	} else {
+	}
+	else
+	{
 		const std::size_t uncompressed_chunk_size = std::min(size, std::size_t(1048576));
 		const std::vector<std::vector<unsigned char>>& compressed_blocks = zlib_compress(reinterpret_cast<const unsigned char*>(data_str), size, uncompressed_chunk_size);
 		std::size_t compressed_size{0ul};

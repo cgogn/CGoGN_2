@@ -45,7 +45,7 @@ using Vertex = Map3::Vertex;
 const cgogn::Orbit VERTEX = Vertex::ORBIT;
 
 using Face = Map3::Face;
-const cgogn::Orbit FACE = Face::ORBIT;
+//const cgogn::Orbit FACE = Face::ORBIT;
 
 using Volume = Map3::Volume;
 const cgogn::Orbit VOLUME = Volume::ORBIT;
@@ -65,7 +65,7 @@ using TVertex = TMap3::Vertex;
 const cgogn::Orbit TVERTEX = TVertex::ORBIT;
 
 using TFace = TMap3::Face;
-const cgogn::Orbit TFACE = TFace::ORBIT;
+//const cgogn::Orbit TFACE = TFace::ORBIT;
 
 using TVolume = TMap3::Volume;
 const cgogn::Orbit TVOLUME = TVolume::ORBIT;
@@ -77,7 +77,7 @@ template <typename T>
 using TVolumeAttribute = TMap3::VolumeAttribute<T>;
 
 
-const uint32 ITERATIONS = 1u;
+//const uint32 ITERATIONS = 1u;
 
 //using Vec3 = Eigen::Vector3d;
 using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;

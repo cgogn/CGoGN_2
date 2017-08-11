@@ -178,6 +178,7 @@ do { 																		\
 	#define cgogn_assert(x) _internal_cgogn_assert(x)
 	#define cgogn_message_assert(x, msg) _internal_cgogn_message_assert(x, msg)
 	#define cgogn_assert_not_reached(msg) _internal_cgogn_assert_not_reached(msg)
+	#define cgogn_assert_not_reached_false(msg) _internal_cgogn_assert_not_reached(msg); return false;
 	#define cgogn_require(x) _internal_cgogn_require(x)
 	#define cgogn_ensure(x) _internal_cgogn_ensure(x)
 	#define cgogn_invariant(x) _internal_cgogn_invariant(x)
@@ -185,6 +186,7 @@ do { 																		\
 	#define cgogn_assert(x)
 	#define cgogn_message_assert(x, msg)
 	#define cgogn_assert_not_reached(msg)
+	#define cgogn_assert_not_reached_false(msg) return false;
 	#define cgogn_require(x)
 	#define cgogn_ensure(x)
 	#define cgogn_invariant(x)

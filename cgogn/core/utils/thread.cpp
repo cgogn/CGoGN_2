@@ -28,19 +28,22 @@
 
 namespace cgogn
 {
-
-CGOGN_CORE_API uint32 NB_THREADS = nb_threads();
-
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread_ = nullptr;
 CGOGN_TLS Buffers<uint32>* uint_buffers_thread_ = nullptr;
+CGOGN_TLS uint32 thread_marker_index_;
+CGOGN_TLS uint32 thread_index_;
 
-CGOGN_CORE_API void thread_start()
+
+CGOGN_CORE_API void thread_start(uint32 ind, uint32 shift_marker_index)
 {
 	if (dart_buffers_thread_ == nullptr)
 		dart_buffers_thread_ = new Buffers<Dart>();
 
 	if (uint_buffers_thread_ == nullptr)
 		uint_buffers_thread_ = new Buffers<uint32>();
+
+	thread_index_ = ind;
+	thread_marker_index_ = ind + shift_marker_index;
 }
 
 CGOGN_CORE_API void thread_stop()
@@ -61,11 +64,30 @@ CGOGN_CORE_API Buffers<uint32>* uint_buffers()
 	return uint_buffers_thread_;
 }
 
+CGOGN_CORE_API uint32 current_thread_marker_index()
+{
+	return thread_marker_index_;
+}
+
+
+CGOGN_CORE_API uint32 current_thread_index()
+{
+	return thread_index_;
+}
+
+
 CGOGN_CORE_API ThreadPool* thread_pool()
 {
 	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
-	static ThreadPool pool;
+	static ThreadPool pool("internal",1);
 	return &pool;
+}
+
+CGOGN_CORE_API ThreadPool* external_thread_pool()
+{
+	// thread safe accoring to http://stackoverflow.com/questions/8102125/is-local-static-variable-initialization-thread-safe-in-c11
+	static ThreadPool u_pool("external",1+ std::thread::hardware_concurrency());
+	return &u_pool;
 }
 
 } // namespace cgogn

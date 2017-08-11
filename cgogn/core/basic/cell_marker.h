@@ -52,13 +52,6 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker_T);
 
-	CellMarker_T(Map& map) :
-		map_(map)
-	{
-		mark_attribute_ = map_.template mark_attribute<ORBIT>();
-		mark_attribute_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&mark_attribute_));
-	}
-
 	CellMarker_T(const MAP& map) :
 		map_(const_cast<MAP&>(map))
 	{
@@ -101,6 +94,12 @@ public:
 		// the pointer is non-null then the map is still alive, and conversely
 		return mark_attribute_ != nullptr; // && MapBaseData::is_alive(&map_);
 	}
+
+	inline uint32 nb_marked()
+	{
+		return this->mark_attribute_->count_true();
+	}
+
 };
 
 template <typename MAP, Orbit ORBIT>
@@ -109,14 +108,10 @@ class CellMarker : public CellMarker_T<MAP, ORBIT>
 public:
 
 	using Inherit = CellMarker_T<MAP, ORBIT>;
-	using Self = CellMarker< MAP, ORBIT >;
+	using Self = CellMarker<MAP, ORBIT>;
 	using Map = typename Inherit::Map;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellMarker);
-
-	inline CellMarker(Map& map) :
-		Inherit(map)
-	{}
 
 	inline CellMarker(const MAP& map) :
 		Inherit(map)
@@ -133,6 +128,7 @@ public:
 		cgogn_message_assert(this->is_valid(), "Invalid CellMarker");
 		this->mark_attribute_->all_false();
 	}
+
 };
 
 template <typename MAP, Orbit ORBIT>
@@ -162,7 +158,9 @@ public:
 	{
 		if (this->is_valid())
 			unmark_all();
-		cgogn::uint_buffers()->release_buffer(marked_cells_);
+		auto* ub = cgogn::uint_buffers();
+		if (ub)
+			ub->release_buffer(marked_cells_);
 	}
 
 	inline void mark(Cell<ORBIT> c)
@@ -179,9 +177,12 @@ public:
 	{
 		cgogn_message_assert(this->is_valid(), "Invalid CellMarkerStore");
 		auto it = std::find(marked_cells_->begin(), marked_cells_->end(), this->map_.embedding(c));
-		cgogn_message_assert(it != marked_cells_->end(), "Cell not found");
-		std::swap(*it, marked_cells_->back());
-		marked_cells_->pop_back();
+		if (it !=  marked_cells_->end())
+		{
+			Inherit::unmark(c);
+			std::swap(*it, marked_cells_->back());
+			marked_cells_->pop_back();
+		}
 	}
 
 	inline void unmark_all()
@@ -206,10 +207,6 @@ public:
 	using Inherit = CellMarker_T<MAP, ORBIT>;
 	using Self = CellMarker< MAP, ORBIT >;
 	using Map = typename Inherit::Map;
-
-	inline CellMarkerNoUnmark(Map& map) :
-		Inherit(map)
-	{}
 
 	inline CellMarkerNoUnmark(const MAP& map) :
 		Inherit(map)

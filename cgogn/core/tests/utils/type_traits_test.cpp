@@ -39,6 +39,12 @@ public:
 };
 
 auto lambda = [](double) -> float { return 0.0f; };
+auto lambda_mutable = [] (double) mutable -> float { return 0.0f; };
+
+float dummy_function(const double&)
+{
+	return 0.0f;
+}
 
 struct Vec
 {
@@ -70,6 +76,35 @@ TEST(TypeTraitsTest, function_traits)
 {
 	{
 		const auto arity = cgogn::func_arity<decltype (lambda)>::value;
+		EXPECT_EQ(arity, 1u);
+	}
+
+	{
+		const auto arity = cgogn::func_arity<decltype (lambda_mutable)>::value;
+		EXPECT_EQ(arity, 1u);
+	}
+
+	{
+		const auto arity = cgogn::func_arity<decltype (dummy_function)>::value;
+		EXPECT_EQ(arity, 1u);
+		bool ok = std::is_same<const double&, cgogn::func_parameter_type<decltype (dummy_function)>>::value;
+		EXPECT_TRUE(ok);
+	}
+
+	{
+		float (&fn)(const double&)(dummy_function);
+		const auto arity = cgogn::func_arity<decltype (fn)>::value;
+		EXPECT_EQ(arity, 1u);
+	}
+
+	{
+		std::function<float(const double&)> fn(dummy_function);
+		const auto arity = cgogn::func_arity<decltype (fn)>::value;
+		EXPECT_EQ(arity, 1u);
+	}
+
+	{
+		const auto arity = cgogn::func_arity<decltype (&A1::operator ())>::value;
 		EXPECT_EQ(arity, 1u);
 	}
 

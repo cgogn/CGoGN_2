@@ -26,6 +26,7 @@
 
 #include <type_traits>
 #include <iterator>
+#include <functional>
 #include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
@@ -38,18 +39,21 @@ namespace type_traits
 {
 
 /**
+ * function_traits
  * Traits class to inspect function characteristics (return type, arity, parameters types)
+ * Warning : when dealing with a member function, the pointer to the current object is ignored.
  */
+
+// specialization for lambda functions
 template <typename T>
 struct function_traits : public function_traits<decltype(&T::operator())>
 {};
 
-template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const>
-// we specialize for pointers to member function
+// General case
+template <typename ReturnType, typename... Args>
+struct function_traits<ReturnType(Args...)>
 {
 	static const size_t arity = sizeof...(Args);
-	// arity is the number of arguments.
 
 	using result_type = ReturnType;
 
@@ -58,10 +62,27 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 	{
 		static_assert(i < sizeof...(Args), "Trying to access to an argument whose index is higher than the function arity.");
 		using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
-		// the i-th argument is equivalent to the i-th tuple element of a tuple
-		// composed of those arguments.
+		// the i-th argument is equivalent to the i-th tuple element of a tuple composed of those arguments.
 	};
 };
+
+// specialization for function pointers
+template <typename ReturnType, typename... Args>
+struct function_traits<ReturnType(*)(Args...)> : public function_traits<ReturnType(Args...)> {};
+
+// specialization for function references
+template <typename ReturnType, typename... Args>
+struct function_traits<ReturnType(&)(Args...)> : public function_traits<ReturnType(Args...)> {};
+
+// specialization for member function pointers
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...)>: public function_traits<ReturnType(Args...)> {};
+
+// specialization for const member function pointers
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...) const> : public function_traits<ReturnType(Args...)>{};
+
+
 
 template <class>
 struct sfinae_true : std::true_type {};
@@ -374,6 +395,7 @@ inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::ty
 }
 
 } // namespace internal
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_UTILS_TYPE_TRAITS_H_

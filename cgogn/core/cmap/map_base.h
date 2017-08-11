@@ -79,14 +79,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
-	MapBase() :
-		Inherit()
-	{}
-
+	MapBase() :	Inherit() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBase);
-
-	~MapBase()
-	{}
+	~MapBase() {}
 
 	inline uint8 dimension_concrete_map() const
 	{
@@ -109,13 +104,19 @@ public:
 	 */
 	inline void clear_and_remove_attributes()
 	{
+		// 1st step : some cleaning
 		this->topology_.clear_chunk_arrays();
-
-		for (auto& mark_att_topo : this->mark_attributes_topology_)
-			mark_att_topo.clear();
 
 		for (auto& att : this->attributes_)
 			att.remove_chunk_arrays();
+
+
+		// 2nd step : updating internal data structures.
+		{
+			std::lock_guard<std::mutex> lock(this->mark_attributes_topology_mutex_);
+			for (ChunkArrayBool* cab : this->topology_.marker_arrays())
+				cab->clear();
+		}
 
 		for (std::size_t i = 0u; i < NB_ORBITS; ++i)
 		{
@@ -125,8 +126,9 @@ public:
 				this->embeddings_[i] = nullptr;
 			}
 
-			for (auto& mark_attr : this->mark_attributes_[i])
-				mark_attr.clear();
+			std::lock_guard<std::mutex> lock(this->mark_attributes_mutex_[i]);
+			for (ChunkArrayBool* cab : this->attributes_[i].marker_arrays())
+				cab->clear();
 		}
 	}
 
@@ -155,7 +157,7 @@ protected:
 	inline Dart add_topology_element()
 	{
 		const uint32 idx = this->topology_.template insert_lines<ConcreteMap::PRIM_SIZE>();
-		for(uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
+		for (uint32 jdx = idx; jdx < idx + ConcreteMap::PRIM_SIZE; ++jdx)
 		{
 			this->topology_.init_markers_of_line(jdx);
 			for (uint32 orbit = 0u; orbit < NB_ORBITS; ++orbit)
@@ -163,27 +165,10 @@ protected:
 				if (this->embeddings_[orbit])
 					(*this->embeddings_[orbit])[jdx] = INVALID_INDEX;
 			}
-			to_concrete()->init_dart(/*d*/Dart(jdx));
+			to_concrete()->init_dart(Dart(jdx));
 		}
 		return Dart(idx);
 	}
-
-//	template <Orbit ORBIT>
-//	inline void compact_orbit_container()
-//	{
-//		if (!this->template is_embedded<ORBIT>())
-//			return;
-
-//		auto& cac = this->template attribute_container<ORBIT>();
-//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
-//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
-//		{
-//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
-//			const uint32 new_idx = map_old_new[old_idx];
-//			if (new_idx != UINT32_MAX)
-//				old_idx = new_idx;
-//		});
-//	}
 
 	/**
 	 * \brief Removes a topological element of PRIM_SIZE from the topology container
@@ -196,11 +181,11 @@ protected:
 		uint32 index = d.index;
 		this->topology_.template remove_lines<ConcreteMap::PRIM_SIZE>(index);
 
-		for(uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
+		for (uint32 orbit = 0; orbit < NB_ORBITS; ++orbit)
 		{
-			if(this->embeddings_[orbit])
+			if (this->embeddings_[orbit])
 			{
-				for(uint32 jdx=index; jdx<index+ConcreteMap::PRIM_SIZE; ++jdx)
+				for (uint32 jdx = index; jdx < index + ConcreteMap::PRIM_SIZE; ++jdx)
 				{
 					uint32 emb = (*this->embeddings_[orbit])[jdx];
 					if (emb != INVALID_INDEX)
@@ -227,6 +212,23 @@ protected:
 
 		this->attributes_[ORBIT].template remove_lines<1>(index);
 	}
+
+	//	template <Orbit ORBIT>
+	//	inline void compact_orbit_container()
+	//	{
+	//		if (!this->template is_embedded<ORBIT>())
+	//			return;
+
+	//		auto& cac = this->template attribute_container<ORBIT>();
+	//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
+	//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
+	//		{
+	//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
+	//			const uint32 new_idx = map_old_new[old_idx];
+	//			if (new_idx != UINT32_MAX)
+	//				old_idx = new_idx;
+	//		});
+	//	}
 
 public:
 
@@ -374,7 +376,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 
-		std::size_t thread = this->current_thread_index();
+		const std::size_t thread = cgogn::current_thread_marker_index();
+		cgogn_assert(thread < mark_attributes_[ORBIT].size());
+
 		if (!this->mark_attributes_[ORBIT][thread].empty())
 		{
 			ChunkArrayBool* ca = this->mark_attributes_[ORBIT][thread].back();
@@ -400,8 +404,9 @@ protected:
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		cgogn_assert(cgogn::current_thread_marker_index() < mark_attributes_[ORBIT].size());
 
-		this->mark_attributes_[ORBIT][this->current_thread_index()].push_back(ca);
+		this->mark_attributes_[ORBIT][cgogn::current_thread_marker_index()].push_back(ca);
 	}
 
 	/*******************************************************************************
@@ -430,7 +435,7 @@ protected:
 		// initialize the indices of the existing orbits
 		foreach_cell<FORCE_DART_MARKING>([this] (Cell<ORBIT> c) { this->new_orbit_embedding(c); });
 
-		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
+//		cgogn_assert(this->template is_well_embedded<Cell<ORBIT>>());
 	}
 
 	/**
@@ -478,7 +483,7 @@ public:
 				const uint32 old_emb = this->embedding(c);
 				const uint32 new_emb = this->new_orbit_embedding(c);
 				cgogn_log_warning("enforce_unique_orbit_embedding") << "Warning: enforce_unique_orbit_embedding: duplicating orbit #" << old_emb << " in orbit " << orbit_name(ORBIT);
-				this->template attribute_container<ORBIT>().copy_line(new_emb, old_emb, false, false);
+				this->attributes_[ORBIT].copy_line(new_emb, old_emb, false, false);
 			}
 
 			counter[c]++;
@@ -500,6 +505,7 @@ public:
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+
 		cgogn_message_assert(this->template is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
 
 		const ConcreteMap* cmap = to_concrete();
@@ -717,18 +723,21 @@ public:
 		this->boundary_marker_->set_value(d.index, b);
 	}
 
+#pragma warning(push)
+#pragma warning(disable:4717)
 	template <Orbit ORBIT>
 	bool is_boundary_cell(Cell<ORBIT> c) const
 	{
 		return to_concrete()->is_boundary_cell(c);
 	}
+#pragma warning(pop)
 
 	template <Orbit ORBIT>
 	bool is_incident_to_boundary(Cell<ORBIT> c) const
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "is_incident_to_boundary is not defined for cells of boundary dimension");
 		bool result = false;
-		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d) -> bool
 		{
 			if (is_boundary(d)) { result = true; return false; }
 			return true;
@@ -741,7 +750,7 @@ public:
 	{
 		static_assert(!std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "boundary_dart is not defined for boundary cells");
 		Dart result;
-		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d)
+		to_concrete()->foreach_dart_of_orbit(c, [this, &result] (Dart d) -> bool
 		{
 			if (is_boundary(d)) { result = d; return false; }
 			return true;
@@ -770,169 +779,10 @@ protected:
 			set_boundary(d, false);
 		});
 	}
+
 	/*******************************************************************************
 	 * Traversals
 	 *******************************************************************************/
-
-public:
-
-//	template <typename FUNC>
-//	inline void parallel_foreach_dart(const FUNC& f) const
-//	{
-//		static_assert(check_func_ith_parameter_type(FUNC, 0, Dart), "Wrong function first parameter type");
-//		static_assert(check_func_ith_parameter_type(FUNC, 1, uint32), "Wrong function second parameter type");
-
-//		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
-//		using VecDarts = std::vector<Dart>;
-
-//		ThreadPool* thread_pool = cgogn::thread_pool();
-//		const std::size_t nb_threads_pool = thread_pool->nb_threads();
-
-//		std::array<std::vector<VecDarts*>, 2> dart_buffers;
-//		std::array<std::vector<Future>, 2> futures;
-//		dart_buffers[0].reserve(nb_threads_pool);
-//		dart_buffers[1].reserve(nb_threads_pool);
-//		futures[0].reserve(nb_threads_pool);
-//		futures[1].reserve(nb_threads_pool);
-
-//		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
-
-//		Dart it = Dart(this->topology_.begin());
-//		Dart last = Dart(this->topology_.end());
-
-//		while (it != last)
-//		{
-//			for (uint32 i = 0u; i < 2u; ++i)
-//			{
-//				for (uint32 j = 0u; j < nb_threads_pool && it.index < last.index; ++j)
-//				{
-//					dart_buffers[i].push_back(dbuffs->buffer());
-//					cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-//					std::vector<Dart>& darts = *dart_buffers[i].back();
-//					darts.reserve(PARALLEL_BUFFER_SIZE);
-//					for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-//					{
-//						darts.push_back(it);
-//						this->topology_.next(it.index);
-//					}
-
-//					futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-//					{
-//						for (auto d : darts)
-//							f(d, th_id);
-//					}));
-//				}
-
-//				const uint32 id = (i+1u) % 2u;
-
-//				for (auto& fu : futures[id])
-//					fu.wait();
-//				for (auto& b : dart_buffers[id])
-//					dbuffs->release_buffer(b);
-
-//				futures[id].clear();
-//				dart_buffers[id].clear();
-
-//				// if we reach the end of the map while filling buffers from the second set we need to clean them too.
-//				if (it.index >= last.index && i == 1u)
-//				{
-//					for (auto& fu : futures[1u])
-//						fu.wait();
-//					for (auto &b : dart_buffers[1u])
-//						dbuffs->release_buffer(b);
-//				}
-//			}
-//		}
-//	}
-
-	template <typename FUNC>
-	inline void parallel_foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_ith_func_parameter_same<FUNC, 0, Dart>::value, "Wrong function first parameter type");
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
-
-		using Future = std::future<typename std::result_of<FUNC(Dart, uint32)>::type>;
-		using VecDarts = std::vector<Dart>;
-
-		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
-
-		std::array<std::vector<VecDarts*>, 2> dart_buffers;
-		std::array<std::vector<Future>, 2> futures;
-		dart_buffers[0].reserve(nb_threads_pool);
-		dart_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
-
-		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
-		const ConcreteMap* cmap = to_concrete();
-
-		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
-		Dart it = cmap->all_begin();
-		Dart last = cmap->all_end();
-
-		while (it != last)
-		{
-			dart_buffers[i].push_back(dbuffs->buffer());
-			cgogn_assert(dart_buffers[i].size() <= nb_threads_pool);
-			std::vector<Dart>& darts = *dart_buffers[i].back();
-			darts.reserve(PARALLEL_BUFFER_SIZE);
-			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
-			{
-				darts.push_back(it);
-				cmap->all_next(it);
-			}
-
-			futures[i].push_back(thread_pool->enqueue([&darts, &f] (uint32 th_id)
-			{
-				for (auto d : darts)
-					f(d, th_id);
-			}));
-
-			// next thread
-			if (++j == nb_threads_pool)
-			{	// again from 0 & change buffer
-				j = 0;
-				i = (i+1u) % 2u;
-				for (auto& fu : futures[i])
-					fu.wait();
-				for (auto& b : dart_buffers[i])
-					dbuffs->release_buffer(b);
-				futures[i].clear();
-				dart_buffers[i].clear();
-			}
-		}
-
-		// clean all at end
-		for (auto& fu : futures[0u])
-			fu.wait();
-		for (auto& b : dart_buffers[0u])
-			dbuffs->release_buffer(b);
-		for (auto& fu : futures[1u])
-			fu.wait();
-		for (auto& b : dart_buffers[1u])
-			dbuffs->release_buffer(b);
-
-	}
-
-	/**
-	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
-	 * @tparam FUNC type of the callable
-	 * @param f a callable
-	 */
-	template <typename FUNC>
-	inline void foreach_dart(const FUNC& f) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
-
-		const ConcreteMap* cmap = to_concrete();
-		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
-		{
-			if (!internal::void_to_true_binder(f, it))
-				break;
-		}
-	}
 
 protected:
 
@@ -967,7 +817,7 @@ protected:
 
 	/*!
 	 * \Brief Methods to iterate over darts.
-	 * These functions browses over all darts.
+	 * These functions traverse all darts.
 	 */
 	inline Dart all_begin() const
 	{
@@ -985,6 +835,97 @@ protected:
 	}
 
 public:
+
+	/**
+	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
+	template <typename FUNC>
+	inline void foreach_dart(const FUNC& f) const
+	{
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+
+		const ConcreteMap* cmap = to_concrete();
+		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
+		{
+			if (!internal::void_to_true_binder(f, it))
+				break;
+		}
+	}
+
+	template <typename FUNC>
+	inline void parallel_foreach_dart(const FUNC& f) const
+	{
+		static_assert(is_ith_func_parameter_same<FUNC, 0, Dart>::value, "Wrong function first parameter type");
+
+		using Future = std::future<typename std::result_of<FUNC(Dart)>::type>;
+		using VecDarts = std::vector<Dart>;
+
+		ThreadPool* thread_pool = cgogn::thread_pool();
+
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_dart(f);
+
+		std::array<std::vector<VecDarts*>, 2> dart_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		dart_buffers[0].reserve(nb_workers);
+		dart_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
+
+		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
+		const ConcreteMap* cmap = to_concrete();
+
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_workers)
+		Dart it = cmap->all_begin();
+		Dart last = cmap->all_end();
+
+		while (it != last)
+		{
+			dart_buffers[i].push_back(dbuffs->buffer());
+			cgogn_assert(dart_buffers[i].size() <= nb_workers);
+			std::vector<Dart>& darts = *dart_buffers[i].back();
+			darts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it.index < last.index; ++k)
+			{
+				darts.push_back(it);
+				cmap->all_next(it);
+			}
+
+			futures[i].push_back(thread_pool->enqueue([&darts, &f] ()
+			{
+				for (auto d : darts)
+					f(d);
+			}));
+
+			// next thread
+			if (++j == nb_workers)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i+1u) % 2u;
+				for (auto& fu : futures[i])
+					fu.wait();
+				for (auto& b : dart_buffers[i])
+					dbuffs->release_buffer(b);
+				futures[i].clear();
+				dart_buffers[i].clear();
+			}
+		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : dart_buffers[0u])
+			dbuffs->release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : dart_buffers[1u])
+			dbuffs->release_buffer(b);
+
+	}
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
@@ -1046,7 +987,6 @@ public:
 			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
 	{
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
 		using CellType = func_parameter_type<FUNC>;
 
 		switch (STRATEGY)
@@ -1115,7 +1055,7 @@ public:
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
-		for(typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>() ;it != end; ++it)
+		for (typename Traversor::const_iterator it = t.template begin<CellType>(), end = t.template end<CellType>(); it != end; ++it)
 			if (!internal::void_to_true_binder(f, CellType(*it)))
 				break;
 	}
@@ -1125,30 +1065,30 @@ public:
 			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
 	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
 	{
-		static_assert(is_ith_func_parameter_same<FUNC, 1, uint32>::value, "Wrong function second parameter type");
-
 		using CellType = func_parameter_type<FUNC>;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		if (!t.template is_traversed<CellType>())
 			cgogn_log_warning("foreach_cell") << "Using a CellTraversor for a non-traversed CellType";
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell(f);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		auto it = t.template begin<CellType>();
 		const auto it_end = t.template end<CellType>();
 		while(it != it_end)
@@ -1163,13 +1103,13 @@ public:
 				++it;
 			}
 			// launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1201,17 +1141,19 @@ protected:
 		using CellType = func_parameter_type<FUNC>;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell_dart_marking(f,filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1221,7 +1163,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1243,13 +1185,13 @@ protected:
 				cmap->next(it);
 			}
 			//launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1280,17 +1222,19 @@ protected:
 		static const Orbit ORBIT = CellType::ORBIT;
 
 		using VecCell = std::vector<CellType>;
-		using Future = std::future<typename std::result_of<FUNC(CellType, uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(CellType)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_cell_cell_marking(f,filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		cells_buffers[0].reserve(nb_threads_pool);
-		cells_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		cells_buffers[0].reserve(nb_workers);
+		cells_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<Dart>* dbuffs = cgogn::dart_buffers();
 
@@ -1300,7 +1244,7 @@ protected:
 		Dart last = cmap->end();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 		while (it.index < last.index)
 		{
 			// fill buffer
@@ -1322,13 +1266,13 @@ protected:
 				cmap->next(it);
 			}
 			// launch thread
-			futures[i].push_back(thread_pool->enqueue([&cells, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&cells, &f] ()
 			{
 				for (auto c : cells)
-					f(c, th_id);
+					f(c);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;

@@ -31,6 +31,7 @@
 #include <cgogn/core/dll.h>
 #include <cgogn/core/utils/numerics.h>
 
+
 namespace cgogn
 {
 
@@ -39,6 +40,7 @@ namespace logger
 
 namespace internal
 {
+
 
 class CGOGN_CORE_API FileInfo
 {
@@ -53,7 +55,10 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& o, const FileInfo& fileinfo);
 private:
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::string filename_;
+#pragma warning(pop)
 	uint32 line_;
 };
 
@@ -124,9 +129,12 @@ public:
 	}
 
 private:
+#pragma warning(push)
+#pragma warning(disable:4251)
 	std::string							sender_;
 	internal::FileInfo					fileinfo_;
 	std::unique_ptr<std::stringstream>	message_;
+#pragma warning(pop)
 	LogLevel							level_;
 };
 

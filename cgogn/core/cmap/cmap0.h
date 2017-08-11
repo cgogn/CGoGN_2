@@ -70,6 +70,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 public:
@@ -211,6 +213,7 @@ struct CMap0Type
 using CMap0 = CMap0_T<CMap0Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP0_CPP_))
+extern template class CGOGN_CORE_API CMap0_T<CMap0Type>;
 extern template class CGOGN_CORE_API DartMarker<CMap0>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap0>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0>;

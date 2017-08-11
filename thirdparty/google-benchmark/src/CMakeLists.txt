@@ -1,50 +1,57 @@
 # Allow the source files to find headers in src/
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-# Define the source files
-set(SOURCE_FILES "benchmark.cc" "colorprint.cc" "commandlineflags.cc"
-                 "console_reporter.cc" "csv_reporter.cc" "json_reporter.cc"
-                 "log.cc" "reporter.cc" "sleep.cc" "string_util.cc"
-                 "sysinfo.cc" "walltime.cc")
-# Determine the correct regular expression engine to use
-if(HAVE_STD_REGEX)
-	set(RE_FILES "re_std.cc")
-elseif(HAVE_GNU_POSIX_REGEX)
-	set(RE_FILES "re_posix.cc")
-elseif(HAVE_POSIX_REGEX)
-	set(RE_FILES "re_posix.cc")
-else()
-	message(FATAL_ERROR "Failed to determine the source files for the regular expression backend")
+if (DEFINED BENCHMARK_CXX_LINKER_FLAGS)
+  list(APPEND CMAKE_SHARED_LINKER_FLAGS ${BENCHMARK_CXX_LINKER_FLAGS})
+  list(APPEND CMAKE_MODULE_LINKER_FLAGS ${BENCHMARK_CXX_LINKER_FLAGS})
 endif()
 
-add_library(benchmark ${SOURCE_FILES} ${RE_FILES})
-# use of target_compile_options to have a transitive c++11 flag
-if(NOT MSVC)
-	target_compile_options(benchmark PUBLIC "-std=c++11")
+file(GLOB
+  SOURCE_FILES
+    *.cc
+    ${PROJECT_SOURCE_DIR}/include/benchmark/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+
+if (WIN32)
+  add_library(benchmark STATIC ${SOURCE_FILES})
+else()
+  add_library(benchmark ${SOURCE_FILES})
 endif()
 
 set_target_properties(benchmark PROPERTIES
-	OUTPUT_NAME "benchmark"
-	VERSION ${GENERIC_LIB_VERSION}
-	SOVERSION ${GENERIC_LIB_SOVERSION}
+  OUTPUT_NAME "benchmark"
+  VERSION ${GENERIC_LIB_VERSION}
+  SOVERSION ${GENERIC_LIB_SOVERSION}
 )
 
 # Link threads.
-target_link_libraries(benchmark ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(benchmark  ${BENCHMARK_CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+find_library(LIBRT rt)
+if(LIBRT)
+  target_link_libraries(benchmark ${LIBRT})
+endif()
 
 # We need extra libraries on Windows
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_link_libraries(benchmark Shlwapi)
+  target_link_libraries(benchmark Shlwapi)
 endif()
 
 # Expose public API
+# target_include_directories(benchmark PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(benchmark PUBLIC
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include/thirdparty>)
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/thirdparty>)
+
+# Install target (will install the library to specified CMAKE_INSTALL_PREFIX variable)
+# install(
+#   TARGETS benchmark
+#   ARCHIVE DESTINATION lib
+#   LIBRARY DESTINATION lib
+#   RUNTIME DESTINATION bin
+#   COMPONENT library)
 
 install(
-	DIRECTORY "${PROJECT_SOURCE_DIR}/include/benchmark"
-	DESTINATION "include/thirdparty/"
-	FILES_MATCHING PATTERN "*.*h")
-
+  DIRECTORY "${PROJECT_SOURCE_DIR}/include/benchmark"
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.*h")
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include")

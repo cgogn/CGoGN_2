@@ -40,18 +40,24 @@ namespace io
 class CGOGN_IO_API FileImport
 {
 public:
+
 	using Self = FileImport;
 
 	FileImport();
+
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FileImport);
+
+	virtual ~FileImport();
+
 	/**
 	 * @brief import_file, try to open and read a file (during the operation the C locale is used)
 	 * @param filename
 	 * @return true iff the file is successfully read
 	 */
 	bool import_file(const std::string& filename);
-	virtual ~FileImport();
+
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) = 0;
 };
 
@@ -59,6 +65,7 @@ template<typename MAP>
 class MeshExport
 {
 public:
+
 	using Map = MAP;
 	using Self = MeshExport<Map>;
 	using Vertex = typename Map::Vertex;
@@ -66,14 +73,15 @@ public:
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
 	template<typename T>
 	using VertexAttribute = typename Map::template VertexAttribute<T>;
-	using CellCache = cgogn::CellCache<Map>;
+	using CellCache = typename Map::CellCache;
 
 	inline MeshExport() :
-		position_attribute_(nullptr),
 		cell_cache_(nullptr)
 	{}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshExport);
+
+	virtual ~MeshExport() {}
 
 	void export_file(Map& map, const ExportOptions& options)
 	{
@@ -87,24 +95,34 @@ public:
 		if (!output || !output->good())
 			return;
 
-		indices_ = map.template add_attribute<uint32, Vertex>("indices_vert_export");
-
-		this->prepare_for_export(map, options);
-
-		if (position_attribute_ == nullptr)
+		if(options.position_attributes_.empty())
 		{
-			cgogn_log_warning("MeshExport::export_file") << "The position attribute is invalid.";
-			map.remove_attribute(indices_);
+			cgogn_log_warning("MeshExport::export_file") << "The position attribute is empty.";
 			return;
 		}
+
+		const Orbit orb = Vertex::ORBIT;
+		if(options.position_attributes_.find(orb) == options.position_attributes_.end())
+		{
+			cgogn_log_warning("MeshExport::export_file") << "The VERTEX ORBIT position attribute do not exist.";
+			return;
+		}
+		else
+			position_attributes_.insert(std::make_pair(
+					orb,
+					map.template attribute_container<Vertex::ORBIT>().get_chunk_array(options.position_attributes_.at(orb)))
+				);
+
+		vindices_ = map.template add_attribute<uint32, Vertex>("indices_vert_export");
+
+		this->prepare_for_export(map, options);
 
 		this->export_file_impl(map,*output, options);
 		this->clean_added_attributes(map);
 	}
 
-	virtual ~MeshExport() {}
-
 protected:
+
 	inline std::vector<const ChunkArrayGen*> const & vertex_attributes() const
 	{
 		return vertex_attributes_;
@@ -112,29 +130,29 @@ protected:
 
 	virtual void clean_added_attributes(Map& map)
 	{
-		map.remove_attribute(indices_);
+		map.remove_attribute(vindices_);
 	}
 
-	ChunkArrayGen const * position_attribute() const
+	inline const ChunkArrayGen* position_attribute(const Orbit orb) const
 	{
-		return position_attribute_;
+		auto it = position_attributes_.find(orb);
+		return it == position_attributes_.end() ? nullptr : it->second;
 	}
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& options) = 0;
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) = 0;
 	virtual void reset()
 	{
-		position_attribute_ = nullptr;
+		position_attributes_.clear();
 		vertex_attributes_.clear();
 		cell_cache_.reset();
 	}
 
-	VertexAttribute<uint32>				indices_;
-	std::vector<const ChunkArrayGen*>	vertex_attributes_;
-	const ChunkArrayGen*				position_attribute_;
-	std::unique_ptr<CellCache>			cell_cache_;
+	VertexAttribute<uint32> vindices_;
+	std::map<Orbit, const ChunkArrayGen*> position_attributes_;
+	std::vector<const ChunkArrayGen*> vertex_attributes_;
+	std::unique_ptr<CellCache>        cell_cache_;
 };
-
 
 } // namespace io
 

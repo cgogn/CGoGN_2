@@ -31,10 +31,10 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3d>;
-template class CGOGN_IO_API PlySurfaceImport<Eigen::Vector3f>;
-template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API PlySurfaceImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 
 template class CGOGN_IO_API PlySurfaceExport<CMap2>;
 

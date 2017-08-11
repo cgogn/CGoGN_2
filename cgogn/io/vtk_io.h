@@ -113,6 +113,7 @@ public:
 	using Self = VtkSurfaceExport<MAP>;
 	using Map = typename Inherit::Map;
 	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
 	using Face = typename Inherit::Face;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 	template<typename T>
@@ -126,13 +127,19 @@ public:
 		if (to_lower(extension(option.filename_)) == "vtk")
 			this->export_legacy_vtk(map, output, option);
 	}
+
 private:
+
 	void export_legacy_vtk(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
 		const bool bin = option.binary_;
 		const uint32 nbv = map.template nb_cells<Vertex::ORBIT>();
+		uint32 nbe = 0;
 		const uint32 nbf = map.template nb_cells<Face::ORBIT>();
-		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name());
+
+		if(this->eindices_.is_valid())
+			nbe = map.template nb_cells<Edge::ORBIT>();
 
 		output << "# vtk DataFile Version 2.0" << std::endl;
 		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
@@ -143,29 +150,59 @@ private:
 		output << "DATASET UNSTRUCTURED_GRID" << std::endl;
 
 		{// point section
-			output << "POINTS " << nbv << " " << scalar_type << std::endl;
+
+			output << "POINTS " << nbv + nbe << " " << scalar_type << std::endl;
 			map.foreach_cell([&](Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, bin, false);
 				if (!bin)
 					output << std::endl;
 			}, *(this->cell_cache_));
+
+			map.foreach_cell([&](Edge e)
+			{
+				this->position_attribute(Edge::ORBIT)->export_element(map.embedding(e), output, bin, false);
+				if (!bin)
+					output << std::endl;
+			}, *(this->cell_cache_));
+
 			output << std::endl;
 		} // end point section
 
 		{ // cell section
 			std::vector<uint32> buffer_cells;
 			buffer_cells.reserve(4u*nbf);
+			std::vector<uint32> buffer_type_cells;
+			buffer_type_cells.reserve(nbf);
+
+			//todo mesh order should not be global
+			//vtk files can handle multiple dimensions simultaneously
+			uint32 mesh_order = 1;
+			if(this->eindices_.is_valid())
+				mesh_order = 2;
+
 			uint32 cell_section_size{0u};
 			map.foreach_cell([&](Face f)
 			{
-				buffer_cells.push_back(map.codegree(f));
-				cell_section_size += buffer_cells.back();
+				uint32 codegree = 0;
 				Dart it = f.dart;
 				do {
-					buffer_cells.push_back(this->indices_[Vertex(it)]);
+					buffer_cells.push_back(this->vindices_[Vertex(it)]);
+					++codegree;
 					it = map.phi1(it);
 				} while (it != f.dart);
+
+				if(mesh_order == 2) {
+					do {
+						buffer_cells.push_back(this->eindices_[Edge(it)]);
+						++codegree;
+						it = map.phi1(it);
+					} while(it != f.dart);
+				}
+
+				buffer_type_cells.push_back(codegree);
+				cell_section_size += codegree;
+
 			}, *(this->cell_cache_));
 
 			cell_section_size += nbf; // we add an integer for each face (the nb of vertices)
@@ -181,9 +218,10 @@ private:
 					i = swap_endianness_native_big(i);
 				output << std::endl;
 			} else {
+					std::size_t k = 0;
 					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
 					{
-						const uint32 nb_vert = buffer_cells[i++];
+						const uint32 nb_vert = buffer_type_cells[k++];
 						output << nb_vert << " ";
 						for (uint32 j = 0u; j < nb_vert; ++j)
 						{
@@ -198,31 +236,44 @@ private:
 			{
 				std::vector<int32> buffer_cell_type;
 				buffer_cell_type.reserve(nbf);
-				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				for (auto it = buffer_type_cells.begin(), end = buffer_type_cells.end() ; it != end ;)
 				{
 					const uint32 nb_vert = *it;
-					switch (nb_vert) {
-						case 3u: buffer_cell_type.push_back(VTK_TRIANGLE); break;
-						case 4u: buffer_cell_type.push_back(VTK_QUAD); break;
-						default: buffer_cell_type.push_back(VTK_POLYGON); break;
+					if(mesh_order == 1) {
+						switch (nb_vert) {
+							case 3u: buffer_cell_type.push_back(VTK_TRIANGLE); break;
+							case 4u: buffer_cell_type.push_back(VTK_QUAD); break;
+							default: buffer_cell_type.push_back(VTK_POLYGON); break;
+						}						
+					} else if(mesh_order == 2) {
+						switch(nb_vert) {
+							case 6u: buffer_cell_type.push_back(VTK_QUADRATIC_TRIANGLE); break;
+						}
+
 					}
-					it += nb_vert + 1u;
+					it += 1u;
 				}
 				for (auto& i : buffer_cell_type)
 					i = swap_endianness_native_big(i);
 				output.write(reinterpret_cast<char*>(&buffer_cell_type[0]), buffer_cell_type.size() * sizeof(int32));
 				output << std::endl;
 			} else {
-				for (auto it = buffer_cells.begin(), end = buffer_cells.end() ; it != end ;)
+				for (auto it = buffer_type_cells.begin(), end = buffer_type_cells.end() ; it != end ;)
 				{
 					const uint32 nb_vert = *it;
-					switch (nb_vert) {
-						case 3u: output << VTK_TRIANGLE; break;
-						case 4u: output << VTK_QUAD; break;
-						default: output << VTK_POLYGON; break;
+					if(mesh_order == 1) {
+						switch (nb_vert) {
+							case 3u: output << VTK_TRIANGLE; break;
+							case 4u: output << VTK_QUAD; break;
+							default: output << VTK_POLYGON; break;
+						}
+					} else if(mesh_order == 2) {
+						switch(nb_vert) {
+							case 6u: output << VTK_QUADRATIC_TRIANGLE; break;
+						}
 					}
 					output << std::endl;
-					it += nb_vert + 1u;
+					it += 1u;
 				}
 			}
 		} // end cell section
@@ -272,7 +323,7 @@ private:
 
 	void export_vtp_xml(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
@@ -312,7 +363,9 @@ private:
 
 			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
-		} else {
+		}
+		else
+		{
 			map.foreach_cell([&](Vertex v)
 			{
 					output << "          ";
@@ -323,7 +376,6 @@ private:
 
 		output << "        </DataArray>" << std::endl;
 		output << "      </Points>" << std::endl;
-
 
 		if (!this->vertex_attributes().empty())
 		{
@@ -348,7 +400,9 @@ private:
 					}, *(this->cell_cache_));
 					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
-				} else {
+				}
+				else
+				{
 					map.foreach_cell([&](Vertex v)
 					{
 							output << "          ";
@@ -387,7 +441,9 @@ private:
 					}, *(this->cell_cache_));
 					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
-				} else {
+				}
+				else
+				{
 					map.foreach_cell([&](Face f)
 					{
 						att->export_element(map.embedding(f), output, false, false);
@@ -402,7 +458,6 @@ private:
 
 		output << "<Polys>" << std::endl;
 
-
 		output << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"" << format << "\">" << std::endl;
 
 		if (bin)
@@ -414,24 +469,25 @@ private:
 			{
 				Dart it = f.dart;
 				do {
-					buffer_vertices.push_back(this->indices_[Vertex(it)]);
+					buffer_vertices.push_back(this->vindices_[Vertex(it)]);
 					it = map.phi1(it);
 				} while (it != f.dart);
 			}, *(this->cell_cache_));
 			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_vertices[0]), buffer_vertices.size() * sizeof(int32), compress);
 			output << std::endl;
-		} else {
+		}
+		else
+		{
 			map.foreach_cell([&](Face f)
 			{
 				Dart it = f.dart;
 				do {
-					output << this->indices_[Vertex(it)] << " ";
+					output << this->vindices_[Vertex(it)] << " ";
 					it = map.phi1(it);
 				} while (it != f.dart);
 				output << std::endl;
 			}, *(this->cell_cache_));
 		}
-
 
 		output << "</DataArray>" << std::endl;
 
@@ -447,9 +503,9 @@ private:
 		}, *(this->cell_cache_));
 
 		if (bin)
-		{
 			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32), compress);
-		} else {
+		else
+		{
 			output << "         ";
 			for (auto o : buffer_offset)
 				output << " " << o;
@@ -467,6 +523,7 @@ template <typename MAP>
 class VtkVolumeExport : public VolumeExport<MAP>
 {
 public:
+
 	using Inherit = VolumeExport<MAP>;
 	using Self = VtkVolumeExport<MAP>;
 	using Map = typename Inherit::Map;
@@ -474,8 +531,8 @@ public:
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
-
 protected:
+
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		if (to_lower(extension(option.filename_)) == "vtu")
@@ -485,12 +542,13 @@ protected:
 	}
 
 private:
+
 	void export_legacy_vtk(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
 		const bool bin = option.binary_;
 		const uint32 nbv = this->nb_vertices();
 		const uint32 nbw = this->nb_volumes();
-		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute_->nested_type_name());
+		std::string scalar_type = cgogn_name_of_type_to_vtk_legacy_data_type(this->position_attribute(Vertex::ORBIT)->nested_type_name());
 
 		output << "# vtk DataFile Version 2.0" << std::endl;
 		output << "Mesh exported with CGoGN : github.com/cgogn/CGoGN_2";
@@ -504,7 +562,7 @@ private:
 			output << "POINTS " << nbv << " " << scalar_type << std::endl;
 			map.foreach_cell([&](Vertex v)
 			{
-				this->position_attribute_->export_element(map.embedding(v), output, bin, false);
+				this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, bin, false);
 				if (!bin)
 					output << std::endl;
 			}, *(this->cell_cache_));
@@ -534,18 +592,18 @@ private:
 					i = swap_endianness_native_big(i);
 				output.write(reinterpret_cast<char*>(&buffer_cells[0]), buffer_cells.size() * sizeof(uint32));
 				output << std::endl;
-			} else {
-					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
-					{
-						const uint32 nb_vert = buffer_cells[i++];
-						output << nb_vert << " ";
-						for (uint32 j = 0u; j < nb_vert; ++j)
-						{
-							output << buffer_cells[i++] << " ";
-						}
-						output << std::endl;
-					}
+			}
+			else
+			{
+				for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
+				{
+					const uint32 nb_vert = buffer_cells[i++];
+					output << nb_vert << " ";
+					for (uint32 j = 0u; j < nb_vert; ++j)
+						output << buffer_cells[i++] << " ";
+					output << std::endl;
 				}
+			}
 
 			output << "CELL_TYPES " << nbw << std::endl;
 			if (bin)
@@ -568,11 +626,14 @@ private:
 					i = swap_endianness_native_big(i);
 				output.write(reinterpret_cast<char*>(&buffer_cell_type[0]), buffer_cell_type.size() * sizeof(int32));
 				output << std::endl;
-			} else {
+			}
+			else
+			{
 				map.foreach_cell([&](Volume w)
 				{
 					const auto& indices = this->vertices_of_volumes(w);
-					switch (indices.size()) {
+					switch (indices.size())
+					{
 						case 4u: output << VTK_TETRA; break;
 						case 5u: output << VTK_PYRAMID; break;
 						case 6u: output << VTK_WEDGE; break;
@@ -630,9 +691,9 @@ private:
 
 	void export_vtu(const Map& map, std::ofstream& output, const ExportOptions& option)
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
-		const std::string format = (option.binary_?"binary" :"ascii");
+		const std::string format = (option.binary_ ? "binary" : "ascii");
 		std::string scalar_type = cgogn_name_of_type_to_vtk_xml_data_type(pos->nested_type_name());
 		const uint32 nbv = this->nb_vertices();
 		const uint32 nbw = this->nb_volumes();
@@ -668,7 +729,9 @@ private:
 
 			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
-		} else {
+		}
+		else
+		{
 			map.foreach_cell([&](Vertex v)
 			{
 					output << "          ";
@@ -703,12 +766,14 @@ private:
 					}, *(this->cell_cache_));
 					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
-				} else {
+				}
+				else
+				{
 					map.foreach_cell([&](Vertex v)
 					{
-							output << "          ";
-							att->export_element(map.embedding(v), output, false, false);
-							output << std::endl;
+						output << "          ";
+						att->export_element(map.embedding(v), output, false, false);
+						output << std::endl;
 					}, *(this->cell_cache_));
 				}
 
@@ -717,6 +782,7 @@ private:
 			output << "      </PointData>" << std::endl;
 		}
 		// end vertices
+
 		// begin volumes
 		output << "      <Cells>" << std::endl;
 		// 2.a. Connectivity
@@ -735,7 +801,9 @@ private:
 			}, *(this->cell_cache_));
 			write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 			output << std::endl;
-		} else {
+		}
+		else
+		{
 			map.foreach_cell([&](Volume w)
 			{
 				const auto& vertices = this->vertices_of_volumes(w);
@@ -750,7 +818,6 @@ private:
 		// 2.b. offsets
 		output << "        <DataArray type=\"Int32\" Name=\"offsets\" format=\"" << format << "\">" << std::endl;
 
-
 		int32 offset{0};
 		std::vector<int32> buffer_offset;
 		buffer_offset.reserve(nbw);
@@ -761,15 +828,14 @@ private:
 		}, *(this->cell_cache_));
 
 		if (bin)
-		{
 			write_binary_xml_data(output,reinterpret_cast<const char*>(&buffer_offset[0]),  buffer_offset.size() * sizeof(int32), option.compress_);
-		} else {
+		else
+		{
 			output << "         ";
 			for (auto o : buffer_offset)
 				output << " " << o;
 		}
 		output << std::endl << "        </DataArray>" << std::endl;
-
 
 		// 2.c cell types
 		output << "        <DataArray type=\"UInt8\" Name=\"types\" format=\"" << format << "\">" << std::endl;
@@ -778,7 +844,8 @@ private:
 		map.foreach_cell([&](Volume w)
 		{
 			const int32 nbv_vol = static_cast<int32>(this->number_of_vertices(w));
-			switch (nbv_vol) {
+			switch (nbv_vol)
+			{
 				case 4: buffer_format.push_back(VTK_TETRA); break;
 				case 5: buffer_format.push_back(VTK_PYRAMID); break;
 				case 6: buffer_format.push_back(VTK_WEDGE); break;
@@ -789,9 +856,9 @@ private:
 		}, *(this->cell_cache_));
 
 		if (bin)
-		{
 			write_binary_xml_data(output,reinterpret_cast<char*>(&buffer_format[0]),  buffer_format.size() * sizeof(uint8), option.compress_);
-		} else {
+		else
+		{
 			output << "         ";
 			for (auto i : buffer_format)
 				output << std::to_string(i) << " ";
@@ -822,7 +889,9 @@ private:
 					}, *(this->cell_cache_));
 					write_binary_xml_data(output,&buffer_char[0], buffer_char.size(), option.compress_);
 					output << std::endl;
-				} else {
+				}
+				else
+				{
 					map.foreach_cell([&](Volume w)
 					{
 						output << "         ";
@@ -864,11 +933,12 @@ public:
 	virtual ~VtkIO() {}
 
 protected:
-	FileType			vtk_file_type_;
-	DataInput<VEC3>		positions_;
-	DataInput<uint32>	cells_;
-	DataInput<int32>	cell_types_;
-	DataInput<uint32>	offsets_;
+
+	FileType          vtk_file_type_;
+	DataInput<VEC3>   positions_;
+	DataInput<uint32> cells_;
+	DataInput<int32>  cell_types_;
+	DataInput<uint32> offsets_;
 
 protected:
 
@@ -952,22 +1022,21 @@ protected:
 						sstream >> nb_cells >> size;
 						cells_.read_n(fp, size, !ascii_file, big_endian);
 
-						std::vector<int>* cell_types_vec = static_cast<std::vector<int>*>(cell_types_.buffer_vector());
-						cgogn_assert(cell_types_vec != nullptr);
+						std::vector<int>& cell_types_vec = cell_types_.vec();
 						if (word == "POLYGONS")
 						{
-							cell_types_vec->reserve(nb_cells);
+							cell_types_vec.reserve(nb_cells);
 							for (unsigned i = 0u; i < nb_cells ;++i)
 							{
-								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_POLYGON);
+								cell_types_vec.push_back(VTK_CELL_TYPES::VTK_POLYGON);
 							}
 						}
 						else if (word == "TRIANGLE_STRIPS")
 						{
-							cell_types_vec->reserve(nb_cells);
+							cell_types_vec.reserve(nb_cells);
 							for (unsigned i = 0u; i < nb_cells ;++i)
 							{
-								cell_types_vec->push_back(VTK_CELL_TYPES::VTK_TRIANGLE_STRIP);
+								cell_types_vec.push_back(VTK_CELL_TYPES::VTK_TRIANGLE_STRIP);
 							}
 						}
 					}
@@ -1020,13 +1089,9 @@ protected:
 										std::string lookup_table_name;
 										sstream >> lookup_table >> lookup_table_name;
 										if (i_equals(lookup_table, "LOOKUP_TABLE"))
-										{
 											cgogn_log_debug("parse_vtk_legacy_file") << "Ignoring lookup table named \"" << lookup_table_name << "\".";
-										}
 										else
-										{
 											fp.seekg(pos_before_lookup_table); // if there wasn't a lookup table we go back and start reading the numerical values
-										}
 
 										std::unique_ptr<DataInputGen> att;
 										if (att_name == "normal")
@@ -1115,12 +1180,12 @@ protected:
 	{
 		using tinyxml2::XMLDocument;
 		using tinyxml2::XMLError;
-		using tinyxml2::XML_NO_ERROR;
+		using tinyxml2::XML_SUCCESS;
 		using tinyxml2::XMLElement;
 
 		XMLDocument doc;
 		XMLError eResult = doc.LoadFile(filename.c_str());
-		if (eResult != XML_NO_ERROR)
+		if (eResult != XML_SUCCESS)
 		{
 			cgogn_log_warning("parse_xml_vtu")<< "Unable to load file \"" << filename << "\".";
 			return false;
@@ -1187,10 +1252,17 @@ protected:
 				cgogn_log_debug("parse_xml_vtu") << "Skipping a vertex DataArray without \"Name\" attribute.";
 			else
 			{
-				const char*					ascii_data = vertex_data->GetText();
-				std::vector<unsigned char>	binary_data;
+				const char* ascii_data = vertex_data->GetText();
+				std::vector<unsigned char> binary_data;
 				if (binary)
+				{
 					binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+					if (binary_data.empty())
+					{
+						cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						continue;
+					}
+				}
 
 				std::unique_ptr<IMemoryStream> mem_stream;
 				if (binary)
@@ -1268,7 +1340,14 @@ protected:
 					const char*					ascii_data = cell_data->GetText();
 					std::vector<unsigned char>	binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -1345,10 +1424,17 @@ protected:
 					cgogn_log_debug("parse_xml_vtu")<< "Skipping a cell DataArray without \"Name\" attribute.";
 				else
 				{
-					const char*					ascii_data = poly_data_array->GetText();
-					std::vector<unsigned char>	binary_data;
+					const char* ascii_data = poly_data_array->GetText();
+					std::vector<unsigned char> binary_data;
 					if (binary)
+					{
 						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+						if (binary_data.empty())
+						{
+							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+							continue;
+						}
+					}
 
 					std::unique_ptr<IMemoryStream> mem_stream;
 					if (binary)
@@ -1380,20 +1466,21 @@ protected:
 	}
 };
 
-template <typename VEC3>
-class VtkSurfaceImport : public VtkIO<CMap2::PRIM_SIZE, VEC3>, public SurfaceFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class VtkSurfaceImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = VtkSurfaceImport<VEC3>;
-	using Inherit_Vtk = VtkIO<CMap2::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<VEC3>;
+	using Self = VtkSurfaceImport<MAP, VEC3>;
+	using Inherit_Vtk = VtkIO<MAP::PRIM_SIZE, VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP, VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 
-	virtual ~VtkSurfaceImport() override
-	{}
+	inline VtkSurfaceImport(MAP& map) : Inherit_Import(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkSurfaceImport);
+	virtual ~VtkSurfaceImport() override {}
 
 protected:
 
@@ -1417,13 +1504,13 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkSurfaceImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
-		Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+		this->Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
 	}
 
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkSurfaceImport::add_cell_attribute") << "Adding a face attribute named \"" << attribute_name << "\".";
-		Inherit_Import::add_face_attribute(attribute_data, attribute_name);
+		this->Inherit_Import::add_face_attribute(attribute_data, attribute_name);
 	}
 
 	virtual bool import_file_impl(const std::string& filename) override
@@ -1455,18 +1542,19 @@ private:
 			const uint32 nb_faces = uint32(this->cell_types_.size());
 			this->reserve(nb_faces);
 
-			auto cells_it = static_cast<std::vector<uint32>*>(this->cells_.buffer_vector())->begin();
-			const std::vector<int32>* cell_types_vec = static_cast<std::vector<int32>*>(this->cell_types_.buffer_vector());
-			const auto offsets_begin = static_cast<std::vector<uint32>*>(this->offsets_.buffer_vector())->begin();
+			auto cells_it = this->cells_.vec().begin();
+			const std::vector<int32>& cell_types_vec = this->cell_types_.vec();
+			const auto offsets_begin = this->offsets_.vec().begin();
 			auto offset_it = offsets_begin;
 			std::size_t last_offset(0);
-			for(auto cell_types_it = cell_types_vec->begin(); cell_types_it != cell_types_vec->end(); )
+			for(auto cell_types_it = cell_types_vec.begin(); cell_types_it != cell_types_vec.end(); )
 			{
 				const int cell_type = *(cell_types_it++);
 				std::size_t nb_vert(0);
 				if (this->vtk_file_type_ == FileType::FileType_VTK_LEGACY)
 					nb_vert = *cells_it++;
-				else {
+				else
+				{
 					const std::size_t curr_offset = *offset_it++;
 					nb_vert = curr_offset - last_offset;
 					last_offset = curr_offset;
@@ -1500,7 +1588,9 @@ private:
 					}
 				}
 			}
-		} else { // .vtp files
+		}
+		else
+		{ // .vtp files
 			const uint32 nb_faces = uint32(this->offsets_.vec().size());
 			this->reserve(nb_faces);
 			auto cells_it = this->cells_.vec().begin();
@@ -1518,27 +1608,25 @@ private:
 	}
 };
 
-template <typename VEC3>
-class VtkVolumeImport : public VtkIO<CMap3::PRIM_SIZE, VEC3>, public VolumeFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class VtkVolumeImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = VtkVolumeImport<VEC3>;
-	using Inherit_Vtk = VtkIO<CMap3::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<VEC3>;
+	using Self = VtkVolumeImport<MAP, VEC3>;
+	using Inherit_Vtk = VtkIO<MAP::PRIM_SIZE, VEC3>;
+	using Inherit_Import = VolumeFileImport<MAP, VEC3>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
-	inline VtkVolumeImport() {}
+	inline VtkVolumeImport(MAP& map) : Inherit_Import(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkVolumeImport);
 	virtual ~VtkVolumeImport() override {}
 
 protected:
-
-
 
 	inline bool read_vtk_legacy_file(std::ifstream& fp)
 	{
@@ -1575,10 +1663,8 @@ protected:
 					}
 				}
 			}
-			for (uint32 i = 0u; i < vol_nb_verts;++i)
-			{
+			for (uint32 i = 0u; i < vol_nb_verts; ++i)
 				cells_buffer.push_back(*cells_it++);
-			}
 		}
 
 		add_vtk_volumes(cells_buffer, cell_types_vec);
@@ -1678,11 +1764,11 @@ protected:
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkSurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkVolumeImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3f>;
 
 extern template class CGOGN_IO_API VtkVolumeExport<CMap3>;
 extern template class CGOGN_IO_API VtkSurfaceExport<CMap2>;

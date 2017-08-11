@@ -105,7 +105,13 @@ protected:
 	GLint unif_projection_matrix_;
 	GLint unif_normal_matrix_;
 
+	static std::vector<ShaderProgram*>* instances_;
+
 public:
+
+	static void register_instance(ShaderProgram* sh);
+
+	static void clean_all();
 
 	~ShaderProgram();
 

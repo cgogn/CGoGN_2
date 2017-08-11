@@ -77,7 +77,7 @@ public:
 protected:
 
 	ShaderVectorPerVertex();
-	static std::unique_ptr<ShaderVectorPerVertex> instance_;
+	static ShaderVectorPerVertex* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamVectorPerVertex : public ShaderParam
@@ -92,6 +92,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderVectorPerVertex;
 
 	QColor color_;
 	float32 length_;

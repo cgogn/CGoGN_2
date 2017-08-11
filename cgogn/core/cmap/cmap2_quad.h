@@ -81,6 +81,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -484,6 +486,12 @@ public:
 
 protected:
 
+	inline Dart collapse_edge_topo(Dart d)
+	{
+		cgogn_log_warning("collapse_edge_topo") << "This operator is not available in CMap2Quad";
+		return d;
+	}
+
 	/**
 	 * @brief extrude a quad: replace by 5 faces. (topo version)
 	 * @param f the quad face to extrude
@@ -850,6 +858,8 @@ protected:
 		cgogn::dart_buffers()->release_buffer(visited_faces);
 	}
 
+public:
+
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -877,8 +887,6 @@ protected:
 	/*******************************************************************************
 	 * Incidence traversal
 	 *******************************************************************************/
-
-public:
 
 	template <typename FUNC>
 	inline void foreach_incident_edge(Vertex v, const FUNC& func) const

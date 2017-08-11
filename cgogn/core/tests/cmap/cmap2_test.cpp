@@ -218,6 +218,18 @@ TEST_F(CMap2Test, flip_edge)
 }
 
 /**
+ * \brief Collapse edges preserves the cell indexation
+ */
+TEST_F(CMap2Test, collapse_edge)
+{
+	Volume v = cmap_.add_prism(3u);
+
+	cmap_.collapse_edge(Edge(v.dart));
+
+	EXPECT_TRUE(cmap_.check_map_integrity());
+}
+
+/**
  * \brief Cutting faces preserves the cell indexation
  */
 TEST_F(CMap2Test, cut_face)
@@ -334,11 +346,13 @@ TEST_F(CMap2Test, compact_map)
 
 	EXPECT_EQ(cmap_.topology_container().size(),cmap_.topology_container().end());
 
-	EXPECT_EQ(cmap_.const_attribute_container<Vertex::ORBIT>().size(),
-			  cmap_.const_attribute_container<Vertex::ORBIT>().end());
+	const auto& cont = cmap_.attribute_container<Vertex::ORBIT>();
 
-	EXPECT_EQ(cmap_.const_attribute_container<Edge::ORBIT>().size(),
-			  cmap_.const_attribute_container<Edge::ORBIT>().end());
+	EXPECT_EQ(cont.size(),
+			  cont.end());
+
+	EXPECT_EQ(cmap_.attribute_container<Edge::ORBIT>().size(),
+			  cmap_.attribute_container<Edge::ORBIT>().end());
 
 //	std::cout << "TOPO SIZE:"<< cmap_.topology_container().size() << " / END:"<<  cmap_.topology_container().end() << std::endl;
 

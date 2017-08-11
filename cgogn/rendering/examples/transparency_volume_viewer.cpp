@@ -36,6 +36,7 @@
 #include <cgogn/geometry/algos/bounding_box.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
+#include <cgogn/rendering/transparency_drawer.h>
 #include <cgogn/rendering/transparency_volume_drawer.h>
 #include <cgogn/rendering/frame_manipulator.h>
 #include <cgogn/rendering/wall_paper.h>
@@ -89,7 +90,7 @@ private:
 
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
 
-
+	std::unique_ptr<cgogn::rendering::SurfaceTransparencyDrawer> transp_drawer_;
 	std::unique_ptr<VolumeDrawer> volume_drawer_;
 	std::unique_ptr<VolumeDrawer::Renderer> volume_drawer_rend_;
 
@@ -154,6 +155,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	volume_drawer_.reset();
 	volume_drawer_rend_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -214,13 +216,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 
 		case Qt::Key_A:
-			mesh_transparency_ += 8;
+			mesh_transparency_ += 1;
 			if (mesh_transparency_ > 254)
 				mesh_transparency_ = 254;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Z:
-			mesh_transparency_ -= 8;
+			mesh_transparency_ -= 1;
 			if (mesh_transparency_ < 0)
 				mesh_transparency_ = 0;
 			volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
@@ -309,7 +311,11 @@ void Viewer::draw()
 
 	frame_manip_->draw(true,true,proj, view, this); // draw opaque first
 
-	volume_drawer_rend_->draw_faces(proj,view);
+	transp_drawer_->draw([&]() -> void
+	{
+		volume_drawer_rend_->draw_faces(proj, view, this);
+	});
+	
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
@@ -319,8 +325,8 @@ void Viewer::draw()
 		nb_fps_ = 0;
 		start_fps_ = std::chrono::system_clock::now();
 	}
-
 }
+
 
 void Viewer::init()
 {
@@ -335,7 +341,9 @@ void Viewer::init()
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
 	volume_drawer_rend_->set_color(QColor(0,250,0,mesh_transparency_));
-	volume_drawer_rend_->set_max_nb_layers(16);
+
+	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
+	transp_drawer_->set_max_nb_layers(16);
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);
@@ -361,7 +369,7 @@ void Viewer::init()
 
 void Viewer::resizeGL(int w ,int h)
 {
-	volume_drawer_rend_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h, this);
+	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h, this);
 	QOGLViewer::resizeGL(w,h);
 }
 

@@ -174,7 +174,12 @@ public:
 	ChunkArrayContainer() :
 		nb_used_lines_(0u),
 		nb_max_lines_(0u)
-	{}
+	{
+		table_arrays_.reserve(16);
+		names_.reserve(16);
+		type_names_.reserve(16);
+		table_marker_arrays_.reserve(16);
+	}
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ChunkArrayContainer);
 
@@ -215,7 +220,7 @@ public:
 	ChunkArray<T>* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
@@ -234,7 +239,7 @@ public:
 	ChunkArrayGen* get_chunk_array(const std::string& name)
 	{
 		// first check if attribute already exists
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
 			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
@@ -268,6 +273,11 @@ public:
 		return table_arrays_;
 	}
 
+	inline const std::vector<ChunkArrayBool*>& marker_arrays()
+	{
+		return table_marker_arrays_;
+	}
+
 	/**
 	 * @brief add an attribute
 	 * @param name name of chunk array
@@ -280,7 +290,7 @@ public:
 		cgogn_assert(name.size() != 0);
 
 		// first check if attribute already exist
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 		if (index != UNKNOWN)
 		{
 			cgogn_log_warning("add_chunk_array") << "Chunk array of name \"" << name << "\" already exists.";
@@ -288,7 +298,7 @@ public:
 		}
 
 		// create the new attribute
-		const std::string& type_name = name_of_type(T());
+		std::string type_name = name_of_type(T());
 		ChunkArray<T>* carr = new ChunkArray<T>(name);
 		chunk_array_factory<CHUNK_SIZE>().template register_CA<T>();
 
@@ -298,7 +308,7 @@ public:
 		// store pointer, name & typename.
 		table_arrays_.push_back(carr);
 		names_.push_back(name);
-		type_names_.push_back(type_name);
+		type_names_.push_back(std::move(type_name));
 
 		return carr;
 	}
@@ -310,7 +320,7 @@ public:
 	 */
 	bool remove_chunk_array(const std::string& name)
 	{
-		uint32 index = array_index(name);
+		const uint32 index = array_index(name);
 
 		if (index == UNKNOWN)
 		{
@@ -330,7 +340,7 @@ public:
 	 */
 	bool remove_chunk_array(const ChunkArrayGen* ptr)
 	{
-		uint32 index = array_index(ptr);
+		const uint32 index = array_index(ptr);
 
 		if (index == UNKNOWN)
 		{
@@ -351,8 +361,8 @@ public:
 	 */
 	bool swap_chunk_arrays(const ChunkArrayGen* ptr1, const ChunkArrayGen* ptr2)
 	{
-		uint32 index1 = array_index(ptr1);
-		uint32 index2 = array_index(ptr2);
+		const uint32 index1 = array_index(ptr1);
+		const uint32 index2 = array_index(ptr2);
 
 		if ((index1 == UNKNOWN) || (index2 == UNKNOWN))
 		{
@@ -378,8 +388,8 @@ public:
 	template <typename T>
 	bool copy_chunk_array_data(const ChunkArray<T>* dest, const ChunkArray<T>* src)
 	{
-		uint32 dest_index = array_index(dest);
-		uint32 src_index = array_index(src);
+		const uint32 dest_index = array_index(dest);
+		const uint32 src_index = array_index(src);
 
 		if ((dest_index == UNKNOWN) || (src_index == UNKNOWN))
 		{
@@ -569,12 +579,12 @@ public:
 		holes_stack_.clear();
 
 		for (auto cagen : table_arrays_)
+		{
+			cagen->invalidate_external_refs();
 			delete cagen;
-		for (auto ca_bool : table_marker_arrays_)
-			delete ca_bool;
+		}
 
 		table_arrays_.clear();
-		table_marker_arrays_.clear();
 		names_.clear();
 		type_names_.clear();
 	}
@@ -582,6 +592,7 @@ public:
 	/**
 	 * @brief swap
 	 * @param container
+	 * @warning When called on a ChunkArrayContainer stored in a map, this method invalidates the map internal data related to the markers.
 	 */
 	void swap(Self& container)
 	{
@@ -817,17 +828,6 @@ public:
 		nb_used_lines_ -= PRIM_SIZE;
 	}
 
-	/**
-	 * @brief initialize a line of the container (an element of each attribute)
-	 * @param index line index
-	 */
-	void init_line(uint32 index)
-	{
-		cgogn_message_assert(used(index), "init_line only with allocated lines");
-
-		for (auto ptr : table_arrays_)
-			ptr->init_element(index);
-	}
 
 	/**
 	 * @brief initialize the markers of a line of the container
@@ -926,6 +926,25 @@ public:
 		// static_assert(PRIM_SIZE == 1u, "getNbRefs with container where PRIM_SIZE!=1");
 		return refs_[index];
 	}
+
+	/**
+	 * @brief copy management section, and allocate data (no copy), use carefully
+	 * @param from source for copy into this
+	 */
+	void copy_all_but_data(const Self* from)
+	{
+		refs_.copy(from->refs_);
+		holes_stack_.copy(from->holes_stack_);
+		nb_used_lines_ = from->nb_used_lines_;
+		nb_max_lines_ = from->nb_max_lines_;
+
+		for (auto* ca : table_arrays_)
+			ca->set_nb_chunks(refs_.nb_chunks());
+
+		for (auto* cab : table_marker_arrays_)
+			cab->set_nb_chunks(refs_.nb_chunks());
+	}
+
 
 	void save(std::ostream& fs)
 	{
@@ -1044,25 +1063,26 @@ public:
 	void parallel_foreach_index(const FUNC& f) const
 	{
 		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
-		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function second parameter type");
 
 		using VecIndice = std::vector<uint32>;
 		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-		const std::size_t nb_threads_pool = thread_pool->nb_threads();
+		uint32 nb_workers = thread_pool->nb_workers();
+		if (nb_workers==0)
+			return foreach_index(f);
 
 		std::array<std::vector<VecIndice*>, 2> indices_buffers;
 		std::array<std::vector<Future>, 2> futures;
-		indices_buffers[0].reserve(nb_threads_pool);
-		indices_buffers[1].reserve(nb_threads_pool);
-		futures[0].reserve(nb_threads_pool);
-		futures[1].reserve(nb_threads_pool);
+		indices_buffers[0].reserve(nb_workers);
+		indices_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
 
 		Buffers<uint32>* buffs = cgogn::uint_buffers();
 
 		uint32 i = 0u; // buffer id (0/1)
-		uint32 j = 0u; // thread id (0..nb_threads_pool)
+		uint32 j = 0u; // thread id (0..nb_workers)
 
 		uint32 it = begin();
 		uint32 it_end = end();
@@ -1084,7 +1104,7 @@ public:
 					f(ind, th_id);
 			}));
 			// next thread
-			if (++j == nb_threads_pool)
+			if (++j == nb_workers)
 			{	// again from 0 & change buffer
 				j = 0;
 				i = (i+1u) % 2u;
@@ -1111,7 +1131,7 @@ public:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint8>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CONTAINER_CPP_))
 
 } // namespace cgogn

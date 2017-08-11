@@ -41,21 +41,20 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class StlSurfaceImport : public SurfaceFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class StlSurfaceImport : public SurfaceFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = StlSurfaceImport<VEC3>;
-	using Inherit = SurfaceFileImport<VEC3>;
+	using Self = StlSurfaceImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP, VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline StlSurfaceImport() {}
+	inline StlSurfaceImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(StlSurfaceImport);
-	virtual ~StlSurfaceImport() override
-	{}
+	virtual ~StlSurfaceImport() override {}
 
 protected:
 
@@ -63,7 +62,7 @@ protected:
 	{
 		std::ifstream fp(filename, std::ios::in);
 		ChunkArray<VEC3>* position = this->position_attribute();
-		ChunkArray<VEC3>* normal = this->face_attributes_.template add_chunk_array<VEC3>("normal");
+		ChunkArray<VEC3>* normal = this->template add_face_attribute<VEC3>("normal");
 		std::string word;
 		fp >> word;
 		fp.close();
@@ -72,6 +71,7 @@ protected:
 		else
 			return this->import_binary(filename, position, normal);
 	}
+
 private:
 
 	// put compare function here because lambda version do not compile on VS2013
@@ -100,7 +100,7 @@ private:
 				continue;
 			}
 			stream_normal >> line >> norm[0] >> norm[1] >> norm[2];
-			const uint32 face_id = this->face_attributes_.template insert_lines<1>();
+			const uint32 face_id = this->insert_line_vertex_container();
 			(*normal)[face_id] = norm;
 			getline_safe(fp, line); // outer loop
 
@@ -115,7 +115,7 @@ private:
 
 				if (it == vertices_set.end())
 				{
-					vertex_id = this->vertex_attributes_.template insert_lines<1>();
+					vertex_id = this->insert_line_face_container();
 					vertices_set.insert(std::make_pair(pos[i], vertex_id));
 //					indices_set.push_back(vertex_id);
 				} else
@@ -131,6 +131,7 @@ private:
 
 		return true;
 	}
+
 	bool import_binary(const std::string& filename, ChunkArray<VEC3>* position, ChunkArray<VEC3>* normal)
 	{
 		std::ifstream fp(filename, std::ios::in | std::ios::binary);
@@ -156,7 +157,7 @@ private:
 			for (auto& x : position_buffer)
 				x = swap_endianness_native_little(x);
 
-			const uint32 face_id = this->face_attributes_.template insert_lines<1>();
+			const uint32 face_id = this->insert_line_vertex_container();
 			const VEC3 norm{Scalar(normal_buffer[0]), Scalar(normal_buffer[1]), Scalar(normal_buffer[2])};
 			(*normal)[face_id] = norm;
 
@@ -168,7 +169,7 @@ private:
 
 				if (it == vertices_set.end())
 				{
-					vertex_id = this->vertex_attributes_.template insert_lines<1>();
+					vertex_id = this->insert_line_face_container();
 					vertices_set.insert(std::make_pair(pos, vertex_id));
 				} else
 					vertex_id = it->second;
@@ -219,7 +220,9 @@ protected:
 			this->export_ascii(map, output, option, normal_attribute);
 
 	}
+
 private:
+
 	void export_ascii(const Map& map, std::ofstream& output, const ExportOptions& option, const ChunkArrayGen* normal_attribute)
 	{
 		// set precision for float output
@@ -238,7 +241,7 @@ private:
 				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
 					output << "vertex ";
-					this->position_attribute_->export_element(map.embedding(v), output, false, false);
+					this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 					output << std::endl;
 				});
 				output << "endloop" << std::endl;
@@ -270,7 +273,7 @@ private:
 				normal_attribute->export_element(map.embedding(f), output, true, true, 4ul);
 				map.foreach_incident_vertex(f, [&] (Vertex v)
 				{
-					this->position_attribute_->export_element(map.embedding(v), output, true, true, 4ul);
+					this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, true, true, 4ul);
 				});
 				output.write(reinterpret_cast<char*>(&attribute_byte_count),sizeof(uint16));
 				++nb_tri;
@@ -289,6 +292,10 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
+extern template class CGOGN_IO_API StlSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API StlSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_API StlSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API StlSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 extern template class CGOGN_IO_API StlSurfaceExport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
 

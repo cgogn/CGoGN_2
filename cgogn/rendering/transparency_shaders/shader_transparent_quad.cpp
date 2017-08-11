@@ -59,7 +59,7 @@ const char* ShaderTranspQuad::fragment_shader_source_ =
 "	fragColor = color;\n"
 "}\n";
 
-std::unique_ptr<ShaderTranspQuad> ShaderTranspQuad::instance_ = nullptr;
+ShaderTranspQuad* ShaderTranspQuad::instance_ = nullptr;
 
 ShaderTranspQuad::ShaderTranspQuad()
 {
@@ -84,8 +84,11 @@ void ShaderTranspQuad::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderTranspQuad::Param> ShaderTranspQuad::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderTranspQuad>(new ShaderTranspQuad());
-	return cgogn::make_unique<ShaderTranspQuad::Param>(instance_.get());
+	{
+		instance_ = new ShaderTranspQuad();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

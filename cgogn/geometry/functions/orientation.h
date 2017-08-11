@@ -32,6 +32,39 @@ namespace cgogn
 namespace geometry
 {
 
+enum Orientation2D
+{
+	ALIGNED = 0,
+	RIGHT,
+	LEFT
+};
+
+/**
+ * return the side of point P w.r.t. the vector (Pb-Pa)
+ * Tells if P is on/right/left of the line (Pa, Pb)
+ * @param P the point
+ * @param Pa origin point
+ * @param Pb end point
+ * @return the orientation
+ */
+template <typename VEC2>
+Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
+{
+	static_assert(vector_traits<VEC2>::SIZE == 2ul, "The size of the vector must be equal to 2.");
+
+	using Scalar = typename vector_traits<VEC2>::Scalar;
+	const Scalar zero(0.000001);
+
+	Scalar p = (P[0] - Pa[0]) * (Pb[1] - Pa[1]) - (Pb[0] - Pa[0]) * (P[1] - Pa[1]) ;
+
+	if (numerics::almost_equal_absolute(p, Scalar(0)))
+		return Orientation2D::ALIGNED;
+	else if (p > Scalar(0))
+		return Orientation2D::RIGHT;
+	else
+		return Orientation2D::LEFT;
+}
+
 /**
  * return the orientation of point P w.r.t. the plane defined by 3 points
  * @param P the point

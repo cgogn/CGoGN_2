@@ -51,16 +51,18 @@ public:
 	using Map = MAP;
 
 	using Vertex = typename Map::Vertex;
+	using Edge = typename Map::Edge;
 	using Face = typename Map::Face;
 
 	using ChunkArrayGen = typename Map::ChunkArrayGen;
 	using ChunkArrayContainer = typename Map::template ChunkArrayContainer<uint32>;
+	template<typename T>
+	using EdgeAttribute = typename Map::template EdgeAttribute<T>;
+	template<typename T>
+	using FaceAttribute = typename Map::template FaceAttribute<T>;
 
-	inline SurfaceExport()
-	{}
-
-	virtual ~SurfaceExport()
-	{}
+	inline SurfaceExport() {}
+	virtual ~SurfaceExport() {}
 
 protected:
 
@@ -72,6 +74,10 @@ protected:
 	void clean_added_attributes(Map& map) override
 	{
 		Inherit::clean_added_attributes(map);
+		if(eindices_.is_valid())
+			map.remove_attribute(eindices_);
+		if(findices_.is_valid())
+			map.remove_attribute(findices_);
 	}
 
 	inline uint32 nb_vertices() const
@@ -88,12 +94,22 @@ private:
 
 	virtual void prepare_for_export(Map& map, const ExportOptions& options) override
 	{
-		const ChunkArrayContainer& ver_cac = map.template const_attribute_container<Vertex::ORBIT>();
-		const ChunkArrayContainer& face_cac = map.template const_attribute_container<Face::ORBIT>();
+		const ChunkArrayContainer& ver_cac = map.template attribute_container<Vertex::ORBIT>();
+		const ChunkArrayContainer& edge_cac = map.template attribute_container<Edge::ORBIT>();
+		const ChunkArrayContainer& face_cac = map.template attribute_container<Face::ORBIT>();
 
-		this->position_attribute_ = ver_cac.get_chunk_array(options.position_attribute_.second);
-		if (!this->position_attribute())
-			return;
+		for(const auto& pair : options.position_attributes_)
+		{
+			const ChunkArrayGen* pos_cag = nullptr;
+
+			if(pair.first == Edge::ORBIT)
+				pos_cag = edge_cac.get_chunk_array(pair.second);
+			else if(pair.first == Face::ORBIT)
+				pos_cag = face_cac.get_chunk_array(pair.second);
+
+			if(pos_cag)
+				this->position_attributes_.insert(std::make_pair(pair.first, pos_cag));
+		}
 
 		for (const auto& pair : options.attributes_to_export_)
 		{
@@ -102,7 +118,15 @@ private:
 				const ChunkArrayGen* ver_cag = ver_cac.get_chunk_array(pair.second);
 				if (ver_cag)
 					this->vertex_attributes_.push_back(ver_cag);
-			} else {
+			}
+			else if(pair.first == Edge::ORBIT)
+			{
+				const ChunkArrayGen* edge_cag = edge_cac.get_chunk_array(pair.second);
+				if (edge_cag)
+					edge_attributes_.push_back(edge_cag);
+			}
+			else if(pair.first == Face::ORBIT)
+			{
 				const ChunkArrayGen* face_cag = face_cac.get_chunk_array(pair.second);
 				if (face_cag)
 					face_attributes_.push_back(face_cag);
@@ -112,19 +136,45 @@ private:
 		this->cell_cache_->template build<Vertex>();
 		this->cell_cache_->template build<Face>();
 		uint32 count{0u};
-		map.foreach_cell([&] (Vertex v)
+		map.foreach_cell(
+			[&] (Vertex v) { this->vindices_[v] = count++; },
+			*(this->cell_cache_)
+		);
+
+		const Orbit eorb = Edge::ORBIT;
+		if(this->position_attributes_.find(eorb) != this->position_attributes_.end())
 		{
-			this->indices_[v] = count++;
-		}, *(this->cell_cache_));
+			this->cell_cache_->template build<Edge>();
+			eindices_ = map.template add_attribute<uint32, Edge>("indices_vert_export");
+			map.foreach_cell(
+				[&] (Edge e) { eindices_[e] = count++; },
+				*(this->cell_cache_)
+			);
+		}
+		const Orbit forb = Face::ORBIT;
+		if(this->position_attributes_.find(forb) != this->position_attributes_.end())
+		{
+			findices_ = map.template add_attribute<uint32, Face>("indices_vert_export");
+			map.foreach_cell(
+				[&] (Face f) { findices_[f] = count++; },
+				*(this->cell_cache_)
+			);
+		}
 	}
 
 	virtual void reset() override
 	{
 		Inherit::reset();
+		edge_attributes_.clear();
 		face_attributes_.clear();
 	}
 
-	std::vector<const ChunkArrayGen*>	face_attributes_;
+	std::vector<const ChunkArrayGen*>	edge_attributes_;
+	std::vector<const ChunkArrayGen*>	face_attributes_;	
+
+protected:
+	EdgeAttribute<uint32> eindices_;
+	FaceAttribute<uint32> findices_;
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_EXPORT_CPP_))

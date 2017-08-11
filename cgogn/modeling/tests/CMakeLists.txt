@@ -8,6 +8,7 @@ find_package(cgogn_modeling REQUIRED)
 
 set(SOURCE_FILES
 	algos/catmull_clark_test.cpp
+	algos/dual_test.cpp
 	tiling/square_tiling_test.cpp
 	tiling/triangular_tiling_test.cpp
 	main.cpp
@@ -22,3 +23,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdpart
 link_directories(${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googletest/lib)
 
 add_test(NAME "${PROJECT_NAME}" WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COMMAND ${PROJECT_NAME})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER tests)

@@ -40,18 +40,15 @@ namespace cgogn
 namespace io
 {
 
-template <uint32 PRIM_SIZE, typename VEC3>
+template <typename VEC3>
 class MshIO
 {
 public:
 
-	using Self = MshIO<PRIM_SIZE, VEC3>;
+	using Self = MshIO<VEC3>;
 
-	using VolumeImport = cgogn::io::VolumeImport<VEC3>;
-	using SurfaceImport = cgogn::io::SurfaceImport<VEC3>;
-
-	template<typename T>
-	using ChunkArray = typename SurfaceImport::template ChunkArray<T>;
+	template <typename T>
+	using ChunkArray = MapBaseData::ChunkArray<T>;
 
 	enum MSH_CELL_TYPES
 	{
@@ -69,15 +66,14 @@ public:
 	};
 
 	inline MshIO() :
-		version_number_()
-	  , file_type_(-1)
-	  , float_size_(sizeof(float64))
-	  , swap_endianness_(false)
+		version_number_(),
+		file_type_(-1),
+		float_size_(sizeof(float64)),
+		swap_endianness_(false)
 	{}
 
-	virtual ~MshIO() {}
-
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshIO);
+	virtual ~MshIO() {}
 
 	inline const std::string& version_number() const
 	{
@@ -95,6 +91,7 @@ public:
 	}
 
 protected:
+
 	bool import_msh_file(const std::string& filename)
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
@@ -121,7 +118,7 @@ protected:
 
 	virtual ChunkArray<VEC3>* msh_position_attribute() = 0;
 	virtual uint32 msh_insert_line_vertex_container() = 0;
-	virtual void msh_clear() = 0;
+//	virtual void msh_clear() = 0;
 	virtual void msh_reserve(uint32 n) = 0;
 	virtual void msh_add_triangle(uint32 p0, uint32 p1, uint32 p2) { unused_parameters(p0, p1, p2); }
 	virtual void msh_add_quad(uint32 p0, uint32 p1, uint32 p2, uint32 p3) { unused_parameters(p0, p1, p2, p3); }
@@ -131,7 +128,6 @@ protected:
 	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) { unused_parameters(p0, p1, p2, p3, p4, check_orientation); }
 	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) { unused_parameters(p0, p1, p2, p3, p4, p5, check_orientation); }
 	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) { unused_parameters(p0, p1, p2, p3); }
-
 
 	inline static std::string skip_empty_lines(std::istream& data_stream)
 	{
@@ -158,7 +154,7 @@ protected:
 			iss >> version_number_ >> file_type_ >> float_size_;
 			if (file_type_ == 1)
 			{
-				std::array<char,4> buff;
+				std::array<char, 4> buff;
 				data_stream.read(&buff[0],4);
 				const int one = *reinterpret_cast<int32*>(&buff[0]);
 				if (one != 1)
@@ -168,7 +164,7 @@ protected:
 		}
 		else
 		{
-			if (line.compare(0,4, "$NOD") == 0)
+			if (line.compare(0, 4, "$NOD") == 0)
 			{
 				version_number_ = "1.0";
 				file_type_ = 0;
@@ -250,7 +246,7 @@ protected:
 		do
 		{
 			line = this->skip_empty_lines(data_stream);
-		} while (line.compare(0,6,"$Nodes") != 0 && data_stream.good());
+		} while (line.compare(0, 6, "$Nodes") != 0 && data_stream.good());
 
 		if (data_stream.bad())
 			return false;
@@ -271,10 +267,10 @@ protected:
 		}
 
 		line = this->skip_empty_lines(data_stream);
-		if (line.compare(0,9,"$EndNodes") != 0)
+		if (line.compare(0, 9, "$EndNodes") != 0)
 			return false;
 
-		while (data_stream.good() && line.compare(0,9,"$Elements") != 0)
+		while (data_stream.good() && line.compare(0, 9, "$Elements") != 0)
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
@@ -320,7 +316,7 @@ protected:
 		do
 		{
 			line = this->skip_empty_lines(data_stream);
-		} while (line.compare(0,6,"$Nodes") != 0 && data_stream.good());
+		} while (line.compare(0, 6, "$Nodes") != 0 && data_stream.good());
 
 		if (data_stream.bad())
 			return false;
@@ -336,14 +332,14 @@ protected:
 		{
 			const uint32 new_index = this->msh_insert_line_vertex_container();
 			auto& v = position->operator[](new_index);
-			using Scalar = decltype(v[0]);
+			using LocScalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
-			v[0] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[0] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[1] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[1] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
-			v[2] = Scalar(*reinterpret_cast<float64*>(&(*it)));
+			v[2] = LocScalar(*reinterpret_cast<float64*>(&(*it)));
 			it+=8;
 			if (this->need_endianness_swap())
 			{
@@ -356,10 +352,10 @@ protected:
 		}
 
 		line = this->skip_empty_lines(data_stream);
-		if (line.compare(0,9,"$EndNodes") != 0)
+		if (line.compare(0, 9, "$EndNodes") != 0)
 			return false;
 
-		while (data_stream.good() && line.compare(0,9,"$Elements") != 0)
+		while (data_stream.good() && line.compare(0, 9, "$Elements") != 0)
 			line = this->skip_empty_lines(data_stream);
 
 		line = this->skip_empty_lines(data_stream);
@@ -369,18 +365,18 @@ protected:
 
 		for (uint32 i = 0u; i < nb_volumes;)
 		{
-			std::array<char,12> header_buff;
+			std::array<char, 12> header_buff;
 			data_stream.read(&header_buff[0], header_buff.size());
 
-			int32 elem_type		= *reinterpret_cast<int32*>(&header_buff[0]);
-			int32 nb_elements	= *reinterpret_cast<int32*>(&header_buff[4]);
-			int32 nb_tags		= *reinterpret_cast<int32*>(&header_buff[8]);
+			int32 elem_type	  = *reinterpret_cast<int32*>(&header_buff[0]);
+			int32 nb_elements = *reinterpret_cast<int32*>(&header_buff[4]);
+			int32 nb_tags     = *reinterpret_cast<int32*>(&header_buff[8]);
 
 			if (this->need_endianness_swap())
 			{
-				elem_type	= swap_endianness(elem_type);
-				nb_elements	= swap_endianness(nb_elements);
-				nb_tags		= swap_endianness(nb_tags);
+				elem_type   = swap_endianness(elem_type);
+				nb_elements = swap_endianness(nb_elements);
+				nb_tags     = swap_endianness(nb_tags);
 			}
 
 			const uint32 nb_nodes = number_of_nodes(MSH_CELL_TYPES(elem_type));
@@ -410,6 +406,7 @@ protected:
 	}
 
 private:
+
 	void add_element(int32 elem_type, const std::vector<uint32>& node_ids)
 	{
 		switch (elem_type)
@@ -442,12 +439,12 @@ private:
 	{
 		switch(c)
 		{
-			case MSH_CELL_TYPES::MSH_TRIANGLE:	return 3u;
+			case MSH_CELL_TYPES::MSH_TRIANGLE: return 3u;
 			case MSH_CELL_TYPES::MSH_QUAD:
-			case MSH_CELL_TYPES::MSH_TETRA:		return 4u;
-			case MSH_CELL_TYPES::MSH_PYRAMID:	return 5u;
-			case MSH_CELL_TYPES::MSH_PRISM:		return 6u;
-			case MSH_CELL_TYPES::MSH_HEXA:		return 8u;
+			case MSH_CELL_TYPES::MSH_TETRA:    return 4u;
+			case MSH_CELL_TYPES::MSH_PYRAMID:  return 5u;
+			case MSH_CELL_TYPES::MSH_PRISM:    return 6u;
+			case MSH_CELL_TYPES::MSH_HEXA:     return 8u;
 			default:
 				cgogn_log_warning("number_of_nodes") << "MSH Element type with index \"" << c << "\" is not supported. Ignoring.";
 				return 0;
@@ -457,41 +454,38 @@ private:
 private:
 
 	std::string	version_number_;
-	int32		file_type_;
-	int32		float_size_; // sizeof(double) normally since the doc says "currently only data-size = sizeof(double) is supported"
-	bool		swap_endianness_;
+	int32       file_type_;
+	int32       float_size_; // sizeof(double) normally since the doc says "currently only data-size = sizeof(double) is supported"
+	bool        swap_endianness_;
 };
 
 
-template <typename VEC3>
-class MshSurfaceImport : public MshIO<CMap2::PRIM_SIZE, VEC3>, public SurfaceFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class MshSurfaceImport : public MshIO<VEC3>, public SurfaceFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = MshSurfaceImport<VEC3>;
-	using Inherit_Msh = MshIO<CMap2::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<VEC3>;
+	using Self = MshSurfaceImport<MAP, VEC3>;
+	using Inherit_Msh = MshIO<VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP, VEC3>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
-	inline MshSurfaceImport()
-	{}
-
+	inline MshSurfaceImport(MAP& map) : Inherit_Import(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshSurfaceImport);
+	virtual ~MshSurfaceImport() override {}
 
-	virtual ~MshSurfaceImport() override
-	{}
+protected:
 
 	// FileImport interface
-protected:
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		return this->import_msh_file(filename);
 	}
 
 	// MshIO interface
-	virtual ChunkArray<VEC3>*msh_position_attribute() override
+	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
 		return this->position_attribute();
 	}
@@ -501,10 +495,10 @@ protected:
 		return this->insert_line_vertex_container();
 	}
 
-	virtual void msh_clear() override
-	{
-		this->clear();
-	}
+//	virtual void msh_clear() override
+//	{
+//		this->clear();
+//	}
 
 	virtual void msh_reserve(uint32 n) override
 	{
@@ -527,27 +521,24 @@ protected:
 	}
 };
 
-template <typename VEC3>
-class MshVolumeImport : public MshIO<CMap3::PRIM_SIZE, VEC3>, public VolumeFileImport<VEC3>
+template <typename MAP, typename VEC3>
+class MshVolumeImport : public MshIO<VEC3>, public VolumeFileImport<MAP, VEC3>
 {
 public:
 
-	using Self = MshVolumeImport<VEC3>;
-	using Inherit_Msh = MshIO<CMap3::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<VEC3>;
+	using Self = MshVolumeImport<MAP, VEC3>;
+	using Inherit_Msh = MshIO<VEC3>;
+	using Inherit_Import = VolumeFileImport<MAP, VEC3>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
 
-	inline MshVolumeImport()
-	{}
-
+	inline MshVolumeImport(MAP& map) : Inherit_Import(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MshVolumeImport);
-
-	virtual ~MshVolumeImport() override
-	{}
+	virtual ~MshVolumeImport() override {}
 
 protected:
+
 	virtual bool import_file_impl(const std::string& filename) override
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in | std::ios::binary);
@@ -572,9 +563,10 @@ protected:
 		return false;
 	}
 
-	// MshIO interface
 protected:
-	virtual ChunkArray<VEC3>*msh_position_attribute() override
+
+	// MshIO interface
+	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
 		return this->position_attribute();
 	}
@@ -584,10 +576,10 @@ protected:
 		return this->insert_line_vertex_container();
 	}
 
-	virtual void msh_clear() override
-	{
-		this->clear();
-	}
+//	virtual void msh_clear() override
+//	{
+//		this->clear();
+//	}
 
 	virtual void msh_reserve(uint32 n) override
 	{
@@ -628,7 +620,7 @@ public:
 	using Inherit = VolumeExport<MAP>;
 	using Self = MshVolumeExport<MAP>;
 	using Map = typename Inherit::Map;
-	using MSH_CELL_TYPES = typename MshIO<Map::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
+	using MSH_CELL_TYPES = typename MshIO<Eigen::Vector3d>::MSH_CELL_TYPES;
 	using Vertex = typename Inherit::Vertex;
 	using Volume = typename Inherit::Volume;
 	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
@@ -637,7 +629,7 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
 		std::string scalar_type = pos->nested_type_name();
@@ -683,7 +675,7 @@ class MshSurfaceExport : public SurfaceExport<MAP>
 {
 public:
 
-	using MSH_CELL_TYPES = typename MshIO<MAP::PRIM_SIZE, Eigen::Vector3d>::MSH_CELL_TYPES;
+	using MSH_CELL_TYPES = typename MshIO<Eigen::Vector3d>::MSH_CELL_TYPES;
 	using Inherit = SurfaceExport<MAP>;
 	using Self = MshSurfaceExport<MAP>;
 	using Map = typename Inherit::Map;
@@ -696,7 +688,7 @@ protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		unused_parameters(option);
-		ChunkArrayGen const* pos = this->position_attribute();
+		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
 //		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 //		const std::string format = (option.binary_?"binary" :"ascii");
 //		std::string scalar_type = pos->nested_type_name();
@@ -719,13 +711,12 @@ protected:
 		const uint32 nb_faces = this->nb_faces();
 		output << nb_faces << std::endl;
 
-
 		uint32 cell_counter = 1u;
 		std::vector<uint32> vertices;
 		map.foreach_cell([&](Face f)
 		{
 			vertices.reserve(4u);
-			map.foreach_incident_vertex(f, [&] (Vertex v) {vertices.push_back(this->indices_[v] + 1u);});
+			map.foreach_incident_vertex(f, [&] (Vertex v) {vertices.push_back(this->vindices_[v] + 1u);});
 			const std::size_t nbv = vertices.size();
 			const MSH_CELL_TYPES type = (nbv == 3u)? MSH_CELL_TYPES::MSH_TRIANGLE :(nbv == 4u)?MSH_CELL_TYPES::MSH_QUAD: MSH_CELL_TYPES(0);
 			output << cell_counter++ << " " <<  type <<" 1 1 " <<  nbv <<" ";
@@ -741,18 +732,18 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MSH_IO_CPP_))
-extern template class CGOGN_IO_API MshIO<1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshIO<1, Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshIO<1, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API MshIO<Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshIO<Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshSurfaceImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshVolumeImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshVolumeImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API MshSurfaceExport<CMap2>;
 extern template class CGOGN_IO_API MshVolumeExport<CMap3>;

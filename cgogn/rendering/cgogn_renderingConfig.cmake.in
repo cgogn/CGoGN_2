@@ -2,7 +2,7 @@
 
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 set(cgogn_rendering_LIBRARIES "cgogn_rendering")
 set(cgogn_rendering_INCLUDE_DIRS "@PACKAGE_CGOGN_RENDERING_INCLUDE_DIRS@")
@@ -12,3 +12,4 @@ if(NOT TARGET cgogn_rendering)
 endif()
 
 check_required_components(cgogn_core cgogn_geometry Qt5::Widgets)
+

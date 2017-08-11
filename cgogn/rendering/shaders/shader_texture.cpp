@@ -32,7 +32,7 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderTexture> ShaderTexture::instance_ = nullptr;
+ShaderTexture* ShaderTexture::instance_ = nullptr;
 
 const char* ShaderTexture::vertex_shader_source_ =
 "#version 150\n"
@@ -95,7 +95,7 @@ void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
-	// color  vbo
+	// texcoord vbo
 	vbo_tc->bind();
 	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_TC);
 	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_TC, vbo_tc->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);

@@ -70,7 +70,7 @@ public:
 protected:
 
 	ShaderSimpleColor();
-	static std::unique_ptr<ShaderSimpleColor> instance_;
+	static ShaderSimpleColor* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamSimpleColor : public ShaderParam
@@ -84,6 +84,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderSimpleColor;
 
 	QColor color_;
 
