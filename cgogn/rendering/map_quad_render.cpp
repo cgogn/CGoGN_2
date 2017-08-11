@@ -48,39 +48,6 @@ MapQuadRender::draw()
     indices_buffers_->release();
 }
 
-//void MapQuadRender::draw(DrawingType prim)
-//{
-//	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-
-//	indices_buffers_[prim]->bind();
-//	switch (prim)
-//	{
-//		case POINTS:
-//			ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
-//			break;
-//		case LINES:
-//			ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
-//			break;
-//		case TRIANGLES:
-//			ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
-//			break;
-//		case BOUNDARY:
-//			switch (boundary_dimension_)
-//			{
-//				case 1:
-//					ogl->glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
-//					break;
-//				case 2:
-//					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
-//					break;
-//			}
-//			break;
-//		default:
-//			break;
-//	}
-//	indices_buffers_[prim]->release();
-//}
-
 } // namespace rendering
 
 } // namespace cgogn
