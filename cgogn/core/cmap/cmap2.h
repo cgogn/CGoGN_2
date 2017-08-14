@@ -1220,36 +1220,26 @@ public:
 			darts->push_back(phi2(f_it)) ;
 
 			if (this->template is_embedded<Vertex>())
-			{
 				v_emb->push_back(this->embedding(Vertex(phi2(f_it))));
-			}
 
 			if(this->template is_embedded<Edge>())
-			{
 				e_emb->push_back(this->embedding(Edge(f_it)));
-			}
 
 			f_it = this->phi1(f_it);
 		}while(f_it != d);
 
 		if(this->template is_embedded<Volume>())
-		{
 			this->template set_orbit_embedding<Volume>(Volume(e), this->embedding(Volume(d)));
-		}
 
 		merge_volumes_topo(d, e);
 
 		for(uint32 i = 0 ; i < darts->size() ; ++i)
 		{
 			if(this->template is_embedded<Vertex>())
-			{
 				this->template set_orbit_embedding<Vertex>(Vertex((*darts)[i]), (*v_emb)[i]);
-			}
 
 			if(this->template is_embedded<Edge>())
-			{
 				this->template set_orbit_embedding<Edge>(Edge((*darts)[i]), (*e_emb)[i]);
-			}
 		}
 
 		dart_buffers()->release_buffer(darts);

@@ -92,7 +92,7 @@ public:
 		return p_min_;
 	}
 
-	inline void min(uint32 d, Scalar v)
+	inline void set_min(uint32 d, Scalar v)
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		cgogn_assert(d < dim_);
@@ -111,7 +111,7 @@ public:
 		return p_max_;
 	}
 
-	inline void max(uint32 d, Scalar v)
+	inline void set_max(uint32 d, Scalar v)
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		cgogn_assert(d < dim_);
@@ -272,6 +272,47 @@ public:
 		p_max_ = ((p_max_ - center) * size) + center;
 	}
 
+	/// \brief Test if a ray intersectes an axis-aligned box
+	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+	auto ray_intersect(const Vec& P, const Vec& V) const
+	  -> enable_if<nb_components_traits<Vec>::value == 3, bool>
+	{
+		Vec aabb_min = aabb.min();
+		Vec aabb_max = aabb.max();
+
+		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
+		{
+			Vec Q = P + ((aabb_min[2] - P[2]) / V[2]) * V;
+			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
+				return true;
+			Q = P + ((aabb_max[2] - P[2]) / V[2]) * V;
+			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
+				return true;
+		}
+
+		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
+		{
+			Vec Q = P + ((aabb_min[1] - P[1]) / V[1]) * V;
+			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+				return true;
+			Q = P + ((aabb_max[1] - P[1]) / V[1]) * V;
+			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+				return true;
+		}
+
+		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
+		{
+			Vec Q = P + ((aabb_min[0] - P[0]) / V[0]) * V;
+			if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+				return true;
+			Q = P + ((aabb_max[0] - P[0]) / V[0]) * V;
+			if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+				return true;
+		}
+
+		return false;
+	}
+
 	static std::string cgogn_name_of_type()
 	{
 		return std::string("cgogn::geometry::AABB<") + name_of_type(Vec()) + std::string(">");
@@ -291,50 +332,6 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 	in >> bb.min() >> bb.max();
 	return in;
 }
-
-/// \brief Test if a ray intersectes an axis-aligned box
-/// \tparam VEC3 the domain of the box. Has to be of dimension 3
-template <typename VEC3, typename std::enable_if<(nb_components_traits<VEC3>::value == 3)>::type* = nullptr>
-inline bool ray_intersect(const AABB<VEC3>& aabb, const VEC3& P, const VEC3& V)
-{
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-
-	VEC3 aabb_min = aabb.min();
-	VEC3 aabb_max = aabb.max();
-
-	if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
-	{
-		VEC3 Q = P + ((aabb_min[2] - P[2]) / V[2]) * V;
-		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
-			return true;
-		Q = P + ((aabb_max[2] - P[2]) / V[2]) * V;
-		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
-			return true;
-	}
-
-	if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
-	{
-		VEC3 Q = P + ((aabb_min[1] - P[1]) / V[1]) * V;
-		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
-			return true;
-		Q = P + ((aabb_max[1] - P[1]) / V[1]) * V;
-		if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
-			return true;
-	}
-
-	if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
-	{
-		VEC3 Q = P + ((aabb_min[0] - P[0]) / V[0]) * V;
-		if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
-			return true;
-		Q = P + ((aabb_max[0] - P[0]) / V[0]) * V;
-		if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
-			return true;
-	}
-
-	return false;
-}
-
 
 /// \brief Computes the smallest axis-aligned box that encloses two AABBs.
 /// \tparam VEC_T the domain of the box
