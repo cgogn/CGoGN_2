@@ -275,38 +275,35 @@ public:
 	/// \brief Test if a ray intersectes an axis-aligned box
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> enable_if<nb_components_traits<Vec>::value == 3, bool>
+	  -> typename std::enable_if<nb_components_traits<Vec>::value == 3, bool>::type
 	{
-		Vec aabb_min = aabb.min();
-		Vec aabb_max = aabb.max();
-
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{
-			Vec Q = P + ((aabb_min[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
+			Vec Q = P + ((p_min_[2] - P[2]) / V[2]) * V;
+			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
 				return true;
-			Q = P + ((aabb_max[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]))
+			Q = P + ((p_max_[2] - P[2]) / V[2]) * V;
+			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
 				return true;
 		}
 
 		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
 		{
-			Vec Q = P + ((aabb_min[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+			Vec Q = P + ((p_min_[1] - P[1]) / V[1]) * V;
+			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
 				return true;
-			Q = P + ((aabb_max[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < aabb_max[0]) && (Q[0] > aabb_min[0]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+			Q = P + ((p_max_[1] - P[1]) / V[1]) * V;
+			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
 				return true;
 		}
 
 		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
 		{
-			Vec Q = P + ((aabb_min[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+			Vec Q = P + ((p_min_[0] - P[0]) / V[0]) * V;
+			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
 				return true;
-			Q = P + ((aabb_max[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < aabb_max[1]) && (Q[1] > aabb_min[1]) && (Q[2] < aabb_max[2]) && (Q[2] > aabb_min[2]))
+			Q = P + ((p_max_[0] - P[0]) / V[0]) * V;
+			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
 				return true;
 		}
 
