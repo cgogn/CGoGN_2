@@ -59,7 +59,7 @@ public:
 	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
 
-	Plane3D() = delete;
+	inline Plane3D() {}
 	Plane3D(const Self&) = default;
 	Self& operator=(const Self&) = default;
 

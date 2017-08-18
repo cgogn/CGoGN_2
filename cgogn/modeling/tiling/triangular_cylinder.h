@@ -116,6 +116,15 @@ public:
 		Dart f = mbuild.close_hole_topo(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->vertex_table_[(this->nx_)*(this->ny_) - 1].dart))));
 		mbuild.boundary_mark(Face(f));
 
+		//add last row of edges to table
+		f = this->map_.phi2(this->map_.phi_1(this->map_.phi2(this->map_.phi1(this->edge_table_[this->edge_table_.size()-this->nx_].dart))));
+		Dart it = f;
+		do
+		{
+			this->edge_table_.push_back(Edge(it));
+			it = this->map_.phi1(it);
+		}while(it != f);
+
 		// close bottom
 		Dart f2 = mbuild.close_hole_topo(this->dart_);
 		mbuild.boundary_mark(Face(f2));
