@@ -14,6 +14,7 @@ namespace modeling
 {
 
 template <typename MAP,typename VEC>
+
 class ParallelogramGrid : public Tiling<MAP>
 {
     using Map2 = cgogn::CMap2;
@@ -145,17 +146,15 @@ public:
             edgeQueue.pop() ;
         }
 
-        // Mark boundary faces
-        // mbuild.boundary_mark(f) ;
-
         // close boundary
         mbuild.close_map() ;
-        this->map_.check_embedding_integrity() ;
+        cgogn_ensure(this->map_.check_embedding_integrity()) ;
+
+//        uint nbV = this->map_.template nb_cells<Vertex::ORBIT>();
+//        uint nbF = this->map_.template nb_cells<Face::ORBIT>();
+//        std::cout << "Nb Vertices: " << nbV << std::endl ;
+//        std::cout << "Nb Faces: " << nbF << std::endl ;
     }
-
-
-
-
 
 //    Orient sew_FaceEdge(MapBuilder& mbuild, /*const DartAttribute<DartDir>& dart_orientation,*/ const Face& f0, const Edge& e0)
 //    {
