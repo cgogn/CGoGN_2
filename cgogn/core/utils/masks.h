@@ -153,6 +153,14 @@ public:
 		return qt_attributes_[ORBIT].end();
 	}
 
+    template <typename CellType>
+    inline CellType cell_from_index(uint32 index)
+    {
+        static const Orbit ORBIT = CellType::ORBIT;
+        cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
+        return CellType(qt_attributes_[ORBIT][index]);
+    }
+
 	template <typename CellType, typename DartSelectionFunction>
 	inline void build(const DartSelectionFunction& dart_select)
 	{
@@ -175,7 +183,7 @@ public:
 	{
 		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		cgogn_message_assert(qt_attributes_[ORBIT].is_valid(), "Try to update a cell on a QuickTraversor that has not been built");
+        cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
 		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 
