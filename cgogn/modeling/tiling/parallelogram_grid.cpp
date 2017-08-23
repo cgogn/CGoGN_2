@@ -21,33 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
+#define CGOGN_MODELING_TILING_SQUARE_GRID_CPP_
 
-#include <cgogn/rendering/map_quad_render.h>
+#include <cgogn/modeling/tiling/parallelogram_grid.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace modeling
 {
 
-MapQuadRender::MapQuadRender()
-{
-    indices_buffers_ = make_unique<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
-    indices_buffers_->setUsagePattern(QOpenGLBuffer::StaticDraw);
-}
+template class CGOGN_MODELING_API ParallelogramGrid<CMap2,Eigen::Vector2d>;
 
-MapQuadRender::~MapQuadRender()
-{}
-
-void
-MapQuadRender::draw()
-{
-    QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-    indices_buffers_->bind();
-    ogl->glDrawElements(GL_LINES_ADJACENCY, nb_indices_, GL_UNSIGNED_INT, 0);
-    indices_buffers_->release();
-}
-
-} // namespace rendering
+} // namespace modeling
 
 } // namespace cgogn
