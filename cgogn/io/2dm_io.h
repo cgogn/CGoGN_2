@@ -101,44 +101,84 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		// lecture des faces
+        this->faces_nb_edges_.reserve(vertices_id.size() * 2);
+        this->faces_vertex_indices_.reserve(vertices_id.size() * 8);
 
-		fp.clear();
-		fp.seekg(0, std::ios::beg);
+        // lecture des faces TRI
 
-		do
-		{
-			fp >> tag;
-			getline_safe(fp, line);
-		} while (tag != std::string("E4Q"));
+        fp.clear();
+        fp.seekg(0, std::ios::beg);
 
-		this->faces_nb_edges_.reserve(vertices_id.size() * 2);
-		this->faces_vertex_indices_.reserve(vertices_id.size() * 8);
+        do
+        {
+            fp >> tag;
+            getline_safe(fp, line);
+        } while (tag != std::string("E3T") && (!fp.eof()));
 
-		do
-		{
-			if (tag == std::string("E4Q")) // lecture d'une face
-			{
-				std::stringstream oss(line);
+        if (tag == "E3T")
+        {
+            do
+            {
+                if (tag == std::string("E3T")) // lecture d'une face
+                {
+                    std::stringstream oss(line);
 
-				uint32 id, v1, v2, v3, v4, matid;
-				oss >> id;
-				oss >> v1;
-				oss >> v2;
-				oss >> v3;
-				oss >> v4;
-				oss >> matid;
+                    uint32 id, v1, v2, v3, matid;
+                    oss >> id;
+                    oss >> v1;
+                    oss >> v2;
+                    oss >> v3;
+                    oss >> matid;
 
-				this->faces_nb_edges_.push_back(4);
-				this->faces_vertex_indices_.push_back(vertices_id[v1-1]);
-				this->faces_vertex_indices_.push_back(vertices_id[v2-1]);
-				this->faces_vertex_indices_.push_back(vertices_id[v3-1]);
-				this->faces_vertex_indices_.push_back(vertices_id[v4-1]);
-			}
+                    this->faces_nb_edges_.push_back(3);
+                    this->faces_vertex_indices_.push_back(vertices_id[v1-1]);
+                    this->faces_vertex_indices_.push_back(vertices_id[v2-1]);
+                    this->faces_vertex_indices_.push_back(vertices_id[v3-1]);
+                }
 
-			fp >> tag;
-			getline_safe(fp, line);
-		} while (!fp.eof());
+                fp >> tag;
+                getline_safe(fp, line);
+            } while (!fp.eof());
+        }
+
+        // lecture des faces QUAD
+
+        fp.clear();
+        fp.seekg(0, std::ios::beg);
+
+        do
+        {
+            fp >> tag;
+            getline_safe(fp, line);
+        } while (tag != std::string("E4Q") && (!fp.eof()));
+
+        if (tag == "E4Q")
+        {
+            do
+            {
+                if (tag == std::string("E4Q")) // lecture d'une face
+                {
+                    std::stringstream oss(line);
+
+                    uint32 id, v1, v2, v3, v4, matid;
+                    oss >> id;
+                    oss >> v1;
+                    oss >> v2;
+                    oss >> v3;
+                    oss >> v4;
+                    oss >> matid;
+
+                    this->faces_nb_edges_.push_back(4);
+                    this->faces_vertex_indices_.push_back(vertices_id[v1-1]);
+                    this->faces_vertex_indices_.push_back(vertices_id[v2-1]);
+                    this->faces_vertex_indices_.push_back(vertices_id[v3-1]);
+                    this->faces_vertex_indices_.push_back(vertices_id[v4-1]);
+                }
+
+                fp >> tag;
+                getline_safe(fp, line);
+            } while (!fp.eof());
+        }
 
 		return true;
 	}
