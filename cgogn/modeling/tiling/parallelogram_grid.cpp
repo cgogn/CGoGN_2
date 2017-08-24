@@ -31,7 +31,7 @@ namespace cgogn
 namespace modeling
 {
 
-template class CGOGN_MODELING_API ParallelogramGrid<CMap2,Eigen::Vector2d>;
+//template class CGOGN_MODELING_API ParallelogramGrid<CMap2,Eigen::Vector2d>;
 
 } // namespace modeling
 
