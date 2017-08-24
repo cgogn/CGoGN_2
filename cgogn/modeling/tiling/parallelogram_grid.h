@@ -55,10 +55,11 @@ protected:
 protected:
     MAP& map_ ;
     Dart dart_ ;
-    const VEC& p_ ;
-    const VEC& Ti_ ;
-    const VEC& Tj_ ;
     const geometry::AABB<VEC>& area_ ;
+
+    VEC p_ ;
+    VEC Ti_ ;
+    VEC Tj_ ;
 
     DartAttribute<DartOrient> dart_orientation_ ;
     VertexAttribute<VEC> vertex_position_ ;
@@ -97,8 +98,13 @@ public:
         Tj_ = Tj ;
         cgogn_assert(area_.contains(p)) ;
 
-        vertex_position_ = map_.template add_attribute<VEC, Vertex>("position") ;
-        dart_orientation_ = map_.template add_attribute<DartOrient, CDart>("dartOrient");
+        vertex_position_ = map_.template get_attribute<VEC, Vertex>("position") ;
+        if (!vertex_position_.is_valid())
+            vertex_position_ = map_.template add_attribute<VEC, Vertex>("position") ;
+
+        dart_orientation_ = map_.template get_attribute<DartOrient, CDart>("dartOrient");
+        if (!dart_orientation_.is_valid())
+            dart_orientation_ = map_.template add_attribute<DartOrient, CDart>("dartOrient");
 
         MapBuilder mbuild(map_);
 
@@ -110,10 +116,10 @@ public:
         const Face f0 = Face(d0) ;
 
         // Embed vertices of face
-        const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, f0, p, Ti, Tj) ;
+        const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, f0, p) ;
 
         std::queue<Edge> edgeQueue ; // list of edges to treat
-        queueFreeEdges(f0,edgeQueue, f_bbox, area_) ;
+        queueFreeEdges(f0,edgeQueue,f_bbox) ;
 
         while(!edgeQueue.empty())
         {
@@ -163,9 +169,9 @@ public:
                 }
 
                 // Embed new face's geometry
-                const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, newFace, p_ref, Ti, Tj) ;
+                const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, newFace, p_ref) ;
                 // Add edges that are free
-                queueFreeEdges(newFace, edgeQueue, f_bbox, area_) ;
+                queueFreeEdges(newFace, edgeQueue, f_bbox) ;
             }
 
             edgeQueue.pop() ;
