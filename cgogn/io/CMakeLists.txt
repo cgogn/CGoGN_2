@@ -12,6 +12,8 @@ set(HEADER_FILES
 	volume_import.h
 	map_import.h
 	map_export.h
+	graph_import.h
+	graph_export.h
 	import_ply_data.h
 	io_utils.h
 	data_io.h
@@ -24,6 +26,12 @@ set(HEADER_FILES
 	ply_io.h
 	lm6_io.h
 	stl_io.h
+	io_cg.h
+	io_cskel.h
+	io_dot.h
+	io_obj.h
+	io_skel.h
+	io_vtk.h
 	mesh_io_gen.h
 	msh_io.h
 	tetgen_io.h
@@ -37,6 +45,8 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	map_export.cpp
 	map_import.cpp
+	graph_export.cpp
+	graph_import.cpp
 	surface_import.cpp
 	surface_export.cpp
 	volume_import.cpp
@@ -56,6 +66,12 @@ set(SOURCE_FILES
 	nastran_io.cpp
 	tet_io.cpp
 	tetmesh_io.cpp
+	io_cg.cpp
+	io_cskel.cpp
+#	io_dot.cpp
+	io_obj.cpp
+	io_skel.cpp
+	io_vtk.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
