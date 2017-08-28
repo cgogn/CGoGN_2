@@ -100,8 +100,8 @@ protected:
 		m.foreach_cell([&] (Edge e)
 		{
 			std::pair<Vertex, Vertex> vs = m.vertices(e);
-			table_indices.push_back(m.embedding(vs.first);
-			table_indices.push_back(m.embedding(vs.second);
+			table_indices.push_back(m.embedding(vs.first));
+			table_indices.push_back(m.embedding(vs.second));
 		},
 		mask);
 	}
