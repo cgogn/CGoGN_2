@@ -19,27 +19,27 @@ set(HEADER_FILES
 	data_io.h
 	dll.h
 	c_locale.h
-	vtk_io.h
-	off_io.h
-	obj_io.h
-	2dm_io.h
-	ply_io.h
-	lm6_io.h
-	stl_io.h
-	io_cg.h
-	io_cskel.h
-	io_dot.h
-	io_obj.h
-	io_skel.h
-	io_vtk.h
 	mesh_io_gen.h
-	msh_io.h
-	tetgen_io.h
-	nastran_io.h
-	tet_io.h
-	tetmesh_io.h
 	surface_export.h
-	volume_export.h
+	volume_export.hformats/
+	formats/vtk_io.h
+	formats/off_io.h
+	formats/obj_io.h
+	formats/2dm_io.h
+	formats/ply_io.h
+	formats/lm6_io.h
+	formats/stl_io.h
+	formats/io_cg.h
+	formats/io_cskel.h
+	formats/io_dot.h
+	formats/io_obj.h
+	formats/io_skel.h
+	formats/io_vtk.h
+	formats/msh_io.h
+	formats/tetgen_io.h
+	formats/nastran_io.h
+	formats/tet_io.h
+	formats/tetmesh_io.h
 )
 
 set(SOURCE_FILES
@@ -54,24 +54,24 @@ set(SOURCE_FILES
 	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
-	vtk_io.cpp
-	lm6_io.cpp
-	msh_io.cpp
-	obj_io.cpp
-	2dm_io.cpp
-	off_io.cpp
-	ply_io.cpp
-	stl_io.cpp
-	tetgen_io.cpp
-	nastran_io.cpp
-	tet_io.cpp
-	tetmesh_io.cpp
-	io_cg.cpp
-	io_cskel.cpp
-#	io_dot.cpp
-	io_obj.cpp
-	io_skel.cpp
-	io_vtk.cpp
+	formats/vtk_io.cpp
+	formats/lm6_io.cpp
+	formats/msh_io.cpp
+	formats/obj_io.cpp
+	formats/2dm_io.cpp
+	formats/off_io.cpp
+	formats/ply_io.cpp
+	formats/stl_io.cpp
+	formats/tetgen_io.cpp
+	formats/nastran_io.cpp
+	formats/tet_io.cpp
+	formats/tetmesh_io.cpp
+	formats/io_cg.cpp
+	formats/io_cskel.cpp
+#	formats/io_dot.cpp
+	formats/io_obj.cpp
+	formats/io_skel.cpp
+	formats/io_vtk.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
