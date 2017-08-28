@@ -212,19 +212,6 @@ protected:
 		return first;
 	}
 
-public:
-	inline Vertex add_vertex()
-	{
-		const Vertex v(add_vertex_topo(1));
-
-		if(this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(v);
-
-		return v;
-	}
-
-
-protected:
 	inline void remove_vertex_topo(Dart d)
 	{
 		Dart it = alpha1(d);
@@ -240,13 +227,6 @@ protected:
 		this->remove_topology_element(d);
 	}
 
-public:
-	inline void remove_vertex(Vertex v)
-	{
-		remove_vertex_topo(v.dart);
-	}
-
-protected:
 	inline Dart insert_vertex_topo(Dart d)
 	{
 		Dart d0 = alpha0(d);
@@ -300,29 +280,6 @@ public:
 	}
 
 protected:
-	inline Dart add_vertex_topo(Dart d)
-	{
-		Dart e = alpha0(d);
-
-		Dart v = add_vertex_topo(2);
-		alpha0_sew(d, v);
-		alpha0_sew(e, alpha1(v));
-
-		return v;
-	}
-
-public:
-	inline Vertex add_vertex(Edge e)
-	{
-		Vertex v(add_vertex_topo(e.dart));
-
-		if(this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(v);
-
-		return v;
-	}
-
-protected:
 	inline Dart add_edge_topo()
 	{
 		Dart d = this->add_topology_element();
@@ -351,54 +308,7 @@ public:
 	}
 
 protected:
-	inline Dart add_edge_topo(Dart d)
-	{
-		Dart e = add_edge_topo();
-
-		alpha1_sew(d, e);
-
-		return alpha0(e);
-	}
-
-public:
-	inline Vertex add_edge(Vertex v)
-	{
-		Vertex nv(add_edge_topo(v.dart));
-
-		if(this->template is_embedded<Vertex>())
-		{
-			this->new_orbit_embedding(nv);
-			this->template copy_embedding<Vertex>(alpha0(nv.dart), v.dart);
-		}
-
-		if(this->template is_embedded<Edge>())
-			this->new_orbit_embedding(Edge(nv.dart));
-
-		return nv;
-	}
-
-protected:
-	inline Dart connect_vertices_topo(Dart d, Dart e)
-	{
-		alpha1_sew(d, e);
-
-		return d;
-	}
-
-public:
-
-	inline Vertex connect_vertices(Vertex v1, Vertex v2)
-	{
-		Vertex v(connect_vertices_topo(v1.dart, v2.dart));
-
-		if(this->template is_embedded<Vertex>())
-			this->template copy_embedding<Vertex>(v2.dart, v1.dart);
-
-		return v;
-	}
-
-protected:
-	inline void disconnect_edge(Dart e)
+	inline void disconnect_edge_topo(Dart e)
 	{
 		alpha1_unsew(e);
 	}
@@ -406,16 +316,15 @@ protected:
 public:
 	inline void disconnect_edge(Edge e)
 	{
-		disconnect_edge(e.dart);
+		disconnect_edge_topo(e.dart);
 		if(this->template is_embedded<Vertex>())
 		{
 			this->new_orbit_embedding(Vertex(e.dart));			
 		}
 	}
 
-
 protected:
-	inline Dart collapse_edge(Dart e)
+	inline Dart collapse_edge_topo(Dart e)
 	{
 		Dart e0 = alpha0(e);
 		Dart e1 = alpha1(e);
@@ -434,7 +343,7 @@ protected:
 public:
 	inline Vertex collapse_edge(Edge e)
 	{
-		Vertex v(collapse_edge(e.dart));
+		Vertex v(collapse_edge_topo(e.dart));
 		if(this->template is_embedded<Vertex>())
 		{
 			this->template set_orbit_embedding<Vertex>(v, this->embedding(v));
@@ -447,13 +356,17 @@ public:
 	inline Vertex make_polyline(uint32 n)
 	{
 		Vertex last;
-		Vertex result;
 
 		for(uint32 i = 0; i < n - 1; ++i)
 		{
 			Edge cur = add_edge();
 			if(last.is_valid())
-				result = connect_vertices(last, Vertex(cur.dart));
+			{
+				alpha1_sew(last.dart, cur.dart);
+
+				if(this->template is_embedded<Vertex>())
+					this->template copy_embedding<Vertex>(cur.dart, last.dart);
+			}
 			last = Vertex(alpha0(cur.dart));
 		}
 
@@ -469,13 +382,21 @@ public:
 		{
 			Edge cur = add_edge();
 			if(last.is_valid())
-				connect_vertices(last, Vertex(cur.dart));
+			{
+				alpha1_sew(last.dart, cur.dart);
+
+				if(this->template is_embedded<Vertex>())
+					this->template copy_embedding<Vertex>(cur.dart, last.dart);
+			}
 			else
 				first = Vertex(cur.dart);
 
 			last = Vertex(alpha0(cur.dart));
 		}
-		connect_vertices(first, last);
+		alpha1_sew(first.dart, last.dart);
+
+		if(this->template is_embedded<Vertex>())
+			this->template copy_embedding<Vertex>(last.dart, first.dart);
 
 		return first;
 	}
@@ -493,6 +414,7 @@ public:
 	{
 		return this->nb_darts_of_orbit(v);
 	}
+
 public:
 	/*******************************************************************************
 	* Orbits traversal                                                             *
