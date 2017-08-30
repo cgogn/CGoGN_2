@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_VTK_G_IO_CPP_
+#define CGOGN_IO_OBJ_IO_CPP_
 
-#include <cgogn/io/io_vtk.h>
+#include <cgogn/io/obj_io.h>
 
 namespace cgogn
 {
@@ -31,14 +31,19 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_API VtkGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API VtkGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API VtkGraphExport<UndirectedGraph>;
+template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3d>;
+template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3f>;
+template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
+template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
 
+template class CGOGN_IO_API ObjGraphExport<UndirectedGraph>;
 } // namespace io
 
 } // namespace cgogn
