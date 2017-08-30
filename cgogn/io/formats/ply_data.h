@@ -22,8 +22,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef _IMPORT_PLY_DATA_H
-#define _IMPORT_PLY_DATA_H
+#ifndef CGOGN_IO_FORMATS_PLY_DATA_H_
+#define CGOGN_IO_FORMATS_PLY_DATA_H_
 
 #include <cstdio>
 #include <cmath>

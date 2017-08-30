@@ -14,14 +14,12 @@ set(HEADER_FILES
 	map_export.h
 	graph_import.h
 	graph_export.h
-	import_ply_data.h
 	io_utils.h
-	data.h
 	dll.h
 	c_locale.h
 	mesh_io_gen.h
 	surface_export.h
-	volume_export.hformats/
+	volume_export.h
 	formats/2dm.h
 	formats/dot.h
 	formats/cg.h
@@ -32,6 +30,7 @@ set(HEADER_FILES
 	formats/obj.h
 	formats/off.h
 	formats/ply.h
+	formats/ply_data.h
 	formats/skel.h
 	formats/stl.h
 	formats/tet.h
@@ -49,7 +48,6 @@ set(SOURCE_FILES
 	surface_export.cpp
 	volume_import.cpp
 	volume_export.cpp
-	import_ply_data.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
 	formats/2dm.cpp
@@ -62,6 +60,7 @@ set(SOURCE_FILES
 	formats/obj.cpp
 	formats/off.cpp
 	formats/ply.cpp
+	formats/ply_data.cpp
 	formats/skel.cpp
 	formats/stl.cpp
 	formats/tet.cpp

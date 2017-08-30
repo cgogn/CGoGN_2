@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_OBJ_IO_CPP_
+#define CGOGN_IO_FORMATS_OBJ_CPP_
 
-#include <cgogn/io/obj_io.h>
+#include <cgogn/io/formats/obj.h>
 
 namespace cgogn
 {

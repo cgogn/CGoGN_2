@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_CG_IO_CPP_
+#define CGOGN_IO_FORMATS_CG_CPP_
 
-#include <cgogn/io/io_cg.h>
+#include <cgogn/io/formats/cg.h>
 
 namespace cgogn
 {

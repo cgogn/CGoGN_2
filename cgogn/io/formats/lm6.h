@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_LM6_IO_H_
-#define CGOGN_IO_LM6_IO_H_
+#ifndef CGOGN_IO_FORMATS_LM6_H_
+#define CGOGN_IO_FORMATS_LM6_H_
 
 #include <libmesh6.h>
 #include <cgogn/io/volume_import.h>
@@ -228,7 +228,7 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_LM6_CPP_))
 extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3d>;
 extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3f>;
 extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
@@ -236,10 +236,10 @@ extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::a
 
 extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3f>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_LM6_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_LM6_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_LM6_IO_H_
+#endif // CGOGN_IO_FORMATS_LM6_H_

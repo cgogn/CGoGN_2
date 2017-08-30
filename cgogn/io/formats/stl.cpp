@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_STL_IO_CPP_
+#define CGOGN_IO_FORMATS_STL_CPP_
 
-#include <cgogn/io/stl_io.h>
+#include <cgogn/io/formats/stl.h>
 
 namespace cgogn
 {

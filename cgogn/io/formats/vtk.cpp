@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_VTK_IO_CPP_
+#define CGOGN_IO_FORMATS_VTK_CPP_
 
-#include <cgogn/io/vtk_io.h>
+#include <cgogn/io/formats/vtk.h>
 #include <cctype>
 
 namespace cgogn

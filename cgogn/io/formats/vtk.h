@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_VTK_IO_H_
-#define CGOGN_IO_VTK_IO_H_
+#ifndef CGOGN_IO_FORMATS_VTK_H_
+#define CGOGN_IO_FORMATS_VTK_H_
 
 #include <istream>
 #include <sstream>
@@ -1977,7 +1977,7 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_VTK_CPP_))
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
@@ -1994,10 +1994,10 @@ extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API VtkGraphExport<UndirectedGraph>;
 
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VTK_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_VTK_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_VTK_IO_H_
+#endif // CGOGN_IO_FORMATS_VTK_H_

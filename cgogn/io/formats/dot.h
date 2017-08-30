@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_DOT_IO_H_
-#define CGOGN_IO_DOT_IO_H_
+#ifndef CGOGN_IO_FORMATS_DOT_H_
+#define CGOGN_IO_FORMATS_DOT_H_
 
 #include <set>
 
@@ -108,17 +108,17 @@ protected:
 };
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DOT_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_DOT_CPP_))
 extern template class CGOGN_IO_API DotGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API DotGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API DotGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API DotGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 //extern template class CGOGN_IO_API DotGraphExport<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_DOT_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_DOT_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_DOT_IO_H_
+#endif // CGOGN_IO_FORMATS_DOT_H_

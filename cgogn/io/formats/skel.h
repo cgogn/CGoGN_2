@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_SKEL_IO_H_
-#define CGOGN_IO_SKEL_IO_H_
+#ifndef CGOGN_IO_FORMATS_SKEL_H_
+#define CGOGN_IO_FORMATS_SKEL_H_
 
 #include <set>
 
@@ -193,18 +193,18 @@ protected:
     }
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SKELL_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_SKELL_CPP_))
 extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API SkelGraphExport<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SKELL_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_SKELL_CPP_))
 
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_SKEL_IO_H_
+#endif // CGOGN_IO_FORMATS_SKEL_H_

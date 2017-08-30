@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_TET_IO_CPP_
+#define CGOGN_IO_FORMATS_TET_CPP_
 
-#include <cgogn/io/tet_io.h>
+#include <cgogn/io/formats/tet.h>
 
 namespace cgogn
 {

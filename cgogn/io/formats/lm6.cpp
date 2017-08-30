@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_LM6_IO_CPP_
+#define CGOGN_IO_FORMATS_LM6_CPP_
 
-#include <cgogn/io/lm6_io.h>
+#include <cgogn/io/formats/lm6.h>
 
 namespace cgogn
 {

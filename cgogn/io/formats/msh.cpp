@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_MSH_IO_CPP_
+#define CGOGN_IO_FORMATS_MSH_CPP_
 
-#include <cgogn/io/msh_io.h>
+#include <cgogn/io/formats/msh.h>
 
 namespace cgogn
 {

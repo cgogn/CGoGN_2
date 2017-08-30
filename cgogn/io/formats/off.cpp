@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_OFF_IO_CPP_
+#define CGOGN_IO_FORMATS_OFF_CPP_
 
-#include <cgogn/io/off_io.h>
+#include <cgogn/io/formats/off.h>
 
 namespace cgogn
 {

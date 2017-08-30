@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_PLY_IO_CPP_
+#define CGOGN_IO_FORMATS_PLY_CPP_
 
-#include <cgogn/io/ply_io.h>
+#include <cgogn/io/formats/ply.h>
 
 namespace cgogn
 {

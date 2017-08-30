@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_OFF_IO_H_
-#define CGOGN_IO_OFF_IO_H_
+#ifndef CGOGN_IO_FORMATS_OFF_H_
+#define CGOGN_IO_FORMATS_OFF_H_
 
 #include <cgogn/core/cmap/cmap3.h>
 
@@ -373,16 +373,16 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_OFF_CPP_))
 extern template class CGOGN_IO_API OffSurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_API OffSurfaceImport<CMap2, Eigen::Vector3f>;
 extern template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 extern template class CGOGN_IO_API OffSurfaceExport<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_OFF_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_OFF_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_OFF_IO_H_
+#endif // CGOGN_IO_FORMATS_OFF_H_

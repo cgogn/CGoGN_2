@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_TETMESH_IO_CPP_
+#define CGOGN_IO_FORMATS_TETMESH_CPP_
 
-#include <cgogn/io/tetmesh_io.h>
+#include <cgogn/io/formats/tetmesh.h>
 
 namespace cgogn
 {

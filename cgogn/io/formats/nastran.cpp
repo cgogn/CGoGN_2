@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_NASTRAN_IO_CPP_
+#define CGOGN_IO_FORMATS_NASTRAN_CPP_
 
-#include <cgogn/io/nastran_io.h>
+#include <cgogn/io/formats/nastran.h>
 
 namespace cgogn
 {

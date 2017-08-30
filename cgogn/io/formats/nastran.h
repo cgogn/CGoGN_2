@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_NASTRAN_IO_H_
-#define CGOGN_IO_NASTRAN_IO_H_
+#ifndef CGOGN_IO_FORMATS_NASTRAN_H_
+#define CGOGN_IO_FORMATS_NASTRAN_H_
 
 #include <map>
 #include <sstream>
@@ -321,7 +321,7 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_NASTRAN_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_NASTRAN_CPP_))
 extern template class CGOGN_IO_API NastranIO<Eigen::Vector3d>;
 extern template class CGOGN_IO_API NastranIO<Eigen::Vector3f>;
 extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float64, 3>>>;
@@ -333,10 +333,10 @@ extern template class CGOGN_IO_API NastranVolumeImport<CMap3, geometry::Vec_T<st
 extern template class CGOGN_IO_API NastranVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 
 extern template class CGOGN_IO_API NastranVolumeExport<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_NASTRAN_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_NASTRAN_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_NASTRAN_IO_H_
+#endif // CGOGN_IO_FORMATS_NASTRAN_H_

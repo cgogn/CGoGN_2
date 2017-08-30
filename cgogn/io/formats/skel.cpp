@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_SKEL_IO_CPP_
+#define CGOGN_IO_FORMATS_SKEL_CPP_
 
-#include <cgogn/io/io_skel.h>
+#include <cgogn/io/formats/skel.h>
 
 namespace cgogn
 {

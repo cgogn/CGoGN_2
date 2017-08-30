@@ -25,9 +25,9 @@
 #pragma warning(disable:4996)
 #endif
 
-#define CGOGN_IO_IMPORT_PLY_DATA_CPP_
+#define CGOGN_IO_FORMATS_IMPORT_PLY_DATA_CPP_
 
-#include <cgogn/io/import_ply_data.h>
+#include <cgogn/io/formats/ply_data.h>
 #include <cstdlib>
 #include <clocale>
 #include <fstream>

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_STL_IO_H_
-#define CGOGN_IO_STL_IO_H_
+#ifndef CGOGN_IO_FORMATS_STL_H_
+#define CGOGN_IO_FORMATS_STL_H_
 
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
@@ -291,17 +291,17 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_STL_CPP_))
 extern template class CGOGN_IO_API StlSurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_API StlSurfaceImport<CMap2, Eigen::Vector3f>;
 extern template class CGOGN_IO_API StlSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
 extern template class CGOGN_IO_API StlSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 extern template class CGOGN_IO_API StlSurfaceExport<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_STL_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_STL_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
 
-#endif // CGOGN_IO_STL_IO_H_
+#endif // CGOGN_IO_FORMATS_STL_H_

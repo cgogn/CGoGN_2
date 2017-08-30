@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_CG_IO_H_
-#define CGOGN_IO_CG_IO_H_
+#ifndef CGOGN_IO_FORMATS_CG_H_
+#define CGOGN_IO_FORMATS_CG_H_
 
 #include <set>
 
@@ -157,18 +157,18 @@ protected:
     }
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_CG_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_CG_CPP_))
 extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API CgGraphExport<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_CG_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_CG_CPP_))
 
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_CSKEL_IO_H_
+#endif // CGOGN_IO_FORMATS_CSKEL_H_

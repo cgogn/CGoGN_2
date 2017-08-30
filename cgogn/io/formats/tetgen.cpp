@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_TETGEN_IO_CPP_
+#define CGOGN_IO_FORMATS_TETGEN_CPP_
 
-#include <cgogn/io/tetgen_io.h>
+#include <cgogn/io/formats/tetgen.h>
 
 namespace cgogn
 {

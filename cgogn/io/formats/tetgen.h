@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_TETGEN_IO_H_
-#define CGOGN_IO_TETGEN_IO_H_
+#ifndef CGOGN_IO_FORMATS_TETGEN_H_
+#define CGOGN_IO_FORMATS_TETGEN_H_
 
 #include <map>
 #include <sstream>
@@ -151,15 +151,15 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_TETGEN_CPP_))
 extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, Eigen::Vector3d>;
 extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, Eigen::Vector3f>;
 extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
 extern template class CGOGN_IO_API TetgenVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_TETGEN_IO_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_TETGEN_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_TETGEN_IO_H_
+#endif // CGOGN_IO_FORMATS_TETGEN_H_

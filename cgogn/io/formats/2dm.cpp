@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_2DM_IO_CPP_
+#define CGOGN_IO_FORMATS_2DM_CPP_
 
-#include <cgogn/io/2dm_io.h>
+#include <cgogn/io/formats/2dm.h>
 
 namespace cgogn
 {
