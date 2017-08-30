@@ -153,13 +153,13 @@ public:
 		return qt_attributes_[ORBIT].end();
 	}
 
-    template <typename CellType>
-    inline CellType cell_from_index(uint32 index)
-    {
-        static const Orbit ORBIT = CellType::ORBIT;
-        cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
-        return CellType(qt_attributes_[ORBIT][index]);
-    }
+	template <typename CellType>
+	inline CellType cell_from_index(uint32 index)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
+		return CellType(qt_attributes_[ORBIT][index]);
+	}
 
 	template <typename CellType, typename DartSelectionFunction>
 	inline void build(const DartSelectionFunction& dart_select)

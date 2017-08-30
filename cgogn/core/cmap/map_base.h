@@ -662,12 +662,24 @@ public:
 		}
 	}
 
+	template <typename CellType>
+	uint32 nb_cells() const
+	{
+		return nb_cells<CellType::ORBIT>();
+	}
+
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
 		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
 		return result;
+	}
+
+	template <typename CellType, typename MASK>
+	uint32 nb_cells() const
+	{
+		return nb_cells<CellType::ORBIT, MASK>();
 	}
 
 	/**

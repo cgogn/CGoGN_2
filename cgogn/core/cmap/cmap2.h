@@ -1196,13 +1196,13 @@ protected:
 
 		if (this->phi1(e2) != d2)
 		{
-			cgogn_assert(!same_orbit(Vertex(e), Vertex(d2)));
+			cgogn_assert(!this->same_orbit(Vertex(e), Vertex(d2)));
 			// two different boundary vertices: merge boundary faces
 			this->phi1_sew(e2, this->phi_1(d2));
 		}
 		if (this->phi1(d2) != e2)
 		{
-			cgogn_assert(!same_orbit(Vertex(d), Vertex(e2)));
+			cgogn_assert(!this->same_orbit(Vertex(d), Vertex(e2)));
 			// two different boundary vertices: merge boundary faces
 			this->phi1_sew(d2, this->phi_1(e2));
 		}
