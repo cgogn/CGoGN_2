@@ -33,5 +33,8 @@ target_link_libraries(square_tiling ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES
 add_executable(dual dual.cpp)
 target_link_libraries(dual ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
-set_target_properties(remeshing decimation subdivision triangular_tiling square_tiling dual  
+add_executable(curve curve.cpp)
+target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
+set_target_properties(remeshing decimation subdivision triangular_tiling square_tiling dual curve 
 PROPERTIES FOLDER examples/modeling)

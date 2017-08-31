@@ -4,6 +4,7 @@
 
 set(HEADER_ALGOS
 	algos/catmull_clark.h
+	algos/curves.h
 	algos/loop.h
 	algos/refinements.h
 	algos/pliant_remeshing.h
