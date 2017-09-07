@@ -30,15 +30,15 @@
 #include <iostream>
 #include <climits>
 
-#include <cgogn/io/vtk_io.h>
-#include <cgogn/io/off_io.h>
-#include <cgogn/io/obj_io.h>
-#include <cgogn/io/stl_io.h>
-#include <cgogn/io/ply_io.h>
-#include <cgogn/io/tet_io.h>
-#include <cgogn/io/msh_io.h>
-#include <cgogn/io/nastran_io.h>
-#include <cgogn/io/tetmesh_io.h>
+#include <cgogn/io/formats/vtk.h>
+#include <cgogn/io/formats/off.h>
+#include <cgogn/io/formats/obj.h>
+#include <cgogn/io/formats/stl.h>
+#include <cgogn/io/formats/ply.h>
+#include <cgogn/io/formats/tet.h>
+#include <cgogn/io/formats/msh.h>
+#include <cgogn/io/formats/nastran.h>
+#include <cgogn/io/formats/tetmesh.h>
 
 namespace cgogn
 {
