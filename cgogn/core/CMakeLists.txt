@@ -10,6 +10,7 @@ set(HEADER_BASIC
 	basic/cell.h
 	basic/cell_marker.h
 )
+
 set(HEADER_CMAP
 	cmap/map_traits.h
 	cmap/map_base_data.h
@@ -26,12 +27,18 @@ set(HEADER_CMAP
 	cmap/cmap3_tetra.h
 	cmap/cmap3_hexa.h
 )
+
 set(HEADER_CONTAINER
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
 	container/chunk_array.h
 	container/chunk_stack.h
+)
+
+set(HEADER_GRAPH
+	graph/undirected_graph.h
+	graph/undirected_graph_builder.h
 )
 
 set(HEADER_UTILS
@@ -55,7 +62,7 @@ set(HEADER_UTILS
 	utils/timer.h
 )
 
-set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_UTILS})
+set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_GRAPH} ${HEADER_UTILS})
 
 
 set(SOURCE_CMAP
@@ -77,6 +84,9 @@ set(SOURCE_CONTAINER
 	container/chunk_array_container.cpp
 	container/chunk_array_factory.cpp
 )
+set(SOURCE_GRAPH
+	graph/undirected_graph.cpp
+)
 set(SOURCE_UTILS
 	utils/assert.cpp
 	utils/name_types.cpp
@@ -92,7 +102,7 @@ set(SOURCE_UTILS
 	utils/timer.cpp
 )
 
-set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_UTILS})
+set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_GRAPH} ${SOURCE_UTILS})
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -178,6 +188,7 @@ cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_
 # VisualStudio nice source organisation
 source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
 source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
+source_group("GRAPH" FILES ${HEADER_GRAPH} ${SOURCE_GRAPH})
 source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
 source_group("BASIC" FILES ${HEADER_BASIC})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

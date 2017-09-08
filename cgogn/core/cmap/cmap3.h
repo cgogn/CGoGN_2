@@ -2416,12 +2416,12 @@ public:
 		});
 	}
 
-	inline std::pair<Vertex, Vertex> vertices(Edge e)
+	inline std::pair<Vertex, Vertex> vertices(Edge e) const
 	{
 		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
 
-	inline std::pair<Vertex2, Vertex2> vertices(Edge2 e)
+	inline std::pair<Vertex2, Vertex2> vertices(Edge2 e) const
 	{
 		return std::pair<Vertex2, Vertex2>(Vertex2(e.dart), Vertex2(this->phi1(e.dart)));
 	}

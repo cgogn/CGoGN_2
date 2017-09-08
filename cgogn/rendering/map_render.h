@@ -43,7 +43,7 @@ namespace cgogn
 namespace rendering
 {
 
-enum DrawingType
+enum DrawingType : uint8
 {
 	POINTS = 0,
 	LINES,
@@ -99,8 +99,9 @@ protected:
 //		table_indices.reserve(m.get_nb_darts() / 2);
 		m.foreach_cell([&] (Edge e)
 		{
-			table_indices.push_back(m.embedding(Vertex(e.dart)));
-			table_indices.push_back(m.embedding(Vertex(m.phi1(e.dart))));
+			std::pair<Vertex, Vertex> vs = m.vertices(e);
+			table_indices.push_back(m.embedding(vs.first));
+			table_indices.push_back(m.embedding(vs.second));
 		},
 		mask);
 	}
