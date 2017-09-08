@@ -24,12 +24,13 @@
 #ifndef CGOGN_IO_GRAPH_IMPORT_H_
 #define CGOGN_IO_GRAPH_IMPORT_H_
 
-#include <cgogn/messy/dll.h>
 #include <cgogn/core/cmap/map_base_data.h>
+
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
 
-namespace cgogn {
+namespace cgogn
+{
 
 namespace io
 {
@@ -38,6 +39,7 @@ template <typename VEC3>
 class GraphImport
 {
 public:
+
 	using Self = GraphImport<VEC3>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 
@@ -52,12 +54,12 @@ public:
 	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline GraphImport():
-		edges_nb_vertices_()
-	  , edges_vertex_indices_()
-	  , vertex_attributes_()
-	  , edge_attributes_()
-	  , position_attribute_(nullptr)
-	  , radius_attribute_(nullptr)
+		edges_nb_vertices_(),
+		edges_vertex_indices_(),
+		vertex_attributes_(),
+		edge_attributes_(),
+		position_attribute_(nullptr),
+		radius_attribute_(nullptr)
 	{}
 
 	virtual ~GraphImport()
@@ -81,7 +83,7 @@ public:
 		using Vertex = typename Map::Vertex;
 		using MapBuilder = typename Map::Builder;
 
-		if(nb_edges() == 0u)
+		if (nb_edges() == 0u)
 			return;
 
 		MapBuilder mbuild(map);
@@ -96,12 +98,12 @@ public:
 		std::vector<uint32> edges_buffer;
 		edges_buffer.reserve(16);
 
-		for(uint32 i = 0, end = nb_edges() ; i < end ; ++i)
+		for (uint32 i = 0, end = nb_edges(); i < end; ++i)
 		{
 			uint nbe = this->edges_nb_vertices_[i];
 
 			edges_buffer.clear();
-			for(uint32 j = 0u ; j < nbe ; ++j)
+			for (uint32 j = 0u; j < nbe; ++j)
 			{
 				uint32 idx = this->edges_vertex_indices_[edges_vertex_index++];
 				edges_buffer.push_back(idx);
@@ -109,7 +111,7 @@ public:
 
 			Dart d = mbuild.add_edge_topo();
 
-			for(uint32 j = 0u ; j < nbe ; ++j)
+			for (uint32 j = 0u; j < nbe; ++j)
 			{
 				const uint32 vertex_index = edges_buffer[j];
 				mbuild.template set_embedding<Vertex>(d, vertex_index);
@@ -121,15 +123,13 @@ public:
 		typename Map::DartMarker treated(map);
 		map.foreach_dart([&] (Dart d)
 		{
-			if(!treated.is_marked(d))
+			if (!treated.is_marked(d))
 			{
 				uint32 emb = map.embedding(Vertex(d));
 				std::vector<Dart>& per_vertex = darts_per_vertex[emb];
 				treated.mark(d);
 
-				for (auto it = per_vertex.begin();
-					 it != per_vertex.end();
-					 ++it)
+				for (auto it = per_vertex.begin(); it != per_vertex.end(); ++it)
 				{
 					mbuild.alpha1_sew(d, *it);
 					treated.mark(*it);
@@ -139,7 +139,7 @@ public:
 
 		//PRIMALE VERSION
 		/*
-		if(nb_vertices() == 0u)
+		if (nb_vertices() == 0u)
 			return;
 
 		MapBuilder mbuild(map);
@@ -156,12 +156,12 @@ public:
 		std::vector<uint32> edges_buffer;
 		edges_buffer.reserve(16);
 
-		for(uint32 i = 0, end = nb_edges() ; i < end ; ++i)
+		for (uint32 i = 0, end = nb_edges(); i < end; ++i)
 		{
 			uint nbe = this->edges_nb_vertices_[i];
 
 			edges_buffer.clear();
-			for(uint32 j = 0u ; j < nbe ; ++j)
+			for (uint32 j = 0u; j < nbe; ++j)
 			{
 				uint32 idx = this->edges_vertex_indices_[edges_vertex_index++];
 				edges_buffer.push_back(idx);
@@ -175,7 +175,7 @@ public:
 				darts_per_vertex[i].push_back(e);
 			});
 
-			for(uint32 j = 0u ; j < nbe ; ++j)
+			for (uint32 j = 0u; j < nbe; ++j)
 			{
 				const uint32 vertex_index = edges_buffer[j];
 				opposite_vertex[d] = vertex_index;
@@ -186,7 +186,7 @@ public:
 		typename Map::DartMarker treated(map);
 		map.foreach_dart([&] (Dart d)
 		{
-			if(!treated.is_marked(d))
+			if (!treated.is_marked(d))
 			{
 				uint32 emb = opposite_vertex[d];
 				std::vector<Dart>& per_vertex = darts_per_vertex[emb];
@@ -196,7 +196,7 @@ public:
 					 it != per_vertex.end();
 					 ++it)
 				{
-					if(opposite_vertex[CDart(*it)] == map.embedding(Vertex(d)))
+					if (opposite_vertex[CDart(*it)] == map.embedding(Vertex(d)))
 					{
 						mbuild.alpha0_sew(d, *it);
 						treated.mark(*it);
@@ -242,13 +242,13 @@ public:
 		in_data.to_chunk_array(att);
 	}
 
-	template<typename T>
+	template <typename T>
 	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
 	{
 		return vertex_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	template<typename T>
+	template <typename T>
 	inline ChunkArray<T>* add_edge_attribute(const std::string& att_name)
 	{
 		return edge_attributes_.template add_chunk_array<T>(att_name);
@@ -256,7 +256,7 @@ public:
 
 	inline ChunkArray<VEC3>* position_attribute()
 	{
-		if(position_attribute_ == nullptr)
+		if (position_attribute_ == nullptr)
 			return (position_attribute_ = add_vertex_attribute<VEC3>("position"));
 		else
 			return position_attribute_;
@@ -264,19 +264,21 @@ public:
 
 	inline ChunkArray<Scalar>* radius_attribute()
 	{
-		if(radius_attribute_ == nullptr)
+		if (radius_attribute_ == nullptr)
 			return (radius_attribute_ = add_vertex_attribute<Scalar>("radius"));
 		else
 			return radius_attribute_;
 	}
 
 private:
+
 	inline uint32 nb_edges() const
 	{
 		return uint32(edges_nb_vertices_.size());
 	}
 
 protected:
+
 	std::vector<uint32> edges_nb_vertices_;
 	std::vector<uint32> edges_vertex_indices_;
 	ChunkArrayContainer vertex_attributes_;
@@ -299,6 +301,7 @@ class GraphFileImport : public GraphImport<VEC3>, public FileImport
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(GraphFileImport);
 
 public:
+
 	inline GraphFileImport() : Inherit1(), Inherit2()
 	{}
 
