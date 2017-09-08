@@ -21,26 +21,26 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/topology/types/dynamic_primal_cmap2.h>
+#include <cgogn/topology/types/adaptive_tri_quad_cmap2.h>
 
 namespace cgogn
 {
 
-DynamicPrimalCMap2::DynamicPrimalCMap2(CMap2& map) : map_(map)
+AdaptiveTriQuadCMap2::AdaptiveTriQuadCMap2(CMap2& map) : map_(map)
 {
 	dart_level_ = map_.add_attribute<uint8, CDart::ORBIT>("__dart_level");
 	face_subd_id_ = map_.add_attribute<uint32, Face::ORBIT>("__face_subdivision_id");
 	tri_face_ = map_.add_attribute<bool, Face::ORBIT>("__tri_face");
 }
 
-DynamicPrimalCMap2::~DynamicPrimalCMap2()
+AdaptiveTriQuadCMap2::~AdaptiveTriQuadCMap2()
 {
 	map_.remove_attribute(tri_face_);
 	map_.remove_attribute(face_subd_id_);
 	map_.remove_attribute(dart_level_);
 }
 
-void DynamicPrimalCMap2::init()
+void AdaptiveTriQuadCMap2::init()
 {
 	map_.parallel_foreach_cell(
 		[&] (Face f)
@@ -55,7 +55,7 @@ void DynamicPrimalCMap2::init()
 	);
 }
 
-bool DynamicPrimalCMap2::is_simplifiable(Face f)
+bool AdaptiveTriQuadCMap2::is_simplifiable(Face f)
 {
 	if (face_level(f) == 0)
 		return false;
@@ -108,7 +108,7 @@ bool DynamicPrimalCMap2::is_simplifiable(Face f)
 	}
 }
 
-uint8 DynamicPrimalCMap2::face_level(Face f)
+uint8 AdaptiveTriQuadCMap2::face_level(Face f)
 {
 	uint32 id = face_subd_id_[f];
 	if (id == 0) return 0;
@@ -120,7 +120,7 @@ uint8 DynamicPrimalCMap2::face_level(Face f)
 	if (id < 5461) return 6;
 }
 
-DynamicPrimalCMap2::FaceType DynamicPrimalCMap2::face_type(Face f)
+AdaptiveTriQuadCMap2::FaceType AdaptiveTriQuadCMap2::face_type(Face f)
 {
 	if (!tri_face_[f])
 		return QUAD;
@@ -130,7 +130,7 @@ DynamicPrimalCMap2::FaceType DynamicPrimalCMap2::face_type(Face f)
 		return TRI_CORNER;
 }
 
-Dart DynamicPrimalCMap2::oldest_dart(Face f)
+Dart AdaptiveTriQuadCMap2::oldest_dart(Face f)
 {
 	Dart res = f.dart;
 	uint8 min = dart_level_[f.dart];

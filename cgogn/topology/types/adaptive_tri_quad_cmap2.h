@@ -21,15 +21,15 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPOLOGY_DYNAMIC_PRIMAL_CMAP2_H_
-#define CGOGN_TOPOLOGY_DYNAMIC_PRIMAL_CMAP2_H_
+#ifndef CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
+#define CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
 
 #include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-class DynamicPrimalCMap2
+class AdaptiveTriQuadCMap2
 {
 public:
 
@@ -45,9 +45,9 @@ public:
 		QUAD
 	};
 
-	DynamicPrimalCMap2(CMap2& map);
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(DynamicPrimalCMap2);
-	~DynamicPrimalCMap2();
+	AdaptiveTriQuadCMap2(CMap2& map);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(AdaptiveTriQuadCMap2);
+	~AdaptiveTriQuadCMap2();
 
 	void init();
 
@@ -84,7 +84,7 @@ public:
 			else
 			{
 				Vertex v = map_.cut_edge(Edge(it));
-				if(map_.is_incident_to_boundary(Edge(it)))
+				if (map_.is_incident_to_boundary(Edge(it)))
 					dart_level_[map_.phi1(it)] = fl+1;
 				else
 				{
@@ -264,4 +264,4 @@ protected:
 
 } // namespace cgogn
 
-#endif // CGOGN_TOPOLOGY_DYNAMIC_PRIMAL_CMAP2_H_
+#endif // CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
