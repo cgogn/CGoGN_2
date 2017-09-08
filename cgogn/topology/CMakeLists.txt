@@ -7,6 +7,7 @@ find_package(OpenNL REQUIRED)
 set(HEADER_TYPES
 	types/adjacency_cache.h
 	types/critical_point.h
+	types/adaptive_tri_quad_cmap2.h
 )
 
 set(HEADER_ALGOS
@@ -18,14 +19,15 @@ set(HEADER_ALGOS
 
 set(HEADER_FILES dll.h ${HEADER_TYPES} ${HEADER_ALGOS})
 
+set(SOURCE_TYPES
+	types/adjacency_cache.cpp
+	types/adaptive_tri_quad_cmap2.cpp
+)
+
 set(SOURCE_ALGOS
 	algos/distance_field.cpp
 	algos/features.cpp
 	algos/scalar_field.cpp
-)
-
-set(SOURCE_TYPES
-	types/adjacency_cache.cpp
 )
 
 set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TYPES})
