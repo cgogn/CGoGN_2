@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -21,82 +21,44 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_TILING_TILING_H_
-#define CGOGN_MODELING_TILING_TILING_H_
+#define CGOGN_IO_FORMATS_PLY_CPP_
 
-#include <cgogn/modeling/dll.h>
-#include <cgogn/core/utils/numerics.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/formats/ply.h>
 
 namespace cgogn
 {
 
-namespace modeling
+namespace io
 {
 
-template <typename MAP>
-class Tiling
+template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+template class CGOGN_IO_API PlySurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
+
+template class CGOGN_IO_API PlySurfaceExport<CMap2>;
+
+CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
 {
-protected:
+	static const std::map<std::string, std::string> type_map{
+		{name_of_type(int8()), "int8"},
+		{name_of_type(uint8()), "uint8"},
+		{name_of_type(int16()), "int16"},
+		{name_of_type(uint16()), "uint16"},
+		{name_of_type(int32()), "int"},
+		{name_of_type(uint32()), "uint"},
+		{name_of_type(float32()), "float32"},
+		{name_of_type(float64()), "float64"}
+	};
 
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-	using Face = typename MAP::Face;
+	const auto it = type_map.find(cgogn_type);
+	if ( it != type_map.end())
+		return it->second;
 
-public:
+	cgogn_log_error("cgogn_name_of_type_to_ply_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
+	return std::string();
+}
 
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
-
-	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
-		map_(map),
-		nx_(x),
-		ny_(y),
-		nz_(z)
-	{}
-
-	Tiling(MAP& map):
-		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
-	{}
-
-	/**
-	 * @brief Map in which we are working
-	 */
-	MAP& map_;
-
-	/**
-	 * @brief Dimensions of the tiling
-	 */
-	uint32 nx_, ny_, nz_;
-
-	/**
-	 * @brief Reference dart;
-	 */
-	Dart dart_;
-
-	/**
-	 * @brief Table of vertices
-	 * Order depends on the tiling kind
-	 */
-	std::vector<Vertex> vertex_table_;
-
-	/**
-	 * @brief Table of edges
-	 */
-	std::vector<Edge> edge_table_;
-
-	/**
-	 * @brief Table of faces
-	 */
-	std::vector<Face> face_table_;
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-extern template class CGOGN_MODELING_API Tiling<CMap2>;
-extern template class CGOGN_MODELING_API Tiling<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-
-} // namespace modeling
+} // namespace io
 
 } // namespace cgogn
-
-#endif // CGOGN_MODELING_TILING_TILING_H_

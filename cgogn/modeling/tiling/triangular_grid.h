@@ -78,6 +78,7 @@ public:
 					mbuild.phi2_sew(g->map_.phi1(d), g->map_.phi_1(d2));
 
 					g->vertex_table_.push_back(Vertex(d));
+					g->edge_table_.push_back(Edge(d));
 
 					g->face_table_.push_back(Face(d));
 					g->face_table_.push_back(Face(d2));

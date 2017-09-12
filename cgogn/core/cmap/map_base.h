@@ -662,12 +662,24 @@ public:
 		}
 	}
 
+	template <typename CellType>
+	uint32 nb_cells() const
+	{
+		return nb_cells<CellType::ORBIT>();
+	}
+
 	template <Orbit ORBIT, typename MASK>
 	uint32 nb_cells(const MASK& mask) const
 	{
 		uint32 result = 0u;
 		foreach_cell([&result] (Cell<ORBIT>) { ++result; }, mask);
 		return result;
+	}
+
+	template <typename CellType, typename MASK>
+	uint32 nb_cells() const
+	{
+		return nb_cells<CellType::ORBIT, MASK>();
 	}
 
 	/**
@@ -837,14 +849,15 @@ protected:
 public:
 
 	/**
-	 * \brief apply a function on each dart of the map (including boundary darts) and stops when the function returns false
+	 * \brief apply a function on each dart of the map (including boundary darts)
+	 * if the function returns a boolean, the traversal stops when it first returns false
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
 	template <typename FUNC>
 	inline void foreach_dart(const FUNC& f) const
 	{
-		static_assert(is_func_parameter_same<FUNC, Dart>::value, "Wrong function parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "foreach_dart: given function should take a Dart as parameter");
 
 		const ConcreteMap* cmap = to_concrete();
 		for (Dart it = cmap->all_begin(), last = cmap->all_end(); it != last; cmap->all_next(it))
@@ -854,18 +867,22 @@ public:
 		}
 	}
 
+	/**
+	 * \brief apply a function in parallel on each dart of the map (including boundary darts)
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
 	template <typename FUNC>
 	inline void parallel_foreach_dart(const FUNC& f) const
 	{
-		static_assert(is_ith_func_parameter_same<FUNC, 0, Dart>::value, "Wrong function first parameter type");
+		static_assert(is_func_parameter_same<FUNC, Dart>::value, "parallel_foreach_dart: given function should take a Dart as parameter");
 
 		using Future = std::future<typename std::result_of<FUNC(Dart)>::type>;
 		using VecDarts = std::vector<Dart>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
-
 		uint32 nb_workers = thread_pool->nb_workers();
-		if (nb_workers==0)
+		if (nb_workers == 0)
 			return foreach_dart(f);
 
 		std::array<std::vector<VecDarts*>, 2> dart_buffers;
@@ -924,12 +941,13 @@ public:
 			fu.wait();
 		for (auto& b : dart_buffers[1u])
 			dbuffs->release_buffer(b);
-
 	}
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * if the function returns a boolean, the traversal stops when it first returns false
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
@@ -941,6 +959,13 @@ public:
 		foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
+	/**
+	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
+	 * @tparam FUNC type of the callable
+	 * @param f a callable
+	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
 	{
@@ -951,16 +976,21 @@ public:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the given FilterFunction (CellType -> bool)
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * if the function returns a boolean, the traversal stops when it first returns false
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
 	 * @param f a callable
+	 * @param filter a cell filtering function
 	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	void foreach_cell(const FUNC& f, const FilterFunction& filter) const
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename FilterFunction>
+	inline auto foreach_cell(const FUNC& f, const FilterFunction& filter) const
+		-> typename std::enable_if<
+			is_func_return_same<FilterFunction, bool>::value  &&
+			is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value
+		   >::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -981,11 +1011,22 @@ public:
 		}
 	}
 
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO,
-			  typename FUNC,
-			  typename FilterFunction,
-			  typename std::enable_if<is_func_return_same<FilterFunction, bool>::value  && is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
+	/**
+	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
+	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
+	 * @param f a callable
+	 * @param filter a cell filtering function
+	 */
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename FilterFunction>
+	inline auto parallel_foreach_cell(const FUNC& f, const FilterFunction& filter) const
+		-> typename std::enable_if<
+			is_func_return_same<FilterFunction, bool>::value &&
+			is_func_parameter_same<FilterFunction, func_parameter_type<FUNC>>::value
+		   >::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -1008,47 +1049,61 @@ public:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
-	 * that is selected by the filter function of the corresponding CellType within the given Filters object
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the filter function of the corresponding CellType within the given Filters object are processed
+	 * if the function returns a boolean, the traversal stops when it first returns false
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
+	 * @tparam Filters type of the CellFilters object (inherits from CellFilters)
 	 * @param f a callable
+	 * @param filters a CellFilters object (contains a filtering function for each CellType)
 	 */
-	template <typename FUNC,
-			  typename Filters,
-			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const Filters& filters) const
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename Filters>
+	inline auto foreach_cell(const FUNC& f, const Filters& filters) const
+		-> typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
 		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
 			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
 
-		foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+		foreach_cell<STRATEGY>(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
-	template <typename FUNC,
-			  typename Filters,
-			  typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const Filters& filters) const
+	/**
+	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the filter function of the corresponding CellType within the given Filters object are processed
+	 * if the function takes a second integer parameter, it is given the cell index along with each cell
+	 * @tparam FUNC type of the callable
+	 * @tparam Filters type of the CellFilters object (inherits from CellFilters)
+	 * @param f a callable
+	 * @param filters a CellFilters object (contains a filtering function for each CellType)
+	 */
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename Filters>
+	inline auto parallel_foreach_cell(const FUNC& f, const Filters& filters) const
+		-> typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
 		if ((filters.filtered_cells() & orbit_mask<CellType>()) == 0u)
 			cgogn_log_warning("foreach_cell") << "Using a CellFilter for a non-filtered CellType";
 
-		parallel_foreach_cell(f, [&filters] (CellType c) { return filters.filter(c); });
+		parallel_foreach_cell<STRATEGY>(f, [&filters] (CellType c) { return filters.filter(c); });
 	}
 
 	/**
 	 * \brief apply a function on each cell of the map that is provided by the given Traversor object
-	 * (the dimension of the traversed cells is determined based on the parameter of the given callable)
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * if the function returns a boolean, the traversal stops when it first returns false
 	 * @tparam FUNC type of the callable
+	 * @tparam Traversor type of the CellTraversor object (inherits from CellTraversor)
 	 * @param f a callable
+	 * @param t a Traversor object
 	 */
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void foreach_cell(const FUNC& f, const Traversor& t) const
+	template <typename FUNC, typename Traversor>
+	inline auto foreach_cell(const FUNC& f, const Traversor& t) const
+		-> typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -1060,10 +1115,17 @@ public:
 				break;
 	}
 
-	template <typename FUNC,
-			  typename Traversor,
-			  typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type* = nullptr>
-	inline void parallel_foreach_cell(const FUNC& f, const Traversor& t) const
+	/**
+	 * \brief apply a function in parallel on each cell of the map that is provided by the given Traversor object
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * @tparam FUNC type of the callable
+	 * @tparam Traversor type of the CellTraversor object (inherits from CellTraversor)
+	 * @param f a callable
+	 * @param t a Traversor object
+	 */
+	template <typename FUNC, typename Traversor>
+	inline auto parallel_foreach_cell(const FUNC& f, const Traversor& t) const
+		-> typename std::enable_if<std::is_base_of<CellTraversor, Traversor>::value>::type
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -1075,8 +1137,8 @@ public:
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
-		if (nb_workers==0)
-			return foreach_cell(f);
+		if (nb_workers == 0)
+			return foreach_cell(f, t);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -1135,6 +1197,44 @@ public:
 
 protected:
 
+	/**
+	 * \brief apply a function on each cell of the map (boundary cells excluded) using a DartMarker
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * if the function returns a boolean, the traversal stops when it first returns false
+	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
+	 * @param f a callable
+	 * @param filter a cell filtering function
+	 */
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
+	{
+		using CellType = func_parameter_type<FUNC>;
+
+		const ConcreteMap* cmap = to_concrete();
+		DartMarker dm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
+		{
+			if (!dm.is_marked(it))
+			{
+				const CellType c(it);
+				dm.mark_orbit(c);
+				if (filter(c) && !internal::void_to_true_binder(f, c))
+					break;
+			}
+		}
+	}
+
+	/**
+	 * \brief apply a function on each cell of the map (boundary cells excluded) using a DartMarker
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
+	 * @param f a callable
+	 * @param filter a cell filtering function
+	 */
 	template <typename FUNC, typename FilterFunction>
 	inline void parallel_foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
 	{
@@ -1145,8 +1245,8 @@ protected:
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
-		if (nb_workers==0)
-			return foreach_cell_dart_marking(f,filter);
+		if (nb_workers == 0)
+			return foreach_cell_dart_marking(f, filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -1215,6 +1315,44 @@ protected:
 			dbuffs->release_cell_buffer(b);
 	}
 
+	/**
+	 * \brief apply a function on each cell of the map (boundary cells excluded) using a CellMarker
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * if the function returns a boolean, the traversal stops when it first returns false
+	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
+	 * @param f a callable
+	 * @param filter a cell filtering function
+	 */
+	template <typename FUNC, typename FilterFunction>
+	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
+	{
+		using CellType = func_parameter_type<FUNC>;
+
+		const ConcreteMap* cmap = to_concrete();
+		CellMarker<CellType::ORBIT> cm(*cmap);
+		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
+		{
+			const CellType c(it);
+			if (!cm.is_marked(c))
+			{
+				cm.mark(c);
+				if (filter(c) && !internal::void_to_true_binder(f, c))
+					break;
+			}
+		}
+	}
+
+	/**
+	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded) using a CellMarker
+	 * the dimension of the traversed cells is determined based on the parameter of the given callable
+	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
+	 * @tparam FUNC type of the callable
+	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
+	 * @param f a callable
+	 * @param filter a cell filtering function
+	 */
 	template <typename FUNC, typename FilterFunction>
 	inline void parallel_foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
 	{
@@ -1226,8 +1364,8 @@ protected:
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
-		if (nb_workers==0)
-			return foreach_cell_cell_marking(f,filter);
+		if (nb_workers == 0)
+			return foreach_cell_cell_marking(f, filter);
 
 		std::array<std::vector<VecCell*>, 2> cells_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -1295,45 +1433,6 @@ protected:
 		for (auto& b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
 	}
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_dart_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		const ConcreteMap* cmap = to_concrete();
-		DartMarker dm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			if (!dm.is_marked(it))
-			{
-				const CellType c(it);
-				dm.mark_orbit(c);
-				if(filter(c) && !internal::void_to_true_binder(f, c))
-					break;
-			}
-		}
-	}
-
-	template <typename FUNC, typename FilterFunction>
-	inline void foreach_cell_cell_marking(const FUNC& f, const FilterFunction& filter) const
-	{
-		using CellType = func_parameter_type<FUNC>;
-
-		const ConcreteMap* cmap = to_concrete();
-		CellMarker<CellType::ORBIT> cm(*cmap);
-		for (Dart it = cmap->begin(), last = cmap->end(); it.index < last.index; cmap->next(it))
-		{
-			const CellType c(it);
-			if (!cm.is_marked(c))
-			{
-				cm.mark(c);
-				if(filter(c) && !internal::void_to_true_binder(f, c))
-					break;
-			}
-		}
-	}
-
 
 public:
 

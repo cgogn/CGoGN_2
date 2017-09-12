@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -21,82 +21,26 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_MODELING_TILING_TILING_H_
-#define CGOGN_MODELING_TILING_TILING_H_
+#define CGOGN_CORE_GRAPH_UNDIRECTED_GRAPH_CPP_
 
-#include <cgogn/modeling/dll.h>
-#include <cgogn/core/utils/numerics.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/graph/undirected_graph.h>
 
 namespace cgogn
 {
 
-namespace modeling
-{
-
-template <typename MAP>
-class Tiling
-{
-protected:
-
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-	using Face = typename MAP::Face;
-
-public:
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
-
-	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
-		map_(map),
-		nx_(x),
-		ny_(y),
-		nz_(z)
-	{}
-
-	Tiling(MAP& map):
-		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
-	{}
-
-	/**
-	 * @brief Map in which we are working
-	 */
-	MAP& map_;
-
-	/**
-	 * @brief Dimensions of the tiling
-	 */
-	uint32 nx_, ny_, nz_;
-
-	/**
-	 * @brief Reference dart;
-	 */
-	Dart dart_;
-
-	/**
-	 * @brief Table of vertices
-	 * Order depends on the tiling kind
-	 */
-	std::vector<Vertex> vertex_table_;
-
-	/**
-	 * @brief Table of edges
-	 */
-	std::vector<Edge> edge_table_;
-
-	/**
-	 * @brief Table of faces
-	 */
-	std::vector<Face> face_table_;
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-extern template class CGOGN_MODELING_API Tiling<CMap2>;
-extern template class CGOGN_MODELING_API Tiling<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-
-} // namespace modeling
+template class CGOGN_CORE_API UndirectedGraph_T<UndirectedGraphType>;
+template class CGOGN_CORE_API UndirectedGraphBuilder_T<UndirectedGraph>;
+template class CGOGN_CORE_API DartMarker<UndirectedGraph>;
+template class CGOGN_CORE_API DartMarkerStore<UndirectedGraph>;
+template class CGOGN_CORE_API DartMarkerNoUnmark<UndirectedGraph>;
+template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+template class CGOGN_CORE_API CellCache<UndirectedGraph>;
+template class CGOGN_CORE_API BoundaryCache<UndirectedGraph>;
+template class CGOGN_CORE_API QuickTraversor<UndirectedGraph>;
 
 } // namespace cgogn
-
-#endif // CGOGN_MODELING_TILING_TILING_H_

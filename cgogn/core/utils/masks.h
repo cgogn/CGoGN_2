@@ -153,6 +153,14 @@ public:
 		return qt_attributes_[ORBIT].end();
 	}
 
+	template <typename CellType>
+	inline CellType cell_from_index(uint32 index)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
+		return CellType(qt_attributes_[ORBIT][index]);
+	}
+
 	template <typename CellType, typename DartSelectionFunction>
 	inline void build(const DartSelectionFunction& dart_select)
 	{
@@ -175,7 +183,7 @@ public:
 	{
 		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		cgogn_message_assert(qt_attributes_[ORBIT].is_valid(), "Try to update a cell on a QuickTraversor that has not been built");
+        cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
 		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 
@@ -242,20 +250,33 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
-	template <typename CellType>
-	inline void build()
+	template <typename CellType, typename MASK, typename DartSelectionFunction>
+	inline void build(const MASK& mask, const DartSelectionFunction& dart_select)
 	{
-		this->build<CellType>([] (CellType) { return true; });
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].clear();
+		cells_[ORBIT].reserve(4096u);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(dart_select(c)); }, mask);
+		traversed_cells_ |= orbit_mask<CellType>();
 	}
 
 	template <typename CellType, typename MASK>
 	inline void build(const MASK& mask)
 	{
-		static const Orbit ORBIT = CellType::ORBIT;
-		cells_[ORBIT].clear();
-		cells_[ORBIT].reserve(4096u);
-		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, mask);
-		traversed_cells_ |= orbit_mask<CellType>();
+		this->build<CellType>(
+			mask,
+			[] (CellType c) -> Dart { return c.dart; }
+		);
+	}
+
+	template <typename CellType>
+	inline void build()
+	{
+		this->build<CellType>(
+			[] (CellType) { return true; },
+			[] (CellType c) -> Dart { return c.dart; }
+		);
 	}
 
 private:
@@ -321,12 +342,11 @@ public:
 		typename MAP::DartMarker dm(map_);
 		map_.foreach_dart([&] (Dart d)
 		{
-			if (!dm.is_marked(d))
+			if (map_.is_boundary(d) && !dm.is_marked(d))
 			{
 				BoundaryCellType c(d);
 				dm.mark_orbit(c);
-				if (map_.is_boundary(d))
-					cells_.push_back(c);
+				cells_.push_back(c);
 			}
 		});
 		traversed_cells_ |= orbit_mask<CellType>();

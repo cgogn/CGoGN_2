@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -20,83 +20,18 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_IO_GRAPH_EXPORT_CPP_
 
-#ifndef CGOGN_MODELING_TILING_TILING_H_
-#define CGOGN_MODELING_TILING_TILING_H_
-
-#include <cgogn/modeling/dll.h>
-#include <cgogn/core/utils/numerics.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/io/graph_export.h>
 
 namespace cgogn
 {
 
-namespace modeling
+namespace io
 {
 
-template <typename MAP>
-class Tiling
-{
-protected:
+template class CGOGN_IO_API GraphExport<UndirectedGraph>;
 
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
-	using Face = typename MAP::Face;
-
-public:
-
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Tiling);
-
-	Tiling(MAP& map, uint32 x, uint32 y, uint32 z):
-		map_(map),
-		nx_(x),
-		ny_(y),
-		nz_(z)
-	{}
-
-	Tiling(MAP& map):
-		Tiling(map, UINT32_MAX, UINT32_MAX, 1u)
-	{}
-
-	/**
-	 * @brief Map in which we are working
-	 */
-	MAP& map_;
-
-	/**
-	 * @brief Dimensions of the tiling
-	 */
-	uint32 nx_, ny_, nz_;
-
-	/**
-	 * @brief Reference dart;
-	 */
-	Dart dart_;
-
-	/**
-	 * @brief Table of vertices
-	 * Order depends on the tiling kind
-	 */
-	std::vector<Vertex> vertex_table_;
-
-	/**
-	 * @brief Table of edges
-	 */
-	std::vector<Edge> edge_table_;
-
-	/**
-	 * @brief Table of faces
-	 */
-	std::vector<Face> face_table_;
-};
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-extern template class CGOGN_MODELING_API Tiling<CMap2>;
-extern template class CGOGN_MODELING_API Tiling<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TILING_CPP_))
-
-} // namespace modeling
+} // namespace io
 
 } // namespace cgogn
-
-#endif // CGOGN_MODELING_TILING_TILING_H_
