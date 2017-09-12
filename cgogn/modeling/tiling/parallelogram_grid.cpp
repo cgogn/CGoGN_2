@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_MODELING_TILING_SQUARE_GRID_CPP_
+#define CGOGN_MODELING_TILING_PARALLELOGRAM_GRID_CPP_
 
 #include <cgogn/modeling/tiling/parallelogram_grid.h>
 

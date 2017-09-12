@@ -14,6 +14,89 @@ namespace cgogn
 namespace modeling
 {
 
+template <typename VEC>
+class Parallelogram
+{
+private:
+    VEC p_ ;
+    VEC Ti_ ;
+    VEC Tj_ ;
+public:
+    Parallelogram()
+    {
+        p_ = VEC::Zero() ;
+        Ti_ = VEC::Zero() ;
+        Ti_[0] = 1.0 ;
+        Tj_ = VEC::Zero() ;
+        Tj_[1] = 1.0 ;
+    }
+
+    Parallelogram(const VEC& p0, const VEC& p1, const VEC& p2, const VEC& p3)
+    {
+        init(p0,p1-p0,p3-p0) ;
+    }
+
+    Parallelogram(const VEC& p, const VEC& Ti, const VEC& Tj)
+    {
+        init(p,Ti,Tj) ;
+    }
+
+    Parallelogram(const VEC& p, const double& mag_i, const double& alpha_i, const double& mag_j, const double& alpha_j )
+    {
+        VEC Ti,Tj ;
+        Ti[0] = mag_i*sin(alpha_i) ;
+        Ti[1] = -mag_i*cos(alpha_i) ;
+        Tj[0] = mag_j*sin(alpha_j) ;
+        Tj[1] = -mag_j*cos(alpha_j) ;
+        init(p,Ti,Tj) ;
+    }
+
+    const VEC& getRefPos() const
+    {
+        return p_ ;
+    }
+
+    const VEC& getTi() const
+    {
+        return Ti_ ;
+    }
+
+    const VEC& getTj() const
+    {
+        return Tj_ ;
+    }
+
+    uint sample_parallelograms(std::vector<Parallelogram>& samples, uint p_bins, uint mag_i_bins, uint alpha_i_bins, uint mag_j_bins, uint alpha_j_bins) const
+    {
+        samples.clear() ;
+
+
+        // TODO
+        assert(false) ;
+
+
+        return samples.size() ;
+    }
+
+private:
+    void init(const VEC& p, const VEC& Ti, const VEC& Tj)
+    {
+        p_ = p ;
+        Ti_ = Ti ;
+        Tj_ = Tj ;
+        cgogn_assert(is_valid()) ;
+        if (!is_valid())
+            cgogn_log_error("Parallelogram::init") << "Attempt to create an invalid Parallelogram.";
+    }
+
+    bool is_valid() const
+    {
+        bool res = Ti_[0] > 0 && Tj_[0] >= 0 && Tj_[1] > Ti_[1] ;
+        cgogn_assert((acos(-Tj_[1] / Tj_.norm()) > acos(-Ti_[1] / Ti_.norm())) == res) ;
+        return res && p_.norm() > 1e-10 && Ti_.norm() > 1e-10 && Tj_.norm() > 1e-10 ;
+    }
+};
+
 /**
  * @brief The ParallelogramGrid class is a utility class to fill a rectangle with a tiling of parallelograms of a given size.
  */
@@ -21,7 +104,6 @@ template <typename MAP,typename VEC>
 class ParallelogramGrid
 {
     CGOGN_NOT_COPYABLE_NOR_MOVABLE(ParallelogramGrid);
-
 protected:
     using Map2 = cgogn::CMap2;
 
@@ -57,9 +139,7 @@ protected:
     Dart dart_ ;
     const geometry::AABB<VEC>& area_ ;
 
-    VEC p_ ;
-    VEC Ti_ ;
-    VEC Tj_ ;
+    Parallelogram<VEC> p_ ;
 
     DartAttribute<DartOrient> dart_orientation_ ;
     VertexAttribute<VEC> vertex_position_ ;
@@ -91,12 +171,10 @@ public:
      *
      * @post the map is embedded with a VertexAttribute called "position".
      */
-    void embed_with_parallelograms(const VEC& p, const VEC& Ti, const VEC& Tj)
+    void embed_with_parallelograms(const VEC& fixed_point, const VEC& Ti, const VEC& Tj)
     {
-        p_ = p ;
-        Ti_ = Ti ;
-        Tj_ = Tj ;
-        cgogn_assert(area_.contains(p)) ;
+        cgogn_assert(area_.contains(fixed_point)) ;
+        p_ = Parallelogram<VEC>(fixed_point,Ti,Tj) ; ;
 
         vertex_position_ = map_.template get_attribute<VEC, Vertex>("position") ;
         if (!vertex_position_.is_valid())
@@ -116,7 +194,7 @@ public:
         const Face f0 = Face(d0) ;
 
         // Embed vertices of face
-        const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, f0, p) ;
+        const geometry::AABB<VEC> f_bbox = embed_parallelogram(vertex_position_, f0, p_.getRefPos()) ;
 
         std::queue<Edge> edgeQueue ; // list of edges to treat
         queueFreeEdges(f0,edgeQueue,f_bbox) ;
@@ -152,16 +230,16 @@ public:
                 switch(provokingFaceOrient)
                 {
                 case(S):
-                    p_ref -= Tj ;
+                    p_ref -= p_.getTj() ;
                     break ;
                 case(E):
-                    p_ref += Ti ;
+                    p_ref += p_.getTi() ;
                     break ;
                 case(N):
-                    p_ref += Tj ;
+                    p_ref += p_.getTj() ;
                     break ;
                 case(W):
-                    p_ref -= Ti ;
+                    p_ref -= p_.getTi() ;
                     break ;
                 case(INVALID_ORIENT):
                     cgogn_log_error("INVALID_ORIENT in switch") ;
@@ -249,7 +327,7 @@ private:
             map_.foreach_incident_edge(f,
                 [&] (Edge e)
             {
-                if (is_border(e.dart)) // if it hasn't been sewed
+                if (is_border(e.dart)) // if it hasn't been sewed yet
                 {
                     edgeQueue.push(e);
                     ++counter ;
@@ -283,9 +361,9 @@ private:
         cgogn_ensure(d0==map_.phi1(d3)) ;
 
         position[Vertex(d0)] = p0 ;
-        position[Vertex(d1)] = p0 + Ti_ ;
-        position[Vertex(d2)] = position[d1] + Tj_ ;
-        position[Vertex(d3)] = p0 + Tj_ ;
+        position[Vertex(d1)] = p0 + p_.getTi() ;
+        position[Vertex(d2)] = position[d1] + p_.getTj() ;
+        position[Vertex(d3)] = p0 + p_.getTj() ;
 
         geometry::AABB<VEC> bbox(p0) ;
         bbox.add_point(position[d1]) ;
