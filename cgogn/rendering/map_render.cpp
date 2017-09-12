@@ -59,9 +59,9 @@ void MapRender::draw(DrawingType prim)
 		case TRIANGLES:
 			ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
 			break;
-        case QUAD:
-            ogl->glDrawElements(GL_LINES_ADJACENCY, nb_indices_[QUAD], GL_UNSIGNED_INT, 0);
-            break;
+		case QUAD:
+			ogl->glDrawElements(GL_LINES_ADJACENCY, nb_indices_[QUAD], GL_UNSIGNED_INT, 0);
+			break;
 		case BOUNDARY:
 			switch (boundary_dimension_)
 			{
