@@ -285,6 +285,7 @@ public:
 				break;
             case QUAD:
                 init_quad(m, mask, table_indices) ;
+                break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
 				break;
