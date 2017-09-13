@@ -108,16 +108,54 @@ public:
 		return Tj_ ;
 	}
 
-	uint sample_parallelograms(std::vector<Parallelogram>& samples, uint p_bins, uint mag_i_bins, uint alpha_i_bins, uint mag_j_bins, uint alpha_j_bins) const
+	static
+	uint sample_parallelograms(std::vector<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
 	{
 		samples.clear() ;
 
+		const uint half_diagonal = diagonal / 2 ;
 
-		// TODO
-		assert(false) ;
-
+		const double angular_step = M_PI * (1.0 / angular_bins) ;
+		for (double alpha_i = angular_step ; alpha_i < M_PI ; alpha_i += angular_step)
+		{
+			for (double alpha_j = alpha_i + angular_step ; alpha_j <= M_PI ; alpha_j += angular_step)
+			{
+				magnitude_bins = std::min(magnitude_bins,half_diagonal) ;
+				const uint mag_step = floor(half_diagonal / magnitude_bins) ;
+				for (uint mag_i = 1 ; mag_i < half_diagonal ; mag_i += mag_step)
+				{
+					for (uint mag_j = 1 ; mag_j < half_diagonal ; mag_j += mag_step)
+					{
+						VEC p0 = VEC::Zero();
+						Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
+						samples.push_back(p) ;
+						std::cout << p << std::endl ;
+					}
+				}
+			}
+		}
 
 		return samples.size() ;
+	}
+
+	inline friend std::ostream& operator<<(std::ostream& o, const Parallelogram<VEC>& p)
+	{
+		o << "p0(" ;
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+			o << p.p_[i] << ",";
+		o << p.p_[VEC::SizeAtCompileTime -1ul] << "), " ;
+
+		o << "Ti(" ;
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+			o << p.Ti_[i] << ",";
+		o << p.Ti_[VEC::SizeAtCompileTime -1ul] << "), " ;
+
+		o << "Tj(" ;
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+			o << p.Tj_[i] << ",";
+		o << p.Tj_[VEC::SizeAtCompileTime -1ul] << ")" ;
+
+		return o;
 	}
 
 private:
@@ -133,9 +171,12 @@ private:
 
 	bool is_valid() const
 	{
-		bool res = Ti_[0] > 0 && Tj_[0] >= 0 && Tj_[1] > Ti_[1] ;
-		cgogn_assert((acos(-Tj_[1] / Tj_.norm()) > acos(-Ti_[1] / Ti_.norm())) == res) ;
-		return res && p_.norm() > 1e-10 && Ti_.norm() > 1e-10 && Tj_.norm() > 1e-10 ;
+		bool res = Ti_[0] > 0 && Tj_[0] >= 0 ;
+		const double alpha_i = acos(-Ti_[1] / Ti_.norm()) ;
+		const double alpha_j = acos(-Tj_[1] / Tj_.norm()) ;
+		res &= (res == (alpha_j > alpha_i)) ;
+		res &= !almost_equal_absolute(Ti_.norm(),0.0) && !almost_equal_absolute(Tj_.norm(),0.0) ;
+		return res ;
 	}
 };
 
@@ -195,7 +236,10 @@ public:
 	ParallelogramGrid(MAP& map, const geometry::AABB<VEC>& fill_area):
 		map_(map),
 		area_(fill_area)
-	{}
+	{
+		std::vector<Parallelogram<VEC> > samples ;
+		std::cout << Parallelogram<VEC>::sample_parallelograms(samples,10,10,fill_area.diag_size()) << std::endl ;
+	}
 
 	/**
 	 * @brief embed_with_parallelograms creates a mesh composed of a tiling of identical parallelograms.
