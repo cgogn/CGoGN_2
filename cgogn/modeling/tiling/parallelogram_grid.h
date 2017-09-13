@@ -73,7 +73,7 @@ public:
 	 */
 	Parallelogram(const VEC& p, const double& mag_i, const double& alpha_i, const double& mag_j, const double& alpha_j )
 	{
-		VEC Ti,Tj ;
+		VEC Ti = VEC::Zero() ,Tj = VEC::Zero() ;
 		Ti[0] = mag_i*sin(alpha_i) ;
 		Ti[1] = -mag_i*cos(alpha_i) ;
 		Tj[0] = mag_j*sin(alpha_j) ;
@@ -108,8 +108,35 @@ public:
 		return Tj_ ;
 	}
 
-	static
-	uint sample_parallelograms(std::vector<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
+	/**
+	 * @brief getAlpha returns the angle between the negative y-axis and the vector, in counterclockwise direction
+	 * @param T the vector
+	 * @return an angle in [[0 M_PI]]
+	 */
+	static double getAlpha(const VEC& T)
+	{
+		return acos(-T[1] / T.norm()) ;
+	}
+
+	/**
+	 * @brief getAlphaI returns the angle of the first vector Ti using #getAlpha
+	 * @return an angle in ]]0 M_PI[[
+	 */
+	double getAlphaI() const
+	{
+		return getAlpha(Ti_) ;
+	}
+
+	/**
+	 * @brief getAlphaJ returns the angle of the second vector Tj using #getAlpha
+	 * @return an angle in ]]0 M_PI]]
+	 */
+	double getAlphaJ() const
+	{
+		return getAlpha(Tj_) ;
+	}
+
+	static uint sample_parallelograms(std::vector<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
 	{
 		samples.clear() ;
 
@@ -141,17 +168,17 @@ public:
 	inline friend std::ostream& operator<<(std::ostream& o, const Parallelogram<VEC>& p)
 	{
 		o << "p0(" ;
-		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
 			o << p.p_[i] << ",";
 		o << p.p_[VEC::SizeAtCompileTime -1ul] << "), " ;
 
 		o << "Ti(" ;
-		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
 			o << p.Ti_[i] << ",";
 		o << p.Ti_[VEC::SizeAtCompileTime -1ul] << "), " ;
 
 		o << "Tj(" ;
-		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime -2ul ; ++i )
+		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
 			o << p.Tj_[i] << ",";
 		o << p.Tj_[VEC::SizeAtCompileTime -1ul] << ")" ;
 
@@ -172,9 +199,7 @@ private:
 	bool is_valid() const
 	{
 		bool res = Ti_[0] > 0 && Tj_[0] >= 0 ;
-		const double alpha_i = acos(-Ti_[1] / Ti_.norm()) ;
-		const double alpha_j = acos(-Tj_[1] / Tj_.norm()) ;
-		res &= (res == (alpha_j > alpha_i)) ;
+		res &= (res == (getAlphaJ() > getAlphaI())) ;
 		res &= !almost_equal_absolute(Ti_.norm(),0.0) && !almost_equal_absolute(Tj_.norm(),0.0) ;
 		return res ;
 	}
@@ -236,10 +261,7 @@ public:
 	ParallelogramGrid(MAP& map, const geometry::AABB<VEC>& fill_area):
 		map_(map),
 		area_(fill_area)
-	{
-		std::vector<Parallelogram<VEC> > samples ;
-		std::cout << Parallelogram<VEC>::sample_parallelograms(samples,10,10,fill_area.diag_size()) << std::endl ;
-	}
+	{}
 
 	/**
 	 * @brief embed_with_parallelograms creates a mesh composed of a tiling of identical parallelograms.
@@ -257,10 +279,10 @@ public:
 	 *
 	 * @post the map is embedded with a VertexAttribute called "position".
 	 */
-	void embed_with_parallelograms(const VEC& fixed_point, const VEC& Ti, const VEC& Tj)
+	void embed_with_parallelograms(const Parallelogram<VEC>& p)
 	{
-		cgogn_assert(area_.contains(fixed_point)) ;
-		p_ = Parallelogram<VEC>(fixed_point,Ti,Tj) ; ;
+		cgogn_assert(area_.contains(p.getRefPos())) ;
+		p_ = p ;
 
 		vertex_position_ = map_.template get_attribute<VEC, Vertex>("position") ;
 		if (!vertex_position_.is_valid())
