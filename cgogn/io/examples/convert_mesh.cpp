@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 			.binary(output_is_binary)
 			.compress(compress_output)
 			.overwrite(overwrite_output)
-			.position_attribute(is_surface? vertex2:vertex3, "position");;
+			.position_attribute(is_surface? vertex2:vertex3, "position");
 	if (is_surface)
 	{
 		export_options.add_attribute(vertex2,"normal")
